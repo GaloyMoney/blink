@@ -1,0 +1,14 @@
+query me {
+  me {
+    defaultAccount {
+      ... on ConsumerAccount {
+        quizRewardsEnabled
+        quiz {
+          id
+          completed
+        }
+      }
+      id
+    }
+  }
+}

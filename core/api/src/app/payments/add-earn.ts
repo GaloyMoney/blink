@@ -1,3 +1,5 @@
+import { PartialResult } from "../partial-result"
+
 import { intraledgerPaymentSendWalletIdForBtcWallet } from "./send-intraledger"
 
 import { getRewardsConfig, OnboardingEarn } from "@/config"
@@ -29,9 +31,14 @@ export const addEarn = async ({
 }: {
   quizQuestionId: string
   accountId: string
-}): Promise<QuizQuestion | ApplicationError> => {
+}): Promise<
+  PartialResult<{
+    quiz: Quiz
+    rewardPaid: boolean
+  }>
+> => {
   const accountId = checkedToAccountId(accountIdRaw)
-  if (accountId instanceof Error) return accountId
+  if (accountId instanceof Error) return PartialResult.err(accountId)
 
   const rewardsConfig = getRewardsConfig()
 
@@ -39,54 +46,110 @@ export const addEarn = async ({
   const quizQuestionId = quizQuestionIdString as QuizQuestionId
 
   const amount = OnboardingEarn[quizQuestionId]
-  if (!amount) return new InvalidQuizQuestionIdError()
+  if (!amount) return PartialResult.err(new InvalidQuizQuestionIdError())
 
   const funderWalletId = await getFunderWalletId()
   const funderWallet = await WalletsRepository().findById(funderWalletId)
-  if (funderWallet instanceof Error) return funderWallet
+  if (funderWallet instanceof Error) return PartialResult.err(funderWallet)
   const funderAccount = await AccountsRepository().findById(funderWallet.accountId)
-  if (funderAccount instanceof Error) return funderAccount
+  if (funderAccount instanceof Error) return PartialResult.err(funderAccount)
 
   const recipientAccount = await AccountsRepository().findById(accountId)
-  if (recipientAccount instanceof Error) return recipientAccount
+  if (recipientAccount instanceof Error) return PartialResult.err(recipientAccount)
 
   const user = await UsersRepository().findById(recipientAccount.kratosUserId)
-  if (user instanceof Error) return user
+  if (user instanceof Error) return PartialResult.err(user)
+
+  const isFirstTimeAnsweringQuestion =
+    await RewardsRepository(accountId).add(quizQuestionId)
+  if (isFirstTimeAnsweringQuestion instanceof Error)
+    return PartialResult.err(isFirstTimeAnsweringQuestion)
+
+  const quiz: Quiz = {
+    id: quizQuestionId,
+    amount: amount,
+    completed: true,
+  }
 
   const validatedPhoneMetadata = PhoneMetadataAuthorizer(
     rewardsConfig.phoneMetadataValidationSettings,
   ).authorize(user.phoneMetadata)
 
   if (validatedPhoneMetadata instanceof Error) {
-    return new InvalidPhoneForRewardError(validatedPhoneMetadata.name)
+    return PartialResult.partial(
+      {
+        quiz,
+        rewardPaid: false,
+      },
+      new InvalidPhoneForRewardError(validatedPhoneMetadata.name),
+    )
   }
 
   const accountIP = await AccountsIpsRepository().findLastByAccountId(recipientAccount.id)
-  if (accountIP instanceof Error) return accountIP
+  if (accountIP instanceof Error)
+    return PartialResult.partial(
+      {
+        quiz,
+        rewardPaid: false,
+      },
+      new InvalidPhoneForRewardError(accountIP),
+    )
 
   const validatedIPMetadata = IPMetadataAuthorizer(
     rewardsConfig.ipMetadataValidationSettings,
   ).authorize(accountIP.metadata)
+
   if (validatedIPMetadata instanceof Error) {
     if (validatedIPMetadata instanceof MissingIPMetadataError)
-      return new InvalidIpMetadataError(validatedIPMetadata)
+      return PartialResult.partial(
+        {
+          quiz,
+          rewardPaid: false,
+        },
+        new InvalidIpMetadataError(validatedIPMetadata),
+      )
 
-    if (validatedIPMetadata instanceof UnauthorizedIPError) return validatedIPMetadata
+    if (validatedIPMetadata instanceof UnauthorizedIPError)
+      return PartialResult.partial(
+        {
+          quiz,
+          rewardPaid: false,
+        },
+        validatedIPMetadata,
+      )
 
-    return new UnknownRepositoryError("add earn error")
+    return PartialResult.partial(
+      {
+        quiz,
+        rewardPaid: false,
+      },
+      new UnknownRepositoryError("add earn error"),
+    )
   }
 
   const recipientWallets = await WalletsRepository().listByAccountId(accountId)
-  if (recipientWallets instanceof Error) return recipientWallets
+  if (recipientWallets instanceof Error)
+    return PartialResult.partial(
+      {
+        quiz,
+        rewardPaid: false,
+      },
+      recipientWallets,
+    )
 
   const recipientBtcWallet = recipientWallets.find(
     (wallet) => wallet.currency === WalletCurrency.Btc,
   )
-  if (recipientBtcWallet === undefined) return new NoBtcWalletExistsForAccountError()
-  const recipientWalletId = recipientBtcWallet.id
+  if (recipientBtcWallet === undefined)
+    return PartialResult.partial(
+      {
+        quiz,
+        rewardPaid: false,
+      },
+      new NoBtcWalletExistsForAccountError(),
+    )
 
-  const shouldGiveReward = await RewardsRepository(accountId).add(quizQuestionId)
-  if (shouldGiveReward instanceof Error) return shouldGiveReward
+  const recipientWalletId = recipientBtcWallet.id
 
   const payment = await intraledgerPaymentSendWalletIdForBtcWallet({
     senderWalletId: funderWalletId,
@@ -95,7 +158,51 @@ export const addEarn = async ({
     memo: quizQuestionId,
     senderAccount: funderAccount,
   })
-  if (payment instanceof Error) return payment
 
-  return { id: quizQuestionId, earnAmount: amount }
+  if (payment instanceof Error)
+    return PartialResult.partial(
+      {
+        quiz,
+        rewardPaid: false,
+      },
+      payment,
+    )
+
+  return PartialResult.ok({
+    quiz,
+    rewardPaid: true,
+  })
+}
+
+export const isAccountEligibleForEarnPayment = async ({
+  accountId,
+}: {
+  accountId: AccountId
+}): Promise<boolean | ApplicationError> => {
+  const recipientAccount = await AccountsRepository().findById(accountId)
+  if (recipientAccount instanceof Error) return recipientAccount
+
+  const user = await UsersRepository().findById(recipientAccount.kratosUserId)
+  if (user instanceof Error) return user
+
+  const rewardsConfig = getRewardsConfig()
+
+  const validatedPhoneMetadata = PhoneMetadataAuthorizer(
+    rewardsConfig.phoneMetadataValidationSettings,
+  ).authorize(user.phoneMetadata)
+
+  if (validatedPhoneMetadata instanceof Error) {
+    return false
+  }
+
+  const accountIP = await AccountsIpsRepository().findLastByAccountId(recipientAccount.id)
+  if (accountIP instanceof Error) return accountIP
+
+  const validatedIPMetadata = IPMetadataAuthorizer(
+    rewardsConfig.ipMetadataValidationSettings,
+  ).authorize(accountIP.metadata)
+
+  if (validatedIPMetadata instanceof Error) return false
+
+  return true
 }

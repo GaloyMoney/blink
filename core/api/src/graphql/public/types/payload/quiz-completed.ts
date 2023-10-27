@@ -12,6 +12,9 @@ const QuizCompletedPayload = GT.Object({
     quiz: {
       type: Quiz,
     },
+    rewardPaid: {
+      type: GT.Boolean,
+    },
   }),
 })
 

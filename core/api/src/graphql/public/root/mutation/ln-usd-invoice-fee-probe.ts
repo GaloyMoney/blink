@@ -1,7 +1,5 @@
 import { normalizePaymentAmount } from "../../../shared/root/mutation"
 
-import { InvalidFeeProbeStateError } from "@/domain/bitcoin/lightning"
-
 import { Payments } from "@/app"
 
 import { GT } from "@/graphql/index"
@@ -11,6 +9,7 @@ import LnPaymentRequest from "@/graphql/shared/types/scalar/ln-payment-request"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 
 import { checkedToWalletId } from "@/domain/wallets"
+import { PartialResultType } from "@/app/partial-result"
 
 const LnUsdInvoiceFeeProbeInput = GT.Input({
   name: "LnUsdInvoiceFeeProbeInput",
@@ -52,28 +51,25 @@ const LnUsdInvoiceFeeProbeMutation = GT.Field<
     if (walletIdChecked instanceof Error)
       return { errors: [mapAndParseErrorForGqlResponse(walletIdChecked)] }
 
-    const { result: feeSatAmount, error } =
-      await Payments.getLightningFeeEstimationForUsdWallet({
-        walletId,
-        uncheckedPaymentRequest: paymentRequest,
-      })
+    const {
+      result: feeSatAmount,
+      error,
+      type,
+    } = await Payments.getLightningFeeEstimationForUsdWallet({
+      walletId,
+      uncheckedPaymentRequest: paymentRequest,
+    })
 
-    if (feeSatAmount !== null && error instanceof Error) {
+    if (type === PartialResultType.Partial) {
       return {
         errors: [mapAndParseErrorForGqlResponse(error)],
         ...normalizePaymentAmount(feeSatAmount),
       }
     }
 
-    if (error instanceof Error) {
+    if (type === PartialResultType.Err) {
       return {
         errors: [mapAndParseErrorForGqlResponse(error)],
-      }
-    }
-
-    if (feeSatAmount === null) {
-      return {
-        errors: [mapAndParseErrorForGqlResponse(new InvalidFeeProbeStateError())],
       }
     }
 

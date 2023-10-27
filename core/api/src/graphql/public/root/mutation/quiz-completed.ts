@@ -1,4 +1,5 @@
 import { Payments } from "@/app"
+import { PartialResultType } from "@/app/partial-result"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import { GT } from "@/graphql/index"
 
@@ -26,21 +27,19 @@ const QuizCompletedMutation = GT.Field<
   resolve: async (_, args, { domainAccount }) => {
     const { id } = args.input
 
-    const question = await Payments.addEarn({
+    const { result, error, type } = await Payments.addEarn({
       quizQuestionId: id,
       accountId: domainAccount.id,
     })
-    if (question instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(question)] }
+
+    if (type === PartialResultType.Err) {
+      return { errors: [mapAndParseErrorForGqlResponse(error)] }
     }
 
     return {
-      errors: [],
-      quiz: {
-        id: question.id,
-        amount: question.earnAmount,
-        completed: true,
-      },
+      errors: error ? [mapAndParseErrorForGqlResponse(error)] : [],
+      quiz: result.quiz,
+      rewardPaid: result.rewardPaid,
     }
   },
 })

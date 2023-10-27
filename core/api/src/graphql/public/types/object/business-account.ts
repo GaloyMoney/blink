@@ -25,8 +25,8 @@ import {
   SAT_PRICE_PRECISION_OFFSET,
   USD_PRICE_PRECISION_OFFSET,
 } from "@/domain/fiat"
-import { CouldNotFindTransactionsForAccountError } from "@/domain/errors"
 import { Accounts, Prices, Wallets } from "@/app"
+import { PartialResultType } from "@/app/partial-result"
 
 const BusinessAccount = GT.Object({
   name: "BusinessAccount",
@@ -137,18 +137,15 @@ const BusinessAccount = GT.Object({
           walletIds = wallets.map((wallet) => wallet.id)
         }
 
-        const { result, error } = await Accounts.getTransactionsForAccountByWalletIds({
-          account: source,
-          walletIds,
-          paginationArgs,
-        })
-        if (error instanceof Error) {
-          throw mapError(error)
-        }
+        const { result, error, type } =
+          await Accounts.getTransactionsForAccountByWalletIds({
+            account: source,
+            walletIds,
+            paginationArgs,
+          })
 
-        if (!result?.slice) {
-          const nullError = new CouldNotFindTransactionsForAccountError()
-          throw mapError(nullError)
+        if (type !== PartialResultType.Ok) {
+          throw mapError(error)
         }
 
         return connectionFromPaginatedArray<WalletTransaction>(

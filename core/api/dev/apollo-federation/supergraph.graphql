@@ -309,6 +309,7 @@ type ConsumerAccount implements Account
 
   """List the quiz questions of the consumer account"""
   quiz: [Quiz!]!
+  quizRewardsEnabled: Boolean!
   realtimePrice: RealtimePrice!
 
   """
@@ -1371,6 +1372,7 @@ type QuizCompletedPayload
 {
   errors: [Error!]!
   quiz: Quiz
+  rewardPaid: Boolean
 }
 
 type QuizQuestion

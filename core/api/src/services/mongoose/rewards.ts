@@ -9,7 +9,7 @@ export const RewardsRepository = (accountId: AccountId) => {
       // by default, mongodb return the previous state before the update
       const oldState = await Account.findOneAndUpdate(
         { id: accountId },
-        { $push: { earn: quizQuestionId } },
+        { $addToSet: { earn: quizQuestionId } },
         // { upsert: true },
       )
 

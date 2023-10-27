@@ -10,14 +10,13 @@ import CallbackEndpoint from "./callback-endpoint"
 
 import { NotificationSettings } from "./notification-settings"
 
-import { Accounts, Prices, Wallets } from "@/app"
+import { Accounts, Payments, Prices, Wallets } from "@/app"
 
 import {
   majorToMinorUnit,
   SAT_PRICE_PRECISION_OFFSET,
   USD_PRICE_PRECISION_OFFSET,
 } from "@/domain/fiat"
-import { CouldNotFindTransactionsForAccountError } from "@/domain/errors"
 
 import { GT } from "@/graphql/index"
 import { mapError } from "@/graphql/error-map"
@@ -36,6 +35,7 @@ import DisplayCurrency from "@/graphql/shared/types/scalar/display-currency"
 import { WalletsRepository } from "@/services/mongoose"
 
 import { listEndpoints } from "@/app/callback"
+import { PartialResultType } from "@/app/partial-result"
 
 const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
   name: "ConsumerAccount",
@@ -158,6 +158,20 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
       resolve: (source) => source.quiz,
     },
 
+    quizRewardsEnabled: {
+      type: GT.NonNull(GT.Boolean),
+      resolve: async (source) => {
+        const rewardsEnabled = await Payments.isAccountEligibleForEarnPayment({
+          accountId: source.id,
+        })
+
+        if (rewardsEnabled instanceof Error) {
+          throw mapError(rewardsEnabled)
+        }
+
+        return rewardsEnabled
+      },
+    },
     transactions: {
       description:
         "A list of all transactions associated with walletIds optionally passed.",
@@ -184,19 +198,15 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
           walletIds = wallets.map((wallet) => wallet.id)
         }
 
-        const { result, error } = await Accounts.getTransactionsForAccountByWalletIds({
-          account: source,
-          walletIds,
-          paginationArgs,
-        })
+        const { result, error, type } =
+          await Accounts.getTransactionsForAccountByWalletIds({
+            account: source,
+            walletIds,
+            paginationArgs,
+          })
 
-        if (error instanceof Error) {
+        if (type !== PartialResultType.Ok) {
           throw mapError(error)
-        }
-
-        if (!result?.slice) {
-          const nullError = new CouldNotFindTransactionsForAccountError()
-          throw mapError(nullError)
         }
 
         return connectionFromPaginatedArray<WalletTransaction>(
