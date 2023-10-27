@@ -88,6 +88,8 @@ integration:
 
 reset-integration: reset-deps-integration integration
 
+reset-all-integration: reset-deps-integration legacy-integration integration
+
 bats:
 	pnpm run build && \
 	bats -t test/bats

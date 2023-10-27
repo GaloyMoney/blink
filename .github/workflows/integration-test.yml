@@ -19,4 +19,4 @@ jobs:
       - name: Run integration tests
         run: |
           cd core/api/
-          nix develop -c make reset-integration
+          nix develop -c make reset-all-integration
