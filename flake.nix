@@ -194,7 +194,7 @@
 
             copyToRoot = pkgs.buildEnv {
               name = "image-root";
-              paths = nativeBuildInputs;
+              paths = nativeBuildInputs ++ [ pkgs.bash ];
               pathsToLink = [ "/bin" ];
             };
           };
