@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: add bash to /bin/bash in image (#3440)'
-      sha: 92024b8de3e59ab115bf534bd948c220c14b84cf
+      commitTitle: 'ci: get Tilt working in concourse'
+      sha: 3ce2b86e7b4760329ad5f863528eb90a26951e2d
       tags:
-      - 0.15.48-1-g92024b8de
+      - 0.15.49-3-g3ce2b86e7
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: add bash to /bin/bash in image (#3440)'
-      sha: 92024b8de3e59ab115bf534bd948c220c14b84cf
+      commitTitle: 'ci: get Tilt working in concourse'
+      sha: 3ce2b86e7b4760329ad5f863528eb90a26951e2d
       tags:
-      - 0.15.48-1-g92024b8de
+      - 0.15.49-3-g3ce2b86e7
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: add bash to /bin/bash in image (#3440)'
-      sha: 92024b8de3e59ab115bf534bd948c220c14b84cf
+      commitTitle: 'ci: get Tilt working in concourse'
+      sha: 3ce2b86e7b4760329ad5f863528eb90a26951e2d
       tags:
-      - 0.15.48-1-g92024b8de
+      - 0.15.49-3-g3ce2b86e7
     path: ./
   path: ./graphql
 kind: LockConfig
