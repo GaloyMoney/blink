@@ -2,7 +2,7 @@
 
 To generate the supergraph you need to run:
 ```
-$ yarn write-sdl
+$ pnpm run write-sdl
 ```
 
 which executes:

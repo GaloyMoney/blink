@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: add git-cliff to flake'
-      sha: d7fc624956bd85a46d76be4a98740772e6c4c54e
+      commitTitle: 'chore: deprecate yarn (#3442)...'
+      sha: 13dafef4e8cbc35d015bbdf21f27d943138da9a1
       tags:
-      - 0.15.53-2-gd7fc62495
+      - 0.15.53-5-g13dafef4e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: add git-cliff to flake'
-      sha: d7fc624956bd85a46d76be4a98740772e6c4c54e
+      commitTitle: 'chore: deprecate yarn (#3442)...'
+      sha: 13dafef4e8cbc35d015bbdf21f27d943138da9a1
       tags:
-      - 0.15.53-2-gd7fc62495
+      - 0.15.53-5-g13dafef4e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: add git-cliff to flake'
-      sha: d7fc624956bd85a46d76be4a98740772e6c4c54e
+      commitTitle: 'chore: deprecate yarn (#3442)...'
+      sha: 13dafef4e8cbc35d015bbdf21f27d943138da9a1
       tags:
-      - 0.15.53-2-gd7fc62495
+      - 0.15.53-5-g13dafef4e
     path: ./
   path: ./graphql
 kind: LockConfig
