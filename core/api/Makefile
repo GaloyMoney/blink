@@ -107,7 +107,7 @@ integration-in-ci:
 # NODE_OPTIONS line should be removed whenever we upgrade yarn.lock to see if
 # heap allocation issue has been resolved in dependencies (fails at 2048).
 execute-integration-from-within-container:
-	pnpm run install --frozen-lockfile && \
+	pnpm install --frozen-lockfile && \
 	SVIX_ENDPOINT= \
 	SVIX_SECRET= \
 	NODE_OPTIONS="--max-old-space-size=6144" \
