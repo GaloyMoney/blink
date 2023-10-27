@@ -102,6 +102,7 @@ bats-in-ci:
 
 integration-in-ci:
 	pnpm install --frozen-lockfile && \
+	. ../../.env && \
 	SVIX_ENDPOINT= \
 	SVIX_SECRET= \
 	NODE_OPTIONS="--max-old-space-size=6144" \
