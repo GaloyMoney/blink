@@ -1,7 +1,7 @@
 BIN_DIR=node_modules/.bin
 
 start-deps:
-	docker compose ./docker-compose.yml up bats-deps -d
+	docker compose -f ./docker-compose.yml up bats-deps -d
 
 start-deps-integration:
 	docker compose -f ./docker-compose.yml up integration-deps -d
