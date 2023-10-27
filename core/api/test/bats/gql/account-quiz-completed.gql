@@ -1,0 +1,13 @@
+mutation accountQuizCompleted($input: QuizCompletedInput!) {
+  quizCompleted(input: $input) {
+    quiz {
+      amount
+      completed
+      id
+    }
+    errors {
+      message
+    }
+    rewardPaid
+  }
+}
