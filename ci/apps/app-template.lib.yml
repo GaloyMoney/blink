@@ -1,5 +1,8 @@
 #@ load("@ytt:data", "data")
 
+#@ load("pipeline-fragments.lib.yml",
+#@   "release_task_image_config")
+
 #@ def galoy_dev_image():
 #@   return data.values.docker_registry + "/galoy-dev"
 #@ end
@@ -231,7 +234,7 @@ plan:
   - task: open-charts-pr
     config:
       platform: linux
-      image_resource: #@ task_image_config()
+      image_resource: #@ release_task_image_config()
       inputs:
         - name: #@ app_src_resource_name(app)
           path: repo
