@@ -59,6 +59,7 @@
           shfmt
           vendir
           gitMinimal
+          git-cliff
           jq
           yq-go
           ytt
