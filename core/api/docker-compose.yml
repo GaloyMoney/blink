@@ -285,33 +285,6 @@ services:
       --tlsautorefresh\
       --restlisten=0.0.0.0:8081\
       --rpclisten=0.0.0.0:11010"
-  bats-tests:
-    image: us.gcr.io/galoy-org/nodejs-concourse
-    ports: []
-    depends_on:
-      - bats-deps
-    command: ["make", "execute-bats-from-within-container"]
-    working_dir: /repo
-    env_file:
-      - ${TMP_ENV_CI:-../../.env.ci}
-    environment:
-      - GALOY_ENDPOINT=oathkeeper:4455
-      - OATHKEEPER_ENDPOINT=http://${OATHKEEPER_HOST:-oathkeeper}:${OATHKEEPER_PORT:-4456}/decisions/
-      - HOST_PROJECT_PATH=${PWD}
-      - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}
-    volumes:
-      - ./:/repo
-      - /var/run/docker.sock:/var/run/docker.sock
-  integration-tests:
-    image: us.gcr.io/galoy-org/nodejs-concourse
-    depends_on:
-      - integration-deps
-    command: ["make", "execute-integration-from-within-container"]
-    working_dir: /repo
-    env_file:
-      - ${TMP_ENV_CI:-../../.env.ci}
-    volumes:
-      - ./:/repo
   stablesats:
     image: us.gcr.io/galoy-org/stablesats-rs:latest
     ports: []

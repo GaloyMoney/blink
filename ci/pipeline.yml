@@ -132,12 +132,13 @@ jobs:
   - name: integration-tests
     #@ container = "integration-tests"
     #@ params = {}
-    #@ params["REPO_PATH"] = data.values.gh_repository + "-" + container + "/core/api"
+    #@ params["REPO_PATH"] = data.values.gh_repository + "-" + container
     #@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
     #@ params["SSH_PRIVATE_KEY"] = "((staging-ssh.ssh_private_key))"
     #@ params["SSH_PUB_KEY"] = "((staging-ssh.ssh_public_key))"
-    #@ params["TEST_CONTAINER"] = container
     #@ params["JEST_TIMEOUT"] = 90000
+    #@ params["PACKAGE_DIR"] = "core/api"
+    #@ params["CMD"] = "make integration-in-ci"
     serial: true
     plan:
     - { put: docker-host, params: { acquire: true } }
@@ -154,28 +155,28 @@ jobs:
         inputs:
         - name: pipeline-tasks
         - name: docker-host
+          path: nix-host
         - name: repo
           path: #@ data.values.gh_repository + "-" + container
-        caches:
-        - path: cargo-home
-        - path: cargo-target-dir
         params: #@ params
         run:
-          path: pipeline-tasks/ci/vendor/tasks/test-on-docker-host.sh
+          path: pipeline-tasks/ci/apps/tasks/run-on-nix-host.sh
       ensure:
         put: docker-host
         params:
           release: docker-host
     on_failure: #@ slack_failure_notification()
+
   - name: bats-tests
     #@ container = "bats-tests"
     #@ params = {}
-    #@ params["REPO_PATH"] = data.values.gh_repository + "-" + container + "/core/api"
+    #@ params["REPO_PATH"] = data.values.gh_repository + "-" + container
     #@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
     #@ params["SSH_PRIVATE_KEY"] = "((staging-ssh.ssh_private_key))"
     #@ params["SSH_PUB_KEY"] = "((staging-ssh.ssh_public_key))"
-    #@ params["TEST_CONTAINER"] = container
     #@ params["JEST_TIMEOUT"] = 90000
+    #@ params["PACKAGE_DIR"] = "core/api"
+    #@ params["CMD"] = "make bats-in-ci"
     serial: true
     plan:
     - { put: docker-host, params: { acquire: true } }
@@ -192,14 +193,12 @@ jobs:
         inputs:
         - name: pipeline-tasks
         - name: docker-host
+          path: nix-host
         - name: repo
           path: #@ data.values.gh_repository + "-" + container
-        caches:
-        - path: cargo-home
-        - path: cargo-target-dir
         params: #@ params
         run:
-          path: pipeline-tasks/ci/vendor/tasks/test-on-docker-host.sh
+          path: pipeline-tasks/ci/apps/tasks/run-on-nix-host.sh
       ensure:
         put: docker-host
         params:

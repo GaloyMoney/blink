@@ -96,31 +96,17 @@ bats:
 
 reset-bats: reset-deps bats
 
-execute-bats-from-within-container:
-	git config --global --add safe.directory /repo # otherwise bats complains
+bats-in-ci:
 	pnpm install --frozen-lockfile && \
-	pnpm run build && \
-	bats -t test/bats
+	$(MAKE) reset-bats
 
 integration-in-ci:
-	make create-tmp-env-ci && \
-	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests --attach integration-tests
-
-# NODE_OPTIONS line should be removed whenever we upgrade yarn.lock to see if
-# heap allocation issue has been resolved in dependencies (fails at 2048).
-execute-integration-from-within-container:
 	pnpm install --frozen-lockfile && \
-	SVIX_ENDPOINT= \
-	SVIX_SECRET= \
-	NODE_OPTIONS="--max-old-space-size=6144" \
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/legacy-integration/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit && \
-	NODE_OPTIONS="--max-old-space-size=6144" \
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/integration/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+	$(MAKE) reset-all-integration
 
 unit-in-ci:
 	. ./.env && \
 		LOGLEVEL=warn $(BIN_DIR)/jest --config ./test/unit/jest.config.js --ci --bail --maxWorkers=50%
-
 check-implicit:
 	pnpm run tsc-check-noimplicitany
 
