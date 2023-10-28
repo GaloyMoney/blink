@@ -1,10 +1,12 @@
-import NextAuth, { AuthOptions } from "next-auth"
-
-import { ApolloQueryResult } from "@apollo/client"
-
 import { fetchUserData } from "@/services/graphql/queries/me-data"
+import NextAuth, { AuthOptions } from "next-auth"
 import { env } from "@/env"
 import { MeQuery } from "@/services/graphql/generated"
+
+const useSecureCookies = process.env.NEXTAUTH_URL?.startsWith("https://")
+const cookiePrefix = useSecureCookies ? "__Secure-" : ""
+
+import { ApolloQueryResult } from "@apollo/client"
 
 declare module "next-auth" {
   interface Profile {
@@ -17,7 +19,10 @@ declare module "next-auth" {
   }
 }
 
-const type = "oauth" as const
+const heightHours = 8 * 60 * 60 * 1000
+const expires = new Date(Date.now() + heightHours)
+
+const type = "oauth" as const;
 export const authOptions: AuthOptions = {
   providers: [
     {
@@ -66,6 +71,19 @@ export const authOptions: AuthOptions = {
       session.accessToken = token.accessToken
       session.userData = userData
       return session
+    },
+  },
+  cookies: {
+    sessionToken: {
+      name: `${cookiePrefix}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        // domain: ".localhost", // FIXME: use env variable
+        secure: useSecureCookies,
+        expires,
+      },
     },
   },
 }
