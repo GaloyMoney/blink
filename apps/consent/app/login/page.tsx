@@ -182,16 +182,7 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
               </Link>
             </div>
           </div>
-          <div className="flex flex-col md:flex-row w-full gap-2">
-            <SecondaryButton
-              type="submit"
-              id="reject"
-              name="submit"
-              value={SubmitValue.denyAccess}
-              formNoValidate
-            >
-              Cancel
-            </SecondaryButton>
+          <div className="flex flex-col md:flex-row-reverse w-full gap-2">
             <PrimaryButton
               type="submit"
               id="accept"
@@ -201,6 +192,15 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
             >
               Next
             </PrimaryButton>
+            <SecondaryButton
+              type="button"
+              id="reject"
+              name="submit"
+              value={SubmitValue.denyAccess}
+              formNoValidate
+            >
+              Cancel
+            </SecondaryButton>
           </div>
         </FormComponent>
       </Card>
