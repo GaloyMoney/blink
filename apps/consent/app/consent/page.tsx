@@ -177,17 +177,7 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
               Do not ask me again
             </label>
           </p>
-          <div className="flex flex-col md:flex-row w-full gap-2">
-            <SecondaryButton
-              type="submit"
-              id="reject"
-              name="submit"
-              value={SubmitValue.denyAccess}
-              formNoValidate
-            >
-              Deny
-            </SecondaryButton>
-
+          <div className="flex flex-col md:flex-row-reverse w-full gap-2">
             <PrimaryButton
               data-testid="submit_consent_btn"
               type="submit"
@@ -197,6 +187,15 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
             >
               Allow
             </PrimaryButton>
+            <SecondaryButton
+              type="submit"
+              id="reject"
+              name="submit"
+              value={SubmitValue.denyAccess}
+              formNoValidate
+            >
+              Deny
+            </SecondaryButton>
           </div>
         </form>
       </Card>

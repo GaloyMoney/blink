@@ -119,7 +119,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ login_challenge, countryCodes }) 
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row w-full gap-2">
+        <div className="flex flex-col md:flex-row-reverse w-full gap-2">
+          <PrimaryButton
+            type="submit"
+            id="accept"
+            name="submit"
+            value="Log in"
+            data-testid="phone_login_next_btn"
+          >
+            Next
+          </PrimaryButton>
           <SecondaryButton
             type="submit"
             id="reject"
@@ -129,15 +138,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ login_challenge, countryCodes }) 
           >
             Cancel
           </SecondaryButton>
-          <PrimaryButton
-            data-testid="phone_login_next_btn"
-            type="submit"
-            id="accept"
-            name="submit"
-            value="Log in"
-          >
-            Next
-          </PrimaryButton>
         </div>
       </FormComponent>
     </>
