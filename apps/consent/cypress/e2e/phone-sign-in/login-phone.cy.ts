@@ -37,7 +37,6 @@ describe("Account ID Test", () => {
     cy.setCookie(login_challenge, cookieValue, { secure: true })
     cy.visit(`/login/verification?login_challenge=${login_challenge}`)
     cy.get("[data-testid=verification_code_input]").type(testData.VERIFICATION_CODE)
-    cy.get("[data-testid=verification_code_submit_btn]").click()
     cy.get("[data-testid=submit_consent_btn]").click()
   })
 })

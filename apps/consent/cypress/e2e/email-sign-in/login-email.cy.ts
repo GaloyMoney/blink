@@ -21,7 +21,6 @@ describe("Account ID Test", () => {
     cy.getOTP(email).then((otp) => {
       const code = otp
       cy.get("[data-testid=verification_code_input]").type(code)
-      cy.get("[data-testid=verification_code_submit_btn]").click()
       cy.get("[data-testid=submit_consent_btn]").click()
     })
   })
