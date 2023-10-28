@@ -125,7 +125,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ login_challenge, countryCodes }) 
             id="accept"
             name="submit"
             value="Log in"
-            data-testid="email_login_next_btn"
+            data-testid="phone_login_next_btn"
           >
             Next
           </PrimaryButton>
