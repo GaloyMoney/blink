@@ -38,7 +38,6 @@ async function submitForm(formData: FormData): Promise<LoginEmailResponse | void
   const submitValue = formData.get("submit")
   const email = formData.get("email")
   const remember = String(formData.get("remember") === "1")
-  console.log(submitValue)
 
   if (
     !login_challenge ||
