@@ -8,9 +8,6 @@ import { GetCaptchaChallengeResponse, SendPhoneCodeResponse } from "./phone-logi
 import { LoginType, SubmitValue } from "@/app/index.types"
 import authApi from "@/services/galoy-auth"
 import { hydraClient } from "@/services/hydra"
-import { env } from "@/env"
-;("use server")
-
 import { handleAxiosError } from "@/app/error-handler"
 import { env } from "@/env"
 
