@@ -5,6 +5,7 @@ export const env = createEnv({
   server: {
     HYDRA_ADMIN_URL: z.string().default("http://localhost:4445"),
     CORE_AUTH_URL: z.string().default("http://localhost:4455/auth"),
+    DASHBOARD_URL: z.string().default("http://localhost:3001"),
   },
   shared: {
     GRAPHQL_ENDPOINT: z.string().default("http://localhost:4455/graphql"),
@@ -19,5 +20,6 @@ export const env = createEnv({
     OTEL_EXPORTER_OTLP_ENDPOINT: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
     TRACING_SERVICE_NAME: process.env.TRACING_SERVICE_NAME,
     NODE_ENV: process.env.NODE_ENV,
+    DASHBOARD_URL: process.env.DASHBOARD_URL,
   },
 })

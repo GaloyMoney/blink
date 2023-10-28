@@ -1,24 +1,25 @@
-import { redirect } from "next/navigation"
-import React from "react"
+import { cookies, headers } from "next/headers"
 import Link from "next/link"
-import { headers, cookies } from "next/headers"
+import { redirect } from "next/navigation"
 
 import { hydraClient } from "../../services/hydra"
-import InputComponent from "../components/input-component"
-import Card from "../components/card"
-import MainContent from "../components/main-container"
-import Logo from "../components/logo"
-import Heading from "../components/heading"
-import SubHeading from "../components/sub-heading"
-import FormComponent from "../components/form-component"
-import Separator from "../components/separator"
 import PrimaryButton from "../components/button/primary-button-component"
 import SecondaryButton from "../components/button/secondary-button-component"
+import Card from "../components/card"
+import FormComponent from "../components/form-component"
+import Heading from "../components/heading"
+import InputComponent from "../components/input-component"
+import Logo from "../components/logo"
+import MainContent from "../components/main-container"
+import Separator from "../components/separator"
+import SubHeading from "../components/sub-heading"
 import { LoginType, SubmitValue } from "../index.types"
 
 import { LoginEmailResponse } from "./email-login.types"
 
+import { env } from "@/env"
 import authApi from "@/services/galoy-auth"
+import axios from "axios"
 
 //  this page is for login via email
 interface LoginProps {
@@ -94,8 +95,8 @@ async function submitForm(formData: FormData): Promise<LoginEmailResponse | void
       value: email,
       remember,
     }),
-    { secure: true },
-  )
+    { secure: true, sameSite: "lax" }
+  );
 
   const params = new URLSearchParams({
     login_challenge,
@@ -136,6 +137,34 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
       },
     )
     redirect(String(response.redirect_to))
+  }
+
+  const useSecureCookies = env.DASHBOARD_URL.startsWith("https://");
+  const cookiePrefix = useSecureCookies ? "__Secure-" : "";
+  const cookieNameSession = `${cookiePrefix}next-auth.session-token`;
+  const cookie = cookies().get(cookieNameSession);
+
+  if (cookie) {
+    const response = await axios(`${env.DASHBOARD_URL}/api/auth/session`, {
+      method: "GET",
+      headers: {
+        Cookie: cookies().toString(),
+      },
+    });
+    const userId = response?.data?.userData?.data?.me?.id;
+
+    if (userId) {
+      const response2 = await hydraClient.acceptOAuth2LoginRequest({
+        loginChallenge: login_challenge,
+        acceptOAuth2LoginRequest: {
+          subject: userId,
+          remember: true,
+          remember_for: 3600,
+          acr: "2", // FIXME
+        },
+      });
+      redirect(response2.data.redirect_to);
+    }
   }
 
   return (
