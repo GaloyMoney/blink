@@ -130,7 +130,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ login_challenge, countryCodes }) 
             Next
           </PrimaryButton>
           <SecondaryButton
-            type="button"
+            type="submit"
             id="reject"
             name="submit"
             value={SubmitValue.denyAccess}
