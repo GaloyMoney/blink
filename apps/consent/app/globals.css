@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 :root {
   --transparent: rgba(0, 0, 0, 0);
   --white: #ffffff;
@@ -31,26 +30,33 @@
   --error: #dc2626;
   --error9: #fee2e2;
   --warning: #f59e0b;
-
-  /* default */
 }
 
 [data-theme="light"] {
+  --backgroundColor: var(--white);
   --overlayBackground: rgba(255, 255, 255, 0.746);
   --backColor: var(--black);
   --primaryButtonBackground: var(--orange);
   --primaryButtonFont: var(--white);
   --inputBackground: var(--grey5);
   --inputColor: var(--black);
-  background-color: var(--white);
+  --inputSecondary: var(--grey2);
+  --shadow: 
+    rgba(0, 0, 0, 0.144) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.144) 0px 0px 0px 1px;
 }
 
 [data-theme="dark"] {
+  --backgroundColor: var(--black);
   --overlayBackground: rgba(16, 16, 16, 0.746);
   --backColor: var(--white);
   --primaryButtonBackground: var(--primary4);
   --primaryButtonFont: var(--black);
   --inputBackground: var(--darkGrey);
   --inputColor: var(--white);
-  background-color: var(--black);
+  --inputSecondary: var(--grey4);
+  --shadow: 
+    rgba(255, 255, 255, 0.144) 0px 1px 3px 0px,
+    rgba(227, 231, 235, 0.144) 0px 0px 0px 1px;
 }
+

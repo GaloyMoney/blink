@@ -4,13 +4,13 @@ import Link from "next/link"
 
 import { toast } from "react-toastify"
 
-/* eslint @typescript-eslint/ban-ts-comment: "off" */
-// @ts-ignore-next-line error
-import { experimental_useFormState as useFormState } from "react-dom"
-
 import PhoneInput from "react-phone-number-input"
 
 import { E164Number } from "libphonenumber-js/types"
+
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line error
+import { experimental_useFormState as useFormState } from "react-dom"
 
 import { getCaptchaChallenge } from "./server-actions"
 
@@ -80,7 +80,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ login_challenge, countryCodes }) 
       ) : null}
       <FormComponent action={formAction}>
         <input type="hidden" name="login_challenge" value={login_challenge} />
-        <label htmlFor="phone" className="block mb-2 text-sm font-medium text-gray-900">
+        <label
+          htmlFor="phone"
+          className="block mb-2 text-sm font-medium text-[var(--inputColor)]"
+        >
           Phone
         </label>
 
@@ -97,7 +100,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ login_challenge, countryCodes }) 
         />
 
         <div className="flex items-center mb-4">
-          <label className="text-gray-700 text-sm flex items-center">
+          <label className="text-[var(--inputColor)] text-sm flex items-center">
             <input
               type="checkbox"
               id="remember"

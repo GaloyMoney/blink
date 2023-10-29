@@ -6,11 +6,9 @@
 
 @media (min-width: 768px) {
   .card {
-    background-color: white;
+    background-color: var(--backgroundColor);
     border-radius: 0.5rem;
-    box-shadow:
-      rgba(0, 0, 0, 0.144) 0px 1px 3px 0px,
-      rgba(27, 31, 35, 0.144) 0px 0px 0px 1px;
+    box-shadow: var(--shadow);
     width: auto;
     margin: auto;
     width: 25em;
