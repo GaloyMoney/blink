@@ -16,6 +16,7 @@ describe("Account ID Test", () => {
   it("Login email Test", () => {
     cy.log("login challenge : ", login_challenge)
     const email = testData.EMAIL
+    cy.wait(2000)
     cy.get("[data-testid=email_id_input]").type(email)
     cy.get("[data-testid=email_login_next_btn]").click()
     cy.getOTP(email).then((otp) => {
