@@ -20,9 +20,7 @@ gql`
       }
     }
   }
-`
 
-gql`
   mutation UserEmailRegistrationValidate($input: UserEmailRegistrationValidateInput!) {
     userEmailRegistrationValidate(input: $input) {
       errors {
@@ -31,9 +29,7 @@ gql`
       }
     }
   }
-`
 
-gql`
   mutation UserEmailDelete {
     userEmailDelete {
       errors {

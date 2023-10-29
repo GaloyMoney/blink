@@ -4,9 +4,6 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
 import {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore-next-line no-implicit-any error
-  experimental_useFormStatus as useFormStatus,
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore-next-line no-implicit-any error
   experimental_useFormState as useFormState,
 } from "react-dom"
 
@@ -15,7 +12,6 @@ import {
   Button,
   Input,
   FormControl,
-  FormLabel,
   FormHelperText,
   Card,
   Typography,
@@ -25,12 +21,16 @@ import Link from "next/link"
 
 import { emailRegisterValidateServerAction } from "../../server-actions"
 
+import FormSubmitButton from "@/components/form-submit-button"
+
 type VerifyEmailFormProps = {
   emailRegistrationId: string
+  email: string
 }
-export default function VerifyEmailForm({ emailRegistrationId }: VerifyEmailFormProps) {
-  const { pending } = useFormStatus()
-
+export default function VerifyEmailForm({
+  emailRegistrationId,
+  email,
+}: VerifyEmailFormProps) {
   const [state, formAction] = useFormState(emailRegisterValidateServerAction, {
     error: null,
     message: null,
@@ -46,16 +46,28 @@ export default function VerifyEmailForm({ emailRegistrationId }: VerifyEmailForm
         marginTop: "4em",
       }}
     >
-      <Card
+      <Box
         sx={{
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
           width: "30em",
+          gap: "1.5em",
         }}
       >
-        <Typography level="h3">Verification Code</Typography>
+        <Typography level="h2">Email Verification Code</Typography>
+        <Box>
+          <Typography>Enter The verfication Code sent to your Email </Typography>
+          <Typography
+            sx={{
+              textAlign: "center",
+            }}
+            level="h4"
+          >
+            {email}{" "}
+          </Typography>
+        </Box>
         <FormControl
           sx={{
             width: "90%",
@@ -63,7 +75,6 @@ export default function VerifyEmailForm({ emailRegistrationId }: VerifyEmailForm
           error={state.error}
         >
           <form action={formAction}>
-            <FormLabel>Code</FormLabel>
             <input type="hidden" name="emailRegistrationId" value={emailRegistrationId} />
             <Input
               name="code"
@@ -78,36 +89,58 @@ export default function VerifyEmailForm({ emailRegistrationId }: VerifyEmailForm
             {state.error ? (
               <FormHelperText>
                 <InfoOutlined />
-                {state.message.message}
+                {state.message}
               </FormHelperText>
             ) : null}
 
             <Box
               sx={{
                 display: "flex",
-                flexDirection: "row",
                 justifyContent: "space-between",
                 width: "100%",
                 alignItems: "center",
               }}
             >
-              <Link href={"/security"}>Cancel</Link>
-              <Button
-                loading={pending}
+              <Link href={"/security"} style={{ width: "49%" }}>
+                <Button
+                  type="submit"
+                  name="submit"
+                  color="danger"
+                  variant="outlined"
+                  sx={{
+                    marginTop: "1em",
+                    display: "flex",
+                    gap: "1em",
+                    width: "100%",
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Link>
+              <FormSubmitButton
                 type="submit"
                 name="submit"
                 sx={{
-                  marginTop: "2em",
+                  marginTop: "1em",
                   display: "flex",
                   gap: "1em",
+                  width: "49%",
                 }}
               >
                 Confirm <ArrowForwardIcon></ArrowForwardIcon>
-              </Button>
+              </FormSubmitButton>
             </Box>
           </form>
         </FormControl>
-      </Card>
+        <Card
+          sx={{
+            width: "90%",
+            textAlign: "center",
+          }}
+        >
+          <Typography>This Email can be used to login to your Account.</Typography>
+        </Card>
+      </Box>
     </main>
   )
 }

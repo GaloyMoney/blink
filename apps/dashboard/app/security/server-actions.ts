@@ -2,11 +2,19 @@
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 
+import { revalidatePath } from "next/cache"
+
 import {
+  deleteEmail,
   emailRegistrationInitiate,
   emailRegistrationValidate,
 } from "@/services/graphql/mutations/email"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+
+import {
+  UserEmailRegistrationInitiateMutation,
+  UserEmailRegistrationValidateMutation,
+} from "@/services/graphql/generated"
 
 export const emailRegisterInitiateServerAction = async (
   _prevState: unknown,
@@ -31,7 +39,7 @@ export const emailRegisterInitiateServerAction = async (
     }
   }
 
-  let data
+  let data: UserEmailRegistrationInitiateMutation | null | undefined
   try {
     data = await emailRegistrationInitiate(email, token)
   } catch (err) {
@@ -45,9 +53,10 @@ export const emailRegisterInitiateServerAction = async (
   }
 
   if (data?.userEmailRegistrationInitiate.errors.length) {
+    console.log()
     return {
       error: true,
-      message: data?.userEmailRegistrationInitiate.errors[0],
+      message: data?.userEmailRegistrationInitiate.errors[0].message,
       data: null,
     }
   }
@@ -87,7 +96,7 @@ export const emailRegisterValidateServerAction = async (
     }
   }
 
-  let codeVerificationResponse
+  let codeVerificationResponse: UserEmailRegistrationValidateMutation | null | undefined
   try {
     codeVerificationResponse = await emailRegistrationValidate(
       code,
@@ -107,10 +116,20 @@ export const emailRegisterValidateServerAction = async (
   if (codeVerificationResponse?.userEmailRegistrationValidate.errors.length) {
     return {
       error: true,
-      message: codeVerificationResponse?.userEmailRegistrationValidate.errors[0],
+      message: codeVerificationResponse?.userEmailRegistrationValidate.errors[0].message,
       data: null,
     }
   }
 
   redirect("/security")
+}
+
+export const deleteEmailServerAction = async () => {
+  const session = await getServerSession(authOptions)
+  const token = session?.accessToken
+  if (!token && typeof token !== "string") {
+    return
+  }
+  await deleteEmail(token)
+  revalidatePath("/security")
 }

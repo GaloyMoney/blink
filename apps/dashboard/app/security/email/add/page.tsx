@@ -1,11 +1,7 @@
 "use client"
-
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
 
 import {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore-next-line no-implicit-any error
-  experimental_useFormStatus as useFormStatus,
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore-next-line no-implicit-any error
   experimental_useFormState as useFormState,
@@ -16,15 +12,16 @@ import {
   Button,
   Input,
   FormControl,
-  FormLabel,
   FormHelperText,
-  Card,
   Typography,
+  Card,
 } from "@mui/joy"
 import InfoOutlined from "@mui/icons-material/InfoOutlined"
 import Link from "next/link"
 
 import { emailRegisterInitiateServerAction } from "../../server-actions"
+
+import FormSubmitButton from "@/components/form-submit-button"
 
 export default function AddEmail() {
   const [state, formAction] = useFormState(emailRegisterInitiateServerAction, {
@@ -32,7 +29,7 @@ export default function AddEmail() {
     message: null,
     responsePayload: {},
   })
-  const { pending } = useFormStatus()
+
   return (
     <main
       style={{
@@ -42,18 +39,20 @@ export default function AddEmail() {
         marginTop: "4em",
       }}
     >
-      <Card
+      <Box
         sx={{
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
           width: "30em",
-          gap: "1em",
+          gap: "1.5em",
         }}
       >
-        <Typography level="h4">Add Email Address</Typography>
-
+        <Typography level="h2">Add Your Email Address</Typography>
+        <Box>
+          <Typography>A Verification Code sent to this Email </Typography>
+        </Box>
         <FormControl
           sx={{
             width: "90%",
@@ -61,7 +60,6 @@ export default function AddEmail() {
           error={state.error}
         >
           <form action={formAction}>
-            <FormLabel>Email</FormLabel>
             <Input
               name="email"
               type="email"
@@ -74,7 +72,7 @@ export default function AddEmail() {
             {state.error ? (
               <FormHelperText>
                 <InfoOutlined />
-                Oops! something is wrong.
+                {state.message}
               </FormHelperText>
             ) : null}
 
@@ -87,23 +85,46 @@ export default function AddEmail() {
                 alignItems: "center",
               }}
             >
-              <Link href={"/security"}> Cancel</Link>
-              <Button
-                loading={pending}
+              <Link href={"/security"} style={{ width: "49%" }}>
+                <Button
+                  type="submit"
+                  name="submit"
+                  color="danger"
+                  variant="outlined"
+                  sx={{
+                    marginTop: "1em",
+                    display: "flex",
+                    gap: "1em",
+                    width: "100%",
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Link>
+              <FormSubmitButton
                 type="submit"
                 name="submit"
                 sx={{
-                  marginTop: "2em",
+                  marginTop: "1em",
                   display: "flex",
                   gap: "1em",
+                  width: "49%",
                 }}
               >
                 Send Code <ArrowForwardIcon></ArrowForwardIcon>
-              </Button>
+              </FormSubmitButton>
             </Box>
           </form>
         </FormControl>
-      </Card>
+        <Card
+          sx={{
+            width: "90%",
+            textAlign: "center",
+          }}
+        >
+          <Typography>This Email can be used to login to your Account.</Typography>
+        </Card>
+      </Box>
     </main>
   )
 }

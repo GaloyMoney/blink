@@ -8,6 +8,7 @@ import {
   emailRegistrationInitiate,
 } from "@/services/graphql/mutations/email"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { UserEmailRegistrationInitiateMutation } from "@/services/graphql/generated"
 
 type VerifyEmailProp = {
   emailRegistrationId: string | null | undefined
@@ -23,14 +24,18 @@ export default async function VerifyEmail({
   const token = session?.accessToken
 
   // this is if user has address but not verified
-  if (!emailRegistrationId || typeof emailRegistrationId !== "string") {
-    const email = session?.userData.data.me?.email?.address
-    if (!email || typeof email !== "string" || !token) {
-      redirect("/security")
-    }
+  const email = session?.userData.data.me?.email?.address
+  if (!email || typeof email !== "string") {
+    redirect("/security")
+  }
 
+  if (!token || typeof token !== "string") {
+    redirect("/security")
+  }
+
+  if (!emailRegistrationId || typeof emailRegistrationId !== "string") {
     await deleteEmail(token)
-    let data
+    let data: UserEmailRegistrationInitiateMutation | null | undefined
     try {
       data = await emailRegistrationInitiate(email, token)
     } catch (err) {
@@ -49,5 +54,10 @@ export default async function VerifyEmail({
     redirect("/security")
   }
 
-  return <VerifyEmailForm emailRegistrationId={emailRegistrationId}></VerifyEmailForm>
+  return (
+    <VerifyEmailForm
+      email={email}
+      emailRegistrationId={emailRegistrationId}
+    ></VerifyEmailForm>
+  )
 }
