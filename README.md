@@ -8,19 +8,19 @@
 
 ## TLDR
 
-Galoy is an opinionated bitcoin banking platform.
+Galoy is an opinionated Bitcoin banking platform.
 
-This repo represents the main api that brings all functionality together.
+This repo represents the main API that brings all functionality together.
 
 
-## Responsible disclosure 
+## Responsible Disclosure 
 
 Found critical bugs/vulnerabilities?
 Please email them security@galoy.io Thanks!
 
 ## Get Started
 
-Want to try it out and contribute? Checkout the [dev documentation](./docs/DEVELOPMENT_ENVIRONMENT.md) to deploy locally with a docker compose script.
+Want to try it out and contribute? Check out the [dev documentation](./docs/DEVELOPMENT_ENVIRONMENT.md) to deploy locally with a docker-compose script.
 
 If you have questions, you can [join our Workspace](https://chat.galoy.io)
 
@@ -32,7 +32,7 @@ For an overview of all relevant repository checkout [awesome-galoy](https://gith
   - For [end clients](./core/api/src/graphql/public/schema.graphql). [Documentation](https://galoymoney.github.io/galoy/)
   - For [admin activities](./core/api/src/graphql/admin/schema.graphql)
 - Authentication:
-  - Code is sent via twillio to end users phone number which can be exchanged for jwt auth token
+  - Code is sent via Twillio to end user's phone number which can be exchanged for JWT auth token
   - OAuth integration (in progress)
   - Account scoped API keys (in progress)
 - Internal ledger:
@@ -41,7 +41,7 @@ For an overview of all relevant repository checkout [awesome-galoy](https://gith
   - CSV based export of all accounting data
 - Contact list for frequent transaction partners
 - Price
-  - Sub-second [price data](https://github.com/GaloyMoney/price) polled from largest exchanges to record USD value at settlement
+  - Sub-second [price data](https://github.com/GaloyMoney/price) polled from the largest exchanges to record USD value at settlement
   - Historical price data can be queried for display for different time frames
 - Send / Receive BTC payments
   - External settlement via OnChain or lightning
@@ -53,7 +53,7 @@ For an overview of all relevant repository checkout [awesome-galoy](https://gith
   - Support for clearnet and TOR
   - Support for invoices with and without specified amount
   - Route probing to pre-display an accurate fee and mitigate attacks based on expensive routing
-  - Channel data backup to dropbox and google cloud storage
+  - Channel data backup to Dropbox and Google Cloud storage
 - Custodial storage of all user assets
   - Limited funds stored in hot-wallet (keys kept on servers)
   - Threshold based rebalancing to cold-storage (keys stored on offline hardware devices)
@@ -61,15 +61,15 @@ For an overview of all relevant repository checkout [awesome-galoy](https://gith
   - [Velocity check](https://www.linkedin.com/pulse/velocity-checks-fraud-prevention-scott-stone/) based on user verification level
   - Spam protection for sharing memos
   - Configurable 2fa for payments (in progress)
-  - DDos prevention 
+  - DDoS prevention 
     - via rate limiting infront of critical APIs
     - via geetest CAPTCHA
 - Resilience
-  - Databases (mongodb and redis) are run by default in high availability/resilience mode. If one pod/node goes down, there is an automatic failover on another pod/node.
+  - Databases (MongoDB and Redis) are run by default in high availability/resilience mode. If one pod/node goes down, there is an automatic failover on another pod/node.
 - Production ready
   - Supports horizontal scaling and highly available deployments via k8s
   - Client side load balancing across multiple LND nodes
-  - Out-of-the-box dashboards for KPIs deployed to grafana showing metrics exported via prometheus
+  - Out-of-the-box dashboards for KPIs deployed to Grafana showing metrics exported via Prometheus
   - Quick response times thanks to pagination of large data sets
   - Returning error codes for full translation capability of the frontend
   - Instrumentation enabled for real-time insights into production runtime ([opentelemetry](https://opentelemetry.io) / [honeycomb](https://www.honeycomb.io))
@@ -153,7 +153,7 @@ Every service should eventually have a green checkmark next to them, which ensur
 
 ### (6) Troubleshooting in Tilt
 
-If some services failed to start, you can restart them on the Tilt dashboard.
+If some services fail to start, you can restart them on the Tilt dashboard.
 
 ### (7) Tearing Down the Stack
 
@@ -164,6 +164,6 @@ It will also remove the containers and, consequentially, the data held in them.
 buck2 run dev:down
 ```
 
-## Run integration tests with galoy as a dependency?
+## Run integration tests with Galoy as a dependency?
 
 Take a look at the [Quickstart](./quickstart) if you want to take it for a spin.
