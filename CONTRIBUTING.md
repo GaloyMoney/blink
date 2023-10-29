@@ -11,7 +11,7 @@ To help get you started, we will explain a bit about how we've laid out the code
 ## Working with Types
 This codebase is implemented using a well-typed approach where we rely on Typescript for catching & enforcing certain kinds of checks we would like to perform.
 
-This approach helps to strenghthen guarantees that bugs/issues don't get to runtime unhandled if our types are implemented properly.
+This approach helps to strengthen guarantees that bugs/issues don't get to runtime unhandled if our types are implemented properly.
 
 ### Our Approach
 We define all our types in declaration files (`*.d.ts`) where typescript automatically adds any types to the context without needing to explicitly import. Declaration files have limitations on what can be imported & instantiated within them, so in the few cases where types derive from instances of things we would usually have to use special tricks to derive them.
@@ -21,7 +21,7 @@ The majority of our types are defined in the `domain` layer (see Architecture se
 #### Symbol types
 These are unique types that are alternatives to generically typing things as Typescript's primitive types (e.g. `string`, `number`, `boolean`). Doing this helps us to add context to primitive types that we pass around and it allows the type checked to distinguish between different kinds of primitives throughout the code.
 
-For example, an onchain address and a lightning network payment request are both strings, but they aren't interchangeable as a data type. Instead of using `string` type for these types we would define as follows using a "unique symbol":
+For example, an onchain address and a lightning network payment request are both strings, but they aren't interchangeable as data types. Instead of using `string` type for these types we would define as follows using a "unique symbol":
 
 ```
 type EncodedPaymentRequest = string & { readonly brand: unique symbol }
@@ -167,7 +167,7 @@ Defines the models and business logic with related interfaces.
 
 #### Responsibility
 - Define all data types
-- Implement operations on the data types that depends on conditionals or data transformations
+- Implement operations on the data types that depend on conditionals or data transformations
 - Define interfaces of external services
 
 #### Dependencies
@@ -182,8 +182,8 @@ Implements all the adapters (specific implementations of the interfaces defined 
 - Implement interfaces defined in domain layer
 
 #### Examples
-- Access to external resources (database, redis, bitcoind, lnd)
-- Consumption of external services/APIs (twilio, geetest, price, hedging)
+- Access to external resources (database, Redis, Bitcoin, lnd)
+- Consumption of external services/APIs (Twilio, geetest, price, hedging)
 
 #### Dependencies
 - Internal: Domain Layer
@@ -216,12 +216,12 @@ This layer will have the entry points used by the infrastructure (pods).
 
 #### Examples
 - Cron jobs
-- Http servers: Middleware related logic (JWT, graphql, …)
+- Http servers: Middleware-related logic (JWT, GraphQL, …)
 - Triggers
 
 #### Dependencies
 - Internal: Domain Layer, Application Layer and Services Layer. (_AR `TODO`: Confirm that this is not just Application layer_)
-- External: all required dependencies required to expose the application (expressjs, apollo server, …)
+- External: all required dependencies required to expose the application (expressJS, Apollo server, …)
 
 
 
