@@ -66,8 +66,8 @@ function EmailSettings({ emailData }: EmailSettingsProps) {
             </Typography>
           </Box>
           <Typography id="modal-desc" textColor="text.tertiary" textAlign="center">
-            Are You sure you want to remove this Email from your Account? You will not be
-            able to Login via this email again.
+            Are you sure you want to remove this email from your account? You will not be
+            able to log in via this email again.
           </Typography>
           <Button
             variant="outlined"
@@ -116,7 +116,7 @@ function EmailSettings({ emailData }: EmailSettingsProps) {
             />
             <Typography level="h3">Email</Typography>
           </Box>
-          <Typography>Use email to login in your Account </Typography>
+          <Typography>Use email to login in your Account.</Typography>
           <Box
             sx={{
               display: { xs: "block", md: "none" },

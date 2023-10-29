@@ -58,7 +58,7 @@ export default function VerifyEmailForm({
       >
         <Typography level="h2">Email Verification Code</Typography>
         <Box>
-          <Typography>Enter The verfication Code sent to your Email </Typography>
+          <Typography>Enter the verification code sent to your email.</Typography>
           <Typography
             sx={{
               textAlign: "center",
@@ -138,7 +138,7 @@ export default function VerifyEmailForm({
             textAlign: "center",
           }}
         >
-          <Typography>This Email can be used to login to your Account.</Typography>
+          <Typography>This email can be used to log in to your account.</Typography>
         </Card>
       </Box>
     </main>

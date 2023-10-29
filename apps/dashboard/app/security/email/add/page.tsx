@@ -51,7 +51,7 @@ export default function AddEmail() {
       >
         <Typography level="h2">Add Your Email Address</Typography>
         <Box>
-          <Typography>A Verification Code sent to this Email </Typography>
+          <Typography>A verification code was sent to this email.</Typography>
         </Box>
         <FormControl
           sx={{
@@ -122,7 +122,7 @@ export default function AddEmail() {
             textAlign: "center",
           }}
         >
-          <Typography>This Email can be used to login to your Account.</Typography>
+          <Typography>This email can be used to log in to your account.</Typography>
         </Card>
       </Box>
     </main>
