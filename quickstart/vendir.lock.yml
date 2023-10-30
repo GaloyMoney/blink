@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: added dark mode (#3448)...'
-      sha: 0d7fe686097afb0fc4bbfa6ec9109948c9f74d7d
+      commitTitle: 'fix: typo in earn persistence (#3458)'
+      sha: d31ea78bfb9156258bc481da2d582d0b3462d1de
       tags:
-      - 0.15.60-2-g0d7fe6860
+      - 0.15.61-2-gd31ea78bf
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: added dark mode (#3448)...'
-      sha: 0d7fe686097afb0fc4bbfa6ec9109948c9f74d7d
+      commitTitle: 'fix: typo in earn persistence (#3458)'
+      sha: d31ea78bfb9156258bc481da2d582d0b3462d1de
       tags:
-      - 0.15.60-2-g0d7fe6860
+      - 0.15.61-2-gd31ea78bf
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: added dark mode (#3448)...'
-      sha: 0d7fe686097afb0fc4bbfa6ec9109948c9f74d7d
+      commitTitle: 'fix: typo in earn persistence (#3458)'
+      sha: d31ea78bfb9156258bc481da2d582d0b3462d1de
       tags:
-      - 0.15.60-2-g0d7fe6860
+      - 0.15.61-2-gd31ea78bf
     path: ./
   path: ./graphql
 kind: LockConfig
