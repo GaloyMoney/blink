@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: deprecate yarn (#3442)...'
-      sha: 13dafef4e8cbc35d015bbdf21f27d943138da9a1
+      commitTitle: 'fix: remove override from re-render.sh'
+      sha: e4b78b3ea86b83b39ed55bee8e2f5b4c88f3330d
       tags:
-      - 0.15.53-5-g13dafef4e
+      - 0.15.58-1-ge4b78b3ea
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: deprecate yarn (#3442)...'
-      sha: 13dafef4e8cbc35d015bbdf21f27d943138da9a1
+      commitTitle: 'fix: remove override from re-render.sh'
+      sha: e4b78b3ea86b83b39ed55bee8e2f5b4c88f3330d
       tags:
-      - 0.15.53-5-g13dafef4e
+      - 0.15.58-1-ge4b78b3ea
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: deprecate yarn (#3442)...'
-      sha: 13dafef4e8cbc35d015bbdf21f27d943138da9a1
+      commitTitle: 'fix: remove override from re-render.sh'
+      sha: e4b78b3ea86b83b39ed55bee8e2f5b4c88f3330d
       tags:
-      - 0.15.53-5-g13dafef4e
+      - 0.15.58-1-ge4b78b3ea
     path: ./
   path: ./graphql
 kind: LockConfig
