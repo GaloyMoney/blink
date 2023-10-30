@@ -1,9 +1,6 @@
 rust_binary(
     name = "api-keys",
     deps = [
-        "//third-party/rust:async-graphql",
-        "//third-party/rust:async-graphql-axum",
-        "//third-party/rust:axum",
         "//third-party/rust:tokio",
     ],
     srcs = glob(["src/**/*.rs"]),

@@ -8,7 +8,6 @@ name = "write_sdl"
 path = "src/bin/write_sdl.rs"
 
 [dependencies]
-async-graphql = { workspace = true }
-async-graphql-axum = { workspace = true }
-axum = { workspace = true }
 tokio = { workspace = true }
+mio = { workspace = true }
+libc = { workspace = true }
