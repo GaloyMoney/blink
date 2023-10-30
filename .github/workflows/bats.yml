@@ -16,6 +16,7 @@ jobs:
       - name: Run the Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v2
       - uses: actions/checkout@v3
+      - run: nix develop -c buck2 build //core/api:api
       - name: Run bats tests
         run: |
-          nix develop -c bats --setup-suite-file bats/setup_suite.bash -t bats/core/api
+          nix develop -c bats -t bats/core/api
