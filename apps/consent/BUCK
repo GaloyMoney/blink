@@ -43,11 +43,12 @@ filegroup(
     "public/**",
     "services/**",
     "components/**",
-    "env.ts",
     "tailwind.config.ts",
     "postcss.config.js",
     "next.config.js",
     "tsconfig.json",
+    "*.ts", # env.ts / instrumentation.ts
+    "instrumentation.node.ts"
     ]),
 )
 
