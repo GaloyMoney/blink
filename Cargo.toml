@@ -1,0 +1,12 @@
+[profile.release]
+debug = true
+
+[workspace]
+resolver = "2"
+members = [
+    "core/api-keys",
+]
+
+[workspace.dependencies]
+async-graphql = "6.0.9"
+async-graphql-axum = "6.0.9"

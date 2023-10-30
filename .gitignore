@@ -54,3 +54,6 @@ junit.xml
 
 # direnv
 .direnv
+
+# rust
+target
