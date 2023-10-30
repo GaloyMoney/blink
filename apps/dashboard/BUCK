@@ -37,7 +37,8 @@ filegroup(
     "postcss.config.js",
     "next.config.js",
     "tsconfig.json",
-    "*.ts", # env.ts / middleware.ts
+    "*.ts", # env.ts / middleware.ts / instrumentation.ts
+    "instrumentation.node.ts"
     ]),
 )
 
