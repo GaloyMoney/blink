@@ -20,7 +20,7 @@ await_api_is_up() {
     [[ "${network}" = "regtest" ]] || exit 1
   }
 
-  retry 60 1 server_is_up
+  retry 300 1 server_is_up
 }
 
 stop_services() {
