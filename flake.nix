@@ -75,6 +75,7 @@
           cargo-nextest
           cargo-audit
           cargo-watch
+          reindeer
         ]
         ++ buck2NativeBuildInputs
         ++ lib.optionals pkgs.stdenv.isLinux [
