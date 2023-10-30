@@ -57,3 +57,6 @@ junit.xml
 
 # rust
 target
+
+# vendir
+/.vendir-tmp/

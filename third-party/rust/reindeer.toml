@@ -3,8 +3,16 @@
 # Overview of available options:
 # https://github.com/facebookincubator/reindeer/blob/main/example/third-party/reindeer.toml
 
+# Build dependencies through http_archive downloaded from crates.io, rather than
+# vendoring sources into this repo.
+vendor = false
+
 # Parse Rust code to work out the precise set of source files for each crate.
 precise_srcs = true
+
+# If a fixups.toml file is needed (eg, the package has a build.rs), then
+# generate a template fixups.toml to be edited.
+fixup_templates = true
 
 # Include a public top-level target which depends on all other targets.
 include_top_level = true

@@ -1,19 +1,19 @@
 apiVersion: vendir.k14s.io/v1alpha1
 directories:
-- contents:
-  - git:
-      commitTitle: 'prelude/rust: Process CARGO_MANIFEST_DIR during rustdoc test...'
-      sha: 98a6e7b70dc82a62784f80897d72fefdfb54d70f
-      tags:
-      - "2023-10-15"
-    path: .
-  path: prelude
-- contents:
-  - git:
-      commitTitle: 'prelude/rust: Process CARGO_MANIFEST_DIR during rustdoc test...'
-      sha: 98a6e7b70dc82a62784f80897d72fefdfb54d70f
-      tags:
-      - "2023-10-15"
-    path: .
-  path: third-party/rust/reindeer.toml
+  - contents:
+      - git:
+          commitTitle: "prelude/rust: Process CARGO_MANIFEST_DIR during rustdoc test..."
+          sha: 98a6e7b70dc82a62784f80897d72fefdfb54d70f
+          tags:
+            - "2023-10-15"
+        path: .
+    path: prelude
+  - contents:
+      - git:
+          commitTitle: "prelude/rust: Process CARGO_MANIFEST_DIR during rustdoc test..."
+          sha: 98a6e7b70dc82a62784f80897d72fefdfb54d70f
+          tags:
+            - "2023-10-15"
+        path: .
+    path: third-party/macros
 kind: LockConfig
