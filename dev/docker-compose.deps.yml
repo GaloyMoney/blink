@@ -11,6 +11,10 @@ services:
     command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
     volumes:
       - ${HOST_PROJECT_PATH:-.}/config/ory:/home/ory
+    depends_on:
+      - kratos
+      - hydra
+      - apollo-router
   hydra:
     image: oryd/hydra:v2.1.2
     ports:

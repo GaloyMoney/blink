@@ -1,4 +1,4 @@
-name: "Bats test"
+name: "Legacy Bats test"
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   integration:
-    name: Bats tests
+    name: Legacy Bats tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -16,6 +16,7 @@ jobs:
       - name: Run the Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v2
       - uses: actions/checkout@v3
+      - run: cd core/api && nix develop -c pnpm install --frozen-lockfile
       - name: Run bats tests
         run: |
-          nix develop -c bats --setup-suite-file bats/setup_suite.bash -t bats/core/api
+          . ./.env && cd core/api && nix develop -c make reset-bats
