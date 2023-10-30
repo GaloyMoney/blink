@@ -25,8 +25,10 @@ const PrimaryButton: React.FC<PrimaryButtonProps> = ({
       disabled={loadOrDisable}
       {...buttonProps}
       className={`flex-1 ${
-        !loadOrDisable ? "bg-orange-500" : "bg-orange-600"
-      } text-white p-2 rounded-lg text-sm hover:bg-orange-600`}
+        !loadOrDisable
+          ? "bg-[var(--primaryButtonBackground)]"
+          : "bg-[var(--primaryButtonBackground)]"
+      } text-[var(--primaryButtonFont)] p-2 rounded-lg text-sm hover:bg-[var(--primaryButtonBackground)]`}
     >
       {loadOrDisable ? <Loader size="15px" /> : children}
     </button>

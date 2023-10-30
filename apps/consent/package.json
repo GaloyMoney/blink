@@ -33,6 +33,7 @@
     "graphql": "^16.8.1",
     "libphonenumber-js": "^1.10.47",
     "next": "latest",
+    "next-themes": "^0.2.1",
     "react": "latest",
     "react-dom": "latest",
     "react-phone-number-input": "^3.3.6",

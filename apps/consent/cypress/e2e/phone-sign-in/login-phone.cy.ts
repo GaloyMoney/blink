@@ -15,6 +15,7 @@ describe("Account ID Test", () => {
 
   it("Verification Test", () => {
     cy.log("login challenge : ", login_challenge)
+    cy.wait(2000)
     cy.get("[data-testid=sign_in_with_phone_text]").click()
     cy.get("[data-testid=phone_number_input]").type(testData.PHONE_NUMBER)
     cy.get("[data-testid=phone_login_next_btn]").click()
@@ -36,6 +37,7 @@ describe("Account ID Test", () => {
     })
     cy.setCookie(login_challenge, cookieValue, { secure: true })
     cy.visit(`/login/verification?login_challenge=${login_challenge}`)
+    cy.wait(2000)
     cy.get("[data-testid=verification_code_input]").type(testData.VERIFICATION_CODE)
     cy.get("[data-testid=submit_consent_btn]").click()
   })

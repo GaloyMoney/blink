@@ -159,7 +159,7 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
             placeholder="Email Id"
           />
           <div className="flex items-center mb-4">
-            <label className="text-gray-700 text-sm flex items-center">
+            <label className="text-[var(--inputColor)] text-sm flex items-center">
               <input
                 type="checkbox"
                 id="remember"

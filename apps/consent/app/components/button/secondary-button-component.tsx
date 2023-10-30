@@ -21,7 +21,7 @@ const SecondaryButton: React.FC<SecondaryButtonProps> = ({
     <button
       disabled={pending || disabled}
       {...buttonProps}
-      className={`flex-1 border-orange-500 bg-transparent text-gray-800 p-2 rounded-lg text-sm border-2 transition-all duration-300 ease-in-out hover:bg-orange-500 hover:text-white hover:border-transparent`}
+      className={`flex-1 border-[var(--primaryButtonBackground)] bg-transparent text-[var(--inputColor)] p-2 rounded-lg text-sm border-2 transition-all duration-300 ease-in-out hover:bg-[var(--primaryButtonBackground)] hover:text-[var(--primaryButtonFont)] hover:border-transparent`}
     >
       {children}
     </button>

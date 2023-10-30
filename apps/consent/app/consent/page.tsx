@@ -132,7 +132,7 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
         <form action={submitForm} className="flex flex-col">
           <input type="hidden" name="consent_challenge" value={consent_challenge} />
 
-          <p className="mb-4 text-gray-700  text-center ">
+          <p className="mb-4 text-[var(--inputColor)]  text-center ">
             Application <strong>{client.client_name || client.client_id}</strong> wants
             access resources on your behalf and to:
           </p>
@@ -141,13 +141,10 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
             <ScopeItem scope={scope} key={scope} />
           ))}
 
-          <p className="mb-4 text-gray-700">
+          <p className="mb-4  mt-4  text-[var(--inputColor)]">
             Do you want to be asked next time when this application wants to access your
-            data?
-          </p>
-          <p className="mb-4 text-gray-700">
-            The application will not be able to ask for more permissions without your
-            consent.
+            data? The application will not be able to ask for more permissions without
+            your consent.
           </p>
           <ul className="mb-4">
             {client.policy_uri && (
@@ -173,7 +170,7 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
               value="1"
               className="mr-2"
             />
-            <label htmlFor="remember" className="text-gray-700">
+            <label htmlFor="remember" className="text-[var(--inputColor)]">
               Do not ask me again
             </label>
           </p>

@@ -8,12 +8,14 @@
   border-radius: 0.5rem;
   margin-bottom: 0.5em;
   position: relative;
+  color: var(--inputColor);
+  background-color: var(--inputBackground);
 }
 
 .custom_label {
   position: relative;
   cursor: pointer;
-  flex-grow: 1; 
+  flex-grow: 1;
 }
 
 .text-gray-700 {
