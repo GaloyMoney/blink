@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: remove override from re-render.sh'
-      sha: e4b78b3ea86b83b39ed55bee8e2f5b4c88f3330d
+      commitTitle: 'fix: added tracing in BUCK (#3450)...'
+      sha: 364aa9dde0c8d238d776a35991032b9ec2069417
       tags:
-      - 0.15.58-1-ge4b78b3ea
+      - 0.15.59-2-g364aa9dde
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: remove override from re-render.sh'
-      sha: e4b78b3ea86b83b39ed55bee8e2f5b4c88f3330d
+      commitTitle: 'fix: added tracing in BUCK (#3450)...'
+      sha: 364aa9dde0c8d238d776a35991032b9ec2069417
       tags:
-      - 0.15.58-1-ge4b78b3ea
+      - 0.15.59-2-g364aa9dde
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: remove override from re-render.sh'
-      sha: e4b78b3ea86b83b39ed55bee8e2f5b4c88f3330d
+      commitTitle: 'fix: added tracing in BUCK (#3450)...'
+      sha: 364aa9dde0c8d238d776a35991032b9ec2069417
       tags:
-      - 0.15.58-1-ge4b78b3ea
+      - 0.15.59-2-g364aa9dde
     path: ./
   path: ./graphql
 kind: LockConfig
