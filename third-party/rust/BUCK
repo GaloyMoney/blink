@@ -66,7 +66,32 @@ cargo.rust_library(
         "default",
         "std",
     ],
+    rustc_flags = ["@$(location :libc-0.2.147-build-script-run[rustc_flags])"],
     visibility = [],
+)
+
+cargo.rust_binary(
+    name = "libc-0.2.147-build-script-build",
+    srcs = [":libc-0.2.147.crate"],
+    crate = "build_script_build",
+    crate_root = "libc-0.2.147.crate/build.rs",
+    edition = "2015",
+    features = [
+        "default",
+        "std",
+    ],
+    visibility = [],
+)
+
+buildscript_run(
+    name = "libc-0.2.147-build-script-run",
+    package_name = "libc",
+    buildscript_rule = ":libc-0.2.147-build-script-build",
+    features = [
+        "default",
+        "std",
+    ],
+    version = "0.2.147",
 )
 
 http_archive(
@@ -288,8 +313,33 @@ cargo.rust_library(
         "default",
         "proc-macro",
     ],
+    rustc_flags = ["@$(location :proc-macro2-1.0.69-build-script-run[rustc_flags])"],
     visibility = [],
     deps = [":unicode-ident-1.0.12"],
+)
+
+cargo.rust_binary(
+    name = "proc-macro2-1.0.69-build-script-build",
+    srcs = [":proc-macro2-1.0.69.crate"],
+    crate = "build_script_build",
+    crate_root = "proc-macro2-1.0.69.crate/build.rs",
+    edition = "2021",
+    features = [
+        "default",
+        "proc-macro",
+    ],
+    visibility = [],
+)
+
+buildscript_run(
+    name = "proc-macro2-1.0.69-build-script-run",
+    package_name = "proc-macro2",
+    buildscript_rule = ":proc-macro2-1.0.69-build-script-build",
+    features = [
+        "default",
+        "proc-macro",
+    ],
+    version = "1.0.69",
 )
 
 http_archive(
