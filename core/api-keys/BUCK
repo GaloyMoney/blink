@@ -1,6 +1,13 @@
 rust_binary(
-    name = "main",
+    name = "api-keys",
     srcs = glob(["src/**/*.rs"]),
     crate_root = "src/main.rs",
+    edition = "2021",
+)
+
+rust_binary(
+    name = "write-sdl",
+    srcs = glob(["src/**/*.rs"]),
+    crate_root = "src/bin/write_sdl.rs",
     edition = "2021",
 )

@@ -10,3 +10,5 @@ path = "src/bin/write_sdl.rs"
 [dependencies]
 async-graphql = { workspace = true }
 async-graphql-axum = { workspace = true }
+axum = "0.6.20"
+tokio = { version = "1.33.0", features = ["full"] }
