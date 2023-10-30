@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: added tracing in BUCK (#3450)...'
-      sha: 364aa9dde0c8d238d776a35991032b9ec2069417
+      commitTitle: 'feat: added dark mode (#3448)...'
+      sha: 0d7fe686097afb0fc4bbfa6ec9109948c9f74d7d
       tags:
-      - 0.15.59-2-g364aa9dde
+      - 0.15.60-2-g0d7fe6860
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: added tracing in BUCK (#3450)...'
-      sha: 364aa9dde0c8d238d776a35991032b9ec2069417
+      commitTitle: 'feat: added dark mode (#3448)...'
+      sha: 0d7fe686097afb0fc4bbfa6ec9109948c9f74d7d
       tags:
-      - 0.15.59-2-g364aa9dde
+      - 0.15.60-2-g0d7fe6860
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: added tracing in BUCK (#3450)...'
-      sha: 364aa9dde0c8d238d776a35991032b9ec2069417
+      commitTitle: 'feat: added dark mode (#3448)...'
+      sha: 0d7fe686097afb0fc4bbfa6ec9109948c9f74d7d
       tags:
-      - 0.15.59-2-g364aa9dde
+      - 0.15.60-2-g0d7fe6860
     path: ./
   path: ./graphql
 kind: LockConfig
