@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: typo in earn persistence (#3458)'
-      sha: d31ea78bfb9156258bc481da2d582d0b3462d1de
+      commitTitle: 'chore: api-keys boilerplate (#3456)...'
+      sha: 8df40d56758f1a29af2b40297524c1184190b7f4
       tags:
-      - 0.15.61-2-gd31ea78bf
+      - 0.15.62-1-g8df40d567
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: typo in earn persistence (#3458)'
-      sha: d31ea78bfb9156258bc481da2d582d0b3462d1de
+      commitTitle: 'chore: api-keys boilerplate (#3456)...'
+      sha: 8df40d56758f1a29af2b40297524c1184190b7f4
       tags:
-      - 0.15.61-2-gd31ea78bf
+      - 0.15.62-1-g8df40d567
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: typo in earn persistence (#3458)'
-      sha: d31ea78bfb9156258bc481da2d582d0b3462d1de
+      commitTitle: 'chore: api-keys boilerplate (#3456)...'
+      sha: 8df40d56758f1a29af2b40297524c1184190b7f4
       tags:
-      - 0.15.61-2-gd31ea78bf
+      - 0.15.62-1-g8df40d567
     path: ./
   path: ./graphql
 kind: LockConfig
