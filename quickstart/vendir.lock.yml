@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: add git to galoy-dev image'
-      sha: fa76c9123e8ead23bfcac0ebb841da7a7a4d6163
+      commitTitle: 'chore: render super graph with keys (#3468)...'
+      sha: f657ebf3a206154d3f3693c8d8ac4270561ad62a
       tags:
-      - 0.15.68-1-gfa76c9123
+      - 0.15.69-2-gf657ebf3a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: add git to galoy-dev image'
-      sha: fa76c9123e8ead23bfcac0ebb841da7a7a4d6163
+      commitTitle: 'chore: render super graph with keys (#3468)...'
+      sha: f657ebf3a206154d3f3693c8d8ac4270561ad62a
       tags:
-      - 0.15.68-1-gfa76c9123
+      - 0.15.69-2-gf657ebf3a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: add git to galoy-dev image'
-      sha: fa76c9123e8ead23bfcac0ebb841da7a7a4d6163
+      commitTitle: 'chore: render super graph with keys (#3468)...'
+      sha: f657ebf3a206154d3f3693c8d8ac4270561ad62a
       tags:
-      - 0.15.68-1-gfa76c9123
+      - 0.15.69-2-gf657ebf3a
     path: ./
   path: ./graphql
 kind: LockConfig
