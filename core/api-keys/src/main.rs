@@ -1,7 +1,7 @@
-use api_keys::graphql::{MutationRoot, QueryRoot};
 use async_graphql::{EmptySubscription, Schema};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{routing::get, Extension, Router};
+use lib_api_keys::graphql::{MutationRoot, QueryRoot};
 
 #[tokio::main]
 async fn main() {

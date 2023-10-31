@@ -14,3 +14,4 @@ axum = { workspace = true }
 tokio = { workspace = true }
 graphql_client = { workspace = true }
 reqwest = { workspace = true }
+lib-api-keys = { path = "../lib/api-keys" }
