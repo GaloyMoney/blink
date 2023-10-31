@@ -165,7 +165,7 @@ build_node_modules = rule(
     attrs = {
         "turbo_bin": attrs.dep(
             providers = [RunInfo],
-            default = "//shim/custom-third-party/node/turbo:turbo_bin",
+            default = "//third-party/node/turbo:turbo_bin",
             doc = """Turbo dependency.""",
         ),
         "workspace": attrs.source(

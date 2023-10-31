@@ -54,3 +54,9 @@ junit.xml
 
 # direnv
 .direnv
+
+# rust
+target
+
+# vendir
+/.vendir-tmp/

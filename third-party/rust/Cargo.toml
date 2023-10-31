@@ -1,0 +1,27 @@
+# Definitions of third-party libraries used for Rust build of Galoy.
+#
+# Note: This file is **not** used by a regular Cargo build of Galoy.
+
+[workspace]
+
+[package]
+# Pseudo-package whose dependencies are imported and buckified
+name = "third-party"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+# Do-nothing target to keep Cargo happy
+[[bin]]
+name = "top"
+path = "top/main.rs"
+
+# List of packages to be imported, with version constraints, features and all
+# options Cargo supports.
+[dependencies]
+async-graphql = { version = "6.0.9", default-features = false, features = ["playground"] }
+async-graphql-axum = "6.0.9"
+axum = "0.6.20"
+tokio = { version = "1.33.0", features = ["full"] }
+
+version_check = "0.9.4" # for some reason reindeer didn't auto-add this

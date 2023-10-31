@@ -1,0 +1,3 @@
+#@data/values
+---
+buck2_git_ref: "2023-10-15" #! echo "${BUCK2_VERSION#*-}"

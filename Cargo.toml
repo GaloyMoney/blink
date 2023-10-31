@@ -1,0 +1,14 @@
+[profile.release]
+debug = true
+
+[workspace]
+resolver = "2"
+members = [
+    "core/api-keys",
+]
+
+[workspace.dependencies]
+async-graphql = { version = "6.0.9", default-features = false, features = ["playground"] }
+async-graphql-axum = "6.0.9"
+axum = "0.6.20"
+tokio = { version = "1.33.0", features = ["full"] }

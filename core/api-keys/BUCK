@@ -1,0 +1,19 @@
+rust_binary(
+    name = "api-keys",
+    deps = [
+        "//third-party/rust:tokio",
+        "//third-party/rust:async-graphql",
+        "//third-party/rust:async-graphql-axum",
+        "//third-party/rust:axum",
+    ],
+    srcs = glob(["src/**/*.rs"]),
+    crate_root = "src/main.rs",
+    edition = "2021",
+)
+
+rust_binary(
+    name = "write-sdl",
+    srcs = glob(["src/**/*.rs"]),
+    crate_root = "src/bin/write_sdl.rs",
+    edition = "2021",
+)

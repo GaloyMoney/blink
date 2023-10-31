@@ -16,7 +16,7 @@ def main() -> int:
 
     remediations = 0
 
-    section("Running health check on system for developing in the SI project")
+    section("Running health check on system for developing in the Galoy project")
 
     docker_cmd = detect_docker_command()
     remediations += docker_cmd
