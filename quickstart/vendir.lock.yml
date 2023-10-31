@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: use reset-all-integration from ci'
-      sha: 557fb67cd7f5489754647f6426c16a4ff7aff777
+      commitTitle: 'ci: add git to galoy-dev image'
+      sha: fa76c9123e8ead23bfcac0ebb841da7a7a4d6163
       tags:
-      - 0.15.64-4-g557fb67cd
+      - 0.15.68-1-gfa76c9123
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: use reset-all-integration from ci'
-      sha: 557fb67cd7f5489754647f6426c16a4ff7aff777
+      commitTitle: 'ci: add git to galoy-dev image'
+      sha: fa76c9123e8ead23bfcac0ebb841da7a7a4d6163
       tags:
-      - 0.15.64-4-g557fb67cd
+      - 0.15.68-1-gfa76c9123
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: use reset-all-integration from ci'
-      sha: 557fb67cd7f5489754647f6426c16a4ff7aff777
+      commitTitle: 'ci: add git to galoy-dev image'
+      sha: fa76c9123e8ead23bfcac0ebb841da7a7a4d6163
       tags:
-      - 0.15.64-4-g557fb67cd
+      - 0.15.68-1-gfa76c9123
     path: ./
   path: ./graphql
 kind: LockConfig
