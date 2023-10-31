@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: added instrumentationHook in consent and dashboard (#3464)...'
-      sha: 9526e0cd912299c13c3ec8ff7854a60f5fb27b0a
+      commitTitle: 'ci: use reset-all-integration from ci'
+      sha: 557fb67cd7f5489754647f6426c16a4ff7aff777
       tags:
-      - 0.15.64
+      - 0.15.64-4-g557fb67cd
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: added instrumentationHook in consent and dashboard (#3464)...'
-      sha: 9526e0cd912299c13c3ec8ff7854a60f5fb27b0a
+      commitTitle: 'ci: use reset-all-integration from ci'
+      sha: 557fb67cd7f5489754647f6426c16a4ff7aff777
       tags:
-      - 0.15.64
+      - 0.15.64-4-g557fb67cd
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: added instrumentationHook in consent and dashboard (#3464)...'
-      sha: 9526e0cd912299c13c3ec8ff7854a60f5fb27b0a
+      commitTitle: 'ci: use reset-all-integration from ci'
+      sha: 557fb67cd7f5489754647f6426c16a4ff7aff777
       tags:
-      - 0.15.64
+      - 0.15.64-4-g557fb67cd
     path: ./
   path: ./graphql
 kind: LockConfig
