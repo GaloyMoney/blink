@@ -100,15 +100,9 @@ bats-in-ci:
 	pnpm install --frozen-lockfile && \
 	$(MAKE) reset-bats
 
-integration-in-ci: reset-deps-integration
+integration-in-ci:
 	pnpm install --frozen-lockfile && \
-	. ../../.env && \
-	SVIX_ENDPOINT= \
-	SVIX_SECRET= \
-	NODE_OPTIONS="--max-old-space-size=6144" \
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/legacy-integration/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit && \
-	NODE_OPTIONS="--max-old-space-size=6144" \
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/integration/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+	$(MAKE) reset-all-integration
 
 unit-in-ci:
 	. ./.env && \
