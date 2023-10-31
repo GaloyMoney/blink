@@ -75,10 +75,10 @@ services:
     extra_hosts:
       - "bats-tests:host-gateway"
     environment:
-    - APOLLO_ROUTER_SUPERGRAPH_PATH=/repo/dev/apollo-federation/supergraph.graphql
-    - APOLLO_ROUTER_CONFIG_PATH=/repo/dev/apollo-federation/router.yaml
+    - APOLLO_ROUTER_SUPERGRAPH_PATH=/repo/dev/supergraph.graphql
+    - APOLLO_ROUTER_CONFIG_PATH=/repo/dev/router.yaml
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/../core/api/dev:/repo/dev
+    - ${HOST_PROJECT_PATH:-.}/config/apollo-federation:/repo/dev
   redis:
     image: redis:7.0.8
     ports:

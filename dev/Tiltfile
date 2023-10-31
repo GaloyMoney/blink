@@ -54,7 +54,14 @@ local_resource(
 local_resource(
   name='hydra-dashboard',
   labels = ['apps'],
-  cmd=['bin/setup-hydra-client.sh', 'dashboard', 'http://localhost:3001/api/auth/callback/blink'],
+  cmd=[
+    'buck2',
+    'run',
+    '//dev:setup-hydra-client',
+    '--',
+    'dashboard',
+    'http://localhost:3001/api/auth/callback/blink'
+  ],
   resource_deps = [
     "hydra",
   ]
@@ -76,7 +83,7 @@ local_resource(
 local_resource(
   name='init-test-user',
   labels = ['test'],
-  cmd='bin/init-user.sh',
+  cmd='buck2 run //dev:init-user',
   resource_deps = [
     "oathkeeper",
     "kratos",
@@ -104,8 +111,15 @@ local_resource(
 
 local_resource(
   name='hydra-consent',
-  labels = ['auth'],
-  cmd=['bin/setup-hydra-client.sh', 'consent', 'http://localhost:3000'],
+  labels = ['apps'],
+  cmd=[
+    'buck2',
+    'run',
+    '//dev:setup-hydra-client',
+    '--',
+    'consent',
+    'http://localhost:3000'
+  ],
   resource_deps = [
     "hydra",
   ]
@@ -159,7 +173,7 @@ local_resource(
 local_resource(
   name='init-onchain',
   labels = ['bitcoin'],
-  cmd='bin/init-onchain.sh',
+  cmd='buck2 run //dev:init-onchain',
   resource_deps = [
     "bitcoind",
     "bria",

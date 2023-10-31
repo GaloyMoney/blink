@@ -120,7 +120,6 @@ check-code: check-implicit
 	pnpm run tsc-check
 	pnpm run eslint-check
 	pnpm run build
-	pnpm run check:sdl
 	pnpm run check-yaml
 	pnpm run madge-check
 

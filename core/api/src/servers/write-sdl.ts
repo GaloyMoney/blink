@@ -29,33 +29,33 @@ export const gqlPublicSchema = new GraphQLSchema({
   subscription: SubscriptionType,
   types: ALL_INTERFACE_TYPES,
 })
+
+const packageRoot = process.argv[2] || __dirname
+
 ;(async () => {
   try {
     console.log("write public schema")
 
     const schemaPublicPath = path.resolve(
-      __dirname,
-      "../../src/graphql/public/schema.graphql",
+      packageRoot,
+      "src/graphql/public/schema.graphql",
     )
     console.log(`Writing to path: ${schemaPublicPath}`)
 
     const sortedPublicSchema = printSchema(lexicographicSortSchema(gqlPublicSchema))
 
-    const fileHandleMain = await fs.open(path.resolve(schemaPublicPath), "w")
+    const fileHandleMain = await fs.open(schemaPublicPath, "w")
     await fileHandleMain.writeFile(sortedPublicSchema)
     await fileHandleMain.close()
 
     console.log("write admin schema")
 
-    const schemaAdminPath = path.resolve(
-      __dirname,
-      "../../src/graphql/admin/schema.graphql",
-    )
+    const schemaAdminPath = path.resolve(packageRoot, "src/graphql/admin/schema.graphql")
     console.log(`Writing to path: ${schemaAdminPath}`)
 
     const sortedAdminSchema = printSchema(lexicographicSortSchema(gqlAdminSchema))
 
-    const fileHandle = await fs.open(path.resolve(schemaAdminPath), "w")
+    const fileHandle = await fs.open(schemaAdminPath, "w")
     await fileHandle.writeFile(sortedAdminSchema)
     await fileHandle.close()
 

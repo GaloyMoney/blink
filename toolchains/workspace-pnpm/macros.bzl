@@ -356,8 +356,13 @@ def prod_tsc_build_bin_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]
         prod_build.build,
         "--package-dir",
         prod_build.build_package_dir,
-        "--preload-file",
-        ctx.attrs.preload_file,
+    )
+    if ctx.attrs.preload_file:
+        cmd.add(
+          "--preload-file",
+          ctx.attrs.preload_file,
+        )
+    cmd.add(
         "--run-file",
         ctx.attrs.run_file,
         out.as_output(),

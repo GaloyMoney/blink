@@ -15,3 +15,28 @@ python_bootstrap_binary(
     main = "healthcheck.py",
     visibility = ["PUBLIC"],
 )
+
+sh_binary(
+  name = "update-supergraph",
+  main = "bin/update-supergraph.sh",
+)
+
+sh_test(
+  name = "check-sdl",
+  test = "bin/check-sdl.sh",
+)
+
+sh_binary(
+  name = "init-onchain",
+  main = "bin/init-onchain.sh",
+)
+
+sh_binary(
+  name = "init-user",
+  main = "bin/init-user.sh",
+)
+
+sh_binary(
+  name = "setup-hydra-client",
+  main = "bin/setup-hydra-client.sh",
+)
