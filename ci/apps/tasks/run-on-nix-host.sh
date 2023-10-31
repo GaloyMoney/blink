@@ -2,7 +2,7 @@
 
 set -eu
 
-export PACKAGE_DIR="${PACKAGE_DIR:-$(pwd)}"
+export PACKAGE_DIR="${PACKAGE_DIR:-.}"
 export CI_ROOT=$(pwd)
 
 host_name=$(cat nix-host/metadata | jq -r '.docker_host_name')
