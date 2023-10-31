@@ -19,9 +19,11 @@ path = "top/main.rs"
 # List of packages to be imported, with version constraints, features and all
 # options Cargo supports.
 [dependencies]
+anyhow = "1.0.75"
 async-graphql = { version = "6.0.9", default-features = false, features = ["playground"] }
 async-graphql-axum = "6.0.9"
 axum = "0.6.20"
+clap = { version = "4.4", features = ["derive", "env"] }
 tokio = { version = "1.33.0", features = ["full"] }
 graphql_client = {version = "0.13.0", features = ["reqwest-rustls"]}
 reqwest = { version = "=0.11.20", default-features = false, features = ["json", "rustls-tls"] }

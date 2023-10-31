@@ -1,3 +1,3 @@
 fn main() {
-    println!("{}", &lib_api_keys::graphql::schema().sdl());
+    println!("{}", &api_keys::graphql::schema().sdl());
 }
