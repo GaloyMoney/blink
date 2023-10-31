@@ -100,7 +100,7 @@ bats-in-ci:
 	pnpm install --frozen-lockfile && \
 	$(MAKE) reset-bats
 
-integration-in-ci:
+integration-in-ci: reset-deps-integration
 	pnpm install --frozen-lockfile && \
 	. ../../.env && \
 	SVIX_ENDPOINT= \
