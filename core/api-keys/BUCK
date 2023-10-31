@@ -33,6 +33,6 @@ rust_binary(
     crate_root = "src/bin/write_sdl.rs",
     srcs = glob(["src/**/*.rs"]),
     deps = [
-        "//core/lib/lib-api-keys:lib-api-keys",
+        ":lib-api-keys",
     ],
 )

@@ -1,4 +1,3 @@
-use anyhow::Context;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -14,6 +13,12 @@ enum Command {
 }
 pub async fn run() -> anyhow::Result<()> {
     let cli = Cli::parse();
-    println!("HELLO COMPLICATED WORLD");
+    match cli.command {
+        Command::Run {} => run_cmd().await?,
+    }
+    Ok(())
+}
+
+async fn run_cmd() -> anyhow::Result<()> {
     Ok(())
 }
