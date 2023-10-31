@@ -1,5 +1,6 @@
 load(
   "@toolchains//workspace-pnpm:macros.bzl",
+  "dev_pnpm_task_binary",
   "build_node_modules",
   "tsc_build",
   "prod_tsc_build",
@@ -8,6 +9,11 @@ load(
   "typescript_check",
   "yaml_check",
   "madge_check",
+)
+
+dev_pnpm_task_binary(
+  name = "lint-fix",
+  command = "eslint-fix",
 )
 
 export_file(
