@@ -72,6 +72,7 @@
           vendir
           jq
           ytt
+          yq-go
           cargo-nextest
           cargo-audit
           cargo-watch
