@@ -42,12 +42,6 @@ cargo.rust_library(
     visibility = [],
 )
 
-alias(
-    name = "libc",
-    actual = ":libc-0.2.147",
-    visibility = ["PUBLIC"],
-)
-
 http_archive(
     name = "libc-0.2.147.crate",
     sha256 = "b4668fb0ea861c1df094127ac5f1da3409a82116a4ba74fca2e58ef927159bb3",
@@ -117,29 +111,6 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "log-0.4.20.crate",
-    sha256 = "b5e6163cb8c49088c2c36f57875e58ccd8c87c7427f7fbd50ea6710b2f3f2e8f",
-    strip_prefix = "log-0.4.20",
-    urls = ["https://crates.io/api/v1/crates/log/0.4.20/download"],
-    visibility = [],
-)
-
-cargo.rust_library(
-    name = "log-0.4.20",
-    srcs = [":log-0.4.20.crate"],
-    crate = "log",
-    crate_root = "log-0.4.20.crate/src/lib.rs",
-    edition = "2015",
-    visibility = [],
-)
-
-alias(
-    name = "mio",
-    actual = ":mio-0.8.8",
-    visibility = ["PUBLIC"],
-)
-
-http_archive(
     name = "mio-0.8.8.crate",
     sha256 = "927a765cd3fc26206e66b296465fa9d3e5ab003e651c1b3c060e7956d96b19d2",
     strip_prefix = "mio-0.8.8",
@@ -154,8 +125,6 @@ cargo.rust_library(
     crate_root = "mio-0.8.8.crate/src/lib.rs",
     edition = "2018",
     features = [
-        "default",
-        "log",
         "net",
         "os-ext",
         "os-poll",
@@ -181,7 +150,6 @@ cargo.rust_library(
         ),
     },
     visibility = [],
-    deps = [":log-0.4.20"],
 )
 
 http_archive(
@@ -493,32 +461,28 @@ cargo.rust_binary(
     crate_root = "top/main.rs",
     edition = "2021",
     visibility = [],
-    deps = [
-        ":libc-0.2.147",
-        ":mio-0.8.8",
-        ":tokio-1.32.0",
-    ],
+    deps = [":tokio-1.33.0"],
 )
 
 alias(
     name = "tokio",
-    actual = ":tokio-1.32.0",
+    actual = ":tokio-1.33.0",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "tokio-1.32.0.crate",
-    sha256 = "17ed6077ed6cd6c74735e21f37eb16dc3935f96878b1fe961074089cc80893f9",
-    strip_prefix = "tokio-1.32.0",
-    urls = ["https://crates.io/api/v1/crates/tokio/1.32.0/download"],
+    name = "tokio-1.33.0.crate",
+    sha256 = "4f38200e3ef7995e5ef13baec2f432a6da0aa9ac495b2c0e8f3b7eec2c92d653",
+    strip_prefix = "tokio-1.33.0",
+    urls = ["https://crates.io/api/v1/crates/tokio/1.33.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "tokio-1.32.0",
-    srcs = [":tokio-1.32.0.crate"],
+    name = "tokio-1.33.0",
+    srcs = [":tokio-1.33.0.crate"],
     crate = "tokio",
-    crate_root = "tokio-1.32.0.crate/src/lib.rs",
+    crate_root = "tokio-1.33.0.crate/src/lib.rs",
     edition = "2021",
     features = [
         "bytes",

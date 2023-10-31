@@ -19,6 +19,4 @@ path = "top/main.rs"
 # List of packages to be imported, with version constraints, features and all
 # options Cargo supports.
 [dependencies]
-tokio = { version = "=1.32.0", features = ["full"] }
-mio = "=0.8.8"
-libc = "=0.2.147"
+tokio = { version = "1.33.0", features = ["full"] }

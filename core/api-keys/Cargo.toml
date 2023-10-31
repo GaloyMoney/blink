@@ -9,5 +9,3 @@ path = "src/bin/write_sdl.rs"
 
 [dependencies]
 tokio = { workspace = true }
-mio = { workspace = true }
-libc = { workspace = true }
