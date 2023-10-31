@@ -1,4 +1,5 @@
-use async_graphql::{EmptyMutation, EmptySubscription, Object, Schema};
+use api_keys::graphql::QueryRoot;
+use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{routing::get, Extension, Router};
 
@@ -35,15 +36,4 @@ async fn playground() -> impl axum::response::IntoResponse {
     axum::response::Html(async_graphql::http::playground_source(
         async_graphql::http::GraphQLPlaygroundConfig::new("/graphql"),
     ))
-}
-
-// Define a simple query object
-#[derive(Default)]
-struct QueryRoot;
-
-#[Object]
-impl QueryRoot {
-    async fn hello_world(&self) -> &str {
-        "Hello, world!"
-    }
 }

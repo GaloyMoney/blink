@@ -1,12 +1,13 @@
 use async_graphql::*;
 
-pub struct Query;
+// Define a simple query object
+#[derive(Default)]
+pub struct QueryRoot;
 
 #[Object]
-impl Query {
-    /// Returns the sum of a and b
-    async fn add(&self, a: i32, b: i32) -> i32 {
-        a + b + 1
+impl QueryRoot {
+    async fn hello_world(&self) -> &str {
+        "Hello, world!"
     }
 }
 
