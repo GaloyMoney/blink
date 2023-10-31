@@ -73,16 +73,16 @@ importers:
         specifier: ^1.10.47
         version: 1.10.47
       next:
-        specifier: latest
+        specifier: 13.5.6
         version: 13.5.6(@babel/core@7.23.2)(@opentelemetry/api@1.6.0)(react-dom@18.2.0)(react@18.2.0)
       next-themes:
         specifier: ^0.2.1
         version: 0.2.1(next@13.5.6)(react-dom@18.2.0)(react@18.2.0)
       react:
-        specifier: latest
+        specifier: 18.2.0
         version: 18.2.0
       react-dom:
-        specifier: latest
+        specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
       react-phone-number-input:
         specifier: ^3.3.6
@@ -116,37 +116,37 @@ importers:
         specifier: ^4.0.0
         version: 4.0.0(graphql-tag@2.12.6)(graphql@16.8.1)
       '@types/node':
-        specifier: latest
+        specifier: 20.8.9
         version: 20.8.9
       '@types/react':
-        specifier: latest
+        specifier: 18.2.33
         version: 18.2.33
       '@types/react-dom':
-        specifier: latest
+        specifier: 18.2.14
         version: 18.2.14
       '@types/react-phone-number-input':
         specifier: ^3.0.15
         version: 3.0.15
       autoprefixer:
-        specifier: latest
+        specifier: 10.4.16
         version: 10.4.16(postcss@8.4.31)
       cypress:
         specifier: ^13.3.0
         version: 13.3.1
       eslint:
-        specifier: latest
+        specifier: 8.52.0
         version: 8.52.0
       eslint-config-next:
-        specifier: latest
+        specifier: 13.5.6
         version: 13.5.6(eslint@8.52.0)(typescript@5.2.2)
       postcss:
-        specifier: latest
+        specifier: 8.4.31
         version: 8.4.31
       tailwindcss:
-        specifier: latest
+        specifier: 3.3.5
         version: 3.3.5
       typescript:
-        specifier: latest
+        specifier: 5.2.2
         version: 5.2.2
 
   apps/dashboard:
@@ -215,16 +215,16 @@ importers:
         specifier: ^16.8.1
         version: 16.8.1
       next:
-        specifier: latest
+        specifier: 13.5.6
         version: 13.5.6(@babel/core@7.23.2)(@opentelemetry/api@1.6.0)(react-dom@18.2.0)(react@18.2.0)
       next-auth:
         specifier: ^4.23.1
         version: 4.23.2(next@13.5.6)(react-dom@18.2.0)(react@18.2.0)
       react:
-        specifier: latest
+        specifier: 18.2.0
         version: 18.2.0
       react-dom:
-        specifier: latest
+        specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
       zod:
         specifier: ^3.22.4
@@ -258,34 +258,34 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2(@types/node@20.8.9)(graphql@16.8.1)
       '@types/node':
-        specifier: latest
+        specifier: 20.8.9
         version: 20.8.9
       '@types/react':
-        specifier: latest
+        specifier: 18.2.33
         version: 18.2.33
       '@types/react-dom':
-        specifier: latest
+        specifier: 18.2.14
         version: 18.2.14
       autoprefixer:
-        specifier: latest
+        specifier: 10.4.16
         version: 10.4.16(postcss@8.4.31)
       eslint:
-        specifier: latest
+        specifier: 8.52.0
         version: 8.52.0
       eslint-config-next:
-        specifier: latest
+        specifier: 13.5.6
         version: 13.5.6(eslint@8.52.0)(typescript@5.2.2)
       eslint_d:
-        specifier: latest
+        specifier: 13.0.0
         version: 13.0.0
       postcss:
-        specifier: latest
+        specifier: 8.4.31
         version: 8.4.31
       tailwindcss:
-        specifier: latest
+        specifier: 3.3.5
         version: 3.3.5
       typescript:
-        specifier: latest
+        specifier: 5.2.2
         version: 5.2.2
 
   core/api:
