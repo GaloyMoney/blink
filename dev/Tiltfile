@@ -177,8 +177,6 @@ def _buck2_dep_inputs(target):
     return file_paths
 
 api_keys_target = "//core/api-keys:api-keys"
-# if is_ci:
-#   consent_target = "//core/api-keys:main"
 local_resource(
     "api_keys",
     labels = ["core"],
