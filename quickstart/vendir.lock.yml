@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: email verification (#3409)...'
-      sha: 105d97468f1840adf4e47649c0aed20f0e325d86
+      commitTitle: 'chore: added instrumentationHook in consent and dashboard (#3464)...'
+      sha: 9526e0cd912299c13c3ec8ff7854a60f5fb27b0a
       tags:
-      - 0.15.63-1-g105d97468
+      - 0.15.64
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: email verification (#3409)...'
-      sha: 105d97468f1840adf4e47649c0aed20f0e325d86
+      commitTitle: 'chore: added instrumentationHook in consent and dashboard (#3464)...'
+      sha: 9526e0cd912299c13c3ec8ff7854a60f5fb27b0a
       tags:
-      - 0.15.63-1-g105d97468
+      - 0.15.64
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: email verification (#3409)...'
-      sha: 105d97468f1840adf4e47649c0aed20f0e325d86
+      commitTitle: 'chore: added instrumentationHook in consent and dashboard (#3464)...'
+      sha: 9526e0cd912299c13c3ec8ff7854a60f5fb27b0a
       tags:
-      - 0.15.63-1-g105d97468
+      - 0.15.64
     path: ./
   path: ./graphql
 kind: LockConfig
