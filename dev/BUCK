@@ -17,6 +17,16 @@ python_bootstrap_binary(
 )
 
 sh_binary(
+  name = "update-supergraph",
+  main = "bin/update-supergraph.sh",
+)
+
+sh_test(
+  name = "check-sdl",
+  test = "bin/check-sdl.sh",
+)
+
+sh_binary(
   name = "init-onchain",
   main = "bin/init-onchain.sh",
 )

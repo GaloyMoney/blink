@@ -9,8 +9,6 @@
     "eslint-fix": "eslint src test --ext .ts --fix",
     "build": "tsc -p tsconfig-build.json && cp -R src/services/price/protos dist/services/price/ && cp -R src/services/dealer-price/proto dist/services/dealer-price/ && cp -R src/services/loopd/protos dist/services/loopd/ && cp -R src/services/bria/proto dist/services/bria/ && tscpaths --silent -p tsconfig.json -s ./src -o ./dist",
     "trigger": "pnpm run build && node dist/servers/trigger.js | pino-pretty -c -l",
-    "check:sdl": ". ../../.env && pnpm run write-sdl && if git diff --name-only | grep -q 'core/api/src/graphql/admin/schema.graphql'; then echo 'Error: core/api/src/graphql/admin/schema.graphql has changes, run `make codegen` and re-recommit' >&2; exit 1; fi && if git diff --name-only | grep -q 'core/api/src/graphql/public/schema.graphql'; then echo 'Error: core/api/src/graphql/public/schema.graphql has changes, run `make codegen` and re-recommit' >&2; exit 1; fi",
-    "write-sdl": "pnpm run build && node dist/servers/write-sdl.js write-sdl.yaml && rover supergraph compose --config dev/apollo-federation/supergraph-config.yaml --elv2-license accept > dev/apollo-federation/supergraph.graphql",
     "ws": "pnpm run build && node dist/servers/ws-server.js | pino-pretty -c -l",
     "watch": "nodemon -V -e ts,graphql -w ./src -x pnpm run start",
     "watch-trigger": "nodemon -V -e ts,graphql -w ./src -x pnpm run trigger",
@@ -114,7 +112,6 @@
   },
   "devDependencies": {
     "@apollo/client": "3.8.6",
-    "@apollo/rover": "^0.21.0",
     "@babel/core": "^7.23.2",
     "@babel/preset-env": "^7.23.2",
     "@graphql-tools/jest-transform": "^2.0.0",

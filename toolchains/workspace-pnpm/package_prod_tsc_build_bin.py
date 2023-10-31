@@ -38,12 +38,20 @@ if __name__ == "__main__":
         "dist",
     )
 
-    preload_path = os.path.join(dist_path, args.preload_file)
-    js_path = os.path.join(dist_path, args.run_file)
-    binary_content = [
-        "#!/usr/bin/env sh",
-        f"exec node -r \"{preload_path}\" \"{js_path}\" \"$@\"",
-    ]
+    if args.preload_file is not None:
+        preload_path = os.path.join(dist_path, args.preload_file)
+        js_path = os.path.join(dist_path, args.run_file)
+        binary_content = [
+            "#!/usr/bin/env sh",
+            f"exec node -r \"{preload_path}\" \"{js_path}\" \"$@\""
+        ]
+    else:
+        js_path = os.path.join(dist_path, args.run_file)
+        binary_content = [
+            "#!/usr/bin/env sh",
+            f"exec node \"{js_path}\" \"$@\""
+        ]
+
 
     binary = args.bin
     os.makedirs(os.path.dirname(args.bin), exist_ok=True)

@@ -73,6 +73,11 @@ prod_tsc_build_bin(
   run_file = "servers/graphql-main-server.js",
 )
 
+prod_tsc_build_bin(
+  name = "write-sdl",
+  run_file = "servers/write-sdl.js",
+)
+
 eslint(
     name = "check-lint",
     srcs = [":src"] + [":test_src"] + glob([".eslint*"]),
@@ -107,6 +112,5 @@ test_suite(
         ":check-type",
         ":check-yaml",
         ":check-circular-dependencies",
-        # ":check-sdl",
     ],
 )
