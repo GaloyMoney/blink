@@ -14,8 +14,10 @@
   --orange: #ff7e1c;
   --sky: #c3ccff;
   --primary: #fc5805;
-  --primary3: #fd800b;
+  --primaryColorDisabled: #c54404;
+  --primary3: #010101;
   --primary4: #fe990d;
+  --primary4Disabled: #b36800;
   --primary5: #ffad0d;
   --blue5: #4453e2;
   --grey0: #3a3c51;
@@ -33,11 +35,17 @@
 }
 
 [data-joy-color-scheme="light"] {
-  --inputColor: var(--black);
+  --logoInputColor: var(--black);
+  --inputColor: var(--white);
   --primaryColor: var(--primary);
+  --primaryColorDisabled: var(--primaryColorDisabled);
+
 }
 
 [data-joy-color-scheme="dark"] {
-  --inputColor: var(--white);
+  --logoInputColor: var(--white);
+  --inputColor: var(--black);
   --primaryColor: var(--primary4);
+  --primaryColorDisabled: var(--primary4Disabled);
+
 }
