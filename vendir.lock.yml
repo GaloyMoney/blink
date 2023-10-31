@@ -16,4 +16,12 @@ directories:
       - "2023-10-15"
     path: .
   path: third-party/macros
+- contents:
+  - git:
+      commitTitle: 'client: Fix "ctrl-c was pressed" bug...'
+      sha: f3c685667ef22d0130687003012b6960abec6b3b
+      tags:
+      - latest
+    path: .
+  path: third-party/rust/fixups/ring/include
 kind: LockConfig
