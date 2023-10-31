@@ -12,3 +12,5 @@ async-graphql = { workspace = true }
 async-graphql-axum = { workspace = true }
 axum = { workspace = true }
 tokio = { workspace = true }
+graphql_client = { workspace = true }
+reqwest = { workspace = true }

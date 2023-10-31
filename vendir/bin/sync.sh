@@ -10,6 +10,7 @@ cat <<EOF > vendir/values.yml
 #@data/values
 ---
 buck2_git_ref: "${BUCK2_VERSION#*-}" #! echo "\${BUCK2_VERSION#*-}"
+ring_fixup_git_ref: f3c685667ef22d0130687003012b6960abec6b3b #! commit for using ring 0.17.5
 EOF
 
 ytt -f vendir > vendir.yml
