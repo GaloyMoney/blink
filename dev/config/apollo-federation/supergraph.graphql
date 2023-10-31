@@ -580,8 +580,8 @@ enum InvoicePaymentStatus
 scalar join__FieldSet
 
 enum join__Graph {
-  API_KEYS @join__graph(name: "api_keys", url: "http://bats-tests:5397/graphql")
-  PUBLIC @join__graph(name: "public", url: "http://bats-tests:4012/graphql")
+  API_KEYS @join__graph(name: "api_keys", url: "http://dockerhost-alias:5397/graphql")
+  PUBLIC @join__graph(name: "public", url: "http://dockerhost-alias:4012/graphql")
 }
 
 scalar Language

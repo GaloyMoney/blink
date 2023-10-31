@@ -1,10 +1,10 @@
 federation_version: =2.3.2
 subgraphs:
   public:
-    routing_url: http://bats-tests:4012/graphql
+    routing_url: http://dockerhost-alias:4012/graphql
     schema:
       file: ../../../core/api/src/graphql/public/schema.graphql
   api_keys:
-    routing_url: http://bats-tests:5397/graphql
+    routing_url: http://dockerhost-alias:5397/graphql
     schema:
       file: ../../../core/api-keys/subgraph/schema.graphql

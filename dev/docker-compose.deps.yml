@@ -7,7 +7,7 @@ services:
       - "4455:4455"
       - "4456:4456"
     extra_hosts:
-      - "bats-tests:host-gateway"
+      - "dockerhost-alias:host-gateway"
     command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
     volumes:
       - ${HOST_PROJECT_PATH:-.}/config/ory:/home/ory
@@ -47,7 +47,7 @@ services:
   kratos:
     image: oryd/kratos:v1.0.0
     extra_hosts:
-      - "bats-tests:host-gateway"
+      - "dockerhost-alias:host-gateway"
     ports:
       - "4433:4433" #! public
       - "4434:4434" #! admin
@@ -73,7 +73,7 @@ services:
     ports:
     - 4004:4004
     extra_hosts:
-      - "bats-tests:host-gateway"
+      - "dockerhost-alias:host-gateway"
     environment:
     - APOLLO_ROUTER_SUPERGRAPH_PATH=/repo/dev/supergraph.graphql
     - APOLLO_ROUTER_CONFIG_PATH=/repo/dev/router.yaml

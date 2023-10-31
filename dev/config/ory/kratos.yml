@@ -72,7 +72,7 @@ selfservice:
           hooks:
             - hook: web_hook
               config:
-                # url: http://bats-tests:4002/auth/after_settings_hooks
+                # url: http://dockerhost-alias:4002/auth/after_settings_hooks
                 url: http://invalid-because-we-dont-want-profile-to-be-updated
                 method: POST
                 body: file:///home/ory/body.jsonnet
@@ -121,7 +121,7 @@ selfservice:
             #
             # - hook: web_hook
             #   config:
-            #     url: http://bats-tests:4012/kratos/preregistration
+            #     url: http://dockerhost-alias:4012/kratos/preregistration
             #     method: POST
             #     response:
             #       parse: true
@@ -134,7 +134,7 @@ selfservice:
             #         in: header
             - hook: web_hook
               config:
-                url: http://bats-tests:4012/kratos/registration
+                url: http://dockerhost-alias:4012/kratos/registration
                 method: POST
                 response:
                   parse: false
