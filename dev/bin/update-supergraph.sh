@@ -1,12 +1,14 @@
 #!/bin/bash
 
+set -e
+
 REPO_ROOT=$(git rev-parse --show-toplevel)
 
 # Write out core api sdl
 buck2 run //core/api:write-sdl -- "${REPO_ROOT}/core/api"
 
 # Write out keys sdl
-# buck2 run //core/api:write-sdl -- "${REPO_ROOT}/core/api"
+buck2 run //core/api-keys:write-sdl > "${REPO_ROOT}/core/api-keys/subgraph/schema.graphql"
 
 buck2 run //dev/rover:rover_bin -- \
   supergraph compose \

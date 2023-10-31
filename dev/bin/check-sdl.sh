@@ -4,6 +4,7 @@ FILES=(
     "dev/config/apollo-federation/supergraph.graphql"
     "core/api/src/graphql/admin/schema.graphql"
     "core/api/src/graphql/public/schema.graphql"
+    "core/api-keys/subgraph/schema.graphql"
 )
 
 for FILE in "${FILES[@]}"; do

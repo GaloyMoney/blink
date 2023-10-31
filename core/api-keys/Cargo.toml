@@ -3,14 +3,23 @@ name = "api-keys"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "lib_api_keys"
+
 [[bin]]
 name = "write_sdl"
 path = "src/bin/write_sdl.rs"
 
+[features]
+
+fail-on-warnings = []
+
 [dependencies]
+anyhow = { workspace = true }
 async-graphql = { workspace = true }
 async-graphql-axum = { workspace = true }
 axum = { workspace = true }
+clap = { workspace = true }
 tokio = { workspace = true }
 graphql_client = { workspace = true }
 reqwest = { workspace = true }
