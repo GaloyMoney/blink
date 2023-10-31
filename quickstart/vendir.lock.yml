@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: api-keys boilerplate (#3456)...'
-      sha: 8df40d56758f1a29af2b40297524c1184190b7f4
+      commitTitle: 'feat: email verification (#3409)...'
+      sha: 105d97468f1840adf4e47649c0aed20f0e325d86
       tags:
-      - 0.15.62-1-g8df40d567
+      - 0.15.63-1-g105d97468
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: api-keys boilerplate (#3456)...'
-      sha: 8df40d56758f1a29af2b40297524c1184190b7f4
+      commitTitle: 'feat: email verification (#3409)...'
+      sha: 105d97468f1840adf4e47649c0aed20f0e325d86
       tags:
-      - 0.15.62-1-g8df40d567
+      - 0.15.63-1-g105d97468
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: api-keys boilerplate (#3456)...'
-      sha: 8df40d56758f1a29af2b40297524c1184190b7f4
+      commitTitle: 'feat: email verification (#3409)...'
+      sha: 105d97468f1840adf4e47649c0aed20f0e325d86
       tags:
-      - 0.15.62-1-g8df40d567
+      - 0.15.63-1-g105d97468
     path: ./
   path: ./graphql
 kind: LockConfig
