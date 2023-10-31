@@ -1,0 +1,24 @@
+#@ load("@ytt:data", "data")
+
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+
+directories:
+  - path: prelude
+    contents:
+      - path: .
+        git:
+          url: https://github.com/facebook/buck2.git
+          ref: #@ data.values.buck2_git_ref
+        includePaths:
+          - prelude/**/*
+        newRootPath: prelude
+  - path: third-party/macros
+    contents:
+      - path: .
+        git:
+          url: https://github.com/facebook/buck2.git
+          ref: #@ data.values.buck2_git_ref
+        includePaths:
+          - shim/third-party/macros/*
+        newRootPath: shim/third-party/macros
