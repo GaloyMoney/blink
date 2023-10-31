@@ -1,8 +1,0 @@
-rust_library(
-    name = "lib-api-keys",
-    deps = [
-        "//third-party/rust:async-graphql",
-    ],
-    srcs = glob(["src/**/*.rs"]),
-    visibility = ["PUBLIC"],
-)

@@ -55,6 +55,164 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "anstream-0.6.4.crate",
+    sha256 = "2ab91ebe16eb252986481c5b62f6098f3b698a45e34b5b98200cf20dd2484a44",
+    strip_prefix = "anstream-0.6.4",
+    urls = ["https://crates.io/api/v1/crates/anstream/0.6.4/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "anstream-0.6.4",
+    srcs = [":anstream-0.6.4.crate"],
+    crate = "anstream",
+    crate_root = "anstream-0.6.4.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "auto",
+        "default",
+        "wincon",
+    ],
+    platform = {
+        "windows-gnu": dict(
+            deps = [":anstyle-wincon-3.0.1"],
+        ),
+        "windows-msvc": dict(
+            deps = [":anstyle-wincon-3.0.1"],
+        ),
+    },
+    visibility = [],
+    deps = [
+        ":anstyle-1.0.4",
+        ":anstyle-parse-0.2.2",
+        ":anstyle-query-1.0.0",
+        ":colorchoice-1.0.0",
+        ":utf8parse-0.2.1",
+    ],
+)
+
+http_archive(
+    name = "anstyle-1.0.4.crate",
+    sha256 = "7079075b41f533b8c61d2a4d073c4676e1f8b249ff94a393b0595db304e0dd87",
+    strip_prefix = "anstyle-1.0.4",
+    urls = ["https://crates.io/api/v1/crates/anstyle/1.0.4/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "anstyle-1.0.4",
+    srcs = [":anstyle-1.0.4.crate"],
+    crate = "anstyle",
+    crate_root = "anstyle-1.0.4.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "default",
+        "std",
+    ],
+    visibility = [],
+)
+
+http_archive(
+    name = "anstyle-parse-0.2.2.crate",
+    sha256 = "317b9a89c1868f5ea6ff1d9539a69f45dffc21ce321ac1fd1160dfa48c8e2140",
+    strip_prefix = "anstyle-parse-0.2.2",
+    urls = ["https://crates.io/api/v1/crates/anstyle-parse/0.2.2/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "anstyle-parse-0.2.2",
+    srcs = [":anstyle-parse-0.2.2.crate"],
+    crate = "anstyle_parse",
+    crate_root = "anstyle-parse-0.2.2.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "default",
+        "utf8",
+    ],
+    visibility = [],
+    deps = [":utf8parse-0.2.1"],
+)
+
+http_archive(
+    name = "anstyle-query-1.0.0.crate",
+    sha256 = "5ca11d4be1bab0c8bc8734a9aa7bf4ee8316d462a08c6ac5052f888fef5b494b",
+    strip_prefix = "anstyle-query-1.0.0",
+    urls = ["https://crates.io/api/v1/crates/anstyle-query/1.0.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "anstyle-query-1.0.0",
+    srcs = [":anstyle-query-1.0.0.crate"],
+    crate = "anstyle_query",
+    crate_root = "anstyle-query-1.0.0.crate/src/lib.rs",
+    edition = "2021",
+    platform = {
+        "windows-gnu": dict(
+            deps = [":windows-sys-0.48.0"],
+        ),
+        "windows-msvc": dict(
+            deps = [":windows-sys-0.48.0"],
+        ),
+    },
+    visibility = [],
+)
+
+http_archive(
+    name = "anstyle-wincon-3.0.1.crate",
+    sha256 = "f0699d10d2f4d628a98ee7b57b289abbc98ff3bad977cb3152709d4bf2330628",
+    strip_prefix = "anstyle-wincon-3.0.1",
+    urls = ["https://crates.io/api/v1/crates/anstyle-wincon/3.0.1/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "anstyle-wincon-3.0.1",
+    srcs = [":anstyle-wincon-3.0.1.crate"],
+    crate = "anstyle_wincon",
+    crate_root = "anstyle-wincon-3.0.1.crate/src/lib.rs",
+    edition = "2021",
+    platform = {
+        "windows-gnu": dict(
+            deps = [":windows-sys-0.48.0"],
+        ),
+        "windows-msvc": dict(
+            deps = [":windows-sys-0.48.0"],
+        ),
+    },
+    visibility = [],
+    deps = [":anstyle-1.0.4"],
+)
+
+alias(
+    name = "anyhow",
+    actual = ":anyhow-1.0.75",
+    visibility = ["PUBLIC"],
+)
+
+http_archive(
+    name = "anyhow-1.0.75.crate",
+    sha256 = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6",
+    strip_prefix = "anyhow-1.0.75",
+    urls = ["https://crates.io/api/v1/crates/anyhow/1.0.75/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "anyhow-1.0.75",
+    srcs = [":anyhow-1.0.75.crate"],
+    crate = "anyhow",
+    crate_root = "anyhow-1.0.75.crate/src/lib.rs",
+    edition = "2018",
+    features = [
+        "default",
+        "std",
+    ],
+    visibility = [],
+)
+
+http_archive(
     name = "ascii-0.9.3.crate",
     sha256 = "eab1c04a571841102f5345a8fc0f6bb3d31c315dec879b5c6e42e40ce7ffa34e",
     strip_prefix = "ascii-0.9.3",
@@ -575,6 +733,135 @@ cargo.rust_library(
     crate = "cfg_if",
     crate_root = "cfg-if-1.0.0.crate/src/lib.rs",
     edition = "2018",
+    visibility = [],
+)
+
+alias(
+    name = "clap",
+    actual = ":clap-4.4.7",
+    visibility = ["PUBLIC"],
+)
+
+http_archive(
+    name = "clap-4.4.7.crate",
+    sha256 = "ac495e00dcec98c83465d5ad66c5c4fabd652fd6686e7c6269b117e729a6f17b",
+    strip_prefix = "clap-4.4.7",
+    urls = ["https://crates.io/api/v1/crates/clap/4.4.7/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "clap-4.4.7",
+    srcs = [":clap-4.4.7.crate"],
+    crate = "clap",
+    crate_root = "clap-4.4.7.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "color",
+        "default",
+        "derive",
+        "env",
+        "error-context",
+        "help",
+        "std",
+        "suggestions",
+        "usage",
+    ],
+    visibility = [],
+    deps = [
+        ":clap_builder-4.4.7",
+        ":clap_derive-4.4.7",
+    ],
+)
+
+http_archive(
+    name = "clap_builder-4.4.7.crate",
+    sha256 = "c77ed9a32a62e6ca27175d00d29d05ca32e396ea1eb5fb01d8256b669cec7663",
+    strip_prefix = "clap_builder-4.4.7",
+    urls = ["https://crates.io/api/v1/crates/clap_builder/4.4.7/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "clap_builder-4.4.7",
+    srcs = [":clap_builder-4.4.7.crate"],
+    crate = "clap_builder",
+    crate_root = "clap_builder-4.4.7.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "color",
+        "env",
+        "error-context",
+        "help",
+        "std",
+        "suggestions",
+        "usage",
+    ],
+    visibility = [],
+    deps = [
+        ":anstream-0.6.4",
+        ":anstyle-1.0.4",
+        ":clap_lex-0.6.0",
+        ":strsim-0.10.0",
+    ],
+)
+
+http_archive(
+    name = "clap_derive-4.4.7.crate",
+    sha256 = "cf9804afaaf59a91e75b022a30fb7229a7901f60c755489cc61c9b423b836442",
+    strip_prefix = "clap_derive-4.4.7",
+    urls = ["https://crates.io/api/v1/crates/clap_derive/4.4.7/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "clap_derive-4.4.7",
+    srcs = [":clap_derive-4.4.7.crate"],
+    crate = "clap_derive",
+    crate_root = "clap_derive-4.4.7.crate/src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+    proc_macro = True,
+    visibility = [],
+    deps = [
+        ":heck-0.4.1",
+        ":proc-macro2-1.0.69",
+        ":quote-1.0.33",
+        ":syn-2.0.38",
+    ],
+)
+
+http_archive(
+    name = "clap_lex-0.6.0.crate",
+    sha256 = "702fc72eb24e5a1e48ce58027a675bc24edd52096d5397d4aea7c6dd9eca0bd1",
+    strip_prefix = "clap_lex-0.6.0",
+    urls = ["https://crates.io/api/v1/crates/clap_lex/0.6.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "clap_lex-0.6.0",
+    srcs = [":clap_lex-0.6.0.crate"],
+    crate = "clap_lex",
+    crate_root = "clap_lex-0.6.0.crate/src/lib.rs",
+    edition = "2021",
+    visibility = [],
+)
+
+http_archive(
+    name = "colorchoice-1.0.0.crate",
+    sha256 = "acbf1af155f9b9ef647e42cdc158db4b64a1b61f743629225fde6f3e0be2a7c7",
+    strip_prefix = "colorchoice-1.0.0",
+    urls = ["https://crates.io/api/v1/crates/colorchoice/1.0.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "colorchoice-1.0.0",
+    srcs = [":colorchoice-1.0.0.crate"],
+    crate = "colorchoice",
+    crate_root = "colorchoice-1.0.0.crate/src/lib.rs",
+    edition = "2021",
     visibility = [],
 )
 
@@ -2945,6 +3232,8 @@ cxx_library(
         ":ring-0.17.5.crate[third_party/fiat/p256_32.h]",
         ":ring-0.17.5.crate[third_party/fiat/p256_64.h]",
         ":ring-0.17.5.crate[third_party/fiat/p256_64_msvc.h]",
+        "fixups/ring/include/ring_core_generated/prefix_symbols.h",
+        "fixups/ring/include/ring_core_generated/prefix_symbols_asm.h",
     ],
     compiler_flags = ["-Wno-error"],
     include_directories = ["fixups/ring/include"],
@@ -3020,6 +3309,8 @@ cxx_library(
         ":ring-0.17.5.crate[third_party/fiat/p256_32.h]",
         ":ring-0.17.5.crate[third_party/fiat/p256_64.h]",
         ":ring-0.17.5.crate[third_party/fiat/p256_64_msvc.h]",
+        "fixups/ring/include/ring_core_generated/prefix_symbols.h",
+        "fixups/ring/include/ring_core_generated/prefix_symbols_asm.h",
     ],
     compiler_flags = ["-Wno-error"],
     include_directories = ["fixups/ring/include"],
@@ -3092,6 +3383,8 @@ cxx_library(
         ":ring-0.17.5.crate[third_party/fiat/p256_32.h]",
         ":ring-0.17.5.crate[third_party/fiat/p256_64.h]",
         ":ring-0.17.5.crate[third_party/fiat/p256_64_msvc.h]",
+        "fixups/ring/include/ring_core_generated/prefix_symbols.h",
+        "fixups/ring/include/ring_core_generated/prefix_symbols_asm.h",
     ],
     compiler_flags = ["-Wno-error"],
     include_directories = ["fixups/ring/include"],
@@ -3167,6 +3460,8 @@ cxx_library(
         ":ring-0.17.5.crate[third_party/fiat/p256_32.h]",
         ":ring-0.17.5.crate[third_party/fiat/p256_64.h]",
         ":ring-0.17.5.crate[third_party/fiat/p256_64_msvc.h]",
+        "fixups/ring/include/ring_core_generated/prefix_symbols.h",
+        "fixups/ring/include/ring_core_generated/prefix_symbols_asm.h",
     ],
     compiler_flags = ["-Wno-error"],
     include_directories = ["fixups/ring/include"],
@@ -3231,6 +3526,8 @@ cxx_library(
         ":ring-0.17.5.crate[third_party/fiat/p256_32.h]",
         ":ring-0.17.5.crate[third_party/fiat/p256_64.h]",
         ":ring-0.17.5.crate[third_party/fiat/p256_64_msvc.h]",
+        "fixups/ring/include/ring_core_generated/prefix_symbols.h",
+        "fixups/ring/include/ring_core_generated/prefix_symbols_asm.h",
     ],
     include_directories = ["fixups/ring/include"],
     preferred_linkage = "static",
@@ -3294,6 +3591,8 @@ cxx_library(
         ":ring-0.17.5.crate[third_party/fiat/p256_32.h]",
         ":ring-0.17.5.crate[third_party/fiat/p256_64.h]",
         ":ring-0.17.5.crate[third_party/fiat/p256_64_msvc.h]",
+        "fixups/ring/include/ring_core_generated/prefix_symbols.h",
+        "fixups/ring/include/ring_core_generated/prefix_symbols_asm.h",
     ],
     compiler_flags = ["-Wno-error"],
     include_directories = ["fixups/ring/include"],
@@ -3962,9 +4261,11 @@ cargo.rust_binary(
     edition = "2021",
     visibility = [],
     deps = [
+        ":anyhow-1.0.75",
         ":async-graphql-6.0.9",
         ":async-graphql-axum-6.0.9",
         ":axum-0.6.20",
+        ":clap-4.4.7",
         ":graphql_client-0.13.0",
         ":reqwest-0.11.20",
         ":tokio-1.33.0",
@@ -4690,6 +4991,24 @@ cargo.rust_library(
     crate = "utf8",
     crate_root = "utf-8-0.7.6.crate/src/lib.rs",
     edition = "2015",
+    visibility = [],
+)
+
+http_archive(
+    name = "utf8parse-0.2.1.crate",
+    sha256 = "711b9620af191e0cdc7468a8d14e709c3dcdb115b36f838e601583af800a370a",
+    strip_prefix = "utf8parse-0.2.1",
+    urls = ["https://crates.io/api/v1/crates/utf8parse/0.2.1/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "utf8parse-0.2.1",
+    srcs = [":utf8parse-0.2.1.crate"],
+    crate = "utf8parse",
+    crate_root = "utf8parse-0.2.1.crate/src/lib.rs",
+    edition = "2018",
+    features = ["default"],
     visibility = [],
 )
 
