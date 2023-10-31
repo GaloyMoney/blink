@@ -72,7 +72,6 @@
           vendir
           jq
           ytt
-          yq-go
           cargo-nextest
           cargo-audit
           cargo-watch
@@ -207,17 +206,23 @@
 
             config = {
               Cmd = ["bash"];
-              Env =
-                [
-                  "GIT_SSL_CAINFO=${cacert}/etc/ssl/certs/ca-bundle.crt"
-                  "SSL_CERT_FILE=${cacert}/etc/ssl/certs/ca-bundle.crt"
-                ];
+              Env = [
+                "GIT_SSL_CAINFO=${cacert}/etc/ssl/certs/ca-bundle.crt"
+                "SSL_CERT_FILE=${cacert}/etc/ssl/certs/ca-bundle.crt"
+              ];
             };
 
             copyToRoot = buildEnv {
               name = "image-root";
-              paths = nativeBuildInputs ++ [ bash ];
-              pathsToLink = [ "/bin" ];
+              paths =
+                nativeBuildInputs
+                ++ [
+                  bash
+                  yq-go
+                  google-cloud-sdk
+                ];
+
+              pathsToLink = ["/bin"];
             };
           };
         };
