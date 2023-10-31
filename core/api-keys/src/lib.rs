@@ -1,1 +1,2 @@
-// pub mod graphql;
+pub mod admin_client;
+pub mod graphql;
