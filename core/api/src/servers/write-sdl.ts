@@ -1,3 +1,30 @@
+// Initialize mandatory environment variables with dummy values if not set
+const envVarsWithDefaults = {
+  HELMREVISION: 'dummy',
+  KRATOS_PG_CON: 'dummy',
+  OATHKEEPER_DECISION_ENDPOINT: 'dummy',
+  NETWORK: 'dummy',
+  TWILIO_ACCOUNT_SID: 'dummy',
+  TWILIO_AUTH_TOKEN: 'dummy',
+  TWILIO_VERIFY_SERVICE_ID: 'dummy',
+  KRATOS_PUBLIC_API: 'dummy',
+  KRATOS_ADMIN_API: 'dummy',
+  KRATOS_MASTER_USER_PASSWORD: 'dummy',
+  KRATOS_CALLBACK_API_KEY: 'dummy',
+  BRIA_HOST: 'dummy',
+  BRIA_API_KEY: 'dummy',
+  MONGODB_CON: 'dummy',
+  REDIS_MASTER_NAME: 'dummy',
+  REDIS_PASSWORD: 'dummy',
+  REDIS_0_DNS: 'dummy'
+};
+
+for (const [envVar, defaultValue] of Object.entries(envVarsWithDefaults)) {
+  if (!process.env[envVar]) {
+    process.env[envVar] = defaultValue;
+  }
+}
+
 import fs from "fs/promises"
 import path from "path"
 

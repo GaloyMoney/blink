@@ -1,7 +1,7 @@
 #! Auto synced from Shared CI Resources repository
 #! Don't change this file, instead change it in github.com/GaloyMoney/concourse-shared
 
-name: Check Code
+name: Check SDLs
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   check-code:
-    name: Check Code
+    name: Check SDLs
     runs-on: ubuntu-latest
     steps:
       - name: Install Nix
