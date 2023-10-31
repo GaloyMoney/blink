@@ -195,7 +195,7 @@ local_resource(
     "api_keys",
     labels = ["core"],
     cmd = "buck2 build {}".format(api_keys_target),
-    serve_cmd = "buck2 run {}".format(api_keys_target),
+    serve_cmd = "buck2 run {} -- run".format(api_keys_target),
     deps = _buck2_dep_inputs(api_keys_target),
 )
 

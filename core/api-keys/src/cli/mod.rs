@@ -20,5 +20,7 @@ pub async fn run() -> anyhow::Result<()> {
 }
 
 async fn run_cmd() -> anyhow::Result<()> {
+    println!("Running server");
+    crate::graphql::run_server().await;
     Ok(())
 }
