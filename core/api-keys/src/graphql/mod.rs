@@ -11,6 +11,15 @@ impl QueryRoot {
     }
 }
 
-pub fn schema() -> Schema<Query, EmptyMutation, EmptySubscription> {
-    Schema::build(Query, EmptyMutation, EmptySubscription).finish()
+pub struct MutationRoot;
+
+#[Object]
+impl MutationRoot {
+    async fn hello_world_mutation(&self) -> &str {
+        "Hello, world!"
+    }
+}
+
+pub fn schema() -> Schema<QueryRoot, MutationRoot, EmptySubscription> {
+    Schema::build(QueryRoot, MutationRoot, EmptySubscription).finish()
 }
