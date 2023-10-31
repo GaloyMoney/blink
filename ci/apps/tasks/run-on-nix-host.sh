@@ -41,4 +41,4 @@ gcloud compute scp --ssh-key-file="${CI_ROOT}/login.ssh" \
   --zone="${host_zone}" \
   --project="${gcp_project}" > /dev/null
 
-gcloud_ssh "cd ${REPO_PATH}; cd ${PACKAGE_DIR}; nix develop -c ${CMD}"
+gcloud_ssh "cd ${REPO_PATH}; cd ${PACKAGE_DIR}; nix develop -c ${CMD} 2>&1"
