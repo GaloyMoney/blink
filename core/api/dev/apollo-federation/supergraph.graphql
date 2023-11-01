@@ -292,24 +292,26 @@ type CentAmountPayload
 
 type ConsumerAccount implements Account
   @join__implements(graph: PUBLIC, interface: "Account")
+  @join__type(graph: API_KEYS, key: "id", extension: true)
   @join__type(graph: PUBLIC)
 {
-  callbackEndpoints: [CallbackEndpoint!]!
+  id: ID!
+  helloWorld: String! @join__field(graph: API_KEYS)
+  callbackEndpoints: [CallbackEndpoint!]! @join__field(graph: PUBLIC)
 
   """
   return CSV stream, base64 encoded, of the list of transactions in the wallet
   """
-  csvTransactions(walletIds: [WalletId!]!): String!
-  defaultWalletId: WalletId!
-  displayCurrency: DisplayCurrency!
-  id: ID!
-  level: AccountLevel!
-  limits: AccountLimits!
-  notificationSettings: NotificationSettings!
+  csvTransactions(walletIds: [WalletId!]!): String! @join__field(graph: PUBLIC)
+  defaultWalletId: WalletId! @join__field(graph: PUBLIC)
+  displayCurrency: DisplayCurrency! @join__field(graph: PUBLIC)
+  level: AccountLevel! @join__field(graph: PUBLIC)
+  limits: AccountLimits! @join__field(graph: PUBLIC)
+  notificationSettings: NotificationSettings! @join__field(graph: PUBLIC)
 
   """List the quiz questions of the consumer account"""
-  quiz: [Quiz!]!
-  realtimePrice: RealtimePrice!
+  quiz: [Quiz!]! @join__field(graph: PUBLIC)
+  realtimePrice: RealtimePrice! @join__field(graph: PUBLIC)
 
   """
   A list of all transactions associated with walletIds optionally passed.
@@ -327,9 +329,9 @@ type ConsumerAccount implements Account
     """Returns the last n items from the list."""
     last: Int
     walletIds: [WalletId]
-  ): TransactionConnection
-  walletById(walletId: WalletId!): Wallet!
-  wallets: [Wallet!]!
+  ): TransactionConnection @join__field(graph: PUBLIC)
+  walletById(walletId: WalletId!): Wallet! @join__field(graph: PUBLIC)
+  wallets: [Wallet!]! @join__field(graph: PUBLIC)
 }
 
 """
@@ -896,89 +898,87 @@ type MobileVersions
 }
 
 type Mutation
-  @join__type(graph: API_KEYS)
   @join__type(graph: PUBLIC)
 {
-  helloWorldMutation: String! @join__field(graph: API_KEYS)
-  accountDelete: AccountDeletePayload! @join__field(graph: PUBLIC)
-  accountDisableNotificationCategory(input: AccountDisableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
-  accountDisableNotificationChannel(input: AccountDisableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
-  accountEnableNotificationCategory(input: AccountEnableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
-  accountEnableNotificationChannel(input: AccountEnableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
-  accountUpdateDefaultWalletId(input: AccountUpdateDefaultWalletIdInput!): AccountUpdateDefaultWalletIdPayload! @join__field(graph: PUBLIC)
-  accountUpdateDisplayCurrency(input: AccountUpdateDisplayCurrencyInput!): AccountUpdateDisplayCurrencyPayload! @join__field(graph: PUBLIC)
-  callbackEndpointAdd(input: CallbackEndpointAddInput!): CallbackEndpointAddPayload! @join__field(graph: PUBLIC)
-  callbackEndpointDelete(input: CallbackEndpointDeleteInput!): SuccessPayload! @join__field(graph: PUBLIC)
-  captchaCreateChallenge: CaptchaCreateChallengePayload! @join__field(graph: PUBLIC)
-  captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload! @join__field(graph: PUBLIC)
-  deviceNotificationTokenCreate(input: DeviceNotificationTokenCreateInput!): SuccessPayload! @join__field(graph: PUBLIC)
-  feedbackSubmit(input: FeedbackSubmitInput!): SuccessPayload! @join__field(graph: PUBLIC)
+  accountDelete: AccountDeletePayload!
+  accountDisableNotificationCategory(input: AccountDisableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload!
+  accountDisableNotificationChannel(input: AccountDisableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload!
+  accountEnableNotificationCategory(input: AccountEnableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload!
+  accountEnableNotificationChannel(input: AccountEnableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload!
+  accountUpdateDefaultWalletId(input: AccountUpdateDefaultWalletIdInput!): AccountUpdateDefaultWalletIdPayload!
+  accountUpdateDisplayCurrency(input: AccountUpdateDisplayCurrencyInput!): AccountUpdateDisplayCurrencyPayload!
+  callbackEndpointAdd(input: CallbackEndpointAddInput!): CallbackEndpointAddPayload!
+  callbackEndpointDelete(input: CallbackEndpointDeleteInput!): SuccessPayload!
+  captchaCreateChallenge: CaptchaCreateChallengePayload!
+  captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
+  deviceNotificationTokenCreate(input: DeviceNotificationTokenCreateInput!): SuccessPayload!
+  feedbackSubmit(input: FeedbackSubmitInput!): SuccessPayload!
 
   """
   Actions a payment which is internal to the ledger e.g. it does
   not use onchain/lightning. Returns payment status (success,
   failed, pending, already_paid).
   """
-  intraLedgerPaymentSend(input: IntraLedgerPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
+  intraLedgerPaymentSend(input: IntraLedgerPaymentSendInput!): PaymentSendPayload!
 
   """
   Actions a payment which is internal to the ledger e.g. it does
   not use onchain/lightning. Returns payment status (success,
   failed, pending, already_paid).
   """
-  intraLedgerUsdPaymentSend(input: IntraLedgerUsdPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
+  intraLedgerUsdPaymentSend(input: IntraLedgerUsdPaymentSendInput!): PaymentSendPayload!
 
   """
   Returns a lightning invoice for an associated wallet.
   When invoice is paid the value will be credited to a BTC wallet.
   Expires after 'expiresIn' or 24 hours.
   """
-  lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload! @join__field(graph: PUBLIC)
+  lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload!
 
   """
   Returns a lightning invoice for an associated wallet.
   When invoice is paid the value will be credited to a BTC wallet.
   Expires after 'expiresIn' or 24 hours.
   """
-  lnInvoiceCreateOnBehalfOfRecipient(input: LnInvoiceCreateOnBehalfOfRecipientInput!): LnInvoicePayload! @join__field(graph: PUBLIC)
-  lnInvoiceFeeProbe(input: LnInvoiceFeeProbeInput!): SatAmountPayload! @join__field(graph: PUBLIC)
+  lnInvoiceCreateOnBehalfOfRecipient(input: LnInvoiceCreateOnBehalfOfRecipientInput!): LnInvoicePayload!
+  lnInvoiceFeeProbe(input: LnInvoiceFeeProbeInput!): SatAmountPayload!
 
   """
   Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user.
   Provided wallet can be USD or BTC and must have sufficient balance to cover amount in lightning invoice.
   Returns payment status (success, failed, pending, already_paid).
   """
-  lnInvoicePaymentSend(input: LnInvoicePaymentInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
+  lnInvoicePaymentSend(input: LnInvoicePaymentInput!): PaymentSendPayload!
 
   """
   Returns a lightning invoice for an associated wallet.
   Can be used to receive any supported currency value (currently USD or BTC).
   Expires after 'expiresIn' or 24 hours for BTC invoices or 5 minutes for USD invoices.
   """
-  lnNoAmountInvoiceCreate(input: LnNoAmountInvoiceCreateInput!): LnNoAmountInvoicePayload! @join__field(graph: PUBLIC)
+  lnNoAmountInvoiceCreate(input: LnNoAmountInvoiceCreateInput!): LnNoAmountInvoicePayload!
 
   """
   Returns a lightning invoice for an associated wallet.
   Can be used to receive any supported currency value (currently USD or BTC).
   Expires after 'expiresIn' or 24 hours for BTC invoices or 5 minutes for USD invoices.
   """
-  lnNoAmountInvoiceCreateOnBehalfOfRecipient(input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!): LnNoAmountInvoicePayload! @join__field(graph: PUBLIC)
-  lnNoAmountInvoiceFeeProbe(input: LnNoAmountInvoiceFeeProbeInput!): SatAmountPayload! @join__field(graph: PUBLIC)
+  lnNoAmountInvoiceCreateOnBehalfOfRecipient(input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!): LnNoAmountInvoicePayload!
+  lnNoAmountInvoiceFeeProbe(input: LnNoAmountInvoiceFeeProbeInput!): SatAmountPayload!
 
   """
   Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user.
   Provided wallet must be BTC and must have sufficient balance to cover amount specified in mutation request.
   Returns payment status (success, failed, pending, already_paid).
   """
-  lnNoAmountInvoicePaymentSend(input: LnNoAmountInvoicePaymentInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
-  lnNoAmountUsdInvoiceFeeProbe(input: LnNoAmountUsdInvoiceFeeProbeInput!): CentAmountPayload! @join__field(graph: PUBLIC)
+  lnNoAmountInvoicePaymentSend(input: LnNoAmountInvoicePaymentInput!): PaymentSendPayload!
+  lnNoAmountUsdInvoiceFeeProbe(input: LnNoAmountUsdInvoiceFeeProbeInput!): CentAmountPayload!
 
   """
   Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user.
   Provided wallet must be USD and have sufficient balance to cover amount specified in mutation request.
   Returns payment status (success, failed, pending, already_paid).
   """
-  lnNoAmountUsdInvoicePaymentSend(input: LnNoAmountUsdInvoicePaymentInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
+  lnNoAmountUsdInvoicePaymentSend(input: LnNoAmountUsdInvoicePaymentInput!): PaymentSendPayload!
 
   """
   Returns a lightning invoice denominated in satoshis for an associated wallet.
@@ -986,7 +986,7 @@ type Mutation
   Expires after 'expiresIn' or 5 minutes (short expiry time because there is a USD/BTC exchange rate
     associated with the amount).
   """
-  lnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipient(input: LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput!): LnInvoicePayload! @join__field(graph: PUBLIC)
+  lnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipient(input: LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput!): LnInvoicePayload!
 
   """
   Returns a lightning invoice denominated in satoshis for an associated wallet.
@@ -994,7 +994,7 @@ type Mutation
   Expires after 'expiresIn' or 5 minutes (short expiry time because there is a USD/BTC exchange rate
   associated with the amount).
   """
-  lnUsdInvoiceCreate(input: LnUsdInvoiceCreateInput!): LnInvoicePayload! @join__field(graph: PUBLIC)
+  lnUsdInvoiceCreate(input: LnUsdInvoiceCreateInput!): LnInvoicePayload!
 
   """
   Returns a lightning invoice denominated in satoshis for an associated wallet.
@@ -1002,30 +1002,36 @@ type Mutation
   Expires after 'expiresIn' or 5 minutes (short expiry time because there is a USD/BTC exchange rate
     associated with the amount).
   """
-  lnUsdInvoiceCreateOnBehalfOfRecipient(input: LnUsdInvoiceCreateOnBehalfOfRecipientInput!): LnInvoicePayload! @join__field(graph: PUBLIC)
-  lnUsdInvoiceFeeProbe(input: LnUsdInvoiceFeeProbeInput!): SatAmountPayload! @join__field(graph: PUBLIC)
-  onChainAddressCreate(input: OnChainAddressCreateInput!): OnChainAddressPayload! @join__field(graph: PUBLIC)
-  onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload! @join__field(graph: PUBLIC)
-  onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
-  onChainPaymentSendAll(input: OnChainPaymentSendAllInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
-  onChainUsdPaymentSend(input: OnChainUsdPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
-  onChainUsdPaymentSendAsBtcDenominated(input: OnChainUsdPaymentSendAsBtcDenominatedInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
-  quizCompleted(input: QuizCompletedInput!): QuizCompletedPayload! @join__field(graph: PUBLIC)
-  userContactUpdateAlias(input: UserContactUpdateAliasInput!): UserContactUpdateAliasPayload! @join__field(graph: PUBLIC) @deprecated(reason: "will be moved to AccountContact")
-  userEmailDelete: UserEmailDeletePayload! @join__field(graph: PUBLIC)
-  userEmailRegistrationInitiate(input: UserEmailRegistrationInitiateInput!): UserEmailRegistrationInitiatePayload! @join__field(graph: PUBLIC)
-  userEmailRegistrationValidate(input: UserEmailRegistrationValidateInput!): UserEmailRegistrationValidatePayload! @join__field(graph: PUBLIC)
-  userLogin(input: UserLoginInput!): AuthTokenPayload! @join__field(graph: PUBLIC)
-  userLoginUpgrade(input: UserLoginUpgradeInput!): UpgradePayload! @join__field(graph: PUBLIC)
-  userLogout(input: UserLogoutInput): SuccessPayload! @join__field(graph: PUBLIC)
-  userPhoneDelete: UserPhoneDeletePayload! @join__field(graph: PUBLIC)
-  userPhoneRegistrationInitiate(input: UserPhoneRegistrationInitiateInput!): SuccessPayload! @join__field(graph: PUBLIC)
-  userPhoneRegistrationValidate(input: UserPhoneRegistrationValidateInput!): UserPhoneRegistrationValidatePayload! @join__field(graph: PUBLIC)
-  userTotpDelete(input: UserTotpDeleteInput!): UserTotpDeletePayload! @join__field(graph: PUBLIC)
-  userTotpRegistrationInitiate(input: UserTotpRegistrationInitiateInput!): UserTotpRegistrationInitiatePayload! @join__field(graph: PUBLIC)
-  userTotpRegistrationValidate(input: UserTotpRegistrationValidateInput!): UserTotpRegistrationValidatePayload! @join__field(graph: PUBLIC)
-  userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload! @join__field(graph: PUBLIC)
-  userUpdateUsername(input: UserUpdateUsernameInput!): UserUpdateUsernamePayload! @join__field(graph: PUBLIC) @deprecated(reason: "Username will be moved to @Handle in Accounts. Also SetUsername naming should be used instead of UpdateUsername to reflect the idempotency of Handles")
+  lnUsdInvoiceCreateOnBehalfOfRecipient(input: LnUsdInvoiceCreateOnBehalfOfRecipientInput!): LnInvoicePayload!
+  lnUsdInvoiceFeeProbe(input: LnUsdInvoiceFeeProbeInput!): SatAmountPayload!
+  onChainAddressCreate(input: OnChainAddressCreateInput!): OnChainAddressPayload!
+  onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload!
+  onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!
+  onChainPaymentSendAll(input: OnChainPaymentSendAllInput!): PaymentSendPayload!
+  onChainUsdPaymentSend(input: OnChainUsdPaymentSendInput!): PaymentSendPayload!
+  onChainUsdPaymentSendAsBtcDenominated(input: OnChainUsdPaymentSendAsBtcDenominatedInput!): PaymentSendPayload!
+  quizCompleted(input: QuizCompletedInput!): QuizCompletedPayload!
+  userContactUpdateAlias(input: UserContactUpdateAliasInput!): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
+  userEmailDelete: UserEmailDeletePayload!
+  userEmailRegistrationInitiate(input: UserEmailRegistrationInitiateInput!): UserEmailRegistrationInitiatePayload!
+  userEmailRegistrationValidate(input: UserEmailRegistrationValidateInput!): UserEmailRegistrationValidatePayload!
+  userLogin(input: UserLoginInput!): AuthTokenPayload!
+  userLoginUpgrade(input: UserLoginUpgradeInput!): UpgradePayload!
+  userLogout(input: UserLogoutInput): SuccessPayload!
+  userPhoneDelete: UserPhoneDeletePayload!
+  userPhoneRegistrationInitiate(input: UserPhoneRegistrationInitiateInput!): SuccessPayload!
+  userPhoneRegistrationValidate(input: UserPhoneRegistrationValidateInput!): UserPhoneRegistrationValidatePayload!
+  userTotpDelete(input: UserTotpDeleteInput!): UserTotpDeletePayload!
+  userTotpRegistrationInitiate(input: UserTotpRegistrationInitiateInput!): UserTotpRegistrationInitiatePayload!
+  userTotpRegistrationValidate(input: UserTotpRegistrationValidateInput!): UserTotpRegistrationValidatePayload!
+  userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
+  userUpdateUsername(input: UserUpdateUsernameInput!): UserUpdateUsernamePayload! @deprecated(reason: "Username will be moved to @Handle in Accounts. Also SetUsername naming should be used instead of UpdateUsername to reflect the idempotency of Handles")
+}
+
+type MutationRoot
+  @join__type(graph: API_KEYS)
+{
+  helloWorldMutation: String!
 }
 
 type MyUpdatesPayload
@@ -1336,7 +1342,6 @@ type Query
   @join__type(graph: API_KEYS)
   @join__type(graph: PUBLIC)
 {
-  helloWorld: String! @join__field(graph: API_KEYS)
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet! @join__field(graph: PUBLIC)
   btcPriceList(range: PriceGraphRange!): [PricePoint] @join__field(graph: PUBLIC)
   businessMapMarkers: [MapMarker] @join__field(graph: PUBLIC)
@@ -1354,6 +1359,12 @@ type Query
   realtimePrice(currency: DisplayCurrency = "USD"): RealtimePrice! @join__field(graph: PUBLIC)
   userDefaultWalletId(username: Username!): WalletId! @join__field(graph: PUBLIC) @deprecated(reason: "will be migrated to AccountDefaultWalletId")
   usernameAvailable(username: Username!): Boolean @join__field(graph: PUBLIC)
+}
+
+type QueryRoot
+  @join__type(graph: API_KEYS)
+{
+  helloWorld: String!
 }
 
 type Quiz

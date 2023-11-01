@@ -1,3 +1,11 @@
+extend type ConsumerAccount @key(fields: "id") {
+	id: ID! @external
+	helloWorld: String!
+}
+
+
+
+
 type MutationRoot {
 	helloWorldMutation: String!
 }
@@ -7,7 +15,9 @@ type QueryRoot {
 }
 
 
-schema {
-	query: QueryRoot
-	mutation: MutationRoot
-}
+extend schema @link(
+	url: "https://specs.apollo.dev/federation/v2.3",
+	import: ["@key", "@tag", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@composeDirective", "@interfaceObject"]
+)
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT

@@ -1,7 +1,5 @@
 use async_graphql::*;
 
-// Define a simple query object
-#[derive(Default)]
 pub struct QueryRoot;
 
 #[Object]
@@ -9,6 +7,22 @@ impl QueryRoot {
     async fn hello_world(&self) -> &str {
         "Hello, world!"
     }
+
+    #[graphql(entity)]
+    async fn consumer_account(&self, id: ID) -> Option<ConsumerAccount> {
+        Some(ConsumerAccount {
+            id,
+            hello_world: "Hello, world!".to_string(),
+        })
+    }
+}
+
+#[derive(SimpleObject)]
+#[graphql(extends)]
+struct ConsumerAccount {
+    #[graphql(external)]
+    id: ID,
+    hello_world: String,
 }
 
 pub struct MutationRoot;

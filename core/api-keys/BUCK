@@ -38,5 +38,6 @@ rust_binary(
     srcs = glob(["src/**/*.rs"]),
     deps = [
         ":lib-api-keys",
+        "//third-party/rust:async-graphql",
     ],
 )
