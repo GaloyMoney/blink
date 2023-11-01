@@ -74,7 +74,7 @@
     "graphql-relay": "^0.10.0",
     "graphql-shield": "^7.6.4",
     "graphql-ws": "^5.14.1",
-    "gt3-server-node-express-sdk": "github:GaloyMoney/gt3-server-node-express-bypass#master",
+    "gt3-server-node-express-sdk": "git+https://github.com/GaloyMoney/gt3-server-node-express-bypass.git#master",
     "i18n": "^0.15.1",
     "invoices": "^3.0.0",
     "ioredis": "^5.3.2",
