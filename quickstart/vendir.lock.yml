@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump @ory/client from 1.2.11 to 1.2.16 (#3466)...'
-      sha: 31fac645a13ff3f32703288d1dc629571f81fde0
+      commitTitle: 'fix: debug image build'
+      sha: a1998c6809aa5a2f00bca62417a51c20194ae6c2
       tags:
-      - 0.15.70-2-g31fac645a
+      - 0.15.72-3-ga1998c680
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump @ory/client from 1.2.11 to 1.2.16 (#3466)...'
-      sha: 31fac645a13ff3f32703288d1dc629571f81fde0
+      commitTitle: 'fix: debug image build'
+      sha: a1998c6809aa5a2f00bca62417a51c20194ae6c2
       tags:
-      - 0.15.70-2-g31fac645a
+      - 0.15.72-3-ga1998c680
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump @ory/client from 1.2.11 to 1.2.16 (#3466)...'
-      sha: 31fac645a13ff3f32703288d1dc629571f81fde0
+      commitTitle: 'fix: debug image build'
+      sha: a1998c6809aa5a2f00bca62417a51c20194ae6c2
       tags:
-      - 0.15.70-2-g31fac645a
+      - 0.15.72-3-ga1998c680
     path: ./
   path: ./graphql
 kind: LockConfig

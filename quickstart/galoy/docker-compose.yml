@@ -104,8 +104,8 @@ services:
   mongodb-migrate:
     depends_on: [mongodb]
     build:
-      context: .
-      dockerfile: Dockerfile-migrate
+      context: ../..
+      dockerfile: core/api/Dockerfile-migrate
     environment:
       - MONGODB_ADDRESS=mongodb
   mongodb:
