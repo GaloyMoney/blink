@@ -1,9 +1,9 @@
 "use server"
-import { isAxiosError } from "axios"
 import { headers } from "next/headers"
 
 import { redirect } from "next/navigation"
 
+import { handleAxiosError } from "@/app/error-handler"
 import { getUserId } from "@/app/graphql/queries/me-query"
 import { LoginType } from "@/app/index.types"
 import authApi from "@/services/galoy-auth"
@@ -36,18 +36,7 @@ export const submitFormTotp = async (_prevState: unknown, form: FormData) => {
     await authApi.validateTotp(totpCode, authToken, customHeaders)
   } catch (err) {
     console.error("error in 'totp/validate' ", err)
-    if (isAxiosError(err) && err.response) {
-      console.error("error in 'totp/validate' ", err.response.data.error)
-      return {
-        error: true,
-        message: err.response.data.error,
-      }
-    } else {
-      return {
-        error: true,
-        message: "unknown Error ",
-      }
-    }
+    return handleAxiosError(err)
   }
 
   const userId = await getUserId(authToken)
@@ -86,9 +75,9 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
   const value = form.get("value")
   const loginId = form.get("loginId")
 
-  let authToken
-  let totpRequired
-  let userId
+  let authToken: string | null
+  let totpRequired: boolean | null
+  let userId: string | null
 
   if ((loginType === LoginType.email && !loginId) || typeof loginId !== "string") {
     throw new Error("Invalid Values")
@@ -113,6 +102,7 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
       userId = loginResponse.id
     } catch (err) {
       console.error("error in 'phone/login' ", err)
+      return handleAxiosError(err)
     }
   } else if (loginType === LoginType.email) {
     try {
@@ -122,6 +112,7 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
       userId = loginResponse.id
     } catch (err) {
       console.error("error in 'email/login' ", err)
+      return handleAxiosError(err)
     }
   } else {
     throw new Error("Invalid Value")
