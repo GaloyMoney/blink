@@ -9,6 +9,6 @@ pub enum AdminClientError {
         message: String,
         path: Option<Vec<Option<String>>>,
     },
-    #[error("AdminClientError - Access Token is Invalid")]
-    InvalidToken,
+    #[error("AdminClientError - UnsuccessfulOAuthTokenRefresh")]
+    UnsuccessfulOAuthTokenRefresh,
 }

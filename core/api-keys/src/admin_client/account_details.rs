@@ -36,7 +36,7 @@ pub struct AccountDetails {
 }
 
 impl AccountDetails {
-    pub fn get_gql_request(variables: AccountDetailsVariables) -> GraphQLRequest {
+    pub(super) fn request(variables: AccountDetailsVariables) -> GraphQLRequest {
         GraphQLRequest {
             query: ACCOUNT_DETAILS_BY_USER_ID_QUERY.to_string(),
             variables,

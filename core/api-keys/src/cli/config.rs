@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::admin_client::{AdminClientConfig, OAuthGrantConfig};
 use crate::graphql::ServerConfig;
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
     pub admin: AdminClientConfig,
@@ -27,8 +27,8 @@ impl Config {
     ) -> anyhow::Result<Self> {
         let mut config: Config = Config::default();
 
-        config.admin.client_id = client_id;
-        config.admin.client_secret = client_secret;
+        config.hydra.client_id = client_id;
+        config.hydra.client_secret = client_secret;
 
         Ok(config)
     }

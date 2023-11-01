@@ -3,67 +3,83 @@ mod config;
 mod error;
 mod oauth_grant;
 
-use std::str::FromStr;
+use reqwest::{
+    header::{HeaderMap, HeaderName, HeaderValue},
+    Client as ReqwestClient,
+};
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
-use reqwest::{header::HeaderName, header::HeaderValue, Client as ReqwestClient, Method};
-
-pub use account_details::*;
+pub use account_details::AccountDetails;
 pub use config::*;
 pub use error::*;
 pub use oauth_grant::OAuthGrantConfig;
 
 use self::oauth_grant::OAuthGrant;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct AdminClient {
     config: AdminClientConfig,
-    grant: OAuthGrant,
+    grant: Arc<RwLock<OAuthGrant>>,
 }
 
 impl AdminClient {
     pub fn new(config: AdminClientConfig, oauth_config: OAuthGrantConfig) -> Self {
         Self {
             config,
-            grant: OAuthGrant::new(oauth_config),
+            grant: Arc::new(RwLock::new(OAuthGrant::new(oauth_config))),
         }
     }
 
-    async fn connect(config: AdminClientConfig) -> Result<Self, AdminClientError> {
-        // let oauth_grant = OauthGrant::new(config.clone()).validate().await?;
-        // let oauth2_token = oauth_grant.access_token()?;
-
-        // let client = ReqwestClient::builder()
-        //     .use_rustls_tls()
-        //     .default_headers(
-        //         std::iter::once((
-        //             HeaderName::from_str("Oauth2-Token").unwrap(),
-        //             HeaderValue::from_str(&oauth2_token).unwrap(),
-        //         ))
-        //         .collect(),
-        //     )
-        //     .build()?;
-
-        // Ok(Self { client, config })
-        unimplemented!()
-    }
-
-    pub async fn get_account_details(
+    pub async fn account_details(
         &self,
         user_id: String,
     ) -> Result<AccountDetails, AdminClientError> {
-        unimplemented!()
-        // let variables = AccountDetailsVariables { user_id };
+        use account_details::*;
 
-        // let json = AccountDetails::get_gql_request(variables);
+        let variables = AccountDetailsVariables { user_id };
 
-        // let response = self
-        //     .client
-        //     .request(Method::POST, &self.config.admin_api)
-        //     .json(&json)
-        //     .send()
-        //     .await?;
-        // let response = response.json::<AccountDetailsResponse>().await?;
+        let request = AccountDetails::request(variables);
 
-        // Ok(AccountDetails::from(response))
+        let response = self
+            .client()
+            .await?
+            .post(&self.config.admin_api)
+            .json(&request)
+            .send()
+            .await?;
+        let response = response.json::<AccountDetailsResponse>().await?;
+
+        Ok(AccountDetails::from(response))
+    }
+
+    async fn client(&self) -> Result<ReqwestClient, AdminClientError> {
+        let headers = {
+            let maybe_headers = {
+                let grant = self.grant.read().await;
+                grant.token().map(Self::headers)
+            };
+            if let Some(headers) = maybe_headers {
+                headers
+            } else {
+                let mut grant = self.grant.write().await;
+                let token = grant.refresh().await?;
+                Self::headers(token)
+            }
+        };
+        Ok(ReqwestClient::builder()
+            .use_rustls_tls()
+            .default_headers(headers)
+            .build()?)
+    }
+
+    fn headers(token: &str) -> HeaderMap {
+        use std::str::FromStr;
+
+        std::iter::once((
+            HeaderName::from_str("Oauth2-Token").unwrap(),
+            HeaderValue::from_str(&token).unwrap(),
+        ))
+        .collect()
     }
 }
