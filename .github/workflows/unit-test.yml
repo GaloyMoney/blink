@@ -15,5 +15,5 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@v2
       - uses: actions/checkout@v3
       - run: cd core/api && nix develop -c pnpm install --frozen-lockfile
-      - name: Run check code
-        run: cd core/api && nix develop -c make check-code
+      - name: Run unit tests
+        run: cd core/api && nix develop -c make unit-in-ci
