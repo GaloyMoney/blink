@@ -1,4 +1,4 @@
-mod config;
+pub mod config;
 
 use std::path::PathBuf;
 
@@ -50,8 +50,8 @@ pub async fn run() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn run_cmd(_config: Config) -> anyhow::Result<()> {
+async fn run_cmd(config: Config) -> anyhow::Result<()> {
     println!("Running server");
-    crate::graphql::run_server().await;
+    crate::graphql::run_server(config).await;
     Ok(())
 }

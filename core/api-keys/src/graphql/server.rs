@@ -3,8 +3,9 @@ use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{routing::get, Extension, Router};
 
 use super::schema::*;
+use crate::cli::config::Config;
 
-pub async fn run_server() {
+pub async fn run_server(config: Config) {
     // Create a GraphQL schema with a simple query
     let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription).finish();
 
@@ -14,7 +15,8 @@ pub async fn run_server() {
             "/graphql",
             get(playground).post(axum::routing::post(graphql_handler)),
         )
-        .layer(Extension(schema));
+        .layer(Extension(schema))
+        .layer(Extension(config));
 
     // Run the server
     axum::Server::bind(&"0.0.0.0:8000".parse().unwrap())
@@ -25,10 +27,13 @@ pub async fn run_server() {
 
 // GraphQL handler
 async fn graphql_handler(
+    config: Extension<Config>,
     schema: Extension<Schema<QueryRoot, MutationRoot, EmptySubscription>>,
     req: GraphQLRequest,
 ) -> GraphQLResponse {
-    schema.execute(req.into_inner()).await.into()
+    let mut req = req.into_inner();
+    req = req.data(config);
+    schema.execute(req).await.into()
 }
 
 // Playground handler
