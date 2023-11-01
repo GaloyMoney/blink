@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: unit test github action (#3477)'
-      sha: 456c8fd87af4998e73494d01cb35d51391aacd07
+      commitTitle: 'feat: channel for phone login consent (#3478)...'
+      sha: 4127a6940ac734d24f2d013fcda188a5402a106b
       tags:
-      - 0.15.74-2-g456c8fd87
+      - 0.15.75-2-g4127a6940
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: unit test github action (#3477)'
-      sha: 456c8fd87af4998e73494d01cb35d51391aacd07
+      commitTitle: 'feat: channel for phone login consent (#3478)...'
+      sha: 4127a6940ac734d24f2d013fcda188a5402a106b
       tags:
-      - 0.15.74-2-g456c8fd87
+      - 0.15.75-2-g4127a6940
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: unit test github action (#3477)'
-      sha: 456c8fd87af4998e73494d01cb35d51391aacd07
+      commitTitle: 'feat: channel for phone login consent (#3478)...'
+      sha: 4127a6940ac734d24f2d013fcda188a5402a106b
       tags:
-      - 0.15.74-2-g456c8fd87
+      - 0.15.75-2-g4127a6940
     path: ./
   path: ./graphql
 kind: LockConfig
