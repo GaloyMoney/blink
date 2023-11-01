@@ -3,12 +3,13 @@ import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { isValidPhoneNumber } from "libphonenumber-js"
 
+import { isAxiosError } from "axios"
+
 import { GetCaptchaChallengeResponse, SendPhoneCodeResponse } from "./phone-login.types"
 
 import { LoginType, SubmitValue } from "@/app/index.types"
 import authApi from "@/services/galoy-auth"
 import { hydraClient } from "@/services/hydra"
-import { isAxiosError } from "axios"
 import { env } from "@/env"
 
 export const getCaptchaChallenge = async (

@@ -16,11 +16,7 @@ const authApi = {
     return result.data.result
   },
 
-  validateTotp: async (
-    totpCode: string,
-    authToken: string,
-    customHeaders?: object,
-  ) => {
+  validateTotp: async (totpCode: string, authToken: string, customHeaders?: object) => {
     const response = await axiosInstance.post(
       "/totp/validate",
       {
