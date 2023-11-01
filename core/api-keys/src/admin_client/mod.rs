@@ -1,19 +1,15 @@
 mod account_details;
 mod config;
-mod convert;
 mod error;
 mod oauth_grant;
-mod queries;
 
 use std::str::FromStr;
 
-use graphql_client::{GraphQLQuery, Response};
 use reqwest::{header::HeaderName, header::HeaderValue, Client as ReqwestClient, Method};
 
 pub use account_details::*;
 pub use config::*;
 pub use error::*;
-pub use queries::*;
 
 use self::oauth_grant::OauthGrant;
 
@@ -45,34 +41,18 @@ impl AdminClient {
         &self,
         user_id: String,
     ) -> Result<AccountDetails, AdminClientError> {
-        let variables = account_details_by_user_id::Variables { user_id };
-        let response = AdminClient::gql_request::<AccountDetailsByUserId, _>(
-            &self.client,
-            &self.config.admin_api,
-            variables,
-        )
-        .await?;
+        let variables = AccountDetailsVariables { user_id };
 
-        let response = response
-            .data
-            .ok_or_else(|| AdminClientError::GraphQLNested {
-                message: "Empty `data` in response".to_string(),
-                path: None,
-            })?;
+        let json = AccountDetails::get_gql_request(variables);
 
-        AccountDetails::try_from(response)
-    }
+        let response = self
+            .client
+            .request(Method::POST, &self.config.admin_api)
+            .json(&json)
+            .send()
+            .await?;
+        let response = response.json::<AccountDetailsResponse>().await?;
 
-    async fn gql_request<Q: GraphQLQuery, U: reqwest::IntoUrl>(
-        client: &ReqwestClient,
-        url: U,
-        variables: Q::Variables,
-    ) -> Result<Response<Q::ResponseData>, AdminClientError> {
-        let body = Q::build_query(variables);
-        let response = client.request(Method::POST, url).json(&body).send().await?;
-
-        let response = response.json::<Response<Q::ResponseData>>().await?;
-
-        Ok(response)
+        Ok(AccountDetails::from(response))
     }
 }
