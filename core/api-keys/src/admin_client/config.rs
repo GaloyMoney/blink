@@ -2,13 +2,10 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct AdminClientConfig {
-    #[serde(default)]
-    pub admin_api: String,
-    #[serde(default)]
-    pub hydra_api: String,
+    #[serde(default = "default_admin_api")]
+    pub admin_api: String, // URL type?
+}
 
-    #[serde(default)]
-    pub client_id: String,
-    #[serde(default)]
-    pub client_secret: String,
+fn default_admin_api() -> String {
+    "local admin endpoint".to_string()
 }

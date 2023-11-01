@@ -1,18 +1,21 @@
 use serde::{Deserialize, Serialize};
 
-use crate::admin_client::AdminClientConfig;
+use crate::admin_client::{AdminClientConfig, OAuthGrantConfig};
+use crate::graphql::ServerConfig;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
     pub admin: AdminClientConfig,
+    #[serde(default)]
+    pub hydra: OAuthGrantConfig,
+    #[serde(default)]
+    pub server: ServerConfig,
 }
 
 pub struct EnvOverride {
     pub client_id: String,
     pub client_secret: String,
-    pub admin_api: String,
-    pub hydra_api: String,
 }
 
 impl Config {
@@ -20,16 +23,12 @@ impl Config {
         EnvOverride {
             client_id,
             client_secret,
-            admin_api,
-            hydra_api,
         }: EnvOverride,
     ) -> anyhow::Result<Self> {
         let mut config: Config = Config::default();
 
         config.admin.client_id = client_id;
         config.admin.client_secret = client_secret;
-        config.admin.hydra_api = hydra_api;
-        config.admin.admin_api = admin_api;
 
         Ok(config)
     }

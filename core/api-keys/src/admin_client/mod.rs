@@ -10,49 +10,60 @@ use reqwest::{header::HeaderName, header::HeaderValue, Client as ReqwestClient, 
 pub use account_details::*;
 pub use config::*;
 pub use error::*;
+pub use oauth_grant::OAuthGrantConfig;
 
-use self::oauth_grant::OauthGrant;
+use self::oauth_grant::OAuthGrant;
 
+#[derive(Debug, Clone)]
 pub struct AdminClient {
     config: AdminClientConfig,
-    client: ReqwestClient,
+    grant: OAuthGrant,
 }
 
 impl AdminClient {
-    pub async fn connect(config: AdminClientConfig) -> Result<Self, AdminClientError> {
-        let oauth_grant = OauthGrant::new(config.clone()).validate().await?;
-        let oauth2_token = oauth_grant.access_token()?;
+    pub fn new(config: AdminClientConfig, oauth_config: OAuthGrantConfig) -> Self {
+        Self {
+            config,
+            grant: OAuthGrant::new(oauth_config),
+        }
+    }
 
-        let client = ReqwestClient::builder()
-            .use_rustls_tls()
-            .default_headers(
-                std::iter::once((
-                    HeaderName::from_str("Oauth2-Token").unwrap(),
-                    HeaderValue::from_str(&oauth2_token).unwrap(),
-                ))
-                .collect(),
-            )
-            .build()?;
+    async fn connect(config: AdminClientConfig) -> Result<Self, AdminClientError> {
+        // let oauth_grant = OauthGrant::new(config.clone()).validate().await?;
+        // let oauth2_token = oauth_grant.access_token()?;
 
-        Ok(Self { client, config })
+        // let client = ReqwestClient::builder()
+        //     .use_rustls_tls()
+        //     .default_headers(
+        //         std::iter::once((
+        //             HeaderName::from_str("Oauth2-Token").unwrap(),
+        //             HeaderValue::from_str(&oauth2_token).unwrap(),
+        //         ))
+        //         .collect(),
+        //     )
+        //     .build()?;
+
+        // Ok(Self { client, config })
+        unimplemented!()
     }
 
     pub async fn get_account_details(
         &self,
         user_id: String,
     ) -> Result<AccountDetails, AdminClientError> {
-        let variables = AccountDetailsVariables { user_id };
+        unimplemented!()
+        // let variables = AccountDetailsVariables { user_id };
 
-        let json = AccountDetails::get_gql_request(variables);
+        // let json = AccountDetails::get_gql_request(variables);
 
-        let response = self
-            .client
-            .request(Method::POST, &self.config.admin_api)
-            .json(&json)
-            .send()
-            .await?;
-        let response = response.json::<AccountDetailsResponse>().await?;
+        // let response = self
+        //     .client
+        //     .request(Method::POST, &self.config.admin_api)
+        //     .json(&json)
+        //     .send()
+        //     .await?;
+        // let response = response.json::<AccountDetailsResponse>().await?;
 
-        Ok(AccountDetails::from(response))
+        // Ok(AccountDetails::from(response))
     }
 }

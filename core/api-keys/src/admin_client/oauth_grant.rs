@@ -1,15 +1,25 @@
 use chrono::Utc;
 
 use reqwest::{header, Client as ReqwestClient};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use super::{AdminClientConfig, AdminClientError};
 
-#[derive(Default)]
-pub struct OauthGrant {
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+pub struct OAuthGrantConfig {
+    #[serde(default)] // add default
+    pub hydra_api: String,
+    #[serde(default)]
+    pub client_id: String,
+    #[serde(default)]
+    pub client_secret: String,
+}
+
+#[derive(Default, Clone)]
+pub struct OAuthGrant {
     access_token: Option<String>,
     expires_at: Option<chrono::DateTime<Utc>>,
-    config: AdminClientConfig,
+    config: OAuthGrantConfig,
 }
 
 #[derive(Deserialize)]
@@ -18,8 +28,8 @@ struct HydraApiResponse {
     expires_in: i64,
 }
 
-impl OauthGrant {
-    pub fn new(config: AdminClientConfig) -> Self {
+impl OAuthGrant {
+    pub fn new(config: OAuthGrantConfig) -> Self {
         Self {
             config,
             ..Default::default()
