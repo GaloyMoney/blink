@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: channel for phone login consent (#3478)...'
-      sha: 4127a6940ac734d24f2d013fcda188a5402a106b
+      commitTitle: 'feat: api-keys admin client (#3476)...'
+      sha: 1359ecd58e5dfeabab6e56503ec6f05a1a243998
       tags:
-      - 0.15.75-2-g4127a6940
+      - 0.15.76-2-g1359ecd58
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: channel for phone login consent (#3478)...'
-      sha: 4127a6940ac734d24f2d013fcda188a5402a106b
+      commitTitle: 'feat: api-keys admin client (#3476)...'
+      sha: 1359ecd58e5dfeabab6e56503ec6f05a1a243998
       tags:
-      - 0.15.75-2-g4127a6940
+      - 0.15.76-2-g1359ecd58
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: channel for phone login consent (#3478)...'
-      sha: 4127a6940ac734d24f2d013fcda188a5402a106b
+      commitTitle: 'feat: api-keys admin client (#3476)...'
+      sha: 1359ecd58e5dfeabab6e56503ec6f05a1a243998
       tags:
-      - 0.15.75-2-g4127a6940
+      - 0.15.76-2-g1359ecd58
     path: ./
   path: ./graphql
 kind: LockConfig
