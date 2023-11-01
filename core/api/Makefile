@@ -59,9 +59,12 @@ reset-deps-integration: clean-deps start-deps-integration
 test: unit legacy-integration integration
 
 test-migrate:
+	mkdir -p tmp/workspace
+	cp ../../pnpm-*.yaml ../../package.json tmp/workspace/
 	docker compose down -v -t 3
 	docker compose build
 	docker compose -f docker-compose.yml up mongodb-migrate --exit-code-from mongodb-migrate
+	rm -r tmp/workspace
 
 unit:
 	pnpm run test:unit
