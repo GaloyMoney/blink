@@ -120,6 +120,54 @@ create_new_lnd_onchain_address() {
   bitcoin_cli sendtoaddress "$on_chain_address_created_2" "$amount"
   retry 15 1 check_for_broadcast "$token_name" "$on_chain_address_created_2" 1
 
+  # Check pending transactions for address 1
+
+  address_1_pending_txns_variables=$(
+  jq -n \
+  --arg address "$on_chain_address_created_1" \
+  '{"address": $address}'
+  )
+  exec_graphql "$token_name" 'pending-transactions-by-address' "$address_1_pending_txns_variables"
+  pending_txns_for_address_1=$(
+    graphql_output '
+      .data.me.defaultAccount.wallets[]
+      | select(.__typename == "BTCWallet")
+      .pendingTransactionsByAddress'
+  )
+  pending_txns_for_address_1_length="$(echo $pending_txns_for_address_1 | jq -r 'length')"
+  [[ "$pending_txns_for_address_1_length" == "1" ]] || exit 1
+  address_1_from_pending_txns="$(echo $pending_txns_for_address_1 | jq -r '.[0].initiationVia.address')"
+  [[ "$address_1_from_pending_txns" == "$on_chain_address_created_1" ]]
+
+  # Check pending transactions for address 2
+
+  address_2_pending_txns_variables=$(
+  jq -n \
+  --arg address "$on_chain_address_created_2" \
+  '{"address": $address}'
+  )
+  exec_graphql "$token_name" 'pending-transactions-by-address' "$address_2_pending_txns_variables"
+  pending_txns_for_address_2=$(
+    graphql_output '
+      .data.me.defaultAccount.wallets[]
+      | select(.__typename == "BTCWallet")
+      .pendingTransactionsByAddress'
+  )
+  pending_txns_for_address_2_length="$(echo $pending_txns_for_address_2 | jq -r 'length')"
+  [[ "$pending_txns_for_address_2_length" == "1" ]] || exit 1
+  address_2_from_pending_txns="$(echo $pending_txns_for_address_2 | jq -r '.[0].initiationVia.address')"
+  [[ "$address_2_from_pending_txns" == "$on_chain_address_created_2" ]]
+
+  # Check pending transactions for account
+
+  exec_graphql "$token_name" 'pending-transactions'
+  pending_txns_for_account=$(
+    graphql_output '
+      .data.me.defaultAccount.pendingTransactions'
+  )
+  pending_txns_for_account_length="$(echo $pending_txns_for_account | jq -r 'length')"
+  [[ "$pending_txns_for_account_length" == "2" ]] || exit 1
+  
   # Mine transactions
   bitcoin_cli -generate 2
   retry 15 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_address_created_1" 2
@@ -162,6 +210,16 @@ create_new_lnd_onchain_address() {
   [[ "$txns_for_address_2_length" == "1" ]] || exit 1
   address_2_from_txns="$(echo $txns_for_address_2 | jq -r '.[0].node.initiationVia.address')"
   [[ "$address_2_from_txns" == "$on_chain_address_created_2" ]]
+
+  # Ensure no pending transactions for account
+
+  exec_graphql "$token_name" 'pending-transactions'
+  pending_txns_for_account=$(
+    graphql_output '
+      .data.me.defaultAccount.pendingTransactions'
+  )
+  pending_txns_for_account_length="$(echo $pending_txns_for_account | jq -r 'length')"
+  [[ "$pending_txns_for_account_length" == "0" ]] || exit 1
 }
 
 @test "onchain-receive: usd wallet, can create new address if current one is unused" {
@@ -216,8 +274,49 @@ create_new_lnd_onchain_address() {
   # Execute onchain send and check for transaction
   bitcoin_cli sendtoaddress "$on_chain_address_created" "$amount"
   retry 15 1 check_for_broadcast "$token_name" "$on_chain_address_created" 1
+
+  # Check pending transactions for address
+
+  address_pending_txns_variables=$(
+  jq -n \
+  --arg address "$on_chain_address_created" \
+  '{"address": $address}'
+  )
+  exec_graphql "$token_name" 'pending-transactions-by-address' "$address_pending_txns_variables"
+  pending_txns_for_address=$(
+    graphql_output '
+      .data.me.defaultAccount.wallets[]
+      | select(.__typename == "UsdWallet")
+      .pendingTransactionsByAddress'
+  )
+  pending_txns_for_address_length="$(echo $pending_txns_for_address | jq -r 'length')"
+  [[ "$pending_txns_for_address_length" == "1" ]] || exit 1
+  address_from_pending_txns="$(echo $pending_txns_for_address | jq -r '.[0].initiationVia.address')"
+  [[ "$address_from_pending_txns" == "$on_chain_address_created" ]]
+
+  # Check pending transactions for account
+
+  exec_graphql "$token_name" 'pending-transactions'
+  pending_txns_for_account=$(
+    graphql_output '
+      .data.me.defaultAccount.pendingTransactions'
+  )
+  pending_txns_for_account_length="$(echo $pending_txns_for_account | jq -r 'length')"
+  [[ "$pending_txns_for_account_length" == "1" ]] || exit 1
+
   bitcoin_cli -generate 2
   retry 15 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_address_created" 1
+
+  # Ensure no pending transactions for account
+
+  exec_graphql "$token_name" 'pending-transactions'
+  pending_txns_for_account=$(
+    graphql_output '
+      .data.me.defaultAccount.pendingTransactions'
+  )
+  pending_txns_for_account_length="$(echo $pending_txns_for_account | jq -r 'length')"
+  [[ "$pending_txns_for_account_length" == "0" ]] || exit 1
+  
 }
 
 @test "onchain-receive: process received batch transaction" {

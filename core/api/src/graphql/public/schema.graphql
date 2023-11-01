@@ -7,6 +7,7 @@ interface Account {
   level: AccountLevel!
   limits: AccountLimits!
   notificationSettings: NotificationSettings!
+  pendingTransactions(walletIds: [WalletId]): [Transaction!]!
   realtimePrice: RealtimePrice!
   transactions(
     """Returns the items in the list that come after the specified cursor."""
@@ -126,6 +127,11 @@ type BTCWallet implements Wallet {
 
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
+  pendingTransactions: [Transaction!]!
+  pendingTransactionsByAddress(
+    """Returns the items that include this address."""
+    address: OnChainAddress!
+  ): [Transaction!]!
   transactionById(transactionId: ID!): Transaction!
 
   """A list of BTC transactions associated with this wallet."""
@@ -227,6 +233,7 @@ type ConsumerAccount implements Account {
   level: AccountLevel!
   limits: AccountLimits!
   notificationSettings: NotificationSettings!
+  pendingTransactions(walletIds: [WalletId]): [Transaction!]!
 
   """List the quiz questions of the consumer account"""
   quiz: [Quiz!]!
@@ -1269,6 +1276,11 @@ type UsdWallet implements Wallet {
 
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
+  pendingTransactions: [Transaction!]!
+  pendingTransactionsByAddress(
+    """Returns the items that include this address."""
+    address: OnChainAddress!
+  ): [Transaction!]!
   transactionById(transactionId: ID!): Transaction!
   transactions(
     """Returns the items in the list that come after the specified cursor."""
@@ -1510,6 +1522,25 @@ interface Wallet {
     paymentHash: PaymentHash!
   ): Invoice!
   pendingIncomingBalance: SignedAmount!
+
+  """
+  Pending OnChain transactions. When transactions
+  are confirmed they will receive a new id and be found in the transactions
+  list. Transactions are ordered anti-chronologically,
+  ie: the newest transaction will be first
+  """
+  pendingTransactions: [Transaction!]!
+
+  """
+  Pending OnChain transactions. When transactions
+  are confirmed they will receive a new id and be found in the transactions
+  list. Transactions are ordered anti-chronologically,
+  ie: the newest transaction will be first
+  """
+  pendingTransactionsByAddress(
+    """Returns the items that include this address."""
+    address: OnChainAddress!
+  ): [Transaction!]!
   transactionById(transactionId: ID!): Transaction!
 
   """
