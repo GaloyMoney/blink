@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: debug image build'
-      sha: a1998c6809aa5a2f00bca62417a51c20194ae6c2
+      commitTitle: 'ci: setup initial top level bats (#3454)...'
+      sha: 0260d6bf606e0a238ca834ae8a92e8eff425586a
       tags:
-      - 0.15.72-3-ga1998c680
+      - 0.15.73-1-g0260d6bf6
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: debug image build'
-      sha: a1998c6809aa5a2f00bca62417a51c20194ae6c2
+      commitTitle: 'ci: setup initial top level bats (#3454)...'
+      sha: 0260d6bf606e0a238ca834ae8a92e8eff425586a
       tags:
-      - 0.15.72-3-ga1998c680
+      - 0.15.73-1-g0260d6bf6
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: debug image build'
-      sha: a1998c6809aa5a2f00bca62417a51c20194ae6c2
+      commitTitle: 'ci: setup initial top level bats (#3454)...'
+      sha: 0260d6bf606e0a238ca834ae8a92e8eff425586a
       tags:
-      - 0.15.72-3-ga1998c680
+      - 0.15.73-1-g0260d6bf6
     path: ./
   path: ./graphql
 kind: LockConfig
