@@ -4,9 +4,11 @@ use thiserror::Error;
 pub enum AdminClientError {
     #[error("AdminClientError - Reqwest: {0}")]
     Reqwest(#[from] reqwest::Error),
-    #[error("GaloyClientError - GraphQLNested {{ message: {message:?}, path: {path:?} }}")]
+    #[error("AdminClientError - GraphQLNested {{ message: {message:?}, path: {path:?} }}")]
     GraphQLNested {
         message: String,
         path: Option<Vec<Option<String>>>,
     },
+    #[error("AdminClientError - Access Token is Invalid")]
+    InvalidToken,
 }

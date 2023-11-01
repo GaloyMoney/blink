@@ -2,6 +2,7 @@ mod account_details;
 mod config;
 mod convert;
 mod error;
+mod oauth_grant;
 mod queries;
 
 use std::str::FromStr;
@@ -14,19 +15,24 @@ pub use config::*;
 pub use error::*;
 pub use queries::*;
 
+use self::oauth_grant::OauthGrant;
+
 pub struct AdminClient {
-    client: ReqwestClient,
     config: AdminClientConfig,
+    client: ReqwestClient,
 }
 
 impl AdminClient {
-    pub fn connect(config: AdminClientConfig) -> Result<Self, AdminClientError> {
+    pub async fn connect(config: AdminClientConfig) -> Result<Self, AdminClientError> {
+        let oauth_grant = OauthGrant::new(config.clone()).validate().await?;
+        let oauth2_token = oauth_grant.access_token()?;
+
         let client = ReqwestClient::builder()
             .use_rustls_tls()
             .default_headers(
                 std::iter::once((
                     HeaderName::from_str("Oauth2-Token").unwrap(),
-                    HeaderValue::from_str(&config.client_id).unwrap(), // TO BE FIXED
+                    HeaderValue::from_str(&oauth2_token).unwrap(),
                 ))
                 .collect(),
             )
@@ -42,7 +48,7 @@ impl AdminClient {
         let variables = account_details_by_user_id::Variables { user_id };
         let response = AdminClient::gql_request::<AccountDetailsByUserId, _>(
             &self.client,
-            &self.config.api,
+            &self.config.admin_api,
             variables,
         )
         .await?;

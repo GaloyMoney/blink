@@ -737,6 +737,62 @@ cargo.rust_library(
 )
 
 alias(
+    name = "chrono",
+    actual = ":chrono-0.4.31",
+    visibility = ["PUBLIC"],
+)
+
+http_archive(
+    name = "chrono-0.4.31.crate",
+    sha256 = "7f2c685bad3eb3d45a01354cedb7d5faa66194d1d58ba6e267a8de788f79db38",
+    strip_prefix = "chrono-0.4.31",
+    urls = ["https://crates.io/api/v1/crates/chrono/0.4.31/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "chrono-0.4.31",
+    srcs = [":chrono-0.4.31.crate"],
+    crate = "chrono",
+    crate_root = "chrono-0.4.31.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "android-tzdata",
+        "clock",
+        "iana-time-zone",
+        "serde",
+        "std",
+        "winapi",
+        "windows-targets",
+    ],
+    platform = {
+        "linux-arm64": dict(
+            deps = [":iana-time-zone-0.1.58"],
+        ),
+        "linux-x86_64": dict(
+            deps = [":iana-time-zone-0.1.58"],
+        ),
+        "macos-arm64": dict(
+            deps = [":iana-time-zone-0.1.58"],
+        ),
+        "macos-x86_64": dict(
+            deps = [":iana-time-zone-0.1.58"],
+        ),
+        "windows-gnu": dict(
+            deps = [":windows-targets-0.48.5"],
+        ),
+        "windows-msvc": dict(
+            deps = [":windows-targets-0.48.5"],
+        ),
+    },
+    visibility = [],
+    deps = [
+        ":num-traits-0.2.17",
+        ":serde-1.0.190",
+    ],
+)
+
+alias(
     name = "clap",
     actual = ":clap-4.4.7",
     visibility = ["PUBLIC"],
@@ -891,6 +947,23 @@ cargo.rust_library(
         ":memchr-2.6.4",
         ":unreachable-1.0.0",
     ],
+)
+
+http_archive(
+    name = "core-foundation-sys-0.8.4.crate",
+    sha256 = "e496a50fda8aacccc86d7529e2c1e0892dbd0f898a6b5645b5561b89c3210efa",
+    strip_prefix = "core-foundation-sys-0.8.4",
+    urls = ["https://crates.io/api/v1/crates/core-foundation-sys/0.8.4/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "core-foundation-sys-0.8.4",
+    srcs = [":core-foundation-sys-0.8.4.crate"],
+    crate = "core_foundation_sys",
+    crate_root = "core-foundation-sys-0.8.4.crate/src/lib.rs",
+    edition = "2015",
+    visibility = [],
 )
 
 http_archive(
@@ -1844,6 +1917,38 @@ cargo.rust_library(
         ":tokio-1.33.0",
         ":tokio-rustls-0.24.1",
     ],
+)
+
+http_archive(
+    name = "iana-time-zone-0.1.58.crate",
+    sha256 = "8326b86b6cff230b97d0d312a6c40a60726df3332e721f72a1b035f451663b20",
+    strip_prefix = "iana-time-zone-0.1.58",
+    urls = ["https://crates.io/api/v1/crates/iana-time-zone/0.1.58/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "iana-time-zone-0.1.58",
+    srcs = [":iana-time-zone-0.1.58.crate"],
+    crate = "iana_time_zone",
+    crate_root = "iana-time-zone-0.1.58.crate/src/lib.rs",
+    edition = "2018",
+    features = ["fallback"],
+    platform = {
+        "macos-arm64": dict(
+            deps = [":core-foundation-sys-0.8.4"],
+        ),
+        "macos-x86_64": dict(
+            deps = [":core-foundation-sys-0.8.4"],
+        ),
+        "windows-gnu": dict(
+            deps = [":windows-core-0.51.1"],
+        ),
+        "windows-msvc": dict(
+            deps = [":windows-core-0.51.1"],
+        ),
+    },
+    visibility = [],
 )
 
 http_archive(
@@ -4301,6 +4406,7 @@ cargo.rust_binary(
         ":async-graphql-6.0.9",
         ":async-graphql-axum-6.0.9",
         ":axum-0.6.20",
+        ":chrono-0.4.31",
         ":clap-4.4.7",
         ":graphql_client-0.13.0",
         ":reqwest-0.11.20",
@@ -5251,6 +5357,25 @@ third_party_rust_prebuilt_cxx_library(
     name = "winapi-x86_64-pc-windows-gnu-0.4.0-extra_libraries-libwinapi_shell32.a",
     static_lib = ":winapi-x86_64-pc-windows-gnu-0.4.0.crate[lib/libwinapi_shell32.a]",
     visibility = [],
+)
+
+http_archive(
+    name = "windows-core-0.51.1.crate",
+    sha256 = "f1f8cf84f35d2db49a46868f947758c7a1138116f7fac3bc844f43ade1292e64",
+    strip_prefix = "windows-core-0.51.1",
+    urls = ["https://crates.io/api/v1/crates/windows-core/0.51.1/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "windows-core-0.51.1",
+    srcs = [":windows-core-0.51.1.crate"],
+    crate = "windows_core",
+    crate_root = "windows-core-0.51.1.crate/src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+    visibility = [],
+    deps = [":windows-targets-0.48.5"],
 )
 
 http_archive(

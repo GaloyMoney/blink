@@ -1,0 +1,5 @@
+admin:
+  client_id: CLIENT-ID
+  client_secret: CLIENT-SECRET
+  hydra_api: http://localhost:4455
+  admin_api: http://localhost:4001/graphql
