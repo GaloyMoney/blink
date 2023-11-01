@@ -1,34 +1,18 @@
-is_ci=("ci" in sys.argv)
-
 config.define_string_list("test")
+config.define_string_list("to-run", args = True)
 cfg = config.parse()
 
-groups = {
-    "auth": [
-        "oathkeeper",
-        "hydra",
-        "hydra-migrate",
-        "hydra-pg",
-        "kratos",
-        "kratos-pg",
-    ],
-    "core": [
-        "apollo-router",
-        "mongodb",
-        "redis",
-    ],
-    "bitcoin": [
-        "lnd1",
-        "bria",
-        "postgres-bria",
-        "fulcrum",
-        "bitcoind-signer",
-        "bitcoind",
-    ],
-    "tracing": [
-      "otel-agent",
-    ],
-}
+is_ci=("ci" in sys.argv)
+
+def _buck2_dep_inputs(target):
+    cmd = [
+        "buck2",
+        "uquery",
+        "\"inputs(deps('{}'))\"".format(target),
+    ]
+    file_paths = str(local(" ".join(cmd))).splitlines()
+
+    return file_paths
 
 dashboard_target = "//apps/dashboard:dev"
 if is_ci:
@@ -43,6 +27,7 @@ local_resource(
       "NEXTAUTH_SECRET": "secret",
       "PORT": "3001",
     },
+    deps = _buck2_dep_inputs(dashboard_target),
     resource_deps = [
         "hydra-dashboard",
     ],
@@ -99,6 +84,7 @@ local_resource(
     labels = ["auth"],
     cmd = "buck2 build {}".format(consent_target),
     serve_cmd = "buck2 run {}".format(consent_target),
+    deps = _buck2_dep_inputs(consent_target),
     resource_deps = [
         "apollo-router",
         "hydra",
@@ -164,9 +150,13 @@ local_resource(
             port = 4012,
         ),
     ),
+    deps = _buck2_dep_inputs(api_target),
     resource_deps = [
         "init-onchain",
         "lnd1",
+        "redis",
+        "mongodb",
+        "oathkeeper",
     ]
 )
 
@@ -199,13 +189,44 @@ local_resource(
     deps = _buck2_dep_inputs(api_keys_target),
 )
 
+docker_groups = {
+    "auth": [
+        "oathkeeper",
+        "hydra",
+        "hydra-migrate",
+        "hydra-pg",
+        "kratos",
+        "kratos-pg",
+    ],
+    "core": [
+        "apollo-router",
+        "mongodb",
+        "redis",
+    ],
+    "bitcoin": [
+        "lnd1",
+        "bria",
+        "bitcoind",
+    ],
+    "tracing": [
+      "otel-agent",
+    ],
+}
+
+to_run = cfg.get("to-run", [])
+if to_run != []:
+    enabled_resources = []
+    for svc in to_run:
+      enabled_resources.append(svc)
+    config.set_enabled_resources(enabled_resources)
+
 docker_compose("./docker-compose.deps.yml", project_name = "galoy-dev")
 
-for service in groups["bitcoin"]:
+for service in docker_groups["bitcoin"]:
     dc_resource(service, labels = ["bitcoin"])
-for service in groups["tracing"]:
+for service in docker_groups["tracing"]:
     dc_resource(service, labels = ["tracing"])
-for service in groups["core"]:
+for service in docker_groups["core"]:
     dc_resource(service, labels = ["core"])
-for service in groups["auth"]:
+for service in docker_groups["auth"]:
     dc_resource(service, labels = ["auth"])
