@@ -18,6 +18,7 @@ const CaptchaChallengeComponent: React.FC<{
     login_challenge: string
     phone: string
     remember: string
+    channel: string
   }
 }> = ({ id, challenge, formData }) => {
   const captchaHandler = useCallback(

@@ -1,5 +1,4 @@
 "use server"
-import { isAxiosError } from "axios"
 import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { isValidPhoneNumber } from "libphonenumber-js"
@@ -9,6 +8,7 @@ import { GetCaptchaChallengeResponse, SendPhoneCodeResponse } from "./phone-logi
 import { LoginType, SubmitValue } from "@/app/index.types"
 import authApi from "@/services/galoy-auth"
 import { hydraClient } from "@/services/hydra"
+import { isAxiosError } from "axios"
 import { env } from "@/env"
 
 export const getCaptchaChallenge = async (
@@ -24,11 +24,18 @@ export const getCaptchaChallenge = async (
   const login_challenge = form.get("login_challenge")
   const remember = form.get("remember") === "1"
   const submitValue = form.get("submit")
+  let channel = form.get("channel")
 
-  if (!submitValue || !login_challenge || typeof login_challenge !== "string") {
-    throw new Error("submitValue not provided")
+  if (
+    !submitValue ||
+    !login_challenge ||
+    !channel ||
+    typeof channel !== "string" ||
+    typeof login_challenge !== "string"
+  ) {
+    throw new Error("Invalid Values provided")
   }
-
+  channel = channel.toUpperCase()
   if (submitValue === SubmitValue.denyAccess) {
     console.log("User denied access")
     const response = await hydraClient.rejectOAuth2LoginRequest({
@@ -63,6 +70,7 @@ export const getCaptchaChallenge = async (
   }
 
   const res = await authApi.requestPhoneCaptcha(customHeaders)
+
   const id = res.id
   const challenge = res.challengeCode
 
@@ -107,6 +115,7 @@ export const sendPhoneCode = async (
     login_challenge: string
     phone: string
     remember: string
+    channel: string
   },
 ): Promise<SendPhoneCodeResponse> => {
   const headersList = headers()
@@ -117,6 +126,7 @@ export const sendPhoneCode = async (
   const login_challenge = formData.login_challenge
   const phone = formData.phone
   const remember = String(formData.remember) === "true"
+  const channel = formData.channel ?? "SMS"
 
   let res
   try {
@@ -125,6 +135,7 @@ export const sendPhoneCode = async (
       result.geetest_challenge,
       result.geetest_validate,
       result.geetest_seccode,
+      channel,
       customHeaders,
     )
   } catch (err) {

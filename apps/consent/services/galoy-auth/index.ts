@@ -20,9 +20,7 @@ const authApi = {
     totpCode: string,
     authToken: string,
     customHeaders?: object,
-    /* eslint @typescript-eslint/ban-ts-comment: "off" */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): Promise<any> => {
+  ) => {
     const response = await axiosInstance.post(
       "/totp/validate",
       {
@@ -71,9 +69,9 @@ const authApi = {
     challengeCode: string,
     validationCode: string,
     secCode: string,
+    channel: string,
     customHeaders?: object,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): Promise<any> => {
+  ) => {
     const response = await axiosInstance.post(
       "/phone/code",
       {
@@ -81,6 +79,7 @@ const authApi = {
         challengeCode,
         validationCode,
         secCode,
+        channel,
       },
       customHeaders ? { headers: customHeaders } : undefined,
     )
