@@ -29,6 +29,8 @@ import "react-phone-number-input/style.css"
 // eslint-disable-next-line import/no-unassigned-import
 import "./phone-input-styles.css"
 
+import SelectComponent from "@/app/components/select"
+
 interface LoginFormProps {
   login_challenge: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,6 +53,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ login_challenge, countryCodes }) 
           login_challenge: null,
           phone: null,
           remember: null,
+          channel: null,
         },
       },
     },
@@ -98,6 +101,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ login_challenge, countryCodes }) 
           name="phone"
           onChange={handlePhoneNumberChange}
         />
+        <SelectComponent
+          id="channel"
+          label="Channel"
+          name="channel"
+          options={["SMS", "WhatsApp"]}
+        ></SelectComponent>
 
         <div className="flex items-center mb-4">
           <label className="text-[var(--inputColor)] text-sm flex items-center">
