@@ -101,6 +101,8 @@ dependencies = [
  "clap",
  "graphql_client",
  "reqwest",
+ "serde",
+ "thiserror",
  "tokio",
 ]
 

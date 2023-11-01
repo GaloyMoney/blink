@@ -3767,6 +3767,12 @@ cargo.rust_library(
     ],
 )
 
+alias(
+    name = "serde",
+    actual = ":serde-1.0.190",
+    visibility = ["PUBLIC"],
+)
+
 http_archive(
     name = "serde-1.0.190.crate",
     sha256 = "91d3c334ca1ee894a2c6f6ad698fe8c435b76d504b13d436f0685d648d6d96f7",
@@ -4268,9 +4274,17 @@ cargo.rust_binary(
         ":clap-4.4.7",
         ":graphql_client-0.13.0",
         ":reqwest-0.11.20",
+        ":serde-1.0.190",
+        ":thiserror-1.0.50",
         ":tokio-1.33.0",
         ":version_check-0.9.4",
     ],
+)
+
+alias(
+    name = "thiserror",
+    actual = ":thiserror-1.0.50",
+    visibility = ["PUBLIC"],
 )
 
 http_archive(
