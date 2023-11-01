@@ -4,8 +4,9 @@ use thiserror::Error;
 pub enum AdminClientError {
     #[error("AdminClientError - Reqwest: {0}")]
     Reqwest(#[from] reqwest::Error),
-    #[error("AdminClientError - InvalidHeaderValue: {0}")]
-    InvalidHeaderValue(#[from] reqwest::header::InvalidHeaderValue),
-    #[error("AdminClientError - InvalidHeaderName: {0}")]
-    InvalidHeaderName(#[from] reqwest::header::InvalidHeaderName),
+    #[error("GaloyClientError - GraphQLNested {{ message: {message:?}, path: {path:?} }}")]
+    GraphQLNested {
+        message: String,
+        path: Option<Vec<Option<String>>>,
+    },
 }
