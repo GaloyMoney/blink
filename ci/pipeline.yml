@@ -293,7 +293,7 @@ jobs:
           outputs:
             - name: image
           params:
-            CONTEXT: repo/core/api
+            CONTEXT: repo
             BUILD_ARGS_FILE: repo/.build-args
             DOCKERFILE: "repo/core/api/Dockerfile-debug"
           run:
