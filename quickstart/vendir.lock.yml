@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: render super graph with keys (#3468)...'
-      sha: f657ebf3a206154d3f3693c8d8ac4270561ad62a
+      commitTitle: 'chore: bump @ory/client from 1.2.11 to 1.2.16 (#3466)...'
+      sha: 31fac645a13ff3f32703288d1dc629571f81fde0
       tags:
-      - 0.15.69-2-gf657ebf3a
+      - 0.15.70-2-g31fac645a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: render super graph with keys (#3468)...'
-      sha: f657ebf3a206154d3f3693c8d8ac4270561ad62a
+      commitTitle: 'chore: bump @ory/client from 1.2.11 to 1.2.16 (#3466)...'
+      sha: 31fac645a13ff3f32703288d1dc629571f81fde0
       tags:
-      - 0.15.69-2-gf657ebf3a
+      - 0.15.70-2-g31fac645a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: render super graph with keys (#3468)...'
-      sha: f657ebf3a206154d3f3693c8d8ac4270561ad62a
+      commitTitle: 'chore: bump @ory/client from 1.2.11 to 1.2.16 (#3466)...'
+      sha: 31fac645a13ff3f32703288d1dc629571f81fde0
       tags:
-      - 0.15.69-2-gf657ebf3a
+      - 0.15.70-2-g31fac645a
     path: ./
   path: ./graphql
 kind: LockConfig
