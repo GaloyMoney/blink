@@ -9,6 +9,11 @@ tilt = rule(
             default = "Tiltfile",
             doc = """The Tiltfile to run.""",
         ),
+        "args": attrs.list(
+            attrs.string(),
+            default = [],
+            doc = """Additional arguments passed as <Tiltfile args>.""",
+        ),
     },
 )
 
@@ -25,14 +30,16 @@ set -euo pipefail
 rootpath="$(git rev-parse --show-toplevel)"
 subcmd="$1"
 tiltfile="$2"
+args=("${@:3}")
 
-tilt "$subcmd" --file "$rootpath"/"$tiltfile"
+tilt "$subcmd" --file "$rootpath"/"$tiltfile" -- "${args[@]}"
 """, is_executable = True)
 
     run_cmd_args = cmd_args([
         script,
         subcmd,
         tiltfile,
+        ctx.attrs.args
     ])
 
     args_file = ctx.actions.write("tilt-args.txt", run_cmd_args)
