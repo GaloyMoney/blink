@@ -1,4 +1,4 @@
-import axios from "axios"
+import { isAxiosError } from "axios"
 
 interface ErrorResponse {
   error: boolean
@@ -14,7 +14,7 @@ const errorMessages: { [key: string]: string } = {
 }
 
 export const handleAxiosError = (err: unknown): ErrorResponse => {
-  if (axios.isAxiosError(err) && err.response) {
+  if (isAxiosError(err) && err.response) {
     const errorCode = err.response?.data?.error?.name
     const errorMessage =
       errorCode && Object.prototype.hasOwnProperty.call(errorMessages, errorCode)
