@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: setup initial top level bats (#3454)...'
-      sha: 0260d6bf606e0a238ca834ae8a92e8eff425586a
+      commitTitle: 'fix: unit test github action (#3477)'
+      sha: 456c8fd87af4998e73494d01cb35d51391aacd07
       tags:
-      - 0.15.73-1-g0260d6bf6
+      - 0.15.74-2-g456c8fd87
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: setup initial top level bats (#3454)...'
-      sha: 0260d6bf606e0a238ca834ae8a92e8eff425586a
+      commitTitle: 'fix: unit test github action (#3477)'
+      sha: 456c8fd87af4998e73494d01cb35d51391aacd07
       tags:
-      - 0.15.73-1-g0260d6bf6
+      - 0.15.74-2-g456c8fd87
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: setup initial top level bats (#3454)...'
-      sha: 0260d6bf606e0a238ca834ae8a92e8eff425586a
+      commitTitle: 'fix: unit test github action (#3477)'
+      sha: 456c8fd87af4998e73494d01cb35d51391aacd07
       tags:
-      - 0.15.73-1-g0260d6bf6
+      - 0.15.74-2-g456c8fd87
     path: ./
   path: ./graphql
 kind: LockConfig
