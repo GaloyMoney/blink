@@ -86,7 +86,7 @@ importers:
         version: 18.2.0(react@18.2.0)
       react-phone-number-input:
         specifier: ^3.3.6
-        version: 3.3.6(react-dom@18.2.0)(react@18.2.0)
+        version: 3.3.7(react-dom@18.2.0)(react@18.2.0)
       react-toastify:
         specifier: ^9.1.3
         version: 9.1.3(react-dom@18.2.0)(react@18.2.0)
@@ -126,7 +126,7 @@ importers:
         version: 18.2.14
       '@types/react-phone-number-input':
         specifier: ^3.0.15
-        version: 3.0.15
+        version: 3.0.16
       autoprefixer:
         specifier: 10.4.16
         version: 10.4.16(postcss@8.4.31)
@@ -418,7 +418,7 @@ importers:
         version: 5.14.1(graphql@16.8.1)
       gt3-server-node-express-sdk:
         specifier: github:GaloyMoney/gt3-server-node-express-bypass#master
-        version: git@github.com+GaloyMoney/gt3-server-node-express-bypass/6559a1a39ef408de3aefa6321934c831edac001e
+        version: git/github.com+GaloyMoney/gt3-server-node-express-bypass/6559a1a39ef408de3aefa6321934c831edac001e
       i18n:
         specifier: ^0.15.1
         version: 0.15.1
@@ -6149,8 +6149,8 @@ packages:
       '@types/react': 18.2.33
     dev: true
 
-  /@types/react-phone-number-input@3.0.15:
-    resolution: {integrity: sha512-3XMPAkfWXcs8tJoyhz4WCxl48cLXi3LPK/8Cg+Pu+2bh8qPIVsvCLcDaTmCffBqhLQOvAiQTlt57gTzwKnb3LA==}
+  /@types/react-phone-number-input@3.0.16:
+    resolution: {integrity: sha512-sMSW0nCf2QmzUUPxdbEgXx07EelUUSqaK4iDrQ/rfi3EwPGeP0rHujUVQZMtG03jUqaf2OHVqs2Jtv6buddT9Q==}
     dependencies:
       '@types/react': 18.2.33
     dev: true
@@ -15397,8 +15397,8 @@ packages:
   /react-is@18.2.0:
     resolution: {integrity: sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==}
 
-  /react-phone-number-input@3.3.6(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-P6q5jSwTyyIPshNhY+JhohjifXwgwLnjsd3IrjQ1vo3ZGlx1ndABXrrfau943iTAaf+tO6os+G6NiJhfHhjLoQ==}
+  /react-phone-number-input@3.3.7(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-/yusEJl2oJA5rTRtny59pf7T1gg/whmfhdZsgrZaL063KEx6FFnmwTskTJ9yR4lYgzj2GyUjXpnA3O9d+ZTHwA==}
     peerDependencies:
       react: '>=16.8'
       react-dom: '>=16.8'
@@ -15406,7 +15406,7 @@ packages:
       classnames: 2.3.2
       country-flag-icons: 1.5.7
       input-format: 0.3.8
-      libphonenumber-js: 1.10.47
+      libphonenumber-js: 1.10.48
       prop-types: 15.8.1
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -17908,7 +17908,7 @@ packages:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
     dev: false
 
-  git@github.com+GaloyMoney/gt3-server-node-express-bypass/6559a1a39ef408de3aefa6321934c831edac001e:
+  git/github.com+GaloyMoney/gt3-server-node-express-bypass/6559a1a39ef408de3aefa6321934c831edac001e:
     resolution: {commit: 6559a1a39ef408de3aefa6321934c831edac001e, repo: git@github.com:GaloyMoney/gt3-server-node-express-bypass.git, type: git}
     name: gt3-server-node-express-sdk
     version: 3.1.0
