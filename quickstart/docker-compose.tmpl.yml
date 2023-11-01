@@ -91,8 +91,8 @@ services:
   mongodb-migrate:
 #@ if mongodb_migrate_image_digest == "local":
     build:
-      context: ../core/api/
-      dockerfile: Dockerfile-migrate
+      context: ..
+      dockerfile: core/api/Dockerfile-migrate
 #@ elif mongodb_migrate_image_digest.startswith("sha256@"):
     image: #@ "us.gcr.io/galoy-org/galoy-app-migrate@" + mongodb_migrate_image_digest.replace("@",":")
 #@ else:
