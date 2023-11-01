@@ -5,5 +5,6 @@ pub struct AdminClientConfig {
     #[serde(default)]
     pub api: String,
     #[serde(default)]
-    pub oauth2_token: String,
+    pub client_id: String,
+    pub client_secret: String,
 }

@@ -26,7 +26,7 @@ impl AdminClient {
             .default_headers(
                 std::iter::once((
                     HeaderName::from_str("Oauth2-Token").unwrap(),
-                    HeaderValue::from_str(&config.oauth2_token).unwrap(),
+                    HeaderValue::from_str(&config.client_id).unwrap(), // TO BE FIXED
                 ))
                 .collect(),
             )

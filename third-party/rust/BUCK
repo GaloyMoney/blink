@@ -3893,6 +3893,36 @@ cargo.rust_library(
     ],
 )
 
+alias(
+    name = "serde_yaml",
+    actual = ":serde_yaml-0.9.27",
+    visibility = ["PUBLIC"],
+)
+
+http_archive(
+    name = "serde_yaml-0.9.27.crate",
+    sha256 = "3cc7a1570e38322cfe4154732e5110f887ea57e22b76f4bfd32b5bdd3368666c",
+    strip_prefix = "serde_yaml-0.9.27",
+    urls = ["https://crates.io/api/v1/crates/serde_yaml/0.9.27/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "serde_yaml-0.9.27",
+    srcs = [":serde_yaml-0.9.27.crate"],
+    crate = "serde_yaml",
+    crate_root = "serde_yaml-0.9.27.crate/src/lib.rs",
+    edition = "2021",
+    visibility = [],
+    deps = [
+        ":indexmap-2.0.2",
+        ":itoa-1.0.9",
+        ":ryu-1.0.15",
+        ":serde-1.0.190",
+        ":unsafe-libyaml-0.2.9",
+    ],
+)
+
 http_archive(
     name = "sha1-0.10.6.crate",
     sha256 = "e3bf829a2d51ab4a5ddf1352d8470c140cadc8301b2ae1789db023f01cedd6ba",
@@ -4275,6 +4305,7 @@ cargo.rust_binary(
         ":graphql_client-0.13.0",
         ":reqwest-0.11.20",
         ":serde-1.0.190",
+        ":serde_yaml-0.9.27",
         ":thiserror-1.0.50",
         ":tokio-1.33.0",
         ":version_check-0.9.4",
@@ -4949,6 +4980,23 @@ cargo.rust_library(
     edition = "2015",
     visibility = [],
     deps = [":void-1.0.2"],
+)
+
+http_archive(
+    name = "unsafe-libyaml-0.2.9.crate",
+    sha256 = "f28467d3e1d3c6586d8f25fa243f544f5800fec42d97032474e17222c2b75cfa",
+    strip_prefix = "unsafe-libyaml-0.2.9",
+    urls = ["https://crates.io/api/v1/crates/unsafe-libyaml/0.2.9/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "unsafe-libyaml-0.2.9",
+    srcs = [":unsafe-libyaml-0.2.9.crate"],
+    crate = "unsafe_libyaml",
+    crate_root = "unsafe-libyaml-0.2.9.crate/src/lib.rs",
+    edition = "2021",
+    visibility = [],
 )
 
 http_archive(

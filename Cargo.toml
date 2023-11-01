@@ -18,3 +18,4 @@ tokio = { version = "1.33.0", features = ["full"] }
 graphql_client = {version = "0.13.0", features = ["reqwest-rustls"]}
 reqwest = { version = "=0.11.20", default-features = false, features = ["json", "rustls-tls"] }
 thiserror = "1.0.49"
+serde_yaml = "0.9.25"

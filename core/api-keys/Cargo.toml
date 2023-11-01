@@ -24,4 +24,5 @@ tokio = { workspace = true }
 graphql_client = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
+serde_yaml = { workspace = true }
 thiserror = { workspace = true }
