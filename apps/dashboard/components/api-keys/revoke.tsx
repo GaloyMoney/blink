@@ -1,15 +1,19 @@
 "use client"
 
 import { Box, Button, Modal, ModalClose, Sheet, Typography } from "@mui/joy"
-import AddIcon from "@mui/icons-material/Add"
-import { useState } from "react"
+import React, { useState } from "react"
 
-const ApiKeyCreate = () => {
+type Props = {
+  id: string
+}
+
+const RevokeKey = ({ id }: Props) => {
   const [open, setOpen] = useState(false)
+
   return (
     <>
-      <Button onClick={() => setOpen(true)} variant="solid" color="primary">
-        {<AddIcon />}
+      <Button onClick={() => setOpen(true)} variant="outlined" color="danger">
+        <Typography>Revoke</Typography>
       </Button>
       <Modal
         open={open}
@@ -44,23 +48,34 @@ const ApiKeyCreate = () => {
               textColor="inherit"
               fontWeight="lg"
             >
-              Create API Key
+              Revoke API Key
             </Typography>
           </Box>
+
           <Typography id="modal-desc" textColor="text.tertiary" textAlign="left">
-            Create an API Key to use with your Blink Account.
+            WARNING! You will no longer be able to authenticate with this API Key.
           </Typography>
+
+          <Typography id="modal-desc-2" textColor="text.tertiary" textAlign="left">
+            API Key ID: {id}
+          </Typography>
+
           <Button
-            variant="outlined"
-            color="primary"
+            variant="solid"
+            color="danger"
             onClick={async () => {
+              await fetch("/api/api-keys", {
+                method: "DELETE",
+                body: JSON.stringify({ id }),
+                headers: { "Content-Type": "application/json" },
+              })
               setOpen(false)
             }}
             sx={{
               width: "100%",
             }}
           >
-            Create
+            Revoke
           </Button>
         </Sheet>
       </Modal>
@@ -68,4 +83,4 @@ const ApiKeyCreate = () => {
   )
 }
 
-export default ApiKeyCreate
+export default RevokeKey

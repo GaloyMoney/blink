@@ -1,0 +1,49 @@
+import { gql } from "@apollo/client"
+
+import { apollo } from ".."
+import {
+  ApiKeyCreateDocument,
+  ApiKeyCreateInput,
+  ApiKeyRevokeDocument,
+  ApiKeyRevokeInput,
+} from "../generated"
+
+gql`
+  mutation ApiKeyCreate($input: ApiKeyCreateInput!) {
+    apiKeyCreate(input: $input) {
+      apiKeySecret
+    }
+  }
+
+  mutation ApiKeyRevoke($input: ApiKeyRevokeInput!) {
+    apiKeyRevoke(input: $input)
+  }
+`
+
+export async function createApiKey(token: string, name: string) {
+  const client = apollo(token).getClient()
+  try {
+    const { data } = await client.mutate<ApiKeyCreateInput>({
+      mutation: ApiKeyCreateDocument,
+      variables: { input: { name } },
+    })
+    return data
+  } catch (error) {
+    console.error("Error executing mutation: apiKeyCreate ==> ", error)
+    throw new Error("Error in apiKeyCreate")
+  }
+}
+
+export async function revokeApiKey(token: string, id: string) {
+  const client = apollo(token).getClient()
+  try {
+    const { data } = await client.mutate<ApiKeyRevokeInput>({
+      mutation: ApiKeyRevokeDocument,
+      variables: { input: id },
+    })
+    return data
+  } catch (error) {
+    console.error("Error executing mutation: apiKeyRevoke ==> ", error)
+    throw new Error("Error in apiKeyRevoke")
+  }
+}

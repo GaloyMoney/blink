@@ -33,7 +33,7 @@ export type Scalars = {
    *
    * The input/output is a string in RFC3339 format.
    */
-  DateTime: { input: z; output: z; }
+  DateTime: { input: string; output: string; }
   /** Display currency of an account */
   DisplayCurrency: { input: string; output: string; }
   /** Email address */
@@ -1901,6 +1901,20 @@ export const WalletCurrency = {
 } as const;
 
 export type WalletCurrency = typeof WalletCurrency[keyof typeof WalletCurrency];
+export type ApiKeyCreateMutationVariables = Exact<{
+  input: ApiKeyCreateInput;
+}>;
+
+
+export type ApiKeyCreateMutation = { readonly __typename: 'Mutation', readonly apiKeyCreate: { readonly __typename: 'ApiKeyCreatePayload', readonly apiKeySecret: string } };
+
+export type ApiKeyRevokeMutationVariables = Exact<{
+  input: ApiKeyRevokeInput;
+}>;
+
+
+export type ApiKeyRevokeMutation = { readonly __typename: 'Mutation', readonly apiKeyRevoke: boolean };
+
 export type UserEmailRegistrationInitiateMutationVariables = Exact<{
   input: UserEmailRegistrationInitiateInput;
 }>;
@@ -1923,7 +1937,7 @@ export type UserEmailDeleteMutation = { readonly __typename: 'Mutation', readonl
 export type ApiKeysQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ApiKeysQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly apiKeys: ReadonlyArray<{ readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: z, readonly expiration: z }> } } | null };
+export type ApiKeysQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly apiKeys: ReadonlyArray<{ readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: string, readonly expiration: string }> } } | null };
 
 export type GetPaginatedTransactionsQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1947,6 +1961,70 @@ export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 export type MeQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly createdAt: number, readonly id: string, readonly language: string, readonly phone?: string | null, readonly totpEnabled: boolean, readonly username?: string | null, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly defaultWalletId: string, readonly displayCurrency: string, readonly id: string, readonly level: AccountLevel, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly accountId: string, readonly balance: number, readonly id: string, readonly pendingIncomingBalance: number, readonly walletCurrency: WalletCurrency } | { readonly __typename: 'UsdWallet', readonly accountId: string, readonly balance: number, readonly id: string, readonly pendingIncomingBalance: number, readonly walletCurrency: WalletCurrency }> }, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null } | null };
 
 
+export const ApiKeyCreateDocument = gql`
+    mutation ApiKeyCreate($input: ApiKeyCreateInput!) {
+  apiKeyCreate(input: $input) {
+    apiKeySecret
+  }
+}
+    `;
+export type ApiKeyCreateMutationFn = Apollo.MutationFunction<ApiKeyCreateMutation, ApiKeyCreateMutationVariables>;
+
+/**
+ * __useApiKeyCreateMutation__
+ *
+ * To run a mutation, you first call `useApiKeyCreateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useApiKeyCreateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [apiKeyCreateMutation, { data, loading, error }] = useApiKeyCreateMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useApiKeyCreateMutation(baseOptions?: Apollo.MutationHookOptions<ApiKeyCreateMutation, ApiKeyCreateMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ApiKeyCreateMutation, ApiKeyCreateMutationVariables>(ApiKeyCreateDocument, options);
+      }
+export type ApiKeyCreateMutationHookResult = ReturnType<typeof useApiKeyCreateMutation>;
+export type ApiKeyCreateMutationResult = Apollo.MutationResult<ApiKeyCreateMutation>;
+export type ApiKeyCreateMutationOptions = Apollo.BaseMutationOptions<ApiKeyCreateMutation, ApiKeyCreateMutationVariables>;
+export const ApiKeyRevokeDocument = gql`
+    mutation ApiKeyRevoke($input: ApiKeyRevokeInput!) {
+  apiKeyRevoke(input: $input)
+}
+    `;
+export type ApiKeyRevokeMutationFn = Apollo.MutationFunction<ApiKeyRevokeMutation, ApiKeyRevokeMutationVariables>;
+
+/**
+ * __useApiKeyRevokeMutation__
+ *
+ * To run a mutation, you first call `useApiKeyRevokeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useApiKeyRevokeMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [apiKeyRevokeMutation, { data, loading, error }] = useApiKeyRevokeMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useApiKeyRevokeMutation(baseOptions?: Apollo.MutationHookOptions<ApiKeyRevokeMutation, ApiKeyRevokeMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ApiKeyRevokeMutation, ApiKeyRevokeMutationVariables>(ApiKeyRevokeDocument, options);
+      }
+export type ApiKeyRevokeMutationHookResult = ReturnType<typeof useApiKeyRevokeMutation>;
+export type ApiKeyRevokeMutationResult = Apollo.MutationResult<ApiKeyRevokeMutation>;
+export type ApiKeyRevokeMutationOptions = Apollo.BaseMutationOptions<ApiKeyRevokeMutation, ApiKeyRevokeMutationVariables>;
 export const UserEmailRegistrationInitiateDocument = gql`
     mutation UserEmailRegistrationInitiate($input: UserEmailRegistrationInitiateInput!) {
   userEmailRegistrationInitiate(input: $input) {

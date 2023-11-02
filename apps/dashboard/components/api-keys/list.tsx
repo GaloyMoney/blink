@@ -1,4 +1,4 @@
-import * as React from "react"
+import React from "react"
 import Table from "@mui/joy/Table"
 
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
@@ -6,6 +6,7 @@ import { getServerSession } from "next-auth"
 import { apiKeys } from "@/services/graphql/queries/api-keys"
 import { redirect } from "next/navigation"
 import { Typography } from "@mui/joy"
+import RevokeKey from "./revoke"
 
 const ApiKeysList = async () => {
   const session = await getServerSession(authOptions)
@@ -22,10 +23,11 @@ const ApiKeysList = async () => {
       <Table aria-label="basic table">
         <thead>
           <tr>
-            <th>Client ID</th>
+            <th>API Key ID</th>
             <th>Name</th>
             <th>Created At</th>
             <th>Expiration Date</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -35,6 +37,9 @@ const ApiKeysList = async () => {
               <td>{name}</td>
               <td>{createdAt}</td>
               <td>{expiration}</td>
+              <td>
+                <RevokeKey id={id} />
+              </td>
             </tr>
           ))}
         </tbody>
