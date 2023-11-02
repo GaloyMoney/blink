@@ -7,26 +7,7 @@ pub struct Query;
 impl Query {
     #[graphql(entity)]
     async fn consumer_account(&self, id: ID) -> Option<ConsumerAccount> {
-        let api_keys = vec![
-            ApiKey {
-                id: ID::from("1"),
-                name: "KeyOne".to_owned(),
-                created_at: Utc::now(),
-                expiration: Utc::now() + chrono::Duration::days(30),
-                last_use: Utc::now(),
-                scopes: vec![Scope::Read, Scope::Create],
-            },
-            ApiKey {
-                id: ID::from("2"),
-                name: "KeyTwo".to_owned(),
-                created_at: Utc::now(),
-                expiration: Utc::now() + chrono::Duration::days(60),
-                last_use: Utc::now(),
-                scopes: vec![Scope::Read],
-            },
-        ];
-
-        Some(ConsumerAccount { id, api_keys })
+        Some(ConsumerAccount { id })
     }
 }
 
@@ -44,16 +25,21 @@ struct ApiKey {
     name: String,
     created_at: DateTime<Utc>,
     expiration: DateTime<Utc>,
-    last_use: DateTime<Utc>,
-    scopes: Vec<Scope>,
 }
 
 #[derive(SimpleObject)]
 #[graphql(extends)]
+#[graphql(complex)]
 struct ConsumerAccount {
     #[graphql(external)]
     id: ID,
-    api_keys: Vec<ApiKey>,
+}
+
+#[ComplexObject]
+impl ConsumerAccount {
+    async fn api_key(&self) -> Vec<ApiKey> {
+        Vec::new()
+    }
 }
 
 #[derive(SimpleObject)]
@@ -72,8 +58,6 @@ impl Mutation {
             name: "GeneratedApiKey".to_owned(),
             created_at: Utc::now(),
             expiration: Utc::now() + chrono::Duration::days(30),
-            last_use: Utc::now(),
-            scopes: vec![],
         };
 
         Ok(ApiKeyCreatePayload {

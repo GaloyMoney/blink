@@ -162,8 +162,6 @@ type ApiKey
   name: String!
   createdAt: DateTime!
   expiration: DateTime!
-  lastUse: DateTime!
-  scopes: [Scope!]!
 }
 
 type ApiKeyCreatePayload
@@ -314,7 +312,7 @@ type ConsumerAccount implements Account
   @join__type(graph: PUBLIC)
 {
   id: ID!
-  apiKeys: [ApiKey!]! @join__field(graph: API_KEYS)
+  apiKey: [ApiKey!]! @join__field(graph: API_KEYS)
   callbackEndpoints: [CallbackEndpoint!]! @join__field(graph: PUBLIC)
 
   """
@@ -1455,15 +1453,6 @@ type SatAmountPayload
 {
   amount: SatAmount
   errors: [Error!]!
-}
-
-enum Scope
-  @join__type(graph: API_KEYS)
-{
-  CREATE @join__enumValue(graph: API_KEYS)
-  READ @join__enumValue(graph: API_KEYS)
-  UPDATE @join__enumValue(graph: API_KEYS)
-  DELETE @join__enumValue(graph: API_KEYS)
 }
 
 """(Positive) amount of seconds"""
