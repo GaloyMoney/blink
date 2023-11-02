@@ -65,6 +65,7 @@ export const getCaptchaChallenge = async (
           login_challenge,
           phone,
           remember,
+          channel,
         },
       },
     }
@@ -101,6 +102,7 @@ export const getCaptchaChallenge = async (
         login_challenge,
         phone,
         remember,
+        channel,
       },
     },
   }
@@ -127,7 +129,7 @@ export const sendPhoneCode = async (
   const login_challenge = formData.login_challenge
   const phone = formData.phone
   const remember = String(formData.remember) === "true"
-  const channel = formData.channel ?? "SMS"
+  const channel = formData.channel ?? "sms"
 
   let res
   try {
