@@ -187,6 +187,35 @@
               --replace "exec node" "exec ${pkgs.nodejs}/bin/node"
           '';
         };
+
+      rustDerivation = {
+        pkgName,
+        pathPrefix ? "core",
+      }:
+        pkgs.stdenv.mkDerivation {
+          bin_target = pkgName;
+
+          name = pkgName;
+          buck2_target = "//${pathPrefix}/${pkgName}";
+          src = ./.;
+          nativeBuildInputs = buck2NativeBuildInputs;
+          inherit postPatch;
+
+          buildPhase = ''
+            export HOME="$(dirname $(pwd))/home"
+            buck2 build "$buck2_target" --verbose 8
+
+            result=$(buck2 build --show-simple-output "$buck2_target:$bin_target" 2> /dev/null)
+
+            mkdir -p build/$name-$system/bin
+            cp -rpv $result build/$name-$system/bin/
+          '';
+
+          installPhase = ''
+            mkdir -pv "$out"
+            cp -rpv "build/$name-$system/bin" "$out/"
+          '';
+        };
     in
       with pkgs; {
         packages = {
@@ -197,6 +226,7 @@
           api-cron = tscDerivation {pkgName = "api-cron";};
           consent = nextDerivation {pkgName = "consent";};
           dashboard = nextDerivation {pkgName = "dashboard";};
+          api-keys = rustDerivation {pkgName = "api-keys";};
 
           dockerImage = dockerTools.buildImage {
             name = "galoy-dev";
