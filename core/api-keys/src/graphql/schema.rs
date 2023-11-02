@@ -32,7 +32,12 @@ struct ConsumerAccount {
 #[ComplexObject]
 impl ConsumerAccount {
     async fn api_keys(&self) -> Vec<ApiKey> {
-        Vec::new()
+        vec![ApiKey {
+            id: ID::from("123"),
+            name: "api-key".to_owned(),
+            created_at: Utc::now(),
+            expiration: Utc::now() + chrono::Duration::days(30),
+        }]
     }
 }
 

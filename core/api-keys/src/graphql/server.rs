@@ -16,6 +16,7 @@ pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) {
             "/graphql",
             get(playground).post(axum::routing::post(graphql_handler)),
         )
+        .route("/auth/check-token", get(check_handler))
         .layer(Extension(schema));
 
     println!("Starting graphql server on port {}", config.port);
@@ -25,11 +26,19 @@ pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) {
         .unwrap();
 }
 
+async fn check_handler() -> impl axum::response::IntoResponse {
+    println!("CHECK HELLO");
+    use axum::http::StatusCode;
+    let error_response =
+        axum::response::Json(serde_json::json!({ "identity": { "id": "ashoten" }}));
+    (StatusCode::INTERNAL_SERVER_ERROR, error_response)
+}
+
 async fn graphql_handler(
     schema: Extension<Schema<Query, Mutation, EmptySubscription>>,
     req: GraphQLRequest,
 ) -> GraphQLResponse {
-    let mut req = req.into_inner();
+    let req = req.into_inner();
     schema.execute(req).await.into()
 }
 
