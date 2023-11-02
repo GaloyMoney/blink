@@ -10,8 +10,12 @@ impl ApiKeysApp {
         Self {}
     }
 
-    pub async fn create_api_key(&self, _name: String) -> Result<(), ApplicationError> {
-        println!("HELLO WORLD");
+    pub async fn create_api_key(
+        &self,
+        user_id: &str,
+        _name: String,
+    ) -> Result<(), ApplicationError> {
+        println!("Hello user id: {}", user_id);
         Ok(())
     }
 }

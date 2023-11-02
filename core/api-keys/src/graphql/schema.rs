@@ -3,6 +3,10 @@ use chrono::{DateTime, Utc};
 
 use crate::app::ApiKeysApp;
 
+pub struct AuthSubject {
+    pub id: String,
+}
+
 pub struct Query;
 
 #[Object]
@@ -67,7 +71,8 @@ impl Mutation {
         input: ApiKeyCreateInput,
     ) -> async_graphql::Result<ApiKeyCreatePayload> {
         let app = ctx.data_unchecked::<ApiKeysApp>();
-        let _key = app.create_api_key(input.name).await?;
+        let subject = ctx.data::<AuthSubject>()?;
+        let _key = app.create_api_key(&subject.id, input.name).await?;
         let api_key = ApiKey {
             id: ID::from("123"),
             name: "GeneratedApiKey".to_owned(),
