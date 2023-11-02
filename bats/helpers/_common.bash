@@ -130,3 +130,11 @@ random_uuid() {
     uuidgen
   fi
 }
+
+cache_value() {
+  echo $2 >${CACHE_DIR}/$1
+}
+
+read_value() {
+  cat ${CACHE_DIR}/$1
+}

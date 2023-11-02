@@ -1,4 +1,15 @@
 rust_binary(
+    name = "write-sdl",
+    edition = "2021",
+    crate_root = "src/bin/write_sdl.rs",
+    srcs = glob(["src/**/*.rs"]),
+    deps = [
+        ":lib-api-keys",
+        "//third-party/rust:async-graphql",
+    ],
+)
+
+rust_binary(
     name = "api-keys",
     edition = "2021",
     crate_root = "src/main.rs",
@@ -26,17 +37,8 @@ rust_library(
         "//third-party/rust:serde_json",
         "//third-party/rust:thiserror",
         "//third-party/rust:chrono",
+        "//third-party/rust:sqlx",
     ],
     srcs = glob(["src/**/*.rs"]),
     visibility = ["PUBLIC"],
-)
-
-rust_binary(
-    name = "write-sdl",
-    edition = "2021",
-    crate_root = "src/bin/write_sdl.rs",
-    srcs = glob(["src/**/*.rs"]),
-    deps = [
-        ":lib-api-keys",
-    ],
 )

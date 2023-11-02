@@ -155,6 +155,34 @@ type AccountUpdateNotificationSettingsPayload
   errors: [Error!]!
 }
 
+type ApiKey
+  @join__type(graph: API_KEYS)
+{
+  id: ID!
+  name: String!
+  createdAt: DateTime!
+  expiration: DateTime!
+}
+
+input ApiKeyCreateInput
+  @join__type(graph: API_KEYS)
+{
+  name: String!
+}
+
+type ApiKeyCreatePayload
+  @join__type(graph: API_KEYS)
+{
+  apiKey: ApiKey!
+  apiKeySecret: String!
+}
+
+input ApiKeyRevokeInput
+  @join__type(graph: API_KEYS)
+{
+  id: ID!
+}
+
 """An Opaque Bearer token"""
 scalar AuthToken
   @join__type(graph: PUBLIC)
@@ -292,24 +320,26 @@ type CentAmountPayload
 
 type ConsumerAccount implements Account
   @join__implements(graph: PUBLIC, interface: "Account")
+  @join__type(graph: API_KEYS, key: "id", extension: true)
   @join__type(graph: PUBLIC)
 {
-  callbackEndpoints: [CallbackEndpoint!]!
+  id: ID!
+  apiKeys: [ApiKey!]! @join__field(graph: API_KEYS)
+  callbackEndpoints: [CallbackEndpoint!]! @join__field(graph: PUBLIC)
 
   """
   return CSV stream, base64 encoded, of the list of transactions in the wallet
   """
-  csvTransactions(walletIds: [WalletId!]!): String!
-  defaultWalletId: WalletId!
-  displayCurrency: DisplayCurrency!
-  id: ID!
-  level: AccountLevel!
-  limits: AccountLimits!
-  notificationSettings: NotificationSettings!
+  csvTransactions(walletIds: [WalletId!]!): String! @join__field(graph: PUBLIC)
+  defaultWalletId: WalletId! @join__field(graph: PUBLIC)
+  displayCurrency: DisplayCurrency! @join__field(graph: PUBLIC)
+  level: AccountLevel! @join__field(graph: PUBLIC)
+  limits: AccountLimits! @join__field(graph: PUBLIC)
+  notificationSettings: NotificationSettings! @join__field(graph: PUBLIC)
 
   """List the quiz questions of the consumer account"""
-  quiz: [Quiz!]!
-  realtimePrice: RealtimePrice!
+  quiz: [Quiz!]! @join__field(graph: PUBLIC)
+  realtimePrice: RealtimePrice! @join__field(graph: PUBLIC)
 
   """
   A list of all transactions associated with walletIds optionally passed.
@@ -327,9 +357,9 @@ type ConsumerAccount implements Account
     """Returns the last n items from the list."""
     last: Int
     walletIds: [WalletId]
-  ): TransactionConnection
-  walletById(walletId: WalletId!): Wallet!
-  wallets: [Wallet!]!
+  ): TransactionConnection @join__field(graph: PUBLIC)
+  walletById(walletId: WalletId!): Wallet! @join__field(graph: PUBLIC)
+  wallets: [Wallet!]! @join__field(graph: PUBLIC)
 }
 
 """
@@ -365,6 +395,14 @@ type Currency
   name: String!
   symbol: String!
 }
+
+"""
+Implement the DateTime<Utc> scalar
+
+The input/output is a string in RFC3339 format.
+"""
+scalar DateTime
+  @join__type(graph: API_KEYS)
 
 type DepositFeesInformation
   @join__type(graph: PUBLIC)
@@ -899,7 +937,8 @@ type Mutation
   @join__type(graph: API_KEYS)
   @join__type(graph: PUBLIC)
 {
-  helloWorldMutation: String! @join__field(graph: API_KEYS)
+  apiKeyCreate(input: ApiKeyCreateInput!): ApiKeyCreatePayload! @join__field(graph: API_KEYS)
+  apiKeyRevoke(input: ApiKeyRevokeInput!): Boolean! @join__field(graph: API_KEYS)
   accountDelete: AccountDeletePayload! @join__field(graph: PUBLIC)
   accountDisableNotificationCategory(input: AccountDisableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
   accountDisableNotificationChannel(input: AccountDisableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
@@ -1336,7 +1375,6 @@ type Query
   @join__type(graph: API_KEYS)
   @join__type(graph: PUBLIC)
 {
-  helloWorld: String! @join__field(graph: API_KEYS)
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet! @join__field(graph: PUBLIC)
   btcPriceList(range: PriceGraphRange!): [PricePoint] @join__field(graph: PUBLIC)
   businessMapMarkers: [MapMarker] @join__field(graph: PUBLIC)

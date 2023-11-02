@@ -200,7 +200,7 @@ local_resource(
 
 api_keys_target = "//core/api-keys:api-keys"
 local_resource(
-    "api_keys",
+    "api-keys",
     labels = ["core"],
     cmd = "buck2 build {}".format(api_keys_target),
     serve_cmd = ". .envs/api-keys.env && buck2 run {} -- run".format(api_keys_target),
@@ -210,7 +210,8 @@ local_resource(
     },
     deps = _buck2_dep_inputs(api_keys_target),
     resource_deps = [
-       "hydra-api-keys"
+       "hydra-api-keys",
+       "api"
     ]
 )
 

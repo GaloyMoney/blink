@@ -84,6 +84,12 @@
           cypress
         ];
 
+      buck2BuildInputs = with pkgs;
+        []
+        ++ lib.optionals pkgs.stdenv.isDarwin [
+          darwin.apple_sdk.frameworks.SystemConfiguration
+        ];
+
       buck2Version = pkgs.buck2.version;
       postPatch = with pkgs; ''
         rg -l '#!(/usr/bin/env|/bin/bash|/bin/sh)' prelude toolchains \
@@ -230,6 +236,8 @@
 
         devShells.default = mkShell {
           inherit nativeBuildInputs;
+          buildInputs = buck2BuildInputs;
+
           BUCK2_VERSION = buck2Version;
           COMPOSE_PROJECT_NAME = "galoy-dev";
         };
