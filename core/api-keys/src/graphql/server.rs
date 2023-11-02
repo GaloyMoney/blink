@@ -2,11 +2,11 @@ use async_graphql::{EmptySubscription, Schema};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{routing::get, Extension, Router};
 
-use crate::admin_client::AdminClient;
+use crate::app::ApiKeysApp;
 
 use super::{config::*, schema::*};
 
-pub async fn run_server(config: ServerConfig, admin_client: AdminClient) {
+pub async fn run_server(config: ServerConfig, app: ApiKeysApp) {
     let schema = Schema::build(Query, Mutation, EmptySubscription).finish();
 
     let app = Router::new()
@@ -15,22 +15,21 @@ pub async fn run_server(config: ServerConfig, admin_client: AdminClient) {
             get(playground).post(axum::routing::post(graphql_handler)),
         )
         .layer(Extension(schema))
-        .layer(Extension(admin_client));
+        .layer(Extension(app));
 
-    // TODO: move addr below to config
-    axum::Server::bind(&"0.0.0.0:5397".parse().unwrap())
+    axum::Server::bind(&std::net::SocketAddr::from(([0, 0, 0, 0], config.port)))
         .serve(app.into_make_service())
         .await
         .unwrap();
 }
 
 async fn graphql_handler(
-    admin_client: Extension<AdminClient>,
+    app: Extension<ApiKeysApp>,
     schema: Extension<Schema<Query, Mutation, EmptySubscription>>,
     req: GraphQLRequest,
 ) -> GraphQLResponse {
     let mut req = req.into_inner();
-    req = req.data(admin_client);
+    req = req.data(app);
     schema.execute(req).await.into()
 }
 
