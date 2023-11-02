@@ -1,20 +1,51 @@
 use async_graphql::*;
+use chrono::{DateTime, Utc};
 
 pub struct QueryRoot;
 
 #[Object]
 impl QueryRoot {
-    async fn hello_world(&self) -> &str {
-        "Hello, world!"
-    }
-
     #[graphql(entity)]
     async fn consumer_account(&self, id: ID) -> Option<ConsumerAccount> {
-        Some(ConsumerAccount {
-            id,
-            hello_world: "Hello, world!".to_string(),
-        })
+        let api_keys = vec![
+            ApiKey {
+                id: ID::from("1"),
+                name: "KeyOne".to_owned(),
+                created_at: Utc::now(),
+                expiration: Utc::now() + chrono::Duration::days(30),
+                last_use: Utc::now(),
+                scopes: vec![Scope::Read, Scope::Create],
+            },
+            ApiKey {
+                id: ID::from("2"),
+                name: "KeyTwo".to_owned(),
+                created_at: Utc::now(),
+                expiration: Utc::now() + chrono::Duration::days(60),
+                last_use: Utc::now(),
+                scopes: vec![Scope::Read],
+            },
+        ];
+
+        Some(ConsumerAccount { id, api_keys })
     }
+}
+
+#[derive(Enum, Clone, Copy, Debug, PartialEq, Eq)]
+enum Scope {
+    Create,
+    Read,
+    Update,
+    Delete,
+}
+
+#[derive(SimpleObject)]
+struct ApiKey {
+    id: ID,
+    name: String,
+    created_at: DateTime<Utc>,
+    expiration: DateTime<Utc>,
+    last_use: DateTime<Utc>,
+    scopes: Vec<Scope>,
 }
 
 #[derive(SimpleObject)]
@@ -22,7 +53,7 @@ impl QueryRoot {
 struct ConsumerAccount {
     #[graphql(external)]
     id: ID,
-    hello_world: String,
+    api_keys: Vec<ApiKey>,
 }
 
 pub struct MutationRoot;

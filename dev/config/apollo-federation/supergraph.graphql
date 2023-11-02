@@ -155,6 +155,17 @@ type AccountUpdateNotificationSettingsPayload
   errors: [Error!]!
 }
 
+type ApiKey
+  @join__type(graph: API_KEYS)
+{
+  id: ID!
+  name: String!
+  createdAt: DateTime!
+  expiration: DateTime!
+  lastUse: DateTime!
+  scopes: [Scope!]!
+}
+
 """An Opaque Bearer token"""
 scalar AuthToken
   @join__type(graph: PUBLIC)
@@ -296,7 +307,7 @@ type ConsumerAccount implements Account
   @join__type(graph: PUBLIC)
 {
   id: ID!
-  helloWorld: String! @join__field(graph: API_KEYS)
+  apiKeys: [ApiKey!]! @join__field(graph: API_KEYS)
   callbackEndpoints: [CallbackEndpoint!]! @join__field(graph: PUBLIC)
 
   """
@@ -367,6 +378,14 @@ type Currency
   name: String!
   symbol: String!
 }
+
+"""
+Implement the DateTime<Utc> scalar
+
+The input/output is a string in RFC3339 format.
+"""
+scalar DateTime
+  @join__type(graph: API_KEYS)
 
 type DepositFeesInformation
   @join__type(graph: PUBLIC)
@@ -1361,12 +1380,6 @@ type Query
   usernameAvailable(username: Username!): Boolean @join__field(graph: PUBLIC)
 }
 
-type QueryRoot
-  @join__type(graph: API_KEYS)
-{
-  helloWorld: String!
-}
-
 type Quiz
   @join__type(graph: PUBLIC)
 {
@@ -1439,6 +1452,15 @@ type SatAmountPayload
 {
   amount: SatAmount
   errors: [Error!]!
+}
+
+enum Scope
+  @join__type(graph: API_KEYS)
+{
+  CREATE @join__enumValue(graph: API_KEYS)
+  READ @join__enumValue(graph: API_KEYS)
+  UPDATE @join__enumValue(graph: API_KEYS)
+  DELETE @join__enumValue(graph: API_KEYS)
 }
 
 """(Positive) amount of seconds"""

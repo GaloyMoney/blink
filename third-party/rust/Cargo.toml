@@ -20,7 +20,7 @@ path = "top/main.rs"
 # options Cargo supports.
 [dependencies]
 anyhow = "1.0.75"
-async-graphql = { version = "6.0.9", default-features = false, features = ["playground"] }
+async-graphql = { version = "6.0.9", default-features = false, features = ["chrono", "playground"] }
 async-graphql-axum = "6.0.9"
 axum = "0.6.20"
 clap = { version = "4.4", features = ["derive", "env"] }
