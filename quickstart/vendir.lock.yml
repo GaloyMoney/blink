@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: channel to lowercase (#3484)...'
-      sha: 4242d781c58a57d46dbe4bce99b62a90f492aa5f
+      commitTitle: 'fix: channel in consent app (#3485)...'
+      sha: 5e5950c3f3f0fbf1c451cd370791482a84c39c0a
       tags:
-      - 0.15.79-1-g4242d781c
+      - 0.15.80-2-g5e5950c3f
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: channel to lowercase (#3484)...'
-      sha: 4242d781c58a57d46dbe4bce99b62a90f492aa5f
+      commitTitle: 'fix: channel in consent app (#3485)...'
+      sha: 5e5950c3f3f0fbf1c451cd370791482a84c39c0a
       tags:
-      - 0.15.79-1-g4242d781c
+      - 0.15.80-2-g5e5950c3f
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: channel to lowercase (#3484)...'
-      sha: 4242d781c58a57d46dbe4bce99b62a90f492aa5f
+      commitTitle: 'fix: channel in consent app (#3485)...'
+      sha: 5e5950c3f3f0fbf1c451cd370791482a84c39c0a
       tags:
-      - 0.15.79-1-g4242d781c
+      - 0.15.80-2-g5e5950c3f
     path: ./
   path: ./graphql
 kind: LockConfig
