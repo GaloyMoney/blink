@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): add watcher for pending held invoices (#3480)'
-      sha: 8b2b2ac39ce44fa79545b34508da438e36e496ff
+      commitTitle: 'chore(api-keys): auth endpoint boilerplate (#3489)...'
+      sha: eb661c65cd086d33c2fbee03399dd91c35bdb720
       tags:
-      - 0.15.82-2-g8b2b2ac39
+      - 0.15.83-2-geb661c65c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): add watcher for pending held invoices (#3480)'
-      sha: 8b2b2ac39ce44fa79545b34508da438e36e496ff
+      commitTitle: 'chore(api-keys): auth endpoint boilerplate (#3489)...'
+      sha: eb661c65cd086d33c2fbee03399dd91c35bdb720
       tags:
-      - 0.15.82-2-g8b2b2ac39
+      - 0.15.83-2-geb661c65c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(core): add watcher for pending held invoices (#3480)'
-      sha: 8b2b2ac39ce44fa79545b34508da438e36e496ff
+      commitTitle: 'chore(api-keys): auth endpoint boilerplate (#3489)...'
+      sha: eb661c65cd086d33c2fbee03399dd91c35bdb720
       tags:
-      - 0.15.82-2-g8b2b2ac39
+      - 0.15.83-2-geb661c65c
     path: ./
   path: ./graphql
 kind: LockConfig
