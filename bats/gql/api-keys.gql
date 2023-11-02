@@ -1,14 +1,10 @@
 query apiKeys {
   me {
-    defaultAccount {
-      ... on ConsumerAccount {
-        apiKeys {
-          id
-          name
-          createdAt
-          expiration
-        }
-      }
+    apiKeys {
+      id
+      name
+      createdAt
+      expiration
     }
   }
 }

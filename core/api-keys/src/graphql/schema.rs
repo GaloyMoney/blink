@@ -3,13 +3,17 @@ use chrono::{DateTime, Utc};
 
 use crate::app::ApiKeysApp;
 
+pub struct AuthSubject {
+    pub id: String,
+}
+
 pub struct Query;
 
 #[Object]
 impl Query {
     #[graphql(entity)]
-    async fn consumer_account(&self, id: ID) -> Option<ConsumerAccount> {
-        Some(ConsumerAccount { id })
+    async fn me(&self, id: ID) -> Option<User> {
+        Some(User { id })
     }
 }
 
@@ -24,15 +28,20 @@ struct ApiKey {
 #[derive(SimpleObject)]
 #[graphql(extends)]
 #[graphql(complex)]
-struct ConsumerAccount {
+struct User {
     #[graphql(external)]
     id: ID,
 }
 
 #[ComplexObject]
-impl ConsumerAccount {
+impl User {
     async fn api_keys(&self) -> Vec<ApiKey> {
-        Vec::new()
+        vec![ApiKey {
+            id: ID::from("123"),
+            name: "api-key".to_owned(),
+            created_at: Utc::now(),
+            expiration: Utc::now() + chrono::Duration::days(30),
+        }]
     }
 }
 
@@ -62,7 +71,8 @@ impl Mutation {
         input: ApiKeyCreateInput,
     ) -> async_graphql::Result<ApiKeyCreatePayload> {
         let app = ctx.data_unchecked::<ApiKeysApp>();
-        let _key = app.create_api_key(input.name).await?;
+        let subject = ctx.data::<AuthSubject>()?;
+        let _key = app.create_api_key(&subject.id, input.name).await?;
         let api_key = ApiKey {
             id: ID::from("123"),
             name: "GeneratedApiKey".to_owned(),
@@ -72,7 +82,7 @@ impl Mutation {
 
         Ok(ApiKeyCreatePayload {
             api_key,
-            api_key_secret: "123".to_owned(),
+            api_key_secret: "secret".to_owned(),
         })
     }
 
@@ -83,8 +93,4 @@ impl Mutation {
     ) -> async_graphql::Result<bool> {
         Ok(true)
     }
-}
-
-pub fn schema() -> Schema<Query, Mutation, EmptySubscription> {
-    Schema::build(Query, Mutation, EmptySubscription).finish()
 }

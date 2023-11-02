@@ -19,11 +19,6 @@ input ApiKeyRevokeInput {
 }
 
 
-extend type ConsumerAccount @key(fields: "id") {
-	id: ID! @external
-	apiKeys: [ApiKey!]!
-}
-
 """
 Implement the DateTime<Utc> scalar
 
@@ -40,6 +35,11 @@ type Mutation {
 }
 
 
+
+extend type User @key(fields: "id") {
+	id: ID! @external
+	apiKeys: [ApiKey!]!
+}
 
 extend schema @link(
 	url: "https://specs.apollo.dev/federation/v2.3",

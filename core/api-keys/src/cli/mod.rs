@@ -3,7 +3,6 @@ pub mod config;
 use clap::{Parser, Subcommand};
 
 use self::config::{Config, EnvOverride};
-use crate::admin_client::AdminClient;
 
 #[derive(Parser)]
 #[clap(long_about = None)]
@@ -15,11 +14,8 @@ struct Cli {
 #[derive(Subcommand)]
 enum Command {
     Run {
-        #[clap(env = "CLIENT_ID")]
-        client_id: String,
-
-        #[clap(env = "CLIENT_SECRET")]
-        client_secret: String,
+        #[clap(env = "PG_CON")]
+        pg_con: String,
     },
 }
 
@@ -27,14 +23,8 @@ pub async fn run() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Command::Run {
-            client_id,
-            client_secret,
-        } => {
-            let config = Config::from_env(EnvOverride {
-                client_id,
-                client_secret,
-            })?;
+        Command::Run { pg_con } => {
+            let config = Config::from_env(EnvOverride { pg_con })?;
 
             run_cmd(config).await?
         }
@@ -44,7 +34,6 @@ pub async fn run() -> anyhow::Result<()> {
 
 async fn run_cmd(config: Config) -> anyhow::Result<()> {
     println!("Running server");
-    let app = crate::app::ApiKeysApp::new(AdminClient::new(config.admin, config.hydra));
-    crate::graphql::run_server(config.server, app).await;
-    Ok(())
+    let app = crate::app::ApiKeysApp::new();
+    crate::server::run_server(config.server, app).await
 }

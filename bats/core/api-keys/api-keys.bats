@@ -12,17 +12,27 @@ teardown_file() {
 }
 
 @test "api-keys: create new key" {
-sleep 30
   login_user 'alice' '+16505554350'
 
   variables="{\"input\":{\"name\":\"api-key\"}}"
 
   exec_graphql 'alice' 'api-key-create' "$variables"
-  result="$(graphql_output '.data.apiKeyCreate.apiKey')"
+  key="$(graphql_output '.data.apiKeyCreate.apiKey')"
+  secret="$(graphql_output '.data.apiKeyCreate.apiKeySecret')"
 
-  key_id="$(echo "$result" | jq -r '.id')"
+  cache_value "api-key-secret" "$secret"
+
+  key_id="$(echo "$key" | jq -r '.id')"
   [[ "${key_id}" = "123" ]] || exit 1
 
-  name=$(echo "$result" | jq -r '.name')
+  name=$(echo "$key" | jq -r '.name')
   [[ "${name}" = "GeneratedApiKey" ]] || exit 1
+}
+
+@test "api-keys: can authenticate with api key" {
+  exec_graphql 'alice' 'api-keys'
+
+  keyName="$(graphql_output '.data.me.apiKeys[0].name')"
+
+  [[ "${keyName}" = "api-key" ]] || exit 1
 }

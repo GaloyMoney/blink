@@ -6,5 +6,6 @@ mutation apiKeyCreate($input: ApiKeyCreateInput!) {
       createdAt
       expiration
     }
+    apiKeySecret
   }
 }

@@ -11,7 +11,8 @@ members = [
 anyhow = "1.0.75"
 async-graphql = { version = "6.0.9", default-features = false, features = ["chrono", "playground"] }
 async-graphql-axum = "6.0.9"
-axum = "0.6.20"
+axum = { version = "0.6.20", features = ["headers", "macros"] }
+jsonwebtoken = "9.1.0"
 clap = { version = "4.4", features = ["derive", "env"] }
 serde = { version = "1.0.158", features = ["derive"] }
 tokio = { version = "1.33.0", features = ["full"] }

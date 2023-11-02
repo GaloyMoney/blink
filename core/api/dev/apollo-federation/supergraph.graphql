@@ -320,26 +320,24 @@ type CentAmountPayload
 
 type ConsumerAccount implements Account
   @join__implements(graph: PUBLIC, interface: "Account")
-  @join__type(graph: API_KEYS, key: "id", extension: true)
   @join__type(graph: PUBLIC)
 {
-  id: ID!
-  apiKeys: [ApiKey!]! @join__field(graph: API_KEYS)
-  callbackEndpoints: [CallbackEndpoint!]! @join__field(graph: PUBLIC)
+  callbackEndpoints: [CallbackEndpoint!]!
 
   """
   return CSV stream, base64 encoded, of the list of transactions in the wallet
   """
-  csvTransactions(walletIds: [WalletId!]!): String! @join__field(graph: PUBLIC)
-  defaultWalletId: WalletId! @join__field(graph: PUBLIC)
-  displayCurrency: DisplayCurrency! @join__field(graph: PUBLIC)
-  level: AccountLevel! @join__field(graph: PUBLIC)
-  limits: AccountLimits! @join__field(graph: PUBLIC)
-  notificationSettings: NotificationSettings! @join__field(graph: PUBLIC)
+  csvTransactions(walletIds: [WalletId!]!): String!
+  defaultWalletId: WalletId!
+  displayCurrency: DisplayCurrency!
+  id: ID!
+  level: AccountLevel!
+  limits: AccountLimits!
+  notificationSettings: NotificationSettings!
 
   """List the quiz questions of the consumer account"""
-  quiz: [Quiz!]! @join__field(graph: PUBLIC)
-  realtimePrice: RealtimePrice! @join__field(graph: PUBLIC)
+  quiz: [Quiz!]!
+  realtimePrice: RealtimePrice!
 
   """
   A list of all transactions associated with walletIds optionally passed.
@@ -357,9 +355,9 @@ type ConsumerAccount implements Account
     """Returns the last n items from the list."""
     last: Int
     walletIds: [WalletId]
-  ): TransactionConnection @join__field(graph: PUBLIC)
-  walletById(walletId: WalletId!): Wallet! @join__field(graph: PUBLIC)
-  wallets: [Wallet!]! @join__field(graph: PUBLIC)
+  ): TransactionConnection
+  walletById(walletId: WalletId!): Wallet!
+  wallets: [Wallet!]!
 }
 
 """
@@ -1690,43 +1688,46 @@ type UsdWallet implements Wallet
 }
 
 type User
+  @join__type(graph: API_KEYS, key: "id", extension: true)
   @join__type(graph: PUBLIC)
 {
+  id: ID!
+  apiKeys: [ApiKey!]! @join__field(graph: API_KEYS)
+
   """
   Get single contact details.
   Can include the transactions associated with the contact.
   """
-  contactByUsername(username: Username!): UserContact! @deprecated(reason: "will be moved to Accounts")
+  contactByUsername(username: Username!): UserContact! @join__field(graph: PUBLIC) @deprecated(reason: "will be moved to Accounts")
 
   """
   Get full list of contacts.
   Can include the transactions associated with each contact.
   """
-  contacts: [UserContact!]! @deprecated(reason: "will be moved to account")
-  createdAt: Timestamp!
-  defaultAccount: Account!
+  contacts: [UserContact!]! @join__field(graph: PUBLIC) @deprecated(reason: "will be moved to account")
+  createdAt: Timestamp! @join__field(graph: PUBLIC)
+  defaultAccount: Account! @join__field(graph: PUBLIC)
 
   """Email address"""
-  email: Email
-  id: ID!
+  email: Email @join__field(graph: PUBLIC)
 
   """
   Preferred language for user.
   When value is 'default' the intent is to use preferred language from OS settings.
   """
-  language: Language!
+  language: Language! @join__field(graph: PUBLIC)
 
   """Phone number with international calling code."""
-  phone: Phone
+  phone: Phone @join__field(graph: PUBLIC)
 
   """List the quiz questions the user may have completed."""
-  quizQuestions: [UserQuizQuestion!]! @deprecated(reason: "use Quiz from Account instead")
+  quizQuestions: [UserQuizQuestion!]! @join__field(graph: PUBLIC) @deprecated(reason: "use Quiz from Account instead")
 
   """Whether TOTP is enabled for this user."""
-  totpEnabled: Boolean!
+  totpEnabled: Boolean! @join__field(graph: PUBLIC)
 
   """Optional immutable user friendly identifier."""
-  username: Username @deprecated(reason: "will be moved to @Handle in Account and Wallet")
+  username: Username @join__field(graph: PUBLIC) @deprecated(reason: "will be moved to @Handle in Account and Wallet")
 }
 
 type UserContact
