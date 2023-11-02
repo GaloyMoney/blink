@@ -45,7 +45,8 @@ local_resource(
     '//dev:setup-hydra-client',
     '--',
     'dashboard',
-    'http://localhost:3001/api/auth/callback/blink'
+    'authorization_code,refresh_token',
+    'http://localhost:3001/api/auth/callback/blink',
   ],
   resource_deps = [
     "hydra",
@@ -104,7 +105,8 @@ local_resource(
     '//dev:setup-hydra-client',
     '--',
     'consent',
-    'http://localhost:3000'
+    'authorization_code,refresh_token',
+    'http://localhost:3000',
   ],
   resource_deps = [
     "hydra",
@@ -186,9 +188,10 @@ local_resource(
   cmd=[
     'buck2',
     'run',
-    '//dev:setup-api-keys-client',
+    '//dev:setup-hydra-client',
     '--',
-    'api-keys'
+    'api-keys',
+    'client_credentials'
   ],
   resource_deps = [
     "hydra",
