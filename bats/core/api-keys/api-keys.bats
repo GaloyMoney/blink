@@ -35,3 +35,16 @@ teardown_file() {
   last_use=$(echo $apiKey1 | jq -r '.lastUse')
   [[ "${last_use}" != "null" ]] || exit 1
 }
+
+@test "api-keys: create new key" {
+  login_user 'alice' '+16505554350'
+
+  exec_graphql 'alice' 'api-keys-create'
+  result="$(graphql_output '.data.apiKeysCreate')"
+  key_id="$(echo $result | jq -r '.keyId')"
+  [[ "${key_id}" = "123" ]] || exit 1
+
+  api_key="$(echo $result | jq -r '.apiKey')"
+  name=$(echo $api_key | jq -r '.name')
+  [[ "${name}" = "GeneratedApiKey" ]] || exit 1
+}

@@ -1,0 +1,13 @@
+mutation apiKeysCreate {
+  apiKeysCreate {
+    apiKey {
+      id
+      name
+      createdAt
+      expiration
+      lastUse
+      scopes
+    }
+    keyId
+  }
+}
