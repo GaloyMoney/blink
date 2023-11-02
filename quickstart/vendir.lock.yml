@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: api-keys admin client (#3476)...'
-      sha: 1359ecd58e5dfeabab6e56503ec6f05a1a243998
+      commitTitle: 'chore: changed otel version in consent and dashboard (#3481)...'
+      sha: c7c15eb3e2313b24a18348de42d3b8d8517a441c
       tags:
-      - 0.15.76-2-g1359ecd58
+      - 0.15.77-2-gc7c15eb3e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: api-keys admin client (#3476)...'
-      sha: 1359ecd58e5dfeabab6e56503ec6f05a1a243998
+      commitTitle: 'chore: changed otel version in consent and dashboard (#3481)...'
+      sha: c7c15eb3e2313b24a18348de42d3b8d8517a441c
       tags:
-      - 0.15.76-2-g1359ecd58
+      - 0.15.77-2-gc7c15eb3e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: api-keys admin client (#3476)...'
-      sha: 1359ecd58e5dfeabab6e56503ec6f05a1a243998
+      commitTitle: 'chore: changed otel version in consent and dashboard (#3481)...'
+      sha: c7c15eb3e2313b24a18348de42d3b8d8517a441c
       tags:
-      - 0.15.76-2-g1359ecd58
+      - 0.15.78
     path: ./
   path: ./graphql
 kind: LockConfig
