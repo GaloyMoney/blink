@@ -3,9 +3,9 @@ import { gql } from "@apollo/client"
 import { apollo } from ".."
 import {
   ApiKeyCreateDocument,
-  ApiKeyCreateInput,
+  ApiKeyCreateMutation,
   ApiKeyRevokeDocument,
-  ApiKeyRevokeInput,
+  ApiKeyRevokeMutation,
 } from "../generated"
 
 gql`
@@ -23,7 +23,7 @@ gql`
 export async function createApiKey(token: string, name: string) {
   const client = apollo(token).getClient()
   try {
-    const { data } = await client.mutate<ApiKeyCreateInput>({
+    const { data } = await client.mutate<ApiKeyCreateMutation>({
       mutation: ApiKeyCreateDocument,
       variables: { input: { name } },
     })
@@ -37,7 +37,7 @@ export async function createApiKey(token: string, name: string) {
 export async function revokeApiKey(token: string, id: string) {
   const client = apollo(token).getClient()
   try {
-    const { data } = await client.mutate<ApiKeyRevokeInput>({
+    const { data } = await client.mutate<ApiKeyRevokeMutation>({
       mutation: ApiKeyRevokeDocument,
       variables: { input: id },
     })
