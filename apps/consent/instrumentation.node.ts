@@ -8,12 +8,11 @@ import { HttpInstrumentation } from "@opentelemetry/instrumentation-http"
 import { GraphQLInstrumentation } from "@opentelemetry/instrumentation-graphql"
 import { W3CTraceContextPropagator } from "@opentelemetry/core"
 
-import { env } from "./env"
-
 const sdk = new NodeSDK({
   textMapPropagator: new W3CTraceContextPropagator(),
   resource: new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: env.TRACING_SERVICE_NAME,
+    [SemanticResourceAttributes.SERVICE_NAME]:
+      process.env.TRACING_SERVICE_NAME || "consent",
   }),
   spanProcessor: new SimpleSpanProcessor(new OTLPTraceExporter()),
   instrumentations: [
@@ -31,6 +30,6 @@ process.on("SIGTERM", () => {
   sdk
     .shutdown()
     .then(() => console.log("Tracing terminated"))
-    .catch((error: Error) => console.log("Error terminating tracing", error))
+    .catch((error) => console.log("Error terminating tracing", error))
     .finally(() => process.exit(0))
 })
