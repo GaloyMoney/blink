@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: changed otel version in consent and dashboard (#3481)...'
-      sha: c7c15eb3e2313b24a18348de42d3b8d8517a441c
+      commitTitle: 'fix: setup hydra client single script (#3482)'
+      sha: 1a5e73684cff7c533db1dd5f4761da62d9bb1670
       tags:
-      - 0.15.77-2-gc7c15eb3e
+      - 0.15.78-2-g1a5e73684
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: changed otel version in consent and dashboard (#3481)...'
-      sha: c7c15eb3e2313b24a18348de42d3b8d8517a441c
+      commitTitle: 'fix: setup hydra client single script (#3482)'
+      sha: 1a5e73684cff7c533db1dd5f4761da62d9bb1670
       tags:
-      - 0.15.77-2-gc7c15eb3e
+      - 0.15.78-2-g1a5e73684
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: changed otel version in consent and dashboard (#3481)...'
-      sha: c7c15eb3e2313b24a18348de42d3b8d8517a441c
+      commitTitle: 'fix: setup hydra client single script (#3482)'
+      sha: 1a5e73684cff7c533db1dd5f4761da62d9bb1670
       tags:
-      - 0.15.78
+      - 0.15.78-2-g1a5e73684
     path: ./
   path: ./graphql
 kind: LockConfig
