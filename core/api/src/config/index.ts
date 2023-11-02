@@ -15,6 +15,7 @@ import { ConfigError } from "./error"
 import { toDays } from "@/domain/primitives"
 
 export const MS_PER_SEC = 1000 as MilliSeconds
+export const MS_PER_5_MINS = (60 * 5 * MS_PER_SEC) as MilliSeconds
 export const MS_PER_HOUR = (60 * 60 * MS_PER_SEC) as MilliSeconds
 export const MS_PER_DAY = (24 * MS_PER_HOUR) as MilliSeconds
 export const TWO_MONTHS_IN_MS = (60 * MS_PER_DAY) as MilliSeconds
