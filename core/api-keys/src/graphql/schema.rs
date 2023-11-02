@@ -1,10 +1,10 @@
 use async_graphql::*;
 use chrono::{DateTime, Utc};
 
-pub struct QueryRoot;
+pub struct Query;
 
 #[Object]
-impl QueryRoot {
+impl Query {
     #[graphql(entity)]
     async fn consumer_account(&self, id: ID) -> Option<ConsumerAccount> {
         let api_keys = vec![
@@ -56,15 +56,33 @@ struct ConsumerAccount {
     api_keys: Vec<ApiKey>,
 }
 
-pub struct MutationRoot;
+#[derive(SimpleObject)]
+struct ApiKeyCreatePayload {
+    key_id: ID,
+    api_key: ApiKey,
+}
+
+pub struct Mutation;
 
 #[Object]
-impl MutationRoot {
-    async fn hello_world_mutation(&self) -> &str {
-        "Hello, world!"
+impl Mutation {
+    async fn api_keys_create(&self) -> Result<ApiKeyCreatePayload> {
+        let api_key = ApiKey {
+            id: ID::from("123"),
+            name: "GeneratedApiKey".to_owned(),
+            created_at: Utc::now(),
+            expiration: Utc::now() + chrono::Duration::days(30),
+            last_use: Utc::now(),
+            scopes: vec![],
+        };
+
+        Ok(ApiKeyCreatePayload {
+            key_id: ID::from("123"),
+            api_key,
+        })
     }
 }
 
-pub fn schema() -> Schema<QueryRoot, MutationRoot, EmptySubscription> {
-    Schema::build(QueryRoot, MutationRoot, EmptySubscription).finish()
+pub fn schema() -> Schema<Query, Mutation, EmptySubscription> {
+    Schema::build(Query, Mutation, EmptySubscription).finish()
 }

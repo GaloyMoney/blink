@@ -7,6 +7,11 @@ type ApiKey {
 	scopes: [Scope!]!
 }
 
+type ApiKeyCreatePayload {
+	keyId: ID!
+	apiKey: ApiKey!
+}
+
 
 extend type ConsumerAccount @key(fields: "id") {
 	id: ID! @external
@@ -23,8 +28,8 @@ scalar DateTime
 
 
 
-type MutationRoot {
-	helloWorldMutation: String!
+type Mutation {
+	apiKeysCreate: ApiKeyCreatePayload!
 }
 
 

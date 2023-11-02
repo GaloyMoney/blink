@@ -7,7 +7,7 @@ use crate::admin_client::AdminClient;
 use super::{config::*, schema::*};
 
 pub async fn run_server(config: ServerConfig, admin_client: AdminClient) {
-    let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription).finish();
+    let schema = Schema::build(Query, Mutation, EmptySubscription).finish();
 
     let app = Router::new()
         .route(
@@ -26,7 +26,7 @@ pub async fn run_server(config: ServerConfig, admin_client: AdminClient) {
 
 async fn graphql_handler(
     admin_client: Extension<AdminClient>,
-    schema: Extension<Schema<QueryRoot, MutationRoot, EmptySubscription>>,
+    schema: Extension<Schema<Query, Mutation, EmptySubscription>>,
     req: GraphQLRequest,
 ) -> GraphQLResponse {
     let mut req = req.into_inner();
