@@ -8,8 +8,8 @@ pub struct Query;
 #[Object]
 impl Query {
     #[graphql(entity)]
-    async fn consumer_account(&self, id: ID) -> Option<ConsumerAccount> {
-        Some(ConsumerAccount { id })
+    async fn me(&self, id: ID) -> Option<User> {
+        Some(User { id })
     }
 }
 
@@ -24,13 +24,13 @@ struct ApiKey {
 #[derive(SimpleObject)]
 #[graphql(extends)]
 #[graphql(complex)]
-struct ConsumerAccount {
+struct User {
     #[graphql(external)]
     id: ID,
 }
 
 #[ComplexObject]
-impl ConsumerAccount {
+impl User {
     async fn api_keys(&self) -> Vec<ApiKey> {
         vec![ApiKey {
             id: ID::from("123"),

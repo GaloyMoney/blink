@@ -6,7 +6,7 @@ use crate::{app::ApiKeysApp, graphql};
 
 pub use config::*;
 
-pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) {
+pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) -> anyhow::Result<()> {
     let schema = graphql::schema(Some(api_keys_app));
 
     let app = Router::new()
@@ -20,8 +20,8 @@ pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) {
     println!("Starting graphql server on port {}", config.port);
     axum::Server::bind(&std::net::SocketAddr::from(([0, 0, 0, 0], config.port)))
         .serve(app.into_make_service())
-        .await
-        .unwrap();
+        .await?;
+    Ok(())
 }
 
 async fn check_handler() -> impl axum::response::IntoResponse {

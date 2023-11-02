@@ -32,7 +32,7 @@ teardown_file() {
 @test "api-keys: can authenticate with api key" {
   exec_graphql 'alice' 'api-keys'
 
-  keyName="$(graphql_output '.data.me.defaultAccount.apiKeys[0].name')"
+  keyName="$(graphql_output '.data.me.apiKeys[0].name')"
 
   [[ "${keyName}" = "api-key" ]] || exit 1
 }

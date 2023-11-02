@@ -2,7 +2,7 @@ mod schema;
 
 use async_graphql::*;
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
-use axum::Extension;
+use axum::{http::HeaderMap, Extension};
 
 use crate::app::ApiKeysApp;
 use schema::*;
@@ -18,8 +18,13 @@ pub fn schema(app: Option<ApiKeysApp>) -> Schema<Query, Mutation, EmptySubscript
 
 pub async fn handler(
     schema: Extension<Schema<Query, Mutation, EmptySubscription>>,
+    headers: HeaderMap,
     req: GraphQLRequest,
 ) -> GraphQLResponse {
+    println!("HEADERS");
+    for (key, value) in headers.iter() {
+        println!("{}: {}", key.as_str(), value.to_str().unwrap_or_default());
+    }
     let req = req.into_inner();
     schema.execute(req).await.into()
 }

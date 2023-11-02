@@ -182,35 +182,17 @@ def _buck2_dep_inputs(target):
 
     return file_paths
 
-local_resource(
-  name='hydra-api-keys',
-  labels = ['core'],
-  cmd=[
-    'buck2',
-    'run',
-    '//dev:setup-hydra-client',
-    '--',
-    'api-keys',
-    'client_credentials'
-  ],
-  resource_deps = [
-    "hydra",
-  ]
-)
-
 api_keys_target = "//core/api-keys:api-keys"
 local_resource(
     "api-keys",
     labels = ["core"],
     cmd = "buck2 build {}".format(api_keys_target),
-    serve_cmd = ". .envs/api-keys.env && buck2 run {} -- run".format(api_keys_target),
+    serve_cmd = "buck2 run {} -- run".format(api_keys_target),
     serve_env = {
-      "HYDRA_API": "",
-      "ADMIN_API": "", 
+      "PG_CON": "",
     },
     deps = _buck2_dep_inputs(api_keys_target),
     resource_deps = [
-       "hydra-api-keys",
        "api"
     ]
 )
