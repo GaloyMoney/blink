@@ -36,7 +36,7 @@ export const getCaptchaChallenge = async (
   ) {
     throw new Error("Invalid Values provided")
   }
-  channel = channel.toUpperCase()
+  channel = channel.toLowerCase()
   if (submitValue === SubmitValue.denyAccess) {
     console.log("User denied access")
     const response = await hydraClient.rejectOAuth2LoginRequest({
