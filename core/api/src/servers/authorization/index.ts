@@ -261,7 +261,7 @@ authRouter.post("/phone/code", async (req: Request, res: Response) => {
   const challengeCodeRaw = req.body.challengeCode
   const validationCodeRaw = req.body.validationCode
   const secCodeRaw = req.body.secCode
-  const channel = req.body.channel ?? "SMS"
+  const channel = req.body.channel ?? "sms"
 
   if (!phoneRaw || !challengeCodeRaw || !validationCodeRaw || !secCodeRaw)
     return res.status(400).send({ error: "missing inputs" })
