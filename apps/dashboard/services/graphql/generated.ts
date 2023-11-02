@@ -28,6 +28,12 @@ export type Scalars = {
   ContactAlias: { input: string; output: string; }
   /** A CCA2 country code (ex US, FR, etc) */
   CountryCode: { input: string; output: string; }
+  /**
+   * Implement the DateTime<Utc> scalar
+   *
+   * The input/output is a string in RFC3339 format.
+   */
+  DateTime: { input: z; output: z; }
   /** Display currency of an account */
   DisplayCurrency: { input: string; output: string; }
   /** Email address */
@@ -42,7 +48,6 @@ export type Scalars = {
   /** Hex-encoded string of 32 bytes */
   Hex32Bytes: { input: string; output: string; }
   Language: { input: string; output: string; }
-  LeaderboardName: { input: string; output: string; }
   LnPaymentPreImage: { input: string; output: string; }
   /** BOLT11 lightning invoice payment request with the amount included */
   LnPaymentRequest: { input: string; output: string; }
@@ -96,6 +101,7 @@ export type Account = {
   readonly notificationSettings: NotificationSettings;
   readonly realtimePrice: RealtimePrice;
   readonly transactions?: Maybe<TransactionConnection>;
+  readonly walletById: Wallet;
   readonly wallets: ReadonlyArray<Wallet>;
 };
 
@@ -111,6 +117,11 @@ export type AccountTransactionsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
   walletIds?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['WalletId']['input']>>>;
+};
+
+
+export type AccountWalletByIdArgs = {
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type AccountDeletePayload = {
@@ -189,6 +200,28 @@ export type AccountUpdateNotificationSettingsPayload = {
   readonly errors: ReadonlyArray<Error>;
 };
 
+export type ApiKey = {
+  readonly __typename: 'ApiKey';
+  readonly createdAt: Scalars['DateTime']['output'];
+  readonly expiration: Scalars['DateTime']['output'];
+  readonly id: Scalars['ID']['output'];
+  readonly name: Scalars['String']['output'];
+};
+
+export type ApiKeyCreateInput = {
+  readonly name: Scalars['String']['input'];
+};
+
+export type ApiKeyCreatePayload = {
+  readonly __typename: 'ApiKeyCreatePayload';
+  readonly apiKey: ApiKey;
+  readonly apiKeySecret: Scalars['String']['output'];
+};
+
+export type ApiKeyRevokeInput = {
+  readonly id: Scalars['ID']['input'];
+};
+
 export type AuthTokenPayload = {
   readonly __typename: 'AuthTokenPayload';
   readonly authToken?: Maybe<Scalars['AuthToken']['output']>;
@@ -203,12 +236,27 @@ export type BtcWallet = Wallet & {
   /** A balance stored in BTC. */
   readonly balance: Scalars['SignedAmount']['output'];
   readonly id: Scalars['ID']['output'];
+  readonly invoiceByPaymentHash: Invoice;
   /** An unconfirmed incoming onchain balance. */
   readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
+  readonly transactionById: Transaction;
   /** A list of BTC transactions associated with this wallet. */
   readonly transactions?: Maybe<TransactionConnection>;
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
+  readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletInvoiceByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletTransactionByIdArgs = {
+  transactionId: Scalars['ID']['input'];
 };
 
 
@@ -228,6 +276,12 @@ export type BtcWalletTransactionsByAddressArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletTransactionsByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
 };
 
 export type BuildInformation = {
@@ -287,6 +341,7 @@ export type CentAmountPayload = {
 
 export type ConsumerAccount = Account & {
   readonly __typename: 'ConsumerAccount';
+  readonly apiKeys: ReadonlyArray<ApiKey>;
   readonly callbackEndpoints: ReadonlyArray<CallbackEndpoint>;
   /** return CSV stream, base64 encoded, of the list of transactions in the wallet */
   readonly csvTransactions: Scalars['String']['output'];
@@ -301,8 +356,8 @@ export type ConsumerAccount = Account & {
   readonly realtimePrice: RealtimePrice;
   /** A list of all transactions associated with walletIds optionally passed. */
   readonly transactions?: Maybe<TransactionConnection>;
+  readonly walletById: Wallet;
   readonly wallets: ReadonlyArray<Wallet>;
-  readonly welcomeProfile?: Maybe<WelcomeProfile>;
 };
 
 
@@ -317,6 +372,11 @@ export type ConsumerAccountTransactionsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
   walletIds?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['WalletId']['input']>>>;
+};
+
+
+export type ConsumerAccountWalletByIdArgs = {
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type Coordinates = {
@@ -454,6 +514,18 @@ export type IntraLedgerUsdPaymentSendInput = {
   readonly walletId: Scalars['WalletId']['input'];
 };
 
+/** A lightning invoice. */
+export type Invoice = {
+  /** The payment hash of the lightning invoice. */
+  readonly paymentHash: Scalars['PaymentHash']['output'];
+  /** The bolt11 invoice to be paid. */
+  readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
+  /** The payment secret of the lightning invoice. This is not the preimage of the payment hash. */
+  readonly paymentSecret: Scalars['LnPaymentSecret']['output'];
+  /** The payment status of the invoice. */
+  readonly paymentStatus: InvoicePaymentStatus;
+};
+
 export const InvoicePaymentStatus = {
   Expired: 'EXPIRED',
   Paid: 'PAID',
@@ -461,24 +533,12 @@ export const InvoicePaymentStatus = {
 } as const;
 
 export type InvoicePaymentStatus = typeof InvoicePaymentStatus[keyof typeof InvoicePaymentStatus];
-export type Leader = {
-  readonly __typename: 'Leader';
-  readonly name?: Maybe<Scalars['LeaderboardName']['output']>;
-  readonly points: Scalars['Int']['output'];
-  readonly rank: Scalars['Int']['output'];
-};
-
-export type Leaderboard = {
-  readonly __typename: 'Leaderboard';
-  readonly leaders: ReadonlyArray<Leader>;
-  readonly range: WelcomeRange;
-};
-
-export type LnInvoice = {
+export type LnInvoice = Invoice & {
   readonly __typename: 'LnInvoice';
   readonly paymentHash: Scalars['PaymentHash']['output'];
   readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
   readonly paymentSecret: Scalars['LnPaymentSecret']['output'];
+  readonly paymentStatus: InvoicePaymentStatus;
   readonly satoshis?: Maybe<Scalars['SatAmount']['output']>;
 };
 
@@ -535,11 +595,12 @@ export type LnInvoicePaymentStatusPayload = {
   readonly status?: Maybe<InvoicePaymentStatus>;
 };
 
-export type LnNoAmountInvoice = {
+export type LnNoAmountInvoice = Invoice & {
   readonly __typename: 'LnNoAmountInvoice';
   readonly paymentHash: Scalars['PaymentHash']['output'];
   readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
   readonly paymentSecret: Scalars['LnPaymentSecret']['output'];
+  readonly paymentStatus: InvoicePaymentStatus;
 };
 
 export type LnNoAmountInvoiceCreateInput = {
@@ -675,6 +736,8 @@ export type Mutation = {
   readonly accountEnableNotificationChannel: AccountUpdateNotificationSettingsPayload;
   readonly accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdPayload;
   readonly accountUpdateDisplayCurrency: AccountUpdateDisplayCurrencyPayload;
+  readonly apiKeyCreate: ApiKeyCreatePayload;
+  readonly apiKeyRevoke: Scalars['Boolean']['output'];
   readonly callbackEndpointAdd: CallbackEndpointAddPayload;
   readonly callbackEndpointDelete: SuccessPayload;
   readonly captchaCreateChallenge: CaptchaCreateChallengePayload;
@@ -814,6 +877,16 @@ export type MutationAccountUpdateDefaultWalletIdArgs = {
 
 export type MutationAccountUpdateDisplayCurrencyArgs = {
   input: AccountUpdateDisplayCurrencyInput;
+};
+
+
+export type MutationApiKeyCreateArgs = {
+  input: ApiKeyCreateInput;
+};
+
+
+export type MutationApiKeyRevokeArgs = {
+  input: ApiKeyRevokeInput;
 };
 
 
@@ -1069,7 +1142,7 @@ export type OnChainAddressPayload = {
 export type OnChainPaymentSendAllInput = {
   readonly address: Scalars['OnChainAddress']['input'];
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly speed?: InputMaybe<PayoutSpeed>;
+  readonly speed?: PayoutSpeed;
   readonly walletId: Scalars['WalletId']['input'];
 };
 
@@ -1077,7 +1150,7 @@ export type OnChainPaymentSendInput = {
   readonly address: Scalars['OnChainAddress']['input'];
   readonly amount: Scalars['SatAmount']['input'];
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly speed?: InputMaybe<PayoutSpeed>;
+  readonly speed?: PayoutSpeed;
   readonly walletId: Scalars['WalletId']['input'];
 };
 
@@ -1101,7 +1174,7 @@ export type OnChainUsdPaymentSendAsBtcDenominatedInput = {
   readonly address: Scalars['OnChainAddress']['input'];
   readonly amount: Scalars['SatAmount']['input'];
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly speed?: InputMaybe<PayoutSpeed>;
+  readonly speed?: PayoutSpeed;
   readonly walletId: Scalars['WalletId']['input'];
 };
 
@@ -1109,7 +1182,7 @@ export type OnChainUsdPaymentSendInput = {
   readonly address: Scalars['OnChainAddress']['input'];
   readonly amount: Scalars['CentAmount']['input'];
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly speed?: InputMaybe<PayoutSpeed>;
+  readonly speed?: PayoutSpeed;
   readonly walletId: Scalars['WalletId']['input'];
 };
 
@@ -1250,8 +1323,6 @@ export type PublicWallet = {
 export type Query = {
   readonly __typename: 'Query';
   readonly accountDefaultWallet: PublicWallet;
-  /** @deprecated Deprecated in favor of realtimePrice */
-  readonly btcPrice?: Maybe<Price>;
   readonly btcPriceList?: Maybe<ReadonlyArray<Maybe<PricePoint>>>;
   readonly businessMapMarkers?: Maybe<ReadonlyArray<Maybe<MapMarker>>>;
   readonly currencyList: ReadonlyArray<Currency>;
@@ -1269,18 +1340,12 @@ export type Query = {
   /** @deprecated will be migrated to AccountDefaultWalletId */
   readonly userDefaultWalletId: Scalars['WalletId']['output'];
   readonly usernameAvailable?: Maybe<Scalars['Boolean']['output']>;
-  readonly welcomeLeaderboard: Leaderboard;
 };
 
 
 export type QueryAccountDefaultWalletArgs = {
   username: Scalars['Username']['input'];
   walletCurrency?: InputMaybe<WalletCurrency>;
-};
-
-
-export type QueryBtcPriceArgs = {
-  currency?: Scalars['DisplayCurrency']['input'];
 };
 
 
@@ -1297,7 +1362,7 @@ export type QueryLnInvoicePaymentStatusArgs = {
 export type QueryOnChainTxFeeArgs = {
   address: Scalars['OnChainAddress']['input'];
   amount: Scalars['SatAmount']['input'];
-  speed?: InputMaybe<PayoutSpeed>;
+  speed?: PayoutSpeed;
   walletId: Scalars['WalletId']['input'];
 };
 
@@ -1305,7 +1370,7 @@ export type QueryOnChainTxFeeArgs = {
 export type QueryOnChainUsdTxFeeArgs = {
   address: Scalars['OnChainAddress']['input'];
   amount: Scalars['CentAmount']['input'];
-  speed?: InputMaybe<PayoutSpeed>;
+  speed?: PayoutSpeed;
   walletId: Scalars['WalletId']['input'];
 };
 
@@ -1313,7 +1378,7 @@ export type QueryOnChainUsdTxFeeArgs = {
 export type QueryOnChainUsdTxFeeAsBtcDenominatedArgs = {
   address: Scalars['OnChainAddress']['input'];
   amount: Scalars['SatAmount']['input'];
-  speed?: InputMaybe<PayoutSpeed>;
+  speed?: PayoutSpeed;
   walletId: Scalars['WalletId']['input'];
 };
 
@@ -1330,11 +1395,6 @@ export type QueryUserDefaultWalletIdArgs = {
 
 export type QueryUsernameAvailableArgs = {
   username: Scalars['Username']['input'];
-};
-
-
-export type QueryWelcomeLeaderboardArgs = {
-  input: WelcomeLeaderboardInput;
 };
 
 export type Quiz = {
@@ -1524,11 +1584,26 @@ export type UsdWallet = Wallet & {
   readonly accountId: Scalars['ID']['output'];
   readonly balance: Scalars['SignedAmount']['output'];
   readonly id: Scalars['ID']['output'];
+  readonly invoiceByPaymentHash: Invoice;
   /** An unconfirmed incoming onchain balance. */
   readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
+  readonly transactionById: Transaction;
   readonly transactions?: Maybe<TransactionConnection>;
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
+  readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletInvoiceByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletTransactionByIdArgs = {
+  transactionId: Scalars['ID']['input'];
 };
 
 
@@ -1548,6 +1623,12 @@ export type UsdWalletTransactionsByAddressArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletTransactionsByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
 };
 
 export type User = {
@@ -1759,7 +1840,9 @@ export type Wallet = {
   readonly accountId: Scalars['ID']['output'];
   readonly balance: Scalars['SignedAmount']['output'];
   readonly id: Scalars['ID']['output'];
+  readonly invoiceByPaymentHash: Invoice;
   readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
+  readonly transactionById: Transaction;
   /**
    * Transactions are ordered anti-chronologically,
    * ie: the newest transaction will be first
@@ -1770,7 +1853,21 @@ export type Wallet = {
    * ie: the newest transaction will be first
    */
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
+  /** Returns the transactions that include this paymentHash. This should be a list of size one for a received lightning payment. This can be more that one transaction for a sent lightning payment. */
+  readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletInvoiceByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletTransactionByIdArgs = {
+  transactionId: Scalars['ID']['input'];
 };
 
 
@@ -1792,35 +1889,18 @@ export type WalletTransactionsByAddressArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
 };
 
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletTransactionsByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
 export const WalletCurrency = {
   Btc: 'BTC',
   Usd: 'USD'
 } as const;
 
 export type WalletCurrency = typeof WalletCurrency[keyof typeof WalletCurrency];
-export type WelcomeLeaderboardInput = {
-  readonly range: WelcomeRange;
-};
-
-export type WelcomeProfile = {
-  readonly __typename: 'WelcomeProfile';
-  readonly allTimePoints: Scalars['Int']['output'];
-  readonly allTimeRank: Scalars['Int']['output'];
-  readonly innerCircleAllTimeCount: Scalars['Int']['output'];
-  readonly innerCircleThisMonthCount: Scalars['Int']['output'];
-  readonly leaderboardName?: Maybe<Scalars['LeaderboardName']['output']>;
-  readonly outerCircleAllTimeCount: Scalars['Int']['output'];
-  readonly outerCircleThisMonthCount: Scalars['Int']['output'];
-  readonly thisMonthPoints: Scalars['Int']['output'];
-  readonly thisMonthRank: Scalars['Int']['output'];
-};
-
-export const WelcomeRange = {
-  AllTime: 'AllTime',
-  ThisMonth: 'ThisMonth'
-} as const;
-
-export type WelcomeRange = typeof WelcomeRange[keyof typeof WelcomeRange];
 export type UserEmailRegistrationInitiateMutationVariables = Exact<{
   input: UserEmailRegistrationInitiateInput;
 }>;
@@ -1839,6 +1919,11 @@ export type UserEmailDeleteMutationVariables = Exact<{ [key: string]: never; }>;
 
 
 export type UserEmailDeleteMutation = { readonly __typename: 'Mutation', readonly userEmailDelete: { readonly __typename: 'UserEmailDeletePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly code?: string | null, readonly message: string }> } };
+
+export type ApiKeysQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ApiKeysQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly apiKeys: ReadonlyArray<{ readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: z, readonly expiration: z }> } } | null };
 
 export type GetPaginatedTransactionsQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1970,6 +2055,49 @@ export function useUserEmailDeleteMutation(baseOptions?: Apollo.MutationHookOpti
 export type UserEmailDeleteMutationHookResult = ReturnType<typeof useUserEmailDeleteMutation>;
 export type UserEmailDeleteMutationResult = Apollo.MutationResult<UserEmailDeleteMutation>;
 export type UserEmailDeleteMutationOptions = Apollo.BaseMutationOptions<UserEmailDeleteMutation, UserEmailDeleteMutationVariables>;
+export const ApiKeysDocument = gql`
+    query ApiKeys {
+  me {
+    defaultAccount {
+      ... on ConsumerAccount {
+        apiKeys {
+          id
+          name
+          createdAt
+          expiration
+        }
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useApiKeysQuery__
+ *
+ * To run a query within a React component, call `useApiKeysQuery` and pass it any options that fit your needs.
+ * When your component renders, `useApiKeysQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useApiKeysQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useApiKeysQuery(baseOptions?: Apollo.QueryHookOptions<ApiKeysQuery, ApiKeysQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ApiKeysQuery, ApiKeysQueryVariables>(ApiKeysDocument, options);
+      }
+export function useApiKeysLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ApiKeysQuery, ApiKeysQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ApiKeysQuery, ApiKeysQueryVariables>(ApiKeysDocument, options);
+        }
+export type ApiKeysQueryHookResult = ReturnType<typeof useApiKeysQuery>;
+export type ApiKeysLazyQueryHookResult = ReturnType<typeof useApiKeysLazyQuery>;
+export type ApiKeysQueryResult = Apollo.QueryResult<ApiKeysQuery, ApiKeysQueryVariables>;
 export const GetPaginatedTransactionsDocument = gql`
     query GetPaginatedTransactions($first: Int, $after: String, $before: String) {
   me {
@@ -2293,6 +2421,7 @@ export type ResolversInterfaceTypes<RefType extends Record<string, unknown>> = {
   Account: ( ConsumerAccount );
   AccountLimit: ( OneDayAccountLimit );
   Error: ( GraphQlApplicationError );
+  Invoice: ( LnInvoice ) | ( LnNoAmountInvoice );
   PriceInterface: ( PriceOfOneSatInMinorUnit ) | ( PriceOfOneSettlementMinorUnitInDisplayMinorUnit ) | ( PriceOfOneUsdCentInMinorUnit );
   Wallet: ( BtcWallet ) | ( UsdWallet );
 };
@@ -2317,6 +2446,10 @@ export type ResolversTypes = {
   AccountUpdateDisplayCurrencyInput: AccountUpdateDisplayCurrencyInput;
   AccountUpdateDisplayCurrencyPayload: ResolverTypeWrapper<AccountUpdateDisplayCurrencyPayload>;
   AccountUpdateNotificationSettingsPayload: ResolverTypeWrapper<AccountUpdateNotificationSettingsPayload>;
+  ApiKey: ResolverTypeWrapper<ApiKey>;
+  ApiKeyCreateInput: ApiKeyCreateInput;
+  ApiKeyCreatePayload: ResolverTypeWrapper<ApiKeyCreatePayload>;
+  ApiKeyRevokeInput: ApiKeyRevokeInput;
   AuthToken: ResolverTypeWrapper<Scalars['AuthToken']['output']>;
   AuthTokenPayload: ResolverTypeWrapper<AuthTokenPayload>;
   BTCWallet: ResolverTypeWrapper<BtcWallet>;
@@ -2337,6 +2470,7 @@ export type ResolversTypes = {
   Country: ResolverTypeWrapper<Country>;
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
   Currency: ResolverTypeWrapper<Currency>;
+  DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
   DepositFeesInformation: ResolverTypeWrapper<DepositFeesInformation>;
   DeviceNotificationTokenCreateInput: DeviceNotificationTokenCreateInput;
   DisplayCurrency: ResolverTypeWrapper<Scalars['DisplayCurrency']['output']>;
@@ -2360,11 +2494,9 @@ export type ResolversTypes = {
   IntraLedgerPaymentSendInput: IntraLedgerPaymentSendInput;
   IntraLedgerUpdate: ResolverTypeWrapper<IntraLedgerUpdate>;
   IntraLedgerUsdPaymentSendInput: IntraLedgerUsdPaymentSendInput;
+  Invoice: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Invoice']>;
   InvoicePaymentStatus: InvoicePaymentStatus;
   Language: ResolverTypeWrapper<Scalars['Language']['output']>;
-  Leader: ResolverTypeWrapper<Leader>;
-  Leaderboard: ResolverTypeWrapper<Leaderboard>;
-  LeaderboardName: ResolverTypeWrapper<Scalars['LeaderboardName']['output']>;
   LnInvoice: ResolverTypeWrapper<LnInvoice>;
   LnInvoiceCreateInput: LnInvoiceCreateInput;
   LnInvoiceCreateOnBehalfOfRecipientInput: LnInvoiceCreateOnBehalfOfRecipientInput;
@@ -2496,9 +2628,6 @@ export type ResolversTypes = {
   Wallet: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Wallet']>;
   WalletCurrency: WalletCurrency;
   WalletId: ResolverTypeWrapper<Scalars['WalletId']['output']>;
-  WelcomeLeaderboardInput: WelcomeLeaderboardInput;
-  WelcomeProfile: ResolverTypeWrapper<WelcomeProfile>;
-  WelcomeRange: WelcomeRange;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -2520,6 +2649,10 @@ export type ResolversParentTypes = {
   AccountUpdateDisplayCurrencyInput: AccountUpdateDisplayCurrencyInput;
   AccountUpdateDisplayCurrencyPayload: AccountUpdateDisplayCurrencyPayload;
   AccountUpdateNotificationSettingsPayload: AccountUpdateNotificationSettingsPayload;
+  ApiKey: ApiKey;
+  ApiKeyCreateInput: ApiKeyCreateInput;
+  ApiKeyCreatePayload: ApiKeyCreatePayload;
+  ApiKeyRevokeInput: ApiKeyRevokeInput;
   AuthToken: Scalars['AuthToken']['output'];
   AuthTokenPayload: AuthTokenPayload;
   BTCWallet: BtcWallet;
@@ -2540,6 +2673,7 @@ export type ResolversParentTypes = {
   Country: Country;
   CountryCode: Scalars['CountryCode']['output'];
   Currency: Currency;
+  DateTime: Scalars['DateTime']['output'];
   DepositFeesInformation: DepositFeesInformation;
   DeviceNotificationTokenCreateInput: DeviceNotificationTokenCreateInput;
   DisplayCurrency: Scalars['DisplayCurrency']['output'];
@@ -2562,10 +2696,8 @@ export type ResolversParentTypes = {
   IntraLedgerPaymentSendInput: IntraLedgerPaymentSendInput;
   IntraLedgerUpdate: IntraLedgerUpdate;
   IntraLedgerUsdPaymentSendInput: IntraLedgerUsdPaymentSendInput;
+  Invoice: ResolversInterfaceTypes<ResolversParentTypes>['Invoice'];
   Language: Scalars['Language']['output'];
-  Leader: Leader;
-  Leaderboard: Leaderboard;
-  LeaderboardName: Scalars['LeaderboardName']['output'];
   LnInvoice: LnInvoice;
   LnInvoiceCreateInput: LnInvoiceCreateInput;
   LnInvoiceCreateOnBehalfOfRecipientInput: LnInvoiceCreateOnBehalfOfRecipientInput;
@@ -2687,8 +2819,6 @@ export type ResolversParentTypes = {
   Username: Scalars['Username']['output'];
   Wallet: ResolversInterfaceTypes<ResolversParentTypes>['Wallet'];
   WalletId: Scalars['WalletId']['output'];
-  WelcomeLeaderboardInput: WelcomeLeaderboardInput;
-  WelcomeProfile: WelcomeProfile;
 };
 
 export type DeferDirectiveArgs = {
@@ -2710,6 +2840,7 @@ export type AccountResolvers<ContextType = any, ParentType extends ResolversPare
   notificationSettings?: Resolver<ResolversTypes['NotificationSettings'], ParentType, ContextType>;
   realtimePrice?: Resolver<ResolversTypes['RealtimePrice'], ParentType, ContextType>;
   transactions?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, Partial<AccountTransactionsArgs>>;
+  walletById?: Resolver<ResolversTypes['Wallet'], ParentType, ContextType, RequireFields<AccountWalletByIdArgs, 'walletId'>>;
   wallets?: Resolver<ReadonlyArray<ResolversTypes['Wallet']>, ParentType, ContextType>;
 };
 
@@ -2751,6 +2882,20 @@ export type AccountUpdateNotificationSettingsPayloadResolvers<ContextType = any,
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type ApiKeyResolvers<ContextType = any, ParentType extends ResolversParentTypes['ApiKey'] = ResolversParentTypes['ApiKey']> = {
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  expiration?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type ApiKeyCreatePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['ApiKeyCreatePayload'] = ResolversParentTypes['ApiKeyCreatePayload']> = {
+  apiKey?: Resolver<ResolversTypes['ApiKey'], ParentType, ContextType>;
+  apiKeySecret?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export interface AuthTokenScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['AuthToken'], any> {
   name: 'AuthToken';
 }
@@ -2766,9 +2911,12 @@ export type BtcWalletResolvers<ContextType = any, ParentType extends ResolversPa
   accountId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   balance?: Resolver<ResolversTypes['SignedAmount'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  invoiceByPaymentHash?: Resolver<ResolversTypes['Invoice'], ParentType, ContextType, RequireFields<BtcWalletInvoiceByPaymentHashArgs, 'paymentHash'>>;
   pendingIncomingBalance?: Resolver<ResolversTypes['SignedAmount'], ParentType, ContextType>;
+  transactionById?: Resolver<ResolversTypes['Transaction'], ParentType, ContextType, RequireFields<BtcWalletTransactionByIdArgs, 'transactionId'>>;
   transactions?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, Partial<BtcWalletTransactionsArgs>>;
   transactionsByAddress?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, RequireFields<BtcWalletTransactionsByAddressArgs, 'address'>>;
+  transactionsByPaymentHash?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType, RequireFields<BtcWalletTransactionsByPaymentHashArgs, 'paymentHash'>>;
   walletCurrency?: Resolver<ResolversTypes['WalletCurrency'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2816,6 +2964,7 @@ export type CentAmountPayloadResolvers<ContextType = any, ParentType extends Res
 };
 
 export type ConsumerAccountResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConsumerAccount'] = ResolversParentTypes['ConsumerAccount']> = {
+  apiKeys?: Resolver<ReadonlyArray<ResolversTypes['ApiKey']>, ParentType, ContextType>;
   callbackEndpoints?: Resolver<ReadonlyArray<ResolversTypes['CallbackEndpoint']>, ParentType, ContextType>;
   csvTransactions?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<ConsumerAccountCsvTransactionsArgs, 'walletIds'>>;
   defaultWalletId?: Resolver<ResolversTypes['WalletId'], ParentType, ContextType>;
@@ -2827,8 +2976,8 @@ export type ConsumerAccountResolvers<ContextType = any, ParentType extends Resol
   quiz?: Resolver<ReadonlyArray<ResolversTypes['Quiz']>, ParentType, ContextType>;
   realtimePrice?: Resolver<ResolversTypes['RealtimePrice'], ParentType, ContextType>;
   transactions?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, Partial<ConsumerAccountTransactionsArgs>>;
+  walletById?: Resolver<ResolversTypes['Wallet'], ParentType, ContextType, RequireFields<ConsumerAccountWalletByIdArgs, 'walletId'>>;
   wallets?: Resolver<ReadonlyArray<ResolversTypes['Wallet']>, ParentType, ContextType>;
-  welcomeProfile?: Resolver<Maybe<ResolversTypes['WelcomeProfile']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2860,6 +3009,10 @@ export type CurrencyResolvers<ContextType = any, ParentType extends ResolversPar
   symbol?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
+
+export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
+  name: 'DateTime';
+}
 
 export type DepositFeesInformationResolvers<ContextType = any, ParentType extends ResolversParentTypes['DepositFeesInformation'] = ResolversParentTypes['DepositFeesInformation']> = {
   minBankFee?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -2961,31 +3114,23 @@ export type IntraLedgerUpdateResolvers<ContextType = any, ParentType extends Res
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type InvoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Invoice'] = ResolversParentTypes['Invoice']> = {
+  __resolveType: TypeResolveFn<'LnInvoice' | 'LnNoAmountInvoice', ParentType, ContextType>;
+  paymentHash?: Resolver<ResolversTypes['PaymentHash'], ParentType, ContextType>;
+  paymentRequest?: Resolver<ResolversTypes['LnPaymentRequest'], ParentType, ContextType>;
+  paymentSecret?: Resolver<ResolversTypes['LnPaymentSecret'], ParentType, ContextType>;
+  paymentStatus?: Resolver<ResolversTypes['InvoicePaymentStatus'], ParentType, ContextType>;
+};
+
 export interface LanguageScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Language'], any> {
   name: 'Language';
-}
-
-export type LeaderResolvers<ContextType = any, ParentType extends ResolversParentTypes['Leader'] = ResolversParentTypes['Leader']> = {
-  name?: Resolver<Maybe<ResolversTypes['LeaderboardName']>, ParentType, ContextType>;
-  points?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  rank?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type LeaderboardResolvers<ContextType = any, ParentType extends ResolversParentTypes['Leaderboard'] = ResolversParentTypes['Leaderboard']> = {
-  leaders?: Resolver<ReadonlyArray<ResolversTypes['Leader']>, ParentType, ContextType>;
-  range?: Resolver<ResolversTypes['WelcomeRange'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export interface LeaderboardNameScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['LeaderboardName'], any> {
-  name: 'LeaderboardName';
 }
 
 export type LnInvoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['LnInvoice'] = ResolversParentTypes['LnInvoice']> = {
   paymentHash?: Resolver<ResolversTypes['PaymentHash'], ParentType, ContextType>;
   paymentRequest?: Resolver<ResolversTypes['LnPaymentRequest'], ParentType, ContextType>;
   paymentSecret?: Resolver<ResolversTypes['LnPaymentSecret'], ParentType, ContextType>;
+  paymentStatus?: Resolver<ResolversTypes['InvoicePaymentStatus'], ParentType, ContextType>;
   satoshis?: Resolver<Maybe<ResolversTypes['SatAmount']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -3006,6 +3151,7 @@ export type LnNoAmountInvoiceResolvers<ContextType = any, ParentType extends Res
   paymentHash?: Resolver<ResolversTypes['PaymentHash'], ParentType, ContextType>;
   paymentRequest?: Resolver<ResolversTypes['LnPaymentRequest'], ParentType, ContextType>;
   paymentSecret?: Resolver<ResolversTypes['LnPaymentSecret'], ParentType, ContextType>;
+  paymentStatus?: Resolver<ResolversTypes['InvoicePaymentStatus'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -3069,6 +3215,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   accountEnableNotificationChannel?: Resolver<ResolversTypes['AccountUpdateNotificationSettingsPayload'], ParentType, ContextType, RequireFields<MutationAccountEnableNotificationChannelArgs, 'input'>>;
   accountUpdateDefaultWalletId?: Resolver<ResolversTypes['AccountUpdateDefaultWalletIdPayload'], ParentType, ContextType, RequireFields<MutationAccountUpdateDefaultWalletIdArgs, 'input'>>;
   accountUpdateDisplayCurrency?: Resolver<ResolversTypes['AccountUpdateDisplayCurrencyPayload'], ParentType, ContextType, RequireFields<MutationAccountUpdateDisplayCurrencyArgs, 'input'>>;
+  apiKeyCreate?: Resolver<ResolversTypes['ApiKeyCreatePayload'], ParentType, ContextType, RequireFields<MutationApiKeyCreateArgs, 'input'>>;
+  apiKeyRevoke?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationApiKeyRevokeArgs, 'input'>>;
   callbackEndpointAdd?: Resolver<ResolversTypes['CallbackEndpointAddPayload'], ParentType, ContextType, RequireFields<MutationCallbackEndpointAddArgs, 'input'>>;
   callbackEndpointDelete?: Resolver<ResolversTypes['SuccessPayload'], ParentType, ContextType, RequireFields<MutationCallbackEndpointDeleteArgs, 'input'>>;
   captchaCreateChallenge?: Resolver<ResolversTypes['CaptchaCreateChallengePayload'], ParentType, ContextType>;
@@ -3261,7 +3409,6 @@ export type PublicWalletResolvers<ContextType = any, ParentType extends Resolver
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   accountDefaultWallet?: Resolver<ResolversTypes['PublicWallet'], ParentType, ContextType, RequireFields<QueryAccountDefaultWalletArgs, 'username'>>;
-  btcPrice?: Resolver<Maybe<ResolversTypes['Price']>, ParentType, ContextType, RequireFields<QueryBtcPriceArgs, 'currency'>>;
   btcPriceList?: Resolver<Maybe<ReadonlyArray<Maybe<ResolversTypes['PricePoint']>>>, ParentType, ContextType, RequireFields<QueryBtcPriceListArgs, 'range'>>;
   businessMapMarkers?: Resolver<Maybe<ReadonlyArray<Maybe<ResolversTypes['MapMarker']>>>, ParentType, ContextType>;
   currencyList?: Resolver<ReadonlyArray<ResolversTypes['Currency']>, ParentType, ContextType>;
@@ -3276,7 +3423,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   realtimePrice?: Resolver<ResolversTypes['RealtimePrice'], ParentType, ContextType, RequireFields<QueryRealtimePriceArgs, 'currency'>>;
   userDefaultWalletId?: Resolver<ResolversTypes['WalletId'], ParentType, ContextType, RequireFields<QueryUserDefaultWalletIdArgs, 'username'>>;
   usernameAvailable?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryUsernameAvailableArgs, 'username'>>;
-  welcomeLeaderboard?: Resolver<ResolversTypes['Leaderboard'], ParentType, ContextType, RequireFields<QueryWelcomeLeaderboardArgs, 'input'>>;
 };
 
 export type QuizResolvers<ContextType = any, ParentType extends ResolversParentTypes['Quiz'] = ResolversParentTypes['Quiz']> = {
@@ -3431,9 +3577,12 @@ export type UsdWalletResolvers<ContextType = any, ParentType extends ResolversPa
   accountId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   balance?: Resolver<ResolversTypes['SignedAmount'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  invoiceByPaymentHash?: Resolver<ResolversTypes['Invoice'], ParentType, ContextType, RequireFields<UsdWalletInvoiceByPaymentHashArgs, 'paymentHash'>>;
   pendingIncomingBalance?: Resolver<ResolversTypes['SignedAmount'], ParentType, ContextType>;
+  transactionById?: Resolver<ResolversTypes['Transaction'], ParentType, ContextType, RequireFields<UsdWalletTransactionByIdArgs, 'transactionId'>>;
   transactions?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, Partial<UsdWalletTransactionsArgs>>;
   transactionsByAddress?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, RequireFields<UsdWalletTransactionsByAddressArgs, 'address'>>;
+  transactionsByPaymentHash?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType, RequireFields<UsdWalletTransactionsByPaymentHashArgs, 'paymentHash'>>;
   walletCurrency?: Resolver<ResolversTypes['WalletCurrency'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -3549,28 +3698,18 @@ export type WalletResolvers<ContextType = any, ParentType extends ResolversParen
   accountId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   balance?: Resolver<ResolversTypes['SignedAmount'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  invoiceByPaymentHash?: Resolver<ResolversTypes['Invoice'], ParentType, ContextType, RequireFields<WalletInvoiceByPaymentHashArgs, 'paymentHash'>>;
   pendingIncomingBalance?: Resolver<ResolversTypes['SignedAmount'], ParentType, ContextType>;
+  transactionById?: Resolver<ResolversTypes['Transaction'], ParentType, ContextType, RequireFields<WalletTransactionByIdArgs, 'transactionId'>>;
   transactions?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, Partial<WalletTransactionsArgs>>;
   transactionsByAddress?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, RequireFields<WalletTransactionsByAddressArgs, 'address'>>;
+  transactionsByPaymentHash?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType, RequireFields<WalletTransactionsByPaymentHashArgs, 'paymentHash'>>;
   walletCurrency?: Resolver<ResolversTypes['WalletCurrency'], ParentType, ContextType>;
 };
 
 export interface WalletIdScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['WalletId'], any> {
   name: 'WalletId';
 }
-
-export type WelcomeProfileResolvers<ContextType = any, ParentType extends ResolversParentTypes['WelcomeProfile'] = ResolversParentTypes['WelcomeProfile']> = {
-  allTimePoints?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  allTimeRank?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  innerCircleAllTimeCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  innerCircleThisMonthCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  leaderboardName?: Resolver<Maybe<ResolversTypes['LeaderboardName']>, ParentType, ContextType>;
-  outerCircleAllTimeCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  outerCircleThisMonthCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  thisMonthPoints?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  thisMonthRank?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
 
 export type Resolvers<ContextType = any> = {
   Account?: AccountResolvers<ContextType>;
@@ -3580,6 +3719,8 @@ export type Resolvers<ContextType = any> = {
   AccountUpdateDefaultWalletIdPayload?: AccountUpdateDefaultWalletIdPayloadResolvers<ContextType>;
   AccountUpdateDisplayCurrencyPayload?: AccountUpdateDisplayCurrencyPayloadResolvers<ContextType>;
   AccountUpdateNotificationSettingsPayload?: AccountUpdateNotificationSettingsPayloadResolvers<ContextType>;
+  ApiKey?: ApiKeyResolvers<ContextType>;
+  ApiKeyCreatePayload?: ApiKeyCreatePayloadResolvers<ContextType>;
   AuthToken?: GraphQLScalarType;
   AuthTokenPayload?: AuthTokenPayloadResolvers<ContextType>;
   BTCWallet?: BtcWalletResolvers<ContextType>;
@@ -3596,6 +3737,7 @@ export type Resolvers<ContextType = any> = {
   Country?: CountryResolvers<ContextType>;
   CountryCode?: GraphQLScalarType;
   Currency?: CurrencyResolvers<ContextType>;
+  DateTime?: GraphQLScalarType;
   DepositFeesInformation?: DepositFeesInformationResolvers<ContextType>;
   DisplayCurrency?: GraphQLScalarType;
   Email?: EmailResolvers<ContextType>;
@@ -3614,10 +3756,8 @@ export type Resolvers<ContextType = any> = {
   InitiationViaLn?: InitiationViaLnResolvers<ContextType>;
   InitiationViaOnChain?: InitiationViaOnChainResolvers<ContextType>;
   IntraLedgerUpdate?: IntraLedgerUpdateResolvers<ContextType>;
+  Invoice?: InvoiceResolvers<ContextType>;
   Language?: GraphQLScalarType;
-  Leader?: LeaderResolvers<ContextType>;
-  Leaderboard?: LeaderboardResolvers<ContextType>;
-  LeaderboardName?: GraphQLScalarType;
   LnInvoice?: LnInvoiceResolvers<ContextType>;
   LnInvoicePayload?: LnInvoicePayloadResolvers<ContextType>;
   LnInvoicePaymentStatusPayload?: LnInvoicePaymentStatusPayloadResolvers<ContextType>;
@@ -3702,7 +3842,6 @@ export type Resolvers<ContextType = any> = {
   Username?: GraphQLScalarType;
   Wallet?: WalletResolvers<ContextType>;
   WalletId?: GraphQLScalarType;
-  WelcomeProfile?: WelcomeProfileResolvers<ContextType>;
 };
 
 export type DirectiveResolvers<ContextType = any> = {

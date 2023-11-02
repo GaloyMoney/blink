@@ -1,5 +1,5 @@
 overwrite: true
-schema: "https://api.staging.galoy.io/graphql"
+schema: "http://localhost:4004/graphql"
 # schema: "./supergraph.graphql"
 documents:
   - "app/**/*.ts"
@@ -66,3 +66,4 @@ generates:
         EndpointId: "string"
         EndpointUrl: "string"
         NotificationCategory: "string"
+        DateTime: "string"
