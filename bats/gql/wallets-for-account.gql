@@ -1,0 +1,13 @@
+query me {
+  me {
+    defaultAccount {
+      id
+      wallets {
+        id
+        walletCurrency
+        balance
+        pendingIncomingBalance
+      }
+    }
+  }
+}
