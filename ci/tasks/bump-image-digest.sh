@@ -16,7 +16,7 @@ cp ./repo/core/api/src/graphql/public/schema.graphql ./charts-repo/charts/galoy/
 cp ./repo/core/api-keys/subgraph/schema.graphql ./charts-repo/charts/galoy/apollo-router/api-keys-schema.graphql
 
 # The supergraph being copied below is a composition of the schemas above
-cp ./repo/core/api/dev/apollo-federation/supergraph.graphql ./charts-repo/charts/galoy/apollo-router/supergraph.graphql
+cp ./repo/dev/config/apollo-federation/supergraph.graphql ./charts-repo/charts/galoy/apollo-router/supergraph.graphql
 
 pushd charts-repo
 
