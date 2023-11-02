@@ -12,7 +12,7 @@ const sdk = new NodeSDK({
   textMapPropagator: new W3CTraceContextPropagator(),
   resource: new Resource({
     [SemanticResourceAttributes.SERVICE_NAME]:
-      process.env.TRACING_SERVICE_NAME || "dashboard",
+      process.env.TRACING_SERVICE_NAME || "blink-dashboard",
   }),
   spanProcessor: new SimpleSpanProcessor(new OTLPTraceExporter()),
   instrumentations: [
@@ -30,6 +30,6 @@ process.on("SIGTERM", () => {
   sdk
     .shutdown()
     .then(() => console.log("Tracing terminated"))
-    .catch((error: Error) => console.log("Error terminating tracing", error))
+    .catch((error) => console.log("Error terminating tracing", error))
     .finally(() => process.exit(0))
 })
