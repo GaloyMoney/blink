@@ -77,7 +77,7 @@ impl Mutation {
 
         Ok(ApiKeyCreatePayload {
             api_key,
-            api_key_secret: "123".to_owned(),
+            api_key_secret: "secret".to_owned(),
         })
     }
 
@@ -88,8 +88,4 @@ impl Mutation {
     ) -> async_graphql::Result<bool> {
         Ok(true)
     }
-}
-
-pub fn schema() -> Schema<Query, Mutation, EmptySubscription> {
-    Schema::build(Query, Mutation, EmptySubscription).finish()
 }

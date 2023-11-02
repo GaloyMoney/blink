@@ -1,20 +1,18 @@
-use async_graphql::{EmptySubscription, Schema};
-use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
+mod config;
+
 use axum::{routing::get, Extension, Router};
 
-use crate::app::ApiKeysApp;
+use crate::{app::ApiKeysApp, graphql};
 
-use super::{config::*, schema::*};
+pub use config::*;
 
 pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) {
-    let schema = Schema::build(Query, Mutation, EmptySubscription)
-        .data(api_keys_app)
-        .finish();
+    let schema = graphql::schema(Some(api_keys_app));
 
     let app = Router::new()
         .route(
             "/graphql",
-            get(playground).post(axum::routing::post(graphql_handler)),
+            get(playground).post(axum::routing::post(graphql::handler)),
         )
         .route("/auth/check-token", get(check_handler))
         .layer(Extension(schema));
@@ -32,14 +30,6 @@ async fn check_handler() -> impl axum::response::IntoResponse {
     let error_response =
         axum::response::Json(serde_json::json!({ "identity": { "id": "ashoten" }}));
     (StatusCode::INTERNAL_SERVER_ERROR, error_response)
-}
-
-async fn graphql_handler(
-    schema: Extension<Schema<Query, Mutation, EmptySubscription>>,
-    req: GraphQLRequest,
-) -> GraphQLResponse {
-    let req = req.into_inner();
-    schema.execute(req).await.into()
 }
 
 async fn playground() -> impl axum::response::IntoResponse {

@@ -45,6 +45,6 @@ pub async fn run() -> anyhow::Result<()> {
 async fn run_cmd(config: Config) -> anyhow::Result<()> {
     println!("Running server");
     let app = crate::app::ApiKeysApp::new(AdminClient::new(config.admin, config.hydra));
-    crate::graphql::run_server(config.server, app).await;
+    crate::server::run_server(config.server, app).await;
     Ok(())
 }

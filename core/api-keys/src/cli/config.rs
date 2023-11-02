@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use crate::admin_client::{AdminClientConfig, OAuthGrantConfig};
-use crate::graphql::ServerConfig;
+use crate::{
+    admin_client::{AdminClientConfig, OAuthGrantConfig},
+    server::ServerConfig,
+};
 
 #[derive(Clone, Default, Serialize, Deserialize)]
 pub struct Config {
