@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: setup hydra client single script (#3482)'
-      sha: 1a5e73684cff7c533db1dd5f4761da62d9bb1670
+      commitTitle: 'fix: channel to lowercase (#3484)...'
+      sha: 4242d781c58a57d46dbe4bce99b62a90f492aa5f
       tags:
-      - 0.15.78-2-g1a5e73684
+      - 0.15.79-1-g4242d781c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: setup hydra client single script (#3482)'
-      sha: 1a5e73684cff7c533db1dd5f4761da62d9bb1670
+      commitTitle: 'fix: channel to lowercase (#3484)...'
+      sha: 4242d781c58a57d46dbe4bce99b62a90f492aa5f
       tags:
-      - 0.15.78-2-g1a5e73684
+      - 0.15.79-1-g4242d781c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: setup hydra client single script (#3482)'
-      sha: 1a5e73684cff7c533db1dd5f4761da62d9bb1670
+      commitTitle: 'fix: channel to lowercase (#3484)...'
+      sha: 4242d781c58a57d46dbe4bce99b62a90f492aa5f
       tags:
-      - 0.15.78-2-g1a5e73684
+      - 0.15.79-1-g4242d781c
     path: ./
   path: ./graphql
 kind: LockConfig
