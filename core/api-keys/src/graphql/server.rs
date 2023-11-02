@@ -6,17 +6,19 @@ use crate::app::ApiKeysApp;
 
 use super::{config::*, schema::*};
 
-pub async fn run_server(config: ServerConfig, app: ApiKeysApp) {
-    let schema = Schema::build(Query, Mutation, EmptySubscription).finish();
+pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) {
+    let schema = Schema::build(Query, Mutation, EmptySubscription)
+        .data(api_keys_app)
+        .finish();
 
     let app = Router::new()
         .route(
             "/graphql",
             get(playground).post(axum::routing::post(graphql_handler)),
         )
-        .layer(Extension(schema))
-        .layer(Extension(app));
+        .layer(Extension(schema));
 
+    println!("Starting graphql server on port {}", config.port);
     axum::Server::bind(&std::net::SocketAddr::from(([0, 0, 0, 0], config.port)))
         .serve(app.into_make_service())
         .await
@@ -24,12 +26,10 @@ pub async fn run_server(config: ServerConfig, app: ApiKeysApp) {
 }
 
 async fn graphql_handler(
-    app: Extension<ApiKeysApp>,
     schema: Extension<Schema<Query, Mutation, EmptySubscription>>,
     req: GraphQLRequest,
 ) -> GraphQLResponse {
     let mut req = req.into_inner();
-    req = req.data(app);
     schema.execute(req).await.into()
 }
 

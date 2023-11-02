@@ -1,6 +1,8 @@
 use async_graphql::*;
 use chrono::{DateTime, Utc};
 
+use crate::app::ApiKeysApp;
+
 pub struct Query;
 
 #[Object]
@@ -9,14 +11,6 @@ impl Query {
     async fn consumer_account(&self, id: ID) -> Option<ConsumerAccount> {
         Some(ConsumerAccount { id })
     }
-}
-
-#[derive(Enum, Clone, Copy, Debug, PartialEq, Eq)]
-enum Scope {
-    Create,
-    Read,
-    Update,
-    Delete,
 }
 
 #[derive(SimpleObject)]
@@ -37,22 +31,38 @@ struct ConsumerAccount {
 
 #[ComplexObject]
 impl ConsumerAccount {
-    async fn api_key(&self) -> Vec<ApiKey> {
+    async fn api_keys(&self) -> Vec<ApiKey> {
         Vec::new()
     }
 }
 
 #[derive(SimpleObject)]
 struct ApiKeyCreatePayload {
-    key_id: ID,
     api_key: ApiKey,
+    api_key_secret: String,
 }
 
 pub struct Mutation;
 
+#[derive(InputObject)]
+struct ApiKeyCreateInput {
+    name: String,
+}
+
+#[derive(InputObject)]
+struct ApiKeyRevokeInput {
+    id: ID,
+}
+
 #[Object]
 impl Mutation {
-    async fn api_keys_create(&self) -> Result<ApiKeyCreatePayload> {
+    async fn api_key_create(
+        &self,
+        ctx: &Context<'_>,
+        input: ApiKeyCreateInput,
+    ) -> async_graphql::Result<ApiKeyCreatePayload> {
+        let app = ctx.data_unchecked::<ApiKeysApp>();
+        let _key = app.create_api_key(input.name).await?;
         let api_key = ApiKey {
             id: ID::from("123"),
             name: "GeneratedApiKey".to_owned(),
@@ -61,9 +71,17 @@ impl Mutation {
         };
 
         Ok(ApiKeyCreatePayload {
-            key_id: ID::from("123"),
             api_key,
+            api_key_secret: "123".to_owned(),
         })
+    }
+
+    async fn api_key_revoke(
+        &self,
+        _ctx: &Context<'_>,
+        _input: ApiKeyRevokeInput,
+    ) -> async_graphql::Result<bool> {
+        Ok(true)
     }
 }
 

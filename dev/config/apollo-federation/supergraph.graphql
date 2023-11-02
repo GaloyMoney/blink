@@ -164,11 +164,23 @@ type ApiKey
   expiration: DateTime!
 }
 
+input ApiKeyCreateInput
+  @join__type(graph: API_KEYS)
+{
+  name: String!
+}
+
 type ApiKeyCreatePayload
   @join__type(graph: API_KEYS)
 {
-  keyId: ID!
   apiKey: ApiKey!
+  apiKeySecret: String!
+}
+
+input ApiKeyRevokeInput
+  @join__type(graph: API_KEYS)
+{
+  id: ID!
 }
 
 """An Opaque Bearer token"""
@@ -312,7 +324,7 @@ type ConsumerAccount implements Account
   @join__type(graph: PUBLIC)
 {
   id: ID!
-  apiKey: [ApiKey!]! @join__field(graph: API_KEYS)
+  apiKeys: [ApiKey!]! @join__field(graph: API_KEYS)
   callbackEndpoints: [CallbackEndpoint!]! @join__field(graph: PUBLIC)
 
   """
@@ -925,7 +937,8 @@ type Mutation
   @join__type(graph: API_KEYS)
   @join__type(graph: PUBLIC)
 {
-  apiKeysCreate: ApiKeyCreatePayload! @join__field(graph: API_KEYS)
+  apiKeyCreate(input: ApiKeyCreateInput!): ApiKeyCreatePayload! @join__field(graph: API_KEYS)
+  apiKeyRevoke(input: ApiKeyRevokeInput!): Boolean! @join__field(graph: API_KEYS)
   accountDelete: AccountDeletePayload! @join__field(graph: PUBLIC)
   accountDisableNotificationCategory(input: AccountDisableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
   accountDisableNotificationChannel(input: AccountDisableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)

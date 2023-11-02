@@ -5,15 +5,23 @@ type ApiKey {
 	expiration: DateTime!
 }
 
+input ApiKeyCreateInput {
+	name: String!
+}
+
 type ApiKeyCreatePayload {
-	keyId: ID!
 	apiKey: ApiKey!
+	apiKeySecret: String!
+}
+
+input ApiKeyRevokeInput {
+	id: ID!
 }
 
 
 extend type ConsumerAccount @key(fields: "id") {
 	id: ID! @external
-	apiKey: [ApiKey!]!
+	apiKeys: [ApiKey!]!
 }
 
 """
@@ -27,7 +35,8 @@ scalar DateTime
 
 
 type Mutation {
-	apiKeysCreate: ApiKeyCreatePayload!
+	apiKeyCreate(input: ApiKeyCreateInput!): ApiKeyCreatePayload!
+	apiKeyRevoke(input: ApiKeyRevokeInput!): Boolean!
 }
 
 

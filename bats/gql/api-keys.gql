@@ -3,12 +3,10 @@ query apiKeys {
     defaultAccount {
       ... on ConsumerAccount {
         apiKeys {
+          id
+          name
           createdAt
           expiration
-          id
-          lastUse
-          name
-          scopes
         }
       }
     }
