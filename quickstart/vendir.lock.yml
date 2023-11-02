@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: channel in consent app (#3485)...'
-      sha: 5e5950c3f3f0fbf1c451cd370791482a84c39c0a
+      commitTitle: 'chore(api-keys): setup dummy api-keys schema (#3470)...'
+      sha: 1e421e6c480761c30400a48f0c589f2b84f7f36d
       tags:
-      - 0.15.80-2-g5e5950c3f
+      - 0.15.81-2-g1e421e6c4
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: channel in consent app (#3485)...'
-      sha: 5e5950c3f3f0fbf1c451cd370791482a84c39c0a
+      commitTitle: 'chore(api-keys): setup dummy api-keys schema (#3470)...'
+      sha: 1e421e6c480761c30400a48f0c589f2b84f7f36d
       tags:
-      - 0.15.80-2-g5e5950c3f
+      - 0.15.81-2-g1e421e6c4
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: channel in consent app (#3485)...'
-      sha: 5e5950c3f3f0fbf1c451cd370791482a84c39c0a
+      commitTitle: 'chore(api-keys): setup dummy api-keys schema (#3470)...'
+      sha: 1e421e6c480761c30400a48f0c589f2b84f7f36d
       tags:
-      - 0.15.80-2-g5e5950c3f
+      - 0.15.81-2-g1e421e6c4
     path: ./
   path: ./graphql
 kind: LockConfig
