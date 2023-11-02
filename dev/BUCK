@@ -40,8 +40,3 @@ sh_binary(
   name = "setup-hydra-client",
   main = "bin/setup-hydra-client.sh",
 )
-
-sh_binary(
-  name = "setup-api-keys-client",
-  main = "bin/setup-api-keys-client.sh",
-)

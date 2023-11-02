@@ -6,7 +6,8 @@ DEV_DIR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
 source "${DEV_DIR}/helpers/cli.sh"
 
 hydra_client_name="${1}"
-redirect_uri="${2}"
+grant_type="${2}"
+redirect_uri="${3}"
 
 HYDRA_CLIENT_JSON="${DEV_DIR}/.${hydra_client_name}-hydra-client.json"
 HYDRA_CLIENT_ENV="${DEV_DIR}/.${hydra_client_name}-hydra-client.env"
@@ -15,7 +16,7 @@ HYDRA_PUBLIC_API="http://localhost:4444"
 
 hydra_cli create client \
     --endpoint "${HYDRA_ADMIN_API}" \
-    --grant-type authorization_code,refresh_token \
+    --grant-type "$grant_type" \
     --response-type code,id_token \
     --format json \
     --scope offline --scope transactions:read --scope payments:send \
