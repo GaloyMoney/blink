@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): setup dummy api-keys schema (#3470)...'
-      sha: 1e421e6c480761c30400a48f0c589f2b84f7f36d
+      commitTitle: 'fix(core): add watcher for pending held invoices (#3480)'
+      sha: 8b2b2ac39ce44fa79545b34508da438e36e496ff
       tags:
-      - 0.15.81-2-g1e421e6c4
+      - 0.15.82-2-g8b2b2ac39
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): setup dummy api-keys schema (#3470)...'
-      sha: 1e421e6c480761c30400a48f0c589f2b84f7f36d
+      commitTitle: 'fix(core): add watcher for pending held invoices (#3480)'
+      sha: 8b2b2ac39ce44fa79545b34508da438e36e496ff
       tags:
-      - 0.15.81-2-g1e421e6c4
+      - 0.15.82-2-g8b2b2ac39
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): setup dummy api-keys schema (#3470)...'
-      sha: 1e421e6c480761c30400a48f0c589f2b84f7f36d
+      commitTitle: 'fix(core): add watcher for pending held invoices (#3480)'
+      sha: 8b2b2ac39ce44fa79545b34508da438e36e496ff
       tags:
-      - 0.15.81-2-g1e421e6c4
+      - 0.15.82-2-g8b2b2ac39
     path: ./
   path: ./graphql
 kind: LockConfig
