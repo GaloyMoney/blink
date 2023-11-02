@@ -24,7 +24,13 @@ import { briaEventHandler } from "./event-handlers/bria"
 
 import healthzHandler from "./middlewares/healthz"
 
-import { getSwapConfig, NETWORK, ONCHAIN_MIN_CONFIRMATIONS, TRIGGER_PORT } from "@/config"
+import {
+  getSwapConfig,
+  MS_PER_5_MINS,
+  NETWORK,
+  ONCHAIN_MIN_CONFIRMATIONS,
+  TRIGGER_PORT,
+} from "@/config"
 
 import {
   Payments,
@@ -175,6 +181,12 @@ const publishCurrentPrice = () => {
   return setInterval(async () => {
     await publishCurrentPrices()
   }, interval)
+}
+
+const watchHeldInvoices = () => {
+  return setInterval(async () => {
+    await Wallets.handleHeldInvoices(logger)
+  }, MS_PER_5_MINS)
 }
 
 const listenerOnchain = (lnd: AuthenticatedLnd) => {
@@ -488,6 +500,7 @@ const main = () => {
 
   activateLndHealthCheck()
   publishCurrentPrice()
+  watchHeldInvoices()
 
   if (getSwapConfig().feeAccountingEnabled) listenerSwapMonitor()
 
