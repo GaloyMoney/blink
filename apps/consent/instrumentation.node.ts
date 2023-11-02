@@ -12,7 +12,7 @@ const sdk = new NodeSDK({
   textMapPropagator: new W3CTraceContextPropagator(),
   resource: new Resource({
     [SemanticResourceAttributes.SERVICE_NAME]:
-      process.env.TRACING_SERVICE_NAME || "blink-consent",
+      process.env.TRACING_SERVICE_NAME || "consent",
   }),
   spanProcessor: new SimpleSpanProcessor(new OTLPTraceExporter()),
   instrumentations: [
