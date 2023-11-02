@@ -7,6 +7,7 @@ interface GetCaptchaChallengeBody {
     login_challenge: string | null
     phone: string | null
     remember: boolean | null
+    channel: string | null
   }
 }
 
