@@ -148,7 +148,6 @@ impl RemoteJwksDecoder {
                     err = None;
                 }
                 Err(e) => {
-                    // log the error and continue with stale keys
                     eprintln!(
                         "Failed to refresh JWKS after {} attempts: {:?}",
                         self.retry_count, err
