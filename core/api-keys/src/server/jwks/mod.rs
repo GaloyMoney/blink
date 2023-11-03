@@ -83,12 +83,12 @@ impl RemoteJwksDecoder {
     pub fn new(jwks_url: String) -> Self {
         Self {
             jwks_url,
-            cache_duration: std::time::Duration::from_secs(60 * 60),
+            cache_duration: std::time::Duration::from_secs(30 * 60),
             keys_cache: RwLock::new(Vec::new()),
             validation: Validation::new(Algorithm::RS256),
             client: reqwest::Client::new(),
-            retry_count: 3,
-            backoff: std::time::Duration::from_secs(1),
+            retry_count: 10,
+            backoff: std::time::Duration::from_secs(2),
         }
     }
 
@@ -108,7 +108,6 @@ impl RemoteJwksDecoder {
             }
         }
 
-        // Last attempt failed, return the error
         Err(err.unwrap())
     }
 
@@ -143,15 +142,21 @@ impl RemoteJwksDecoder {
     /// succeeds or the universe ends, whichever comes first.
     pub async fn refresh_keys_periodically(&self) {
         loop {
+            let mut err = None;
             match self.refresh_keys().await {
-                Ok(_) => {}
-                Err(err) => {
-                    // log the error and continue with stale keys
+                Ok(_) => {
+                    err = None;
+                }
+                Err(e) => {
                     eprintln!(
                         "Failed to refresh JWKS after {} attempts: {:?}",
                         self.retry_count, err
                     );
+                    err = Some(e);
                 }
+            }
+            if err.is_some() {
+                continue;
             }
             tokio::time::sleep(self.cache_duration).await;
         }

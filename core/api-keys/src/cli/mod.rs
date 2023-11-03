@@ -24,7 +24,6 @@ struct Cli {
 pub async fn run() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
-    println!("config: {:?}", cli.config);
     let config = Config::from_path(cli.config, EnvOverride { db_con: cli.pg_con })?;
 
     run_cmd(config).await?;
@@ -33,7 +32,6 @@ pub async fn run() -> anyhow::Result<()> {
 }
 
 async fn run_cmd(config: Config) -> anyhow::Result<()> {
-    println!("Running server");
     let pool = db::init_pool(&config.db).await?;
     let app = crate::app::ApiKeysApp::new(pool, config.app);
     crate::server::run_server(config.server, app).await
