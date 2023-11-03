@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: Better error handling in consent. (#3479)...'
-      sha: d17fb0627dd3327423430511ea692cd431c895a0
+      commitTitle: 'build: add api-keys dockerfile (#3492)...'
+      sha: 7c7642d81ba6563072f05223f314b9c062ec1afe
       tags:
-      - 0.15.84-2-gd17fb0627
+      - 0.15.85-2-g7c7642d81
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: Better error handling in consent. (#3479)...'
-      sha: d17fb0627dd3327423430511ea692cd431c895a0
+      commitTitle: 'build: add api-keys dockerfile (#3492)...'
+      sha: 7c7642d81ba6563072f05223f314b9c062ec1afe
       tags:
-      - 0.15.84-2-gd17fb0627
+      - 0.15.85-2-g7c7642d81
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: Better error handling in consent. (#3479)...'
-      sha: d17fb0627dd3327423430511ea692cd431c895a0
+      commitTitle: 'build: add api-keys dockerfile (#3492)...'
+      sha: 7c7642d81ba6563072f05223f314b9c062ec1afe
       tags:
-      - 0.15.84-2-gd17fb0627
+      - 0.15.85-2-g7c7642d81
     path: ./
   path: ./graphql
 kind: LockConfig
