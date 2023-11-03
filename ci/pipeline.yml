@@ -43,6 +43,10 @@
 #@   return data.values.docker_registry + "/galoy-api-cron"
 #@ end
 
+#@ def api_keys_galoy_image():
+#@   return data.values.docker_registry + "/galoy-api-keys"
+#@ end
+
 #@ def release_pipeline_image():
 #@   return data.values.docker_registry + "/release-pipeline"
 #@ end
@@ -82,6 +86,7 @@ groups:
       - build-exporter-edge-image
       - build-trigger-edge-image
       - build-cron-edge-image
+      - build-api-keys-edge-image
       - bump-image-in-chart
       - quickstart
       - release
@@ -502,6 +507,46 @@ jobs:
         params:
           image: image/image.tar
 
+  - name: build-api-keys-edge-image
+    serial: true
+    plan:
+      - in_parallel:
+          - { get: repo, trigger: true }
+          - { get: pipeline-tasks }
+      - task: prepare-docker-build
+        config:
+          platform: linux
+          image_resource: #@ galoy_dev_image_config()
+          inputs:
+            - name: pipeline-tasks
+            - name: repo
+          outputs:
+            - name: repo
+          run:
+            path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
+      - task: build
+        attempts: 2
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: vito/oci-build-task
+          inputs:
+            - name: repo
+          outputs:
+            - name: image
+          params:
+            CONTEXT: repo
+            BUILD_ARGS_FILE: repo/.build-args
+            DOCKERFILE: "repo/core/api-keys/Dockerfile"
+          run:
+            path: build
+      - put: api-keys-edge-image
+        params:
+          image: image/image.tar
+
   - name: quickstart
     serial: true
     plan:
@@ -596,6 +641,7 @@ jobs:
               - build-cron-edge-image
               - build-exporter-edge-image
               - build-websocket-edge-image
+              - build-api-keys-edge-image
           - get: pipeline-tasks
           - get: edge-image
             passed: [build-edge-image]
@@ -619,6 +665,10 @@ jobs:
               format: oci
           - get: websocket-edge-image
             passed: [build-websocket-edge-image]
+            params:
+              format: oci
+          - get: api-keys-edge-image
+            passed: [build-api-keys-edge-image]
             params:
               format: oci
           - get: version
@@ -678,6 +728,9 @@ jobs:
           - get: exporter-edge-image
             passed: [release]
             params: { skip_download: true }
+          - get: api-keys-edge-image
+            passed: [release]
+            params: { skip_download: true }
           - get: repo
             trigger: true
             passed:
@@ -699,6 +752,7 @@ jobs:
             - name: trigger-edge-image
             - name: cron-edge-image
             - name: exporter-edge-image
+            - name: api-keys-edge-image
             - name: pipeline-tasks
             - name: charts-repo
             - name: version
@@ -725,6 +779,7 @@ jobs:
             - name: cron-edge-image
             - name: migrate-edge-image
             - name: websocket-edge-image
+            - name: api-keys-edge-image
             - name: charts-repo
           params:
             GH_APP_ID: #@ data.values.github_app_id
@@ -1036,6 +1091,14 @@ resources:
       username: #@ data.values.docker_registry_user
       password: #@ data.values.docker_registry_password
       repository: #@ exporter_galoy_image()
+
+  - name: api-keys-edge-image
+    type: registry-image
+    source:
+      tag: edge
+      username: #@ data.values.docker_registry_user
+      password: #@ data.values.docker_registry_password
+      repository: #@ api_keys_galoy_image()
 
   - name: version
     type: semver
