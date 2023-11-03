@@ -93,7 +93,7 @@ impl Identities {
             r#"SELECT i.id, i.subject_id
                FROM identities i
                JOIN identity_api_keys k ON k.identity_id = i.id
-               WHERE k.active = true AND k.encrypted_key = crypt($1, encrypted_key)"#,
+               WHERE k.revoked = false AND k.encrypted_key = crypt($1, encrypted_key)"#,
             code
         )
         .fetch_optional(&self.pool)
@@ -125,8 +125,6 @@ impl Identities {
                 ON i.id = a.identity_id
             WHERE
                 i.subject_id = $1
-                AND a.active = true
-                AND a.expires_at > NOW() AT TIME ZONE 'utc'
             "#,
             subject_id,
         )

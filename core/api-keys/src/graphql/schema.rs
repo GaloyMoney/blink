@@ -22,6 +22,9 @@ pub(super) struct ApiKey {
     pub id: ID,
     pub name: String,
     pub created_at: DateTime<Utc>,
+    pub revoked: bool,
+    pub expired: bool,
+    pub last_used_at: Option<DateTime<Utc>>,
     pub expires_at: DateTime<Utc>,
 }
 
@@ -48,6 +51,9 @@ impl User {
                 name: identity_key.name,
                 created_at: identity_key.created_at,
                 expires_at: identity_key.expires_at,
+                revoked: false,
+                expired: false,
+                last_used_at: None,
             })
             .collect();
 

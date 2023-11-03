@@ -2,6 +2,9 @@ type ApiKey {
 	id: ID!
 	name: String!
 	createdAt: DateTime!
+	revoked: Boolean!
+	expired: Boolean!
+	lastUsedAt: DateTime
 	expiresAt: DateTime!
 }
 
