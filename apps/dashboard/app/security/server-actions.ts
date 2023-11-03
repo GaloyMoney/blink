@@ -53,7 +53,6 @@ export const emailRegisterInitiateServerAction = async (
   }
 
   if (data?.userEmailRegistrationInitiate.errors.length) {
-    console.log()
     return {
       error: true,
       message: data?.userEmailRegistrationInitiate.errors[0].message,

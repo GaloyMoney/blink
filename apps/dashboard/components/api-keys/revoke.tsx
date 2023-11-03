@@ -1,14 +1,17 @@
 "use client"
-
+import ReportProblemRoundedIcon from "@mui/icons-material/ReportProblemRounded"
 import { Box, Button, Modal, ModalClose, Sheet, Typography } from "@mui/joy"
 import React, { useState } from "react"
+
+import { revokeApiKeyServerAction } from "@/app/api-keys/server-actions"
 
 type Props = {
   id: string
 }
 
 const RevokeKey = ({ id }: Props) => {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState<boolean>(false)
+  const [loading, setLoading] = useState(false)
 
   return (
     <>
@@ -23,14 +26,14 @@ const RevokeKey = ({ id }: Props) => {
         <Sheet
           variant="outlined"
           sx={{
-            maxWidth: 600,
+            maxWidth: 400,
             borderRadius: "md",
             p: 3,
             boxShadow: "lg",
             display: "flex",
             flexDirection: "column",
             gap: 2,
-            alignItems: "flex-start",
+            alignItems: "center",
           }}
         >
           <ModalClose variant="plain" sx={{ alignSelf: "flex-end" }} />
@@ -41,6 +44,11 @@ const RevokeKey = ({ id }: Props) => {
               alignItems: "center",
             }}
           >
+            <ReportProblemRoundedIcon
+              sx={{
+                fontSize: "4rem",
+              }}
+            />
             <Typography
               component="h2"
               id="modal-title"
@@ -52,23 +60,35 @@ const RevokeKey = ({ id }: Props) => {
             </Typography>
           </Box>
 
-          <Typography id="modal-desc" textColor="text.tertiary" textAlign="left">
-            WARNING! You will no longer be able to authenticate with this API Key.
+          <Typography id="modal-desc" textColor="text.tertiary" textAlign="center">
+            You will no longer be able to authenticate with this API Key.
           </Typography>
 
-          <Typography id="modal-desc-2" textColor="text.tertiary" textAlign="left">
-            API Key ID: {id}
-          </Typography>
-
+          <Box
+            sx={{
+              backgroundColor: "neutral.solidDisabledBg",
+              width: "100%",
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "0.6em",
+              borderRadius: "0.5em",
+            }}
+          >
+            <Typography id="modal-desc-2" textColor="text.tertiary" textAlign="left">
+              API Key ID
+            </Typography>
+            <Typography id="modal-desc-2" textColor="text.tertiary" textAlign="left">
+              {id}
+            </Typography>
+          </Box>
           <Button
-            variant="solid"
+            variant="outlined"
             color="danger"
+            loading={loading}
             onClick={async () => {
-              await fetch("/api/api-keys", {
-                method: "DELETE",
-                body: JSON.stringify({ id }),
-                headers: { "Content-Type": "application/json" },
-              })
+              setLoading(true)
+              await revokeApiKeyServerAction(id)
+              setLoading(false)
               setOpen(false)
             }}
             sx={{

@@ -11,6 +11,12 @@ import {
 gql`
   mutation ApiKeyCreate($input: ApiKeyCreateInput!) {
     apiKeyCreate(input: $input) {
+      apiKey {
+        id
+        name
+        createdAt
+        expiration
+      }
       apiKeySecret
     }
   }

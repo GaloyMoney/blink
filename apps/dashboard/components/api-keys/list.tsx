@@ -11,6 +11,15 @@ import RevokeKey from "./revoke"
 import { apiKeys } from "@/services/graphql/queries/api-keys"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
+const formatDate = (dateStr: string): string => {
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "long",
+    day: "2-digit",
+  }
+  return new Date(dateStr).toLocaleDateString(undefined, options)
+}
+
 const ApiKeysList = async () => {
   const session = await getServerSession(authOptions)
   const token = session?.accessToken
@@ -35,11 +44,11 @@ const ApiKeysList = async () => {
         </thead>
         <tbody>
           {keys.map(({ id, name, createdAt, expiration }) => (
-            <tr>
+            <tr key={id}>
               <td>{id}</td>
               <td>{name}</td>
-              <td>{createdAt}</td>
-              <td>{expiration}</td>
+              <td>{formatDate(createdAt)}</td>
+              <td>{formatDate(expiration)}</td>
               <td>
                 <RevokeKey id={id} />
               </td>

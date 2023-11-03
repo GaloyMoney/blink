@@ -1,7 +1,5 @@
-import { getServerSession } from "next-auth"
 import { Box, Link, Typography } from "@mui/joy"
 
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import ContentContainer from "@/components/content-container"
 import ApiKeysList from "@/components/api-keys/list"
 import ApiKeyCreate from "@/components/api-keys/create"

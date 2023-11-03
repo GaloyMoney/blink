@@ -341,7 +341,6 @@ export type CentAmountPayload = {
 
 export type ConsumerAccount = Account & {
   readonly __typename: 'ConsumerAccount';
-  readonly apiKeys: ReadonlyArray<ApiKey>;
   readonly callbackEndpoints: ReadonlyArray<CallbackEndpoint>;
   /** return CSV stream, base64 encoded, of the list of transactions in the wallet */
   readonly csvTransactions: Scalars['String']['output'];
@@ -1633,6 +1632,7 @@ export type UsdWalletTransactionsByPaymentHashArgs = {
 
 export type User = {
   readonly __typename: 'User';
+  readonly apiKeys: ReadonlyArray<ApiKey>;
   /**
    * Get single contact details.
    * Can include the transactions associated with the contact.
@@ -1906,7 +1906,7 @@ export type ApiKeyCreateMutationVariables = Exact<{
 }>;
 
 
-export type ApiKeyCreateMutation = { readonly __typename: 'Mutation', readonly apiKeyCreate: { readonly __typename: 'ApiKeyCreatePayload', readonly apiKeySecret: string } };
+export type ApiKeyCreateMutation = { readonly __typename: 'Mutation', readonly apiKeyCreate: { readonly __typename: 'ApiKeyCreatePayload', readonly apiKeySecret: string, readonly apiKey: { readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: string, readonly expiration: string } } };
 
 export type ApiKeyRevokeMutationVariables = Exact<{
   input: ApiKeyRevokeInput;
@@ -1937,7 +1937,7 @@ export type UserEmailDeleteMutation = { readonly __typename: 'Mutation', readonl
 export type ApiKeysQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ApiKeysQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly apiKeys: ReadonlyArray<{ readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: string, readonly expiration: string }> } } | null };
+export type ApiKeysQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly apiKeys: ReadonlyArray<{ readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: string, readonly expiration: string }> } | null };
 
 export type GetPaginatedTransactionsQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1964,6 +1964,12 @@ export type MeQuery = { readonly __typename: 'Query', readonly me?: { readonly _
 export const ApiKeyCreateDocument = gql`
     mutation ApiKeyCreate($input: ApiKeyCreateInput!) {
   apiKeyCreate(input: $input) {
+    apiKey {
+      id
+      name
+      createdAt
+      expiration
+    }
     apiKeySecret
   }
 }
@@ -2136,15 +2142,11 @@ export type UserEmailDeleteMutationOptions = Apollo.BaseMutationOptions<UserEmai
 export const ApiKeysDocument = gql`
     query ApiKeys {
   me {
-    defaultAccount {
-      ... on ConsumerAccount {
-        apiKeys {
-          id
-          name
-          createdAt
-          expiration
-        }
-      }
+    apiKeys {
+      id
+      name
+      createdAt
+      expiration
     }
   }
 }
@@ -3042,7 +3044,6 @@ export type CentAmountPayloadResolvers<ContextType = any, ParentType extends Res
 };
 
 export type ConsumerAccountResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConsumerAccount'] = ResolversParentTypes['ConsumerAccount']> = {
-  apiKeys?: Resolver<ReadonlyArray<ResolversTypes['ApiKey']>, ParentType, ContextType>;
   callbackEndpoints?: Resolver<ReadonlyArray<ResolversTypes['CallbackEndpoint']>, ParentType, ContextType>;
   csvTransactions?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<ConsumerAccountCsvTransactionsArgs, 'walletIds'>>;
   defaultWalletId?: Resolver<ResolversTypes['WalletId'], ParentType, ContextType>;
@@ -3666,6 +3667,7 @@ export type UsdWalletResolvers<ContextType = any, ParentType extends ResolversPa
 };
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  apiKeys?: Resolver<ReadonlyArray<ResolversTypes['ApiKey']>, ParentType, ContextType>;
   contactByUsername?: Resolver<ResolversTypes['UserContact'], ParentType, ContextType, RequireFields<UserContactByUsernameArgs, 'username'>>;
   contacts?: Resolver<ReadonlyArray<ResolversTypes['UserContact']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
