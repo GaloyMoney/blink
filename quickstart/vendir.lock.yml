@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(api-keys): complete revoke use case (#3500)...'
-      sha: d5d3016f5974e97ae931d748a4368c9bed233b59
+      commitTitle: 'chore(dashboard): create api key expires in ui (#3502)...'
+      sha: 808444d1926ae373e562f4303c7793dea489bb88
       tags:
-      - 0.15.91-2-gd5d3016f5
+      - 0.15.92-1-g808444d19
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(api-keys): complete revoke use case (#3500)...'
-      sha: d5d3016f5974e97ae931d748a4368c9bed233b59
+      commitTitle: 'chore(dashboard): create api key expires in ui (#3502)...'
+      sha: 808444d1926ae373e562f4303c7793dea489bb88
       tags:
-      - 0.15.91-2-gd5d3016f5
+      - 0.15.92-1-g808444d19
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(api-keys): complete revoke use case (#3500)...'
-      sha: d5d3016f5974e97ae931d748a4368c9bed233b59
+      commitTitle: 'chore(dashboard): create api key expires in ui (#3502)...'
+      sha: 808444d1926ae373e562f4303c7793dea489bb88
       tags:
-      - 0.15.91-2-gd5d3016f5
+      - 0.15.92-1-g808444d19
     path: ./
   path: ./graphql
 kind: LockConfig
