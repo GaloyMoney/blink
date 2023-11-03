@@ -11,10 +11,24 @@ teardown_file() {
   stop_services
 }
 
+random_uuid() {
+  if [[ -e /proc/sys/kernel/random/uuid ]]; then
+    cat /proc/sys/kernel/random/uuid
+  else
+    uuidgen
+  fi
+}
+
+new_key_name() {
+  random_uuid
+}
+
 @test "api-keys: create new key" {
   login_user 'alice' '+16505554350'
 
-  variables="{\"input\":{\"name\":\"api-key\"}}"
+  key_name="$(new_key_name)"
+
+  variables="{\"input\":{\"name\":\"${key_name}\"}}"
 
   exec_graphql 'alice' 'api-key-create' "$variables"
   key="$(graphql_output '.data.apiKeyCreate.apiKey')"
@@ -22,15 +36,12 @@ teardown_file() {
 
   cache_value "api-key-secret" "$secret"
 
-  key_id="$(echo "$key" | jq -r '.id')"
-  [[ "${key_id}" = "123" ]] || exit 1
-
   name=$(echo "$key" | jq -r '.name')
-  [[ "${name}" = "GeneratedApiKey" ]] || exit 1
+  [[ "${name}" = "${key_name}" ]] || exit 1
 }
 
 @test "api-keys: can authenticate with api key" {
-  exec_graphql 'alice' 'api-keys'
+  exec_graphql 'api-key-secret' 'api-keys'
 
   keyName="$(graphql_output '.data.me.apiKeys[0].name')"
 

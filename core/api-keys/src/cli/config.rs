@@ -1,20 +1,34 @@
+use anyhow::Context;
 use serde::{Deserialize, Serialize};
 
-use crate::server::ServerConfig;
+use std::path::Path;
+
+use super::db::*;
+use crate::{app::AppConfig, server::ServerConfig};
 
 #[derive(Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
+    pub db: DbConfig,
+    #[serde(default)]
     pub server: ServerConfig,
+    #[serde(default)]
+    pub app: AppConfig,
 }
 
 pub struct EnvOverride {
-    pub pg_con: String,
+    pub db_con: String,
 }
 
 impl Config {
-    pub fn from_env(EnvOverride { pg_con: _ }: EnvOverride) -> anyhow::Result<Self> {
-        let config = Config::default();
+    pub fn from_path(
+        path: impl AsRef<Path>,
+        EnvOverride { db_con }: EnvOverride,
+    ) -> anyhow::Result<Self> {
+        let config_file = std::fs::read_to_string(path).context("Couldn't read config file")?;
+        let mut config: Config =
+            serde_yaml::from_str(&config_file).context("Couldn't parse config file")?;
+        config.db.pg_con = db_con;
 
         Ok(config)
     }

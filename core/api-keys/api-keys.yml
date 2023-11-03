@@ -1,0 +1,9 @@
+# db:
+#   pool_size: 20
+# server:
+#   port: 5397
+#   jwks_url: "http://localhost:4456/.well-known/jwks.json"
+#   api_key_auth_header: "X-API-KEY"
+# app:
+#   key_prefix: galoy_dev
+#   default_expiry_days: 30

@@ -72,6 +72,7 @@
           vendir
           jq
           ytt
+          sqlx-cli
           cargo-nextest
           cargo-audit
           cargo-watch

@@ -18,11 +18,11 @@ impl Query {
 }
 
 #[derive(SimpleObject)]
-struct ApiKey {
-    id: ID,
-    name: String,
-    created_at: DateTime<Utc>,
-    expiration: DateTime<Utc>,
+pub(super) struct ApiKey {
+    pub id: ID,
+    pub name: String,
+    pub created_at: DateTime<Utc>,
+    pub expires_at: DateTime<Utc>,
 }
 
 #[derive(SimpleObject)]
@@ -40,15 +40,15 @@ impl User {
             id: ID::from("123"),
             name: "api-key".to_owned(),
             created_at: Utc::now(),
-            expiration: Utc::now() + chrono::Duration::days(30),
+            expires_at: Utc::now() + chrono::Duration::days(30),
         }]
     }
 }
 
 #[derive(SimpleObject)]
-struct ApiKeyCreatePayload {
-    api_key: ApiKey,
-    api_key_secret: String,
+pub(super) struct ApiKeyCreatePayload {
+    pub api_key: ApiKey,
+    pub api_key_secret: String,
 }
 
 pub struct Mutation;
@@ -72,18 +72,10 @@ impl Mutation {
     ) -> async_graphql::Result<ApiKeyCreatePayload> {
         let app = ctx.data_unchecked::<ApiKeysApp>();
         let subject = ctx.data::<AuthSubject>()?;
-        let _key = app.create_api_key(&subject.id, input.name).await?;
-        let api_key = ApiKey {
-            id: ID::from("123"),
-            name: "GeneratedApiKey".to_owned(),
-            created_at: Utc::now(),
-            expiration: Utc::now() + chrono::Duration::days(30),
-        };
-
-        Ok(ApiKeyCreatePayload {
-            api_key,
-            api_key_secret: "secret".to_owned(),
-        })
+        let key = app
+            .create_api_key_for_subject(&subject.id, input.name)
+            .await?;
+        Ok(ApiKeyCreatePayload::from(key))
     }
 
     async fn api_key_revoke(

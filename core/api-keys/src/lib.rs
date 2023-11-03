@@ -3,5 +3,7 @@
 
 pub mod app;
 pub mod cli;
+mod entity;
 pub mod graphql;
+pub mod identity;
 pub mod server;

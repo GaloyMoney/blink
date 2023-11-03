@@ -64,12 +64,14 @@
     - handler: bearer_token
       config:
         token_from:
-          header: X-BLINK-KEY
-        check_session_url: "http://bats-tests:5397/auth/check-token"
+          header: X-API-KEY
+        forward_http_headers:
+        - "X-API-KEY"
+        check_session_url: "http://bats-tests:5397/auth/check"
         force_method: GET
         preserve_path: true
         preserve_query: true
-        subject_from: identity.id
+        subject_from: sub
         extra_from: "@this"
     - handler: bearer_token
       config:

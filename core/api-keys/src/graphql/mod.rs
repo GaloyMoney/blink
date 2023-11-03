@@ -1,3 +1,4 @@
+mod convert;
 mod schema;
 
 use async_graphql::*;

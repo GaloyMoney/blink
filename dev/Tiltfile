@@ -98,7 +98,7 @@ local_resource(
 
 local_resource(
   name='hydra-consent',
-  labels = ['apps'],
+  labels = ['auth'],
   cmd=[
     'buck2',
     'run',
@@ -185,20 +185,23 @@ def _buck2_dep_inputs(target):
 api_keys_target = "//core/api-keys:api-keys"
 local_resource(
     "api-keys",
-    labels = ["core"],
+    labels = ["auth"],
     cmd = "buck2 build {}".format(api_keys_target),
-    serve_cmd = "buck2 run {} -- run".format(api_keys_target),
+    serve_cmd = "buck2 run {}".format(api_keys_target),
     serve_env = {
-      "PG_CON": "",
+      "PG_CON": "postgres://user:password@localhost:5431/pg",
+      "API_KEYS_CONFIG": "../core/api-keys/api-keys.yml"
     },
     deps = _buck2_dep_inputs(api_keys_target),
     resource_deps = [
-       "api"
+       "api",
+       "api-keys-pg"
     ]
 )
 
 docker_groups = {
     "auth": [
+        "api-keys-pg",
         "oathkeeper",
         "hydra",
         "hydra-migrate",
@@ -214,6 +217,7 @@ docker_groups = {
     "bitcoin": [
         "lnd1",
         "bria",
+        "bria-pg",
         "bitcoind",
     ],
     "tracing": [

@@ -1,10 +1,13 @@
 query apiKeys {
   me {
+    defaultAccount {
+      id
+    }
     apiKeys {
       id
       name
       createdAt
-      expiration
+      expiresAt
     }
   }
 }

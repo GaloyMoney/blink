@@ -1,6 +1,19 @@
 ---
 version: "3"
 services:
+  api-keys-pg:
+    image: postgres:14.1
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=pg
+    ports:
+      - "5431:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 30s
+      retries: 5
   oathkeeper:
     image: oryd/oathkeeper:v0.40.6-distroless
     ports:
@@ -65,9 +78,8 @@ services:
       - ${HOST_PROJECT_PATH:-.}/config/ory:/home/ory
   kratos-pg:
     image: postgres:14.1
-    ports: []
-    expose:
-      - "5432"
+    ports:
+      - "5432:5432"
     environment:
       - POSTGRES_USER=dbuser
       - POSTGRES_PASSWORD=secret
@@ -122,7 +134,7 @@ services:
       - "2743:2743"
       - "2742:2742"
     environment:
-      - PG_CON=postgres://user:password@postgres-bria:5432/pg
+      - PG_CON=postgres://user:password@bria-pg:5432/pg
       - BITCOIND_SIGNER_ENDPOINT=https://bitcoind-signer:18443
     command:
       - bria
@@ -143,9 +155,9 @@ services:
         condition: service_started
       fulcrum:
         condition: service_started
-      postgres-bria:
+      bria-pg:
         condition: service_healthy
-  postgres-bria:
+  bria-pg:
     image: postgres:14.1
     environment:
       - POSTGRES_USER=user
