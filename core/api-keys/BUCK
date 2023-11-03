@@ -12,7 +12,6 @@ rust_binary(
 rust_binary(
     name = "api-keys",
     edition = "2021",
-    crate_root = "src/main.rs",
     srcs = glob(["src/**/*.rs"]),
     deps = [
         ":lib-api-keys",
@@ -40,6 +39,12 @@ rust_library(
         "//third-party/rust:chrono",
         "//third-party/rust:sqlx",
     ],
-    srcs = glob(["src/**/*.rs"]),
-    visibility = ["PUBLIC"],
+    srcs = glob([
+      "src/**/*.rs",
+      "migrations/*",
+      "api-keys.yml"
+    ]),
+    env = {
+        "CARGO_MANIFEST_DIR": ".",
+    }
 )
