@@ -16,6 +16,9 @@ pub struct IdentityApiKey {
     pub identity_id: IdentityId,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub expires_at: chrono::DateTime<chrono::Utc>,
+    pub last_used_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub revoked: bool,
+    pub expired: bool,
 }
 
 pub struct ApiKeySecret(String);
@@ -79,6 +82,9 @@ impl Identities {
                 identity_id,
                 created_at: record.created_at,
                 expires_at,
+                revoked: false,
+                expired: false,
+                last_used_at: None,
             },
             ApiKeySecret(key),
         ))
@@ -117,7 +123,10 @@ impl Identities {
                 a.id AS api_key_id,
                 a.name,
                 a.created_at,
-                a.expires_at
+                a.expires_at,
+                revoked,
+                expires_at < NOW() AS "expired!",
+                last_used_at
             FROM
                 identities i
             JOIN
@@ -139,6 +148,9 @@ impl Identities {
                 identity_id: IdentityId::from(record.identity_id),
                 created_at: record.created_at,
                 expires_at: record.expires_at,
+                revoked: record.revoked,
+                expired: record.expired,
+                last_used_at: record.last_used_at,
             })
             .collect();
 

@@ -16,9 +16,9 @@ impl From<(IdentityApiKey, ApiKeySecret)> for ApiKeyCreatePayload {
             api_key: ApiKey {
                 id: key.id.to_string().into(),
                 name: key.name,
-                revoked: false,
-                expired: false,
-                last_used_at: Some(chrono::Utc::now()),
+                revoked: key.revoked,
+                expired: key.expired,
+                last_used_at: key.last_used_at,
                 created_at: key.created_at,
                 expires_at: key.expires_at,
             },
