@@ -28,8 +28,11 @@ import {
 import FormSubmitButton from "../form-submit-button"
 
 import { createApiKeyServerAction } from "@/app/api-keys/server-actions"
+import { useRouter } from "next/navigation"
 
 const ApiKeyCreate = () => {
+  const router = useRouter()
+
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [state, formAction] = useFormState(createApiKeyServerAction, {
@@ -44,6 +47,7 @@ const ApiKeyCreate = () => {
     state.message = null
     state.data = null
     console.log("Modal has been closed")
+    router.refresh()
   }
 
   return (

@@ -4,12 +4,14 @@ import { Box, Button, Modal, ModalClose, Sheet, Typography } from "@mui/joy"
 import React, { useState } from "react"
 
 import { revokeApiKeyServerAction } from "@/app/api-keys/server-actions"
+import { useRouter } from "next/navigation"
 
 type Props = {
   id: string
 }
 
 const RevokeKey = ({ id }: Props) => {
+  const router = useRouter()
   const [open, setOpen] = useState<boolean>(false)
   const [loading, setLoading] = useState(false)
 
@@ -90,6 +92,7 @@ const RevokeKey = ({ id }: Props) => {
               await revokeApiKeyServerAction(id)
               setLoading(false)
               setOpen(false)
+              router.refresh()
             }}
             sx={{
               width: "100%",
