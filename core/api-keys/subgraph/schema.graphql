@@ -1,11 +1,11 @@
 type ApiKey {
 	id: ID!
 	name: String!
-	createdAt: DateTime!
+	createdAt: Timestamp!
 	revoked: Boolean!
 	expired: Boolean!
-	lastUsedAt: DateTime
-	expiresAt: DateTime!
+	lastUsedAt: Timestamp
+	expiresAt: Timestamp!
 }
 
 input ApiKeyCreateInput {
@@ -23,13 +23,6 @@ input ApiKeyRevokeInput {
 }
 
 
-"""
-Implement the DateTime<Utc> scalar
-
-The input/output is a string in RFC3339 format.
-"""
-scalar DateTime
-
 
 
 
@@ -39,6 +32,8 @@ type Mutation {
 }
 
 
+
+scalar Timestamp
 
 extend type User @key(fields: "id") {
 	id: ID! @external
