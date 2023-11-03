@@ -161,6 +161,9 @@ type ApiKey
   id: ID!
   name: String!
   createdAt: DateTime!
+  revoked: Boolean!
+  expired: Boolean!
+  lastUsedAt: DateTime
   expiresAt: DateTime!
 }
 
@@ -168,6 +171,7 @@ input ApiKeyCreateInput
   @join__type(graph: API_KEYS)
 {
   name: String!
+  expireInDays: Int
 }
 
 type ApiKeyCreatePayload

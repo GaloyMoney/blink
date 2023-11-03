@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(api-keys): implement ''list api keys'' function for query
-        (#3498)...'
-      sha: fe5024d826db4f69a32d5e1a86e55e9b950d663a
+      commitTitle: 'feat(api-keys): complete revoke use case (#3500)...'
+      sha: d5d3016f5974e97ae931d748a4368c9bed233b59
       tags:
-      - 0.15.90-1-gfe5024d82
+      - 0.15.91-2-gd5d3016f5
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(api-keys): implement ''list api keys'' function for query
-        (#3498)...'
-      sha: fe5024d826db4f69a32d5e1a86e55e9b950d663a
+      commitTitle: 'feat(api-keys): complete revoke use case (#3500)...'
+      sha: d5d3016f5974e97ae931d748a4368c9bed233b59
       tags:
-      - 0.15.90-1-gfe5024d82
+      - 0.15.91-2-gd5d3016f5
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(api-keys): implement ''list api keys'' function for query
-        (#3498)...'
-      sha: fe5024d826db4f69a32d5e1a86e55e9b950d663a
+      commitTitle: 'feat(api-keys): complete revoke use case (#3500)...'
+      sha: d5d3016f5974e97ae931d748a4368c9bed233b59
       tags:
-      - 0.15.90-1-gfe5024d82
+      - 0.15.91-2-gd5d3016f5
     path: ./
   path: ./graphql
 kind: LockConfig
