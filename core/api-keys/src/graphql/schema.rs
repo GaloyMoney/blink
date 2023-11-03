@@ -1,7 +1,7 @@
 use async_graphql::*;
 use chrono::{DateTime, Utc};
 
-use crate::app::ApiKeysApp;
+use crate::{app::ApiKeysApp, identity::IdentityApiKeyId};
 
 pub struct AuthSubject {
     pub id: String,
@@ -72,6 +72,7 @@ pub struct Mutation;
 #[derive(InputObject)]
 struct ApiKeyCreateInput {
     name: String,
+    expire_in_days: Option<u16>,
 }
 
 #[derive(InputObject)]
@@ -96,9 +97,14 @@ impl Mutation {
 
     async fn api_key_revoke(
         &self,
-        _ctx: &Context<'_>,
-        _input: ApiKeyRevokeInput,
+        ctx: &Context<'_>,
+        input: ApiKeyRevokeInput,
     ) -> async_graphql::Result<bool> {
+        let app = ctx.data_unchecked::<ApiKeysApp>();
+        let api_key_id = input.id.parse::<IdentityApiKeyId>()?;
+        let subject = ctx.data::<AuthSubject>()?;
+        app.revoke_api_key_for_subject(&subject.id, api_key_id)
+            .await?;
         Ok(true)
     }
 }

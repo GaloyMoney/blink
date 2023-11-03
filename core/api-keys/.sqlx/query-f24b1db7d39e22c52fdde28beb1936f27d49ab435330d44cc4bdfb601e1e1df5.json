@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE identity_api_keys k\n               SET revoked = true,\n                   revoked_at = NOW()\n               FROM identities i\n               WHERE k.identity_id = i.id\n               AND i.subject_id = $1\n               AND k.id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f24b1db7d39e22c52fdde28beb1936f27d49ab435330d44cc4bdfb601e1e1df5"
+}

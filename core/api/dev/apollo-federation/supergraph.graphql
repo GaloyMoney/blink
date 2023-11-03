@@ -171,6 +171,7 @@ input ApiKeyCreateInput
   @join__type(graph: API_KEYS)
 {
   name: String!
+  expireInDays: Int
 }
 
 type ApiKeyCreatePayload

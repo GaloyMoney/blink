@@ -144,4 +144,29 @@ impl Identities {
 
         Ok(api_keys)
     }
+
+    pub async fn revoke_api_key(
+        &self,
+        subject_id: &str,
+        key_id: IdentityApiKeyId,
+    ) -> Result<(), IdentityError> {
+        let result = sqlx::query!(
+            r#"UPDATE identity_api_keys k
+               SET revoked = true,
+                   revoked_at = NOW()
+               FROM identities i
+               WHERE k.identity_id = i.id
+               AND i.subject_id = $1
+               AND k.id = $2"#,
+            subject_id,
+            key_id as IdentityApiKeyId
+        )
+        .execute(&self.pool)
+        .await?;
+        let num_deleted = result.rows_affected();
+        if num_deleted == 0 {
+            return Err(IdentityError::KeyNotFoundForRevoke);
+        }
+        Ok(())
+    }
 }

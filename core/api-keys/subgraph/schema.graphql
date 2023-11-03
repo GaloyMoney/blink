@@ -10,6 +10,7 @@ type ApiKey {
 
 input ApiKeyCreateInput {
 	name: String!
+	expireInDays: Int
 }
 
 type ApiKeyCreatePayload {

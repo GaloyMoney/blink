@@ -2,6 +2,8 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum IdentityError {
+    #[error("IdentityError - KeyNotFoundForRevoke")]
+    KeyNotFoundForRevoke,
     #[error("IdentityError - MismatchedPrefix")]
     MismatchedPrefix,
     #[error("IdentityError - NoActiveKeyFound")]
