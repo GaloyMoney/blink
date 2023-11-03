@@ -1,4 +1,12 @@
-use crate::identity::{ApiKeySecret, IdentityApiKey};
+use axum::{
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
+
+use crate::{
+    app::ApplicationError,
+    identity::{ApiKeySecret, IdentityApiKey},
+};
 
 use super::schema::{ApiKey, ApiKeyCreatePayload};
 
@@ -12,6 +20,14 @@ impl From<(IdentityApiKey, ApiKeySecret)> for ApiKeyCreatePayload {
                 expires_at: key.expires_at,
             },
             api_key_secret: secret.into_inner(),
+        }
+    }
+}
+
+impl IntoResponse for ApplicationError {
+    fn into_response(self) -> Response {
+        match self {
+            e => (StatusCode::INTERNAL_SERVER_ERROR, e).into_response(),
         }
     }
 }

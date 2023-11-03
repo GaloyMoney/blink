@@ -3,11 +3,14 @@ mod jwks;
 
 use async_graphql::*;
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
-use axum::{routing::get, Extension, Router};
+use axum::{extract::State, routing::get, Extension, Json, Router};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-use crate::{app::ApiKeysApp, graphql};
+use crate::{
+    app::{ApiKeysApp, ApplicationError},
+    graphql,
+};
 
 pub use config::*;
 use jwks::*;
@@ -19,7 +22,7 @@ pub struct OathkeeperClaims {
 }
 
 pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) -> anyhow::Result<()> {
-    let schema = graphql::schema(Some(api_keys_app));
+    let schema = graphql::schema(Some(api_keys_app.clone()));
 
     let jwks_decoder = Arc::new(RemoteJwksDecoder::new(config.oathkeeper_jwks_url.clone()));
     let decoder = jwks_decoder.clone();
@@ -32,7 +35,7 @@ pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) -> anyho
             "/graphql",
             get(playground).post(axum::routing::post(graphql_handler)),
         )
-        .route("/auth/check-token", get(check_handler))
+        .route("/auth/check", get(check_handler).with_state(api_keys_app))
         .with_state(JwtDecoderState {
             decoder: jwks_decoder,
         })
@@ -45,12 +48,18 @@ pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) -> anyho
     Ok(())
 }
 
-async fn check_handler() -> impl axum::response::IntoResponse {
-    println!("CHECK HELLO");
-    use axum::http::StatusCode;
-    let error_response =
-        axum::response::Json(serde_json::json!({ "identity": { "id": "ashoten" }}));
-    (StatusCode::INTERNAL_SERVER_ERROR, error_response)
+#[derive(Debug, Serialize)]
+struct CheckResponse {
+    sub: String,
+}
+
+async fn check_handler(
+    State(app): State<ApiKeysApp>,
+) -> Result<Json<CheckResponse>, ApplicationError> {
+    let sub = app
+        .lookup_authenticated_subject("ashoten".to_string())
+        .await?;
+    Ok(Json(CheckResponse { sub }))
 }
 
 pub async fn graphql_handler(

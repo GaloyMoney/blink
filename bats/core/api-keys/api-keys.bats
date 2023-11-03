@@ -41,7 +41,7 @@ new_key_name() {
 }
 
 @test "api-keys: can authenticate with api key" {
-  exec_graphql 'alice' 'api-keys'
+  exec_graphql 'api-key-secret' 'api-keys'
 
   keyName="$(graphql_output '.data.me.apiKeys[0].name')"
 

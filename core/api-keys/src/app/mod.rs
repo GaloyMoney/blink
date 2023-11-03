@@ -24,6 +24,19 @@ impl ApiKeysApp {
         }
     }
 
+    pub async fn lookup_authenticated_subject(
+        &self,
+        key: String,
+    ) -> Result<String, ApplicationError> {
+        println!("CHECK HELLO");
+        // let mut tx = self.pool.begin().await?;
+        // let identity = self
+        //     .identities
+        //     .find_identity_by_key_in_tx(&mut tx, key)
+        //     .await?;
+        Ok("subject".to_string())
+    }
+
     pub async fn create_api_key_for_subject(
         &self,
         subject_id: &str,
