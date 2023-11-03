@@ -66,4 +66,9 @@ new_key_name() {
 
   revoked="$(graphql_output '.data.me.apiKeys[-1].revoked')"
   [[ "${revoked}" = "true" ]] || exit 1
+
+  exec_graphql 'api-key-secret' 'api-keys'
+
+  error="$(graphql_output '.error.code')"
+  [[ "${error}" = "401" ]] || exit 1
 }
