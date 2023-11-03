@@ -130,12 +130,12 @@ impl Identities {
             SELECT
                 i.id AS identity_id,
                 a.id AS api_key_id,
-                a.name,
-                a.created_at,
-                a.expires_at,
-                revoked,
-                expires_at < NOW() AS "expired!",
-                last_used_at
+                    a.name,
+                    a.created_at,
+                    a.expires_at,
+                    revoked,
+                    expires_at < NOW() AS "expired!",
+                    last_used_at
             FROM
                 identities i
             JOIN
@@ -170,24 +170,42 @@ impl Identities {
         &self,
         subject_id: &str,
         key_id: IdentityApiKeyId,
-    ) -> Result<(), IdentityError> {
-        let result = sqlx::query!(
+    ) -> Result<IdentityApiKey, IdentityError> {
+        let record = sqlx::query!(
             r#"UPDATE identity_api_keys k
                SET revoked = true,
                    revoked_at = NOW()
                FROM identities i
                WHERE k.identity_id = i.id
                AND i.subject_id = $1
-               AND k.id = $2"#,
+               AND k.id = $2
+               RETURNING
+               k.name,
+               k.identity_id,
+               k.created_at,
+               k.expires_at,
+               k.revoked,
+               expires_at < NOW() AS "expired!",
+               k.last_used_at
+            "#,
             subject_id,
             key_id as IdentityApiKeyId
         )
-        .execute(&self.pool)
+        .fetch_optional(&self.pool)
         .await?;
-        let num_deleted = result.rows_affected();
-        if num_deleted == 0 {
-            return Err(IdentityError::KeyNotFoundForRevoke);
+
+        match record {
+            Some(record) => Ok(IdentityApiKey {
+                id: IdentityApiKeyId::from(key_id),
+                name: record.name,
+                identity_id: IdentityId::from(record.identity_id),
+                created_at: record.created_at,
+                expires_at: record.expires_at,
+                revoked: record.revoked,
+                expired: record.expired,
+                last_used_at: record.last_used_at,
+            }),
+            None => Err(IdentityError::KeyNotFoundForRevoke),
         }
-        Ok(())
     }
 }

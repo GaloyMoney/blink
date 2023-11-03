@@ -9,7 +9,7 @@ use crate::{
 };
 
 use super::{
-    schema::{ApiKey, ApiKeyCreatePayload},
+    schema::{ApiKey, ApiKeyCreatePayload, ApiKeyRevokePayload},
     Timestamp,
 };
 
@@ -31,6 +31,14 @@ impl From<(IdentityApiKey, ApiKeySecret)> for ApiKeyCreatePayload {
         Self {
             api_key: ApiKey::from(key),
             api_key_secret: secret.into_inner(),
+        }
+    }
+}
+
+impl From<IdentityApiKey> for ApiKeyRevokePayload {
+    fn from(key: IdentityApiKey) -> Self {
+        Self {
+            api_key: ApiKey::from(key),
         }
     }
 }

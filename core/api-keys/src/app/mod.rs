@@ -64,8 +64,7 @@ impl ApiKeysApp {
         &self,
         subject: &str,
         key_id: IdentityApiKeyId,
-    ) -> Result<(), ApplicationError> {
-        self.identities.revoke_api_key(subject, key_id).await?;
-        Ok(())
+    ) -> Result<IdentityApiKey, ApplicationError> {
+        Ok(self.identities.revoke_api_key(subject, key_id).await?)
     }
 }
