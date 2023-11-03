@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): persist api keys (#3494)...'
-      sha: 893f858bef31721ea896a1ab30382d0709646ea0
+      commitTitle: 'chore(api-keys): small fixes (#3499)...'
+      sha: 7dbcfb6ac7eea9f192daf2d587f5299ae1301dc0
       tags:
-      - 0.15.87-1-g893f858be
+      - 0.15.88-1-g7dbcfb6ac
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): persist api keys (#3494)...'
-      sha: 893f858bef31721ea896a1ab30382d0709646ea0
+      commitTitle: 'chore(api-keys): small fixes (#3499)...'
+      sha: 7dbcfb6ac7eea9f192daf2d587f5299ae1301dc0
       tags:
-      - 0.15.87-1-g893f858be
+      - 0.15.88-1-g7dbcfb6ac
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): persist api keys (#3494)...'
-      sha: 893f858bef31721ea896a1ab30382d0709646ea0
+      commitTitle: 'chore(api-keys): small fixes (#3499)...'
+      sha: 7dbcfb6ac7eea9f192daf2d587f5299ae1301dc0
       tags:
-      - 0.15.87-1-g893f858be
+      - 0.15.88-1-g7dbcfb6ac
     path: ./
   path: ./graphql
 kind: LockConfig
