@@ -95,11 +95,19 @@ impl Identities {
             None => return Err(IdentityError::MismatchedPrefix),
             Some(code) => code,
         };
+
         let record = sqlx::query!(
-            r#"SELECT i.id, i.subject_id
-               FROM identities i
-               JOIN identity_api_keys k ON k.identity_id = i.id
-               WHERE k.revoked = false AND k.encrypted_key = crypt($1, encrypted_key)"#,
+            r#"WITH updated_key AS (
+                 UPDATE identity_api_keys k
+                 SET last_used_at = NOW()
+                 FROM identities i
+                 WHERE k.identity_id = i.id
+                 AND k.revoked = false
+                 AND k.encrypted_key = crypt($1, k.encrypted_key)
+                 AND k.expires_at > NOW()
+                 RETURNING k.id, i.subject_id
+               )
+               SELECT subject_id FROM updated_key"#,
             code
         )
         .fetch_optional(&self.pool)
