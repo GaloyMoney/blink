@@ -10,7 +10,7 @@ gql`
         id
         name
         createdAt
-        expiration
+        expiresAt
       }
     }
   }

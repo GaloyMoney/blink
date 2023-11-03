@@ -59,14 +59,13 @@ const ApiKeyCreate = () => {
         <Sheet
           variant="outlined"
           sx={{
-            maxWidth: 600,
             borderRadius: "md",
             p: 3,
             boxShadow: "lg",
             display: "flex",
             flexDirection: "column",
             gap: 2,
-            alignItems: "center",
+            alignItems: "flex-start",
           }}
         >
           <ModalClose variant="plain" sx={{ alignSelf: "flex-end" }} />
@@ -106,6 +105,7 @@ const ApiKeyCreate = () => {
                   {state?.data?.apiKeySecret}
                 </Typography>
                 <Tooltip
+                  sx={{ cursor: "pointer" }}
                   open={copied}
                   title="Copied to Clipboard"
                   variant="plain"

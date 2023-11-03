@@ -38,17 +38,17 @@ const ApiKeysList = async () => {
             <th>API Key ID</th>
             <th>Name</th>
             <th>Created At</th>
-            <th>Expiration Date</th>
+            <th>Expires At</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {keys.map(({ id, name, createdAt, expiration }) => (
+          {keys.map(({ id, name, createdAt, expiresAt }) => (
             <tr key={id}>
               <td>{id}</td>
               <td>{name}</td>
               <td>{formatDate(createdAt)}</td>
-              <td>{formatDate(expiration)}</td>
+              <td>{formatDate(expiresAt)}</td>
               <td>
                 <RevokeKey id={id} />
               </td>

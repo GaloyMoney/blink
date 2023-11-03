@@ -203,7 +203,7 @@ export type AccountUpdateNotificationSettingsPayload = {
 export type ApiKey = {
   readonly __typename: 'ApiKey';
   readonly createdAt: Scalars['DateTime']['output'];
-  readonly expiration: Scalars['DateTime']['output'];
+  readonly expiresAt: Scalars['DateTime']['output'];
   readonly id: Scalars['ID']['output'];
   readonly name: Scalars['String']['output'];
 };
@@ -1906,7 +1906,7 @@ export type ApiKeyCreateMutationVariables = Exact<{
 }>;
 
 
-export type ApiKeyCreateMutation = { readonly __typename: 'Mutation', readonly apiKeyCreate: { readonly __typename: 'ApiKeyCreatePayload', readonly apiKeySecret: string, readonly apiKey: { readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: string, readonly expiration: string } } };
+export type ApiKeyCreateMutation = { readonly __typename: 'Mutation', readonly apiKeyCreate: { readonly __typename: 'ApiKeyCreatePayload', readonly apiKeySecret: string, readonly apiKey: { readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: string, readonly expiresAt: string } } };
 
 export type ApiKeyRevokeMutationVariables = Exact<{
   input: ApiKeyRevokeInput;
@@ -1937,7 +1937,7 @@ export type UserEmailDeleteMutation = { readonly __typename: 'Mutation', readonl
 export type ApiKeysQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ApiKeysQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly apiKeys: ReadonlyArray<{ readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: string, readonly expiration: string }> } | null };
+export type ApiKeysQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly apiKeys: ReadonlyArray<{ readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: string, readonly expiresAt: string }> } | null };
 
 export type GetPaginatedTransactionsQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -1968,7 +1968,7 @@ export const ApiKeyCreateDocument = gql`
       id
       name
       createdAt
-      expiration
+      expiresAt
     }
     apiKeySecret
   }
@@ -2146,7 +2146,7 @@ export const ApiKeysDocument = gql`
       id
       name
       createdAt
-      expiration
+      expiresAt
     }
   }
 }
@@ -2964,7 +2964,7 @@ export type AccountUpdateNotificationSettingsPayloadResolvers<ContextType = any,
 
 export type ApiKeyResolvers<ContextType = any, ParentType extends ResolversParentTypes['ApiKey'] = ResolversParentTypes['ApiKey']> = {
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  expiration?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  expiresAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
