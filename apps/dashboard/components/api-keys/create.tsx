@@ -192,7 +192,10 @@ const ApiKeyCreate = () => {
                   <Select
                     placeholder="Expires In"
                     onChange={(_, v) => {
-                      setEnableCustomExpiresInDays(v === "custom")
+                      if (v === "custom") {
+                        setEnableCustomExpiresInDays(true)
+                        setExpiresInDays(30)
+                      }
                       if (v && v !== "custom") setExpiresInDays(parseInt(String(v)))
                     }}
                   >
