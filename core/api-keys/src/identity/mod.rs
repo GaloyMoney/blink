@@ -105,4 +105,45 @@ impl Identities {
             Err(IdentityError::NoActiveKeyFound)
         }
     }
+
+    pub async fn list_keys_for_subject(
+        &self,
+        subject_id: &str,
+    ) -> Result<Vec<IdentityApiKey>, IdentityError> {
+        let api_keys_records = sqlx::query!(
+            r#"
+            SELECT
+                i.id AS identity_id,
+                a.id AS api_key_id,
+                a.name,
+                a.created_at,
+                a.expires_at
+            FROM
+                identities i
+            JOIN
+                identity_api_keys a
+                ON i.id = a.identity_id
+            WHERE
+                i.subject_id = $1
+                AND a.active = true
+                AND a.expires_at > NOW() AT TIME ZONE 'utc'
+            "#,
+            subject_id,
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        let api_keys = api_keys_records
+            .into_iter()
+            .map(|record| IdentityApiKey {
+                id: IdentityApiKeyId::from(record.api_key_id),
+                name: record.name,
+                identity_id: IdentityId::from(record.identity_id),
+                created_at: record.created_at,
+                expires_at: record.expires_at,
+            })
+            .collect();
+
+        Ok(api_keys)
+    }
 }

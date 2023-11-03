@@ -52,4 +52,11 @@ impl ApiKeysApp {
         tx.commit().await?;
         Ok(key)
     }
+
+    pub async fn list_api_keys_for_subject(
+        &self,
+        subject_id: &str,
+    ) -> Result<Vec<IdentityApiKey>, ApplicationError> {
+        Ok(self.identities.list_keys_for_subject(subject_id).await?)
+    }
 }
