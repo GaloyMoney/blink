@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build: add api-keys dockerfile (#3492)...'
-      sha: 7c7642d81ba6563072f05223f314b9c062ec1afe
+      commitTitle: 'fix: typos (#3496)...'
+      sha: 017665f2078c038c3b8335ca3dfde8c7224f9562
       tags:
-      - 0.15.85-2-g7c7642d81
+      - 0.15.86-3-g017665f20
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build: add api-keys dockerfile (#3492)...'
-      sha: 7c7642d81ba6563072f05223f314b9c062ec1afe
+      commitTitle: 'fix: typos (#3496)...'
+      sha: 017665f2078c038c3b8335ca3dfde8c7224f9562
       tags:
-      - 0.15.85-2-g7c7642d81
+      - 0.15.86-3-g017665f20
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'build: add api-keys dockerfile (#3492)...'
-      sha: 7c7642d81ba6563072f05223f314b9c062ec1afe
+      commitTitle: 'fix: typos (#3496)...'
+      sha: 017665f2078c038c3b8335ca3dfde8c7224f9562
       tags:
-      - 0.15.85-2-g7c7642d81
+      - 0.15.86-3-g017665f20
     path: ./
   path: ./graphql
 kind: LockConfig
