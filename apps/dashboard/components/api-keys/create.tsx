@@ -90,6 +90,7 @@ const ApiKeyCreate = () => {
             <>
               <Box
                 sx={{
+                  maxWidth: 400,
                   display: "flex",
                   flexDirection: "row",
                   alignItems: "center",
@@ -102,7 +103,7 @@ const ApiKeyCreate = () => {
               >
                 <Typography
                   sx={{
-                    width: "100%",
+                    overflow: "scroll",
                   }}
                   fontFamily="monospace"
                 >
