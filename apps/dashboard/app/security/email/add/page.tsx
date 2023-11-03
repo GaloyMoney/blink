@@ -27,7 +27,7 @@ export default function AddEmail() {
   const [state, formAction] = useFormState(emailRegisterInitiateServerAction, {
     error: null,
     message: null,
-    responsePayload: {},
+    data: null,
   })
 
   return (
