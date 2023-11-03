@@ -23,9 +23,15 @@ new_key_name() {
   random_uuid
 }
 
-@test "api-keys: create new key" {
+@test "api-keys: returns empty list for no api-keys" {
   login_user 'alice' '+16505554350'
 
+  exec_graphql 'alice' 'api-keys'
+  length="$(graphql_output '.data.me.apiKeys | length')"
+  [[ "$length" == "0" ]] || exit 1
+}
+
+@test "api-keys: create new key" {
   key_name="$(new_key_name)"
   cache_value 'key_name' $key_name
 
