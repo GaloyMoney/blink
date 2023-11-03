@@ -52,7 +52,7 @@ export async function revokeApiKey(token: string, id: string) {
   try {
     const { data } = await client.mutate<ApiKeyRevokeMutation>({
       mutation: ApiKeyRevokeDocument,
-      variables: { input: id },
+      variables: { input: { id } },
     })
     return data
   } catch (error) {
