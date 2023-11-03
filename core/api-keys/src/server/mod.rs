@@ -16,7 +16,7 @@ pub use config::*;
 use jwks::*;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct OathkeeperClaims {
+pub struct JwtClaims {
     sub: String,
     exp: u64,
 }
@@ -24,7 +24,7 @@ pub struct OathkeeperClaims {
 pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) -> anyhow::Result<()> {
     let schema = graphql::schema(Some(api_keys_app.clone()));
 
-    let jwks_decoder = Arc::new(RemoteJwksDecoder::new(config.oathkeeper_jwks_url.clone()));
+    let jwks_decoder = Arc::new(RemoteJwksDecoder::new(config.jwks_url.clone()));
     let decoder = jwks_decoder.clone();
     tokio::spawn(async move {
         decoder.refresh_keys_periodically().await;
@@ -64,7 +64,7 @@ async fn check_handler(
 
 pub async fn graphql_handler(
     schema: Extension<Schema<graphql::Query, graphql::Mutation, EmptySubscription>>,
-    Claims(jwt_claims): Claims<OathkeeperClaims>,
+    Claims(jwt_claims): Claims<JwtClaims>,
     req: GraphQLRequest,
 ) -> GraphQLResponse {
     let req = req.into_inner();

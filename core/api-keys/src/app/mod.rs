@@ -47,7 +47,7 @@ impl ApiKeysApp {
             .identities
             .find_or_create_identity_for_subject_in_tx(&mut tx, subject_id)
             .await?;
-        let expiry = chrono::Utc::now() + self.config.default_expiry;
+        let expiry = chrono::Utc::now() + self.config.default_expiry();
         let key = self
             .identities
             .create_key_for_identity_in_tx(&mut tx, id, name, expiry)

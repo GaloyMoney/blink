@@ -6,8 +6,8 @@ pub struct ServerConfig {
     pub port: u16,
     #[serde(default = "default_api_key_auth_header")]
     pub api_key_auth_header: String,
-    #[serde(default = "default_oathkeeper_jwks_url")]
-    pub oathkeeper_jwks_url: String,
+    #[serde(default = "default_jwks_url")]
+    pub jwks_url: String,
 }
 
 impl Default for ServerConfig {
@@ -15,7 +15,7 @@ impl Default for ServerConfig {
         Self {
             port: default_port(),
             api_key_auth_header: default_api_key_auth_header(),
-            oathkeeper_jwks_url: default_oathkeeper_jwks_url(),
+            jwks_url: default_jwks_url(),
         }
     }
 }
@@ -28,6 +28,6 @@ fn default_api_key_auth_header() -> String {
     "X-API-KEY".to_string()
 }
 
-fn default_oathkeeper_jwks_url() -> String {
+fn default_jwks_url() -> String {
     "http://localhost:4456/.well-known/jwks.json".to_string()
 }
