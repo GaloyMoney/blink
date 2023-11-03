@@ -1,12 +1,15 @@
 import React from "react"
 import Table from "@mui/joy/Table"
 
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { getServerSession } from "next-auth"
-import { apiKeys } from "@/services/graphql/queries/api-keys"
+
 import { redirect } from "next/navigation"
 import { Typography } from "@mui/joy"
+
 import RevokeKey from "./revoke"
+
+import { apiKeys } from "@/services/graphql/queries/api-keys"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
 const ApiKeysList = async () => {
   const session = await getServerSession(authOptions)

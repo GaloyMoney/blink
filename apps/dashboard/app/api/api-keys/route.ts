@@ -1,8 +1,10 @@
-import { createApiKey, revokeApiKey } from "@/services/graphql/mutations/api-keys"
 import { getServerSession } from "next-auth"
 
 import { NextRequest, NextResponse } from "next/server"
+
 import { authOptions } from "../auth/[...nextauth]/route"
+
+import { createApiKey, revokeApiKey } from "@/services/graphql/mutations/api-keys"
 
 export async function DELETE(request: NextRequest) {
   const { id }: { id: string } = await request.json()

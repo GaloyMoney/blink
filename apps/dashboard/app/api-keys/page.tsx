@@ -7,7 +7,6 @@ import ApiKeysList from "@/components/api-keys/list"
 import ApiKeyCreate from "@/components/api-keys/create"
 
 export default async function Home() {
-  const session = await getServerSession(authOptions)
   return (
     <ContentContainer>
       <Box
