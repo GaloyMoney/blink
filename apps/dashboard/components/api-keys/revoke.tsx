@@ -2,9 +2,9 @@
 import ReportProblemRoundedIcon from "@mui/icons-material/ReportProblemRounded"
 import { Box, Button, Modal, ModalClose, Sheet, Typography } from "@mui/joy"
 import React, { useState } from "react"
+import { useRouter } from "next/navigation"
 
 import { revokeApiKeyServerAction } from "@/app/api-keys/server-actions"
-import { useRouter } from "next/navigation"
 
 type Props = {
   id: string

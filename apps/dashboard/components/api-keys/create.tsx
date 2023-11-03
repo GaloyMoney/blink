@@ -18,6 +18,7 @@ import InfoOutlined from "@mui/icons-material/InfoOutlined"
 import AddIcon from "@mui/icons-material/Add"
 import CopyIcon from "@mui/icons-material/CopyAll"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 import {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -28,7 +29,6 @@ import {
 import FormSubmitButton from "../form-submit-button"
 
 import { createApiKeyServerAction } from "@/app/api-keys/server-actions"
-import { useRouter } from "next/navigation"
 
 const ApiKeyCreate = () => {
   const router = useRouter()
