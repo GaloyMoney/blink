@@ -35,6 +35,6 @@ pub async fn run() -> anyhow::Result<()> {
 async fn run_cmd(config: Config) -> anyhow::Result<()> {
     println!("Running server");
     let pool = db::init_pool(&config.db).await?;
-    let app = crate::app::ApiKeysApp::new();
+    let app = crate::app::ApiKeysApp::new(pool, config.app);
     crate::server::run_server(config.server, app).await
 }

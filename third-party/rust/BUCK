@@ -898,6 +898,7 @@ cargo.rust_library(
     crate_root = "chrono-0.4.31.crate/src/lib.rs",
     edition = "2021",
     features = [
+        "alloc",
         "android-tzdata",
         "clock",
         "iana-time-zone",
@@ -1390,10 +1391,14 @@ cargo.rust_library(
     features = [
         "alloc",
         "powerfmt",
+        "serde",
         "std",
     ],
     visibility = [],
-    deps = [":powerfmt-0.2.0"],
+    deps = [
+        ":powerfmt-0.2.0",
+        ":serde-1.0.190",
+    ],
 )
 
 http_archive(
@@ -2525,10 +2530,17 @@ cargo.rust_library(
     crate = "indexmap",
     crate_root = "indexmap-1.9.3.crate/src/lib.rs",
     edition = "2021",
-    features = ["std"],
+    features = [
+        "serde",
+        "serde-1",
+        "std",
+    ],
     rustc_flags = ["--cfg=has_std"],
     visibility = [],
-    deps = [":hashbrown-0.12.3"],
+    deps = [
+        ":hashbrown-0.12.3",
+        ":serde-1.0.190",
+    ],
 )
 
 http_archive(
@@ -3802,6 +3814,12 @@ cargo.rust_library(
     ],
     visibility = [],
     deps = [":proc-macro2-1.0.69"],
+)
+
+alias(
+    name = "rand",
+    actual = ":rand-0.8.5",
+    visibility = ["PUBLIC"],
 )
 
 http_archive(
@@ -5182,6 +5200,7 @@ cargo.rust_library(
     crate_root = "serde_json-1.0.108.crate/src/lib.rs",
     edition = "2021",
     features = [
+        "alloc",
         "default",
         "raw_value",
         "std",
@@ -5235,6 +5254,72 @@ cargo.rust_library(
         ":itoa-1.0.9",
         ":ryu-1.0.15",
         ":serde-1.0.190",
+    ],
+)
+
+alias(
+    name = "serde_with",
+    actual = ":serde_with-3.4.0",
+    visibility = ["PUBLIC"],
+)
+
+http_archive(
+    name = "serde_with-3.4.0.crate",
+    sha256 = "64cd236ccc1b7a29e7e2739f27c0b2dd199804abc4290e32f59f3b68d6405c23",
+    strip_prefix = "serde_with-3.4.0",
+    urls = ["https://crates.io/api/v1/crates/serde_with/3.4.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "serde_with-3.4.0",
+    srcs = [":serde_with-3.4.0.crate"],
+    crate = "serde_with",
+    crate_root = "serde_with-3.4.0.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "alloc",
+        "default",
+        "macros",
+        "std",
+    ],
+    named_deps = {
+        "chrono_0_4": ":chrono-0.4.31",
+        "indexmap_1": ":indexmap-1.9.3",
+        "indexmap_2": ":indexmap-2.0.2",
+        "time_0_3": ":time-0.3.30",
+    },
+    visibility = [],
+    deps = [
+        ":base64-0.21.5",
+        ":hex-0.4.3",
+        ":serde-1.0.190",
+        ":serde_json-1.0.108",
+        ":serde_with_macros-3.4.0",
+    ],
+)
+
+http_archive(
+    name = "serde_with_macros-3.4.0.crate",
+    sha256 = "93634eb5f75a2323b16de4748022ac4297f9e76b6dced2be287a099f41b5e788",
+    strip_prefix = "serde_with_macros-3.4.0",
+    urls = ["https://crates.io/api/v1/crates/serde_with_macros/3.4.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "serde_with_macros-3.4.0",
+    srcs = [":serde_with_macros-3.4.0.crate"],
+    crate = "serde_with_macros",
+    crate_root = "serde_with_macros-3.4.0.crate/src/lib.rs",
+    edition = "2021",
+    proc_macro = True,
+    visibility = [],
+    deps = [
+        ":darling-0.20.3",
+        ":proc-macro2-1.0.69",
+        ":quote-1.0.33",
+        ":syn-2.0.38",
     ],
 )
 
@@ -6278,13 +6363,16 @@ cargo.rust_binary(
         ":chrono-0.4.31",
         ":clap-4.4.7",
         ":jsonwebtoken-9.1.0",
+        ":rand-0.8.5",
         ":reqwest-0.11.20",
         ":serde-1.0.190",
         ":serde_json-1.0.108",
+        ":serde_with-3.4.0",
         ":serde_yaml-0.9.27",
         ":sqlx-0.7.2",
         ":thiserror-1.0.50",
         ":tokio-1.33.0",
+        ":uuid-1.5.0",
         ":version_check-0.9.4",
     ],
 )
@@ -6355,6 +6443,8 @@ cargo.rust_library(
         "formatting",
         "macros",
         "parsing",
+        "serde",
+        "serde-well-known",
         "std",
     ],
     visibility = [],
@@ -6402,6 +6492,7 @@ cargo.rust_library(
     features = [
         "formatting",
         "parsing",
+        "serde",
     ],
     proc_macro = True,
     visibility = [],
@@ -7171,6 +7262,12 @@ cargo.rust_library(
     visibility = [],
 )
 
+alias(
+    name = "uuid",
+    actual = ":uuid-1.5.0",
+    visibility = ["PUBLIC"],
+)
+
 http_archive(
     name = "uuid-1.5.0.crate",
     sha256 = "88ad59a7560b41a70d191093a945f0b87bc1deeda46fb237479708a1d6b6cdfc",
@@ -7187,9 +7284,17 @@ cargo.rust_library(
     edition = "2018",
     features = [
         "default",
+        "getrandom",
+        "rng",
+        "serde",
         "std",
+        "v4",
     ],
     visibility = [],
+    deps = [
+        ":getrandom-0.2.10",
+        ":serde-1.0.190",
+    ],
 )
 
 http_archive(
