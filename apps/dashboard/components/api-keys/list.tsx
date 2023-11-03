@@ -53,7 +53,7 @@ const ApiKeysList = async () => {
               <td>{name}</td>
               <td>{id}</td>
               <td>{formatDate(expiresAt)}</td>
-              <td>{lastUsedAt ? formatDate(lastUsedAt) : "-"}</td>
+              <td>{lastUsedAt ? formatDate(lastUsedAt) : "Never"}</td>
               <td>
                 <RevokeKey id={id} />
               </td>

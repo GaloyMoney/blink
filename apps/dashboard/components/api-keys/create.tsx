@@ -11,6 +11,8 @@ import {
   Sheet,
   Typography,
   Tooltip,
+  Select,
+  Option,
 } from "@mui/joy"
 
 import InfoOutlined from "@mui/icons-material/InfoOutlined"
@@ -40,9 +42,13 @@ const ApiKeyCreate = () => {
     message: null,
     data: null,
   })
+  const [enableCustomExpiresInDays, setEnableCustomExpiresInDays] = useState(false)
+  const [expiresInDays, setExpiresInDays] = useState<number | null>(null)
 
   const handleModalClose = () => {
     setOpen(false)
+    setEnableCustomExpiresInDays(false)
+    setExpiresInDays(null)
     state.error = null
     state.message = null
     state.data = null
@@ -164,6 +170,7 @@ const ApiKeyCreate = () => {
                   }}
                   action={formAction}
                 >
+                  <Typography>Name</Typography>
                   <Input
                     name="apiKeyName"
                     id="apiKeyName"
@@ -171,8 +178,57 @@ const ApiKeyCreate = () => {
                       padding: "0.6em",
                       width: "100%",
                     }}
-                    placeholder="API Key Name..."
+                    placeholder="API Key Name *"
                   />
+
+                  <Typography>Expires In</Typography>
+
+                  <Input
+                    name="apiKeyExpiresInDays"
+                    id="apiKeyExpiresInDays"
+                    sx={{ display: "none" }}
+                  />
+
+                  <Select
+                    placeholder="Expires In"
+                    onChange={(_, v) => {
+                      if (v === "custom") {
+                        setEnableCustomExpiresInDays(true)
+                        setExpiresInDays(30)
+                      }
+                      if (v && v !== "custom") setExpiresInDays(parseInt(String(v)))
+                    }}
+                  >
+                    <Option value="30">30 days</Option>
+                    <Option value="90">90 days</Option>
+                    <Option value="custom">Custom</Option>
+                  </Select>
+
+                  {enableCustomExpiresInDays && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        columnGap: 2,
+                        alignItems: "center",
+                      }}
+                    >
+                      <Input
+                        sx={{
+                          width: "100%",
+                        }}
+                        onChange={(e) => {
+                          if (e.target.value && parseInt(e.target.value) > 0)
+                            setExpiresInDays(parseInt(e.target.value))
+                          else setExpiresInDays(0)
+                        }}
+                        type="number"
+                        value={String(expiresInDays)}
+                      />
+                      <Typography>days</Typography>
+                    </Box>
+                  )}
+
                   {state.error ? (
                     <FormHelperText>
                       <InfoOutlined />

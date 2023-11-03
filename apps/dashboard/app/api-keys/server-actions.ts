@@ -55,6 +55,11 @@ export const createApiKeyServerAction = async (_prevState: unknown, form: FormDa
     }
   }
 
+  const apiKeyExpiresInDaysFormData = form.get("apiKeyExpiresInDays")
+  const apiKeyExpiresInDays = apiKeyExpiresInDaysFormData
+    ? parseInt(String(apiKeyExpiresInDaysFormData))
+    : null
+
   const session = await getServerSession(authOptions)
   const token = session?.accessToken
   if (!token || typeof token !== "string") {
@@ -67,7 +72,7 @@ export const createApiKeyServerAction = async (_prevState: unknown, form: FormDa
 
   let data
   try {
-    data = await createApiKey(token, apiKeyName)
+    data = await createApiKey(token, apiKeyName, apiKeyExpiresInDays)
   } catch (err) {
     console.log("error in createApiKey ", err)
     return {
