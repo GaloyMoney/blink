@@ -127,7 +127,7 @@ There are two primary options to do so:
 1. If `direnv` is installed _and_ hooked into your shell, you can `cd` into
    the repository and `nix` will bootstrap the environment for you using the flake.
 2. Otherwise, you can execute `nix develop` to enter the environment, `nix develop --command <command>` to
-   execute a command, or use the environment in whatever way your prefer.
+   execute a command, or use the environment in whatever way you prefer.
 
 ## Troubleshooting Potential Service Conflicts
 

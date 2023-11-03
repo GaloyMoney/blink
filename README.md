@@ -73,7 +73,7 @@ For an overview of all relevant repository checkout [awesome-galoy](https://gith
   - Quick response times thanks to pagination of large data sets
   - Returning error codes for full translation capability of the frontend
   - Instrumentation enabled for real-time insights into production runtime ([opentelemetry](https://opentelemetry.io) / [honeycomb](https://www.honeycomb.io))
-- User on-boarding (optional)
+- User onboarding (optional)
   - Gamification via user quiz that pays out sats
   - Map of in-network merchants
 - Notifications
@@ -88,7 +88,7 @@ For more information and options on running Galoy locally, see the [development 
 
 ### (1) Choose a Supported Platform
 
-Currently developming on MacOS and Linux is supported.
+Currently developing on MacOS and Linux is supported.
 
 ### (2) Install Dependencies
 

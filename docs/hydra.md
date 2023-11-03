@@ -34,7 +34,7 @@ Follow the instructions below
 
 ## create a OAuth2 client
 
-Think of the client as the service that need to get the delegation access
+Think of the client as the service that needs to get the delegation access
 
 If you use concourse, you, as the end user, will login with Google Workspace.
 The client is concourse in this example.
@@ -103,7 +103,7 @@ CLIENT_ID=$(echo $code_client | jq -r '.client_id')
 
 ## Initiate the request (if not using Dashboard)
 
-this simulate the front end client.
+this simulates the front end client.
 would be mobile app for adding a boltcard
 
 ```sh
@@ -119,7 +119,7 @@ do the login and consent
 
 copy the Access token to the mobile app.
 
-you are now connect as the user when you add the Header `Oauth2-Token: {token}`. (note that Bearer should not be present, unlike for the Authorization header. seems to a oathkeeper quirks)
+you are now connected as the user when you add the Header `Oauth2-Token: {token}`. (note that Bearer should not be present, unlike for the Authorization header. seems to a oathkeeper quirks)
 
 ### debug
 

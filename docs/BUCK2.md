@@ -72,7 +72,7 @@ There are two directories where the rules come from:
 
 - **[prelude](../prelude):** the vendored, [upstream standard library](https://github.com/facebook/buck2-prelude) with rules for common use cases and programming languages
   - **Common use case example:** `sh_binary` is provided as a way to run shell scripts
-  - **Programming language example:** `rust_library` is a provided as a way to add buildable Rust library targets
+  - **Programming language example:** `rust_library` is provided as a way to add buildable Rust library targets
   - **Side note:** this must be kept up to date in conjunction with the `buck2` binary
 - **[toolchains](../toolchains/*):** our custom toolchains to use pnpm (which is not supported out of the box)
   - **Example:** `tsc_build` uses tsc to output compiled javascript

@@ -141,7 +141,7 @@ There is an event listener for swaps called `listenerSwapMonitor` in the `src/se
 make start-trigger
 ```
 
-In dev, you can monitoring the output of this listener in the console. You should see blocks being mined, as well as
+In dev, you can monitor the output of this listener in the console. You should see blocks being mined, as well as
 successfully loop outs, preimage revealed messages, etc...
 
 Cron Job
