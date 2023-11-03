@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): auth endpoint boilerplate (#3489)...'
-      sha: eb661c65cd086d33c2fbee03399dd91c35bdb720
+      commitTitle: 'chore: Better error handling in consent. (#3479)...'
+      sha: d17fb0627dd3327423430511ea692cd431c895a0
       tags:
-      - 0.15.83-2-geb661c65c
+      - 0.15.84-2-gd17fb0627
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): auth endpoint boilerplate (#3489)...'
-      sha: eb661c65cd086d33c2fbee03399dd91c35bdb720
+      commitTitle: 'chore: Better error handling in consent. (#3479)...'
+      sha: d17fb0627dd3327423430511ea692cd431c895a0
       tags:
-      - 0.15.83-2-geb661c65c
+      - 0.15.84-2-gd17fb0627
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): auth endpoint boilerplate (#3489)...'
-      sha: eb661c65cd086d33c2fbee03399dd91c35bdb720
+      commitTitle: 'chore: Better error handling in consent. (#3479)...'
+      sha: d17fb0627dd3327423430511ea692cd431c895a0
       tags:
-      - 0.15.83-2-geb661c65c
+      - 0.15.84-2-gd17fb0627
     path: ./
   path: ./graphql
 kind: LockConfig
