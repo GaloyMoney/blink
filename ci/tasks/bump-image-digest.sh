@@ -8,6 +8,7 @@ export trigger_digest=$(cat ./trigger-edge-image/digest)
 export cron_digest=$(cat ./cron-edge-image/digest)
 export migrate_digest=$(cat ./migrate-edge-image/digest)
 export websocket_digest=$(cat ./websocket-edge-image/digest)
+export api_keys_digest=$(cat ./api-keys-edge-image/digest)
 export ref=$(cat ./repo/.git/short_ref)
 export app_version=$(cat version/version)
 
@@ -27,6 +28,7 @@ yq -i e '.galoy.images.websocket.digest = strenv(websocket_digest)' ./charts/gal
 yq -i e '.galoy.images.exporter.digest = strenv(exporter_digest)' ./charts/galoy/values.yaml
 yq -i e '.galoy.images.trigger.digest = strenv(trigger_digest)' ./charts/galoy/values.yaml
 yq -i e '.galoy.images.cron.digest = strenv(cron_digest)' ./charts/galoy/values.yaml
+yq -i e '.galoy.images.apiKeys.digest = strenv(api_keys_digest)' ./charts/galoy/values.yaml
 yq -i e '.appVersion = strenv(app_version)' ./charts/galoy/Chart.yaml
 
 if [[ -z $(git config --global user.email) ]]; then
