@@ -6,6 +6,8 @@ pub enum IdentityError {
     MismatchedPrefix,
     #[error("IdentityError - NoActiveKeyFound")]
     NoActiveKeyFound,
+    #[error("IdentityError - NoIdentityForSubject")]
+    NoIdentityForSubject,
     #[error("IdentityError - Sqlx: {0}")]
     Sqlx(#[from] sqlx::Error),
 }

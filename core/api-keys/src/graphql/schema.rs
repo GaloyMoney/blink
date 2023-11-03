@@ -35,13 +35,23 @@ struct User {
 
 #[ComplexObject]
 impl User {
-    async fn api_keys(&self) -> Vec<ApiKey> {
-        vec![ApiKey {
-            id: ID::from("123"),
-            name: "api-key".to_owned(),
-            created_at: Utc::now(),
-            expires_at: Utc::now() + chrono::Duration::days(30),
-        }]
+    async fn api_keys(&self, ctx: &Context<'_>) -> Result<Vec<ApiKey>> {
+        let app = ctx.data_unchecked::<ApiKeysApp>();
+        let subject = ctx.data::<AuthSubject>()?;
+
+        let identity_api_keys = app.list_api_keys_for_subject(&subject.id).await?;
+
+        let api_keys = identity_api_keys
+            .into_iter()
+            .map(|identity_key| ApiKey {
+                id: ID::from(identity_key.id.to_string()),
+                name: identity_key.name,
+                created_at: identity_key.created_at,
+                expires_at: identity_key.expires_at,
+            })
+            .collect();
+
+        Ok(api_keys)
     }
 }
 
