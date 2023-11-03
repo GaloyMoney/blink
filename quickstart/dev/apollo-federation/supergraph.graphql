@@ -160,11 +160,11 @@ type ApiKey
 {
   id: ID!
   name: String!
-  createdAt: DateTime!
+  createdAt: Timestamp!
   revoked: Boolean!
   expired: Boolean!
-  lastUsedAt: DateTime
-  expiresAt: DateTime!
+  lastUsedAt: Timestamp
+  expiresAt: Timestamp!
 }
 
 input ApiKeyCreateInput
@@ -397,14 +397,6 @@ type Currency
   name: String!
   symbol: String!
 }
-
-"""
-Implement the DateTime<Utc> scalar
-
-The input/output is a string in RFC3339 format.
-"""
-scalar DateTime
-  @join__type(graph: API_KEYS)
 
 type DepositFeesInformation
   @join__type(graph: PUBLIC)
@@ -1537,6 +1529,7 @@ type SuccessPayload
 Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)
 """
 scalar Timestamp
+  @join__type(graph: API_KEYS)
   @join__type(graph: PUBLIC)
 
 """A time-based one-time password"""
