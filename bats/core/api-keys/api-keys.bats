@@ -27,6 +27,7 @@ new_key_name() {
   login_user 'alice' '+16505554350'
 
   key_name="$(new_key_name)"
+  cache_value 'key_name' $key_name
 
   variables="{\"input\":{\"name\":\"${key_name}\"}}"
 
@@ -40,10 +41,9 @@ new_key_name() {
   [[ "${name}" = "${key_name}" ]] || exit 1
 }
 
-@test "api-keys: can authenticate with api key" {
+@test "api-keys: can authenticate with api key and list keys" {
   exec_graphql 'api-key-secret' 'api-keys'
 
-  keyName="$(graphql_output '.data.me.apiKeys[0].name')"
-
-  [[ "${keyName}" = "api-key" ]] || exit 1
+  keyName="$(graphql_output '.data.me.apiKeys[-1].name')"
+  [[ "${keyName}" = "$(read_value 'key_name')" ]] || exit 1
 }
