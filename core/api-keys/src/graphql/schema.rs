@@ -43,19 +43,7 @@ impl User {
         let subject = ctx.data::<AuthSubject>()?;
 
         let identity_api_keys = app.list_api_keys_for_subject(&subject.id).await?;
-
-        let api_keys = identity_api_keys
-            .into_iter()
-            .map(|identity_key| ApiKey {
-                id: ID::from(identity_key.id.to_string()),
-                name: identity_key.name,
-                created_at: identity_key.created_at,
-                expires_at: identity_key.expires_at,
-                revoked: false,
-                expired: false,
-                last_used_at: None,
-            })
-            .collect();
+        let api_keys = identity_api_keys.into_iter().map(ApiKey::from).collect();
 
         Ok(api_keys)
     }

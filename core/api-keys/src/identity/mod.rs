@@ -10,6 +10,7 @@ pub use error::*;
 crate::entity_id! { IdentityApiKeyId }
 crate::entity_id! { IdentityId }
 
+#[derive(Debug)]
 pub struct IdentityApiKey {
     pub name: String,
     pub id: IdentityApiKeyId,

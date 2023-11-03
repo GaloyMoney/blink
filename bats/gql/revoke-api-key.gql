@@ -1,0 +1,3 @@
+mutation ApiKeyRevoke($input: ApiKeyRevokeInput!) {
+  apiKeyRevoke(input: $input)
+}
