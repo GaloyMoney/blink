@@ -29,12 +29,16 @@ gql`
   }
 `
 
-export async function createApiKey(token: string, name: string) {
+export async function createApiKey(
+  token: string,
+  name: string,
+  expireInDays: number | null,
+) {
   const client = apollo(token).getClient()
   try {
     const { data } = await client.mutate<ApiKeyCreateMutation>({
       mutation: ApiKeyCreateDocument,
-      variables: { input: { name } },
+      variables: { input: { name, expireInDays } },
     })
     return data
   } catch (error) {
