@@ -4,7 +4,7 @@ import Table from "@mui/joy/Table"
 import { getServerSession } from "next-auth"
 
 import { redirect } from "next/navigation"
-import { Typography } from "@mui/joy"
+import { Divider, Typography } from "@mui/joy"
 
 import RevokeKey from "./revoke"
 
@@ -30,25 +30,30 @@ const ApiKeysList = async () => {
 
   const keys = await apiKeys(token)
 
+  const activeKeys = keys.filter(({ expired, revoked }) => !expired && !revoked)
+  const expiredKeys = keys.filter(({ expired }) => expired)
+  const revokedKeys = keys.filter(({ revoked }) => revoked)
+
   return (
     <>
+      <Typography fontSize={22}>Active Keys</Typography>
       <Table aria-label="basic table">
         <thead>
           <tr>
-            <th>API Key ID</th>
             <th>Name</th>
-            <th>Created At</th>
+            <th>API Key ID</th>
             <th>Expires At</th>
+            <th>Last Used</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {keys.map(({ id, name, createdAt, expiresAt }) => (
+          {activeKeys.map(({ id, name, expiresAt, lastUsedAt }) => (
             <tr key={id}>
-              <td>{id}</td>
               <td>{name}</td>
-              <td>{formatDate(createdAt)}</td>
+              <td>{id}</td>
               <td>{formatDate(expiresAt)}</td>
+              <td>{lastUsedAt ? formatDate(lastUsedAt) : "-"}</td>
               <td>
                 <RevokeKey id={id} />
               </td>
@@ -56,7 +61,57 @@ const ApiKeysList = async () => {
           ))}
         </tbody>
       </Table>
-      {keys.length === 0 && <Typography>No keys to display.</Typography>}
+      {activeKeys.length === 0 && <Typography>No keys to display.</Typography>}
+
+      <Divider />
+
+      <Typography fontSize={22}>Revoked Keys</Typography>
+      <Table aria-label="basic table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>API Key ID</th>
+            <th>Created At</th>
+            <th>Last Used</th>
+          </tr>
+        </thead>
+        <tbody>
+          {revokedKeys.map(({ id, name, expiresAt, createdAt }) => (
+            <tr key={id}>
+              <td>{name}</td>
+              <td>{id}</td>
+              <td>{formatDate(createdAt)}</td>
+              <td>{formatDate(expiresAt)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+      {revokedKeys.length === 0 && <Typography>No keys to display.</Typography>}
+
+      <Divider />
+
+      <Typography fontSize={22}>Expired Keys</Typography>
+      <Table aria-label="basic table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>API Key ID</th>
+            <th>Created At</th>
+            <th>Last Used</th>
+          </tr>
+        </thead>
+        <tbody>
+          {expiredKeys.map(({ id, name, expiresAt, createdAt }) => (
+            <tr key={id}>
+              <td>{name}</td>
+              <td>{id}</td>
+              <td>{formatDate(createdAt)}</td>
+              <td>{formatDate(expiresAt)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+      {expiredKeys.length === 0 && <Typography>No keys to display.</Typography>}
     </>
   )
 }

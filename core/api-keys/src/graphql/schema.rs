@@ -1,7 +1,7 @@
 use async_graphql::*;
 use chrono::{DateTime, Utc};
 
-use crate::app::ApiKeysApp;
+use crate::{app::ApiKeysApp, identity::IdentityApiKeyId};
 
 pub struct AuthSubject {
     pub id: String,
@@ -22,6 +22,9 @@ pub(super) struct ApiKey {
     pub id: ID,
     pub name: String,
     pub created_at: DateTime<Utc>,
+    pub revoked: bool,
+    pub expired: bool,
+    pub last_used_at: Option<DateTime<Utc>>,
     pub expires_at: DateTime<Utc>,
 }
 
@@ -40,16 +43,7 @@ impl User {
         let subject = ctx.data::<AuthSubject>()?;
 
         let identity_api_keys = app.list_api_keys_for_subject(&subject.id).await?;
-
-        let api_keys = identity_api_keys
-            .into_iter()
-            .map(|identity_key| ApiKey {
-                id: ID::from(identity_key.id.to_string()),
-                name: identity_key.name,
-                created_at: identity_key.created_at,
-                expires_at: identity_key.expires_at,
-            })
-            .collect();
+        let api_keys = identity_api_keys.into_iter().map(ApiKey::from).collect();
 
         Ok(api_keys)
     }
@@ -66,6 +60,7 @@ pub struct Mutation;
 #[derive(InputObject)]
 struct ApiKeyCreateInput {
     name: String,
+    expire_in_days: Option<u16>,
 }
 
 #[derive(InputObject)]
@@ -90,9 +85,14 @@ impl Mutation {
 
     async fn api_key_revoke(
         &self,
-        _ctx: &Context<'_>,
-        _input: ApiKeyRevokeInput,
+        ctx: &Context<'_>,
+        input: ApiKeyRevokeInput,
     ) -> async_graphql::Result<bool> {
+        let app = ctx.data_unchecked::<ApiKeysApp>();
+        let api_key_id = input.id.parse::<IdentityApiKeyId>()?;
+        let subject = ctx.data::<AuthSubject>()?;
+        app.revoke_api_key_for_subject(&subject.id, api_key_id)
+            .await?;
         Ok(true)
     }
 }

@@ -45,6 +45,8 @@ new_key_name() {
 
   name=$(echo "$key" | jq -r '.name')
   [[ "${name}" = "${key_name}" ]] || exit 1
+  key_id=$(echo "$key" | jq -r '.id')
+  cache_value "api-key-id" "$key_id"
 }
 
 @test "api-keys: can authenticate with api key and list keys" {
@@ -52,4 +54,21 @@ new_key_name() {
 
   keyName="$(graphql_output '.data.me.apiKeys[-1].name')"
   [[ "${keyName}" = "$(read_value 'key_name')" ]] || exit 1
+}
+
+@test "api-keys: can revoke key" {
+  key_id=$(read_value "api-key-id")
+  variables="{\"input\":{\"id\":\"${key_id}\"}}"
+
+  exec_graphql 'alice' 'revoke-api-key' "$variables"
+
+  exec_graphql 'alice' 'api-keys'
+
+  revoked="$(graphql_output '.data.me.apiKeys[-1].revoked')"
+  [[ "${revoked}" = "true" ]] || exit 1
+
+  exec_graphql 'api-key-secret' 'api-keys'
+
+  error="$(graphql_output '.error.code')"
+  [[ "${error}" = "401" ]] || exit 1
 }

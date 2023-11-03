@@ -59,4 +59,13 @@ impl ApiKeysApp {
     ) -> Result<Vec<IdentityApiKey>, ApplicationError> {
         Ok(self.identities.list_keys_for_subject(subject_id).await?)
     }
+
+    pub async fn revoke_api_key_for_subject(
+        &self,
+        subject: &str,
+        key_id: IdentityApiKeyId,
+    ) -> Result<(), ApplicationError> {
+        self.identities.revoke_api_key(subject, key_id).await?;
+        Ok(())
+    }
 }

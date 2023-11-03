@@ -10,15 +10,23 @@ use crate::{
 
 use super::schema::{ApiKey, ApiKeyCreatePayload};
 
+impl From<IdentityApiKey> for ApiKey {
+    fn from(key: IdentityApiKey) -> Self {
+        ApiKey {
+            id: key.id.to_string().into(),
+            name: key.name,
+            revoked: key.revoked,
+            expired: key.expired,
+            last_used_at: key.last_used_at,
+            created_at: key.created_at,
+            expires_at: key.expires_at,
+        }
+    }
+}
 impl From<(IdentityApiKey, ApiKeySecret)> for ApiKeyCreatePayload {
     fn from((key, secret): (IdentityApiKey, ApiKeySecret)) -> Self {
         Self {
-            api_key: ApiKey {
-                id: key.id.to_string().into(),
-                name: key.name,
-                created_at: key.created_at,
-                expires_at: key.expires_at,
-            },
+            api_key: ApiKey::from(key),
             api_key_secret: secret.into_inner(),
         }
     }

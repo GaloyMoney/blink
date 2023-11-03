@@ -10,6 +10,9 @@ gql`
         id
         name
         createdAt
+        revoked
+        expired
+        lastUsedAt
         expiresAt
       }
     }
@@ -20,10 +23,10 @@ export async function apiKeys(token: string) {
   const client = apollo(token).getClient()
 
   try {
-    const data = await client.query<ApiKeysQuery>({
+    const { data } = await client.query<ApiKeysQuery>({
       query: ApiKeysDocument,
     })
-    return data.data.me?.apiKeys || []
+    return data.me?.apiKeys || []
   } catch (err) {
     if (err instanceof Error) {
       console.error("error", err)

@@ -10,12 +10,16 @@ pub use error::*;
 crate::entity_id! { IdentityApiKeyId }
 crate::entity_id! { IdentityId }
 
+#[derive(Debug)]
 pub struct IdentityApiKey {
     pub name: String,
     pub id: IdentityApiKeyId,
     pub identity_id: IdentityId,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub expires_at: chrono::DateTime<chrono::Utc>,
+    pub last_used_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub revoked: bool,
+    pub expired: bool,
 }
 
 pub struct ApiKeySecret(String);
@@ -79,6 +83,9 @@ impl Identities {
                 identity_id,
                 created_at: record.created_at,
                 expires_at,
+                revoked: false,
+                expired: false,
+                last_used_at: None,
             },
             ApiKeySecret(key),
         ))
@@ -89,11 +96,19 @@ impl Identities {
             None => return Err(IdentityError::MismatchedPrefix),
             Some(code) => code,
         };
+
         let record = sqlx::query!(
-            r#"SELECT i.id, i.subject_id
-               FROM identities i
-               JOIN identity_api_keys k ON k.identity_id = i.id
-               WHERE k.active = true AND k.encrypted_key = crypt($1, encrypted_key)"#,
+            r#"WITH updated_key AS (
+                 UPDATE identity_api_keys k
+                 SET last_used_at = NOW()
+                 FROM identities i
+                 WHERE k.identity_id = i.id
+                 AND k.revoked = false
+                 AND k.encrypted_key = crypt($1, k.encrypted_key)
+                 AND k.expires_at > NOW()
+                 RETURNING k.id, i.subject_id
+               )
+               SELECT subject_id FROM updated_key"#,
             code
         )
         .fetch_optional(&self.pool)
@@ -117,7 +132,10 @@ impl Identities {
                 a.id AS api_key_id,
                 a.name,
                 a.created_at,
-                a.expires_at
+                a.expires_at,
+                revoked,
+                expires_at < NOW() AS "expired!",
+                last_used_at
             FROM
                 identities i
             JOIN
@@ -125,8 +143,6 @@ impl Identities {
                 ON i.id = a.identity_id
             WHERE
                 i.subject_id = $1
-                AND a.active = true
-                AND a.expires_at > NOW() AT TIME ZONE 'utc'
             "#,
             subject_id,
         )
@@ -141,9 +157,37 @@ impl Identities {
                 identity_id: IdentityId::from(record.identity_id),
                 created_at: record.created_at,
                 expires_at: record.expires_at,
+                revoked: record.revoked,
+                expired: record.expired,
+                last_used_at: record.last_used_at,
             })
             .collect();
 
         Ok(api_keys)
+    }
+
+    pub async fn revoke_api_key(
+        &self,
+        subject_id: &str,
+        key_id: IdentityApiKeyId,
+    ) -> Result<(), IdentityError> {
+        let result = sqlx::query!(
+            r#"UPDATE identity_api_keys k
+               SET revoked = true,
+                   revoked_at = NOW()
+               FROM identities i
+               WHERE k.identity_id = i.id
+               AND i.subject_id = $1
+               AND k.id = $2"#,
+            subject_id,
+            key_id as IdentityApiKeyId
+        )
+        .execute(&self.pool)
+        .await?;
+        let num_deleted = result.rows_affected();
+        if num_deleted == 0 {
+            return Err(IdentityError::KeyNotFoundForRevoke);
+        }
+        Ok(())
     }
 }
