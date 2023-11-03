@@ -39,10 +39,12 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
 
   if (stateVerificationCode.error) {
     toast.error(stateVerificationCode.message)
+    stateVerificationCode.message = null
   }
 
   if (stateTwoFA.error) {
     toast.error(stateTwoFA.message)
+    stateTwoFA.message = null
   }
 
   return (

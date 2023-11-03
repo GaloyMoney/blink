@@ -3,13 +3,12 @@ import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { isValidPhoneNumber } from "libphonenumber-js"
 
-import { isAxiosError } from "axios"
-
 import { GetCaptchaChallengeResponse, SendPhoneCodeResponse } from "./phone-login.types"
 
 import { LoginType, SubmitValue } from "@/app/index.types"
 import authApi from "@/services/galoy-auth"
 import { hydraClient } from "@/services/hydra"
+import { handleAxiosError } from "@/app/error-handler"
 import { env } from "@/env"
 
 export const getCaptchaChallenge = async (
@@ -71,7 +70,23 @@ export const getCaptchaChallenge = async (
     }
   }
 
-  const res = await authApi.requestPhoneCaptcha(customHeaders)
+  let res: {
+    id: string
+    challengeCode: string
+  } | null
+  try {
+    res = await authApi.requestPhoneCaptcha(customHeaders)
+  } catch (err) {
+    console.error("error in requestPhoneCaptcha", err)
+    return handleAxiosError(err)
+  }
+  if (!res) {
+    return {
+      error: true,
+      message: "Cannot get Captcha",
+      responsePayload: null,
+    }
+  }
 
   const id = res.id
   const challenge = res.challengeCode
@@ -131,7 +146,12 @@ export const sendPhoneCode = async (
   const remember = String(formData.remember) === "true"
   const channel = formData.channel ?? "sms"
 
-  let res
+  let res: {
+    data?: {
+      success?: boolean
+    }
+    status?: number
+  } | null
   try {
     res = await authApi.requestPhoneCode(
       phone,
@@ -142,21 +162,8 @@ export const sendPhoneCode = async (
       customHeaders,
     )
   } catch (err) {
-    if (isAxiosError(err) && err.response) {
-      console.error("Error in 'phone/code' action", err.response.data)
-      return {
-        error: true,
-        message: err.response.data.error || "An unknown error occurred",
-        responsePayload: null,
-      }
-    } else {
-      console.error("An unknown error occurred", err)
-      return {
-        error: true,
-        message: "An unknown error occurred",
-        responsePayload: null,
-      }
-    }
+    console.error("error in requestPhoneCode", err)
+    return handleAxiosError(err)
   }
 
   if (res?.data?.success !== true) {
