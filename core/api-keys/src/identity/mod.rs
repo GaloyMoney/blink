@@ -110,19 +110,25 @@ impl Identities {
         &self,
         subject_id: &str,
     ) -> Result<Vec<IdentityApiKey>, IdentityError> {
-        let identity = sqlx::query!(
-            r#"SELECT id FROM identities WHERE subject_id = $1"#,
-            subject_id,
-        )
-        .fetch_optional(&self.pool)
-        .await?
-        .ok_or(IdentityError::NoIdentityForSubject)?;
-
         let api_keys_records = sqlx::query!(
-            r#"SELECT id, name, created_at, expires_at
-               FROM identity_api_keys
-               WHERE identity_id = $1 AND active = true AND expires_at > NOW() AT TIME ZONE 'utc'"#,
-            identity.id,
+            r#"
+            SELECT
+                i.id AS identity_id,
+                a.id AS api_key_id,
+                a.name,
+                a.created_at,
+                a.expires_at
+            FROM
+                identities i
+            JOIN
+                identity_api_keys a
+                ON i.id = a.identity_id
+            WHERE
+                i.subject_id = $1
+                AND a.active = true
+                AND a.expires_at > NOW() AT TIME ZONE 'utc'
+            "#,
+            subject_id,
         )
         .fetch_all(&self.pool)
         .await?;
@@ -130,9 +136,9 @@ impl Identities {
         let api_keys = api_keys_records
             .into_iter()
             .map(|record| IdentityApiKey {
-                id: IdentityApiKeyId::from(record.id),
+                id: IdentityApiKeyId::from(record.api_key_id),
                 name: record.name,
-                identity_id: IdentityId::from(identity.id),
+                identity_id: IdentityId::from(record.identity_id),
                 created_at: record.created_at,
                 expires_at: record.expires_at,
             })
