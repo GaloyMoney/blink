@@ -5,7 +5,7 @@ use axum::{
 
 use crate::{
     app::ApplicationError,
-    identity::{ApiKeySecret, IdentityApiKey},
+    identity::{ApiKeySecret, IdentityApiKey, IdentityError},
 };
 
 use super::schema::{ApiKey, ApiKeyCreatePayload};
@@ -27,6 +27,13 @@ impl From<(IdentityApiKey, ApiKeySecret)> for ApiKeyCreatePayload {
 impl IntoResponse for ApplicationError {
     fn into_response(self) -> Response {
         match self {
+            ApplicationError::Identity(IdentityError::NoActiveKeyFound)
+            | ApplicationError::Identity(IdentityError::MismatchedPrefix) => {
+                (StatusCode::UNAUTHORIZED, self.to_string()).into_response()
+            }
+            ApplicationError::MissingApiKey | ApplicationError::BadKeyFormat(_) => {
+                (StatusCode::BAD_REQUEST, self.to_string()).into_response()
+            }
             e => (StatusCode::INTERNAL_SERVER_ERROR, e).into_response(),
         }
     }

@@ -1,5 +1,8 @@
 query apiKeys {
   me {
+    defaultAccount {
+      id
+    }
     apiKeys {
       id
       name

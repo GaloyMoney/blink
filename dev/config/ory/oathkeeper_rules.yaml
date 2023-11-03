@@ -65,6 +65,8 @@
       config:
         token_from:
           header: X-API-KEY
+        forward_http_headers:
+        - "X-API-KEY"
         check_session_url: "http://bats-tests:5397/auth/check"
         force_method: GET
         preserve_path: true

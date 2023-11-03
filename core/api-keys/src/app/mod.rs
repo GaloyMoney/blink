@@ -18,23 +18,20 @@ pub struct ApiKeysApp {
 impl ApiKeysApp {
     pub fn new(pool: Pool<Postgres>, config: AppConfig) -> Self {
         Self {
+            identities: Identities::new(
+                pool.clone(),
+                std::sync::Arc::new(format!("{}_", config.key_prefix)),
+            ),
             config,
-            identities: Identities::new(pool.clone(), std::sync::Arc::new("galoy".to_string())),
             pool,
         }
     }
 
     pub async fn lookup_authenticated_subject(
         &self,
-        key: String,
+        key: &str,
     ) -> Result<String, ApplicationError> {
-        println!("CHECK HELLO");
-        // let mut tx = self.pool.begin().await?;
-        // let identity = self
-        //     .identities
-        //     .find_identity_by_key_in_tx(&mut tx, key)
-        //     .await?;
-        Ok("subject".to_string())
+        Ok(self.identities.find_subject_by_key(&key).await?)
     }
 
     pub async fn create_api_key_for_subject(
@@ -52,6 +49,7 @@ impl ApiKeysApp {
             .identities
             .create_key_for_identity_in_tx(&mut tx, id, name, expiry)
             .await?;
+        tx.commit().await?;
         Ok(key)
     }
 }

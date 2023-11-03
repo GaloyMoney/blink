@@ -71,7 +71,7 @@ impl Identities {
         .fetch_one(&mut **tx)
         .await?;
 
-        let key = format!("{}_{code}", self.key_prefix);
+        let key = format!("{}{code}", self.key_prefix);
         Ok((
             IdentityApiKey {
                 name,
@@ -82,5 +82,27 @@ impl Identities {
             },
             ApiKeySecret(key),
         ))
+    }
+
+    pub async fn find_subject_by_key(&self, key: &str) -> Result<String, IdentityError> {
+        let code = match key.strip_prefix(&*self.key_prefix) {
+            None => return Err(IdentityError::MismatchedPrefix),
+            Some(code) => code,
+        };
+        let record = sqlx::query!(
+            r#"SELECT i.id, i.subject_id
+               FROM identities i
+               JOIN identity_api_keys k ON k.identity_id = i.id
+               WHERE k.active = true AND k.encrypted_key = crypt($1, encrypted_key)"#,
+            code
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+
+        if let Some(record) = record {
+            Ok(record.subject_id)
+        } else {
+            Err(IdentityError::NoActiveKeyFound)
+        }
     }
 }
