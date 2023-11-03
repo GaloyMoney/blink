@@ -17,9 +17,9 @@ impl From<IdentityApiKey> for ApiKey {
             name: key.name,
             revoked: key.revoked,
             expired: key.expired,
-            last_used_at: key.last_used_at,
-            created_at: key.created_at,
-            expires_at: key.expires_at,
+            last_used_at: key.last_used_at.map(Into::into),
+            created_at: key.created_at.into(),
+            expires_at: key.expires_at.into(),
         }
     }
 }

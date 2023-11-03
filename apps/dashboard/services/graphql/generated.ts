@@ -212,6 +212,7 @@ export type ApiKey = {
 };
 
 export type ApiKeyCreateInput = {
+  readonly expireInDays?: InputMaybe<Scalars['Int']['input']>;
   readonly name: Scalars['String']['input'];
 };
 
