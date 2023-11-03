@@ -15,6 +15,9 @@ gql`
         id
         name
         createdAt
+        revoked
+        expired
+        lastUsedAt
         expiresAt
       }
       apiKeySecret
