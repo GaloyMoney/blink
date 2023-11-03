@@ -161,7 +161,7 @@ type ApiKey
   id: ID!
   name: String!
   createdAt: DateTime!
-  expiration: DateTime!
+  expiresAt: DateTime!
 }
 
 input ApiKeyCreateInput
