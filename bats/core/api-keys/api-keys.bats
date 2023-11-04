@@ -32,6 +32,8 @@ new_key_name() {
 }
 
 @test "api-keys: create new key" {
+  login_user 'alice' '+16505554350'
+
   key_name="$(new_key_name)"
   cache_value 'key_name' $key_name
 
@@ -61,9 +63,10 @@ new_key_name() {
   variables="{\"input\":{\"id\":\"${key_id}\"}}"
 
   exec_graphql 'alice' 'revoke-api-key' "$variables"
+  revoked_from_response=$(graphql_output '.data.apiKeyRevoke.apiKey.revoked')
+  [[ "${revoked_from_response}" = "true" ]] || exit 1
 
   exec_graphql 'alice' 'api-keys'
-
   revoked="$(graphql_output '.data.me.apiKeys[-1].revoked')"
   [[ "${revoked}" = "true" ]] || exit 1
 
