@@ -96,7 +96,7 @@ const ApiKeyCreate = () => {
             <>
               <Box
                 sx={{
-                  maxWidth: 400,
+                  maxWidth: "20em",
                   display: "flex",
                   flexDirection: "row",
                   alignItems: "center",

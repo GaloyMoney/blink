@@ -25,7 +25,17 @@ gql`
   }
 
   mutation ApiKeyRevoke($input: ApiKeyRevokeInput!) {
-    apiKeyRevoke(input: $input)
+    apiKeyRevoke(input: $input) {
+      apiKey {
+        id
+        name
+        createdAt
+        revoked
+        expired
+        lastUsedAt
+        expiresAt
+      }
+    }
   }
 `
 
