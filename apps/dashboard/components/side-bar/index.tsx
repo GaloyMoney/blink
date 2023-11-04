@@ -6,9 +6,10 @@ import Sheet from "@mui/joy/Sheet"
 import Divider from "@mui/material/Divider"
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined"
+import LinkIcon from "@mui/icons-material/Link"
+import { usePathname } from "next/navigation"
 import SecurityIcon from "@mui/icons-material/Security"
 import KeyIcon from "@mui/icons-material/Key"
-import { usePathname } from "next/navigation"
 
 import Logo from "./../logo"
 import { SidebarStyles } from "./side-bar-style"
@@ -100,6 +101,12 @@ const Sidebar: React.FC = () => {
             href="/api-keys"
             icon={<KeyIcon />}
             label="API Keys"
+            isCurrentPath={isCurrentPath}
+          />
+          <NavigationLink
+            href="/callback"
+            icon={<LinkIcon />}
+            label="Callback Endpoints"
             isCurrentPath={isCurrentPath}
           />
         </List>
