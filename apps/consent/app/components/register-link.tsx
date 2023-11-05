@@ -9,7 +9,7 @@ const RegisterLink: React.FC<RegisterLinkProp> = ({ href }) => {
   return (
     <div className="flex justify-center mt-6">
       <div className="text-center text-sm ">
-        <Link data-testid="sign_in_with_phone_text" href={href} replace>
+        <Link href={href} replace>
           <p className="font-medium text-sm">
             Don&apos;t have an Account?{" "}
             <span className="font-semibold text-[var(--primaryButtonBackground)] dark:text-[var(--primaryButtonBackground)] hover:underline">
