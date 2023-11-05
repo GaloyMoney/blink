@@ -33,6 +33,7 @@ import {
 } from "@/config"
 
 import {
+  Lightning,
   Payments,
   Prices as PricesWithSpans,
   Swap as SwapWithSpans,
@@ -185,7 +186,11 @@ const publishCurrentPrice = () => {
 
 const watchHeldInvoices = () => {
   return setInterval(async () => {
-    await Wallets.handleHeldInvoices(logger)
+    const heldInvoicesCount = await Lightning.getHeldInvoicesCount()
+    if (heldInvoicesCount instanceof Error) return
+    if (heldInvoicesCount > 0) {
+      await Wallets.handleHeldInvoices(logger)
+    }
   }, MS_PER_5_MINS)
 }
 
