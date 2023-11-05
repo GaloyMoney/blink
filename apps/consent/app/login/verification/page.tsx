@@ -6,7 +6,7 @@ import VerificationForm from "./form"
 import MainContent from "@/app/components/main-container"
 import Card from "@/app/components/card"
 import Logo from "@/app/components/logo"
-import { LoginType } from "@/app/index.types"
+import { LoginType } from "@/app/types/index.types"
 
 interface VerificationProps {
   login_challenge: string

@@ -1,4 +1,4 @@
-import { ServerActionResponse } from "../../index.types"
+import { ServerActionResponse } from "./index.types"
 
 interface GetCaptchaChallengeBody {
   id: string | null

@@ -12,9 +12,11 @@ import { E164Number } from "libphonenumber-js/types"
 // @ts-ignore-next-line error
 import { experimental_useFormState as useFormState } from "react-dom"
 
-import { getCaptchaChallenge } from "./server-actions"
+import LoginLink from "../login-link"
 
-import { GetCaptchaChallengeResponse } from "./phone-login.types"
+import { getCaptchaChallenge } from "@/app/login/phone/server-actions"
+
+import { GetCaptchaChallengeResponse } from "@/app/types/phone-auth.types"
 
 import PrimaryButton from "@/app/components/button/primary-button-component"
 import SecondaryButton from "@/app/components/button/secondary-button-component"
@@ -23,7 +25,7 @@ import { CaptchaChallenge } from "@/app/components/captcha-challenge"
 import FormComponent from "@/app/components/form-component"
 import Separator from "@/app/components/separator"
 
-import { SubmitValue } from "@/app/index.types"
+import { SubmitValue } from "@/app/types/index.types"
 // eslint-disable-next-line import/no-unassigned-import
 import "react-phone-number-input/style.css"
 // eslint-disable-next-line import/no-unassigned-import
@@ -31,14 +33,21 @@ import "./phone-input-styles.css"
 
 import SelectComponent from "@/app/components/select"
 
-interface LoginFormProps {
+import RegisterLink from "@/app/components/register-link"
+
+interface AuthFormProps {
+  authAction: "Register" | "Login"
   login_challenge: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   countryCodes: any
 }
 
 // TODO need to add country call codes
-const LoginForm: React.FC<LoginFormProps> = ({ login_challenge, countryCodes }) => {
+const PhoneAuthForm: React.FC<AuthFormProps> = ({
+  login_challenge,
+  countryCodes,
+  authAction,
+}) => {
   const [phoneNumber, setPhoneNumber] = useState<string>("")
   //TODO useFormState is not giving type suggestions/errors i.e: not typed
   const [state, formAction] = useFormState<GetCaptchaChallengeResponse>(
@@ -121,15 +130,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ login_challenge, countryCodes }) 
             Remember me
           </label>
         </div>
-        <Separator>or</Separator>
 
-        <div className="flex justify-center mb-4">
-          <div className="text-center text-sm w-60">
-            <Link href={`/login?login_challenge=${login_challenge}`} replace>
-              <p className="font-semibold text-sm">Sign in with Email</p>
-            </Link>
-          </div>
-        </div>
+        {authAction === "Register" ? null : (
+          <>
+            <Separator>or</Separator>
+            <div className="flex justify-center mb-4">
+              <div className="text-center text-sm w-60">
+                <Link href={`/login?login_challenge=${login_challenge}`} replace>
+                  <p className="font-semibold text-sm">Sign in with Email</p>
+                </Link>
+              </div>
+            </div>
+          </>
+        )}
 
         <div className="flex flex-col md:flex-row-reverse w-full gap-2">
           <PrimaryButton
@@ -152,8 +165,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ login_challenge, countryCodes }) 
           </SecondaryButton>
         </div>
       </FormComponent>
+      {authAction === "Register" ? (
+        <LoginLink href={`/login/phone?login_challenge=${login_challenge}`} />
+      ) : (
+        <RegisterLink href={`/register?login_challenge=${login_challenge}`} />
+      )}
     </>
   )
 }
 
-export default LoginForm
+export default PhoneAuthForm

@@ -10,7 +10,7 @@ import ScopeItem from "../components/scope-item/scope-item"
 import PrimaryButton from "../components/button/primary-button-component"
 import SecondaryButton from "../components/button/secondary-button-component"
 import Heading from "../components/heading"
-import { SubmitValue } from "../index.types"
+import { SubmitValue } from "../types/index.types"
 
 interface ConsentProps {
   consent_challenge: string

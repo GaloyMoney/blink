@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 
 import { handleAxiosError } from "@/app/error-handler"
 import { getUserId } from "@/app/graphql/queries/me-query"
-import { LoginType } from "@/app/index.types"
+import { LoginType } from "@/app/types/index.types"
 import authApi from "@/services/galoy-auth"
 import { hydraClient } from "@/services/hydra"
 
