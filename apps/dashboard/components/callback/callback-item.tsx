@@ -1,66 +1,85 @@
-"use client"
 import React from "react"
-
-import { Box, Card, Typography } from "@mui/joy"
+import { Card, Typography, Box } from "@mui/joy"
 
 import DeleteCallback from "./callback-delete"
 
-type CallbackEndpointProps = {
-  id: string
-  url: string
+type EndPointProps = {
+  readonly id: string
+  readonly url: string
 }
 
-function callbackItem({ id, url }: CallbackEndpointProps) {
-  return (
-    <Card
-      id={id}
-      sx={{
-        "display": "flex",
-        "flexDirection": "row",
-        "alignItems": "center",
-        "justifyContent": "space-between",
-        "padding": 2,
-        "borderRadius": 1,
-        "boxShadow": 1,
-        "&:hover": {
-          boxShadow: 3,
-        },
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          boxShadow: 0.5,
-          gap: "1em",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            gap: "0.5em",
-            justifyContent: "space-between",
-            padding: "0.4em",
-            borderRadius: "0.5em",
-            backgroundColor: "neutral.solidDisabledBg",
-          }}
-        >
-          {id}
-        </Box>
+type EndPointCardListProps = {
+  endpoints: readonly EndPointProps[]
+}
 
-        <Typography
+const CallBackCardItem = ({ endpoints }: EndPointCardListProps) => {
+  return (
+    <>
+      {endpoints.map(({ id, url }) => (
+        <Card
+          key={id}
           sx={{
-            fontWeight: "bold",
+            "display": "flex",
+            "flexDirection": "column",
+            "alignItems": "flex-start",
+            "borderRadius": "1em",
+            "boxShadow": 1,
+            "marginBottom": "1em",
+            "&:hover": {
+              boxShadow: 3,
+            },
           }}
         >
-          {url}
-        </Typography>
-      </Box>
-      <DeleteCallback id={id}></DeleteCallback>
-    </Card>
+          <Box
+            sx={{
+              width: "100%",
+              padding: 0.5,
+            }}
+          >
+            <Typography>ID</Typography>
+            <Typography
+              sx={{
+                fontWeight: "bold",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                backgroundColor: "neutral.solidDisabledBg",
+                textOverflow: "ellipsis",
+                padding: 1,
+                borderRadius: "0.5em",
+              }}
+            >
+              {id}
+            </Typography>
+          </Box>
+
+          <Box
+            sx={{
+              width: "100%",
+              padding: 0.5,
+            }}
+          >
+            <Typography>URL</Typography>
+            <Typography
+              sx={{
+                fontWeight: "bold",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                backgroundColor: "neutral.solidDisabledBg",
+                padding: 1,
+                borderRadius: "0.5em",
+              }}
+            >
+              {url}
+            </Typography>
+          </Box>
+
+          <DeleteCallback id={id}></DeleteCallback>
+        </Card>
+      ))}
+      {endpoints.length === 0 && <Typography>No Callbacks Added</Typography>}
+    </>
   )
 }
 
-export default callbackItem
+export default CallBackCardItem

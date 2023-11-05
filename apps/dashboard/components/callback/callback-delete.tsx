@@ -1,11 +1,9 @@
 "use client"
 import { useState } from "react"
-import Button from "@mui/joy/Button"
-import Modal from "@mui/joy/Modal"
-import ModalClose from "@mui/joy/ModalClose"
-import Typography from "@mui/joy/Typography"
-import Sheet from "@mui/joy/Sheet"
+import { Button, Typography, Box, Modal, Sheet, ModalClose } from "@mui/joy"
+
 import DeleteIcon from "@mui/icons-material/Delete"
+import ReportProblemRoundedIcon from "@mui/icons-material/ReportProblemRounded"
 
 import { deleteCallbackAction } from "@/app/callback/server-actions"
 
@@ -15,13 +13,17 @@ type CallbackDeleteProps = {
 
 function DeleteCallback({ id }: CallbackDeleteProps) {
   const [open, setOpen] = useState<boolean>(false)
+  const [loading, setLoading] = useState(false)
 
   const deleteHandler = async () => {
     try {
+      setLoading(true)
       await deleteCallbackAction(id)
       setOpen(false)
     } catch (error) {
       console.error(error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -35,33 +37,75 @@ function DeleteCallback({ id }: CallbackDeleteProps) {
         <Sheet
           variant="outlined"
           sx={{
-            maxWidth: "20em",
+            maxWidth: 400,
             borderRadius: "md",
             p: 3,
             boxShadow: "lg",
             display: "flex",
             flexDirection: "column",
-            gap: "1em",
-            justifyContent: "center",
+            gap: 2,
             alignItems: "center",
           }}
         >
-          <ModalClose variant="plain" sx={{ m: 1 }} />
-          <Typography
-            component="h2"
-            id="modal-callback"
-            level="h4"
-            textColor="inherit"
-            fontWeight="lg"
-            mb={1}
+          <ModalClose variant="plain" sx={{ alignSelf: "flex-end" }} />
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
           >
-            Delete Callback
+            <ReportProblemRoundedIcon
+              sx={{
+                fontSize: "4rem",
+              }}
+            />
+            <Typography
+              component="h2"
+              id="modal-callback"
+              level="h4"
+              textColor="inherit"
+              fontWeight="lg"
+            >
+              Delete Callback
+            </Typography>
+          </Box>
+          <Typography id="modal-desc" textColor="text.tertiary" textAlign="center">
+            Are you sure you want to delete? You will not be able to use this callback
+            further.
           </Typography>
-          <Typography>Are you sure you want to delete?</Typography>
-          <Button onClick={deleteHandler}>Confirm</Button>
+          <Button
+            variant="outlined"
+            loading={loading}
+            color="danger"
+            onClick={deleteHandler}
+            sx={{
+              width: "100%",
+            }}
+          >
+            Confirm
+          </Button>
         </Sheet>
       </Modal>
-      <DeleteIcon sx={{ cursor: "pointer" }} onClick={() => setOpen(true)}></DeleteIcon>
+      <Box
+        sx={{
+          alignItems: "right",
+        }}
+      >
+        <Button onClick={() => setOpen(true)} variant="outlined" color="danger">
+          <DeleteIcon />
+          <Typography
+            sx={{
+              display: {
+                xs: "block",
+                md: "none",
+              },
+            }}
+          >
+            Remove
+          </Typography>
+        </Button>
+      </Box>
     </>
   )
 }

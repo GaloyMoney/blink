@@ -19,10 +19,10 @@ gql`
 export async function fetchCallbackData(token: string) {
   const client = apollo(token).getClient()
   try {
-    const data = await client.query<CallbackEndpointsQuery>({
+    const response = await client.query<CallbackEndpointsQuery>({
       query: CallbackEndpointsDocument,
     })
-    return data
+    return response
   } catch (err) {
     if (err instanceof Error) {
       console.error("error", err)

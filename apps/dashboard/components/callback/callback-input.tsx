@@ -2,6 +2,7 @@
 import Button from "@mui/joy/Button"
 import { Input, FormLabel, FormControl, FormHelperText } from "@mui/joy"
 import Modal from "@mui/joy/Modal"
+import Box from "@mui/joy/Box"
 import ModalClose from "@mui/joy/ModalClose"
 import Typography from "@mui/joy/Typography"
 import Sheet from "@mui/joy/Sheet"
@@ -18,6 +19,8 @@ import {
   experimental_useFormState as useFormState,
 } from "react-dom"
 
+import FormSubmitButton from "../form-submit-button"
+
 import { createCallbackAction } from "@/app/callback/server-actions"
 
 function CreateCallBack() {
@@ -30,7 +33,9 @@ function CreateCallBack() {
   })
 
   if (state.message === "success") {
+    state.error = false
     state.message = null
+    state.responsePayload = null
     setOpen(false)
   }
   return (
@@ -43,15 +48,15 @@ function CreateCallBack() {
         <Sheet
           variant="outlined"
           sx={{
-            maxWidth: "20em",
+            maxWidth: 400,
             borderRadius: "md",
             p: 3,
             boxShadow: "lg",
             display: "flex",
             flexDirection: "column",
-            gap: "1em",
-            justifyContent: "center",
-            alignItems: "center",
+            gap: 2,
+            alignItems: "left",
+            width: "100%",
           }}
         >
           <ModalClose variant="plain" sx={{ m: 1 }} />
@@ -73,9 +78,15 @@ function CreateCallBack() {
               gap: "1em",
               justifyContent: "center",
               alignItems: "center",
+              width: "100%",
             }}
           >
-            <FormControl error={state?.error}>
+            <FormControl
+              sx={{
+                width: "100%",
+              }}
+              error={state?.error}
+            >
               <FormLabel>Callback URL</FormLabel>
               <Input
                 required
@@ -91,27 +102,27 @@ function CreateCallBack() {
                 </FormHelperText>
               ) : null}
             </FormControl>
-            <Button
+            <FormSubmitButton
               sx={{
                 width: "100%",
               }}
-              loading={pending}
               type="submit"
             >
               Create
-            </Button>
+            </FormSubmitButton>
           </form>
         </Sheet>
       </Modal>
-      <Button
-        loading={pending}
-        sx={{
-          width: "10em",
-        }}
-        onClick={() => setOpen(true)}
+      <Box
+        sx={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem" }}
       >
-        Add Callback <AddIcon></AddIcon>
-      </Button>
+        <Typography id="modal-desc" textColor="text.tertiary" textAlign="left">
+          Attach Callback Endpoints
+        </Typography>
+        <Button loading={pending} onClick={() => setOpen(true)}>
+          <AddIcon />
+        </Button>
+      </Box>
     </>
   )
 }
