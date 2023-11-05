@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor: change DateTime types to Timestamp in schema (#3501)...'
-      sha: a41b6dcf67cc12b9b308bc1ea3729237f852a125
+      commitTitle: 'perf(core): run watchHeldInvoices only if held invoices count
+        is greater than 0 (#3504)'
+      sha: b4f7f5db59f82893870ee19692ea578dd3acab20
       tags:
-      - 0.15.93-2-ga41b6dcf6
+      - 0.15.94-2-gb4f7f5db5
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor: change DateTime types to Timestamp in schema (#3501)...'
-      sha: a41b6dcf67cc12b9b308bc1ea3729237f852a125
+      commitTitle: 'perf(core): run watchHeldInvoices only if held invoices count
+        is greater than 0 (#3504)'
+      sha: b4f7f5db59f82893870ee19692ea578dd3acab20
       tags:
-      - 0.15.93-2-ga41b6dcf6
+      - 0.15.94-2-gb4f7f5db5
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'refactor: change DateTime types to Timestamp in schema (#3501)...'
-      sha: a41b6dcf67cc12b9b308bc1ea3729237f852a125
+      commitTitle: 'perf(core): run watchHeldInvoices only if held invoices count
+        is greater than 0 (#3504)'
+      sha: b4f7f5db59f82893870ee19692ea578dd3acab20
       tags:
-      - 0.15.93-2-ga41b6dcf6
+      - 0.15.94-2-gb4f7f5db5
     path: ./
   path: ./graphql
 kind: LockConfig
