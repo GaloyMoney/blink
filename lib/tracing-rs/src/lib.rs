@@ -1,33 +1,35 @@
-use opentelemetry::sdk::{
-    resource::{EnvResourceDetector, OsResourceDetector, ProcessResourceDetector},
-    trace, Resource,
+use opentelemetry::{
+    global,
+    sdk::{
+        propagation::TraceContextPropagator,
+        resource::{EnvResourceDetector, OsResourceDetector, ProcessResourceDetector},
+        trace, Resource,
+    },
 };
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_semantic_conventions::resource;
 use serde::{Deserialize, Serialize};
 use tracing_subscriber::{filter::EnvFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt};
 
+pub use tracing::*;
+
 use std::time::Duration;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TracingConfig {
-    #[serde(default = "default_service_name")]
-    service_name: String,
+    pub service_name: String,
 }
 
 impl Default for TracingConfig {
     fn default() -> Self {
         Self {
-            service_name: default_service_name(),
+            service_name: "dev-rs".to_string(),
         }
     }
 }
 
-fn default_service_name() -> String {
-    env!("CARGO_PKG_NAME").to_string()
-}
-
 pub fn init_tracer(config: TracingConfig) -> anyhow::Result<()> {
+    global::set_text_map_propagator(TraceContextPropagator::new());
     let tracer = opentelemetry_otlp::new_pipeline()
         .tracing()
         .with_exporter(opentelemetry_otlp::new_exporter().tonic().with_env())
@@ -37,7 +39,7 @@ pub fn init_tracer(config: TracingConfig) -> anyhow::Result<()> {
 
     let fmt_layer = fmt::layer().json();
     let filter_layer = EnvFilter::try_from_default_env()
-        .or_else(|_| EnvFilter::try_new("info,sqlx=warn,sqlx_ledger=info"))
+        .or_else(|_| EnvFilter::try_new("info,otel::tracing=trace,sqlx=warn,sqlx_ledger=info"))
         .unwrap();
     tracing_subscriber::registry()
         .with(filter_layer)

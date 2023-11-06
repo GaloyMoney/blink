@@ -28,6 +28,7 @@ services:
       - kratos
       - hydra
       - apollo-router
+      - otel-agent
   hydra:
     image: oryd/hydra:v2.1.2
     ports:
@@ -95,6 +96,8 @@ services:
     - APOLLO_ROUTER_CONFIG_PATH=/repo/dev/router.yaml
     volumes:
     - ${HOST_PROJECT_PATH:-.}/config/apollo-federation:/repo/dev
+    depends_on:
+      - otel-agent
   redis:
     image: redis:7.0.8
     ports:
@@ -201,6 +204,7 @@ services:
   otel-agent:
     ports:
       - "4318:4318" #! http receiver
+      - "4317:4317" #! grpc receiver
     image: otel/opentelemetry-collector-contrib:0.84.0
     command: ["--config=/etc/otel-agent-config.yaml"]
     environment:

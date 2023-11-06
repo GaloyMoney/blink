@@ -27,6 +27,7 @@ impl ApiKeysApp {
         }
     }
 
+    #[tracing::instrument(name = "app.lookup_authenticated_subject", skip_all)]
     pub async fn lookup_authenticated_subject(
         &self,
         key: &str,
@@ -34,6 +35,7 @@ impl ApiKeysApp {
         Ok(self.identities.find_subject_by_key(&key).await?)
     }
 
+    #[tracing::instrument(name = "app.create_api_key_for_subject", skip_all)]
     pub async fn create_api_key_for_subject(
         &self,
         subject_id: &str,
@@ -53,6 +55,7 @@ impl ApiKeysApp {
         Ok(key)
     }
 
+    #[tracing::instrument(name = "app.list_api_keys_for_subject", skip_all)]
     pub async fn list_api_keys_for_subject(
         &self,
         subject_id: &str,
@@ -60,6 +63,7 @@ impl ApiKeysApp {
         Ok(self.identities.list_keys_for_subject(subject_id).await?)
     }
 
+    #[tracing::instrument(name = "app.revoke_api_key_for_subject", skip_all)]
     pub async fn revoke_api_key_for_subject(
         &self,
         subject: &str,
