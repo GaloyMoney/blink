@@ -3,9 +3,12 @@ import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { isValidPhoneNumber } from "libphonenumber-js"
 
-import { GetCaptchaChallengeResponse, SendPhoneCodeResponse } from "./phone-login.types"
+import {
+  GetCaptchaChallengeResponse,
+  SendPhoneCodeResponse,
+} from "@/app/types/phone-auth.types"
 
-import { LoginType, SubmitValue } from "@/app/index.types"
+import { LoginType, SubmitValue } from "@/app/types/index.types"
 import authApi from "@/services/galoy-auth"
 import { hydraClient } from "@/services/hydra"
 import { handleAxiosError } from "@/app/error-handler"

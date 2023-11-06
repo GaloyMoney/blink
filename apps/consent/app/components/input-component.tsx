@@ -23,7 +23,7 @@ const InputComponent: React.FC<InputProps> = ({ label, id, ...inputProps }) => {
                   border-1 
                   border-solid 
                   border-gray-300 
-                  rounded-sm 
+                  rounded-md 
                   mb- 
                   w-full 
                   bg-[var(--inputBackground)] 

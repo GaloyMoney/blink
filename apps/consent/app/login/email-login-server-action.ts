@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 import { cookies, headers } from "next/headers"
 
 import { hydraClient } from "../../services/hydra"
-import { LoginType, SubmitValue } from "../index.types"
+import { LoginType, SubmitValue } from "../types/index.types"
 
 import { LoginEmailResponse } from "./email-login.types"
 

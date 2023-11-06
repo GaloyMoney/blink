@@ -54,7 +54,7 @@
   --primaryButtonFont: var(--black);
   --inputBackground: var(--darkGrey);
   --inputColor: var(--white);
-  --inputSecondary: var(--grey4);
+  --inputSecondary: var(--grey3);
   --shadow: 
     rgba(255, 255, 255, 0.144) 0px 1px 3px 0px,
     rgba(227, 231, 235, 0.144) 0px 0px 0px 1px;

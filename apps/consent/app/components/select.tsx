@@ -29,7 +29,7 @@ const SelectComponent: React.FC<SelectProps> = ({
                   border-1 
                   border-solid 
                   border-gray-300 
-                  rounded-sm 
+                  rounded-md 
                   w-full 
                   bg-[var(--inputBackground)] 
                   focus:border-blue-500 "

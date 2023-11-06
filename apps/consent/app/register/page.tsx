@@ -8,7 +8,7 @@ interface LoginProps {
 
 const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
   const { login_challenge } = searchParams
-  const authAction = "Login"
+  const authAction = "Register"
   return <PhoneAuth login_challenge={login_challenge} authAction={authAction} />
 }
 export default Login
