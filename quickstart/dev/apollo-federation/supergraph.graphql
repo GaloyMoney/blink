@@ -187,6 +187,12 @@ input ApiKeyRevokeInput
   id: ID!
 }
 
+type ApiKeyRevokePayload
+  @join__type(graph: API_KEYS)
+{
+  apiKey: ApiKey!
+}
+
 """An Opaque Bearer token"""
 scalar AuthToken
   @join__type(graph: PUBLIC)
@@ -932,7 +938,7 @@ type Mutation
   @join__type(graph: PUBLIC)
 {
   apiKeyCreate(input: ApiKeyCreateInput!): ApiKeyCreatePayload! @join__field(graph: API_KEYS)
-  apiKeyRevoke(input: ApiKeyRevokeInput!): Boolean! @join__field(graph: API_KEYS)
+  apiKeyRevoke(input: ApiKeyRevokeInput!): ApiKeyRevokePayload! @join__field(graph: API_KEYS)
   accountDelete: AccountDeletePayload! @join__field(graph: PUBLIC)
   accountDisableNotificationCategory(input: AccountDisableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
   accountDisableNotificationChannel(input: AccountDisableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)

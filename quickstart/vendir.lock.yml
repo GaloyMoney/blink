@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): add tracing (#3507)...'
-      sha: cd18b10b56c0a3b173ea6578bb9643ae88cbdfb7
+      commitTitle: 'refactor(api-keys)!: add ApiRevokePayload mutation return type
+        (#3503)...'
+      sha: 255a1c30a1f068338359314e829b1da53ff3da7f
       tags:
-      - 0.15.96-2-gcd18b10b5
+      - 0.15.97-1-g255a1c30a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): add tracing (#3507)...'
-      sha: cd18b10b56c0a3b173ea6578bb9643ae88cbdfb7
+      commitTitle: 'refactor(api-keys)!: add ApiRevokePayload mutation return type
+        (#3503)...'
+      sha: 255a1c30a1f068338359314e829b1da53ff3da7f
       tags:
-      - 0.15.96-2-gcd18b10b5
+      - 0.15.97-1-g255a1c30a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): add tracing (#3507)...'
-      sha: cd18b10b56c0a3b173ea6578bb9643ae88cbdfb7
+      commitTitle: 'refactor(api-keys)!: add ApiRevokePayload mutation return type
+        (#3503)...'
+      sha: 255a1c30a1f068338359314e829b1da53ff3da7f
       tags:
-      - 0.15.96-2-gcd18b10b5
+      - 0.15.97-1-g255a1c30a
     path: ./
   path: ./graphql
 kind: LockConfig
