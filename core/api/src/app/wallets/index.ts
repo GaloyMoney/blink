@@ -19,6 +19,7 @@ export * from "./validate"
 export * from "./get-invoice-for-wallet-by-hash"
 export * from "./get-pending-onchain-transactions-for-wallets"
 export * from "./get-pending-transactions-by-addresses"
+export * from "./get-invoices-for-wallets"
 
 import { WalletsRepository } from "@/services/mongoose"
 

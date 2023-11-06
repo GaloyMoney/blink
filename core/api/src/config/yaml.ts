@@ -69,6 +69,8 @@ export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.spamLimits
 export const MEMO_SHARING_CENTS_THRESHOLD = yamlConfig.spamLimits
   .memoSharingCentsThreshold as UsdCents
 
+export const MAX_PAGINATION_PAGE_SIZE = 100
+
 // how many block are we looking back for getChainTransactions
 const getOnChainScanDepth = (val: number): ScanDepth => {
   const scanDepth = checkedToScanDepth(val)

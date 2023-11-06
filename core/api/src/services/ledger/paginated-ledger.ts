@@ -11,8 +11,7 @@ import { MainBook } from "./books"
 
 import { InvalidPaginationArgumentsError } from "@/domain/ledger"
 import { Transaction } from "@/services/ledger/schema"
-
-export const DEFAULT_MAX_CONNECTION_LIMIT = 100
+import { MAX_PAGINATION_PAGE_SIZE } from "@/config"
 
 type IFilterQuery = {
   account?: string | string[]
@@ -47,7 +46,7 @@ export const paginatedLedger = async ({
     filterQuery["_id"] = { $gt: new Types.ObjectId(before) }
   }
 
-  let limit = first ?? DEFAULT_MAX_CONNECTION_LIMIT
+  let limit = first ?? MAX_PAGINATION_PAGE_SIZE
   let skip = 0
 
   const total = await Transaction.countDocuments(filterQuery)

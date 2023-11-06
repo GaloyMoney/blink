@@ -6,7 +6,7 @@ import SignedAmount from "../scalar/signed-amount"
 import OnChainAddress from "../scalar/on-chain-address"
 import PaymentHash from "../scalar/payment-hash"
 
-import IInvoice from "./invoice"
+import IInvoice, { IInvoiceConnection } from "./invoice"
 
 import { connectionArgs } from "@/graphql/connections"
 import { GT } from "@/graphql/index"
@@ -76,6 +76,12 @@ const IWallet = GT.Interface({
           description:
             "The lightning invoice with the matching paymentHash belonging to this wallet.",
         },
+      },
+    },
+    invoices: {
+      type: IInvoiceConnection,
+      args: {
+        ...connectionArgs,
       },
     },
     transactionsByPaymentHash: {

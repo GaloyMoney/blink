@@ -20,6 +20,7 @@ import * as CaptchaErrors from "@/domain/captcha/errors"
 import * as AuthenticationErrors from "@/domain/authentication/errors"
 import * as UserErrors from "@/domain/users/errors"
 import * as WalletInvoiceErrors from "@/domain/wallet-invoices/errors"
+import * as PaginationErrors from "@/domain/pagination/errors"
 
 import * as LedgerFacadeErrors from "@/services/ledger/domain/errors"
 import * as KratosErrors from "@/services/kratos/errors"
@@ -49,6 +50,7 @@ export const ApplicationErrors = {
   ...AuthenticationErrors,
   ...UserErrors,
   ...WalletInvoiceErrors,
+  ...PaginationErrors,
 
   ...KratosErrors,
   ...LedgerFacadeErrors,

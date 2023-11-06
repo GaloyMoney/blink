@@ -4,7 +4,7 @@ import { ConnectionConfig, GraphQLConnectionDefinitions } from "graphql-relay"
 import { GT } from "."
 
 import { InputValidationError } from "@/graphql/error"
-import { DEFAULT_MAX_CONNECTION_LIMIT } from "@/services/ledger/paginated-ledger"
+import { MAX_PAGINATION_PAGE_SIZE } from "@/config"
 
 const CURSOR_REGEX = /^[A-Fa-f0-9]{24}$/
 
@@ -141,15 +141,15 @@ export const connectionDefinitions = (
 export { connectionArgs } from "graphql-relay"
 
 export const checkedConnectionArgs = (args: PaginationArgs): PaginationArgs | Error => {
-  if (typeof args.first === "number" && args.first > DEFAULT_MAX_CONNECTION_LIMIT) {
+  if (typeof args.first === "number" && args.first > MAX_PAGINATION_PAGE_SIZE) {
     return new InputValidationError({
-      message: `Requesting ${args.first} records on this connection exceeds the "first" limit of ${DEFAULT_MAX_CONNECTION_LIMIT} records.`,
+      message: `Requesting ${args.first} records on this connection exceeds the "first" limit of ${MAX_PAGINATION_PAGE_SIZE} records.`,
     })
   }
 
-  if (typeof args.last === "number" && args.last > DEFAULT_MAX_CONNECTION_LIMIT) {
+  if (typeof args.last === "number" && args.last > MAX_PAGINATION_PAGE_SIZE) {
     return new InputValidationError({
-      message: `Requesting ${args.last} records on this connection exceeds the "last" limit of ${DEFAULT_MAX_CONNECTION_LIMIT} records.`,
+      message: `Requesting ${args.last} records on this connection exceeds the "last" limit of ${MAX_PAGINATION_PAGE_SIZE} records.`,
     })
   }
 
@@ -165,7 +165,7 @@ export const checkedConnectionArgs = (args: PaginationArgs): PaginationArgs | Er
 
   // FIXME: make first or last required (after making sure no one is using them as optional)
   if (args.first === undefined && args.last === undefined) {
-    args.first = DEFAULT_MAX_CONNECTION_LIMIT
+    args.first = MAX_PAGINATION_PAGE_SIZE
   }
 
   if (args.after && typeof args.after === "string" && !CURSOR_REGEX.test(args.after)) {
