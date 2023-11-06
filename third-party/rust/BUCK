@@ -1158,6 +1158,32 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "crossbeam-channel-0.5.8.crate",
+    sha256 = "a33c2bf77f2df06183c3aa30d1e96c0695a313d4f9c453cc3762a6db39f99200",
+    strip_prefix = "crossbeam-channel-0.5.8",
+    urls = ["https://crates.io/api/v1/crates/crossbeam-channel/0.5.8/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "crossbeam-channel-0.5.8",
+    srcs = [":crossbeam-channel-0.5.8.crate"],
+    crate = "crossbeam_channel",
+    crate_root = "crossbeam-channel-0.5.8.crate/src/lib.rs",
+    edition = "2018",
+    features = [
+        "crossbeam-utils",
+        "default",
+        "std",
+    ],
+    visibility = [],
+    deps = [
+        ":cfg-if-1.0.0",
+        ":crossbeam-utils-0.8.16",
+    ],
+)
+
+http_archive(
     name = "crossbeam-queue-0.3.8.crate",
     sha256 = "d1cfb3ea8a53f37c40dea2c7bedcbd88bdfae54f5e2175d6ecaff1c988353add",
     strip_prefix = "crossbeam-queue-0.3.8",
@@ -2386,6 +2412,7 @@ cargo.rust_library(
     features = [
         "client",
         "default",
+        "full",
         "h2",
         "http1",
         "http2",
@@ -2438,6 +2465,29 @@ cargo.rust_library(
         ":rustls-0.21.8",
         ":tokio-1.33.0",
         ":tokio-rustls-0.24.1",
+    ],
+)
+
+http_archive(
+    name = "hyper-timeout-0.4.1.crate",
+    sha256 = "bbb958482e8c7be4bc3cf272a766a2b0bf1a6755e7a6ae777f017a31d11b13b1",
+    strip_prefix = "hyper-timeout-0.4.1",
+    urls = ["https://crates.io/api/v1/crates/hyper-timeout/0.4.1/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "hyper-timeout-0.4.1",
+    srcs = [":hyper-timeout-0.4.1.crate"],
+    crate = "hyper_timeout",
+    crate_root = "hyper-timeout-0.4.1.crate/src/lib.rs",
+    edition = "2018",
+    visibility = [],
+    deps = [
+        ":hyper-0.14.27",
+        ":pin-project-lite-0.2.13",
+        ":tokio-1.33.0",
+        ":tokio-io-timeout-1.2.0",
     ],
 )
 
@@ -2590,6 +2640,25 @@ cargo.rust_library(
         "std",
     ],
     visibility = [],
+)
+
+http_archive(
+    name = "itertools-0.10.5.crate",
+    sha256 = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473",
+    strip_prefix = "itertools-0.10.5",
+    urls = ["https://crates.io/api/v1/crates/itertools/0.10.5/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "itertools-0.10.5",
+    srcs = [":itertools-0.10.5.crate"],
+    crate = "itertools",
+    crate_root = "itertools-0.10.5.crate/src/lib.rs",
+    edition = "2018",
+    features = ["use_alloc"],
+    visibility = [],
+    deps = [":either-1.9.0"],
 )
 
 http_archive(
@@ -2872,7 +2941,26 @@ cargo.rust_library(
     crate = "log",
     crate_root = "log-0.4.20.crate/src/lib.rs",
     edition = "2015",
+    features = ["std"],
     visibility = [],
+)
+
+http_archive(
+    name = "matchers-0.1.0.crate",
+    sha256 = "8263075bb86c5a1b1427b5ae862e8889656f126e9f77c484496e8b47cf5c5558",
+    strip_prefix = "matchers-0.1.0",
+    urls = ["https://crates.io/api/v1/crates/matchers/0.1.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "matchers-0.1.0",
+    srcs = [":matchers-0.1.0.crate"],
+    crate = "matchers",
+    crate_root = "matchers-0.1.0.crate/src/lib.rs",
+    edition = "2018",
+    visibility = [],
+    deps = [":regex-automata-0.1.10"],
 )
 
 http_archive(
@@ -3067,6 +3155,32 @@ cargo.rust_library(
         ":memchr-2.6.4",
         ":minimal-lexical-0.2.1",
     ],
+)
+
+http_archive(
+    name = "nu-ansi-term-0.46.0.crate",
+    sha256 = "77a8165726e8236064dbb45459242600304b42a5ea24ee2948e18e023bf7ba84",
+    strip_prefix = "nu-ansi-term-0.46.0",
+    urls = ["https://crates.io/api/v1/crates/nu-ansi-term/0.46.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "nu-ansi-term-0.46.0",
+    srcs = [":nu-ansi-term-0.46.0.crate"],
+    crate = "nu_ansi_term",
+    crate_root = "nu-ansi-term-0.46.0.crate/src/lib.rs",
+    edition = "2018",
+    platform = {
+        "windows-gnu": dict(
+            deps = [":winapi-0.3.9"],
+        ),
+        "windows-msvc": dict(
+            deps = [":winapi-0.3.9"],
+        ),
+    },
+    visibility = [],
+    deps = [":overload-0.1.1"],
 )
 
 http_archive(
@@ -3364,6 +3478,314 @@ cargo.rust_library(
         "std",
         "unstable",
     ],
+    visibility = [],
+)
+
+alias(
+    name = "opentelemetry",
+    actual = ":opentelemetry-0.20.0",
+    visibility = ["PUBLIC"],
+)
+
+http_archive(
+    name = "opentelemetry-0.20.0.crate",
+    sha256 = "9591d937bc0e6d2feb6f71a559540ab300ea49955229c347a517a28d27784c54",
+    strip_prefix = "opentelemetry-0.20.0",
+    urls = ["https://crates.io/api/v1/crates/opentelemetry/0.20.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "opentelemetry-0.20.0",
+    srcs = [":opentelemetry-0.20.0.crate"],
+    crate = "opentelemetry",
+    crate_root = "opentelemetry-0.20.0.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "default",
+        "metrics",
+        "rt-tokio",
+        "trace",
+    ],
+    visibility = [],
+    deps = [
+        ":opentelemetry_api-0.20.0",
+        ":opentelemetry_sdk-0.20.0",
+    ],
+)
+
+http_archive(
+    name = "opentelemetry-http-0.9.0.crate",
+    sha256 = "c7594ec0e11d8e33faf03530a4c49af7064ebba81c1480e01be67d90b356508b",
+    strip_prefix = "opentelemetry-http-0.9.0",
+    urls = ["https://crates.io/api/v1/crates/opentelemetry-http/0.9.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "opentelemetry-http-0.9.0",
+    srcs = [":opentelemetry-http-0.9.0.crate"],
+    crate = "opentelemetry_http",
+    crate_root = "opentelemetry-http-0.9.0.crate/src/lib.rs",
+    edition = "2021",
+    features = ["reqwest"],
+    visibility = [],
+    deps = [
+        ":async-trait-0.1.74",
+        ":bytes-1.5.0",
+        ":http-0.2.9",
+        ":opentelemetry_api-0.20.0",
+        ":reqwest-0.11.20",
+    ],
+)
+
+alias(
+    name = "opentelemetry-otlp",
+    actual = ":opentelemetry-otlp-0.13.0",
+    visibility = ["PUBLIC"],
+)
+
+http_archive(
+    name = "opentelemetry-otlp-0.13.0.crate",
+    sha256 = "7e5e5a5c4135864099f3faafbe939eb4d7f9b80ebf68a8448da961b32a7c1275",
+    strip_prefix = "opentelemetry-otlp-0.13.0",
+    urls = ["https://crates.io/api/v1/crates/opentelemetry-otlp/0.13.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "opentelemetry-otlp-0.13.0",
+    srcs = [":opentelemetry-otlp-0.13.0.crate"],
+    crate = "opentelemetry_otlp",
+    crate_root = "opentelemetry-otlp-0.13.0.crate/src/lib.rs",
+    edition = "2021",
+    env = {
+        "CARGO_MANIFEST_DIR": "opentelemetry-otlp-0.13.0.crate",
+        "CARGO_PKG_AUTHORS": "",
+        "CARGO_PKG_DESCRIPTION": "Exporter for the OpenTelemetry Collector",
+        "CARGO_PKG_NAME": "opentelemetry-otlp",
+        "CARGO_PKG_REPOSITORY": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-otlp",
+        "CARGO_PKG_VERSION": "0.13.0",
+        "CARGO_PKG_VERSION_MAJOR": "0",
+        "CARGO_PKG_VERSION_MINOR": "13",
+        "CARGO_PKG_VERSION_PATCH": "0",
+    },
+    features = [
+        "default",
+        "grpc-tonic",
+        "http",
+        "http-proto",
+        "metrics",
+        "opentelemetry-http",
+        "prost",
+        "reqwest",
+        "reqwest-client",
+        "tokio",
+        "tonic",
+        "trace",
+    ],
+    visibility = [],
+    deps = [
+        ":async-trait-0.1.74",
+        ":futures-core-0.3.29",
+        ":http-0.2.9",
+        ":opentelemetry-http-0.9.0",
+        ":opentelemetry-proto-0.3.0",
+        ":opentelemetry-semantic-conventions-0.12.0",
+        ":opentelemetry_api-0.20.0",
+        ":opentelemetry_sdk-0.20.0",
+        ":prost-0.11.9",
+        ":reqwest-0.11.20",
+        ":thiserror-1.0.50",
+        ":tokio-1.33.0",
+        ":tonic-0.9.2",
+    ],
+)
+
+http_archive(
+    name = "opentelemetry-proto-0.3.0.crate",
+    sha256 = "b1e3f814aa9f8c905d0ee4bde026afd3b2577a97c10e1699912e3e44f0c4cbeb",
+    strip_prefix = "opentelemetry-proto-0.3.0",
+    urls = ["https://crates.io/api/v1/crates/opentelemetry-proto/0.3.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "opentelemetry-proto-0.3.0",
+    srcs = [":opentelemetry-proto-0.3.0.crate"],
+    crate = "opentelemetry_proto",
+    crate_root = "opentelemetry-proto-0.3.0.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "gen-tonic",
+        "gen-tonic-messages",
+        "metrics",
+        "prost",
+        "tonic",
+        "traces",
+    ],
+    visibility = [],
+    deps = [
+        ":opentelemetry_api-0.20.0",
+        ":opentelemetry_sdk-0.20.0",
+        ":prost-0.11.9",
+        ":tonic-0.9.2",
+    ],
+)
+
+alias(
+    name = "opentelemetry-semantic-conventions",
+    actual = ":opentelemetry-semantic-conventions-0.12.0",
+    visibility = ["PUBLIC"],
+)
+
+http_archive(
+    name = "opentelemetry-semantic-conventions-0.12.0.crate",
+    sha256 = "73c9f9340ad135068800e7f1b24e9e09ed9e7143f5bf8518ded3d3ec69789269",
+    strip_prefix = "opentelemetry-semantic-conventions-0.12.0",
+    urls = ["https://crates.io/api/v1/crates/opentelemetry-semantic-conventions/0.12.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "opentelemetry-semantic-conventions-0.12.0",
+    srcs = [":opentelemetry-semantic-conventions-0.12.0.crate"],
+    crate = "opentelemetry_semantic_conventions",
+    crate_root = "opentelemetry-semantic-conventions-0.12.0.crate/src/lib.rs",
+    edition = "2021",
+    visibility = [],
+    deps = [":opentelemetry-0.20.0"],
+)
+
+http_archive(
+    name = "opentelemetry_api-0.20.0.crate",
+    sha256 = "8a81f725323db1b1206ca3da8bb19874bbd3f57c3bcd59471bfb04525b265b9b",
+    strip_prefix = "opentelemetry_api-0.20.0",
+    urls = ["https://crates.io/api/v1/crates/opentelemetry_api/0.20.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "opentelemetry_api-0.20.0",
+    srcs = [":opentelemetry_api-0.20.0.crate"],
+    crate = "opentelemetry_api",
+    crate_root = "opentelemetry_api-0.20.0.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "default",
+        "logs",
+        "metrics",
+        "pin-project-lite",
+        "trace",
+    ],
+    visibility = [],
+    deps = [
+        ":futures-channel-0.3.29",
+        ":futures-util-0.3.29",
+        ":indexmap-1.9.3",
+        ":once_cell-1.18.0",
+        ":pin-project-lite-0.2.13",
+        ":thiserror-1.0.50",
+        ":urlencoding-2.1.3",
+    ],
+)
+
+http_archive(
+    name = "opentelemetry_sdk-0.20.0.crate",
+    sha256 = "fa8e705a0612d48139799fcbaba0d4a90f06277153e43dd2bdc16c6f0edd8026",
+    strip_prefix = "opentelemetry_sdk-0.20.0",
+    urls = ["https://crates.io/api/v1/crates/opentelemetry_sdk/0.20.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "opentelemetry_sdk-0.20.0",
+    srcs = [":opentelemetry_sdk-0.20.0.crate"],
+    crate = "opentelemetry_sdk",
+    crate_root = "opentelemetry_sdk-0.20.0.crate/src/lib.rs",
+    edition = "2021",
+    env = {
+        "CARGO_MANIFEST_DIR": "opentelemetry_sdk-0.20.0.crate",
+        "CARGO_PKG_AUTHORS": "",
+        "CARGO_PKG_DESCRIPTION": "The SDK for the OpenTelemetry metrics collection and distributed tracing framework",
+        "CARGO_PKG_NAME": "opentelemetry_sdk",
+        "CARGO_PKG_REPOSITORY": "https://github.com/open-telemetry/opentelemetry-rust",
+        "CARGO_PKG_VERSION": "0.20.0",
+        "CARGO_PKG_VERSION_MAJOR": "0",
+        "CARGO_PKG_VERSION_MINOR": "20",
+        "CARGO_PKG_VERSION_PATCH": "0",
+    },
+    features = [
+        "async-trait",
+        "crossbeam-channel",
+        "default",
+        "logs",
+        "metrics",
+        "percent-encoding",
+        "rand",
+        "regex",
+        "rt-tokio",
+        "serde_json",
+        "tokio",
+        "tokio-stream",
+        "trace",
+    ],
+    visibility = [],
+    deps = [
+        ":async-trait-0.1.74",
+        ":crossbeam-channel-0.5.8",
+        ":futures-channel-0.3.29",
+        ":futures-executor-0.3.29",
+        ":futures-util-0.3.29",
+        ":once_cell-1.18.0",
+        ":opentelemetry_api-0.20.0",
+        ":ordered-float-3.9.2",
+        ":percent-encoding-2.3.0",
+        ":rand-0.8.5",
+        ":regex-1.10.2",
+        ":serde_json-1.0.108",
+        ":thiserror-1.0.50",
+        ":tokio-1.33.0",
+        ":tokio-stream-0.1.14",
+    ],
+)
+
+http_archive(
+    name = "ordered-float-3.9.2.crate",
+    sha256 = "f1e1c390732d15f1d48471625cd92d154e66db2c56645e29a9cd26f4699f72dc",
+    strip_prefix = "ordered-float-3.9.2",
+    urls = ["https://crates.io/api/v1/crates/ordered-float/3.9.2/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "ordered-float-3.9.2",
+    srcs = [":ordered-float-3.9.2.crate"],
+    crate = "ordered_float",
+    crate_root = "ordered-float-3.9.2.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "default",
+        "std",
+    ],
+    visibility = [],
+    deps = [":num-traits-0.2.17"],
+)
+
+http_archive(
+    name = "overload-0.1.1.crate",
+    sha256 = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39",
+    strip_prefix = "overload-0.1.1",
+    urls = ["https://crates.io/api/v1/crates/overload/0.1.1/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "overload-0.1.1",
+    srcs = [":overload-0.1.1.crate"],
+    crate = "overload",
+    crate_root = "overload-0.1.1.crate/src/lib.rs",
+    edition = "2018",
     visibility = [],
 )
 
@@ -3795,6 +4217,57 @@ buildscript_run(
 )
 
 http_archive(
+    name = "prost-0.11.9.crate",
+    sha256 = "0b82eaa1d779e9a4bc1c3217db8ffbeabaae1dca241bf70183242128d48681cd",
+    strip_prefix = "prost-0.11.9",
+    urls = ["https://crates.io/api/v1/crates/prost/0.11.9/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "prost-0.11.9",
+    srcs = [":prost-0.11.9.crate"],
+    crate = "prost",
+    crate_root = "prost-0.11.9.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "default",
+        "prost-derive",
+        "std",
+    ],
+    visibility = [],
+    deps = [
+        ":bytes-1.5.0",
+        ":prost-derive-0.11.9",
+    ],
+)
+
+http_archive(
+    name = "prost-derive-0.11.9.crate",
+    sha256 = "e5d2d8d10f3c6ded6da8b05b5fb3b8a5082514344d56c9f871412d29b4e075b4",
+    strip_prefix = "prost-derive-0.11.9",
+    urls = ["https://crates.io/api/v1/crates/prost-derive/0.11.9/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "prost-derive-0.11.9",
+    srcs = [":prost-derive-0.11.9.crate"],
+    crate = "prost_derive",
+    crate_root = "prost-derive-0.11.9.crate/src/lib.rs",
+    edition = "2021",
+    proc_macro = True,
+    visibility = [],
+    deps = [
+        ":anyhow-1.0.75",
+        ":itertools-0.10.5",
+        ":proc-macro2-1.0.69",
+        ":quote-1.0.33",
+        ":syn-1.0.109",
+    ],
+)
+
+http_archive(
     name = "quote-1.0.33.crate",
     sha256 = "5267fca4496028628a95160fc423a33e8b2e6af8a5302579e322e4b520293cae",
     strip_prefix = "quote-1.0.33",
@@ -3842,6 +4315,7 @@ cargo.rust_library(
         "getrandom",
         "libc",
         "rand_chacha",
+        "small_rng",
         "std",
         "std_rng",
     ],
@@ -3954,6 +4428,29 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "regex-automata-0.1.10.crate",
+    sha256 = "6c230d73fb8d8c1b9c0b3135c5142a8acee3a0558fb8db5cf1cb65f8d7862132",
+    strip_prefix = "regex-automata-0.1.10",
+    urls = ["https://crates.io/api/v1/crates/regex-automata/0.1.10/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "regex-automata-0.1.10",
+    srcs = [":regex-automata-0.1.10.crate"],
+    crate = "regex_automata",
+    crate_root = "regex-automata-0.1.10.crate/src/lib.rs",
+    edition = "2015",
+    features = [
+        "default",
+        "regex-syntax",
+        "std",
+    ],
+    visibility = [],
+    deps = [":regex-syntax-0.6.29"],
+)
+
+http_archive(
     name = "regex-automata-0.4.3.crate",
     sha256 = "5f804c7828047e88b2d32e2d7fe5a105da8ee3264f01902f796c8e067dc2483f",
     strip_prefix = "regex-automata-0.4.3",
@@ -3997,6 +4494,34 @@ cargo.rust_library(
         ":memchr-2.6.4",
         ":regex-syntax-0.8.2",
     ],
+)
+
+http_archive(
+    name = "regex-syntax-0.6.29.crate",
+    sha256 = "f162c6dd7b008981e4d40210aca20b4bd0f9b60ca9271061b07f78537722f2e1",
+    strip_prefix = "regex-syntax-0.6.29",
+    urls = ["https://crates.io/api/v1/crates/regex-syntax/0.6.29/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "regex-syntax-0.6.29",
+    srcs = [":regex-syntax-0.6.29.crate"],
+    crate = "regex_syntax",
+    crate_root = "regex-syntax-0.6.29.crate/src/lib.rs",
+    edition = "2018",
+    features = [
+        "default",
+        "unicode",
+        "unicode-age",
+        "unicode-bool",
+        "unicode-case",
+        "unicode-gencat",
+        "unicode-perl",
+        "unicode-script",
+        "unicode-segment",
+    ],
+    visibility = [],
 )
 
 http_archive(
@@ -4051,6 +4576,7 @@ cargo.rust_library(
     features = [
         "__rustls",
         "__tls",
+        "blocking",
         "hyper-rustls",
         "json",
         "rustls",
@@ -5444,6 +5970,24 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "sharded-slab-0.1.7.crate",
+    sha256 = "f40ca3c46823713e0d4209592e8d6e826aa57e928f09752619fc696c499637f6",
+    strip_prefix = "sharded-slab-0.1.7",
+    urls = ["https://crates.io/api/v1/crates/sharded-slab/0.1.7/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "sharded-slab-0.1.7",
+    srcs = [":sharded-slab-0.1.7.crate"],
+    crate = "sharded_slab",
+    crate_root = "sharded-slab-0.1.7.crate/src/lib.rs",
+    edition = "2018",
+    visibility = [],
+    deps = [":lazy_static-1.4.0"],
+)
+
+http_archive(
     name = "signal-hook-registry-1.4.1.crate",
     sha256 = "d8229b473baa5980ac72ef434c4415e70c4b5e71b423043adb4ba059f89c99a1",
     strip_prefix = "signal-hook-registry-1.4.1",
@@ -6240,7 +6784,9 @@ cargo.rust_library(
     edition = "2018",
     features = [
         "clone-impls",
+        "default",
         "derive",
+        "extra-traits",
         "full",
         "parsing",
         "printing",
@@ -6363,6 +6909,9 @@ cargo.rust_binary(
         ":chrono-0.4.31",
         ":clap-4.4.7",
         ":jsonwebtoken-9.1.0",
+        ":opentelemetry-0.20.0",
+        ":opentelemetry-otlp-0.13.0",
+        ":opentelemetry-semantic-conventions-0.12.0",
         ":rand-0.8.5",
         ":reqwest-0.11.20",
         ":serde-1.0.190",
@@ -6372,6 +6921,9 @@ cargo.rust_binary(
         ":sqlx-0.7.2",
         ":thiserror-1.0.50",
         ":tokio-1.33.0",
+        ":tracing-0.1.40",
+        ":tracing-opentelemetry-0.20.0",
+        ":tracing-subscriber-0.3.17",
         ":uuid-1.5.0",
         ":version_check-0.9.4",
     ],
@@ -6421,6 +6973,27 @@ cargo.rust_library(
         ":proc-macro2-1.0.69",
         ":quote-1.0.33",
         ":syn-2.0.38",
+    ],
+)
+
+http_archive(
+    name = "thread_local-1.1.7.crate",
+    sha256 = "3fdd6f064ccff2d6567adcb3873ca630700f00b5ad3f060c25b5dcfd9a4ce152",
+    strip_prefix = "thread_local-1.1.7",
+    urls = ["https://crates.io/api/v1/crates/thread_local/1.1.7/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "thread_local-1.1.7",
+    srcs = [":thread_local-1.1.7.crate"],
+    crate = "thread_local",
+    crate_root = "thread_local-1.1.7.crate/src/lib.rs",
+    edition = "2021",
+    visibility = [],
+    deps = [
+        ":cfg-if-1.0.0",
+        ":once_cell-1.18.0",
     ],
 )
 
@@ -6637,6 +7210,27 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "tokio-io-timeout-1.2.0.crate",
+    sha256 = "30b74022ada614a1b4834de765f9bb43877f910cc8ce4be40e89042c9223a8bf",
+    strip_prefix = "tokio-io-timeout-1.2.0",
+    urls = ["https://crates.io/api/v1/crates/tokio-io-timeout/1.2.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "tokio-io-timeout-1.2.0",
+    srcs = [":tokio-io-timeout-1.2.0.crate"],
+    crate = "tokio_io_timeout",
+    crate_root = "tokio-io-timeout-1.2.0.crate/src/lib.rs",
+    edition = "2018",
+    visibility = [],
+    deps = [
+        ":pin-project-lite-0.2.13",
+        ":tokio-1.33.0",
+    ],
+)
+
+http_archive(
     name = "tokio-macros-2.1.0.crate",
     sha256 = "630bdcf245f78637c13ec01ffae6187cca34625e8c63150d424b59e55af2675e",
     strip_prefix = "tokio-macros-2.1.0",
@@ -6816,6 +7410,63 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "tonic-0.9.2.crate",
+    sha256 = "3082666a3a6433f7f511c7192923fa1fe07c69332d3c6a2e6bb040b569199d5a",
+    strip_prefix = "tonic-0.9.2",
+    urls = ["https://crates.io/api/v1/crates/tonic/0.9.2/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "tonic-0.9.2",
+    srcs = [":tonic-0.9.2.crate"],
+    crate = "tonic",
+    crate_root = "tonic-0.9.2.crate/src/lib.rs",
+    edition = "2021",
+    env = {
+        "CARGO_MANIFEST_DIR": "tonic-0.9.2.crate",
+        "CARGO_PKG_AUTHORS": "Lucio Franco <luciofranco14@gmail.com>",
+        "CARGO_PKG_DESCRIPTION": "A gRPC over HTTP/2 implementation focused on high performance, interoperability, and flexibility.\n",
+        "CARGO_PKG_NAME": "tonic",
+        "CARGO_PKG_REPOSITORY": "https://github.com/hyperium/tonic",
+        "CARGO_PKG_VERSION": "0.9.2",
+        "CARGO_PKG_VERSION_MAJOR": "0",
+        "CARGO_PKG_VERSION_MINOR": "9",
+        "CARGO_PKG_VERSION_PATCH": "2",
+    },
+    features = [
+        "channel",
+        "codegen",
+        "default",
+        "prost",
+        "transport",
+    ],
+    visibility = [],
+    deps = [
+        ":async-trait-0.1.74",
+        ":axum-0.6.20",
+        ":base64-0.21.5",
+        ":bytes-1.5.0",
+        ":futures-core-0.3.29",
+        ":futures-util-0.3.29",
+        ":h2-0.3.21",
+        ":http-0.2.9",
+        ":http-body-0.4.5",
+        ":hyper-0.14.27",
+        ":hyper-timeout-0.4.1",
+        ":percent-encoding-2.3.0",
+        ":pin-project-1.1.3",
+        ":prost-0.11.9",
+        ":tokio-1.33.0",
+        ":tokio-stream-0.1.14",
+        ":tower-0.4.13",
+        ":tower-layer-0.3.2",
+        ":tower-service-0.3.2",
+        ":tracing-0.1.40",
+    ],
+)
+
+http_archive(
     name = "tower-0.4.13.crate",
     sha256 = "b8fa9be0de6cf49e536ce1851f987bd21a43b771b09473c3549a6c853db37c1c",
     strip_prefix = "tower-0.4.13",
@@ -6831,13 +7482,24 @@ cargo.rust_library(
     edition = "2018",
     features = [
         "__common",
+        "balance",
+        "buffer",
+        "discover",
         "futures-core",
         "futures-util",
+        "indexmap",
+        "limit",
+        "load",
         "log",
         "make",
         "pin-project",
         "pin-project-lite",
+        "rand",
+        "ready-cache",
+        "slab",
+        "timeout",
         "tokio",
+        "tokio-util",
         "tracing",
         "util",
     ],
@@ -6845,9 +7507,13 @@ cargo.rust_library(
     deps = [
         ":futures-core-0.3.29",
         ":futures-util-0.3.29",
+        ":indexmap-1.9.3",
         ":pin-project-1.1.3",
         ":pin-project-lite-0.2.13",
+        ":rand-0.8.5",
+        ":slab-0.4.9",
         ":tokio-1.33.0",
+        ":tokio-util-0.7.10",
         ":tower-layer-0.3.2",
         ":tower-service-0.3.2",
         ":tracing-0.1.40",
@@ -6886,6 +7552,12 @@ cargo.rust_library(
     crate_root = "tower-service-0.3.2.crate/src/lib.rs",
     edition = "2018",
     visibility = [],
+)
+
+alias(
+    name = "tracing",
+    actual = ":tracing-0.1.40",
+    visibility = ["PUBLIC"],
 )
 
 http_archive(
@@ -6956,11 +7628,167 @@ cargo.rust_library(
     crate_root = "tracing-core-0.1.32.crate/src/lib.rs",
     edition = "2018",
     features = [
+        "default",
         "once_cell",
         "std",
+        "valuable",
     ],
     visibility = [],
     deps = [":once_cell-1.18.0"],
+)
+
+http_archive(
+    name = "tracing-log-0.1.4.crate",
+    sha256 = "f751112709b4e791d8ce53e32c4ed2d353565a795ce84da2285393f41557bdf2",
+    strip_prefix = "tracing-log-0.1.4",
+    urls = ["https://crates.io/api/v1/crates/tracing-log/0.1.4/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "tracing-log-0.1.4",
+    srcs = [":tracing-log-0.1.4.crate"],
+    crate = "tracing_log",
+    crate_root = "tracing-log-0.1.4.crate/src/lib.rs",
+    edition = "2018",
+    features = [
+        "log-tracer",
+        "std",
+    ],
+    visibility = [],
+    deps = [
+        ":log-0.4.20",
+        ":once_cell-1.18.0",
+        ":tracing-core-0.1.32",
+    ],
+)
+
+alias(
+    name = "tracing-opentelemetry",
+    actual = ":tracing-opentelemetry-0.20.0",
+    visibility = ["PUBLIC"],
+)
+
+http_archive(
+    name = "tracing-opentelemetry-0.20.0.crate",
+    sha256 = "fc09e402904a5261e42cf27aea09ccb7d5318c6717a9eec3d8e2e65c56b18f19",
+    strip_prefix = "tracing-opentelemetry-0.20.0",
+    urls = ["https://crates.io/api/v1/crates/tracing-opentelemetry/0.20.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "tracing-opentelemetry-0.20.0",
+    srcs = [":tracing-opentelemetry-0.20.0.crate"],
+    crate = "tracing_opentelemetry",
+    crate_root = "tracing-opentelemetry-0.20.0.crate/src/lib.rs",
+    edition = "2018",
+    env = {
+        "CARGO_MANIFEST_DIR": "tracing-opentelemetry-0.20.0.crate",
+        "CARGO_PKG_AUTHORS": "Julian Tescher <julian@tescher.me>:Tokio Contributors <team@tokio.rs>",
+        "CARGO_PKG_DESCRIPTION": "OpenTelemetry integration for tracing",
+        "CARGO_PKG_NAME": "tracing-opentelemetry",
+        "CARGO_PKG_REPOSITORY": "https://github.com/tokio-rs/tracing-opentelemetry",
+        "CARGO_PKG_VERSION": "0.20.0",
+        "CARGO_PKG_VERSION_MAJOR": "0",
+        "CARGO_PKG_VERSION_MINOR": "20",
+        "CARGO_PKG_VERSION_PATCH": "0",
+    },
+    features = [
+        "default",
+        "metrics",
+        "tracing-log",
+    ],
+    visibility = [],
+    deps = [
+        ":once_cell-1.18.0",
+        ":opentelemetry-0.20.0",
+        ":tracing-0.1.40",
+        ":tracing-core-0.1.32",
+        ":tracing-log-0.1.4",
+        ":tracing-subscriber-0.3.17",
+    ],
+)
+
+http_archive(
+    name = "tracing-serde-0.1.3.crate",
+    sha256 = "bc6b213177105856957181934e4920de57730fc69bf42c37ee5bb664d406d9e1",
+    strip_prefix = "tracing-serde-0.1.3",
+    urls = ["https://crates.io/api/v1/crates/tracing-serde/0.1.3/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "tracing-serde-0.1.3",
+    srcs = [":tracing-serde-0.1.3.crate"],
+    crate = "tracing_serde",
+    crate_root = "tracing-serde-0.1.3.crate/src/lib.rs",
+    edition = "2018",
+    visibility = [],
+    deps = [
+        ":serde-1.0.190",
+        ":tracing-core-0.1.32",
+    ],
+)
+
+alias(
+    name = "tracing-subscriber",
+    actual = ":tracing-subscriber-0.3.17",
+    visibility = ["PUBLIC"],
+)
+
+http_archive(
+    name = "tracing-subscriber-0.3.17.crate",
+    sha256 = "30a651bc37f915e81f087d86e62a18eec5f79550c7faff886f7090b4ea757c77",
+    strip_prefix = "tracing-subscriber-0.3.17",
+    urls = ["https://crates.io/api/v1/crates/tracing-subscriber/0.3.17/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "tracing-subscriber-0.3.17",
+    srcs = [":tracing-subscriber-0.3.17.crate"],
+    crate = "tracing_subscriber",
+    crate_root = "tracing-subscriber-0.3.17.crate/src/lib.rs",
+    edition = "2018",
+    features = [
+        "alloc",
+        "ansi",
+        "default",
+        "env-filter",
+        "fmt",
+        "json",
+        "matchers",
+        "nu-ansi-term",
+        "once_cell",
+        "regex",
+        "registry",
+        "serde",
+        "serde_json",
+        "sharded-slab",
+        "smallvec",
+        "std",
+        "thread_local",
+        "tracing",
+        "tracing-log",
+        "tracing-serde",
+    ],
+    visibility = [],
+    deps = [
+        ":matchers-0.1.0",
+        ":nu-ansi-term-0.46.0",
+        ":once_cell-1.18.0",
+        ":regex-1.10.2",
+        ":serde-1.0.190",
+        ":serde_json-1.0.108",
+        ":sharded-slab-0.1.7",
+        ":smallvec-1.11.1",
+        ":thread_local-1.1.7",
+        ":tracing-0.1.40",
+        ":tracing-core-0.1.32",
+        ":tracing-log-0.1.4",
+        ":tracing-serde-0.1.3",
+    ],
 )
 
 http_archive(
@@ -7228,6 +8056,23 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "urlencoding-2.1.3.crate",
+    sha256 = "daf8dba3b7eb870caf1ddeed7bc9d2a049f3cfdfae7cb521b087cc33ae4c49da",
+    strip_prefix = "urlencoding-2.1.3",
+    urls = ["https://crates.io/api/v1/crates/urlencoding/2.1.3/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "urlencoding-2.1.3",
+    srcs = [":urlencoding-2.1.3.crate"],
+    crate = "urlencoding",
+    crate_root = "urlencoding-2.1.3.crate/src/lib.rs",
+    edition = "2021",
+    visibility = [],
+)
+
+http_archive(
     name = "utf-8-0.7.6.crate",
     sha256 = "09cc8ee72d2a9becf2f2febe0205bbed8fc6615b7cb429ad062dc7b7ddd036a9",
     strip_prefix = "utf-8-0.7.6",
@@ -7422,7 +8267,11 @@ cargo.rust_library(
     crate_root = "winapi-0.3.9.crate/src/lib.rs",
     edition = "2015",
     features = [
+        "consoleapi",
+        "errhandlingapi",
+        "fileapi",
         "handleapi",
+        "processenv",
         "ws2ipdef",
         "ws2tcpip",
     ],
@@ -7445,7 +8294,11 @@ cargo.rust_binary(
     crate_root = "winapi-0.3.9.crate/build.rs",
     edition = "2015",
     features = [
+        "consoleapi",
+        "errhandlingapi",
+        "fileapi",
         "handleapi",
+        "processenv",
         "ws2ipdef",
         "ws2tcpip",
     ],
@@ -7457,7 +8310,11 @@ buildscript_run(
     package_name = "winapi",
     buildscript_rule = ":winapi-0.3.9-build-script-build",
     features = [
+        "consoleapi",
+        "errhandlingapi",
+        "fileapi",
         "handleapi",
+        "processenv",
         "ws2ipdef",
         "ws2tcpip",
     ],

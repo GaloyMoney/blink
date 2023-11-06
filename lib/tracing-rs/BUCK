@@ -1,0 +1,20 @@
+rust_library(
+    name = "tracing",
+    edition = "2021",
+    deps = [
+        "//third-party/rust:anyhow",
+        "//third-party/rust:serde",
+        "//third-party/rust:opentelemetry-otlp",
+        "//third-party/rust:opentelemetry-semantic-conventions",
+        "//third-party/rust:opentelemetry",
+        "//third-party/rust:tracing",
+        "//third-party/rust:tracing-opentelemetry",
+        "//third-party/rust:tracing-subscriber",
+    ],
+    srcs = glob(["src/**/*.rs"]),
+    env = {
+        "CARGO_PKG_NAME": "tracing" ,
+        "CARGO_PKG_VERSION": "0.1.0" ,
+    },
+    visibility = ["PUBLIC"],
+)

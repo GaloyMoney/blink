@@ -56,6 +56,7 @@ struct CheckResponse {
     sub: String,
 }
 
+#[tracing::instrument(name = "server.auth_check", skip(headers, app), err)]
 async fn check_handler(
     State((header, app)): State<(String, ApiKeysApp)>,
     headers: HeaderMap,
@@ -65,6 +66,7 @@ async fn check_handler(
     Ok(Json(CheckResponse { sub }))
 }
 
+#[tracing::instrument(name = "server.graphql", skip_all)]
 pub async fn graphql_handler(
     schema: Extension<Schema<graphql::Query, graphql::Mutation, EmptySubscription>>,
     Claims(jwt_claims): Claims<JwtClaims>,

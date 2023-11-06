@@ -190,7 +190,8 @@ local_resource(
     serve_cmd = "buck2 run {}".format(api_keys_target),
     serve_env = {
       "PG_CON": "postgres://user:password@localhost:5431/pg",
-      "API_KEYS_CONFIG": "../core/api-keys/api-keys.yml"
+      "API_KEYS_CONFIG": "../core/api-keys/api-keys.yml",
+      "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
     },
     deps = _buck2_dep_inputs(api_keys_target),
     resource_deps = [

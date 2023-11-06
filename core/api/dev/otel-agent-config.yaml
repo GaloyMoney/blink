@@ -5,7 +5,10 @@ receivers:
       thrift_binary: # on port 6832
   otlp:
     protocols:
-      http: # on port 4318
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
 
 processors:
   filter/ottl:

@@ -1,5 +1,6 @@
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
+use tracing::TracingConfig;
 
 use std::path::Path;
 
@@ -14,6 +15,14 @@ pub struct Config {
     pub server: ServerConfig,
     #[serde(default)]
     pub app: AppConfig,
+    #[serde(default = "default_tracing_config")]
+    pub tracing: TracingConfig,
+}
+
+fn default_tracing_config() -> TracingConfig {
+    TracingConfig {
+        service_name: "api-keys".to_string(),
+    }
 }
 
 pub struct EnvOverride {
