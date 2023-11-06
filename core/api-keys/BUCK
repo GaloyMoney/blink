@@ -24,6 +24,7 @@ rust_library(
     name = "lib-api-keys",
     edition = "2021",
     deps = [
+        "//lib/tracing-rs:tracing",
         "//third-party/rust:tokio",
         "//third-party/rust:anyhow",
         "//third-party/rust:async-graphql",
