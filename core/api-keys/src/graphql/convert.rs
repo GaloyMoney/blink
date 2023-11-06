@@ -8,7 +8,10 @@ use crate::{
     identity::{ApiKeySecret, IdentityApiKey, IdentityError},
 };
 
-use super::schema::{ApiKey, ApiKeyCreatePayload};
+use super::{
+    schema::{ApiKey, ApiKeyCreatePayload, ApiKeyRevokePayload},
+    Timestamp,
+};
 
 impl From<IdentityApiKey> for ApiKey {
     fn from(key: IdentityApiKey) -> Self {
@@ -17,9 +20,9 @@ impl From<IdentityApiKey> for ApiKey {
             name: key.name,
             revoked: key.revoked,
             expired: key.expired,
-            last_used_at: key.last_used_at.map(Into::into),
-            created_at: key.created_at.into(),
-            expires_at: key.expires_at.into(),
+            last_used_at: key.last_used_at.map(Timestamp::from),
+            created_at: Timestamp::from(key.created_at),
+            expires_at: Timestamp::from(key.expires_at),
         }
     }
 }
@@ -28,6 +31,14 @@ impl From<(IdentityApiKey, ApiKeySecret)> for ApiKeyCreatePayload {
         Self {
             api_key: ApiKey::from(key),
             api_key_secret: secret.into_inner(),
+        }
+    }
+}
+
+impl From<IdentityApiKey> for ApiKeyRevokePayload {
+    fn from(key: IdentityApiKey) -> Self {
+        Self {
+            api_key: ApiKey::from(key),
         }
     }
 }

@@ -22,13 +22,17 @@ input ApiKeyRevokeInput {
 	id: ID!
 }
 
+type ApiKeyRevokePayload {
+	apiKey: ApiKey!
+}
+
 
 
 
 
 type Mutation {
 	apiKeyCreate(input: ApiKeyCreateInput!): ApiKeyCreatePayload!
-	apiKeyRevoke(input: ApiKeyRevokeInput!): Boolean!
+	apiKeyRevoke(input: ApiKeyRevokeInput!): ApiKeyRevokePayload!
 }
 
 

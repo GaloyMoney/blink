@@ -91,6 +91,11 @@ pub(super) struct ApiKeyCreatePayload {
     pub api_key_secret: String,
 }
 
+#[derive(SimpleObject)]
+pub(super) struct ApiKeyRevokePayload {
+    pub api_key: ApiKey,
+}
+
 pub struct Mutation;
 
 #[derive(InputObject)]
@@ -123,12 +128,13 @@ impl Mutation {
         &self,
         ctx: &Context<'_>,
         input: ApiKeyRevokeInput,
-    ) -> async_graphql::Result<bool> {
+    ) -> async_graphql::Result<ApiKeyRevokePayload> {
         let app = ctx.data_unchecked::<ApiKeysApp>();
         let api_key_id = input.id.parse::<IdentityApiKeyId>()?;
         let subject = ctx.data::<AuthSubject>()?;
-        app.revoke_api_key_for_subject(&subject.id, api_key_id)
+        let api_key = app
+            .revoke_api_key_for_subject(&subject.id, api_key_id)
             .await?;
-        Ok(true)
+        Ok(ApiKeyRevokePayload::from(api_key))
     }
 }
