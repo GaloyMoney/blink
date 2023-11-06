@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'perf(core): run watchHeldInvoices only if held invoices count
-        is greater than 0 (#3504)'
-      sha: b4f7f5db59f82893870ee19692ea578dd3acab20
+      commitTitle: 'feat(consent): added register page (#3505)...'
+      sha: b2ea0700cd2667e0538cb1921ceaf1831f9ee264
       tags:
-      - 0.15.94-2-gb4f7f5db5
+      - 0.15.95-1-gb2ea0700c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'perf(core): run watchHeldInvoices only if held invoices count
-        is greater than 0 (#3504)'
-      sha: b4f7f5db59f82893870ee19692ea578dd3acab20
+      commitTitle: 'feat(consent): added register page (#3505)...'
+      sha: b2ea0700cd2667e0538cb1921ceaf1831f9ee264
       tags:
-      - 0.15.94-2-gb4f7f5db5
+      - 0.15.95-1-gb2ea0700c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'perf(core): run watchHeldInvoices only if held invoices count
-        is greater than 0 (#3504)'
-      sha: b4f7f5db59f82893870ee19692ea578dd3acab20
+      commitTitle: 'feat(consent): added register page (#3505)...'
+      sha: b2ea0700cd2667e0538cb1921ceaf1831f9ee264
       tags:
-      - 0.15.94-2-gb4f7f5db5
+      - 0.15.95-1-gb2ea0700c
     path: ./
   path: ./graphql
 kind: LockConfig
