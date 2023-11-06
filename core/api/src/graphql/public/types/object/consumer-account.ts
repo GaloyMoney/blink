@@ -216,21 +216,14 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
         },
       },
       resolve: async (source, args) => {
-        let { walletIds } = args
-
-        if (!walletIds) {
-          const wallets = await WalletsRepository().listByAccountId(source.id)
-          if (wallets instanceof Error) {
-            throw mapError(wallets)
-          }
-          walletIds = wallets.map((wallet) => wallet.id)
-        }
+        const { walletIds } = args
 
         const transactions =
           await Accounts.getPendingOnChainTransactionsForAccountByWalletIds({
             account: source,
             walletIds,
           })
+
         if (transactions instanceof Error) {
           throw mapError(transactions)
         }

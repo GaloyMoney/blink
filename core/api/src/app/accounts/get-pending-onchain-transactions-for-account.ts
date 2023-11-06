@@ -1,33 +1,36 @@
 import { getPendingOnChainTransactionsForWallets } from "../wallets/get-pending-onchain-transactions-for-wallets"
 
-import { AccountValidator } from "@/domain/accounts"
 import { RepositoryError } from "@/domain/errors"
-import { WalletsRepository } from "@/services/mongoose"
 import { checkedToWalletId } from "@/domain/wallets"
+import { WalletsRepository } from "@/services/mongoose"
 
 export const getPendingOnChainTransactionsForAccountByWalletIds = async ({
   account,
   walletIds,
 }: {
   account: Account
-  walletIds: string[]
+  walletIds?: string[]
 }): Promise<WalletOnChainSettledTransaction[] | ApplicationError> => {
   const walletsRepo = WalletsRepository()
 
-  const wallets: Wallet[] = []
-  for (const uncheckedWalletId of walletIds) {
-    const walletId = checkedToWalletId(uncheckedWalletId)
-    if (walletId instanceof Error) return walletId
-    const wallet = await walletsRepo.findById(walletId)
-    if (wallet instanceof RepositoryError) return wallet
+  const accountWallets = await walletsRepo.listByAccountId(account.id)
+  if (accountWallets instanceof RepositoryError) return accountWallets
 
-    const accountValidator = AccountValidator(account)
-    if (accountValidator instanceof Error) return accountValidator
-    const validateWallet = accountValidator.validateWalletForAccount(wallet)
-    if (validateWallet instanceof Error) return validateWallet
-
-    wallets.push(wallet)
+  if (!walletIds) {
+    return getPendingOnChainTransactionsForWallets({ wallets: accountWallets })
   }
 
-  return getPendingOnChainTransactionsForWallets({ wallets })
+  const checkedWalletIds: WalletId[] = []
+
+  for (const walletId of walletIds) {
+    const checkedWalletId = checkedToWalletId(walletId)
+    if (checkedWalletId instanceof Error) return checkedWalletId
+    checkedWalletIds.push(checkedWalletId)
+  }
+
+  const selectedWallets = accountWallets.filter((wallet) =>
+    checkedWalletIds.includes(wallet.id),
+  )
+
+  return getPendingOnChainTransactionsForWallets({ wallets: selectedWallets })
 }
