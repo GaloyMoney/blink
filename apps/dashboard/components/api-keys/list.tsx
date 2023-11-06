@@ -11,13 +11,13 @@ import RevokeKey from "./revoke"
 import { apiKeys } from "@/services/graphql/queries/api-keys"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
-const formatDate = (timestamp: string): string => {
+const formatDate = (timestamp: number): string => {
   const options: Intl.DateTimeFormatOptions = {
     year: "numeric",
     month: "long",
     day: "2-digit",
   }
-  return new Date(parseInt(timestamp) * 1000).toLocaleDateString(undefined, options)
+  return new Date(timestamp * 1000).toLocaleDateString(undefined, options)
 }
 
 const ApiKeysList = async () => {
