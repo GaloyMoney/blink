@@ -15,8 +15,14 @@ pub struct Config {
     pub server: ServerConfig,
     #[serde(default)]
     pub app: AppConfig,
-    #[serde(default)]
+    #[serde(default = "default_tracing_config")]
     pub tracing: TracingConfig,
+}
+
+fn default_tracing_config() -> TracingConfig {
+    TracingConfig {
+        service_name: "api-keys".to_string(),
+    }
 }
 
 pub struct EnvOverride {
