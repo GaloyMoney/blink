@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(consent): added register page (#3505)...'
-      sha: b2ea0700cd2667e0538cb1921ceaf1831f9ee264
+      commitTitle: 'chore(api-keys): add tracing (#3507)...'
+      sha: cd18b10b56c0a3b173ea6578bb9643ae88cbdfb7
       tags:
-      - 0.15.95-1-gb2ea0700c
+      - 0.15.96-2-gcd18b10b5
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(consent): added register page (#3505)...'
-      sha: b2ea0700cd2667e0538cb1921ceaf1831f9ee264
+      commitTitle: 'chore(api-keys): add tracing (#3507)...'
+      sha: cd18b10b56c0a3b173ea6578bb9643ae88cbdfb7
       tags:
-      - 0.15.95-1-gb2ea0700c
+      - 0.15.96-2-gcd18b10b5
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(consent): added register page (#3505)...'
-      sha: b2ea0700cd2667e0538cb1921ceaf1831f9ee264
+      commitTitle: 'chore(api-keys): add tracing (#3507)...'
+      sha: cd18b10b56c0a3b173ea6578bb9643ae88cbdfb7
       tags:
-      - 0.15.95-1-gb2ea0700c
+      - 0.15.96-2-gcd18b10b5
     path: ./
   path: ./graphql
 kind: LockConfig
