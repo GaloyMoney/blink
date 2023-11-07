@@ -55,6 +55,11 @@ dev_update_file(
 )
 
 sh_binary(
+  name = "update-schemas",
+  main = "bin/update-schemas.sh",
+)
+
+sh_binary(
   name = "init-onchain",
   main = "bin/init-onchain.sh",
 )
