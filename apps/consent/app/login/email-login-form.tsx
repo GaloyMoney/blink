@@ -92,7 +92,7 @@ const EmailLoginForm = ({ login_challenge }: LoginProps) => {
           </SecondaryButton>
         </div>
       </FormComponent>
-      <RegisterLink href={`/login/phone?login_challenge=${login_challenge}`} />
+      <RegisterLink href={`/register?login_challenge=${login_challenge}`} />
     </>
   )
 }
