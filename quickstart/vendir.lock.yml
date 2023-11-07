@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): extract tracing in api-keys server (#3509)'
-      sha: 1b45a31510d5511713b9fa79ad3d30d54d144bfe
+      commitTitle: 'feat(dashboard): added callback, add, delete, list. (#3422)...'
+      sha: f3c863e8b6a196ae6711424cbe7b2249cce93e4b
       tags:
-      - 0.16.2-3-g1b45a3151
+      - 0.16.3-2-gf3c863e8b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): extract tracing in api-keys server (#3509)'
-      sha: 1b45a31510d5511713b9fa79ad3d30d54d144bfe
+      commitTitle: 'feat(dashboard): added callback, add, delete, list. (#3422)...'
+      sha: f3c863e8b6a196ae6711424cbe7b2249cce93e4b
       tags:
-      - 0.16.2-3-g1b45a3151
+      - 0.16.3-2-gf3c863e8b
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): extract tracing in api-keys server (#3509)'
-      sha: 1b45a31510d5511713b9fa79ad3d30d54d144bfe
+      commitTitle: 'feat(dashboard): added callback, add, delete, list. (#3422)...'
+      sha: f3c863e8b6a196ae6711424cbe7b2249cce93e4b
       tags:
-      - 0.16.2-3-g1b45a3151
+      - 0.16.3-2-gf3c863e8b
     path: ./
   path: ./graphql
 kind: LockConfig
