@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: register url on email page (#3510)...'
-      sha: 724a3efa5fbd591f359023c6bd5e9d15ea07f69a
+      commitTitle: 'ci: add openssh to ci image'
+      sha: 1d1409c35f7686316233adbf4f0e037977fa980f
       tags:
-      - 0.16.0-2-g724a3efa5
+      - 0.16.1-1-g1d1409c35
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: register url on email page (#3510)...'
-      sha: 724a3efa5fbd591f359023c6bd5e9d15ea07f69a
+      commitTitle: 'ci: add openssh to ci image'
+      sha: 1d1409c35f7686316233adbf4f0e037977fa980f
       tags:
-      - 0.16.0-2-g724a3efa5
+      - 0.16.2
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: register url on email page (#3510)...'
-      sha: 724a3efa5fbd591f359023c6bd5e9d15ea07f69a
+      commitTitle: 'ci: add openssh to ci image'
+      sha: 1d1409c35f7686316233adbf4f0e037977fa980f
       tags:
-      - 0.16.0-2-g724a3efa5
+      - 0.16.2
     path: ./
   path: ./graphql
 kind: LockConfig
