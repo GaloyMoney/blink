@@ -42,6 +42,8 @@ const PhoneAuth = async ({ login_challenge, authAction }: PhoneAuth) => {
   }
 
   const countryCodes = countries.map((country) => country.id)
+  console.log("=========", countryCodes)
+
   const subHeadingMessage =
     authAction === "Register"
       ? "Enter your phone number to register with Blink and log in to this application."

@@ -10,6 +10,6 @@ export enum SubmitValue {
 
 export interface ServerActionResponse<ResponseBody> {
   error: boolean
-  message: string
+  message: string | null
   responsePayload: ResponseBody
 }
