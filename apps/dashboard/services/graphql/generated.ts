@@ -1918,6 +1918,20 @@ export type ApiKeyRevokeMutationVariables = Exact<{
 
 export type ApiKeyRevokeMutation = { readonly __typename: 'Mutation', readonly apiKeyRevoke: { readonly __typename: 'ApiKeyRevokePayload', readonly apiKey: { readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: number, readonly revoked: boolean, readonly expired: boolean, readonly lastUsedAt?: number | null, readonly expiresAt: number } } };
 
+export type CallbackEndpointAddMutationVariables = Exact<{
+  input: CallbackEndpointAddInput;
+}>;
+
+
+export type CallbackEndpointAddMutation = { readonly __typename: 'Mutation', readonly callbackEndpointAdd: { readonly __typename: 'CallbackEndpointAddPayload', readonly id?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly code?: string | null, readonly message: string }> } };
+
+export type CallbackEndpointDeleteMutationVariables = Exact<{
+  input: CallbackEndpointDeleteInput;
+}>;
+
+
+export type CallbackEndpointDeleteMutation = { readonly __typename: 'Mutation', readonly callbackEndpointDelete: { readonly __typename: 'SuccessPayload', readonly success?: boolean | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string, readonly code?: string | null }> } };
+
 export type UserEmailRegistrationInitiateMutationVariables = Exact<{
   input: UserEmailRegistrationInitiateInput;
 }>;
@@ -1941,6 +1955,11 @@ export type ApiKeysQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type ApiKeysQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly apiKeys: ReadonlyArray<{ readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: number, readonly revoked: boolean, readonly expired: boolean, readonly lastUsedAt?: number | null, readonly expiresAt: number }> } | null };
+
+export type CallbackEndpointsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CallbackEndpointsQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly callbackEndpoints: ReadonlyArray<{ readonly __typename: 'CallbackEndpoint', readonly url: string, readonly id: string }> } } | null };
 
 export type GetPaginatedTransactionsQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -2047,6 +2066,80 @@ export function useApiKeyRevokeMutation(baseOptions?: Apollo.MutationHookOptions
 export type ApiKeyRevokeMutationHookResult = ReturnType<typeof useApiKeyRevokeMutation>;
 export type ApiKeyRevokeMutationResult = Apollo.MutationResult<ApiKeyRevokeMutation>;
 export type ApiKeyRevokeMutationOptions = Apollo.BaseMutationOptions<ApiKeyRevokeMutation, ApiKeyRevokeMutationVariables>;
+export const CallbackEndpointAddDocument = gql`
+    mutation CallbackEndpointAdd($input: CallbackEndpointAddInput!) {
+  callbackEndpointAdd(input: $input) {
+    id
+    errors {
+      code
+      message
+    }
+  }
+}
+    `;
+export type CallbackEndpointAddMutationFn = Apollo.MutationFunction<CallbackEndpointAddMutation, CallbackEndpointAddMutationVariables>;
+
+/**
+ * __useCallbackEndpointAddMutation__
+ *
+ * To run a mutation, you first call `useCallbackEndpointAddMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCallbackEndpointAddMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [callbackEndpointAddMutation, { data, loading, error }] = useCallbackEndpointAddMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCallbackEndpointAddMutation(baseOptions?: Apollo.MutationHookOptions<CallbackEndpointAddMutation, CallbackEndpointAddMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CallbackEndpointAddMutation, CallbackEndpointAddMutationVariables>(CallbackEndpointAddDocument, options);
+      }
+export type CallbackEndpointAddMutationHookResult = ReturnType<typeof useCallbackEndpointAddMutation>;
+export type CallbackEndpointAddMutationResult = Apollo.MutationResult<CallbackEndpointAddMutation>;
+export type CallbackEndpointAddMutationOptions = Apollo.BaseMutationOptions<CallbackEndpointAddMutation, CallbackEndpointAddMutationVariables>;
+export const CallbackEndpointDeleteDocument = gql`
+    mutation CallbackEndpointDelete($input: CallbackEndpointDeleteInput!) {
+  callbackEndpointDelete(input: $input) {
+    success
+    errors {
+      message
+      code
+    }
+  }
+}
+    `;
+export type CallbackEndpointDeleteMutationFn = Apollo.MutationFunction<CallbackEndpointDeleteMutation, CallbackEndpointDeleteMutationVariables>;
+
+/**
+ * __useCallbackEndpointDeleteMutation__
+ *
+ * To run a mutation, you first call `useCallbackEndpointDeleteMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCallbackEndpointDeleteMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [callbackEndpointDeleteMutation, { data, loading, error }] = useCallbackEndpointDeleteMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCallbackEndpointDeleteMutation(baseOptions?: Apollo.MutationHookOptions<CallbackEndpointDeleteMutation, CallbackEndpointDeleteMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CallbackEndpointDeleteMutation, CallbackEndpointDeleteMutationVariables>(CallbackEndpointDeleteDocument, options);
+      }
+export type CallbackEndpointDeleteMutationHookResult = ReturnType<typeof useCallbackEndpointDeleteMutation>;
+export type CallbackEndpointDeleteMutationResult = Apollo.MutationResult<CallbackEndpointDeleteMutation>;
+export type CallbackEndpointDeleteMutationOptions = Apollo.BaseMutationOptions<CallbackEndpointDeleteMutation, CallbackEndpointDeleteMutationVariables>;
 export const UserEmailRegistrationInitiateDocument = gql`
     mutation UserEmailRegistrationInitiate($input: UserEmailRegistrationInitiateInput!) {
   userEmailRegistrationInitiate(input: $input) {
@@ -2197,6 +2290,45 @@ export function useApiKeysLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Ap
 export type ApiKeysQueryHookResult = ReturnType<typeof useApiKeysQuery>;
 export type ApiKeysLazyQueryHookResult = ReturnType<typeof useApiKeysLazyQuery>;
 export type ApiKeysQueryResult = Apollo.QueryResult<ApiKeysQuery, ApiKeysQueryVariables>;
+export const CallbackEndpointsDocument = gql`
+    query CallbackEndpoints {
+  me {
+    defaultAccount {
+      callbackEndpoints {
+        url
+        id
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useCallbackEndpointsQuery__
+ *
+ * To run a query within a React component, call `useCallbackEndpointsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCallbackEndpointsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCallbackEndpointsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useCallbackEndpointsQuery(baseOptions?: Apollo.QueryHookOptions<CallbackEndpointsQuery, CallbackEndpointsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<CallbackEndpointsQuery, CallbackEndpointsQueryVariables>(CallbackEndpointsDocument, options);
+      }
+export function useCallbackEndpointsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CallbackEndpointsQuery, CallbackEndpointsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<CallbackEndpointsQuery, CallbackEndpointsQueryVariables>(CallbackEndpointsDocument, options);
+        }
+export type CallbackEndpointsQueryHookResult = ReturnType<typeof useCallbackEndpointsQuery>;
+export type CallbackEndpointsLazyQueryHookResult = ReturnType<typeof useCallbackEndpointsLazyQuery>;
+export type CallbackEndpointsQueryResult = Apollo.QueryResult<CallbackEndpointsQuery, CallbackEndpointsQueryVariables>;
 export const GetPaginatedTransactionsDocument = gql`
     query GetPaginatedTransactions($first: Int, $after: String, $before: String) {
   me {

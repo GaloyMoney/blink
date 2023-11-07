@@ -88,14 +88,14 @@ services:
   apollo-router:
     image: ghcr.io/apollographql/router:v1.25.0
     ports:
-    - 4004:4004
+      - 4004:4004
     extra_hosts:
       - "bats-tests:host-gateway"
     environment:
-    - APOLLO_ROUTER_SUPERGRAPH_PATH=/repo/dev/supergraph.graphql
-    - APOLLO_ROUTER_CONFIG_PATH=/repo/dev/router.yaml
+      - APOLLO_ROUTER_SUPERGRAPH_PATH=/repo/dev/supergraph.graphql
+      - APOLLO_ROUTER_CONFIG_PATH=/repo/dev/router.yaml
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/config/apollo-federation:/repo/dev
+      - ${HOST_PROJECT_PATH:-.}/config/apollo-federation:/repo/dev
     depends_on:
       - otel-agent
   redis:
@@ -212,3 +212,23 @@ services:
       - HONEYCOMB_API_KEY=${HONEYCOMB_API_KEY}
     volumes:
       - ${HOST_PROJECT_PATH:-.}/config/otel-agent-config.yaml:/etc/otel-agent-config.yaml
+  svix:
+    image: svix/svix-server:v1.11
+    platform: linux/amd64
+    environment:
+      WAIT_FOR: "true"
+      SVIX_DB_DSN: "postgresql://postgres:postgres@svix-pg/postgres"
+      SVIX_JWT_SECRET: "8KjzRXrKkd9YFcNyqLSIY8JwiaCeRc6WK4UkMnSW"
+      SVIX_WHITELIST_SUBNETS: "[0.0.0.0/0]"
+      SVIX_QUEUE_TYPE: "memory"
+    depends_on:
+      - svix-pg
+    ports:
+      - "8071:8071"
+    extra_hosts:
+      - "bats-tests:host-gateway"
+
+  svix-pg:
+    image: postgres:14.1
+    environment:
+      POSTGRES_PASSWORD: postgres
