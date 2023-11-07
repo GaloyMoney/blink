@@ -217,14 +217,6 @@
             cp -rpv "build/$name-$system/bin" "$out/"
           '';
         };
-
-      linuxEnvVars =
-        if pkgs.stdenv.isLinux
-        then ''
-          export CYPRESS_INSTALL_BINARY=0
-          export CYPRESS_RUN_BINARY=${pkgs.cypress}/bin/Cypress
-        ''
-        else "";
     in
       with pkgs; {
         packages = {
@@ -280,9 +272,6 @@
 
           BUCK2_VERSION = buck2Version;
           COMPOSE_PROJECT_NAME = "galoy-dev";
-          shellHook = ''
-            ${linuxEnvVars}
-          '';
         };
 
         formatter = alejandra;
