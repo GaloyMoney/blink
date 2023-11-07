@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(api-keys)!: add ApiRevokePayload mutation return type
-        (#3503)...'
-      sha: 255a1c30a1f068338359314e829b1da53ff3da7f
+      commitTitle: 'fix: register url on email page (#3510)...'
+      sha: 724a3efa5fbd591f359023c6bd5e9d15ea07f69a
       tags:
-      - 0.15.97-1-g255a1c30a
+      - 0.16.0-2-g724a3efa5
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(api-keys)!: add ApiRevokePayload mutation return type
-        (#3503)...'
-      sha: 255a1c30a1f068338359314e829b1da53ff3da7f
+      commitTitle: 'fix: register url on email page (#3510)...'
+      sha: 724a3efa5fbd591f359023c6bd5e9d15ea07f69a
       tags:
-      - 0.15.97-1-g255a1c30a
+      - 0.16.0-2-g724a3efa5
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'refactor(api-keys)!: add ApiRevokePayload mutation return type
-        (#3503)...'
-      sha: 255a1c30a1f068338359314e829b1da53ff3da7f
+      commitTitle: 'fix: register url on email page (#3510)...'
+      sha: 724a3efa5fbd591f359023c6bd5e9d15ea07f69a
       tags:
-      - 0.15.97-1-g255a1c30a
+      - 0.16.0-2-g724a3efa5
     path: ./
   path: ./graphql
 kind: LockConfig
