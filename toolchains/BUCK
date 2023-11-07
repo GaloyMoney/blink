@@ -40,3 +40,10 @@ workspace_pnpm_toolchain(
   name = "workspace_pnpm",
   visibility = ["PUBLIC"],
 )
+
+load("@toolchains//rover:toolchain.bzl", "rover_toolchain")
+
+rover_toolchain(
+  name = "rover",
+  visibility = ["PUBLIC"],
+)

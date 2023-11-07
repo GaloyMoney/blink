@@ -1,3 +1,4 @@
+load("@toolchains//rover:macros.bzl", "supergraph", "diff_check", "dev_update_file")
 load( ":tilt.bzl", "tilt_down", "tilt_up",)
 
 # Bring up the full set of services for development
@@ -16,14 +17,46 @@ python_bootstrap_binary(
     visibility = ["PUBLIC"],
 )
 
-sh_binary(
-  name = "update-supergraph",
-  main = "bin/update-supergraph.sh",
+supergraph(
+  name = "supergraph",
+  config = "config/apollo-federation/supergraph-config.yaml",
+  subgraphs = {
+    "API_KEYS_SCHEMA": "//core/api-keys:sdl",
+    "PUBLIC_SCHEMA": "//core/api:public-sdl",
+  },
 )
 
-sh_test(
-  name = "check-sdl",
-  test = "bin/check-sdl.sh",
+diff_check(
+  name = "supergraph-diff",
+  original = "config/apollo-federation/supergraph.graphql",
+  new = ":supergraph"
+)
+
+test_suite(
+    name = "check-sdls",
+    tests = [
+        ":supergraph-diff",
+        "//core/api:public-schema-diff",
+        "//core/api:admin-schema-diff",
+        "//core/api-keys:schema-diff",
+    ],
+)
+
+dev_update_file(
+  name = "update-supergraph",
+  generated = ":supergraph",
+  out = "config/apollo-federation/supergraph.graphql"
+)
+
+dev_update_file(
+  name = "update-core-supergraph",
+  generated = ":supergraph",
+  out = "../core/api/dev/apollo-federation/supergraph.graphql"
+)
+
+sh_binary(
+  name = "update-schemas",
+  main = "bin/update-schemas.sh",
 )
 
 sh_binary(

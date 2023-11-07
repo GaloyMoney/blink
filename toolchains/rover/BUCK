@@ -1,0 +1,9 @@
+export_file(
+  name = "output_sdl.py",
+  visibility = ["PUBLIC"],
+)
+
+export_file(
+  name = "generate_supergraph.py",
+  visibility = ["PUBLIC"],
+)

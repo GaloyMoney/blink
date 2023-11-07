@@ -17,6 +17,4 @@ jobs:
       - name: Run the Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v2
       - uses: actions/checkout@v3
-      - run: nix develop -c buck2 run //dev:update-supergraph
-      - name: Run check code
-        run: nix develop -c buck2 test //dev:check-sdl
+      - run: nix develop -c buck2 test //dev:check-sdls

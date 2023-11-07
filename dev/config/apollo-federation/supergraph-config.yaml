@@ -3,8 +3,8 @@ subgraphs:
   public:
     routing_url: http://bats-tests:4012/graphql
     schema:
-      file: ../../../core/api/src/graphql/public/schema.graphql
+      file: ${env.PUBLIC_SCHEMA:-../../../core/api/src/graphql/public/schema.graphql}
   api_keys:
     routing_url: http://bats-tests:5397/graphql
     schema:
-      file: ../../../core/api-keys/subgraph/schema.graphql
+      file: ${env.API_KEYS_SCHEMA:-../../../core/api-keys/subgraph/schema.graphql}

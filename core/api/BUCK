@@ -10,6 +10,7 @@ load(
   "yaml_check",
   "madge_check",
 )
+load("@toolchains//rover:macros.bzl", "sdl", "diff_check", "dev_update_file")
 
 dev_pnpm_task_binary(
   name = "lint-fix",
@@ -84,6 +85,43 @@ prod_tsc_build_bin(
   run_file = "servers/write-sdl.js",
 )
 
+sdl(
+  name = "public-sdl",
+  generator = ":write-sdl",
+  args = ["public"],
+  visibility = ["PUBLIC"],
+)
+
+diff_check(
+  name = "public-schema-diff",
+  original = "src/graphql/public/schema.graphql",
+  new = ":public-sdl"
+)
+
+dev_update_file(
+  name = "update-public-schema",
+  generated = ":public-sdl",
+  out = "src/graphql/public/schema.graphql"
+)
+
+sdl(
+  name = "admin-sdl",
+  generator = ":write-sdl",
+  args = ["admin"]
+)
+
+diff_check(
+  name = "admin-schema-diff",
+  original = "src/graphql/admin/schema.graphql",
+  new = ":admin-sdl"
+)
+
+dev_update_file(
+  name = "update-admin-schema",
+  generated = ":admin-sdl",
+  out = "src/graphql/admin/schema.graphql"
+)
+
 eslint(
     name = "check-lint",
     srcs = [":src"] + [":test_src"] + glob([".eslint*"]),
@@ -118,5 +156,7 @@ test_suite(
         ":check-type",
         ":check-yaml",
         ":check-circular-dependencies",
+        ":public-schema-diff",
+        ":admin-schema-diff",
     ],
 )

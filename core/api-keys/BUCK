@@ -1,3 +1,23 @@
+load("@toolchains//rover:macros.bzl", "sdl", "diff_check", "dev_update_file")
+
+sdl(
+  name = "sdl",
+  generator = ":write-sdl",
+  visibility = ["PUBLIC"],
+)
+
+diff_check(
+  name = "schema-diff",
+  original = "subgraph/schema.graphql",
+  new = ":sdl"
+)
+
+dev_update_file(
+  name = "update-schema",
+  generated = ":sdl",
+  out = "subgraph/schema.graphql"
+)
+
 rust_binary(
     name = "write-sdl",
     edition = "2021",
