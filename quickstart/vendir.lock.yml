@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'revert: "ci: fix cypress"...'
-      sha: b681ff20dea99cec93c5850096e8ca8f22cfefef
+      commitTitle: 'chore(dev): buckify sdl gen / diff (#3511)...'
+      sha: 2f43ae9ab2319907162326cbd4a9a63baf6c6460
       tags:
-      - 0.16.4-2-gb681ff20d
+      - 0.16.5-2-g2f43ae9ab
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'revert: "ci: fix cypress"...'
-      sha: b681ff20dea99cec93c5850096e8ca8f22cfefef
+      commitTitle: 'chore(dev): buckify sdl gen / diff (#3511)...'
+      sha: 2f43ae9ab2319907162326cbd4a9a63baf6c6460
       tags:
-      - 0.16.4-2-gb681ff20d
+      - 0.16.5-2-g2f43ae9ab
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'revert: "ci: fix cypress"...'
-      sha: b681ff20dea99cec93c5850096e8ca8f22cfefef
+      commitTitle: 'chore(dev): buckify sdl gen / diff (#3511)...'
+      sha: 2f43ae9ab2319907162326cbd4a9a63baf6c6460
       tags:
-      - 0.16.4-2-gb681ff20d
+      - 0.16.5-2-g2f43ae9ab
     path: ./
   path: ./graphql
 kind: LockConfig
