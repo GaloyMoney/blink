@@ -1,3 +1,11 @@
+load("@toolchains//rover:macros.bzl", "sdl")
+
+sdl(
+  name = "sdl",
+  generator = ":write-sdl",
+  output = "subgraph/schema.graphql"
+)
+
 rust_binary(
     name = "write-sdl",
     edition = "2021",
