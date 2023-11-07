@@ -24,7 +24,8 @@ def main(args):
     # Run the generator binary and redirect stdout to the out-path
     try:
         with open(out_path, 'w') as out_file:
-            result = subprocess.run([generator_bin], stdout=out_file, stderr=subprocess.PIPE, text=True)
+            command = [generator_bin] + args.additional_args
+            result = subprocess.run(command, stdout=out_file, stderr=subprocess.PIPE, text=True)
 
         # Check if the generator command was successful
         if result.returncode != 0:
@@ -43,6 +44,13 @@ if __name__ == "__main__":
         "--generator-bin",
         required=True,
         help="Path to the generator binary",
+    )
+    parser.add_argument(
+        "--arg",
+        action='append',
+        dest='additional_args',
+        default=[],
+        help="Additional arguments to pass to the generator script prefixed with --arg"
     )
     parser.add_argument(
         "out_path",

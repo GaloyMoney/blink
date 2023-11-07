@@ -56,7 +56,7 @@ def diff_impl(
 diff_check = rule(
     impl = diff_impl,
     attrs = {
-        "original": attrs.string(
+        "original": attrs.source(
             doc = """The original file on disk""",
         ),
         "new": attrs.source(
@@ -129,6 +129,10 @@ def sdl_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
         rover_toolchain.output_sdl[DefaultInfo].default_outputs,
         "--generator-bin",
         ctx.attrs.generator[RunInfo],
+    )
+    for arg in ctx.attrs.args:
+        cmd.add("--arg", arg)
+    cmd.add(
         out.as_output()
     )
 
@@ -141,6 +145,10 @@ sdl = rule(
         "generator": attrs.dep(
             providers = [RunInfo],
             doc = """Generator that will output the sdl""",
+        ),
+        "args": attrs.list(
+            attrs.string(),
+            default = [],
         ),
         "_python_toolchain": attrs.toolchain_dep(
             default = "toolchains//:python",
