@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: add openssh to ci image'
-      sha: 1d1409c35f7686316233adbf4f0e037977fa980f
+      commitTitle: 'chore(api-keys): extract tracing in api-keys server (#3509)'
+      sha: 1b45a31510d5511713b9fa79ad3d30d54d144bfe
       tags:
-      - 0.16.1-1-g1d1409c35
+      - 0.16.2-3-g1b45a3151
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: add openssh to ci image'
-      sha: 1d1409c35f7686316233adbf4f0e037977fa980f
+      commitTitle: 'chore(api-keys): extract tracing in api-keys server (#3509)'
+      sha: 1b45a31510d5511713b9fa79ad3d30d54d144bfe
       tags:
-      - 0.16.2
+      - 0.16.2-3-g1b45a3151
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: add openssh to ci image'
-      sha: 1d1409c35f7686316233adbf4f0e037977fa980f
+      commitTitle: 'chore(api-keys): extract tracing in api-keys server (#3509)'
+      sha: 1b45a31510d5511713b9fa79ad3d30d54d144bfe
       tags:
-      - 0.16.2
+      - 0.16.2-3-g1b45a3151
     path: ./
   path: ./graphql
 kind: LockConfig
