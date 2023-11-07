@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): added callback, add, delete, list. (#3422)...'
-      sha: f3c863e8b6a196ae6711424cbe7b2249cce93e4b
+      commitTitle: 'revert: "ci: fix cypress"...'
+      sha: b681ff20dea99cec93c5850096e8ca8f22cfefef
       tags:
-      - 0.16.3-2-gf3c863e8b
+      - 0.16.4-2-gb681ff20d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): added callback, add, delete, list. (#3422)...'
-      sha: f3c863e8b6a196ae6711424cbe7b2249cce93e4b
+      commitTitle: 'revert: "ci: fix cypress"...'
+      sha: b681ff20dea99cec93c5850096e8ca8f22cfefef
       tags:
-      - 0.16.3-2-gf3c863e8b
+      - 0.16.4-2-gb681ff20d
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): added callback, add, delete, list. (#3422)...'
-      sha: f3c863e8b6a196ae6711424cbe7b2249cce93e4b
+      commitTitle: 'revert: "ci: fix cypress"...'
+      sha: b681ff20dea99cec93c5850096e8ca8f22cfefef
       tags:
-      - 0.16.3-2-gf3c863e8b
+      - 0.16.4-2-gb681ff20d
     path: ./
   path: ./graphql
 kind: LockConfig
