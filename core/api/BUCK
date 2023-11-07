@@ -10,6 +10,7 @@ load(
   "yaml_check",
   "madge_check",
 )
+load("@toolchains//rover:macros.bzl", "sdl", "diff_check")
 
 dev_pnpm_task_binary(
   name = "lint-fix",
@@ -79,6 +80,30 @@ prod_tsc_build_bin(
   run_file = "servers/graphql-main-server.js",
 )
 
+export_file(
+  name = "public.schema",
+  src = "src/graphql/public/schema.graphql",
+  visibility = ["PUBLIC"],
+)
+
+diff_check(
+  name = "public-schema-diff",
+  original = ":public.schema",
+  new = ":public.schema"
+)
+
+export_file(
+  name = "admin.schema",
+  src = "src/graphql/admin/schema.graphql",
+  visibility = ["PUBLIC"],
+)
+
+diff_check(
+  name = "admin-schema-diff",
+  original = ":admin.schema",
+  new = ":admin.schema"
+)
+
 prod_tsc_build_bin(
   name = "write-sdl",
   run_file = "servers/write-sdl.js",
@@ -118,5 +143,7 @@ test_suite(
         ":check-type",
         ":check-yaml",
         ":check-circular-dependencies",
+        ":public-schema-diff",
+        ":admin-schema-diff",
     ],
 )

@@ -1,5 +1,6 @@
 RoverToolchainInfo = provider(fields = [
   "output_sdl",
+  "generate_supergraph",
 ])
 
 def rover_toolchain_impl(ctx) -> list[[DefaultInfo, RoverToolchainInfo]]:
@@ -10,6 +11,7 @@ def rover_toolchain_impl(ctx) -> list[[DefaultInfo, RoverToolchainInfo]]:
         DefaultInfo(),
         RoverToolchainInfo(
             output_sdl = ctx.attrs._output_sdl,
+            generate_supergraph = ctx.attrs._generate_supergraph,
         )
     ]
 
@@ -18,6 +20,9 @@ rover_toolchain = rule(
     attrs = {
         "_output_sdl": attrs.dep(
             default = "toolchains//rover:output_sdl.py",
+        ),
+        "_generate_supergraph": attrs.dep(
+            default = "toolchains//rover:generate_supergraph.py",
         ),
     },
     is_toolchain_rule = True,
