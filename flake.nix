@@ -258,6 +258,7 @@
                   bash
                   yq-go
                   google-cloud-sdk
+                  openssh
                 ];
 
               pathsToLink = ["/bin"];
