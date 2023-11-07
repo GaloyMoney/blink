@@ -42,7 +42,6 @@ const PhoneAuth = async ({ login_challenge, authAction }: PhoneAuth) => {
   }
 
   const countryCodes = countries.map((country) => country.id)
-  console.log("=========", countryCodes)
 
   const subHeadingMessage =
     authAction === "Register"

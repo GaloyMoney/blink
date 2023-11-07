@@ -3,13 +3,19 @@ import { headers } from "next/headers"
 
 import { redirect } from "next/navigation"
 
+import { VerificationCodeResponse, VerificationTotpResponse } from "./verification.types"
+
 import { handleAxiosError } from "@/app/error-handler"
 import { getUserId } from "@/app/graphql/queries/me-query"
 import { LoginType } from "@/app/types/index.types"
 import authApi from "@/services/galoy-auth"
+
 import { hydraClient } from "@/services/hydra"
 
-export const submitFormTotp = async (_prevState: unknown, form: FormData) => {
+export const submitFormTotp = async (
+  _prevState: VerificationTotpResponse,
+  form: FormData,
+): Promise<VerificationTotpResponse> => {
   const headersList = headers()
   const customHeaders = {
     "x-real-ip": headersList.get("x-real-ip"),
@@ -61,7 +67,10 @@ export const submitFormTotp = async (_prevState: unknown, form: FormData) => {
   redirect(response2.data.redirect_to)
 }
 
-export const submitForm = async (_prevState: unknown, form: FormData) => {
+export const submitForm = async (
+  _prevState: VerificationCodeResponse,
+  form: FormData,
+): Promise<VerificationCodeResponse> => {
   const headersList = headers()
   const customHeaders = {
     "x-real-ip": headersList.get("x-real-ip"),
@@ -122,6 +131,7 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
     return {
       error: true,
       message: "Invalid code",
+      responsePayload: null,
     }
   }
 
@@ -129,8 +139,10 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
     return {
       error: false,
       message: "2FA required",
-      totpRequired: true,
-      authToken,
+      responsePayload: {
+        totpRequired: true,
+        authToken,
+      },
     }
   }
 

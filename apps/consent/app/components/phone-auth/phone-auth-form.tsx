@@ -37,6 +37,7 @@ import { GetCaptchaChallengeResponse } from "@/app/types/phone-auth.types"
 interface AuthFormProps {
   authAction: "Register" | "Login"
   login_challenge: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   countryCodes: any
 }
 
@@ -61,7 +62,6 @@ const PhoneAuthForm: React.FC<AuthFormProps> = ({
   authAction,
 }) => {
   const [phoneNumber, setPhoneNumber] = useState<string>("")
-  //TODO useFormState is not giving type suggestions/errors i.e: not typed
   const [state, formAction] = useFormState<GetCaptchaChallengeResponse, FormData>(
     getCaptchaChallenge,
     initialState,

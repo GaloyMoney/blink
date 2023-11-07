@@ -11,9 +11,9 @@ import authApi from "@/services/galoy-auth"
 import { handleAxiosError } from "@/app/error-handler"
 
 export async function submitForm(
-  _prevState: unknown,
+  _prevState: LoginEmailResponse,
   formData: FormData,
-): Promise<LoginEmailResponse | void> {
+): Promise<LoginEmailResponse> {
   const headersList = headers()
   const customHeaders = {
     "x-real-ip": headersList.get("x-real-ip"),

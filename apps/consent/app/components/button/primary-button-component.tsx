@@ -1,9 +1,7 @@
 "use client"
 import React, { ButtonHTMLAttributes } from "react"
-/* eslint @typescript-eslint/ban-ts-comment: "off" */
-// ts-ignore because experimental_useFormStatus is not in the types
-// @ts-ignore-next-line error
-import { experimental_useFormStatus as useFormStatus } from "react-dom"
+
+import { useFormStatus } from "react-dom"
 
 import Loader from "../loader"
 
