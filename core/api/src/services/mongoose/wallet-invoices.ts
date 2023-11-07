@@ -183,7 +183,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
 
       const documentCount = await WalletInvoice.countDocuments(filterQuery)
 
-      // hasPreviosPage and hasNextPage can default to false for the opposite pagination direction per the Connection spec
+      // hasPreviousPage and hasNextPage can default to false for the opposite pagination direction per the Connection spec
       let hasPreviousPage = false
       let hasNextPage = false
       let walletInvoiceRecords: WalletInvoiceRecord[]
