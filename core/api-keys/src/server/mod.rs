@@ -4,6 +4,7 @@ mod jwks;
 use async_graphql::*;
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{extract::State, headers::HeaderMap, routing::get, Extension, Json, Router};
+use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -42,6 +43,8 @@ pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) -> anyho
         .with_state(JwtDecoderState {
             decoder: jwks_decoder,
         })
+        .layer(OtelInResponseLayer::default())
+        .layer(OtelAxumLayer::default())
         .layer(Extension(schema));
 
     println!("Starting graphql server on port {}", config.port);
@@ -56,7 +59,6 @@ struct CheckResponse {
     sub: String,
 }
 
-#[tracing::instrument(name = "server.auth_check", skip(headers, app), err)]
 async fn check_handler(
     State((header, app)): State<(String, ApiKeysApp)>,
     headers: HeaderMap,
@@ -66,7 +68,6 @@ async fn check_handler(
     Ok(Json(CheckResponse { sub }))
 }
 
-#[tracing::instrument(name = "server.graphql", skip_all)]
 pub async fn graphql_handler(
     schema: Extension<Schema<graphql::Query, graphql::Mutation, EmptySubscription>>,
     Claims(jwt_claims): Claims<JwtClaims>,
