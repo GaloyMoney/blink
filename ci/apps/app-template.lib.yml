@@ -100,7 +100,7 @@ plan:
 #@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
 #@ params["SSH_PRIVATE_KEY"] = "((staging-ssh.ssh_private_key))"
 #@ params["SSH_PUB_KEY"] = "((staging-ssh.ssh_public_key))"
-#@ params["CMD"] = "xvfb-run tilt --file dev/Tiltfile ci -- --test " + app
+#@ params["CMD"] = "tilt --file dev/Tiltfile ci -- --test " + app
 name: #@ tilt_integration_test_name(app)
 serial: true
 plan:
@@ -198,6 +198,7 @@ plan:
         passed:
           - #@ build_edge_image_name(app)
           - #@ buck_test_name(app)
+          - #@ tilt_integration_test_name(app)
       - get: #@ edge_image_resource_name(app)
         passed:
           - #@ build_edge_image_name(app)
