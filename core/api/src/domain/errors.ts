@@ -147,6 +147,8 @@ export class InactiveAccountError extends InvalidAccountStatusError {}
 
 export class InvalidMinutesError extends ValidationError {}
 
+export class InvalidPaginatedQueryArgsError extends ValidationError {}
+
 export class InvalidNonHodlInvoiceError extends ValidationError {
   level = ErrorLevel.Critical
 }

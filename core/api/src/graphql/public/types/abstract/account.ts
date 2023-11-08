@@ -16,6 +16,7 @@ import DisplayCurrency from "@/graphql/shared/types/scalar/display-currency"
 import Transaction, {
   TransactionConnection,
 } from "@/graphql/shared/types/object/transaction"
+import { IInvoiceConnection } from "@/graphql/shared/types/abstract/invoice"
 
 const IAccount = GT.Interface({
   name: "Account",
@@ -64,6 +65,15 @@ const IAccount = GT.Interface({
     pendingTransactions: {
       type: GT.NonNullList(Transaction),
       args: {
+        walletIds: {
+          type: GT.List(WalletId),
+        },
+      },
+    },
+    invoices: {
+      type: IInvoiceConnection,
+      args: {
+        ...connectionArgs,
         walletIds: {
           type: GT.List(WalletId),
         },

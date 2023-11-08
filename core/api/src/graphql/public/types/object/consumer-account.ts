@@ -38,6 +38,7 @@ import DisplayCurrency from "@/graphql/shared/types/scalar/display-currency"
 import { WalletsRepository } from "@/services/mongoose"
 
 import { listEndpoints } from "@/app/callback"
+import { IInvoiceConnection } from "@/graphql/shared/types/abstract/invoice"
 
 const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
   name: "ConsumerAccount",
@@ -231,6 +232,31 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
       },
     },
 
+    invoices: {
+      description: "A list of all invoices associated with walletIds optionally passed.",
+      type: IInvoiceConnection,
+      args: {
+        ...connectionArgs,
+        walletIds: {
+          type: GT.List(WalletId),
+        },
+      },
+      resolve: async (source, args) => {
+        const { walletIds } = args
+
+        const result = await Accounts.getInvoicesForAccountByWalletIds({
+          account: source,
+          walletIds,
+          rawPaginationArgs: args,
+        })
+
+        if (result instanceof Error) {
+          throw mapError(result)
+        }
+
+        return result
+      },
+    },
     notificationSettings: {
       type: GT.NonNull(NotificationSettings),
       resolve: (source) => source.notificationSettings,

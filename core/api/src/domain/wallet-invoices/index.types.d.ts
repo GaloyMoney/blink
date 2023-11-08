@@ -179,6 +179,14 @@ interface IWalletInvoicesRepository {
     paymentHash: PaymentHash,
   ) => Promise<WalletInvoiceWithOptionalLnInvoice | RepositoryError>
 
+  findInvoicesForWallets: ({
+    walletIds,
+    paginationArgs,
+  }: {
+    walletIds: WalletId[]
+    paginationArgs: PaginatedQueryArgs
+  }) => Promise<PaginatedQueryResult<WalletInvoice> | RepositoryError>
+
   findByPaymentHash: (
     paymentHash: PaymentHash,
   ) => Promise<WalletInvoice | RepositoryError>

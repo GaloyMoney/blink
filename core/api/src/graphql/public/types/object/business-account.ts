@@ -29,6 +29,7 @@ import {
 } from "@/domain/fiat"
 import { CouldNotFindTransactionsForAccountError } from "@/domain/errors"
 import { Accounts, Prices, Wallets } from "@/app"
+import { IInvoiceConnection } from "@/graphql/shared/types/abstract/invoice"
 
 const BusinessAccount = GT.Object({
   name: "BusinessAccount",
@@ -169,7 +170,6 @@ const BusinessAccount = GT.Object({
       },
       resolve: async (source, args) => {
         const { walletIds } = args
-
         const transactions =
           await Accounts.getPendingOnChainTransactionsForAccountByWalletIds({
             account: source,
@@ -182,6 +182,31 @@ const BusinessAccount = GT.Object({
         return transactions
       },
     },
+    invoices: {
+      description: "A list of all invoices associated with walletIds optionally passed.",
+      type: IInvoiceConnection,
+      args: {
+        ...connectionArgs,
+        walletIds: {
+          type: GT.List(WalletId),
+        },
+      },
+      resolve: async (source, args) => {
+        const { walletIds } = args
+        const result = await Accounts.getInvoicesForAccountByWalletIds({
+          account: source,
+          walletIds,
+          rawPaginationArgs: args,
+        })
+
+        if (result instanceof Error) {
+          throw mapError(result)
+        }
+
+        return result
+      },
+    },
+
     notificationSettings: {
       type: GT.NonNull(NotificationSettings),
       resolve: (source) => source.notificationSettings,

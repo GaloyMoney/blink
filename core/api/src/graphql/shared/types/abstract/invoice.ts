@@ -6,6 +6,7 @@ import LnPaymentSecret from "../scalar/ln-payment-secret"
 import InvoicePaymentStatus from "../scalar/invoice-payment-status"
 
 import { GT } from "@/graphql/index"
+import { connectionDefinitions } from "@/graphql/connections"
 
 const IInvoice = GT.Interface({
   name: "Invoice",
@@ -29,6 +30,10 @@ const IInvoice = GT.Interface({
       description: "The payment status of the invoice.",
     },
   }),
+})
+
+export const { connectionType: IInvoiceConnection } = connectionDefinitions({
+  nodeType: IInvoice,
 })
 
 export default IInvoice

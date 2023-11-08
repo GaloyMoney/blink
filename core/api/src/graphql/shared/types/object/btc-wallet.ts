@@ -8,7 +8,7 @@ import OnChainAddress from "../scalar/on-chain-address"
 
 import PaymentHash from "../scalar/payment-hash"
 
-import IInvoice from "../abstract/invoice"
+import IInvoice, { IInvoiceConnection } from "../abstract/invoice"
 
 import Transaction, { TransactionConnection } from "./transaction"
 
@@ -124,6 +124,25 @@ const BtcWallet = GT.Object<Wallet>({
           throw mapError(transactions)
         }
         return transactions
+      },
+    },
+    invoices: {
+      description: "A list of all invoices associated with walletIds optionally passed.",
+      type: IInvoiceConnection,
+      args: {
+        ...connectionArgs,
+      },
+      resolve: async (source, args) => {
+        const result = await Wallets.getInvoicesForWallets({
+          wallets: [source],
+          rawPaginationArgs: args,
+        })
+
+        if (result instanceof Error) {
+          throw mapError(result)
+        }
+
+        return result
       },
     },
     transactionsByAddress: {
