@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: add pending tx queries (#3488)...'
-      sha: 989bab56e70b4840b5850711db5a1f1ac45561c1
+      commitTitle: 'feat: invoice pagination (#3512)...'
+      sha: 6232ee2645dc8344ec61c4728c670690068d014b
       tags:
-      - 0.16.8-1-g989bab56e
+      - 0.16.9-1-g6232ee264
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: add pending tx queries (#3488)...'
-      sha: 989bab56e70b4840b5850711db5a1f1ac45561c1
+      commitTitle: 'feat: invoice pagination (#3512)...'
+      sha: 6232ee2645dc8344ec61c4728c670690068d014b
       tags:
-      - 0.16.8-1-g989bab56e
+      - 0.16.9-1-g6232ee264
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: add pending tx queries (#3488)...'
-      sha: 989bab56e70b4840b5850711db5a1f1ac45561c1
+      commitTitle: 'feat: invoice pagination (#3512)...'
+      sha: 6232ee2645dc8344ec61c4728c670690068d014b
       tags:
-      - 0.16.8-1-g989bab56e
+      - 0.16.9-1-g6232ee264
     path: ./
   path: ./graphql
 kind: LockConfig

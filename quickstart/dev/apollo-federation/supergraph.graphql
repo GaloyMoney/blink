@@ -29,6 +29,20 @@ interface Account
   defaultWalletId: WalletId!
   displayCurrency: DisplayCurrency!
   id: ID!
+  invoices(
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+    walletIds: [WalletId]
+  ): InvoiceConnection
   level: AccountLevel!
   limits: AccountLimits!
   notificationSettings: NotificationSettings!
@@ -220,6 +234,21 @@ type BTCWallet implements Wallet
   id: ID!
   invoiceByPaymentHash(paymentHash: PaymentHash!): Invoice!
 
+  """A list of all invoices associated with walletIds optionally passed."""
+  invoices(
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+  ): InvoiceConnection
+
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
   pendingTransactions: [Transaction!]!
@@ -347,6 +376,22 @@ type ConsumerAccount implements Account
   defaultWalletId: WalletId!
   displayCurrency: DisplayCurrency!
   id: ID!
+
+  """A list of all invoices associated with walletIds optionally passed."""
+  invoices(
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+    walletIds: [WalletId]
+  ): InvoiceConnection
   level: AccountLevel!
   limits: AccountLimits!
   notificationSettings: NotificationSettings!
@@ -612,6 +657,28 @@ interface Invoice
 
   """The payment status of the invoice."""
   paymentStatus: InvoicePaymentStatus!
+}
+
+"""A connection to a list of items."""
+type InvoiceConnection
+  @join__type(graph: PUBLIC)
+{
+  """A list of edges."""
+  edges: [InvoiceEdge!]
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+}
+
+"""An edge in a connection."""
+type InvoiceEdge
+  @join__type(graph: PUBLIC)
+{
+  """A cursor for use in pagination"""
+  cursor: String!
+
+  """The item at the end of the edge"""
+  node: Invoice!
 }
 
 enum InvoicePaymentStatus
@@ -1661,6 +1728,21 @@ type UsdWallet implements Wallet
   id: ID!
   invoiceByPaymentHash(paymentHash: PaymentHash!): Invoice!
 
+  """A list of all invoices associated with walletIds optionally passed."""
+  invoices(
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+  ): InvoiceConnection
+
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
   pendingTransactions: [Transaction!]!
@@ -1975,6 +2057,19 @@ interface Wallet
     """
     paymentHash: PaymentHash!
   ): Invoice!
+  invoices(
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+  ): InvoiceConnection
   pendingIncomingBalance: SignedAmount!
 
   """
