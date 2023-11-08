@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(dev): buckify sdl gen / diff (#3511)...'
-      sha: 2f43ae9ab2319907162326cbd4a9a63baf6c6460
+      commitTitle: 'fix: add url(protocol) validation to add callback mutation (#3513)'
+      sha: ecd1f46d9ff72a9f29f9fccc7356902460642930
       tags:
-      - 0.16.5-2-g2f43ae9ab
+      - 0.16.6-2-gecd1f46d9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(dev): buckify sdl gen / diff (#3511)...'
-      sha: 2f43ae9ab2319907162326cbd4a9a63baf6c6460
+      commitTitle: 'fix: add url(protocol) validation to add callback mutation (#3513)'
+      sha: ecd1f46d9ff72a9f29f9fccc7356902460642930
       tags:
-      - 0.16.5-2-g2f43ae9ab
+      - 0.16.6-2-gecd1f46d9
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(dev): buckify sdl gen / diff (#3511)...'
-      sha: 2f43ae9ab2319907162326cbd4a9a63baf6c6460
+      commitTitle: 'fix: add url(protocol) validation to add callback mutation (#3513)'
+      sha: ecd1f46d9ff72a9f29f9fccc7356902460642930
       tags:
-      - 0.16.5-2-g2f43ae9ab
+      - 0.16.7
     path: ./
   path: ./graphql
 kind: LockConfig
