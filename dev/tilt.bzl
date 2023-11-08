@@ -1,9 +1,10 @@
-def tilt_up_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
-    return _invoke_tilt(ctx, "up")
+def tilt_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
+    return _invoke_tilt(ctx, ctx.attrs.subcmd)
 
-tilt_up = rule(
-    impl = tilt_up_impl,
+tilt = rule(
+    impl = tilt_impl,
     attrs = {
+        "subcmd": attrs.enum(["up", "down"]),
         "tiltfile": attrs.string(
             default = "Tiltfile",
             doc = """The Tiltfile to run.""",
@@ -12,34 +13,6 @@ tilt_up = rule(
             attrs.string(),
             default = [],
             doc = """Additional arguments passed as <Tiltfile args>.""",
-        ),
-        "tilt_args": attrs.list(
-            attrs.string(),
-            default = [],
-            doc = """Additional arguments passed as `tilt` arguments.""",
-        ),
-    },
-)
-
-def tilt_down_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
-    return _invoke_tilt(ctx, "down")
-
-tilt_down = rule(
-    impl = tilt_down_impl,
-    attrs = {
-        "tiltfile": attrs.string(
-            default = "Tiltfile",
-            doc = """The Tiltfile to run.""",
-        ),
-        "args": attrs.list(
-            attrs.string(),
-            default = [],
-            doc = """Additional arguments passed as <Tiltfile args>.""",
-        ),
-        "tilt_args": attrs.list(
-            attrs.string(),
-            default = [],
-            doc = """Additional arguments passed as `tilt` arguments.""",
         ),
     },
 )
@@ -50,15 +23,24 @@ def _invoke_tilt(ctx: AnalysisContext, subcmd: str) -> list[[DefaultInfo, RunInf
         ctx.attrs.tiltfile,
     )
 
+    script = ctx.actions.write("tilt-run.sh", """\
+#!/usr/bin/env bash
+set -euo pipefail
+
+rootpath="$(git rev-parse --show-toplevel)"
+subcmd="$1"
+tiltfile="$2"
+args=("${@:3}")
+
+tilt "$subcmd" --file "$rootpath"/"$tiltfile" -- "${args[@]}"
+""", is_executable = True)
+
     run_cmd_args = cmd_args([
-        "tilt",
+        script,
         subcmd,
-        "--file",
         tiltfile,
+        ctx.attrs.args
     ])
-    run_cmd_args.add(ctx.attrs.tilt_args)
-    run_cmd_args.add("--")
-    run_cmd_args.add(ctx.attrs.args)
 
     args_file = ctx.actions.write("tilt-args.txt", run_cmd_args)
 

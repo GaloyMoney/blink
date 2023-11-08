@@ -1,14 +1,16 @@
 load("@toolchains//rover:macros.bzl", "supergraph", "diff_check", "dev_update_file")
-load( ":tilt.bzl", "tilt_down", "tilt_up",)
+load( ":tilt.bzl", "tilt",)
 
 # Bring up the full set of services for development
-tilt_up(
+tilt(
     name = "up",
+    subcmd = "up",
 )
 
 # Bring down any remaining/running services
-tilt_down(
+tilt(
     name = "down",
+    subcmd = "down",
 )
 
 python_bootstrap_binary(
