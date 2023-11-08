@@ -19,13 +19,13 @@ interface ApiKeysListProps {
   revokedKeys: ApiKey[]
 }
 
-const formatDate = (timestamp: number): string => {
+const formatDate = (timestamp: string): string => {
   const options: Intl.DateTimeFormatOptions = {
     year: "numeric",
     month: "long",
     day: "2-digit",
   }
-  return new Date(timestamp * 1000).toLocaleDateString(undefined, options)
+  return new Date(parseInt(timestamp) * 1000).toLocaleDateString(undefined, options)
 }
 
 const ApiKeysList: React.FC<ApiKeysListProps> = ({
