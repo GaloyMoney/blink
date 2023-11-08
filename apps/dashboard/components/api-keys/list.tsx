@@ -4,28 +4,20 @@ import Typography from "@mui/joy/Typography"
 import Divider from "@mui/joy/Divider"
 
 import RevokeKey from "./revoke"
+import { formatDate } from "./utils"
 
 interface ApiKey {
   id: string
   name: string
-  createdAt: string
-  expiresAt: string
-  lastUsedAt?: string | null
+  createdAt: number
+  expiresAt: number
+  lastUsedAt?: number | null
 }
 
 interface ApiKeysListProps {
   activeKeys: ApiKey[]
   expiredKeys: ApiKey[]
   revokedKeys: ApiKey[]
-}
-
-const formatDate = (timestamp: number): string => {
-  const options: Intl.DateTimeFormatOptions = {
-    year: "numeric",
-    month: "long",
-    day: "2-digit",
-  }
-  return new Date(timestamp * 1000).toLocaleDateString(undefined, options)
 }
 
 const ApiKeysList: React.FC<ApiKeysListProps> = ({

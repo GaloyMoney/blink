@@ -3,24 +3,16 @@ import React from "react"
 import { Card, Divider, Typography, Box } from "@mui/joy"
 
 import RevokeKey from "./revoke"
+import { formatDate } from "./utils"
 
 interface ApiKey {
   id: string
   name: string
-  createdAt: string
-  expiresAt: string
-  lastUsedAt?: string | null
+  createdAt: number
+  expiresAt: number
+  lastUsedAt?: number | null | undefined
   expired: boolean
   revoked: boolean
-}
-
-const formatDate = (timestamp: string): string => {
-  const options: Intl.DateTimeFormatOptions = {
-    year: "numeric",
-    month: "long",
-    day: "2-digit",
-  }
-  return new Date(parseInt(timestamp) * 1000).toLocaleDateString(undefined, options)
 }
 
 interface ApiKeysCardProps {
