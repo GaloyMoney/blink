@@ -6,7 +6,9 @@ import DisplayCurrency from "../../../shared/types/scalar/display-currency"
 
 import AccountLevel from "../../../shared/types/scalar/account-level"
 
-import { TransactionConnection } from "../../../shared/types/object/transaction"
+import Transaction, {
+  TransactionConnection,
+} from "../../../shared/types/object/transaction"
 
 import RealtimePrice from "./realtime-price"
 import { NotificationSettings } from "./notification-settings"
@@ -156,6 +158,28 @@ const BusinessAccount = GT.Object({
           result.total,
           paginationArgs,
         )
+      },
+    },
+    pendingTransactions: {
+      type: GT.NonNullList(Transaction),
+      args: {
+        walletIds: {
+          type: GT.List(WalletId),
+        },
+      },
+      resolve: async (source, args) => {
+        const { walletIds } = args
+
+        const transactions =
+          await Accounts.getPendingOnChainTransactionsForAccountByWalletIds({
+            account: source,
+            walletIds,
+          })
+
+        if (transactions instanceof Error) {
+          throw mapError(transactions)
+        }
+        return transactions
       },
     },
     notificationSettings: {

@@ -90,6 +90,40 @@ const UsdWallet = GT.Object<Wallet>({
         )
       },
     },
+    pendingTransactions: {
+      type: GT.NonNullList(Transaction),
+      resolve: async (source) => {
+        const transactions = await Wallets.getPendingOnChainTransactionsForWallets({
+          wallets: [source],
+        })
+        if (transactions instanceof Error) {
+          throw mapError(transactions)
+        }
+        return transactions
+      },
+    },
+    pendingTransactionsByAddress: {
+      type: GT.NonNullList(Transaction),
+      args: {
+        address: {
+          type: GT.NonNull(OnChainAddress),
+          description: "Returns the items that include this address.",
+        },
+      },
+      resolve: async (source, args) => {
+        const { address } = args
+        if (address instanceof Error) throw address
+
+        const transactions = await Wallets.getPendingTransactionsForWalletsByAddresses({
+          wallets: [source],
+          addresses: [address],
+        })
+        if (transactions instanceof Error) {
+          throw mapError(transactions)
+        }
+        return transactions
+      },
+    },
     transactionsByAddress: {
       type: TransactionConnection,
       args: {

@@ -13,7 +13,9 @@ import WalletId from "@/graphql/shared/types/scalar/wallet-id"
 import AccountLimits from "@/graphql/public/types/object/account-limits"
 import RealtimePrice from "@/graphql/public/types/object/realtime-price"
 import DisplayCurrency from "@/graphql/shared/types/scalar/display-currency"
-import { TransactionConnection } from "@/graphql/shared/types/object/transaction"
+import Transaction, {
+  TransactionConnection,
+} from "@/graphql/shared/types/object/transaction"
 
 const IAccount = GT.Interface({
   name: "Account",
@@ -54,6 +56,14 @@ const IAccount = GT.Interface({
       type: TransactionConnection,
       args: {
         ...connectionArgs,
+        walletIds: {
+          type: GT.List(WalletId),
+        },
+      },
+    },
+    pendingTransactions: {
+      type: GT.NonNullList(Transaction),
+      args: {
         walletIds: {
           type: GT.List(WalletId),
         },

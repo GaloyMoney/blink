@@ -17,6 +17,8 @@ export * from "./update-legacy-on-chain-receipt"
 export * from "./update-pending-invoices"
 export * from "./validate"
 export * from "./get-invoice-for-wallet-by-hash"
+export * from "./get-pending-onchain-transactions-for-wallets"
+export * from "./get-pending-transactions-by-addresses"
 
 import { WalletsRepository } from "@/services/mongoose"
 
