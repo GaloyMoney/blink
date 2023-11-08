@@ -15,7 +15,7 @@ const CallbackEndpointAddInput = GT.Input({
 const CallbackEndpointAdd = GT.Field<
   null,
   GraphQLPublicContextAuth,
-  { input: { url: string } }
+  { input: { url: string | Error } }
 >({
   extensions: {
     complexity: 120,
@@ -26,6 +26,9 @@ const CallbackEndpointAdd = GT.Field<
   },
   resolve: async (_, args, { domainAccount }: { domainAccount: Account }) => {
     const { url } = args.input
+    if (url instanceof Error) {
+      return { errors: [{ message: url.message }] }
+    }
 
     const result = await Callback.addEndpoint({
       accountId: domainAccount.id,

@@ -2,12 +2,14 @@ import { ApplicationIn, Svix } from "svix"
 
 import { SvixError, UnknownSvixError } from "./errors"
 
-import { baseLogger } from "@/services/logger"
+import { InvalidUrlError } from "@/domain/callback/errors"
+import { parseErrorMessageFromUnknown } from "@/domain/shared"
 
 import {
   addAttributesToCurrentSpan,
   wrapAsyncFunctionsToRunInSpan,
 } from "@/services/tracing"
+import { baseLogger } from "@/services/logger"
 
 function prefixObjectKeys(
   obj: Record<string, string>,
@@ -56,7 +58,7 @@ export const CallbackService = (config: SvixConfig) => {
       if ((err as SvixError).code === 409) {
         // we create app on the fly, so we are expecting this error and can ignore it
       } else {
-        return new UnknownSvixError(err)
+        return handleCommonErrors(err)
       }
     }
   }
@@ -91,7 +93,7 @@ export const CallbackService = (config: SvixConfig) => {
       baseLogger.info({ res }, `message sent successfully to ${accountCallbackId}`)
       return res
     } catch (err) {
-      return new UnknownSvixError(err)
+      return handleCommonErrors(err)
     }
   }
 
@@ -106,7 +108,7 @@ export const CallbackService = (config: SvixConfig) => {
       const res = await svix.authentication.appPortalAccess(accountCallbackId, {})
       return res
     } catch (err) {
-      return new UnknownSvixError(err)
+      return handleCommonErrors(err)
     }
   }
 
@@ -128,7 +130,7 @@ export const CallbackService = (config: SvixConfig) => {
       })
       return res
     } catch (err) {
-      return new UnknownSvixError(err)
+      return handleCommonErrors(err)
     }
   }
 
@@ -142,7 +144,7 @@ export const CallbackService = (config: SvixConfig) => {
       const res = await svix.endpoint.list(accountCallbackId)
       return res.data.map((endpoint) => ({ id: endpoint.id, url: endpoint.url }))
     } catch (err) {
-      return new UnknownSvixError(err)
+      return handleCommonErrors(err)
     }
   }
 
@@ -159,7 +161,7 @@ export const CallbackService = (config: SvixConfig) => {
       await svix.endpoint.delete(accountCallbackId, endpointId)
       return true
     } catch (err) {
-      return new UnknownSvixError(err)
+      return handleCommonErrors(err)
     }
   }
 
@@ -168,3 +170,20 @@ export const CallbackService = (config: SvixConfig) => {
     fns: { sendMessage, getWebsocketPortal, addEndpoint, listEndpoints, deleteEndpoint },
   })
 }
+
+const handleCommonErrors = (err: Error | string | unknown) => {
+  const errMsg = parseErrorMessageFromUnknown(err)
+
+  const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
+
+  switch (true) {
+    case match(KnownSvixErrorMessages.InvalidHttpsUrl):
+      return new InvalidUrlError("URL must be https")
+
+    default:
+      return new UnknownSvixError(errMsg)
+  }
+}
+export const KnownSvixErrorMessages = {
+  InvalidHttpsUrl: /endpoint_https_only/,
+} as const
