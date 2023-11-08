@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): responsive card for api key (#3506)...'
-      sha: e7d4d1650f5b05c59cccd25ffc805eb8aba24109
+      commitTitle: 'fix(dashboard): dateformat in dashboard (#3515)...'
+      sha: c002dcc6e6c7836a40a11b561ec0c78bfae6a7a7
       tags:
-      - 0.16.7-2-ge7d4d1650
+      - 0.16.7-4-gc002dcc6e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): responsive card for api key (#3506)...'
-      sha: e7d4d1650f5b05c59cccd25ffc805eb8aba24109
+      commitTitle: 'fix(dashboard): dateformat in dashboard (#3515)...'
+      sha: c002dcc6e6c7836a40a11b561ec0c78bfae6a7a7
       tags:
-      - 0.16.7-2-ge7d4d1650
+      - 0.16.7-4-gc002dcc6e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): responsive card for api key (#3506)...'
-      sha: e7d4d1650f5b05c59cccd25ffc805eb8aba24109
+      commitTitle: 'fix(dashboard): dateformat in dashboard (#3515)...'
+      sha: c002dcc6e6c7836a40a11b561ec0c78bfae6a7a7
       tags:
-      - 0.16.7-2-ge7d4d1650
+      - 0.16.7-4-gc002dcc6e
     path: ./
   path: ./graphql
 kind: LockConfig
