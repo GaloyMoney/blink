@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(dashboard): dateformat in dashboard (#3515)...'
-      sha: c002dcc6e6c7836a40a11b561ec0c78bfae6a7a7
+      commitTitle: 'feat: add pending tx queries (#3488)...'
+      sha: 989bab56e70b4840b5850711db5a1f1ac45561c1
       tags:
-      - 0.16.7-4-gc002dcc6e
+      - 0.16.8-1-g989bab56e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(dashboard): dateformat in dashboard (#3515)...'
-      sha: c002dcc6e6c7836a40a11b561ec0c78bfae6a7a7
+      commitTitle: 'feat: add pending tx queries (#3488)...'
+      sha: 989bab56e70b4840b5850711db5a1f1ac45561c1
       tags:
-      - 0.16.7-4-gc002dcc6e
+      - 0.16.8-1-g989bab56e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(dashboard): dateformat in dashboard (#3515)...'
-      sha: c002dcc6e6c7836a40a11b561ec0c78bfae6a7a7
+      commitTitle: 'feat: add pending tx queries (#3488)...'
+      sha: 989bab56e70b4840b5850711db5a1f1ac45561c1
       tags:
-      - 0.16.7-4-gc002dcc6e
+      - 0.16.8-1-g989bab56e
     path: ./
   path: ./graphql
 kind: LockConfig
