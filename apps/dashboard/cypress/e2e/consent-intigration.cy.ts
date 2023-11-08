@@ -27,7 +27,7 @@ describe("Account ID Test", () => {
     cy.getCookie("next-auth.session-token").then((cookie) => {
       if (cookie && cookie.value) {
         cy.writeFile(".env.test", `NEXT_AUTH_SESSION_TOKEN=${cookie.value}\n`, {
-          flag: "a+",
+          flag: "w",
         })
         cy.log("Session token saved to .env.test")
       } else {
