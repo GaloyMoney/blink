@@ -2,6 +2,8 @@ type LedgerError = import("./errors").LedgerError
 type FeeDifferenceError = import("./errors").FeeDifferenceError
 type LedgerServiceError = import("./errors").LedgerServiceError
 
+type PaginationArgs = import("graphql-relay").ConnectionArguments
+
 declare const liabilitiesWalletId: unique symbol
 type LiabilitiesWalletId = string & { [liabilitiesWalletId]: never }
 

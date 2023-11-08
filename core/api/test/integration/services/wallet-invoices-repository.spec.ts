@@ -1,3 +1,4 @@
+import { checkedToPaginatedQueryCursor } from "@/domain/primitives"
 import { WalletCurrency } from "@/domain/shared"
 import { WalletInvoicesRepository } from "@/services/mongoose"
 import { createMockWalletInvoice } from "test/helpers/wallet-invoices"
@@ -40,7 +41,7 @@ describe("WalletInvoicesRepository", () => {
     const walletInvoicesRepository = WalletInvoicesRepository()
 
     it("gets first page of invoices", async () => {
-      const result = await walletInvoicesRepository.getInvoicesForWallets({
+      const result = await walletInvoicesRepository.findInvoicesForWallets({
         walletIds: [recipientWalletDescriptor.id],
         paginationArgs: {
           first: 100,
@@ -68,11 +69,11 @@ describe("WalletInvoicesRepository", () => {
     })
 
     it("gets page after cursor", async () => {
-      const result = await walletInvoicesRepository.getInvoicesForWallets({
+      const result = await walletInvoicesRepository.findInvoicesForWallets({
         walletIds: [recipientWalletDescriptor.id],
         paginationArgs: {
           first: 2,
-          after: createdInvoices[1].paymentHash,
+          after: checkedToPaginatedQueryCursor(createdInvoices[1].paymentHash),
         },
       })
       if (result instanceof Error) throw result
@@ -100,7 +101,7 @@ describe("WalletInvoicesRepository", () => {
     })
 
     it("get last page of invoices", async () => {
-      const result = await walletInvoicesRepository.getInvoicesForWallets({
+      const result = await walletInvoicesRepository.findInvoicesForWallets({
         walletIds: [recipientWalletDescriptor.id],
         paginationArgs: {
           last: 100,
@@ -119,11 +120,13 @@ describe("WalletInvoicesRepository", () => {
     })
 
     it("get page before cursor", async () => {
-      const result = await walletInvoicesRepository.getInvoicesForWallets({
+      const result = await walletInvoicesRepository.findInvoicesForWallets({
         walletIds: [recipientWalletDescriptor.id],
         paginationArgs: {
           last: 2,
-          before: createdInvoices[createdInvoices.length - 2].paymentHash,
+          before: checkedToPaginatedQueryCursor(
+            createdInvoices[createdInvoices.length - 2].paymentHash,
+          ),
         },
       })
       if (result instanceof Error) throw result
@@ -151,7 +154,7 @@ describe("WalletInvoicesRepository", () => {
     })
 
     it("returns empty edges for wallet without invoices", async () => {
-      const result = await walletInvoicesRepository.getInvoicesForWallets({
+      const result = await walletInvoicesRepository.findInvoicesForWallets({
         walletIds: [crypto.randomUUID() as WalletId],
         paginationArgs: {
           first: 100,

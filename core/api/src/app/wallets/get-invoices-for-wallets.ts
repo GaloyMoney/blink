@@ -1,27 +1,32 @@
 import { MAX_PAGINATION_PAGE_SIZE } from "@/config"
-import { parsePaginationArgs } from "@/domain/pagination"
+import { checkedToPaginatedQueryArgs } from "@/domain/primitives"
 import { WalletInvoicesRepository } from "@/services/mongoose"
 
 export const getInvoicesForWallets = async ({
   wallets,
-  paginationArgs,
+  rawPaginationArgs,
 }: {
   wallets: Wallet[]
-  paginationArgs?: PaginationArgs
-}): Promise<PaginatedResult<WalletInvoice> | ApplicationError> => {
+  rawPaginationArgs: {
+    first?: number | null
+    last?: number | null
+    before?: string | null
+    after?: string | null
+  }
+}): Promise<PaginatedQueryResult<WalletInvoice> | ApplicationError> => {
   const walletIds = wallets.map((wallet) => wallet.id)
 
-  const parsedPaginationArgs = parsePaginationArgs({
-    paginationArgs,
+  const paginationArgs = checkedToPaginatedQueryArgs({
+    paginationArgs: rawPaginationArgs,
     maxPageSize: MAX_PAGINATION_PAGE_SIZE,
   })
 
-  if (parsedPaginationArgs instanceof Error) {
-    return parsedPaginationArgs
+  if (paginationArgs instanceof Error) {
+    return paginationArgs
   }
 
-  return WalletInvoicesRepository().getInvoicesForWallets({
+  return WalletInvoicesRepository().findInvoicesForWallets({
     walletIds,
-    paginationArgs: parsedPaginationArgs,
+    paginationArgs,
   })
 }

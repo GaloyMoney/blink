@@ -196,7 +196,7 @@ const BusinessAccount = GT.Object({
         const result = await Accounts.getInvoicesForAccountByWalletIds({
           account: source,
           walletIds,
-          paginationArgs: args,
+          rawPaginationArgs: args,
         })
 
         if (result instanceof Error) {

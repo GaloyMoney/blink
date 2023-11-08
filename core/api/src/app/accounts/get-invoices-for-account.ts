@@ -6,12 +6,17 @@ import { WalletsRepository } from "@/services/mongoose"
 export const getInvoicesForAccountByWalletIds = async ({
   account,
   walletIds,
-  paginationArgs,
+  rawPaginationArgs,
 }: {
   account: Account
   walletIds?: WalletId[]
-  paginationArgs?: PaginationArgs
-}): Promise<PaginatedResult<WalletInvoice> | ApplicationError> => {
+  rawPaginationArgs: {
+    first?: number | null
+    last?: number | null
+    before?: string | null
+    after?: string | null
+  }
+}): Promise<PaginatedQueryResult<WalletInvoice> | ApplicationError> => {
   const walletsRepo = WalletsRepository()
 
   const accountWallets = await walletsRepo.listByAccountId(account.id)
@@ -21,5 +26,5 @@ export const getInvoicesForAccountByWalletIds = async ({
     walletIds ? walletIds.includes(wallet.id) : true,
   )
 
-  return getInvoicesForWallets({ wallets, paginationArgs })
+  return getInvoicesForWallets({ wallets, rawPaginationArgs })
 }

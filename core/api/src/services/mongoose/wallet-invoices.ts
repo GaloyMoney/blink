@@ -10,6 +10,7 @@ import {
   UnknownRepositoryError,
   WalletInvoiceMissingLnInvoiceError,
 } from "@/domain/errors"
+import { checkedToPaginatedQueryCursor } from "@/domain/primitives"
 import { UsdPaymentAmount } from "@/domain/shared"
 
 export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
@@ -137,13 +138,13 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     }
   }
 
-  const getInvoicesForWallets = async ({
+  const findInvoicesForWallets = async ({
     walletIds,
     paginationArgs,
   }: {
     walletIds: WalletId[]
-    paginationArgs: ParsedPaginationArgs
-  }): Promise<PaginatedResult<WalletInvoice> | RepositoryError> => {
+    paginationArgs: PaginatedQueryArgs
+  }): Promise<PaginatedQueryResult<WalletInvoice> | RepositoryError> => {
     const { first, last, before, after } = paginationArgs
 
     try {
@@ -222,12 +223,18 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
 
       return {
         edges: walletInvoices.map((walletInvoice) => ({
-          cursor: walletInvoice.paymentHash,
+          cursor: checkedToPaginatedQueryCursor(walletInvoice.paymentHash),
           node: walletInvoice,
         })),
         pageInfo: {
-          startCursor: walletInvoices[0]?.paymentHash ?? null,
-          endCursor: walletInvoices[walletInvoices.length - 1]?.paymentHash ?? null,
+          startCursor: walletInvoices[0]?.paymentHash
+            ? checkedToPaginatedQueryCursor(walletInvoices[0].paymentHash)
+            : undefined,
+          endCursor: walletInvoices[walletInvoices.length - 1]?.paymentHash
+            ? checkedToPaginatedQueryCursor(
+                walletInvoices[walletInvoices.length - 1].paymentHash,
+              )
+            : undefined,
           hasPreviousPage,
           hasNextPage,
         },
@@ -245,7 +252,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     yieldPending,
     deleteByPaymentHash,
     deleteUnpaidOlderThan,
-    getInvoicesForWallets,
+    findInvoicesForWallets,
   }
 }
 

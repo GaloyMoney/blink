@@ -135,7 +135,7 @@ const BtcWallet = GT.Object<Wallet>({
       resolve: async (source, args) => {
         const result = await Wallets.getInvoicesForWallets({
           wallets: [source],
-          paginationArgs: args,
+          rawPaginationArgs: args,
         })
 
         if (result instanceof Error) {

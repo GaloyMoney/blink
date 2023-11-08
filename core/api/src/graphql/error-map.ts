@@ -446,7 +446,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
 
     case "UnauthorizedIPMetadataCountryError":
       return new UnauthorizedIPMetadataCountryError({ logger: baseLogger })
-    case "InvalidPaginationArgsError":
+    case "InvalidPaginatedQueryArgsError":
       message = error.message
       return new ValidationInternalError({ message, logger: baseLogger })
 

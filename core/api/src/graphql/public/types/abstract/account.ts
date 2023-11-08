@@ -65,7 +65,6 @@ const IAccount = GT.Interface({
     pendingTransactions: {
       type: GT.NonNullList(Transaction),
       args: {
-        ...connectionArgs,
         walletIds: {
           type: GT.List(WalletId),
         },

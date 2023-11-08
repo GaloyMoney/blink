@@ -28,3 +28,30 @@ type JSONValue =
   | undefined
 type JSONArray = Array<JSONValue>
 type JSONObject = { [key: string]: JSONValue }
+
+type PaginatedQueryCursor = string & { readonly brand: unique symbol }
+type PaginatedQueryArgs =
+  | {
+      first: number
+      last?: undefined
+      after?: PaginatedQueryCursor
+      before?: PaginatedQueryCursor
+    }
+  | {
+      first?: undefined
+      last: number
+      before?: PaginatedQueryCursor
+      after?: PaginatedQueryCursor
+    }
+type PaginatedQueryResult<T> = {
+  edges: {
+    node: T
+    cursor: PaginatedQueryCursor
+  }[]
+  pageInfo: {
+    startCursor?: PaginatedQueryCursor
+    endCursor?: PaginatedQueryCursor
+    hasNextPage: boolean
+    hasPreviousPage: boolean
+  }
+}
