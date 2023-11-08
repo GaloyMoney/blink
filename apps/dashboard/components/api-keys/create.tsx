@@ -134,6 +134,8 @@ const ApiKeyCreate = () => {
               <Typography
                 sx={{
                   p: "1em",
+                  width: "100%",
+                  borderRadius: "0.5em",
                 }}
                 variant="outlined"
                 color="success"
@@ -170,39 +172,55 @@ const ApiKeyCreate = () => {
                   }}
                   action={formAction}
                 >
-                  <Typography>Name</Typography>
-                  <Input
-                    name="apiKeyName"
-                    id="apiKeyName"
+                  <Box
                     sx={{
-                      padding: "0.6em",
-                      width: "100%",
-                    }}
-                    placeholder="API Key Name *"
-                  />
-
-                  <Typography>Expires In</Typography>
-
-                  <Input
-                    name="apiKeyExpiresInDays"
-                    id="apiKeyExpiresInDays"
-                    sx={{ display: "none" }}
-                  />
-
-                  <Select
-                    placeholder="Expires In"
-                    onChange={(_, v) => {
-                      if (v === "custom") {
-                        setEnableCustomExpiresInDays(true)
-                        setExpiresInDays(30)
-                      }
-                      if (v && v !== "custom") setExpiresInDays(parseInt(String(v)))
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.2em",
                     }}
                   >
-                    <Option value="30">30 days</Option>
-                    <Option value="90">90 days</Option>
-                    <Option value="custom">Custom</Option>
-                  </Select>
+                    <Typography>Name</Typography>
+                    <Input
+                      name="apiKeyName"
+                      id="apiKeyName"
+                      sx={{
+                        padding: "0.6em",
+                        width: "100%",
+                      }}
+                      placeholder="API Key Name *"
+                    />
+                  </Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.2em",
+                    }}
+                  >
+                    <Typography>Expires In</Typography>
+                    <Input
+                      name="apiKeyExpiresInDays"
+                      id="apiKeyExpiresInDays"
+                      sx={{ display: "none", padding: "0.6em" }}
+                    />
+                    <Select
+                      sx={{
+                        padding: "0.6em",
+                      }}
+                      placeholder="Expires In"
+                      onChange={(_, v) => {
+                        if (v === "custom") {
+                          setEnableCustomExpiresInDays(true)
+                          setExpiresInDays(30)
+                        }
+                        if (v && v !== "custom") setExpiresInDays(parseInt(String(v)))
+                      }}
+                    >
+                      <Option value="30">30 days</Option>
+                      <Option value="90">90 days</Option>
+                      <Option value="custom">Custom</Option>
+                    </Select>
+                  </Box>
 
                   {enableCustomExpiresInDays && (
                     <Box
@@ -216,6 +234,7 @@ const ApiKeyCreate = () => {
                       <Input
                         sx={{
                           width: "100%",
+                          padding: "0.6em",
                         }}
                         onChange={(e) => {
                           if (e.target.value && parseInt(e.target.value) > 0)

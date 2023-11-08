@@ -76,10 +76,20 @@ const RevokeKey = ({ id }: Props) => {
               borderRadius: "0.5em",
             }}
           >
-            <Typography id="modal-desc-2" textColor="text.tertiary" textAlign="left">
-              API Key ID
+            <Typography
+              fontSize={13}
+              id="modal-desc-2"
+              textColor="text.tertiary"
+              textAlign="left"
+            >
+              ID :
             </Typography>
-            <Typography id="modal-desc-2" textColor="text.tertiary" textAlign="left">
+            <Typography
+              fontSize={13}
+              id="modal-desc-2"
+              textColor="text.tertiary"
+              textAlign="left"
+            >
               {id}
             </Typography>
           </Box>

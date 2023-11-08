@@ -1,15 +1,23 @@
 import React from "react"
 import Table from "@mui/joy/Table"
-
-import { getServerSession } from "next-auth"
-
-import { redirect } from "next/navigation"
-import { Divider, Typography } from "@mui/joy"
+import Typography from "@mui/joy/Typography"
+import Divider from "@mui/joy/Divider"
 
 import RevokeKey from "./revoke"
 
-import { apiKeys } from "@/services/graphql/queries/api-keys"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+interface ApiKey {
+  id: string
+  name: string
+  createdAt: string
+  expiresAt: string
+  lastUsedAt?: string | null
+}
+
+interface ApiKeysListProps {
+  activeKeys: ApiKey[]
+  expiredKeys: ApiKey[]
+  revokedKeys: ApiKey[]
+}
 
 const formatDate = (timestamp: number): string => {
   const options: Intl.DateTimeFormatOptions = {
@@ -20,98 +28,93 @@ const formatDate = (timestamp: number): string => {
   return new Date(timestamp * 1000).toLocaleDateString(undefined, options)
 }
 
-const ApiKeysList = async () => {
-  const session = await getServerSession(authOptions)
-  const token = session?.accessToken
-
-  if (!token || typeof token !== "string") {
-    redirect("/")
-  }
-
-  const keys = await apiKeys(token)
-
-  const activeKeys = keys.filter(({ expired, revoked }) => !expired && !revoked)
-  const expiredKeys = keys.filter(({ expired }) => expired)
-  const revokedKeys = keys.filter(({ revoked }) => revoked)
-
+const ApiKeysList: React.FC<ApiKeysListProps> = ({
+  activeKeys,
+  expiredKeys,
+  revokedKeys,
+}) => {
   return (
     <>
       <Typography fontSize={22}>Active Keys</Typography>
-      <Table aria-label="basic table">
+      <Table aria-label="active keys table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>API Key ID</th>
-            <th>Expires At</th>
-            <th>Last Used</th>
-            <th>Action</th>
+            <th style={{ width: "20%" }}>Name</th>
+            <th style={{ width: "30%" }}>API Key ID</th>
+            <th style={{ width: "20%" }}>Expires At</th>
+            <th style={{ width: "20%" }}>Last Used</th>
+            <th style={{ width: "10%", textAlign: "right" }}>Action</th>
           </tr>
         </thead>
         <tbody>
           {activeKeys.map(({ id, name, expiresAt, lastUsedAt }) => (
             <tr key={id}>
-              <td>{name}</td>
-              <td>{id}</td>
-              <td>{formatDate(expiresAt)}</td>
-              <td>{lastUsedAt ? formatDate(lastUsedAt) : "Never"}</td>
-              <td>
+              <td style={{ width: "20%" }}>{name}</td>
+              <td style={{ width: "30%" }}>{id}</td>
+              <td style={{ width: "20%" }}>{formatDate(expiresAt)}</td>
+              <td style={{ width: "20%" }}>
+                {lastUsedAt ? formatDate(lastUsedAt) : "Never"}
+              </td>
+              <td style={{ width: "10%", textAlign: "right" }}>
                 <RevokeKey id={id} />
               </td>
             </tr>
           ))}
         </tbody>
       </Table>
-      {activeKeys.length === 0 && <Typography>No keys to display.</Typography>}
+      {activeKeys.length === 0 && <Typography>No active keys to display.</Typography>}
 
       <Divider />
 
       <Typography fontSize={22}>Revoked Keys</Typography>
-      <Table aria-label="basic table">
+      <Table aria-label="revoked keys table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>API Key ID</th>
-            <th>Created At</th>
-            <th>Last Used</th>
+            <th style={{ width: "25%" }}>Name</th>
+            <th style={{ width: "35%" }}>API Key ID</th>
+            <th style={{ width: "15%" }}>Created At</th>
+            <th style={{ textAlign: "right", width: "15%" }}>Status</th>
           </tr>
         </thead>
         <tbody>
-          {revokedKeys.map(({ id, name, expiresAt, createdAt }) => (
+          {revokedKeys.map(({ id, name, createdAt }) => (
             <tr key={id}>
-              <td>{name}</td>
-              <td>{id}</td>
-              <td>{formatDate(createdAt)}</td>
-              <td>{formatDate(expiresAt)}</td>
+              <td style={{ width: "25%" }}>{name}</td>
+              <td style={{ width: "35%" }}>{id}</td>
+              <td style={{ width: "15%" }}>{formatDate(createdAt)}</td>
+              <td style={{ textAlign: "right", width: "15%" }}>Revoked</td>
             </tr>
           ))}
         </tbody>
       </Table>
-      {revokedKeys.length === 0 && <Typography>No keys to display.</Typography>}
+      {revokedKeys.length === 0 && <Typography>No revoked keys to display.</Typography>}
 
       <Divider />
 
       <Typography fontSize={22}>Expired Keys</Typography>
-      <Table aria-label="basic table">
+      <Table aria-label="expired keys table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>API Key ID</th>
-            <th>Created At</th>
-            <th>Last Used</th>
+            <th style={{ width: "25%" }}>Name</th>
+            <th style={{ width: "35%" }}>API Key ID</th>
+            <th style={{ width: "20%" }}>Created At</th>
+            <th style={{ textAlign: "right", width: "15%" }}>Expires At</th>
           </tr>
         </thead>
         <tbody>
-          {expiredKeys.map(({ id, name, expiresAt, createdAt }) => (
+          {expiredKeys.map(({ id, name, createdAt, expiresAt }) => (
             <tr key={id}>
-              <td>{name}</td>
-              <td>{id}</td>
-              <td>{formatDate(createdAt)}</td>
-              <td>{formatDate(expiresAt)}</td>
+              <td style={{ width: "25%" }}>{name}</td>
+              <td style={{ width: "35%" }}>{id}</td>
+              <td style={{ width: "20%" }}>{formatDate(createdAt)}</td>
+              <td style={{ textAlign: "right", width: "15%" }}>
+                {formatDate(expiresAt)}
+              </td>
             </tr>
           ))}
         </tbody>
       </Table>
-      {expiredKeys.length === 0 && <Typography>No keys to display.</Typography>}
+      {expiredKeys.length === 0 && <Typography>No expired keys to display.</Typography>}
     </>
   )
 }
