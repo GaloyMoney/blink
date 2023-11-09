@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: invoice pagination (#3512)...'
-      sha: 6232ee2645dc8344ec61c4728c670690068d014b
+      commitTitle: 'ci: top level bats (#3520)...'
+      sha: b1d12ec05839808254a20a55d8f0dd093fbed379
       tags:
-      - 0.16.9-1-g6232ee264
+      - 0.16.10-2-gb1d12ec05
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: invoice pagination (#3512)...'
-      sha: 6232ee2645dc8344ec61c4728c670690068d014b
+      commitTitle: 'ci: top level bats (#3520)...'
+      sha: b1d12ec05839808254a20a55d8f0dd093fbed379
       tags:
-      - 0.16.9-1-g6232ee264
+      - 0.16.10-2-gb1d12ec05
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: invoice pagination (#3512)...'
-      sha: 6232ee2645dc8344ec61c4728c670690068d014b
+      commitTitle: 'ci: top level bats (#3520)...'
+      sha: b1d12ec05839808254a20a55d8f0dd093fbed379
       tags:
-      - 0.16.9-1-g6232ee264
+      - 0.16.10-2-gb1d12ec05
     path: ./
   path: ./graphql
 kind: LockConfig
