@@ -166,13 +166,14 @@ lnd_cli() {
 }
 
 lnd_start() {
-  synced_to_graph() {
-    is_synced="$(lnd_cli getinfo | jq -r '.synced_to_graph')"
-    [[ "$is_synced" == "true" ]] || exit 1
+  started() {
+    state="$(lnd_cli state | jq -r '.state')"
+    is_synced="$(lnd_outside_cli getinfo | jq -r '.synced_to_graph')"
+    [[ "$state" == "SERVER_ACTIVE" && "$is_synced" == "true" ]] || exit 1
   }
 
   docker start "${COMPOSE_PROJECT_NAME}-lnd1-1"
-  retry 10 1 synced_to_graph
+  retry 20 3 started
 }
 
 lnd_stop() {
