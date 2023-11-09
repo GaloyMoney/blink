@@ -6,7 +6,8 @@ login_user() {
 
   local code="000000"
 
-  local variables=$(
+  local variables
+  variables=$(
     jq -n \
     --arg phone "$phone" \
     --arg code "$code" \
