@@ -2,11 +2,12 @@ import { testData } from "../../support/test-data"
 
 describe("Callback Test", () => {
   beforeEach(() => {
+    cy.viewport(3000, 2000)
     cy.setCookie("next-auth.session-token", testData.NEXT_AUTH_SESSION_TOKEN, {
       secure: true,
     })
     cy.visit("/")
-
+    cy.wait(2000)
     cy.get("[data-testid=sidebar-callback-link]").click()
     cy.get("[data-testid=add-callback-btn]").click()
     cy.get("[data-testid=add-callback-input]").type(testData.CALLBACK_URL)
