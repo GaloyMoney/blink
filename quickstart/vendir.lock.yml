@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: top level bats (#3520)...'
-      sha: b1d12ec05839808254a20a55d8f0dd093fbed379
+      commitTitle: 'fix: allow k8s-context (#3521)'
+      sha: 75e15769b3ca726f9bd4ee340bef07d1d5b50364
       tags:
-      - 0.16.10-2-gb1d12ec05
+      - 0.16.11-3-g75e15769b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: top level bats (#3520)...'
-      sha: b1d12ec05839808254a20a55d8f0dd093fbed379
+      commitTitle: 'fix: allow k8s-context (#3521)'
+      sha: 75e15769b3ca726f9bd4ee340bef07d1d5b50364
       tags:
-      - 0.16.10-2-gb1d12ec05
+      - 0.16.11-3-g75e15769b
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: top level bats (#3520)...'
-      sha: b1d12ec05839808254a20a55d8f0dd093fbed379
+      commitTitle: 'fix: allow k8s-context (#3521)'
+      sha: 75e15769b3ca726f9bd4ee340bef07d1d5b50364
       tags:
-      - 0.16.10-2-gb1d12ec05
+      - 0.16.11-3-g75e15769b
     path: ./
   path: ./graphql
 kind: LockConfig
