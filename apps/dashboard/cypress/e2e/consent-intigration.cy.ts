@@ -1,4 +1,4 @@
-describe("Account ID Test", () => {
+describe("Consent integration Test", () => {
   const signInData = {
     PHONE_NUMBER: "+16505554350",
     VERIFICATION_CODE: "000000",
@@ -8,7 +8,7 @@ describe("Account ID Test", () => {
     cy.visit("/api/auth/signin")
   })
 
-  it("Login email Test", () => {
+  it("Consent integration", () => {
     cy.contains("button", "Sign in with Blink").click()
     cy.wait(2000)
     cy.get("[data-testid=sign_in_with_phone_text]").click()
@@ -17,18 +17,21 @@ describe("Account ID Test", () => {
     cy.get("[data-testid=verification_code_input]").type(signInData.VERIFICATION_CODE)
     cy.wait(2000)
 
-    // Click on the options by text
-    cy.contains("label", "offline").click() // Adjust if 'label' is not the correct selector
-    cy.contains("label", "transactions:read").click() // Adjust if 'label' is not the correct selector
-    cy.contains("label", "payments:send").click() // Adjust if 'label' is not the correct selector
+    cy.contains("label", "offline").click()
+    cy.contains("label", "transactions:read").click()
+    cy.contains("label", "payments:send").click()
 
     cy.get("[data-testid=submit_consent_btn]").click()
     cy.wait(5000)
     cy.getCookie("next-auth.session-token").then((cookie) => {
       if (cookie && cookie.value) {
-        cy.writeFile(".env.test", `NEXT_AUTH_SESSION_TOKEN=${cookie.value}\n`, {
-          flag: "w",
-        })
+        cy.writeFile(
+          "../../../../dev/.dashboard-test.env",
+          `NEXT_AUTH_SESSION_TOKEN=${cookie.value}\n`,
+          {
+            flag: "w",
+          },
+        )
         cy.log("Session token saved to .env.test")
       } else {
         cy.log("Session token not found")

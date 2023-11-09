@@ -18,6 +18,16 @@ dev_pnpm_task_binary(
   command = "dev",
 )
 
+dev_pnpm_task_binary(
+  name = "cypress-open",
+  command = "cypress:open",
+)
+
+dev_pnpm_task_test(
+  name = "test-integration",
+  command = "cypress:run",
+)
+
 export_file(
   name = "package.json",
   visibility = ["PUBLIC"],
