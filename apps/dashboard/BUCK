@@ -16,7 +16,7 @@ dev_pnpm_task_binary(
 
 dev_pnpm_task_binary(
   name = "lint-fix",
-  command = "dev",
+  command = "lint:fix",
 )
 
 dev_pnpm_task_binary(

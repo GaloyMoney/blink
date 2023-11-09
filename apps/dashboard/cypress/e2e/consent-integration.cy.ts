@@ -13,6 +13,7 @@ describe("Consent integration Test", () => {
     cy.wait(2000)
     cy.get("[data-testid=sign_in_with_phone_text]").click()
     cy.get("[data-testid=phone_number_input]").type(signInData.PHONE_NUMBER)
+    cy.wait(2000)
     cy.get("[data-testid=phone_login_next_btn]").click()
     cy.get("[data-testid=verification_code_input]").type(signInData.VERIFICATION_CODE)
     cy.wait(2000)
