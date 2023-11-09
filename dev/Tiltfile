@@ -1,8 +1,8 @@
 config.define_string_list("test")
-config.define_string_list("to-run", args = True)
+config.define_bool("bats")
 cfg = config.parse()
 
-is_ci=("ci" in sys.argv)
+is_ci=("ci" in sys.argv) or cfg.get("bats", False)
 
 def _buck2_dep_inputs(target):
     cmd = [

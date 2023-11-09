@@ -899,7 +899,7 @@ cd "$rootpath/$npm_package_path"
 if [ "$install_node_modules" = "True" ]; then
     pnpm install
 fi
-pnpm run --report-summary "$npm_run_command"
+exec pnpm run --report-summary "$npm_run_command"
 """, is_executable = True)
     args = cmd_args([script, str(ctx.attrs.local_node_modules), ctx.label.package, ctx.attrs.command])
     args.hidden([ctx.attrs.deps])
@@ -927,7 +927,7 @@ cd "$rootpath/$npm_package_path"
 if [ "$install_node_modules" = "True" ]; then
     pnpm install
 fi
-pnpm run --report-summary "$npm_run_command"
+exec pnpm run --report-summary "$npm_run_command"
 """, is_executable = True)
     args = cmd_args([script, str(ctx.attrs.local_node_modules), ctx.label.package, ctx.attrs.command])
     args.hidden([ctx.attrs.deps])

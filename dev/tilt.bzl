@@ -32,7 +32,7 @@ subcmd="$1"
 tiltfile="$2"
 args=("${@:3}")
 
-tilt "$subcmd" --file "$rootpath"/"$tiltfile" -- "${args[@]}"
+exec tilt "$subcmd" --file "$rootpath"/"$tiltfile" -- "${args[@]}"
 """, is_executable = True)
 
     run_cmd_args = cmd_args([
