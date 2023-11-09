@@ -163,8 +163,12 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
           $lt?: Date
           $gt?: Date
         }
+        paymentRequest: {
+          $exists: true
+        }
       } = {
         walletId: { $in: walletIds },
+        paymentRequest: { $exists: true },
       }
 
       // this could cause a bug if there are multiple invoices with the same timestamp
