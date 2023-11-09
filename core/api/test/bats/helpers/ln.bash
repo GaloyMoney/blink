@@ -165,6 +165,20 @@ lnd_cli() {
       $@
 }
 
+lnd_start() {
+  synced_to_graph() {
+    is_synced="$(lnd_cli getinfo | jq -r '.synced_to_graph')"
+    [[ "$is_synced" == "true" ]] || exit 1
+  }
+
+  docker start "${COMPOSE_PROJECT_NAME}-lnd1-1"
+  retry 10 1 synced_to_graph
+}
+
+lnd_stop() {
+  docker stop -t 0 "${COMPOSE_PROJECT_NAME}-lnd1-1"
+}
+
 lnd2_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-lnd2-1" \
     lncli \

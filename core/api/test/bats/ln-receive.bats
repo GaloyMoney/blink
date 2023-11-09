@@ -404,3 +404,55 @@ usd_amount=50
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
+
+@test "ln-receive: create invoices from alternate node" {
+  lnd1_pubkey=$(lnd_cli getinfo | jq -r '.identity_pubkey')
+  lnd2_pubkey=$(lnd2_cli getinfo | jq -r '.identity_pubkey')
+
+  token_name="$ALICE_TOKEN_NAME"
+  btc_wallet_name="$token_name.btc_wallet_id"
+
+  # Generate invoice, it should be from lnd1
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg amount "$btc_amount" \
+    '{input: {walletId: $wallet_id, amount: $amount}}'
+  )
+  exec_graphql "$token_name" 'ln-invoice-create' "$variables"
+  invoice="$(graphql_output '.data.lnInvoiceCreate.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
+  destination_node="$(lnd_cli decodepayreq $payment_request | jq -r '.destination')"
+  [[ "${destination_node}" == "${lnd1_pubkey}" ]] || exit 1
+
+  # Generate invoice after lnd1 stop, it should be from lnd2
+  lnd_stop
+  exec_graphql "$token_name" 'ln-invoice-create' "$variables"
+  invoice="$(graphql_output '.data.lnInvoiceCreate.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
+  destination_node="$(lnd2_cli decodepayreq $payment_request | jq -r '.destination')"
+  [[ "${destination_node}" == "${lnd2_pubkey}" ]] || exit 1
+
+  # Generate invoice after lnd1 start, it should be from lnd1
+  lnd_start
+  exec_graphql "$token_name" 'ln-invoice-create' "$variables"
+  invoice="$(graphql_output '.data.lnInvoiceCreate.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
+  destination_node="$(lnd_cli decodepayreq $payment_request | jq -r '.destination')"
+  [[ "${destination_node}" == "${lnd1_pubkey}" ]] || exit 1
+}
