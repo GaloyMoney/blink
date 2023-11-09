@@ -20,6 +20,7 @@ describe("Callback Test", () => {
   })
 
   it("Callback Addition Test", () => {
+    cy.wait(2000)
     cy.get("@callbackId")
       .should("exist")
       .then((id) => {
@@ -28,6 +29,7 @@ describe("Callback Test", () => {
   })
 
   it("Callback Deletion Test", () => {
+    cy.wait(2000)
     cy.get("@callbackId")
       .should("exist")
       .then((id) => {
