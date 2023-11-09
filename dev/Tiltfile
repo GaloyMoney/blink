@@ -4,6 +4,19 @@ cfg = config.parse()
 
 is_ci=("ci" in sys.argv) or cfg.get("bats", False)
 
+# From the Tilt docs:
+#
+# > By default, Tilt will not let you develop against a remote cluster.
+#
+# The implication appears to be that if Tilt finds a configured Kubernetes setup on your system
+# **and** it's a remote cluster, despite the fact that we are not using any Kubernetes features or
+# capabilities, it will still try to connect and fail. Instead, we're going to disable this check
+# and continue.
+#
+# - https://docs.tilt.dev/choosing_clusters.html#remote
+# - https://docs.tilt.dev/api.html#api.allow_k8s_contexts
+allow_k8s_contexts(k8s_context())
+
 def _buck2_dep_inputs(target):
     cmd = [
         "buck2",
