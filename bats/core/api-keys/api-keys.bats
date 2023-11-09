@@ -2,15 +2,6 @@
 
 load "../../helpers/setup-and-teardown.bash"
 
-setup_file() {
-  start_services "api-keys"
-  await_api_is_up
-}
-
-teardown_file() {
-  stop_services
-}
-
 random_uuid() {
   if [[ -e /proc/sys/kernel/random/uuid ]]; then
     cat /proc/sys/kernel/random/uuid
