@@ -25,13 +25,9 @@ describe("Consent integration Test", () => {
     cy.wait(5000)
     cy.getCookie("next-auth.session-token").then((cookie) => {
       if (cookie && cookie.value) {
-        cy.writeFile(
-          "../../../../dev/.dashboard-test.env",
-          `NEXT_AUTH_SESSION_TOKEN=${cookie.value}\n`,
-          {
-            flag: "w",
-          },
-        )
+        cy.writeFile(".env.test", `NEXT_AUTH_SESSION_TOKEN=${cookie.value}\n`, {
+          flag: "w",
+        })
         cy.log("Session token saved to .env.test")
       } else {
         cy.log("Session token not found")

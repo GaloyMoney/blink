@@ -83,6 +83,19 @@ local_resource(
   ],
 )
 
+dashboard_test_target = "//apps/dashboard:test-integration"
+local_resource(
+  "dashboard-test",
+  labels = ["test"],
+  auto_init = is_ci and "dashboard" in cfg.get("test", []),
+  cmd = "buck2 test {}".format(dashboard_test_target),
+  resource_deps = [
+    "dashboard",
+    "init-test-user",
+    "hydra-dashboard"
+  ],
+)
+
 local_resource(
   name='init-test-user',
   labels = ['test'],
