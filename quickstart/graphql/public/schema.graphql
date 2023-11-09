@@ -474,6 +474,8 @@ input IntraLedgerUsdPaymentSendInput {
 
 """A lightning invoice."""
 interface Invoice {
+  createdAt: Timestamp!
+
   """The payment hash of the lightning invoice."""
   paymentHash: PaymentHash!
 
@@ -516,11 +518,12 @@ enum InvoicePaymentStatus {
 scalar Language
 
 type LnInvoice implements Invoice {
+  createdAt: Timestamp!
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!
   paymentStatus: InvoicePaymentStatus!
-  satoshis: SatAmount
+  satoshis: SatAmount!
 }
 
 input LnInvoiceCreateInput {
@@ -585,6 +588,7 @@ type LnInvoicePaymentStatusPayload {
 }
 
 type LnNoAmountInvoice implements Invoice {
+  createdAt: Timestamp!
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!

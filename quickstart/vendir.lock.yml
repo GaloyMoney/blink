@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: allow k8s-context (#3521)'
-      sha: 75e15769b3ca726f9bd4ee340bef07d1d5b50364
+      commitTitle: 'fix: filter invoices without paymentRequest (#3522)'
+      sha: b5ac078bc2f03357986e2b81290e2beb2784d1d9
       tags:
-      - 0.16.11-3-g75e15769b
+      - 0.16.12-2-gb5ac078bc
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: allow k8s-context (#3521)'
-      sha: 75e15769b3ca726f9bd4ee340bef07d1d5b50364
+      commitTitle: 'fix: filter invoices without paymentRequest (#3522)'
+      sha: b5ac078bc2f03357986e2b81290e2beb2784d1d9
       tags:
-      - 0.16.11-3-g75e15769b
+      - 0.16.12-2-gb5ac078bc
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: allow k8s-context (#3521)'
-      sha: 75e15769b3ca726f9bd4ee340bef07d1d5b50364
+      commitTitle: 'fix: filter invoices without paymentRequest (#3522)'
+      sha: b5ac078bc2f03357986e2b81290e2beb2784d1d9
       tags:
-      - 0.16.11-3-g75e15769b
+      - 0.16.12-2-gb5ac078bc
     path: ./
   path: ./graphql
 kind: LockConfig
