@@ -644,6 +644,8 @@ input IntraLedgerUsdPaymentSendInput
 interface Invoice
   @join__type(graph: PUBLIC)
 {
+  createdAt: Timestamp!
+
   """The payment hash of the lightning invoice."""
   paymentHash: PaymentHash!
 
@@ -717,11 +719,12 @@ type LnInvoice implements Invoice
   @join__implements(graph: PUBLIC, interface: "Invoice")
   @join__type(graph: PUBLIC)
 {
+  createdAt: Timestamp!
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!
   paymentStatus: InvoicePaymentStatus!
-  satoshis: SatAmount
+  satoshis: SatAmount!
 }
 
 input LnInvoiceCreateInput
@@ -803,6 +806,7 @@ type LnNoAmountInvoice implements Invoice
   @join__implements(graph: PUBLIC, interface: "Invoice")
   @join__type(graph: PUBLIC)
 {
+  createdAt: Timestamp!
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!

@@ -5,6 +5,8 @@ import LnPaymentSecret from "../scalar/ln-payment-secret"
 
 import InvoicePaymentStatus from "../scalar/invoice-payment-status"
 
+import Timestamp from "../scalar/timestamp"
+
 import { GT } from "@/graphql/index"
 import { connectionDefinitions } from "@/graphql/connections"
 
@@ -28,6 +30,9 @@ const IInvoice = GT.Interface({
     paymentStatus: {
       type: GT.NonNull(InvoicePaymentStatus),
       description: "The payment status of the invoice.",
+    },
+    createdAt: {
+      type: GT.NonNull(Timestamp),
     },
   }),
 })

@@ -7,6 +7,8 @@ import IInvoice from "../abstract/invoice"
 
 import InvoicePaymentStatus from "../scalar/invoice-payment-status"
 
+import Timestamp from "../scalar/timestamp"
+
 import { GT } from "@/graphql/index"
 import { WalletInvoiceStatusChecker } from "@/domain/wallet-invoices/wallet-invoice-status-checker"
 
@@ -28,7 +30,7 @@ const LnInvoice = GT.Object<WalletInvoice>({
       resolve: (source) => source.lnInvoice.paymentSecret,
     },
     satoshis: {
-      type: SatAmount,
+      type: GT.NonNull(SatAmount),
       resolve: (source) => source.lnInvoice.amount,
     },
     paymentStatus: {
@@ -38,6 +40,10 @@ const LnInvoice = GT.Object<WalletInvoice>({
         const status = statusChecker.status(new Date())
         return status
       },
+    },
+    createdAt: {
+      type: GT.NonNull(Timestamp),
+      resolve: (source) => source.createdAt,
     },
   }),
 })
