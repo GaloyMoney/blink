@@ -13,16 +13,6 @@ start_services() {
   echo $! > "$SERVICES_PID_FILE"
 }
 
-await_api_is_up() {
-  server_is_up() {
-    exec_graphql 'anon' 'globals'
-    network="$(graphql_output '.data.globals.network')"
-    [[ "${network}" = "regtest" ]] || exit 1
-  }
-
-  retry 300 1 server_is_up
-}
-
 stop_services() {
   [[ -f "$SERVICES_PID_FILE" ]] && kill -9 "$(cat "$SERVICES_PID_FILE")" > /dev/null || true
   buck2 run //dev:down
