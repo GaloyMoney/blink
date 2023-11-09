@@ -28,6 +28,7 @@ local_resource(
       "PORT": "3001",
     },
     deps = _buck2_dep_inputs(dashboard_target),
+    allow_parallel = True,
     resource_deps = [
         "hydra-dashboard",
     ],
@@ -48,6 +49,7 @@ local_resource(
     'authorization_code,refresh_token',
     'http://localhost:3001/api/auth/callback/blink',
   ],
+  allow_parallel = True,
   resource_deps = [
     "hydra",
   ]
@@ -59,6 +61,7 @@ local_resource(
   labels = ["test"],
   auto_init = is_ci and "consent" in cfg.get("test", []),
   cmd = "buck2 test {}".format(consent_test_target),
+  allow_parallel = True,
   resource_deps = [
     "consent",
     "init-test-user",
@@ -70,6 +73,7 @@ local_resource(
   name='init-test-user',
   labels = ['test'],
   cmd='buck2 run //dev:init-user',
+  allow_parallel = True,
   resource_deps = [
     "oathkeeper",
     "kratos",
@@ -86,6 +90,7 @@ local_resource(
     cmd = "buck2 build {}".format(consent_target),
     serve_cmd = "buck2 run {}".format(consent_target),
     deps = _buck2_dep_inputs(consent_target),
+    allow_parallel = True,
     resource_deps = [
         "apollo-router",
         "hydra",
@@ -108,6 +113,7 @@ local_resource(
     'authorization_code,refresh_token',
     'http://localhost:3000',
   ],
+  allow_parallel = True,
   resource_deps = [
     "hydra",
   ]
@@ -166,21 +172,12 @@ local_resource(
   name='init-onchain',
   labels = ['bitcoin'],
   cmd='buck2 run //dev:init-onchain',
+  allow_parallel = True,
   resource_deps = [
     "bitcoind",
     "bria",
   ]
 )
-
-def _buck2_dep_inputs(target):
-    cmd = [
-        "buck2",
-        "uquery",
-        "\"inputs(deps('{}'))\"".format(target),
-    ]
-    file_paths = str(local(" ".join(cmd))).splitlines()
-
-    return file_paths
 
 api_keys_target = "//core/api-keys:api-keys"
 local_resource(
@@ -194,6 +191,7 @@ local_resource(
       "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
     },
     deps = _buck2_dep_inputs(api_keys_target),
+    allow_parallel = True,
     resource_deps = [
        "api",
        "api-keys-pg"
