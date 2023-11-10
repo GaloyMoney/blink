@@ -1,8 +1,7 @@
 "use client"
 import React from "react"
-/* eslint @typescript-eslint/ban-ts-comment: "off" */
-// @ts-ignore-next-line error
-import { experimental_useFormState as useFormState } from "react-dom"
+
+import { useFormState } from "react-dom"
 
 import { toast } from "react-toastify"
 
@@ -10,6 +9,7 @@ import TwoFaVerificationForm from "../../components/varification-components/two-
 import VerificationCodeForm from "../../components/varification-components/verification-code-form"
 
 import { submitFormTotp, submitForm } from "./server-actions"
+import { VerificationCodeResponse, VerificationTotpResponse } from "./verification.types"
 
 interface VerificationFormProps {
   login_challenge: string
@@ -26,34 +26,46 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
   loginType,
   value,
 }) => {
-  const [stateVerificationCode, formActionVerificationCode] = useFormState(submitForm, {
-    totpRequired: false,
-    message: null,
-    authToken: null,
-  })
-
-  const [stateTwoFA, formActionTwoFA] = useFormState(submitFormTotp, {
+  const [stateVerificationCode, formActionVerificationCode] = useFormState<
+    VerificationCodeResponse,
+    FormData
+  >(submitForm, {
     error: false,
     message: null,
+    responsePayload: null,
   })
+
+  const [stateTwoFA, formActionTwoFA] = useFormState<VerificationTotpResponse, FormData>(
+    submitFormTotp,
+    {
+      error: false,
+      message: null,
+      responsePayload: null,
+    },
+  )
 
   if (stateVerificationCode.error) {
     toast.error(stateVerificationCode.message)
+    stateVerificationCode.error = false
     stateVerificationCode.message = null
+    stateVerificationCode.responsePayload = null
   }
 
   if (stateTwoFA.error) {
     toast.error(stateTwoFA.message)
+    stateTwoFA.error = false
     stateTwoFA.message = null
+    stateTwoFA.responsePayload = null
   }
 
   return (
     <>
-      {stateVerificationCode.totpRequired ? (
+      {stateVerificationCode?.responsePayload?.totpRequired &&
+      stateVerificationCode?.responsePayload?.authToken ? (
         <TwoFaVerificationForm
           formActionTwoFA={formActionTwoFA}
           login_challenge={login_challenge}
-          authToken={stateVerificationCode.authToken}
+          authToken={stateVerificationCode.responsePayload.authToken}
         />
       ) : (
         <VerificationCodeForm

@@ -15,7 +15,7 @@ import { handleAxiosError } from "@/app/error-handler"
 import { env } from "@/env"
 
 export const getCaptchaChallenge = async (
-  _prevState: unknown,
+  _prevState: GetCaptchaChallengeResponse,
   form: FormData,
 ): Promise<GetCaptchaChallengeResponse> => {
   const headersList = headers()

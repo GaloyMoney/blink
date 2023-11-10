@@ -1,4 +1,5 @@
 import { testData } from "../../support/test-config"
+
 describe("Account ID Test", () => {
   let login_challenge: string | null
 
@@ -16,13 +17,27 @@ describe("Account ID Test", () => {
   it("Login email Test", () => {
     cy.log("login challenge : ", login_challenge)
     const email = testData.EMAIL
-    cy.wait(2000)
+
+    cy.get("[data-testid=email_id_input]").should("exist")
+    cy.get("[data-testid=email_id_input]").should("be.visible")
+    cy.get("[data-testid=email_id_input]").should("not.be.disabled")
     cy.get("[data-testid=email_id_input]").type(email)
+
+    cy.get("[data-testid=email_login_next_btn]").should("exist")
+    cy.get("[data-testid=email_login_next_btn]").should("be.visible")
     cy.get("[data-testid=email_login_next_btn]").click()
+
     cy.getOTP(email).then((otp) => {
       const code = otp
-      cy.wait(2000)
+
+      cy.get("[data-testid=verification_code_input]").should("exist")
+      cy.get("[data-testid=verification_code_input]").should("be.visible")
+      cy.get("[data-testid=verification_code_input]").should("not.be.disabled")
       cy.get("[data-testid=verification_code_input]").type(code)
+
+      cy.get("[data-testid=submit_consent_btn]").should("exist")
+      cy.get("[data-testid=submit_consent_btn]").should("be.visible")
+      cy.get("[data-testid=submit_consent_btn]").should("not.be.disabled")
       cy.get("[data-testid=submit_consent_btn]").click()
     })
   })

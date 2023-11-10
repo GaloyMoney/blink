@@ -32,7 +32,7 @@
     "edge-csrf": "^1.0.4",
     "graphql": "^16.8.1",
     "libphonenumber-js": "^1.10.47",
-    "next": "13.5.6",
+    "next": "14.0.1",
     "next-themes": "^0.2.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -55,7 +55,7 @@
     "autoprefixer": "10.4.16",
     "cypress": "^13.3.0",
     "eslint": "8.52.0",
-    "eslint-config-next": "13.5.6",
+    "eslint-config-next": "14.0.1",
     "postcss": "8.4.31",
     "tailwindcss": "3.3.5",
     "typescript": "5.2.2"

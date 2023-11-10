@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation"
 import React from "react"
 
+import { CountryCode } from "libphonenumber-js"
+
 import PhoneAuthForm from "./phone-auth-form"
 
 import { getSupportedCountryCodes } from "@/app/graphql/queries/get-supported-countries"
@@ -41,7 +43,9 @@ const PhoneAuth = async ({ login_challenge, authAction }: PhoneAuth) => {
     throw new Error("Unable to get Countries")
   }
 
-  const countryCodes = countries.map((country) => country.id)
+  const countryCodes: CountryCode[] = countries.map(
+    (country) => country.id as CountryCode,
+  )
   const subHeadingMessage =
     authAction === "Register"
       ? "Enter your phone number to register with Blink and log in to this application."

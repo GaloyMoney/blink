@@ -6,17 +6,13 @@ import { toast } from "react-toastify"
 
 import PhoneInput from "react-phone-number-input"
 
-import { E164Number } from "libphonenumber-js/types"
+import { CountryCode, E164Number } from "libphonenumber-js/types"
 
-/* eslint @typescript-eslint/ban-ts-comment: "off" */
-// @ts-ignore-next-line error
-import { experimental_useFormState as useFormState } from "react-dom"
+import { useFormState } from "react-dom"
 
 import LoginLink from "../login-link"
 
 import { getCaptchaChallenge } from "@/app/login/phone/server-actions"
-
-import { GetCaptchaChallengeResponse } from "@/app/types/phone-auth.types"
 
 import PrimaryButton from "@/app/components/button/primary-button-component"
 import SecondaryButton from "@/app/components/button/secondary-button-component"
@@ -26,6 +22,7 @@ import FormComponent from "@/app/components/form-component"
 import Separator from "@/app/components/separator"
 
 import { SubmitValue } from "@/app/types/index.types"
+
 // eslint-disable-next-line import/no-unassigned-import
 import "react-phone-number-input/style.css"
 // eslint-disable-next-line import/no-unassigned-import
@@ -35,42 +32,34 @@ import SelectComponent from "@/app/components/select"
 
 import RegisterLink from "@/app/components/register-link"
 
+import { GetCaptchaChallengeResponse } from "@/app/types/phone-auth.types"
+
 interface AuthFormProps {
   authAction: "Register" | "Login"
   login_challenge: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  countryCodes: any
+  countryCodes: Array<CountryCode>
 }
 
-// TODO need to add country call codes
 const PhoneAuthForm: React.FC<AuthFormProps> = ({
   login_challenge,
   countryCodes,
   authAction,
 }) => {
   const [phoneNumber, setPhoneNumber] = useState<string>("")
-  //TODO useFormState is not giving type suggestions/errors i.e: not typed
-  const [state, formAction] = useFormState<GetCaptchaChallengeResponse>(
+  const [state, formAction] = useFormState<GetCaptchaChallengeResponse, FormData>(
     getCaptchaChallenge,
     {
-      error: null,
+      error: false,
       message: null,
-      responsePayload: {
-        id: null,
-        challenge: null,
-        formData: {
-          login_challenge: null,
-          phone: null,
-          remember: null,
-          channel: null,
-        },
-      },
+      responsePayload: null,
     },
   )
 
   if (state.error) {
     toast.error(state.message)
-    state.error = null
+    state.error = false
+    state.message = null
+    state.responsePayload = null
   }
 
   const handlePhoneNumberChange = (value?: E164Number | undefined) => {
@@ -81,15 +70,46 @@ const PhoneAuthForm: React.FC<AuthFormProps> = ({
     }
   }
 
+  const renderCaptchaChallenge = () => {
+    const { responsePayload, message } = state
+    if (
+      message === "success" &&
+      responsePayload &&
+      responsePayload.id &&
+      responsePayload.challenge &&
+      responsePayload.formData &&
+      responsePayload.formData.login_challenge &&
+      responsePayload.formData.phone &&
+      responsePayload.formData.remember !== null &&
+      responsePayload.formData.channel
+    ) {
+      return (
+        <CaptchaChallenge
+          id={responsePayload.id}
+          challenge={responsePayload.challenge}
+          formData={{
+            login_challenge: responsePayload.formData.login_challenge,
+            phone: responsePayload.formData.phone,
+            remember: responsePayload.formData.remember.toString(),
+            channel: responsePayload.formData.channel,
+          }}
+        />
+      )
+    }
+
+    if (message === "success") {
+      toast.error("Invalid Captcha Request")
+    }
+
+    state.error = false
+    state.message = null
+    state.responsePayload = null
+    return null
+  }
+
   return (
     <>
-      {state.message === "success" ? (
-        <CaptchaChallenge
-          id={state.responsePayload.id}
-          challenge={state.responsePayload.challenge}
-          formData={state.responsePayload.formData}
-        />
-      ) : null}
+      {renderCaptchaChallenge()}
       <FormComponent action={formAction}>
         <input type="hidden" name="login_challenge" value={login_challenge} />
         <label

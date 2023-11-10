@@ -1,8 +1,7 @@
 "use client"
 import React from "react"
-/* eslint @typescript-eslint/ban-ts-comment: "off" */
-// @ts-ignore-next-line error
-import { experimental_useFormState as useFormState } from "react-dom"
+
+import { useFormState } from "react-dom"
 import Link from "next/link"
 import { toast } from "react-toastify"
 
@@ -16,20 +15,24 @@ import RegisterLink from "../components/register-link"
 import { SubmitValue } from "../types/index.types"
 
 import { submitForm } from "./email-login-server-action"
+import { LoginEmailResponse } from "./email-login.types"
 
 interface LoginProps {
   login_challenge: string
 }
 
 const EmailLoginForm = ({ login_challenge }: LoginProps) => {
-  const [state, formAction] = useFormState(submitForm, {
-    error: null,
+  const [state, formAction] = useFormState<LoginEmailResponse, FormData>(submitForm, {
+    error: false,
     message: null,
+    responsePayload: null,
   })
 
   if (state.error) {
     toast.error(state.message)
-    state.error = null
+    state.error = false
+    state.message = null
+    state.responsePayload = null
   }
 
   return (
