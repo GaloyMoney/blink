@@ -50,7 +50,7 @@ const initialState: GetCaptchaChallengeResponse = {
     formData: {
       login_challenge: null,
       phone: null,
-      remember: null,
+      remember: false,
       channel: null,
     },
   },
@@ -90,7 +90,7 @@ const PhoneAuthForm: React.FC<AuthFormProps> = ({
       responsePayload.formData &&
       responsePayload.formData.login_challenge &&
       responsePayload.formData.phone &&
-      responsePayload.formData.remember &&
+      responsePayload.formData.remember !== null &&
       responsePayload.formData.channel
     ) {
       return (
