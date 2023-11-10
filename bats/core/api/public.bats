@@ -53,3 +53,17 @@ load "../../helpers/subscriber.bash"
 
   stop_subscriber
 }
+
+@test "public: can subscribe to realtime price" {
+  subscribe_to 'anon' real-time-price-sub '{"currency": "EUR"}'
+  retry 10 1 grep 'Data.*\brealtimePrice\b.*EUR' "${SUBSCRIBER_LOG_FILE}"
+
+  num_errors=$(
+    grep 'Data.*\brealtimePrice\b.*EUR' "${SUBSCRIBER_LOG_FILE}" \
+      | awk '{print $2}' \
+      | jq -r '.data.brealtimePrice.errors | length'
+  )
+  [[ "$num_errors" == "0" ]] || exit 1
+
+  stop_subscriber
+}

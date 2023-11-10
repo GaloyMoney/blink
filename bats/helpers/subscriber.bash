@@ -3,8 +3,10 @@ source "$(dirname "$CURRENT_FILE")/_common.bash"
 
 export SUBSCRIBER_PID_FILE="${BATS_ROOT_DIR}/.gql_subscriber_pid"
 export SUBSCRIBER_LOG_FILE="${BATS_ROOT_DIR}/.e2e-subscriber.log"
+
 subscribe_to() {
   stop_subscriber > /dev/null 2>&1 || true
+  rm -f "$SUBSCRIBER_LOG_FILE" "$SUBSCRIBER_PID_FILE" || true
 
   token_name=$1
   if [[ -n "$token_name" && "$token_name" != 'anon' ]]; then
