@@ -31,14 +31,17 @@ ${SSH_PUB_KEY}
 EOF
 gcloud auth activate-service-account --key-file "${CI_ROOT}/gcloud-creds.json" 2> /dev/null
 
-gcloud_ssh "docker ps -qa | xargs docker rm -fv || true; sudo rm -rf ${REPO_PATH} || true; mkdir -p ${REPO_PATH} && cd ${REPO_PATH}/../ && rmdir $(basename "${REPO_PATH}")"
+gcloud_ssh "docker ps -qa | xargs docker rm -fv || true;"
 
-pushd "${REPO_PATH}"
+login_user="sa_$(cat "${CI_ROOT}/gcloud-creds.json" | jq -r '.client_id')"
 
-gcloud compute scp --ssh-key-file="${CI_ROOT}/login.ssh" \
-  --recurse "$(pwd)" "${host_name}:${REPO_PATH}" \
-  --tunnel-through-iap \
-  --zone="${host_zone}" \
-  --project="${gcp_project}" > /dev/null
+gcloud compute start-iap-tunnel "${host_name}" --zone="${host_zone}" --project="${gcp_project}" 22 --local-host-port=localhost:2222 &
+tunnel_pid="$!"
+trap 'jobs -p | xargs kill' EXIT
 
-gcloud_ssh "cd ${REPO_PATH}; cd ${PACKAGE_DIR}; nix develop -c buck2 clean && nix develop -c ${CMD} 2>&1"
+rsync -avr --delete --exclude="buck-out/**" \
+  -e "ssh -i ${CI_ROOT}/login.ssh -p 2222" "${REPO_PATH}/" "${login_user}@localhost:${REPO_PATH}"
+
+kill "${tunnel_pid}"
+
+gcloud_ssh "cd ${REPO_PATH}; cd ${PACKAGE_DIR}; nix develop -c ${CMD} 2>&1"
