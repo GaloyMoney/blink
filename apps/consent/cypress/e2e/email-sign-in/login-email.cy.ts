@@ -17,20 +17,28 @@ describe("Account ID Test", () => {
   it("Login email Test", () => {
     cy.log("login challenge : ", login_challenge)
     const email = testData.EMAIL
-    cy.get("[data-testid=email_id_input]")
-      .should("exist")
-      .and("be.visible")
-      .and("not.be.disabled")
-      .type(email)
-    cy.get("[data-testid=email_login_next_btn]").should("exist").and("be.visible").click()
+
+    cy.get("[data-testid=email_id_input]").should("exist")
+    cy.get("[data-testid=email_id_input]").should("be.visible")
+    cy.get("[data-testid=email_id_input]").should("not.be.disabled")
+    cy.get("[data-testid=email_id_input]").type(email)
+
+    cy.get("[data-testid=email_login_next_btn]").should("exist")
+    cy.get("[data-testid=email_login_next_btn]").should("be.visible")
+    cy.get("[data-testid=email_login_next_btn]").click()
+
     cy.getOTP(email).then((otp) => {
       const code = otp
-      cy.get("[data-testid=verification_code_input]")
-        .should("exist")
-        .and("be.visible")
-        .and("not.be.disabled")
-        .type(code)
-      cy.get("[data-testid=submit_consent_btn]").should("exist").and("be.visible").click()
+
+      cy.get("[data-testid=verification_code_input]").should("exist")
+      cy.get("[data-testid=verification_code_input]").should("be.visible")
+      cy.get("[data-testid=verification_code_input]").should("not.be.disabled")
+      cy.get("[data-testid=verification_code_input]").type(code)
+
+      cy.get("[data-testid=submit_consent_btn]").should("exist")
+      cy.get("[data-testid=submit_consent_btn]").should("be.visible")
+      cy.get("[data-testid=submit_consent_btn]").should("not.be.disabled")
+      cy.get("[data-testid=submit_consent_btn]").click()
     })
   })
 })

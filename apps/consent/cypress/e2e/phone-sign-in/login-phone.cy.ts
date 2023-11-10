@@ -16,15 +16,20 @@ describe("Account ID Test", () => {
 
   it("Verification Test", () => {
     cy.log("login challenge : ", login_challenge)
-    cy.get("[data-testid=sign_in_with_phone_text]")
-      .should("exist")
-      .and("be.visible")
-      .click()
-    cy.get("[data-testid=phone_number_input]")
-      .should("exist")
-      .and("be.visible")
-      .type(testData.PHONE_NUMBER)
-    cy.get("[data-testid=phone_login_next_btn]").should("exist").and("be.visible").click()
+
+    cy.get("[data-testid=sign_in_with_phone_text]").should("exist")
+    cy.get("[data-testid=sign_in_with_phone_text]").should("be.visible")
+    cy.get("[data-testid=sign_in_with_phone_text]").click()
+
+    cy.get("[data-testid=phone_number_input]").should("exist")
+    cy.get("[data-testid=phone_number_input]").should("be.visible")
+    cy.get("[data-testid=phone_number_input]").should("not.be.disabled")
+    cy.get("[data-testid=phone_number_input]").type(testData.PHONE_NUMBER)
+
+    cy.get("[data-testid=phone_login_next_btn]").should("exist")
+    cy.get("[data-testid=phone_login_next_btn]").should("be.visible")
+    cy.get("[data-testid=phone_login_next_btn]").should("not.be.disabled")
+    cy.get("[data-testid=phone_login_next_btn]").click()
 
     if (!login_challenge) {
       throw new Error("login_challenge does not found")
@@ -37,10 +42,15 @@ describe("Account ID Test", () => {
     })
     cy.setCookie(login_challenge, cookieValue, { secure: true })
     cy.visit(`/login/verification?login_challenge=${login_challenge}`)
-    cy.get("[data-testid=verification_code_input]")
-      .should("exist")
-      .and("be.visible")
-      .type(testData.VERIFICATION_CODE)
-    cy.get("[data-testid=submit_consent_btn]").should("exist").and("be.visible").click()
+
+    cy.get("[data-testid=verification_code_input]").should("exist")
+    cy.get("[data-testid=verification_code_input]").should("be.visible")
+    cy.get("[data-testid=verification_code_input]").should("not.be.disabled")
+    cy.get("[data-testid=verification_code_input]").type(testData.VERIFICATION_CODE)
+
+    cy.get("[data-testid=submit_consent_btn]").should("exist")
+    cy.get("[data-testid=submit_consent_btn]").should("be.visible")
+    cy.get("[data-testid=submit_consent_btn]").should("not.be.disabled")
+    cy.get("[data-testid=submit_consent_btn]").click()
   })
 })
