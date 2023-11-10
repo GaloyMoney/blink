@@ -106,7 +106,9 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
         return new EmailValidationSubmittedTooOftenError()
       }
 
-      return new UnknownKratosError("should be a dead branch as 422 error code expected")
+      return new UnknownKratosError(
+        `should be a dead branch as 422 error code expected (${res.data.ui.messages?.[0].id})`,
+      )
     } catch (err) {
       // the recovery flow assume that the user has an additional action
       // after the code has been verified to reset the password.
