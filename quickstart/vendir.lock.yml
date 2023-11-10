@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(consent): nextjs update consent (#3514)...'
-      sha: ce345f40783e1068968094779251e76d07b0dd78
+      commitTitle: 'test: pino is masking test exist code (#3525)...'
+      sha: 647e421f25ff7c832f420b687a4ce3d61e03b329
       tags:
-      - 0.16.13-5-gce345f407
+      - 0.16.14-1-g647e421f2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(consent): nextjs update consent (#3514)...'
-      sha: ce345f40783e1068968094779251e76d07b0dd78
+      commitTitle: 'test: pino is masking test exist code (#3525)...'
+      sha: 647e421f25ff7c832f420b687a4ce3d61e03b329
       tags:
-      - 0.16.13-5-gce345f407
+      - 0.16.14-1-g647e421f2
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(consent): nextjs update consent (#3514)...'
-      sha: ce345f40783e1068968094779251e76d07b0dd78
+      commitTitle: 'test: pino is masking test exist code (#3525)...'
+      sha: 647e421f25ff7c832f420b687a4ce3d61e03b329
       tags:
-      - 0.16.13-5-gce345f407
+      - 0.16.15
     path: ./
   path: ./graphql
 kind: LockConfig
