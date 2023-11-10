@@ -69,9 +69,9 @@ type WalletState = {
 
 const getWalletState = async (walletId: WalletId): Promise<WalletState> => {
   const balance = await getBalanceHelper(walletId)
-  const { result, error } = await getTransactionsForWalletId(walletId)
-  if (error instanceof Error || !result?.slice) {
-    throw error
+  const result = await getTransactionsForWalletId(walletId)
+  if (result instanceof Error) {
+    throw result
   }
   const onchainAddress = await Wallets.getLastOnChainAddress(walletId)
   if (onchainAddress instanceof Error) {
@@ -79,7 +79,7 @@ const getWalletState = async (walletId: WalletId): Promise<WalletState> => {
   }
   return {
     balance,
-    transactions: result.slice,
+    transactions: result.edges.map((edge) => edge.node),
     onchainAddress,
   }
 }

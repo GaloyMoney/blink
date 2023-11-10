@@ -212,7 +212,5 @@ type DisplayTxnAmountsArg = {
   displayCurrency: DisplayCurrency
 }
 
-type PaginatedArray<T> = { slice: T[]; total: number }
-
 // The following is needed for src/services/ledger/paginated-ledger.ts
 declare module "medici/build/helper/parse/parseFilterQuery"
