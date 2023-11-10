@@ -1,5 +1,5 @@
 interface ILedgerTransaction {
-  _id?: ObjectId
+  _id: ObjectId
   credit: number
   debit: number
   meta?: { [k: string]: unknown }
@@ -10,8 +10,8 @@ interface ILedgerTransaction {
   memo: string
   _journal: ObjectId
   timestamp: Date
-  voided?: boolean
-  void_reason?: string
+  voided: boolean
+  void_reason: string
   _original_journal?: ObjectId
 
   hash?: string

@@ -20,6 +20,7 @@ describe("LedgerService", () => {
       _journal: toObjectId(sampleJournalId),
       timestamp,
       voided: false,
+      void_reason: "",
 
       hash: "hash",
       txid: "txid",
