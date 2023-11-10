@@ -37,7 +37,6 @@ login_user="sa_$(cat "${CI_ROOT}/gcloud-creds.json" | jq -r '.client_id')"
 
 gcloud compute start-iap-tunnel "${host_name}" --zone="${host_zone}" --project="${gcp_project}" 22 --local-host-port=localhost:2222 &
 tunnel_pid="$!"
-trap 'jobs -p | xargs kill' EXIT
 
 # Retry loop with a 1-second sleep to wait for the rsync command to succeed
 rsync_ready=false
