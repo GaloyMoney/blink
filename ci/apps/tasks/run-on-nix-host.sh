@@ -40,7 +40,7 @@ tunnel_pid="$!"
 trap 'jobs -p | xargs kill' EXIT
 
 rsync -avr --delete --exclude="buck-out/**" \
-  -e "ssh -i ${CI_ROOT}/login.ssh -p 2222" "${REPO_PATH}/" "${login_user}@localhost:${REPO_PATH}"
+  -e "ssh -o StrictHostKeyChecking=no -i ${CI_ROOT}/login.ssh -p 2222" "${REPO_PATH}/" "${login_user}@localhost:${REPO_PATH}"
 
 kill "${tunnel_pid}"
 
