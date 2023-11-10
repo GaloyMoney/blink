@@ -259,6 +259,7 @@
                   yq-go
                   google-cloud-sdk
                   openssh
+                  rsync
                 ];
 
               pathsToLink = ["/bin"];
