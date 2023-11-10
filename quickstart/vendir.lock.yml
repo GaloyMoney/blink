@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: filter invoices without paymentRequest (#3522)'
-      sha: b5ac078bc2f03357986e2b81290e2beb2784d1d9
+      commitTitle: 'chore(consent): nextjs update consent (#3514)...'
+      sha: ce345f40783e1068968094779251e76d07b0dd78
       tags:
-      - 0.16.12-2-gb5ac078bc
+      - 0.16.13-5-gce345f407
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: filter invoices without paymentRequest (#3522)'
-      sha: b5ac078bc2f03357986e2b81290e2beb2784d1d9
+      commitTitle: 'chore(consent): nextjs update consent (#3514)...'
+      sha: ce345f40783e1068968094779251e76d07b0dd78
       tags:
-      - 0.16.12-2-gb5ac078bc
+      - 0.16.13-5-gce345f407
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: filter invoices without paymentRequest (#3522)'
-      sha: b5ac078bc2f03357986e2b81290e2beb2784d1d9
+      commitTitle: 'chore(consent): nextjs update consent (#3514)...'
+      sha: ce345f40783e1068968094779251e76d07b0dd78
       tags:
-      - 0.16.12-2-gb5ac078bc
+      - 0.16.13-5-gce345f407
     path: ./
   path: ./graphql
 kind: LockConfig
