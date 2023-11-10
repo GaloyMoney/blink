@@ -1,0 +1,33 @@
+name: "Cache buck build"
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  integration:
+    name: Bats tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v4
+      - name: Run the Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v2
+      - uses: actions/cache@v3
+        id: buck-out-main
+        with:
+          path: buck-out
+          key: buck-out-${{ github.sha }}
+      - name: Buck2 build
+        run: |
+          nix develop -c buck2 build \
+           //core/api \
+           //core/api-ws-server \
+           //core/api-trigger \
+           //core/api-cron \
+           //core/api-exporter \
+           //core/api-keys \
+           //apps/dashboard \
+           //apps/consent
