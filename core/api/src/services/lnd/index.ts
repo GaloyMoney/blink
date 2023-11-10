@@ -96,10 +96,11 @@ export const LndService = (): ILightningService | LightningServiceError => {
   const defaultLnd = activeNode.lnd
   const defaultPubkey = activeNode.pubkey as Pubkey
 
-  const activeOnchainNode = getActiveOnchainLnd()
-  if (activeOnchainNode instanceof Error) return activeOnchainNode
-
-  const defaultOnchainLnd = activeOnchainNode.lnd
+  const defaultOnchainLnd = () => {
+    const activeOnchainNode = getActiveOnchainLnd()
+    if (activeOnchainNode instanceof Error) return activeOnchainNode
+    return activeOnchainNode.lnd
+  }
 
   const isLocal = (pubkey: Pubkey): boolean | LightningServiceError =>
     getLnds({ type: "offchain" }).some((item) => item.pubkey === pubkey)
@@ -131,7 +132,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     pubkey?: Pubkey,
   ): Promise<Satoshis | LightningServiceError> => {
     try {
-      const lndInstance = pubkey ? getLndFromPubkey({ pubkey }) : defaultOnchainLnd
+      const lndInstance = pubkey ? getLndFromPubkey({ pubkey }) : defaultOnchainLnd()
       if (lndInstance instanceof Error) return lndInstance
 
       const { chain_balance } = await getChainBalance({ lnd: lndInstance })
@@ -145,7 +146,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     pubkey?: Pubkey,
   ): Promise<Satoshis | LightningServiceError> => {
     try {
-      const lndInstance = pubkey ? getLndFromPubkey({ pubkey }) : defaultOnchainLnd
+      const lndInstance = pubkey ? getLndFromPubkey({ pubkey }) : defaultOnchainLnd()
       if (lndInstance instanceof Error) return lndInstance
 
       const { pending_chain_balance } = await getPendingChainBalance({ lnd: lndInstance })
@@ -183,8 +184,11 @@ export const LndService = (): ILightningService | LightningServiceError => {
       // this is necessary for tests, otherwise `after` may be negative
       const after = Math.max(0, blockHeight - scanDepth)
 
+      const lnd = defaultOnchainLnd()
+      if (lnd instanceof Error) return lnd
+
       const txs = await getChainTransactions({
-        lnd: defaultOnchainLnd,
+        lnd,
         after,
       })
 
