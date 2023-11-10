@@ -11,6 +11,7 @@ import MainContent from "@/app/components/main-container"
 import Logo from "@/app/components/logo"
 import Heading from "@/app/components/heading"
 import SubHeading from "@/app/components/sub-heading"
+import { CountryCode } from "libphonenumber-js"
 
 interface PhoneAuth {
   login_challenge: string
@@ -41,8 +42,9 @@ const PhoneAuth = async ({ login_challenge, authAction }: PhoneAuth) => {
     throw new Error("Unable to get Countries")
   }
 
-  const countryCodes = countries.map((country) => country.id)
-
+  const countryCodes: CountryCode[] = countries.map(
+    (country) => country.id as CountryCode,
+  )
   const subHeadingMessage =
     authAction === "Register"
       ? "Enter your phone number to register with Blink and log in to this application."

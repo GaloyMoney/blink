@@ -6,7 +6,7 @@ import { toast } from "react-toastify"
 
 import PhoneInput from "react-phone-number-input"
 
-import { E164Number } from "libphonenumber-js/types"
+import { CountryCode, E164Number } from "libphonenumber-js/types"
 
 import { useFormState } from "react-dom"
 
@@ -37,8 +37,7 @@ import { GetCaptchaChallengeResponse } from "@/app/types/phone-auth.types"
 interface AuthFormProps {
   authAction: "Register" | "Login"
   login_challenge: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  countryCodes: any
+  countryCodes: Array<CountryCode>
 }
 
 const PhoneAuthForm: React.FC<AuthFormProps> = ({
