@@ -15,6 +15,13 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@v4
       - name: Run the Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v2
+      - uses: actions/cache@v3
+        id: buck-out
+        with:
+          path: buck-out
+          key: buck-out
+          restore-keys: |
+            buck-out
       - name: Buck2 build
         run: |
           nix develop -c buck2 build //core/api //core/api-ws-server \
