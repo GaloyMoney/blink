@@ -671,6 +671,7 @@ jobs:
               - test-unit
               - integration-tests
               - legacy-bats-tests
+              - bats-tests
               - build-debug-edge-image
               - build-migrate-edge-image
               - build-edge-image
