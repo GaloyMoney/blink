@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation"
 import React from "react"
 
+import { CountryCode } from "libphonenumber-js"
+
 import PhoneAuthForm from "./phone-auth-form"
 
 import { getSupportedCountryCodes } from "@/app/graphql/queries/get-supported-countries"
@@ -11,7 +13,6 @@ import MainContent from "@/app/components/main-container"
 import Logo from "@/app/components/logo"
 import Heading from "@/app/components/heading"
 import SubHeading from "@/app/components/sub-heading"
-import { CountryCode } from "libphonenumber-js"
 
 interface PhoneAuth {
   login_challenge: string
