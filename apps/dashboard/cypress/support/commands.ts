@@ -42,6 +42,7 @@ declare namespace Cypress {
   interface Chainable<Subject> {
     getOTP(email: string): Chainable<string>
     requestEmailCode(email: string): Chainable<string>
+    flushRedis(): Chainable<void>
   }
 }
 
@@ -54,6 +55,17 @@ Cypress.Commands.add("getOTP", (email) => {
       return otpMatch[1]
     } else {
       throw new Error("OTP not found in the message")
+    }
+  })
+})
+
+Cypress.Commands.add("flushRedis", () => {
+  const command = `docker exec galoy-dev-redis-1 redis-cli FLUSHALL`
+  cy.exec(command).then((result) => {
+    if (result.code === 0) {
+      cy.log("Redis FLUSHALL executed successfully")
+    } else {
+      throw new Error("Failed to execute FLUSHALL on Redis")
     }
   })
 })
