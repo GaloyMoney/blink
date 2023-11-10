@@ -1,4 +1,5 @@
-source 'bats/helpers/_common.bash'
+CURRENT_FILE=${BASH_SOURCE:-bats/helpers/.}
+source "$(dirname "$CURRENT_FILE")/_common.bash"
 
 login_user() {
   local token_name=$1

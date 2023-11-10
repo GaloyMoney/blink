@@ -1,22 +1,10 @@
 export REPO_ROOT=$(git rev-parse --show-toplevel)
 
+export BATS_ROOT_DIR="${REPO_ROOT}/bats"
 CACHE_DIR=${BATS_TMPDIR:-tmp/bats}/galoy-bats-cache
 mkdir -p "$CACHE_DIR"
 
 OATHKEEPER_PROXY=${OATHKEEPER_PROXY:-localhost:4455}
-
-SERVICES_PID_FILE=$REPO_ROOT/bats/.services_pid
-
-start_services() {
-  stop_services > /dev/null 2>&1 || true
-  background buck2 run //dev:up -- "$@" > "${REPO_ROOT}/bats/.e2e-services.log"
-  echo $! > "$SERVICES_PID_FILE"
-}
-
-stop_services() {
-  [[ -f "$SERVICES_PID_FILE" ]] && kill -9 "$(cat "$SERVICES_PID_FILE")" > /dev/null || true
-  buck2 run //dev:down
-}
 
 if ! type fail &>/dev/null; then
   fail() {

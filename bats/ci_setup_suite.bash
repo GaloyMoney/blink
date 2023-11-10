@@ -1,9 +1,9 @@
 #!/bin/bash
 
 export REPO_ROOT=$(git rev-parse --show-toplevel)
-source "${REPO_ROOT}/bats/helpers/setup-and-teardown.bash"
+source "${REPO_ROOT}/bats/helpers/_common.bash"
 
-TILT_PID_FILE=$REPO_ROOT/bats/.tilt_pid
+TILT_PID_FILE="${BATS_ROOT_DIR}/.tilt_pid"
 
 setup_suite() {
   background buck2 run //dev:up -- --bats=True > "${REPO_ROOT}/bats/.e2e-tilt.log"
