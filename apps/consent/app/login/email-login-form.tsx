@@ -31,6 +31,8 @@ const EmailLoginForm = ({ login_challenge }: LoginProps) => {
   if (state.error) {
     toast.error(state.message)
     state.error = false
+    state.message = null
+    state.responsePayload = null
   }
 
   return (

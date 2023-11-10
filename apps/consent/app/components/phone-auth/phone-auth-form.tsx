@@ -41,21 +41,6 @@ interface AuthFormProps {
   countryCodes: any
 }
 
-const initialState: GetCaptchaChallengeResponse = {
-  error: false,
-  message: null,
-  responsePayload: {
-    id: null,
-    challenge: null,
-    formData: {
-      login_challenge: null,
-      phone: null,
-      remember: false,
-      channel: null,
-    },
-  },
-}
-
 const PhoneAuthForm: React.FC<AuthFormProps> = ({
   login_challenge,
   countryCodes,
@@ -64,12 +49,18 @@ const PhoneAuthForm: React.FC<AuthFormProps> = ({
   const [phoneNumber, setPhoneNumber] = useState<string>("")
   const [state, formAction] = useFormState<GetCaptchaChallengeResponse, FormData>(
     getCaptchaChallenge,
-    initialState,
+    {
+      error: false,
+      message: null,
+      responsePayload: null,
+    },
   )
 
   if (state.error) {
     toast.error(state.message)
     state.error = false
+    state.message = null
+    state.responsePayload = null
   }
 
   const handlePhoneNumberChange = (value?: E164Number | undefined) => {
@@ -111,6 +102,9 @@ const PhoneAuthForm: React.FC<AuthFormProps> = ({
       toast.error("Invalid Captcha Request")
     }
 
+    state.error = false
+    state.message = null
+    state.responsePayload = null
     return null
   }
 
