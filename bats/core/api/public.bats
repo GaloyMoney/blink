@@ -42,10 +42,10 @@ load "../../helpers/subscriber.bash"
 
 @test "public: can subscribe to price" {
   subscribe_to 'anon' price-sub
-  retry 10 1 grep 'Data.*\bprice\b' .e2e-subscriber.log
+  retry 10 1 grep 'Data.*\bprice\b' "${SUBSCRIBER_LOG_FILE}"
 
   num_errors=$(
-    grep 'Data.*\bprice\b' .e2e-subscriber.log \
+    grep 'Data.*\bprice\b' "${SUBSCRIBER_LOG_FILE}" \
       | awk '{print $2}' \
       | jq -r '.data.price.errors | length'
   )

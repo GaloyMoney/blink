@@ -9,8 +9,6 @@ if (process.argv.length <= 3) {
   process.exit(1)
 }
 
-console.log("Starting subscription...")
-console.log(JSON.stringify(process.argv))
 const url = process.argv[3]
 const filePath = process.argv[4]
 const authToken = process.argv[5]

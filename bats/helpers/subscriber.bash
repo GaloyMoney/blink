@@ -2,7 +2,7 @@ CURRENT_FILE=${BASH_SOURCE:-bats/helpers/.}
 source "$(dirname "$CURRENT_FILE")/_common.bash"
 
 export SUBSCRIBER_PID_FILE="${BATS_ROOT_DIR}/.gql_subscriber_pid"
-
+export SUBSCRIBER_LOG_FILE="${BATS_ROOT_DIR}/.e2e-subscriber.log"
 subscribe_to() {
   stop_subscriber > /dev/null 2>&1 || true
 
@@ -19,7 +19,7 @@ subscribe_to() {
     "$(gql_file "$gql_filename")" \
     "$token" \
     "$variables" \
-    > "${BATS_ROOT_DIR}/.e2e-subscriber.log"
+    > "${SUBSCRIBER_LOG_FILE}"
   echo $! > "$SUBSCRIBER_PID_FILE"
 }
 

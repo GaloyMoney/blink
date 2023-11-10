@@ -134,13 +134,7 @@ local_resource(
   ]
 )
 
-api_target = "//core/api:api"
-local_resource(
-    "api",
-    labels = ["core"],
-    cmd = "buck2 build {}".format(api_target),
-    serve_cmd = "buck2 run {}".format(api_target),
-    serve_env = {
+core_serve_env = {
         "HELMREVISION": "dev",
         "NETWORK": "regtest",
         "OATHKEEPER_DECISION_ENDPOINT": "http://localhost:4456",
@@ -164,7 +158,40 @@ local_resource(
         "UNSECURE_DEFAULT_LOGIN_CODE": "000000",
         "GEETEST_ID": "geetest_id",
         "GEETEST_KEY": "geetest_key"
-    },
+}
+
+api_target = "//core/api:api"
+local_resource(
+    "api",
+    labels = ["core"],
+    cmd = "buck2 build {}".format(api_target),
+    serve_cmd = "buck2 run {}".format(api_target),
+    serve_env = core_serve_env,
+    allow_parallel = True,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "healthz",
+            port = 4012,
+        ),
+    ),
+    deps = _buck2_dep_inputs(api_target),
+    resource_deps = [
+        "init-onchain",
+        "lnd1",
+        "redis",
+        "mongodb",
+        "oathkeeper",
+    ]
+)
+
+api_ws_server_target = "//core/api-ws-server:api-ws-server"
+local_resource(
+    "api-ws-server",
+    labels = ["core"],
+    cmd = "buck2 build {}".format(api_ws_server_target),
+    serve_cmd = "buck2 run {}".format(api_ws_server_target),
+    serve_env = core_serve_env,
     allow_parallel = True,
     readiness_probe = probe(
         period_secs  = 5,
@@ -235,6 +262,12 @@ docker_groups = {
         "bria-pg",
         "bitcoind",
     ],
+    "price": [
+      "price",
+      "price-history",
+      "price-history-migrate",
+      "price-history-pg"
+    ],
     "tracing": [
       "otel-agent",
     ],
@@ -257,3 +290,5 @@ for service in docker_groups["core"]:
     dc_resource(service, labels = ["core"])
 for service in docker_groups["auth"]:
     dc_resource(service, labels = ["auth"])
+for service in docker_groups["price"]:
+    dc_resource(service, labels = ["price"])
