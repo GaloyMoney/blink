@@ -39,8 +39,25 @@ gcloud compute start-iap-tunnel "${host_name}" --zone="${host_zone}" --project="
 tunnel_pid="$!"
 trap 'jobs -p | xargs kill' EXIT
 
-rsync -avr --delete --exclude="buck-out/**" \
-  -e "ssh -o StrictHostKeyChecking=no -i ${CI_ROOT}/login.ssh -p 2222" "${REPO_PATH}/" "${login_user}@localhost:${REPO_PATH}"
+# Retry loop with a 1-second sleep to wait for the rsync command to succeed
+rsync_ready=false
+for i in {1..30}; do
+  rsync -avr --delete --exclude="buck-out/**" \
+    -e "ssh -o StrictHostKeyChecking=no -i ${CI_ROOT}/login.ssh -p 2222" \
+    "${REPO_PATH}/" \
+    "${login_user}@localhost:${REPO_PATH}" && {
+    rsync_ready=true
+    break
+  } || {
+    echo "rsync command failed, retrying in 1 second (attempt $i/30)..."
+    sleep 1
+  }
+done
+
+if [ "$rsync_ready" = false ]; then
+  echo "rsync command failed after 30 attempts. Exiting."
+  exit 1
+fi
 
 kill "${tunnel_pid}"
 
