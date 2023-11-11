@@ -28,7 +28,7 @@ Using native Windows is not supported at this time.
 
 ### File Descriptor Limit
 
-On some systems, you may need to significantly increasing the file descriptor limit for `buck2`.
+On some systems, you may need to significantly increase the file descriptor limit for `buck2`.
 This is because `buck2` opens many more files than either `cargo` or `pnpm` do.
 Not only that, but when using Tilt to build and run concurrent services, even more files are opened than they would be for sequential builds.
 
