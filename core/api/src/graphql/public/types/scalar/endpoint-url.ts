@@ -22,7 +22,10 @@ const EndpointUrl = GT.Scalar({
 
 function validUrlValue(value: string) {
   try {
-    new URL(value)
+    const url = new URL(value)
+    if (url.protocol !== "https:" && url.protocol !== "http:") {
+      return new InputValidationError({ message: "Invalid value for EndpointUrl" })
+    }
     return value
   } catch (error) {
     return new InputValidationError({ message: "Invalid value for EndpointUrl" })

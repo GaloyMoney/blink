@@ -177,6 +177,8 @@ const handleCommonErrors = (err: Error | string | unknown) => {
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
 
   switch (true) {
+    case match(KnownSvixErrorMessages.InvalidUrlProtocol):
+      return new InvalidUrlError("URL must have a valid protocol")
     case match(KnownSvixErrorMessages.InvalidHttpsUrl):
       return new InvalidUrlError("URL must be https")
 
@@ -186,4 +188,5 @@ const handleCommonErrors = (err: Error | string | unknown) => {
 }
 export const KnownSvixErrorMessages = {
   InvalidHttpsUrl: /endpoint_https_only/,
+  InvalidUrlProtocol: /must be http or https/,
 } as const
