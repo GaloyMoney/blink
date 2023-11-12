@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: add buck-build cache to main'
-      sha: 9ba3deddb4bdaee3940cc4fcaf5346a72245bcf2
+      commitTitle: 'fix: several typos in the docs (#3533)'
+      sha: 6a12038e9004e217fbee3989f5fc52adc069b52e
       tags:
-      - 0.16.16-2-g9ba3deddb
+      - 0.16.17-1-g6a12038e9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: add buck-build cache to main'
-      sha: 9ba3deddb4bdaee3940cc4fcaf5346a72245bcf2
+      commitTitle: 'fix: several typos in the docs (#3533)'
+      sha: 6a12038e9004e217fbee3989f5fc52adc069b52e
       tags:
-      - 0.16.16-2-g9ba3deddb
+      - 0.16.17-1-g6a12038e9
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: add buck-build cache to main'
-      sha: 9ba3deddb4bdaee3940cc4fcaf5346a72245bcf2
+      commitTitle: 'fix: several typos in the docs (#3533)'
+      sha: 6a12038e9004e217fbee3989f5fc52adc069b52e
       tags:
-      - 0.16.16-2-g9ba3deddb
+      - 0.16.17-1-g6a12038e9
     path: ./
   path: ./graphql
 kind: LockConfig
