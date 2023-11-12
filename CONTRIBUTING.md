@@ -49,7 +49,7 @@ type LightningError = import("./errors").LightningError
 
 #### Imported Library types
 
-In the places where we would like to work with types defined in imported libraries, we have two options. When we would like to use them directly, we can simply import them. If we would like to re-use a type to create our own types, we would re-import to get those types into our declaration files.
+In the places where we would like to work with types defined in imported libraries, we have two options. When we would like to use them directly, we can simply import them. If we would like to reuse a type to create our own types, we would re-import to get those types into our declaration files.
 
 For example, for a result type from the `lightning` library, we would import and re-use it like:
 ```
@@ -100,7 +100,7 @@ const myFunction = async ({
 ```
 
 #### Defining objects with methods
-We use functional constructors to define certain types of objects that we can call method on. The intention here is to instantiate the object first and then call methods on that object with method-specific args to execute some functionality.
+We use functional constructors to define certain types of objects that we can call methods on. The intention here is to instantiate the object first and then call methods on that object with method-specific args to execute some functionality.
 
 For objects like these, the interface for the object is defined using a `type` declaration and methods are typed at this point.
 
