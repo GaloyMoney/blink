@@ -272,6 +272,11 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = "Reward for quiz question was already claimed."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "NotEnoughBalanceForRewardError":
+      message =
+        "Rewards wallet temporarily depleted. Please contact support if problem persists."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "SubOneCentSatAmountForUsdSelfSendError":
     case "SubOneCentSatAmountForUsdReceiveError":
       message = "Amount sent was too low for recipient's usd wallet."

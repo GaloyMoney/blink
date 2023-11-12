@@ -1,5 +1,7 @@
 import { intraledgerPaymentSendWalletIdForBtcWallet } from "./send-intraledger"
 
+import { getBalanceForWallet } from "@/app/wallets"
+
 import { getRewardsConfig, OnboardingEarn } from "@/config"
 import { IPMetadataAuthorizer } from "@/domain/accounts-ips/ip-metadata-authorizer"
 import {
@@ -7,6 +9,7 @@ import {
   InvalidQuizQuestionIdError,
   MissingIPMetadataError,
   NoBtcWalletExistsForAccountError,
+  NotEnoughBalanceForRewardError,
   UnauthorizedIPError,
   UnknownRepositoryError,
 } from "@/domain/errors"
@@ -22,6 +25,24 @@ import {
 } from "@/services/mongoose"
 import { AccountsIpsRepository } from "@/services/mongoose/accounts-ips"
 import { checkedToAccountId } from "@/domain/accounts"
+
+const FunderBalanceChecker = () => {
+  const check = ({
+    balance,
+    amountToSend,
+  }: {
+    balance: Satoshis
+    amountToSend: Satoshis
+  }): ValidationError | true => {
+    if (balance < amountToSend) {
+      return new NotEnoughBalanceForRewardError(JSON.stringify({ balance, amountToSend }))
+    }
+
+    return true
+  }
+
+  return { check }
+}
 
 export const addEarn = async ({
   quizQuestionId: quizQuestionIdString,
@@ -87,6 +108,15 @@ export const addEarn = async ({
 
   const shouldGiveReward = await RewardsRepository(accountId).add(quizQuestionId)
   if (shouldGiveReward instanceof Error) return shouldGiveReward
+
+  const funderBalance = await getBalanceForWallet({ walletId: funderWalletId })
+  if (funderBalance instanceof Error) return funderBalance
+
+  const sendCheck = FunderBalanceChecker().check({
+    balance: funderBalance as Satoshis,
+    amountToSend: amount,
+  })
+  if (sendCheck instanceof Error) return sendCheck
 
   const payment = await intraledgerPaymentSendWalletIdForBtcWallet({
     senderWalletId: funderWalletId,
