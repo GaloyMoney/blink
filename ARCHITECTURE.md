@@ -23,7 +23,7 @@ Galoy relies on lnd to process transactions. The dependency of lnd, and bitcoind
 
 Currently Galoy relies on a single lnd instance, but the goal is to be able to manage several lnd instances at the same time, so that lnd can be recycled when needed, and also provide reliability when downtime is needed, or to provide multi-region redundancy.
 
-Lnd itself is also adding etcd as another backend option to bring more resilicency; this will be another option when available that will bring more resiliency to Galoy
+Lnd itself is also adding etcd as another backend option to bring more resiliency; this will be another option when available that will bring more resiliency to Galoy
 
 ### Main pods
 
