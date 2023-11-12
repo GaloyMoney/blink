@@ -24,7 +24,7 @@ Want to try it out and contribute? Check out the [dev documentation](./docs/DEVE
 
 If you have questions, you can [join our Workspace](https://chat.galoy.io)
 
-For an overview of all relevant repository checkout [awesome-galoy](https://github.com/GaloyMoney/awesome-galoy).
+For an overview of all relevant repositories checkout [awesome-galoy](https://github.com/GaloyMoney/awesome-galoy).
 ## Galoy-Backend features
 
 - GraphqlAPI:
@@ -51,7 +51,7 @@ For an overview of all relevant repository checkout [awesome-galoy](https://gith
   - Include memo to payment
 - Lightning Network
   - Support for clearnet and TOR
-  - Support for invoices with and without specified amount
+  - Support for invoices with and without a specified amount
   - Route probing to pre-display an accurate fee and mitigate attacks based on expensive routing
   - Channel data backup to Dropbox and Google Cloud storage
 - Custodial storage of all user assets
@@ -70,7 +70,7 @@ For an overview of all relevant repository checkout [awesome-galoy](https://gith
   - Supports horizontal scaling and highly available deployments via k8s
   - Client side load balancing across multiple LND nodes
   - Out-of-the-box dashboards for KPIs deployed to Grafana showing metrics exported via Prometheus
-  - Quick response times thanks to pagination of large data sets
+  - Quick response times thanks to the pagination of large data sets
   - Returning error codes for full translation capability of the frontend
   - Instrumentation enabled for real-time insights into production runtime ([opentelemetry](https://opentelemetry.io) / [honeycomb](https://www.honeycomb.io))
 - User onboarding (optional)
