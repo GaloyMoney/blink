@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(bats): complete move of public.bats (#3527)...'
-      sha: 142e7f4b21316e79a22e6478996b411a92223d63
+      commitTitle: 'fix(core): add callback protocol validation (#3531)'
+      sha: 1d1d1a730d63587fd10f966c6c8ce0897b795d61
       tags:
-      - 0.16.20-1-g142e7f4b2
+      - 0.16.21-2-g1d1d1a730
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(bats): complete move of public.bats (#3527)...'
-      sha: 142e7f4b21316e79a22e6478996b411a92223d63
+      commitTitle: 'fix(core): add callback protocol validation (#3531)'
+      sha: 1d1d1a730d63587fd10f966c6c8ce0897b795d61
       tags:
-      - 0.16.20-1-g142e7f4b2
+      - 0.16.21-2-g1d1d1a730
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(bats): complete move of public.bats (#3527)...'
-      sha: 142e7f4b21316e79a22e6478996b411a92223d63
+      commitTitle: 'fix(core): add callback protocol validation (#3531)'
+      sha: 1d1d1a730d63587fd10f966c6c8ce0897b795d61
       tags:
-      - 0.16.20-1-g142e7f4b2
+      - 0.16.21-2-g1d1d1a730
     path: ./
   path: ./graphql
 kind: LockConfig
