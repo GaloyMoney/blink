@@ -8,10 +8,10 @@ export const getInvoicesForWallets = async ({
 }: {
   wallets: Wallet[]
   rawPaginationArgs: {
-    first?: number | null
-    last?: number | null
-    before?: string | null
-    after?: string | null
+    first?: number
+    last?: number
+    before?: string
+    after?: string
   }
 }): Promise<PaginatedQueryResult<WalletInvoice> | ApplicationError> => {
   const walletIds = wallets.map((wallet) => wallet.id)

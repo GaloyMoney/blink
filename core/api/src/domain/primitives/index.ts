@@ -22,10 +22,10 @@ export const checkedToPaginatedQueryArgs = ({
   maxPageSize,
 }: {
   paginationArgs: {
-    first?: number | null
-    last?: number | null
-    before?: string | null
-    after?: string | null
+    first?: number
+    last?: number
+    before?: string
+    after?: string
   }
   maxPageSize: number
 }): InvalidPaginatedQueryArgsError | PaginatedQueryArgs => {

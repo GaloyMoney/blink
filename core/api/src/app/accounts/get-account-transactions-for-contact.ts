@@ -14,10 +14,10 @@ export const getAccountTransactionsForContact = async ({
   account: Account
   contactUsername: Username
   rawPaginationArgs: {
-    first?: number | null
-    last?: number | null
-    before?: string | null
-    after?: string | null
+    first?: number
+    last?: number
+    before?: string
+    after?: string
   }
 }): Promise<PaginatedQueryResult<WalletTransaction> | ApplicationError> => {
   const paginationArgs = checkedToPaginatedQueryArgs({

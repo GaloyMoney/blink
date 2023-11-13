@@ -12,10 +12,10 @@ export const getTransactionsForWallets = async ({
 }: {
   wallets: Wallet[]
   rawPaginationArgs: {
-    first?: number | null
-    last?: number | null
-    before?: string | null
-    after?: string | null
+    first?: number
+    last?: number
+    before?: string
+    after?: string
   }
 }): Promise<PaginatedQueryResult<WalletTransaction> | ApplicationError> => {
   const paginationArgs = checkedToPaginatedQueryArgs({

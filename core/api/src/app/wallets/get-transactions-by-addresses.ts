@@ -14,10 +14,10 @@ export const getTransactionsForWalletsByAddresses = async ({
   wallets: Wallet[]
   addresses: OnChainAddress[]
   rawPaginationArgs: {
-    first?: number | null
-    last?: number | null
-    before?: string | null
-    after?: string | null
+    first?: number
+    last?: number
+    before?: string
+    after?: string
   }
 }): Promise<PaginatedQueryResult<WalletTransaction> | ApplicationError> => {
   const paginationArgs = checkedToPaginatedQueryArgs({
