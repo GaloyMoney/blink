@@ -6,7 +6,7 @@ at the root of the repository.
 ## Supported Platforms
 
 Using the flake requires using one of the below platforms.
-It is possible that the System Initiative software can be developed on even more platforms, but these platforms have
+It is possible that the Galoy software can be developed on even more platforms, but these platforms have
 been validated to work with `nix` and the corresponding flake.
 
 ### macOS
@@ -82,12 +82,6 @@ WSL2 users should be able to use either Docker Desktop for WSL2 or Docker Engine
 `docker` within the distro and not interacting with the host).
 
 Regardless of platform, you may need to configure credentials in `~/.local/share`.
-
-#### Rancher Desktop
-
-Since [Rancher Desktop](https://rancherdesktop.io/) provides the ability to use [moby](https://github.com/moby/moby),
-you can use it to run and develop the System Initiative software.
-However, it is untested, and you may need to further configuration depending on your platform.
 
 ### (Optional) Direnv
 
