@@ -76,7 +76,7 @@ describe("getTransactionsForAccountByWalletIds", () => {
       walletIds: [otherWalletDescriptor.id],
       rawPaginationArgs: {},
     })
-    if (txns instanceof Error) throw txns
+
     expect(txns).toBeInstanceOf(InvalidWalletId)
 
     // Restore system state
