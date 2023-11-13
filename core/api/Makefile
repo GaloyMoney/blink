@@ -102,6 +102,7 @@ bats-in-ci:
 
 integration-in-ci:
 	pnpm install --frozen-lockfile && \
+	export NODE_OPTIONS="--max-old-space-size=6144" && \
 	$(MAKE) reset-all-integration
 
 unit-in-ci:

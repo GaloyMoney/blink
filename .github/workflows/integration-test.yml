@@ -14,9 +14,7 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@v4
       - name: Run the Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v2
-      - uses: actions/checkout@v3
-      - run: cd core/api && nix develop -c pnpm install --frozen-lockfile
       - name: Run integration tests
         run: |
           cd core/api/
-          nix develop -c make reset-all-integration
+          nix develop -c make integration-in-ci
