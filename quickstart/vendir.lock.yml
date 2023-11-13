@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: bring back deleted checkout action'
-      sha: eb73fe78c5881896c7b2e98d7d9823fc7a139fd9
+      commitTitle: 'test(bats): complete move of public.bats (#3527)...'
+      sha: 142e7f4b21316e79a22e6478996b411a92223d63
       tags:
-      - 0.16.19-1-geb73fe78c
+      - 0.16.20-1-g142e7f4b2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: bring back deleted checkout action'
-      sha: eb73fe78c5881896c7b2e98d7d9823fc7a139fd9
+      commitTitle: 'test(bats): complete move of public.bats (#3527)...'
+      sha: 142e7f4b21316e79a22e6478996b411a92223d63
       tags:
-      - 0.16.19-1-geb73fe78c
+      - 0.16.20-1-g142e7f4b2
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: bring back deleted checkout action'
-      sha: eb73fe78c5881896c7b2e98d7d9823fc7a139fd9
+      commitTitle: 'test(bats): complete move of public.bats (#3527)...'
+      sha: 142e7f4b21316e79a22e6478996b411a92223d63
       tags:
-      - 0.16.19-1-geb73fe78c
+      - 0.16.20-1-g142e7f4b2
     path: ./
   path: ./graphql
 kind: LockConfig
