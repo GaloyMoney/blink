@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): add callback protocol validation (#3531)'
-      sha: 1d1d1a730d63587fd10f966c6c8ce0897b795d61
+      commitTitle: 'docs: fix DEV ENV readme'
+      sha: cdf08a959b0d0f8d0243c0675e3723f1c43e0d1c
       tags:
-      - 0.16.21-2-g1d1d1a730
+      - 0.16.21-4-gcdf08a959
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): add callback protocol validation (#3531)'
-      sha: 1d1d1a730d63587fd10f966c6c8ce0897b795d61
+      commitTitle: 'docs: fix DEV ENV readme'
+      sha: cdf08a959b0d0f8d0243c0675e3723f1c43e0d1c
       tags:
-      - 0.16.21-2-g1d1d1a730
+      - 0.16.21-4-gcdf08a959
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(core): add callback protocol validation (#3531)'
-      sha: 1d1d1a730d63587fd10f966c6c8ce0897b795d61
+      commitTitle: 'docs: fix DEV ENV readme'
+      sha: cdf08a959b0d0f8d0243c0675e3723f1c43e0d1c
       tags:
-      - 0.16.21-2-g1d1d1a730
+      - 0.16.21-4-gcdf08a959
     path: ./
   path: ./graphql
 kind: LockConfig
