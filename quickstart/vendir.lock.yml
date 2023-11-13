@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: several typos in the docs (#3533)'
-      sha: 6a12038e9004e217fbee3989f5fc52adc069b52e
+      commitTitle: 'ci: give nodejs more mem for integration test'
+      sha: 6d43fe12ce71f9a85081f86e8701f31e2c28385c
       tags:
-      - 0.16.17-1-g6a12038e9
+      - 0.16.18-1-g6d43fe12c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: several typos in the docs (#3533)'
-      sha: 6a12038e9004e217fbee3989f5fc52adc069b52e
+      commitTitle: 'ci: give nodejs more mem for integration test'
+      sha: 6d43fe12ce71f9a85081f86e8701f31e2c28385c
       tags:
-      - 0.16.17-1-g6a12038e9
+      - 0.16.18-1-g6d43fe12c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: several typos in the docs (#3533)'
-      sha: 6a12038e9004e217fbee3989f5fc52adc069b52e
+      commitTitle: 'ci: give nodejs more mem for integration test'
+      sha: 6d43fe12ce71f9a85081f86e8701f31e2c28385c
       tags:
-      - 0.16.17-1-g6a12038e9
+      - 0.16.18-1-g6d43fe12c
     path: ./
   path: ./graphql
 kind: LockConfig
