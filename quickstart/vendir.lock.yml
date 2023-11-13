@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: give nodejs more mem for integration test'
-      sha: 6d43fe12ce71f9a85081f86e8701f31e2c28385c
+      commitTitle: 'ci: bring back deleted checkout action'
+      sha: eb73fe78c5881896c7b2e98d7d9823fc7a139fd9
       tags:
-      - 0.16.18-1-g6d43fe12c
+      - 0.16.19-1-geb73fe78c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: give nodejs more mem for integration test'
-      sha: 6d43fe12ce71f9a85081f86e8701f31e2c28385c
+      commitTitle: 'ci: bring back deleted checkout action'
+      sha: eb73fe78c5881896c7b2e98d7d9823fc7a139fd9
       tags:
-      - 0.16.18-1-g6d43fe12c
+      - 0.16.19-1-geb73fe78c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: give nodejs more mem for integration test'
-      sha: 6d43fe12ce71f9a85081f86e8701f31e2c28385c
+      commitTitle: 'ci: bring back deleted checkout action'
+      sha: eb73fe78c5881896c7b2e98d7d9823fc7a139fd9
       tags:
-      - 0.16.18-1-g6d43fe12c
+      - 0.16.19-1-geb73fe78c
     path: ./
   path: ./graphql
 kind: LockConfig
