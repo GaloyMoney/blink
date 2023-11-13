@@ -17,6 +17,6 @@ export default defineConfig({
       bundler: "webpack",
     },
   },
-  screenshotOnRunFailure: true,
-  video: true,
+  screenshotOnRunFailure: false,
+  video: false,
 })
