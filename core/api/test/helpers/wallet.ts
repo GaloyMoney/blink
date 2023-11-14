@@ -2,7 +2,7 @@ import { createChainAddress } from "lightning"
 
 import {
   getBalanceForWallet,
-  getPendingOnChainTransactionsForWallets,
+  getPendingIncomingOnChainTransactionsForWallets,
   getTransactionsForWallets,
 } from "@/app/wallets"
 import { RepositoryError } from "@/domain/errors"
@@ -32,7 +32,7 @@ export const getPendingTransactionsForWalletId = async (
   const wallets = WalletsRepository()
   const wallet = await wallets.findById(walletId)
   if (wallet instanceof RepositoryError) return wallet
-  return getPendingOnChainTransactionsForWallets({
+  return getPendingIncomingOnChainTransactionsForWallets({
     wallets: [wallet],
   })
 }
