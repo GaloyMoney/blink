@@ -361,7 +361,7 @@ services:
   oathkeeper:
     image: oryd/oathkeeper:v0.40.6-distroless
     ports:
-      - "4002:4455"
+      - "4455:4455"
       - "4456:4456"
     extra_hosts:
       - "bats-tests:host-gateway"

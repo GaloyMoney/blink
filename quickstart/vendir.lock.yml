@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: rename pendingTransactions to pendingIncomingTransactions
-        (#3548)'
-      sha: 9d482e9ce1936dee99b3aa58e459b4bd83b8fa74
+      commitTitle: 'chore: consistent on port 4455 for oathkeeper (#3549)...'
+      sha: a824a36f1b2a8a9539b58851539d0586e6bd15cf
       tags:
-      - 0.16.22-2-g9d482e9ce
+      - 0.16.23-1-ga824a36f1
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: rename pendingTransactions to pendingIncomingTransactions
-        (#3548)'
-      sha: 9d482e9ce1936dee99b3aa58e459b4bd83b8fa74
+      commitTitle: 'chore: consistent on port 4455 for oathkeeper (#3549)...'
+      sha: a824a36f1b2a8a9539b58851539d0586e6bd15cf
       tags:
-      - 0.16.22-2-g9d482e9ce
+      - 0.16.23-1-ga824a36f1
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: rename pendingTransactions to pendingIncomingTransactions
-        (#3548)'
-      sha: 9d482e9ce1936dee99b3aa58e459b4bd83b8fa74
+      commitTitle: 'chore: consistent on port 4455 for oathkeeper (#3549)...'
+      sha: a824a36f1b2a8a9539b58851539d0586e6bd15cf
       tags:
-      - 0.16.22-2-g9d482e9ce
+      - 0.16.23-1-ga824a36f1
     path: ./
   path: ./graphql
 kind: LockConfig
