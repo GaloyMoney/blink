@@ -187,6 +187,31 @@ local_resource(
     ]
 )
 
+api_trigger_target = "//core/api-trigger:api-trigger"
+local_resource(
+    "api-trigger",
+    labels = ["core"],
+    cmd = "buck2 build {}".format(api_trigger_target),
+    serve_cmd = "buck2 run {}".format(api_trigger_target),
+    serve_env = core_serve_env,
+    allow_parallel = True,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "healthz",
+            port = 4012,
+        ),
+    ),
+    deps = _buck2_dep_inputs(api_target),
+    resource_deps = [
+        "init-onchain",
+        "lnd1",
+        "redis",
+        "mongodb",
+        "oathkeeper",
+    ]
+)
+
 api_ws_server_target = "//core/api-ws-server:api-ws-server"
 local_resource(
     "api-ws-server",
