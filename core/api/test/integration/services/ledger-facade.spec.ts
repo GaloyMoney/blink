@@ -576,6 +576,25 @@ describe("Facade", () => {
         const remaining = await remainingWithdrawalLimit({ priceRatio: sendPriceRatio })
         expect(remaining).toStrictEqual(expectedRemaining)
       })
+
+      it("returns 0 volume for a voided btc transaction", async () => {
+        const resBtc = await recordSendLnPayment({
+          walletDescriptor: accountWalletDescriptors.BTC,
+          paymentAmount: sendAmount,
+          bankFee,
+          displayAmounts: displaySendEurAmounts,
+        })
+        if (resBtc instanceof Error) throw resBtc
+
+        const voided = await LedgerFacade.recordLnSendRevert({
+          journalId: resBtc.journalId,
+          paymentHash: resBtc.paymentHash,
+        })
+        if (voided instanceof Error) return voided
+
+        const remaining = await remainingWithdrawalLimit({ priceRatio: sendPriceRatio })
+        expect(remaining).toStrictEqual(accountLimitAmountsLevelOne.withdrawalLimit)
+      })
     })
   })
 })
