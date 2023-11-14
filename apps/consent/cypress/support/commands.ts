@@ -62,7 +62,7 @@ Cypress.Commands.add("requestEmailCode", (email) => {
   return cy
     .request({
       method: "POST",
-      url: "http://localhost:4002/auth/email/code",
+      url: "http://localhost:4455/auth/email/code",
       body: {
         email: email,
       },

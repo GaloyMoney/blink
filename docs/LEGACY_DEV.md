@@ -93,8 +93,8 @@ fees:
 
 You can load the Apollo GraphQL Playground, a web GUI for GraphQL. Start the server and open the following url:
 
-- http://localhost:4002/admin/graphql (admin API, proxied thru oathkeeper)
-- http://localhost:4002/graphql (end user API, proxied thru oathkeeper)
+- http://localhost:4455/admin/graphql (admin API, proxied thru oathkeeper)
+- http://localhost:4455/graphql (end user API, proxied thru oathkeeper)
 
 ### Honeycomb
 

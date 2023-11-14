@@ -7,7 +7,7 @@ This folder hosts all configuration needed to run the galoy stack locally to pla
 To open the graphql playground start docker compose and bring up the public endpoint of the oathkeeper proxy in your browser.
 ```
 docker compose up -d
-open http://localhost:4002/graphql
+open http://localhost:4455/graphql
 ```
 
 ## Embedded
