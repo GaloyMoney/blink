@@ -167,7 +167,9 @@ export const setOnChainTxIdByPayoutId = async ({
   }
 
   const bankOwnerWalletId = await getBankOwnerWalletId()
-  const bankOwnerTxns = txns.filter((txn) => txn.walletId === bankOwnerWalletId)
+  const bankOwnerTxns = txns.filter(
+    (txn) => txn.satsFee && txn.walletId === bankOwnerWalletId,
+  )
   if (bankOwnerTxns.length !== 1) {
     return new InvalidLedgerTransactionStateError(`payoutId: ${payoutId}`)
   }
