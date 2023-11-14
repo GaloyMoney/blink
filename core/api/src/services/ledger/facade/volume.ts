@@ -21,6 +21,7 @@ export const TxnGroups = {
   ],
   externalPaymentVolumeSince: [
     LedgerTransactionType.Payment,
+    LedgerTransactionType.LnFeeReimbursement,
     LedgerTransactionType.OnchainPayment,
   ],
   intraledgerTxBaseVolumeSince: [
