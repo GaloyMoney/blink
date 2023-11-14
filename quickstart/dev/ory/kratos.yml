@@ -35,7 +35,7 @@ serve:
 selfservice:
   default_browser_return_url: http://localhost:3000/
   allowed_return_urls:
-    - http://127.0.0.1:4002/
+    - http://127.0.0.1:4455/
     - http://localhost:3000/
 
   methods:
@@ -56,10 +56,10 @@ selfservice:
 
   flows:
     error:
-      ui_url: http://127.0.0.1:4002/error
+      ui_url: http://127.0.0.1:4455/error
 
     settings:
-      ui_url: http://127.0.0.1:4002/settings
+      ui_url: http://127.0.0.1:4455/settings
 
       # very short time frame because this has impact in the totp flow
       privileged_session_max_age: 1s
@@ -72,7 +72,7 @@ selfservice:
           hooks:
             - hook: web_hook
               config:
-                # url: http://bats-tests:4002/auth/after_settings_hooks
+                # url: http://bats-tests:4455/auth/after_settings_hooks
                 url: http://invalid-because-we-dont-want-profile-to-be-updated
                 method: POST
                 body: file:///home/ory/body.jsonnet
@@ -85,7 +85,7 @@ selfservice:
 
     recovery:
       enabled: true
-      ui_url: http://127.0.0.1:4002/recovery
+      ui_url: http://127.0.0.1:4455/recovery
 
     verification:
       use: code
@@ -95,7 +95,7 @@ selfservice:
 
     logout:
       after:
-        default_browser_return_url: http://127.0.0.1:4002/login
+        default_browser_return_url: http://127.0.0.1:4455/login
 
     login:
       ui_url: http://localhost:3000/login

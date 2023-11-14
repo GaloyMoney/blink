@@ -4,7 +4,7 @@ set -e
 
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-quickstart}"
 # default is oathkeeper endpoint
-GALOY_ENDPOINT=${GALOY_ENDPOINT:-localhost:4002}
+GALOY_ENDPOINT=${GALOY_ENDPOINT:-localhost:4455}
 
 if [ -n "$HOST_PROJECT_PATH" ]; then
   GALOY_DIR="./vendor/galoy-quickstart"

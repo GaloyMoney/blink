@@ -138,7 +138,7 @@ curl -X POST http://localhost:4445/admin/oauth2/introspect -d token=$ory_at_TOKE
 
 curl -I -X POST http://localhost:4456/decisions/graphql -H "Oauth2-Token: $ory_at_TOKEN"
 
-curl --location 'http://localhost:4002/graphql' \
+curl --location 'http://localhost:4455/graphql' \
 --header 'Content-Type: application/json' \
 --header "Oauth2-Token: $ory_at_TOKEN" \
 --data '{"query":"query me {\n    me {\n        id\n        defaultAccount {\n            id\n        }\n    }\n}","variables":{}}'

@@ -174,8 +174,8 @@ export const startApolloServer = async ({
       console.log(
         `in dev mode, ${type} server should be accessed through oathkeeper reverse proxy at ${
           type === "admin"
-            ? "http://localhost:4002/admin/graphql"
-            : "http://localhost:4002/graphql"
+            ? "http://localhost:4455/admin/graphql"
+            : "http://localhost:4455/graphql"
         }`,
       )
 
