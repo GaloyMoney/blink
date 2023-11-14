@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: consistent on port 4455 for oathkeeper (#3549)...'
-      sha: a824a36f1b2a8a9539b58851539d0586e6bd15cf
+      commitTitle: 'fix: bankowner fee onchain tx selection (#3550)'
+      sha: ab30bc7cd44ebcf6755170e6da045a38ce655121
       tags:
-      - 0.16.23-1-ga824a36f1
+      - 0.16.24-2-gab30bc7cd
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: consistent on port 4455 for oathkeeper (#3549)...'
-      sha: a824a36f1b2a8a9539b58851539d0586e6bd15cf
+      commitTitle: 'fix: bankowner fee onchain tx selection (#3550)'
+      sha: ab30bc7cd44ebcf6755170e6da045a38ce655121
       tags:
-      - 0.16.23-1-ga824a36f1
+      - 0.16.24-2-gab30bc7cd
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: consistent on port 4455 for oathkeeper (#3549)...'
-      sha: a824a36f1b2a8a9539b58851539d0586e6bd15cf
+      commitTitle: 'fix: bankowner fee onchain tx selection (#3550)'
+      sha: ab30bc7cd44ebcf6755170e6da045a38ce655121
       tags:
-      - 0.16.23-1-ga824a36f1
+      - 0.16.24-2-gab30bc7cd
     path: ./
   path: ./graphql
 kind: LockConfig
