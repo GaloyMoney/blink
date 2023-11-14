@@ -2,20 +2,16 @@ import { CouldNotFindError } from "@/domain/errors"
 
 import { WalletOnChainPendingReceiveRepository } from "@/services/mongoose"
 
-export const getPendingTransactionsForWalletsByAddresses = async ({
+export const getPendingIncomingOnChainTransactionsForWallets = async ({
   wallets,
-  addresses,
 }: {
   wallets: Wallet[]
-  addresses: OnChainAddress[]
 }): Promise<WalletOnChainSettledTransaction[] | ApplicationError> => {
   const walletIds = wallets.map((wallet) => wallet.id)
 
-  const pendingHistory =
-    await WalletOnChainPendingReceiveRepository().listByWalletIdsAndAddresses({
-      walletIds,
-      addresses,
-    })
+  const pendingHistory = await WalletOnChainPendingReceiveRepository().listByWalletIds({
+    walletIds,
+  })
 
   if (pendingHistory instanceof CouldNotFindError) {
     return []

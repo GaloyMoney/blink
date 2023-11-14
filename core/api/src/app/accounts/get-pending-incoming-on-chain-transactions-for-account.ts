@@ -1,10 +1,10 @@
-import { getPendingOnChainTransactionsForWallets } from "../wallets/get-pending-onchain-transactions-for-wallets"
+import { getPendingIncomingOnChainTransactionsForWallets } from "../wallets/get-pending-incoming-on-chain-transactions-for-wallets"
 
 import { RepositoryError } from "@/domain/errors"
 import { checkedToWalletId } from "@/domain/wallets"
 import { WalletsRepository } from "@/services/mongoose"
 
-export const getPendingOnChainTransactionsForAccountByWalletIds = async ({
+export const getPendingIncomingOnChainTransactionsForAccountByWalletIds = async ({
   account,
   walletIds,
 }: {
@@ -17,7 +17,7 @@ export const getPendingOnChainTransactionsForAccountByWalletIds = async ({
   if (accountWallets instanceof RepositoryError) return accountWallets
 
   if (!walletIds) {
-    return getPendingOnChainTransactionsForWallets({ wallets: accountWallets })
+    return getPendingIncomingOnChainTransactionsForWallets({ wallets: accountWallets })
   }
 
   const checkedWalletIds: WalletId[] = []
@@ -32,5 +32,5 @@ export const getPendingOnChainTransactionsForAccountByWalletIds = async ({
     checkedWalletIds.includes(wallet.id),
   )
 
-  return getPendingOnChainTransactionsForWallets({ wallets: selectedWallets })
+  return getPendingIncomingOnChainTransactionsForWallets({ wallets: selectedWallets })
 }

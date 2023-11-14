@@ -48,8 +48,8 @@ const IWallet = GT.Interface({
         },
       },
     },
-    pendingTransactionsByAddress: {
-      description: dedent`Pending OnChain transactions. When transactions
+    pendingIncomingTransactionsByAddress: {
+      description: dedent`Pending incoming OnChain transactions. When transactions
       are confirmed they will receive a new id and be found in the transactions
       list. Transactions are ordered anti-chronologically,
       ie: the newest transaction will be first`,
@@ -61,8 +61,8 @@ const IWallet = GT.Interface({
         },
       },
     },
-    pendingTransactions: {
-      description: dedent`Pending OnChain transactions. When transactions
+    pendingIncomingTransactions: {
+      description: dedent`Pending incoming OnChain transactions. When transactions
       are confirmed they will receive a new id and be found in the transactions
       list. Transactions are ordered anti-chronologically,
       ie: the newest transaction will be first`,

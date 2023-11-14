@@ -7,7 +7,9 @@ import { WalletOnChainPendingReceiveRepository } from "@/services/mongoose"
 import { IncomingOnChainTxHandler } from "@/domain/bitcoin/onchain/incoming-tx-handler"
 import { WalletCurrency, ZERO_CENTS, ZERO_SATS } from "@/domain/shared"
 
-export const getPendingOnChainBalanceForWallets = async <S extends WalletCurrency>(
+export const getPendingIncomingOnChainBalanceForWallets = async <
+  S extends WalletCurrency,
+>(
   wallets: Wallet[],
 ): Promise<{ [key: WalletId]: PaymentAmount<S> } | ApplicationError> => {
   const pendingIncoming = await WalletOnChainPendingReceiveRepository().listByWalletIds({

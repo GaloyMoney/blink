@@ -57,7 +57,9 @@ const BtcWallet = GT.Object<Wallet>({
       type: GT.NonNull(SignedAmount),
       description: "An unconfirmed incoming onchain balance.",
       resolve: async (source) => {
-        const balanceSats = await Wallets.getPendingOnChainBalanceForWallets([source])
+        const balanceSats = await Wallets.getPendingIncomingOnChainBalanceForWallets([
+          source,
+        ])
         if (balanceSats instanceof Error) {
           throw mapError(balanceSats)
         }
@@ -92,19 +94,20 @@ const BtcWallet = GT.Object<Wallet>({
       },
       description: "A list of BTC transactions associated with this wallet.",
     },
-    pendingTransactions: {
+    pendingIncomingTransactions: {
       type: GT.NonNullList(Transaction),
       resolve: async (source) => {
-        const transactions = await Wallets.getPendingOnChainTransactionsForWallets({
-          wallets: [source],
-        })
+        const transactions =
+          await Wallets.getPendingIncomingOnChainTransactionsForWallets({
+            wallets: [source],
+          })
         if (transactions instanceof Error) {
           throw mapError(transactions)
         }
         return transactions
       },
     },
-    pendingTransactionsByAddress: {
+    pendingIncomingTransactionsByAddress: {
       type: GT.NonNullList(Transaction),
       args: {
         address: {
@@ -116,10 +119,11 @@ const BtcWallet = GT.Object<Wallet>({
         const { address } = args
         if (address instanceof Error) throw address
 
-        const transactions = await Wallets.getPendingTransactionsForWalletsByAddresses({
-          wallets: [source],
-          addresses: [address],
-        })
+        const transactions =
+          await Wallets.getPendingIncomingOnChainTransactionsForWalletsByAddresses({
+            wallets: [source],
+            addresses: [address],
+          })
         if (transactions instanceof Error) {
           throw mapError(transactions)
         }

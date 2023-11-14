@@ -62,7 +62,7 @@ const IAccount = GT.Interface({
         },
       },
     },
-    pendingTransactions: {
+    pendingIncomingTransactions: {
       type: GT.NonNullList(Transaction),
       args: {
         walletIds: {

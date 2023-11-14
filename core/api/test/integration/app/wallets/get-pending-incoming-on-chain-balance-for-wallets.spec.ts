@@ -14,7 +14,7 @@ describe("getPendingOnChainBalanceForWallets", () => {
       const wallet = await WalletsRepository().findById(newWalletDescriptor.id)
       if (wallet instanceof Error) throw wallet
 
-      const res = await Wallets.getPendingOnChainBalanceForWallets([wallet])
+      const res = await Wallets.getPendingIncomingOnChainBalanceForWallets([wallet])
       expect(res).toStrictEqual({ [newWalletDescriptor.id]: ZERO_SATS })
     })
 
@@ -27,12 +27,15 @@ describe("getPendingOnChainBalanceForWallets", () => {
       const usdWallet = await WalletsRepository().findById(usdWalletDescriptor.id)
       if (usdWallet instanceof Error) throw usdWallet
 
-      const res = await Wallets.getPendingOnChainBalanceForWallets([btcWallet, usdWallet])
+      const res = await Wallets.getPendingIncomingOnChainBalanceForWallets([
+        btcWallet,
+        usdWallet,
+      ])
       expect(res).toBeInstanceOf(MultipleCurrenciesForSingleCurrencyOperationError)
     })
 
     it("returns error for no wallets passed", async () => {
-      const res = await Wallets.getPendingOnChainBalanceForWallets([])
+      const res = await Wallets.getPendingIncomingOnChainBalanceForWallets([])
       expect(res).toBeInstanceOf(MultipleCurrenciesForSingleCurrencyOperationError)
     })
   })

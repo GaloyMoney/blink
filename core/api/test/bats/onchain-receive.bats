@@ -127,12 +127,12 @@ create_new_lnd_onchain_address() {
   --arg address "$on_chain_address_created_1" \
   '{"address": $address}'
   )
-  exec_graphql "$token_name" 'pending-transactions-by-address' "$address_1_pending_txns_variables"
+  exec_graphql "$token_name" 'pending-incoming-transactions-by-address' "$address_1_pending_txns_variables"
   pending_txns_for_address_1=$(
     graphql_output '
       .data.me.defaultAccount.wallets[]
       | select(.__typename == "BTCWallet")
-      .pendingTransactionsByAddress'
+      .pendingIncomingTransactionsByAddress'
   )
   pending_txns_for_address_1_length="$(echo $pending_txns_for_address_1 | jq -r 'length')"
   [[ "$pending_txns_for_address_1_length" == "1" ]] || exit 1
@@ -146,12 +146,12 @@ create_new_lnd_onchain_address() {
   --arg address "$on_chain_address_created_2" \
   '{"address": $address}'
   )
-  exec_graphql "$token_name" 'pending-transactions-by-address' "$address_2_pending_txns_variables"
+  exec_graphql "$token_name" 'pending-incoming-transactions-by-address' "$address_2_pending_txns_variables"
   pending_txns_for_address_2=$(
     graphql_output '
       .data.me.defaultAccount.wallets[]
       | select(.__typename == "BTCWallet")
-      .pendingTransactionsByAddress'
+      .pendingIncomingTransactionsByAddress'
   )
   pending_txns_for_address_2_length="$(echo $pending_txns_for_address_2 | jq -r 'length')"
   [[ "$pending_txns_for_address_2_length" == "1" ]] || exit 1
@@ -160,10 +160,10 @@ create_new_lnd_onchain_address() {
 
   # Check pending transactions for account
 
-  exec_graphql "$token_name" 'pending-transactions'
+  exec_graphql "$token_name" 'pending-incoming-transactions'
   pending_txns_for_account=$(
     graphql_output '
-      .data.me.defaultAccount.pendingTransactions'
+      .data.me.defaultAccount.pendingIncomingTransactions'
   )
   pending_txns_for_account_length="$(echo $pending_txns_for_account | jq -r 'length')"
   [[ "$pending_txns_for_account_length" == "2" ]] || exit 1
@@ -213,10 +213,10 @@ create_new_lnd_onchain_address() {
 
   # Ensure no pending transactions for account
 
-  exec_graphql "$token_name" 'pending-transactions'
+  exec_graphql "$token_name" 'pending-incoming-transactions'
   pending_txns_for_account=$(
     graphql_output '
-      .data.me.defaultAccount.pendingTransactions'
+      .data.me.defaultAccount.pendingIncomingTransactions'
   )
   pending_txns_for_account_length="$(echo $pending_txns_for_account | jq -r 'length')"
   [[ "$pending_txns_for_account_length" == "0" ]] || exit 1
@@ -282,12 +282,12 @@ create_new_lnd_onchain_address() {
   --arg address "$on_chain_address_created" \
   '{"address": $address}'
   )
-  exec_graphql "$token_name" 'pending-transactions-by-address' "$address_pending_txns_variables"
+  exec_graphql "$token_name" 'pending-incoming-transactions-by-address' "$address_pending_txns_variables"
   pending_txns_for_address=$(
     graphql_output '
       .data.me.defaultAccount.wallets[]
       | select(.__typename == "UsdWallet")
-      .pendingTransactionsByAddress'
+      .pendingIncomingTransactionsByAddress'
   )
   pending_txns_for_address_length="$(echo $pending_txns_for_address | jq -r 'length')"
   [[ "$pending_txns_for_address_length" == "1" ]] || exit 1
@@ -296,10 +296,10 @@ create_new_lnd_onchain_address() {
 
   # Check pending transactions for account
 
-  exec_graphql "$token_name" 'pending-transactions'
+  exec_graphql "$token_name" 'pending-incoming-transactions'
   pending_txns_for_account=$(
     graphql_output '
-      .data.me.defaultAccount.pendingTransactions'
+      .data.me.defaultAccount.pendingIncomingTransactions'
   )
   pending_txns_for_account_length="$(echo $pending_txns_for_account | jq -r 'length')"
   [[ "$pending_txns_for_account_length" == "1" ]] || exit 1
@@ -309,10 +309,10 @@ create_new_lnd_onchain_address() {
 
   # Ensure no pending transactions for account
 
-  exec_graphql "$token_name" 'pending-transactions'
+  exec_graphql "$token_name" 'pending-incoming-transactions'
   pending_txns_for_account=$(
     graphql_output '
-      .data.me.defaultAccount.pendingTransactions'
+      .data.me.defaultAccount.pendingIncomingTransactions'
   )
   pending_txns_for_account_length="$(echo $pending_txns_for_account | jq -r 'length')"
   [[ "$pending_txns_for_account_length" == "0" ]] || exit 1
