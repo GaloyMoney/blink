@@ -25,7 +25,7 @@ export * from "./disable-notification-category"
 export * from "./enable-notification-category"
 export * from "./enable-notification-channel"
 export * from "./disable-notification-channel"
-export * from "./get-pending-onchain-transactions-for-account"
+export * from "./get-pending-incoming-on-chain-transactions-for-account"
 export * from "./get-invoices-for-account"
 
 const accounts = AccountsRepository()

@@ -209,7 +209,7 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
         )
       },
     },
-    pendingTransactions: {
+    pendingIncomingTransactions: {
       type: GT.NonNullList(Transaction),
       args: {
         walletIds: {
@@ -220,7 +220,7 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
         const { walletIds } = args
 
         const transactions =
-          await Accounts.getPendingOnChainTransactionsForAccountByWalletIds({
+          await Accounts.getPendingIncomingOnChainTransactionsForAccountByWalletIds({
             account: source,
             walletIds,
           })

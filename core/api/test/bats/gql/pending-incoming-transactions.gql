@@ -1,8 +1,8 @@
-query pendingTransactions {
+query pendingIncomingTransactions {
   me {
     defaultAccount {
       displayCurrency
-      pendingTransactions {
+      pendingIncomingTransactions {
         __typename
         id
         status

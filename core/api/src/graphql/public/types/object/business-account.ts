@@ -161,7 +161,7 @@ const BusinessAccount = GT.Object({
         )
       },
     },
-    pendingTransactions: {
+    pendingIncomingTransactions: {
       type: GT.NonNullList(Transaction),
       args: {
         walletIds: {
@@ -171,7 +171,7 @@ const BusinessAccount = GT.Object({
       resolve: async (source, args) => {
         const { walletIds } = args
         const transactions =
-          await Accounts.getPendingOnChainTransactionsForAccountByWalletIds({
+          await Accounts.getPendingIncomingOnChainTransactionsForAccountByWalletIds({
             account: source,
             walletIds,
           })
