@@ -342,7 +342,7 @@ setup_file() {
     --arg amount 12345 \
     '{walletId: $wallet_id, address: $address, amount: $amount}'
   )
-  exec_graphql 'alice''on-chain-tx-fee' "$variables"
+  exec_graphql 'alice' 'on-chain-tx-fee' "$variables"
   amount="$(graphql_output '.data.onChainTxFee.amount')"
   [[ "${amount}" -gt 0 ]] || exit 1
 
@@ -354,7 +354,7 @@ setup_file() {
     --arg amount 200 \
     '{walletId: $wallet_id, address: $address, amount: $amount}'
   )
-  exec_graphql 'alice''on-chain-usd-tx-fee' "$variables"
+  exec_graphql 'alice' 'on-chain-usd-tx-fee' "$variables"
   amount="$(graphql_output '.data.onChainUsdTxFee.amount')"
   [[ "${amount}" -gt 0 ]] || exit 1
 
@@ -366,7 +366,129 @@ setup_file() {
     --arg amount 12345 \
     '{walletId: $wallet_id, address: $address, amount: $amount}'
   )
-  exec_graphql 'alice''on-chain-usd-tx-fee-as-btc-denominated' "$variables"
+  exec_graphql 'alice' 'on-chain-usd-tx-fee-as-btc-denominated' "$variables"
   amount="$(graphql_output '.data.onChainUsdTxFeeAsBtcDenominated.amount')"
   [[ "${amount}" -gt 0 ]] || exit 1
+}
+
+@test "onchain-send: get fee for internal address" {
+  btc_wallet_name="alice.btc_wallet_id"
+  usd_wallet_name="alice.usd_wallet_id"
+
+  btc_recipient_wallet_name="bob.btc_wallet_id"
+
+  # EXECUTE GQL FEE ESTIMATES
+  # ----------
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_recipient_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql 'bob' 'on-chain-address-create' "$variables"
+  address="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${address}" != "null" ]] || exit 1
+
+  # mutation: onChainTxFee
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg address "$address" \
+    --arg amount 12345 \
+    '{walletId: $wallet_id, address: $address, amount: $amount}'
+  )
+  exec_graphql 'alice' 'on-chain-tx-fee' "$variables"
+  amount="$(graphql_output '.data.onChainTxFee.amount')"
+  [[ "${amount}" == 0 ]] || exit 1
+
+  # mutation: onChainUsdTxFee
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    --arg address "$address" \
+    --arg amount 200 \
+    '{walletId: $wallet_id, address: $address, amount: $amount}'
+  )
+  exec_graphql 'alice' 'on-chain-usd-tx-fee' "$variables"
+  amount="$(graphql_output '.data.onChainUsdTxFee.amount')"
+  [[ "${amount}" == 0 ]] || exit 1
+
+  # mutation: onChainUsdTxFeeAsBtcDenominated
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    --arg address "$address" \
+    --arg amount 12345 \
+    '{walletId: $wallet_id, address: $address, amount: $amount}'
+  )
+  exec_graphql 'alice' 'on-chain-usd-tx-fee-as-btc-denominated' "$variables"
+  amount="$(graphql_output '.data.onChainUsdTxFeeAsBtcDenominated.amount')"
+  [[ "${amount}" == 0 ]] || exit 1
+}
+
+
+@test "onchain-send: cancel external payout" {
+  payout_id=$(bria_cli submit-payout \
+    -w dev-wallet \
+    -q dev-queue \
+    -d bc1qxnjv6rqqzxc6kglyasljmwupwrlv5n5uqkyuk0 \
+    -a 1000000000 \
+    | jq -r '.id'
+  )
+  [[ "${payout_id}" != "null" ]] || exit 1
+  retry 10 1 grep "sequence.*payout_submitted.*${payout_id}" .e2e-trigger.log
+
+  last_sequence=$(
+    grep "sequence" .e2e-trigger.log \
+    | tail -n 1 \
+    | jq -r '.sequence'
+  )
+  [[ -n "${last_sequence}" ]] || exit 1
+
+  bria_cli cancel-payout -i ${payout_id}
+  retry 10 1 grep "sequence\":${sequence}.*payout_cancelled.*${payout_id}" .e2e-trigger.log
+}
+
+@test "onchain-send: cancel internal payout" {
+  btc_wallet_name="alice.btc_wallet_id"
+  usd_wallet_name="alice.usd_wallet_id"
+
+  # Get last sequence
+  last_sequence=$(
+    grep "sequence" .e2e-trigger.log \
+    | tail -n 1 \
+    | jq -r '.sequence'
+  )
+  if [[ -z "${last_sequence}" ]]; then
+    sequence=1
+  else
+    sequence="$(( $last_sequence + 1 ))"
+  fi
+
+  # Initiate internal payout
+  on_chain_payment_send_address=$(bitcoin_cli getnewaddress)
+  [[ "${on_chain_payment_send_address}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg address "$on_chain_payment_send_address" \
+    --arg amount 12345 \
+    '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
+  )
+  exec_graphql 'alice' 'on-chain-payment-send' "$variables"
+  send_status="$(graphql_output '.data.onChainPaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  # Parse payout_id value
+  retry 10 1 grep "sequence\":${sequence}.*payout_submitted" .e2e-trigger.log
+  payout_id=$(
+    grep "sequence.*payout_submitted" .e2e-trigger.log \
+    | tail -n 1 \
+    | jq -r '.id'
+  )
+
+  # Check for cancelled event
+  bria_cli cancel-payout -i ${payout_id}
+  retry 10 1 grep "sequence.*payout_cancelled.*${payout_id}" .e2e-trigger.log
 }
