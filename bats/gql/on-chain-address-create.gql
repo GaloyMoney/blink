@@ -1,0 +1,8 @@
+mutation onChainAddressCreate($input: OnChainAddressCreateInput!) {
+  onChainAddressCreate(input: $input) {
+    address
+    errors {
+      message
+    }
+  }
+}

@@ -29,3 +29,15 @@ login_user() {
   [[ "${usd_wallet_id}" != "null" ]]
   cache_value "$token_name.usd_wallet_id" "$usd_wallet_id"
 }
+
+create_user() {
+  local token_name=$1
+  local phone=$(random_phone)
+
+  login_user "$token_name" "$phone"
+  cache_value "$token_name.phone" "$phone"
+}
+
+random_phone() {
+  printf "+1%010d\n" $(( ($RANDOM * 1000000) + ($RANDOM % 1000000) ))
+}

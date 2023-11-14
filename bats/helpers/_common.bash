@@ -118,3 +118,7 @@ cache_value() {
 read_value() {
   cat ${CACHE_DIR}/$1
 }
+
+bitcoin_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-bitcoind-1" bitcoin-cli $@
+}
