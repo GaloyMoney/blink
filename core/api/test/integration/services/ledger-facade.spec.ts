@@ -1,11 +1,23 @@
 import crypto from "crypto"
 
-import { BtcWalletDescriptor, UsdWalletDescriptor, WalletCurrency } from "@/domain/shared"
-import { LedgerTransactionType } from "@/domain/ledger"
+import { ONE_DAY, getAccountLimits } from "@/config"
+
+import {
+  AmountCalculator,
+  BtcWalletDescriptor,
+  UsdWalletDescriptor,
+  WalletCurrency,
+  paymentAmountFromNumber,
+} from "@/domain/shared"
+import { AccountLevel, AccountTxVolumeRemaining } from "@/domain/accounts"
 import { UsdDisplayCurrency } from "@/domain/fiat"
+import { LedgerTransactionType } from "@/domain/ledger"
+import { WalletPriceRatio } from "@/domain/payments"
 import { CouldNotFindError } from "@/domain/errors"
 
 import { LedgerService } from "@/services/ledger"
+import * as LedgerFacade from "@/services/ledger/facade"
+import { Transaction, TransactionMetadata } from "@/services/ledger/schema"
 
 import { createMandatoryUsers } from "test/helpers"
 import {
@@ -24,24 +36,70 @@ import {
   recordWalletIdTradeIntraAccountTxn,
 } from "test/helpers/ledger"
 
+let accountWalletDescriptors: AccountWalletDescriptors
+let accountLimitsLevelOne: IAccountLimits
+let accountLimitAmountsLevelOne: {
+  intraLedgerLimit: UsdPaymentAmount
+  withdrawalLimit: UsdPaymentAmount
+  tradeIntraAccountLimit: UsdPaymentAmount
+}
+
+const calc = AmountCalculator()
+
 beforeAll(async () => {
   await createMandatoryUsers()
+
+  accountWalletDescriptors = {
+    BTC: BtcWalletDescriptor(crypto.randomUUID() as WalletId),
+    USD: UsdWalletDescriptor(crypto.randomUUID() as WalletId),
+  }
+
+  accountLimitsLevelOne = getAccountLimits({ level: AccountLevel.One })
+
+  const intraLedgerLimitAmount = paymentAmountFromNumber({
+    amount: accountLimitsLevelOne.intraLedgerLimit,
+    currency: WalletCurrency.Usd,
+  })
+  if (intraLedgerLimitAmount instanceof Error) throw intraLedgerLimitAmount
+
+  const withdrawalLimitAmount = paymentAmountFromNumber({
+    amount: accountLimitsLevelOne.withdrawalLimit,
+    currency: WalletCurrency.Usd,
+  })
+  if (withdrawalLimitAmount instanceof Error) throw withdrawalLimitAmount
+
+  const tradeIntraAccountLimitAmount = paymentAmountFromNumber({
+    amount: accountLimitsLevelOne.tradeIntraAccountLimit,
+    currency: WalletCurrency.Usd,
+  })
+  if (tradeIntraAccountLimitAmount instanceof Error) throw tradeIntraAccountLimitAmount
+
+  accountLimitAmountsLevelOne = {
+    intraLedgerLimit: intraLedgerLimitAmount,
+    withdrawalLimit: withdrawalLimitAmount,
+    tradeIntraAccountLimit: tradeIntraAccountLimitAmount,
+  }
+})
+
+afterEach(async () => {
+  await Transaction.deleteMany({})
+  await TransactionMetadata.deleteMany({})
 })
 
 describe("Facade", () => {
   const receiveAmount = {
     usd: { amount: 100n, currency: WalletCurrency.Usd },
-    btc: { amount: 200n, currency: WalletCurrency.Btc },
+    btc: { amount: 300n, currency: WalletCurrency.Btc },
   }
 
   const sendAmount = {
     usd: { amount: 20n, currency: WalletCurrency.Usd },
-    btc: { amount: 40n, currency: WalletCurrency.Btc },
+    btc: { amount: 60n, currency: WalletCurrency.Btc },
   }
 
   const bankFee = {
     usd: { amount: 10n, currency: WalletCurrency.Usd },
-    btc: { amount: 20n, currency: WalletCurrency.Btc },
+    btc: { amount: 30n, currency: WalletCurrency.Btc },
   }
 
   const displayReceiveUsdAmounts = {
@@ -455,6 +513,68 @@ describe("Facade", () => {
         )
         if (liabilitiesTxn === undefined) throw new Error("Could not find transaction")
         expect(liabilitiesTxn.type).toBe(LedgerTransactionType.OnchainPayment)
+      })
+    })
+  })
+
+  describe("volume", () => {
+    const remainingWithdrawalLimit = async ({
+      priceRatio,
+    }: {
+      priceRatio: WalletPriceRatio
+    }) => {
+      const accountVolumeRemaining = AccountTxVolumeRemaining(accountLimitsLevelOne)
+
+      const walletVolumes = await LedgerFacade.externalPaymentVolumeAmountForAccountSince(
+        {
+          accountWalletDescriptors,
+          period: ONE_DAY,
+        },
+      )
+      if (walletVolumes instanceof Error) throw walletVolumes
+
+      const remainingAmount = await accountVolumeRemaining.withdrawal({
+        priceRatio,
+        walletVolumes,
+      })
+      if (remainingAmount instanceof Error) throw remainingAmount
+
+      return remainingAmount
+    }
+
+    describe("withdrawal", () => {
+      const sendPriceRatio = WalletPriceRatio(sendAmount)
+      if (sendPriceRatio instanceof Error) throw sendPriceRatio
+
+      it("returns 0 volume for no transactions", async () => {
+        const remaining = await remainingWithdrawalLimit({ priceRatio: sendPriceRatio })
+        expect(remaining).toStrictEqual(accountLimitAmountsLevelOne.withdrawalLimit)
+      })
+
+      it("returns correct volume for a btc and usd transactions", async () => {
+        const resBtc = await recordSendLnPayment({
+          walletDescriptor: accountWalletDescriptors.BTC,
+          paymentAmount: sendAmount,
+          bankFee,
+          displayAmounts: displaySendEurAmounts,
+        })
+        if (resBtc instanceof Error) throw resBtc
+
+        const resUsd = await recordSendLnPayment({
+          walletDescriptor: accountWalletDescriptors.USD,
+          paymentAmount: sendAmount,
+          bankFee,
+          displayAmounts: displaySendEurAmounts,
+        })
+        if (resUsd instanceof Error) throw resUsd
+
+        const expectedRemaining = calc.sub(
+          accountLimitAmountsLevelOne.withdrawalLimit,
+          calc.mul(sendAmount.usd, 2n),
+        )
+
+        const remaining = await remainingWithdrawalLimit({ priceRatio: sendPriceRatio })
+        expect(remaining).toStrictEqual(expectedRemaining)
       })
     })
   })
