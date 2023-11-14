@@ -32,7 +32,21 @@ const WalletVolumesAggregator = ({
     return volumeInUsdAmount
   }
 
-  return { outgoingUsdAmount }
+  const incomingUsdAmount = (): UsdPaymentAmount => {
+    let volumeInUsdAmount = ZERO_CENTS
+    for (const walletVolume of walletVolumes) {
+      const incomingUsdAmount =
+        walletVolume.incomingBaseAmount.currency === WalletCurrency.Btc
+          ? priceRatio.convertFromBtc(walletVolume.incomingBaseAmount as BtcPaymentAmount)
+          : (walletVolume.incomingBaseAmount as UsdPaymentAmount)
+
+      volumeInUsdAmount = calc.add(volumeInUsdAmount, incomingUsdAmount)
+    }
+
+    return volumeInUsdAmount
+  }
+
+  return { outgoingUsdAmount, incomingUsdAmount }
 }
 
 export const AccountTxVolumeRemaining = (
@@ -73,10 +87,13 @@ export const AccountTxVolumeRemaining = (
     priceRatio: WalletPriceRatio
     walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
   }): Promise<UsdPaymentAmount | ValidationError> => {
-    const outgoingUsdVolumeAmount = WalletVolumesAggregator({
+    const aggregator = WalletVolumesAggregator({
       walletVolumes,
       priceRatio,
-    }).outgoingUsdAmount()
+    })
+
+    const outgoingUsdVolumeAmount = aggregator.outgoingUsdAmount()
+    const incomingUsdVolumeAmount = aggregator.incomingUsdAmount()
 
     const { withdrawalLimit: limit } = accountLimits
     const limitAmount = paymentAmountFromNumber({
@@ -87,11 +104,13 @@ export const AccountTxVolumeRemaining = (
 
     addAttributesToCurrentSpan({
       "txVolume.outgoingInBase": `${outgoingUsdVolumeAmount.amount}`,
+      "txVolume.incomingInBase": `${incomingUsdVolumeAmount.amount}`,
       "txVolume.threshold": `${limitAmount.amount}`,
       "txVolume.limitCheck": AccountLimitsType.Withdrawal,
     })
 
-    return calc.sub(limitAmount, outgoingUsdVolumeAmount)
+    const netVolumeAmount = calc.sub(outgoingUsdVolumeAmount, incomingUsdVolumeAmount)
+    return calc.sub(limitAmount, netVolumeAmount)
   }
 
   const tradeIntraAccount = async ({
