@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load "../../helpers/setup-and-teardown.bash"
+load "../../helpers/auth.bash"
 
 random_uuid() {
   if [[ -e /proc/sys/kernel/random/uuid ]]; then
