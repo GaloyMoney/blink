@@ -1,6 +1,6 @@
 import crypto from "crypto"
 
-import { ONE_DAY, getAccountLimits } from "@/config"
+import { MS_PER_DAY, ONE_DAY, getAccountLimits } from "@/config"
 
 import {
   AmountCalculator,
@@ -18,6 +18,7 @@ import { CouldNotFindError } from "@/domain/errors"
 import { LedgerService } from "@/services/ledger"
 import * as LedgerFacade from "@/services/ledger/facade"
 import { Transaction, TransactionMetadata } from "@/services/ledger/schema"
+import { toObjectId } from "@/services/mongoose/utils"
 
 import { createMandatoryUsers } from "test/helpers"
 import {
@@ -591,6 +592,32 @@ describe("Facade", () => {
           paymentHash: resBtc.paymentHash,
         })
         if (voided instanceof Error) return voided
+
+        const remaining = await remainingWithdrawalLimit({ priceRatio: sendPriceRatio })
+        expect(remaining).toStrictEqual(accountLimitAmountsLevelOne.withdrawalLimit)
+      })
+
+      it("returns 0 volume for a delayed voided btc transaction", async () => {
+        const resUsd = await recordSendLnPayment({
+          walletDescriptor: accountWalletDescriptors.USD,
+          paymentAmount: sendAmount,
+          bankFee,
+          displayAmounts: displaySendEurAmounts,
+        })
+        if (resUsd instanceof Error) throw resUsd
+        const { journalId, paymentHash } = resUsd
+
+        const voided = await LedgerFacade.recordLnSendRevert({
+          journalId,
+          paymentHash,
+        })
+        if (voided instanceof Error) return voided
+
+        const newDateTime = new Date(Date.now() - MS_PER_DAY * 2)
+        await Transaction.updateMany(
+          { _journal: toObjectId(journalId) },
+          { timestamp: newDateTime, datetime: newDateTime },
+        )
 
         const remaining = await remainingWithdrawalLimit({ priceRatio: sendPriceRatio })
         expect(remaining).toStrictEqual(accountLimitAmountsLevelOne.withdrawalLimit)
