@@ -595,6 +595,32 @@ describe("Facade", () => {
         const remaining = await remainingWithdrawalLimit({ priceRatio: sendPriceRatio })
         expect(remaining).toStrictEqual(accountLimitAmountsLevelOne.withdrawalLimit)
       })
+
+      it("returns correct volume for a fee reimbursed btc transaction", async () => {
+        const resBtc = await recordSendLnPayment({
+          walletDescriptor: accountWalletDescriptors.BTC,
+          paymentAmount: sendAmount,
+          bankFee,
+          displayAmounts: displaySendEurAmounts,
+        })
+        if (resBtc instanceof Error) throw resBtc
+
+        const reimbursed = await recordLnFeeReimbursement({
+          walletDescriptor: accountWalletDescriptors.BTC,
+          paymentAmount: bankFee,
+          bankFee,
+          displayAmounts: displayReceiveEurAmounts,
+        })
+        if (reimbursed instanceof Error) throw reimbursed
+
+        const expectedRemaining = calc.sub(
+          accountLimitAmountsLevelOne.withdrawalLimit,
+          calc.sub(sendAmount.usd, bankFee.usd),
+        )
+
+        const remaining = await remainingWithdrawalLimit({ priceRatio: sendPriceRatio })
+        expect(remaining).toStrictEqual(expectedRemaining)
+      })
     })
   })
 })
