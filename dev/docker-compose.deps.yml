@@ -274,3 +274,15 @@ services:
     image: postgres:14.1
     environment:
       POSTGRES_PASSWORD: postgres
+
+  stablesats:
+    image: us.gcr.io/galoy-org/stablesats-rs:latest
+    ports:
+      - "3325:3325"
+    command: ["stablesats", "run"]
+    working_dir: /repo/config
+    depends_on:
+      - otel-agent
+    restart: on-failure:10
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/:/repo

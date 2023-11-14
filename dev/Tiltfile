@@ -281,7 +281,8 @@ docker_groups = {
         "apollo-router",
         "mongodb",
         "redis",
-        "svix"
+        "svix",
+        "stablesats"
     ],
     "bitcoin": [
         "lnd1",

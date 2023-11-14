@@ -6,7 +6,7 @@ load "../../helpers/funding/onchain.bash"
 setup_file() {
   create_user 'alice'
   fund_user_onchain 'alice' 'btc_wallet'
-  # fund_user_onchain 'alice' 'usd_wallet'
+  fund_user_onchain 'alice' 'usd_wallet'
 
   # create_user 'bob'
   # fund_user_onchain 'bob' 'btc_wallet'
@@ -115,5 +115,4 @@ setup_file() {
   exec_graphql 'alice' 'transactions' '{"first": 1}'
   settled_status="$(get_from_transaction_by_address $on_chain_payment_send_all_address '.status')"
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
-  exit 1
 }
