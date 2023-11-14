@@ -6549,9 +6549,9 @@ grunt@~1.5.3:
     nopt "~3.0.6"
     rimraf "~3.0.2"
 
-"gt3-server-node-express-sdk@github:GaloyMoney/gt3-server-node-express-bypass#master":
+"gt3-server-node-express-sdk@git+https://github.com/GaloyMoney/gt3-server-node-express-bypass.git#master":
   version "3.1.0"
-  resolved "https://codeload.github.com/GaloyMoney/gt3-server-node-express-bypass/tar.gz/6559a1a39ef408de3aefa6321934c831edac001e"
+  resolved "git+https://github.com/GaloyMoney/gt3-server-node-express-bypass.git#6559a1a39ef408de3aefa6321934c831edac001e"
   dependencies:
     async-redis "^2.0.0"
     axios "^1.3.4"
