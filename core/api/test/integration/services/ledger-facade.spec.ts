@@ -33,10 +33,12 @@ describe("Facade", () => {
     usd: { amount: 100n, currency: WalletCurrency.Usd },
     btc: { amount: 200n, currency: WalletCurrency.Btc },
   }
+
   const sendAmount = {
     usd: { amount: 20n, currency: WalletCurrency.Usd },
     btc: { amount: 40n, currency: WalletCurrency.Btc },
   }
+
   const bankFee = {
     usd: { amount: 10n, currency: WalletCurrency.Usd },
     btc: { amount: 20n, currency: WalletCurrency.Btc },
@@ -60,380 +62,400 @@ describe("Facade", () => {
     displayCurrency: "EUR" as DisplayCurrency,
   }
 
-  describe("recordReceive", () => {
-    it("recordReceiveLnPayment", async () => {
-      const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+  describe("record", () => {
+    describe("recordReceive", () => {
+      it("recordReceiveLnPayment", async () => {
+        const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
 
-      const res = await recordReceiveLnPayment({
-        walletDescriptor: btcWalletDescriptor,
-        paymentAmount: receiveAmount,
-        bankFee,
-        displayAmounts: displayReceiveEurAmounts,
+        const res = await recordReceiveLnPayment({
+          walletDescriptor: btcWalletDescriptor,
+          paymentAmount: receiveAmount,
+          bankFee,
+          displayAmounts: displayReceiveEurAmounts,
+        })
+        if (res instanceof Error) throw res
+
+        const txns = await LedgerService().getTransactionsByWalletId(
+          btcWalletDescriptor.id,
+        )
+        if (txns instanceof Error) throw txns
+        if (!(txns && txns.length)) throw new Error()
+        const txn = txns[0]
+
+        expect(txn.type).toBe(LedgerTransactionType.Invoice)
       })
-      if (res instanceof Error) throw res
 
-      const txns = await LedgerService().getTransactionsByWalletId(btcWalletDescriptor.id)
-      if (txns instanceof Error) throw txns
-      if (!(txns && txns.length)) throw new Error()
-      const txn = txns[0]
+      it("recordReceiveOnChainPayment", async () => {
+        const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
 
-      expect(txn.type).toBe(LedgerTransactionType.Invoice)
+        const res = await recordReceiveOnChainPayment({
+          walletDescriptor: btcWalletDescriptor,
+          paymentAmount: receiveAmount,
+          bankFee,
+          displayAmounts: displayReceiveEurAmounts,
+        })
+        if (res instanceof Error) throw res
+
+        const txns = await LedgerService().getTransactionsByWalletId(
+          btcWalletDescriptor.id,
+        )
+        if (txns instanceof Error) throw txns
+        if (!(txns && txns.length)) throw new Error()
+        const txn = txns[0]
+
+        expect(txn.type).toBe(LedgerTransactionType.OnchainReceipt)
+      })
+
+      it("recordLnFailedPayment", async () => {
+        const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+
+        const res = await recordLnFailedPayment({
+          walletDescriptor: btcWalletDescriptor,
+          paymentAmount: receiveAmount,
+          bankFee,
+          displayAmounts: displayReceiveEurAmounts,
+        })
+        if (res instanceof Error) throw res
+
+        const txns = await LedgerService().getTransactionsByWalletId(
+          btcWalletDescriptor.id,
+        )
+        if (txns instanceof Error) throw txns
+        if (!(txns && txns.length)) throw new Error()
+        const txn = txns[0]
+
+        expect(txn.type).toBe(LedgerTransactionType.Payment)
+      })
+
+      it("recordLnFeeReimbursement", async () => {
+        const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+
+        const res = await recordLnFeeReimbursement({
+          walletDescriptor: btcWalletDescriptor,
+          paymentAmount: receiveAmount,
+          bankFee,
+          displayAmounts: displayReceiveEurAmounts,
+        })
+        if (res instanceof Error) throw res
+
+        const txns = await LedgerService().getTransactionsByWalletId(
+          btcWalletDescriptor.id,
+        )
+        if (txns instanceof Error) throw txns
+        if (!(txns && txns.length)) throw new Error()
+        const txn = txns[0]
+
+        expect(txn.type).toBe(LedgerTransactionType.LnFeeReimbursement)
+      })
     })
 
-    it("recordReceiveOnChainPayment", async () => {
-      const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+    describe("recordSend", () => {
+      it("recordSendLnPayment", async () => {
+        const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
 
-      const res = await recordReceiveOnChainPayment({
-        walletDescriptor: btcWalletDescriptor,
-        paymentAmount: receiveAmount,
-        bankFee,
-        displayAmounts: displayReceiveEurAmounts,
+        const res = await recordSendLnPayment({
+          walletDescriptor: btcWalletDescriptor,
+          paymentAmount: sendAmount,
+          bankFee,
+          displayAmounts: displaySendEurAmounts,
+        })
+        if (res instanceof Error) throw res
+
+        const txns = await LedgerService().getTransactionsByWalletId(
+          btcWalletDescriptor.id,
+        )
+        if (txns instanceof Error) throw txns
+        if (!(txns && txns.length)) throw new Error()
+        const txn = txns[0]
+
+        expect(txn.type).toBe(LedgerTransactionType.Payment)
       })
-      if (res instanceof Error) throw res
 
-      const txns = await LedgerService().getTransactionsByWalletId(btcWalletDescriptor.id)
-      if (txns instanceof Error) throw txns
-      if (!(txns && txns.length)) throw new Error()
-      const txn = txns[0]
+      it("recordSendOnChainPayment", async () => {
+        const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
 
-      expect(txn.type).toBe(LedgerTransactionType.OnchainReceipt)
+        const res = await recordSendOnChainPayment({
+          walletDescriptor: btcWalletDescriptor,
+          paymentAmount: sendAmount,
+          bankFee,
+          displayAmounts: displaySendEurAmounts,
+        })
+        if (res instanceof Error) throw res
+
+        const txns = await LedgerService().getTransactionsByWalletId(
+          btcWalletDescriptor.id,
+        )
+        if (txns instanceof Error) throw txns
+        if (!(txns && txns.length)) throw new Error()
+        const txn = txns[0]
+
+        expect(txn.type).toBe(LedgerTransactionType.OnchainPayment)
+      })
     })
 
-    it("recordLnFailedPayment", async () => {
-      const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+    describe("recordIntraledger", () => {
+      it("recordLnIntraLedgerPayment", async () => {
+        const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+        const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
 
-      const res = await recordLnFailedPayment({
-        walletDescriptor: btcWalletDescriptor,
-        paymentAmount: receiveAmount,
-        bankFee,
-        displayAmounts: displayReceiveEurAmounts,
+        const res = await recordLnIntraLedgerPayment({
+          senderWalletDescriptor: btcWalletDescriptor,
+          recipientWalletDescriptor: usdWalletDescriptor,
+          paymentAmount: sendAmount,
+          senderDisplayAmounts: {
+            senderAmountDisplayCurrency: displaySendEurAmounts.amountDisplayCurrency,
+            senderFeeDisplayCurrency: displaySendEurAmounts.feeDisplayCurrency,
+            senderDisplayCurrency: displaySendEurAmounts.displayCurrency,
+          },
+          recipientDisplayAmounts: {
+            recipientAmountDisplayCurrency:
+              displayReceiveUsdAmounts.amountDisplayCurrency,
+            recipientFeeDisplayCurrency: displayReceiveUsdAmounts.feeDisplayCurrency,
+            recipientDisplayCurrency: displayReceiveUsdAmounts.displayCurrency,
+          },
+        })
+        if (res instanceof Error) throw res
+
+        const senderTxns = await LedgerService().getTransactionsByWalletId(
+          btcWalletDescriptor.id,
+        )
+        if (senderTxns instanceof Error) throw senderTxns
+        if (!(senderTxns && senderTxns.length)) throw new Error()
+        const senderTxn = senderTxns[0]
+        expect(senderTxn.type).toBe(LedgerTransactionType.LnIntraLedger)
+
+        const recipientTxns = await LedgerService().getTransactionsByWalletId(
+          usdWalletDescriptor.id,
+        )
+        if (recipientTxns instanceof Error) throw recipientTxns
+        if (!(recipientTxns && recipientTxns.length)) throw new Error()
+        const recipientTxn = recipientTxns[0]
+        expect(recipientTxn.type).toBe(LedgerTransactionType.LnIntraLedger)
       })
-      if (res instanceof Error) throw res
 
-      const txns = await LedgerService().getTransactionsByWalletId(btcWalletDescriptor.id)
-      if (txns instanceof Error) throw txns
-      if (!(txns && txns.length)) throw new Error()
-      const txn = txns[0]
+      it("recordWalletIdIntraLedgerPayment", async () => {
+        const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+        const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
 
-      expect(txn.type).toBe(LedgerTransactionType.Payment)
+        const res = await recordWalletIdIntraLedgerPayment({
+          senderWalletDescriptor: btcWalletDescriptor,
+          recipientWalletDescriptor: usdWalletDescriptor,
+          paymentAmount: sendAmount,
+          senderDisplayAmounts: {
+            senderAmountDisplayCurrency: displaySendEurAmounts.amountDisplayCurrency,
+            senderFeeDisplayCurrency: displaySendEurAmounts.feeDisplayCurrency,
+            senderDisplayCurrency: displaySendEurAmounts.displayCurrency,
+          },
+          recipientDisplayAmounts: {
+            recipientAmountDisplayCurrency:
+              displayReceiveUsdAmounts.amountDisplayCurrency,
+            recipientFeeDisplayCurrency: displayReceiveUsdAmounts.feeDisplayCurrency,
+            recipientDisplayCurrency: displayReceiveUsdAmounts.displayCurrency,
+          },
+        })
+        if (res instanceof Error) throw res
+
+        const senderTxns = await LedgerService().getTransactionsByWalletId(
+          btcWalletDescriptor.id,
+        )
+        if (senderTxns instanceof Error) throw senderTxns
+        if (!(senderTxns && senderTxns.length)) throw new Error()
+        const senderTxn = senderTxns[0]
+        expect(senderTxn.type).toBe(LedgerTransactionType.IntraLedger)
+
+        const recipientTxns = await LedgerService().getTransactionsByWalletId(
+          usdWalletDescriptor.id,
+        )
+        if (recipientTxns instanceof Error) throw recipientTxns
+        if (!(recipientTxns && recipientTxns.length)) throw new Error()
+        const recipientTxn = recipientTxns[0]
+        expect(recipientTxn.type).toBe(LedgerTransactionType.IntraLedger)
+      })
+
+      it("recordOnChainIntraLedgerPayment", async () => {
+        const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+        const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
+
+        const res = await recordOnChainIntraLedgerPayment({
+          senderWalletDescriptor: btcWalletDescriptor,
+          recipientWalletDescriptor: usdWalletDescriptor,
+          paymentAmount: sendAmount,
+          senderDisplayAmounts: {
+            senderAmountDisplayCurrency: displaySendEurAmounts.amountDisplayCurrency,
+            senderFeeDisplayCurrency: displaySendEurAmounts.feeDisplayCurrency,
+            senderDisplayCurrency: displaySendEurAmounts.displayCurrency,
+          },
+          recipientDisplayAmounts: {
+            recipientAmountDisplayCurrency:
+              displayReceiveUsdAmounts.amountDisplayCurrency,
+            recipientFeeDisplayCurrency: displayReceiveUsdAmounts.feeDisplayCurrency,
+            recipientDisplayCurrency: displayReceiveUsdAmounts.displayCurrency,
+          },
+        })
+        if (res instanceof Error) throw res
+
+        const senderTxns = await LedgerService().getTransactionsByWalletId(
+          btcWalletDescriptor.id,
+        )
+        if (senderTxns instanceof Error) throw senderTxns
+        if (!(senderTxns && senderTxns.length)) throw new Error()
+        const senderTxn = senderTxns[0]
+        expect(senderTxn.type).toBe(LedgerTransactionType.OnchainIntraLedger)
+
+        const recipientTxns = await LedgerService().getTransactionsByWalletId(
+          usdWalletDescriptor.id,
+        )
+        if (recipientTxns instanceof Error) throw recipientTxns
+        if (!(recipientTxns && recipientTxns.length)) throw new Error()
+        const recipientTxn = recipientTxns[0]
+        expect(recipientTxn.type).toBe(LedgerTransactionType.OnchainIntraLedger)
+      })
     })
 
-    it("recordLnFeeReimbursement", async () => {
-      const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+    describe("recordTradeIntraAccount", () => {
+      it("recordLnTradeIntraAccountTxn", async () => {
+        const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+        const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
 
-      const res = await recordLnFeeReimbursement({
-        walletDescriptor: btcWalletDescriptor,
-        paymentAmount: receiveAmount,
-        bankFee,
-        displayAmounts: displayReceiveEurAmounts,
+        const res = await recordLnTradeIntraAccountTxn({
+          senderWalletDescriptor: btcWalletDescriptor,
+          recipientWalletDescriptor: usdWalletDescriptor,
+          paymentAmount: sendAmount,
+          senderDisplayAmounts: {
+            senderAmountDisplayCurrency: displaySendEurAmounts.amountDisplayCurrency,
+            senderFeeDisplayCurrency: displaySendEurAmounts.feeDisplayCurrency,
+            senderDisplayCurrency: displaySendEurAmounts.displayCurrency,
+          },
+          recipientDisplayAmounts: {
+            recipientAmountDisplayCurrency:
+              displayReceiveUsdAmounts.amountDisplayCurrency,
+            recipientFeeDisplayCurrency: displayReceiveUsdAmounts.feeDisplayCurrency,
+            recipientDisplayCurrency: displayReceiveUsdAmounts.displayCurrency,
+          },
+        })
+        if (res instanceof Error) throw res
+
+        const senderTxns = await LedgerService().getTransactionsByWalletId(
+          btcWalletDescriptor.id,
+        )
+        if (senderTxns instanceof Error) throw senderTxns
+        if (!(senderTxns && senderTxns.length)) throw new Error()
+        const senderTxn = senderTxns[0]
+        expect(senderTxn.type).toBe(LedgerTransactionType.LnTradeIntraAccount)
+
+        const recipientTxns = await LedgerService().getTransactionsByWalletId(
+          usdWalletDescriptor.id,
+        )
+        if (recipientTxns instanceof Error) throw recipientTxns
+        if (!(recipientTxns && recipientTxns.length)) throw new Error()
+        const recipientTxn = recipientTxns[0]
+        expect(recipientTxn.type).toBe(LedgerTransactionType.LnTradeIntraAccount)
       })
-      if (res instanceof Error) throw res
 
-      const txns = await LedgerService().getTransactionsByWalletId(btcWalletDescriptor.id)
-      if (txns instanceof Error) throw txns
-      if (!(txns && txns.length)) throw new Error()
-      const txn = txns[0]
+      it("recordWalletIdTradeIntraAccountTxn", async () => {
+        const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+        const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
 
-      expect(txn.type).toBe(LedgerTransactionType.LnFeeReimbursement)
-    })
-  })
+        const res = await recordWalletIdTradeIntraAccountTxn({
+          senderWalletDescriptor: btcWalletDescriptor,
+          recipientWalletDescriptor: usdWalletDescriptor,
+          paymentAmount: sendAmount,
+          senderDisplayAmounts: {
+            senderAmountDisplayCurrency: displaySendEurAmounts.amountDisplayCurrency,
+            senderFeeDisplayCurrency: displaySendEurAmounts.feeDisplayCurrency,
+            senderDisplayCurrency: displaySendEurAmounts.displayCurrency,
+          },
+          recipientDisplayAmounts: {
+            recipientAmountDisplayCurrency:
+              displayReceiveUsdAmounts.amountDisplayCurrency,
+            recipientFeeDisplayCurrency: displayReceiveUsdAmounts.feeDisplayCurrency,
+            recipientDisplayCurrency: displayReceiveUsdAmounts.displayCurrency,
+          },
+        })
+        if (res instanceof Error) throw res
 
-  describe("recordSend", () => {
-    it("recordSendLnPayment", async () => {
-      const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+        const senderTxns = await LedgerService().getTransactionsByWalletId(
+          btcWalletDescriptor.id,
+        )
+        if (senderTxns instanceof Error) throw senderTxns
+        if (!(senderTxns && senderTxns.length)) throw new Error()
+        const senderTxn = senderTxns[0]
+        expect(senderTxn.type).toBe(LedgerTransactionType.WalletIdTradeIntraAccount)
 
-      const res = await recordSendLnPayment({
-        walletDescriptor: btcWalletDescriptor,
-        paymentAmount: sendAmount,
-        bankFee,
-        displayAmounts: displaySendEurAmounts,
+        const recipientTxns = await LedgerService().getTransactionsByWalletId(
+          usdWalletDescriptor.id,
+        )
+        if (recipientTxns instanceof Error) throw recipientTxns
+        if (!(recipientTxns && recipientTxns.length)) throw new Error()
+        const recipientTxn = recipientTxns[0]
+        expect(recipientTxn.type).toBe(LedgerTransactionType.WalletIdTradeIntraAccount)
       })
-      if (res instanceof Error) throw res
 
-      const txns = await LedgerService().getTransactionsByWalletId(btcWalletDescriptor.id)
-      if (txns instanceof Error) throw txns
-      if (!(txns && txns.length)) throw new Error()
-      const txn = txns[0]
+      it("recordOnChainTradeIntraAccountTxn", async () => {
+        const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+        const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
 
-      expect(txn.type).toBe(LedgerTransactionType.Payment)
-    })
+        const res = await recordOnChainTradeIntraAccountTxn({
+          senderWalletDescriptor: btcWalletDescriptor,
+          recipientWalletDescriptor: usdWalletDescriptor,
+          paymentAmount: sendAmount,
+          senderDisplayAmounts: {
+            senderAmountDisplayCurrency: displaySendEurAmounts.amountDisplayCurrency,
+            senderFeeDisplayCurrency: displaySendEurAmounts.feeDisplayCurrency,
+            senderDisplayCurrency: displaySendEurAmounts.displayCurrency,
+          },
+          recipientDisplayAmounts: {
+            recipientAmountDisplayCurrency:
+              displayReceiveUsdAmounts.amountDisplayCurrency,
+            recipientFeeDisplayCurrency: displayReceiveUsdAmounts.feeDisplayCurrency,
+            recipientDisplayCurrency: displayReceiveUsdAmounts.displayCurrency,
+          },
+        })
+        if (res instanceof Error) throw res
 
-    it("recordSendOnChainPayment", async () => {
-      const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+        const senderTxns = await LedgerService().getTransactionsByWalletId(
+          btcWalletDescriptor.id,
+        )
+        if (senderTxns instanceof Error) throw senderTxns
+        if (!(senderTxns && senderTxns.length)) throw new Error()
+        const senderTxn = senderTxns[0]
+        expect(senderTxn.type).toBe(LedgerTransactionType.OnChainTradeIntraAccount)
 
-      const res = await recordSendOnChainPayment({
-        walletDescriptor: btcWalletDescriptor,
-        paymentAmount: sendAmount,
-        bankFee,
-        displayAmounts: displaySendEurAmounts,
+        const recipientTxns = await LedgerService().getTransactionsByWalletId(
+          usdWalletDescriptor.id,
+        )
+        if (recipientTxns instanceof Error) throw recipientTxns
+        if (!(recipientTxns && recipientTxns.length)) throw new Error()
+        const recipientTxn = recipientTxns[0]
+        expect(recipientTxn.type).toBe(LedgerTransactionType.OnChainTradeIntraAccount)
       })
-      if (res instanceof Error) throw res
-
-      const txns = await LedgerService().getTransactionsByWalletId(btcWalletDescriptor.id)
-      if (txns instanceof Error) throw txns
-      if (!(txns && txns.length)) throw new Error()
-      const txn = txns[0]
-
-      expect(txn.type).toBe(LedgerTransactionType.OnchainPayment)
-    })
-  })
-
-  describe("recordIntraledger", () => {
-    it("recordLnIntraLedgerPayment", async () => {
-      const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
-      const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
-
-      const res = await recordLnIntraLedgerPayment({
-        senderWalletDescriptor: btcWalletDescriptor,
-        recipientWalletDescriptor: usdWalletDescriptor,
-        paymentAmount: sendAmount,
-        senderDisplayAmounts: {
-          senderAmountDisplayCurrency: displaySendEurAmounts.amountDisplayCurrency,
-          senderFeeDisplayCurrency: displaySendEurAmounts.feeDisplayCurrency,
-          senderDisplayCurrency: displaySendEurAmounts.displayCurrency,
-        },
-        recipientDisplayAmounts: {
-          recipientAmountDisplayCurrency: displayReceiveUsdAmounts.amountDisplayCurrency,
-          recipientFeeDisplayCurrency: displayReceiveUsdAmounts.feeDisplayCurrency,
-          recipientDisplayCurrency: displayReceiveUsdAmounts.displayCurrency,
-        },
-      })
-      if (res instanceof Error) throw res
-
-      const senderTxns = await LedgerService().getTransactionsByWalletId(
-        btcWalletDescriptor.id,
-      )
-      if (senderTxns instanceof Error) throw senderTxns
-      if (!(senderTxns && senderTxns.length)) throw new Error()
-      const senderTxn = senderTxns[0]
-      expect(senderTxn.type).toBe(LedgerTransactionType.LnIntraLedger)
-
-      const recipientTxns = await LedgerService().getTransactionsByWalletId(
-        usdWalletDescriptor.id,
-      )
-      if (recipientTxns instanceof Error) throw recipientTxns
-      if (!(recipientTxns && recipientTxns.length)) throw new Error()
-      const recipientTxn = recipientTxns[0]
-      expect(recipientTxn.type).toBe(LedgerTransactionType.LnIntraLedger)
-    })
-
-    it("recordWalletIdIntraLedgerPayment", async () => {
-      const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
-      const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
-
-      const res = await recordWalletIdIntraLedgerPayment({
-        senderWalletDescriptor: btcWalletDescriptor,
-        recipientWalletDescriptor: usdWalletDescriptor,
-        paymentAmount: sendAmount,
-        senderDisplayAmounts: {
-          senderAmountDisplayCurrency: displaySendEurAmounts.amountDisplayCurrency,
-          senderFeeDisplayCurrency: displaySendEurAmounts.feeDisplayCurrency,
-          senderDisplayCurrency: displaySendEurAmounts.displayCurrency,
-        },
-        recipientDisplayAmounts: {
-          recipientAmountDisplayCurrency: displayReceiveUsdAmounts.amountDisplayCurrency,
-          recipientFeeDisplayCurrency: displayReceiveUsdAmounts.feeDisplayCurrency,
-          recipientDisplayCurrency: displayReceiveUsdAmounts.displayCurrency,
-        },
-      })
-      if (res instanceof Error) throw res
-
-      const senderTxns = await LedgerService().getTransactionsByWalletId(
-        btcWalletDescriptor.id,
-      )
-      if (senderTxns instanceof Error) throw senderTxns
-      if (!(senderTxns && senderTxns.length)) throw new Error()
-      const senderTxn = senderTxns[0]
-      expect(senderTxn.type).toBe(LedgerTransactionType.IntraLedger)
-
-      const recipientTxns = await LedgerService().getTransactionsByWalletId(
-        usdWalletDescriptor.id,
-      )
-      if (recipientTxns instanceof Error) throw recipientTxns
-      if (!(recipientTxns && recipientTxns.length)) throw new Error()
-      const recipientTxn = recipientTxns[0]
-      expect(recipientTxn.type).toBe(LedgerTransactionType.IntraLedger)
     })
 
-    it("recordOnChainIntraLedgerPayment", async () => {
-      const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
-      const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
+    describe("recordReceiveOnChainFeeReconciliation", () => {
+      it("recordReceiveOnChainFeeReconciliation", async () => {
+        const lowerFee = { amount: 1000n, currency: WalletCurrency.Btc }
+        const higherFee = { amount: 2100n, currency: WalletCurrency.Btc }
 
-      const res = await recordOnChainIntraLedgerPayment({
-        senderWalletDescriptor: btcWalletDescriptor,
-        recipientWalletDescriptor: usdWalletDescriptor,
-        paymentAmount: sendAmount,
-        senderDisplayAmounts: {
-          senderAmountDisplayCurrency: displaySendEurAmounts.amountDisplayCurrency,
-          senderFeeDisplayCurrency: displaySendEurAmounts.feeDisplayCurrency,
-          senderDisplayCurrency: displaySendEurAmounts.displayCurrency,
-        },
-        recipientDisplayAmounts: {
-          recipientAmountDisplayCurrency: displayReceiveUsdAmounts.amountDisplayCurrency,
-          recipientFeeDisplayCurrency: displayReceiveUsdAmounts.feeDisplayCurrency,
-          recipientDisplayCurrency: displayReceiveUsdAmounts.displayCurrency,
-        },
+        const res = await recordReceiveOnChainFeeReconciliation({
+          estimatedFee: lowerFee,
+          actualFee: higherFee,
+        })
+        if (res instanceof Error) throw res
+
+        const { transactionIds } = res
+        expect(transactionIds).toHaveLength(2)
+
+        const ledger = LedgerService()
+
+        const tx0 = await ledger.getTransactionById(transactionIds[0])
+        const tx1 = await ledger.getTransactionById(transactionIds[1])
+        const liabilitiesTxn = [tx0, tx1].find(
+          (tx): tx is LedgerTransaction<WalletCurrency> =>
+            !(tx instanceof CouldNotFindError),
+        )
+        if (liabilitiesTxn === undefined) throw new Error("Could not find transaction")
+        expect(liabilitiesTxn.type).toBe(LedgerTransactionType.OnchainPayment)
       })
-      if (res instanceof Error) throw res
-
-      const senderTxns = await LedgerService().getTransactionsByWalletId(
-        btcWalletDescriptor.id,
-      )
-      if (senderTxns instanceof Error) throw senderTxns
-      if (!(senderTxns && senderTxns.length)) throw new Error()
-      const senderTxn = senderTxns[0]
-      expect(senderTxn.type).toBe(LedgerTransactionType.OnchainIntraLedger)
-
-      const recipientTxns = await LedgerService().getTransactionsByWalletId(
-        usdWalletDescriptor.id,
-      )
-      if (recipientTxns instanceof Error) throw recipientTxns
-      if (!(recipientTxns && recipientTxns.length)) throw new Error()
-      const recipientTxn = recipientTxns[0]
-      expect(recipientTxn.type).toBe(LedgerTransactionType.OnchainIntraLedger)
-    })
-  })
-
-  describe("recordTradeIntraAccount", () => {
-    it("recordLnTradeIntraAccountTxn", async () => {
-      const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
-      const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
-
-      const res = await recordLnTradeIntraAccountTxn({
-        senderWalletDescriptor: btcWalletDescriptor,
-        recipientWalletDescriptor: usdWalletDescriptor,
-        paymentAmount: sendAmount,
-        senderDisplayAmounts: {
-          senderAmountDisplayCurrency: displaySendEurAmounts.amountDisplayCurrency,
-          senderFeeDisplayCurrency: displaySendEurAmounts.feeDisplayCurrency,
-          senderDisplayCurrency: displaySendEurAmounts.displayCurrency,
-        },
-        recipientDisplayAmounts: {
-          recipientAmountDisplayCurrency: displayReceiveUsdAmounts.amountDisplayCurrency,
-          recipientFeeDisplayCurrency: displayReceiveUsdAmounts.feeDisplayCurrency,
-          recipientDisplayCurrency: displayReceiveUsdAmounts.displayCurrency,
-        },
-      })
-      if (res instanceof Error) throw res
-
-      const senderTxns = await LedgerService().getTransactionsByWalletId(
-        btcWalletDescriptor.id,
-      )
-      if (senderTxns instanceof Error) throw senderTxns
-      if (!(senderTxns && senderTxns.length)) throw new Error()
-      const senderTxn = senderTxns[0]
-      expect(senderTxn.type).toBe(LedgerTransactionType.LnTradeIntraAccount)
-
-      const recipientTxns = await LedgerService().getTransactionsByWalletId(
-        usdWalletDescriptor.id,
-      )
-      if (recipientTxns instanceof Error) throw recipientTxns
-      if (!(recipientTxns && recipientTxns.length)) throw new Error()
-      const recipientTxn = recipientTxns[0]
-      expect(recipientTxn.type).toBe(LedgerTransactionType.LnTradeIntraAccount)
-    })
-
-    it("recordWalletIdTradeIntraAccountTxn", async () => {
-      const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
-      const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
-
-      const res = await recordWalletIdTradeIntraAccountTxn({
-        senderWalletDescriptor: btcWalletDescriptor,
-        recipientWalletDescriptor: usdWalletDescriptor,
-        paymentAmount: sendAmount,
-        senderDisplayAmounts: {
-          senderAmountDisplayCurrency: displaySendEurAmounts.amountDisplayCurrency,
-          senderFeeDisplayCurrency: displaySendEurAmounts.feeDisplayCurrency,
-          senderDisplayCurrency: displaySendEurAmounts.displayCurrency,
-        },
-        recipientDisplayAmounts: {
-          recipientAmountDisplayCurrency: displayReceiveUsdAmounts.amountDisplayCurrency,
-          recipientFeeDisplayCurrency: displayReceiveUsdAmounts.feeDisplayCurrency,
-          recipientDisplayCurrency: displayReceiveUsdAmounts.displayCurrency,
-        },
-      })
-      if (res instanceof Error) throw res
-
-      const senderTxns = await LedgerService().getTransactionsByWalletId(
-        btcWalletDescriptor.id,
-      )
-      if (senderTxns instanceof Error) throw senderTxns
-      if (!(senderTxns && senderTxns.length)) throw new Error()
-      const senderTxn = senderTxns[0]
-      expect(senderTxn.type).toBe(LedgerTransactionType.WalletIdTradeIntraAccount)
-
-      const recipientTxns = await LedgerService().getTransactionsByWalletId(
-        usdWalletDescriptor.id,
-      )
-      if (recipientTxns instanceof Error) throw recipientTxns
-      if (!(recipientTxns && recipientTxns.length)) throw new Error()
-      const recipientTxn = recipientTxns[0]
-      expect(recipientTxn.type).toBe(LedgerTransactionType.WalletIdTradeIntraAccount)
-    })
-
-    it("recordOnChainTradeIntraAccountTxn", async () => {
-      const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
-      const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
-
-      const res = await recordOnChainTradeIntraAccountTxn({
-        senderWalletDescriptor: btcWalletDescriptor,
-        recipientWalletDescriptor: usdWalletDescriptor,
-        paymentAmount: sendAmount,
-        senderDisplayAmounts: {
-          senderAmountDisplayCurrency: displaySendEurAmounts.amountDisplayCurrency,
-          senderFeeDisplayCurrency: displaySendEurAmounts.feeDisplayCurrency,
-          senderDisplayCurrency: displaySendEurAmounts.displayCurrency,
-        },
-        recipientDisplayAmounts: {
-          recipientAmountDisplayCurrency: displayReceiveUsdAmounts.amountDisplayCurrency,
-          recipientFeeDisplayCurrency: displayReceiveUsdAmounts.feeDisplayCurrency,
-          recipientDisplayCurrency: displayReceiveUsdAmounts.displayCurrency,
-        },
-      })
-      if (res instanceof Error) throw res
-
-      const senderTxns = await LedgerService().getTransactionsByWalletId(
-        btcWalletDescriptor.id,
-      )
-      if (senderTxns instanceof Error) throw senderTxns
-      if (!(senderTxns && senderTxns.length)) throw new Error()
-      const senderTxn = senderTxns[0]
-      expect(senderTxn.type).toBe(LedgerTransactionType.OnChainTradeIntraAccount)
-
-      const recipientTxns = await LedgerService().getTransactionsByWalletId(
-        usdWalletDescriptor.id,
-      )
-      if (recipientTxns instanceof Error) throw recipientTxns
-      if (!(recipientTxns && recipientTxns.length)) throw new Error()
-      const recipientTxn = recipientTxns[0]
-      expect(recipientTxn.type).toBe(LedgerTransactionType.OnChainTradeIntraAccount)
-    })
-  })
-
-  describe("recordReceiveOnChainFeeReconciliation", () => {
-    it("recordReceiveOnChainFeeReconciliation", async () => {
-      const lowerFee = { amount: 1000n, currency: WalletCurrency.Btc }
-      const higherFee = { amount: 2100n, currency: WalletCurrency.Btc }
-
-      const res = await recordReceiveOnChainFeeReconciliation({
-        estimatedFee: lowerFee,
-        actualFee: higherFee,
-      })
-      if (res instanceof Error) throw res
-
-      const { transactionIds } = res
-      expect(transactionIds).toHaveLength(2)
-
-      const ledger = LedgerService()
-
-      const tx0 = await ledger.getTransactionById(transactionIds[0])
-      const tx1 = await ledger.getTransactionById(transactionIds[1])
-      const liabilitiesTxn = [tx0, tx1].find(
-        (tx): tx is LedgerTransaction<WalletCurrency> =>
-          !(tx instanceof CouldNotFindError),
-      )
-      if (liabilitiesTxn === undefined) throw new Error("Could not find transaction")
-      expect(liabilitiesTxn.type).toBe(LedgerTransactionType.OnchainPayment)
     })
   })
 })
