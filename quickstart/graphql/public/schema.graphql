@@ -21,7 +21,7 @@ interface Account {
   level: AccountLevel!
   limits: AccountLimits!
   notificationSettings: NotificationSettings!
-  pendingTransactions(walletIds: [WalletId]): [Transaction!]!
+  pendingIncomingTransactions(walletIds: [WalletId]): [Transaction!]!
   realtimePrice: RealtimePrice!
   transactions(
     """Returns the items in the list that come after the specified cursor."""
@@ -156,8 +156,8 @@ type BTCWallet implements Wallet {
 
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
-  pendingTransactions: [Transaction!]!
-  pendingTransactionsByAddress(
+  pendingIncomingTransactions: [Transaction!]!
+  pendingIncomingTransactionsByAddress(
     """Returns the items that include this address."""
     address: OnChainAddress!
   ): [Transaction!]!
@@ -278,7 +278,7 @@ type ConsumerAccount implements Account {
   level: AccountLevel!
   limits: AccountLimits!
   notificationSettings: NotificationSettings!
-  pendingTransactions(walletIds: [WalletId]): [Transaction!]!
+  pendingIncomingTransactions(walletIds: [WalletId]): [Transaction!]!
 
   """List the quiz questions of the consumer account"""
   quiz: [Quiz!]!
@@ -1358,8 +1358,8 @@ type UsdWallet implements Wallet {
 
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
-  pendingTransactions: [Transaction!]!
-  pendingTransactionsByAddress(
+  pendingIncomingTransactions: [Transaction!]!
+  pendingIncomingTransactionsByAddress(
     """Returns the items that include this address."""
     address: OnChainAddress!
   ): [Transaction!]!
@@ -1619,20 +1619,20 @@ interface Wallet {
   pendingIncomingBalance: SignedAmount!
 
   """
-  Pending OnChain transactions. When transactions
+  Pending incoming OnChain transactions. When transactions
   are confirmed they will receive a new id and be found in the transactions
   list. Transactions are ordered anti-chronologically,
   ie: the newest transaction will be first
   """
-  pendingTransactions: [Transaction!]!
+  pendingIncomingTransactions: [Transaction!]!
 
   """
-  Pending OnChain transactions. When transactions
+  Pending incoming OnChain transactions. When transactions
   are confirmed they will receive a new id and be found in the transactions
   list. Transactions are ordered anti-chronologically,
   ie: the newest transaction will be first
   """
-  pendingTransactionsByAddress(
+  pendingIncomingTransactionsByAddress(
     """Returns the items that include this address."""
     address: OnChainAddress!
   ): [Transaction!]!
