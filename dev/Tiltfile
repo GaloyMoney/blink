@@ -97,6 +97,8 @@ local_resource(
     "consent",
     "api-keys",
     "dashboard",
+    "svix",
+    "svix-pg",
   ],
 )
 
