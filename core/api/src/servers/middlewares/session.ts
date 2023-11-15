@@ -28,6 +28,7 @@ export const sessionPublicContext = async ({
   const scope = tokenPayload?.scope?.split(" ") ?? []
   const sub = tokenPayload?.sub
   const appId = tokenPayload?.client_id
+  const readOnly = tokenPayload?.read_only ?? false
 
   // note: value should match (ie: "anon") if not an accountId
   // settings from dev/ory/oathkeeper.yml/authenticator/anonymous/config/subjet
@@ -85,5 +86,6 @@ export const sessionPublicContext = async ({
     sessionId,
     scope,
     appId,
+    readOnly,
   }
 }

@@ -43,6 +43,14 @@ export const isAuthenticated = rule({ cache: "contextual" })((
   return "domainAccount" in ctx && !!ctx.domainAccount
 })
 
+export const isAuthenticatedForMutation = rule({ cache: "contextual" })((
+  parent,
+  args,
+  ctx: GraphQLPublicContext,
+) => {
+  return "domainAccount" in ctx && !!ctx.domainAccount && !ctx.readOnly
+})
+
 const setGqlContext = async (
   req: Request,
   res: Response,
@@ -104,7 +112,7 @@ export async function startApolloServerForCoreSchema() {
     ...mutationFields.authed.atAccountLevel,
     ...mutationFields.authed.atWalletLevel,
   })) {
-    authedMutationFields[key] = isAuthenticated
+    authedMutationFields[key] = isAuthenticatedForMutation
   }
 
   const permissions = shield(

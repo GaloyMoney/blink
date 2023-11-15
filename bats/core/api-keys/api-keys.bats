@@ -96,8 +96,19 @@ new_key_name() {
 
 @test "api-keys: read-only key cannot mutate" {
   key_name="$(new_key_name)"
+
   variables="{\"input\":{\"name\":\"${key_name}\"}}"
   exec_graphql 'api-key-secret' 'api-key-create' "$variables"
   errors="$(graphql_output '.errors | length')"
   [[ "${errors}" = "1" ]] || exit 1
+
+  variables="{\"input\":{\"currency\":\"USD\"}}"
+  exec_graphql 'api-key-secret' 'update-display-currency' "$variables"
+  errors="$(graphql_output '.errors | length')"
+  [[ "${errors}" = "1" ]] || exit 1
+
+  # Sanity check that it works with alice
+  exec_graphql 'alice' 'update-display-currency' "$variables"
+  errors="$(graphql_output '.errors | length')"
+  [[ "${errors}" = "0" ]] || exit 1
 }
