@@ -62,6 +62,7 @@ pub(super) struct ApiKey {
     pub expired: bool,
     pub last_used_at: Option<Timestamp>,
     pub expires_at: Timestamp,
+    pub read_only: bool,
 }
 
 #[derive(SimpleObject)]

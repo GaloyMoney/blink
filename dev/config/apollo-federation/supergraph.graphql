@@ -180,6 +180,7 @@ type ApiKey
   expired: Boolean!
   lastUsedAt: Timestamp
   expiresAt: Timestamp!
+  readOnly: Boolean!
 }
 
 input ApiKeyCreateInput

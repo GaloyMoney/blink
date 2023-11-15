@@ -23,6 +23,7 @@ impl From<IdentityApiKey> for ApiKey {
             last_used_at: key.last_used_at.map(Timestamp::from),
             created_at: Timestamp::from(key.created_at),
             expires_at: Timestamp::from(key.expires_at),
+            read_only: key.read_only,
         }
     }
 }
