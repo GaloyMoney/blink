@@ -21,6 +21,9 @@ export const registerBroadcastedPayout = async ({
   const { estimatedProtocolFee } = setTxIdResult
   if (estimatedProtocolFee.amount === proportionalFee.amount) return true
 
+  const isRecorded = await LedgerFacade.isOnChainFeeReconciliationRecorded(payoutId)
+  if (isRecorded !== false) return isRecorded
+
   const { metadata } = LedgerFacade.OnChainFeeReconciliationLedgerMetadata({
     payoutId,
     txHash: txId,
