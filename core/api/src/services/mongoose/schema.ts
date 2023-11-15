@@ -78,6 +78,11 @@ const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
     default: false,
   },
 
+  processingCompleted: {
+    type: Boolean,
+    default: false,
+  },
+
   paymentRequest: {
     type: String,
   },

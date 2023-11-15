@@ -36,7 +36,7 @@ describe("WalletInvoices", () => {
     expect(lookedUpInvoice).toEqual(invoiceToPersist)
   })
 
-  it("updates an invoice", async () => {
+  it("marks an invoice as paid", async () => {
     const repo = WalletInvoicesRepository()
     const invoiceToPersist = createMockWalletInvoice(walletDescriptor)
     const persistResult = await repo.persistNew(invoiceToPersist)
@@ -46,23 +46,33 @@ describe("WalletInvoices", () => {
     const updatedResult = await repo.markAsPaid(invoiceToUpdate.paymentHash)
     expect(updatedResult).not.toBeInstanceOf(Error)
     expect(updatedResult).toHaveProperty("paid", true)
+    expect(updatedResult).toHaveProperty("processingCompleted", true)
 
     const { paymentHash } = updatedResult as WalletInvoice
     const lookedUpInvoice = await repo.findByPaymentHash(paymentHash)
     expect(lookedUpInvoice).not.toBeInstanceOf(Error)
     expect(lookedUpInvoice).toEqual(updatedResult)
     expect(lookedUpInvoice).toHaveProperty("paid", true)
+    expect(updatedResult).toHaveProperty("processingCompleted", true)
   })
 
-  it("deletes an invoice by hash", async () => {
+  it("marks an invoice as processing completed", async () => {
     const repo = WalletInvoicesRepository()
     const invoiceToPersist = createMockWalletInvoice(walletDescriptor)
     const persistResult = await repo.persistNew(invoiceToPersist)
     expect(persistResult).not.toBeInstanceOf(Error)
 
-    const { paymentHash } = persistResult as WalletInvoice
-    const isDeleted = await repo.deleteByPaymentHash(paymentHash)
-    expect(isDeleted).not.toBeInstanceOf(Error)
-    expect(isDeleted).toEqual(true)
+    const invoiceToUpdate = persistResult as WalletInvoice
+    const updatedResult = await repo.markAsProcessingCompleted(
+      invoiceToUpdate.paymentHash,
+    )
+    expect(updatedResult).not.toBeInstanceOf(Error)
+    expect(updatedResult).toHaveProperty("processingCompleted", true)
+
+    const { paymentHash } = updatedResult as WalletInvoice
+    const lookedUpInvoice = await repo.findByPaymentHash(paymentHash)
+    expect(lookedUpInvoice).not.toBeInstanceOf(Error)
+    expect(lookedUpInvoice).toEqual(updatedResult)
+    expect(lookedUpInvoice).toHaveProperty("processingCompleted", true)
   })
 })

@@ -93,6 +93,7 @@ type WalletInvoiceWithOptionalLnInvoice = {
   recipientWalletDescriptor: PartialWalletDescriptor<WalletCurrency>
   paid: boolean
   createdAt: Date
+  processingCompleted?: boolean
   lnInvoice?: LnInvoice // LnInvoice is optional because some older invoices don't have it
 }
 
@@ -197,7 +198,7 @@ interface IWalletInvoicesRepository {
 
   yieldPending: () => AsyncGenerator<WalletInvoiceWithOptionalLnInvoice> | RepositoryError
 
-  deleteByPaymentHash: (paymentHash: PaymentHash) => Promise<boolean | RepositoryError>
-
-  deleteUnpaidOlderThan: (before: Date) => Promise<number | RepositoryError>
+  markAsProcessingCompleted: (
+    paymentHash: PaymentHash,
+  ) => Promise<WalletInvoiceWithOptionalLnInvoice | RepositoryError>
 }

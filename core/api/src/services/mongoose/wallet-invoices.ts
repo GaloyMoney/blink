@@ -48,7 +48,27 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     try {
       const walletInvoice = await WalletInvoice.findOneAndUpdate(
         { _id: paymentHash },
-        { paid: true },
+        { paid: true, processingCompleted: true },
+        {
+          new: true,
+        },
+      )
+      if (!walletInvoice) {
+        return new CouldNotFindWalletInvoiceError()
+      }
+      return walletInvoiceFromRaw(walletInvoice)
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
+  const markAsProcessingCompleted = async (
+    paymentHash: PaymentHash,
+  ): Promise<WalletInvoiceWithOptionalLnInvoice | RepositoryError> => {
+    try {
+      const walletInvoice = await WalletInvoice.findOneAndUpdate(
+        { _id: paymentHash },
+        { processingCompleted: true },
         {
           new: true,
         },
@@ -98,7 +118,13 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     | RepositoryError {
     let pending
     try {
-      pending = WalletInvoice.find({ paid: false }).cursor({
+      pending = WalletInvoice.find({
+        paid: false,
+        $or: [
+          { processingCompleted: false },
+          { processingCompleted: { $exists: false } }, // TODO remove this after migration
+        ],
+      }).cursor({
         batchSize: 100,
       })
     } catch (error) {
@@ -107,34 +133,6 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
 
     for await (const walletInvoice of pending) {
       yield walletInvoiceFromRaw(walletInvoice)
-    }
-  }
-
-  const deleteByPaymentHash = async (
-    paymentHash: PaymentHash,
-  ): Promise<boolean | RepositoryError> => {
-    try {
-      const result = await WalletInvoice.deleteOne({ _id: paymentHash })
-      if (result.deletedCount === 0) {
-        return new CouldNotFindWalletInvoiceError(paymentHash)
-      }
-      return true
-    } catch (error) {
-      return new UnknownRepositoryError(error)
-    }
-  }
-
-  const deleteUnpaidOlderThan = async (
-    before: Date,
-  ): Promise<number | RepositoryError> => {
-    try {
-      const result = await WalletInvoice.deleteMany({
-        timestamp: { $lt: before },
-        paid: false,
-      })
-      return result.deletedCount
-    } catch (error) {
-      return new UnknownRepositoryError(error)
     }
   }
 
@@ -251,11 +249,10 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
   return {
     persistNew,
     markAsPaid,
+    markAsProcessingCompleted,
     findByPaymentHash,
     findForWalletByPaymentHash,
     yieldPending,
-    deleteByPaymentHash,
-    deleteUnpaidOlderThan,
     findInvoicesForWallets,
   }
 }
@@ -281,6 +278,7 @@ const walletInvoiceFromRaw = (
     paid: result.paid as boolean,
     usdAmount: result.cents ? UsdPaymentAmount(BigInt(result.cents)) : undefined,
     createdAt: new Date(result.timestamp.getTime()),
+    processingCompleted: result.processingCompleted,
     lnInvoice,
   }
 }

@@ -35,28 +35,10 @@ import {
   updateLndEscrow,
 } from "@/services/ledger/admin-legacy"
 import { baseLogger } from "@/services/logger"
-import { PaymentFlowStateRepository, WalletInvoicesRepository } from "@/services/mongoose"
+import { PaymentFlowStateRepository } from "@/services/mongoose"
 import { DbMetadata } from "@/services/mongoose/schema"
 
 import { timestampDaysAgo } from "@/utils"
-
-export const deleteExpiredWalletInvoice = async (): Promise<number> => {
-  const walletInvoicesRepo = WalletInvoicesRepository()
-
-  // this should be longer than the invoice validity time
-  const delta = 90 // days
-
-  const date = new Date()
-  date.setDate(date.getDate() - delta)
-
-  const result = await walletInvoicesRepo.deleteUnpaidOlderThan(date)
-  if (result instanceof Error) {
-    baseLogger.error({ error: result }, "error deleting expired invoices")
-    return 0
-  }
-
-  return result
-}
 
 export const deleteFailedPaymentsAttemptAllLnds = async () => {
   const lnds = offchainLnds
