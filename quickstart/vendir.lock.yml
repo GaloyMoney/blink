@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: audit command (#3459)'
-      sha: 2a7d79c8f0e34395d32258a7ac151a701863ccee
+      commitTitle: 'fix(core): handle email code expired kratos error (#3556)'
+      sha: a262a32efae76366c4ca0a6f0568644bfd7f68c2
       tags:
-      - 0.16.27-2-g2a7d79c8f
+      - 0.16.28-1-ga262a32ef
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: audit command (#3459)'
-      sha: 2a7d79c8f0e34395d32258a7ac151a701863ccee
+      commitTitle: 'fix(core): handle email code expired kratos error (#3556)'
+      sha: a262a32efae76366c4ca0a6f0568644bfd7f68c2
       tags:
-      - 0.16.27-2-g2a7d79c8f
+      - 0.16.28-1-ga262a32ef
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: audit command (#3459)'
-      sha: 2a7d79c8f0e34395d32258a7ac151a701863ccee
+      commitTitle: 'fix(core): handle email code expired kratos error (#3556)'
+      sha: a262a32efae76366c4ca0a6f0568644bfd7f68c2
       tags:
-      - 0.16.27-2-g2a7d79c8f
+      - 0.16.28-1-ga262a32ef
     path: ./
   path: ./graphql
 kind: LockConfig
