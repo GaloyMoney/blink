@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: rename authorization to authentication (#3542)...'
-      sha: 89860aba589d974d9841417db79f7537e390581d
+      commitTitle: 'build(deps): bump dependencies (#3552)...'
+      sha: 0157e38e061b06551a353c6daf3620160b58d73d
       tags:
-      - 0.16.25-1-g89860aba5
+      - 0.16.26-1-g0157e38e0
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: rename authorization to authentication (#3542)...'
-      sha: 89860aba589d974d9841417db79f7537e390581d
+      commitTitle: 'build(deps): bump dependencies (#3552)...'
+      sha: 0157e38e061b06551a353c6daf3620160b58d73d
       tags:
-      - 0.16.25-1-g89860aba5
+      - 0.16.26-1-g0157e38e0
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: rename authorization to authentication (#3542)...'
-      sha: 89860aba589d974d9841417db79f7537e390581d
+      commitTitle: 'build(deps): bump dependencies (#3552)...'
+      sha: 0157e38e061b06551a353c6daf3620160b58d73d
       tags:
-      - 0.16.25-1-g89860aba5
+      - 0.16.27
     path: ./
   path: ./graphql
 kind: LockConfig
