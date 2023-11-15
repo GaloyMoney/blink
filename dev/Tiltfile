@@ -44,6 +44,8 @@ local_resource(
     allow_parallel = True,
     resource_deps = [
         "hydra-dashboard",
+        "svix",
+        "svix-pg",
     ],
     links = [
         link("http://localhost:3001", "dashboard"),
