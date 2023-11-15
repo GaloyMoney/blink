@@ -20,6 +20,8 @@ use jwks::*;
 pub struct JwtClaims {
     sub: String,
     exp: u64,
+    #[serde(default)]
+    read_only: String,
 }
 
 pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) -> anyhow::Result<()> {
@@ -76,7 +78,10 @@ pub async fn graphql_handler(
 ) -> GraphQLResponse {
     let req = req.into_inner();
     schema
-        .execute(req.data(graphql::AuthSubject { id: jwt_claims.sub }))
+        .execute(req.data(graphql::AuthSubject {
+            id: jwt_claims.sub,
+            read_only: jwt_claims.read_only.eq("true"),
+        }))
         .await
         .into()
 }

@@ -5,6 +5,7 @@ use crate::{app::ApiKeysApp, identity::IdentityApiKeyId};
 
 pub struct AuthSubject {
     pub id: String,
+    pub read_only: bool,
 }
 
 #[derive(Clone, Copy)]
@@ -121,6 +122,9 @@ impl Mutation {
     ) -> async_graphql::Result<ApiKeyCreatePayload> {
         let app = ctx.data_unchecked::<ApiKeysApp>();
         let subject = ctx.data::<AuthSubject>()?;
+        if subject.read_only {
+            return Err("Permission denied".into());
+        }
         let key = app
             .create_api_key_for_subject(
                 &subject.id,

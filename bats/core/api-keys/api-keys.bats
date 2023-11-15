@@ -93,3 +93,11 @@ new_key_name() {
   name="$(graphql_output '.data.me.apiKeys[-1].name')"
   [[ "${name}" = "${key_name}" ]] || exit 1
 }
+
+@test "api-keys: read-only key cannot mutate" {
+  key_name="$(new_key_name)"
+  variables="{\"input\":{\"name\":\"${key_name}\"}}"
+  exec_graphql 'api-key-secret' 'api-key-create' "$variables"
+  errors="$(graphql_output '.errors | length')"
+  [[ "${errors}" = "1" ]] || exit 1
+}
