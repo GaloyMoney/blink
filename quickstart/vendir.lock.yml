@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build(deps): bump dependencies (#3552)...'
-      sha: 0157e38e061b06551a353c6daf3620160b58d73d
+      commitTitle: 'fix: audit command (#3459)'
+      sha: 2a7d79c8f0e34395d32258a7ac151a701863ccee
       tags:
-      - 0.16.26-1-g0157e38e0
+      - 0.16.27-2-g2a7d79c8f
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build(deps): bump dependencies (#3552)...'
-      sha: 0157e38e061b06551a353c6daf3620160b58d73d
+      commitTitle: 'fix: audit command (#3459)'
+      sha: 2a7d79c8f0e34395d32258a7ac151a701863ccee
       tags:
-      - 0.16.26-1-g0157e38e0
+      - 0.16.27-2-g2a7d79c8f
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'build(deps): bump dependencies (#3552)...'
-      sha: 0157e38e061b06551a353c6daf3620160b58d73d
+      commitTitle: 'fix: audit command (#3459)'
+      sha: 2a7d79c8f0e34395d32258a7ac151a701863ccee
       tags:
-      - 0.16.27
+      - 0.16.27-2-g2a7d79c8f
     path: ./
   path: ./graphql
 kind: LockConfig
