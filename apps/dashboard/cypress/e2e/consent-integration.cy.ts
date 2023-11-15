@@ -43,7 +43,8 @@ describe("Consent integration Test", () => {
 
       cy.get("[data-testid=submit_consent_btn]").should("exist")
       cy.get("[data-testid=submit_consent_btn]").should("be.visible")
-      cy.get("[data-testid=submit_consent_btn]").should("not.be.disabled").click()
+      cy.get("[data-testid=submit_consent_btn]").should("not.be.disabled")
+      cy.get("[data-testid=submit_consent_btn]").click()
 
       cy.wait(5000)
       cy.getCookie("next-auth.session-token").then((cookie) => {
