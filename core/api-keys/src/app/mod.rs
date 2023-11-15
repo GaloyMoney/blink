@@ -31,7 +31,7 @@ impl ApiKeysApp {
     pub async fn lookup_authenticated_subject(
         &self,
         key: &str,
-    ) -> Result<String, ApplicationError> {
+    ) -> Result<(String, bool), ApplicationError> {
         Ok(self.identities.find_subject_by_key(&key).await?)
     }
 
@@ -40,16 +40,21 @@ impl ApiKeysApp {
         &self,
         subject_id: &str,
         name: String,
+        expire_in_days: Option<u16>,
+        read_only: bool,
     ) -> Result<(IdentityApiKey, ApiKeySecret), ApplicationError> {
         let mut tx = self.pool.begin().await?;
         let id = self
             .identities
             .find_or_create_identity_for_subject_in_tx(&mut tx, subject_id)
             .await?;
-        let expiry = chrono::Utc::now() + self.config.default_expiry();
+        let expiry = chrono::Utc::now()
+            + expire_in_days
+                .map(|days| std::time::Duration::from_secs(days as u64 * 24 * 60 * 60))
+                .unwrap_or_else(|| self.config.default_expiry());
         let key = self
             .identities
-            .create_key_for_identity_in_tx(&mut tx, id, name, expiry)
+            .create_key_for_identity_in_tx(&mut tx, id, name, expiry, read_only)
             .await?;
         tx.commit().await?;
         Ok(key)

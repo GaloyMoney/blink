@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "UPDATE identity_api_keys k\n               SET revoked = true,\n                   revoked_at = NOW()\n               FROM identities i\n               WHERE k.identity_id = i.id\n               AND i.subject_id = $1\n               AND k.id = $2\n               RETURNING\n               k.name,\n               k.identity_id,\n               k.created_at,\n               k.expires_at,\n               k.revoked,\n               expires_at < NOW() AS \"expired!\",\n               k.last_used_at\n            ",
+  "query": "UPDATE identity_api_keys k\n               SET revoked = true,\n                   revoked_at = NOW()\n               FROM identities i\n               WHERE k.identity_id = i.id\n               AND i.subject_id = $1\n               AND k.id = $2\n               RETURNING\n               k.name,\n               k.identity_id,\n               k.created_at,\n               k.expires_at,\n               k.revoked,\n               expires_at < NOW() AS \"expired!\",\n               k.read_only,\n               k.last_used_at\n            ",
   "describe": {
     "columns": [
       {
@@ -35,6 +35,11 @@
       },
       {
         "ordinal": 6,
+        "name": "read_only",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
         "name": "last_used_at",
         "type_info": "Timestamptz"
       }
@@ -52,8 +57,9 @@
       false,
       false,
       null,
+      false,
       true
     ]
   },
-  "hash": "de6ccead87f1624a72b18a0c7f715f21c1d3caea71cf9d86ddee3180d3673995"
+  "hash": "f53f91f541e68cc541117f51440989b17bde77e7bfef55430bbe2ba75b1dfcbd"
 }

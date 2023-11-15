@@ -187,6 +187,7 @@ input ApiKeyCreateInput
 {
   name: String!
   expireInDays: Int
+  readOnly: Boolean! = false
 }
 
 type ApiKeyCreatePayload

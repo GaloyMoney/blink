@@ -102,6 +102,8 @@ pub struct Mutation;
 struct ApiKeyCreateInput {
     name: String,
     expire_in_days: Option<u16>,
+    #[graphql(default)]
+    read_only: bool,
 }
 
 #[derive(InputObject)]
@@ -119,7 +121,12 @@ impl Mutation {
         let app = ctx.data_unchecked::<ApiKeysApp>();
         let subject = ctx.data::<AuthSubject>()?;
         let key = app
-            .create_api_key_for_subject(&subject.id, input.name)
+            .create_api_key_for_subject(
+                &subject.id,
+                input.name,
+                input.expire_in_days,
+                input.read_only,
+            )
             .await?;
         Ok(ApiKeyCreatePayload::from(key))
     }

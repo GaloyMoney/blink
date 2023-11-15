@@ -57,6 +57,7 @@ pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) -> anyho
 #[derive(Debug, Serialize)]
 struct CheckResponse {
     sub: String,
+    read_only: bool,
 }
 
 async fn check_handler(
@@ -64,8 +65,8 @@ async fn check_handler(
     headers: HeaderMap,
 ) -> Result<Json<CheckResponse>, ApplicationError> {
     let key = headers.get(header).ok_or(ApplicationError::MissingApiKey)?;
-    let sub = app.lookup_authenticated_subject(key.to_str()?).await?;
-    Ok(Json(CheckResponse { sub }))
+    let (sub, read_only) = app.lookup_authenticated_subject(key.to_str()?).await?;
+    Ok(Json(CheckResponse { sub, read_only }))
 }
 
 pub async fn graphql_handler(

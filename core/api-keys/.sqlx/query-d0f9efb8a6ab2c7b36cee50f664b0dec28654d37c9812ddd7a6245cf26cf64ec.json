@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO identity_api_keys (encrypted_key, identity_id, name, expires_at)\n            VALUES (crypt($1, gen_salt('bf')), $2, $3, $4) RETURNING id, created_at",
+  "query": "INSERT INTO identity_api_keys (encrypted_key, identity_id, name, expires_at, read_only)\n            VALUES (crypt($1, gen_salt('bf')), $2, $3, $4, $5) RETURNING id, created_at",
   "describe": {
     "columns": [
       {
@@ -19,7 +19,8 @@
         "Text",
         "Uuid",
         "Varchar",
-        "Timestamptz"
+        "Timestamptz",
+        "Bool"
       ]
     },
     "nullable": [
@@ -27,5 +28,5 @@
       false
     ]
   },
-  "hash": "799aef2d29106de6822e1f66ee9f7a71d3c844edd6aef491af4621cf73e11234"
+  "hash": "d0f9efb8a6ab2c7b36cee50f664b0dec28654d37c9812ddd7a6245cf26cf64ec"
 }

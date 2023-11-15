@@ -20,6 +20,7 @@ pub struct IdentityApiKey {
     pub last_used_at: Option<chrono::DateTime<chrono::Utc>>,
     pub revoked: bool,
     pub expired: bool,
+    pub read_only: bool,
 }
 
 pub struct ApiKeySecret(String);
@@ -62,15 +63,17 @@ impl Identities {
         identity_id: IdentityId,
         name: String,
         expires_at: chrono::DateTime<chrono::Utc>,
+        read_only: bool,
     ) -> Result<(IdentityApiKey, ApiKeySecret), IdentityError> {
         let code = Alphanumeric.sample_string(&mut rand::thread_rng(), 64);
         let record = sqlx::query!(
-            r#"INSERT INTO identity_api_keys (encrypted_key, identity_id, name, expires_at)
-            VALUES (crypt($1, gen_salt('bf')), $2, $3, $4) RETURNING id, created_at"#,
+            r#"INSERT INTO identity_api_keys (encrypted_key, identity_id, name, expires_at, read_only)
+            VALUES (crypt($1, gen_salt('bf')), $2, $3, $4, $5) RETURNING id, created_at"#,
             code,
             identity_id as IdentityId,
             name,
             expires_at,
+            read_only,
         )
         .fetch_one(&mut **tx)
         .await?;
@@ -86,12 +89,13 @@ impl Identities {
                 revoked: false,
                 expired: false,
                 last_used_at: None,
+                read_only,
             },
             ApiKeySecret(key),
         ))
     }
 
-    pub async fn find_subject_by_key(&self, key: &str) -> Result<String, IdentityError> {
+    pub async fn find_subject_by_key(&self, key: &str) -> Result<(String, bool), IdentityError> {
         let code = match key.strip_prefix(&*self.key_prefix) {
             None => return Err(IdentityError::MismatchedPrefix),
             Some(code) => code,
@@ -106,16 +110,16 @@ impl Identities {
                  AND k.revoked = false
                  AND k.encrypted_key = crypt($1, k.encrypted_key)
                  AND k.expires_at > NOW()
-                 RETURNING k.id, i.subject_id
+                 RETURNING k.id, i.subject_id, k.read_only
                )
-               SELECT subject_id FROM updated_key"#,
+               SELECT subject_id, read_only FROM updated_key"#,
             code
         )
         .fetch_optional(&self.pool)
         .await?;
 
         if let Some(record) = record {
-            Ok(record.subject_id)
+            Ok((record.subject_id, record.read_only))
         } else {
             Err(IdentityError::NoActiveKeyFound)
         }
@@ -135,6 +139,7 @@ impl Identities {
                     a.expires_at,
                     revoked,
                     expires_at < NOW() AS "expired!",
+                    read_only,
                     last_used_at
             FROM
                 identities i
@@ -160,6 +165,7 @@ impl Identities {
                 revoked: record.revoked,
                 expired: record.expired,
                 last_used_at: record.last_used_at,
+                read_only: record.read_only,
             })
             .collect();
 
@@ -186,6 +192,7 @@ impl Identities {
                k.expires_at,
                k.revoked,
                expires_at < NOW() AS "expired!",
+               k.read_only,
                k.last_used_at
             "#,
             subject_id,
@@ -204,6 +211,7 @@ impl Identities {
                 revoked: record.revoked,
                 expired: record.expired,
                 last_used_at: record.last_used_at,
+                read_only: record.read_only,
             }),
             None => Err(IdentityError::KeyNotFoundForRevoke),
         }
