@@ -18,7 +18,7 @@ import jsonwebtoken from "jsonwebtoken"
 import jwksRsa from "jwks-rsa"
 import PinoHttp from "pino-http"
 
-import authRouter from "./authorization"
+import authRouter from "./authentication"
 import kratosCallback from "./event-handlers/kratos"
 import healthzHandler from "./middlewares/healthz"
 import { idempotencyMiddleware } from "./middlewares/idempotency"
