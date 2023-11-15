@@ -235,6 +235,10 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = "Invalid or incorrect code entered."
       return new VerificationCodeError({ message, logger: baseLogger })
 
+    case "EmailCodeExpiredError":
+      message = "Your code has expired."
+      return new VerificationCodeError({ message, logger: baseLogger })
+
     case "ExpiredOrNonExistentPhoneNumberError":
       message = "Invalid or incorrect phone entered."
       return new VerificationCodeError({ message, logger: baseLogger })

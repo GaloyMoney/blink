@@ -18,6 +18,7 @@ import { SchemaIdType } from "./schema"
 import { checkedToEmailAddress } from "@/domain/users"
 import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
 import {
+  EmailCodeExpiredError,
   EmailCodeInvalidError,
   EmailUnverifiedError,
   EmailValidationSubmittedTooOftenError,
@@ -93,22 +94,24 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
         },
       })
 
-      // https://github.com/ory/kratos/blob/b43c50cb8d46638f1b43d4f618dc3631a28cb719/text/id.go#L151
+      // https://github.com/ory/kratos/blob/master/text/id.go#L145
       const ValidationRecoveryCodeInvalidOrAlreadyUsedIdError = 4060006
+      const ValidationRecoveryCodeExpiredError = 4060005
       const ValidationRecoveryCodeRateLimitError = 4000001
-      if (
-        res.data.ui.messages?.[0].id === ValidationRecoveryCodeInvalidOrAlreadyUsedIdError
-      ) {
-        return new EmailCodeInvalidError()
-      }
 
-      if (res.data.ui.messages?.[0].id === ValidationRecoveryCodeRateLimitError) {
-        return new EmailValidationSubmittedTooOftenError()
+      const errorCode = res.data.ui.messages?.[0].id
+      switch (errorCode) {
+        case ValidationRecoveryCodeInvalidOrAlreadyUsedIdError:
+          return new EmailCodeInvalidError()
+        case ValidationRecoveryCodeExpiredError:
+          return new EmailCodeExpiredError()
+        case ValidationRecoveryCodeRateLimitError:
+          return new EmailValidationSubmittedTooOftenError()
+        default:
+          return new UnknownKratosError(
+            `should be a dead branch as 422 error code expected (${errorCode})`,
+          )
       }
-
-      return new UnknownKratosError(
-        `should be a dead branch as 422 error code expected (${res.data.ui.messages?.[0].id})`,
-      )
     } catch (err) {
       // the recovery flow assume that the user has an additional action
       // after the code has been verified to reset the password.

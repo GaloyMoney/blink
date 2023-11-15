@@ -8,6 +8,7 @@ export class AccountHasPositiveBalanceError extends AuthenticationError {}
 export class PhoneAlreadyExistsError extends AuthenticationError {}
 
 export class EmailCodeInvalidError extends AuthenticationError {}
+export class EmailCodeExpiredError extends AuthenticationError {}
 export class EmailUnverifiedError extends AuthenticationError {}
 export class AccountAlreadyHasEmailError extends AuthenticationError {}
 
