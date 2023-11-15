@@ -5,9 +5,9 @@ export const parseUnknownDomainErrorFromUnknown = (error: unknown): DomainError 
     error instanceof Error
       ? error
       : typeof error === "string"
-      ? new UnknownDomainError(error)
-      : error instanceof Object
-      ? new UnknownDomainError(JSON.stringify(error))
-      : new UnknownDomainError("Unknown error")
+        ? new UnknownDomainError(error)
+        : error instanceof Object
+          ? new UnknownDomainError(JSON.stringify(error))
+          : new UnknownDomainError("Unknown error")
   return err
 }

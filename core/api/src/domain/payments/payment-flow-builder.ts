@@ -44,8 +44,8 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
       destination === undefined
         ? SettlementMethod.IntraLedger
         : config.localNodeIds.includes(destination)
-        ? SettlementMethod.IntraLedger
-        : SettlementMethod.Lightning
+          ? SettlementMethod.IntraLedger
+          : SettlementMethod.Lightning
     return {
       settlementMethod,
       btcProtocolAndBankFee:
@@ -533,8 +533,8 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     const hash = state.paymentHash
       ? { paymentHash: state.paymentHash }
       : state.intraLedgerHash
-      ? { intraLedgerHash: state.intraLedgerHash }
-      : new InvalidLightningPaymentFlowStateError()
+        ? { intraLedgerHash: state.intraLedgerHash }
+        : new InvalidLightningPaymentFlowStateError()
     if (hash instanceof Error) return hash
 
     return PaymentFlow({

@@ -23,8 +23,8 @@ const LightningPaymentQuery = GT.Field({
       const paymentRequest = !(lightningPayment instanceof Error)
         ? lightningPayment.paymentRequest
         : "paymentRequest" in lightningPaymentFromLnd
-        ? lightningPaymentFromLnd.paymentRequest
-        : undefined
+          ? lightningPaymentFromLnd.paymentRequest
+          : undefined
 
       return {
         ...lightningPaymentFromLnd,
