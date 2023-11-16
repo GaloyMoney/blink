@@ -5,7 +5,7 @@
       "sourceMap": true,
       "strict": true,
       "target": "es2020",
-      "noImplicitAny": false,
+      "noImplicitAny": true,
       "useUnknownInCatchVariables": false,
       "esModuleInterop": true,
       "baseUrl": "./",

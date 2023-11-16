@@ -2,7 +2,6 @@
   "name": "galoy",
   "type": "module",
   "scripts": {
-    "tsc-check-noimplicitany": "tsc --noEmit -p tsconfig.no-implicit-any.json",
     "tsc-check": "tsc --noEmit",
     "eslint-check": "eslint \"{src,test}/**/*.ts\"",
     "eslint-fix": "eslint \"{src,test}/**/*.ts\" --fix",
