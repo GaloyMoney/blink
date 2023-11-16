@@ -5,6 +5,7 @@ load(
   "tsc_build",
   "prod_tsc_build",
   "prod_tsc_build_bin",
+  "audit",
   "eslint",
   "typescript_check",
   "yaml_check",
@@ -122,6 +123,11 @@ dev_update_file(
   out = "src/graphql/admin/schema.graphql"
 )
 
+audit(
+    name = "audit",
+    level = "critical",
+)
+
 eslint(
     name = "check-lint",
     srcs = [":src"] + [":test_src"] + glob([".eslint*"]),
@@ -152,6 +158,7 @@ madge_check(
 test_suite(
     name = "test-unit",
     tests = [
+        ":audit",
         ":check-lint",
         ":check-type",
         ":check-yaml",

@@ -42,3 +42,8 @@ export_file(
   name = "run_in_dir.py",
   visibility = ["PUBLIC"],
 )
+
+export_file(
+  name = "run_audit.py",
+  visibility = ["PUBLIC"],
+)
