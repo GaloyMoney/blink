@@ -14,6 +14,7 @@ import { TransactionsMetadataRepository } from "../services"
 
 import { translateToLedgerTx } from ".."
 
+import { isOnChainFeeReconciliationTxn } from "./onchain-reconcile"
 import { staticAccountIds } from "./static-account-ids"
 
 import {
@@ -168,7 +169,7 @@ export const setOnChainTxIdByPayoutId = async ({
 
   const bankOwnerWalletId = await getBankOwnerWalletId()
   const bankOwnerTxns = txns.filter(
-    (txn) => txn.satsFee && txn.walletId === bankOwnerWalletId,
+    (txn) => txn.walletId === bankOwnerWalletId && !isOnChainFeeReconciliationTxn(txn),
   )
   if (bankOwnerTxns.length !== 1) {
     return new InvalidLedgerTransactionStateError(`payoutId: ${payoutId}`)

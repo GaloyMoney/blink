@@ -514,6 +514,15 @@ describe("Bria Event Handlers", () => {
       })
       expect(res).toBe(true)
 
+      // Idempotency check
+      const resRerun = await registerBroadcastedPayout({
+        payoutId,
+        proportionalFee,
+        txId,
+        vout,
+      })
+      expect(resRerun).toBe(true)
+
       // Run after-broadcast checks
       const txnsAfter = await LedgerFacade.getTransactionsByPayoutId(payoutId)
       if (txnsAfter instanceof Error) throw txnsAfter
@@ -561,6 +570,15 @@ describe("Bria Event Handlers", () => {
         vout,
       })
       expect(res).toBe(true)
+
+      // Idempotency check
+      const resRerun = await registerBroadcastedPayout({
+        payoutId,
+        proportionalFee,
+        txId,
+        vout,
+      })
+      expect(resRerun).toBe(true)
 
       // Run after-broadcast checks
       const txnsAfter = await LedgerFacade.getTransactionsByPayoutId(payoutId)
@@ -616,6 +634,15 @@ describe("Bria Event Handlers", () => {
         vout,
       })
       expect(res).toBe(true)
+
+      // Idempotency check
+      const resRerun = await registerBroadcastedPayout({
+        payoutId,
+        proportionalFee,
+        txId,
+        vout,
+      })
+      expect(resRerun).toBe(true)
 
       // Run after-broadcast checks
       const txnsAfter = await LedgerFacade.getTransactionsByPayoutId(payoutId)
@@ -676,6 +703,15 @@ describe("Bria Event Handlers", () => {
         vout,
       })
       expect(res).toBeInstanceOf(UnknownLedgerError)
+
+      // Idempotency check
+      const resRerun = await registerBroadcastedPayout({
+        payoutId,
+        proportionalFee,
+        txId,
+        vout,
+      })
+      expect(resRerun).toBeInstanceOf(UnknownLedgerError)
 
       spy.mockRestore()
 
