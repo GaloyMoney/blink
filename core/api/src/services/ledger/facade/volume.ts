@@ -10,6 +10,7 @@ import { timestampDaysAgo } from "@/utils"
 
 import { paymentAmountFromNumber } from "@/domain/shared"
 import { addAttributesToCurrentSpan } from "@/services/tracing"
+import { MS_PER_DAY } from "@/config"
 
 export const TxnGroups = {
   allPaymentVolumeSince: [
@@ -21,6 +22,7 @@ export const TxnGroups = {
   ],
   externalPaymentVolumeSince: [
     LedgerTransactionType.Payment,
+    LedgerTransactionType.LnFeeReimbursement,
     LedgerTransactionType.OnchainPayment,
   ],
   intraledgerTxBaseVolumeSince: [
@@ -69,6 +71,34 @@ const TxVolumeAmountSinceFactory = () => {
             accounts: liabilitiesWalletId,
             $or: txnTypesObj,
             $and: [{ timestamp: { $gte: timestamp } }],
+          },
+        },
+        {
+          $lookup: {
+            from: "medici_transactions",
+            localField: "_original_journal",
+            foreignField: "_journal",
+            as: "original_transactions",
+          },
+        },
+        {
+          $addFields: {
+            is_transaction_valid: {
+              $or: [
+                { $eq: [{ $size: "$original_transactions" }, 0] },
+                {
+                  $gte: [
+                    { $arrayElemAt: ["$original_transactions.datetime", 0] },
+                    new Date(Date.now() - MS_PER_DAY),
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        {
+          $match: {
+            is_transaction_valid: true,
           },
         },
         {
