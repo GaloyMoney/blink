@@ -43,12 +43,13 @@ export async function createApiKey(
   token: string,
   name: string,
   expireInDays: number | null,
+  readOnly: boolean,
 ) {
   const client = apollo(token).getClient()
   try {
     const { data } = await client.mutate<ApiKeyCreateMutation>({
       mutation: ApiKeyCreateDocument,
-      variables: { input: { name, expireInDays } },
+      variables: { input: { name, expireInDays, readOnly } },
     })
     return data
   } catch (error) {

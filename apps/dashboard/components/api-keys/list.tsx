@@ -4,14 +4,18 @@ import Typography from "@mui/joy/Typography"
 import Divider from "@mui/joy/Divider"
 
 import RevokeKey from "./revoke"
-import { formatDate } from "./utils"
+import { formatDate, getScopeText } from "./utils"
 
 interface ApiKey {
-  id: string
-  name: string
-  createdAt: number
-  expiresAt: number
-  lastUsedAt?: number | null
+  readonly __typename: "ApiKey"
+  readonly id: string
+  readonly name: string
+  readonly createdAt: number
+  readonly revoked: boolean
+  readonly expired: boolean
+  readonly lastUsedAt?: number | null
+  readonly expiresAt: number
+  readonly readOnly: boolean
 }
 
 interface ApiKeysListProps {
@@ -32,26 +36,28 @@ const ApiKeysList: React.FC<ApiKeysListProps> = ({
         <thead>
           <tr>
             <th style={{ width: "20%" }}>Name</th>
-            <th style={{ width: "30%" }}>API Key ID</th>
-            <th style={{ width: "20%" }}>Expires At</th>
-            <th style={{ width: "20%" }}>Last Used</th>
-            <th style={{ width: "10%", textAlign: "right" }}>Action</th>
+            <th style={{ width: "25%" }}>API Key ID</th>
+            <th style={{ width: "15%" }}>Scope</th>
+            <th style={{ width: "15%" }}>Expires At</th>
+            <th style={{ width: "15%" }}>Last Used</th>
+            <th style={{ width: "5%", textAlign: "right" }}>Action</th>
           </tr>
         </thead>
         <tbody>
-          {activeKeys.map(({ id, name, expiresAt, lastUsedAt }) => (
-            <tr key={id}>
-              <td style={{ width: "20%" }}>{name}</td>
-              <td style={{ width: "30%" }}>{id}</td>
-              <td style={{ width: "20%" }}>{formatDate(expiresAt)}</td>
-              <td style={{ width: "20%" }}>
-                {lastUsedAt ? formatDate(lastUsedAt) : "Never"}
-              </td>
-              <td style={{ width: "10%", textAlign: "right" }}>
-                <RevokeKey id={id} />
-              </td>
-            </tr>
-          ))}
+          {activeKeys.map(({ id, name, expiresAt, lastUsedAt, readOnly }) => {
+            return (
+              <tr key={id}>
+                <td>{name}</td>
+                <td>{id}</td>
+                <td>{getScopeText(readOnly)}</td>
+                <td>{formatDate(expiresAt)}</td>
+                <td>{lastUsedAt ? formatDate(lastUsedAt) : "Never"}</td>
+                <td style={{ textAlign: "right" }}>
+                  <RevokeKey id={id} />
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </Table>
       {activeKeys.length === 0 && <Typography>No active keys to display.</Typography>}
@@ -62,19 +68,21 @@ const ApiKeysList: React.FC<ApiKeysListProps> = ({
       <Table aria-label="revoked keys table">
         <thead>
           <tr>
-            <th style={{ width: "25%" }}>Name</th>
-            <th style={{ width: "35%" }}>API Key ID</th>
-            <th style={{ width: "15%" }}>Created At</th>
+            <th style={{ width: "20%" }}>Name</th>
+            <th style={{ width: "25%" }}>API Key ID</th>
+            <th style={{ width: "15%" }}>Scope</th>
+            <th style={{ width: "20%" }}>Created At</th>
             <th style={{ textAlign: "right", width: "15%" }}>Status</th>
           </tr>
         </thead>
         <tbody>
-          {revokedKeys.map(({ id, name, createdAt }) => (
+          {revokedKeys.map(({ id, name, createdAt, readOnly }) => (
             <tr key={id}>
-              <td style={{ width: "25%" }}>{name}</td>
-              <td style={{ width: "35%" }}>{id}</td>
-              <td style={{ width: "15%" }}>{formatDate(createdAt)}</td>
-              <td style={{ textAlign: "right", width: "15%" }}>Revoked</td>
+              <td>{name}</td>
+              <td>{id}</td>
+              <td>{getScopeText(readOnly)}</td>
+              <td>{formatDate(createdAt)}</td>
+              <td style={{ textAlign: "right" }}>Revoked</td>
             </tr>
           ))}
         </tbody>
@@ -83,25 +91,26 @@ const ApiKeysList: React.FC<ApiKeysListProps> = ({
 
       <Divider />
 
+      {/* Expired Keys Section */}
       <Typography fontSize={22}>Expired Keys</Typography>
       <Table aria-label="expired keys table">
         <thead>
           <tr>
-            <th style={{ width: "25%" }}>Name</th>
-            <th style={{ width: "35%" }}>API Key ID</th>
+            <th style={{ width: "20%" }}>Name</th>
+            <th style={{ width: "25%" }}>API Key ID</th>
+            <th style={{ width: "15%" }}>Scope</th>
             <th style={{ width: "20%" }}>Created At</th>
             <th style={{ textAlign: "right", width: "15%" }}>Expires At</th>
           </tr>
         </thead>
         <tbody>
-          {expiredKeys.map(({ id, name, createdAt, expiresAt }) => (
+          {expiredKeys.map(({ id, name, createdAt, expiresAt, readOnly }) => (
             <tr key={id}>
-              <td style={{ width: "25%" }}>{name}</td>
-              <td style={{ width: "35%" }}>{id}</td>
-              <td style={{ width: "20%" }}>{formatDate(createdAt)}</td>
-              <td style={{ textAlign: "right", width: "15%" }}>
-                {formatDate(expiresAt)}
-              </td>
+              <td>{name}</td>
+              <td>{id}</td>
+              <td>{getScopeText(readOnly)}</td>
+              <td>{formatDate(createdAt)}</td>
+              <td style={{ textAlign: "right" }}>{formatDate(expiresAt)}</td>
             </tr>
           ))}
         </tbody>

@@ -13,6 +13,8 @@ import {
   Tooltip,
   Select,
   Option,
+  Radio,
+  RadioGroup,
 } from "@mui/joy"
 
 import InfoOutlined from "@mui/icons-material/InfoOutlined"
@@ -254,7 +256,17 @@ const ApiKeyCreate = () => {
                       {state.message}
                     </FormHelperText>
                   ) : null}
-
+                  <Box>
+                    <Typography>Scope</Typography>
+                    <RadioGroup defaultValue="readAndWrite" name="apiScope">
+                      <Radio value="readAndWrite" label="Read and Write" />
+                      <FormHelperText>
+                        Full access: read and write account details.
+                      </FormHelperText>
+                      <Radio value="readOnly" label="Read Only" />
+                      <FormHelperText>Limited access: view data only.</FormHelperText>
+                    </RadioGroup>
+                  </Box>
                   <Box
                     sx={{
                       display: "flex",
