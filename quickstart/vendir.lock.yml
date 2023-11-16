@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build: add audit buck build steps (#3561)...'
-      sha: d285b9e84ad35b87ca5279f8d6e23f9d235677c6
+      commitTitle: 'chore: prevent WalletInvoice deletion (#3557)...'
+      sha: 6b16663755df02135f9343a297eab831d122e8b5
       tags:
-      - 0.16.31-2-gd285b9e84
+      - 0.16.32-2-g6b1666375
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build: add audit buck build steps (#3561)...'
-      sha: d285b9e84ad35b87ca5279f8d6e23f9d235677c6
+      commitTitle: 'chore: prevent WalletInvoice deletion (#3557)...'
+      sha: 6b16663755df02135f9343a297eab831d122e8b5
       tags:
-      - 0.16.31-2-gd285b9e84
+      - 0.16.32-2-g6b1666375
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'build: add audit buck build steps (#3561)...'
-      sha: d285b9e84ad35b87ca5279f8d6e23f9d235677c6
+      commitTitle: 'chore: prevent WalletInvoice deletion (#3557)...'
+      sha: 6b16663755df02135f9343a297eab831d122e8b5
       tags:
-      - 0.16.31-2-gd285b9e84
+      - 0.16.32-2-g6b1666375
     path: ./
   path: ./graphql
 kind: LockConfig
