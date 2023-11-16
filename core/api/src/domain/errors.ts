@@ -118,6 +118,9 @@ export class MissingIPMetadataError extends ValidationError {}
 export class InvalidIpMetadataError extends ValidationError {
   level = ErrorLevel.Critical
 }
+export class NotEnoughBalanceForRewardError extends ValidationError {
+  level = ErrorLevel.Critical
+}
 
 export class UnauthorizedIPForOnboardingError extends AuthorizationError {}
 
