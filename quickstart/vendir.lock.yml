@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: add critical error for funder balance (#3535)'
-      sha: 80dd26f6d928af07562c9a003d10c64fc6a648c7
+      commitTitle: 'chore(api): unify separated no-implicit-any checks (#3559)'
+      sha: 2ceaf4acc61ff41cbc12ebfae74f80c8cd764f59
       tags:
-      - 0.16.29-2-g80dd26f6d
+      - 0.16.30-2-g2ceaf4acc
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: add critical error for funder balance (#3535)'
-      sha: 80dd26f6d928af07562c9a003d10c64fc6a648c7
+      commitTitle: 'chore(api): unify separated no-implicit-any checks (#3559)'
+      sha: 2ceaf4acc61ff41cbc12ebfae74f80c8cd764f59
       tags:
-      - 0.16.29-2-g80dd26f6d
+      - 0.16.30-2-g2ceaf4acc
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: add critical error for funder balance (#3535)'
-      sha: 80dd26f6d928af07562c9a003d10c64fc6a648c7
+      commitTitle: 'chore(api): unify separated no-implicit-any checks (#3559)'
+      sha: 2ceaf4acc61ff41cbc12ebfae74f80c8cd764f59
       tags:
-      - 0.16.29-2-g80dd26f6d
+      - 0.16.30-2-g2ceaf4acc
     path: ./
   path: ./graphql
 kind: LockConfig
