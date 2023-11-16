@@ -109,19 +109,9 @@ unit-in-ci:
 	. ./.env && \
 		LOGLEVEL=warn $(BIN_DIR)/jest --config ./test/unit/jest.config.js --ci --bail --maxWorkers=50%
 
-check-code:
-	pnpm run tsc-check
-	pnpm run eslint-check
-	pnpm run build
-	pnpm run check-yaml
-	pnpm run madge-check
-
 create-tmp-env-ci:
 	. ./.env && \
 	envsubst < ./.env.ci > tmp.env.ci
-
-audit:
-	bash -c 'pnpm audit --audit-level critical --ignore-registry-errors --json | jq -e ".metadata.vulnerabilities.critical > 0" && exit 1 || exit 0'
 
 mine-block:
 	container_id=$$(docker ps -q -f status=running -f name="bitcoind-1"); \

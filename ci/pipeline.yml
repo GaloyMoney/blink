@@ -5,8 +5,6 @@
 #@   "rust_task_image_config",
 #@   "nodejs_concourse_image",
 #@   "slack_failure_notification",
-#@   "nodejs_check_code",
-#@   "nodejs_audit",
 #@   "test_on_docker_host",
 #@   "docker_host_pool",
 #@   "repo_resource",
@@ -74,12 +72,11 @@ source:
 groups:
   - name: galoy
     jobs:
+      - buck-test
       - integration-tests
       - bats-tests
       - legacy-bats-tests
       - test-unit
-      - check-code
-      - audit
       - build-edge-image
       - build-debug-edge-image
       - build-migrate-edge-image
@@ -99,42 +96,25 @@ groups:
       - sync-bria-api-proto
 
 jobs:
-  - name: check-code
+  - name: buck-test
     serial: true
     plan:
-    - in_parallel:
-      - { get: repo, trigger: true }
-      - { get: pipeline-tasks }
-    - task: check-code
-      config:
-        platform: linux
-        image_resource: #@ galoy_dev_image_config()
-        inputs:
-        - name: pipeline-tasks
-        - name: repo
-        run:
-          path: pipeline-tasks/ci/tasks/check-code.sh
-    on_failure: #@ slack_failure_notification()
-  - name: audit
-    serial: true
-    plan:
-    - in_parallel:
-      - { get: repo, trigger: true }
-      - { get: pipeline-tasks }
-    - task: audit
-      config:
-        platform: linux
-        image_resource: #@ nodejs_task_image_config()
-        inputs:
-        - name: pipeline-tasks
-        - name: repo
-        params:
-          LEVEL: high
-          REPO_ROOT: repo/core/api
-        run:
-          path: pipeline-tasks/ci/vendor/tasks/nodejs-audit.sh
-    on_failure: #@ slack_failure_notification()
-
+      - in_parallel:
+          - get: repo
+            trigger: true
+          - { get: pipeline-tasks }
+      - task: buck-test-unit
+        config:
+          platform: linux
+          image_resource: #@ galoy_dev_image_config()
+          inputs:
+            - name: pipeline-tasks
+            - name: repo
+          params:
+            BUCK_TARGET: #@ "//core/api:test-unit"
+            BUCK_CMD: test
+          run:
+            path: pipeline-tasks/ci/apps/tasks/buck-task.sh
   - name: integration-tests
     #@ container = "integration-tests"
     #@ params = {}
@@ -666,9 +646,7 @@ jobs:
           - get: repo
             trigger: true
             passed:
-              - check-code
-              - audit
-              - test-unit
+              - buck-test
               - integration-tests
               - legacy-bats-tests
               - bats-tests

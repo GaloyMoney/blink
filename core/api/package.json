@@ -2,8 +2,6 @@
   "name": "api",
   "scripts": {
     "tsc-check": "tsc --noEmit",
-    "madge-check": "madge --circular --extensions ts ./src",
-    "madge-check-tests": "madge --circular --extensions ts ./test",
     "eslint-check": "eslint src test --ext .ts",
     "eslint-fix": "eslint src test --ext .ts --fix",
     "build": "tsc -p tsconfig-build.json && cp -R src/services/price/protos dist/services/price/ && cp -R src/services/dealer-price/proto dist/services/dealer-price/ && cp -R src/services/loopd/protos dist/services/loopd/ && cp -R src/services/bria/proto dist/services/bria/ && tscpaths --silent -p tsconfig.json -s ./src -o ./dist",
@@ -21,7 +19,6 @@
     "test:integration": ". ../../.env && LOGLEVEL=warn jest --config ./test/integration/jest.config.js --bail --runInBand --verbose $TEST",
     "build-docs": "npx spectaql spectaql-config.yml -1",
     "fix-yaml": "prettier --write '**/*.(yaml|yml)'",
-    "check-yaml": "prettier --check '**/*.(yaml|yml)'",
     "watch-main": ". ../../.env && nodemon -V -e ts,graphql -w ./src --exec pnpm run start-main",
     "start-main": ". ../../.env && pnpm run build && node --inspect -r ./dist/services/tracing.js ./dist/servers/graphql-main-server.js",
     "migrate-mongo-up": "migrate-mongo up -f './src/migrations/migrate-mongo-config.js'",
