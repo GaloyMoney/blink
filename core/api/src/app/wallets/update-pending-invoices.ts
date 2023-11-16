@@ -316,7 +316,6 @@ const updatePendingInvoiceBeforeFinally = async ({
       "invoices.finalRecipient": JSON.stringify(recipientWalletDescriptor),
     })
 
-    // Is this crossing the lock boundary?
     if (!lnInvoiceLookup.isSettled) {
       const invoiceSettled = await lndService.settleInvoice({ pubkey, secret })
       if (invoiceSettled instanceof Error) return invoiceSettled

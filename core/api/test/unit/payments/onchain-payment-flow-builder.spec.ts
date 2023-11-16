@@ -1122,10 +1122,10 @@ describe("OnChainPaymentFlowBuilder", () => {
                     amountCurrency === WalletCurrency.Usd
                       ? (sendAmount as UsdPaymentAmount)
                       : sendAmount.amount === 1n
-                      ? ONE_CENT
-                      : await convertForUsdWalletToUsdWallet.usdFromBtc(
-                          sendAmount as BtcPaymentAmount,
-                        )
+                        ? ONE_CENT
+                        : await convertForUsdWalletToUsdWallet.usdFromBtc(
+                            sendAmount as BtcPaymentAmount,
+                          )
 
                   checkAddress(payment)
                   checkSettlementMethod(payment)
@@ -1180,10 +1180,10 @@ describe("OnChainPaymentFlowBuilder", () => {
                     amountCurrency === WalletCurrency.Usd
                       ? (sendAmount as UsdPaymentAmount)
                       : sendAmount.amount === 1n
-                      ? ONE_CENT
-                      : await convertForUsdWalletToUsdWallet.usdFromBtc(
-                          sendAmount as BtcPaymentAmount,
-                        )
+                        ? ONE_CENT
+                        : await convertForUsdWalletToUsdWallet.usdFromBtc(
+                            sendAmount as BtcPaymentAmount,
+                          )
 
                   checkAddress(payment)
                   checkSettlementMethod(payment)

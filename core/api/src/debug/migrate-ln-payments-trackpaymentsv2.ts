@@ -102,23 +102,23 @@ const migrateLnPayment = async (
         payment.status === PaymentStatus.Pending
           ? partialLnPayment
           : payment.status === PaymentStatus.Failed
-          ? {
-              ...partialLnPayment,
-              status: PaymentStatus.Failed,
-              confirmedDetails: undefined,
-              attempts: undefined,
-              isCompleteRecord: true,
-            }
-          : {
-              ...partialLnPayment,
-              createdAt: payment.createdAt,
-              status: payment.status,
-              milliSatsAmount: payment.milliSatsAmount,
-              roundedUpAmount: payment.roundedUpAmount,
-              confirmedDetails: payment.confirmedDetails,
-              attempts: payment.attempts, // will be null, only comes from getPayments
-              isCompleteRecord: true,
-            }
+            ? {
+                ...partialLnPayment,
+                status: PaymentStatus.Failed,
+                confirmedDetails: undefined,
+                attempts: undefined,
+                isCompleteRecord: true,
+              }
+            : {
+                ...partialLnPayment,
+                createdAt: payment.createdAt,
+                status: payment.status,
+                milliSatsAmount: payment.milliSatsAmount,
+                roundedUpAmount: payment.roundedUpAmount,
+                confirmedDetails: payment.confirmedDetails,
+                attempts: payment.attempts, // will be null, only comes from getPayments
+                isCompleteRecord: true,
+              }
 
       const updatedPaymentLookup = await LnPaymentsRepository().persistNew(newLnPayment)
       if (updatedPaymentLookup instanceof Error) {
