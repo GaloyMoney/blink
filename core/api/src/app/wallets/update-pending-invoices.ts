@@ -116,10 +116,11 @@ export const declineHeldInvoice = wrapAsyncToRunInSpan({
     })
 
     if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
-      const isDeleted = await walletInvoicesRepo.deleteByPaymentHash(paymentHash)
-      if (isDeleted instanceof Error) {
-        pendingInvoiceLogger.error("impossible to delete WalletInvoice entry")
-        return isDeleted
+      const processingCompletedInvoice =
+        await walletInvoicesRepo.markAsProcessingCompleted(paymentHash)
+      if (processingCompletedInvoice instanceof Error) {
+        pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
+        return processingCompletedInvoice
       }
       return false
     }
@@ -148,9 +149,10 @@ export const declineHeldInvoice = wrapAsyncToRunInSpan({
     const invoiceSettled = await lndService.cancelInvoice({ pubkey, paymentHash })
     if (invoiceSettled instanceof Error) return invoiceSettled
 
-    const isDeleted = await walletInvoicesRepo.deleteByPaymentHash(paymentHash)
-    if (isDeleted instanceof Error) {
-      pendingInvoiceLogger.error("impossible to delete WalletInvoice entry")
+    const processingCompletedInvoice =
+      await walletInvoicesRepo.markAsProcessingCompleted(paymentHash)
+    if (processingCompletedInvoice instanceof Error) {
+      pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
     }
 
     return true
@@ -211,10 +213,11 @@ const updatePendingInvoiceBeforeFinally = async ({
 
   const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
   if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
-    const isDeleted = await walletInvoicesRepo.deleteByPaymentHash(paymentHash)
-    if (isDeleted instanceof Error) {
-      pendingInvoiceLogger.error("impossible to delete WalletInvoice entry")
-      return isDeleted
+    const processingCompletedInvoice =
+      await walletInvoicesRepo.markAsProcessingCompleted(paymentHash)
+    if (processingCompletedInvoice instanceof Error) {
+      pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
+      return processingCompletedInvoice
     }
     return false
   }
@@ -228,6 +231,17 @@ const updatePendingInvoiceBeforeFinally = async ({
   if (walletInvoice.paid) {
     pendingInvoiceLogger.info("invoice has already been processed")
     return true
+  }
+
+  if (lnInvoiceLookup.isCanceled) {
+    pendingInvoiceLogger.info("invoice has been canceled")
+    const processingCompletedInvoice =
+      await walletInvoicesRepo.markAsProcessingCompleted(paymentHash)
+    if (processingCompletedInvoice instanceof Error) {
+      pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
+      return processingCompletedInvoice
+    }
+    return false
   }
 
   if (!lnInvoiceLookup.isHeld && !lnInvoiceLookup.isSettled) {

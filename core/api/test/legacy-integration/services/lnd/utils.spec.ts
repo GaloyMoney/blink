@@ -1,8 +1,8 @@
 import { MS_PER_DAY, ONE_DAY } from "@/config"
-import { deleteExpiredWalletInvoice, updateRoutingRevenues } from "@/services/lnd/utils"
+import { updateRoutingRevenues } from "@/services/lnd/utils"
 import { baseLogger } from "@/services/logger"
 import { ledgerAdmin } from "@/services/mongodb"
-import { DbMetadata, WalletInvoice } from "@/services/mongoose/schema"
+import { DbMetadata } from "@/services/mongoose/schema"
 
 import { sleep, timestampDaysAgo } from "@/utils"
 
@@ -128,22 +128,5 @@ describe("lndUtils", () => {
     const endBalance = await ledgerAdmin.getBankOwnerBalance()
 
     expect((endBalance - initBalance) * 1000).toBeCloseTo(totalFees, 0)
-  })
-
-  it("deletes expired WalletInvoice without throw an exception", async () => {
-    const delta = 90 // days
-    const mockDate = new Date()
-    mockDate.setDate(mockDate.getDate() + delta)
-    jest.spyOn(global.Date, "now").mockImplementation(() => new Date(mockDate).valueOf())
-
-    const queryDate = new Date()
-    queryDate.setDate(queryDate.getDate() - delta)
-
-    const invoicesCount = await WalletInvoice.countDocuments({
-      timestamp: { $lt: queryDate },
-      paid: false,
-    })
-    const result = await deleteExpiredWalletInvoice()
-    expect(result).toBe(invoicesCount)
   })
 })

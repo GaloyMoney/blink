@@ -12,7 +12,6 @@ import {
 } from "@/services/tracing"
 import {
   deleteExpiredLightningPaymentFlows,
-  deleteExpiredWalletInvoice,
   deleteFailedPaymentsAttemptAllLnds,
   updateEscrows,
   updateRoutingRevenues,
@@ -38,10 +37,6 @@ const updatePendingLightningPayments = () => Payments.updatePendingPayments(logg
 const updateLegacyOnChainReceipt = async () => {
   const txNumber = await Wallets.updateLegacyOnChainReceipt({ logger })
   if (txNumber instanceof Error) throw txNumber
-}
-
-const deleteExpiredInvoices = async () => {
-  await deleteExpiredWalletInvoice()
 }
 
 const deleteExpiredPaymentFlows = async () => {
@@ -85,7 +80,6 @@ const main = async () => {
     ...(cronConfig.rebalanceEnabled ? [rebalance] : []),
     ...(cronConfig.swapEnabled ? [swapOutJob] : []),
     deleteExpiredPaymentFlows,
-    deleteExpiredInvoices,
     deleteLndPaymentsBefore2Months,
     deleteFailedPaymentsAttemptAllLnds,
   ]
