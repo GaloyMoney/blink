@@ -26,7 +26,7 @@ export const authOptions: AuthOptions = {
       clientSecret: env.CLIENT_SECRET,
       wellKnown: `${env.HYDRA_PUBLIC}/.well-known/openid-configuration`,
       authorization: {
-        params: { scope: "offline read write" },
+        params: { scope: "read write" },
       },
       idToken: false,
       name: "Blink",

@@ -93,7 +93,7 @@ code_client=$(hydra create client \
     --grant-type authorization_code \
     --response-type code,id_token \
     --format json \
-    --scope offline --scope read --scope write \
+    --scope read --scope write \
     --redirect-uri http://localhost:5555/callback \
     --token-endpoint-auth-method none \
 )
@@ -112,7 +112,7 @@ hydra perform authorization-code \
     --client-secret $CLIENT_SECRET \
     --endpoint http://localhost:4444/ \
     --port 5555 \
-    --scope offline --scope read --scope write
+    --scope read --scope write
 ```
 
 do the login and consent
