@@ -47,6 +47,8 @@ export const revokeApiKeyServerAction = async (id: string) => {
 
 export const createApiKeyServerAction = async (_prevState: unknown, form: FormData) => {
   const apiKeyName = form.get("apiKeyName")
+  const readOnly = form.get("apiScope") === "readOnly"
+
   if (!apiKeyName || typeof apiKeyName !== "string") {
     return {
       error: true,
@@ -72,7 +74,7 @@ export const createApiKeyServerAction = async (_prevState: unknown, form: FormDa
 
   let data
   try {
-    data = await createApiKey(token, apiKeyName, apiKeyExpiresInDays)
+    data = await createApiKey(token, apiKeyName, apiKeyExpiresInDays, readOnly)
   } catch (err) {
     console.log("error in createApiKey ", err)
     return {

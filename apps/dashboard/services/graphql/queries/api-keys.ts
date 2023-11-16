@@ -14,6 +14,7 @@ gql`
         expired
         lastUsedAt
         expiresAt
+        readOnly
       }
     }
   }
