@@ -608,6 +608,72 @@ def _npm_test_impl(
         DefaultInfo(default_output = args_file),
     ]
 
+def _audit_impl(ctx: AnalysisContext) -> list[[
+    DefaultInfo,
+    RunInfo,
+    ExternalRunnerTestInfo,
+]]:
+    pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
+
+    audit_args = cmd_args()
+    audit_args.add("--ignore-registry-errors")
+
+    run_cmd_args = cmd_args([
+        ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
+        pnpm_toolchain.run_audit[DefaultInfo].default_outputs,
+        "--audit-level",
+        ctx.attrs.level,
+        "--",
+        audit_args,
+    ])
+
+    args_file = ctx.actions.write("args.txt", run_cmd_args)
+
+    return inject_test_run_info(
+        ctx,
+        ExternalRunnerTestInfo(
+            type = "audit",
+            command = [run_cmd_args],
+        ),
+    ) + [
+        DefaultInfo(default_output = args_file),
+    ]
+
+_audit = rule(
+    impl = _audit_impl,
+    attrs = {
+        "level": attrs.enum(
+            ["low", "moderate", "high", "critical"],
+            default = "critical"
+        ),
+        "node_modules": attrs.source(
+            doc = """Target which builds `node_modules`.""",
+        ),
+        "_inject_test_env": attrs.default_only(
+            attrs.dep(default = "prelude//test/tools:inject_test_env"),
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
+
+def audit(
+        node_modules = ":node_modules",
+        visibility = ["PUBLIC"],
+        **kwargs):
+
+    _audit(
+        node_modules = node_modules,
+        visibility = visibility,
+        **kwargs,
+    )
+
 def eslint_impl(ctx: AnalysisContext) -> list[[
     DefaultInfo,
     RunInfo,
