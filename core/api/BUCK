@@ -158,6 +158,7 @@ madge_check(
 test_suite(
     name = "test-unit",
     tests = [
+        ":audit",
         ":check-lint",
         ":check-type",
         ":check-yaml",

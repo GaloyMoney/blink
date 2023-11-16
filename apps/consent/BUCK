@@ -82,6 +82,7 @@ eslint(
 test_suite(
     name = "test-unit",
     tests = [
+        ":audit",
         ":lint",
     ],
 )
