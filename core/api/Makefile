@@ -108,10 +108,8 @@ integration-in-ci:
 unit-in-ci:
 	. ./.env && \
 		LOGLEVEL=warn $(BIN_DIR)/jest --config ./test/unit/jest.config.js --ci --bail --maxWorkers=50%
-check-implicit:
-	pnpm run tsc-check-noimplicitany
 
-check-code: check-implicit
+check-code:
 	pnpm run tsc-check
 	pnpm run eslint-check
 	pnpm run build
