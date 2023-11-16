@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: prevent WalletInvoice deletion (#3557)...'
-      sha: 6b16663755df02135f9343a297eab831d122e8b5
+      commitTitle: 'chore: add index to WalletInvoice (#3563)...'
+      sha: 17ba06e373000b34375c10b96a7a9e9aa8e8fffb
       tags:
-      - 0.16.32-2-g6b1666375
+      - 0.16.33-1-g17ba06e37
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: prevent WalletInvoice deletion (#3557)...'
-      sha: 6b16663755df02135f9343a297eab831d122e8b5
+      commitTitle: 'chore: add index to WalletInvoice (#3563)...'
+      sha: 17ba06e373000b34375c10b96a7a9e9aa8e8fffb
       tags:
-      - 0.16.32-2-g6b1666375
+      - 0.16.33-1-g17ba06e37
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: prevent WalletInvoice deletion (#3557)...'
-      sha: 6b16663755df02135f9343a297eab831d122e8b5
+      commitTitle: 'chore: add index to WalletInvoice (#3563)...'
+      sha: 17ba06e373000b34375c10b96a7a9e9aa8e8fffb
       tags:
-      - 0.16.32-2-g6b1666375
+      - 0.16.33-1-g17ba06e37
     path: ./
   path: ./graphql
 kind: LockConfig
