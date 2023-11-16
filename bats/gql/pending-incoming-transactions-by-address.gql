@@ -1,4 +1,4 @@
-query pendingTransactionsByAddress($address: OnChainAddress!) {
+query pendingIncomingTransactionsByAddress($address: OnChainAddress!) {
   me {
     defaultAccount {
       displayCurrency
@@ -6,7 +6,7 @@ query pendingTransactionsByAddress($address: OnChainAddress!) {
         __typename
         id
         walletCurrency
-        pendingTransactionsByAddress(address: $address) {
+        pendingIncomingTransactionsByAddress(address: $address) {
           __typename
           id
           status

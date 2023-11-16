@@ -83,12 +83,12 @@ setup_file() {
   --arg address "$on_chain_address_created_1" \
   '{"address": $address}'
   )
-  exec_graphql 'alice' 'pending-transactions-by-address' "$address_1_pending_txns_variables"
+  exec_graphql 'alice' 'pending-incoming-transactions-by-address' "$address_1_pending_txns_variables"
   pending_txns_for_address_1=$(
     graphql_output '
       .data.me.defaultAccount.wallets[]
       | select(.__typename == "BTCWallet")
-      .pendingTransactionsByAddress'
+      .pendingIncomingTransactionsByAddress'
   )
   pending_txns_for_address_1_length="$(echo $pending_txns_for_address_1 | jq -r 'length')"
   [[ "$pending_txns_for_address_1_length" == "1" ]] || exit 1
@@ -101,12 +101,12 @@ setup_file() {
   --arg address "$on_chain_address_created_2" \
   '{"address": $address}'
   )
-  exec_graphql 'alice' 'pending-transactions-by-address' "$address_2_pending_txns_variables"
+  exec_graphql 'alice' 'pending-incoming-transactions-by-address' "$address_2_pending_txns_variables"
   pending_txns_for_address_2=$(
     graphql_output '
       .data.me.defaultAccount.wallets[]
       | select(.__typename == "BTCWallet")
-      .pendingTransactionsByAddress'
+      .pendingIncomingTransactionsByAddress'
   )
   pending_txns_for_address_2_length="$(echo $pending_txns_for_address_2 | jq -r 'length')"
   [[ "$pending_txns_for_address_2_length" == "1" ]] || exit 1
@@ -114,10 +114,10 @@ setup_file() {
   [[ "$address_2_from_pending_txns" == "$on_chain_address_created_2" ]]
 
   # Check pending transactions for account
-  exec_graphql 'alice' 'pending-transactions'
+  exec_graphql 'alice' 'pending-incoming-transactions'
   pending_txns_for_account=$(
     graphql_output '
-      .data.me.defaultAccount.pendingTransactions'
+      .data.me.defaultAccount.pendingIncomingTransactions'
   )
   pending_txns_for_account_length="$(echo $pending_txns_for_account | jq -r 'length')"
   [[ "$pending_txns_for_account_length" == "2" ]] || exit 1
@@ -169,7 +169,7 @@ setup_file() {
   exec_graphql 'alice' 'pending-transactions'
   pending_txns_for_account=$(
     graphql_output '
-      .data.me.defaultAccount.pendingTransactions'
+      .data.me.defaultAccount.pendingIncomingTransactions'
   )
   pending_txns_for_account_length="$(echo $pending_txns_for_account | jq -r 'length')"
   [[ "$pending_txns_for_account_length" == "0" ]] || exit 1
@@ -232,12 +232,12 @@ setup_file() {
   --arg address "$on_chain_address_created" \
   '{"address": $address}'
   )
-  exec_graphql 'alice' 'pending-transactions-by-address' "$address_pending_txns_variables"
+  exec_graphql 'alice' 'pending-incoming-transactions-by-address' "$address_pending_txns_variables"
   pending_txns_for_address=$(
     graphql_output '
       .data.me.defaultAccount.wallets[]
       | select(.__typename == "UsdWallet")
-      .pendingTransactionsByAddress'
+      .pendingIncomingTransactionsByAddress'
   )
   pending_txns_for_address_length="$(echo $pending_txns_for_address | jq -r 'length')"
   [[ "$pending_txns_for_address_length" == "1" ]] || exit 1
@@ -245,10 +245,10 @@ setup_file() {
   [[ "$address_from_pending_txns" == "$on_chain_address_created" ]]
 
   # Check pending transactions for account
-  exec_graphql 'alice' 'pending-transactions'
+  exec_graphql 'alice' 'pending-incoming-transactions'
   pending_txns_for_account=$(
     graphql_output '
-      .data.me.defaultAccount.pendingTransactions'
+      .data.me.defaultAccount.pendingIncomingTransactions'
   )
   pending_txns_for_account_length="$(echo $pending_txns_for_account | jq -r 'length')"
   [[ "$pending_txns_for_account_length" == "1" ]] || exit 1
@@ -257,90 +257,13 @@ setup_file() {
   retry 15 1 check_for_onchain_initiated_settled 'alice' "$on_chain_address_created" 1
 
   # Ensure no pending transactions for account
-  exec_graphql 'alice' 'pending-transactions'
+  exec_graphql 'alice' 'pending-incoming-transactions'
   pending_txns_for_account=$(
     graphql_output '
-      .data.me.defaultAccount.pendingTransactions'
+      .data.me.defaultAccount.pendingIncomingTransactions'
   )
   pending_txns_for_account_length="$(echo $pending_txns_for_account | jq -r 'length')"
   [[ "$pending_txns_for_account_length" == "0" ]] || exit 1  
-}
-
-@test "onchain-receive: process received batch transaction" {
-  alice_btc_wallet_name="alice.btc_wallet_id"
-  bob_usd_wallet_name="bob.usd_wallet_id"
-  amount="0.01"
-
-  # Create Alice addresses
-  alice_variables=$(
-    jq -n \
-    --arg wallet_id "$(read_value $alice_btc_wallet_name)" \
-    '{input: {walletId: $wallet_id}}'
-  )
-
-  exec_graphql 'alice' 'on-chain-address-create' "$alice_variables"
-  alice_address_1="$(graphql_output '.data.onChainAddressCreate.address')"
-  [[ "${alice_address_1}" != "null" ]] || exit 1
-
-  exec_graphql 'alice' 'on-chain-address-create' "$alice_variables"
-  alice_address_2="$(graphql_output '.data.onChainAddressCreate.address')"
-  [[ "${alice_address_2}" != "null" ]] || exit 1
-
-  # Create Bob addresses
-  bob_variables=$(
-    jq -n \
-    --arg wallet_id "$(read_value $bob_usd_wallet_name)" \
-    '{input: {walletId: $wallet_id}}'
-  )
-
-  exec_graphql 'bob' 'on-chain-address-create' "$bob_variables"
-  bob_address_1="$(graphql_output '.data.onChainAddressCreate.address')"
-  [[ "${bob_address_1}" != "null" ]] || exit 1
-
-  # Create psbt & broadcast transaction
-  psbt_outputs=$(
-    jq -c -n \
-    --arg alice_address_1 "$alice_address_1" \
-    --arg alice_address_2 "$alice_address_2" \
-    --arg bob_address_1 "$bob_address_1" \
-    --argjson amount "$amount" \
-    '{
-      ($alice_address_1): $amount,
-      ($alice_address_2): $amount,
-      ($bob_address_1): $amount
-    }'
-  )
-  unsigned_psbt=$(bitcoin_cli walletcreatefundedpsbt '[]' $psbt_outputs | jq -r '.psbt')
-  signed_psbt=$(bitcoin_cli walletprocesspsbt "$unsigned_psbt" | jq -r '.psbt')
-  tx_hex=$(bitcoin_cli finalizepsbt "$signed_psbt" | jq -r '.hex')
-  txid=$(bitcoin_cli sendrawtransaction "$tx_hex")
-
-  retry 15 1 check_for_broadcast 'alice' "$alice_address_1" 2
-  retry 3 1 check_for_broadcast 'alice' "$alice_address_2" 2
-  retry 3 1 check_for_broadcast 'bob' "$bob_address_1" 1
-
-  # Check 'pendingIncomingBalance' query
-  exec_graphql 'alice' 'wallets-for-account'
-  alice_btc_pending_incoming=$(graphql_output '
-    .data.me.defaultAccount.wallets[]
-    | select(.walletCurrency == "BTC")
-    .pendingIncomingBalance
-  ')
-  [[ "$alice_btc_pending_incoming" -gt 0 ]] || exit 1
-
-  exec_graphql 'bob' 'wallets-for-account'
-  bob_usd_pending_incoming=$(graphql_output '
-    .data.me.defaultAccount.wallets[]
-    | select(.walletCurrency == "USD")
-    .pendingIncomingBalance
-  ')
-  [[ "$bob_usd_pending_incoming" -gt 0 ]] || exit 1
-
-  # Mine transactions
-  bitcoin_cli -generate 2
-  retry 15 1 check_for_onchain_initiated_settled 'alice' "$alice_address_1" 2
-  retry 3 1 check_for_onchain_initiated_settled 'alice' "$alice_address_2" 2
-  retry 3 1 check_for_onchain_initiated_settled 'bob' "$bob_address_1" 1
 }
 
 @test "onchain-receive: process received batch transaction" {
