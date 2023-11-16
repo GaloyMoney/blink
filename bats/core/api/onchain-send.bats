@@ -1,5 +1,6 @@
 #!/usr/bin/env bats
 
+load "../../helpers/cli.bash"
 load "../../helpers/user.bash"
 load "../../helpers/funding/onchain.bash"
 load "../../helpers/funding/wallet.bash"
@@ -14,6 +15,15 @@ setup_file() {
   user_update_username 'bob'
   fund_user_onchain 'bob' 'btc_wallet'
   fund_user_onchain 'bob' 'usd_wallet'
+}
+
+generate_trigger_logs() {
+  tilt_cli logs api-trigger > .e2e-trigger.log
+}
+
+grep_in_trigger_logs() {
+  generate_trigger_logs
+  grep $1 .e2e-trigger.log
 }
 
 @test "onchain-send: settle trade intraccount" {
@@ -426,7 +436,6 @@ setup_file() {
   [[ "${amount}" == 0 ]] || exit 1
 }
 
-
 @test "onchain-send: cancel external payout" {
   payout_id=$(bria_cli submit-payout \
     -w dev-wallet \
@@ -436,7 +445,8 @@ setup_file() {
     | jq -r '.id'
   )
   [[ "${payout_id}" != "null" ]] || exit 1
-  retry 10 1 grep "sequence.*payout_submitted.*${payout_id}" .e2e-trigger.log
+
+  retry 10 1 grep_in_trigger_logs "sequence.*payout_submitted.*${payout_id}"
 
   last_sequence=$(
     grep "sequence" .e2e-trigger.log \
@@ -446,7 +456,7 @@ setup_file() {
   [[ -n "${last_sequence}" ]] || exit 1
 
   bria_cli cancel-payout -i ${payout_id}
-  retry 10 1 grep "sequence\":${sequence}.*payout_cancelled.*${payout_id}" .e2e-trigger.log
+  retry 10 1 grep_in_trigger_logs "sequence.*payout_cancelled.*${payout_id}"
 }
 
 @test "onchain-send: cancel internal payout" {
@@ -481,7 +491,7 @@ setup_file() {
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
   # Parse payout_id value
-  retry 10 1 grep "sequence\":${sequence}.*payout_submitted" .e2e-trigger.log
+  retry 10 1 grep_in_trigger_logs "sequence\":${sequence}.*payout_submitted"
   payout_id=$(
     grep "sequence.*payout_submitted" .e2e-trigger.log \
     | tail -n 1 \
@@ -490,5 +500,5 @@ setup_file() {
 
   # Check for cancelled event
   bria_cli cancel-payout -i ${payout_id}
-  retry 10 1 grep "sequence.*payout_cancelled.*${payout_id}" .e2e-trigger.log
+  retry 10 1 grep_in_trigger_logs "sequence.*payout_cancelled.*${payout_id}"
 }
