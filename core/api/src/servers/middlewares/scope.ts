@@ -14,7 +14,6 @@ const readAuthorize = async (
 ) => {
   const scope = context.scope
 
-  console.log("SCOPE ", scope)
   // not a token with scope
   if (scope === undefined || scope.length === 0) {
     return resolve(parent, args, context, info)
