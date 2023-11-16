@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Runs a program in a directory.
+Runs audit for npm dependencies.
 """
 import argparse
 import json

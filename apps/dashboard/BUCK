@@ -4,7 +4,8 @@ load(
   "build_node_modules",
   "next_build",
   "next_build_bin",
-  "eslint"
+  "eslint",
+  "audit",
 )
 
 dev_pnpm_task_binary(
@@ -54,6 +55,11 @@ next_build_bin(
 dev_deps_srcs = {
     "lib/eslint-config": "//lib/eslint-config:src",
 }
+
+audit(
+    name = "audit",
+    level = "critical",
+)
 
 eslint(
     name = "lint",

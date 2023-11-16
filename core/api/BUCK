@@ -5,6 +5,7 @@ load(
   "tsc_build",
   "prod_tsc_build",
   "prod_tsc_build_bin",
+  "audit",
   "eslint",
   "typescript_check",
   "yaml_check",
@@ -120,6 +121,11 @@ dev_update_file(
   name = "update-admin-schema",
   generated = ":admin-sdl",
   out = "src/graphql/admin/schema.graphql"
+)
+
+audit(
+    name = "audit",
+    level = "critical",
 )
 
 eslint(
