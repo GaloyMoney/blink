@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): handle email code expired kratos error (#3556)'
-      sha: a262a32efae76366c4ca0a6f0568644bfd7f68c2
+      commitTitle: 'chore: add critical error for funder balance (#3535)'
+      sha: 80dd26f6d928af07562c9a003d10c64fc6a648c7
       tags:
-      - 0.16.28-1-ga262a32ef
+      - 0.16.29-2-g80dd26f6d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): handle email code expired kratos error (#3556)'
-      sha: a262a32efae76366c4ca0a6f0568644bfd7f68c2
+      commitTitle: 'chore: add critical error for funder balance (#3535)'
+      sha: 80dd26f6d928af07562c9a003d10c64fc6a648c7
       tags:
-      - 0.16.28-1-ga262a32ef
+      - 0.16.29-2-g80dd26f6d
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(core): handle email code expired kratos error (#3556)'
-      sha: a262a32efae76366c4ca0a6f0568644bfd7f68c2
+      commitTitle: 'chore: add critical error for funder balance (#3535)'
+      sha: 80dd26f6d928af07562c9a003d10c64fc6a648c7
       tags:
-      - 0.16.28-1-ga262a32ef
+      - 0.16.29-2-g80dd26f6d
     path: ./
   path: ./graphql
 kind: LockConfig
