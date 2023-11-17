@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): improve lightning resilience (#3497)'
-      sha: e2e39ee4355b16e9cd20bb674aad224cc2cd3f19
+      commitTitle: 'fix: alert on test phone (#3566)...'
+      sha: 09de196cafbc80ea8a93e3ed1cda5d520d21af4d
       tags:
-      - 0.16.37-2-ge2e39ee43
+      - 0.16.38-1-g09de196ca
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): improve lightning resilience (#3497)'
-      sha: e2e39ee4355b16e9cd20bb674aad224cc2cd3f19
+      commitTitle: 'fix: alert on test phone (#3566)...'
+      sha: 09de196cafbc80ea8a93e3ed1cda5d520d21af4d
       tags:
-      - 0.16.37-2-ge2e39ee43
+      - 0.16.38-1-g09de196ca
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(core): improve lightning resilience (#3497)'
-      sha: e2e39ee4355b16e9cd20bb674aad224cc2cd3f19
+      commitTitle: 'fix: alert on test phone (#3566)...'
+      sha: 09de196cafbc80ea8a93e3ed1cda5d520d21af4d
       tags:
-      - 0.16.37-2-ge2e39ee43
+      - 0.16.38-1-g09de196ca
     path: ./
   path: ./graphql
 kind: LockConfig
