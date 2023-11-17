@@ -6,7 +6,7 @@ describe("test-accounts", () => {
 
   it("valid user account", () =>
     expect(
-      TestAccountsChecker(testAccounts).isPhoneAndCodeValid({
+      TestAccountsChecker(testAccounts).isPhoneTestAndCodeValid({
         code: testAccounts[0].code,
         phone: testAccounts[0].phone,
       }),
@@ -14,7 +14,7 @@ describe("test-accounts", () => {
 
   it("mix (invalid) user account", () =>
     expect(
-      TestAccountsChecker(testAccounts).isPhoneAndCodeValid({
+      TestAccountsChecker(testAccounts).isPhoneTestAndCodeValid({
         code: testAccounts[1].code,
         phone: testAccounts[0].phone,
       }),
@@ -22,7 +22,7 @@ describe("test-accounts", () => {
 
   it("wrong phone", () =>
     expect(
-      TestAccountsChecker(testAccounts).isPhoneAndCodeValid({
+      TestAccountsChecker(testAccounts).isPhoneTestAndCodeValid({
         code: testAccounts[1].code,
         phone: "+19999999999" as PhoneNumber,
       }),
@@ -30,7 +30,7 @@ describe("test-accounts", () => {
 
   it("empty code", () =>
     expect(
-      TestAccountsChecker(testAccounts).isPhoneAndCodeValid({
+      TestAccountsChecker(testAccounts).isPhoneTestAndCodeValid({
         code: "" as PhoneCode,
         phone: "+19999999999" as PhoneNumber,
       }),

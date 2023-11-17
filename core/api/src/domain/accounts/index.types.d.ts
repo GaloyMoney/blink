@@ -178,8 +178,8 @@ type TestAccount = {
 }
 
 type TestAccountsChecker = (testAccounts: TestAccount[]) => {
-  isPhoneValid: (phone: PhoneNumber) => boolean
-  isPhoneAndCodeValid: ({
+  isPhoneTest: (phone: PhoneNumber) => boolean
+  isPhoneTestAndCodeValid: ({
     code,
     phone,
   }: {
