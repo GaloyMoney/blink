@@ -29,10 +29,7 @@ import {
   settleHodlInvoice,
 } from "lightning"
 import lnService from "ln-service"
-
 import sumBy from "lodash.sumby"
-
-import { KnownLndErrorDetails } from "./errors"
 
 import {
   getActiveLnd,
@@ -42,9 +39,12 @@ import {
   parseLndErrorDetails,
 } from "./config"
 
+import { checkAllLndHealth } from "./health"
+
+import { KnownLndErrorDetails } from "./errors"
+
 import { NETWORK, SECS_PER_5_MINS } from "@/config"
 
-import { toMilliSatsFromString, toSats } from "@/domain/bitcoin"
 import {
   BadPaymentDataError,
   CorruptLndDbError,
@@ -76,9 +76,10 @@ import {
   UnknownRouteNotFoundError,
   decodeInvoice,
 } from "@/domain/bitcoin/lightning"
-import { IncomingOnChainTransaction } from "@/domain/bitcoin/onchain"
 import { CacheKeys } from "@/domain/cache"
 import { LnFees } from "@/domain/payments"
+import { toMilliSatsFromString, toSats } from "@/domain/bitcoin"
+import { IncomingOnChainTransaction } from "@/domain/bitcoin/onchain"
 import { WalletCurrency, paymentAmountFromNumber } from "@/domain/shared"
 
 import { LocalCacheService } from "@/services/cache"
@@ -95,16 +96,20 @@ export const LndService = (): ILightningService | LightningServiceError => {
   const defaultLnd = activeNode.lnd
   const defaultPubkey = activeNode.pubkey as Pubkey
 
-  const activeOnchainNode = getActiveOnchainLnd()
-  if (activeOnchainNode instanceof Error) return activeOnchainNode
-
-  const defaultOnchainLnd = activeOnchainNode.lnd
+  const defaultOnchainLnd = () => {
+    const activeOnchainNode = getActiveOnchainLnd()
+    if (activeOnchainNode instanceof Error) return activeOnchainNode
+    return activeOnchainNode.lnd
+  }
 
   const isLocal = (pubkey: Pubkey): boolean | LightningServiceError =>
     getLnds({ type: "offchain" }).some((item) => item.pubkey === pubkey)
 
   const listActivePubkeys = (): Pubkey[] =>
     getLnds({ active: true, type: "offchain" }).map((lndAuth) => lndAuth.pubkey as Pubkey)
+
+  const listActiveLnd = (): AuthenticatedLnd[] =>
+    getLnds({ active: true, type: "offchain" }).map((lndAuth) => lndAuth.lnd)
 
   const listAllPubkeys = (): Pubkey[] =>
     getLnds({ type: "offchain" }).map((lndAuth) => lndAuth.pubkey as Pubkey)
@@ -127,7 +132,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     pubkey?: Pubkey,
   ): Promise<Satoshis | LightningServiceError> => {
     try {
-      const lndInstance = pubkey ? getLndFromPubkey({ pubkey }) : defaultOnchainLnd
+      const lndInstance = pubkey ? getLndFromPubkey({ pubkey }) : defaultOnchainLnd()
       if (lndInstance instanceof Error) return lndInstance
 
       const { chain_balance } = await getChainBalance({ lnd: lndInstance })
@@ -141,7 +146,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     pubkey?: Pubkey,
   ): Promise<Satoshis | LightningServiceError> => {
     try {
-      const lndInstance = pubkey ? getLndFromPubkey({ pubkey }) : defaultOnchainLnd
+      const lndInstance = pubkey ? getLndFromPubkey({ pubkey }) : defaultOnchainLnd()
       if (lndInstance instanceof Error) return lndInstance
 
       const { pending_chain_balance } = await getPendingChainBalance({ lnd: lndInstance })
@@ -179,8 +184,11 @@ export const LndService = (): ILightningService | LightningServiceError => {
       // this is necessary for tests, otherwise `after` may be negative
       const after = Math.max(0, blockHeight - scanDepth)
 
+      const lnd = defaultOnchainLnd()
+      if (lnd instanceof Error) return lnd
+
       const txs = await getChainTransactions({
-        lnd: defaultOnchainLnd,
+        lnd,
         after,
       })
 
@@ -478,15 +486,18 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const registerInvoice = async ({
+  const registerLndInvoice = async ({
+    lnd,
     paymentHash,
     sats,
     description,
     descriptionHash,
     expiresAt,
-  }: RegisterInvoiceArgs): Promise<RegisteredInvoice | LightningServiceError> => {
+  }: RegisterInvoiceArgs & { lnd: AuthenticatedLnd }): Promise<
+    RegisteredInvoice | LightningServiceError
+  > => {
     const input = {
-      lnd: defaultLnd,
+      lnd,
       id: paymentHash,
       description,
       description_hash: descriptionHash,
@@ -509,6 +520,30 @@ export const LndService = (): ILightningService | LightningServiceError => {
     } catch (err) {
       return handleCommonLightningServiceErrors(err)
     }
+  }
+
+  const registerInvoice = async ({
+    paymentHash,
+    sats,
+    description,
+    descriptionHash,
+    expiresAt,
+  }: RegisterInvoiceArgs): Promise<RegisteredInvoice | LightningServiceError> => {
+    const lnds = listActiveLnd()
+    for (const lnd of lnds) {
+      const result = await registerLndInvoice({
+        lnd,
+        paymentHash,
+        sats,
+        description,
+        descriptionHash,
+        expiresAt,
+      })
+      if (isConnectionError(result)) continue
+      return result
+    }
+
+    return new OffChainServiceUnavailableError("no active lightning node (for offchain)")
   }
 
   const lookupInvoice = async ({
@@ -782,11 +817,13 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const payInvoiceViaPaymentDetails = async ({
+  const payInvoiceViaPaymentDetailsWithLnd = async ({
+    lnd,
     decodedInvoice,
     btcPaymentAmount,
     maxFeeAmount,
   }: {
+    lnd: AuthenticatedLnd
     decodedInvoice: LnInvoice
     btcPaymentAmount: BtcPaymentAmount
     maxFeeAmount: BtcPaymentAmount | undefined
@@ -808,7 +845,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
 
     const paymentDetailsArgs: PayViaPaymentDetailsArgs = {
-      lnd: defaultLnd,
+      lnd,
       id: decodedInvoice.paymentHash,
       destination: decodedInvoice.destination,
       mtokens: milliSatsAmount.toString(),
@@ -854,6 +891,30 @@ export const LndService = (): ILightningService | LightningServiceError => {
       cancelTimeout()
       return handleSendPaymentLndErrors({ err, paymentHash: decodedInvoice.paymentHash })
     }
+  }
+
+  const payInvoiceViaPaymentDetails = async ({
+    decodedInvoice,
+    btcPaymentAmount,
+    maxFeeAmount,
+  }: {
+    decodedInvoice: LnInvoice
+    btcPaymentAmount: BtcPaymentAmount
+    maxFeeAmount: BtcPaymentAmount | undefined
+  }): Promise<PayInvoiceResult | LightningServiceError> => {
+    const lnds = listActiveLnd()
+    for (const lnd of lnds) {
+      const result = await payInvoiceViaPaymentDetailsWithLnd({
+        lnd,
+        decodedInvoice,
+        btcPaymentAmount,
+        maxFeeAmount,
+      })
+      if (isConnectionError(result)) continue
+      return result
+    }
+
+    return new OffChainServiceUnavailableError("no active lightning node (for offchain)")
   }
 
   return wrapAsyncFunctionsToRunInSpan({
@@ -982,16 +1043,17 @@ const lookupPaymentByPubkeyAndHash = async ({
   }
 }
 
-/* eslint @typescript-eslint/ban-ts-comment: "off" */
-// @ts-ignore-next-line no-implicit-any error
-const translateLnPaymentLookup = (p): LnPaymentLookup => ({
+const isPaymentConfirmed = (p: PaymentResult): p is ConfirmedPaymentResult =>
+  p.is_confirmed
+
+const translateLnPaymentLookup = (p: PaymentResult): LnPaymentLookup => ({
   createdAt: new Date(p.created_at),
   status: p.is_confirmed ? PaymentStatus.Settled : PaymentStatus.Pending,
   paymentHash: p.id as PaymentHash,
   paymentRequest: p.request as EncodedPaymentRequest,
   milliSatsAmount: toMilliSatsFromString(p.mtokens),
   roundedUpAmount: toSats(p.safe_tokens),
-  confirmedDetails: p.is_confirmed
+  confirmedDetails: isPaymentConfirmed(p)
     ? {
         confirmedAt: new Date(p.confirmed_at),
         destination: p.destination as Pubkey,
@@ -1139,8 +1201,10 @@ const handleCommonLightningServiceErrors = (err: Error | unknown) => {
   switch (true) {
     case match(KnownLndErrorDetails.ConnectionDropped):
     case match(KnownLndErrorDetails.NoConnectionEstablished):
+      checkAllLndHealth()
       return new OffChainServiceUnavailableError()
     case match(KnownLndErrorDetails.ConnectionRefused):
+      checkAllLndHealth()
       return new OffChainServiceBusyError()
     default:
       return new UnknownLightningServiceError(msgForUnknown(err as LnError))
@@ -1153,6 +1217,7 @@ const handleCommonRouteNotFoundErrors = (err: Error | unknown) => {
   switch (true) {
     case match(KnownLndErrorDetails.ConnectionDropped):
     case match(KnownLndErrorDetails.NoConnectionEstablished):
+      checkAllLndHealth()
       return new OffChainServiceUnavailableError()
 
     case match(KnownLndErrorDetails.MissingDependentFeature):
@@ -1162,6 +1227,10 @@ const handleCommonRouteNotFoundErrors = (err: Error | unknown) => {
       return new UnknownRouteNotFoundError(msgForUnknown(err as LnError))
   }
 }
+
+const isConnectionError = (result: unknown | LightningServiceError): boolean =>
+  result instanceof OffChainServiceUnavailableError ||
+  result instanceof OffChainServiceBusyError
 
 const msgForUnknown = (err: LnError) =>
   JSON.stringify({

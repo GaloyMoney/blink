@@ -8,6 +8,20 @@ type GetPaymentsArgs = import("lightning").GetPaymentsArgs
 type GetPendingPaymentsArgs = import("lightning").GetPendingPaymentsArgs
 type GetPendingPaymentsResult = import("lightning").GetPendingPaymentsResult
 
+type ConfirmedPaymentResult = Extract<
+  GetPaymentsResult,
+  { payments: unknown }
+>["payments"][0]
+type PendingPaymentResult = Extract<
+  GetPendingPaymentsResult,
+  { payments: unknown }
+>["payments"][0]
+type FailedPaymentResult = Extract<
+  GetFailedPaymentsResult,
+  { payments: unknown }
+>["payments"][0]
+type PaymentResult = ConfirmedPaymentResult | PendingPaymentResult | FailedPaymentResult
+
 type PaymentFnFactory =
   | import("lightning").AuthenticatedLightningMethod<
       GetFailedPaymentsArgs,
