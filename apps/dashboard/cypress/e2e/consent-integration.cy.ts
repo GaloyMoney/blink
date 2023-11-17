@@ -29,17 +29,13 @@ describe("Consent integration Test", () => {
       cy.get("[data-testid=verification_code_input]").should("be.visible")
       cy.get("[data-testid=verification_code_input]").should("not.be.disabled").type(code)
 
-      cy.contains("label", "offline").should("exist")
-      cy.contains("label", "offline").should("be.visible")
-      cy.contains("label", "offline").should("not.be.disabled").click()
+      cy.contains("label", "read").should("exist")
+      cy.contains("label", "read").should("be.visible")
+      cy.contains("label", "read").should("not.be.disabled").click()
 
-      cy.contains("label", "transactions:read").should("exist")
-      cy.contains("label", "transactions:read").should("be.visible")
-      cy.contains("label", "transactions:read").should("not.be.disabled").click()
-
-      cy.contains("label", "payments:send").should("exist")
-      cy.contains("label", "payments:send").should("be.visible")
-      cy.contains("label", "payments:send").should("not.be.disabled").click()
+      cy.contains("label", "write").should("exist")
+      cy.contains("label", "write").should("be.visible")
+      cy.contains("label", "write").should("not.be.disabled").click()
 
       cy.get("[data-testid=submit_consent_btn]").should("exist")
       cy.get("[data-testid=submit_consent_btn]").should("be.visible")
