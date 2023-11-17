@@ -59,7 +59,7 @@ export const requestPhoneCodeWithCaptcha = async ({
   }
 
   const testAccounts = getTestAccounts()
-  if (TestAccountsChecker(testAccounts).isPhoneValid(phone)) {
+  if (TestAccountsChecker(testAccounts).isPhoneTest(phone)) {
     return true
   }
 
@@ -100,7 +100,7 @@ export const requestPhoneCodeForAuthedUser = async ({
   }
 
   const testAccounts = getTestAccounts()
-  if (TestAccountsChecker(testAccounts).isPhoneValid(phone)) {
+  if (TestAccountsChecker(testAccounts).isPhoneTest(phone)) {
     return true
   }
 

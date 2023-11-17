@@ -1,8 +1,11 @@
+import { TestAccountsChecker } from "../accounts/test-accounts-checker"
+
 import {
   MissingRegistrationPayloadPropertiesError,
   UnsupportedSchemaTypeError,
 } from "./errors"
 
+import { getTestAccounts } from "@/config"
 import { checkedToUserId } from "@/domain/accounts"
 import { checkedToPhoneNumber, PhoneMetadataValidator } from "@/domain/users"
 
@@ -33,21 +36,25 @@ export const RegistrationPayloadValidator = (
     const userIdChecked = checkedToUserId(userIdRaw)
     if (userIdChecked instanceof Error) return userIdChecked
 
-    const phoneChecked = checkedToPhoneNumber(phoneRaw)
-    if (phoneChecked instanceof Error) return phoneChecked
+    const phone = checkedToPhoneNumber(phoneRaw)
+    if (phone instanceof Error) return phone
 
     const rawPhoneMetadata = transient_payload?.phoneMetadata
 
     let phoneMetadata: PhoneMetadata | undefined = undefined
-    if (rawPhoneMetadata !== undefined) {
-      const validated = PhoneMetadataValidator().validate(rawPhoneMetadata)
-      if (validated instanceof Error) return validated
-      phoneMetadata = validated
+
+    const testAccounts = getTestAccounts()
+    if (!TestAccountsChecker(testAccounts).isPhoneTest(phone)) {
+      if (rawPhoneMetadata !== undefined) {
+        const validated = PhoneMetadataValidator().validate(rawPhoneMetadata)
+        if (validated instanceof Error) return validated
+        phoneMetadata = validated
+      }
     }
 
     return {
       userId: userIdChecked,
-      phone: phoneChecked,
+      phone,
       phoneMetadata,
     }
   }

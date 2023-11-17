@@ -198,8 +198,8 @@ export const isPhoneCodeValid = async ({
   }
 
   const testAccounts = getTestAccounts()
-  if (TestAccountsChecker(testAccounts).isPhoneValid(phone)) {
-    const validTestCode = TestAccountsChecker(testAccounts).isPhoneAndCodeValid({
+  if (TestAccountsChecker(testAccounts).isPhoneTest(phone)) {
+    const validTestCode = TestAccountsChecker(testAccounts).isPhoneTestAndCodeValid({
       code,
       phone,
     })
