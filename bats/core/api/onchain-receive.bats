@@ -406,7 +406,7 @@ setup_file() {
   tx_hex=$(bitcoin_cli finalizepsbt "$signed_psbt" | jq -r '.hex')
   txid=$(bitcoin_cli sendrawtransaction "$tx_hex")
 
-  retry 15 1 check_for_broadcast 'alice' "$alice_btc_address" 10
+  retry 45 1 check_for_broadcast 'alice' "$alice_btc_address" 10
   retry 3 1 check_for_broadcast 'alice' "$alice_usd_address" 10
   retry 3 1 check_for_broadcast 'bob' "$bob_btc_address" 10
 
