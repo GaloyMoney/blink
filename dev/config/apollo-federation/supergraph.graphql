@@ -180,6 +180,7 @@ type ApiKey
   expired: Boolean!
   lastUsedAt: Timestamp
   expiresAt: Timestamp!
+  readOnly: Boolean!
 }
 
 input ApiKeyCreateInput
@@ -187,6 +188,7 @@ input ApiKeyCreateInput
 {
   name: String!
   expireInDays: Int
+  readOnly: Boolean! = false
 }
 
 type ApiKeyCreatePayload

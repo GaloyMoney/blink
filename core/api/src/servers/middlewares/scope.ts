@@ -3,9 +3,9 @@ import { GraphQLResolveInfo, GraphQLFieldResolver } from "graphql"
 import ScopesOauth2 from "@/domain/authorization"
 import { AuthorizationError } from "@/domain/errors"
 import { mapError } from "@/graphql/error-map"
-import { mutationFields } from "@/graphql/public"
+import { mutationFields, queryFields } from "@/graphql/public"
 
-const readTransactionsAuthorize = async (
+const readAuthorize = async (
   resolve: GraphQLFieldResolver<unknown, GraphQLPublicContextAuth>,
   parent: unknown,
   args: unknown,
@@ -13,27 +13,20 @@ const readTransactionsAuthorize = async (
   info: GraphQLResolveInfo,
 ) => {
   const scope = context.scope
-  const appId = context.appId
 
-  // not a delegated token
-  if (appId === undefined || appId === "") {
-    return resolve(parent, args, context, info)
-  }
-
+  // not a token with scope
   if (scope === undefined || scope.length === 0) {
-    return mapError(
-      new AuthorizationError("appId is defined but scope is undefined or empty"),
-    )
-  }
-
-  if (scope.find((s) => s === ScopesOauth2.TransactionsRead) !== undefined) {
     return resolve(parent, args, context, info)
   }
 
-  return mapError(new AuthorizationError("not authorized to read transactions"))
+  if (scope.find((s) => s === ScopesOauth2.Read) !== undefined) {
+    return resolve(parent, args, context, info)
+  }
+
+  return mapError(new AuthorizationError("not authorized to read data"))
 }
 
-const paymentSendAuthorize = async (
+const writeAuthorize = async (
   resolve: GraphQLFieldResolver<unknown, GraphQLPublicContextAuth>,
   parent: unknown,
   args: unknown,
@@ -41,26 +34,21 @@ const paymentSendAuthorize = async (
   info: GraphQLResolveInfo,
 ) => {
   const scope = context.scope
-  const appId = context.appId
 
-  // not a delegated token
-  if (appId === undefined || appId === "") {
+  // not a token with scope
+  if (scope === undefined || scope.length === 0) {
     return resolve(parent, args, context, info)
   }
 
-  if (scope === undefined) {
-    return mapError(new AuthorizationError("appId is defined but scope is undefined"))
-  }
-
-  if (scope.find((s) => s === ScopesOauth2.PaymentsSend) !== undefined) {
+  if (scope.find((s) => s === ScopesOauth2.Write) !== undefined) {
     return resolve(parent, args, context, info)
   }
 
-  return mapError(new AuthorizationError("not authorized to send payments"))
+  return mapError(new AuthorizationError("not authorized to execute mutations"))
 }
 
 // Placed here because 'GraphQLFieldResolver' not working from .d.ts file
-type ValidateWalletIdFn = (
+type ValidateFn = (
   resolve: GraphQLFieldResolver<unknown, GraphQLPublicContextAuth>,
   parent: unknown,
   args: unknown,
@@ -68,14 +56,23 @@ type ValidateWalletIdFn = (
   info: GraphQLResolveInfo,
 ) => Promise<unknown>
 
-const walletIdMutationFields: { [key: string]: ValidateWalletIdFn } = {}
-for (const key of Object.keys(mutationFields.authed.atWalletLevel)) {
-  walletIdMutationFields[key] = paymentSendAuthorize
+const authedQueryFields: { [key: string]: ValidateFn } = {}
+for (const key of Object.keys({
+  ...queryFields.authed.atAccountLevel,
+  ...queryFields.authed.atWalletLevel,
+})) {
+  authedQueryFields[key] = readAuthorize
+}
+
+const authedMutationFields: { [key: string]: ValidateFn } = {}
+for (const key of Object.keys({
+  ...mutationFields.authed.atAccountLevel,
+  ...mutationFields.authed.atWalletLevel,
+})) {
+  authedMutationFields[key] = writeAuthorize
 }
 
 export const scopeMiddleware = {
-  Query: {
-    me: readTransactionsAuthorize,
-  },
-  Mutation: walletIdMutationFields,
+  Query: authedQueryFields,
+  Mutation: authedMutationFields,
 }

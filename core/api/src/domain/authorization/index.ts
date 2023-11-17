@@ -1,6 +1,5 @@
 export const ScopesOauth2 = {
-  TransactionsRead: "transactions:read",
-  Offline: "offline",
-  PaymentsSend: "payments:send",
+  Read: "read",
+  Write: "write",
 } as const
 export default ScopesOauth2

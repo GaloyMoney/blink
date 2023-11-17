@@ -33,6 +33,10 @@ new_key_name() {
 
   name=$(echo "$key" | jq -r '.name')
   [[ "${name}" = "${key_name}" ]] || exit 1
+
+  readOnly=$(echo "$key" | jq -r '.readOnly')
+  [[ "${readOnly}" = "false" ]] || exit 1
+
   key_id=$(echo "$key" | jq -r '.id')
   cache_value "api-key-id" "$key_id"
 
@@ -66,4 +70,45 @@ new_key_name() {
 
   error="$(graphql_output '.error.code')"
   [[ "${error}" = "401" ]] || exit 1
+}
+
+@test "api-keys: can create read-only" {
+  key_name="$(new_key_name)"
+
+  variables="{\"input\":{\"name\":\"${key_name}\",\"readOnly\": true}}"
+
+  exec_graphql 'alice' 'api-key-create' "$variables"
+  key="$(graphql_output '.data.apiKeyCreate.apiKey')"
+  secret="$(graphql_output '.data.apiKeyCreate.apiKeySecret')"
+  cache_value "api-key-secret" "$secret"
+
+  readOnly=$(echo "$key" | jq -r '.readOnly')
+  [[ "${readOnly}" = "true" ]] || exit 1
+
+  key_id=$(echo "$key" | jq -r '.id')
+  cache_value "api-key-id" "$key_id"
+
+  exec_graphql 'api-key-secret' 'api-keys'
+
+  name="$(graphql_output '.data.me.apiKeys[-1].name')"
+  [[ "${name}" = "${key_name}" ]] || exit 1
+}
+
+@test "api-keys: read-only key cannot mutate" {
+  key_name="$(new_key_name)"
+
+  variables="{\"input\":{\"name\":\"${key_name}\"}}"
+  exec_graphql 'api-key-secret' 'api-key-create' "$variables"
+  errors="$(graphql_output '.errors | length')"
+  [[ "${errors}" = "1" ]] || exit 1
+
+  variables="{\"input\":{\"currency\":\"USD\"}}"
+  exec_graphql 'api-key-secret' 'update-display-currency' "$variables"
+  errors="$(graphql_output '.errors | length')"
+  [[ "${errors}" = "1" ]] || exit 1
+
+  # Sanity check that it works with alice
+  exec_graphql 'alice' 'update-display-currency' "$variables"
+  errors="$(graphql_output '.errors | length')"
+  [[ "${errors}" = "0" ]] || exit 1
 }

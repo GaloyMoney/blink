@@ -5,6 +5,7 @@ use crate::{app::ApiKeysApp, identity::IdentityApiKeyId};
 
 pub struct AuthSubject {
     pub id: String,
+    pub read_only: bool,
 }
 
 #[derive(Clone, Copy)]
@@ -62,6 +63,7 @@ pub(super) struct ApiKey {
     pub expired: bool,
     pub last_used_at: Option<Timestamp>,
     pub expires_at: Timestamp,
+    pub read_only: bool,
 }
 
 #[derive(SimpleObject)]
@@ -102,6 +104,8 @@ pub struct Mutation;
 struct ApiKeyCreateInput {
     name: String,
     expire_in_days: Option<u16>,
+    #[graphql(default)]
+    read_only: bool,
 }
 
 #[derive(InputObject)]
@@ -118,8 +122,16 @@ impl Mutation {
     ) -> async_graphql::Result<ApiKeyCreatePayload> {
         let app = ctx.data_unchecked::<ApiKeysApp>();
         let subject = ctx.data::<AuthSubject>()?;
+        if subject.read_only {
+            return Err("Permission denied".into());
+        }
         let key = app
-            .create_api_key_for_subject(&subject.id, input.name)
+            .create_api_key_for_subject(
+                &subject.id,
+                input.name,
+                input.expire_in_days,
+                input.read_only,
+            )
             .await?;
         Ok(ApiKeyCreatePayload::from(key))
     }

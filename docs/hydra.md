@@ -54,8 +54,8 @@ code_client=$(hydra create client \
     --response-type code,id_token \
     --format json \
     --scope offline \
-    --scope transactions:read \
-    --scope payments:send \
+    --scope read \
+    --scope write \
     --redirect-uri $NEXTAUTH_URL/api/auth/callback/blink \
     --skip-consent
 )
@@ -69,8 +69,8 @@ code_client_app_=$(hydra create client \
     --grant-type authorization_code \
     --response-type code,id_token \
     --format json \
-    --scope transactions:read \
-    --scope payments:send \
+    --scope read \
+    --scope write \
     --scope openid \
     --redirect-uri http://localhost:3001/keys/create/callback \
     --skip-consent
@@ -93,7 +93,7 @@ code_client=$(hydra create client \
     --grant-type authorization_code \
     --response-type code,id_token \
     --format json \
-    --scope offline --scope transactions:read --scope payments:send \
+    --scope read --scope write \
     --redirect-uri http://localhost:5555/callback \
     --token-endpoint-auth-method none \
 )
@@ -112,7 +112,7 @@ hydra perform authorization-code \
     --client-secret $CLIENT_SECRET \
     --endpoint http://localhost:4444/ \
     --port 5555 \
-    --scope offline --scope transactions:read --scope payments:send
+    --scope read --scope write
 ```
 
 do the login and consent

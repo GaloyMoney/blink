@@ -9,6 +9,7 @@ query apiKeys {
       revoked
       createdAt
       expiresAt
+      readOnly
     }
   }
 }

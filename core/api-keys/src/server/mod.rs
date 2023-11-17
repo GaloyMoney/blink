@@ -20,6 +20,8 @@ use jwks::*;
 pub struct JwtClaims {
     sub: String,
     exp: u64,
+    #[serde(default)]
+    scope: String,
 }
 
 pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) -> anyhow::Result<()> {
@@ -57,6 +59,7 @@ pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) -> anyho
 #[derive(Debug, Serialize)]
 struct CheckResponse {
     sub: String,
+    scope: String,
 }
 
 async fn check_handler(
@@ -64,8 +67,13 @@ async fn check_handler(
     headers: HeaderMap,
 ) -> Result<Json<CheckResponse>, ApplicationError> {
     let key = headers.get(header).ok_or(ApplicationError::MissingApiKey)?;
-    let sub = app.lookup_authenticated_subject(key.to_str()?).await?;
-    Ok(Json(CheckResponse { sub }))
+    let (sub, read_only) = app.lookup_authenticated_subject(key.to_str()?).await?;
+    let scope = if read_only {
+        crate::scope::read_only_scope()
+    } else {
+        crate::scope::read_write_scope()
+    };
+    Ok(Json(CheckResponse { sub, scope }))
 }
 
 pub async fn graphql_handler(
@@ -74,8 +82,12 @@ pub async fn graphql_handler(
     req: GraphQLRequest,
 ) -> GraphQLResponse {
     let req = req.into_inner();
+    let read_only = crate::scope::is_read_only(&jwt_claims.scope);
     schema
-        .execute(req.data(graphql::AuthSubject { id: jwt_claims.sub }))
+        .execute(req.data(graphql::AuthSubject {
+            id: jwt_claims.sub,
+            read_only,
+        }))
         .await
         .into()
 }

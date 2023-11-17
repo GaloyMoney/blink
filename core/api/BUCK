@@ -14,7 +14,7 @@ load(
 load("@toolchains//rover:macros.bzl", "sdl", "diff_check", "dev_update_file")
 
 dev_pnpm_task_binary(
-  name = "lint-fix",
+  name = "fix-lint",
   command = "eslint-fix",
 )
 

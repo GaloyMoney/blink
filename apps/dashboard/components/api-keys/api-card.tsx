@@ -3,16 +3,18 @@ import React from "react"
 import { Card, Divider, Typography, Box } from "@mui/joy"
 
 import RevokeKey from "./revoke"
-import { formatDate } from "./utils"
+import { formatDate, getScopeText } from "./utils"
 
 interface ApiKey {
-  id: string
-  name: string
-  createdAt: number
-  expiresAt: number
-  lastUsedAt?: number | null | undefined
-  expired: boolean
-  revoked: boolean
+  readonly __typename: "ApiKey"
+  readonly id: string
+  readonly name: string
+  readonly createdAt: number
+  readonly revoked: boolean
+  readonly expired: boolean
+  readonly lastUsedAt?: number | null
+  readonly expiresAt: number
+  readonly readOnly: boolean
 }
 
 interface ApiKeysCardProps {
@@ -46,6 +48,10 @@ const ApiKeysCard: React.FC<ApiKeysCardProps> = ({
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <Typography fontSize={13}>Expires At</Typography>
               <Typography fontSize={13}>{formatDate(key.expiresAt)}</Typography>
+            </Box>
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Typography fontSize={13}>Scope</Typography>
+              <Typography fontSize={13}>{getScopeText(key.readOnly)}</Typography>
             </Box>
             {!key.revoked && !key.expired && <RevokeKey id={key.id} />}
           </Card>

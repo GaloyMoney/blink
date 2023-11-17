@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT\n                i.id AS identity_id,\n                a.id AS api_key_id,\n                    a.name,\n                    a.created_at,\n                    a.expires_at,\n                    revoked,\n                    expires_at < NOW() AS \"expired!\",\n                    last_used_at\n            FROM\n                identities i\n            JOIN\n                identity_api_keys a\n                ON i.id = a.identity_id\n            WHERE\n                i.subject_id = $1\n            ",
+  "query": "\n            SELECT\n                i.id AS identity_id,\n                a.id AS api_key_id,\n                    a.name,\n                    a.created_at,\n                    a.expires_at,\n                    revoked,\n                    expires_at < NOW() AS \"expired!\",\n                    read_only,\n                    last_used_at\n            FROM\n                identities i\n            JOIN\n                identity_api_keys a\n                ON i.id = a.identity_id\n            WHERE\n                i.subject_id = $1\n            ",
   "describe": {
     "columns": [
       {
@@ -40,6 +40,11 @@
       },
       {
         "ordinal": 7,
+        "name": "read_only",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 8,
         "name": "last_used_at",
         "type_info": "Timestamptz"
       }
@@ -57,8 +62,9 @@
       false,
       false,
       null,
+      false,
       true
     ]
   },
-  "hash": "99bc6db0b354e8a7ef70fe64d2bd7dd5da9d3d4f6ffa47296e8678fa902cf5e4"
+  "hash": "fa550a28f90f8cdbacf62f56e642ee52d743b27cebe180e712ea808cef3798da"
 }
