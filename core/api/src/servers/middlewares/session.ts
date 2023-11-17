@@ -17,7 +17,7 @@ export const sessionPublicContext = async ({
 }: {
   tokenPayload: jsonwebtoken.JwtPayload
   ip: IpAddress | undefined
-}): Promise<GraphQLPublicContext | GraphQLPublicContextAuth | Error> => {
+}): Promise<GraphQLPublicContext | GraphQLPublicContextAuth> => {
   const logger = baseLogger.child({ tokenPayload })
 
   let domainAccount: Account | undefined
@@ -36,46 +36,46 @@ export const sessionPublicContext = async ({
   const maybeUserId = checkedToUserId(sub ?? "")
 
   if (!(maybeUserId instanceof ValidationError)) {
+    const defaultContext = {
+      logger,
+      loaders,
+      ip,
+      sessionId: undefined,
+    }
     const userId = maybeUserId
     const account = await Accounts.getAccountFromUserId(userId)
     if (account instanceof Error) {
-      return account
-    } else {
-      domainAccount = account
-      // not awaiting on purpose. just updating metadata
-      // TODO: look if this can be a source of memory leaks
-      Accounts.updateAccountIPsInfo({
-        accountId: account.id,
-        ip,
-        logger,
+      recordExceptionInCurrentSpan({
+        level: "critical",
+        error: account,
+        fallbackMsg: "error executing sessionPublicContext",
       })
-
-      if (sessionId && expiresAt) {
-        maybeExtendSession({ sessionId, expiresAt })
-      }
-
-      const userRes = await UsersRepository().findById(account.kratosUserId)
-      if (userRes instanceof Error) return userRes
-      user = userRes
+      return defaultContext
     }
-  }
 
-  const loaders = {
-    txnMetadata: new DataLoader(async (keys) => {
-      const txnMetadata = await Transactions.getTransactionsMetadataByIds(
-        keys as LedgerTransactionId[],
-      )
-      if (txnMetadata instanceof Error) {
-        recordExceptionInCurrentSpan({
-          error: txnMetadata,
-          level: txnMetadata.level,
-        })
+    domainAccount = account
+    // not awaiting on purpose. just updating metadata
+    // TODO: look if this can be a source of memory leaks
+    Accounts.updateAccountIPsInfo({
+      accountId: account.id,
+      ip,
+      logger,
+    })
 
-        return keys.map(() => undefined)
-      }
+    if (sessionId && expiresAt) {
+      maybeExtendSession({ sessionId, expiresAt })
+    }
 
-      return txnMetadata
-    }),
+    const userRes = await UsersRepository().findById(account.kratosUserId)
+    if (userRes instanceof Error) {
+      recordExceptionInCurrentSpan({
+        level: "critical",
+        error: userRes,
+        fallbackMsg: "error executing sessionPublicContext",
+      })
+      return defaultContext
+    }
+    user = userRes
   }
 
   return {
@@ -88,4 +88,22 @@ export const sessionPublicContext = async ({
     scope,
     appId,
   }
+}
+
+const loaders = {
+  txnMetadata: new DataLoader(async (keys) => {
+    const txnMetadata = await Transactions.getTransactionsMetadataByIds(
+      keys as LedgerTransactionId[],
+    )
+    if (txnMetadata instanceof Error) {
+      recordExceptionInCurrentSpan({
+        error: txnMetadata,
+        level: txnMetadata.level,
+      })
+
+      return keys.map(() => undefined)
+    }
+
+    return txnMetadata
+  }),
 }

@@ -30,14 +30,13 @@ import {
   ACCOUNT_USERNAME,
   SemanticAttributes,
   addAttributesToCurrentSpanAndPropagate,
-  recordExceptionInCurrentSpan,
 } from "@/services/tracing"
 
 import { parseIps } from "@/domain/accounts-ips"
 
 export const isAuthenticated = rule({ cache: "contextual" })((
-  parent,
-  args,
+  _parent,
+  _args,
   ctx: GraphQLPublicContext,
 ) => {
   return "domainAccount" in ctx && !!ctx.domainAccount
@@ -45,7 +44,7 @@ export const isAuthenticated = rule({ cache: "contextual" })((
 
 const setGqlContext = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ): Promise<void> => {
   const tokenPayload = req.token
@@ -60,15 +59,6 @@ const setGqlContext = async (
     tokenPayload,
     ip,
   })
-
-  if (gqlContext instanceof Error) {
-    recordExceptionInCurrentSpan({
-      error: gqlContext,
-      fallbackMsg: "error executing sessionPublicContext",
-    })
-    next(gqlContext)
-    return
-  }
 
   req.gqlContext = gqlContext
 
