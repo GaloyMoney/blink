@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(dashboard): nextjs 14 in dashboard (#3565)...'
-      sha: d341e27584b112171a584c9382adc98c489eb778
+      commitTitle: 'chore(core): improve lightning resilience (#3497)'
+      sha: e2e39ee4355b16e9cd20bb674aad224cc2cd3f19
       tags:
-      - 0.16.36-1-gd341e2758
+      - 0.16.37-2-ge2e39ee43
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(dashboard): nextjs 14 in dashboard (#3565)...'
-      sha: d341e27584b112171a584c9382adc98c489eb778
+      commitTitle: 'chore(core): improve lightning resilience (#3497)'
+      sha: e2e39ee4355b16e9cd20bb674aad224cc2cd3f19
       tags:
-      - 0.16.36-1-gd341e2758
+      - 0.16.37-2-ge2e39ee43
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(dashboard): nextjs 14 in dashboard (#3565)...'
-      sha: d341e27584b112171a584c9382adc98c489eb778
+      commitTitle: 'chore(core): improve lightning resilience (#3497)'
+      sha: e2e39ee4355b16e9cd20bb674aad224cc2cd3f19
       tags:
-      - 0.16.36-1-gd341e2758
+      - 0.16.37-2-ge2e39ee43
     path: ./
   path: ./graphql
 kind: LockConfig
