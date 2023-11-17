@@ -2,7 +2,7 @@ import { getRecentlyActiveAccounts } from "@/app/accounts/active-accounts"
 import { sendDefaultWalletBalanceToAccounts } from "@/app/accounts/send-default-wallet-balance-to-users"
 
 import { toSats } from "@/domain/bitcoin"
-import { UsdDisplayCurrency } from "@/domain/fiat"
+import { UsdDisplayCurrency, toCents } from "@/domain/fiat"
 import { LedgerService } from "@/services/ledger"
 import * as serviceLedger from "@/services/ledger"
 import {
@@ -19,6 +19,7 @@ import {
 } from "@/app/prices"
 import { WalletCurrency } from "@/domain/shared"
 import { GaloyNotificationCategories } from "@/domain/notifications"
+import { displayCurrencyPerBaseUnitFromAmounts } from "@/domain/wallets/tx-history"
 
 // @ts-ignore-next-line no-implicit-any error
 let spy
@@ -33,10 +34,18 @@ const language = "" as UserLanguageOrEmpty
 const paymentAmount = {
   amount: 1000n,
   currency: WalletCurrency.Btc,
+  settlementAmount: toSats(1000),
+  settlementAmountSend: toSats(-1000),
+  settlementFee: toSats(0),
+  settlementDisplayFee: "0",
 }
 const usdPaymentAmount = {
   amount: 5n,
   currency: WalletCurrency.Usd,
+  settlementAmount: toCents(5),
+  settlementAmountSend: toCents(-5),
+  settlementFee: toCents(0),
+  settlementDisplayFee: "0",
 }
 
 const crcDisplayPaymentAmount = {
@@ -44,6 +53,19 @@ const crcDisplayPaymentAmount = {
   currency: "CRC" as DisplayCurrency,
   displayInMajor: "3500.50",
 }
+const crcSettlementDisplayPrice = <S extends WalletCurrency>({
+  walletAmount,
+  walletCurrency,
+}: {
+  walletAmount: number
+  walletCurrency: S
+}) =>
+  displayCurrencyPerBaseUnitFromAmounts({
+    displayCurrency: crcDisplayPaymentAmount.currency,
+    displayAmount: Number(crcDisplayPaymentAmount.amountInMinor),
+    walletAmount,
+    walletCurrency,
+  })
 
 const unfilteredNotificationSettings: NotificationSettings = {
   push: {
@@ -218,16 +240,39 @@ describe("notification", () => {
               sendNotification: jest.fn(),
             }))
 
-          await NotificationsService().lightningTxReceived({
-            paymentAmount,
-
-            recipientAccountId: accountId,
-            recipientWalletId: walletId,
-            displayPaymentAmount: crcDisplayPaymentAmount,
-            paymentHash,
-            recipientDeviceTokens: deviceTokens,
-            recipientNotificationSettings: unfilteredNotificationSettings,
-            recipientLanguage: language,
+          await NotificationsService().sendTransaction({
+            recipient: {
+              accountId,
+              walletId,
+              deviceTokens,
+              language,
+              notificationSettings: unfilteredNotificationSettings,
+            },
+            transaction: {
+              id: "id" as LedgerTransactionId,
+              status: "success",
+              memo: "",
+              walletId,
+              initiationVia: {
+                type: "lightning",
+                paymentHash,
+                pubkey: "pk" as Pubkey,
+              },
+              settlementVia: {
+                type: "lightning",
+                revealedPreImage: undefined,
+              },
+              settlementAmount: paymentAmount.settlementAmount,
+              settlementCurrency: paymentAmount.currency,
+              settlementFee: paymentAmount.settlementFee,
+              settlementDisplayAmount: crcDisplayPaymentAmount.displayInMajor,
+              settlementDisplayPrice: crcSettlementDisplayPrice({
+                walletAmount: toSats(paymentAmount.amount),
+                walletCurrency: paymentAmount.currency,
+              }),
+              settlementDisplayFee: paymentAmount.settlementDisplayFee,
+              createdAt: new Date(),
+            },
           })
 
           expect(sendFilteredNotification.mock.calls.length).toBe(1)
@@ -266,15 +311,40 @@ describe("notification", () => {
               sendNotification: jest.fn(),
             }))
 
-          await NotificationsService().intraLedgerTxReceived({
-            paymentAmount,
-
-            recipientAccountId: accountId,
-            recipientWalletId: walletId,
-            displayPaymentAmount: crcDisplayPaymentAmount,
-            recipientDeviceTokens: deviceTokens,
-            recipientNotificationSettings: unfilteredNotificationSettings,
-            recipientLanguage: language,
+          await NotificationsService().sendTransaction({
+            recipient: {
+              accountId,
+              walletId,
+              deviceTokens,
+              language,
+              notificationSettings: unfilteredNotificationSettings,
+            },
+            transaction: {
+              id: "id" as LedgerTransactionId,
+              status: "success",
+              memo: "",
+              walletId,
+              initiationVia: {
+                type: "intraledger",
+                counterPartyUsername: "user" as Username,
+                counterPartyWalletId: "walletId" as WalletId,
+              },
+              settlementVia: {
+                type: "intraledger",
+                counterPartyUsername: "user" as Username,
+                counterPartyWalletId: "walletId" as WalletId,
+              },
+              settlementAmount: paymentAmount.settlementAmount,
+              settlementCurrency: paymentAmount.currency,
+              settlementFee: paymentAmount.settlementFee,
+              settlementDisplayAmount: crcDisplayPaymentAmount.displayInMajor,
+              settlementDisplayPrice: crcSettlementDisplayPrice({
+                walletAmount: toSats(paymentAmount.amount),
+                walletCurrency: paymentAmount.currency,
+              }),
+              settlementDisplayFee: paymentAmount.settlementDisplayFee,
+              createdAt: new Date(),
+            },
           })
 
           expect(sendFilteredNotification.mock.calls.length).toBe(1)
@@ -313,16 +383,37 @@ describe("notification", () => {
               sendNotification: jest.fn(),
             }))
 
-          await NotificationsService().onChainTxReceived({
-            paymentAmount,
-
-            recipientAccountId: accountId,
-            recipientWalletId: walletId,
-            displayPaymentAmount: crcDisplayPaymentAmount,
-            txHash,
-            recipientDeviceTokens: deviceTokens,
-            recipientNotificationSettings: unfilteredNotificationSettings,
-            recipientLanguage: language,
+          await NotificationsService().sendTransaction({
+            recipient: {
+              accountId,
+              walletId,
+              deviceTokens,
+              language,
+              notificationSettings: unfilteredNotificationSettings,
+            },
+            transaction: {
+              id: "id" as LedgerTransactionId,
+              status: "success",
+              memo: "",
+              walletId,
+              initiationVia: {
+                type: "onchain",
+              },
+              settlementVia: {
+                type: "onchain",
+                transactionHash: txHash,
+              },
+              settlementAmount: paymentAmount.settlementAmount,
+              settlementCurrency: paymentAmount.currency,
+              settlementFee: paymentAmount.settlementFee,
+              settlementDisplayAmount: crcDisplayPaymentAmount.displayInMajor,
+              settlementDisplayPrice: crcSettlementDisplayPrice({
+                walletAmount: toSats(paymentAmount.amount),
+                walletCurrency: paymentAmount.currency,
+              }),
+              settlementDisplayFee: paymentAmount.settlementDisplayFee,
+              createdAt: new Date(),
+            },
           })
 
           expect(sendFilteredNotification.mock.calls.length).toBe(1)
@@ -361,15 +452,37 @@ describe("notification", () => {
               sendNotification: jest.fn(),
             }))
 
-          await NotificationsService().onChainTxReceivedPending({
-            recipientAccountId: accountId,
-            recipientWalletId: walletId,
-            paymentAmount,
-            txHash,
-            displayPaymentAmount: crcDisplayPaymentAmount,
-            recipientDeviceTokens: deviceTokens,
-            recipientNotificationSettings: unfilteredNotificationSettings,
-            recipientLanguage: language,
+          await NotificationsService().sendTransaction({
+            recipient: {
+              accountId,
+              walletId,
+              deviceTokens,
+              language,
+              notificationSettings: unfilteredNotificationSettings,
+            },
+            transaction: {
+              id: "id" as LedgerTransactionId,
+              status: "pending",
+              memo: "",
+              walletId,
+              initiationVia: {
+                type: "onchain",
+              },
+              settlementVia: {
+                type: "onchain",
+                transactionHash: txHash,
+              },
+              settlementAmount: paymentAmount.settlementAmount,
+              settlementCurrency: paymentAmount.currency,
+              settlementFee: paymentAmount.settlementFee,
+              settlementDisplayAmount: crcDisplayPaymentAmount.displayInMajor,
+              settlementDisplayPrice: crcSettlementDisplayPrice({
+                walletAmount: toSats(paymentAmount.amount),
+                walletCurrency: paymentAmount.currency,
+              }),
+              settlementDisplayFee: paymentAmount.settlementDisplayFee,
+              createdAt: new Date(),
+            },
           })
 
           expect(sendFilteredNotification.mock.calls.length).toBe(1)
@@ -408,15 +521,37 @@ describe("notification", () => {
               sendNotification: jest.fn(),
             }))
 
-          await NotificationsService().onChainTxSent({
-            senderAccountId: accountId,
-            senderWalletId: walletId,
-            paymentAmount,
-            txHash,
-            displayPaymentAmount: crcDisplayPaymentAmount,
-            senderDeviceTokens: deviceTokens,
-            senderNotificationSettings: unfilteredNotificationSettings,
-            senderLanguage: language,
+          await NotificationsService().sendTransaction({
+            recipient: {
+              accountId,
+              walletId,
+              deviceTokens,
+              language,
+              notificationSettings: unfilteredNotificationSettings,
+            },
+            transaction: {
+              id: "id" as LedgerTransactionId,
+              status: "success",
+              memo: "",
+              walletId,
+              initiationVia: {
+                type: "onchain",
+              },
+              settlementVia: {
+                type: "onchain",
+                transactionHash: txHash,
+              },
+              settlementAmount: paymentAmount.settlementAmountSend,
+              settlementCurrency: paymentAmount.currency,
+              settlementFee: paymentAmount.settlementFee,
+              settlementDisplayAmount: crcDisplayPaymentAmount.displayInMajor,
+              settlementDisplayPrice: crcSettlementDisplayPrice({
+                walletAmount: toSats(paymentAmount.amount),
+                walletCurrency: paymentAmount.currency,
+              }),
+              settlementDisplayFee: paymentAmount.settlementDisplayFee,
+              createdAt: new Date(),
+            },
           })
 
           expect(sendFilteredNotification.mock.calls.length).toBe(1)

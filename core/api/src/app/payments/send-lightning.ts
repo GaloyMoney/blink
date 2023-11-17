@@ -65,7 +65,11 @@ import {
 } from "@/app/accounts"
 import { getCurrentPriceAsDisplayPriceRatio } from "@/app/prices"
 import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
-import { validateIsBtcWallet, validateIsUsdWallet } from "@/app/wallets"
+import {
+  getTransactionForWalletByJournalId,
+  validateIsBtcWallet,
+  validateIsUsdWallet,
+} from "@/app/wallets"
 
 import { ResourceExpiredLockServiceError } from "@/domain/lock"
 import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
@@ -378,8 +382,7 @@ const executePaymentViaIntraledger = async <
       "Expected recipient details missing",
     )
   }
-  const { id: recipientWalletId, currency: recipientWalletCurrency } =
-    recipientWalletDescriptor
+  const { id: recipientWalletId } = recipientWalletDescriptor
 
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
@@ -521,20 +524,21 @@ const executePaymentViaIntraledger = async <
     const recipientUser = await UsersRepository().findById(recipientUserId)
     if (recipientUser instanceof Error) return recipientUser
 
-    let amount = paymentFlow.btcPaymentAmount.amount
-    if (recipientWalletCurrency === WalletCurrency.Usd) {
-      amount = paymentFlow.usdPaymentAmount.amount
-    }
+    const walletTransaction = await getTransactionForWalletByJournalId({
+      walletId: recipientWallet.id,
+      journalId: journal.journalId,
+    })
+    if (walletTransaction instanceof Error) return walletTransaction
 
-    const result = await NotificationsService().lightningTxReceived({
-      recipientAccountId: recipientWallet.accountId,
-      recipientWalletId,
-      paymentAmount: { amount, currency: recipientWalletCurrency },
-      displayPaymentAmount: recipientDisplayAmount,
-      paymentHash,
-      recipientDeviceTokens: recipientUser.deviceTokens,
-      recipientNotificationSettings: recipientAccount.notificationSettings,
-      recipientLanguage: recipientUser.language,
+    const result = await NotificationsService().sendTransaction({
+      recipient: {
+        accountId: recipientWallet.accountId,
+        walletId: recipientWallet.id,
+        deviceTokens: recipientUser.deviceTokens,
+        language: recipientUser.language,
+        notificationSettings: recipientAccount.notificationSettings,
+      },
+      transaction: walletTransaction,
     })
 
     if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {

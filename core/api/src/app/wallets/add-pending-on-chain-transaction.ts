@@ -138,22 +138,23 @@ export const addPendingTransaction = async ({
 
     const res =
       await WalletOnChainPendingReceiveRepository().persistNew(pendingTransaction)
-    if (res instanceof Error && !(res instanceof DuplicateKeyForPersistError)) {
+    if (res instanceof Error) {
+      if (res instanceof DuplicateKeyForPersistError) return true
       return res
     }
 
     const recipientUser = await UsersRepository().findById(account.kratosUserId)
     if (recipientUser instanceof Error) return recipientUser
 
-    const result = await NotificationsService().onChainTxReceivedPending({
-      recipientAccountId: wallet.accountId,
-      recipientWalletId: wallet.id,
-      paymentAmount: settlementAmount,
-      displayPaymentAmount: settlementDisplayAmount,
-      txHash: txId,
-      recipientDeviceTokens: recipientUser.deviceTokens,
-      recipientNotificationSettings: account.notificationSettings,
-      recipientLanguage: recipientUser.language,
+    const result = await NotificationsService().sendTransaction({
+      recipient: {
+        accountId: wallet.accountId,
+        walletId: wallet.id,
+        deviceTokens: recipientUser.deviceTokens,
+        language: recipientUser.language,
+        notificationSettings: account.notificationSettings,
+      },
+      transaction: res,
     })
 
     if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {

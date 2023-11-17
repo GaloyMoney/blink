@@ -4,6 +4,8 @@ import { getLastOnChainAddress } from "./get-last-on-chain-address"
 
 import { createOnChainAddress } from "./create-on-chain-address"
 
+import { getTransactionForWalletByJournalId } from "./get-transaction-by-journal-id"
+
 import { getFeesConfig, getOnChainWalletConfig } from "@/config"
 
 import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
@@ -149,7 +151,7 @@ const addSettledTransactionBeforeFinally = async ({
       newAddressRequestId,
     })
 
-    const result = await LedgerFacade.recordReceiveOnChain({
+    const journal = await LedgerFacade.recordReceiveOnChain({
       description: "",
       recipientWalletDescriptor: wallet,
       amountToCreditReceiver: {
@@ -165,31 +167,35 @@ const addSettledTransactionBeforeFinally = async ({
       additionalInternalMetadata: internalAccountsAdditionalMetadata,
     })
 
-    if (result instanceof Error) {
-      logger.error({ error: result }, "Could not record onchain tx in ledger")
-      return result
+    if (journal instanceof Error) {
+      logger.error({ error: journal }, "Could not record onchain tx in ledger")
+      return journal
     }
 
     const user = await UsersRepository().findById(account.kratosUserId)
     if (user instanceof Error) return user
 
-    const notificationResult = await NotificationsService().onChainTxReceived({
-      recipientAccountId: wallet.accountId,
-      recipientWalletId: wallet.id,
-      paymentAmount: amount,
-      displayPaymentAmount: displayAmount,
-      txHash,
-      recipientDeviceTokens: user.deviceTokens,
-      recipientNotificationSettings: account.notificationSettings,
-      recipientLanguage: user.language,
+    const walletTransaction = await getTransactionForWalletByJournalId({
+      walletId: wallet.id,
+      journalId: journal.journalId,
+    })
+    if (walletTransaction instanceof Error) return walletTransaction
+
+    const result = await NotificationsService().sendTransaction({
+      recipient: {
+        accountId: wallet.accountId,
+        walletId: wallet.id,
+        deviceTokens: user.deviceTokens,
+        language: user.language,
+        notificationSettings: account.notificationSettings,
+      },
+      transaction: walletTransaction,
     })
 
-    if (
-      notificationResult instanceof DeviceTokensNotRegisteredNotificationsServiceError
-    ) {
+    if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
       await removeDeviceTokens({
         userId: user.id,
-        deviceTokens: notificationResult.tokens,
+        deviceTokens: result.tokens,
       })
     }
 

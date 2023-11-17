@@ -1,3 +1,5 @@
+import { getTransactionForWalletByJournalId } from "./get-transaction-by-journal-id"
+
 import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@/app/prices"
 
@@ -366,7 +368,7 @@ const updatePendingInvoiceBeforeFinally = async ({
     })
 
     //TODO: add displayCurrency: displayPaymentAmount.currency,
-    const result = await LedgerFacade.recordReceiveOffChain({
+    const journal = await LedgerFacade.recordReceiveOffChain({
       description,
       recipientWalletDescriptor,
       amountToCreditReceiver: {
@@ -384,29 +386,33 @@ const updatePendingInvoiceBeforeFinally = async ({
       additionalCreditMetadata: creditAccountAdditionalMetadata,
       additionalInternalMetadata: internalAccountsAdditionalMetadata,
     })
-    if (result instanceof Error) return result
+    if (journal instanceof Error) return journal
 
     // Prepare and send notification
     const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
     if (recipientUser instanceof Error) return recipientUser
 
-    const notificationResult = await NotificationsService().lightningTxReceived({
-      recipientAccountId,
-      recipientWalletId: recipientWalletDescriptor.id,
-      paymentAmount: receivedWalletInvoice.receivedAmount(),
-      displayPaymentAmount,
-      paymentHash,
-      recipientDeviceTokens: recipientUser.deviceTokens,
-      recipientNotificationSettings: recipientAccount.notificationSettings,
-      recipientLanguage: recipientUser.language,
+    const walletTransaction = await getTransactionForWalletByJournalId({
+      walletId: recipientWalletDescriptor.id,
+      journalId: journal.journalId,
+    })
+    if (walletTransaction instanceof Error) return walletTransaction
+
+    const result = await NotificationsService().sendTransaction({
+      recipient: {
+        accountId: recipientAccountId,
+        walletId: recipientWalletDescriptor.id,
+        deviceTokens: recipientUser.deviceTokens,
+        language: recipientUser.language,
+        notificationSettings: recipientAccount.notificationSettings,
+      },
+      transaction: walletTransaction,
     })
 
-    if (
-      notificationResult instanceof DeviceTokensNotRegisteredNotificationsServiceError
-    ) {
+    if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
       await removeDeviceTokens({
         userId: recipientUser.id,
-        deviceTokens: notificationResult.tokens,
+        deviceTokens: result.tokens,
       })
     }
 
@@ -420,7 +426,7 @@ const updatePendingInvoiceBeforeFinally = async ({
         eventType: CallbackEventType.ReceiveLightning,
         payload: {
           // FIXME: [0] might not be correct
-          txid: result.transactionIds[0],
+          txid: journal.transactionIds[0],
         },
       })
     }
