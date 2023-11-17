@@ -158,8 +158,8 @@ importers:
         specifier: ^3.8.4
         version: 3.8.5(graphql@16.8.1)(react-dom@18.2.0)(react@18.2.0)
       '@apollo/experimental-nextjs-app-support':
-        specifier: ^0.4.3
-        version: 0.4.3(@apollo/client@3.8.5)(next@14.0.1)(react@18.2.0)
+        specifier: ^0.5.1
+        version: 0.5.1(@apollo/client@3.8.5)(next@14.0.1)(react@18.2.0)
       '@emotion/cache':
         specifier: ^11.11.0
         version: 11.11.0
@@ -427,7 +427,7 @@ importers:
         version: 5.14.1(graphql@16.8.1)
       gt3-server-node-express-sdk:
         specifier: git+https://github.com/GaloyMoney/gt3-server-node-express-bypass.git#master
-        version: github.com/GaloyMoney/gt3-server-node-express-bypass/6559a1a39ef408de3aefa6321934c831edac001e
+        version: git@github.com+GaloyMoney/gt3-server-node-express-bypass/6559a1a39ef408de3aefa6321934c831edac001e
       i18n:
         specifier: ^0.15.1
         version: 0.15.1
@@ -886,11 +886,11 @@ packages:
       zen-observable-ts: 1.2.5
     dev: true
 
-  /@apollo/experimental-nextjs-app-support@0.4.3(@apollo/client@3.8.5)(next@14.0.1)(react@18.2.0):
-    resolution: {integrity: sha512-UrgLMUIW7SFmeJyLvqh0E8KRvo6Nd/zzbUFt0ENT3BRa7z7kGsCk7I+kZEZEAn13nqlTC3M4VPS6tOfvtLFhxQ==}
+  /@apollo/experimental-nextjs-app-support@0.5.1(@apollo/client@3.8.5)(next@14.0.1)(react@18.2.0):
+    resolution: {integrity: sha512-gQiFY/zntVAhPTTFfFFOogp4TKVMpbPsydv3gyMR5E0IK6WgtITTcl/uuWlnfL92+enk5mfrtoQ+0p+t2a9u2A==}
     peerDependencies:
-      '@apollo/client': '>=3.8.0-rc || ^3.8.0'
-      next: ^13.4.1
+      '@apollo/client': '>=3.8.0-rc || ^3.8.0 || >=3.9.0-alpha || >=3.9.0-beta || >=3.9.0-rc'
+      next: ^13.4.1 || ^14.0.0
       react: ^18
     dependencies:
       '@apollo/client': 3.8.5(graphql@16.8.1)(react-dom@18.2.0)(react@18.2.0)
@@ -18671,8 +18671,8 @@ packages:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
     dev: false
 
-  github.com/GaloyMoney/gt3-server-node-express-bypass/6559a1a39ef408de3aefa6321934c831edac001e:
-    resolution: {tarball: https://codeload.github.com/GaloyMoney/gt3-server-node-express-bypass/tar.gz/6559a1a39ef408de3aefa6321934c831edac001e}
+  git@github.com+GaloyMoney/gt3-server-node-express-bypass/6559a1a39ef408de3aefa6321934c831edac001e:
+    resolution: {commit: 6559a1a39ef408de3aefa6321934c831edac001e, repo: git@github.com:GaloyMoney/gt3-server-node-express-bypass.git, type: git}
     name: gt3-server-node-express-sdk
     version: 3.1.0
     dependencies:
