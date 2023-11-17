@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: add index to WalletInvoice (#3563)...'
-      sha: 17ba06e373000b34375c10b96a7a9e9aa8e8fffb
+      commitTitle: 'feat(api-keys): add read_only field to api-keys (#3554)...'
+      sha: 47ace194c2a21b2388e0a05e8eeb62b73f05506e
       tags:
-      - 0.16.33-1-g17ba06e37
+      - 0.16.35-1-g47ace194c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: add index to WalletInvoice (#3563)...'
-      sha: 17ba06e373000b34375c10b96a7a9e9aa8e8fffb
+      commitTitle: 'feat(api-keys): add read_only field to api-keys (#3554)...'
+      sha: 47ace194c2a21b2388e0a05e8eeb62b73f05506e
       tags:
-      - 0.16.33-1-g17ba06e37
+      - 0.16.35-1-g47ace194c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: add index to WalletInvoice (#3563)...'
-      sha: 17ba06e373000b34375c10b96a7a9e9aa8e8fffb
+      commitTitle: 'feat(api-keys): add read_only field to api-keys (#3554)...'
+      sha: 47ace194c2a21b2388e0a05e8eeb62b73f05506e
       tags:
-      - 0.16.33-1-g17ba06e37
+      - 0.16.35-1-g47ace194c
     path: ./
   path: ./graphql
 kind: LockConfig
