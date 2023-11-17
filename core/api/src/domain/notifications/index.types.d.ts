@@ -89,3 +89,30 @@ type NotificationChannelSettings = {
   enabled: boolean
   disabledCategories: NotificationCategory[]
 }
+
+type NotificationRecipient = {
+  accountId: AccountId
+  walletId: WalletId
+  deviceTokens: DeviceToken[]
+  notificationSettings: NotificationSettings
+  language: UserLanguageOrEmpty
+}
+
+type NotificatioSendTransactionArgs = {
+  recipient: NotificationRecipient
+  transaction: WalletTransaction
+}
+
+interface INewNotificationsService {
+  sendTransaction: (
+    args: NotificatioSendTransactionArgs,
+  ) => Promise<true | NotificationsServiceError>
+  sendBalance(args: SendBalanceArgs): Promise<true | NotificationsServiceError>
+  priceUpdate: <C extends DisplayCurrency>(args: PriceUpdateArgs<C>) => void
+  adminPushNotificationSend(
+    args: SendPushNotificationArgs,
+  ): Promise<true | NotificationsServiceError>
+  adminPushNotificationFilteredSend(
+    args: SendFilteredPushNotificationArgs,
+  ): Promise<true | NotificationsServiceError>
+}
