@@ -513,6 +513,7 @@ describe("initiated via lightning", () => {
         recipientWalletDescriptor,
         paid: false,
         lnInvoice,
+        processingCompleted: false,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -563,6 +564,7 @@ describe("initiated via lightning", () => {
         recipientWalletDescriptor: newWalletDescriptor,
         paid: false,
         lnInvoice,
+        processingCompleted: false,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -635,6 +637,7 @@ describe("initiated via lightning", () => {
         paid: false,
         usdAmount,
         lnInvoice,
+        processingCompleted: false,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -656,6 +659,7 @@ describe("initiated via lightning", () => {
         recipientWalletDescriptor: usdWalletDescriptor,
         paid: false,
         lnInvoice,
+        processingCompleted: false,
       })
       if (noAmountPersisted instanceof Error) throw noAmountPersisted
 
@@ -715,6 +719,7 @@ describe("initiated via lightning", () => {
         recipientWalletDescriptor: otherWalletDescriptor,
         paid: false,
         lnInvoice,
+        processingCompleted: false,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -736,6 +741,7 @@ describe("initiated via lightning", () => {
         recipientWalletDescriptor: otherWalletDescriptor,
         paid: false,
         lnInvoice,
+        processingCompleted: false,
       })
       if (noAmountPersisted instanceof Error) throw noAmountPersisted
 
@@ -789,6 +795,7 @@ describe("initiated via lightning", () => {
         recipientWalletDescriptor: usdWalletDescriptor,
         paid: false,
         lnInvoice,
+        processingCompleted: false,
       })
       if (persisted instanceof Error) throw persisted
 

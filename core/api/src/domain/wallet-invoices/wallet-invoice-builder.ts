@@ -153,6 +153,7 @@ export const WIBWithAmount = (state: WIBWithAmountState): WIBWithAmount => {
       paid: false,
       createdAt: new Date(),
       lnInvoice: registeredInvoice.invoice,
+      processingCompleted: false,
     }
     return walletInvoice
   }

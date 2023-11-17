@@ -12,6 +12,7 @@ const baseInvoice: WalletInvoice = {
   recipientWalletDescriptor: { id: "walletId" as WalletId, currency: WalletCurrency.Usd },
   paid: false,
   createdAt: new Date(Date.now()),
+  processingCompleted: false,
   lnInvoice: {
     destination: "destination" as Pubkey,
     paymentHash: "paymentHash" as PaymentHash,

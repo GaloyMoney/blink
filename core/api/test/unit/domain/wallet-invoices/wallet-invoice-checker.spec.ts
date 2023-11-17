@@ -11,6 +11,7 @@ const goodWalletInvoice = {
   recipientWalletDescriptor: { id: "walletId" as WalletId, currency: WalletCurrency.Usd },
   paid: false,
   createdAt: new Date(Date.now()),
+  processingCompleted: false,
 }
 
 describe("WalletInvoiceChecker", () => {

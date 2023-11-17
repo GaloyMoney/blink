@@ -80,6 +80,7 @@ describe("WalletInvoiceReceiver", () => {
       recipientWalletDescriptor: partialRecipientBtcWalletDescriptor,
       createdAt: new Date(),
       lnInvoice: mockLnInvoice,
+      processingCompleted: false,
     }
 
     it("returns correct amounts", async () => {
@@ -121,6 +122,7 @@ describe("WalletInvoiceReceiver", () => {
         paid: false,
         createdAt: new Date(),
         lnInvoice: mockLnInvoice,
+        processingCompleted: false,
       }
 
       it("returns correct amounts", async () => {
@@ -155,6 +157,7 @@ describe("WalletInvoiceReceiver", () => {
         paid: false,
         createdAt: new Date(),
         lnInvoice: mockLnInvoice,
+        processingCompleted: false,
       }
 
       it("returns correct amounts", async () => {

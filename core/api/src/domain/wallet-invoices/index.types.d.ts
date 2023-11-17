@@ -93,7 +93,7 @@ type WalletInvoiceWithOptionalLnInvoice = {
   recipientWalletDescriptor: PartialWalletDescriptor<WalletCurrency>
   paid: boolean
   createdAt: Date
-  processingCompleted?: boolean
+  processingCompleted: boolean
   lnInvoice?: LnInvoice // LnInvoice is optional because some older invoices don't have it
 }
 

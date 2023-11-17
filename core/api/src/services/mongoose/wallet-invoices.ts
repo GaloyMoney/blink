@@ -120,10 +120,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     try {
       pending = WalletInvoice.find({
         paid: false,
-        $or: [
-          { processingCompleted: false },
-          { processingCompleted: { $exists: false } }, // TODO remove this after migration
-        ],
+        processingCompleted: false,
       }).cursor({
         batchSize: 100,
       })
