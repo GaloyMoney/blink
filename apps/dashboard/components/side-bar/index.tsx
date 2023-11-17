@@ -84,30 +84,35 @@ const Sidebar: React.FC = () => {
             icon={<HomeOutlinedIcon />}
             label="Home"
             isCurrentPath={isCurrentPath}
+            dataTestid="sidebar-home-link"
           />
           <NavigationLink
             href="/transactions"
             icon={<ReceiptLongIcon />}
             label="Transactions"
             isCurrentPath={isCurrentPath}
+            dataTestid="sidebar-transactions-link"
           />
           <NavigationLink
             href="/security"
             icon={<SecurityIcon />}
             label="Security"
             isCurrentPath={isCurrentPath}
+            dataTestid="sidebar-security-link"
           />
           <NavigationLink
             href="/api-keys"
             icon={<KeyIcon />}
             label="API Keys"
             isCurrentPath={isCurrentPath}
+            dataTestid="sidebar-api-keys-link"
           />
           <NavigationLink
             href="/callback"
             icon={<LinkIcon />}
             label="Callback Endpoints"
             isCurrentPath={isCurrentPath}
+            dataTestid="sidebar-callback-link"
           />
         </List>
       </Box>

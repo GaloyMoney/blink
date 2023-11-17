@@ -24,26 +24,26 @@ import CopyIcon from "@mui/icons-material/CopyAll"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
-import {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore-next-line no-implicit-any error
-  experimental_useFormState as useFormState,
-} from "react-dom"
+import { useFormState } from "react-dom"
 
 import FormSubmitButton from "../form-submit-button"
 
 import { createApiKeyServerAction } from "@/app/api-keys/server-actions"
+import { ApiKeyResponse } from "@/app/api-keys/api-key.types"
 
 const ApiKeyCreate = () => {
   const router = useRouter()
 
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [state, formAction] = useFormState(createApiKeyServerAction, {
-    error: null,
-    message: null,
-    data: null,
-  })
+  const [state, formAction] = useFormState<ApiKeyResponse, FormData>(
+    createApiKeyServerAction,
+    {
+      error: false,
+      message: null,
+      responsePayload: null,
+    },
+  )
   const [enableCustomExpiresInDays, setEnableCustomExpiresInDays] = useState(false)
   const [expiresInDays, setExpiresInDays] = useState<number | null>(null)
 
@@ -51,9 +51,9 @@ const ApiKeyCreate = () => {
     setOpen(false)
     setEnableCustomExpiresInDays(false)
     setExpiresInDays(null)
-    state.error = null
+    state.error = false
     state.message = null
-    state.data = null
+    state.responsePayload = null
     console.log("Modal has been closed")
     router.refresh()
   }
@@ -61,7 +61,7 @@ const ApiKeyCreate = () => {
   return (
     <>
       <Button onClick={() => setOpen(true)} variant="solid" color="primary">
-        {<AddIcon />}
+        {<AddIcon data-testid="create-api-add-btn" />}
       </Button>
       <Modal
         open={open}
@@ -94,7 +94,7 @@ const ApiKeyCreate = () => {
             Talk to the Blink Servers using this token.
           </Typography>
 
-          {state?.data?.apiKeySecret ? (
+          {state?.responsePayload?.apiKeySecret ? (
             <>
               <Box
                 sx={{
@@ -115,7 +115,7 @@ const ApiKeyCreate = () => {
                   }}
                   fontFamily="monospace"
                 >
-                  {state?.data?.apiKeySecret}
+                  {state?.responsePayload?.apiKeySecret}
                 </Typography>
                 <Tooltip
                   sx={{ cursor: "pointer" }}
@@ -127,7 +127,9 @@ const ApiKeyCreate = () => {
                     setTimeout(() => {
                       setCopied(false)
                     }, 2000)
-                    navigator.clipboard.writeText(state?.data?.apiKeySecret)
+                    navigator.clipboard.writeText(
+                      state?.responsePayload?.apiKeySecret ?? "",
+                    )
                   }}
                 >
                   <CopyIcon />
@@ -147,6 +149,7 @@ const ApiKeyCreate = () => {
                 <br /> Please save it somewhere safely!
               </Typography>
               <Button
+                data-testid="create-api-close-btn"
                 variant="outlined"
                 color="primary"
                 type="submit"
@@ -183,6 +186,7 @@ const ApiKeyCreate = () => {
                   >
                     <Typography>Name</Typography>
                     <Input
+                      data-testid="create-api-name-input"
                       name="apiKeyName"
                       id="apiKeyName"
                       sx={{
@@ -206,6 +210,7 @@ const ApiKeyCreate = () => {
                       sx={{ display: "none", padding: "0.6em" }}
                     />
                     <Select
+                      data-testid="create-api-expire-select"
                       sx={{
                         padding: "0.6em",
                       }}
@@ -218,7 +223,9 @@ const ApiKeyCreate = () => {
                         if (v && v !== "custom") setExpiresInDays(parseInt(String(v)))
                       }}
                     >
-                      <Option value="30">30 days</Option>
+                      <Option data-testid="create-api-expire-30-days-select" value="30">
+                        30 days
+                      </Option>
                       <Option value="90">90 days</Option>
                       <Option value="custom">Custom</Option>
                     </Select>
@@ -277,6 +284,7 @@ const ApiKeyCreate = () => {
                     }}
                   >
                     <FormSubmitButton
+                      data-testid="create-api-create-btn"
                       variant="outlined"
                       color="primary"
                       type="submit"

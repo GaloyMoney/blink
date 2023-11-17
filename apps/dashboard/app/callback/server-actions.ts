@@ -5,12 +5,17 @@ import { revalidatePath } from "next/cache"
 
 import { authOptions } from "../api/auth/[...nextauth]/route"
 
+import { CallBackAdditionResponse, CallBackDeletionResponse } from "./callback.types"
+
 import {
   callbackEndpointAdd,
   callbackEndpointDelete,
 } from "@/services/graphql/mutations/callback-mutation"
 
-export const createCallbackAction = async (_prevState: unknown, formData: FormData) => {
+export const createCallbackAction = async (
+  _prevState: CallBackAdditionResponse,
+  formData: FormData,
+): Promise<CallBackAdditionResponse> => {
   const session = await getServerSession(authOptions)
   const callBackUrl = formData.get("callBackUrl")
   console.log(callBackUrl)
@@ -23,6 +28,7 @@ export const createCallbackAction = async (_prevState: unknown, formData: FormDa
     return {
       error: true,
       message: "Please Provide a Valid Value",
+      responsePayload: null,
     }
   }
 
@@ -33,6 +39,7 @@ export const createCallbackAction = async (_prevState: unknown, formData: FormDa
     return {
       error: true,
       message: "Something went wrong!",
+      responsePayload: null,
     }
   }
 
@@ -40,7 +47,7 @@ export const createCallbackAction = async (_prevState: unknown, formData: FormDa
     return {
       error: true,
       message: response?.callbackEndpointAdd.errors[0].message,
-      data: null,
+      responsePayload: null,
     }
   }
 
@@ -48,11 +55,13 @@ export const createCallbackAction = async (_prevState: unknown, formData: FormDa
   return {
     error: false,
     message: "success",
-    data: null,
+    responsePayload: null,
   }
 }
 
-export const deleteCallbackAction = async (callBackId: string) => {
+export const deleteCallbackAction = async (
+  callBackId: string,
+): Promise<CallBackDeletionResponse> => {
   const session = await getServerSession(authOptions)
   const token = session?.accessToken
   if (!token || typeof token !== "string") {
@@ -62,6 +71,7 @@ export const deleteCallbackAction = async (callBackId: string) => {
     return {
       error: true,
       message: "Please Provide a Valid Value",
+      responsePayload: null,
     }
   }
 
@@ -72,6 +82,7 @@ export const deleteCallbackAction = async (callBackId: string) => {
     return {
       error: true,
       message: "Something went wrong!",
+      responsePayload: null,
     }
   }
 
@@ -79,7 +90,7 @@ export const deleteCallbackAction = async (callBackId: string) => {
     return {
       error: true,
       message: response?.callbackEndpointDelete.errors[0].message,
-      data: null,
+      responsePayload: null,
     }
   }
 
@@ -87,6 +98,6 @@ export const deleteCallbackAction = async (callBackId: string) => {
   return {
     error: false,
     message: "success",
-    data: null,
+    responsePayload: null,
   }
 }

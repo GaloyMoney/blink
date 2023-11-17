@@ -11,6 +11,7 @@ interface NavigationLinkProps {
   icon: React.ReactElement
   label: string
   isCurrentPath: (href: string) => boolean
+  dataTestid: string
 }
 
 export const NavigationLink: React.FC<NavigationLinkProps> = ({
@@ -18,8 +19,9 @@ export const NavigationLink: React.FC<NavigationLinkProps> = ({
   icon,
   label,
   isCurrentPath,
+  dataTestid,
 }) => (
-  <Link href={href}>
+  <Link data-testid={dataTestid} href={href}>
     <ListItem>
       <ListItemButton
         onClick={() => {

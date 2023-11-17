@@ -7,7 +7,7 @@ import ReportProblemRoundedIcon from "@mui/icons-material/ReportProblemRounded"
 
 import MailRoundedIcon from "@mui/icons-material/MailRounded"
 
-import { deleteEmailServerAction } from "@/app/security/server-actions"
+import { deleteEmailServerAction } from "@/app/security/email/server-actions"
 
 type EmailDataProps = {
   readonly __typename: "Email"
@@ -118,6 +118,7 @@ function EmailSettings({ emailData }: EmailSettingsProps) {
           </Box>
           <Typography>Use email to login in your Account.</Typography>
           <Box
+            data-testid="security-add-email-address"
             sx={{
               display: { xs: "block", md: "none" },
             }}
@@ -127,6 +128,7 @@ function EmailSettings({ emailData }: EmailSettingsProps) {
         </Box>
 
         <Box
+          data-testid="security-add-email-verification-code-confirm-btn"
           sx={{
             display: { xs: "none", md: "block" },
           }}
@@ -160,7 +162,11 @@ function EmailSettings({ emailData }: EmailSettingsProps) {
             </Box>
           ) : (
             <Link href={"/security/email/add"}>
-              <Button variant="outlined" color="primary">
+              <Button
+                data-testid="security-add-email-btn"
+                variant="outlined"
+                color="primary"
+              >
                 Add
               </Button>
             </Link>
