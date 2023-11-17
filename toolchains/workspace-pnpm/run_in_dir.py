@@ -3,23 +3,28 @@
 Runs a program in a directory.
 """
 import argparse
-import json
 import os
 import subprocess
 import sys
 
 def merge_env_from_file(file_path):
-    # Shell command to source the .env file and then get the environment as JSON using jq
+    # Shell command to source the .env file
     if file_path and os.path.exists(file_path):
-        cmd = f'source {file_path} && jq -n env'
+        cmd = f'source {file_path} && env'
     else:
-        cmd = f'jq -n env'
+        cmd = f'env'
 
     result = subprocess.run(cmd, capture_output=True, text=True, shell=True, executable="/bin/bash")
     if result.returncode != 0:
         raise RuntimeError(result.stderr)
 
-    return json.loads(result.stdout)
+    lines = result.stdout.strip().split('\n')
+    env_dict = {}
+    for line in lines:
+        key, value = line.split('=', 1)
+        env_dict[key] = value
+
+    return env_dict
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
