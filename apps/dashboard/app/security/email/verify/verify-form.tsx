@@ -1,11 +1,7 @@
 "use client"
 
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
-import {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore-next-line no-implicit-any error
-  experimental_useFormState as useFormState,
-} from "react-dom"
+import { useFormState } from "react-dom"
 
 import {
   Box,
@@ -19,7 +15,9 @@ import {
 import InfoOutlined from "@mui/icons-material/InfoOutlined"
 import Link from "next/link"
 
-import { emailRegisterValidateServerAction } from "../../server-actions"
+import { emailRegisterValidateServerAction } from "../server-actions"
+
+import { VerifyEmailResponse } from "../email.types"
 
 import FormSubmitButton from "@/components/form-submit-button"
 
@@ -31,11 +29,14 @@ export default function VerifyEmailForm({
   emailRegistrationId,
   email,
 }: VerifyEmailFormProps) {
-  const [state, formAction] = useFormState(emailRegisterValidateServerAction, {
-    error: null,
-    message: null,
-    responsePayload: {},
-  })
+  const [state, formAction] = useFormState<VerifyEmailResponse, FormData>(
+    emailRegisterValidateServerAction,
+    {
+      error: false,
+      message: null,
+      responsePayload: null,
+    },
+  )
 
   return (
     <main
@@ -77,6 +78,7 @@ export default function VerifyEmailForm({
           <form action={formAction}>
             <input type="hidden" name="emailRegistrationId" value={emailRegistrationId} />
             <Input
+              data-testid="security-add-email-verification-code-input"
               name="code"
               type="code"
               sx={{
@@ -118,6 +120,7 @@ export default function VerifyEmailForm({
                 </Button>
               </Link>
               <FormSubmitButton
+                data-testid="security-add-email-verification-code-confirm-btn"
                 type="submit"
                 name="submit"
                 sx={{

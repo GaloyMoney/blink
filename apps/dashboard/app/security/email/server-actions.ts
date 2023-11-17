@@ -4,6 +4,8 @@ import { redirect } from "next/navigation"
 
 import { revalidatePath } from "next/cache"
 
+import { AddEmailResponse, VerifyEmailResponse } from "./email.types"
+
 import {
   deleteEmail,
   emailRegistrationInitiate,
@@ -17,15 +19,15 @@ import {
 } from "@/services/graphql/generated"
 
 export const emailRegisterInitiateServerAction = async (
-  _prevState: unknown,
+  _prevState: AddEmailResponse,
   form: FormData,
-) => {
+): Promise<AddEmailResponse> => {
   const email = form.get("email")
   if (!email || typeof email !== "string") {
     return {
       error: true,
       message: "Invalid Email",
-      data: null,
+      responsePayload: null,
     }
   }
 
@@ -35,7 +37,7 @@ export const emailRegisterInitiateServerAction = async (
     return {
       error: true,
       message: "Invalid Token",
-      data: null,
+      responsePayload: null,
     }
   }
 
@@ -48,7 +50,7 @@ export const emailRegisterInitiateServerAction = async (
       error: true,
       message:
         "Something went wrong Please try again and if error persist contact support",
-      data: null,
+      responsePayload: null,
     }
   }
 
@@ -56,7 +58,7 @@ export const emailRegisterInitiateServerAction = async (
     return {
       error: true,
       message: data?.userEmailRegistrationInitiate.errors[0].message,
-      data: null,
+      responsePayload: null,
     }
   }
 
@@ -65,9 +67,9 @@ export const emailRegisterInitiateServerAction = async (
 }
 
 export const emailRegisterValidateServerAction = async (
-  _prevState: unknown,
+  _prevState: VerifyEmailResponse,
   form: FormData,
-) => {
+): Promise<VerifyEmailResponse> => {
   const code = form.get("code")
   const emailRegistrationId = form.get("emailRegistrationId")
 
@@ -80,7 +82,7 @@ export const emailRegisterValidateServerAction = async (
     return {
       error: true,
       message: "Invalid values",
-      data: null,
+      responsePayload: null,
     }
   }
 
@@ -91,7 +93,7 @@ export const emailRegisterValidateServerAction = async (
     return {
       error: true,
       message: "Invalid Token",
-      data: null,
+      responsePayload: null,
     }
   }
 
@@ -108,7 +110,7 @@ export const emailRegisterValidateServerAction = async (
       error: true,
       message:
         "Something went wrong Please try again and if error persist contact support",
-      data: null,
+      responsePayload: null,
     }
   }
 
@@ -116,7 +118,7 @@ export const emailRegisterValidateServerAction = async (
     return {
       error: true,
       message: codeVerificationResponse?.userEmailRegistrationValidate.errors[0].message,
-      data: null,
+      responsePayload: null,
     }
   }
 

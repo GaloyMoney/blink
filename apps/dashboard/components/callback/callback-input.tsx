@@ -10,27 +10,24 @@ import { useState } from "react"
 import AddIcon from "@mui/icons-material/Add"
 import InfoOutlined from "@mui/icons-material/InfoOutlined"
 
-import {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  experimental_useFormStatus as useFormStatus,
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  experimental_useFormState as useFormState,
-} from "react-dom"
+import { useFormStatus, useFormState } from "react-dom"
 
 import FormSubmitButton from "../form-submit-button"
 
 import { createCallbackAction } from "@/app/callback/server-actions"
+import { CallBackAdditionResponse } from "@/app/callback/callback.types"
 
 function CreateCallBack() {
   const [open, setOpen] = useState<boolean>(false)
   const { pending } = useFormStatus()
-  const [state, formAction] = useFormState(createCallbackAction, {
-    error: false,
-    message: null,
-    responsePayload: null,
-  })
+  const [state, formAction] = useFormState<CallBackAdditionResponse, FormData>(
+    createCallbackAction,
+    {
+      error: false,
+      message: null,
+      responsePayload: null,
+    },
+  )
 
   if (state.message === "success") {
     state.error = false
@@ -90,6 +87,7 @@ function CreateCallBack() {
               <FormLabel>Callback URL</FormLabel>
               <Input
                 required
+                data-testid="add-callback-input"
                 placeholder="Enter the Callback URL"
                 type="url"
                 name="callBackUrl"
@@ -103,6 +101,7 @@ function CreateCallBack() {
               ) : null}
             </FormControl>
             <FormSubmitButton
+              data-testid="add-callback-create-btn"
               sx={{
                 width: "100%",
               }}
@@ -119,7 +118,11 @@ function CreateCallBack() {
         <Typography id="modal-desc" textColor="text.tertiary" textAlign="left">
           Attach Callback Endpoints
         </Typography>
-        <Button loading={pending} onClick={() => setOpen(true)}>
+        <Button
+          data-testid="add-callback-btn"
+          loading={pending}
+          onClick={() => setOpen(true)}
+        >
           <AddIcon />
         </Button>
       </Box>

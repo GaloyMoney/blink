@@ -2,6 +2,8 @@
 import { getServerSession } from "next-auth"
 import { revalidatePath } from "next/cache"
 
+import { ApiKeyResponse } from "./api-key.types"
+
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { createApiKey, revokeApiKey } from "@/services/graphql/mutations/api-keys"
 
@@ -45,13 +47,16 @@ export const revokeApiKeyServerAction = async (id: string) => {
   }
 }
 
-export const createApiKeyServerAction = async (_prevState: unknown, form: FormData) => {
+export const createApiKeyServerAction = async (
+  _prevState: ApiKeyResponse,
+  form: FormData,
+): Promise<ApiKeyResponse> => {
   const apiKeyName = form.get("apiKeyName")
   if (!apiKeyName || typeof apiKeyName !== "string") {
     return {
       error: true,
       message: "API Key name to create is not present",
-      data: null,
+      responsePayload: null,
     }
   }
 
@@ -66,7 +71,7 @@ export const createApiKeyServerAction = async (_prevState: unknown, form: FormDa
     return {
       error: true,
       message: "Token is not present",
-      data: null,
+      responsePayload: null,
     }
   }
 
@@ -79,7 +84,7 @@ export const createApiKeyServerAction = async (_prevState: unknown, form: FormDa
       error: true,
       message:
         "Something went wrong Please try again and if error persist contact support",
-      data: null,
+      responsePayload: null,
     }
   }
 
@@ -88,6 +93,6 @@ export const createApiKeyServerAction = async (_prevState: unknown, form: FormDa
   return {
     error: false,
     message: "API Key created successfully",
-    data: { apiKeySecret: data?.apiKeyCreate.apiKeySecret },
+    responsePayload: { apiKeySecret: data?.apiKeyCreate.apiKeySecret },
   }
 }

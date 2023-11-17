@@ -75,6 +75,7 @@ function DeleteCallback({ id }: CallbackDeleteProps) {
             further.
           </Typography>
           <Button
+            data-testid={`delete-callback-confirm-btn-${id}`}
             variant="outlined"
             loading={loading}
             color="danger"
@@ -92,7 +93,12 @@ function DeleteCallback({ id }: CallbackDeleteProps) {
           alignItems: "right",
         }}
       >
-        <Button onClick={() => setOpen(true)} variant="outlined" color="danger">
+        <Button
+          data-testid={`delete-callback-btn-${id}`}
+          onClick={() => setOpen(true)}
+          variant="outlined"
+          color="danger"
+        >
           <DeleteIcon />
           <Typography
             sx={{

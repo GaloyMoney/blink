@@ -1,11 +1,7 @@
 "use client"
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
 
-import {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore-next-line no-implicit-any error
-  experimental_useFormState as useFormState,
-} from "react-dom"
+import { useFormState } from "react-dom"
 
 import {
   Box,
@@ -19,16 +15,21 @@ import {
 import InfoOutlined from "@mui/icons-material/InfoOutlined"
 import Link from "next/link"
 
-import { emailRegisterInitiateServerAction } from "../../server-actions"
+import { emailRegisterInitiateServerAction } from "../server-actions"
+
+import { AddEmailResponse } from "../email.types"
 
 import FormSubmitButton from "@/components/form-submit-button"
 
 export default function AddEmail() {
-  const [state, formAction] = useFormState(emailRegisterInitiateServerAction, {
-    error: null,
-    message: null,
-    data: null,
-  })
+  const [state, formAction] = useFormState<AddEmailResponse, FormData>(
+    emailRegisterInitiateServerAction,
+    {
+      error: false,
+      message: null,
+      responsePayload: null,
+    },
+  )
 
   return (
     <main
@@ -61,6 +62,7 @@ export default function AddEmail() {
         >
           <form action={formAction}>
             <Input
+              data-testid="security-add-email-input"
               name="email"
               type="email"
               sx={{
@@ -104,6 +106,7 @@ export default function AddEmail() {
               <FormSubmitButton
                 type="submit"
                 name="submit"
+                data-testid="security-add-email-send-code-btn"
                 sx={{
                   marginTop: "1em",
                   display: "flex",

@@ -40,7 +40,7 @@ const CallBackList = async ({ endpoints }: EndPointCardListProps) => {
         </thead>
         <tbody>
           {endpoints.map(({ id, url }) => (
-            <tr key={id}>
+            <tr key={id} data-testid={id}>
               <td style={{ wordBreak: "break-word", wordWrap: "break-word" }}>{id}</td>
               <td style={{ wordBreak: "break-word", wordWrap: "break-word" }}>{url}</td>
               <td
