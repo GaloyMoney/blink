@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(api-keys): add read_only field to api-keys (#3554)...'
-      sha: 47ace194c2a21b2388e0a05e8eeb62b73f05506e
+      commitTitle: 'chore(dashboard): nextjs 14 in dashboard (#3565)...'
+      sha: d341e27584b112171a584c9382adc98c489eb778
       tags:
-      - 0.16.35-1-g47ace194c
+      - 0.16.36-1-gd341e2758
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(api-keys): add read_only field to api-keys (#3554)...'
-      sha: 47ace194c2a21b2388e0a05e8eeb62b73f05506e
+      commitTitle: 'chore(dashboard): nextjs 14 in dashboard (#3565)...'
+      sha: d341e27584b112171a584c9382adc98c489eb778
       tags:
-      - 0.16.35-1-g47ace194c
+      - 0.16.36-1-gd341e2758
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(api-keys): add read_only field to api-keys (#3554)...'
-      sha: 47ace194c2a21b2388e0a05e8eeb62b73f05506e
+      commitTitle: 'chore(dashboard): nextjs 14 in dashboard (#3565)...'
+      sha: d341e27584b112171a584c9382adc98c489eb778
       tags:
-      - 0.16.35-1-g47ace194c
+      - 0.16.36-1-gd341e2758
     path: ./
   path: ./graphql
 kind: LockConfig
