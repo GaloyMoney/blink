@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: alert on test phone (#3566)...'
-      sha: 09de196cafbc80ea8a93e3ed1cda5d520d21af4d
+      commitTitle: 'fix(core): avoid unknown exceptions in setGqlContext (#3567)'
+      sha: bb13363ec8b0c122d21fac4eb8dfaf915d1d283c
       tags:
-      - 0.16.38-1-g09de196ca
+      - 0.16.39-1-gbb13363ec
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: alert on test phone (#3566)...'
-      sha: 09de196cafbc80ea8a93e3ed1cda5d520d21af4d
+      commitTitle: 'fix(core): avoid unknown exceptions in setGqlContext (#3567)'
+      sha: bb13363ec8b0c122d21fac4eb8dfaf915d1d283c
       tags:
-      - 0.16.38-1-g09de196ca
+      - 0.16.40
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: alert on test phone (#3566)...'
-      sha: 09de196cafbc80ea8a93e3ed1cda5d520d21af4d
+      commitTitle: 'fix(core): avoid unknown exceptions in setGqlContext (#3567)'
+      sha: bb13363ec8b0c122d21fac4eb8dfaf915d1d283c
       tags:
-      - 0.16.38-1-g09de196ca
+      - 0.16.40
     path: ./
   path: ./graphql
 kind: LockConfig
