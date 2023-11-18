@@ -73,6 +73,9 @@ mutators:
   noop:
     enabled: true
 
+  header:
+    enabled: true
+
 errors:
   fallback:
     - json
