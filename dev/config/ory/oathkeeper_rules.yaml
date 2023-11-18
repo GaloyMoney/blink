@@ -57,7 +57,7 @@
         token_from:
           header: X-API-KEY
         forward_http_headers:
-        - "X-API-KEY"
+          - "X-API-KEY"
         check_session_url: "http://bats-tests:5397/auth/check"
         force_method: GET
         preserve_path: true
@@ -76,9 +76,15 @@
   authorizer:
     handler: allow
   mutators:
+    - handler: hydrator
+      config:
+        api:
+          url: http://bats-test:4012/appcheck/token
+      cache:
+        ttl: 300s
     - handler: id_token
       config: #! TODO: add aud: {"aud": ["https://api/graphql"] }
-        claims: '{"sub": "{{ print .Subject }}", "session_id": "{{ print .Extra.id }}", "expires_at": "{{ print .Extra.expires_at }}", "scope": "{{ print .Extra.scope }}", "client_id": "{{ print .Extra.client_id }}"}'
+        claims: '{"sub": "{{ print .Subject }}", "session_id": "{{ print .Extra.id }}", "expires_at": "{{ print .Extra.expires_at }}", "scope": "{{ print .Extra.scope }}", "client_id": "{{ print .Extra.client_id }}", "appcheck_jti": "{{ print .Extra.appcheck_jti }}" }'
 
 - id: admin-backend
   upstream:

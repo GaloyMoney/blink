@@ -71,6 +71,12 @@ mutators:
       issuer_url: "galoy.io"
       claims: '{"sub": "{{ print .Subject }}" }'
 
+  hydrator:
+    enabled: true
+    config:
+      api:
+        url: http://bats-test:4012/appcheck/token
+
   noop:
     enabled: true
 

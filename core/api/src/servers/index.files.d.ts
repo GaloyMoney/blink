@@ -11,6 +11,7 @@ type GraphQLPublicContext = {
   loaders: Loaders
   ip: IpAddress | undefined
   sessionId: SessionId | undefined
+  appcheckJti: AppcheckJti | undefined
 }
 
 type GraphQLPublicContextAuth = GraphQLPublicContext & {

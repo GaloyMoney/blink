@@ -27,6 +27,7 @@ import { getJwksArgs } from "@/config"
 import { DomainError, parseUnknownDomainErrorFromUnknown } from "@/domain/shared"
 import { mapError } from "@/graphql/error-map"
 import { baseLogger } from "@/services/logger"
+import { appcheckRouter } from "./authentication/appcheck"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -84,6 +85,7 @@ export const startApolloServer = async ({
   })
 
   app.use("/auth", authRouter)
+  app.use("/appcheck", appcheckRouter)
   app.use("/kratos", kratosCallback)
 
   // Health check
