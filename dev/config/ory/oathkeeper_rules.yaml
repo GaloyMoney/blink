@@ -2,21 +2,8 @@
   upstream:
     url: "http://bats-tests:4012"
   match:
-    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<(clearCookies|login|logout|email/code|email/login|totp/validate|email/login/cookie|phone/captcha|phone/code|phone/login)>"
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<.*>"
     methods: ["GET", "POST", "OPTIONS"]
-  authenticators:
-    - handler: anonymous
-  authorizer:
-    handler: allow
-  mutators:
-    - handler: noop
-
-- id: device-login
-  upstream:
-    url: "http://bats-tests:4012"
-  match:
-    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/create/device-account"
-    methods: ["POST"]
   authenticators:
     - handler: jwt
       config:
@@ -29,10 +16,14 @@
           - file:///home/ory/jwks.json # ONLY FOR DEV, DO NOT USE IN PRODUCTION
         token_from:
           header: Appcheck
+    - handler: anonymous
   authorizer:
     handler: allow
   mutators:
-    - handler: noop
+    - handler: header
+      config:
+        headers:
+          X-Appcheck-Jti: "{{ print .Extra.jti }}"
 
 - id: galoy-ws
   upstream:

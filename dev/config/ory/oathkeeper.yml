@@ -74,6 +74,12 @@ mutators:
   noop:
     enabled: true
 
+  header:
+    enabled: true
+    config:
+      headers:
+        X-Appcheck-Jti: "{{ print .Extra.jti }}"
+
 errors:
   fallback:
     - json

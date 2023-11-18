@@ -1,4 +1,5 @@
 type SessionId = string & { readonly brand: unique symbol }
+type AppcheckJti = string & { readonly brand: unique symbol }
 
 type AuthenticationError = import("./errors").AuthenticationError
 
