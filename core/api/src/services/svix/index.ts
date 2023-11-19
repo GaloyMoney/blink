@@ -81,19 +81,24 @@ export const CallbackService = (config: SvixConfig) => {
     walletId: WalletId
     payload: Record<string, JSONValue>
   }) => {
-    const accountCallbackId = getAccountCallbackId(accountId)
-    addAttributesToCurrentSpan({ "callback.application": accountCallbackId })
-
-    const res = await createApplication(accountCallbackId)
-    if (res instanceof Error) return res
-
     try {
+      const accountCallbackId = getAccountCallbackId(accountId)
+      addAttributesToCurrentSpan({ "callback.application": accountCallbackId })
+
+      const result = await createApplication(accountCallbackId)
+      if (result instanceof Error) return result
+
+      const safePayload = JSON.parse(
+        JSON.stringify(payload, (_key, value) =>
+          typeof value === "bigint" ? value.toString() : value,
+        ),
+      )
       const res = await svix.message.create(accountCallbackId, {
         eventType,
-        payload: { ...payload, accountId, walletId, eventType },
+        payload: { ...safePayload, accountId, walletId, eventType },
       })
 
-      const prefixedPayload = prefixObjectKeys(payload, "callback.payload.")
+      const prefixedPayload = prefixObjectKeys(safePayload, "callback.payload")
       addAttributesToCurrentSpan({
         ...prefixedPayload,
         ["callback.accountId"]: accountId,

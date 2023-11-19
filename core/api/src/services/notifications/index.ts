@@ -207,7 +207,7 @@ export const NotificationsService = (): INotificationsService => {
         accountId: recipient.accountId,
         walletId: recipient.walletId,
         eventType,
-        payload: transaction,
+        payload: { transaction },
       })
       if (result instanceof Error) return result
 
