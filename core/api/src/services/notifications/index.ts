@@ -15,11 +15,11 @@ import {
 } from "@/domain/notifications"
 import { toSats } from "@/domain/bitcoin"
 import { AccountLevel } from "@/domain/accounts"
-import { WalletCurrency } from "@/domain/shared"
 import { TxStatus } from "@/domain/wallets/tx-status"
 import { CallbackEventType } from "@/domain/callback"
 import { CallbackError } from "@/domain/callback/errors"
 import { WalletInvoiceStatus } from "@/domain/wallet-invoices"
+import { roundToBigInt, WalletCurrency } from "@/domain/shared"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@/domain/pubsub"
 import { majorToMinorUnit, toCents, UsdDisplayCurrency } from "@/domain/fiat"
 

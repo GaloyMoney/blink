@@ -506,13 +506,13 @@ describe("notification", () => {
           name: "btc",
           paymentAmount,
           title: "BTC Transaction",
-          body: "Sent onchain payment of +₡3,500.50 | 1,000 sats confirmed",
+          body: "Sent onchain payment of -₡3,500.50 | -1,000 sats confirmed",
         },
         {
           name: "usd",
           paymentAmount: usdPaymentAmount,
           title: "USD Transaction",
-          body: "Sent onchain payment of +₡3,500.50 | $0.05 confirmed",
+          body: "Sent onchain payment of -₡3,500.50 | -$0.05 confirmed",
         },
       ]
 
@@ -550,12 +550,12 @@ describe("notification", () => {
               settlementAmount: paymentAmount.settlementAmountSend,
               settlementCurrency: paymentAmount.currency,
               settlementFee: paymentAmount.settlementFee,
-              settlementDisplayAmount: crcDisplayPaymentAmount.displayInMajor,
+              settlementDisplayAmount: `-${crcDisplayPaymentAmount.displayInMajor}`,
               settlementDisplayPrice: crcSettlementDisplayPrice({
                 walletAmount: toSats(paymentAmount.amount),
                 walletCurrency: paymentAmount.currency,
               }),
-              settlementDisplayFee: paymentAmount.settlementDisplayFee,
+              settlementDisplayFee: `-${paymentAmount.settlementDisplayFee}`,
               createdAt: new Date(),
             },
           })
