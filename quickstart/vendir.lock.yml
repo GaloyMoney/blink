@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor: move callback to notification service (#3564)...'
-      sha: c3638f8e940291fc57759c667eb5ab063dbac433
+      commitTitle: 'chore: split export type (#3569)'
+      sha: 78a66cff0c5158c44f403292ee8dbdc2772cc19f
       tags:
-      - 0.16.40-2-gc3638f8e9
+      - 0.16.40-4-g78a66cff0
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor: move callback to notification service (#3564)...'
-      sha: c3638f8e940291fc57759c667eb5ab063dbac433
+      commitTitle: 'chore: split export type (#3569)'
+      sha: 78a66cff0c5158c44f403292ee8dbdc2772cc19f
       tags:
-      - 0.16.40-2-gc3638f8e9
+      - 0.16.40-4-g78a66cff0
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'refactor: move callback to notification service (#3564)...'
-      sha: c3638f8e940291fc57759c667eb5ab063dbac433
+      commitTitle: 'chore: split export type (#3569)'
+      sha: 78a66cff0c5158c44f403292ee8dbdc2772cc19f
       tags:
-      - 0.16.40-2-gc3638f8e9
+      - 0.16.40-4-g78a66cff0
     path: ./
   path: ./graphql
 kind: LockConfig
