@@ -20,6 +20,7 @@ import {
 import { WalletCurrency } from "@/domain/shared"
 import { GaloyNotificationCategories } from "@/domain/notifications"
 import { displayCurrencyPerBaseUnitFromAmounts } from "@/domain/wallets/tx-history"
+import { AccountLevel } from "@/domain/accounts"
 
 // @ts-ignore-next-line no-implicit-any error
 let spy
@@ -247,6 +248,7 @@ describe("notification", () => {
               deviceTokens,
               language,
               notificationSettings: unfilteredNotificationSettings,
+              level: AccountLevel.One,
             },
             transaction: {
               id: "id" as LedgerTransactionId,
@@ -318,6 +320,7 @@ describe("notification", () => {
               deviceTokens,
               language,
               notificationSettings: unfilteredNotificationSettings,
+              level: AccountLevel.One,
             },
             transaction: {
               id: "id" as LedgerTransactionId,
@@ -390,6 +393,7 @@ describe("notification", () => {
               deviceTokens,
               language,
               notificationSettings: unfilteredNotificationSettings,
+              level: AccountLevel.One,
             },
             transaction: {
               id: "id" as LedgerTransactionId,
@@ -459,6 +463,7 @@ describe("notification", () => {
               deviceTokens,
               language,
               notificationSettings: unfilteredNotificationSettings,
+              level: AccountLevel.One,
             },
             transaction: {
               id: "id" as LedgerTransactionId,
@@ -528,6 +533,7 @@ describe("notification", () => {
               deviceTokens,
               language,
               notificationSettings: unfilteredNotificationSettings,
+              level: AccountLevel.One,
             },
             transaction: {
               id: "id" as LedgerTransactionId,

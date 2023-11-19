@@ -6,7 +6,7 @@ import {
 
 import { reimburseFee } from "./reimburse-fee"
 
-import { AccountLevel, AccountValidator } from "@/domain/accounts"
+import { AccountValidator } from "@/domain/accounts"
 import {
   decodeInvoice,
   defaultTimeToExpiryInSeconds,
@@ -73,10 +73,6 @@ import {
 
 import { ResourceExpiredLockServiceError } from "@/domain/lock"
 import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
-
-import { CallbackService } from "@/services/svix"
-import { getCallbackServiceConfig } from "@/config"
-import { CallbackEventType } from "@/domain/callback"
 
 const dealer = DealerPriceService()
 const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
@@ -537,28 +533,13 @@ const executePaymentViaIntraledger = async <
         deviceTokens: recipientUser.deviceTokens,
         language: recipientUser.language,
         notificationSettings: recipientAccount.notificationSettings,
+        level: recipientAccount.level,
       },
       transaction: walletTransaction,
     })
 
     if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
       await removeDeviceTokens({ userId: recipientUser.id, deviceTokens: result.tokens })
-    }
-
-    if (
-      recipientAccount.level === AccountLevel.One ||
-      recipientAccount.level === AccountLevel.Two
-    ) {
-      const callbackService = CallbackService(getCallbackServiceConfig())
-      callbackService.sendMessage({
-        accountId: recipientAccount.id,
-        eventType: CallbackEventType.ReceiveIntraledger,
-        payload: {
-          // FIXME: [0] might not be correct
-          txid: journal.transactionIds[0],
-          paymentHash,
-        },
-      })
     }
 
     if (senderAccount.id !== recipientAccount.id) {

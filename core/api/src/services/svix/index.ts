@@ -12,16 +12,23 @@ import {
 import { baseLogger } from "@/services/logger"
 
 function prefixObjectKeys(
-  obj: Record<string, string>,
+  obj: Record<string, JSONValue>,
   prefix: string,
 ): Record<string, string> {
-  return Object.keys(obj).reduce(
-    (acc, key) => {
-      acc[`${prefix}${key}`] = obj[key]
-      return acc
-    },
-    {} as Record<string, string>,
-  )
+  return Object.keys(obj).reduce<Record<string, string>>((acc, key) => {
+    const newKey = `${prefix}.${key}`
+
+    if (typeof obj[key] === "object" && obj[key] !== null && !Array.isArray(obj[key])) {
+      const flattenedSubObject = prefixObjectKeys(
+        obj[key] as Record<string, JSONValue>,
+        newKey,
+      )
+      return { ...acc, ...flattenedSubObject }
+    }
+
+    acc[newKey] = `${obj[key]}`
+    return acc
+  }, {})
 }
 
 export const CallbackService = (config: SvixConfig) => {
@@ -66,11 +73,13 @@ export const CallbackService = (config: SvixConfig) => {
   const sendMessage = async ({
     eventType,
     accountId,
+    walletId,
     payload,
   }: {
     eventType: string
     accountId: AccountId
-    payload: Record<string, string>
+    walletId: WalletId
+    payload: Record<string, JSONValue>
   }) => {
     const accountCallbackId = getAccountCallbackId(accountId)
     addAttributesToCurrentSpan({ "callback.application": accountCallbackId })
@@ -81,13 +90,14 @@ export const CallbackService = (config: SvixConfig) => {
     try {
       const res = await svix.message.create(accountCallbackId, {
         eventType,
-        payload: { ...payload, accountId, eventType },
+        payload: { ...payload, accountId, walletId, eventType },
       })
 
       const prefixedPayload = prefixObjectKeys(payload, "callback.payload.")
       addAttributesToCurrentSpan({
         ...prefixedPayload,
         ["callback.accountId"]: accountId,
+        ["callback.walletId"]: walletId,
         ["callback.eventType"]: eventType,
       })
       baseLogger.info({ res }, `message sent successfully to ${accountCallbackId}`)

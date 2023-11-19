@@ -153,6 +153,7 @@ export const addPendingTransaction = async ({
         deviceTokens: recipientUser.deviceTokens,
         language: recipientUser.language,
         notificationSettings: account.notificationSettings,
+        level: account.level,
       },
       transaction: res,
     })
