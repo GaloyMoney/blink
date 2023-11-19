@@ -112,11 +112,9 @@ export async function startApolloServerForAdminSchema() {
   })
 }
 
-if (require.main === module) {
-  setupMongoConnection()
-    .then(async () => {
-      activateLndHealthCheck()
-      await startApolloServerForAdminSchema()
-    })
-    .catch((err) => graphqlLogger.error(err, "server error"))
-}
+setupMongoConnection()
+  .then(async () => {
+    activateLndHealthCheck()
+    await startApolloServerForAdminSchema()
+  })
+  .catch((err) => graphqlLogger.error(err, "server error"))

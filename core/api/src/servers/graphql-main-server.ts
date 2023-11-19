@@ -123,18 +123,16 @@ export async function startApolloServerForCoreSchema() {
   })
 }
 
-if (require.main === module) {
-  setupMongoConnection(true)
-    .then(async () => {
-      activateLndHealthCheck()
+setupMongoConnection(true)
+  .then(async () => {
+    activateLndHealthCheck()
 
-      const res = await bootstrap()
-      if (res instanceof Error) throw res
+    const res = await bootstrap()
+    if (res instanceof Error) throw res
 
-      await Promise.race([
-        startApolloServerForCoreSchema(),
-        startApolloServerForAdminSchema(),
-      ])
-    })
-    .catch((err) => baseLogger.error(err, "server error"))
-}
+    await Promise.race([
+      startApolloServerForCoreSchema(),
+      startApolloServerForAdminSchema(),
+    ])
+  })
+  .catch((err) => baseLogger.error(err, "server error"))
