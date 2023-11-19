@@ -1,3 +1,5 @@
+import { getTransactionForWalletByJournalId } from "./get-transaction-by-journal-id"
+
 import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
 
 import { displayAmountFromNumber } from "@/domain/fiat"
@@ -52,15 +54,21 @@ export const settlePayout = async (
   const { txHash } = ledgerTxn
   if (txHash === undefined) return new InvalidLedgerTransactionStateError()
 
-  const result = await NotificationsService().onChainTxSent({
-    senderAccountId: wallet.accountId,
-    senderWalletId: wallet.id,
-    paymentAmount,
-    displayPaymentAmount,
-    txHash,
-    senderDeviceTokens: user.deviceTokens,
-    senderNotificationSettings: account.notificationSettings,
-    senderLanguage: user.language,
+  const walletTransaction = await getTransactionForWalletByJournalId({
+    walletId: wallet.id,
+    journalId: ledgerTxn.journalId,
+  })
+  if (walletTransaction instanceof Error) return walletTransaction
+
+  const result = await NotificationsService().sendTransaction({
+    recipient: {
+      accountId: wallet.accountId,
+      walletId: wallet.id,
+      deviceTokens: user.deviceTokens,
+      language: user.language,
+      notificationSettings: account.notificationSettings,
+    },
+    transaction: walletTransaction,
   })
 
   if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {

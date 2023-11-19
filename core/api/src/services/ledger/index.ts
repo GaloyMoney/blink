@@ -111,6 +111,28 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
+  const getTransactionForWalletByJournalId = async ({
+    walletId,
+    journalId,
+  }: {
+    walletId: WalletId
+    journalId: LedgerJournalId
+  }): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError> => {
+    try {
+      const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+      const { results } = await MainBook.ledger({
+        account: liabilitiesWalletId,
+        _journal: toObjectId(journalId),
+      })
+      if (results.length === 1) {
+        return translateToLedgerTx(results[0])
+      }
+      return new CouldNotFindTransactionError()
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
   const getTransactionsByHash = async (
     hash: PaymentHash | OnChainTxHash,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
@@ -460,6 +482,7 @@ export const LedgerService = (): ILedgerService => {
       updateMetadataByHash,
       getTransactionById,
       getTransactionForWalletById,
+      getTransactionForWalletByJournalId,
       getTransactionsByHash,
       getTransactionsForWalletByPaymentHash,
       getTransactionsByWalletId,

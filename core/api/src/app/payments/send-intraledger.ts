@@ -9,7 +9,11 @@ import {
   usdFromBtcMidPriceFn,
 } from "@/app/prices"
 import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
-import { validateIsBtcWallet, validateIsUsdWallet } from "@/app/wallets"
+import {
+  getTransactionForWalletByJournalId,
+  validateIsBtcWallet,
+  validateIsUsdWallet,
+} from "@/app/wallets"
 
 import {
   InvalidLightningPaymentFlowBuilderStateError,
@@ -245,7 +249,6 @@ const executePaymentViaIntraledger = async <
       "Expected recipient details missing",
     )
   }
-  const { currency: recipientWalletCurrency } = recipientWalletDescriptor
 
   return LockService().lockWalletId(senderWallet.id, async (signal) => {
     const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
@@ -342,24 +345,24 @@ const executePaymentViaIntraledger = async <
     })
     if (journal instanceof Error) return journal
 
-    const totalSendAmounts = paymentFlow.totalAmountsForPayment()
-
     const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
     if (recipientUser instanceof Error) return recipientUser
 
-    let amount = totalSendAmounts.btc.amount
-    if (recipientWalletCurrency === WalletCurrency.Usd) {
-      amount = totalSendAmounts.usd.amount
-    }
+    const walletTransaction = await getTransactionForWalletByJournalId({
+      walletId: recipientWallet.id,
+      journalId: journal.journalId,
+    })
+    if (walletTransaction instanceof Error) return walletTransaction
 
-    const result = await NotificationsService().intraLedgerTxReceived({
-      recipientAccountId: recipientWallet.accountId,
-      recipientWalletId: recipientWallet.id,
-      recipientDeviceTokens: recipientUser.deviceTokens,
-      recipientLanguage: recipientUser.language,
-      paymentAmount: { amount, currency: recipientWallet.currency },
-      recipientNotificationSettings: recipientAccount.notificationSettings,
-      displayPaymentAmount: recipientDisplayAmount,
+    const result = await NotificationsService().sendTransaction({
+      recipient: {
+        accountId: recipientWallet.accountId,
+        walletId: recipientWallet.id,
+        deviceTokens: recipientUser.deviceTokens,
+        language: recipientUser.language,
+        notificationSettings: recipientAccount.notificationSettings,
+      },
+      transaction: walletTransaction,
     })
 
     if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
