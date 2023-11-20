@@ -7,12 +7,24 @@ import os
 import subprocess
 import sys
 
-def compute_path(arg: str) -> str:
-    if arg.endswith("::abspath"):
-        return os.path.abspath(arg.removesuffix("::abspath"))
+def merge_env_from_file(file_path):
+    # Shell command to source the .env file
+    if file_path and os.path.exists(file_path):
+        cmd = f'source {file_path} && env'
     else:
-        return arg
+        cmd = f'env'
 
+    result = subprocess.run(cmd, capture_output=True, text=True, shell=True, executable="/bin/bash")
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr)
+
+    lines = result.stdout.strip().split('\n')
+    env_dict = {}
+    for line in lines:
+        key, value = line.split('=', 1)
+        env_dict[key] = value
+
+    return env_dict
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
@@ -25,6 +37,10 @@ if __name__ == "__main__":
         help="Binary to execute program with",
     )
     parser.add_argument(
+        "--env-file",
+        help="Env file to load variables from",
+    )
+    parser.add_argument(
         "args",
         help="Program and arguments",
         nargs=argparse.REMAINDER,
@@ -34,6 +50,7 @@ if __name__ == "__main__":
     bin_args = args.args[1:] # ignore '--' separator
     cmd = [os.path.abspath(args.bin), *bin_args]
 
-    exit_code = subprocess.call(cmd, cwd=args.cwd)
+    env = merge_env_from_file(args.env_file)
+    exit_code = subprocess.call(cmd, cwd=args.cwd, env=env)
 
     sys.exit(exit_code)

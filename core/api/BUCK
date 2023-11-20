@@ -10,6 +10,7 @@ load(
   "typescript_check",
   "yaml_check",
   "madge_check",
+  "test_unit",
 )
 load("@toolchains//rover:macros.bzl", "sdl", "diff_check", "dev_update_file")
 
@@ -155,6 +156,16 @@ madge_check(
     srcs = [":src"],
 )
 
+test_unit(
+    name = "unit-tests",
+    srcs = [":src"] + [":test_src"] + glob([".env", "galoy.yaml"]),
+    config_file = "test/unit/jest.config.js",
+    env_file = ".env",
+    env = {
+        "LOGLEVEL": "warn",
+    }
+)
+
 test_suite(
     name = "test-unit",
     tests = [
@@ -165,5 +176,6 @@ test_suite(
         ":check-circular-dependencies",
         ":public-schema-diff",
         ":admin-schema-diff",
+        ":unit-tests",
     ],
 )
