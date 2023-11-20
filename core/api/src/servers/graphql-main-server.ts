@@ -14,6 +14,8 @@ import { sessionPublicContext } from "./middlewares/session"
 
 import { scopeMiddleware } from "./middlewares/scope"
 
+import { startApolloServerForAdminSchema } from "./graphql-admin-server"
+
 import { GALOY_API_PORT, UNSECURE_IP_FROM_REQUEST_OBJECT } from "@/config"
 
 import { AuthorizationError } from "@/graphql/error"
@@ -121,13 +123,18 @@ export async function startApolloServerForCoreSchema() {
   })
 }
 
-setupMongoConnection(true)
-  .then(async () => {
-    activateLndHealthCheck()
+if (require.main === module) {
+  setupMongoConnection(true)
+    .then(async () => {
+      activateLndHealthCheck()
 
-    const res = await bootstrap()
-    if (res instanceof Error) throw res
+      const res = await bootstrap()
+      if (res instanceof Error) throw res
 
-    await startApolloServerForCoreSchema()
-  })
-  .catch((err) => baseLogger.error(err, "server error"))
+      await Promise.race([
+        startApolloServerForCoreSchema(),
+        startApolloServerForAdminSchema(),
+      ])
+    })
+    .catch((err) => baseLogger.error(err, "server error"))
+}
