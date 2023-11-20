@@ -92,13 +92,9 @@ local_resource(
   auto_init = is_ci and "dashboard" in cfg.get("test", []),
   cmd = "buck2 test {}".format(dashboard_test_target),
   resource_deps = [
-    "init-test-user",
-    "hydra-dashboard",
     "consent",
     "api-keys",
     "dashboard",
-    "svix",
-    "svix-pg",
   ],
 )
 

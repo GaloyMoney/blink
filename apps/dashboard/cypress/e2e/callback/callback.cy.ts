@@ -17,7 +17,6 @@ describe("Callback Test", () => {
   })
 
   it("Callback Addition Test", () => {
-    cy.wait(2000)
     cy.get("[data-testid=add-callback-btn]").should("exist")
     cy.get("[data-testid=add-callback-btn]").should("be.visible")
     cy.get("[data-testid=add-callback-btn]").should("not.be.disabled")

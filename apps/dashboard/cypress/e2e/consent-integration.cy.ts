@@ -14,7 +14,6 @@ describe("Consent integration Test", () => {
     cy.contains("button", "Sign in with Blink").should("not.be.disabled").click()
 
     const email = signInData.EMAIL
-    cy.wait(1000)
     cy.get("[data-testid=email_id_input]").should("exist")
     cy.get("[data-testid=email_id_input]").should("be.visible")
     cy.get("[data-testid=email_id_input]").should("not.be.disabled").type(email)
@@ -42,13 +41,17 @@ describe("Consent integration Test", () => {
       cy.get("[data-testid=submit_consent_btn]").should("not.be.disabled")
       cy.get("[data-testid=submit_consent_btn]").click()
 
-      cy.wait(5000)
+      cy.url().should("eq", Cypress.config().baseUrl + "/")
       cy.getCookie("next-auth.session-token").then((cookie) => {
         if (cookie && cookie.value) {
-          cy.writeFile(".env.test", `NEXT_AUTH_SESSION_TOKEN=${cookie.value}\n`, {
-            flag: "w",
-          })
-          cy.log("Session token saved to .env.test")
+          cy.writeFile(
+            "../../dev/.envs/next-auth-session.env",
+            `NEXT_AUTH_SESSION_TOKEN=${cookie.value}\n`,
+            {
+              flag: "w",
+            },
+          )
+          cy.log("Session token saved to next-auth-session.test")
         } else {
           cy.log("Session token not found")
         }
