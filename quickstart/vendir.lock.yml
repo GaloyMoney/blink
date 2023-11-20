@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: migrate WalletInvoice processingCompleted (#3576)'
-      sha: b5f0f43c50fe0654c1c2427dcb8fdac82bcf8844
+      commitTitle: 'fix: decimals issue in notification service (#3577)...'
+      sha: 9edf1c319571c833f427024732d3575e45860c08
       tags:
-      - 0.16.43-1-gb5f0f43c5
+      - 0.16.44-1-g9edf1c319
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: migrate WalletInvoice processingCompleted (#3576)'
-      sha: b5f0f43c50fe0654c1c2427dcb8fdac82bcf8844
+      commitTitle: 'fix: decimals issue in notification service (#3577)...'
+      sha: 9edf1c319571c833f427024732d3575e45860c08
       tags:
-      - 0.16.43-1-gb5f0f43c5
+      - 0.16.44-1-g9edf1c319
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: migrate WalletInvoice processingCompleted (#3576)'
-      sha: b5f0f43c50fe0654c1c2427dcb8fdac82bcf8844
+      commitTitle: 'fix: decimals issue in notification service (#3577)...'
+      sha: 9edf1c319571c833f427024732d3575e45860c08
       tags:
-      - 0.16.43-1-gb5f0f43c5
+      - 0.16.44-1-g9edf1c319
     path: ./
   path: ./graphql
 kind: LockConfig
