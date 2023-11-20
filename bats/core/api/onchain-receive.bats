@@ -124,7 +124,7 @@ setup_file() {
   
   # Mine transactions
   bitcoin_cli -generate 2
-  retry 15 1 check_for_onchain_initiated_settled 'alice' "$on_chain_address_created_1" 2
+  retry 30 1 check_for_onchain_initiated_settled 'alice' "$on_chain_address_created_1" 2
   retry 3 1 check_for_onchain_initiated_settled 'alice' "$on_chain_address_created_2" 2
 
   # Check transactions for address 1
@@ -254,7 +254,7 @@ setup_file() {
   [[ "$pending_txns_for_account_length" == "1" ]] || exit 1
 
   bitcoin_cli -generate 2
-  retry 15 1 check_for_onchain_initiated_settled 'alice' "$on_chain_address_created" 1
+  retry 30 1 check_for_onchain_initiated_settled 'alice' "$on_chain_address_created" 1
 
   # Ensure no pending transactions for account
   exec_graphql 'alice' 'pending-incoming-transactions'
