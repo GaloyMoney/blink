@@ -179,3 +179,8 @@ test_suite(
         ":unit-tests",
     ],
 )
+
+dev_pnpm_task_binary(
+  name = "dev",
+  command = "dev:api",
+)
