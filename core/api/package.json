@@ -22,7 +22,8 @@
     "watch-main": ". ../../.env && nodemon -V -e ts,graphql -w ./src --exec pnpm run start-main",
     "start-main": ". ../../.env && pnpm run build && node --inspect -r ./dist/services/tracing.js ./dist/servers/graphql-main-server.js",
     "migrate-mongo-up": "migrate-mongo up -f './src/migrations/migrate-mongo-config.js'",
-    "gen-test-jwt": "tsx dev/bin/gen-test-jwt.ts"
+    "gen-test-jwt": "tsx dev/bin/gen-test-jwt.ts",
+    "dev:api": "tsx src/servers/graphql-main-server.ts"
   },
   "engines": {
     "node": "20"
