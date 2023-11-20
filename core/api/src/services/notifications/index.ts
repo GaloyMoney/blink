@@ -6,7 +6,7 @@ import {
 import { createPushNotificationContent } from "./create-push-notification-content"
 
 import { toSats } from "@/domain/bitcoin"
-import { truncToBigInt, WalletCurrency } from "@/domain/shared"
+import { roundToBigInt, WalletCurrency } from "@/domain/shared"
 import { majorToMinorUnit, toCents, UsdDisplayCurrency } from "@/domain/fiat"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@/domain/pubsub"
 import {
@@ -150,14 +150,14 @@ export const NotificationsService = (): INotificationsService => {
 
       const displayAmountMajor = transaction.settlementDisplayAmount
       const displayCurrency = transaction.settlementDisplayPrice.displayCurrency
-      const displayAmountMinor = truncToBigInt(
+      const displayAmountMinor = roundToBigInt(
         majorToMinorUnit({ amount: Number(displayAmountMajor), displayCurrency }),
       )
       const { title, body } = createPushNotificationContent({
         type,
         userLanguage: recipient.language,
         amount: {
-          amount: truncToBigInt(Math.abs(transaction.settlementAmount)),
+          amount: roundToBigInt(Math.abs(transaction.settlementAmount)),
           currency: transaction.settlementCurrency,
         },
         displayAmount: {

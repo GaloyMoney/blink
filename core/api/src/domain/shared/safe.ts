@@ -11,6 +11,6 @@ export const safeBigInt = (num: number): bigint | BigIntConversionError => {
   }
 }
 
-export const truncToBigInt = (num: number): bigint => {
-  return BigInt(Math.trunc(Math.round(num)))
+export const roundToBigInt = (num: number): bigint => {
+  return BigInt(Math.round(num))
 }

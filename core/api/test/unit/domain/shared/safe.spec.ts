@@ -1,7 +1,7 @@
-import { truncToBigInt } from "@/domain/shared/safe"
+import { roundToBigInt } from "@/domain/shared/safe"
 
 describe("safe", () => {
-  describe("truncToBigInt", () => {
+  describe("roundToBigInt", () => {
     const amounts = [
       { amount: 200.99999999999997, expected: 201n },
       { amount: 7823.999999999999, expected: 7824n },
@@ -12,7 +12,7 @@ describe("safe", () => {
     test.each(amounts)(
       "amount $amount is trunc correctly to $expected",
       ({ amount, expected }) => {
-        const result = truncToBigInt(amount)
+        const result = roundToBigInt(amount)
         expect(result).toEqual(expected)
       },
     )
