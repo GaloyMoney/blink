@@ -187,9 +187,8 @@ core_serve_env = {
 }
 
 api_target = "//core/api:dev"
-api_target_ci = '//core/api:api'
 if is_ci:
-  api_target = api_target_ci
+  api_target = "//core/api:api"
 local_resource(
     "api",
     labels = ["core"],
@@ -204,7 +203,7 @@ local_resource(
             port = 4012,
         ),
     ),
-    deps = _buck2_dep_inputs(api_target_ci),
+    deps = _buck2_dep_inputs(api_target),
     resource_deps = [
         "init-onchain",
         "lnd1",
