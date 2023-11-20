@@ -6,7 +6,7 @@ import {
 import { createPushNotificationContent } from "./create-push-notification-content"
 
 import { toSats } from "@/domain/bitcoin"
-import { WalletCurrency } from "@/domain/shared"
+import { roundToBigInt, WalletCurrency } from "@/domain/shared"
 import { majorToMinorUnit, toCents, UsdDisplayCurrency } from "@/domain/fiat"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@/domain/pubsub"
 import {
@@ -78,7 +78,7 @@ export const NotificationsService = (): INotificationsService => {
         const data: NotificationsDataObject = {
           walletId: recipient.walletId,
           txNotificationType: NotificationType.IntraLedgerReceipt,
-          amount: BigInt(intraLedgerTx.settlementAmount),
+          amount: intraLedgerTx.settlementAmount,
           currency: intraLedgerTx.settlementCurrency,
           displayAmount: intraLedgerTx.settlementDisplayAmount,
           displayCurrency: intraLedgerTx.settlementDisplayPrice.displayCurrency,
@@ -114,7 +114,7 @@ export const NotificationsService = (): INotificationsService => {
         const data: NotificationsDataObject = {
           walletId: recipient.walletId,
           txNotificationType: type,
-          amount: BigInt(Math.abs(onchainTx.settlementAmount)),
+          amount: Math.abs(onchainTx.settlementAmount),
           currency: onchainTx.settlementCurrency,
           displayAmount: onchainTx.settlementDisplayAmount,
           displayCurrency: onchainTx.settlementDisplayPrice.displayCurrency,
@@ -150,14 +150,14 @@ export const NotificationsService = (): INotificationsService => {
 
       const displayAmountMajor = transaction.settlementDisplayAmount
       const displayCurrency = transaction.settlementDisplayPrice.displayCurrency
-      const displayAmountMinor = BigInt(
+      const displayAmountMinor = roundToBigInt(
         majorToMinorUnit({ amount: Number(displayAmountMajor), displayCurrency }),
       )
       const { title, body } = createPushNotificationContent({
         type,
         userLanguage: recipient.language,
         amount: {
-          amount: BigInt(Math.abs(transaction.settlementAmount)),
+          amount: roundToBigInt(Math.abs(transaction.settlementAmount)),
           currency: transaction.settlementCurrency,
         },
         displayAmount: {

@@ -10,3 +10,7 @@ export const safeBigInt = (num: number): bigint | BigIntConversionError => {
     return new UnknownBigIntConversionError(err)
   }
 }
+
+export const roundToBigInt = (num: number): bigint => {
+  return BigInt(Math.round(num))
+}
