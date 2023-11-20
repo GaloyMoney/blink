@@ -39,14 +39,9 @@ import {
   EmailValidationSubmittedTooOftenError,
 } from "@/domain/authentication/errors"
 
-import {
-  RateLimiterExceededError,
-  UserLoginIpRateLimiterExceededError,
-} from "@/domain/rate-limit/errors"
+import { UserLoginIpRateLimiterExceededError } from "@/domain/rate-limit/errors"
 
 import { registerCaptchaGeetest } from "@/app/captcha"
-import { consumeLimiter } from "@/services/rate-limit"
-import { RateLimitConfig } from "@/domain/rate-limit"
 
 const authRouter = express.Router({ caseSensitive: true })
 
@@ -87,14 +82,6 @@ authRouter.post("/create/device-account", async (req: Request, res: Response) =>
     return res.status(401).send({ error: "missing or invalid appcheck jti" })
   }
 
-  const check = await checkDeviceLoginAttemptPerAppcheckJtiLimits(
-    appcheckJti as AppcheckJti,
-  )
-
-  if (check instanceof Error) {
-    return res.status(429).send({ error: "too many requests" })
-  }
-
   const ip = req.originalIp
   const user = basicAuth(req)
 
@@ -116,6 +103,7 @@ authRouter.post("/create/device-account", async (req: Request, res: Response) =>
       password,
       ip,
       deviceId,
+      appcheckJti,
     })
     if (authToken instanceof Error) {
       recordExceptionInCurrentSpan({ error: authToken })
@@ -313,6 +301,37 @@ authRouter.post("/phone/code", async (req: Request, res: Response) => {
   })
 })
 
+authRouter.post("/phone/code-appcheck", async (req: Request, res: Response) => {
+  const appcheckJti = req.headers["x-appcheck-jti"]
+  if (!appcheckJti || typeof appcheckJti !== "string" || appcheckJti === "") {
+    return res.status(400).send({ error: "missing or invalid appcheck jti" })
+  }
+
+  const ip = req.originalIp
+  const phoneRaw = req.body.phone
+  const channel = req.body.channel ?? "SMS"
+
+  if (!phoneRaw) return res.status(400).send({ error: "missing inputs" })
+
+  const phone = checkedToPhoneNumber(phoneRaw)
+  if (phone instanceof Error) return res.status(400).send({ error: "invalid phone" })
+
+  const result = await Authentication.requestPhoneCodeWithAppcheckJti({
+    phone,
+    appcheckJti,
+    ip,
+    channel,
+  })
+
+  if (result instanceof Error) {
+    return res.status(400).json({ error: result.name })
+  }
+
+  return res.json({
+    success: true,
+  })
+})
+
 authRouter.post("/phone/login", async (req: Request, res: Response) => {
   const ip = req.originalIp
   const codeRaw = req.body.code
@@ -344,11 +363,3 @@ authRouter.post("/phone/login", async (req: Request, res: Response) => {
 })
 
 export default authRouter
-
-const checkDeviceLoginAttemptPerAppcheckJtiLimits = async (
-  appcheckJti: AppcheckJti,
-): Promise<true | RateLimiterExceededError> =>
-  consumeLimiter({
-    rateLimitConfig: RateLimitConfig.deviceAccountCreate,
-    keyToConsume: appcheckJti,
-  })
