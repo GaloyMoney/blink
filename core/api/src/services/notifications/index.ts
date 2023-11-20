@@ -164,7 +164,7 @@ export const NotificationsService = (): INotificationsService => {
         type,
         userLanguage: recipient.language,
         amount: {
-          amount: roundToBigInt(Math.abs(transaction.settlementAmount)),
+          amount: roundToBigInt(transaction.settlementAmount),
           currency: transaction.settlementCurrency,
         },
         displayAmount: {
