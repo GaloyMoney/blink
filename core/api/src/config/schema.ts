@@ -313,7 +313,7 @@ export const configSchema = {
           blockDuration: 14400,
         },
         deviceAccountCreateAttempt: {
-          points: 1,
+          points: 2,
           duration: 86400,
           blockDuration: 86400,
         },
