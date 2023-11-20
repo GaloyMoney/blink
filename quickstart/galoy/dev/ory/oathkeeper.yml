@@ -28,8 +28,9 @@ authenticators:
     config:
       check_session_url: http://kratos:4433/sessions/whoami
       preserve_path: true
+      preserve_query: true
       subject_from: identity.id
-      extra_from: identity.traits
+      extra_from: "@this"
 
   oauth2_introspection:
     enabled: true
@@ -72,6 +73,12 @@ mutators:
 
   noop:
     enabled: true
+
+  header:
+    enabled: true
+    config:
+      headers:
+        X-Appcheck-Jti: "{{ print .Extra.jti }}"
 
 errors:
   fallback:

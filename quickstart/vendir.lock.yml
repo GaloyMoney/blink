@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: decimals issue in notification service (#3577)...'
-      sha: 9edf1c319571c833f427024732d3575e45860c08
+      commitTitle: 'chore: adding rate limit on device account creation (#3568)...'
+      sha: 063ee9d625e733008b5240509812288b76acb4ab
       tags:
-      - 0.16.44-1-g9edf1c319
+      - 0.16.45-2-g063ee9d62
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: decimals issue in notification service (#3577)...'
-      sha: 9edf1c319571c833f427024732d3575e45860c08
+      commitTitle: 'chore: adding rate limit on device account creation (#3568)...'
+      sha: 063ee9d625e733008b5240509812288b76acb4ab
       tags:
-      - 0.16.44-1-g9edf1c319
+      - 0.16.45-2-g063ee9d62
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: decimals issue in notification service (#3577)...'
-      sha: 9edf1c319571c833f427024732d3575e45860c08
+      commitTitle: 'chore: adding rate limit on device account creation (#3568)...'
+      sha: 063ee9d625e733008b5240509812288b76acb4ab
       tags:
-      - 0.16.44-1-g9edf1c319
+      - 0.16.45-2-g063ee9d62
     path: ./
   path: ./graphql
 kind: LockConfig
