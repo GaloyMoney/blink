@@ -39,9 +39,14 @@ import {
   EmailValidationSubmittedTooOftenError,
 } from "@/domain/authentication/errors"
 
-import { UserLoginIpRateLimiterExceededError } from "@/domain/rate-limit/errors"
+import {
+  RateLimiterExceededError,
+  UserLoginIpRateLimiterExceededError,
+} from "@/domain/rate-limit/errors"
 
 import { registerCaptchaGeetest } from "@/app/captcha"
+import { consumeLimiter } from "@/services/rate-limit"
+import { RateLimitConfig } from "@/domain/rate-limit"
 
 const authRouter = express.Router({ caseSensitive: true })
 
@@ -75,6 +80,19 @@ authRouter.use((req: Request, res: Response, next: NextFunction) => {
 })
 
 authRouter.post("/create/device-account", async (req: Request, res: Response) => {
+  const appcheckJti = req.headers["x-appcheck-jti"]
+  if (!appcheckJti || typeof appcheckJti !== "string" || appcheckJti === "") {
+    return res.status(401).send({ error: "missing or invalid appcheck jti" })
+  }
+
+  const check = await checkDeviceLoginAttemptPerAppcheckJtiLimits(
+    appcheckJti as AppcheckJti,
+  )
+
+  if (check instanceof Error) {
+    return res.status(429).send({ error: "too many requests" })
+  }
+
   const ip = req.originalIp
   const user = basicAuth(req)
 
@@ -320,3 +338,11 @@ authRouter.post("/phone/login", async (req: Request, res: Response) => {
 })
 
 export default authRouter
+
+const checkDeviceLoginAttemptPerAppcheckJtiLimits = async (
+  appcheckJti: AppcheckJti,
+): Promise<true | RateLimiterExceededError> =>
+  consumeLimiter({
+    rateLimitConfig: RateLimitConfig.deviceAccountCreate,
+    keyToConsume: appcheckJti,
+  })

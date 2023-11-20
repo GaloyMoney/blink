@@ -1,13 +1,13 @@
 // this script generates and verifies a JSON Web Token (JWT), using the 'node-jose', 'jsonwebtoken', and 'jwks-rsa' packages.
 // It uses a local 'jwks.json' file for key storage and verification
 
-// cd dev/ory && ts-node gen-test-jwt.ts
+// cd dev/bin && ts-node gen-test-jwt.ts
 import fs from "fs"
 import * as jose from "node-jose"
 import jsonwebtoken from "jsonwebtoken"
 import jwksRsa from "jwks-rsa"
 
-const jwksFilePath = "./dev/ory/jwks.json"
+const jwksFilePath = "../ory/jwks.json"
 const jwksUri = "https://firebaseappcheck.googleapis.com/v1beta/jwks"
 const sub = "1:72279297366:android:TESTE2EACCOUNT5aa75af7"
 const aud = ["projects/72279297366", "projects/galoyapp"]
@@ -25,6 +25,7 @@ async function main() {
     provider: "debug",
     iss,
     exp: 2639000069,
+    jti: "RCgwmNlmbZdEwdYz486XkD2xkLTkWGpiCXBxXW1RQCk",
   })
   console.log("JWT:", token)
 

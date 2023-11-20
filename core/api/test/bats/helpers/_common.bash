@@ -165,7 +165,7 @@ curl_request() {
   shift
   local headers=("$@")
 
-  echo "Curl request -  url: ${url} -  data: ${data}"
+  echo "Curl request -  url: ${url} -  data: ${data}" - headers: ${headers}
 
   if [[ "${BATS_TEST_DIRNAME}" != "" ]]; then
     run_cmd="run"

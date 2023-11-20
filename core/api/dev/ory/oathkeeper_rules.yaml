@@ -2,21 +2,8 @@
   upstream:
     url: "http://bats-tests:4012"
   match:
-    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<(clearCookies|login|logout|email/code|email/login|totp/validate|email/login/cookie|phone/captcha|phone/code|phone/login)>"
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<.*>"
     methods: ["GET", "POST", "OPTIONS"]
-  authenticators:
-    - handler: anonymous
-  authorizer:
-    handler: allow
-  mutators:
-    - handler: noop
-
-- id: device-login
-  upstream:
-    url: "http://bats-tests:4012"
-  match:
-    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/create/device-account"
-    methods: ["POST"]
   authenticators:
     - handler: jwt
       config:
@@ -29,10 +16,14 @@
           - file:///home/ory/jwks.json # ONLY FOR DEV, DO NOT USE IN PRODUCTION
         token_from:
           header: Appcheck
+    - handler: anonymous
   authorizer:
     handler: allow
   mutators:
-    - handler: noop
+    - handler: header
+      config:
+        headers:
+          X-Appcheck-Jti: "{{ print .Extra.jti }}"
 
 - id: galoy-ws
   upstream:
@@ -63,18 +54,31 @@
 
     - handler: bearer_token
       config:
+        token_from:
+          header: X-API-KEY
+        forward_http_headers:
+        - "X-API-KEY"
+        check_session_url: "http://bats-tests:5397/auth/check"
+        force_method: GET
+        preserve_path: true
+        preserve_query: true
+        subject_from: sub
+        extra_from: "@this"
+    - handler: bearer_token
+      config:
         check_session_url: http://kratos:4433/sessions/whoami
         preserve_path: true
         preserve_query: true
         subject_from: identity.id
         extra_from: "@this"
+
     - handler: anonymous
   authorizer:
     handler: allow
   mutators:
     - handler: id_token
       config: #! TODO: add aud: {"aud": ["https://api/graphql"] }
-        claims: '{"sub": "{{ print .Subject }}", "session_id": "{{ print .Extra.id }}", "expires_at": "{{ print .Extra.expires_at }}", "scope": "{{ print .Extra.scope }}", "client_id": "{{ print .Extra.client_id }}" }'
+        claims: '{"sub": "{{ print .Subject }}", "session_id": "{{ print .Extra.id }}", "expires_at": "{{ print .Extra.expires_at }}", "scope": "{{ print .Extra.scope }}", "client_id": "{{ print .Extra.client_id }}"}'
 
 - id: admin-backend
   upstream:

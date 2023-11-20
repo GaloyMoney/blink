@@ -263,6 +263,7 @@ export const configSchema = {
         invoiceCreateAttempt: rateLimitConfigSchema,
         invoiceCreateForRecipientAttempt: rateLimitConfigSchema,
         onChainAddressCreateAttempt: rateLimitConfigSchema,
+        deviceAccountCreateAttempt: rateLimitConfigSchema,
       },
       required: [
         "requestCodePerLoginIdentifier",
@@ -272,6 +273,7 @@ export const configSchema = {
         "invoiceCreateAttempt",
         "invoiceCreateForRecipientAttempt",
         "onChainAddressCreateAttempt",
+        "deviceAccountCreateAttempt",
       ],
       additionalProperties: false,
       default: {
@@ -309,6 +311,11 @@ export const configSchema = {
           points: 20,
           duration: 3600,
           blockDuration: 14400,
+        },
+        deviceAccountCreateAttempt: {
+          points: 2,
+          duration: 86400,
+          blockDuration: 86400,
         },
       },
     },

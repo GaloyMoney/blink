@@ -6,9 +6,11 @@ import {
   UserLoginIdentifierRateLimiterExceededError,
   UserCodeAttemptIpRateLimiterExceededError,
   UserCodeAttemptIdentifierRateLimiterExceededError,
+  DeviceAccountCreateRateLimiterExceededError,
 } from "./errors"
 
 import {
+  getDeviceAccountCreateAttemptLimits,
   getFailedLoginAttemptPerIpLimits,
   getFailedLoginAttemptPerLoginIdentifierLimits,
   getInvoiceCreateAttemptLimits,
@@ -26,9 +28,12 @@ export const RateLimitPrefix = {
   invoiceCreate: "invoice_create",
   invoiceCreateForRecipient: "invoice_create_for_recipient",
   onChainAddressCreate: "onchain_address_create",
+  deviceAccountCreate: "device_account_create",
 } as const
 
-export const RateLimitConfig: { [key: string]: RateLimitConfig } = {
+type RateLimitPrefixKey = keyof typeof RateLimitPrefix
+
+export const RateLimitConfig: { [key in RateLimitPrefixKey]: RateLimitConfig } = {
   requestCodeAttemptPerLoginIdentifier: {
     key: RateLimitPrefix.requestCodeAttemptPerLoginIdentifier,
     limits: getRequestCodePerLoginIdentifierLimits(),
@@ -63,5 +68,10 @@ export const RateLimitConfig: { [key: string]: RateLimitConfig } = {
     key: RateLimitPrefix.onChainAddressCreate,
     limits: getOnChainAddressCreateAttemptLimits(),
     error: OnChainAddressCreateRateLimiterExceededError,
+  },
+  deviceAccountCreate: {
+    key: RateLimitPrefix.deviceAccountCreate,
+    limits: getDeviceAccountCreateAttemptLimits(),
+    error: DeviceAccountCreateRateLimiterExceededError,
   },
 }
