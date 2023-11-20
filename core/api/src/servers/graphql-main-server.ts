@@ -6,8 +6,6 @@ import { Rule } from "graphql-shield/typings/rules"
 
 import { NextFunction, Request, Response } from "express"
 
-import { startApolloServerForAdminSchema } from "./graphql-admin-server"
-
 import { startApolloServer } from "./graphql-server"
 
 import { walletIdMiddleware } from "./middlewares/wallet-id"
@@ -130,9 +128,6 @@ setupMongoConnection(true)
     const res = await bootstrap()
     if (res instanceof Error) throw res
 
-    await Promise.race([
-      startApolloServerForCoreSchema(),
-      startApolloServerForAdminSchema(),
-    ])
+    await startApolloServerForCoreSchema()
   })
   .catch((err) => baseLogger.error(err, "server error"))
