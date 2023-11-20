@@ -216,6 +216,7 @@ export const NotificationsService = (): INotificationsService => {
       return handleCommonNotificationErrors(err)
     }
   }
+
   const sendTransaction = async ({
     recipient,
     transaction,
