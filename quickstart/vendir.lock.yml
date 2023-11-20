@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: split export type (#3569)'
-      sha: 78a66cff0c5158c44f403292ee8dbdc2772cc19f
+      commitTitle: 'feat: add unit test rule to core/api buck file (#3372)...'
+      sha: 70893de117ce0cd5da1e4b2e9272b4fd868b6669
       tags:
-      - 0.16.40-4-g78a66cff0
+      - 0.16.41-1-g70893de11
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: split export type (#3569)'
-      sha: 78a66cff0c5158c44f403292ee8dbdc2772cc19f
+      commitTitle: 'feat: add unit test rule to core/api buck file (#3372)...'
+      sha: 70893de117ce0cd5da1e4b2e9272b4fd868b6669
       tags:
-      - 0.16.40-4-g78a66cff0
+      - 0.16.41-1-g70893de11
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: split export type (#3569)'
-      sha: 78a66cff0c5158c44f403292ee8dbdc2772cc19f
+      commitTitle: 'feat: add unit test rule to core/api buck file (#3372)...'
+      sha: 70893de117ce0cd5da1e4b2e9272b4fd868b6669
       tags:
-      - 0.16.40-4-g78a66cff0
+      - 0.16.41-1-g70893de11
     path: ./
   path: ./graphql
 kind: LockConfig
