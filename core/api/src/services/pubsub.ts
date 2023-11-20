@@ -20,7 +20,12 @@ export const PubSubService = (): IPubSubService => {
     payload,
   }: PublishArgs<T>): Promise<void | PubSubServiceError> => {
     try {
-      return await redisPubSub.publish(trigger, payload)
+      const safePayload = JSON.parse(
+        JSON.stringify(payload, (_key, value) =>
+          typeof value === "bigint" ? value.toString() : value,
+        ),
+      )
+      return await redisPubSub.publish(trigger, safePayload)
     } catch (err) {
       return new UnknownPubSubError(err)
     }
