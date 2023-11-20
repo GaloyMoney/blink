@@ -186,7 +186,10 @@ core_serve_env = {
   "SVIX_ENDPOINT": "http://localhost:8071",
 }
 
-api_target = "//core/api:api"
+api_target = "//core/api:dev"
+api_target_ci = '//core/api:api'
+if is_ci:
+  api_target = api_target_ci
 local_resource(
     "api",
     labels = ["core"],
@@ -201,7 +204,7 @@ local_resource(
             port = 4012,
         ),
     ),
-    deps = _buck2_dep_inputs(api_target),
+    deps = _buck2_dep_inputs(api_target_ci),
     resource_deps = [
         "init-onchain",
         "lnd1",
