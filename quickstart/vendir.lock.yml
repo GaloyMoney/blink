@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: bigint serialization in pubsub service (#3573)'
-      sha: 489fdfc350ae330b3f2fec501f78086a038a1c3a
+      commitTitle: 'chore: migrate WalletInvoice processingCompleted (#3576)'
+      sha: b5f0f43c50fe0654c1c2427dcb8fdac82bcf8844
       tags:
-      - 0.16.42-1-g489fdfc35
+      - 0.16.43-1-gb5f0f43c5
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: bigint serialization in pubsub service (#3573)'
-      sha: 489fdfc350ae330b3f2fec501f78086a038a1c3a
+      commitTitle: 'chore: migrate WalletInvoice processingCompleted (#3576)'
+      sha: b5f0f43c50fe0654c1c2427dcb8fdac82bcf8844
       tags:
-      - 0.16.42-1-g489fdfc35
+      - 0.16.43-1-gb5f0f43c5
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: bigint serialization in pubsub service (#3573)'
-      sha: 489fdfc350ae330b3f2fec501f78086a038a1c3a
+      commitTitle: 'chore: migrate WalletInvoice processingCompleted (#3576)'
+      sha: b5f0f43c50fe0654c1c2427dcb8fdac82bcf8844
       tags:
-      - 0.16.42-1-g489fdfc35
+      - 0.16.43-1-gb5f0f43c5
     path: ./
   path: ./graphql
 kind: LockConfig
