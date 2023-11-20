@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: add unit test rule to core/api buck file (#3372)...'
-      sha: 70893de117ce0cd5da1e4b2e9272b4fd868b6669
+      commitTitle: 'fix: bigint serialization in pubsub service (#3573)'
+      sha: 489fdfc350ae330b3f2fec501f78086a038a1c3a
       tags:
-      - 0.16.41-1-g70893de11
+      - 0.16.42-1-g489fdfc35
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: add unit test rule to core/api buck file (#3372)...'
-      sha: 70893de117ce0cd5da1e4b2e9272b4fd868b6669
+      commitTitle: 'fix: bigint serialization in pubsub service (#3573)'
+      sha: 489fdfc350ae330b3f2fec501f78086a038a1c3a
       tags:
-      - 0.16.41-1-g70893de11
+      - 0.16.42-1-g489fdfc35
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: add unit test rule to core/api buck file (#3372)...'
-      sha: 70893de117ce0cd5da1e4b2e9272b4fd868b6669
+      commitTitle: 'fix: bigint serialization in pubsub service (#3573)'
+      sha: 489fdfc350ae330b3f2fec501f78086a038a1c3a
       tags:
-      - 0.16.41-1-g70893de11
+      - 0.16.42-1-g489fdfc35
     path: ./
   path: ./graphql
 kind: LockConfig
