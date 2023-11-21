@@ -2,9 +2,9 @@
 
 load "../../helpers/cli.bash"
 load "../../helpers/user.bash"
-load "../../helpers/funding/onchain.bash"
-load "../../helpers/funding/ln.bash"
-load "../../helpers/funding/wallet.bash"
+load "../../helpers/onchain.bash"
+load "../../helpers/ln.bash"
+load "../../helpers/wallet.bash"
 
 setup_file() {
   create_user 'alice'

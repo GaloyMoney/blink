@@ -1,5 +1,5 @@
 CURRENT_FILE=${BASH_SOURCE:-bats/helpers/.}
-source "$(dirname "$CURRENT_FILE")/../_common.bash"
+source "$(dirname "$CURRENT_FILE")/_common.bash"
 
 fund_user_onchain() {
   local token_name=$1

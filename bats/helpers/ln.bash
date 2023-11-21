@@ -1,6 +1,6 @@
 CURRENT_FILE=${BASH_SOURCE:-bats/helpers/.}
-source "$(dirname "$CURRENT_FILE")/../_common.bash"
-source "$(dirname "$CURRENT_FILE")/../cli.bash"
+source "$(dirname "$CURRENT_FILE")/_common.bash"
+source "$(dirname "$CURRENT_FILE")/cli.bash"
 
 create_new_lnd_onchain_address() {
   local wallet_name=$1
