@@ -29,12 +29,8 @@ import {
 
 import { waitFor } from "./shared"
 
-import { Wallets } from "@/app"
-
-import { WalletCurrency } from "@/domain/shared"
 import { onChannelUpdated, updateEscrows } from "@/services/lnd/utils"
 import { baseLogger } from "@/services/logger"
-import { WalletsRepository } from "@/services/mongoose"
 
 import { sleep } from "@/utils"
 
@@ -452,40 +448,6 @@ export const waitUntilGraphIsReady = async ({
     }
     return true
   })
-}
-
-export const fundWalletIdFromLightning = async ({
-  walletId,
-  amount,
-}: {
-  walletId: WalletId
-  amount: number
-}) => {
-  const wallet = await WalletsRepository().findById(walletId)
-  if (wallet instanceof Error) throw wallet
-
-  const invoice =
-    wallet.currency === WalletCurrency.Btc
-      ? await Wallets.addInvoiceForSelfForBtcWallet({ walletId, amount })
-      : await Wallets.addInvoiceForSelfForUsdWallet({ walletId, amount })
-  if (invoice instanceof Error) return invoice
-
-  safePay({ lnd: lndOutside1, request: invoice.lnInvoice.paymentRequest })
-
-  // TODO: we could use an event instead of a sleep
-  await sleep(500)
-
-  const hash = getHash(invoice.lnInvoice.paymentRequest)
-
-  expect(
-    await Wallets.updatePendingInvoiceByPaymentHash({
-      paymentHash: hash as PaymentHash,
-      logger: baseLogger,
-    }),
-  ).not.toBeInstanceOf(Error)
-
-  const balance = await Wallets.getBalanceForWallet({ walletId })
-  if (balance instanceof Error) throw balance
 }
 
 // @ts-ignore-next-line no-implicit-any error
