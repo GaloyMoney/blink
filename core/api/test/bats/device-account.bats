@@ -22,11 +22,7 @@ jwt="eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiOTdiMjIxLWNhMDgtNGViMi05ZDA5LWE1NzcwZmNjZWI
   username="$(random_uuid)"
   password="$(random_uuid)"
 
-  if [[ "$(uname)" == "Linux" ]]; then
-      basic_token="$(echo -n $username:$password | base64 -w 0)"
-  else
-      basic_token="$(echo -n $username:$password | base64)"
-  fi
+  basic_token="$(echo -n $username:$password | base64 -w 0)"
 
   auth_header="Authorization: Basic $basic_token"
 
