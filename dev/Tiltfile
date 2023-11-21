@@ -135,31 +135,38 @@ local_resource(
 )
 
 core_serve_env = {
-        "HELMREVISION": "dev",
-        "NETWORK": "regtest",
-        "OATHKEEPER_DECISION_ENDPOINT": "http://localhost:4456",
-        "TWILIO_ACCOUNT_SID": "AC_twilio_id",
-        "TWILIO_AUTH_TOKEN": "AC_twilio_auth_token",
-        "TWILIO_VERIFY_SERVICE_ID": "VA_twilio_service",
-        "KRATOS_PG_CON": "postgres://dbuser:secret@localhost:5433/default?sslmode=disable",
-        "KRATOS_PUBLIC_API": "http://localhost:4433",
-        "KRATOS_ADMIN_API": "http://localhost:4434",
-        "KRATOS_MASTER_USER_PASSWORD": "passwordHardtoFindWithNumber123",
-        "KRATOS_CALLBACK_API_KEY": "The-Value-of-My-Key",
-        "PRICE_HOST": "localhost",
-        "PRICE_HISTORY_HOST": "localhost",
-        "BRIA_HOST": "localhost",
-        "BRIA_API_KEY": "bria_dev_000000000000000000000",
-        "MONGODB_CON": "mongodb://localhost:27017/galoy",
-        "REDIS_MASTER_NAME": "mymaster",
-        "REDIS_PASSWORD": "",
-        "REDIS_0_DNS": "localhost",
-        "REDIS_0_PORT": "6379",
-        "REDIS_TYPE": "standalone",
-        "UNSECURE_IP_FROM_REQUEST_OBJECT": "true",
-        "UNSECURE_DEFAULT_LOGIN_CODE": "000000",
-        "GEETEST_ID": "geetest_id",
-        "GEETEST_KEY": "geetest_key"
+  "HELMREVISION": "dev",
+  "NETWORK": "regtest",
+  "OATHKEEPER_DECISION_ENDPOINT": "http://localhost:4456",
+  "TWILIO_ACCOUNT_SID": "AC_twilio_id",
+  "TWILIO_AUTH_TOKEN": "AC_twilio_auth_token",
+  "TWILIO_VERIFY_SERVICE_ID": "VA_twilio_service",
+  "KRATOS_PG_CON": "postgres://dbuser:secret@localhost:5433/default?sslmode=disable",
+  "KRATOS_PUBLIC_API": "http://localhost:4433",
+  "KRATOS_ADMIN_API": "http://localhost:4434",
+  "KRATOS_MASTER_USER_PASSWORD": "passwordHardtoFindWithNumber123",
+  "KRATOS_CALLBACK_API_KEY": "The-Value-of-My-Key",
+  "PRICE_HOST": "localhost",
+  "PRICE_HISTORY_HOST": "localhost",
+  "BRIA_HOST": "localhost",
+  "BRIA_API_KEY": "bria_dev_000000000000000000000",
+  "MONGODB_CON": "mongodb://localhost:27017/galoy",
+  "REDIS_MASTER_NAME": "mymaster",
+  "REDIS_PASSWORD": "",
+  "REDIS_0_DNS": "localhost",
+  "REDIS_0_PORT": "6379",
+  "REDIS_TYPE": "standalone",
+  "UNSECURE_IP_FROM_REQUEST_OBJECT": "true",
+  "UNSECURE_DEFAULT_LOGIN_CODE": "000000",
+  "GEETEST_ID": "geetest_id",
+  "GEETEST_KEY": "geetest_key",
+  "LND1_TLS": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNZVENDQWdlZ0F3SUJBZ0lSQU9zZzdYWFR4cnVZYlhkeTY2d3RuN1F3Q2dZSUtvWkl6ajBFQXdJd09ERWYKTUIwR0ExVUVDaE1XYkc1a0lHRjFkRzluWlc1bGNtRjBaV1FnWTJWeWRERVZNQk1HQTFVRUF4TU1PRFl4T1RneApNak5tT0Roak1CNFhEVEl6TURFeE9USXdOREUxTTFvWERUTTBNRGN5TVRJd05ERTFNMW93T0RFZk1CMEdBMVVFCkNoTVdiRzVrSUdGMWRHOW5aVzVsY21GMFpXUWdZMlZ5ZERFVk1CTUdBMVVFQXhNTU9EWXhPVGd4TWpObU9EaGoKTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFM1lieUlKWU1Vcm8zZkl0UFFucysxZ2lpTXI5NQpJUXRmclFDQ2JhOWVtcjI4TENmbk1vYy9VQVFwUlg3QVlvVFRneUdiMFBuZGNUODF5ZVgvYTlPa0RLT0I4VENCCjdqQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVL1AxRHpJUkRzTEhHMU10d3NrZE5nZ0lub1Mwd2daWUdBMVVkRVFTQgpqakNCaTRJTU9EWXhPVGd4TWpObU9EaGpnZ2xzYjJOaGJHaHZjM1NDRFd4dVpDMXZkWFJ6YVdSbExUR0NEV3h1ClpDMXZkWFJ6YVdSbExUS0NEV3h1WkMxdmRYUnphV1JsTFRPQ0JHeHVaREdDQkd4dVpES0NCSFZ1YVhpQ0NuVnUKYVhod1lXTnJaWFNDQjJKMVptTnZibTZIQkg4QUFBR0hFQUFBQUFBQUFBQUFBQUFBQUFBQUFBR0hCS3dUQUJBdwpDZ1lJS29aSXpqMEVBd0lEU0FBd1JRSWhBSU5DNlJWQ3d6SzFYRnFxeVNLY0Y4QzQ5ZFlSOThjemdLNVdkcmNOCkxYYWlBaUJHYmtWeGhaeHdDaDVLQ1o1Z2M1Q2FsQ0RvaGNxVkdiaHNya0hHTFhpdHN3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=",
+  "LND1_MACAROON": "AgEDbG5kAvgBAwoQB1FdhGa9xoewc1LEXmnURRIBMBoWCgdhZGRyZXNzEgRyZWFkEgV3cml0ZRoTCgRpbmZvEgRyZWFkEgV3cml0ZRoXCghpbnZvaWNlcxIEcmVhZBIFd3JpdGUaIQoIbWFjYXJvb24SCGdlbmVyYXRlEgRyZWFkEgV3cml0ZRoWCgdtZXNzYWdlEgRyZWFkEgV3cml0ZRoXCghvZmZjaGFpbhIEcmVhZBIFd3JpdGUaFgoHb25jaGFpbhIEcmVhZBIFd3JpdGUaFAoFcGVlcnMSBHJlYWQSBXdyaXRlGhgKBnNpZ25lchIIZ2VuZXJhdGUSBHJlYWQAAAYgqHDdwGCqx0aQL1/Z3uUfzCpeBhfapGf9s/AZPOVwf6s=",
+  "LND1_PUBKEY":"03ca1907342d5d37744cb7038375e1867c24a87564c293157c95b2a9d38dcfb4c2",
+  "LND1_DNS": "localhost",
+  "LND1_RPCPORT": "10009",
+  "LND1_NAME": "lnd1",
+  "LND1_TYPE": "offchain,onchain"
 }
 
 api_target = "//core/api:api"
@@ -168,6 +175,31 @@ local_resource(
     labels = ["core"],
     cmd = "buck2 build {}".format(api_target),
     serve_cmd = "buck2 run {}".format(api_target),
+    serve_env = core_serve_env,
+    allow_parallel = True,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "healthz",
+            port = 4012,
+        ),
+    ),
+    deps = _buck2_dep_inputs(api_target),
+    resource_deps = [
+        "init-onchain",
+        "lnd1",
+        "redis",
+        "mongodb",
+        "oathkeeper",
+    ]
+)
+
+api_trigger_target = "//core/api-trigger:api-trigger"
+local_resource(
+    "api-trigger",
+    labels = ["core"],
+    cmd = "buck2 build {}".format(api_trigger_target),
+    serve_cmd = "buck2 run {}".format(api_trigger_target),
     serve_env = core_serve_env,
     allow_parallel = True,
     readiness_probe = probe(
@@ -256,7 +288,8 @@ docker_groups = {
         "apollo-router",
         "mongodb",
         "redis",
-        "svix"
+        "svix",
+        "stablesats"
     ],
     "bitcoin": [
         "lnd1",

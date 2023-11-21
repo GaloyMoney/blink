@@ -1,38 +1,34 @@
 #!/usr/bin/env bats
 
-load "helpers/setup-and-teardown"
-load "helpers/onchain"
+load "../../helpers/cli.bash"
+load "../../helpers/user.bash"
+load "../../helpers/onchain.bash"
+load "../../helpers/wallet.bash"
 
 setup_file() {
-  clear_cache
-  reset_redis
+  create_user 'alice'
+  user_update_username 'alice'
+  fund_user_onchain 'alice' 'btc_wallet'
+  fund_user_onchain 'alice' 'usd_wallet'
 
-  bitcoind_init
-  start_trigger
-  start_exporter
-  start_server
-
-  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
-  user_update_username "$ALICE_TOKEN_NAME"
-  initialize_user_from_onchain "$BOB_TOKEN_NAME" "$BOB_PHONE" "$CODE"
+  create_user 'bob'
+  user_update_username 'bob'
+  fund_user_onchain 'bob' 'btc_wallet'
+  fund_user_onchain 'bob' 'usd_wallet'
 }
 
-teardown_file() {
-  stop_trigger
-  stop_server
-  stop_exporter
+generate_trigger_logs() {
+  tilt_cli logs api-trigger > .e2e-trigger.log
 }
 
-teardown() {
-  if [[ "$(balance_for_check)" != 0 ]]; then
-    fail "Error: balance_for_check failed"
-  fi
+grep_in_trigger_logs() {
+  generate_trigger_logs
+  grep $1 .e2e-trigger.log
 }
 
 @test "onchain-send: settle trade intraccount" {
-  token_name="$BOB_TOKEN_NAME"
-  btc_wallet_name="$token_name.btc_wallet_id"
-  usd_wallet_name="$token_name.usd_wallet_id"
+  btc_wallet_name="alice.btc_wallet_id"
+  usd_wallet_name="alice.usd_wallet_id"
 
   # mutation: onChainPaymentSend, from BTC to USD wallet
   variables=$(
@@ -40,7 +36,7 @@ teardown() {
     --arg wallet_id "$(read_value $usd_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
-  exec_graphql "$token_name" 'on-chain-address-create' "$variables"
+  exec_graphql 'alice' 'on-chain-address-create' "$variables"
   on_chain_btc_payment_send_address="$(graphql_output '.data.onChainAddressCreate.address')"
   [[ "${on_chain_btc_payment_send_address}" != "null" ]] || exit 1
 
@@ -51,14 +47,13 @@ teardown() {
     --arg amount 200 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
   )
-  exec_graphql "$token_name" 'on-chain-payment-send' "$variables"
+  exec_graphql 'alice' 'on-chain-payment-send' "$variables"
   send_status="$(graphql_output '.data.onChainPaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
-  exec_graphql "$token_name" 'transactions' '{"first": 1}'
+  exec_graphql 'alice' 'transactions' '{"first": 1}'
   settled_status="$(get_from_transaction_by_address $on_chain_btc_payment_send_address '.status')"
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
-
 
   # mutation: onChainUsdPaymentSend, from USD to BTC wallet
   variables=$(
@@ -66,7 +61,7 @@ teardown() {
     --arg wallet_id "$(read_value $btc_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
-  exec_graphql "$token_name" 'on-chain-address-create' "$variables"
+  exec_graphql 'alice' 'on-chain-address-create' "$variables"
   on_chain_usd_payment_send_address="$(graphql_output '.data.onChainAddressCreate.address')"
   [[ "${on_chain_usd_payment_send_address}" != "null" ]] || exit 1
 
@@ -77,11 +72,11 @@ teardown() {
     --arg amount 200 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
   )
-  exec_graphql "$token_name" 'on-chain-usd-payment-send' "$variables"
+  exec_graphql 'alice' 'on-chain-usd-payment-send' "$variables"
   send_status="$(graphql_output '.data.onChainUsdPaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
-  exec_graphql "$token_name" 'transactions' '{"first": 1}'
+  exec_graphql 'alice' 'transactions' '{"first": 1}'
   settled_status="$(get_from_transaction_by_address $on_chain_usd_payment_send_address '.status')"
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 
@@ -91,7 +86,7 @@ teardown() {
     --arg wallet_id "$(read_value $btc_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
-  exec_graphql "$token_name" 'on-chain-address-create' "$variables"
+  exec_graphql 'alice' 'on-chain-address-create' "$variables"
   on_chain_usd_payment_send_as_btc_denominated_address="$(graphql_output '.data.onChainAddressCreate.address')"
   [[ "${on_chain_usd_payment_send_as_btc_denominated_address}" != "null" ]] || exit 1
 
@@ -102,11 +97,11 @@ teardown() {
     --arg amount 12345 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
   )
-  exec_graphql "$token_name" 'on-chain-usd-payment-send-as-btc-denominated' "$variables"
+  exec_graphql 'alice' 'on-chain-usd-payment-send-as-btc-denominated' "$variables"
   send_status="$(graphql_output '.data.onChainUsdPaymentSendAsBtcDenominated.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
-  exec_graphql "$token_name" 'transactions' '{"first": 1}'
+  exec_graphql 'alice' 'transactions' '{"first": 1}'
   settled_status="$(get_from_transaction_by_address $on_chain_usd_payment_send_as_btc_denominated_address '.status')"
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 
@@ -116,7 +111,7 @@ teardown() {
     --arg wallet_id "$(read_value $btc_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
-  exec_graphql "$token_name" 'on-chain-address-create' "$variables"
+  exec_graphql 'alice' 'on-chain-address-create' "$variables"
   on_chain_payment_send_all_address="$(graphql_output '.data.onChainAddressCreate.address')"
   [[ "${on_chain_payment_send_all_address}" != "null" ]] || exit 1
 
@@ -126,42 +121,36 @@ teardown() {
     --arg address "$on_chain_payment_send_all_address" \
     '{input: {walletId: $wallet_id, address: $address}}'
   )
-  exec_graphql "$token_name" 'on-chain-payment-send-all' "$variables"
+  exec_graphql 'alice' 'on-chain-payment-send-all' "$variables"
   send_status="$(graphql_output '.data.onChainPaymentSendAll.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
-  exec_graphql "$token_name" 'transactions' '{"first": 1}'
+  exec_graphql 'alice' 'transactions' '{"first": 1}'
   settled_status="$(get_from_transaction_by_address $on_chain_payment_send_all_address '.status')"
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
+
+  fund_user_onchain 'alice' 'usd_wallet' # bcoz depleted
 }
 
 @test "onchain-send: settle intraledger, with no contacts check" {
-  alice_token_name="$ALICE_TOKEN_NAME"
-  alice_btc_wallet_name="$alice_token_name.btc_wallet_id"
-  alice_usd_wallet_name="$alice_token_name.usd_wallet_id"
+  alice_btc_wallet_name="alice.btc_wallet_id"
+  alice_usd_wallet_name="alice.usd_wallet_id"
 
-  recipient_token_name="user_$RANDOM"
-  recipient_phone="$(random_phone)"
-  login_user \
-    "$recipient_token_name" \
-    "$recipient_phone"  \
-    "$CODE"
-  user_update_username "$recipient_token_name"
-  btc_recipient_wallet_name="$recipient_token_name.btc_wallet_id"
+  bob_btc_wallet_name="bob.btc_wallet_id"
 
   # Check is not contact before send
-  run is_contact "$alice_token_name" "$recipient_token_name"
+  run is_contact 'alice' 'bob'
   [[ "$status" -ne "0" ]] || exit 1
-  run is_contact "$recipient_token_name" "$alice_token_name"
+  run is_contact 'bob' 'alice'
   [[ "$status" -ne "0" ]] || exit 1
 
   # mutation: onChainPaymentSend, alice btc -> bob btc
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value $btc_recipient_wallet_name)" \
+    --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
-  exec_graphql "$recipient_token_name" 'on-chain-address-create' "$variables"
+  exec_graphql 'bob' 'on-chain-address-create' "$variables"
   on_chain_payment_send_address="$(graphql_output '.data.onChainAddressCreate.address')"
   [[ "${on_chain_payment_send_address}" != "null" ]] || exit 1
 
@@ -172,27 +161,27 @@ teardown() {
     --arg amount 12345 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
   )
-  exec_graphql "$alice_token_name" 'on-chain-payment-send' "$variables"
+  exec_graphql 'alice' 'on-chain-payment-send' "$variables"
   send_status="$(graphql_output '.data.onChainPaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
-  exec_graphql "$alice_token_name" 'transactions' '{"first": 1}'
+  exec_graphql 'alice' 'transactions' '{"first": 1}'
   settled_status="$(get_from_transaction_by_address $on_chain_payment_send_address '.status')"
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 
   # Check is not contact after send
-  run is_contact "$alice_token_name" "$recipient_token_name"
+  run is_contact 'alice' 'bob'
   [[ "$status" -ne "0" ]] || exit 1
-  run is_contact "$recipient_token_name" "$alice_token_name"
+  run is_contact 'bob' 'alice'
   [[ "$status" -ne "0" ]] || exit 1
 
   # mutation: onChainUsdPaymentSend, alice usd -> bob btc
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value $btc_recipient_wallet_name)" \
+    --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
-  exec_graphql "$recipient_token_name" 'on-chain-address-create' "$variables"
+  exec_graphql 'bob' 'on-chain-address-create' "$variables"
   on_chain_usd_payment_send_address="$(graphql_output '.data.onChainAddressCreate.address')"
   [[ "${on_chain_usd_payment_send_address}" != "null" ]] || exit 1
 
@@ -203,21 +192,21 @@ teardown() {
     --arg amount 200 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
   )
-  exec_graphql "$alice_token_name" 'on-chain-usd-payment-send' "$variables"
+  exec_graphql 'alice' 'on-chain-usd-payment-send' "$variables"
   send_status="$(graphql_output '.data.onChainUsdPaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
-  exec_graphql "$alice_token_name" 'transactions' '{"first": 1}'
+  exec_graphql 'alice' 'transactions' '{"first": 1}'
   settled_status="$(get_from_transaction_by_address $on_chain_usd_payment_send_address '.status')"
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 
   # mutation: onChainUsdPaymentSendAsBtcDenominated, alice usd -> bob btc
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value $btc_recipient_wallet_name)" \
+    --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
-  exec_graphql "$recipient_token_name" 'on-chain-address-create' "$variables"
+  exec_graphql 'bob' 'on-chain-address-create' "$variables"
   on_chain_usd_payment_send_as_btc_denominated_address="$(graphql_output '.data.onChainAddressCreate.address')"
   [[ "${on_chain_usd_payment_send_as_btc_denominated_address}" != "null" ]] || exit 1
 
@@ -228,11 +217,11 @@ teardown() {
     --arg amount 12345 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
   )
-  exec_graphql "$alice_token_name" 'on-chain-usd-payment-send-as-btc-denominated' "$variables"
+  exec_graphql 'alice' 'on-chain-usd-payment-send-as-btc-denominated' "$variables"
   send_status="$(graphql_output '.data.onChainUsdPaymentSendAsBtcDenominated.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
-  exec_graphql "$alice_token_name" 'transactions' '{"first": 1}'
+  exec_graphql 'alice' 'transactions' '{"first": 1}'
   settled_status="$(get_from_transaction_by_address $on_chain_usd_payment_send_as_btc_denominated_address '.status')"
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 
@@ -242,32 +231,30 @@ teardown() {
     --arg wallet_id "$(read_value $alice_btc_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
-  exec_graphql "$alice_token_name" 'on-chain-address-create' "$variables"
+  exec_graphql 'alice' 'on-chain-address-create' "$variables"
   on_chain_payment_send_all_address="$(graphql_output '.data.onChainAddressCreate.address')"
   [[ "${on_chain_payment_send_all_address}" != "null" ]] || exit 1
 
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value $btc_recipient_wallet_name)" \
+    --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
     --arg address "$on_chain_payment_send_all_address" \
     '{input: {walletId: $wallet_id, address: $address}}'
   )
-  exec_graphql "$recipient_token_name" 'on-chain-payment-send-all' "$variables"
+  exec_graphql 'bob' 'on-chain-payment-send-all' "$variables"
   send_status="$(graphql_output '.data.onChainPaymentSendAll.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
-  exec_graphql "$recipient_token_name" 'transactions' '{"first": 1}'
+  exec_graphql 'bob' 'transactions' '{"first": 1}'
   settled_status="$(get_from_transaction_by_address $on_chain_payment_send_all_address '.status')"
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
+
+  fund_user_onchain 'bob' 'btc_wallet' # bcoz depleted
 }
 
 @test "onchain-send: settle onchain" {
-  token_name="$ALICE_TOKEN_NAME"
-  btc_wallet_name="$token_name.btc_wallet_id"
-  usd_wallet_name="$token_name.usd_wallet_id"
-
-  # EXECUTE GQL SENDS
-  # ----------
+  btc_wallet_name="alice.btc_wallet_id"
+  usd_wallet_name="alice.usd_wallet_id"
 
   # mutation: onChainPaymentSend
   on_chain_payment_send_address=$(bitcoin_cli getnewaddress)
@@ -280,7 +267,7 @@ teardown() {
     --arg amount 12345 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
   )
-  exec_graphql "$token_name" 'on-chain-payment-send' "$variables"
+  exec_graphql 'alice' 'on-chain-payment-send' "$variables"
   send_status="$(graphql_output '.data.onChainPaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
@@ -295,7 +282,7 @@ teardown() {
     --arg amount 200 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
   )
-  exec_graphql "$token_name" 'on-chain-usd-payment-send' "$variables"
+  exec_graphql 'alice' 'on-chain-usd-payment-send' "$variables"
   send_status="$(graphql_output '.data.onChainUsdPaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
@@ -310,7 +297,7 @@ teardown() {
     --arg amount 12345 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
   )
-  exec_graphql "$token_name" 'on-chain-usd-payment-send-as-btc-denominated' "$variables"
+  exec_graphql 'alice' 'on-chain-usd-payment-send-as-btc-denominated' "$variables"
   send_status="$(graphql_output '.data.onChainUsdPaymentSendAsBtcDenominated.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
@@ -324,7 +311,7 @@ teardown() {
     --arg address "$on_chain_payment_send_all_address" \
     '{input: {walletId: $wallet_id, address: $address}}'
   )
-  exec_graphql "$token_name" 'on-chain-payment-send-all' "$variables"
+  exec_graphql 'alice' 'on-chain-payment-send-all' "$variables"
   send_status="$(graphql_output '.data.onChainPaymentSendAll.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
@@ -332,25 +319,24 @@ teardown() {
   # ----------
 
   # Check for broadcast of last send
-  retry 15 1 check_for_broadcast "$token_name" "$on_chain_payment_send_all_address" 4
-  retry 3 1 check_for_broadcast "$token_name" "$on_chain_usd_payment_send_as_btc_denominated_address" 4
-  retry 3 1 check_for_broadcast "$token_name" "$on_chain_usd_payment_send_address" 4
-  retry 3 1 check_for_broadcast "$token_name" "$on_chain_payment_send_address" 4
+  retry 15 1 check_for_broadcast 'alice' "$on_chain_payment_send_all_address" 4
+  retry 3 1 check_for_broadcast 'alice' "$on_chain_usd_payment_send_as_btc_denominated_address" 4
+  retry 3 1 check_for_broadcast 'alice' "$on_chain_usd_payment_send_address" 4
+  retry 3 1 check_for_broadcast 'alice' "$on_chain_payment_send_address" 4
 
   # Mine all
   bitcoin_cli -generate 2
 
   # Check for settled
-  retry 15 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_payment_send_all_address" 4
-  retry 3 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_usd_payment_send_as_btc_denominated_address" 4
-  retry 3 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_usd_payment_send_address" 4
-  retry 3 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_payment_send_address" 4
+  retry 15 1 check_for_onchain_initiated_settled 'alice' "$on_chain_payment_send_all_address" 4
+  retry 3 1 check_for_onchain_initiated_settled 'alice' "$on_chain_usd_payment_send_as_btc_denominated_address" 4
+  retry 3 1 check_for_onchain_initiated_settled 'alice' "$on_chain_usd_payment_send_address" 4
+  retry 3 1 check_for_onchain_initiated_settled 'alice' "$on_chain_payment_send_address" 4
 }
 
 @test "onchain-send: get fee for external address" {
-  token_name="$ALICE_TOKEN_NAME"
-  btc_wallet_name="$token_name.btc_wallet_id"
-  usd_wallet_name="$token_name.usd_wallet_id"
+  btc_wallet_name="alice.btc_wallet_id"
+  usd_wallet_name="alice.usd_wallet_id"
 
   # EXECUTE GQL FEE ESTIMATES
   # ----------
@@ -366,7 +352,7 @@ teardown() {
     --arg amount 12345 \
     '{walletId: $wallet_id, address: $address, amount: $amount}'
   )
-  exec_graphql "$token_name" 'on-chain-tx-fee' "$variables"
+  exec_graphql 'alice' 'on-chain-tx-fee' "$variables"
   amount="$(graphql_output '.data.onChainTxFee.amount')"
   [[ "${amount}" -gt 0 ]] || exit 1
 
@@ -378,7 +364,7 @@ teardown() {
     --arg amount 200 \
     '{walletId: $wallet_id, address: $address, amount: $amount}'
   )
-  exec_graphql "$token_name" 'on-chain-usd-tx-fee' "$variables"
+  exec_graphql 'alice' 'on-chain-usd-tx-fee' "$variables"
   amount="$(graphql_output '.data.onChainUsdTxFee.amount')"
   [[ "${amount}" -gt 0 ]] || exit 1
 
@@ -390,34 +376,26 @@ teardown() {
     --arg amount 12345 \
     '{walletId: $wallet_id, address: $address, amount: $amount}'
   )
-  exec_graphql "$token_name" 'on-chain-usd-tx-fee-as-btc-denominated' "$variables"
+  exec_graphql 'alice' 'on-chain-usd-tx-fee-as-btc-denominated' "$variables"
   amount="$(graphql_output '.data.onChainUsdTxFeeAsBtcDenominated.amount')"
   [[ "${amount}" -gt 0 ]] || exit 1
 }
 
 @test "onchain-send: get fee for internal address" {
-  token_name="$ALICE_TOKEN_NAME"
-  btc_wallet_name="$token_name.btc_wallet_id"
-  usd_wallet_name="$token_name.usd_wallet_id"
+  btc_wallet_name="alice.btc_wallet_id"
+  usd_wallet_name="alice.usd_wallet_id"
+
+  btc_recipient_wallet_name="bob.btc_wallet_id"
 
   # EXECUTE GQL FEE ESTIMATES
   # ----------
-
-  recipient_token_name="user_$RANDOM"
-  recipient_phone="$(random_phone)"
-  login_user \
-    "$recipient_token_name" \
-    "$recipient_phone"  \
-    "$CODE"
-  user_update_username "$recipient_token_name"
-  btc_recipient_wallet_name="$recipient_token_name.btc_wallet_id"
 
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value $btc_recipient_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
-  exec_graphql "$recipient_token_name" 'on-chain-address-create' "$variables"
+  exec_graphql 'bob' 'on-chain-address-create' "$variables"
   address="$(graphql_output '.data.onChainAddressCreate.address')"
   [[ "${address}" != "null" ]] || exit 1
 
@@ -429,7 +407,7 @@ teardown() {
     --arg amount 12345 \
     '{walletId: $wallet_id, address: $address, amount: $amount}'
   )
-  exec_graphql "$token_name" 'on-chain-tx-fee' "$variables"
+  exec_graphql 'alice' 'on-chain-tx-fee' "$variables"
   amount="$(graphql_output '.data.onChainTxFee.amount')"
   [[ "${amount}" == 0 ]] || exit 1
 
@@ -441,7 +419,7 @@ teardown() {
     --arg amount 200 \
     '{walletId: $wallet_id, address: $address, amount: $amount}'
   )
-  exec_graphql "$token_name" 'on-chain-usd-tx-fee' "$variables"
+  exec_graphql 'alice' 'on-chain-usd-tx-fee' "$variables"
   amount="$(graphql_output '.data.onChainUsdTxFee.amount')"
   [[ "${amount}" == 0 ]] || exit 1
 
@@ -453,7 +431,7 @@ teardown() {
     --arg amount 12345 \
     '{walletId: $wallet_id, address: $address, amount: $amount}'
   )
-  exec_graphql "$token_name" 'on-chain-usd-tx-fee-as-btc-denominated' "$variables"
+  exec_graphql 'alice' 'on-chain-usd-tx-fee-as-btc-denominated' "$variables"
   amount="$(graphql_output '.data.onChainUsdTxFeeAsBtcDenominated.amount')"
   [[ "${amount}" == 0 ]] || exit 1
 }
@@ -467,7 +445,8 @@ teardown() {
     | jq -r '.id'
   )
   [[ "${payout_id}" != "null" ]] || exit 1
-  retry 10 1 grep "sequence.*payout_submitted.*${payout_id}" .e2e-trigger.log
+
+  retry 10 1 grep_in_trigger_logs "sequence.*payout_submitted.*${payout_id}"
 
   last_sequence=$(
     grep "sequence" .e2e-trigger.log \
@@ -477,13 +456,12 @@ teardown() {
   [[ -n "${last_sequence}" ]] || exit 1
 
   bria_cli cancel-payout -i ${payout_id}
-  retry 10 1 grep "sequence\":${sequence}.*payout_cancelled.*${payout_id}" .e2e-trigger.log
+  retry 10 1 grep_in_trigger_logs "sequence.*payout_cancelled.*${payout_id}"
 }
 
 @test "onchain-send: cancel internal payout" {
-  token_name="$ALICE_TOKEN_NAME"
-  btc_wallet_name="$token_name.btc_wallet_id"
-  usd_wallet_name="$token_name.usd_wallet_id"
+  btc_wallet_name="alice.btc_wallet_id"
+  usd_wallet_name="alice.usd_wallet_id"
 
   # Get last sequence
   last_sequence=$(
@@ -508,12 +486,12 @@ teardown() {
     --arg amount 12345 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
   )
-  exec_graphql "$token_name" 'on-chain-payment-send' "$variables"
+  exec_graphql 'alice' 'on-chain-payment-send' "$variables"
   send_status="$(graphql_output '.data.onChainPaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
   # Parse payout_id value
-  retry 10 1 grep "sequence\":${sequence}.*payout_submitted" .e2e-trigger.log
+  retry 10 1 grep_in_trigger_logs "sequence\":${sequence}.*payout_submitted"
   payout_id=$(
     grep "sequence.*payout_submitted" .e2e-trigger.log \
     | tail -n 1 \
@@ -522,5 +500,5 @@ teardown() {
 
   # Check for cancelled event
   bria_cli cancel-payout -i ${payout_id}
-  retry 10 1 grep "sequence.*payout_cancelled.*${payout_id}" .e2e-trigger.log
+  retry 10 1 grep_in_trigger_logs "sequence.*payout_cancelled.*${payout_id}"
 }
