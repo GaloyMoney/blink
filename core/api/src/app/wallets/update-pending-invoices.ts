@@ -26,10 +26,9 @@ export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
     ) => {
       logger.trace("updating pending invoices %s in worker %d", index)
 
-      return updateOrDeclinePendingInvoice({
-        walletInvoice,
-        logger,
-      })
+      return WalletInvoiceChecker(walletInvoice).shouldDecline()
+        ? declineHeldInvoice({ walletInvoice, logger })
+        : updatePendingInvoice({ walletInvoice, logger })
     },
   })
 
@@ -50,18 +49,3 @@ export const handleHeldInvoiceByPaymentHash = async ({
     ? declineHeldInvoice({ walletInvoice, logger })
     : updatePendingInvoice({ walletInvoice, logger })
 }
-
-const updateOrDeclinePendingInvoice = async ({
-  walletInvoice,
-  logger,
-}: {
-  walletInvoice: WalletInvoiceWithOptionalLnInvoice
-  logger: Logger
-}): Promise<boolean | ApplicationError> =>
-  WalletInvoiceChecker(walletInvoice).shouldDecline()
-    ? declineHeldInvoice({
-        pubkey: walletInvoice.pubkey,
-        paymentHash: walletInvoice.paymentHash,
-        logger,
-      })
-    : updatePendingInvoice({ walletInvoice, logger })
