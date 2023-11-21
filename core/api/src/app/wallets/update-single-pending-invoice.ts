@@ -117,8 +117,7 @@ const updatePendingInvoiceBeforeFinally = async ({
       level: roundedDownReceived.level,
     })
     return declineHeldInvoice({
-      pubkey: walletInvoice.pubkey,
-      paymentHash: walletInvoice.paymentHash,
+      walletInvoice,
       logger,
     })
   }

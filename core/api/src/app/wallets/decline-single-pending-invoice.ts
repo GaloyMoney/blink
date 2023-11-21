@@ -14,14 +14,13 @@ export const declineHeldInvoice = wrapAsyncToRunInSpan({
   namespace: "app.invoices",
   fnName: "declineHeldInvoice",
   fn: async ({
-    pubkey,
-    paymentHash,
+    walletInvoice,
     logger,
   }: {
-    pubkey: Pubkey
-    paymentHash: PaymentHash
+    walletInvoice: WalletInvoiceWithOptionalLnInvoice
     logger: Logger
   }): Promise<boolean | ApplicationError> => {
+    const { pubkey, paymentHash } = walletInvoice
     addAttributesToCurrentSpan({ paymentHash, pubkey })
 
     const lndService = LndService()

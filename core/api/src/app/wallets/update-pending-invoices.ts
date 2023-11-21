@@ -47,7 +47,7 @@ export const handleHeldInvoiceByPaymentHash = async ({
   if (walletInvoice instanceof Error) return walletInvoice
 
   return WalletInvoiceChecker(walletInvoice).shouldDecline()
-    ? declineHeldInvoice({ paymentHash, pubkey: walletInvoice.pubkey, logger })
+    ? declineHeldInvoice({ walletInvoice, logger })
     : updatePendingInvoice({ walletInvoice, logger })
 }
 

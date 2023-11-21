@@ -61,7 +61,9 @@ describe("update pending invoices", () => {
 
       // Expect declined invoice
       expect(declineHeldInvoiceMock.mock.calls.length).toBe(1)
-      expect(declineHeldInvoiceMock.mock.calls[0][0].paymentHash).toBe(paymentHash)
+      expect(declineHeldInvoiceMock.mock.calls[0][0].walletInvoice.paymentHash).toBe(
+        paymentHash,
+      )
 
       // Restore system state
       declineHeldInvoiceSpy.mockRestore()
