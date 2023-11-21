@@ -1,13 +1,13 @@
 {
   "name": "subscriber",
   "scripts": {
-    "subscriber": "ts-node src/gql-subscribe.ts"
+    "subscriber": "tsx src/gql-subscribe.ts"
   },
   "devDependencies": {
-    "@types/ws": "^8.5.8",
     "@types/node": "^20.8.7",
-    "ws": "^8.14.2",
+    "@types/ws": "^8.5.8",
     "graphql-ws": "^5.14.1",
-    "ts-node": "^10.9.1"
+    "tsx": "^4.2.0",
+    "ws": "^8.14.2"
   }
 }

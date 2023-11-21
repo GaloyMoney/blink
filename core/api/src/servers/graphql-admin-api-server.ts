@@ -9,9 +9,6 @@ import DataLoader from "dataloader"
 import { startApolloServer } from "./graphql-server"
 
 import { baseLogger } from "@/services/logger"
-import { setupMongoConnection } from "@/services/mongodb"
-
-import { activateLndHealthCheck } from "@/services/lnd/health"
 
 import { adminMutationFields, adminQueryFields, gqlAdminSchema } from "@/graphql/admin"
 
@@ -26,8 +23,6 @@ import {
 import { Transactions } from "@/app"
 
 import { AuthorizationError } from "@/graphql/error"
-
-const graphqlLogger = baseLogger.child({ module: "graphql" })
 
 const setGqlAdminContext = async (
   req: Request,
@@ -111,10 +106,3 @@ export async function startApolloServerForAdminSchema() {
     setGqlContext: setGqlAdminContext,
   })
 }
-
-setupMongoConnection()
-  .then(async () => {
-    activateLndHealthCheck()
-    await startApolloServerForAdminSchema()
-  })
-  .catch((err) => graphqlLogger.error(err, "server error"))

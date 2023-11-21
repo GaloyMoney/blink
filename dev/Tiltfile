@@ -186,7 +186,9 @@ core_serve_env = {
   "SVIX_ENDPOINT": "http://localhost:8071",
 }
 
-api_target = "//core/api:api"
+api_target = "//core/api:dev"
+if is_ci:
+  api_target = "//core/api:api"
 local_resource(
     "api",
     labels = ["core"],

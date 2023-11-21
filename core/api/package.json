@@ -22,7 +22,8 @@
     "watch-main": ". ../../.env && nodemon -V -e ts,graphql -w ./src --exec pnpm run start-main",
     "start-main": ". ../../.env && pnpm run build && node --inspect -r ./dist/services/tracing.js ./dist/servers/graphql-main-server.js",
     "migrate-mongo-up": "migrate-mongo up -f './src/migrations/migrate-mongo-config.js'",
-    "gen-test-jwt": "ts-node dev/bin/gen-test-jwt.ts"
+    "gen-test-jwt": "tsx dev/bin/gen-test-jwt.ts",
+    "dev:api": "tsx src/servers/graphql-main-server.ts"
   },
   "engines": {
     "node": "20"
@@ -174,9 +175,8 @@
     "spectaql": "^2.3.0",
     "tiny-secp256k1": "^2.2.3",
     "tree-kill": "^1.2.2",
-    "ts-node": "^10.9.1",
-    "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.1.4",
     "typescript": "^5.2.2",
     "zen-observable-ts": "^1.1.0"
   },
