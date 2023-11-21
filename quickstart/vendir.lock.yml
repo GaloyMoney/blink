@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): remove legacy Dockerfile-websocket (#3581)'
-      sha: 7b348465fc4c3fe43def9f893a9a78827d6b6b76
+      commitTitle: 'test(dashboard): setup cypress dashboard (#3519)...'
+      sha: 5d900a1d7214d7ef6c894cad5b7fc6398690bf09
       tags:
-      - 0.16.46-1-g7b348465f
+      - 0.16.48-1-g5d900a1d7
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): remove legacy Dockerfile-websocket (#3581)'
-      sha: 7b348465fc4c3fe43def9f893a9a78827d6b6b76
+      commitTitle: 'test(dashboard): setup cypress dashboard (#3519)...'
+      sha: 5d900a1d7214d7ef6c894cad5b7fc6398690bf09
       tags:
-      - 0.16.46-1-g7b348465f
+      - 0.16.48-1-g5d900a1d7
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(core): remove legacy Dockerfile-websocket (#3581)'
-      sha: 7b348465fc4c3fe43def9f893a9a78827d6b6b76
+      commitTitle: 'test(dashboard): setup cypress dashboard (#3519)...'
+      sha: 5d900a1d7214d7ef6c894cad5b7fc6398690bf09
       tags:
-      - 0.16.46-1-g7b348465f
+      - 0.16.48-1-g5d900a1d7
     path: ./
   path: ./graphql
 kind: LockConfig
