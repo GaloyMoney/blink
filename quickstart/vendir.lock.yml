@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: more debug output'
-      sha: 5eb975f2edc570edd42f4aaaa4a8ebc3ede67960
+      commitTitle: 'chore: adding open telemetry to the auth router (#3579)...'
+      sha: c2a02ce842613fa3ed4e107d52cb82c301cd8383
       tags:
-      - 0.16.50-1-g5eb975f2e
+      - 0.16.51
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: more debug output'
-      sha: 5eb975f2edc570edd42f4aaaa4a8ebc3ede67960
+      commitTitle: 'chore: adding open telemetry to the auth router (#3579)...'
+      sha: c2a02ce842613fa3ed4e107d52cb82c301cd8383
       tags:
-      - 0.16.50-1-g5eb975f2e
+      - 0.16.51
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: more debug output'
-      sha: 5eb975f2edc570edd42f4aaaa4a8ebc3ede67960
+      commitTitle: 'chore: adding open telemetry to the auth router (#3579)...'
+      sha: c2a02ce842613fa3ed4e107d52cb82c301cd8383
       tags:
-      - 0.16.50-1-g5eb975f2e
+      - 0.16.51
     path: ./
   path: ./graphql
 kind: LockConfig
