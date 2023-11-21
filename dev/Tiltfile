@@ -305,7 +305,7 @@ docker_groups = {
         "apollo-router",
         "mongodb",
         "redis",
-        "stablesats"
+        "stablesats",
         "svix-pg",
         "svix",
     ],
