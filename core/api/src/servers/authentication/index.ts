@@ -81,6 +81,8 @@ authRouter.use((req: Request, res: Response, next: NextFunction) => {
 
 authRouter.post("/create/device-account", async (req: Request, res: Response) => {
   const appcheckJti = req.headers["x-appcheck-jti"]
+  addAttributesToCurrentSpan({ "appcheck.jti": appcheckJti })
+
   if (!appcheckJti || typeof appcheckJti !== "string" || appcheckJti === "") {
     return res.status(401).send({ error: "missing or invalid appcheck jti" })
   }
