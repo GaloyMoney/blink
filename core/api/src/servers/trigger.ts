@@ -252,7 +252,7 @@ const invoiceUpdateHandler = wrapAsyncToRunInSpan({
   },
 })
 
-const listenerHodlInvoice = ({
+const setupListenerForHodlInvoice = ({
   lnd,
   paymentHash,
 }: {
@@ -286,7 +286,7 @@ const listenerHodlInvoice = ({
   })
 }
 
-const listenerExistingHodlInvoices = async ({
+const setupListenersForExistingHodlInvoices = async ({
   lnd,
   pubkey,
 }: {
@@ -324,7 +324,7 @@ const listenerExistingHodlInvoices = async ({
       }
     }
 
-    listenerHodlInvoice({ lnd, paymentHash: lnInvoice.paymentHash })
+    setupListenerForHodlInvoice({ lnd, paymentHash: lnInvoice.paymentHash })
   }
 }
 
@@ -351,10 +351,11 @@ export const setupInvoiceSubscribe = ({
   pubkey: Pubkey
   subInvoices: EventEmitter
 }) => {
+  // Setup listener that sets up a new listener for each new invoice created
   subInvoices.on("invoice_updated", (invoice: SubscribeToInvoicesInvoiceUpdatedEvent) =>
     // Note: canceled and expired invoices don't come in here, only confirmed check req'd
     !invoice.is_confirmed
-      ? listenerHodlInvoice({ lnd, paymentHash: invoice.id as PaymentHash })
+      ? setupListenerForHodlInvoice({ lnd, paymentHash: invoice.id as PaymentHash })
       : undefined,
   )
   subInvoices.on("error", (err) => {
@@ -367,7 +368,7 @@ export const setupInvoiceSubscribe = ({
     subInvoices.removeAllListeners()
   })
 
-  listenerExistingHodlInvoices({ lnd, pubkey })
+  setupListenersForExistingHodlInvoices({ lnd, pubkey })
 }
 
 export const setupPaymentSubscribe = async ({
