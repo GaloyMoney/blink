@@ -96,6 +96,10 @@ authRouter.post("/create/device-account", async (req: Request, res: Response) =>
   const ip = req.originalIp
   const user = basicAuth(req)
 
+  if (!user) {
+    return res.status(422).send({ error: "user undefined" })
+  }
+
   if (!user?.name || !user?.pass) {
     return res.status(422).send({ error: "Bad input" })
   }
