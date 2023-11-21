@@ -4,6 +4,7 @@ import { registerInstrumentations } from "@opentelemetry/instrumentation"
 import { GraphQLInstrumentation } from "@opentelemetry/instrumentation-graphql"
 import { GrpcInstrumentation } from "@opentelemetry/instrumentation-grpc"
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http"
+import { ExpressInstrumentation } from "@opentelemetry/instrumentation-express"
 import { IORedisInstrumentation } from "@opentelemetry/instrumentation-ioredis"
 import { MongoDBInstrumentation } from "@opentelemetry/instrumentation-mongodb"
 import { Span as SdkSpan, SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base"
@@ -192,6 +193,7 @@ registerInstrumentations({
             "apollographql-client-version",
             "x-real-ip",
             "x-forwarded-for",
+            "x-appcheck-jti",
             "user-agent",
           ],
         },
@@ -205,6 +207,14 @@ registerInstrumentations({
     new MongoDBInstrumentation(),
     new GrpcInstrumentation(),
     new IORedisInstrumentation(),
+    new ExpressInstrumentation({
+      requestHook: (span, request) => {
+        console.log("requestHook", request)
+        console.log("span", span)
+        // span NonRecordingSpan {}
+      },
+      enabled: true,
+    }),
   ],
 })
 
