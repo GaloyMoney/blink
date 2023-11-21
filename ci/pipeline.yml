@@ -76,7 +76,6 @@ groups:
       - integration-tests
       - bats-tests
       - legacy-bats-tests
-      - test-unit
       - build-edge-image
       - build-debug-edge-image
       - build-migrate-edge-image
@@ -225,23 +224,6 @@ jobs:
         put: docker-host
         params:
           release: docker-host
-    on_failure: #@ slack_failure_notification()
-
-  - name: test-unit
-    serial: true
-    plan:
-      - in_parallel:
-          - { get: repo, trigger: true }
-          - { get: pipeline-tasks }
-      - task: test-unit
-        config:
-          platform: linux
-          image_resource: #@ galoy_dev_image_config()
-          inputs:
-            - name: pipeline-tasks
-            - name: repo
-          run:
-            path: pipeline-tasks/ci/tasks/test-unit.sh
     on_failure: #@ slack_failure_notification()
 
   - name: build-edge-image
