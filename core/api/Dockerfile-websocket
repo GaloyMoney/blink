@@ -30,4 +30,4 @@ USER 1000
 ARG COMMITHASH
 ENV COMMITHASH ${COMMITHASH}
 
-CMD ["lib/servers/ws-server.js"]
+CMD ["dist/servers/ws-server.js"]
