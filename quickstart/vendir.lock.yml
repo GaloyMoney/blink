@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(dashboard): setup cypress dashboard (#3519)...'
-      sha: 5d900a1d7214d7ef6c894cad5b7fc6398690bf09
+      commitTitle: 'chore(api): clean up api runs for local dev (#3572)...'
+      sha: e7edca1d68452c246cfb335b230440a2fb76f36c
       tags:
-      - 0.16.48-1-g5d900a1d7
+      - 0.16.49-1-ge7edca1d6
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(dashboard): setup cypress dashboard (#3519)...'
-      sha: 5d900a1d7214d7ef6c894cad5b7fc6398690bf09
+      commitTitle: 'chore(api): clean up api runs for local dev (#3572)...'
+      sha: e7edca1d68452c246cfb335b230440a2fb76f36c
       tags:
-      - 0.16.48-1-g5d900a1d7
+      - 0.16.49-1-ge7edca1d6
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(dashboard): setup cypress dashboard (#3519)...'
-      sha: 5d900a1d7214d7ef6c894cad5b7fc6398690bf09
+      commitTitle: 'chore(api): clean up api runs for local dev (#3572)...'
+      sha: e7edca1d68452c246cfb335b230440a2fb76f36c
       tags:
-      - 0.16.48-1-g5d900a1d7
+      - 0.16.49-1-ge7edca1d6
     path: ./
   path: ./graphql
 kind: LockConfig
