@@ -18,7 +18,7 @@
       },
       "onchain_payment": {
         "body": "Pago onchain por {{baseCurrencyAmount}}{{baseCurrencyName}} confirmado",
-        "bodyDisplayCurrency": "Pago onchain por +{{displayCurrencyAmount}} | {{baseCurrencyAmount}}{{baseCurrencyName}} confirmado",
+        "bodyDisplayCurrency": "Pago onchain por {{displayCurrencyAmount}} | {{baseCurrencyAmount}}{{baseCurrencyName}} confirmado",
         "title": "Transacción {{walletCurrency}}"
       },
       "onchain_receipt": {

@@ -33,6 +33,7 @@ type NotificationRecipient = {
   deviceTokens: DeviceToken[]
   notificationSettings: NotificationSettings
   language: UserLanguageOrEmpty
+  level: AccountLevel
 }
 
 type NotificatioSendTransactionArgs = {

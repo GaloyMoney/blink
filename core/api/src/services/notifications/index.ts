@@ -5,25 +5,32 @@ import {
 
 import { createPushNotificationContent } from "./create-push-notification-content"
 
-import { toSats } from "@/domain/bitcoin"
-import { roundToBigInt, WalletCurrency } from "@/domain/shared"
-import { majorToMinorUnit, toCents, UsdDisplayCurrency } from "@/domain/fiat"
-import { customPubSubTrigger, PubSubDefaultTriggers } from "@/domain/pubsub"
+import { getCallbackServiceConfig } from "@/config"
+
 import {
   GaloyNotificationCategories,
   NotificationsServiceError,
   NotificationType,
   UnknownNotificationsServiceError,
 } from "@/domain/notifications"
+import { toSats } from "@/domain/bitcoin"
+import { AccountLevel } from "@/domain/accounts"
+import { TxStatus } from "@/domain/wallets/tx-status"
+import { CallbackEventType } from "@/domain/callback"
+import { CallbackError } from "@/domain/callback/errors"
+import { WalletInvoiceStatus } from "@/domain/wallet-invoices"
+import { roundToBigInt, WalletCurrency } from "@/domain/shared"
+import { customPubSubTrigger, PubSubDefaultTriggers } from "@/domain/pubsub"
+import { majorToMinorUnit, toCents, UsdDisplayCurrency } from "@/domain/fiat"
 
 import { PubSubService } from "@/services/pubsub"
+import { CallbackService } from "@/services/svix"
 import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
-import { WalletInvoiceStatus } from "@/domain/wallet-invoices"
-import { TxStatus } from "@/domain/wallets/tx-status"
 
 export const NotificationsService = (): INotificationsService => {
   const pubsub = PubSubService()
   const pushNotification = PushNotificationsService()
+  const callbackService = CallbackService(getCallbackServiceConfig())
 
   const sendTransactionPubSubNotification = async ({
     recipient,
@@ -140,7 +147,7 @@ export const NotificationsService = (): INotificationsService => {
   const sendTransactionPushNotification = async ({
     recipient,
     transaction,
-  }: NotificatioSendTransactionArgs): Promise<true | PubSubServiceError> => {
+  }: NotificatioSendTransactionArgs): Promise<true | NotificationsServiceError> => {
     try {
       const hasDeviceTokens = recipient.deviceTokens && recipient.deviceTokens.length > 0
       if (!hasDeviceTokens) return true
@@ -157,7 +164,7 @@ export const NotificationsService = (): INotificationsService => {
         type,
         userLanguage: recipient.language,
         amount: {
-          amount: roundToBigInt(Math.abs(transaction.settlementAmount)),
+          amount: roundToBigInt(transaction.settlementAmount),
           currency: transaction.settlementCurrency,
         },
         displayAmount: {
@@ -175,7 +182,34 @@ export const NotificationsService = (): INotificationsService => {
         notificationSettings: recipient.notificationSettings,
       })
 
-      if (result instanceof NotificationsServiceError) return result
+      if (result instanceof Error) return result
+
+      return true
+    } catch (err) {
+      return handleCommonNotificationErrors(err)
+    }
+  }
+
+  const sendTransactionCallbackNotification = async ({
+    recipient,
+    transaction,
+  }: NotificatioSendTransactionArgs): Promise<true | CallbackError> => {
+    try {
+      const type = translateToNotificationType(transaction)
+      if (!type) return true
+
+      if (recipient.level === AccountLevel.Zero) return true
+
+      const eventType = getCallbackEventType(type)
+      if (!eventType) return true
+
+      const result = await callbackService.sendMessage({
+        accountId: recipient.accountId,
+        walletId: recipient.walletId,
+        eventType,
+        payload: { transaction },
+      })
+      if (result instanceof Error) return result
 
       return true
     } catch (err) {
@@ -191,6 +225,7 @@ export const NotificationsService = (): INotificationsService => {
       sendTransactionPushNotification({ recipient, transaction }),
       // Notify the recipient and public subscribers (via GraphQL subscription if any)
       sendTransactionPubSubNotification({ recipient, transaction }),
+      sendTransactionCallbackNotification({ recipient, transaction }),
     ])
     return result.then((results) => {
       for (const result of results) {
@@ -362,5 +397,16 @@ const translateToNotificationType = (
         : NotificationType.OnchainReceipt
     }
     return NotificationType.OnchainPayment
+  }
+}
+
+const getCallbackEventType = (type: NotificationType): CallbackEventType | undefined => {
+  switch (type) {
+    case NotificationType.LnInvoicePaid:
+      return CallbackEventType.ReceiveLightning
+    case NotificationType.IntraLedgerReceipt:
+      return CallbackEventType.ReceiveIntraledger
+    default:
+      return undefined
   }
 }

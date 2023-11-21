@@ -60,11 +60,7 @@ export const createPushNotificationContent = <T extends DisplayCurrency>({
     },
   )
 
-  if (
-    displayAmount &&
-    displayAmount.amountInMinor > 0n &&
-    displayAmount.currency !== baseCurrency
-  ) {
+  if (displayAmount && displayAmount.currency !== baseCurrency) {
     const exponent = getCurrencyMajorExponent(displayAmount.currency)
     const displayCurrencyAmount = customToLocaleString(
       Number(displayAmount.displayInMajor),

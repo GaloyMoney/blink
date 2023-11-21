@@ -33,10 +33,6 @@ import { DealerPriceService } from "@/services/dealer-price"
 import { NotificationsService } from "@/services/notifications"
 
 import { elapsedSinceTimestamp, runInParallel } from "@/utils"
-import { CallbackEventType } from "@/domain/callback"
-import { AccountLevel } from "@/domain/accounts"
-import { CallbackService } from "@/services/svix"
-import { getCallbackServiceConfig } from "@/config"
 import { toDisplayBaseAmount } from "@/domain/payments"
 import { WalletInvoiceChecker } from "@/domain/wallet-invoices"
 
@@ -405,6 +401,7 @@ const updatePendingInvoiceBeforeFinally = async ({
         deviceTokens: recipientUser.deviceTokens,
         language: recipientUser.language,
         notificationSettings: recipientAccount.notificationSettings,
+        level: recipientAccount.level,
       },
       transaction: walletTransaction,
     })
@@ -413,21 +410,6 @@ const updatePendingInvoiceBeforeFinally = async ({
       await removeDeviceTokens({
         userId: recipientUser.id,
         deviceTokens: result.tokens,
-      })
-    }
-
-    if (
-      recipientAccount.level === AccountLevel.One ||
-      recipientAccount.level === AccountLevel.Two
-    ) {
-      const callbackService = CallbackService(getCallbackServiceConfig())
-      callbackService.sendMessage({
-        accountId: recipientAccount.id,
-        eventType: CallbackEventType.ReceiveLightning,
-        payload: {
-          // FIXME: [0] might not be correct
-          txid: journal.transactionIds[0],
-        },
       })
     }
 

@@ -1,6 +1,6 @@
 import { addContactsAfterSend, getPriceRatioForLimits } from "./helpers"
 
-import { getCallbackServiceConfig, getValuesToSkipProbe } from "@/config"
+import { getValuesToSkipProbe } from "@/config"
 
 import { checkIntraledgerLimits, checkTradeIntraAccountLimits } from "@/app/accounts"
 import {
@@ -20,9 +20,9 @@ import {
   LightningPaymentFlowBuilder,
   toDisplayBaseAmount,
 } from "@/domain/payments"
-import { AccountLevel, AccountValidator } from "@/domain/accounts"
+import { AccountValidator } from "@/domain/accounts"
 import { DisplayAmountsConverter } from "@/domain/fiat"
-import { ErrorLevel, WalletCurrency } from "@/domain/shared"
+import { ErrorLevel } from "@/domain/shared"
 import { PaymentSendStatus } from "@/domain/bitcoin/lightning"
 import { ResourceExpiredLockServiceError } from "@/domain/lock"
 import { checkedToWalletId, SettlementMethod } from "@/domain/wallets"
@@ -42,10 +42,6 @@ import {
   UsersRepository,
 } from "@/services/mongoose"
 import { NotificationsService } from "@/services/notifications"
-
-import { CallbackService } from "@/services/svix"
-
-import { CallbackEventType } from "@/domain/callback"
 
 const dealer = DealerPriceService()
 
@@ -361,27 +357,13 @@ const executePaymentViaIntraledger = async <
         deviceTokens: recipientUser.deviceTokens,
         language: recipientUser.language,
         notificationSettings: recipientAccount.notificationSettings,
+        level: recipientAccount.level,
       },
       transaction: walletTransaction,
     })
 
     if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
       await removeDeviceTokens({ userId: recipientUser.id, deviceTokens: result.tokens })
-    }
-
-    if (
-      recipientAccount.level === AccountLevel.One ||
-      recipientAccount.level === AccountLevel.Two
-    ) {
-      const callbackService = CallbackService(getCallbackServiceConfig())
-      callbackService.sendMessage({
-        accountId: recipientAccount.id,
-        eventType: CallbackEventType.ReceiveIntraledger,
-        payload: {
-          // FIXME: [0] might not be correct
-          txid: journal.transactionIds[0],
-        },
-      })
     }
 
     return PaymentSendStatus.Success

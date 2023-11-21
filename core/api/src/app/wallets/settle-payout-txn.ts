@@ -67,6 +67,7 @@ export const settlePayout = async (
       deviceTokens: user.deviceTokens,
       language: user.language,
       notificationSettings: account.notificationSettings,
+      level: account.level,
     },
     transaction: walletTransaction,
   })

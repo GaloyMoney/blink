@@ -20,6 +20,7 @@ import {
 import { WalletCurrency } from "@/domain/shared"
 import { GaloyNotificationCategories } from "@/domain/notifications"
 import { displayCurrencyPerBaseUnitFromAmounts } from "@/domain/wallets/tx-history"
+import { AccountLevel } from "@/domain/accounts"
 
 // @ts-ignore-next-line no-implicit-any error
 let spy
@@ -247,6 +248,7 @@ describe("notification", () => {
               deviceTokens,
               language,
               notificationSettings: unfilteredNotificationSettings,
+              level: AccountLevel.One,
             },
             transaction: {
               id: "id" as LedgerTransactionId,
@@ -318,6 +320,7 @@ describe("notification", () => {
               deviceTokens,
               language,
               notificationSettings: unfilteredNotificationSettings,
+              level: AccountLevel.One,
             },
             transaction: {
               id: "id" as LedgerTransactionId,
@@ -390,6 +393,7 @@ describe("notification", () => {
               deviceTokens,
               language,
               notificationSettings: unfilteredNotificationSettings,
+              level: AccountLevel.One,
             },
             transaction: {
               id: "id" as LedgerTransactionId,
@@ -459,6 +463,7 @@ describe("notification", () => {
               deviceTokens,
               language,
               notificationSettings: unfilteredNotificationSettings,
+              level: AccountLevel.One,
             },
             transaction: {
               id: "id" as LedgerTransactionId,
@@ -501,13 +506,13 @@ describe("notification", () => {
           name: "btc",
           paymentAmount,
           title: "BTC Transaction",
-          body: "Sent onchain payment of +₡3,500.50 | 1,000 sats confirmed",
+          body: "Sent onchain payment of -₡3,500.50 | -1,000 sats confirmed",
         },
         {
           name: "usd",
           paymentAmount: usdPaymentAmount,
           title: "USD Transaction",
-          body: "Sent onchain payment of +₡3,500.50 | $0.05 confirmed",
+          body: "Sent onchain payment of -₡3,500.50 | -$0.05 confirmed",
         },
       ]
 
@@ -528,6 +533,7 @@ describe("notification", () => {
               deviceTokens,
               language,
               notificationSettings: unfilteredNotificationSettings,
+              level: AccountLevel.One,
             },
             transaction: {
               id: "id" as LedgerTransactionId,
@@ -544,12 +550,12 @@ describe("notification", () => {
               settlementAmount: paymentAmount.settlementAmountSend,
               settlementCurrency: paymentAmount.currency,
               settlementFee: paymentAmount.settlementFee,
-              settlementDisplayAmount: crcDisplayPaymentAmount.displayInMajor,
+              settlementDisplayAmount: `-${crcDisplayPaymentAmount.displayInMajor}`,
               settlementDisplayPrice: crcSettlementDisplayPrice({
                 walletAmount: toSats(paymentAmount.amount),
                 walletCurrency: paymentAmount.currency,
               }),
-              settlementDisplayFee: paymentAmount.settlementDisplayFee,
+              settlementDisplayFee: `-${paymentAmount.settlementDisplayFee}`,
               createdAt: new Date(),
             },
           })
