@@ -34,6 +34,172 @@ import { NotificationsService } from "@/services/notifications"
 
 import { toDisplayBaseAmount } from "@/domain/payments"
 
+const lockedUpdatePendingInvoiceSteps = async ({
+  paymentHash,
+  recipientWalletId,
+  receivedBtc,
+  description,
+  isSettledInLnd,
+  logger,
+}: {
+  paymentHash: PaymentHash
+  recipientWalletId: WalletId
+  receivedBtc: BtcPaymentAmount
+  description: string
+  isSettledInLnd: boolean
+  logger: Logger
+}) => {
+  const walletInvoices = WalletInvoicesRepository()
+
+  const walletInvoiceInsideLock = await walletInvoices.findByPaymentHash(paymentHash)
+  if (walletInvoiceInsideLock instanceof CouldNotFindError) {
+    logger.error({ paymentHash }, "WalletInvoice doesn't exist")
+    return false
+  }
+  if (walletInvoiceInsideLock instanceof Error) return walletInvoiceInsideLock
+  if (walletInvoiceInsideLock.paid) {
+    logger.info("invoice has already been processed")
+    return true
+  }
+
+  // Prepare metadata and record transaction
+  const recipientInvoiceWallet = await WalletsRepository().findById(recipientWalletId)
+  if (recipientInvoiceWallet instanceof Error) return recipientInvoiceWallet
+  const { accountId: recipientAccountId } = recipientInvoiceWallet
+
+  const accountWallets =
+    await WalletsRepository().findAccountWalletsByAccountId(recipientAccountId)
+  if (accountWallets instanceof Error) return accountWallets
+
+  const receivedWalletInvoice = await WalletInvoiceReceiver({
+    walletInvoice: walletInvoiceInsideLock,
+    receivedBtc,
+    recipientWalletDescriptors: accountWallets,
+  }).withConversion({
+    mid: { usdFromBtc: usdFromBtcMidPriceFn },
+    hedgeBuyUsd: { usdFromBtc: DealerPriceService().getCentsFromSatsForImmediateBuy },
+  })
+  if (receivedWalletInvoice instanceof Error) return receivedWalletInvoice
+
+  const {
+    recipientWalletDescriptor,
+    btcToCreditReceiver,
+    btcBankFee,
+    usdToCreditReceiver,
+    usdBankFee,
+  } = receivedWalletInvoice
+
+  addAttributesToCurrentSpan({
+    "invoices.finalRecipient": JSON.stringify(recipientWalletDescriptor),
+  })
+
+  if (!isSettledInLnd) {
+    const lndService = LndService()
+    if (lndService instanceof Error) return lndService
+    const invoiceSettled = await lndService.settleInvoice({
+      pubkey: walletInvoiceInsideLock.pubkey,
+      secret: walletInvoiceInsideLock.secret,
+    })
+    if (invoiceSettled instanceof Error) return invoiceSettled
+  }
+
+  const invoicePaid = await walletInvoices.markAsPaid(paymentHash)
+  if (invoicePaid instanceof Error) return invoicePaid
+
+  const recipientAccount = await AccountsRepository().findById(recipientAccountId)
+  if (recipientAccount instanceof Error) return recipientAccount
+  const { displayCurrency: recipientDisplayCurrency } = recipientAccount
+  const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+    currency: recipientDisplayCurrency,
+  })
+  if (displayPriceRatio instanceof Error) return displayPriceRatio
+
+  const { displayAmount: displayPaymentAmount, displayFee } = DisplayAmountsConverter(
+    displayPriceRatio,
+  ).convert({
+    btcPaymentAmount: btcToCreditReceiver,
+    btcProtocolAndBankFee: btcBankFee,
+    usdPaymentAmount: usdToCreditReceiver,
+    usdProtocolAndBankFee: usdBankFee,
+  })
+
+  // TODO: this should be a in a mongodb transaction session with the ledger transaction below
+  // markAsPaid could be done after the transaction, but we should in that case not only look
+  // for walletInvoicesRepo, but also in the ledger to make sure in case the process crash in this
+  // loop that an eventual consistency doesn't lead to a double credit
+
+  const {
+    metadata,
+    creditAccountAdditionalMetadata,
+    internalAccountsAdditionalMetadata,
+  } = LedgerFacade.LnReceiveLedgerMetadata({
+    paymentHash,
+    pubkey: walletInvoiceInsideLock.pubkey,
+    paymentAmounts: {
+      btcPaymentAmount: btcToCreditReceiver,
+      usdPaymentAmount: usdToCreditReceiver,
+      btcProtocolAndBankFee: btcBankFee,
+      usdProtocolAndBankFee: usdBankFee,
+    },
+
+    feeDisplayCurrency: toDisplayBaseAmount(displayFee),
+    amountDisplayCurrency: toDisplayBaseAmount(displayPaymentAmount),
+    displayCurrency: recipientDisplayCurrency,
+  })
+
+  //TODO: add displayCurrency: displayPaymentAmount.currency,
+  const journal = await LedgerFacade.recordReceiveOffChain({
+    description,
+    recipientWalletDescriptor,
+    amountToCreditReceiver: {
+      usd: usdToCreditReceiver,
+      btc: btcToCreditReceiver,
+    },
+    bankFee: {
+      usd: usdBankFee,
+      btc: btcBankFee,
+    },
+    metadata,
+    txMetadata: {
+      hash: metadata.hash,
+    },
+    additionalCreditMetadata: creditAccountAdditionalMetadata,
+    additionalInternalMetadata: internalAccountsAdditionalMetadata,
+  })
+  if (journal instanceof Error) return journal
+
+  // Prepare and send notification
+  const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
+  if (recipientUser instanceof Error) return recipientUser
+
+  const walletTransaction = await getTransactionForWalletByJournalId({
+    walletId: recipientWalletDescriptor.id,
+    journalId: journal.journalId,
+  })
+  if (walletTransaction instanceof Error) return walletTransaction
+
+  const result = await NotificationsService().sendTransaction({
+    recipient: {
+      accountId: recipientAccountId,
+      walletId: recipientWalletDescriptor.id,
+      deviceTokens: recipientUser.deviceTokens,
+      language: recipientUser.language,
+      notificationSettings: recipientAccount.notificationSettings,
+      level: recipientAccount.level,
+    },
+    transaction: walletTransaction,
+  })
+
+  if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
+    await removeDeviceTokens({
+      userId: recipientUser.id,
+      deviceTokens: result.tokens,
+    })
+  }
+
+  return true
+}
+
 const updatePendingInvoiceBeforeFinally = async ({
   walletInvoice,
   logger,
@@ -46,15 +212,11 @@ const updatePendingInvoiceBeforeFinally = async ({
     pubkey: walletInvoice.pubkey,
   })
 
-  const lndService = LndService()
-  if (lndService instanceof Error) return lndService
-
   const walletInvoicesRepo = WalletInvoicesRepository()
 
   const {
     pubkey,
     paymentHash,
-    secret,
     recipientWalletDescriptor: recipientInvoiceWalletDescriptor,
   } = walletInvoice
 
@@ -71,6 +233,8 @@ const updatePendingInvoiceBeforeFinally = async ({
     onUs: false,
   })
 
+  const lndService = LndService()
+  if (lndService instanceof Error) return lndService
   const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
   if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
     const processingCompletedInvoice =
@@ -83,15 +247,15 @@ const updatePendingInvoiceBeforeFinally = async ({
   }
   if (lnInvoiceLookup instanceof Error) return lnInvoiceLookup
 
-  const {
-    lnInvoice: { description },
-    roundedDownReceived: uncheckedRoundedDownReceived,
-  } = lnInvoiceLookup
-
   if (walletInvoice.paid) {
     pendingInvoiceLogger.info("invoice has already been processed")
     return true
   }
+
+  const {
+    lnInvoice: { description },
+    roundedDownReceived: uncheckedRoundedDownReceived,
+  } = lnInvoiceLookup
 
   if (lnInvoiceLookup.isCanceled) {
     pendingInvoiceLogger.info("invoice has been canceled")
@@ -129,153 +293,16 @@ const updatePendingInvoiceBeforeFinally = async ({
   if (receivedBtc instanceof Error) return receivedBtc
 
   const lockService = LockService()
-  return lockService.lockPaymentHash(paymentHash, async () => {
-    // we're getting the invoice another time, now behind the lock, to avoid potential race condition
-    const invoiceToUpdate = await walletInvoicesRepo.findByPaymentHash(paymentHash)
-    if (invoiceToUpdate instanceof CouldNotFindError) {
-      pendingInvoiceLogger.error({ paymentHash }, "WalletInvoice doesn't exist")
-      return false
-    }
-    if (invoiceToUpdate instanceof Error) return invoiceToUpdate
-    if (invoiceToUpdate.paid) {
-      pendingInvoiceLogger.info("invoice has already been processed")
-      return true
-    }
-
-    // Prepare metadata and record transaction
-    const recipientInvoiceWallet = await WalletsRepository().findById(
-      recipientInvoiceWalletDescriptor.id,
-    )
-    if (recipientInvoiceWallet instanceof Error) return recipientInvoiceWallet
-    const { accountId: recipientAccountId } = recipientInvoiceWallet
-
-    const accountWallets =
-      await WalletsRepository().findAccountWalletsByAccountId(recipientAccountId)
-    if (accountWallets instanceof Error) return accountWallets
-
-    const receivedWalletInvoice = await WalletInvoiceReceiver({
-      walletInvoice,
-      receivedBtc,
-      recipientWalletDescriptors: accountWallets,
-    }).withConversion({
-      mid: { usdFromBtc: usdFromBtcMidPriceFn },
-      hedgeBuyUsd: { usdFromBtc: DealerPriceService().getCentsFromSatsForImmediateBuy },
-    })
-    if (receivedWalletInvoice instanceof Error) return receivedWalletInvoice
-
-    const {
-      recipientWalletDescriptor,
-      btcToCreditReceiver,
-      btcBankFee,
-      usdToCreditReceiver,
-      usdBankFee,
-    } = receivedWalletInvoice
-
-    addAttributesToCurrentSpan({
-      "invoices.finalRecipient": JSON.stringify(recipientWalletDescriptor),
-    })
-
-    if (!lnInvoiceLookup.isSettled) {
-      const invoiceSettled = await lndService.settleInvoice({ pubkey, secret })
-      if (invoiceSettled instanceof Error) return invoiceSettled
-    }
-
-    const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
-    if (invoicePaid instanceof Error) return invoicePaid
-
-    const recipientAccount = await AccountsRepository().findById(recipientAccountId)
-    if (recipientAccount instanceof Error) return recipientAccount
-    const { displayCurrency: recipientDisplayCurrency } = recipientAccount
-    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-      currency: recipientDisplayCurrency,
-    })
-    if (displayPriceRatio instanceof Error) return displayPriceRatio
-
-    const { displayAmount: displayPaymentAmount, displayFee } = DisplayAmountsConverter(
-      displayPriceRatio,
-    ).convert({
-      btcPaymentAmount: btcToCreditReceiver,
-      btcProtocolAndBankFee: btcBankFee,
-      usdPaymentAmount: usdToCreditReceiver,
-      usdProtocolAndBankFee: usdBankFee,
-    })
-
-    // TODO: this should be a in a mongodb transaction session with the ledger transaction below
-    // markAsPaid could be done after the transaction, but we should in that case not only look
-    // for walletInvoicesRepo, but also in the ledger to make sure in case the process crash in this
-    // loop that an eventual consistency doesn't lead to a double credit
-
-    const {
-      metadata,
-      creditAccountAdditionalMetadata,
-      internalAccountsAdditionalMetadata,
-    } = LedgerFacade.LnReceiveLedgerMetadata({
+  return lockService.lockPaymentHash(paymentHash, async () =>
+    lockedUpdatePendingInvoiceSteps({
+      recipientWalletId: recipientInvoiceWalletDescriptor.id,
       paymentHash,
-      pubkey: walletInvoice.pubkey,
-      paymentAmounts: {
-        btcPaymentAmount: btcToCreditReceiver,
-        usdPaymentAmount: usdToCreditReceiver,
-        btcProtocolAndBankFee: btcBankFee,
-        usdProtocolAndBankFee: usdBankFee,
-      },
-
-      feeDisplayCurrency: toDisplayBaseAmount(displayFee),
-      amountDisplayCurrency: toDisplayBaseAmount(displayPaymentAmount),
-      displayCurrency: recipientDisplayCurrency,
-    })
-
-    //TODO: add displayCurrency: displayPaymentAmount.currency,
-    const journal = await LedgerFacade.recordReceiveOffChain({
+      receivedBtc,
       description,
-      recipientWalletDescriptor,
-      amountToCreditReceiver: {
-        usd: usdToCreditReceiver,
-        btc: btcToCreditReceiver,
-      },
-      bankFee: {
-        usd: usdBankFee,
-        btc: btcBankFee,
-      },
-      metadata,
-      txMetadata: {
-        hash: metadata.hash,
-      },
-      additionalCreditMetadata: creditAccountAdditionalMetadata,
-      additionalInternalMetadata: internalAccountsAdditionalMetadata,
-    })
-    if (journal instanceof Error) return journal
-
-    // Prepare and send notification
-    const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
-    if (recipientUser instanceof Error) return recipientUser
-
-    const walletTransaction = await getTransactionForWalletByJournalId({
-      walletId: recipientWalletDescriptor.id,
-      journalId: journal.journalId,
-    })
-    if (walletTransaction instanceof Error) return walletTransaction
-
-    const result = await NotificationsService().sendTransaction({
-      recipient: {
-        accountId: recipientAccountId,
-        walletId: recipientWalletDescriptor.id,
-        deviceTokens: recipientUser.deviceTokens,
-        language: recipientUser.language,
-        notificationSettings: recipientAccount.notificationSettings,
-        level: recipientAccount.level,
-      },
-      transaction: walletTransaction,
-    })
-
-    if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
-      await removeDeviceTokens({
-        userId: recipientUser.id,
-        deviceTokens: result.tokens,
-      })
-    }
-
-    return true
-  })
+      isSettledInLnd: lnInvoiceLookup.isSettled,
+      logger,
+    }),
+  )
 }
 
 export const updatePendingInvoice = wrapAsyncToRunInSpan({
