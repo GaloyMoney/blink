@@ -157,26 +157,26 @@ random_uuid() {
     uuidgen
   fi
 }
-
 curl_request() {
-  local url=$1
-  shift
-  local data=${1:-""}
-  shift
+  local url="$1"
+  local data="${2:-""}"
+  shift 2
   local headers=("$@")
 
-  echo "Curl request -  url: ${url} -  data: ${data}" - headers: ${headers}
+  echo "Curl request - url: ${url} - data: ${data} - headers:"
+  for header in "${headers[@]}"; do
+    echo "  $header"
+  done
 
+  local run_cmd=""
   if [[ "${BATS_TEST_DIRNAME}" != "" ]]; then
     run_cmd="run"
-  else
-    run_cmd=""
   fi
 
   cmd=(${run_cmd} curl -s -X POST -H "Content-Type: application/json")
 
   for header in "${headers[@]}"; do
-    cmd+=(-H "$header")
+    cmd+=(-H "${header}")
   done
 
   if [[ -n "$data" ]]; then
@@ -184,6 +184,7 @@ curl_request() {
   fi
 
   cmd+=("${url}")
+  echo "Curl input: '${cmd[*]}'"
 
   "${cmd[@]}"
 
