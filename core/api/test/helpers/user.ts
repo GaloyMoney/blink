@@ -348,7 +348,7 @@ export const fundWallet = async ({
   if (invoice instanceof Error) throw invoice
   const { paymentRequest, paymentHash } = invoice.lnInvoice
   const updateInvoice = () =>
-    Wallets.updatePendingInvoiceByPaymentHash({
+    Wallets.handleHeldInvoiceByPaymentHash({
       paymentHash,
       logger: baseLogger,
     })

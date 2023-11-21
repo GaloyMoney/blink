@@ -42,7 +42,6 @@ import {
 import { uploadBackup } from "@/app/admin/backup"
 import { lnd1LoopConfig, lnd2LoopConfig } from "@/app/swap/get-active-loopd"
 import * as Wallets from "@/app/wallets"
-import { declineHeldInvoice } from "@/app/wallets/decline-single-pending-invoice"
 
 import { TxDecoder } from "@/domain/bitcoin/onchain"
 import { CacheKeys } from "@/domain/cache"
@@ -51,7 +50,6 @@ import { SwapTriggerError } from "@/domain/swap/errors"
 import { checkedToDisplayCurrency } from "@/domain/fiat"
 import { DEFAULT_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
-import { WalletInvoiceChecker } from "@/domain/wallet-invoices"
 
 import { BriaSubscriber } from "@/services/bria"
 import { RedisCacheService } from "@/services/cache"
@@ -62,7 +60,6 @@ import { onChannelUpdated } from "@/services/lnd/utils"
 import { baseLogger } from "@/services/logger"
 import { LoopService } from "@/services/loopd"
 import { setupMongoConnection } from "@/services/mongodb"
-import { WalletInvoicesRepository } from "@/services/mongoose"
 import { NotificationsService } from "@/services/notifications"
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@/services/tracing"
 
@@ -244,7 +241,7 @@ const invoiceUpdateHandler = wrapAsyncToRunInSpan({
   ): Promise<boolean | ApplicationError> => {
     logger.info({ invoice }, "invoiceUpdateEventHandler")
     return invoice.is_held
-      ? WalletWithSpans.updatePendingInvoiceByPaymentHash({
+      ? WalletWithSpans.handleHeldInvoiceByPaymentHash({
           paymentHash: invoice.id as PaymentHash,
           logger,
         })
@@ -308,20 +305,11 @@ const setupListenersForExistingHodlInvoices = async ({
     }
 
     if (lnInvoice.isHeld) {
-      const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(
-        lnInvoice.paymentHash,
-      )
-      if (WalletInvoiceChecker(walletInvoice).shouldDecline()) {
-        declineHeldInvoice({
-          pubkey,
-          paymentHash: lnInvoice.paymentHash,
-          logger: baseLogger,
-        })
-        continue
-      }
-      if (walletInvoice instanceof Error) {
-        continue
-      }
+      await Wallets.handleHeldInvoiceByPaymentHash({
+        paymentHash: lnInvoice.paymentHash,
+        logger,
+      })
+      continue
     }
 
     setupListenerForHodlInvoice({ lnd, paymentHash: lnInvoice.paymentHash })

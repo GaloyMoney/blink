@@ -2,8 +2,6 @@ import { declineHeldInvoice } from "./decline-single-pending-invoice"
 
 import { updatePendingInvoice } from "./update-single-pending-invoice"
 
-import { CouldNotFindError } from "@/domain/errors"
-
 import { WalletInvoicesRepository } from "@/services/mongoose"
 
 import { runInParallel } from "@/utils"
@@ -38,21 +36,19 @@ export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   logger.info("finish updating pending invoices")
 }
 
-export const updatePendingInvoiceByPaymentHash = async ({
+export const handleHeldInvoiceByPaymentHash = async ({
   paymentHash,
   logger,
 }: {
   paymentHash: PaymentHash
   logger: Logger
 }): Promise<boolean | ApplicationError> => {
-  const invoicesRepo = WalletInvoicesRepository()
-  const walletInvoice = await invoicesRepo.findByPaymentHash(paymentHash)
-  if (walletInvoice instanceof CouldNotFindError) {
-    logger.info({ paymentHash }, "WalletInvoice doesn't exist")
-    return false
-  }
+  const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(paymentHash)
   if (walletInvoice instanceof Error) return walletInvoice
-  return updatePendingInvoice({ walletInvoice, logger })
+
+  return WalletInvoiceChecker(walletInvoice).shouldDecline()
+    ? declineHeldInvoice({ paymentHash, pubkey: walletInvoice.pubkey, logger })
+    : updatePendingInvoice({ walletInvoice, logger })
 }
 
 const updateOrDeclinePendingInvoice = async ({
