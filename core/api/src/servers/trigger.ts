@@ -42,6 +42,7 @@ import {
 import { uploadBackup } from "@/app/admin/backup"
 import { lnd1LoopConfig, lnd2LoopConfig } from "@/app/swap/get-active-loopd"
 import * as Wallets from "@/app/wallets"
+import { declineHeldInvoice } from "@/app/wallets/decline-single-pending-invoice"
 
 import { TxDecoder } from "@/domain/bitcoin/onchain"
 import { CacheKeys } from "@/domain/cache"
@@ -311,7 +312,7 @@ const listenerExistingHodlInvoices = async ({
         lnInvoice.paymentHash,
       )
       if (WalletInvoiceChecker(walletInvoice).shouldDecline()) {
-        Wallets.declineHeldInvoice({
+        declineHeldInvoice({
           pubkey,
           paymentHash: lnInvoice.paymentHash,
           logger: baseLogger,

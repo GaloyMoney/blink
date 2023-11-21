@@ -1,7 +1,9 @@
 import { randomUUID } from "crypto"
 
+import * as DeclinePendingInvoiceImpl from "@/app/wallets/decline-single-pending-invoice"
+import * as UpdatePendingInvoiceImpl from "@/app/wallets/update-single-pending-invoice"
+
 import { handleHeldInvoices } from "@/app/wallets"
-import * as UpdatePendingInvoicesImpl from "@/app/wallets/update-pending-invoices"
 
 import { DEFAULT_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
 import { WalletCurrency } from "@/domain/shared"
@@ -24,7 +26,7 @@ describe("update pending invoices", () => {
       // Setup mocks
       const declineHeldInvoiceMock = jest.fn()
       const declineHeldInvoiceSpy = jest
-        .spyOn(UpdatePendingInvoicesImpl, "declineHeldInvoice")
+        .spyOn(DeclinePendingInvoiceImpl, "declineHeldInvoice")
         .mockImplementation(declineHeldInvoiceMock)
 
       // Setup expired USD wallet invoice
@@ -69,12 +71,12 @@ describe("update pending invoices", () => {
       // Setup mocks
       const declineHeldInvoiceMock = jest.fn()
       const declineHeldInvoiceSpy = jest
-        .spyOn(UpdatePendingInvoicesImpl, "declineHeldInvoice")
+        .spyOn(DeclinePendingInvoiceImpl, "declineHeldInvoice")
         .mockImplementation(declineHeldInvoiceMock)
 
       const updatePendingInvoiceMock = jest.fn()
       const updatePendingInvoiceSpy = jest
-        .spyOn(UpdatePendingInvoicesImpl, "updatePendingInvoice")
+        .spyOn(UpdatePendingInvoiceImpl, "updatePendingInvoice")
         .mockImplementation(updatePendingInvoiceMock)
 
       // Setup expired BTC wallet invoice
