@@ -44,6 +44,8 @@ local_resource(
     allow_parallel = True,
     resource_deps = [
         "hydra-dashboard",
+        "svix",
+        "svix-pg",
     ],
     links = [
         link("http://localhost:3001", "dashboard"),
@@ -80,6 +82,19 @@ local_resource(
     "consent",
     "init-test-user",
     "hydra-consent"
+  ],
+)
+
+dashboard_test_target = "//apps/dashboard:test-integration"
+local_resource(
+  "dashboard-test",
+  labels = ["test"],
+  auto_init = is_ci and "dashboard" in cfg.get("test", []),
+  cmd = "buck2 test {}".format(dashboard_test_target),
+  resource_deps = [
+    "consent",
+    "api-keys",
+    "dashboard",
   ],
 )
 
@@ -166,7 +181,9 @@ core_serve_env = {
   "LND1_DNS": "localhost",
   "LND1_RPCPORT": "10009",
   "LND1_NAME": "lnd1",
-  "LND1_TYPE": "offchain,onchain"
+  "LND1_TYPE": "offchain,onchain",
+  "SVIX_SECRET": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2OTE2NzIwMTQsImV4cCI6MjAwNzAzMjAxNCwibmJmIjoxNjkxNjcyMDE0LCJpc3MiOiJzdml4LXNlcnZlciIsInN1YiI6Im9yZ18yM3JiOFlkR3FNVDBxSXpwZ0d3ZFhmSGlyTXUifQ.b9s0aWSisNdUNki4edabBEToLNSwjC9-AiJQr4J3y4E",
+  "SVIX_ENDPOINT": "http://localhost:8071",
 }
 
 api_target = "//core/api:api"
@@ -288,8 +305,9 @@ docker_groups = {
         "apollo-router",
         "mongodb",
         "redis",
+        "stablesats",
+        "svix-pg",
         "svix",
-        "stablesats"
     ],
     "bitcoin": [
         "lnd1",

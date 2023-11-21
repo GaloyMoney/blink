@@ -4,6 +4,7 @@ describe("Account ID Test", () => {
   let login_challenge: string | null
 
   before(() => {
+    cy.flushRedis()
     cy.visit(testData.AUTHORIZATION_URL)
     cy.url().then((currentUrl) => {
       const urlObj = new URL(currentUrl)

@@ -59,20 +59,6 @@ Cypress.Commands.add("getOTP", (email) => {
   })
 })
 
-Cypress.Commands.add("requestEmailCode", (email) => {
-  return cy
-    .request({
-      method: "POST",
-      url: "http://localhost:4455/auth/email/code",
-      body: {
-        email: email,
-      },
-    })
-    .then((response) => {
-      return response.body.result
-    })
-})
-
 Cypress.Commands.add("flushRedis", () => {
   const command = `docker exec galoy-dev-redis-1 redis-cli FLUSHALL`
   cy.exec(command).then((result) => {
