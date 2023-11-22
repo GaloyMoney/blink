@@ -34,6 +34,141 @@ import { NotificationsService } from "@/services/notifications"
 
 import { toDisplayBaseAmount } from "@/domain/payments"
 
+export const updatePendingInvoice = wrapAsyncToRunInSpan({
+  namespace: "app.invoices",
+  fnName: "updatePendingInvoice",
+  fn: async ({
+    walletInvoice,
+    logger,
+  }: {
+    walletInvoice: WalletInvoiceWithOptionalLnInvoice
+    logger: Logger
+  }): Promise<boolean | ApplicationError> => {
+    const result = await updatePendingInvoiceBeforeFinally({
+      walletInvoice,
+      logger,
+    })
+    if (result) {
+      if (!walletInvoice.paid) {
+        const walletInvoices = WalletInvoicesRepository()
+        const invoicePaid = await walletInvoices.markAsPaid(walletInvoice.paymentHash)
+        if (
+          invoicePaid instanceof Error &&
+          !(invoicePaid instanceof CouldNotFindWalletInvoiceError)
+        ) {
+          return invoicePaid
+        }
+      }
+    }
+    return result
+  },
+})
+
+const updatePendingInvoiceBeforeFinally = async ({
+  walletInvoice,
+  logger,
+}: {
+  walletInvoice: WalletInvoiceWithOptionalLnInvoice
+  logger: Logger
+}): Promise<boolean | ApplicationError> => {
+  addAttributesToCurrentSpan({
+    paymentHash: walletInvoice.paymentHash,
+    pubkey: walletInvoice.pubkey,
+  })
+
+  const walletInvoicesRepo = WalletInvoicesRepository()
+
+  const {
+    pubkey,
+    paymentHash,
+    recipientWalletDescriptor: recipientInvoiceWalletDescriptor,
+  } = walletInvoice
+
+  addAttributesToCurrentSpan({
+    "invoices.originalRecipient": JSON.stringify(recipientInvoiceWalletDescriptor),
+  })
+
+  const pendingInvoiceLogger = logger.child({
+    hash: paymentHash,
+    walletId: recipientInvoiceWalletDescriptor.id,
+    topic: "payment",
+    protocol: "lightning",
+    transactionType: "receipt",
+    onUs: false,
+  })
+
+  const lndService = LndService()
+  if (lndService instanceof Error) return lndService
+  const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
+  if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
+    const processingCompletedInvoice =
+      await walletInvoicesRepo.markAsProcessingCompleted(paymentHash)
+    if (processingCompletedInvoice instanceof Error) {
+      pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
+      return processingCompletedInvoice
+    }
+    return false
+  }
+  if (lnInvoiceLookup instanceof Error) return lnInvoiceLookup
+
+  if (walletInvoice.paid) {
+    pendingInvoiceLogger.info("invoice has already been processed")
+    return true
+  }
+
+  const {
+    lnInvoice: { description },
+    roundedDownReceived: uncheckedRoundedDownReceived,
+  } = lnInvoiceLookup
+
+  if (lnInvoiceLookup.isCanceled) {
+    pendingInvoiceLogger.info("invoice has been canceled")
+    const processingCompletedInvoice =
+      await walletInvoicesRepo.markAsProcessingCompleted(paymentHash)
+    if (processingCompletedInvoice instanceof Error) {
+      pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
+      return processingCompletedInvoice
+    }
+    return false
+  }
+
+  if (!lnInvoiceLookup.isHeld && !lnInvoiceLookup.isSettled) {
+    pendingInvoiceLogger.info("invoice has not been paid yet")
+    return false
+  }
+
+  // TODO: validate roundedDownReceived as user input
+  const roundedDownReceived = checkedToSats(uncheckedRoundedDownReceived)
+  if (roundedDownReceived instanceof Error) {
+    recordExceptionInCurrentSpan({
+      error: roundedDownReceived,
+      level: roundedDownReceived.level,
+    })
+    return declineHeldInvoice({
+      walletInvoice,
+      logger,
+    })
+  }
+
+  const receivedBtc = paymentAmountFromNumber({
+    amount: roundedDownReceived,
+    currency: WalletCurrency.Btc,
+  })
+  if (receivedBtc instanceof Error) return receivedBtc
+
+  const lockService = LockService()
+  return lockService.lockPaymentHash(paymentHash, async () =>
+    lockedUpdatePendingInvoiceSteps({
+      recipientWalletId: recipientInvoiceWalletDescriptor.id,
+      paymentHash,
+      receivedBtc,
+      description,
+      isSettledInLnd: lnInvoiceLookup.isSettled,
+      logger,
+    }),
+  )
+}
+
 const lockedUpdatePendingInvoiceSteps = async ({
   paymentHash,
   recipientWalletId,
@@ -199,138 +334,3 @@ const lockedUpdatePendingInvoiceSteps = async ({
 
   return true
 }
-
-const updatePendingInvoiceBeforeFinally = async ({
-  walletInvoice,
-  logger,
-}: {
-  walletInvoice: WalletInvoiceWithOptionalLnInvoice
-  logger: Logger
-}): Promise<boolean | ApplicationError> => {
-  addAttributesToCurrentSpan({
-    paymentHash: walletInvoice.paymentHash,
-    pubkey: walletInvoice.pubkey,
-  })
-
-  const walletInvoicesRepo = WalletInvoicesRepository()
-
-  const {
-    pubkey,
-    paymentHash,
-    recipientWalletDescriptor: recipientInvoiceWalletDescriptor,
-  } = walletInvoice
-
-  addAttributesToCurrentSpan({
-    "invoices.originalRecipient": JSON.stringify(recipientInvoiceWalletDescriptor),
-  })
-
-  const pendingInvoiceLogger = logger.child({
-    hash: paymentHash,
-    walletId: recipientInvoiceWalletDescriptor.id,
-    topic: "payment",
-    protocol: "lightning",
-    transactionType: "receipt",
-    onUs: false,
-  })
-
-  const lndService = LndService()
-  if (lndService instanceof Error) return lndService
-  const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
-  if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
-    const processingCompletedInvoice =
-      await walletInvoicesRepo.markAsProcessingCompleted(paymentHash)
-    if (processingCompletedInvoice instanceof Error) {
-      pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
-      return processingCompletedInvoice
-    }
-    return false
-  }
-  if (lnInvoiceLookup instanceof Error) return lnInvoiceLookup
-
-  if (walletInvoice.paid) {
-    pendingInvoiceLogger.info("invoice has already been processed")
-    return true
-  }
-
-  const {
-    lnInvoice: { description },
-    roundedDownReceived: uncheckedRoundedDownReceived,
-  } = lnInvoiceLookup
-
-  if (lnInvoiceLookup.isCanceled) {
-    pendingInvoiceLogger.info("invoice has been canceled")
-    const processingCompletedInvoice =
-      await walletInvoicesRepo.markAsProcessingCompleted(paymentHash)
-    if (processingCompletedInvoice instanceof Error) {
-      pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
-      return processingCompletedInvoice
-    }
-    return false
-  }
-
-  if (!lnInvoiceLookup.isHeld && !lnInvoiceLookup.isSettled) {
-    pendingInvoiceLogger.info("invoice has not been paid yet")
-    return false
-  }
-
-  // TODO: validate roundedDownReceived as user input
-  const roundedDownReceived = checkedToSats(uncheckedRoundedDownReceived)
-  if (roundedDownReceived instanceof Error) {
-    recordExceptionInCurrentSpan({
-      error: roundedDownReceived,
-      level: roundedDownReceived.level,
-    })
-    return declineHeldInvoice({
-      walletInvoice,
-      logger,
-    })
-  }
-
-  const receivedBtc = paymentAmountFromNumber({
-    amount: roundedDownReceived,
-    currency: WalletCurrency.Btc,
-  })
-  if (receivedBtc instanceof Error) return receivedBtc
-
-  const lockService = LockService()
-  return lockService.lockPaymentHash(paymentHash, async () =>
-    lockedUpdatePendingInvoiceSteps({
-      recipientWalletId: recipientInvoiceWalletDescriptor.id,
-      paymentHash,
-      receivedBtc,
-      description,
-      isSettledInLnd: lnInvoiceLookup.isSettled,
-      logger,
-    }),
-  )
-}
-
-export const updatePendingInvoice = wrapAsyncToRunInSpan({
-  namespace: "app.invoices",
-  fnName: "updatePendingInvoice",
-  fn: async ({
-    walletInvoice,
-    logger,
-  }: {
-    walletInvoice: WalletInvoiceWithOptionalLnInvoice
-    logger: Logger
-  }): Promise<boolean | ApplicationError> => {
-    const result = await updatePendingInvoiceBeforeFinally({
-      walletInvoice,
-      logger,
-    })
-    if (result) {
-      if (!walletInvoice.paid) {
-        const walletInvoices = WalletInvoicesRepository()
-        const invoicePaid = await walletInvoices.markAsPaid(walletInvoice.paymentHash)
-        if (
-          invoicePaid instanceof Error &&
-          !(invoicePaid instanceof CouldNotFindWalletInvoiceError)
-        ) {
-          return invoicePaid
-        }
-      }
-    }
-    return result
-  },
-})
