@@ -521,15 +521,15 @@ const executePaymentViaIntraledger = async <
     if (recipientUser instanceof Error) return recipientUser
 
     const walletTransaction = await getTransactionForWalletByJournalId({
-      walletId: recipientWallet.id,
+      walletId: recipientWalletDescriptor.id,
       journalId: journal.journalId,
     })
     if (walletTransaction instanceof Error) return walletTransaction
 
     const result = await NotificationsService().sendTransaction({
       recipient: {
-        accountId: recipientWallet.accountId,
-        walletId: recipientWallet.id,
+        accountId: recipientAccount.id,
+        walletId: recipientWalletDescriptor.id,
         deviceTokens: recipientUser.deviceTokens,
         language: recipientUser.language,
         notificationSettings: recipientAccount.notificationSettings,
