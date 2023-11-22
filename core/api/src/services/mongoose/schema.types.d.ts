@@ -69,7 +69,7 @@ interface WalletInvoiceRecord {
   currency: string
   timestamp: Date
   selfGenerated: boolean
-  processingCompleted?: boolean
+  processingCompleted: boolean
   pubkey: string
   paid: boolean
   paymentRequest?: string // optional because we historically did not store it
