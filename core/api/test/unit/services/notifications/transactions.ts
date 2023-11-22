@@ -58,7 +58,7 @@ export const btcTransactions = [
     title: "BTC Transaction",
   },
   {
-    type: NotificationType.LnInvoicePaid,
+    type: NotificationType.LigtningReceipt,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     body: "+1,000 sats",
     title: "BTC Transaction",
@@ -102,7 +102,7 @@ export const btcTransactionsWithDisplayCurrency = [
     title: "BTC Transaction",
   },
   {
-    type: NotificationType.LnInvoicePaid,
+    type: NotificationType.LigtningReceipt,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     displayPaymentAmount: usdDisplayPaymentAmount,
     body: "+$5 | 1,000 sats",
@@ -144,7 +144,7 @@ export const btcTransactionsWithDisplayCurrency = [
     title: "BTC Transaction",
   },
   {
-    type: NotificationType.LnInvoicePaid,
+    type: NotificationType.LigtningReceipt,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     displayPaymentAmount: crcDisplayPaymentAmount,
     body: "+₡3,500.50 | 1,000 sats",
@@ -184,7 +184,7 @@ export const usdTransactions = [
     title: "USD Transaction",
   },
   {
-    type: NotificationType.LnInvoicePaid,
+    type: NotificationType.LigtningReceipt,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Usd },
     body: "+$10",
     title: "USD Transaction",
@@ -220,7 +220,7 @@ export const usdTransactions = [
     title: "USD Transaction",
   },
   {
-    type: NotificationType.LnInvoicePaid,
+    type: NotificationType.LigtningReceipt,
     paymentAmount: { amount: 1030n, currency: WalletCurrency.Usd },
     body: "+$10.30",
     title: "USD Transaction",
@@ -264,7 +264,7 @@ export const usdTransactionsWithDisplayCurrency = [
     title: "USD Transaction",
   },
   {
-    type: NotificationType.LnInvoicePaid,
+    type: NotificationType.LigtningReceipt,
     paymentAmount: { amount: 500n, currency: WalletCurrency.Usd },
     displayPaymentAmount: usdDisplayPaymentAmount,
     body: "+$5",
@@ -306,7 +306,7 @@ export const usdTransactionsWithDisplayCurrency = [
     title: "USD Transaction",
   },
   {
-    type: NotificationType.LnInvoicePaid,
+    type: NotificationType.LigtningReceipt,
     paymentAmount: { amount: 500n, currency: WalletCurrency.Usd },
     displayPaymentAmount: crcDisplayPaymentAmount,
     body: "+₡3,500.50 | $5",
@@ -348,7 +348,7 @@ export const usdTransactionsWithDisplayCurrency = [
     title: "USD Transaction",
   },
   {
-    type: NotificationType.LnInvoicePaid,
+    type: NotificationType.LigtningReceipt,
     paymentAmount: { amount: 507n, currency: WalletCurrency.Usd },
     displayPaymentAmount: usdDisplayPaymentAmount,
     body: "+$5.07",
@@ -390,7 +390,7 @@ export const usdTransactionsWithDisplayCurrency = [
     title: "USD Transaction",
   },
   {
-    type: NotificationType.LnInvoicePaid,
+    type: NotificationType.LigtningReceipt,
     paymentAmount: { amount: 507n, currency: WalletCurrency.Usd },
     displayPaymentAmount: crcDisplayPaymentAmount,
     body: "+₡3,500.50 | $5.07",
