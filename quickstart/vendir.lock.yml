@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: myupdates for ln settle intraledger (#3591)'
-      sha: e6c24ba024bbc4ca4d91e212e93b1a72dff12aaf
+      commitTitle: 'test(core): move updatePendingInvoice idempotency test  (#3582)...'
+      sha: 39ed5f08f947fbe7991a84681aafccfcc644cfa0
       tags:
-      - 0.16.55-1-ge6c24ba02
+      - 0.16.58-1-g39ed5f08f
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: myupdates for ln settle intraledger (#3591)'
-      sha: e6c24ba024bbc4ca4d91e212e93b1a72dff12aaf
+      commitTitle: 'test(core): move updatePendingInvoice idempotency test  (#3582)...'
+      sha: 39ed5f08f947fbe7991a84681aafccfcc644cfa0
       tags:
-      - 0.16.55-1-ge6c24ba02
+      - 0.16.58-1-g39ed5f08f
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: myupdates for ln settle intraledger (#3591)'
-      sha: e6c24ba024bbc4ca4d91e212e93b1a72dff12aaf
+      commitTitle: 'test(core): move updatePendingInvoice idempotency test  (#3582)...'
+      sha: 39ed5f08f947fbe7991a84681aafccfcc644cfa0
       tags:
-      - 0.16.55-1-ge6c24ba02
+      - 0.16.58-1-g39ed5f08f
     path: ./
   path: ./graphql
 kind: LockConfig
