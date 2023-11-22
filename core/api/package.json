@@ -23,7 +23,9 @@
     "start-main": ". ../../.env && pnpm run build && node --inspect -r ./dist/services/tracing.js ./dist/servers/graphql-main-server.js",
     "migrate-mongo-up": "migrate-mongo up -f './src/migrations/migrate-mongo-config.js'",
     "gen-test-jwt": "tsx dev/bin/gen-test-jwt.ts",
-    "dev:api": "tsx src/servers/graphql-main-server.ts"
+    "dev:api": "tsx src/servers/graphql-main-server.ts",
+    "dev:api-trigger": "tsx src/servers/trigger.ts",
+    "dev:api-ws-server": "tsx src/servers/ws-server.ts"
   },
   "engines": {
     "node": "20"
