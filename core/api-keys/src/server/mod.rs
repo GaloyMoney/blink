@@ -63,7 +63,7 @@ struct CheckResponse {
 #[instrument(
     name = "api-keys.server.check",
     skip_all,
-    fields(key_id, sub, scopes),
+    fields(key_id, sub, scope),
     err
 )]
 async fn check_handler(
