@@ -382,16 +382,9 @@ const getPubSubNotificationEventType = (
     case NotificationType.LnInvoicePaid:
     case NotificationType.IntraLedgerReceipt:
     case NotificationType.OnchainReceiptPending:
+    case NotificationType.OnchainReceipt:
     case NotificationType.OnchainPayment:
       return type
-
-    // special case because we don't have a hash
-    case NotificationType.OnchainReceipt: {
-      const settlementViaType = transaction.settlementVia.type
-      return settlementViaType === "intraledger"
-        ? NotificationType.IntraLedgerReceipt
-        : type
-    }
     default:
       return undefined
   }
@@ -405,16 +398,9 @@ const getPushNotificationEventType = (
     case NotificationType.LnInvoicePaid:
     case NotificationType.IntraLedgerReceipt:
     case NotificationType.OnchainReceiptPending:
+    case NotificationType.OnchainReceipt:
     case NotificationType.OnchainPayment:
       return type
-
-    // special case because we don't have a hash
-    case NotificationType.OnchainReceipt: {
-      const settlementViaType = transaction.settlementVia.type
-      return settlementViaType === "intraledger"
-        ? NotificationType.IntraLedgerReceipt
-        : type
-    }
     default:
       return undefined
   }
@@ -440,11 +426,11 @@ const translateToNotificationType = (
   const type = transaction.initiationVia.type
   const isReceive = transaction.settlementAmount > 0
   if (type === "lightning") {
-    return isReceive ? NotificationType.LnInvoicePaid : undefined
+    return isReceive ? NotificationType.LnInvoicePaid : NotificationType.LnInvoicePaid
   }
 
   if (type === "intraledger") {
-    return isReceive ? NotificationType.IntraLedgerReceipt : undefined
+    return isReceive ? NotificationType.IntraLedgerReceipt : NotificationType.IntraLedgerPayment
   }
 
   if (type === "onchain") {
