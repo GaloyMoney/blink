@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build(core): add dev rules for running trigger & ws servers locally
-        (#3587)...'
-      sha: 6bd3e0309df549680cc6f081af72f5c577db0c9c
+      commitTitle: 'fix: myupdates for ln settle intraledger (#3591)'
+      sha: e6c24ba024bbc4ca4d91e212e93b1a72dff12aaf
       tags:
-      - 0.16.54-1-g6bd3e0309
+      - 0.16.55-1-ge6c24ba02
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build(core): add dev rules for running trigger & ws servers locally
-        (#3587)...'
-      sha: 6bd3e0309df549680cc6f081af72f5c577db0c9c
+      commitTitle: 'fix: myupdates for ln settle intraledger (#3591)'
+      sha: e6c24ba024bbc4ca4d91e212e93b1a72dff12aaf
       tags:
-      - 0.16.54-1-g6bd3e0309
+      - 0.16.55-1-ge6c24ba02
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'build(core): add dev rules for running trigger & ws servers locally
-        (#3587)...'
-      sha: 6bd3e0309df549680cc6f081af72f5c577db0c9c
+      commitTitle: 'fix: myupdates for ln settle intraledger (#3591)'
+      sha: e6c24ba024bbc4ca4d91e212e93b1a72dff12aaf
       tags:
-      - 0.16.54-1-g6bd3e0309
+      - 0.16.55-1-ge6c24ba02
     path: ./
   path: ./graphql
 kind: LockConfig
