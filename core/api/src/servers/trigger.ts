@@ -50,7 +50,6 @@ import { SwapTriggerError } from "@/domain/swap/errors"
 import { checkedToDisplayCurrency } from "@/domain/fiat"
 import { DEFAULT_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
-import { WalletInvoiceChecker } from "@/domain/wallet-invoices"
 
 import { BriaSubscriber } from "@/services/bria"
 import { RedisCacheService } from "@/services/cache"
@@ -61,7 +60,6 @@ import { onChannelUpdated } from "@/services/lnd/utils"
 import { baseLogger } from "@/services/logger"
 import { LoopService } from "@/services/loopd"
 import { setupMongoConnection } from "@/services/mongodb"
-import { WalletInvoicesRepository } from "@/services/mongoose"
 import { NotificationsService } from "@/services/notifications"
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@/services/tracing"
 
@@ -243,7 +241,7 @@ const invoiceUpdateHandler = wrapAsyncToRunInSpan({
   ): Promise<boolean | ApplicationError> => {
     logger.info({ invoice }, "invoiceUpdateEventHandler")
     return invoice.is_held
-      ? WalletWithSpans.updatePendingInvoiceByPaymentHash({
+      ? WalletWithSpans.handleHeldInvoiceByPaymentHash({
           paymentHash: invoice.id as PaymentHash,
           logger,
         })
@@ -251,7 +249,7 @@ const invoiceUpdateHandler = wrapAsyncToRunInSpan({
   },
 })
 
-const listenerHodlInvoice = ({
+const setupListenerForHodlInvoice = ({
   lnd,
   paymentHash,
 }: {
@@ -285,7 +283,7 @@ const listenerHodlInvoice = ({
   })
 }
 
-const listenerExistingHodlInvoices = async ({
+const setupListenersForExistingHodlInvoices = async ({
   lnd,
   pubkey,
 }: {
@@ -307,38 +305,15 @@ const listenerExistingHodlInvoices = async ({
     }
 
     if (lnInvoice.isHeld) {
-      const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(
-        lnInvoice.paymentHash,
-      )
-      if (WalletInvoiceChecker(walletInvoice).shouldDecline()) {
-        Wallets.declineHeldInvoice({
-          pubkey,
-          paymentHash: lnInvoice.paymentHash,
-          logger: baseLogger,
-        })
-        continue
-      }
-      if (walletInvoice instanceof Error) {
-        continue
-      }
+      await Wallets.handleHeldInvoiceByPaymentHash({
+        paymentHash: lnInvoice.paymentHash,
+        logger,
+      })
+      continue
     }
 
-    listenerHodlInvoice({ lnd, paymentHash: lnInvoice.paymentHash })
+    setupListenerForHodlInvoice({ lnd, paymentHash: lnInvoice.paymentHash })
   }
-}
-
-export const setupAndProcessInvoiceSubscribe = ({
-  lnd,
-  pubkey,
-  subInvoices,
-}: {
-  lnd: AuthenticatedLnd
-  pubkey: Pubkey
-  subInvoices: EventEmitter
-}) => {
-  setupInvoiceSubscribe({ lnd, pubkey, subInvoices })
-  // Update existing pending invoices
-  Wallets.handleHeldInvoices(logger)
 }
 
 export const setupInvoiceSubscribe = ({
@@ -350,10 +325,11 @@ export const setupInvoiceSubscribe = ({
   pubkey: Pubkey
   subInvoices: EventEmitter
 }) => {
+  // Setup listener that sets up a new listener for each new invoice created
   subInvoices.on("invoice_updated", (invoice: SubscribeToInvoicesInvoiceUpdatedEvent) =>
     // Note: canceled and expired invoices don't come in here, only confirmed check req'd
     !invoice.is_confirmed
-      ? listenerHodlInvoice({ lnd, paymentHash: invoice.id as PaymentHash })
+      ? setupListenerForHodlInvoice({ lnd, paymentHash: invoice.id as PaymentHash })
       : undefined,
   )
   subInvoices.on("error", (err) => {
@@ -366,7 +342,11 @@ export const setupInvoiceSubscribe = ({
     subInvoices.removeAllListeners()
   })
 
-  listenerExistingHodlInvoices({ lnd, pubkey })
+  // Setup listeners for existing invoices
+  setupListenersForExistingHodlInvoices({ lnd, pubkey })
+
+  // Update existing held invoices
+  Wallets.handleHeldInvoices(logger)
 }
 
 export const setupPaymentSubscribe = async ({
@@ -404,7 +384,7 @@ export const setupPaymentSubscribe = async ({
 
 const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubkey }) => {
   const subInvoices = subscribeToInvoices({ lnd })
-  setupAndProcessInvoiceSubscribe({ lnd, pubkey, subInvoices })
+  setupInvoiceSubscribe({ lnd, pubkey, subInvoices })
 
   const subPayments = subscribeToPayments({ lnd })
   setupPaymentSubscribe({ subPayments })

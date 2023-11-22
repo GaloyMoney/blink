@@ -225,7 +225,7 @@ describe("Display properties on transactions", () => {
           (async () => {
             // TODO: we could use event instead of a sleep to lower test latency
             await sleep(500)
-            return Wallets.updatePendingInvoiceByPaymentHash({
+            return Wallets.handleHeldInvoiceByPaymentHash({
               paymentHash,
               logger: baseLogger,
             })
