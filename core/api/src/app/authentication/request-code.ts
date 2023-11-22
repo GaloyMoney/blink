@@ -107,6 +107,50 @@ export const requestPhoneCodeForAuthedUser = async ({
   return TwilioClient().initiateVerify({ to: phone, channel })
 }
 
+export const requestPhoneCodeWithAppcheckJti = async ({
+  phone,
+  ip,
+  channel,
+  appcheckJti,
+}: {
+  phone: PhoneNumber
+  ip: IpAddress
+  channel: ChannelType
+  appcheckJti: string
+}): Promise<true | PhoneProviderServiceError> => {
+  {
+    const limitOk = await checkRequestCodeAttemptPerIpLimits(ip)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  {
+    const limitOk = await checkRequestCodeAttemptPerLoginIdentifierLimits(phone)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  {
+    const limitOk = await checkRequestCodeAttemptPerAppcheckJtiLimits(
+      appcheckJti as AppcheckJti,
+    )
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  if (UNSECURE_DEFAULT_LOGIN_CODE) {
+    return true
+  }
+
+  if (TWILIO_ACCOUNT_SID === TWILIO_ACCOUNT_TEST) {
+    return new NotImplementedError()
+  }
+
+  const testAccounts = getTestAccounts()
+  if (TestAccountsChecker(testAccounts).isPhoneTest(phone)) {
+    return true
+  }
+
+  return TwilioClient().initiateVerify({ to: phone, channel })
+}
+
 export const requestEmailCode = async ({
   email,
   ip,
@@ -147,4 +191,12 @@ const checkRequestCodeAttemptPerLoginIdentifierLimits = async (
   consumeLimiter({
     rateLimitConfig: RateLimitConfig.requestCodeAttemptPerLoginIdentifier,
     keyToConsume: loginIdentifier,
+  })
+
+const checkRequestCodeAttemptPerAppcheckJtiLimits = async (
+  appcheckJti: AppcheckJti,
+): Promise<true | RateLimiterExceededError> =>
+  consumeLimiter({
+    rateLimitConfig: RateLimitConfig.requestCodeAttemptPerAppcheckJti,
+    keyToConsume: appcheckJti,
   })

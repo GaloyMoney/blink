@@ -7,6 +7,7 @@ import {
   UserCodeAttemptIpRateLimiterExceededError,
   UserCodeAttemptIdentifierRateLimiterExceededError,
   DeviceAccountCreateRateLimiterExceededError,
+  UserCodeAttemptAppcheckJtiLimiterExceededError,
 } from "./errors"
 
 import {
@@ -18,6 +19,7 @@ import {
   getOnChainAddressCreateAttemptLimits,
   getRequestCodePerIpLimits,
   getRequestCodePerLoginIdentifierLimits,
+  getAppcheckJtiAttemptLimits,
 } from "@/config"
 
 export const RateLimitPrefix = {
@@ -29,6 +31,7 @@ export const RateLimitPrefix = {
   invoiceCreateForRecipient: "invoice_create_for_recipient",
   onChainAddressCreate: "onchain_address_create",
   deviceAccountCreate: "device_account_create",
+  requestCodeAttemptPerAppcheckJti: "request_code_attempt_appcheck_jti",
 } as const
 
 type RateLimitPrefixKey = keyof typeof RateLimitPrefix
@@ -73,5 +76,10 @@ export const RateLimitConfig: { [key in RateLimitPrefixKey]: RateLimitConfig } =
     key: RateLimitPrefix.deviceAccountCreate,
     limits: getDeviceAccountCreateAttemptLimits(),
     error: DeviceAccountCreateRateLimiterExceededError,
+  },
+  requestCodeAttemptPerAppcheckJti: {
+    key: RateLimitPrefix.requestCodeAttemptPerAppcheckJti,
+    limits: getAppcheckJtiAttemptLimits(),
+    error: UserCodeAttemptAppcheckJtiLimiterExceededError,
   },
 }

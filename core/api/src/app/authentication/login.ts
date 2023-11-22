@@ -54,6 +54,9 @@ import { IpFetcher } from "@/services/ipfetcher"
 
 import { IpFetcherServiceError } from "@/domain/ipfetcher"
 import { ErrorLevel } from "@/domain/shared"
+import { consumeLimiter } from "@/services/rate-limit"
+import { RateLimitConfig } from "@/domain/rate-limit"
+import { RateLimiterExceededError } from "@/domain/rate-limit/errors"
 
 export const loginWithPhoneToken = async ({
   phone,
@@ -244,11 +247,13 @@ export const loginWithDevice = async ({
   username: usernameRaw,
   password: passwordRaw,
   deviceId: deviceIdRaw,
+  appcheckJti,
   ip,
 }: {
   username: string
   password: string
   deviceId: string
+  appcheckJti: string
   ip: IpAddress
 }): Promise<AuthToken | ApplicationError> => {
   {
@@ -256,7 +261,11 @@ export const loginWithDevice = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  // add check on property from jwt, like expiry
+  const check = await checkDeviceLoginAttemptPerAppcheckJtiLimits(
+    appcheckJti as AppcheckJti,
+  )
+
+  if (check instanceof Error) return check
 
   const deviceId = checkedToDeviceId(deviceIdRaw)
   if (deviceId instanceof Error) return deviceId
@@ -383,3 +392,11 @@ const isAllowedToOnboard = async ({
 
   return phoneMetadata
 }
+
+const checkDeviceLoginAttemptPerAppcheckJtiLimits = async (
+  appcheckJti: AppcheckJti,
+): Promise<true | RateLimiterExceededError> =>
+  consumeLimiter({
+    rateLimitConfig: RateLimitConfig.deviceAccountCreate,
+    keyToConsume: appcheckJti,
+  })

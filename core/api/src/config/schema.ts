@@ -264,6 +264,7 @@ export const configSchema = {
         invoiceCreateForRecipientAttempt: rateLimitConfigSchema,
         onChainAddressCreateAttempt: rateLimitConfigSchema,
         deviceAccountCreateAttempt: rateLimitConfigSchema,
+        requestCodePerAppcheckJti: rateLimitConfigSchema,
       },
       required: [
         "requestCodePerLoginIdentifier",
@@ -274,6 +275,7 @@ export const configSchema = {
         "invoiceCreateForRecipientAttempt",
         "onChainAddressCreateAttempt",
         "deviceAccountCreateAttempt",
+        "requestCodePerAppcheckJti",
       ],
       additionalProperties: false,
       default: {
@@ -316,6 +318,11 @@ export const configSchema = {
           points: 2,
           duration: 86400,
           blockDuration: 86400,
+        },
+        requestCodePerAppcheckJti: {
+          points: 3,
+          duration: 3600,
+          blockDuration: 3600,
         },
       },
     },

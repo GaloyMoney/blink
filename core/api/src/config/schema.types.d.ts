@@ -78,6 +78,7 @@ type YamlSchema = {
     invoiceCreateForRecipientAttempt: RateLimitInput
     onChainAddressCreateAttempt: RateLimitInput
     deviceAccountCreateAttempt: RateLimitInput
+    requestCodePerAppcheckJti: RateLimitInput
   }
   accounts: {
     initialStatus: string

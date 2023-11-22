@@ -39,14 +39,9 @@ import {
   EmailValidationSubmittedTooOftenError,
 } from "@/domain/authentication/errors"
 
-import {
-  RateLimiterExceededError,
-  UserLoginIpRateLimiterExceededError,
-} from "@/domain/rate-limit/errors"
+import { UserLoginIpRateLimiterExceededError } from "@/domain/rate-limit/errors"
 
 import { registerCaptchaGeetest } from "@/app/captcha"
-import { consumeLimiter } from "@/services/rate-limit"
-import { RateLimitConfig } from "@/domain/rate-limit"
 
 const authRouter = express.Router({ caseSensitive: true })
 
@@ -55,7 +50,7 @@ authRouter.use(bodyParser.urlencoded({ extended: true }))
 authRouter.use(bodyParser.json())
 
 authRouter.use((req: Request, res: Response, next: NextFunction) => {
-  const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT ? req?.ip : req?.headers["x-real-ip"]
+  const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT ? req.ip : req.headers["x-real-ip"]
   const ip = parseIps(ipString)
   if (!ip) {
     recordExceptionInCurrentSpan({ error: "IP is not defined" })
@@ -83,16 +78,8 @@ authRouter.post("/create/device-account", async (req: Request, res: Response) =>
   const appcheckJti = req.headers["x-appcheck-jti"]
   addAttributesToCurrentSpan({ "appcheck.jti": appcheckJti })
 
-  if (!appcheckJti || typeof appcheckJti !== "string" || appcheckJti === "") {
+  if (!appcheckJti || typeof appcheckJti !== "string") {
     return res.status(401).send({ error: "missing or invalid appcheck jti" })
-  }
-
-  const check = await checkDeviceLoginAttemptPerAppcheckJtiLimits(
-    appcheckJti as AppcheckJti,
-  )
-
-  if (check instanceof Error) {
-    return res.status(429).send({ error: "too many requests" })
   }
 
   const ip = req.originalIp
@@ -116,6 +103,7 @@ authRouter.post("/create/device-account", async (req: Request, res: Response) =>
       password,
       ip,
       deviceId,
+      appcheckJti,
     })
     if (authToken instanceof Error) {
       recordExceptionInCurrentSpan({ error: authToken })
@@ -313,12 +301,56 @@ authRouter.post("/phone/code", async (req: Request, res: Response) => {
   })
 })
 
+authRouter.post("/phone/code-appcheck", async (req: Request, res: Response) => {
+  const appcheckJti = req.headers["x-appcheck-jti"]
+  if (!appcheckJti || typeof appcheckJti !== "string") {
+    const error = "missing or invalid appcheck jti"
+    recordExceptionInCurrentSpan({ error })
+    return res.status(400).send({ error })
+  }
+
+  const ip = req.originalIp
+  const phoneRaw = req.body.phone
+  const channel = req.body.channel ?? "SMS"
+
+  if (!phoneRaw) {
+    const error = "missing phone input"
+    recordExceptionInCurrentSpan({ error })
+    return res.status(400).send({ error })
+  }
+
+  const phone = checkedToPhoneNumber(phoneRaw)
+  if (phone instanceof Error) {
+    const error = "invalid phone"
+    recordExceptionInCurrentSpan({ error })
+    return res.status(400).send({ error })
+  }
+
+  const result = await Authentication.requestPhoneCodeWithAppcheckJti({
+    phone,
+    appcheckJti,
+    ip,
+    channel,
+  })
+
+  if (result instanceof Error) {
+    recordExceptionInCurrentSpan({ error: result })
+    return res.status(400).json({ error: result.name })
+  }
+
+  return res.json({
+    success: true,
+  })
+})
+
 authRouter.post("/phone/login", async (req: Request, res: Response) => {
   const ip = req.originalIp
   const codeRaw = req.body.code
   const phoneRaw = req.body.phone
   if (!codeRaw || !phoneRaw) {
-    return res.status(400).send({ error: "missing inputs" })
+    const error = "missing inputs"
+    recordExceptionInCurrentSpan({ error })
+    return res.status(400).send({ error })
   }
   const code = validOneTimeAuthCodeValue(codeRaw)
   if (code instanceof Error) return res.status(400).json({ error: "invalid code" })
@@ -344,11 +376,3 @@ authRouter.post("/phone/login", async (req: Request, res: Response) => {
 })
 
 export default authRouter
-
-const checkDeviceLoginAttemptPerAppcheckJtiLimits = async (
-  appcheckJti: AppcheckJti,
-): Promise<true | RateLimiterExceededError> =>
-  consumeLimiter({
-    rateLimitConfig: RateLimitConfig.deviceAccountCreate,
-    keyToConsume: appcheckJti,
-  })

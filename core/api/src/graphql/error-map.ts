@@ -185,6 +185,10 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = "Too many phone number attempts, please try again in a few minutes."
       return new PhoneProviderError({ message, logger: baseLogger })
 
+    case "UserCodeAttemptAppcheckJtiLimiterExceededError":
+      message = "Too many attempts, please try again in a few minutes."
+      return new PhoneProviderError({ message, logger: baseLogger })
+
     case "RestrictedRecipientPhoneNumberError":
       message =
         "Issue detected with phone number. Please try again later or contact support."
