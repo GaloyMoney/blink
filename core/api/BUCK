@@ -199,3 +199,9 @@ dev_pnpm_task_binary(
   srcs = [":src"],
   visibility = ["PUBLIC"],
 )
+
+dev_pnpm_task_binary(
+  name = "watch-compile",
+  command = "watch:compile",
+  srcs = [":src"] + [":test_src"],
+)
