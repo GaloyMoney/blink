@@ -1,5 +1,3 @@
-// Package-internal method, not re-exported from index.ts but used in tests
-
 import { getTransactionForWalletByJournalId } from "./get-transaction-by-journal-id"
 
 import { declineHeldInvoice } from "./decline-single-pending-invoice"

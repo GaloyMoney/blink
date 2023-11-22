@@ -1,5 +1,3 @@
-// Package-internal method, not re-exported from index.ts but used in tests
-
 import { InvoiceNotFoundError } from "@/domain/bitcoin/lightning"
 
 import { InvalidNonHodlInvoiceError } from "@/domain/errors"
