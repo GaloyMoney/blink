@@ -413,8 +413,23 @@ const getCallbackEventType = (
   switch (type) {
     case NotificationType.LigtningReceipt:
       return CallbackEventType.ReceiveLightning
+
+    case NotificationType.LigtningPayment:
+      return CallbackEventType.SendLightning
+
     case NotificationType.IntraLedgerReceipt:
       return CallbackEventType.ReceiveIntraledger
+
+    case NotificationType.IntraLedgerPayment:
+      return CallbackEventType.SendIntraledger
+
+    case NotificationType.OnchainReceiptPending:
+    case NotificationType.OnchainReceipt:
+      return CallbackEventType.ReceiveOnchain
+
+    case NotificationType.OnchainPayment:
+      return CallbackEventType.SendOnchain
+
     default:
       return undefined
   }

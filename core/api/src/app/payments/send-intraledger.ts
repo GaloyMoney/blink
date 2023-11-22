@@ -344,13 +344,13 @@ const executePaymentViaIntraledger = async <
     const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
     if (recipientUser instanceof Error) return recipientUser
 
-    const walletTransaction = await getTransactionForWalletByJournalId({
-      walletId: recipientWalletDescriptor.id,
+    const recipientWalletTransaction = await getTransactionForWalletByJournalId({
+      walletId: recipientWallet.id,
       journalId: journal.journalId,
     })
-    if (walletTransaction instanceof Error) return walletTransaction
+    if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
 
-    const result = await NotificationsService().sendTransaction({
+    const recipientResult = await NotificationsService().sendTransaction({
       recipient: {
         accountId: recipientAccount.id,
         walletId: recipientWalletDescriptor.id,
@@ -359,11 +359,42 @@ const executePaymentViaIntraledger = async <
         notificationSettings: recipientAccount.notificationSettings,
         level: recipientAccount.level,
       },
-      transaction: walletTransaction,
+      transaction: recipientWalletTransaction,
     })
 
-    if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
-      await removeDeviceTokens({ userId: recipientUser.id, deviceTokens: result.tokens })
+    if (recipientResult instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
+      await removeDeviceTokens({
+        userId: recipientUser.id,
+        deviceTokens: recipientResult.tokens,
+      })
+    }
+
+    const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
+    if (senderUser instanceof Error) return senderUser
+
+    const senderWalletTransaction = await getTransactionForWalletByJournalId({
+      walletId: senderWallet.id,
+      journalId: journal.journalId,
+    })
+    if (senderWalletTransaction instanceof Error) return senderWalletTransaction
+
+    const senderResult = await NotificationsService().sendTransaction({
+      recipient: {
+        accountId: senderWallet.accountId,
+        walletId: senderWallet.id,
+        deviceTokens: senderUser.deviceTokens,
+        language: senderUser.language,
+        notificationSettings: senderAccount.notificationSettings,
+        level: senderAccount.level,
+      },
+      transaction: senderWalletTransaction,
+    })
+
+    if (senderResult instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
+      await removeDeviceTokens({
+        userId: senderUser.id,
+        deviceTokens: senderResult.tokens,
+      })
     }
 
     return PaymentSendStatus.Success

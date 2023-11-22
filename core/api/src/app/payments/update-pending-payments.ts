@@ -4,6 +4,9 @@ import { reimburseFailedUsdPayment } from "./reimburse-failed-usd"
 
 import { PaymentFlowFromLedgerTransaction } from "./translations"
 
+import { getTransactionForWalletByJournalId } from "@/app/wallets"
+import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
+
 import { toSats } from "@/domain/bitcoin"
 import { defaultTimeToExpiryInSeconds, PaymentStatus } from "@/domain/bitcoin/lightning"
 import { InconsistentDataError } from "@/domain/errors"
@@ -16,6 +19,7 @@ import {
 } from "@/domain/ledger"
 import { MissingPropsInTransactionForPaymentFlowError } from "@/domain/payments"
 import { setErrorCritical, WalletCurrency } from "@/domain/shared"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
 import { LedgerService, getNonEndUserWalletIds } from "@/services/ledger"
 import * as LedgerFacade from "@/services/ledger/facade"
@@ -24,8 +28,10 @@ import { LockService } from "@/services/lock"
 import {
   AccountsRepository,
   PaymentFlowStateRepository,
+  UsersRepository,
   WalletsRepository,
 } from "@/services/mongoose"
+import { NotificationsService } from "@/services/notifications"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@/services/tracing"
 import { runInParallel } from "@/utils"
 
@@ -261,6 +267,40 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         displayCurrency === undefined
       ) {
         return new MissingExpectedDisplayAmountsForTransactionError()
+      }
+
+      const senderWallet = await WalletsRepository().findById(walletId)
+      if (senderWallet instanceof Error) return senderWallet
+
+      const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
+      if (senderAccount instanceof Error) return senderAccount
+
+      const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
+      if (senderUser instanceof Error) return senderUser
+
+      const walletTransaction = await getTransactionForWalletByJournalId({
+        walletId,
+        journalId: pendingPayment.journalId,
+      })
+      if (walletTransaction instanceof Error) return walletTransaction
+
+      const result = await NotificationsService().sendTransaction({
+        recipient: {
+          accountId: senderWallet.accountId,
+          walletId,
+          deviceTokens: senderUser.deviceTokens,
+          language: senderUser.language,
+          notificationSettings: senderAccount.notificationSettings,
+          level: senderAccount.level,
+        },
+        transaction: walletTransaction,
+      })
+
+      if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
+        await removeDeviceTokens({
+          userId: senderUser.id,
+          deviceTokens: result.tokens,
+        })
       }
 
       return reimburseFee({
