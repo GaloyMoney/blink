@@ -37,7 +37,7 @@ export const NotificationsService = (): INotificationsService => {
     transaction,
   }: NotificatioSendTransactionArgs): Promise<void | PubSubServiceError> => {
     try {
-      const type = translateToNotificationType(transaction)
+      const type = getPubSubNotificationEventType(transaction)
       if (!type) return
 
       if (type === NotificationType.LnInvoicePaid) {
@@ -152,7 +152,7 @@ export const NotificationsService = (): INotificationsService => {
       const hasDeviceTokens = recipient.deviceTokens && recipient.deviceTokens.length > 0
       if (!hasDeviceTokens) return true
 
-      const type = translateToNotificationType(transaction)
+      const type = getPushNotificationEventType(transaction)
       if (!type) return true
 
       const displayAmountMajor = transaction.settlementDisplayAmount
@@ -195,13 +195,10 @@ export const NotificationsService = (): INotificationsService => {
     transaction,
   }: NotificatioSendTransactionArgs): Promise<true | CallbackError> => {
     try {
-      const type = translateToNotificationType(transaction)
-      if (!type) return true
+      const eventType = getCallbackEventType(transaction)
+      if (!eventType) return true
 
       if (recipient.level === AccountLevel.Zero) return true
-
-      const eventType = getCallbackEventType(type)
-      if (!eventType) return true
 
       const result = await callbackService.sendMessage({
         accountId: recipient.accountId,
@@ -377,10 +374,70 @@ export const NotificationsService = (): INotificationsService => {
   }
 }
 
+const getPubSubNotificationEventType = (
+  transaction: WalletTransaction,
+): NotificationType | undefined => {
+  const type = translateToNotificationType(transaction)
+  switch (type) {
+    case NotificationType.LnInvoicePaid:
+    case NotificationType.IntraLedgerReceipt:
+    case NotificationType.OnchainReceiptPending:
+    case NotificationType.OnchainPayment:
+      return type
+
+    // special case because we don't have a hash
+    case NotificationType.OnchainReceipt: {
+      const settlementViaType = transaction.settlementVia.type
+      return settlementViaType === "intraledger"
+        ? NotificationType.IntraLedgerReceipt
+        : type
+    }
+    default:
+      return undefined
+  }
+}
+
+const getPushNotificationEventType = (
+  transaction: WalletTransaction,
+): NotificationType | undefined => {
+  const type = translateToNotificationType(transaction)
+  switch (type) {
+    case NotificationType.LnInvoicePaid:
+    case NotificationType.IntraLedgerReceipt:
+    case NotificationType.OnchainReceiptPending:
+    case NotificationType.OnchainPayment:
+      return type
+
+    // special case because we don't have a hash
+    case NotificationType.OnchainReceipt: {
+      const settlementViaType = transaction.settlementVia.type
+      return settlementViaType === "intraledger"
+        ? NotificationType.IntraLedgerReceipt
+        : type
+    }
+    default:
+      return undefined
+  }
+}
+
+const getCallbackEventType = (
+  transaction: WalletTransaction,
+): CallbackEventType | undefined => {
+  const type = translateToNotificationType(transaction)
+  switch (type) {
+    case NotificationType.LnInvoicePaid:
+      return CallbackEventType.ReceiveLightning
+    case NotificationType.IntraLedgerReceipt:
+      return CallbackEventType.ReceiveIntraledger
+    default:
+      return undefined
+  }
+}
+
 const translateToNotificationType = (
   transaction: WalletTransaction,
 ): NotificationType | undefined => {
-  const type = transaction.settlementVia.type
+  const type = transaction.initiationVia.type
   const isReceive = transaction.settlementAmount > 0
   if (type === "lightning") {
     return isReceive ? NotificationType.LnInvoicePaid : undefined
@@ -397,16 +454,5 @@ const translateToNotificationType = (
         : NotificationType.OnchainReceipt
     }
     return NotificationType.OnchainPayment
-  }
-}
-
-const getCallbackEventType = (type: NotificationType): CallbackEventType | undefined => {
-  switch (type) {
-    case NotificationType.LnInvoicePaid:
-      return CallbackEventType.ReceiveLightning
-    case NotificationType.IntraLedgerReceipt:
-      return CallbackEventType.ReceiveIntraledger
-    default:
-      return undefined
   }
 }
