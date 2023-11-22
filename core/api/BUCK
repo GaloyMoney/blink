@@ -184,4 +184,18 @@ dev_pnpm_task_binary(
   name = "dev",
   command = "dev:api",
   srcs = [":src"],
-  )
+)
+
+dev_pnpm_task_binary(
+  name = "dev-trigger",
+  command = "dev:api-trigger",
+  srcs = [":src"],
+  visibility = ["PUBLIC"],
+)
+
+dev_pnpm_task_binary(
+  name = "dev-ws-server",
+  command = "dev:api-ws-server",
+  srcs = [":src"],
+  visibility = ["PUBLIC"],
+)
