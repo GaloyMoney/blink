@@ -1,3 +1,1 @@
-const baseConfig = require("@galoy/eslint-config/prettier");
-
-module.exports = baseConfig
+module.exports = require("@galoy/eslint-config/prettier")
