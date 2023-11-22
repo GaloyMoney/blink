@@ -78,7 +78,7 @@ authRouter.post("/create/device-account", async (req: Request, res: Response) =>
   const appcheckJti = req.headers["x-appcheck-jti"]
   addAttributesToCurrentSpan({ "appcheck.jti": appcheckJti })
 
-  if (!appcheckJti || typeof appcheckJti !== "string" || appcheckJti === "") {
+  if (!appcheckJti || typeof appcheckJti !== "string") {
     return res.status(401).send({ error: "missing or invalid appcheck jti" })
   }
 
@@ -303,18 +303,28 @@ authRouter.post("/phone/code", async (req: Request, res: Response) => {
 
 authRouter.post("/phone/code-appcheck", async (req: Request, res: Response) => {
   const appcheckJti = req.headers["x-appcheck-jti"]
-  if (!appcheckJti || typeof appcheckJti !== "string" || appcheckJti === "") {
-    return res.status(400).send({ error: "missing or invalid appcheck jti" })
+  if (!appcheckJti || typeof appcheckJti !== "string") {
+    const error = "missing or invalid appcheck jti"
+    recordExceptionInCurrentSpan({ error })
+    return res.status(400).send({ error })
   }
 
   const ip = req.originalIp
   const phoneRaw = req.body.phone
   const channel = req.body.channel ?? "SMS"
 
-  if (!phoneRaw) return res.status(400).send({ error: "missing inputs" })
+  if (!phoneRaw) {
+    const error = "missing phone input"
+    recordExceptionInCurrentSpan({ error })
+    return res.status(400).send({ error })
+  }
 
   const phone = checkedToPhoneNumber(phoneRaw)
-  if (phone instanceof Error) return res.status(400).send({ error: "invalid phone" })
+  if (phone instanceof Error) {
+    const error = "invalid phone"
+    recordExceptionInCurrentSpan({ error })
+    return res.status(400).send({ error })
+  }
 
   const result = await Authentication.requestPhoneCodeWithAppcheckJti({
     phone,
@@ -324,6 +334,7 @@ authRouter.post("/phone/code-appcheck", async (req: Request, res: Response) => {
   })
 
   if (result instanceof Error) {
+    recordExceptionInCurrentSpan({ error: result })
     return res.status(400).json({ error: result.name })
   }
 
@@ -337,7 +348,9 @@ authRouter.post("/phone/login", async (req: Request, res: Response) => {
   const codeRaw = req.body.code
   const phoneRaw = req.body.phone
   if (!codeRaw || !phoneRaw) {
-    return res.status(400).send({ error: "missing inputs" })
+    const error = "missing inputs"
+    recordExceptionInCurrentSpan({ error })
+    return res.status(400).send({ error })
   }
   const code = validOneTimeAuthCodeValue(codeRaw)
   if (code instanceof Error) return res.status(400).json({ error: "invalid code" })
