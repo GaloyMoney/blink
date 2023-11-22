@@ -70,9 +70,6 @@ watch-unit:
 	$(BIN_DIR)/jest --config ./test/unit/jest.config.js --clearCache
 	NODE_ENV=test LOGLEVEL=warn $(BIN_DIR)/jest --watch --config ./test/unit/jest.config.js
 
-watch-compile:
-	$(BIN_DIR)/tsc --watch  --noEmit
-
 del-containers:
 	docker compose rm -sfv
 

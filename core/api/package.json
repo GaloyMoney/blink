@@ -8,6 +8,7 @@
     "trigger": "pnpm run build && node dist/servers/trigger.js | pino-pretty -c -l",
     "ws": "pnpm run build && node dist/servers/ws-server.js | pino-pretty -c -l",
     "watch": "nodemon -V -e ts,graphql -w ./src -x pnpm run start",
+    "watch:compile": "tsc --watch  --noEmit",
     "watch-trigger": "nodemon -V -e ts,graphql -w ./src -x pnpm run trigger",
     "graphql-check": "curl -fsS https://raw.githubusercontent.com/GaloyMoney/galoy-mobile/main/app/graphql/generated.gql -o generated.gql && npx @graphql-inspector/cli validate ./generated.gql src/graphql/public/schema.graphql --apollo --noStrictFragments",
     "cron": ". ../../.env && pnpm run build && node dist/servers/cron.js",
