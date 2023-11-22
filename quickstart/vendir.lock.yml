@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): move updatePendingInvoice idempotency test  (#3582)...'
-      sha: 39ed5f08f947fbe7991a84681aafccfcc644cfa0
+      commitTitle: 'refactor(core): move ''watch:compile'' from make to buck (#3590)...'
+      sha: c8a796f605de0921367655204b99482af6da313a
       tags:
-      - 0.16.58-1-g39ed5f08f
+      - 0.16.59-2-gc8a796f60
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): move updatePendingInvoice idempotency test  (#3582)...'
-      sha: 39ed5f08f947fbe7991a84681aafccfcc644cfa0
+      commitTitle: 'refactor(core): move ''watch:compile'' from make to buck (#3590)...'
+      sha: c8a796f605de0921367655204b99482af6da313a
       tags:
-      - 0.16.58-1-g39ed5f08f
+      - 0.16.59-2-gc8a796f60
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(core): move updatePendingInvoice idempotency test  (#3582)...'
-      sha: 39ed5f08f947fbe7991a84681aafccfcc644cfa0
+      commitTitle: 'refactor(core): move ''watch:compile'' from make to buck (#3590)...'
+      sha: c8a796f605de0921367655204b99482af6da313a
       tags:
-      - 0.16.58-1-g39ed5f08f
+      - 0.16.59-2-gc8a796f60
     path: ./
   path: ./graphql
 kind: LockConfig
