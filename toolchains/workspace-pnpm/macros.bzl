@@ -1019,7 +1019,11 @@ cd "$rootpath/$npm_package_path"
 if [ "$install_node_modules" = "True" ]; then
     pnpm install
 fi
-exec pnpm run --report-summary "$npm_run_command" -- "${@:4}"
+if [ "${*:4}" ]; then
+    exec pnpm run --report-summary "$npm_run_command" -- "${@:4}"
+else
+    exec pnpm run --report-summary "$npm_run_command"
+fi
 """, is_executable = True)
     args = cmd_args([script, str(ctx.attrs.local_node_modules), ctx.label.package, ctx.attrs.command])
     args.hidden([ctx.attrs.deps])
