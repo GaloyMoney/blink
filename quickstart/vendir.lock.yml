@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): improve tracing for check_handler (#3586)'
-      sha: 931bca8b13072674656029a5415c184ba8ee0084
+      commitTitle: 'fix(api-keys): typo in check_handler instrumentation'
+      sha: 5c5184655c6428ffb6f795637f5001c147f65cec
       tags:
-      - 0.16.51-2-g931bca8b1
+      - 0.16.53-2-g5c5184655
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): improve tracing for check_handler (#3586)'
-      sha: 931bca8b13072674656029a5415c184ba8ee0084
+      commitTitle: 'fix(api-keys): typo in check_handler instrumentation'
+      sha: 5c5184655c6428ffb6f795637f5001c147f65cec
       tags:
-      - 0.16.51-2-g931bca8b1
+      - 0.16.53-2-g5c5184655
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): improve tracing for check_handler (#3586)'
-      sha: 931bca8b13072674656029a5415c184ba8ee0084
+      commitTitle: 'fix(api-keys): typo in check_handler instrumentation'
+      sha: 5c5184655c6428ffb6f795637f5001c147f65cec
       tags:
-      - 0.16.51-2-g931bca8b1
+      - 0.16.53-2-g5c5184655
     path: ./
   path: ./graphql
 kind: LockConfig
