@@ -1021,15 +1021,13 @@ if [ "$install_node_modules" = "True" ]; then
 fi
 exec pnpm run --report-summary "$npm_run_command" -- "${@:4}"
 """, is_executable = True)
-    package_dir = ctx.attrs.package_dir or ctx.label.package
-    args = cmd_args([script, str(ctx.attrs.local_node_modules), package_dir, ctx.attrs.command])
+    args = cmd_args([script, str(ctx.attrs.local_node_modules), ctx.label.package, ctx.attrs.command])
     args.hidden([ctx.attrs.deps])
     args.hidden([ctx.attrs.srcs])
     return [DefaultInfo(), RunInfo(args = args)]
 
 dev_pnpm_task_binary = rule(impl = pnpm_task_binary_impl, attrs = {
     "command": attrs.string(doc = """pnpm command to run"""),
-    "package_dir": attrs.string(default = "", doc = """package dir to run commands from"""),
     "local_node_modules": attrs.bool(default = True, doc = """Need to run pnpm install first?"""),
     "srcs": attrs.list(attrs.source(), default = [], doc = """List of sources we require"""),
     "deps": attrs.list(attrs.source(), default = [], doc = """List of dependencies we require"""),
