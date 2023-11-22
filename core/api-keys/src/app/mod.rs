@@ -31,7 +31,7 @@ impl ApiKeysApp {
     pub async fn lookup_authenticated_subject(
         &self,
         key: &str,
-    ) -> Result<(String, bool), ApplicationError> {
+    ) -> Result<(IdentityApiKeyId, String, bool), ApplicationError> {
         Ok(self.identities.find_subject_by_key(&key).await?)
     }
 

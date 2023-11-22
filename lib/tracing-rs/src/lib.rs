@@ -64,3 +64,12 @@ fn telemetry_resource(config: &TracingConfig) -> Resource {
         resource::SERVICE_NAMESPACE.string("galoy"),
     ]))
 }
+
+pub fn extract_tracing(headers: &http::HeaderMap) {
+    use opentelemetry_http::HeaderExtractor;
+    use tracing_opentelemetry::OpenTelemetrySpanExt;
+    let extractor = HeaderExtractor(headers);
+    let ctx =
+        opentelemetry::global::get_text_map_propagator(|propagator| propagator.extract(&extractor));
+    tracing::Span::current().set_parent(ctx)
+}

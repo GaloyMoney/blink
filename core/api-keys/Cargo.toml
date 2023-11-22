@@ -21,7 +21,6 @@ anyhow = { workspace = true }
 async-graphql = { workspace = true }
 async-graphql-axum = { workspace = true }
 axum = { workspace = true }
-axum-tracing-opentelemetry = { workspace = true }
 jsonwebtoken = { workspace = true }
 clap = { workspace = true }
 tokio = { workspace = true }

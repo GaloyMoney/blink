@@ -7,9 +7,11 @@ rust_library(
         "//third-party/rust:opentelemetry-otlp",
         "//third-party/rust:opentelemetry-semantic-conventions",
         "//third-party/rust:opentelemetry",
+        "//third-party/rust:opentelemetry-http",
         "//third-party/rust:tracing",
         "//third-party/rust:tracing-opentelemetry",
         "//third-party/rust:tracing-subscriber",
+        "//third-party/rust:http",
     ],
     srcs = glob(["src/**/*.rs"]),
     env = {
