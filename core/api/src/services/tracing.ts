@@ -208,11 +208,6 @@ registerInstrumentations({
     new GrpcInstrumentation(),
     new IORedisInstrumentation(),
     new ExpressInstrumentation({
-      requestHook: (span, request) => {
-        console.log("requestHook", request)
-        console.log("span", span)
-        // span NonRecordingSpan {}
-      },
       enabled: true,
     }),
   ],
