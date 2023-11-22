@@ -160,6 +160,7 @@ const payNoAmountInvoiceByWalletId = async ({
         decodedInvoice,
         paymentFlow,
         senderWallet,
+        senderAccount,
         senderDisplayCurrency: senderAccount.displayCurrency,
         memo,
       })
