@@ -62,7 +62,6 @@ rust_library(
         "//third-party/rust:rand",
         "//third-party/rust:uuid",
         "//third-party/rust:serde_with",
-        "//third-party/rust:axum-tracing-opentelemetry",
     ],
     srcs = glob([
       "src/**/*.rs",

@@ -14,3 +14,5 @@ tracing-opentelemetry = { workspace = true }
 opentelemetry-otlp = { workspace = true }
 opentelemetry = { workspace = true }
 opentelemetry-semantic-conventions = { workspace = true }
+opentelemetry-http = { workspace = true }
+http = { workspace = true }

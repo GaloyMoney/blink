@@ -95,7 +95,10 @@ impl Identities {
         ))
     }
 
-    pub async fn find_subject_by_key(&self, key: &str) -> Result<(String, bool), IdentityError> {
+    pub async fn find_subject_by_key(
+        &self,
+        key: &str,
+    ) -> Result<(IdentityApiKeyId, String, bool), IdentityError> {
         let code = match key.strip_prefix(&*self.key_prefix) {
             None => return Err(IdentityError::MismatchedPrefix),
             Some(code) => code,
@@ -112,14 +115,18 @@ impl Identities {
                  AND k.expires_at > NOW()
                  RETURNING k.id, i.subject_id, k.read_only
                )
-               SELECT subject_id, read_only FROM updated_key"#,
+               SELECT id, subject_id, read_only FROM updated_key"#,
             code
         )
         .fetch_optional(&self.pool)
         .await?;
 
         if let Some(record) = record {
-            Ok((record.subject_id, record.read_only))
+            Ok((
+                IdentityApiKeyId::from(record.id),
+                record.subject_id,
+                record.read_only,
+            ))
         } else {
             Err(IdentityError::NoActiveKeyFound)
         }
