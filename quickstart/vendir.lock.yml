@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(core): move ''watch:compile'' from make to buck (#3590)...'
-      sha: c8a796f605de0921367655204b99482af6da313a
+      commitTitle: 'chore: make processingCompleted non-optional (#3575)'
+      sha: 802c47c41736c28d52ba736ad2f1c166c5afe42e
       tags:
-      - 0.16.59-2-gc8a796f60
+      - 0.16.60-2-g802c47c41
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(core): move ''watch:compile'' from make to buck (#3590)...'
-      sha: c8a796f605de0921367655204b99482af6da313a
+      commitTitle: 'chore: make processingCompleted non-optional (#3575)'
+      sha: 802c47c41736c28d52ba736ad2f1c166c5afe42e
       tags:
-      - 0.16.59-2-gc8a796f60
+      - 0.16.60-2-g802c47c41
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'refactor(core): move ''watch:compile'' from make to buck (#3590)...'
-      sha: c8a796f605de0921367655204b99482af6da313a
+      commitTitle: 'chore: make processingCompleted non-optional (#3575)'
+      sha: 802c47c41736c28d52ba736ad2f1c166c5afe42e
       tags:
-      - 0.16.59-2-gc8a796f60
+      - 0.16.60-2-g802c47c41
     path: ./
   path: ./graphql
 kind: LockConfig
