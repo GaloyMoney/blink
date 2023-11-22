@@ -50,7 +50,7 @@ authRouter.use(bodyParser.urlencoded({ extended: true }))
 authRouter.use(bodyParser.json())
 
 authRouter.use((req: Request, res: Response, next: NextFunction) => {
-  const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT ? req?.ip : req?.headers["x-real-ip"]
+  const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT ? req.ip : req.headers["x-real-ip"]
   const ip = parseIps(ipString)
   if (!ip) {
     recordExceptionInCurrentSpan({ error: "IP is not defined" })
