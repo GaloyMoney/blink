@@ -382,9 +382,16 @@ const getPubSubNotificationEventType = (
     case NotificationType.LigtningReceipt:
     case NotificationType.IntraLedgerReceipt:
     case NotificationType.OnchainReceiptPending:
-    case NotificationType.OnchainReceipt:
     case NotificationType.OnchainPayment:
       return type
+
+    // special case because we don't have a hash
+    case NotificationType.OnchainReceipt: {
+      const settlementViaType = transaction.settlementVia.type
+      return settlementViaType === "intraledger"
+        ? NotificationType.IntraLedgerReceipt
+        : type
+    }
     default:
       return undefined
   }
@@ -398,9 +405,16 @@ const getPushNotificationEventType = (
     case NotificationType.LigtningReceipt:
     case NotificationType.IntraLedgerReceipt:
     case NotificationType.OnchainReceiptPending:
-    case NotificationType.OnchainReceipt:
     case NotificationType.OnchainPayment:
       return type
+
+    // special case because we don't have a hash
+    case NotificationType.OnchainReceipt: {
+      const settlementViaType = transaction.settlementVia.type
+      return settlementViaType === "intraledger"
+        ? NotificationType.IntraLedgerReceipt
+        : type
+    }
     default:
       return undefined
   }

@@ -322,8 +322,9 @@ const executePaymentViaIntraledger = async <
       }))
     }
 
+    const senderWalletDescriptor = paymentFlow.senderWalletDescriptor()
     const recipientWalletDescriptor = paymentFlow.recipientWalletDescriptor()
-    if (recipientWalletDescriptor === undefined)
+    if (!senderWalletDescriptor || !recipientWalletDescriptor)
       return new InvalidLightningPaymentFlowBuilderStateError()
 
     const journal = await LedgerFacade.recordIntraledger({
@@ -332,7 +333,7 @@ const executePaymentViaIntraledger = async <
         btc: paymentFlow.btcPaymentAmount,
         usd: paymentFlow.usdPaymentAmount,
       },
-      senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
+      senderWalletDescriptor,
       recipientWalletDescriptor,
       metadata,
       additionalDebitMetadata,
@@ -345,7 +346,7 @@ const executePaymentViaIntraledger = async <
     if (recipientUser instanceof Error) return recipientUser
 
     const recipientWalletTransaction = await getTransactionForWalletByJournalId({
-      walletId: recipientWallet.id,
+      walletId: recipientWalletDescriptor.id,
       journalId: journal.journalId,
     })
     if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
@@ -373,15 +374,15 @@ const executePaymentViaIntraledger = async <
     if (senderUser instanceof Error) return senderUser
 
     const senderWalletTransaction = await getTransactionForWalletByJournalId({
-      walletId: senderWallet.id,
+      walletId: senderWalletDescriptor.id,
       journalId: journal.journalId,
     })
     if (senderWalletTransaction instanceof Error) return senderWalletTransaction
 
     const senderResult = await NotificationsService().sendTransaction({
       recipient: {
-        accountId: senderWallet.accountId,
-        walletId: senderWallet.id,
+        accountId: senderAccount.id,
+        walletId: senderWalletDescriptor.id,
         deviceTokens: senderUser.deviceTokens,
         language: senderUser.language,
         notificationSettings: senderAccount.notificationSettings,
