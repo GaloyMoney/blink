@@ -5,6 +5,8 @@ import {
   deleteForwardingReputations,
 } from "lightning"
 
+import { LND1_PUBKEY } from "@/config"
+
 import { WalletCurrency } from "@/domain/shared"
 import { toSats } from "@/domain/bitcoin"
 import {
@@ -346,7 +348,10 @@ describe("LndService", () => {
     expect(retrievedPayment.confirmedDetails?.revealedPreImage).toBe(revealedPreImage)
 
     // Delete payment
-    const deleted = await lndService.deletePaymentByHash({ paymentHash })
+    const deleted = await lndService.deletePaymentByHash({
+      paymentHash,
+      pubkey: LND1_PUBKEY,
+    })
     expect(deleted).not.toBeInstanceOf(Error)
 
     // Check that payment no longer exists
@@ -354,7 +359,10 @@ describe("LndService", () => {
     expect(retrievedDeletedPayment).toBeInstanceOf(PaymentNotFoundError)
 
     // Check that deleting missing payment doesn't return error
-    const deletedAttempt = await lndService.deletePaymentByHash({ paymentHash })
+    const deletedAttempt = await lndService.deletePaymentByHash({
+      paymentHash,
+      pubkey: LND1_PUBKEY,
+    })
     expect(deletedAttempt).not.toBeInstanceOf(Error)
   })
 })
