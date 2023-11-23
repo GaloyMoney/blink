@@ -4,45 +4,45 @@ services:
   price:
     image: us.gcr.io/galoy-org/price:edge
     ports:
-    - 50051:50051
-    - 9464:9464
+      - 50051:50051
+      - 9464:9464
   price-history:
     image: us.gcr.io/galoy-org/price-history:edge
     ports:
-    - 50052:50052
+      - 50052:50052
     command: ./scripts/run-servers-dev.sh
     environment:
-    - DB_HOST=price-history-pg
-    - DB_PORT=5432
-    - DB_USER=galoy-price-usr
-    - DB_PWD=galoy-price-pwd
-    - DB_DB=galoy-price-history
-    - DB_POOL_MIN=1
-    - DB_POOL_MAX=5
-    - DB_DEBUG=false
+      - DB_HOST=price-history-pg
+      - DB_PORT=5432
+      - DB_USER=galoy-price-usr
+      - DB_PWD=galoy-price-pwd
+      - DB_DB=galoy-price-history
+      - DB_POOL_MIN=1
+      - DB_POOL_MAX=5
+      - DB_DEBUG=false
     depends_on:
-    - price-history-pg
-    - price-history-migrate
+      - price-history-pg
+      - price-history-migrate
   price-history-migrate:
     image: us.gcr.io/galoy-org/price-history-migrate:edge
     ports: []
     environment:
-    - DB_HOST=price-history-pg
-    - DB_PORT=5432
-    - DB_USER=galoy-price-usr
-    - DB_PWD=galoy-price-pwd
-    - DB_DB=galoy-price-history
-    - DB_POOL_MIN=1
-    - DB_POOL_MAX=5
-    - DB_DEBUG=false
+      - DB_HOST=price-history-pg
+      - DB_PORT=5432
+      - DB_USER=galoy-price-usr
+      - DB_PWD=galoy-price-pwd
+      - DB_DB=galoy-price-history
+      - DB_POOL_MIN=1
+      - DB_POOL_MAX=5
+      - DB_DEBUG=false
     depends_on:
-    - price-history-pg
+      - price-history-pg
   price-history-pg:
     image: postgres:14.1
     environment:
-    - POSTGRES_USER=galoy-price-usr
-    - POSTGRES_PASSWORD=galoy-price-pwd
-    - POSTGRES_DB=galoy-price-history
+      - POSTGRES_USER=galoy-price-usr
+      - POSTGRES_PASSWORD=galoy-price-pwd
+      - POSTGRES_DB=galoy-price-history
   api-keys-pg:
     image: postgres:14.1
     environment:
@@ -173,6 +173,66 @@ services:
         cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
         cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
         /bin/lnd
+  lnd2:
+    image: lightninglabs/lnd:v0.16.2-beta
+    ports:
+      - "10010:10009"
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.key:/root/.lnd/tls.key
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd2.wallet.db:/root/.lnd/wallet.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd2.macaroons.db:/root/.lnd/macaroons.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd2.admin.macaroon:/root/.lnd/admin.macaroon
+    depends_on: [bitcoind]
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
+  lnd-outside-1:
+    image: lightninglabs/lnd:v0.16.2-beta
+    ports:
+      - "10012:10009"
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.key:/root/.lnd/tls.key
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-1.wallet.db:/root/.lnd/wallet.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-1.macaroons.db:/root/.lnd/macaroons.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/admin.macaroon
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
+    depends_on: [bitcoind]
+  lnd-outside-2:
+    image: lightninglabs/lnd:v0.16.2-beta
+    ports:
+      - "10013:10009"
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.key:/root/.lnd/tls.key
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-2.wallet.db:/root/.lnd/wallet.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-2.macaroons.db:/root/.lnd/macaroons.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-2.admin.macaroon:/root/.lnd/admin.macaroon
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
+    depends_on: [bitcoind]
   bria:
     image: us.gcr.io/galoy-org/bria:latest
     ports:

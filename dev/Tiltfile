@@ -317,6 +317,9 @@ docker_groups = {
     ],
     "bitcoin": [
         "lnd1",
+        "lnd2",
+        "lnd-outside-1",
+        "lnd-outside-2",
         "bria",
         "bria-pg",
         "bitcoind",
