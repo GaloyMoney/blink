@@ -7,7 +7,7 @@ const Logo: React.FC = () => {
       xmlSpace="preserve"
       id="Layer_1"
       viewBox="0 0 490 100"
-      width={130}
+      width={140}
       height={40}
       style={{
         marginBottom: "1em",
