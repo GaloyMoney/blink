@@ -15,6 +15,7 @@ import {
   ExpiredOrNonExistentPhoneNumberError,
   InvalidOrApprovedVerificationError,
   InvalidPhoneNumberPhoneProviderError,
+  InvalidTypePhoneProviderError,
   PhoneCodeInvalidError,
   PhoneProviderConnectionError,
   PhoneProviderRateLimitExceededError,
@@ -48,6 +49,13 @@ export const TwilioClient = (): IPhoneProviderService => {
     channel: ChannelType
   }): Promise<true | PhoneProviderServiceError> => {
     try {
+      const lookup = await client.lookups.v2.phoneNumbers(to).fetch({
+        fields: "line_type_intelligence",
+      })
+      // https://www.twilio.com/docs/lookup/v2-api/line-type-intelligence#type-property-values
+      if (lookup.lineTypeIntelligence.type === "nonFixedVoip") {
+        return new InvalidTypePhoneProviderError()
+      }
       await verify.verifications.create({ to, channel })
     } catch (err) {
       baseLogger.error({ err }, "impossible to send text")
