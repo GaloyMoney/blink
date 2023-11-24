@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): remove cache and price tracing wrappers (#3597)'
-      sha: 6ced850f9bdb518034855bdb356f0a5d7052a80c
+      commitTitle: 'fix(core): add nonFixedVoip validation (#3596)'
+      sha: a6a187a40261b9f9c63e149a686163cc2fbd6c33
       tags:
-      - 0.16.60-4-g6ced850f9
+      - 0.16.61-2-ga6a187a40
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): remove cache and price tracing wrappers (#3597)'
-      sha: 6ced850f9bdb518034855bdb356f0a5d7052a80c
+      commitTitle: 'fix(core): add nonFixedVoip validation (#3596)'
+      sha: a6a187a40261b9f9c63e149a686163cc2fbd6c33
       tags:
-      - 0.16.60-4-g6ced850f9
+      - 0.16.61-2-ga6a187a40
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(core): remove cache and price tracing wrappers (#3597)'
-      sha: 6ced850f9bdb518034855bdb356f0a5d7052a80c
+      commitTitle: 'fix(core): add nonFixedVoip validation (#3596)'
+      sha: a6a187a40261b9f9c63e149a686163cc2fbd6c33
       tags:
-      - 0.16.60-4-g6ced850f9
+      - 0.16.61-2-ga6a187a40
     path: ./
   path: ./graphql
 kind: LockConfig
