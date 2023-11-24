@@ -1,6 +1,6 @@
 import twilio from "twilio"
-
 import { isAxiosError } from "axios"
+import disposablePhoneList from "@ip1sms/disposable-phone-numbers"
 
 import { wrapAsyncFunctionsToRunInSpan } from "./tracing"
 
@@ -49,6 +49,10 @@ export const TwilioClient = (): IPhoneProviderService => {
     channel: ChannelType
   }): Promise<true | PhoneProviderServiceError> => {
     try {
+      if (isDisposablePhoneNumber(to)) {
+        return new InvalidTypePhoneProviderError()
+      }
+
       const lookup = await client.lookups.v2.phoneNumbers(to).fetch({
         fields: "line_type_intelligence",
       })
@@ -56,6 +60,7 @@ export const TwilioClient = (): IPhoneProviderService => {
       if (lookup.lineTypeIntelligence.type === "nonFixedVoip") {
         return new InvalidTypePhoneProviderError()
       }
+
       await verify.verifications.create({ to, channel })
     } catch (err) {
       baseLogger.error({ err }, "impossible to send text")
@@ -225,4 +230,9 @@ export const isPhoneCodeValid = async ({
   }
 
   return TwilioClient().validateVerify({ to: phone, code })
+}
+
+export const isDisposablePhoneNumber = (phone: PhoneNumber) => {
+  const phoneNumber = phone.replace(/[^0-9]/, "")
+  return phoneNumber in disposablePhoneList
 }
