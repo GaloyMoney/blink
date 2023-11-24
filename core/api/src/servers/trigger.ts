@@ -35,12 +35,12 @@ import {
 import {
   Lightning,
   Payments,
-  Prices as PricesWithSpans,
   Swap as SwapWithSpans,
   Wallets as WalletWithSpans,
 } from "@/app"
 import { uploadBackup } from "@/app/admin/backup"
 import { lnd1LoopConfig, lnd2LoopConfig } from "@/app/swap/get-active-loopd"
+import * as Prices from "@/app/prices"
 import * as Wallets from "@/app/wallets"
 
 import { TxDecoder } from "@/domain/bitcoin/onchain"
@@ -145,7 +145,7 @@ export const onchainBlockEventHandler = async (height: number) => {
 }
 
 export const publishCurrentPrices = async () => {
-  const currencies = await PricesWithSpans.listCurrencies()
+  const currencies = await Prices.listCurrencies()
   if (currencies instanceof Error) {
     return logger.error(
       { err: currencies },
@@ -157,14 +157,14 @@ export const publishCurrentPrices = async () => {
     const displayCurrency = checkedToDisplayCurrency(code)
     if (displayCurrency instanceof Error) continue
 
-    const pricePerSat = await PricesWithSpans.getCurrentSatPrice({
+    const pricePerSat = await Prices.getCurrentSatPrice({
       currency: displayCurrency,
     })
     if (pricePerSat instanceof Error) {
       return logger.error({ err: pricePerSat }, "can't publish the price")
     }
 
-    const pricePerUsdCent = await PricesWithSpans.getCurrentUsdCentPrice({
+    const pricePerUsdCent = await Prices.getCurrentUsdCentPrice({
       currency: displayCurrency,
     })
     if (pricePerUsdCent instanceof Error) {

@@ -4,7 +4,6 @@ import {
   UnknownCacheServiceError,
 } from "@/domain/cache"
 import { redisCache } from "@/services/redis"
-import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
 
 export const RedisCacheService = (): ICacheService => {
   const set = async <T>({
@@ -68,8 +67,5 @@ export const RedisCacheService = (): ICacheService => {
     }
   }
 
-  return wrapAsyncFunctionsToRunInSpan({
-    namespace: "services.cache.redis",
-    fns: { set, get, getOrSet, clear },
-  })
+  return { set, get, getOrSet, clear }
 }
