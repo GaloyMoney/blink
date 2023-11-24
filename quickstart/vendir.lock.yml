@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): update dashboard logo (#3595)...'
-      sha: b8112b2e28ad3f12e0913a9795314207d44a4d73
+      commitTitle: 'chore(core): add disposable phone validation (#3598)'
+      sha: 9b3fa32a36448beaf111ac7bd076ac9f27891a3a
       tags:
-      - 0.16.62-1-gb8112b2e2
+      - 0.16.63-2-g9b3fa32a3
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): update dashboard logo (#3595)...'
-      sha: b8112b2e28ad3f12e0913a9795314207d44a4d73
+      commitTitle: 'chore(core): add disposable phone validation (#3598)'
+      sha: 9b3fa32a36448beaf111ac7bd076ac9f27891a3a
       tags:
-      - 0.16.62-1-gb8112b2e2
+      - 0.16.63-2-g9b3fa32a3
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): update dashboard logo (#3595)...'
-      sha: b8112b2e28ad3f12e0913a9795314207d44a4d73
+      commitTitle: 'chore(core): add disposable phone validation (#3598)'
+      sha: 9b3fa32a36448beaf111ac7bd076ac9f27891a3a
       tags:
-      - 0.16.62-1-gb8112b2e2
+      - 0.16.63-2-g9b3fa32a3
     path: ./
   path: ./graphql
 kind: LockConfig
