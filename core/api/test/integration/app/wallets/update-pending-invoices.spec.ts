@@ -197,6 +197,7 @@ describe("update pending invoices", () => {
         recipientWalletDescriptor,
         paid: false,
         lnInvoice: mockLnInvoice,
+        processingCompleted: false,
       }
 
       const persisted = await walletInvoices.persistNew(btcWalletInvoice)

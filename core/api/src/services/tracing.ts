@@ -204,7 +204,9 @@ registerInstrumentations({
       responseHook: gqlResponseHook,
     }),
     new MongoDBInstrumentation(),
-    new GrpcInstrumentation(),
+    new GrpcInstrumentation({
+      ignoreGrpcMethods: [/GetPrice/],
+    }),
     new IORedisInstrumentation(),
   ],
 })
