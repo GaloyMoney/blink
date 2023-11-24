@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): add nonFixedVoip validation (#3596)'
-      sha: a6a187a40261b9f9c63e149a686163cc2fbd6c33
+      commitTitle: 'feat(dashboard): update dashboard logo (#3595)...'
+      sha: b8112b2e28ad3f12e0913a9795314207d44a4d73
       tags:
-      - 0.16.61-2-ga6a187a40
+      - 0.16.62-1-gb8112b2e2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): add nonFixedVoip validation (#3596)'
-      sha: a6a187a40261b9f9c63e149a686163cc2fbd6c33
+      commitTitle: 'feat(dashboard): update dashboard logo (#3595)...'
+      sha: b8112b2e28ad3f12e0913a9795314207d44a4d73
       tags:
-      - 0.16.61-2-ga6a187a40
+      - 0.16.62-1-gb8112b2e2
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(core): add nonFixedVoip validation (#3596)'
-      sha: a6a187a40261b9f9c63e149a686163cc2fbd6c33
+      commitTitle: 'feat(dashboard): update dashboard logo (#3595)...'
+      sha: b8112b2e28ad3f12e0913a9795314207d44a4d73
       tags:
-      - 0.16.61-2-ga6a187a40
+      - 0.16.62-1-gb8112b2e2
     path: ./
   path: ./graphql
 kind: LockConfig
