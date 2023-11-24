@@ -1192,6 +1192,16 @@ export class PayoutQueueConfig extends jspb.Message {
     getIntervalSecs(): number;
     setIntervalSecs(value: number): PayoutQueueConfig;
 
+    hasCpfpPayoutsAfterMins(): boolean;
+    clearCpfpPayoutsAfterMins(): void;
+    getCpfpPayoutsAfterMins(): number | undefined;
+    setCpfpPayoutsAfterMins(value: number): PayoutQueueConfig;
+
+    hasCpfpPayoutsAfterBlocks(): boolean;
+    clearCpfpPayoutsAfterBlocks(): void;
+    getCpfpPayoutsAfterBlocks(): number | undefined;
+    setCpfpPayoutsAfterBlocks(value: number): PayoutQueueConfig;
+
     getTriggerCase(): PayoutQueueConfig.TriggerCase;
 
     serializeBinary(): Uint8Array;
@@ -1210,6 +1220,8 @@ export namespace PayoutQueueConfig {
         consolidateDeprecatedKeychains: boolean,
         manual: boolean,
         intervalSecs: number,
+        cpfpPayoutsAfterMins?: number,
+        cpfpPayoutsAfterBlocks?: number,
     }
 
     export enum TriggerCase {
