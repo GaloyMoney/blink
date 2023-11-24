@@ -232,7 +232,7 @@ export const isPhoneCodeValid = async ({
   return TwilioClient().validateVerify({ to: phone, code })
 }
 
-const isDisposablePhoneNumber = (phone: PhoneNumber) => {
+export const isDisposablePhoneNumber = (phone: PhoneNumber) => {
   const phoneNumber = phone.replace(/[^0-9]/, "")
   return phoneNumber in disposablePhoneList
 }
