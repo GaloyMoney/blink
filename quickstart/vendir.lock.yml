@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: make processingCompleted non-optional (#3575)'
-      sha: 802c47c41736c28d52ba736ad2f1c166c5afe42e
+      commitTitle: 'chore(core): remove cache and price tracing wrappers (#3597)'
+      sha: 6ced850f9bdb518034855bdb356f0a5d7052a80c
       tags:
-      - 0.16.60-2-g802c47c41
+      - 0.16.60-4-g6ced850f9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: make processingCompleted non-optional (#3575)'
-      sha: 802c47c41736c28d52ba736ad2f1c166c5afe42e
+      commitTitle: 'chore(core): remove cache and price tracing wrappers (#3597)'
+      sha: 6ced850f9bdb518034855bdb356f0a5d7052a80c
       tags:
-      - 0.16.60-2-g802c47c41
+      - 0.16.60-4-g6ced850f9
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: make processingCompleted non-optional (#3575)'
-      sha: 802c47c41736c28d52ba736ad2f1c166c5afe42e
+      commitTitle: 'chore(core): remove cache and price tracing wrappers (#3597)'
+      sha: 6ced850f9bdb518034855bdb356f0a5d7052a80c
       tags:
-      - 0.16.60-2-g802c47c41
+      - 0.16.60-4-g6ced850f9
     path: ./
   path: ./graphql
 kind: LockConfig
