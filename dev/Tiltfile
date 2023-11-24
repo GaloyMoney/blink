@@ -357,3 +357,12 @@ for service in docker_groups["price"]:
     dc_resource(service, labels = ["price"])
 for service in docker_groups["integration"]:
     dc_resource(service, labels = ["integration"])
+
+api_test_target = "//core/api:test-integration"
+local_resource(
+  "api-test",
+  labels = ["test"],
+  auto_init = is_ci and "core" in cfg.get("test", []),
+  cmd = "buck2 test {}".format(api_test_target),
+  resource_deps = [res for sublist in docker_groups.values() for res in sublist],
+)

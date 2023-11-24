@@ -20,11 +20,7 @@ jobs:
           ${{ toJSON(github.event.pull_request.labels.*.name) }}
           EOF
           for LABEL in dashboard consent core; do
-            case "$LABEL" in
-              dashboard|consent)
-                ARGS+=" --test $LABEL"
-                ;;
-            esac
+            ARGS+=" --test $LABEL"
           done
           echo "Prepared args: $ARGS"
           echo "args=$ARGS" >> "$GITHUB_OUTPUT"
