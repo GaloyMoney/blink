@@ -10166,7 +10166,8 @@ proto.services.bria.v1.PayoutQueueConfig.toObject = function(includeInstance, ms
     txPriority: jspb.Message.getFieldWithDefault(msg, 1, 0),
     consolidateDeprecatedKeychains: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
     manual: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
-    intervalSecs: jspb.Message.getFieldWithDefault(msg, 5, 0)
+    intervalSecs: jspb.Message.getFieldWithDefault(msg, 5, 0),
+    cpfpPayoutsAfterMins: jspb.Message.getFieldWithDefault(msg, 6, 0)
   };
 
   if (includeInstance) {
@@ -10218,6 +10219,10 @@ proto.services.bria.v1.PayoutQueueConfig.deserializeBinaryFromReader = function(
     case 5:
       var value = /** @type {number} */ (reader.readUint32());
       msg.setIntervalSecs(value);
+      break;
+    case 6:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setCpfpPayoutsAfterMins(value);
       break;
     default:
       reader.skipField();
@@ -10273,6 +10278,13 @@ proto.services.bria.v1.PayoutQueueConfig.serializeBinaryToWriter = function(mess
   if (f != null) {
     writer.writeUint32(
       5,
+      f
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 6));
+  if (f != null) {
+    writer.writeUint32(
+      6,
       f
     );
   }
@@ -10384,6 +10396,42 @@ proto.services.bria.v1.PayoutQueueConfig.prototype.clearIntervalSecs = function(
  */
 proto.services.bria.v1.PayoutQueueConfig.prototype.hasIntervalSecs = function() {
   return jspb.Message.getField(this, 5) != null;
+};
+
+
+/**
+ * optional uint32 cpfp_payouts_after_mins = 6;
+ * @return {number}
+ */
+proto.services.bria.v1.PayoutQueueConfig.prototype.getCpfpPayoutsAfterMins = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.services.bria.v1.PayoutQueueConfig} returns this
+ */
+proto.services.bria.v1.PayoutQueueConfig.prototype.setCpfpPayoutsAfterMins = function(value) {
+  return jspb.Message.setField(this, 6, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.services.bria.v1.PayoutQueueConfig} returns this
+ */
+proto.services.bria.v1.PayoutQueueConfig.prototype.clearCpfpPayoutsAfterMins = function() {
+  return jspb.Message.setField(this, 6, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.services.bria.v1.PayoutQueueConfig.prototype.hasCpfpPayoutsAfterMins = function() {
+  return jspb.Message.getField(this, 6) != null;
 };
 
 
