@@ -149,71 +149,69 @@ usd_amount=50
   [[ "$lnd1_diff" == "$btc_amount" ]] || exit 1
 }
 
-# @test "ln-send: lightning settled - lnNoAmountInvoicePaymentSend" {
-#   token_name="$ALICE_TOKEN_NAME"
-#   btc_wallet_name="$token_name.btc_wallet_id"
+@test "ln-send: lightning settled - lnNoAmountInvoicePaymentSend" {
+  btc_wallet_name="alice.btc_wallet_id"
 
-#   initial_lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
+  initial_lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
 
-#   invoice_response="$(lnd_outside_cli addinvoice)"
-#   payment_request="$(echo $invoice_response | jq -r '.payment_request')"
-#   payment_hash=$(echo $invoice_response | jq -r '.r_hash')
-#   [[ "${payment_request}" != "null" ]] || exit 1
+  invoice_response="$(lnd_outside_cli addinvoice)"
+  payment_request="$(echo $invoice_response | jq -r '.payment_request')"
+  payment_hash=$(echo $invoice_response | jq -r '.r_hash')
+  [[ "${payment_request}" != "null" ]] || exit 1
 
-#   variables=$(
-#     jq -n \
-#     --arg wallet_id "$(read_value $btc_wallet_name)" \
-#     --arg payment_request "$payment_request" \
-#     --arg amount $btc_amount \
-#     '{input: {walletId: $wallet_id, paymentRequest: $payment_request, amount: $amount}}'
-#   )
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg payment_request "$payment_request" \
+    --arg amount $btc_amount \
+    '{input: {walletId: $wallet_id, paymentRequest: $payment_request, amount: $amount}}'
+  )
 
-#   exec_graphql "$token_name" 'ln-no-amount-invoice-fee-probe' "$variables"
-#   fee_amount="$(graphql_output '.data.lnNoAmountInvoiceFeeProbe.amount')"
-#   [[ "${fee_amount}" = "0" ]] || exit 1
+  exec_graphql "alice" 'ln-no-amount-invoice-fee-probe' "$variables"
+  fee_amount="$(graphql_output '.data.lnNoAmountInvoiceFeeProbe.amount')"
+  [[ "${fee_amount}" = "0" ]] || exit 1
 
-#   exec_graphql "$token_name" 'ln-no-amount-invoice-payment-send' "$variables"
-#   send_status="$(graphql_output '.data.lnNoAmountInvoicePaymentSend.status')"
-#   [[ "${send_status}" = "SUCCESS" ]] || exit 1
+  exec_graphql "alice" 'ln-no-amount-invoice-payment-send' "$variables"
+  send_status="$(graphql_output '.data.lnNoAmountInvoicePaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
-#   # Check for settled
-#   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+  # Check for settled
+  retry 15 1 check_for_ln_initiated_settled "alice" "$payment_hash"
 
-#   final_lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
-#   lnd1_diff="$(( $initial_lnd1_balance - $final_lnd1_balance ))"
-#   [[ "$lnd1_diff" == "$btc_amount" ]] || exit 1
-# }
+  final_lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
+  lnd1_diff="$(( $initial_lnd1_balance - $final_lnd1_balance ))"
+  [[ "$lnd1_diff" == "$btc_amount" ]] || exit 1
+}
 
-# @test "ln-send: lightning settled - lnNoAmountInvoicePaymentSend, no fee probe" {
-#   token_name="$ALICE_TOKEN_NAME"
-#   btc_wallet_name="$token_name.btc_wallet_id"
+@test "ln-send: lightning settled - lnNoAmountInvoicePaymentSend, no fee probe" {
+  btc_wallet_name="alice.btc_wallet_id"
 
-#   initial_lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
+  initial_lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
 
-#   invoice_response="$(lnd_outside_cli addinvoice)"
-#   payment_request="$(echo $invoice_response | jq -r '.payment_request')"
-#   payment_hash=$(echo $invoice_response | jq -r '.r_hash')
-#   [[ "${payment_request}" != "null" ]] || exit 1
+  invoice_response="$(lnd_outside_cli addinvoice)"
+  payment_request="$(echo $invoice_response | jq -r '.payment_request')"
+  payment_hash=$(echo $invoice_response | jq -r '.r_hash')
+  [[ "${payment_request}" != "null" ]] || exit 1
 
-#   variables=$(
-#     jq -n \
-#     --arg wallet_id "$(read_value $btc_wallet_name)" \
-#     --arg payment_request "$payment_request" \
-#     --arg amount $btc_amount \
-#     '{input: {walletId: $wallet_id, paymentRequest: $payment_request, amount: $amount}}'
-#   )
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg payment_request "$payment_request" \
+    --arg amount $btc_amount \
+    '{input: {walletId: $wallet_id, paymentRequest: $payment_request, amount: $amount}}'
+  )
 
-#   exec_graphql "$token_name" 'ln-no-amount-invoice-payment-send' "$variables"
-#   send_status="$(graphql_output '.data.lnNoAmountInvoicePaymentSend.status')"
-#   [[ "${send_status}" = "SUCCESS" ]] || exit 1
+  exec_graphql "alice" 'ln-no-amount-invoice-payment-send' "$variables"
+  send_status="$(graphql_output '.data.lnNoAmountInvoicePaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
-#   # Check for settled
-#   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+  # Check for settled
+  retry 15 1 check_for_ln_initiated_settled "alice" "$payment_hash"
 
-#   final_lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
-#   lnd1_diff="$(( $initial_lnd1_balance - $final_lnd1_balance ))"
-#   [[ "$lnd1_diff" == "$btc_amount" ]] || exit 1
-# }
+  final_lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
+  lnd1_diff="$(( $initial_lnd1_balance - $final_lnd1_balance ))"
+  [[ "$lnd1_diff" == "$btc_amount" ]] || exit 1
+}
 
 # @test "ln-send: lightning settled - lnNoAmountUsdInvoicePaymentSend" {
 #   token_name="$ALICE_TOKEN_NAME"
