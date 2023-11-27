@@ -381,7 +381,7 @@ type OPFBWithSenderWalletAndAccountState<S extends WalletCurrency> =
     senderWalletId: WalletId
     senderWalletCurrency: S
     senderAccountId: AccountId
-    senderWithdrawFee: Satoshis
+    senderWithdrawFee: Satoshis | undefined
   }
 
 type OPFBWithRecipientWalletState<
