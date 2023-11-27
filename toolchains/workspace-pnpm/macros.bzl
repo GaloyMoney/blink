@@ -1075,6 +1075,8 @@ def jest_test_impl(ctx: AnalysisContext) -> list[[
     args.add(ctx.attrs.config_file)
     args.add("--bail")
     args.add("--verbose")
+    if ctx.attrs.run_serially:
+        args.add("--runInBand")
 
     return _npm_test_impl(
         ctx,
@@ -1098,6 +1100,10 @@ _jest_test = rule(
         "config_file": attrs.option(
             attrs.string(),
             doc = """File name and relative path for jest config.""",
+        ),
+        "run_serially": attrs.bool(
+            default = False,
+            doc = "Run all tests serially in the current process"
         ),
         "env_file": attrs.option(
             attrs.string(),

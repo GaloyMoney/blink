@@ -167,6 +167,17 @@ jest_test(
     }
 )
 
+jest_test(
+    name = "test-integration",
+    srcs = [":src"] + [":test_src"] + glob([".env", "galoy.yaml"]),
+    config_file = "test/integration/jest.config.js",
+    run_serially = True,
+    env_file = ".env",
+    env = {
+        "LOGLEVEL": "warn",
+    }
+)
+
 test_suite(
     name = "test-unit",
     tests = [
@@ -179,11 +190,6 @@ test_suite(
         ":admin-schema-diff",
         ":unit-tests",
     ],
-)
-
-dev_pnpm_task_test(
-  name = "test-integration",
-  command = "test:integration",
 )
 
 dev_pnpm_task_binary(
