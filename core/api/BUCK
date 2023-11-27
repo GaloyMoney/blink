@@ -11,7 +11,7 @@ load(
   "typescript_check",
   "yaml_check",
   "madge_check",
-  "test_unit",
+  "jest_test",
 )
 load("@toolchains//rover:macros.bzl", "sdl", "diff_check", "dev_update_file")
 
@@ -157,7 +157,7 @@ madge_check(
     srcs = [":src"],
 )
 
-test_unit(
+jest_test(
     name = "unit-tests",
     srcs = [":src"] + [":test_src"] + glob([".env", "galoy.yaml"]),
     config_file = "test/unit/jest.config.js",
