@@ -69,6 +69,34 @@ source:
   repository: #@ galoy_dev_image()
 #@ end
 
+#@ def tilt_integration_test_name(container):
+#@  return "tilt-" + container
+#@ end
+
+#@ def core_src_resource_name(app):
+#@   return app + "-src"
+#@ end
+
+#@ def core_src_resource(app):
+name: #@ core_src_resource_name(app)
+type: git
+source:
+  paths:
+  - #@ "core/" + app
+  - #@ "core/" + app + "/*"
+  - #@ "core/" + app + "/**/*"
+  - flake.nix
+  - flake.lock
+  - toolchains/
+  - toolchains/*
+  - toolchains/**/*
+  - pnpm-lock.yaml
+  fetch_tags: true
+  uri: #@ data.values.git_uri
+  branch: #@ data.values.git_branch
+  private_key: #@ data.values.github_private_key
+#@ end
+
 groups:
   - name: galoy
     jobs:
@@ -114,6 +142,43 @@ jobs:
             BUCK_CMD: test
           run:
             path: pipeline-tasks/ci/apps/tasks/buck-task.sh
+
+  - name: integration-tests
+    #@ container = "integration-tests"
+    #@ sub_core = "api"
+    #@ params = {}
+    #@ params["REPO_PATH"] = data.values.gh_repository + "-" + container
+    #@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
+    #@ params["SSH_PRIVATE_KEY"] = "((staging-ssh.ssh_private_key))"
+    #@ params["SSH_PUB_KEY"] = "((staging-ssh.ssh_public_key))"
+    #@ params["CMD"] = "tilt --file dev/Tiltfile ci -- --test " + "core"
+    serial: true
+    plan:
+    - { put: nix-host, params: { acquire: true } }
+    - in_parallel:
+      - { get: repo, trigger: true }
+      - { get: pipeline-tasks }
+    - task: #@ tilt_integration_test_name(container)
+      attempts: 2
+      timeout: 18m
+      tags: ["galoy-staging"]
+      config:
+        platform: linux
+        image_resource: #@ galoy_dev_image_config()
+        inputs:
+        - name: pipeline-tasks
+        - name: docker-host
+          path: nix-host
+        - name: #@ core_src_resource_name(sub_core)
+          path: #@ data.values.gh_repository + "-" + container
+        params: #@ params
+        run:
+          path: pipeline-tasks/ci/apps/tasks/run-on-nix-host.sh
+      ensure:
+        put: docker-host
+        params:
+          release: docker-host
+
   - name: legacy-integration-tests
     #@ container = "legacy-integration-tests"
     #@ params = {}
