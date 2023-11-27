@@ -1017,7 +1017,7 @@ npm_run_command="$3"
 
 cd "$rootpath/$npm_package_path"
 if [ "$install_node_modules" = "True" ]; then
-    pnpm install
+    pnpm install --frozen-lockfile
 fi
 if [ "${*:4}" ]; then
     exec pnpm run --report-summary "$npm_run_command" -- "${@:4}"
@@ -1049,7 +1049,7 @@ npm_run_command="$3"
 
 cd "$rootpath/$npm_package_path"
 if [ "$install_node_modules" = "True" ]; then
-    pnpm install
+    pnpm install --frozen-lockfile
 fi
 exec pnpm run --report-summary "$npm_run_command"
 """, is_executable = True)
