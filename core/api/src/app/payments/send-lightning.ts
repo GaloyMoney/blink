@@ -114,6 +114,7 @@ export const payInvoiceByWalletId = async ({
         decodedInvoice,
         paymentFlow,
         senderWallet,
+        senderAccount,
         senderDisplayCurrency: senderAccount.displayCurrency,
         memo,
       })
@@ -159,6 +160,7 @@ const payNoAmountInvoiceByWalletId = async ({
         decodedInvoice,
         paymentFlow,
         senderWallet,
+        senderAccount,
         senderDisplayCurrency: senderAccount.displayCurrency,
         memo,
       })
@@ -560,12 +562,14 @@ const executePaymentViaLn = async ({
   decodedInvoice,
   paymentFlow,
   senderWallet,
+  senderAccount,
   senderDisplayCurrency,
   memo,
 }: {
   decodedInvoice: LnInvoice
   paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
   senderWallet: Wallet
+  senderAccount: Account
   senderDisplayCurrency: DisplayCurrency
   memo: string | null
 }): Promise<PaymentSendStatus | ApplicationError> => {
@@ -740,6 +744,31 @@ const executePaymentViaLn = async ({
         revealedPreImage: payResult.revealedPreImage,
       })
       if (reimbursed instanceof Error) return reimbursed
+    }
+
+    const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
+    if (senderUser instanceof Error) return senderUser
+
+    const walletTransaction = await getTransactionForWalletByJournalId({
+      walletId: senderWallet.id,
+      journalId,
+    })
+    if (walletTransaction instanceof Error) return walletTransaction
+
+    const result = await NotificationsService().sendTransaction({
+      recipient: {
+        accountId: senderWallet.accountId,
+        walletId: senderWallet.id,
+        deviceTokens: senderUser.deviceTokens,
+        language: senderUser.language,
+        notificationSettings: senderAccount.notificationSettings,
+        level: senderAccount.level,
+      },
+      transaction: walletTransaction,
+    })
+
+    if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
+      await removeDeviceTokens({ userId: senderUser.id, deviceTokens: result.tokens })
     }
 
     return PaymentSendStatus.Success

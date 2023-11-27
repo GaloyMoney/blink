@@ -1700,7 +1700,7 @@ enum TxNotificationType
 {
   IntraLedgerPayment @join__enumValue(graph: PUBLIC)
   IntraLedgerReceipt @join__enumValue(graph: PUBLIC)
-  LnInvoicePaid @join__enumValue(graph: PUBLIC)
+  LigtningReceipt @join__enumValue(graph: PUBLIC)
   OnchainPayment @join__enumValue(graph: PUBLIC)
   OnchainReceipt @join__enumValue(graph: PUBLIC)
   OnchainReceiptPending @join__enumValue(graph: PUBLIC)

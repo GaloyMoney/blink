@@ -8,7 +8,8 @@ export const NotificationType = {
   OnchainReceipt: "onchain_receipt",
   OnchainReceiptPending: "onchain_receipt_pending",
   OnchainPayment: "onchain_payment",
-  LnInvoicePaid: "paid-invoice",
+  LigtningReceipt: "paid-invoice",
+  LigtningPayment: "lightning_payment",
 } as const
 
 export const NotificationChannel = {

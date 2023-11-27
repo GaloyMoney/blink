@@ -40,7 +40,7 @@ export const NotificationsService = (): INotificationsService => {
       const type = getPubSubNotificationEventType(transaction)
       if (!type) return
 
-      if (type === NotificationType.LnInvoicePaid) {
+      if (type === NotificationType.LigtningReceipt) {
         const lnTx = transaction as WalletLnTransaction
         const paymentHash = lnTx.initiationVia.paymentHash
         // Notify public subscribers
@@ -379,7 +379,7 @@ const getPubSubNotificationEventType = (
 ): NotificationType | undefined => {
   const type = translateToNotificationType(transaction)
   switch (type) {
-    case NotificationType.LnInvoicePaid:
+    case NotificationType.LigtningReceipt:
     case NotificationType.IntraLedgerReceipt:
     case NotificationType.OnchainReceiptPending:
     case NotificationType.OnchainPayment:
@@ -402,7 +402,7 @@ const getPushNotificationEventType = (
 ): NotificationType | undefined => {
   const type = translateToNotificationType(transaction)
   switch (type) {
-    case NotificationType.LnInvoicePaid:
+    case NotificationType.LigtningReceipt:
     case NotificationType.IntraLedgerReceipt:
     case NotificationType.OnchainReceiptPending:
     case NotificationType.OnchainPayment:
@@ -425,10 +425,25 @@ const getCallbackEventType = (
 ): CallbackEventType | undefined => {
   const type = translateToNotificationType(transaction)
   switch (type) {
-    case NotificationType.LnInvoicePaid:
+    case NotificationType.LigtningReceipt:
       return CallbackEventType.ReceiveLightning
+
+    case NotificationType.LigtningPayment:
+      return CallbackEventType.SendLightning
+
     case NotificationType.IntraLedgerReceipt:
       return CallbackEventType.ReceiveIntraledger
+
+    case NotificationType.IntraLedgerPayment:
+      return CallbackEventType.SendIntraledger
+
+    case NotificationType.OnchainReceiptPending:
+    case NotificationType.OnchainReceipt:
+      return CallbackEventType.ReceiveOnchain
+
+    case NotificationType.OnchainPayment:
+      return CallbackEventType.SendOnchain
+
     default:
       return undefined
   }
@@ -440,11 +455,13 @@ const translateToNotificationType = (
   const type = transaction.initiationVia.type
   const isReceive = transaction.settlementAmount > 0
   if (type === "lightning") {
-    return isReceive ? NotificationType.LnInvoicePaid : undefined
+    return isReceive ? NotificationType.LigtningReceipt : NotificationType.LigtningPayment
   }
 
   if (type === "intraledger") {
-    return isReceive ? NotificationType.IntraLedgerReceipt : undefined
+    return isReceive
+      ? NotificationType.IntraLedgerReceipt
+      : NotificationType.IntraLedgerPayment
   }
 
   if (type === "onchain") {

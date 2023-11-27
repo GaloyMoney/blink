@@ -322,8 +322,9 @@ const executePaymentViaIntraledger = async <
       }))
     }
 
+    const senderWalletDescriptor = paymentFlow.senderWalletDescriptor()
     const recipientWalletDescriptor = paymentFlow.recipientWalletDescriptor()
-    if (recipientWalletDescriptor === undefined)
+    if (!senderWalletDescriptor || !recipientWalletDescriptor)
       return new InvalidLightningPaymentFlowBuilderStateError()
 
     const journal = await LedgerFacade.recordIntraledger({
@@ -332,7 +333,7 @@ const executePaymentViaIntraledger = async <
         btc: paymentFlow.btcPaymentAmount,
         usd: paymentFlow.usdPaymentAmount,
       },
-      senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
+      senderWalletDescriptor,
       recipientWalletDescriptor,
       metadata,
       additionalDebitMetadata,
@@ -344,13 +345,13 @@ const executePaymentViaIntraledger = async <
     const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
     if (recipientUser instanceof Error) return recipientUser
 
-    const walletTransaction = await getTransactionForWalletByJournalId({
+    const recipientWalletTransaction = await getTransactionForWalletByJournalId({
       walletId: recipientWalletDescriptor.id,
       journalId: journal.journalId,
     })
-    if (walletTransaction instanceof Error) return walletTransaction
+    if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
 
-    const result = await NotificationsService().sendTransaction({
+    const recipientResult = await NotificationsService().sendTransaction({
       recipient: {
         accountId: recipientAccount.id,
         walletId: recipientWalletDescriptor.id,
@@ -359,11 +360,42 @@ const executePaymentViaIntraledger = async <
         notificationSettings: recipientAccount.notificationSettings,
         level: recipientAccount.level,
       },
-      transaction: walletTransaction,
+      transaction: recipientWalletTransaction,
     })
 
-    if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
-      await removeDeviceTokens({ userId: recipientUser.id, deviceTokens: result.tokens })
+    if (recipientResult instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
+      await removeDeviceTokens({
+        userId: recipientUser.id,
+        deviceTokens: recipientResult.tokens,
+      })
+    }
+
+    const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
+    if (senderUser instanceof Error) return senderUser
+
+    const senderWalletTransaction = await getTransactionForWalletByJournalId({
+      walletId: senderWalletDescriptor.id,
+      journalId: journal.journalId,
+    })
+    if (senderWalletTransaction instanceof Error) return senderWalletTransaction
+
+    const senderResult = await NotificationsService().sendTransaction({
+      recipient: {
+        accountId: senderAccount.id,
+        walletId: senderWalletDescriptor.id,
+        deviceTokens: senderUser.deviceTokens,
+        language: senderUser.language,
+        notificationSettings: senderAccount.notificationSettings,
+        level: senderAccount.level,
+      },
+      transaction: senderWalletTransaction,
+    })
+
+    if (senderResult instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
+      await removeDeviceTokens({
+        userId: senderUser.id,
+        deviceTokens: senderResult.tokens,
+      })
     }
 
     return PaymentSendStatus.Success
