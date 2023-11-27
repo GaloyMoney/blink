@@ -18,4 +18,4 @@ jobs:
       - name: Run integration tests
         run: |
           cd core/api/
-          nix develop -c make integration-in-ci
+          nix develop -c make legacy-integration-in-ci

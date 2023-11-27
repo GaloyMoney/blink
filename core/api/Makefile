@@ -102,6 +102,11 @@ integration-in-ci:
 	export NODE_OPTIONS="--max-old-space-size=6144" && \
 	$(MAKE) reset-all-integration
 
+legacy-integration-in-ci:
+	pnpm install --frozen-lockfile && \
+	export NODE_OPTIONS="--max-old-space-size=6144" && \
+	$(MAKE) reset-legacy-integration
+
 unit-in-ci:
 	. ./.env && \
 		LOGLEVEL=warn $(BIN_DIR)/jest --config ./test/unit/jest.config.js --ci --bail --maxWorkers=50%
