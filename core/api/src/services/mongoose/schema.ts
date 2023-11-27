@@ -151,7 +151,6 @@ const AccountSchema = new Schema<AccountRecord>(
     },
     withdrawFee: {
       type: Number,
-      default: undefined,
       min: 0,
       required: false,
     },
