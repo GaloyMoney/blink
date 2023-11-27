@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build(core): add --frozen-lockfile flag where missing (#3609)...'
-      sha: f386f249d408679b49cee07366c355d148e821fc
+      commitTitle: 'test(core): add integration tests to BUCK (#3594)...'
+      sha: 59c39bccfd4d8c043b0d05f0e316b872156466e6
       tags:
-      - 0.16.65-1-gf386f249d
+      - 0.16.66-1-g59c39bccf
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build(core): add --frozen-lockfile flag where missing (#3609)...'
-      sha: f386f249d408679b49cee07366c355d148e821fc
+      commitTitle: 'test(core): add integration tests to BUCK (#3594)...'
+      sha: 59c39bccfd4d8c043b0d05f0e316b872156466e6
       tags:
-      - 0.16.65-1-gf386f249d
+      - 0.16.66-1-g59c39bccf
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'build(core): add --frozen-lockfile flag where missing (#3609)...'
-      sha: f386f249d408679b49cee07366c355d148e821fc
+      commitTitle: 'test(core): add integration tests to BUCK (#3594)...'
+      sha: 59c39bccfd4d8c043b0d05f0e316b872156466e6
       tags:
-      - 0.16.65-1-gf386f249d
+      - 0.16.67
     path: ./
   path: ./graphql
 kind: LockConfig
