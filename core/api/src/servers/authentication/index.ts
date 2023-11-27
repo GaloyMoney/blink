@@ -273,7 +273,10 @@ authRouter.post("/phone/code", async (req: Request, res: Response) => {
   const challengeCodeRaw = req.body.challengeCode
   const validationCodeRaw = req.body.validationCode
   const secCodeRaw = req.body.secCode
-  const channel = req.body.channel ?? "SMS"
+
+  // TODO: proper validation
+  const channel =
+    typeof req.body.channel === "string" ? req.body.channel.toLowerCase() : "sms"
 
   if (!phoneRaw || !challengeCodeRaw || !validationCodeRaw || !secCodeRaw)
     return res.status(400).send({ error: "missing inputs" })
@@ -311,7 +314,10 @@ authRouter.post("/phone/code-appcheck", async (req: Request, res: Response) => {
 
   const ip = req.originalIp
   const phoneRaw = req.body.phone
-  const channel = req.body.channel ?? "SMS"
+
+  // TODO: proper validation
+  const channel =
+    typeof req.body.channel === "string" ? req.body.channel.toLowerCase() : "sms"
 
   if (!phoneRaw) {
     const error = "missing phone input"
