@@ -12,7 +12,7 @@ COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 
 WORKDIR /app/core/api
 
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 
 COPY ./core/api/src ./src
 COPY ./core/api/test ./test
