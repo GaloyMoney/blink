@@ -9,7 +9,7 @@ import {
   lndOutside2,
   getWalletInfo,
   bitcoindClient,
-  resetIntegrationLnds,
+  resetLegacyIntegrationLnds,
   getChannels,
   getChainBalance,
   waitUntilBriaConnected,
@@ -22,7 +22,7 @@ it("connects to bitcoind", async () => {
 
 describe("connects to lnds", () => {
   beforeAll(async () => {
-    await resetIntegrationLnds()
+    await resetLegacyIntegrationLnds()
   })
 
   const lnds = [lnd1, lnd2]

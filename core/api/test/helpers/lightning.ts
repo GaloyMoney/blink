@@ -91,7 +91,8 @@ export const lndOutside2 = authenticatedLndGrpc({
   socket: `${process.env.LNDOUTSIDE2ADDR}:${process.env.LNDOUTSIDE2RPCPORT ?? 10009}`,
 }).lnd
 
-export const lndsIntegration = [lnd1, lnd2, lndOutside1, lndOutside2]
+export const lndsIntegration = [lnd1, lndOutside1, lndOutside2]
+export const lndsLegacyIntegration = [lnd1, lnd2, lndOutside1, lndOutside2]
 export const lndsE2e = [lnd1, lnd2, lndOutside1, lndOutside2]
 
 export const waitUntilBlockHeight = async ({
@@ -300,6 +301,7 @@ const resetLnds = async (lnds: AuthenticatedLnd[]) => {
 }
 
 export const resetIntegrationLnds = () => resetLnds(lndsIntegration)
+export const resetLegacyIntegrationLnds = () => resetLnds(lndsLegacyIntegration)
 export const resetE2eLnds = () => resetLnds(lndsE2e)
 
 export const closeAllChannels = async ({ lnd }: { lnd: AuthenticatedLnd }) => {

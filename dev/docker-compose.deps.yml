@@ -173,6 +173,46 @@ services:
         cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
         cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
         /bin/lnd
+  lnd-outside-1:
+    image: lightninglabs/lnd:v0.16.2-beta
+    ports:
+      - "10012:10009"
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.key:/root/.lnd/tls.key
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-1.wallet.db:/root/.lnd/wallet.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-1.macaroons.db:/root/.lnd/macaroons.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/admin.macaroon
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
+    depends_on: [bitcoind]
+  lnd-outside-2:
+    image: lightninglabs/lnd:v0.16.2-beta
+    ports:
+      - "10013:10009"
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.key:/root/.lnd/tls.key
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-2.wallet.db:/root/.lnd/wallet.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-2.macaroons.db:/root/.lnd/macaroons.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-2.admin.macaroon:/root/.lnd/admin.macaroon
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
+    depends_on: [bitcoind]
   bria:
     image: us.gcr.io/galoy-org/bria:latest
     ports:

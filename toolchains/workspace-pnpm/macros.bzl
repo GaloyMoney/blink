@@ -1065,7 +1065,7 @@ dev_pnpm_task_test = rule(impl = pnpm_task_test_impl, attrs = {
     "deps": attrs.list(attrs.source(), default = [], doc = """List of dependencies we require"""),
 })
 
-def test_unit_impl(ctx: AnalysisContext) -> list[[
+def jest_test_impl(ctx: AnalysisContext) -> list[[
     DefaultInfo,
     RunInfo,
     ExternalRunnerTestInfo,
@@ -1075,6 +1075,8 @@ def test_unit_impl(ctx: AnalysisContext) -> list[[
     args.add(ctx.attrs.config_file)
     args.add("--bail")
     args.add("--verbose")
+    if ctx.attrs.run_serially:
+        args.add("--runInBand")
 
     return _npm_test_impl(
         ctx,
@@ -1083,8 +1085,8 @@ def test_unit_impl(ctx: AnalysisContext) -> list[[
         "jest",
     )
 
-_test_unit = rule(
-    impl = test_unit_impl,
+_jest_test = rule(
+    impl = jest_test_impl,
     attrs = {
         "srcs": attrs.list(
             attrs.source(),
@@ -1098,6 +1100,10 @@ _test_unit = rule(
         "config_file": attrs.option(
             attrs.string(),
             doc = """File name and relative path for jest config.""",
+        ),
+        "run_serially": attrs.bool(
+            default = False,
+            doc = "Run all tests serially in the current process"
         ),
         "env_file": attrs.option(
             attrs.string(),
@@ -1132,7 +1138,7 @@ _test_unit = rule(
     },
 )
 
-def test_unit(
+def jest_test(
         node_modules = ":node_modules",
         visibility = ["PUBLIC"],
         **kwargs):
@@ -1143,7 +1149,7 @@ def test_unit(
             bin_name = "jest",
         )
 
-    _test_unit(
+    _jest_test(
         jest = ":{}".format(jest_bin),
         node_modules = node_modules,
         visibility = visibility,

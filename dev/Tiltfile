@@ -321,6 +321,10 @@ docker_groups = {
         "bria-pg",
         "bitcoind",
     ],
+    "integration": [
+        "lnd-outside-1",
+        "lnd-outside-2",
+    ],
     "price": [
       "price",
       "price-history",
@@ -351,3 +355,14 @@ for service in docker_groups["auth"]:
     dc_resource(service, labels = ["auth"])
 for service in docker_groups["price"]:
     dc_resource(service, labels = ["price"])
+for service in docker_groups["integration"]:
+    dc_resource(service, labels = ["integration"])
+
+api_test_target = "//core/api:test-integration"
+local_resource(
+  "api-test",
+  labels = ["test"],
+  auto_init = is_ci and "core" in cfg.get("test", []),
+  cmd = "buck2 test {}".format(api_test_target),
+  resource_deps = [res for sublist in docker_groups.values() for res in sublist],
+)

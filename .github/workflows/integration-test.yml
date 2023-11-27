@@ -1,21 +1,29 @@
 name: "Integration test"
-
 on:
   pull_request:
     branches: [main]
+    types: [opened, synchronize, labeled, unlabeled]
 
 jobs:
-  integration:
+  tests:
     name: Integration test
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v4
-      - name: Run the Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v2
       - uses: actions/checkout@v3
-      - name: Run integration tests
+      - uses: cachix/install-nix-action@v22
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Prepare tilt args from labels
+        id: prepare_args
         run: |
-          cd core/api/
-          nix develop -c make integration-in-ci
+          ARGS=""
+          cat <<EOF > labels.json
+          ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          EOF
+          for LABEL in dashboard consent core; do
+            ARGS+=" --test $LABEL"
+          done
+          echo "Prepared args: $ARGS"
+          echo "args=$ARGS" >> "$GITHUB_OUTPUT"
+      - name: Tilt CI
+        run: nix develop -c xvfb-run tilt --file dev/Tiltfile ci -- ${{ steps.prepare_args.outputs.args }}

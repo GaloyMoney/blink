@@ -1,6 +1,7 @@
 load(
   "@toolchains//workspace-pnpm:macros.bzl",
   "dev_pnpm_task_binary",
+  "dev_pnpm_task_test",
   "build_node_modules",
   "tsc_build",
   "prod_tsc_build",
@@ -10,7 +11,7 @@ load(
   "typescript_check",
   "yaml_check",
   "madge_check",
-  "test_unit",
+  "jest_test",
 )
 load("@toolchains//rover:macros.bzl", "sdl", "diff_check", "dev_update_file")
 
@@ -156,10 +157,21 @@ madge_check(
     srcs = [":src"],
 )
 
-test_unit(
+jest_test(
     name = "unit-tests",
     srcs = [":src"] + [":test_src"] + glob([".env", "galoy.yaml"]),
     config_file = "test/unit/jest.config.js",
+    env_file = ".env",
+    env = {
+        "LOGLEVEL": "warn",
+    }
+)
+
+jest_test(
+    name = "test-integration",
+    srcs = [":src"] + [":test_src"] + glob([".env", "galoy.yaml"]),
+    config_file = "test/integration/jest.config.js",
+    run_serially = True,
     env_file = ".env",
     env = {
         "LOGLEVEL": "warn",
