@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): add disposable phone validation (#3598)'
-      sha: 9b3fa32a36448beaf111ac7bd076ac9f27891a3a
+      commitTitle: 'fix: auth validation with new mobile app (#3606)...'
+      sha: 8233d4b8ee67c69e75ed4b8fda283a2498fac973
       tags:
-      - 0.16.63-2-g9b3fa32a3
+      - 0.16.64-1-g8233d4b8e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): add disposable phone validation (#3598)'
-      sha: 9b3fa32a36448beaf111ac7bd076ac9f27891a3a
+      commitTitle: 'fix: auth validation with new mobile app (#3606)...'
+      sha: 8233d4b8ee67c69e75ed4b8fda283a2498fac973
       tags:
-      - 0.16.63-2-g9b3fa32a3
+      - 0.16.64-1-g8233d4b8e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(core): add disposable phone validation (#3598)'
-      sha: 9b3fa32a36448beaf111ac7bd076ac9f27891a3a
+      commitTitle: 'fix: auth validation with new mobile app (#3606)...'
+      sha: 8233d4b8ee67c69e75ed4b8fda283a2498fac973
       tags:
-      - 0.16.63-2-g9b3fa32a3
+      - 0.16.64-1-g8233d4b8e
     path: ./
   path: ./graphql
 kind: LockConfig
