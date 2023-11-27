@@ -73,7 +73,7 @@ groups:
   - name: galoy
     jobs:
       - buck-test
-      - integration-tests
+      - legacy-integration-tests
       - bats-tests
       - legacy-bats-tests
       - build-edge-image
@@ -114,8 +114,8 @@ jobs:
             BUCK_CMD: test
           run:
             path: pipeline-tasks/ci/apps/tasks/buck-task.sh
-  - name: integration-tests
-    #@ container = "integration-tests"
+  - name: legacy-integration-tests
+    #@ container = "legacy-integration-tests"
     #@ params = {}
     #@ params["REPO_PATH"] = data.values.gh_repository + "-" + container
     #@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
@@ -123,7 +123,7 @@ jobs:
     #@ params["SSH_PUB_KEY"] = "((staging-ssh.ssh_public_key))"
     #@ params["JEST_TIMEOUT"] = 90000
     #@ params["PACKAGE_DIR"] = "core/api"
-    #@ params["CMD"] = "make integration-in-ci"
+    #@ params["CMD"] = "make legacy-integration-in-ci"
     serial: true
     plan:
     - { put: docker-host, params: { acquire: true } }
@@ -629,7 +629,7 @@ jobs:
             trigger: true
             passed:
               - buck-test
-              - integration-tests
+              - legacy-integration-tests
               - legacy-bats-tests
               - bats-tests
               - build-debug-edge-image
