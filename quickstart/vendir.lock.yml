@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(core): add missing callbacks (#3585)...'
-      sha: 8976cc5fb83f3839fe6cda1f781b1277d8939c51
+      commitTitle: 'chore: bump deps (#3438)'
+      sha: 824a0fc7d2f0d3db908c816d88ff1f9b73b6245f
       tags:
-      - 0.16.67-2-g8976cc5fb
+      - 0.16.68-1-g824a0fc7d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(core): add missing callbacks (#3585)...'
-      sha: 8976cc5fb83f3839fe6cda1f781b1277d8939c51
+      commitTitle: 'chore: bump deps (#3438)'
+      sha: 824a0fc7d2f0d3db908c816d88ff1f9b73b6245f
       tags:
-      - 0.16.67-2-g8976cc5fb
+      - 0.16.68-1-g824a0fc7d
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(core): add missing callbacks (#3585)...'
-      sha: 8976cc5fb83f3839fe6cda1f781b1277d8939c51
+      commitTitle: 'chore: bump deps (#3438)'
+      sha: 824a0fc7d2f0d3db908c816d88ff1f9b73b6245f
       tags:
-      - 0.16.67-2-g8976cc5fb
+      - 0.16.68-1-g824a0fc7d
     path: ./
   path: ./graphql
 kind: LockConfig
