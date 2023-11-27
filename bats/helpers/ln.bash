@@ -190,3 +190,8 @@ get_from_transaction_by_ln_hash_and_status() {
     | jq -r "$property_query" \
     | head -n 1
 }
+
+mempool_not_empty() {
+  local txid="$(bitcoin_cli getrawmempool | jq -r ".[0]")"
+  [[ "$txid" != "null" ]] || exit 1
+}
