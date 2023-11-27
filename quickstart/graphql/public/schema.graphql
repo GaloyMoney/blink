@@ -1314,7 +1314,7 @@ enum TxDirection {
 enum TxNotificationType {
   IntraLedgerPayment
   IntraLedgerReceipt
-  LnInvoicePaid
+  LigtningReceipt
   OnchainPayment
   OnchainReceipt
   OnchainReceiptPending

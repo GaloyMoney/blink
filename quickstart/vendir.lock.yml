@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): add integration tests to BUCK (#3594)...'
-      sha: 59c39bccfd4d8c043b0d05f0e316b872156466e6
+      commitTitle: 'feat(core): add missing callbacks (#3585)...'
+      sha: 8976cc5fb83f3839fe6cda1f781b1277d8939c51
       tags:
-      - 0.16.66-1-g59c39bccf
+      - 0.16.67-2-g8976cc5fb
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): add integration tests to BUCK (#3594)...'
-      sha: 59c39bccfd4d8c043b0d05f0e316b872156466e6
+      commitTitle: 'feat(core): add missing callbacks (#3585)...'
+      sha: 8976cc5fb83f3839fe6cda1f781b1277d8939c51
       tags:
-      - 0.16.66-1-g59c39bccf
+      - 0.16.67-2-g8976cc5fb
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(core): add integration tests to BUCK (#3594)...'
-      sha: 59c39bccfd4d8c043b0d05f0e316b872156466e6
+      commitTitle: 'feat(core): add missing callbacks (#3585)...'
+      sha: 8976cc5fb83f3839fe6cda1f781b1277d8939c51
       tags:
-      - 0.16.67
+      - 0.16.67-2-g8976cc5fb
     path: ./
   path: ./graphql
 kind: LockConfig
