@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: auth validation with new mobile app (#3606)...'
-      sha: 8233d4b8ee67c69e75ed4b8fda283a2498fac973
+      commitTitle: 'build(core): add --frozen-lockfile flag where missing (#3609)...'
+      sha: f386f249d408679b49cee07366c355d148e821fc
       tags:
-      - 0.16.64-1-g8233d4b8e
+      - 0.16.65-1-gf386f249d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: auth validation with new mobile app (#3606)...'
-      sha: 8233d4b8ee67c69e75ed4b8fda283a2498fac973
+      commitTitle: 'build(core): add --frozen-lockfile flag where missing (#3609)...'
+      sha: f386f249d408679b49cee07366c355d148e821fc
       tags:
-      - 0.16.64-1-g8233d4b8e
+      - 0.16.65-1-gf386f249d
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: auth validation with new mobile app (#3606)...'
-      sha: 8233d4b8ee67c69e75ed4b8fda283a2498fac973
+      commitTitle: 'build(core): add --frozen-lockfile flag where missing (#3609)...'
+      sha: f386f249d408679b49cee07366c355d148e821fc
       tags:
-      - 0.16.64-1-g8233d4b8e
+      - 0.16.65-1-gf386f249d
     path: ./
   path: ./graphql
 kind: LockConfig
