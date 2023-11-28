@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: re-init-withdraw-fee migration (#3614)'
-      sha: 3a1dacd6990d0af12d9b77b59cd8a3cfa6c669d2
+      commitTitle: 'build(ci): refactor labels to have a default value if empty (#3616)...'
+      sha: 98d8006ed44ba9191604e397ef8ef0ddc4e799cb
       tags:
-      - 0.16.72-2-g3a1dacd69
+      - 0.16.73-1-g98d8006ed
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: re-init-withdraw-fee migration (#3614)'
-      sha: 3a1dacd6990d0af12d9b77b59cd8a3cfa6c669d2
+      commitTitle: 'build(ci): refactor labels to have a default value if empty (#3616)...'
+      sha: 98d8006ed44ba9191604e397ef8ef0ddc4e799cb
       tags:
-      - 0.16.72-2-g3a1dacd69
+      - 0.16.73-1-g98d8006ed
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: re-init-withdraw-fee migration (#3614)'
-      sha: 3a1dacd6990d0af12d9b77b59cd8a3cfa6c669d2
+      commitTitle: 'build(ci): refactor labels to have a default value if empty (#3616)...'
+      sha: 98d8006ed44ba9191604e397ef8ef0ddc4e799cb
       tags:
-      - 0.16.72-2-g3a1dacd69
+      - 0.16.73-1-g98d8006ed
     path: ./
   path: ./graphql
 kind: LockConfig
