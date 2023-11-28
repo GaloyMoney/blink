@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: make withdrawFee undefined by default (#3610)...'
-      sha: b7ab4f12d1baba03bf968d1ea04679b576292fc7
+      commitTitle: 'fix(dashboard): api expire (#3613)...'
+      sha: e68d354271bf25a339cf3f53ab025f28782e248d
       tags:
-      - 0.16.69-2-gb7ab4f12d
+      - 0.16.70-3-ge68d35427
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: make withdrawFee undefined by default (#3610)...'
-      sha: b7ab4f12d1baba03bf968d1ea04679b576292fc7
+      commitTitle: 'fix(dashboard): api expire (#3613)...'
+      sha: e68d354271bf25a339cf3f53ab025f28782e248d
       tags:
-      - 0.16.69-2-gb7ab4f12d
+      - 0.16.70-3-ge68d35427
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: make withdrawFee undefined by default (#3610)...'
-      sha: b7ab4f12d1baba03bf968d1ea04679b576292fc7
+      commitTitle: 'fix(dashboard): api expire (#3613)...'
+      sha: e68d354271bf25a339cf3f53ab025f28782e248d
       tags:
-      - 0.16.69-2-gb7ab4f12d
+      - 0.16.70-3-ge68d35427
     path: ./
   path: ./graphql
 kind: LockConfig
