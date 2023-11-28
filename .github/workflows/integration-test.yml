@@ -29,7 +29,11 @@ jobs:
           fi
 
           for LABEL in "${LABELS[@]}"; do
-            ARGS+=" --test $LABEL"
+            case "$LABEL" in
+              dashboard|consent|core)
+                ARGS+=" --test $LABEL"
+                ;;
+            esac
           done
 
           echo "Prepared args: $ARGS"
