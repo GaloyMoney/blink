@@ -74,6 +74,7 @@ groups:
     jobs:
       - buck-test
       - integration-tests
+      - legacy-integration-tests
       - bats-tests
       - legacy-bats-tests
       - build-edge-image
@@ -116,6 +117,42 @@ jobs:
             path: pipeline-tasks/ci/apps/tasks/buck-task.sh
   - name: integration-tests
     #@ container = "integration-tests"
+    #@ params = {}
+    #@ params["REPO_PATH"] = data.values.gh_repository + "-" + container
+    #@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
+    #@ params["SSH_PRIVATE_KEY"] = "((staging-ssh.ssh_private_key))"
+    #@ params["SSH_PUB_KEY"] = "((staging-ssh.ssh_public_key))"
+    #@ params["CMD"] = "tilt --file dev/Tiltfile ci -- --test core"
+    serial: true
+    plan:
+    - { put: docker-host, params: { acquire: true } }
+    - in_parallel:
+      - get: repo
+        trigger: true
+      - { get: pipeline-tasks }
+    - task: integration-tests
+      attempts: 2
+      timeout: 18m
+      tags: ["galoy-staging"]
+      config:
+        platform: linux
+        image_resource: #@ rust_task_image_config()
+        inputs:
+        - name: pipeline-tasks
+        - name: docker-host
+          path: nix-host
+        - name: repo
+          path: #@ data.values.gh_repository + "-" + container
+        params: #@ params
+        run:
+          path: pipeline-tasks/ci/apps/tasks/run-on-nix-host.sh
+      ensure:
+        put: docker-host
+        params:
+          release: docker-host
+    on_failure: #@ slack_failure_notification()
+  - name: legacy-integration-tests
+    #@ container = "legacy-integration-tests"
     #@ params = {}
     #@ params["REPO_PATH"] = data.values.gh_repository + "-" + container
     #@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
@@ -630,6 +667,7 @@ jobs:
             passed:
               - buck-test
               - integration-tests
+              - legacy-integration-tests
               - legacy-bats-tests
               - bats-tests
               - build-debug-edge-image
