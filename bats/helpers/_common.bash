@@ -53,6 +53,23 @@ retry() {
   false
 }
 
+is_number() {
+  if ! [[ $1 =~ ^-?[0-9]+$ ]]; then
+    echo "Error: $2 input is not a number: $1"
+    exit 1
+  fi
+}
+
+abs() {
+  is_number $1 || return 1
+
+  if [[ $1 -lt 0 ]]; then
+    echo "$((- $1))"
+  else
+    echo "$1"
+  fi
+}
+
 gql_query() {
   cat "$(gql_file "$1")" | tr '\n' ' ' | sed 's/"/\\"/g'
 }

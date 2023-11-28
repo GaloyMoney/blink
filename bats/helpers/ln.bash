@@ -195,3 +195,61 @@ mempool_not_empty() {
   local txid="$(bitcoin_cli getrawmempool | jq -r ".[0]")"
   [[ "$txid" != "null" ]] || exit 1
 }
+
+num_txns_for_hash() {
+  token_name="$1"
+  payment_hash="$2"
+
+  first=20
+  txn_variables=$(
+  jq -n \
+  --argjson first "$first" \
+  '{"first": $first}'
+  )
+  exec_graphql "$token_name" 'transactions' "$txn_variables" > /dev/null
+
+  jq_query='
+    [
+      .data.me.defaultAccount.transactions.edges[]
+      | select(.node.initiationVia.paymentHash == $payment_hash)
+    ]
+      | length
+  '
+  echo $output \
+    | jq -r \
+      --arg payment_hash "$payment_hash" \
+      "$jq_query"
+}
+
+
+rebalance_channel() {
+    lnd_cli_value="$1"
+    lnd_partner_cli_value="$2"
+    target_local_balance="$3"
+
+    local_pubkey="$(run_with_lnd $lnd_cli_value getinfo | jq -r '.identity_pubkey')"
+    remote_pubkey="$(run_with_lnd $lnd_partner_cli_value getinfo | jq -r '.identity_pubkey')"
+
+    partner_channel_filter='
+    [
+      .channels[]?
+      | select(.remote_pubkey == $remote_pubkey)
+    ] | first
+    '
+
+    channel=$(
+      run_with_lnd "$lnd_cli_value" listchannels \
+        | jq -r \
+          --arg remote_pubkey "$remote_pubkey" \
+          "$partner_channel_filter"
+    )
+    [[ "$channel" != "null" ]]
+
+    actual_local_balance=$(echo $channel | jq -r '.local_balance')
+    diff="$(( $actual_local_balance - $target_local_balance ))"
+    if [[ "$diff" -gt 0 ]]; then
+      run_with_lnd "$lnd_cli_value" sendpayment --dest=$remote_pubkey --amt=$diff --keysend
+    elif [[ "$diff" -lt 0 ]]; then
+      run_with_lnd "$lnd_partner_cli_value" sendpayment --dest=$local_pubkey --amt="$(abs $diff)" --keysend
+    fi
+}
