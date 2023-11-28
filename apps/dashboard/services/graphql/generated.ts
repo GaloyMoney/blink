@@ -1634,7 +1634,7 @@ export type TxDirection = typeof TxDirection[keyof typeof TxDirection];
 export const TxNotificationType = {
   IntraLedgerPayment: 'IntraLedgerPayment',
   IntraLedgerReceipt: 'IntraLedgerReceipt',
-  LnInvoicePaid: 'LnInvoicePaid',
+  LigtningReceipt: 'LigtningReceipt',
   OnchainPayment: 'OnchainPayment',
   OnchainReceipt: 'OnchainReceipt',
   OnchainReceiptPending: 'OnchainReceiptPending'
