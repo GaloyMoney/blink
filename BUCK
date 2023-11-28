@@ -6,6 +6,7 @@ pnpm_workspace(
     "//core/api:package.json",
     "//apps/consent:package.json",
     "//apps/dashboard:package.json",
+    "//apps/pay:package.json",
     "//lib/eslint-config:package.json"
   ],
   visibility = ["PUBLIC"],

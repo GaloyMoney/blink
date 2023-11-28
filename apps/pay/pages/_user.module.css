@@ -1,0 +1,67 @@
+.payment_container {
+  height: 100%;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.pin_btn {
+  --black-900: rgba(17, 25, 40, 1);
+  font-family: "Source Sans Pro", sans-serif;
+  font-weight: 600;
+  font-size: 0.75rem;
+  line-height: 12px;
+  background-color: transparent;
+  color: var(--black-900);
+  outline: none;
+  border: none;
+}
+
+.username_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.username_container > button {
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  outline: none;
+  position: absolute;
+  left: -50%;
+  transition: all 0.5s ease;
+}
+
+.username_container > button:hover,
+.username_container > button:focus {
+  outline: 1px solid rgba(239, 241, 245, 1);
+  border-radius: 50%;
+  padding: 0.75rem 0.85rem;
+}
+
+.username {
+  color: rgba(17, 25, 40, 1);
+  font-weight: 600;
+  line-height: 24px;
+  margin-top: 12px;
+  margin-bottom: 6px;
+  text-transform: capitalize;
+}
+
+.error {
+  color: rgb(224, 6, 6);
+  font-size: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+  display: grid;
+  padding: 0 1rem;
+  place-content: center;
+  height: calc(100vh - 2rem);
+}
+
+.error > p:last-child {
+  color: rgb(45, 43, 43);
+}

@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "AYPCPV46WW.io.galoy.bitcoinbeach",
+        "paths": ["*"]
+      }
+    ]
+  }
+}
