@@ -2,7 +2,7 @@ import crypto from "crypto"
 
 import mongoose from "mongoose"
 
-import { getDefaultAccountsConfig, getFeesConfig, Levels } from "@/config"
+import { getDefaultAccountsConfig, Levels } from "@/config"
 import { AccountStatus, UsernameRegex } from "@/domain/accounts"
 import { WalletIdRegex, WalletType } from "@/domain/wallets"
 import { WalletCurrency } from "@/domain/shared"
@@ -96,8 +96,6 @@ export const WalletInvoice = mongoose.model<WalletInvoiceRecord>(
   walletInvoiceSchema,
 )
 
-const feesConfig = getFeesConfig()
-
 const WalletSchema = new Schema<WalletRecord>({
   id: {
     type: String,
@@ -151,11 +149,10 @@ const AccountSchema = new Schema<AccountRecord>(
       required: true,
       default: () => crypto.randomUUID(),
     },
-
     withdrawFee: {
       type: Number,
-      default: feesConfig.withdrawDefaultMin,
       min: 0,
+      required: false,
     },
     created_at: {
       type: Date,

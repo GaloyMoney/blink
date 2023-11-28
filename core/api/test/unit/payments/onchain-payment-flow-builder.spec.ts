@@ -301,7 +301,7 @@ describe("OnChainPaymentFlowBuilder", () => {
                 if (sendAmount instanceof Error) throw sendAmount
 
                 const minBankFee = paymentAmountFromNumber({
-                  amount: senderAccount.withdrawFee,
+                  amount: senderAccount.withdrawFee as Satoshis,
                   currency: WalletCurrency.Btc,
                 })
                 if (minBankFee instanceof Error) throw minBankFee
@@ -821,7 +821,7 @@ describe("OnChainPaymentFlowBuilder", () => {
                           )
 
                     const minBankFee = paymentAmountFromNumber({
-                      amount: senderAccount.withdrawFee,
+                      amount: senderAccount.withdrawFee as Satoshis,
                       currency: WalletCurrency.Btc,
                     })
                     if (minBankFee instanceof Error) throw minBankFee

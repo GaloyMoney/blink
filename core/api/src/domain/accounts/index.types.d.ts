@@ -99,7 +99,7 @@ type Account = {
   readonly createdAt: Date
   username?: Username | undefined
   defaultWalletId: WalletId
-  withdrawFee: Satoshis // TODO: make it optional. only save when not default value from yaml
+  withdrawFee: Satoshis | undefined
   level: AccountLevel
   status: AccountStatus
   statusHistory: AccountStatusHistory
