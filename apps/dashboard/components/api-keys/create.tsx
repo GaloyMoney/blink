@@ -204,13 +204,10 @@ const ApiKeyCreate = () => {
                     }}
                   >
                     <Typography>Expires In</Typography>
-                    <Input
-                      name="apiKeyExpiresInDays"
-                      id="apiKeyExpiresInDays"
-                      sx={{ display: "none", padding: "0.6em" }}
-                    />
                     <Select
                       data-testid="create-api-expire-select"
+                      name="apiKeyExpiresInDaysSelect"
+                      id="apiKeyExpiresInDaysSelect"
                       sx={{
                         padding: "0.6em",
                       }}
@@ -241,6 +238,8 @@ const ApiKeyCreate = () => {
                       }}
                     >
                       <Input
+                        name="apiKeyExpiresInDaysCustom"
+                        id="apiKeyExpiresInDaysCustom"
                         sx={{
                           width: "100%",
                           padding: "0.6em",

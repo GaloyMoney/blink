@@ -51,8 +51,10 @@ export const createApiKeyServerAction = async (
   _prevState: ApiKeyResponse,
   form: FormData,
 ): Promise<ApiKeyResponse> => {
+  let apiKeyExpiresInDays: number | null = null
   const apiKeyName = form.get("apiKeyName")
   const readOnly = form.get("apiScope") === "readOnly"
+  const apiKeyExpiresInDaysSelect = form.get("apiKeyExpiresInDaysSelect")
 
   if (!apiKeyName || typeof apiKeyName !== "string") {
     return {
@@ -62,10 +64,14 @@ export const createApiKeyServerAction = async (
     }
   }
 
-  const apiKeyExpiresInDaysFormData = form.get("apiKeyExpiresInDays")
-  const apiKeyExpiresInDays = apiKeyExpiresInDaysFormData
-    ? parseInt(String(apiKeyExpiresInDaysFormData))
-    : null
+  if (apiKeyExpiresInDaysSelect === "custom") {
+    const customValue = form.get("apiKeyExpiresInDaysCustom")
+    apiKeyExpiresInDays = customValue ? parseInt(customValue as string, 10) : null
+  } else {
+    apiKeyExpiresInDays = apiKeyExpiresInDaysSelect
+      ? parseInt(apiKeyExpiresInDaysSelect as string, 10)
+      : null
+  }
 
   const session = await getServerSession(authOptions)
   const token = session?.accessToken
