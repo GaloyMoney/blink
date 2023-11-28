@@ -2,6 +2,16 @@ config.define_string_list("test")
 config.define_bool("bats")
 cfg = config.parse()
 
+CORE_TEST_LABEL = "core"
+CONSENT_TEST_LABEL = "consent"
+DASHBOARD_TEST_LABEL = "dashboard"
+
+TEST_RESOURCES = {
+   CORE_TEST_LABEL: "api-test",
+   CONSENT_TEST_LABEL: "consent-test",
+   DASHBOARD_TEST_LABEL: "dashboard-test",
+}
+
 is_ci=("ci" in sys.argv) or cfg.get("bats", False)
 
 # From the Tilt docs:
@@ -75,7 +85,7 @@ consent_test_target = "//apps/consent:test-integration"
 local_resource(
   "consent-test",
   labels = ["test"],
-  auto_init = is_ci and "consent" in cfg.get("test", []),
+  auto_init = is_ci and CONSENT_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(consent_test_target),
   allow_parallel = True,
   resource_deps = [
@@ -89,7 +99,7 @@ dashboard_test_target = "//apps/dashboard:test-integration"
 local_resource(
   "dashboard-test",
   labels = ["test"],
-  auto_init = is_ci and "dashboard" in cfg.get("test", []),
+  auto_init = is_ci and DASHBOARD_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(dashboard_test_target),
   resource_deps = [
     "consent",
@@ -340,7 +350,16 @@ to_run = cfg.get("to-run", [])
 if to_run != []:
     enabled_resources = []
     for svc in to_run:
-      enabled_resources.append(svc)
+        enabled_resources.append(svc)
+    config.set_enabled_resources(enabled_resources)
+
+to_test = cfg.get("test", [])
+if to_test != []:
+    enabled_resources = []
+    for label in to_test:
+        svc = TEST_RESOURCES.get(label)
+        if svc:
+            enabled_resources.append(svc)
     config.set_enabled_resources(enabled_resources)
 
 docker_compose("./docker-compose.deps.yml", project_name = "galoy-dev")
@@ -362,7 +381,7 @@ api_test_target = "//core/api:test-integration"
 local_resource(
   "api-test",
   labels = ["test"],
-  auto_init = is_ci and "core" in cfg.get("test", []),
+  auto_init = is_ci and CORE_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(api_test_target),
   resource_deps = [res for sublist in docker_groups.values() for res in sublist],
 )
