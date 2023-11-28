@@ -355,11 +355,11 @@ if to_run != []:
 
 to_test = cfg.get("test", [])
 if to_test != []:
-    enabled_resources = [
-        TEST_RESOURCES.get(label)
-        for label in to_test
-        if TEST_RESOURCES.get(label)
-    ]
+    enabled_resources = []
+    for label in to_test:
+        svc = TEST_RESOURCES.get(label)
+        if svc:
+            enabled_resources.append(svc)
     config.set_enabled_resources(enabled_resources)
 
 docker_compose("./docker-compose.deps.yml", project_name = "galoy-dev")
