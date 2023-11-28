@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor: target tests more specifically in Tiltfile (#3615)...'
-      sha: b1fd44c1d2e5cf467b1b25a6aa2541817f810595
+      commitTitle: 'chore: re-init-withdraw-fee migration (#3614)'
+      sha: 3a1dacd6990d0af12d9b77b59cd8a3cfa6c669d2
       tags:
-      - 0.16.71-1-gb1fd44c1d
+      - 0.16.72-2-g3a1dacd69
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor: target tests more specifically in Tiltfile (#3615)...'
-      sha: b1fd44c1d2e5cf467b1b25a6aa2541817f810595
+      commitTitle: 'chore: re-init-withdraw-fee migration (#3614)'
+      sha: 3a1dacd6990d0af12d9b77b59cd8a3cfa6c669d2
       tags:
-      - 0.16.71-1-gb1fd44c1d
+      - 0.16.72-2-g3a1dacd69
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'refactor: target tests more specifically in Tiltfile (#3615)...'
-      sha: b1fd44c1d2e5cf467b1b25a6aa2541817f810595
+      commitTitle: 'chore: re-init-withdraw-fee migration (#3614)'
+      sha: 3a1dacd6990d0af12d9b77b59cd8a3cfa6c669d2
       tags:
-      - 0.16.72
+      - 0.16.72-2-g3a1dacd69
     path: ./
   path: ./graphql
 kind: LockConfig
