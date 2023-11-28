@@ -56,7 +56,6 @@ export const createApiKeyServerAction = async (
   const readOnly = form.get("apiScope") === "readOnly"
   const apiKeyExpiresInDaysSelect = form.get("apiKeyExpiresInDaysSelect")
 
-
   if (!apiKeyName || typeof apiKeyName !== "string") {
     return {
       error: true,
