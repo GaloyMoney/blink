@@ -18,10 +18,18 @@ jobs:
         id: prepare_args
         run: |
           ARGS=""
+
           cat <<EOF > labels.json
           ${{ toJSON(github.event.pull_request.labels.*.name) }}
           EOF
-          for LABEL in dashboard consent core; do
+
+          DEFAULT_LABELS=("dashboard" "consent" "core")
+          LABELS=($(jq -r '.[]' < labels.json))
+          if [ ${#LABELS[@]} -eq 0 ]; then
+              LABELS=("${DEFAULT_LABELS[@]}")
+          fi
+
+          for LABEL in "${LABELS[@]}"; do
             case "$LABEL" in
               dashboard|consent)
                 ARGS+=" //apps/$LABEL:test-unit"
@@ -31,7 +39,9 @@ jobs:
                 ;;
             esac
           done
+
           echo "Prepared args: $ARGS"
           echo "args=$ARGS" >> "$GITHUB_OUTPUT"
       - name: Buck2 test
+        if: steps.prepare_args.outputs.args != ''
         run: nix develop -c buck2 test ${{ steps.prepare_args.outputs.args }}
