@@ -54,7 +54,7 @@ get_from_pending_transaction_by_address() {
     | jq -r "$property_query"
 }
 
-check_for_broadcast() {
+check_for_incoming_broadcast() {
   local token_name=$1
   local address=$2
 

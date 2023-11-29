@@ -243,7 +243,7 @@ describe("translates ledger txs to wallet txs", () => {
           memoSharingConfig,
         })
 
-        expect(result).toEqual([expected[i]])
+        expect(result).toEqual(expected[i])
       }
     })
 
@@ -272,7 +272,7 @@ describe("translates ledger txs to wallet txs", () => {
           memoSharingConfig,
         })
 
-        expect(result).toEqual([expected[i]])
+        expect(result).toEqual(expected[i])
       }
     })
 
@@ -360,7 +360,7 @@ describe("translates ledger txs to wallet txs", () => {
           memoSharingConfig,
         })
 
-        expect(result).toEqual([expectedTransactionsModified[i]])
+        expect(result).toEqual(expectedTransactionsModified[i])
       }
     })
   })
