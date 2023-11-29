@@ -18,7 +18,7 @@ jobs:
       - name: Buck2 build
         run: |
           nix develop -c buck2 build //core/api //core/api-ws-server \
-            //core/api-keys //apps/dashboard //apps/consent
+            //core/api-keys //apps/dashboard //apps/consent //apps/pay
       - name: Run bats tests
         run: |
           nix develop -c bats --setup-suite-file bats/ci_setup_suite.bash -t bats/core/**
