@@ -10,9 +10,11 @@ import { toCents, UsdDisplayCurrency } from "@/domain/fiat"
 import {
   InactiveAccountError,
   InsufficientBalanceError,
+  IntraledgerLimitsExceededError,
   LessThanDustThresholdError,
-  LimitsExceededError,
   SelfPaymentError,
+  TradeIntraAccountLimitsExceededError,
+  WithdrawalLimitsExceededError,
 } from "@/domain/errors"
 import { SubOneCentSatAmountForUsdSelfSendError } from "@/domain/payments"
 import {
@@ -225,7 +227,7 @@ describe("onChainPay", () => {
         memo,
       })
 
-      expect(result).toBeInstanceOf(LimitsExceededError)
+      expect(result).toBeInstanceOf(WithdrawalLimitsExceededError)
     })
 
     it("fails if has insufficient balance for fee", async () => {
@@ -440,7 +442,7 @@ describe("onChainPay", () => {
         memo,
       })
 
-      expect(result).toBeInstanceOf(LimitsExceededError)
+      expect(result).toBeInstanceOf(IntraledgerLimitsExceededError)
     })
 
     it("fails if trade-intra-account limit hit", async () => {
@@ -502,7 +504,7 @@ describe("onChainPay", () => {
         memo,
       })
 
-      expect(result).toBeInstanceOf(LimitsExceededError)
+      expect(result).toBeInstanceOf(TradeIntraAccountLimitsExceededError)
     })
 
     it("fails if recipient account is locked", async () => {
