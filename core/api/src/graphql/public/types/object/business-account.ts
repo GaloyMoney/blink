@@ -118,12 +118,12 @@ const BusinessAccount = GT.Object({
         },
       },
       resolve: async (source, args) => {
-        const { walletIds } = args
+        const { walletIds, ...rawPaginationArgs } = args
 
         const result = await Accounts.getTransactionsForAccountByWalletIds({
           account: source,
           walletIds,
-          rawPaginationArgs: args,
+          rawPaginationArgs,
         })
 
         if (result instanceof Error) {
@@ -164,11 +164,11 @@ const BusinessAccount = GT.Object({
         },
       },
       resolve: async (source, args) => {
-        const { walletIds } = args
+        const { walletIds, ...rawPaginationArgs } = args
         const result = await Accounts.getInvoicesForAccountByWalletIds({
           account: source,
           walletIds,
-          rawPaginationArgs: args,
+          rawPaginationArgs,
         })
 
         if (result instanceof Error) {

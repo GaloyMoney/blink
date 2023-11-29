@@ -144,13 +144,13 @@ const BtcWallet = GT.Object<Wallet>({
         },
       },
       resolve: async (source, args) => {
-        const { address } = args
+        const { address, ...rawPaginationArgs } = args
         if (address instanceof Error) throw address
 
         const result = await Wallets.getTransactionsForWalletsByAddresses({
           wallets: [source],
           addresses: [address],
-          rawPaginationArgs: args,
+          rawPaginationArgs,
         })
 
         if (result instanceof Error) {

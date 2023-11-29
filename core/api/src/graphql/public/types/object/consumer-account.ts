@@ -165,12 +165,12 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
         },
       },
       resolve: async (source, args) => {
-        const { walletIds } = args
+        const { walletIds, ...rawPaginationArgs } = args
 
         const result = await Accounts.getTransactionsForAccountByWalletIds({
           account: source,
           walletIds,
-          rawPaginationArgs: args,
+          rawPaginationArgs,
         })
 
         if (result instanceof Error) {
@@ -213,12 +213,12 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
         },
       },
       resolve: async (source, args) => {
-        const { walletIds } = args
+        const { walletIds, ...rawPaginationArgs } = args
 
         const result = await Accounts.getInvoicesForAccountByWalletIds({
           account: source,
           walletIds,
-          rawPaginationArgs: args,
+          rawPaginationArgs,
         })
 
         if (result instanceof Error) {
