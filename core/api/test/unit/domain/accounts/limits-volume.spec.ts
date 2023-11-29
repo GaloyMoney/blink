@@ -129,7 +129,7 @@ describe("LimitsChecker", () => {
     })
   })
 
-  describe.skip("returns 0n for walletVolumes above limit", () => {
+  describe("returns 0n for walletVolumes above limit", () => {
     it("intraLedger", async () => {
       const remaining = await volumeRemainingCalc.intraLedger({
         priceRatio,
