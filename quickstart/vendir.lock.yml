@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build(ci): refactor labels to have a default value if empty (#3616)...'
-      sha: 98d8006ed44ba9191604e397ef8ef0ddc4e799cb
+      commitTitle: 'test: move bria integration (#3617)'
+      sha: bde0f1360d3df2f2ce3c91cbc63c841606ad4875
       tags:
-      - 0.16.73-1-g98d8006ed
+      - 0.16.74-3-gbde0f1360
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build(ci): refactor labels to have a default value if empty (#3616)...'
-      sha: 98d8006ed44ba9191604e397ef8ef0ddc4e799cb
+      commitTitle: 'test: move bria integration (#3617)'
+      sha: bde0f1360d3df2f2ce3c91cbc63c841606ad4875
       tags:
-      - 0.16.73-1-g98d8006ed
+      - 0.16.74-3-gbde0f1360
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'build(ci): refactor labels to have a default value if empty (#3616)...'
-      sha: 98d8006ed44ba9191604e397ef8ef0ddc4e799cb
+      commitTitle: 'test: move bria integration (#3617)'
+      sha: bde0f1360d3df2f2ce3c91cbc63c841606ad4875
       tags:
-      - 0.16.73-1-g98d8006ed
+      - 0.16.74-3-gbde0f1360
     path: ./
   path: ./graphql
 kind: LockConfig
