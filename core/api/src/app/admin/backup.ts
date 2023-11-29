@@ -1,4 +1,5 @@
 import { Storage } from "@google-cloud/storage"
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 
 import axios from "axios"
 
@@ -10,6 +11,8 @@ import {
   NEXTCLOUD_PASSWORD,
   NEXTCLOUD_URL,
   NEXTCLOUD_USER,
+  AWS_ACCESS_KEY_ID,
+  AWS_SECRET_ACCESS_KEY,
 } from "@/config"
 import { ErrorLevel } from "@/domain/shared"
 import {
@@ -30,7 +33,8 @@ export const uploadBackup =
       !(
         DROPBOX_ACCESS_TOKEN ||
         GCS_APPLICATION_CREDENTIALS_PATH ||
-        (NEXTCLOUD_URL && NEXTCLOUD_USER && NEXTCLOUD_PASSWORD)
+        (NEXTCLOUD_URL && NEXTCLOUD_USER && NEXTCLOUD_PASSWORD) ||
+        (AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY)
       )
     ) {
       const err = new Error(
@@ -100,6 +104,42 @@ export const uploadBackup =
             addEventToCurrentSpan("Static channel backup to GoogleCloud successful.")
           } catch (error) {
             const fallbackMsg = "Static channel backup to GoogleCloud failed."
+            logger.error({ error }, fallbackMsg)
+            recordExceptionInCurrentSpan({
+              error: error,
+              level: ErrorLevel.Warn,
+              fallbackMsg,
+            })
+          }
+        },
+      )
+    }
+
+    if (!(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY)) {
+      addAttributesToCurrentSpan({ ["uploadBackup.destination.aws"]: "false" })
+    } else {
+      addAttributesToCurrentSpan({ ["uploadBackup.destination.aws"]: "true" })
+      asyncRunInSpan(
+        "app.admin.backup.uploadBackup.aws",
+        {
+          attributes: {
+            [SemanticAttributes.CODE_FUNCTION]: "uploadBackup.aws",
+            [SemanticAttributes.CODE_NAMESPACE]: "app.admin.backup",
+          },
+        },
+        async () => {
+          const client = new S3Client({})
+          const command = new PutObjectCommand({
+            Bucket: LND_SCB_BACKUP_BUCKET_NAME,
+            Key: `lnd_scb/${filename}`,
+            Body: backup,
+          })
+          try {
+            client.send(command)
+            logger.info({ backup }, "Static channel backup to AWS successful.")
+            addEventToCurrentSpan("Static channel backup to AWS successful.")
+          } catch (error) {
+            const fallbackMsg = "Static channel backup to AWS failed."
             logger.error({ error }, fallbackMsg)
             recordExceptionInCurrentSpan({
               error: error,

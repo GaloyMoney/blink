@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@apollo/server": "^4.9.5",
+    "@aws-sdk/client-s3": "^3.461.0",
     "@google-cloud/storage": "^7.6.0",
     "@grpc/grpc-js": "^1.9.11",
     "@grpc/proto-loader": "^0.7.10",
