@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: move bria integration (#3617)'
-      sha: bde0f1360d3df2f2ce3c91cbc63c841606ad4875
+      commitTitle: 'chore(deps): bump bria-api proto (#3624)...'
+      sha: 7fa3a4dc8ea3ee146128f977f66deefb1e43cfaf
       tags:
-      - 0.16.74-3-gbde0f1360
+      - 0.16.74-5-g7fa3a4dc8
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: move bria integration (#3617)'
-      sha: bde0f1360d3df2f2ce3c91cbc63c841606ad4875
+      commitTitle: 'chore(deps): bump bria-api proto (#3624)...'
+      sha: 7fa3a4dc8ea3ee146128f977f66deefb1e43cfaf
       tags:
-      - 0.16.74-3-gbde0f1360
+      - 0.16.74-5-g7fa3a4dc8
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test: move bria integration (#3617)'
-      sha: bde0f1360d3df2f2ce3c91cbc63c841606ad4875
+      commitTitle: 'chore(deps): bump bria-api proto (#3624)...'
+      sha: 7fa3a4dc8ea3ee146128f977f66deefb1e43cfaf
       tags:
-      - 0.16.74-3-gbde0f1360
+      - 0.16.74-5-g7fa3a4dc8
     path: ./
   path: ./graphql
 kind: LockConfig
