@@ -1,6 +1,7 @@
 CURRENT_FILE=${BASH_SOURCE:-bats/helpers/.}
 source "$(dirname "$CURRENT_FILE")/_common.bash"
 source "$(dirname "$CURRENT_FILE")/cli.bash"
+source "$(dirname "$CURRENT_FILE")/subscriber.bash"
 
 fund_user_lightning() {
   local token_name=$1
@@ -252,4 +253,21 @@ rebalance_channel() {
     elif [[ "$diff" -lt 0 ]]; then
       run_with_lnd "$lnd_partner_cli_value" sendpayment --dest=$local_pubkey --amt="$(abs $diff)" --keysend
     fi
+}
+
+check_for_ln_update() {
+  payment_hash=$1
+
+  retry 10 1 \
+    grep "Data.*LnUpdate.*$payment_hash" "$SUBSCRIBER_LOG_FILE" \
+    | awk '{print $2}' \
+    | jq -r --arg hash "$payment_hash" 'select(.data.myUpdates.update.paymentHash == $hash)'
+
+  paid_status=$( \
+    grep 'Data.*LnUpdate' "$SUBSCRIBER_LOG_FILE" \
+    | awk '{print $2}' \
+    | jq -r --arg hash "$payment_hash" 'select(.data.myUpdates.update.paymentHash == $hash) .data.myUpdates.update.status'
+  )
+
+  [[ "$paid_status" == "PAID" ]] || exit 1
 }
