@@ -51,7 +51,7 @@ const intraledgerPaymentSendWalletId = async ({
   amount: uncheckedAmount,
   memo,
   senderWalletId: uncheckedSenderWalletId,
-}: IntraLedgerPaymentSendWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
+}: IntraLedgerPaymentSendWalletIdArgs): Promise<PaymentSendResult | ApplicationError> => {
   const validatedPaymentInputs = await validateIntraledgerPaymentInputs({
     uncheckedSenderWalletId,
     uncheckedRecipientWalletId,
@@ -117,7 +117,7 @@ const intraledgerPaymentSendWalletId = async ({
     "payment.finalRecipient": JSON.stringify(paymentFlow.recipientWalletDescriptor()),
   })
 
-  const paymentSendStatus = await executePaymentViaIntraledger({
+  const paymentSendResult = await executePaymentViaIntraledger({
     paymentFlow,
     senderAccount,
     senderWallet,
@@ -125,7 +125,7 @@ const intraledgerPaymentSendWalletId = async ({
     recipientWallet,
     memo,
   })
-  if (paymentSendStatus instanceof Error) return paymentSendStatus
+  if (paymentSendResult instanceof Error) return paymentSendResult
 
   if (senderAccount.id !== recipientAccount.id) {
     const addContactResult = await addContactsAfterSend({
@@ -137,19 +137,19 @@ const intraledgerPaymentSendWalletId = async ({
     }
   }
 
-  return paymentSendStatus
+  return paymentSendResult
 }
 
 export const intraledgerPaymentSendWalletIdForBtcWallet = async (
   args: IntraLedgerPaymentSendWalletIdArgs,
-): Promise<PaymentSendStatus | ApplicationError> => {
+): Promise<PaymentSendResult | ApplicationError> => {
   const validated = await validateIsBtcWallet(args.senderWalletId)
   return validated instanceof Error ? validated : intraledgerPaymentSendWalletId(args)
 }
 
 export const intraledgerPaymentSendWalletIdForUsdWallet = async (
   args: IntraLedgerPaymentSendWalletIdArgs,
-): Promise<PaymentSendStatus | ApplicationError> => {
+): Promise<PaymentSendResult | ApplicationError> => {
   const validated = await validateIsUsdWallet(args.senderWalletId)
   return validated instanceof Error ? validated : intraledgerPaymentSendWalletId(args)
 }
@@ -219,7 +219,7 @@ const executePaymentViaIntraledger = async <
   recipientAccount: Account
   recipientWallet: WalletDescriptor<R>
   memo: string | null
-}): Promise<PaymentSendStatus | ApplicationError> => {
+}): Promise<PaymentSendResult | ApplicationError> => {
   addAttributesToCurrentSpan({
     "payment.settlement_method": SettlementMethod.IntraLedger,
   })
@@ -398,6 +398,9 @@ const executePaymentViaIntraledger = async <
       })
     }
 
-    return PaymentSendStatus.Success
+    return {
+      status: PaymentSendStatus.Success,
+      transaction: senderWalletTransaction,
+    }
   })
 }

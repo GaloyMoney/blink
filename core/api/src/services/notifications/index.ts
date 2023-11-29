@@ -66,6 +66,7 @@ export const NotificationsService = (): INotificationsService => {
                 walletId: recipient.walletId,
                 paymentHash,
                 status: WalletInvoiceStatus.Paid,
+                transaction,
               },
             },
           }),
@@ -89,6 +90,7 @@ export const NotificationsService = (): INotificationsService => {
           currency: intraLedgerTx.settlementCurrency,
           displayAmount: intraLedgerTx.settlementDisplayAmount,
           displayCurrency: intraLedgerTx.settlementDisplayPrice.displayCurrency,
+          transaction,
         }
 
         // TODO: remove deprecated fields
@@ -126,6 +128,7 @@ export const NotificationsService = (): INotificationsService => {
           displayAmount: onchainTx.settlementDisplayAmount,
           displayCurrency: onchainTx.settlementDisplayPrice.displayCurrency,
           txHash: onchainTx.settlementVia.transactionHash,
+          transaction,
         }
 
         // TODO: remove deprecated fields

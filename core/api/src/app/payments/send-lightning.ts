@@ -67,6 +67,7 @@ import { getCurrentPriceAsDisplayPriceRatio } from "@/app/prices"
 import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
 import {
   getTransactionForWalletByJournalId,
+  getTransactionsForWalletByPaymentHash,
   validateIsBtcWallet,
   validateIsUsdWallet,
 } from "@/app/wallets"
@@ -82,7 +83,7 @@ export const payInvoiceByWalletId = async ({
   memo,
   senderWalletId: uncheckedSenderWalletId,
   senderAccount,
-}: PayInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
+}: PayInvoiceByWalletIdArgs): Promise<PaymentSendResult | ApplicationError> => {
   addAttributesToCurrentSpan({
     "payment.initiation_method": PaymentInitiationMethod.Lightning,
   })
@@ -92,7 +93,12 @@ export const payInvoiceByWalletId = async ({
     uncheckedSenderWalletId,
   })
   if (validatedPaymentInputs instanceof AlreadyPaidError) {
-    return PaymentSendStatus.AlreadyPaid
+    const decodedInvoice = decodeInvoice(uncheckedPaymentRequest)
+    if (decodedInvoice instanceof Error) return decodedInvoice
+    return getAlreadyPaidResponse({
+      walletId: uncheckedSenderWalletId,
+      paymentHash: decodedInvoice.paymentHash,
+    })
   }
   if (validatedPaymentInputs instanceof Error) {
     return validatedPaymentInputs
@@ -126,7 +132,7 @@ const payNoAmountInvoiceByWalletId = async ({
   memo,
   senderWalletId: uncheckedSenderWalletId,
   senderAccount,
-}: PayNoAmountInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
+}: PayNoAmountInvoiceByWalletIdArgs): Promise<PaymentSendResult | ApplicationError> => {
   addAttributesToCurrentSpan({
     "payment.initiation_method": PaymentInitiationMethod.Lightning,
   })
@@ -138,7 +144,12 @@ const payNoAmountInvoiceByWalletId = async ({
     senderAccount,
   })
   if (validatedNoAmountPaymentInputs instanceof AlreadyPaidError) {
-    return PaymentSendStatus.AlreadyPaid
+    const decodedInvoice = decodeInvoice(uncheckedPaymentRequest)
+    if (decodedInvoice instanceof Error) return decodedInvoice
+    return getAlreadyPaidResponse({
+      walletId: uncheckedSenderWalletId,
+      paymentHash: decodedInvoice.paymentHash,
+    })
   }
   if (validatedNoAmountPaymentInputs instanceof Error) {
     return validatedNoAmountPaymentInputs
@@ -168,14 +179,14 @@ const payNoAmountInvoiceByWalletId = async ({
 
 export const payNoAmountInvoiceByWalletIdForBtcWallet = async (
   args: PayNoAmountInvoiceByWalletIdArgs,
-): Promise<PaymentSendStatus | ApplicationError> => {
+): Promise<PaymentSendResult | ApplicationError> => {
   const validated = await validateIsBtcWallet(args.senderWalletId)
   return validated instanceof Error ? validated : payNoAmountInvoiceByWalletId(args)
 }
 
 export const payNoAmountInvoiceByWalletIdForUsdWallet = async (
   args: PayNoAmountInvoiceByWalletIdArgs,
-): Promise<PaymentSendStatus | ApplicationError> => {
+): Promise<PaymentSendResult | ApplicationError> => {
   const validated = await validateIsUsdWallet(args.senderWalletId)
   return validated instanceof Error ? validated : payNoAmountInvoiceByWalletId(args)
 }
@@ -358,7 +369,7 @@ const executePaymentViaIntraledger = async <
   senderWallet: WalletDescriptor<S>
   senderAccount: Account
   memo: string | null
-}): Promise<PaymentSendStatus | ApplicationError> => {
+}): Promise<PaymentSendResult | ApplicationError> => {
   addAttributesToCurrentSpan({
     "payment.settlement_method": SettlementMethod.IntraLedger,
   })
@@ -407,7 +418,11 @@ const executePaymentViaIntraledger = async <
 
     const recorded = await ledgerService.isLnTxRecorded(paymentHash)
     if (recorded instanceof Error) return recorded
-    if (recorded) return PaymentSendStatus.AlreadyPaid
+    if (recorded)
+      return getAlreadyPaidResponse({
+        walletId: senderWallet.id,
+        paymentHash,
+      })
 
     const balance = await ledgerService.getWalletBalanceAmount(senderWallet)
     if (balance instanceof Error) return balance
@@ -541,7 +556,10 @@ const executePaymentViaIntraledger = async <
     })
 
     if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
-      await removeDeviceTokens({ userId: recipientUser.id, deviceTokens: result.tokens })
+      await removeDeviceTokens({
+        userId: recipientUser.id,
+        deviceTokens: result.tokens,
+      })
     }
 
     if (senderAccount.id !== recipientAccount.id) {
@@ -550,11 +568,17 @@ const executePaymentViaIntraledger = async <
         recipientAccount,
       })
       if (addContactResult instanceof Error) {
-        recordExceptionInCurrentSpan({ error: addContactResult, level: ErrorLevel.Warn })
+        recordExceptionInCurrentSpan({
+          error: addContactResult,
+          level: ErrorLevel.Warn,
+        })
       }
     }
 
-    return PaymentSendStatus.Success
+    return {
+      status: PaymentSendStatus.Success,
+      transaction: walletTransaction,
+    }
   })
 }
 
@@ -572,7 +596,7 @@ const executePaymentViaLn = async ({
   senderAccount: Account
   senderDisplayCurrency: DisplayCurrency
   memo: string | null
-}): Promise<PaymentSendStatus | ApplicationError> => {
+}): Promise<PaymentSendResult | ApplicationError> => {
   addAttributesToCurrentSpan({
     "payment.settlement_method": SettlementMethod.Lightning,
   })
@@ -714,7 +738,10 @@ const executePaymentViaLn = async ({
       if (updateResult instanceof Error) {
         recordExceptionInCurrentSpan({ error: updateResult })
       }
-      return PaymentSendStatus.Pending
+      return getPendingPaymentResponse({
+        walletId: senderWallet.id,
+        paymentHash,
+      })
     }
 
     const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
@@ -728,7 +755,10 @@ const executePaymentViaLn = async ({
       if (voided instanceof Error) return voided
 
       if (payResult instanceof LnAlreadyPaidError) {
-        return PaymentSendStatus.AlreadyPaid
+        return getAlreadyPaidResponse({
+          walletId: senderWallet.id,
+          paymentHash,
+        })
       }
 
       return payResult
@@ -771,6 +801,55 @@ const executePaymentViaLn = async ({
       await removeDeviceTokens({ userId: senderUser.id, deviceTokens: result.tokens })
     }
 
-    return PaymentSendStatus.Success
+    return {
+      status: PaymentSendStatus.Success,
+      transaction: walletTransaction,
+    }
   })
+}
+
+const getAlreadyPaidResponse = async ({
+  walletId,
+  paymentHash,
+}: {
+  walletId: WalletId
+  paymentHash: PaymentHash
+}): Promise<PaymentSendResult | ApplicationError> =>
+  getPaymentSendResponse({
+    walletId,
+    paymentHash,
+    status: PaymentSendStatus.AlreadyPaid,
+  })
+
+const getPendingPaymentResponse = async ({
+  walletId,
+  paymentHash,
+}: {
+  walletId: WalletId
+  paymentHash: PaymentHash
+}): Promise<PaymentSendResult | ApplicationError> =>
+  getPaymentSendResponse({
+    walletId,
+    paymentHash,
+    status: PaymentSendStatus.Pending,
+  })
+
+const getPaymentSendResponse = async ({
+  walletId,
+  paymentHash,
+  status,
+}: {
+  walletId: WalletId
+  paymentHash: PaymentHash
+  status: PaymentSendStatus
+}): Promise<PaymentSendResult | ApplicationError> => {
+  const transactions = await getTransactionsForWalletByPaymentHash({
+    walletId,
+    paymentHash,
+  })
+  if (transactions instanceof Error) return transactions
+  return {
+    status,
+    transaction: transactions.find((t) => t.settlementAmount < 0) || transactions[0],
+  }
 }

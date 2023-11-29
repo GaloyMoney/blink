@@ -68,7 +68,7 @@ const LnNoAmountUsdInvoicePaymentSendMutation = GT.Field<
       return { errors: [{ message: memo.message }] }
     }
 
-    const status = await Payments.payNoAmountInvoiceByWalletIdForUsdWallet({
+    const result = await Payments.payNoAmountInvoiceByWalletIdForUsdWallet({
       senderWalletId: walletId,
       uncheckedPaymentRequest: paymentRequest,
       memo: memo ?? null,
@@ -76,13 +76,14 @@ const LnNoAmountUsdInvoicePaymentSendMutation = GT.Field<
       senderAccount: domainAccount,
     })
 
-    if (status instanceof Error) {
-      return { status: "failed", errors: [mapAndParseErrorForGqlResponse(status)] }
+    if (result instanceof Error) {
+      return { status: "failed", errors: [mapAndParseErrorForGqlResponse(result)] }
     }
 
     return {
       errors: [],
-      status: status.value,
+      status: result.status.value,
+      transaction: result.transaction,
     }
   },
 })

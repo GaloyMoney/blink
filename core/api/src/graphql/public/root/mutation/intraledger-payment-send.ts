@@ -48,20 +48,21 @@ const IntraLedgerPaymentSendMutation = GT.Field<null, GraphQLPublicContextAuth>(
       return { errors: [mapAndParseErrorForGqlResponse(recipientWalletIdChecked)] }
     }
 
-    const status = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
+    const result = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
       recipientWalletId,
       memo,
       amount,
       senderWalletId: walletId,
       senderAccount: domainAccount,
     })
-    if (status instanceof Error) {
-      return { status: "failed", errors: [mapAndParseErrorForGqlResponse(status)] }
+    if (result instanceof Error) {
+      return { status: "failed", errors: [mapAndParseErrorForGqlResponse(result)] }
     }
 
     return {
       errors: [],
-      status: status.value,
+      status: result.status.value,
+      transaction: result.transaction,
     }
   },
 })

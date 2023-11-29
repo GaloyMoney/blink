@@ -1321,6 +1321,7 @@ type PaymentSendPayload
 {
   errors: [Error!]!
   status: PaymentSendResult
+  transaction: Transaction
 }
 
 enum PaymentSendResult

@@ -80,6 +80,7 @@ const OnChainUsdPaymentSendMutation = GT.Field<
     return {
       errors: [],
       status: result.status.value,
+      transaction: result.transaction,
     }
   },
 })
