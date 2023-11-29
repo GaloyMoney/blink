@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): move bria handler test to new integration setup (#3627)...'
-      sha: 6e1db8f6e7ebf55bfa162d84a5303eafaafe6845
+      commitTitle: 'chore(core): enforce non-negative ''volumeRemaining'' (#3628)'
+      sha: a97b03b4650d94f89d86c86b834f5465fe879027
       tags:
-      - 0.16.75-2-g6e1db8f6e
+      - 0.16.76-1-ga97b03b46
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): move bria handler test to new integration setup (#3627)...'
-      sha: 6e1db8f6e7ebf55bfa162d84a5303eafaafe6845
+      commitTitle: 'chore(core): enforce non-negative ''volumeRemaining'' (#3628)'
+      sha: a97b03b4650d94f89d86c86b834f5465fe879027
       tags:
-      - 0.16.75-2-g6e1db8f6e
+      - 0.16.76-1-ga97b03b46
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(core): move bria handler test to new integration setup (#3627)...'
-      sha: 6e1db8f6e7ebf55bfa162d84a5303eafaafe6845
+      commitTitle: 'chore(core): enforce non-negative ''volumeRemaining'' (#3628)'
+      sha: a97b03b4650d94f89d86c86b834f5465fe879027
       tags:
-      - 0.16.75-2-g6e1db8f6e
+      - 0.16.76-1-ga97b03b46
     path: ./
   path: ./graphql
 kind: LockConfig
