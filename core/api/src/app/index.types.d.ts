@@ -4,6 +4,13 @@ type PartialResult<T> = {
   partialResult: true
 }
 
+type RawPaginationArgs = {
+  first?: number
+  last?: number
+  before?: string
+  after?: string
+}
+
 type ValueOf<T> = T[keyof T]
 
 type ApplicationErrors = typeof import("./errors").ApplicationErrors

@@ -13,12 +13,7 @@ export const getAccountTransactionsForContact = async ({
 }: {
   account: Account
   contactUsername: Username
-  rawPaginationArgs: {
-    first?: number
-    last?: number
-    before?: string
-    after?: string
-  }
+  rawPaginationArgs: RawPaginationArgs
 }): Promise<PaginatedQueryResult<WalletTransaction> | ApplicationError> => {
   const paginationArgs = checkedToPaginatedQueryArgs({
     paginationArgs: rawPaginationArgs,
@@ -42,15 +37,15 @@ export const getAccountTransactionsForContact = async ({
   const nonEndUserWalletIds = Object.values(await getNonEndUserWalletIds())
 
   const txEdges = ledgerTxs.edges.map((edge) => {
-    const { transactions } = WalletTransactionHistory.fromLedger({
-      ledgerTransactions: [edge.node],
+    const transaction = WalletTransactionHistory.fromLedger({
+      txn: edge.node,
       nonEndUserWalletIds,
       memoSharingConfig,
     })
 
     return {
       cursor: edge.cursor,
-      node: transactions[0],
+      node: transaction,
     }
   })
 

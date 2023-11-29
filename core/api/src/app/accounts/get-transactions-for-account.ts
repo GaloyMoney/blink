@@ -11,12 +11,7 @@ export const getTransactionsForAccountByWalletIds = async ({
 }: {
   account: Account
   walletIds?: WalletId[]
-  rawPaginationArgs: {
-    first?: number
-    last?: number
-    before?: string
-    after?: string
-  }
+  rawPaginationArgs: RawPaginationArgs
 }): Promise<PaginatedQueryResult<WalletTransaction> | ApplicationError> => {
   const walletsRepo = WalletsRepository()
 

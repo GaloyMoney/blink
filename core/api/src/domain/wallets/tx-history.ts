@@ -204,24 +204,6 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
   return walletTransaction
 }
 
-const fromLedger = ({
-  ledgerTransactions,
-  nonEndUserWalletIds,
-  memoSharingConfig,
-}: {
-  ledgerTransactions: LedgerTransaction<WalletCurrency>[]
-  nonEndUserWalletIds: WalletId[]
-  memoSharingConfig: MemoSharingConfig
-}): ConfirmedTransactionHistory => {
-  const transactions = ledgerTransactions.map((txn) =>
-    translateLedgerTxnToWalletTxn({ txn, nonEndUserWalletIds, memoSharingConfig }),
-  )
-
-  return {
-    transactions,
-  }
-}
-
 const shouldDisplayMemo = ({
   memo,
   credit,
@@ -274,7 +256,7 @@ export const translateMemo = ({
 }
 
 export const WalletTransactionHistory = {
-  fromLedger,
+  fromLedger: translateLedgerTxnToWalletTxn,
 } as const
 
 // TODO: refactor this to use WalletPriceRatio eventually instead after

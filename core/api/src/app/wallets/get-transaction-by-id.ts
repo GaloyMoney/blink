@@ -23,10 +23,10 @@ export const getTransactionForWalletById = async ({
   if (ledgerTransaction instanceof Error) return ledgerTransaction
 
   return WalletTransactionHistory.fromLedger({
-    ledgerTransactions: [ledgerTransaction],
+    txn: ledgerTransaction,
     nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
     memoSharingConfig,
-  }).transactions[0]
+  })
 }
 
 export const getTransactionById = async (
@@ -41,8 +41,8 @@ export const getTransactionById = async (
   if (ledgerTransaction instanceof Error) return ledgerTransaction
 
   return WalletTransactionHistory.fromLedger({
-    ledgerTransactions: [ledgerTransaction],
+    txn: ledgerTransaction,
     nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
     memoSharingConfig,
-  }).transactions[0]
+  })
 }

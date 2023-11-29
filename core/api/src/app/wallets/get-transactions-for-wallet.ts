@@ -11,12 +11,7 @@ export const getTransactionsForWallets = async ({
   rawPaginationArgs,
 }: {
   wallets: Wallet[]
-  rawPaginationArgs: {
-    first?: number
-    last?: number
-    before?: string
-    after?: string
-  }
+  rawPaginationArgs: RawPaginationArgs
 }): Promise<PaginatedQueryResult<WalletTransaction> | ApplicationError> => {
   const paginationArgs = checkedToPaginatedQueryArgs({
     paginationArgs: rawPaginationArgs,
@@ -37,15 +32,15 @@ export const getTransactionsForWallets = async ({
   const nonEndUserWalletIds = Object.values(await getNonEndUserWalletIds())
 
   const txEdges = ledgerTxs.edges.map((edge) => {
-    const { transactions } = WalletTransactionHistory.fromLedger({
-      ledgerTransactions: [edge.node],
+    const transaction = WalletTransactionHistory.fromLedger({
+      txn: edge.node,
       nonEndUserWalletIds,
       memoSharingConfig,
     })
 
     return {
       cursor: edge.cursor,
-      node: transactions[0],
+      node: transaction,
     }
   })
 

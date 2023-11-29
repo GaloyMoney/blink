@@ -18,11 +18,15 @@ export const getTransactionsForWalletByPaymentHash = async ({
 
   if (ledgerTransactions instanceof Error) return ledgerTransactions
 
-  return WalletTransactionHistory.fromLedger({
-    ledgerTransactions,
-    nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
-    memoSharingConfig,
-  }).transactions
+  const nonEndUserWalletIds = Object.values(await getNonEndUserWalletIds())
+
+  return ledgerTransactions.map((txn) =>
+    WalletTransactionHistory.fromLedger({
+      txn,
+      nonEndUserWalletIds,
+      memoSharingConfig,
+    }),
+  )
 }
 
 export const getTransactionsByHash = async (
@@ -31,9 +35,13 @@ export const getTransactionsByHash = async (
   const ledger = LedgerService()
   const ledgerTransactions = await ledger.getTransactionsByHash(hash)
   if (ledgerTransactions instanceof Error) return ledgerTransactions
-  return WalletTransactionHistory.fromLedger({
-    ledgerTransactions,
-    nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
-    memoSharingConfig,
-  }).transactions
+  const nonEndUserWalletIds = Object.values(await getNonEndUserWalletIds())
+
+  return ledgerTransactions.map((txn) =>
+    WalletTransactionHistory.fromLedger({
+      txn,
+      nonEndUserWalletIds,
+      memoSharingConfig,
+    }),
+  )
 }
