@@ -21,6 +21,7 @@ import { AmountCalculator, WalletCurrency, ZERO_SATS } from "@/domain/shared"
 
 import { getBankOwnerWalletId } from "@/services/ledger/caching"
 import * as LedgerFacade from "@/services/ledger/facade"
+import * as LedgerFacadeSendImpl from "@/services/ledger/facade/onchain-send"
 import { Transaction, TransactionMetadata } from "@/services/ledger/schema"
 import { WalletOnChainPendingReceive } from "@/services/mongoose/schema"
 
@@ -677,8 +678,7 @@ describe("Bria Event Handlers", () => {
       await Transaction.deleteMany({ payout_id: payoutId })
     })
 
-    // TODO: fix mock below and unskip this test
-    it.skip("handles failed pending fee reconciliation and then retry", async () => {
+    it("handles failed pending fee reconciliation and then retry", async () => {
       // Setup a transaction in database
       const btcFeeDifference = { amount: 1500n, currency: WalletCurrency.Btc }
       const actualFee = calc.add(estimatedFee, btcFeeDifference)
@@ -704,7 +704,7 @@ describe("Bria Event Handlers", () => {
 
       // Register broadcast with failure
       const spy = jest
-        .spyOn(LedgerFacade, "getTransactionsByPayoutId")
+        .spyOn(LedgerFacadeSendImpl, "getTransactionsByPayoutId")
         .mockImplementation(async () => new UnknownLedgerError())
 
       const res = await registerBroadcastedPayout({
