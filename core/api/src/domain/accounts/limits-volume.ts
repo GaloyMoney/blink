@@ -77,7 +77,8 @@ export const AccountTxVolumeRemaining = (
       "txVolume.limitCheck": AccountLimitsType.IntraLedger,
     })
 
-    return calc.sub(limitAmount, outgoingUsdVolumeAmount)
+    const rawVolumeRemaining = calc.sub(limitAmount, outgoingUsdVolumeAmount)
+    return calc.max(ZERO_CENTS, rawVolumeRemaining)
   }
 
   const withdrawal = async ({
@@ -110,7 +111,8 @@ export const AccountTxVolumeRemaining = (
     })
 
     const netVolumeAmount = calc.sub(outgoingUsdVolumeAmount, incomingUsdVolumeAmount)
-    return calc.sub(limitAmount, netVolumeAmount)
+    const rawVolumeRemaining = calc.sub(limitAmount, netVolumeAmount)
+    return calc.max(ZERO_CENTS, rawVolumeRemaining)
   }
 
   const tradeIntraAccount = async ({
@@ -138,7 +140,8 @@ export const AccountTxVolumeRemaining = (
       "txVolume.limitCheck": AccountLimitsType.SelfTrade,
     })
 
-    return calc.sub(limitAmount, outgoingUsdVolumeAmount)
+    const rawVolumeRemaining = calc.sub(limitAmount, outgoingUsdVolumeAmount)
+    return calc.max(ZERO_CENTS, rawVolumeRemaining)
   }
 
   return {
