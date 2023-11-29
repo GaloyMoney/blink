@@ -456,7 +456,24 @@ describe("initiated via lightning", () => {
         senderAccount: newAccount,
         amount,
       })
-      expect(paymentResult).toEqual(PaymentSendStatus.Success)
+      if (paymentResult instanceof Error) throw paymentResult
+      expect(paymentResult).toEqual({
+        status: PaymentSendStatus.Success,
+        transaction: expect.objectContaining({
+          walletId: newWalletDescriptor.id,
+          status: "success",
+          settlementAmount: (amount + paymentResult.transaction.settlementFee) * -1,
+          settlementCurrency: "BTC",
+          initiationVia: expect.objectContaining({
+            type: "lightning",
+            paymentHash: noAmountLnInvoice.paymentHash,
+            pubkey: DEFAULT_PUBKEY,
+          }),
+          settlementVia: expect.objectContaining({
+            type: "lightning",
+          }),
+        }),
+      })
 
       // Check lnPayment collection after
       const lnPaymentAfter = await LnPaymentsRepository().findByPaymentHash(
@@ -817,7 +834,23 @@ describe("initiated via lightning", () => {
         senderAccount: newAccount,
         amount,
       })
-      expect(paymentResult).toEqual(PaymentSendStatus.Success)
+      expect(paymentResult).toEqual({
+        status: PaymentSendStatus.Success,
+        transaction: expect.objectContaining({
+          walletId: newWalletDescriptor.id,
+          status: "success",
+          settlementAmount: amount * -1,
+          settlementCurrency: "BTC",
+          initiationVia: expect.objectContaining({
+            type: "lightning",
+            paymentHash: noAmountLnInvoice.paymentHash,
+            pubkey: noAmountLnInvoice.destination,
+          }),
+          settlementVia: expect.objectContaining({
+            type: "intraledger",
+          }),
+        }),
+      })
 
       // Expect sent notification
       expect(sendFilteredNotification.mock.calls.length).toBe(1)

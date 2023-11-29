@@ -294,7 +294,21 @@ describe("intraLedgerPay", () => {
       senderWalletId: newWalletDescriptor.id,
       senderAccount: newAccount,
     })
-    expect(paymentResult).toEqual(PaymentSendStatus.Success)
+    expect(paymentResult).toEqual({
+      status: PaymentSendStatus.Success,
+      transaction: expect.objectContaining({
+        walletId: newWalletDescriptor.id,
+        status: "success",
+        settlementAmount: amount * -1,
+        settlementCurrency: "BTC",
+        initiationVia: expect.objectContaining({
+          type: "intraledger",
+        }),
+        settlementVia: expect.objectContaining({
+          type: "intraledger",
+        }),
+      }),
+    })
 
     // Expect sent notification
     expect(sendFilteredNotification.mock.calls.length).toBe(1)

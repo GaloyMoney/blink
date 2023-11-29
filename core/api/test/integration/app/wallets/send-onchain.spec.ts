@@ -596,12 +596,26 @@ describe("onChainPay", () => {
         senderAccount: newAccount,
         amount,
         address: recipientWalletIdAddress,
-
         speed: PayoutSpeed.Fast,
         memo,
       })
       if (paymentResult instanceof Error) throw paymentResult
-      expect(paymentResult.status).toEqual(PaymentSendStatus.Success)
+      expect(paymentResult).toEqual({
+        status: PaymentSendStatus.Success,
+        transaction: expect.objectContaining({
+          walletId: newWalletDescriptor.id,
+          status: "success",
+          settlementAmount: amount * -1,
+          settlementCurrency: "BTC",
+          initiationVia: expect.objectContaining({
+            type: "onchain",
+            address: recipientWalletIdAddress,
+          }),
+          settlementVia: expect.objectContaining({
+            type: "intraledger",
+          }),
+        }),
+      })
 
       // Expect sent notification
       expect(sendFilteredNotification.mock.calls.length).toBe(1)
