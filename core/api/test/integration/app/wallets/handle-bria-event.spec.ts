@@ -21,12 +21,16 @@ import { AmountCalculator, WalletCurrency, ZERO_SATS } from "@/domain/shared"
 
 import { getBankOwnerWalletId } from "@/services/ledger/caching"
 import * as LedgerFacade from "@/services/ledger/facade"
-import { Transaction } from "@/services/ledger/schema"
+import { Transaction, TransactionMetadata } from "@/services/ledger/schema"
 import { WalletOnChainPendingReceive } from "@/services/mongoose/schema"
 
 import { LessThanDustThresholdError } from "@/domain/errors"
 
-import { createRandomUserAndBtcWallet, generateHash } from "test/helpers"
+import {
+  createMandatoryUsers,
+  createRandomUserAndBtcWallet,
+  generateHash,
+} from "test/helpers"
 
 const calc = AmountCalculator()
 
@@ -40,6 +44,7 @@ let accountId: AccountId
 let address: OnChainAddress
 
 beforeAll(async () => {
+  await createMandatoryUsers()
   ;({ id: walletId, accountId } = await createRandomUserAndBtcWallet())
 
   const addressResult = await getLastOnChainAddress(walletId)
@@ -47,6 +52,12 @@ beforeAll(async () => {
   address = addressResult
 
   bankOwnerWalletId = await getBankOwnerWalletId()
+})
+
+afterEach(async () => {
+  await Transaction.deleteMany({})
+  await TransactionMetadata.deleteMany({})
+  await WalletOnChainPendingReceive.deleteMany({})
 })
 
 const getRandomBtcAmountForOnchain = (): BtcPaymentAmount => {
