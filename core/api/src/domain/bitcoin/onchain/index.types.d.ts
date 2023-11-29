@@ -88,6 +88,12 @@ interface OnChainEvent {
   recorded_at: number
 }
 
+type OnChainPayout = {
+  id: PayoutId
+  journalId: LedgerJournalId
+  batchInclusionEstimatedAt: number | undefined
+}
+
 type OnChainEventHandler = (event: OnChainEvent) => true | ApplicationError
 
 interface IOnChainService {
@@ -103,10 +109,10 @@ interface IOnChainService {
   ): Promise<OnChainAddressIdentifier | OnChainServiceError>
   findPayoutByLedgerJournalId(
     requestId: LedgerJournalId,
-  ): Promise<PayoutId | OnChainServiceError>
+  ): Promise<OnChainPayout | OnChainServiceError>
   queuePayoutToAddress(
     args: QueuePayoutToAddressArgs,
-  ): Promise<PayoutId | OnChainServiceError>
+  ): Promise<OnChainPayout | OnChainServiceError>
   rebalanceToColdWallet(amount: BtcPaymentAmount): Promise<PayoutId | OnChainServiceError>
   estimateFeeForPayout(
     args: EstimatePayoutFeeArgs,

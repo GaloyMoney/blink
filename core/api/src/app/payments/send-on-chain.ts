@@ -506,7 +506,7 @@ const executePaymentViaOnChain = async <
   const senderWalletDescriptor = await builder.senderWalletDescriptor()
   if (senderWalletDescriptor instanceof Error) return senderWalletDescriptor
 
-  const newOnChainService = OnChainService()
+  const onChainService = OnChainService()
 
   // Limit check
   const proposedAmounts = await builder.proposedAmounts()
@@ -609,29 +609,29 @@ const executePaymentViaOnChain = async <
     if (journal instanceof Error) return journal
 
     // Execute payment onchain
-    const payoutId = await newOnChainService.queuePayoutToAddress({
+    const payout = await onChainService.queuePayoutToAddress({
       walletDescriptor: senderWalletDescriptor,
       address: paymentFlow.address,
       amount: paymentFlow.btcPaymentAmount,
       speed,
       journalId: journal.journalId,
     })
-    if (payoutId instanceof Error) {
+    if (payout instanceof Error) {
       logger.error(
         {
-          err: payoutId,
+          err: payout,
           externalId: journal.journalId,
           address,
           tokens: Number(paymentFlow.btcPaymentAmount.amount),
           success: false,
         },
-        `Could not queue payout with id ${payoutId}`,
+        `Could not queue payout with id ${payout}`,
       )
       const reverted = await LedgerService().revertOnChainPayment({
         journalId: journal.journalId,
       })
       if (reverted instanceof Error) return reverted
-      return payoutId
+      return payout
     }
 
     const walletTransaction = await getTransactionForWalletByJournalId({
