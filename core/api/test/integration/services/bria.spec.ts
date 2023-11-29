@@ -10,13 +10,14 @@ import { GrpcStreamClient, timeoutWithCancel } from "@/utils"
 import {
   bitcoindClient,
   bitcoindOutside,
-  checkIsBalanced,
   createMandatoryUsers,
   createUserAndWalletFromPhone,
   getDefaultWalletIdByPhone,
+  mineAndConfirm,
   randomPhone,
   sendToAddressAndConfirm,
 } from "test/helpers"
+import { BitcoindWalletClient } from "test/helpers/bitcoind"
 
 let walletIdA: WalletId
 
@@ -24,17 +25,43 @@ const TIMEOUT_BRIA_EVENT = 60_000
 
 const phone = randomPhone()
 
+const loadBitcoindWallet = async (walletName: string) => {
+  const wallets = await bitcoindClient.listWallets()
+  if (!wallets.includes(walletName)) {
+    try {
+      await bitcoindClient.createWallet({ walletName })
+    } catch (err) {
+      const error = err as Error
+      if (error.message.includes("Database already exists")) {
+        await bitcoindClient.loadWallet({ filename: walletName })
+      }
+    }
+  }
+}
+
+const fundOutsideOnChainWallet = async () => {
+  // Setup outside bitcoind
+  const walletName = "outside"
+  const bitcoindOutside = new BitcoindWalletClient(walletName)
+
+  // Fund outside bitcoind
+  const numOfBlocks = 10
+  const bitcoindAddress = await bitcoindOutside.getNewAddress()
+  await mineAndConfirm({
+    walletClient: bitcoindOutside,
+    numOfBlocks,
+    address: bitcoindAddress,
+  })
+}
+
 beforeAll(async () => {
   await createMandatoryUsers()
 
-  await bitcoindClient.loadWallet({ filename: "outside" })
+  await loadBitcoindWallet("outside")
+  await fundOutsideOnChainWallet()
 
   await createUserAndWalletFromPhone(phone)
   walletIdA = await getDefaultWalletIdByPhone(phone)
-})
-
-afterEach(async () => {
-  await checkIsBalanced()
 })
 
 afterAll(async () => {
