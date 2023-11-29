@@ -21,6 +21,7 @@ import {
 } from "@/domain/errors"
 import { AmountCalculator, WalletCurrency } from "@/domain/shared"
 import * as LnFeesImpl from "@/domain/payments"
+import * as DisplayAmountsConverterImpl from "@/domain/fiat"
 
 import {
   AccountsRepository,
@@ -33,6 +34,7 @@ import { WalletInvoice } from "@/services/mongoose/schema"
 import { LnPayment } from "@/services/lnd/schema"
 import * as LndImpl from "@/services/lnd"
 import * as PushNotificationsServiceImpl from "@/services/notifications/push-notifications"
+import * as LedgerFacadeImpl from "@/services/ledger/facade"
 
 import {
   createMandatoryUsers,
@@ -41,6 +43,7 @@ import {
   getBalanceHelper,
   recordReceiveLnPayment,
 } from "test/helpers"
+import { LedgerTransactionType } from "@/domain/ledger"
 
 let lnInvoice: LnInvoice
 let noAmountLnInvoice: LnInvoice
@@ -484,6 +487,62 @@ describe("initiated via lightning", () => {
 
       // Restore system state
       lndServiceSpy.mockRestore()
+    })
+
+    it("records transaction with lightning metadata on ln send", async () => {
+      // Setup mocks
+      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
+      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+        ...LnServiceOrig(),
+        defaultPubkey: (): Pubkey => DEFAULT_PUBKEY,
+        listAllPubkeys: () => [],
+      })
+
+      const displayAmountsConverterSpy = jest.spyOn(
+        DisplayAmountsConverterImpl,
+        "DisplayAmountsConverter",
+      )
+
+      const lnSendLedgerMetadataSpy = jest.spyOn(LedgerFacadeImpl, "LnSendLedgerMetadata")
+      const recordOffChainSendSpy = jest.spyOn(LedgerFacadeImpl, "recordSendOffChain")
+
+      // Create users
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      // Execute pay
+      await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
+        memo,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        amount,
+      })
+
+      // Check record function was called with right metadata
+      expect(displayAmountsConverterSpy).toHaveBeenCalledTimes(1)
+      expect(lnSendLedgerMetadataSpy).toHaveBeenCalledTimes(1)
+      const args = recordOffChainSendSpy.mock.calls[0][0]
+      expect(args.metadata.type).toBe(LedgerTransactionType.Payment)
+
+      // Restore system state
+      lndServiceSpy.mockRestore()
+      displayAmountsConverterSpy.mockRestore()
+      lnSendLedgerMetadataSpy.mockRestore()
+      recordOffChainSendSpy.mockRestore()
     })
   })
 
