@@ -48,7 +48,7 @@ export async function getServerSideProps({
   }
 }
 
-export default function ({
+export default function Print({
   qrCodeURL,
   username,
   userHeader,

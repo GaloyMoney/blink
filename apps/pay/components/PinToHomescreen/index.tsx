@@ -139,7 +139,12 @@ const PinToHomescreen = ({ pinnedToHomeScreenModalVisible, dispatch }: Props) =>
                   <li className={styles.index}>{content.index}</li>
                   <p className={styles.text}>{content.text}</p>
                   <picture>
-                    <Image src={content.image} width="100%" height="100%" />
+                    <Image
+                      src={content.image}
+                      width="100%"
+                      height="100%"
+                      alt="Chrome modal tutorial image"
+                    />
                   </picture>
                 </div>
               )
@@ -168,7 +173,7 @@ const PinToHomescreen = ({ pinnedToHomeScreenModalVisible, dispatch }: Props) =>
                   <li className={styles.index}>{content.index}</li>
                   <p className={styles.text}>{content.text}</p>
                   <picture>
-                    <Image src={content.image} alt="chrome modal tutorial image" />
+                    <Image src={content.image} alt="Chrome modal tutorial image" />
                   </picture>
                 </div>
               )

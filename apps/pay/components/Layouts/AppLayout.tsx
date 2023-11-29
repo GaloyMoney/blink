@@ -68,7 +68,12 @@ const AppLayout = ({ children, username }: Props) => {
           <li onClick={closeSideBar}>
             <Link href={cashRegisterLink}>
               <>
-                <Image src="/register-black&white.svg" width={"15"} height={"15"} />
+                <Image
+                  src="/register-black&white.svg"
+                  width={"15"}
+                  height={"15"}
+                  alt="Cash register"
+                />
                 Cash Register App
               </>
             </Link>
@@ -76,14 +81,19 @@ const AppLayout = ({ children, username }: Props) => {
           <li onClick={closeSideBar}>
             <Link href={payCodeLink}>
               <>
-                <Image src="/paycode-black&white.svg" width={"15"} height={"15"} />
+                <Image
+                  src="/paycode-black&white.svg"
+                  width={"15"}
+                  height={"15"}
+                  alt="Paycode"
+                />
                 Printable Paycode
               </>
             </Link>
           </li>
           <div className={styles.lightning_addr}>
             <div>
-              <Image src="/at-black&white.svg" width={"15"} height={"15"} />
+              <Image src="/at-black&white.svg" width={"15"} height={"15"} alt="@" />
               <div>
                 <p>Lightning address:</p>
                 <p>{lightningAddr}</p>
@@ -154,7 +164,7 @@ const AppLayout = ({ children, username }: Props) => {
             <span>Powered by</span>
             <Image
               src="/icons/galoy-logo-text-icon.svg"
-              alt="galoy-logo"
+              alt="Galoy logo"
               width={50}
               height={50}
             />

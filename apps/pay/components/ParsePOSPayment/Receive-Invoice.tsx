@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+// TODO: remove eslint-disable, the logic likely needs to be reworked
 import copy from "copy-to-clipboard"
 import { useRouter } from "next/router"
 import React, { useCallback } from "react"

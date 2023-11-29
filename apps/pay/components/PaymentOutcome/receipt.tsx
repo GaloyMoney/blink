@@ -19,7 +19,7 @@ function receipt(props: Props) {
   return (
     <div className="w-100">
       <div className="d-flex py-3 justify-content-center">
-        <Image src="/blink-qr-logo.png" width={50} height={50} />
+        <Image src="/blink-qr-logo.png" width={50} height={50} alt="Blink logo" />
       </div>
 
       <div className="text-center">

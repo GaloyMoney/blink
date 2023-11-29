@@ -1,6 +1,9 @@
+// Disable no-unassigned-import rule becuase we are importing css files
+// eslint-disable-next-line
 import "bootstrap/dist/css/bootstrap.min.css"
+// eslint-disable-next-line
 import "./index.css"
-
+import Script from "next/script"
 import { NextPage } from "next"
 import dynamic from "next/dynamic"
 import Head from "next/head"
@@ -29,23 +32,18 @@ export default function Layout({
         <meta name="apple-mobile-web-app-status-bar" content="#536FF2" />
         <link rel="apple-touch-icon" href="/APPLE-ICON.png" />
         <link rel="icon" type="image/png" href="/APPLE-ICON.png" />
-        <script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=UA-181044262-1"
-        ></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
+        <title>Blink Cash Register</title>
+      </Head>
+      <Script src="https://www.googletagmanager.com/gtag/js?id=UA-181044262-1"></Script>
+      <Script id="google-analytics">
+        {`
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
 
       gtag('config', 'UA-181044262-1');
-    `,
-          }}
-        />
-        <title>Blink Cash Register</title>
-      </Head>
+    `}
+      </Script>
       <GraphQLProvider>
         <AppLayout username={username}>
           <Component {...pageProps} />

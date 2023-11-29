@@ -12,28 +12,26 @@ interface Props {
   modalWidth?: string
 }
 
-const Modal = React.forwardRef(
-  (
-    { children, isOpened, modalTitle, modalWidth, handleClose }: Props,
-    modalContentRef: React.ForwardedRef<HTMLDivElement>,
-  ) => {
-    const defaultModalWidth = modalWidth || "100%"
-    const modalFocus = modalContentRef || null
+const Modal = (
+  { children, isOpened, modalTitle, modalWidth, handleClose }: Props,
+  modalContentRef: React.ForwardedRef<HTMLDivElement>,
+) => {
+  const defaultModalWidth = modalWidth || "100%"
+  const modalFocus = modalContentRef || null
 
-    return (
-      <dialog open={isOpened} className={styles.modal}>
-        <div className={styles.modal_wrapper} style={{ width: defaultModalWidth }}>
-          <button onClick={handleClose} className={styles.close_btn}>
-            <Image src="/icons/cross-icon.svg" />
-          </button>
-          <div ref={modalFocus}>
-            <div className={styles.modal_title}>{modalTitle || ""}</div>
-            <div>{children}</div>
-          </div>
+  return (
+    <dialog open={isOpened} className={styles.modal}>
+      <div className={styles.modal_wrapper} style={{ width: defaultModalWidth }}>
+        <button onClick={handleClose} className={styles.close_btn}>
+          <Image src="/icons/cross-icon.svg" alt="Close icon" />
+        </button>
+        <div ref={modalFocus}>
+          <div className={styles.modal_title}>{modalTitle || ""}</div>
+          <div>{children}</div>
         </div>
-      </dialog>
-    )
-  },
-)
+      </div>
+    </dialog>
+  )
+}
 
-export default Modal
+export default React.forwardRef(Modal)
