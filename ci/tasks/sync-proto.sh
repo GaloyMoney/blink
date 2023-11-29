@@ -9,7 +9,7 @@ cp -R src-repo/${PROTO_FILES_SRC_PATH}/* repo/core/api/${PROTO_FILES_DEST_PATH}
 pushd repo/core/api
 
 if [[ -n "${BUF_CONFIG_PATH:-}" ]]; then
-  yarn install
+  pnpm install
   export PATH=$PATH:$(pwd)/node_modules/.bin
   pushd "${BUF_CONFIG_PATH}/"
   buf generate
