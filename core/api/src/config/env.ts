@@ -121,6 +121,8 @@ export const env = createEnv({
     NEXTCLOUD_URL: z.string().min(1).optional(),
     NEXTCLOUD_USER: z.string().min(1).optional(),
     NEXTCLOUD_PASSWORD: z.string().min(1).optional(),
+    AWS_ACCESS_KEY_ID: z.string().min(1).optional(),
+    AWS_SECRET_ACCESS_KEY: z.string().min(1).optional(),
 
     MATTERMOST_WEBHOOK_URL: z.string().min(1).optional(),
 
@@ -218,6 +220,8 @@ export const env = createEnv({
     NEXTCLOUD_URL: process.env.NEXTCLOUD_URL,
     NEXTCLOUD_USER: process.env.NEXTCLOUD_USER,
     NEXTCLOUD_PASSWORD: process.env.NEXTCLOUD_PASSWORD,
+    AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
 
     MATTERMOST_WEBHOOK_URL: process.env.MATTERMOST_WEBHOOK_URL,
 
