@@ -1192,6 +1192,16 @@ export class PayoutQueueConfig extends jspb.Message {
     getIntervalSecs(): number;
     setIntervalSecs(value: number): PayoutQueueConfig;
 
+    hasCpfpPayoutsAfterMins(): boolean;
+    clearCpfpPayoutsAfterMins(): void;
+    getCpfpPayoutsAfterMins(): number | undefined;
+    setCpfpPayoutsAfterMins(value: number): PayoutQueueConfig;
+
+    hasCpfpPayoutsAfterBlocks(): boolean;
+    clearCpfpPayoutsAfterBlocks(): void;
+    getCpfpPayoutsAfterBlocks(): number | undefined;
+    setCpfpPayoutsAfterBlocks(value: number): PayoutQueueConfig;
+
     getTriggerCase(): PayoutQueueConfig.TriggerCase;
 
     serializeBinary(): Uint8Array;
@@ -1210,6 +1220,8 @@ export namespace PayoutQueueConfig {
         consolidateDeprecatedKeychains: boolean,
         manual: boolean,
         intervalSecs: number,
+        cpfpPayoutsAfterMins?: number,
+        cpfpPayoutsAfterBlocks?: number,
     }
 
     export enum TriggerCase {
@@ -1629,6 +1641,11 @@ export class Payout extends jspb.Message {
     getMetadata(): google_protobuf_struct_pb.Struct | undefined;
     setMetadata(value?: google_protobuf_struct_pb.Struct): Payout;
 
+    hasBatchInclusionEstimatedAt(): boolean;
+    clearBatchInclusionEstimatedAt(): void;
+    getBatchInclusionEstimatedAt(): number | undefined;
+    setBatchInclusionEstimatedAt(value: number): Payout;
+
     getDestinationCase(): Payout.DestinationCase;
 
     serializeBinary(): Uint8Array;
@@ -1653,6 +1670,7 @@ export namespace Payout {
         cancelled: boolean,
         externalId: string,
         metadata?: google_protobuf_struct_pb.Struct.AsObject,
+        batchInclusionEstimatedAt?: number,
     }
 
     export enum DestinationCase {
