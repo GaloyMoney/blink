@@ -22,14 +22,16 @@ import {
   InvalidBtcPaymentAmountError,
   WalletCurrency,
 } from "@/domain/shared"
+import * as DisplayAmountsConverterImpl from "@/domain/fiat"
 
 import { PayoutSpeed } from "@/domain/bitcoin/onchain"
 import { PaymentSendStatus } from "@/domain/bitcoin/lightning"
 
+import { DealerPriceService } from "@/services/dealer-price"
 import { AccountsRepository } from "@/services/mongoose"
 import { Transaction, TransactionMetadata } from "@/services/ledger/schema"
 import * as PushNotificationsServiceImpl from "@/services/notifications/push-notifications"
-import { DealerPriceService } from "@/services/dealer-price"
+import * as LedgerFacadeImpl from "@/services/ledger/facade"
 
 import { timestampDaysAgo } from "@/utils"
 
@@ -40,6 +42,7 @@ import {
   recordReceiveLnPayment,
 } from "test/helpers"
 import { getBalanceHelper } from "test/helpers/wallet"
+import { LedgerTransactionType } from "@/domain/ledger"
 
 let outsideAddress: OnChainAddress
 let memo: string
@@ -300,6 +303,59 @@ describe("onChainPay", () => {
         memo,
       })
       expect(res).toBeInstanceOf(InactiveAccountError)
+    })
+
+    it("records transaction with send-onchain metadata on send", async () => {
+      // Setup mocks
+      const displayAmountsConverterSpy = jest.spyOn(
+        DisplayAmountsConverterImpl,
+        "DisplayAmountsConverter",
+      )
+
+      const onChainSendLedgerMetadataSpy = jest.spyOn(
+        LedgerFacadeImpl,
+        "OnChainSendLedgerMetadata",
+      )
+      const recordOnChainSendSpy = jest.spyOn(LedgerFacadeImpl, "recordSendOnChain")
+
+      // Create users
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      // Send payment
+      await Payments.payOnChainByWalletIdForBtcWallet({
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        amount,
+        address: outsideAddress,
+
+        speed: PayoutSpeed.Fast,
+        memo,
+      })
+
+      // Check record function was called with right metadata
+      expect(displayAmountsConverterSpy).toHaveBeenCalledTimes(1)
+      expect(onChainSendLedgerMetadataSpy).toHaveBeenCalledTimes(1)
+      const args = recordOnChainSendSpy.mock.calls[0][0]
+      expect(args.metadata.type).toBe(LedgerTransactionType.OnchainPayment)
+
+      // Restore system state
+      displayAmountsConverterSpy.mockRestore()
+      onChainSendLedgerMetadataSpy.mockRestore()
+      recordOnChainSendSpy.mockRestore()
     })
   })
 
