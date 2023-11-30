@@ -621,11 +621,12 @@ input IntraLedgerPaymentSendInput
 type IntraLedgerUpdate
   @join__type(graph: PUBLIC)
 {
-  amount: SatAmount!
-  displayCurrencyPerSat: Float!
+  amount: SatAmount! @deprecated(reason: "Deprecated in favor of transaction")
+  displayCurrencyPerSat: Float! @deprecated(reason: "Deprecated in favor of transaction")
+  transaction: Transaction!
   txNotificationType: TxNotificationType!
   usdPerSat: Float! @deprecated(reason: "updated over displayCurrencyPerSat")
-  walletId: WalletId!
+  walletId: WalletId! @deprecated(reason: "Deprecated in favor of transaction")
 }
 
 input IntraLedgerUsdPaymentSendInput
@@ -917,9 +918,10 @@ scalar LnPaymentSecret
 type LnUpdate
   @join__type(graph: PUBLIC)
 {
-  paymentHash: PaymentHash!
+  paymentHash: PaymentHash! @deprecated(reason: "Deprecated in favor of transaction")
   status: InvoicePaymentStatus!
-  walletId: WalletId!
+  transaction: Transaction!
+  walletId: WalletId! @deprecated(reason: "Deprecated in favor of transaction")
 }
 
 input LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput
@@ -1240,12 +1242,13 @@ scalar OnChainTxHash
 type OnChainUpdate
   @join__type(graph: PUBLIC)
 {
-  amount: SatAmount!
-  displayCurrencyPerSat: Float!
-  txHash: OnChainTxHash!
+  amount: SatAmount! @deprecated(reason: "Deprecated in favor of transaction")
+  displayCurrencyPerSat: Float! @deprecated(reason: "Deprecated in favor of transaction")
+  transaction: Transaction!
+  txHash: OnChainTxHash! @deprecated(reason: "Deprecated in favor of transaction")
   txNotificationType: TxNotificationType!
   usdPerSat: Float! @deprecated(reason: "updated over displayCurrencyPerSat")
-  walletId: WalletId!
+  walletId: WalletId! @deprecated(reason: "Deprecated in favor of transaction")
 }
 
 input OnChainUsdPaymentSendAsBtcDenominatedInput
@@ -1321,6 +1324,7 @@ type PaymentSendPayload
 {
   errors: [Error!]!
   status: PaymentSendResult
+  transaction: Transaction
 }
 
 enum PaymentSendResult

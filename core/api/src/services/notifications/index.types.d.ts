@@ -9,4 +9,5 @@ type NotificationsDataObject = {
   sats?: Satoshis
   cents?: UsdCents
   txHash?: OnChainTxHash
+  transaction: WalletTransaction
 }

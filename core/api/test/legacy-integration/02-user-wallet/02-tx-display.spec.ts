@@ -352,7 +352,11 @@ describe("Display properties on transactions", () => {
           memo,
         })
         if (invoice instanceof Error) throw invoice
-        const { paymentRequest: uncheckedPaymentRequest, paymentHash } = invoice.lnInvoice
+        const {
+          paymentRequest: uncheckedPaymentRequest,
+          paymentHash,
+          destination,
+        } = invoice.lnInvoice
 
         const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
           uncheckedPaymentRequest,
@@ -362,7 +366,23 @@ describe("Display properties on transactions", () => {
           amount: amountInvoice,
         })
         if (paymentResult instanceof Error) throw paymentResult
-        expect(paymentResult).toBe(PaymentSendStatus.Success)
+        expect(paymentResult).toEqual({
+          status: PaymentSendStatus.Success,
+          transaction: expect.objectContaining({
+            walletId: senderWalletId,
+            status: "success",
+            settlementAmount: amountInvoice * -1,
+            settlementCurrency: "BTC",
+            initiationVia: expect.objectContaining({
+              type: "lightning",
+              paymentHash,
+              pubkey: destination,
+            }),
+            settlementVia: expect.objectContaining({
+              type: "intraledger",
+            }),
+          }),
+        })
 
         // Check entries
         const txns = await getAllTransactionsByHash(paymentHash)
@@ -437,7 +457,22 @@ describe("Display properties on transactions", () => {
           senderAccount: accountB,
         })
         if (paymentResult instanceof Error) throw paymentResult
-        expect(paymentResult).toBe(PaymentSendStatus.Success)
+        expect(paymentResult).toEqual({
+          status: PaymentSendStatus.Success,
+          transaction: expect.objectContaining({
+            walletId: walletIdB,
+            status: "success",
+            settlementAmount: amountInvoice * -1,
+            settlementCurrency: "BTC",
+            initiationVia: expect.objectContaining({
+              type: "lightning",
+              paymentHash,
+            }),
+            settlementVia: expect.objectContaining({
+              type: "lightning",
+            }),
+          }),
+        })
 
         // Check entries
         const txns = await getAllTransactionsByHash(paymentHash)
@@ -503,7 +538,23 @@ describe("Display properties on transactions", () => {
           senderAccount: accountB,
         })
         if (paymentResult instanceof Error) throw paymentResult
-        expect(paymentResult).toBe(PaymentSendStatus.Success)
+        expect(paymentResult).toEqual({
+          status: PaymentSendStatus.Success,
+          transaction: expect.objectContaining({
+            walletId: walletIdB,
+            status: "success",
+            settlementAmount:
+              (amountInvoice + paymentResult.transaction.settlementFee) * -1,
+            settlementCurrency: "BTC",
+            initiationVia: expect.objectContaining({
+              type: "lightning",
+              paymentHash,
+            }),
+            settlementVia: expect.objectContaining({
+              type: "lightning",
+            }),
+          }),
+        })
 
         // Check entries
         const txns = await getAllTransactionsByHash(paymentHash)
@@ -848,7 +899,7 @@ describe("Display properties on transactions", () => {
         })
         if (address instanceof Error) throw address
 
-        const paid = await Payments.payOnChainByWalletIdForBtcWallet({
+        const paymentResult = await Payments.payOnChainByWalletIdForBtcWallet({
           senderAccount,
           senderWalletId,
           address,
@@ -856,8 +907,23 @@ describe("Display properties on transactions", () => {
           speed: PayoutSpeed.Fast,
           memo,
         })
-        if (paid instanceof Error) throw paid
-        expect(paid.status).toBe(PaymentSendStatus.Success)
+        if (paymentResult instanceof Error) throw paymentResult
+        expect(paymentResult).toEqual({
+          status: PaymentSendStatus.Success,
+          transaction: expect.objectContaining({
+            walletId: senderWalletId,
+            status: "success",
+            settlementAmount: amountSats * -1,
+            settlementCurrency: "BTC",
+            initiationVia: expect.objectContaining({
+              type: "onchain",
+              address,
+            }),
+            settlementVia: expect.objectContaining({
+              type: "intraledger",
+            }),
+          }),
+        })
 
         // Check entries
         const memoTxns = await getAllTransactionsByMemo(memo)
@@ -921,7 +987,7 @@ describe("Display properties on transactions", () => {
         })
         if (address instanceof Error) throw address
 
-        const paid = await Payments.payOnChainByWalletIdForBtcWallet({
+        const paymentResult = await Payments.payOnChainByWalletIdForBtcWallet({
           senderAccount,
           senderWalletId,
           address,
@@ -929,8 +995,23 @@ describe("Display properties on transactions", () => {
           speed: PayoutSpeed.Fast,
           memo,
         })
-        if (paid instanceof Error) throw paid
-        expect(paid.status).toBe(PaymentSendStatus.Success)
+        if (paymentResult instanceof Error) throw paymentResult
+        expect(paymentResult).toEqual({
+          status: PaymentSendStatus.Success,
+          transaction: expect.objectContaining({
+            walletId: senderWalletId,
+            status: "success",
+            settlementAmount: amountSats * -1,
+            settlementCurrency: "BTC",
+            initiationVia: expect.objectContaining({
+              type: "onchain",
+              address,
+            }),
+            settlementVia: expect.objectContaining({
+              type: "intraledger",
+            }),
+          }),
+        })
 
         // Check entries
         const memoTxns = await getAllTransactionsByMemo(memo)
@@ -1013,7 +1094,7 @@ describe("Display properties on transactions", () => {
           lnd: lndOutside1,
         })
 
-        const paid = await Payments.payOnChainByWalletIdForBtcWallet({
+        const paymentResult = await Payments.payOnChainByWalletIdForBtcWallet({
           senderAccount,
           senderWalletId,
           address,
@@ -1021,8 +1102,25 @@ describe("Display properties on transactions", () => {
           speed: PayoutSpeed.Fast,
           memo,
         })
-        if (paid instanceof Error) throw paid
-        expect(paid.status).toBe(PaymentSendStatus.Success)
+        if (paymentResult instanceof Error) throw paymentResult
+        expect(paymentResult).toEqual({
+          status: PaymentSendStatus.Success,
+          transaction: expect.objectContaining({
+            walletId: senderWalletId,
+            status: "pending",
+            settlementAmount: (amountSats + paymentResult.transaction.settlementFee) * -1,
+            settlementCurrency: "BTC",
+            initiationVia: expect.objectContaining({
+              type: "onchain",
+              address,
+            }),
+            settlementVia: expect.objectContaining({
+              type: "onchain",
+              transactionHash: undefined,
+              vout: undefined,
+            }),
+          }),
+        })
 
         // Check entries
         const txns = await getAllTransactionsByMemo(memo)
@@ -1081,14 +1179,28 @@ describe("Display properties on transactions", () => {
         // Send payment
         const memo = "invoiceMemo #" + (Math.random() * 1_000_000).toFixed()
 
-        const paid = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
+        const paymentResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
           senderWalletId,
           senderAccount,
           memo,
           recipientWalletId,
           amount: amountSats,
         })
-        expect(paid).toBe(PaymentSendStatus.Success)
+        expect(paymentResult).toEqual({
+          status: PaymentSendStatus.Success,
+          transaction: expect.objectContaining({
+            walletId: senderWalletId,
+            status: "success",
+            settlementAmount: amountSats * -1,
+            settlementCurrency: "BTC",
+            initiationVia: expect.objectContaining({
+              type: "intraledger",
+            }),
+            settlementVia: expect.objectContaining({
+              type: "intraledger",
+            }),
+          }),
+        })
 
         // Check entries
         const txns = await getAllTransactionsByMemo(memo)
@@ -1131,7 +1243,7 @@ describe("Display properties on transactions", () => {
         // TxMetadata:
         // - WalletIdTradeIntraAccountLedgerMetadata
 
-        const amountSats = 20_000
+        const amountSats = 10_000
 
         const senderWalletId = walletIdB
         const senderAccount = accountB
@@ -1140,14 +1252,28 @@ describe("Display properties on transactions", () => {
         // Send payment
         const memo = "invoiceMemo #" + (Math.random() * 1_000_000).toFixed()
 
-        const paid = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
+        const paymentResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
           senderWalletId,
           senderAccount,
           memo,
           recipientWalletId,
           amount: amountSats,
         })
-        expect(paid).toBe(PaymentSendStatus.Success)
+        expect(paymentResult).toEqual({
+          status: PaymentSendStatus.Success,
+          transaction: expect.objectContaining({
+            walletId: senderWalletId,
+            status: "success",
+            settlementAmount: amountSats * -1,
+            settlementCurrency: "BTC",
+            initiationVia: expect.objectContaining({
+              type: "intraledger",
+            }),
+            settlementVia: expect.objectContaining({
+              type: "intraledger",
+            }),
+          }),
+        })
 
         // Check entries
         const txns = await getAllTransactionsByMemo(memo)

@@ -80,6 +80,7 @@ const OnChainUsdPaymentSendAsBtcDenominatedMutation = GT.Field<
     return {
       errors: [],
       status: result.status.value,
+      transaction: result.transaction,
     }
   },
 })

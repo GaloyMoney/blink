@@ -14,13 +14,13 @@ import IError from "@/graphql/shared/types/abstract/error"
 import WalletId from "@/graphql/shared/types/scalar/wallet-id"
 import SatAmount from "@/graphql/shared/types/scalar/sat-amount"
 import GraphQLUser from "@/graphql/public/types/object/user"
+import Transaction from "@/graphql/shared/types/object/transaction"
 import PaymentHash from "@/graphql/shared/types/scalar/payment-hash"
 import RealtimePrice from "@/graphql/public/types/object/realtime-price"
 import OnChainTxHash from "@/graphql/shared/types/scalar/onchain-tx-hash"
 import { AuthenticationError, UnknownClientError } from "@/graphql/error"
 import TxNotificationType from "@/graphql/public/types/scalar/tx-notification-type"
 import InvoicePaymentStatus from "@/graphql/shared/types/scalar/invoice-payment-status"
-
 import { baseLogger } from "@/services/logger"
 import { PubSubService } from "@/services/pubsub"
 
@@ -30,22 +30,39 @@ const IntraLedgerUpdate = GT.Object({
   name: "IntraLedgerUpdate",
   fields: () => ({
     txNotificationType: { type: GT.NonNull(TxNotificationType) },
-    amount: { type: GT.NonNull(SatAmount) },
-    displayCurrencyPerSat: { type: GT.NonNull(GT.Float) },
+    amount: {
+      type: GT.NonNull(SatAmount),
+      deprecationReason: "Deprecated in favor of transaction",
+    },
+    displayCurrencyPerSat: {
+      type: GT.NonNull(GT.Float),
+      deprecationReason: "Deprecated in favor of transaction",
+    },
     usdPerSat: {
       type: GT.NonNull(GT.Float),
       deprecationReason: "updated over displayCurrencyPerSat",
     },
-    walletId: { type: GT.NonNull(WalletId) },
+    walletId: {
+      type: GT.NonNull(WalletId),
+      deprecationReason: "Deprecated in favor of transaction",
+    },
+    transaction: { type: GT.NonNull(Transaction) },
   }),
 })
 
 const LnUpdate = GT.Object({
   name: "LnUpdate",
   fields: () => ({
-    paymentHash: { type: GT.NonNull(PaymentHash) },
+    paymentHash: {
+      type: GT.NonNull(PaymentHash),
+      deprecationReason: "Deprecated in favor of transaction",
+    },
     status: { type: GT.NonNull(InvoicePaymentStatus) },
-    walletId: { type: GT.NonNull(WalletId) },
+    walletId: {
+      type: GT.NonNull(WalletId),
+      deprecationReason: "Deprecated in favor of transaction",
+    },
+    transaction: { type: GT.NonNull(Transaction) },
   }),
 })
 
@@ -53,14 +70,27 @@ const OnChainUpdate = GT.Object({
   name: "OnChainUpdate",
   fields: () => ({
     txNotificationType: { type: GT.NonNull(TxNotificationType) },
-    txHash: { type: GT.NonNull(OnChainTxHash) },
-    amount: { type: GT.NonNull(SatAmount) },
-    displayCurrencyPerSat: { type: GT.NonNull(GT.Float) },
+    txHash: {
+      type: GT.NonNull(OnChainTxHash),
+      deprecationReason: "Deprecated in favor of transaction",
+    },
+    amount: {
+      type: GT.NonNull(SatAmount),
+      deprecationReason: "Deprecated in favor of transaction",
+    },
+    displayCurrencyPerSat: {
+      type: GT.NonNull(GT.Float),
+      deprecationReason: "Deprecated in favor of transaction",
+    },
     usdPerSat: {
       type: GT.NonNull(GT.Float),
       deprecationReason: "updated over displayCurrencyPerSat",
     },
-    walletId: { type: GT.NonNull(WalletId) },
+    walletId: {
+      type: GT.NonNull(WalletId),
+      deprecationReason: "Deprecated in favor of transaction",
+    },
+    transaction: { type: GT.NonNull(Transaction) },
   }),
 })
 
