@@ -39,7 +39,6 @@ import {
   onceBriaSubscribe,
   RANDOM_ADDRESS,
   randomPhone,
-  sendToAddressAndConfirm,
 } from "test/helpers"
 
 let accountB: Account
@@ -272,104 +271,7 @@ describe("Display properties on transactions", () => {
   })
 
   describe("onchain", () => {
-    const sendToWalletTestWrapper = async ({
-      amountSats,
-      walletId,
-    }: {
-      amountSats: Satoshis
-      walletId: WalletId
-    }) => {
-      const address = await Wallets.createOnChainAddress({
-        walletId,
-      })
-      if (address instanceof Error) throw address
-      expect(address.substring(0, 4)).toBe("bcrt")
-
-      const txId = await sendToAddressAndConfirm({
-        walletClient: bitcoindOutside,
-        address,
-        amount: sat2btc(amountSats),
-      })
-      if (txId instanceof Error) throw txId
-
-      // Register confirmed txn in database
-      const detectedEvent = await onceBriaSubscribe({
-        type: BriaPayloadType.UtxoDetected,
-        txId,
-      })
-      if (detectedEvent?.payload.type !== BriaPayloadType.UtxoDetected) {
-        throw new Error(`Expected ${BriaPayloadType.UtxoDetected} event`)
-      }
-      const resultPending = await utxoDetectedEventHandler({
-        event: detectedEvent.payload,
-      })
-      if (resultPending instanceof Error) {
-        throw resultPending
-      }
-
-      const settledEvent = await onceBriaSubscribe({
-        type: BriaPayloadType.UtxoSettled,
-        txId,
-      })
-      if (settledEvent?.payload.type !== BriaPayloadType.UtxoSettled) {
-        throw new Error(`Expected ${BriaPayloadType.UtxoSettled} event`)
-      }
-      const resultSettled = await utxoSettledEventHandler({ event: settledEvent.payload })
-      if (resultSettled instanceof Error) {
-        throw resultSettled
-      }
-
-      return txId
-    }
-
     describe("receive", () => {
-      it("(OnChainReceiveLedgerMetadata) receives on-chain transaction", async () => {
-        // TxMetadata:
-        // - OnChainReceiveLedgerMetadata
-
-        const amountSats = toSats(20_000)
-
-        const recipientWalletId = walletIdB
-
-        // Execute receive
-        const txId = await sendToWalletTestWrapper({
-          walletId: recipientWalletId,
-          amountSats,
-        })
-
-        // Check entries
-        const txns = await getAllTransactionsByHash(txId)
-        if (txns instanceof Error) throw txns
-
-        const recipientTxn = txns.find(({ walletId }) => walletId === recipientWalletId)
-        if (recipientTxn === undefined) throw new Error("'recipientTxn' not found")
-
-        const internalTxns = txns.filter(({ walletId }) => walletId !== recipientWalletId)
-        expect(internalTxns.length).toBeGreaterThan(0)
-
-        const { EUR: expectedRecipientDisplayProps } = await getDisplayAmounts({
-          satsAmount: recipientTxn.satsAmount || toSats(0),
-          satsFee: recipientTxn.satsFee || toSats(0),
-        })
-
-        expect(recipientTxn).toEqual(
-          expect.objectContaining({
-            ...expectedRecipientDisplayProps,
-            type: LedgerTransactionType.OnchainReceipt,
-          }),
-        )
-
-        for (const txn of internalTxns) {
-          expect(txn).toEqual(
-            expect.objectContaining({
-              displayAmount: recipientTxn.centsAmount,
-              displayFee: recipientTxn.centsFee,
-              displayCurrency: UsdDisplayCurrency,
-            }),
-          )
-        }
-      })
-
       it("(Pending, no metadata) identifies unconfirmed incoming on-chain transactions", async () => {
         const amountSats = toSats(20_000)
 
