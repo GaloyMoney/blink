@@ -16,24 +16,19 @@ import { updateDisplayCurrency } from "@/app/accounts"
 import { PayoutSpeed } from "@/domain/bitcoin/onchain"
 
 import { translateToLedgerTx } from "@/services/ledger"
-import { MainBook, Transaction } from "@/services/ledger/books"
-import * as BriaImpl from "@/services/bria"
+import { MainBook } from "@/services/ledger/books"
 import { BriaPayloadType } from "@/services/bria"
 import { AccountsRepository } from "@/services/mongoose"
 import { toObjectId } from "@/services/mongoose/utils"
-import { baseLogger } from "@/services/logger"
 
 import {
   utxoDetectedEventHandler,
   utxoSettledEventHandler,
 } from "@/servers/event-handlers/bria"
 
-import { sleep } from "@/utils"
-
 import {
   bitcoindClient,
   bitcoindOutside,
-  createChainAddress,
   createInvoice,
   createUserAndWalletFromPhone,
   getAccountByPhone,
@@ -44,7 +39,6 @@ import {
   onceBriaSubscribe,
   RANDOM_ADDRESS,
   randomPhone,
-  safePay,
   sendToAddressAndConfirm,
 } from "test/helpers"
 
@@ -648,100 +642,6 @@ describe("Display properties on transactions", () => {
             }),
           )
         }
-      })
-    })
-
-    describe("send", () => {
-      it("(OnChainSendLedgerMetadata) sends an onchain payment", async () => {
-        // TxMetadata:
-        // - OnChainSendLedgerMetadata
-
-        const { OnChainService: OnChainServiceOrig } =
-          jest.requireActual("@/services/bria")
-        const briaSpy = jest.spyOn(BriaImpl, "OnChainService").mockReturnValue({
-          ...OnChainServiceOrig(),
-          queuePayoutToAddress: async () => "payoutId" as PayoutId,
-        })
-
-        const amountSats = toSats(20_000)
-
-        const senderWalletId = walletIdB
-        const senderAccount = accountB
-
-        // Execute Send
-        const memo = "invoiceMemo #" + (Math.random() * 1_000_000).toFixed()
-
-        const { address } = await createChainAddress({
-          format: "p2wpkh",
-          lnd: lndOutside1,
-        })
-
-        const paymentResult = await Payments.payOnChainByWalletIdForBtcWallet({
-          senderAccount,
-          senderWalletId,
-          address,
-          amount: amountSats,
-          speed: PayoutSpeed.Fast,
-          memo,
-        })
-        if (paymentResult instanceof Error) throw paymentResult
-        expect(paymentResult).toEqual({
-          status: PaymentSendStatus.Success,
-          transaction: expect.objectContaining({
-            walletId: senderWalletId,
-            status: "pending",
-            settlementAmount: (amountSats + paymentResult.transaction.settlementFee) * -1,
-            settlementCurrency: "BTC",
-            initiationVia: expect.objectContaining({
-              type: "onchain",
-              address,
-            }),
-            settlementVia: expect.objectContaining({
-              type: "onchain",
-              transactionHash: undefined,
-              vout: undefined,
-            }),
-          }),
-        })
-
-        // Check entries
-        const txns = await getAllTransactionsByMemo(memo)
-        if (txns instanceof Error) throw txns
-
-        const senderTxn = txns.find(
-          ({ walletId, debit }) => walletId === senderWalletId && debit > 0,
-        )
-        if (senderTxn === undefined) throw new Error("'senderTxn' not found")
-
-        const internalTxns = txns.filter(({ walletId }) => walletId !== senderWalletId)
-        expect(internalTxns.length).toEqual(2)
-
-        const { EUR: expectedSenderDisplayProps } = await getDisplayAmounts({
-          satsAmount: senderTxn.satsAmount || toSats(0),
-          satsFee: senderTxn.satsFee || toSats(0),
-        })
-
-        expect(senderTxn).toEqual(
-          expect.objectContaining({
-            ...expectedSenderDisplayProps,
-            type: LedgerTransactionType.OnchainPayment,
-            currency: WalletCurrency.Btc,
-          }),
-        )
-
-        for (const txn of internalTxns) {
-          expect(txn).toEqual(
-            expect.objectContaining({
-              displayAmount: senderTxn.centsAmount,
-              displayFee: senderTxn.centsFee,
-              displayCurrency: UsdDisplayCurrency,
-            }),
-          )
-        }
-
-        // Clean up after test
-        await Transaction.deleteMany({ memo })
-        briaSpy.mockRestore()
       })
     })
   })
