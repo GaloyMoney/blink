@@ -5,11 +5,13 @@ cfg = config.parse()
 CORE_TEST_LABEL = "core"
 CONSENT_TEST_LABEL = "consent"
 DASHBOARD_TEST_LABEL = "dashboard"
+PAY_TEST_LABEL = "pay"
 
 TEST_RESOURCES = {
    CORE_TEST_LABEL: "api-test",
    CONSENT_TEST_LABEL: "consent-test",
    DASHBOARD_TEST_LABEL: "dashboard-test",
+   PAY_TEST_LABEL: "pay-test",
 }
 
 is_ci=("ci" in sys.argv) or cfg.get("bats", False)
@@ -62,6 +64,29 @@ local_resource(
     ],
 )
 
+pay_target = "//apps/pay:dev"
+if is_ci:
+  pay_target = '//apps/pay:pay'
+local_resource(
+    "pay",
+    labels = ["apps"],
+    cmd = "buck2 build {}".format(pay_target),
+    serve_cmd = "buck2 run {}".format(pay_target),
+    serve_env = {
+      "NEXTAUTH_URL": "http://localhost:3002",
+      "NEXTAUTH_SECRET": "secret",
+      "PORT": "3002",
+    },
+    deps = _buck2_dep_inputs(pay_target),
+    allow_parallel = True,
+    resource_deps = [
+        "api",
+    ],
+    links = [
+        link("http://localhost:3002", "pay"),
+    ],
+)
+
 local_resource(
   name='hydra-dashboard',
   labels = ['apps'],
@@ -105,6 +130,18 @@ local_resource(
     "consent",
     "api-keys",
     "dashboard",
+  ],
+)
+
+pay_test_target = "//apps/pay:test-integration"
+local_resource(
+  "pay-test",
+  labels = ["test"],
+  auto_init = is_ci and DASHBOARD_TEST_LABEL in cfg.get("test", []),
+  cmd = "buck2 test {}".format(pay_test_target),
+  resource_deps = [
+    "api",
+    "pay",
   ],
 )
 
