@@ -544,6 +544,74 @@ describe("initiated via lightning", () => {
       lnSendLedgerMetadataSpy.mockRestore()
       recordOffChainSendSpy.mockRestore()
     })
+
+    it("records transaction with fee reimbursement metadata on ln send", async () => {
+      // Setup mocks
+      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
+      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+        ...LnServiceOrig(),
+        defaultPubkey: (): Pubkey => DEFAULT_PUBKEY,
+        listAllPubkeys: () => [],
+        payInvoiceViaPaymentDetails: () => ({
+          roundedUpFee: toSats(0),
+          revealedPreImage: "revealedPreImage" as RevealedPreImage,
+          sentFromPubkey: DEFAULT_PUBKEY,
+        }),
+      })
+
+      const displayAmountsConverterSpy = jest.spyOn(
+        DisplayAmountsConverterImpl,
+        "DisplayAmountsConverter",
+      )
+
+      const lnFeeReimbursementReceiveLedgerMetadataSpy = jest.spyOn(
+        LedgerFacadeImpl,
+        "LnFeeReimbursementReceiveLedgerMetadata",
+      )
+      const recordOffChainReceiveSpy = jest.spyOn(
+        LedgerFacadeImpl,
+        "recordReceiveOffChain",
+      )
+
+      // Create users
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      // Execute pay
+      await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
+        memo,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        amount,
+      })
+
+      // Check record function was called with right metadata
+      expect(displayAmountsConverterSpy).toHaveBeenCalledTimes(2)
+      expect(lnFeeReimbursementReceiveLedgerMetadataSpy).toHaveBeenCalledTimes(1)
+      // Note: 1st call is funding balance in test, 2nd call is fee reimbursement
+      const args = recordOffChainReceiveSpy.mock.calls[1][0]
+      expect(args.metadata.type).toBe(LedgerTransactionType.LnFeeReimbursement)
+
+      // Restore system state
+      lndServiceSpy.mockRestore()
+      displayAmountsConverterSpy.mockRestore()
+      lnFeeReimbursementReceiveLedgerMetadataSpy.mockRestore()
+      recordOffChainReceiveSpy.mockRestore()
+    })
   })
 
   describe("settles intraledger", () => {
