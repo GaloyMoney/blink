@@ -370,4 +370,55 @@ describe("intraLedgerPay", () => {
     walletIdTradeIntraAccountLedgerMetadataSpy.mockRestore()
     recordIntraledgerSpy.mockRestore()
   })
+
+  it("records transaction with wallet-id-intraledger metadata on intraledger send", async () => {
+    // Setup mocks
+    const displayAmountsConverterSpy = jest.spyOn(
+      DisplayAmountsConverterImpl,
+      "DisplayAmountsConverter",
+    )
+
+    const walletIdIntraledgerLedgerMetadataSpy = jest.spyOn(
+      LedgerFacadeImpl,
+      "WalletIdIntraledgerLedgerMetadata",
+    )
+    const recordIntraledgerSpy = jest.spyOn(LedgerFacadeImpl, "recordIntraledger")
+
+    // Setup users and wallets
+    const newWalletDescriptor = await createRandomUserAndBtcWallet()
+    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
+    if (newAccount instanceof Error) throw newAccount
+
+    const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
+
+    // Fund balance for send
+    const receive = await recordReceiveLnPayment({
+      walletDescriptor: newWalletDescriptor,
+      paymentAmount: receiveAmounts,
+      bankFee: receiveBankFee,
+      displayAmounts: receiveDisplayAmounts,
+      memo,
+    })
+    if (receive instanceof Error) throw receive
+
+    // Pay intraledger
+    await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
+      recipientWalletId: recipientWalletDescriptor.id,
+      memo,
+      amount,
+      senderWalletId: newWalletDescriptor.id,
+      senderAccount: newAccount,
+    })
+
+    // Check record function was called with right metadata
+    expect(displayAmountsConverterSpy).toHaveBeenCalledTimes(2)
+    expect(walletIdIntraledgerLedgerMetadataSpy).toHaveBeenCalledTimes(1)
+    const args = recordIntraledgerSpy.mock.calls[0][0]
+    expect(args.metadata.type).toBe(LedgerTransactionType.IntraLedger)
+
+    // Restore system state
+    displayAmountsConverterSpy.mockRestore()
+    walletIdIntraledgerLedgerMetadataSpy.mockRestore()
+    recordIntraledgerSpy.mockRestore()
+  })
 })
