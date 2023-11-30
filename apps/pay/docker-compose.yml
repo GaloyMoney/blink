@@ -1,8 +1,0 @@
-version: "3.9"
-services:
-  pay:
-    image: galoy-pay
-    environment:
-      - NEXT_PUBLIC_GRAPHQL_HOSTNAME=api.staging.galoy.io
-    ports:
-      - "3000:3000"

@@ -13,7 +13,7 @@ consent:
   - pnpm-lock.yaml
 
 pay:
-  - apps/dashboard/*
+  - apps/pay/*
   - flake.lock
   - pnpm-lock.yaml
 
