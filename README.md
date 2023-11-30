@@ -13,7 +13,7 @@ Galoy is an opinionated Bitcoin banking platform.
 This repo represents the main API that brings all functionality together.
 
 
-## Responsible Disclosure 
+## Responsible Disclosure
 
 Found critical bugs/vulnerabilities?
 Please email them security@galoy.io Thanks!
@@ -53,7 +53,7 @@ For an overview of all relevant repositories checkout [awesome-galoy](https://gi
   - Support for clearnet and TOR
   - Support for invoices with and without a specified amount
   - Route probing to pre-display an accurate fee and mitigate attacks based on expensive routing
-  - Channel data backup to Dropbox and Google Cloud storage
+  - Channel data backup to S3 and Google Cloud storage
 - Custodial storage of all user assets
   - Limited funds stored in hot-wallet (keys kept on servers)
   - Threshold based rebalancing to cold-storage (keys stored on offline hardware devices)
@@ -61,7 +61,7 @@ For an overview of all relevant repositories checkout [awesome-galoy](https://gi
   - [Velocity check](https://www.linkedin.com/pulse/velocity-checks-fraud-prevention-scott-stone/) based on user verification level
   - Spam protection for sharing memos
   - Configurable 2fa for payments (in progress)
-  - DDoS prevention 
+  - DDoS prevention
     - via rate limiting infront of critical APIs
     - via geetest CAPTCHA
 - Resilience
