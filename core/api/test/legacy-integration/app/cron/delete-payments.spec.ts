@@ -57,16 +57,32 @@ describe("Delete payments from Lnd - Lightning Pay", () => {
     const { request, secret, id } = await createInvoice({ lnd: lndOutside1 })
     const paymentHash = id as PaymentHash
     const revealedPreImage = secret as RevealedPreImage
+    const amount = toSats(1000)
 
     const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
       uncheckedPaymentRequest: request,
       memo: null,
-      amount: toSats(1000),
+      amount,
       senderWalletId: walletIdB,
       senderAccount: accountB,
     })
     if (paymentResult instanceof Error) throw paymentResult
-    expect(paymentResult).toBe(PaymentSendStatus.Success)
+    expect(paymentResult).toEqual({
+      status: PaymentSendStatus.Success,
+      transaction: expect.objectContaining({
+        walletId: walletIdB,
+        status: "success",
+        settlementAmount: (amount + paymentResult.transaction.settlementFee) * -1,
+        settlementCurrency: "BTC",
+        initiationVia: expect.objectContaining({
+          type: "lightning",
+          paymentHash,
+        }),
+        settlementVia: expect.objectContaining({
+          type: "lightning",
+        }),
+      }),
+    })
 
     const lndService = LndService()
     if (lndService instanceof Error) return lndService
