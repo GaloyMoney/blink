@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(core): add transaction to send mutations and myupdates (#3619)...'
-      sha: 81e1678accbea022d104fd1cedc7e36041806587
+      commitTitle: 'fix: tx pagination (#3530)...'
+      sha: eecbbd39d40135744b9b2f3dfecd7305df2b4060
       tags:
-      - 0.16.79-1-g81e1678ac
+      - 0.16.80-1-geecbbd39d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(core): add transaction to send mutations and myupdates (#3619)...'
-      sha: 81e1678accbea022d104fd1cedc7e36041806587
+      commitTitle: 'fix: tx pagination (#3530)...'
+      sha: eecbbd39d40135744b9b2f3dfecd7305df2b4060
       tags:
-      - 0.16.79-1-g81e1678ac
+      - 0.16.80-1-geecbbd39d
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(core): add transaction to send mutations and myupdates (#3619)...'
-      sha: 81e1678accbea022d104fd1cedc7e36041806587
+      commitTitle: 'fix: tx pagination (#3530)...'
+      sha: eecbbd39d40135744b9b2f3dfecd7305df2b4060
       tags:
-      - 0.16.79-1-g81e1678ac
+      - 0.16.80-1-geecbbd39d
     path: ./
   path: ./graphql
 kind: LockConfig
