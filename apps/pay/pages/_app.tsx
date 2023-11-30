@@ -1,4 +1,4 @@
-// Disable no-unassigned-import rule becuase we are importing css files
+// Disable no-unassigned-import rule because we are importing css files
 // eslint-disable-next-line
 import "bootstrap/dist/css/bootstrap.min.css"
 // eslint-disable-next-line
