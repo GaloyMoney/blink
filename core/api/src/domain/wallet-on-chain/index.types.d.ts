@@ -30,13 +30,13 @@ interface IWalletOnChainAddressesRepository {
 
 type ListWalletOnChainPendingReceiveArgs = {
   walletIds: WalletId[]
-  paginationArgs?: PaginationArgs
+  paginationArgs?: PaginatedQueryArgs
 }
 
 type ListWalletOnChainPendingReceiveByAddressesArgs = {
   walletIds: WalletId[]
   addresses: OnChainAddress[]
-  paginationArgs?: PaginationArgs
+  paginationArgs?: PaginatedQueryArgs
 }
 
 type PersistWalletOnChainPendingReceiveArgs = WalletOnChainPendingTransaction

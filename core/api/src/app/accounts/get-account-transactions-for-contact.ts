@@ -1,5 +1,6 @@
-import { memoSharingConfig } from "@/config"
+import { MAX_PAGINATION_PAGE_SIZE, memoSharingConfig } from "@/config"
 import { LedgerError } from "@/domain/ledger"
+import { checkedToPaginatedQueryArgs } from "@/domain/primitives"
 import { WalletTransactionHistory } from "@/domain/wallets"
 
 import { getNonEndUserWalletIds, LedgerService } from "@/services/ledger"
@@ -8,29 +9,45 @@ import { WalletsRepository } from "@/services/mongoose"
 export const getAccountTransactionsForContact = async ({
   account,
   contactUsername,
-  paginationArgs,
+  rawPaginationArgs,
 }: {
   account: Account
   contactUsername: Username
-  paginationArgs?: PaginationArgs
-}): Promise<PaginatedArray<WalletTransaction> | ApplicationError> => {
+  rawPaginationArgs: RawPaginationArgs
+}): Promise<PaginatedQueryResult<WalletTransaction> | ApplicationError> => {
+  const paginationArgs = checkedToPaginatedQueryArgs({
+    paginationArgs: rawPaginationArgs,
+    maxPageSize: MAX_PAGINATION_PAGE_SIZE,
+  })
+
+  if (paginationArgs instanceof Error) return paginationArgs
+
   const ledger = LedgerService()
 
   const wallets = await WalletsRepository().listByAccountId(account.id)
   if (wallets instanceof Error) return wallets
 
-  const resp = await ledger.getTransactionsByWalletIdAndContactUsername({
+  const ledgerTxs = await ledger.getTransactionsByWalletIdAndContactUsername({
     walletIds: wallets.map((wallet) => wallet.id),
     contactUsername,
     paginationArgs,
   })
-  if (resp instanceof LedgerError) return resp
+  if (ledgerTxs instanceof LedgerError) return ledgerTxs
 
-  const confirmedHistory = WalletTransactionHistory.fromLedger({
-    ledgerTransactions: resp.slice,
-    nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
-    memoSharingConfig,
+  const nonEndUserWalletIds = Object.values(await getNonEndUserWalletIds())
+
+  const txEdges = ledgerTxs.edges.map((edge) => {
+    const transaction = WalletTransactionHistory.fromLedger({
+      txn: edge.node,
+      nonEndUserWalletIds,
+      memoSharingConfig,
+    })
+
+    return {
+      cursor: edge.cursor,
+      node: transaction,
+    }
   })
 
-  return { slice: confirmedHistory.transactions, total: resp.total }
+  return { ...ledgerTxs, edges: txEdges }
 }

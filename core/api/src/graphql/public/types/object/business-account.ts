@@ -13,13 +13,7 @@ import Transaction, {
 import RealtimePrice from "./realtime-price"
 import { NotificationSettings } from "./notification-settings"
 
-import { WalletsRepository } from "@/services/mongoose"
-
-import {
-  connectionArgs,
-  connectionFromPaginatedArray,
-  checkedConnectionArgs,
-} from "@/graphql/connections"
+import { connectionArgs } from "@/graphql/connections"
 import { GT } from "@/graphql/index"
 import { mapError } from "@/graphql/error-map"
 import {
@@ -27,7 +21,6 @@ import {
   SAT_PRICE_PRECISION_OFFSET,
   USD_PRICE_PRECISION_OFFSET,
 } from "@/domain/fiat"
-import { CouldNotFindTransactionsForAccountError } from "@/domain/errors"
 import { Accounts, Prices, Wallets } from "@/app"
 import { IInvoiceConnection } from "@/graphql/shared/types/abstract/invoice"
 
@@ -125,40 +118,19 @@ const BusinessAccount = GT.Object({
         },
       },
       resolve: async (source, args) => {
-        const paginationArgs = checkedConnectionArgs(args)
-        if (paginationArgs instanceof Error) {
-          throw paginationArgs
-        }
+        const { walletIds, ...rawPaginationArgs } = args
 
-        let { walletIds } = args
-
-        if (!walletIds) {
-          const wallets = await WalletsRepository().listByAccountId(source.id)
-          if (wallets instanceof Error) {
-            throw mapError(wallets)
-          }
-          walletIds = wallets.map((wallet) => wallet.id)
-        }
-
-        const { result, error } = await Accounts.getTransactionsForAccountByWalletIds({
+        const result = await Accounts.getTransactionsForAccountByWalletIds({
           account: source,
           walletIds,
-          paginationArgs,
+          rawPaginationArgs,
         })
-        if (error instanceof Error) {
-          throw mapError(error)
+
+        if (result instanceof Error) {
+          throw mapError(result)
         }
 
-        if (!result?.slice) {
-          const nullError = new CouldNotFindTransactionsForAccountError()
-          throw mapError(nullError)
-        }
-
-        return connectionFromPaginatedArray<WalletTransaction>(
-          result.slice,
-          result.total,
-          paginationArgs,
-        )
+        return result
       },
     },
     pendingIncomingTransactions: {
@@ -192,11 +164,11 @@ const BusinessAccount = GT.Object({
         },
       },
       resolve: async (source, args) => {
-        const { walletIds } = args
+        const { walletIds, ...rawPaginationArgs } = args
         const result = await Accounts.getInvoicesForAccountByWalletIds({
           account: source,
           walletIds,
-          rawPaginationArgs: args,
+          rawPaginationArgs,
         })
 
         if (result instanceof Error) {

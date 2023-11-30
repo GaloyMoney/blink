@@ -108,12 +108,15 @@ describe("UserWallet - addEarn", () => {
     const OnboardingEarnIds = Object.keys(OnboardingEarn)
     expect(OnboardingEarnIds.length).toBeGreaterThanOrEqual(1)
 
-    const { result: transactionsBefore } = await getTransactionsForWalletId(walletIdB)
+    const transactionsBefore = await getTransactionsForWalletId(walletIdB)
+    if (transactionsBefore instanceof Error) throw transactionsBefore
 
     let OnboardingEarnId = ""
     let txCheck: WalletTransaction | undefined
     for (OnboardingEarnId of OnboardingEarnIds) {
-      txCheck = transactionsBefore?.slice.find((tx) => tx.memo === OnboardingEarnId)
+      txCheck = transactionsBefore.edges.find(
+        ({ node: tx }) => tx.memo === OnboardingEarnId,
+      )?.node
       if (!txCheck) break
     }
     expect(txCheck).toBeUndefined()
@@ -136,8 +139,11 @@ describe("UserWallet - addEarn", () => {
     })
     if (payment instanceof Error) return payment
 
-    const { result: transactionsAfter } = await getTransactionsForWalletId(walletIdB)
-    const rewardTx = transactionsAfter?.slice.find((tx) => tx.memo === OnboardingEarnId)
+    const transactionsAfter = await getTransactionsForWalletId(walletIdB)
+    if (transactionsAfter instanceof Error) throw transactionsAfter
+    const rewardTx = transactionsAfter.edges.find(
+      ({ node: tx }) => tx.memo === OnboardingEarnId,
+    )
     expect(rewardTx).not.toBeUndefined()
   })
 })

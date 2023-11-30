@@ -1,7 +1,5 @@
 import { getTransactionsForWallets } from "../wallets"
 
-import { PartialResult } from "../partial-result"
-
 import { AccountValidator } from "@/domain/accounts"
 import { RepositoryError } from "@/domain/errors"
 import { WalletsRepository } from "@/services/mongoose"
@@ -9,26 +7,33 @@ import { WalletsRepository } from "@/services/mongoose"
 export const getTransactionsForAccountByWalletIds = async ({
   account,
   walletIds,
-  paginationArgs,
+  rawPaginationArgs,
 }: {
   account: Account
-  walletIds: WalletId[]
-  paginationArgs?: PaginationArgs
-}): Promise<PartialResult<PaginatedArray<WalletTransaction>>> => {
+  walletIds?: WalletId[]
+  rawPaginationArgs: RawPaginationArgs
+}): Promise<PaginatedQueryResult<WalletTransaction> | ApplicationError> => {
   const walletsRepo = WalletsRepository()
 
   const wallets: Wallet[] = []
-  for (const walletId of walletIds) {
-    const wallet = await walletsRepo.findById(walletId)
-    if (wallet instanceof RepositoryError) return PartialResult.err(wallet)
 
-    const accountValidator = AccountValidator(account)
-    if (accountValidator instanceof Error) return PartialResult.err(accountValidator)
-    const validateWallet = accountValidator.validateWalletForAccount(wallet)
-    if (validateWallet instanceof Error) return PartialResult.err(validateWallet)
+  if (walletIds) {
+    for (const walletId of walletIds) {
+      const wallet = await walletsRepo.findById(walletId)
+      if (wallet instanceof RepositoryError) return wallet
 
-    wallets.push(wallet)
+      const accountValidator = AccountValidator(account)
+      if (accountValidator instanceof Error) return accountValidator
+      const validateWallet = accountValidator.validateWalletForAccount(wallet)
+      if (validateWallet instanceof Error) return validateWallet
+
+      wallets.push(wallet)
+    }
+  } else {
+    const accountWallets = await walletsRepo.listByAccountId(account.id)
+    if (accountWallets instanceof RepositoryError) return accountWallets
+    wallets.push(...accountWallets)
   }
 
-  return getTransactionsForWallets({ wallets, paginationArgs })
+  return getTransactionsForWallets({ wallets, rawPaginationArgs })
 }

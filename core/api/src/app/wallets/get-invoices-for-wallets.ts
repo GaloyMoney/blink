@@ -7,12 +7,7 @@ export const getInvoicesForWallets = async ({
   rawPaginationArgs,
 }: {
   wallets: Wallet[]
-  rawPaginationArgs: {
-    first?: number | null
-    last?: number | null
-    before?: string | null
-    after?: string | null
-  }
+  rawPaginationArgs: RawPaginationArgs
 }): Promise<PaginatedQueryResult<WalletInvoice> | ApplicationError> => {
   const walletIds = wallets.map((wallet) => wallet.id)
 

@@ -188,28 +188,43 @@ export const LedgerService = (): ILedgerService => {
 
   const getTransactionsByWalletIds = async ({
     walletIds,
-    paginationArgs = {} as PaginationArgs,
+    paginationArgs,
   }: {
     walletIds: WalletId[]
-    paginationArgs: PaginationArgs
-  }): Promise<PaginatedArray<LedgerTransaction<WalletCurrency>> | LedgerError> => {
+    paginationArgs: PaginatedQueryArgs
+  }): Promise<PaginatedQueryResult<LedgerTransaction<WalletCurrency>> | LedgerError> => {
     const liabilitiesWalletIds = walletIds.map(toLiabilitiesWalletId)
     try {
       const ledgerResp = await paginatedLedger({
-        query: { account: liabilitiesWalletIds },
+        filters: {
+          mediciFilters: { account: liabilitiesWalletIds },
+        },
         paginationArgs,
       })
 
-      if (ledgerResp instanceof Error) {
-        return ledgerResp
-      }
+      return ledgerResp
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
 
-      const { slice, total } = ledgerResp
+  const getTransactionsByWalletIdsAndAddresses = async ({
+    walletIds,
+    paginationArgs,
+    addresses,
+  }: {
+    walletIds: WalletId[]
+    paginationArgs: PaginatedQueryArgs
+    addresses: OnChainAddress[]
+  }): Promise<PaginatedQueryResult<LedgerTransaction<WalletCurrency>> | LedgerError> => {
+    const liabilitiesWalletIds = walletIds.map(toLiabilitiesWalletId)
+    try {
+      const ledgerResp = await paginatedLedger({
+        filters: { mediciFilters: { account: liabilitiesWalletIds }, addresses },
+        paginationArgs,
+      })
 
-      return {
-        slice: slice.map((tx) => translateToLedgerTx(tx)),
-        total,
-      }
+      return ledgerResp
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -222,25 +237,19 @@ export const LedgerService = (): ILedgerService => {
   }: {
     walletIds: WalletId[]
     contactUsername: Username
-    paginationArgs?: PaginationArgs
-  }): Promise<PaginatedArray<LedgerTransaction<WalletCurrency>> | LedgerError> => {
+    paginationArgs: PaginatedQueryArgs
+  }): Promise<PaginatedQueryResult<LedgerTransaction<WalletCurrency>> | LedgerError> => {
     const liabilitiesWalletIds = walletIds.map(toLiabilitiesWalletId)
     try {
       const ledgerResp = await paginatedLedger({
-        query: { account: liabilitiesWalletIds, username: contactUsername },
+        filters: {
+          mediciFilters: { account: liabilitiesWalletIds },
+          username: contactUsername,
+        },
         paginationArgs,
       })
 
-      if (ledgerResp instanceof Error) {
-        return ledgerResp
-      }
-
-      const { slice, total } = ledgerResp
-
-      return {
-        slice: slice.map((tx) => translateToLedgerTx(tx)),
-        total,
-      }
+      return ledgerResp
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -490,6 +499,7 @@ export const LedgerService = (): ILedgerService => {
       getTransactionsForWalletByPaymentHash,
       getTransactionsByWalletId,
       getTransactionsByWalletIds,
+      getTransactionsByWalletIdsAndAddresses,
       getTransactionsByWalletIdAndContactUsername,
       listPendingPayments,
       listAllPaymentHashes,

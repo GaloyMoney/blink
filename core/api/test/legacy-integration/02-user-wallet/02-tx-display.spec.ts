@@ -9,7 +9,6 @@ import { sat2btc, toSats } from "@/domain/bitcoin"
 import { LedgerTransactionType, UnknownLedgerError } from "@/domain/ledger"
 import * as LnFeesImpl from "@/domain/payments"
 import { paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
-import { TxStatus } from "@/domain/wallets"
 import { UsdDisplayCurrency, displayAmountFromNumber } from "@/domain/fiat"
 
 import { updateDisplayCurrency } from "@/app/accounts"
@@ -39,7 +38,7 @@ import {
   createUserAndWalletFromPhone,
   getAccountByPhone,
   getDefaultWalletIdByPhone,
-  getTransactionsForWalletId,
+  getPendingTransactionsForWalletId,
   getUsdWalletIdByPhone,
   lndOutside1,
   onceBriaSubscribe,
@@ -823,11 +822,9 @@ describe("Display properties on transactions", () => {
         }
 
         // Check entries
-        const { result: txs, error } = await getTransactionsForWalletId(recipientWalletId)
-        if (error instanceof Error || txs === null) {
-          throw error
-        }
-        const pendingTxs = txs.slice.filter(({ status }) => status === TxStatus.Pending)
+        const pendingTxs = await getPendingTransactionsForWalletId(recipientWalletId)
+        if (pendingTxs instanceof Error) throw pendingTxs
+
         expect(pendingTxs.length).toBe(1)
         const recipientTxn = pendingTxs[0]
 

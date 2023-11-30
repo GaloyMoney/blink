@@ -234,14 +234,17 @@ describe("translates ledger txs to wallet txs", () => {
       }
 
       const ledgerTransactions = ledgerTxnsInputs(txnsArgs)
-      const result = WalletTransactionHistory.fromLedger({
-        ledgerTransactions,
-        nonEndUserWalletIds: [],
-        memoSharingConfig,
-      })
-
       const expected = expectedWalletTxns(txnsArgs)
-      expect(result.transactions).toEqual(expected)
+
+      for (let i = 0; i < ledgerTransactions.length; i++) {
+        const result = WalletTransactionHistory.fromLedger({
+          txn: ledgerTransactions[i],
+          nonEndUserWalletIds: [],
+          memoSharingConfig,
+        })
+
+        expect(result).toEqual(expected[i])
+      }
     })
 
     it("translates usd ledger txs", () => {
@@ -260,14 +263,17 @@ describe("translates ledger txs to wallet txs", () => {
       }
 
       const ledgerTransactions = ledgerTxnsInputs(txnsArgs)
-      const result = WalletTransactionHistory.fromLedger({
-        ledgerTransactions,
-        nonEndUserWalletIds: [],
-        memoSharingConfig,
-      })
-
       const expected = expectedWalletTxns(txnsArgs)
-      expect(result.transactions).toEqual(expected)
+
+      for (let i = 0; i < ledgerTransactions.length; i++) {
+        const result = WalletTransactionHistory.fromLedger({
+          txn: ledgerTransactions[i],
+          nonEndUserWalletIds: [],
+          memoSharingConfig,
+        })
+
+        expect(result).toEqual(expected[i])
+      }
     })
 
     it("handles missing satsAmount-related properties", () => {
@@ -314,12 +320,6 @@ describe("translates ledger txs to wallet txs", () => {
         return rest
       })
 
-      const result = WalletTransactionHistory.fromLedger({
-        ledgerTransactions: ledgerTransactionsModified,
-        nonEndUserWalletIds: [],
-        memoSharingConfig,
-      })
-
       const expected = expectedWalletTxns(txnsArgs)
 
       // Modify satsAmount-related-dependent properties
@@ -353,7 +353,15 @@ describe("translates ledger txs to wallet txs", () => {
         }
       })
 
-      expect(result.transactions).toEqual(expectedTransactionsModified)
+      for (let i = 0; i < ledgerTransactionsModified.length; i++) {
+        const result = WalletTransactionHistory.fromLedger({
+          txn: ledgerTransactionsModified[i],
+          nonEndUserWalletIds: [],
+          memoSharingConfig,
+        })
+
+        expect(result).toEqual(expectedTransactionsModified[i])
+      }
     })
   })
 })

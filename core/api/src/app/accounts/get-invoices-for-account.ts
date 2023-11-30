@@ -10,12 +10,7 @@ export const getInvoicesForAccountByWalletIds = async ({
 }: {
   account: Account
   walletIds?: WalletId[]
-  rawPaginationArgs: {
-    first?: number | null
-    last?: number | null
-    before?: string | null
-    after?: string | null
-  }
+  rawPaginationArgs: RawPaginationArgs
 }): Promise<PaginatedQueryResult<WalletInvoice> | ApplicationError> => {
   const walletsRepo = WalletsRepository()
 

@@ -9,34 +9,34 @@ import { parseFilterQuery } from "medici/build/helper/parse/parseFilterQuery"
 
 import { MainBook } from "./books"
 
-import { InvalidPaginationArgumentsError } from "@/domain/ledger"
-import { Transaction } from "@/services/ledger/schema"
-import { MAX_PAGINATION_PAGE_SIZE } from "@/config"
+import { translateToLedgerTx } from "."
 
-type IFilterQuery = {
-  account?: string | string[]
-  _journal?: Types.ObjectId | string
-  start_date?: Date | string | number
-  end_date?: Date | string | number
-} & Partial<ILedgerTransaction>
+import { Transaction } from "@/services/ledger/schema"
+import { checkedToPaginatedQueryCursor } from "@/domain/primitives"
+
+type LedgerQueryFilter = {
+  mediciFilters: {
+    account?: string | string[]
+    _journal?: Types.ObjectId | string
+    start_date?: Date | string | number
+    end_date?: Date | string | number
+  }
+  username?: string
+  addresses?: OnChainAddress[]
+}
 
 export const paginatedLedger = async ({
-  query,
+  filters,
   paginationArgs,
 }: {
-  query: IFilterQuery
-  paginationArgs?: PaginationArgs
-}): Promise<Error | PaginatedArray<ILedgerTransaction>> => {
-  const filterQuery = parseFilterQuery(query, MainBook)
+  filters: LedgerQueryFilter
+  paginationArgs: PaginatedQueryArgs
+}): Promise<Error | PaginatedQueryResult<LedgerTransaction<WalletCurrency>>> => {
+  const filterQuery = parseFilterQuery(filters.mediciFilters, MainBook)
 
-  const { first, after, last, before } = paginationArgs || {}
+  const { first, last, before, after } = paginationArgs
 
-  if (
-    (first !== undefined && last !== undefined) ||
-    (after !== undefined && before !== undefined)
-  ) {
-    return new InvalidPaginationArgumentsError()
-  }
+  filterQuery["_id"] = { $exists: true }
 
   if (after) {
     filterQuery["_id"] = { $lt: new Types.ObjectId(after) }
@@ -46,27 +46,59 @@ export const paginatedLedger = async ({
     filterQuery["_id"] = { $gt: new Types.ObjectId(before) }
   }
 
-  let limit = first ?? MAX_PAGINATION_PAGE_SIZE
-  let skip = 0
-
-  const total = await Transaction.countDocuments(filterQuery)
-
-  if (last) {
-    limit = last
-    if (total > last) {
-      skip = total - last
-    }
+  if (filters.username) {
+    filterQuery["username"] = filters.username
   }
 
-  const slice = await Transaction.collection
-    .find<ILedgerTransaction>(filterQuery)
-    .sort({ datetime: -1, timestamp: -1, _id: -1 })
-    .limit(limit)
-    .skip(skip)
-    .toArray()
+  if (filters.addresses) {
+    filterQuery["payee_addresses"] = { $in: filters.addresses }
+  }
+
+  const documentCount = await Transaction.countDocuments(filterQuery)
+
+  // hasPreviousPage and hasNextPage can default to false for the opposite pagination direction per the Connection spec
+  let hasPreviousPage = false
+  let hasNextPage = false
+  let transactionRecords: ILedgerTransaction[] = []
+
+  if (first !== undefined) {
+    if (documentCount > first) {
+      hasNextPage = true
+    }
+
+    transactionRecords = await Transaction.collection
+      .find<ILedgerTransaction>(filterQuery)
+      .sort({ _id: -1 })
+      .limit(first)
+      .toArray()
+  } else {
+    let skipAmount = 0
+    if (documentCount > last) {
+      hasPreviousPage = true
+      skipAmount = documentCount - last
+    }
+
+    transactionRecords = await Transaction.collection
+      .find<ILedgerTransaction>(filterQuery)
+      .sort({ _id: -1 })
+      .skip(skipAmount)
+      .toArray()
+  }
+
+  const txs = transactionRecords.map((tx) => translateToLedgerTx(tx))
 
   return {
-    slice,
-    total,
+    edges: txs.map((tx) => ({
+      cursor: checkedToPaginatedQueryCursor(tx.id),
+      node: tx,
+    })),
+    pageInfo: {
+      startCursor: txs[0]?.id ? checkedToPaginatedQueryCursor(txs[0].id) : undefined,
+      endCursor: txs[txs.length - 1]?.id
+        ? checkedToPaginatedQueryCursor(txs[txs.length - 1].id)
+        : undefined,
+      hasPreviousPage,
+      hasNextPage,
+    },
   }
 }

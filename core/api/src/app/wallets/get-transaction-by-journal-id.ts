@@ -18,8 +18,8 @@ export const getTransactionForWalletByJournalId = async ({
   if (ledgerTransaction instanceof Error) return ledgerTransaction
 
   return WalletTransactionHistory.fromLedger({
-    ledgerTransactions: [ledgerTransaction],
+    txn: ledgerTransaction,
     nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
     memoSharingConfig,
-  }).transactions[0]
+  })
 }

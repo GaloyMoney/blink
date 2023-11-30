@@ -74,9 +74,10 @@ describe("getTransactionsForAccountByWalletIds", () => {
     const txns = await Accounts.getTransactionsForAccountByWalletIds({
       account: senderAccount,
       walletIds: [otherWalletDescriptor.id],
+      rawPaginationArgs: {},
     })
-    if (txns instanceof Error) throw txns
-    expect(txns.error).toBeInstanceOf(InvalidWalletId)
+
+    expect(txns).toBeInstanceOf(InvalidWalletId)
 
     // Restore system state
     await Transaction.deleteMany({ memo })

@@ -45,7 +45,32 @@ get_from_transaction_by_address() {
     | jq -r "$property_query"
 }
 
-check_for_broadcast() {
+get_from_pending_transaction_by_address() {
+  property_query=$2
+
+  jq_query='.data.me.defaultAccount.pendingIncomingTransactions[] | select(.initiationVia.address == $address)'
+  echo $output \
+    | jq -r --arg address "$1" "$jq_query" \
+    | jq -r "$property_query"
+}
+
+check_for_incoming_broadcast() {
+  local token_name=$1
+  local address=$2
+
+  exec_graphql "$token_name" 'pending-incoming-transactions'
+
+  tx="$(get_from_pending_transaction_by_address "$address" '.')"
+  [[ -n "${tx}" && "${tx}" != "null" ]] || exit 1
+  txid="$(echo $tx | jq -r '.settlementVia.transactionHash')"
+  [[ "${txid}" != "null" ]] || exit 1
+  status="$(echo $tx | jq -r '.status')"
+  [[ "${status}" == "PENDING" ]] || exit 1
+
+  bitcoin_cli gettransaction "$txid" || exit 1
+}
+
+check_for_outgoing_broadcast() {
   local token_name=$1
   local address=$2
   local first=${3:-"1"}

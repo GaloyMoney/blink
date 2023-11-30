@@ -1,61 +1,55 @@
-import { memoSharingConfig } from "@/config"
-import { PartialResult } from "@/app/partial-result"
+import { MAX_PAGINATION_PAGE_SIZE, memoSharingConfig } from "@/config"
 
 import { LedgerError } from "@/domain/ledger"
 import { WalletTransactionHistory } from "@/domain/wallets"
-import { CouldNotFindError } from "@/domain/errors"
 
 import { getNonEndUserWalletIds, LedgerService } from "@/services/ledger"
-import { WalletOnChainPendingReceiveRepository } from "@/services/mongoose"
+import { checkedToPaginatedQueryArgs } from "@/domain/primitives"
 
 export const getTransactionsForWalletsByAddresses = async ({
   wallets,
   addresses,
-  paginationArgs,
+  rawPaginationArgs,
 }: {
   wallets: Wallet[]
   addresses: OnChainAddress[]
-  paginationArgs?: PaginationArgs
-}): Promise<PartialResult<PaginatedArray<WalletTransaction>>> => {
+  rawPaginationArgs: RawPaginationArgs
+}): Promise<PaginatedQueryResult<WalletTransaction> | ApplicationError> => {
+  const paginationArgs = checkedToPaginatedQueryArgs({
+    paginationArgs: rawPaginationArgs,
+    maxPageSize: MAX_PAGINATION_PAGE_SIZE,
+  })
+
+  if (paginationArgs instanceof Error) {
+    return paginationArgs
+  }
+
   const walletIds = wallets.map((wallet) => wallet.id)
 
-  let pendingHistory =
-    await WalletOnChainPendingReceiveRepository().listByWalletIdsAndAddresses({
-      walletIds,
-      addresses,
-    })
-  if (pendingHistory instanceof Error) {
-    if (pendingHistory instanceof CouldNotFindError) {
-      pendingHistory = []
-    } else {
-      return PartialResult.err(pendingHistory)
-    }
-  }
-
-  const confirmedLedgerTxns = await LedgerService().getTransactionsByWalletIds({
+  const ledgerTxs = await LedgerService().getTransactionsByWalletIdsAndAddresses({
     walletIds,
     paginationArgs,
+    addresses,
   })
-  if (confirmedLedgerTxns instanceof LedgerError) {
-    return PartialResult.partial(
-      { slice: pendingHistory, total: pendingHistory.length },
-      confirmedLedgerTxns,
-    )
+
+  if (ledgerTxs instanceof LedgerError) {
+    return ledgerTxs
   }
-  const ledgerTransactions = confirmedLedgerTxns.slice.filter(
-    (tx) => tx.address && addresses.includes(tx.address),
-  )
 
-  const confirmedHistory = WalletTransactionHistory.fromLedger({
-    ledgerTransactions,
-    nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
-    memoSharingConfig,
+  const nonEndUserWalletIds = Object.values(await getNonEndUserWalletIds())
+
+  const txEdges = ledgerTxs.edges.map((edge) => {
+    const transaction = WalletTransactionHistory.fromLedger({
+      txn: edge.node,
+      nonEndUserWalletIds,
+      memoSharingConfig,
+    })
+
+    return {
+      cursor: edge.cursor,
+      node: transaction,
+    }
   })
 
-  const transactions = [...pendingHistory, ...confirmedHistory.transactions]
-
-  return PartialResult.ok({
-    slice: transactions,
-    total: transactions.length,
-  })
+  return { ...ledgerTxs, edges: txEdges }
 }

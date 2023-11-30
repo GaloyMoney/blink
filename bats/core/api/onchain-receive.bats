@@ -67,7 +67,7 @@ setup_file() {
   [[ "${on_chain_address_created_1}" != "null" ]] || exit 1
 
   bitcoin_cli sendtoaddress "$on_chain_address_created_1" "$amount"
-  retry 15 1 check_for_broadcast 'alice' "$on_chain_address_created_1" 1
+  retry 15 1 check_for_incoming_broadcast 'alice' "$on_chain_address_created_1"
 
   # Create address and broadcast transaction 2
   exec_graphql 'alice' 'on-chain-address-create' "$variables"
@@ -75,7 +75,7 @@ setup_file() {
   [[ "${on_chain_address_created_2}" != "null" ]] || exit 1
 
   bitcoin_cli sendtoaddress "$on_chain_address_created_2" "$amount"
-  retry 15 1 check_for_broadcast 'alice' "$on_chain_address_created_2" 1
+  retry 15 1 check_for_incoming_broadcast 'alice' "$on_chain_address_created_2"
 
   # Check pending transactions for address 1
   address_1_pending_txns_variables=$(
@@ -224,7 +224,7 @@ setup_file() {
 
   # Execute onchain send and check for transaction
   bitcoin_cli sendtoaddress "$on_chain_address_created" "$amount"
-  retry 15 1 check_for_broadcast 'alice' "$on_chain_address_created" 1
+  retry 15 1 check_for_incoming_broadcast 'alice' "$on_chain_address_created"
 
   # Check pending transactions for address
   address_pending_txns_variables=$(
@@ -315,9 +315,9 @@ setup_file() {
   tx_hex=$(bitcoin_cli finalizepsbt "$signed_psbt" | jq -r '.hex')
   txid=$(bitcoin_cli sendrawtransaction "$tx_hex")
 
-  retry 15 1 check_for_broadcast 'alice' "$alice_address_1" 2
-  retry 3 1 check_for_broadcast 'alice' "$alice_address_2" 2
-  retry 3 1 check_for_broadcast 'bob' "$bob_address_1" 1
+  retry 15 1 check_for_incoming_broadcast 'alice' "$alice_address_1"
+  retry 3 1 check_for_incoming_broadcast 'alice' "$alice_address_2"
+  retry 3 1 check_for_incoming_broadcast 'bob' "$bob_address_1"
 
   # Check 'pendingIncomingBalance' query
   exec_graphql 'alice' 'wallets-for-account'
@@ -406,9 +406,9 @@ setup_file() {
   tx_hex=$(bitcoin_cli finalizepsbt "$signed_psbt" | jq -r '.hex')
   txid=$(bitcoin_cli sendrawtransaction "$tx_hex")
 
-  retry 45 1 check_for_broadcast 'alice' "$alice_btc_address" 10
-  retry 3 1 check_for_broadcast 'alice' "$alice_usd_address" 10
-  retry 3 1 check_for_broadcast 'bob' "$bob_btc_address" 10
+  retry 45 1 check_for_incoming_broadcast 'alice' "$alice_btc_address"
+  retry 3 1 check_for_incoming_broadcast 'alice' "$alice_usd_address"
+  retry 3 1 check_for_incoming_broadcast 'bob' "$bob_btc_address"
 
   # Mine transactions
   # Note: subscription event operates in a delayed way from lnd1 state

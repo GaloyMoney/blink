@@ -9,11 +9,7 @@ import { TransactionConnection } from "../../../shared/types/object/transaction"
 import { Accounts } from "@/app"
 import { checkedToUsername } from "@/domain/accounts"
 import { GT } from "@/graphql/index"
-import {
-  checkedConnectionArgs,
-  connectionArgs,
-  connectionFromPaginatedArray,
-} from "@/graphql/connections"
+import { connectionArgs } from "@/graphql/connections"
 import { mapError } from "@/graphql/error-map"
 
 const AccountContact = GT.Object<AccountRecord, GraphQLPublicContextAuth>({
@@ -36,11 +32,6 @@ const AccountContact = GT.Object<AccountRecord, GraphQLPublicContextAuth>({
       type: TransactionConnection,
       args: connectionArgs,
       resolve: async (source, args, { domainAccount }) => {
-        const paginationArgs = checkedConnectionArgs(args)
-        if (paginationArgs instanceof Error) {
-          throw paginationArgs
-        }
-
         if (!source.username) {
           throw new Error("Missing username for contact")
         }
@@ -59,18 +50,14 @@ const AccountContact = GT.Object<AccountRecord, GraphQLPublicContextAuth>({
         const resp = await Accounts.getAccountTransactionsForContact({
           account,
           contactUsername,
-          paginationArgs,
+          rawPaginationArgs: args,
         })
 
         if (resp instanceof Error) {
           throw mapError(resp)
         }
 
-        return connectionFromPaginatedArray<WalletTransaction>(
-          resp.slice,
-          resp.total,
-          paginationArgs,
-        )
+        return resp
       },
       description: "Paginated list of transactions sent to/from this contact.",
     },

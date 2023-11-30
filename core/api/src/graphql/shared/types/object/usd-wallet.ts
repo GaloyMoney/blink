@@ -13,11 +13,7 @@ import IInvoice, { IInvoiceConnection } from "../abstract/invoice"
 import Transaction, { TransactionConnection } from "./transaction"
 
 import { GT } from "@/graphql/index"
-import {
-  connectionArgs,
-  connectionFromPaginatedArray,
-  checkedConnectionArgs,
-} from "@/graphql/connections"
+import { connectionArgs } from "@/graphql/connections"
 import { normalizePaymentAmount } from "@/graphql/shared/root/mutation"
 import { mapError } from "@/graphql/error-map"
 
@@ -69,27 +65,16 @@ const UsdWallet = GT.Object<Wallet>({
       type: TransactionConnection,
       args: connectionArgs,
       resolve: async (source, args) => {
-        const paginationArgs = checkedConnectionArgs(args)
-        if (paginationArgs instanceof Error) {
-          throw paginationArgs
-        }
-
-        const { result, error } = await Wallets.getTransactionsForWallets({
+        const result = await Wallets.getTransactionsForWallets({
           wallets: [source],
-          paginationArgs,
+          rawPaginationArgs: args,
         })
-        if (error instanceof Error) {
-          throw mapError(error)
+
+        if (result instanceof Error) {
+          throw mapError(result)
         }
 
-        // Non-null signal to type checker; consider fixing in PartialResult type
-        if (!result?.slice) throw error
-
-        return connectionFromPaginatedArray<WalletTransaction>(
-          result.slice,
-          result.total,
-          paginationArgs,
-        )
+        return result
       },
     },
     pendingIncomingTransactions: {
@@ -157,31 +142,20 @@ const UsdWallet = GT.Object<Wallet>({
         },
       },
       resolve: async (source, args) => {
-        const paginationArgs = checkedConnectionArgs(args)
-        if (paginationArgs instanceof Error) {
-          throw paginationArgs
-        }
-
-        const { address } = args
+        const { address, ...rawPaginationArgs } = args
         if (address instanceof Error) throw address
 
-        const { result, error } = await Wallets.getTransactionsForWalletsByAddresses({
+        const result = await Wallets.getTransactionsForWalletsByAddresses({
           wallets: [source],
           addresses: [address],
-          paginationArgs,
+          rawPaginationArgs,
         })
-        if (error instanceof Error) {
-          throw mapError(error)
+
+        if (result instanceof Error) {
+          throw mapError(result)
         }
 
-        // Non-null signal to type checker; consider fixing in PartialResult type
-        if (!result?.slice) throw error
-
-        return connectionFromPaginatedArray<WalletTransaction>(
-          result.slice,
-          result.total,
-          paginationArgs,
-        )
+        return result
       },
     },
     invoiceByPaymentHash: {

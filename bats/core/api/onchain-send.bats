@@ -319,10 +319,10 @@ grep_in_trigger_logs() {
   # ----------
 
   # Check for broadcast of last send
-  retry 15 1 check_for_broadcast 'alice' "$on_chain_payment_send_all_address" 4
-  retry 3 1 check_for_broadcast 'alice' "$on_chain_usd_payment_send_as_btc_denominated_address" 4
-  retry 3 1 check_for_broadcast 'alice' "$on_chain_usd_payment_send_address" 4
-  retry 3 1 check_for_broadcast 'alice' "$on_chain_payment_send_address" 4
+  retry 15 1 check_for_outgoing_broadcast 'alice' "$on_chain_payment_send_all_address" 4
+  retry 3 1 check_for_outgoing_broadcast 'alice' "$on_chain_usd_payment_send_as_btc_denominated_address" 4
+  retry 3 1 check_for_outgoing_broadcast 'alice' "$on_chain_usd_payment_send_address" 4
+  retry 3 1 check_for_outgoing_broadcast 'alice' "$on_chain_payment_send_address" 4
 
   # Mine all
   bitcoin_cli -generate 2
