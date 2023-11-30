@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): enforce non-negative ''volumeRemaining'' (#3628)'
-      sha: a97b03b4650d94f89d86c86b834f5465fe879027
+      commitTitle: 'chore: bump deps (#3578)'
+      sha: c44f77f3dd1a8b7ea444a7a40282e32e8c6c656a
       tags:
-      - 0.16.76-1-ga97b03b46
+      - 0.16.78-1-gc44f77f3d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): enforce non-negative ''volumeRemaining'' (#3628)'
-      sha: a97b03b4650d94f89d86c86b834f5465fe879027
+      commitTitle: 'chore: bump deps (#3578)'
+      sha: c44f77f3dd1a8b7ea444a7a40282e32e8c6c656a
       tags:
-      - 0.16.76-1-ga97b03b46
+      - 0.16.78-1-gc44f77f3d
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(core): enforce non-negative ''volumeRemaining'' (#3628)'
-      sha: a97b03b4650d94f89d86c86b834f5465fe879027
+      commitTitle: 'chore: bump deps (#3578)'
+      sha: c44f77f3dd1a8b7ea444a7a40282e32e8c6c656a
       tags:
-      - 0.16.76-1-ga97b03b46
+      - 0.16.78-1-gc44f77f3d
     path: ./
   path: ./graphql
 kind: LockConfig
