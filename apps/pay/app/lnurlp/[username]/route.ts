@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 
-import { URL_HOST_DOMAIN } from "../../../config/config"
-import { NOSTR_PUBKEY, PAY_SERVER } from "../../../lib/config"
+import { env } from "../../../env"
 import {
   AccountDefaultWalletDocument,
   AccountDefaultWalletQuery,
@@ -13,14 +12,12 @@ import { client } from "./graphql"
 
 const COMMENT_SIZE = 2000 // 2000 characters max for GET
 
-const nostrEnabled = !!NOSTR_PUBKEY
+const nostrEnabled = !!env.NOSTR_PUBKEY
 
 export async function GET(
   request: Request,
   { params }: { params: { username: string } },
 ) {
-  console.log(NOSTR_PUBKEY)
-
   const { searchParams } = new URL(request.url)
 
   const username = params.username
@@ -73,10 +70,10 @@ export async function GET(
 
   const metadata = JSON.stringify([
     ["text/plain", `Payment to ${username}`],
-    ["text/identifier", `${username}@${URL_HOST_DOMAIN}`],
+    ["text/identifier", `${username}@${env.NEXT_PUBLIC_PAY_DOMAIN}`],
   ])
 
-  const callback = `${PAY_SERVER}/lnurlp/${username}/callback`
+  const callback = `${env.PAY_URL}/lnurlp/${username}/callback`
 
   let minSendable = 1000 // 1 sat in millisat
   let maxSendable = 100000000000 // 1 BTC in millisat
@@ -96,7 +93,7 @@ export async function GET(
     ...(nostrEnabled
       ? {
           allowsNostr: true,
-          nostrPubkey: NOSTR_PUBKEY,
+          nostrPubkey: env.NOSTR_PUBKEY,
         }
       : {}),
   })

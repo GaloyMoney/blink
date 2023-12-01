@@ -9,7 +9,7 @@ import { gql, useQuery } from "@apollo/client"
 
 import { useRouter } from "next/router"
 
-import { GRAPHQL_URL } from "../lib/config"
+import { env } from "../env"
 import CurrencyDropdown from "../components/Currency/currency-dropdown"
 
 const GET_NODE_STATS = gql`
@@ -21,7 +21,7 @@ const GET_NODE_STATS = gql`
 `
 
 function Home() {
-  const nodeUrl = GRAPHQL_URL.includes("staging")
+  const nodeUrl = env.NEXT_PUBLIC_CORE_GQL_URL.includes("staging")
     ? `https://mempool.space/signet/lightning/node/`
     : `https://mempool.space/lightning/node/`
   const { loading, error, data } = useQuery(GET_NODE_STATS)

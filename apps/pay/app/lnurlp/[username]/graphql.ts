@@ -7,7 +7,7 @@ import {
   InMemoryCache,
 } from "@apollo/client"
 
-import { GRAPHQL_URL_INTERNAL } from "../../../lib/config"
+import { env } from "../../../env"
 
 const ipForwardingMiddleware = new ApolloLink((operation, forward) => {
   operation.setContext(({ headers = {} }) => ({
@@ -25,7 +25,7 @@ export const client = new ApolloClient({
   link: concat(
     ipForwardingMiddleware,
     new HttpLink({
-      uri: GRAPHQL_URL_INTERNAL,
+      uri: env.CORE_GQL_URL_INTRANET,
       fetchOptions: { cache: "no-store" },
     }),
   ),

@@ -302,6 +302,9 @@ importers:
       '@galoymoney/client':
         specifier: ^0.2.2
         version: 0.2.6(@bitcoinerlab/secp256k1@1.0.5)(bitcoinjs-lib@5.0.5)(bolt11@1.3.4)(lnurl-pay@1.0.1)(url@0.11.3)
+      '@t3-oss/env-nextjs':
+        specifier: ^0.6.1
+        version: 0.6.1(typescript@5.2.2)(zod@3.22.4)
       bech32:
         specifier: ^2.0.0
         version: 2.0.0
@@ -368,6 +371,9 @@ importers:
       use-react-screenshot:
         specifier: ^3.0.0
         version: 3.0.0(html2canvas@1.4.1)(react@18.2.0)
+      zod:
+        specifier: ^3.22.4
+        version: 3.22.4
     devDependencies:
       '@galoy/eslint-config':
         specifier: workspace:^
