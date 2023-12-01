@@ -41,7 +41,12 @@ if __name__ == "__main__":
     audit_cmd_json_out = [*audit_cmd, "--json"]
 
     result = subprocess.run(audit_cmd_json_out, stdout=subprocess.PIPE)
-    result_dict = json.loads(result.stdout)
+    try:
+        result_dict = json.loads(result.stdout)
+    except:
+        print("Could not parse audit response. Got 'result.stdout' value:", file=sys.stderr)
+        print(result.stdout, file=sys.stderr)
+        sys.exit(1)
 
     num_vulns = sum_severities(
         result_dict["metadata"]["vulnerabilities"],
