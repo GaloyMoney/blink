@@ -153,6 +153,10 @@ def build_node_modules_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
         cmd.add("--prod-only")
         identifier += "--prod "
 
+    if ctx.attrs.local_packages:
+        cmd.add("--local-packages-path")
+        cmd.add(ctx.attrs.local_packages)
+
     cmd.add(out.as_output())
     cmd.hidden([ctx.attrs.workspace])
 
@@ -175,6 +179,10 @@ build_node_modules = rule(
         "prod_only": attrs.bool(
             default = False,
             doc = "Only install production dependencies"
+        ),
+        "local_packages": attrs.string(
+            default = "lib",
+            doc = """NPM vendored dependencies directory""",
         ),
         "_python_toolchain": attrs.toolchain_dep(
             default = "toolchains//:python",
