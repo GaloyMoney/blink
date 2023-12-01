@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(pay): add galoy pay (#3618)...'
-      sha: d2e95df1a5f41a9e4243e9504e8d0f998e5b0f01
+      commitTitle: 'chore(dashboard): message changes (#3643)...'
+      sha: 8709e34944c0f9c3d1f23647476a65f358e299dd
       tags:
-      - 0.16.83-1-gd2e95df1a
+      - 0.16.83-4-g8709e3494
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(pay): add galoy pay (#3618)...'
-      sha: d2e95df1a5f41a9e4243e9504e8d0f998e5b0f01
+      commitTitle: 'chore(dashboard): message changes (#3643)...'
+      sha: 8709e34944c0f9c3d1f23647476a65f358e299dd
       tags:
-      - 0.16.83-1-gd2e95df1a
+      - 0.16.83-4-g8709e3494
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(pay): add galoy pay (#3618)...'
-      sha: d2e95df1a5f41a9e4243e9504e8d0f998e5b0f01
+      commitTitle: 'chore(dashboard): message changes (#3643)...'
+      sha: 8709e34944c0f9c3d1f23647476a65f358e299dd
       tags:
-      - 0.16.83-1-gd2e95df1a
+      - 0.16.83-4-g8709e3494
     path: ./
   path: ./graphql
 kind: LockConfig
