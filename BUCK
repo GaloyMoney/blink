@@ -7,7 +7,6 @@ pnpm_workspace(
     "//apps/consent:package.json",
     "//apps/dashboard:package.json",
     "//lib/eslint-config:package.json"
-    "//lib/gt3-server-node-express-sdk:package.json"
   ],
   visibility = ["PUBLIC"],
 )
