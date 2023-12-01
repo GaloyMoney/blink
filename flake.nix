@@ -5,13 +5,6 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
 
-    # Pin Tilt to version 0.33.5 until an updated build of Nix's upstream
-    # unstable pkgs addresses a build error.
-    #
-    # References: https://github.com/tilt-dev/tilt/pull/6214
-    # References: https://github.com/NixOS/nixpkgs/issues/260411
-    # See: https://lazamar.co.uk/nix-versions/?channel=nixos-unstable&package=tilt
-    tilt-pin-pkgs.url = "https://github.com/NixOS/nixpkgs/archive/e1ee359d16a1886f0771cc433a00827da98d861c.tar.gz";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
       inputs = {
@@ -25,7 +18,6 @@
     self,
     nixpkgs,
     flake-utils,
-    tilt-pin-pkgs,
     rust-overlay,
   }:
     flake-utils.lib.eachDefaultSystem (system: let
@@ -41,7 +33,6 @@
       rust-toolchain = rustVersion.override {
         extensions = ["rust-analyzer" "rust-src"];
       };
-      tilt-pin = import tilt-pin-pkgs {inherit system;};
 
       buck2NativeBuildInputs = with pkgs; [
         buck2
@@ -59,7 +50,7 @@
         [
           envsubst
           nodejs
-          tilt-pin.tilt
+          tilt
           typescript
           bats
           postgresql
