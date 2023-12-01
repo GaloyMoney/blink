@@ -14,6 +14,10 @@ import { createRandomUserAndBtcWallet, recordSendLnPayment } from "test/helpers"
 
 const calc = AmountCalculator()
 
+afterEach(() => {
+  jest.restoreAllMocks()
+})
+
 describe("update pending payments", () => {
   const sendAmount = {
     usd: { amount: 20n, currency: WalletCurrency.Usd },
@@ -34,7 +38,7 @@ describe("update pending payments", () => {
   it("records transaction with ln-failed-payment metadata on ln update", async () => {
     // Setup mocks
     const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
-    const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+    jest.spyOn(LndImpl, "LndService").mockReturnValue({
       ...LnServiceOrig(),
       lookupPayment: () => ({
         status: PaymentStatus.Failed,
@@ -81,12 +85,10 @@ describe("update pending payments", () => {
 
     const { PaymentFlowStateRepository: PaymentFlowStateRepositoryOrig } =
       jest.requireActual("@/services/mongoose")
-    const paymentFlowRepoSpy = jest
-      .spyOn(MongooseImpl, "PaymentFlowStateRepository")
-      .mockReturnValue({
-        ...PaymentFlowStateRepositoryOrig(),
-        markLightningPaymentFlowNotPending: () => mockedPaymentFlow,
-      })
+    jest.spyOn(MongooseImpl, "PaymentFlowStateRepository").mockReturnValue({
+      ...PaymentFlowStateRepositoryOrig(),
+      markLightningPaymentFlowNotPending: () => mockedPaymentFlow,
+    })
 
     // Call update-pending function
     await updatePendingPaymentByHash({ paymentHash, logger: baseLogger })
@@ -97,12 +99,5 @@ describe("update pending payments", () => {
     const args = recordOffChainReceiveSpy.mock.calls[0][0]
     expect(args.metadata.type).toBe(LedgerTransactionType.Payment)
     expect(args.description).toBe("Usd payment canceled")
-
-    // Restore system state
-    lndServiceSpy.mockRestore()
-    displayAmountsConverterSpy.mockRestore()
-    lnFailedPaymentReceiveLedgerMetadataSpy.mockRestore()
-    recordOffChainReceiveSpy.mockRestore()
-    paymentFlowRepoSpy.mockRestore()
   })
 })

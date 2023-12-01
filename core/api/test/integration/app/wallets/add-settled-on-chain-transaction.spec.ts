@@ -28,6 +28,8 @@ afterEach(async () => {
     { $pull: { onchain: { address } } },
     { multi: true }, // This option updates all matching documents
   )
+
+  jest.restoreAllMocks()
 })
 
 describe("addSettledTransaction", () => {
@@ -101,10 +103,5 @@ describe("addSettledTransaction", () => {
     expect(onChainReceiveLedgerMetadataSpy).toHaveBeenCalledTimes(1)
     const args = recordOnChainReceiveSpy.mock.calls[0][0]
     expect(args.metadata.type).toBe(LedgerTransactionType.OnchainReceipt)
-
-    // Restore system state
-    displayAmountsConverterSpy.mockRestore()
-    onChainReceiveLedgerMetadataSpy.mockRestore()
-    recordOnChainReceiveSpy.mockRestore()
   })
 })

@@ -20,13 +20,15 @@ afterEach(async () => {
     { $pull: { onchain: { address } } },
     { multi: true }, // This option updates all matching documents
   )
+
+  jest.restoreAllMocks()
 })
 
 describe("addPendingTransaction", () => {
   it("calls sendFilteredNotification on pending onchain receive", async () => {
     // Setup mocks
     const sendFilteredNotification = jest.fn()
-    const pushNotificationsServiceSpy = jest
+    jest
       .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
       .mockImplementationOnce(() => ({
         sendFilteredNotification,
@@ -53,9 +55,6 @@ describe("addPendingTransaction", () => {
     // Expect sent notification
     expect(sendFilteredNotification.mock.calls.length).toBe(1)
     expect(sendFilteredNotification.mock.calls[0][0].title).toBeTruthy()
-
-    // Restore system state
-    pushNotificationsServiceSpy.mockRestore()
   })
 
   it("calls DisplayConverter on pending onchain receive", async () => {
@@ -84,8 +83,5 @@ describe("addPendingTransaction", () => {
 
     // Expect sent notification
     expect(displayAmountsConverterSpy).toHaveBeenCalledTimes(1)
-
-    // Restore system state
-    displayAmountsConverterSpy.mockRestore()
   })
 })

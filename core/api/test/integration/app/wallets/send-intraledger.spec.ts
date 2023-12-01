@@ -44,6 +44,8 @@ beforeEach(() => {
 afterEach(async () => {
   await Transaction.deleteMany({ memo })
   await Transaction.deleteMany({ memoPayer: memo })
+
+  jest.restoreAllMocks()
 })
 
 const amount = toSats(10040)
@@ -364,11 +366,6 @@ describe("intraLedgerPay", () => {
     expect(walletIdTradeIntraAccountLedgerMetadataSpy).toHaveBeenCalledTimes(1)
     const args = recordIntraledgerSpy.mock.calls[0][0]
     expect(args.metadata.type).toBe(LedgerTransactionType.WalletIdTradeIntraAccount)
-
-    // Restore system state
-    displayAmountsConverterSpy.mockRestore()
-    walletIdTradeIntraAccountLedgerMetadataSpy.mockRestore()
-    recordIntraledgerSpy.mockRestore()
   })
 
   it("records transaction with wallet-id-intraledger metadata on intraledger send", async () => {
@@ -415,10 +412,5 @@ describe("intraLedgerPay", () => {
     expect(walletIdIntraledgerLedgerMetadataSpy).toHaveBeenCalledTimes(1)
     const args = recordIntraledgerSpy.mock.calls[0][0]
     expect(args.metadata.type).toBe(LedgerTransactionType.IntraLedger)
-
-    // Restore system state
-    displayAmountsConverterSpy.mockRestore()
-    walletIdIntraledgerLedgerMetadataSpy.mockRestore()
-    recordIntraledgerSpy.mockRestore()
   })
 })
