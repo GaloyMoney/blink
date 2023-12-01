@@ -54,6 +54,7 @@ local_resource(
     allow_parallel = True,
     resource_deps = [
         "hydra-dashboard",
+        "api-keys",
         "svix",
         "svix-pg",
     ],
@@ -91,7 +92,6 @@ local_resource(
   resource_deps = [
     "consent",
     "init-test-user",
-    "hydra-consent"
   ],
 )
 
@@ -103,8 +103,8 @@ local_resource(
   cmd = "buck2 test {}".format(dashboard_test_target),
   resource_deps = [
     "consent",
-    "api-keys",
     "dashboard",
+    "init-test-user",
   ],
 )
 
@@ -131,6 +131,7 @@ local_resource(
     deps = _buck2_dep_inputs(consent_target),
     allow_parallel = True,
     resource_deps = [
+        "hydra-consent",
         "apollo-router",
         "hydra",
         "api",
