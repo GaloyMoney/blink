@@ -253,20 +253,11 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       )
 
       const revealedPreImage = lnPaymentLookup.confirmedDetails?.revealedPreImage
-      if (revealedPreImage)
-        LedgerService().updateMetadataByHash({
+      if (revealedPreImage) {
+        await LedgerService().updateMetadataByHash({
           hash: paymentHash,
           revealedPreImage,
         })
-      if (pendingPayment.feeKnownInAdvance) return true
-
-      const { displayAmount, displayFee, displayCurrency } = pendingPayment
-      if (
-        displayAmount === undefined ||
-        displayFee === undefined ||
-        displayCurrency === undefined
-      ) {
-        return new MissingExpectedDisplayAmountsForTransactionError()
       }
 
       const senderWallet = await WalletsRepository().findById(walletId)
@@ -303,6 +294,12 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         })
       }
 
+      if (pendingPayment.feeKnownInAdvance) return true
+
+      const { displayAmount, displayFee, displayCurrency } = pendingPayment
+      if (!displayAmount || !displayFee || !displayCurrency) {
+        return new MissingExpectedDisplayAmountsForTransactionError()
+      }
       return reimburseFee({
         paymentFlow,
         senderDisplayAmount: displayAmount,
