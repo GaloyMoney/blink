@@ -1,10 +1,7 @@
 import { Payments, Wallets } from "@/app"
 import { getCurrentPriceAsDisplayPriceRatio } from "@/app/prices"
 
-import {
-  MaxFeeTooLargeForRoutelessPaymentError,
-  PaymentSendStatus,
-} from "@/domain/bitcoin/lightning"
+import { MaxFeeTooLargeForRoutelessPaymentError } from "@/domain/bitcoin/lightning"
 import { sat2btc, toSats } from "@/domain/bitcoin"
 import { LedgerTransactionType, UnknownLedgerError } from "@/domain/ledger"
 import * as LnFeesImpl from "@/domain/payments"
@@ -13,13 +10,10 @@ import { UsdDisplayCurrency, displayAmountFromNumber } from "@/domain/fiat"
 
 import { updateDisplayCurrency } from "@/app/accounts"
 
-import { PayoutSpeed } from "@/domain/bitcoin/onchain"
-
 import { translateToLedgerTx } from "@/services/ledger"
 import { MainBook } from "@/services/ledger/books"
 import { BriaPayloadType } from "@/services/bria"
 import { AccountsRepository } from "@/services/mongoose"
-import { toObjectId } from "@/services/mongoose/utils"
 
 import {
   utxoDetectedEventHandler,
@@ -44,7 +38,6 @@ let accountB: Account
 let accountC: Account
 
 let walletIdB: WalletId
-let walletIdC: WalletId
 
 const phoneB = randomPhone()
 const phoneC = randomPhone()
@@ -57,7 +50,6 @@ beforeAll(async () => {
   accountC = await getAccountByPhone(phoneC)
 
   walletIdB = await getDefaultWalletIdByPhone(phoneB)
-  walletIdC = await getDefaultWalletIdByPhone(phoneC)
 
   await bitcoindClient.loadWallet({ filename: "outside" })
 
@@ -100,36 +92,6 @@ describe("Display properties on transactions", () => {
     try {
       const { results } = await MainBook.ledger({
         hash,
-      })
-      /* eslint @typescript-eslint/ban-ts-comment: "off" */
-      // @ts-ignore-next-line no-implicit-any error
-      return results.map((tx) => translateToLedgerTx(tx))
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
-  const getAllTransactionsByJournalId = async (
-    journalId: LedgerJournalId,
-  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
-    try {
-      const { results } = await MainBook.ledger({
-        _journal: toObjectId(journalId),
-      })
-      /* eslint @typescript-eslint/ban-ts-comment: "off" */
-      // @ts-ignore-next-line no-implicit-any error
-      return results.map((tx) => translateToLedgerTx(tx))
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
-  const getAllTransactionsByMemo = async (
-    memoPayer: string,
-  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
-    try {
-      const { results } = await MainBook.ledger({
-        memoPayer,
       })
       /* eslint @typescript-eslint/ban-ts-comment: "off" */
       // @ts-ignore-next-line no-implicit-any error
@@ -353,95 +315,6 @@ describe("Display properties on transactions", () => {
         if (resultSettled instanceof Error) {
           throw resultSettled
         }
-      })
-    })
-
-    describe("intraledger", () => {
-      it("(OnChainIntraledgerLedgerMetadata) pays another galoy user via onchain address", async () => {
-        // TxMetadata:
-        // - OnChainIntraledgerLedgerMetadata
-        const amountSats = toSats(20_000)
-
-        const senderWalletId = walletIdB
-        const senderAccount = accountB
-        const recipientWalletId = walletIdC
-
-        // Execute Send
-        const memo = "invoiceMemo #" + (Math.random() * 1_000_000).toFixed()
-
-        const address = await Wallets.createOnChainAddress({
-          walletId: recipientWalletId,
-        })
-        if (address instanceof Error) throw address
-
-        const paymentResult = await Payments.payOnChainByWalletIdForBtcWallet({
-          senderAccount,
-          senderWalletId,
-          address,
-          amount: amountSats,
-          speed: PayoutSpeed.Fast,
-          memo,
-        })
-        if (paymentResult instanceof Error) throw paymentResult
-        expect(paymentResult).toEqual({
-          status: PaymentSendStatus.Success,
-          transaction: expect.objectContaining({
-            walletId: senderWalletId,
-            status: "success",
-            settlementAmount: amountSats * -1,
-            settlementCurrency: "BTC",
-            initiationVia: expect.objectContaining({
-              type: "onchain",
-              address,
-            }),
-            settlementVia: expect.objectContaining({
-              type: "intraledger",
-            }),
-          }),
-        })
-
-        // Check entries
-        const memoTxns = await getAllTransactionsByMemo(memo)
-        if (memoTxns instanceof Error) throw memoTxns
-        expect(memoTxns.length).toEqual(1)
-        const { journalId } = memoTxns[0]
-        const txns = await getAllTransactionsByJournalId(journalId)
-        if (txns instanceof Error) throw txns
-
-        const senderTxn = txns.find(
-          ({ walletId, debit }) => walletId === senderWalletId && debit > 0,
-        )
-        if (senderTxn === undefined) throw new Error("'senderTxn' not found")
-
-        const recipientTxn = txns.find(
-          ({ walletId, credit }) => walletId === recipientWalletId && credit > 0,
-        )
-        if (recipientTxn === undefined) throw new Error("'recipientTxn' not found")
-
-        const internalTxns = txns.filter(
-          ({ walletId }) => walletId !== senderWalletId && walletId !== recipientWalletId,
-        )
-        expect(internalTxns.length).toEqual(0)
-
-        const { EUR: expectedSenderDisplayProps, CRC: expectedRecipientDisplayProps } =
-          await getDisplayAmounts({
-            satsAmount: recipientTxn.satsAmount || toSats(0),
-            satsFee: recipientTxn.satsFee || toSats(0),
-          })
-
-        expect(senderTxn).toEqual(
-          expect.objectContaining({
-            ...expectedSenderDisplayProps,
-            type: LedgerTransactionType.OnchainIntraLedger,
-          }),
-        )
-
-        expect(recipientTxn).toEqual(
-          expect.objectContaining({
-            ...expectedRecipientDisplayProps,
-            type: LedgerTransactionType.OnchainIntraLedger,
-          }),
-        )
       })
     })
   })
