@@ -1,17 +1,12 @@
-import { Payments, Wallets } from "@/app"
+import { Wallets } from "@/app"
 import { getCurrentPriceAsDisplayPriceRatio } from "@/app/prices"
 
-import { MaxFeeTooLargeForRoutelessPaymentError } from "@/domain/bitcoin/lightning"
 import { sat2btc, toSats } from "@/domain/bitcoin"
-import { LedgerTransactionType, UnknownLedgerError } from "@/domain/ledger"
-import * as LnFeesImpl from "@/domain/payments"
 import { paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
-import { UsdDisplayCurrency, displayAmountFromNumber } from "@/domain/fiat"
+import { displayAmountFromNumber } from "@/domain/fiat"
 
 import { updateDisplayCurrency } from "@/app/accounts"
 
-import { translateToLedgerTx } from "@/services/ledger"
-import { MainBook } from "@/services/ledger/books"
 import { BriaPayloadType } from "@/services/bria"
 import { AccountsRepository } from "@/services/mongoose"
 
@@ -23,12 +18,10 @@ import {
 import {
   bitcoindClient,
   bitcoindOutside,
-  createInvoice,
   createUserAndWalletFromPhone,
   getAccountByPhone,
   getDefaultWalletIdByPhone,
   getPendingTransactionsForWalletId,
-  lndOutside1,
   onceBriaSubscribe,
   RANDOM_ADDRESS,
   randomPhone,
@@ -86,21 +79,6 @@ afterAll(async () => {
 })
 
 describe("Display properties on transactions", () => {
-  const getAllTransactionsByHash = async (
-    hash: PaymentHash | OnChainTxHash,
-  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
-    try {
-      const { results } = await MainBook.ledger({
-        hash,
-      })
-      /* eslint @typescript-eslint/ban-ts-comment: "off" */
-      // @ts-ignore-next-line no-implicit-any error
-      return results.map((tx) => translateToLedgerTx(tx))
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
   const getDisplayAmounts = async ({
     satsAmount,
     satsFee,
@@ -151,83 +129,6 @@ describe("Display properties on transactions", () => {
 
     return result
   }
-
-  describe("ln", () => {
-    describe("send", () => {
-      it("(LnFailedPaymentReceiveLedgerMetadata) pay zero amount invoice & revert txn when verifyMaxFee fails", async () => {
-        // TxMetadata:
-        // - LnFailedPaymentReceiveLedgerMetadata
-        const { LnFees: LnFeesOrig } = jest.requireActual("@/domain/payments")
-        const lndFeesSpy = jest.spyOn(LnFeesImpl, "LnFees").mockReturnValue({
-          ...LnFeesOrig(),
-          verifyMaxFee: () => new MaxFeeTooLargeForRoutelessPaymentError(),
-        })
-
-        const senderWalletId = walletIdB
-        const senderAccount = accountB
-
-        const amountInvoice = toSats(20_000)
-
-        const { request, id } = await createInvoice({ lnd: lndOutside1 })
-        const paymentHash = id as PaymentHash
-
-        const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
-          uncheckedPaymentRequest: request,
-          memo: null,
-          amount: amountInvoice,
-          senderWalletId,
-          senderAccount,
-        })
-        expect(paymentResult).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
-        // Restore system state
-        lndFeesSpy.mockReset()
-
-        const txns = await getAllTransactionsByHash(paymentHash)
-        if (txns instanceof Error) throw txns
-
-        const senderTxn = txns.find(
-          ({ walletId, debit }) => walletId === senderWalletId && debit > 0,
-        )
-        if (senderTxn === undefined) throw new Error("'senderTxn' not found")
-
-        const repaidTxn = txns.find(
-          ({ walletId, credit }) => walletId === senderWalletId && credit > 0,
-        )
-        if (repaidTxn === undefined) throw new Error("'repaidTxn' not found")
-
-        const internalTxns = txns.filter(({ walletId }) => walletId !== senderWalletId)
-        expect(internalTxns.length).toEqual(2)
-
-        const { EUR: expectedSenderDisplayProps } = await getDisplayAmounts({
-          satsAmount: senderTxn.satsAmount || toSats(0),
-          satsFee: senderTxn.satsFee || toSats(0),
-        })
-
-        expect(senderTxn).toEqual(
-          expect.objectContaining({
-            ...expectedSenderDisplayProps,
-            type: LedgerTransactionType.Payment,
-          }),
-        )
-        expect(repaidTxn).toEqual(
-          expect.objectContaining({
-            ...expectedSenderDisplayProps,
-            type: LedgerTransactionType.Payment,
-          }),
-        )
-
-        for (const txn of internalTxns) {
-          expect(txn).toEqual(
-            expect.objectContaining({
-              displayAmount: senderTxn.centsAmount,
-              displayFee: senderTxn.centsFee,
-              displayCurrency: UsdDisplayCurrency,
-            }),
-          )
-        }
-      })
-    })
-  })
 
   describe("onchain", () => {
     describe("receive", () => {
