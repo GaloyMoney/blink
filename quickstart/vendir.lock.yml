@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: pending payments notifications (#3635)'
-      sha: 9f91d10b3647f7024377317cc4c2856eca7a24e2
+      commitTitle: 'chore: update flake deps (#3638)'
+      sha: 319aee79eb30e07ebf9f336c2b404c5b960be094
       tags:
-      - 0.16.81-2-g9f91d10b3
+      - 0.16.82-1-g319aee79e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: pending payments notifications (#3635)'
-      sha: 9f91d10b3647f7024377317cc4c2856eca7a24e2
+      commitTitle: 'chore: update flake deps (#3638)'
+      sha: 319aee79eb30e07ebf9f336c2b404c5b960be094
       tags:
-      - 0.16.81-2-g9f91d10b3
+      - 0.16.82-1-g319aee79e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: pending payments notifications (#3635)'
-      sha: 9f91d10b3647f7024377317cc4c2856eca7a24e2
+      commitTitle: 'chore: update flake deps (#3638)'
+      sha: 319aee79eb30e07ebf9f336c2b404c5b960be094
       tags:
-      - 0.16.81-2-g9f91d10b3
+      - 0.16.82-1-g319aee79e
     path: ./
   path: ./graphql
 kind: LockConfig
