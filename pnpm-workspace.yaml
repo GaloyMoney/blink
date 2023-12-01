@@ -4,3 +4,4 @@ packages:
   - apps/consent
   - apps/dashboard
   - lib/eslint-config
+  - lib/gt3-server-node-express-sdk

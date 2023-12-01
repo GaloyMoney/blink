@@ -17,4 +17,4 @@ type GeetestType = {
   ) => Promise<true | CaptchaError>
 }
 
-declare module "gt3-server-node-express-sdk/sdk/geetest_lib"
+declare module "@galoy/gt3-server-node-express-sdk"

@@ -4,7 +4,7 @@
 // doing this: "If the storage space is not sufficient: Send request to check bypass status before starting the verification process."
 
 import axios from "axios"
-import GeetestLib from "gt3-server-node-express-sdk/sdk/geetest_lib" // galoy fork
+import { GeetestLib } from "@galoy/gt3-server-node-express-sdk"
 
 import { addEventToCurrentSpan, recordExceptionInCurrentSpan } from "./tracing"
 
