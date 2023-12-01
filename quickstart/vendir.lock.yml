@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: tx pagination (#3530)...'
-      sha: eecbbd39d40135744b9b2f3dfecd7305df2b4060
+      commitTitle: 'fix: pending payments notifications (#3635)'
+      sha: 9f91d10b3647f7024377317cc4c2856eca7a24e2
       tags:
-      - 0.16.80-1-geecbbd39d
+      - 0.16.81-2-g9f91d10b3
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: tx pagination (#3530)...'
-      sha: eecbbd39d40135744b9b2f3dfecd7305df2b4060
+      commitTitle: 'fix: pending payments notifications (#3635)'
+      sha: 9f91d10b3647f7024377317cc4c2856eca7a24e2
       tags:
-      - 0.16.80-1-geecbbd39d
+      - 0.16.81-2-g9f91d10b3
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: tx pagination (#3530)...'
-      sha: eecbbd39d40135744b9b2f3dfecd7305df2b4060
+      commitTitle: 'fix: pending payments notifications (#3635)'
+      sha: 9f91d10b3647f7024377317cc4c2856eca7a24e2
       tags:
-      - 0.16.80-1-geecbbd39d
+      - 0.16.81-2-g9f91d10b3
     path: ./
   path: ./graphql
 kind: LockConfig
