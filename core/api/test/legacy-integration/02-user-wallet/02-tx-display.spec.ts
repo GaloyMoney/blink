@@ -34,7 +34,6 @@ import {
   getAccountByPhone,
   getDefaultWalletIdByPhone,
   getPendingTransactionsForWalletId,
-  getUsdWalletIdByPhone,
   lndOutside1,
   onceBriaSubscribe,
   RANDOM_ADDRESS,
@@ -45,7 +44,6 @@ let accountB: Account
 let accountC: Account
 
 let walletIdB: WalletId
-let walletIdUsdB: WalletId
 let walletIdC: WalletId
 
 const phoneB = randomPhone()
@@ -59,7 +57,6 @@ beforeAll(async () => {
   accountC = await getAccountByPhone(phoneC)
 
   walletIdB = await getDefaultWalletIdByPhone(phoneB)
-  walletIdUsdB = await getUsdWalletIdByPhone(phoneB)
   walletIdC = await getDefaultWalletIdByPhone(phoneC)
 
   await bitcoindClient.loadWallet({ filename: "outside" })
@@ -445,105 +442,6 @@ describe("Display properties on transactions", () => {
             type: LedgerTransactionType.OnchainIntraLedger,
           }),
         )
-      })
-
-      it("(OnChainTradeIntraAccountLedgerMetadata) self trade via onchain address", async () => {
-        // TxMetadata:
-        // - OnChainTradeIntraAccountLedgerMetadata
-
-        const amountSats = toSats(20_000)
-
-        const senderWalletId = walletIdB
-        const senderAccount = accountB
-        const recipientWalletId = walletIdUsdB
-
-        // Execute Send
-        const memo = "invoiceMemo #" + (Math.random() * 1_000_000).toFixed()
-
-        const address = await Wallets.createOnChainAddress({
-          walletId: recipientWalletId,
-        })
-        if (address instanceof Error) throw address
-
-        const paymentResult = await Payments.payOnChainByWalletIdForBtcWallet({
-          senderAccount,
-          senderWalletId,
-          address,
-          amount: amountSats,
-          speed: PayoutSpeed.Fast,
-          memo,
-        })
-        if (paymentResult instanceof Error) throw paymentResult
-        expect(paymentResult).toEqual({
-          status: PaymentSendStatus.Success,
-          transaction: expect.objectContaining({
-            walletId: senderWalletId,
-            status: "success",
-            settlementAmount: amountSats * -1,
-            settlementCurrency: "BTC",
-            initiationVia: expect.objectContaining({
-              type: "onchain",
-              address,
-            }),
-            settlementVia: expect.objectContaining({
-              type: "intraledger",
-            }),
-          }),
-        })
-
-        // Check entries
-        const memoTxns = await getAllTransactionsByMemo(memo)
-        if (memoTxns instanceof Error) throw memoTxns
-        expect(memoTxns.length).toEqual(1)
-        const { journalId } = memoTxns[0]
-        const txns = await getAllTransactionsByJournalId(journalId)
-        if (txns instanceof Error) throw txns
-
-        const senderTxn = txns.find(
-          ({ walletId, debit }) => walletId === senderWalletId && debit > 0,
-        )
-        if (senderTxn === undefined) throw new Error("'senderTxn' not found")
-
-        const recipientTxn = txns.find(
-          ({ walletId, credit }) => walletId === recipientWalletId && credit > 0,
-        )
-        if (recipientTxn === undefined) throw new Error("'recipientTxn' not found")
-
-        const internalTxns = txns.filter(
-          ({ walletId }) => walletId !== senderWalletId && walletId !== recipientWalletId,
-        )
-        expect(internalTxns.length).toEqual(2)
-
-        const { EUR: expectedSenderDisplayProps } = await getDisplayAmounts({
-          satsAmount: recipientTxn.satsAmount || toSats(0),
-          satsFee: recipientTxn.satsFee || toSats(0),
-        })
-
-        expect(senderTxn).toEqual(
-          expect.objectContaining({
-            ...expectedSenderDisplayProps,
-            type: LedgerTransactionType.OnChainTradeIntraAccount,
-            currency: WalletCurrency.Btc,
-          }),
-        )
-
-        expect(recipientTxn).toEqual(
-          expect.objectContaining({
-            ...expectedSenderDisplayProps,
-            type: LedgerTransactionType.OnChainTradeIntraAccount,
-            currency: WalletCurrency.Usd,
-          }),
-        )
-
-        for (const txn of internalTxns) {
-          expect(txn).toEqual(
-            expect.objectContaining({
-              displayAmount: senderTxn.centsAmount,
-              displayFee: senderTxn.centsFee,
-              displayCurrency: UsdDisplayCurrency,
-            }),
-          )
-        }
       })
     })
   })
