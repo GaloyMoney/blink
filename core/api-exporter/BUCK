@@ -13,3 +13,8 @@ prod_tsc_build_bin(
   preload_file = "services/tracing.js",
   run_file = "servers/exporter.js",
 )
+
+alias(
+    name = "dev",
+    actual = "//core/api:dev-exporter",
+)
