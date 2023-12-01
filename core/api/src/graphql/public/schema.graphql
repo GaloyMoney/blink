@@ -1218,6 +1218,7 @@ type SettlementViaLn {
 }
 
 type SettlementViaOnChain {
+  arrivalInMempoolEstimatedAt: Timestamp!
   transactionHash: OnChainTxHash
   vout: Int
 }
