@@ -4,7 +4,7 @@ load "../../helpers/cli.bash"
 load "../../helpers/user.bash"
 load "../../helpers/onchain.bash"
 load "../../helpers/wallet.bash"
-load "../../helpers/dealer.bash"
+load "../../helpers/ledger.bash"
 
 setup_file() {
   create_user 'alice'
