@@ -12,6 +12,11 @@ consent:
   - flake.lock
   - pnpm-lock.yaml
 
+pay:
+  - apps/pay/*
+  - flake.lock
+  - pnpm-lock.yaml
+
 core:
   - core/**/*
   - flake.lock

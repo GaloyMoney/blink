@@ -3,4 +3,5 @@ packages:
   - core/api
   - apps/consent
   - apps/dashboard
+  - apps/pay
   - lib/eslint-config
