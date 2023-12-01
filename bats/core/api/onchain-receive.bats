@@ -5,6 +5,7 @@ load "../../helpers/user.bash"
 load "../../helpers/onchain.bash"
 load "../../helpers/ln.bash"
 load "../../helpers/wallet.bash"
+load "../../helpers/dealer.bash"
 
 setup_file() {
   create_user 'alice'
@@ -16,6 +17,12 @@ setup_file() {
   user_update_username 'bob'
   fund_user_onchain 'bob' 'btc_wallet'
   fund_user_onchain 'bob' 'usd_wallet'
+}
+
+teardown() {
+   if [[ "$(balance_for_check)" != 0 ]]; then
+     fail "Error: balance_for_check failed"
+   fi
 }
 
 @test "onchain-receive: btc wallet, can create new address if current one is unused" {

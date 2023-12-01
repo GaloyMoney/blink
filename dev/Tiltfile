@@ -194,6 +194,7 @@ core_serve_env = {
   "LND1_TYPE": "offchain,onchain",
   "SVIX_SECRET": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2OTE2NzIwMTQsImV4cCI6MjAwNzAzMjAxNCwibmJmIjoxNjkxNjcyMDE0LCJpc3MiOiJzdml4LXNlcnZlciIsInN1YiI6Im9yZ18yM3JiOFlkR3FNVDBxSXpwZ0d3ZFhmSGlyTXUifQ.b9s0aWSisNdUNki4edabBEToLNSwjC9-AiJQr4J3y4E",
   "SVIX_ENDPOINT": "http://localhost:8071",
+  "EXPORTER_PORT": "3002"
 }
 
 api_target = "//core/api:dev"
@@ -241,6 +242,33 @@ local_resource(
         ),
     ),
     deps = _buck2_dep_inputs(api_target),
+    resource_deps = [
+        "init-onchain",
+        "lnd1",
+        "redis",
+        "mongodb",
+        "oathkeeper",
+    ]
+)
+
+api_exporter_target = "//core/api-exporter:dev"
+if is_ci:
+  api_exporter_target = "//core/api-exporter:api-exporter"
+local_resource(
+    "api-exporter",
+    labels = ["core"],
+    cmd = "buck2 build {}".format(api_exporter_target),
+    serve_cmd = "buck2 run {}".format(api_exporter_target),
+    serve_env = core_serve_env,
+    allow_parallel = True,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "healthz",
+            port = 4012,
+        ),
+    ),
+    deps = _buck2_dep_inputs(api_exporter_target),
     resource_deps = [
         "init-onchain",
         "lnd1",
