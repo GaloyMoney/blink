@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: update flake deps (#3638)'
-      sha: 319aee79eb30e07ebf9f336c2b404c5b960be094
+      commitTitle: 'feat(pay): add galoy pay (#3618)...'
+      sha: d2e95df1a5f41a9e4243e9504e8d0f998e5b0f01
       tags:
-      - 0.16.82-1-g319aee79e
+      - 0.16.83-1-gd2e95df1a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: update flake deps (#3638)'
-      sha: 319aee79eb30e07ebf9f336c2b404c5b960be094
+      commitTitle: 'feat(pay): add galoy pay (#3618)...'
+      sha: d2e95df1a5f41a9e4243e9504e8d0f998e5b0f01
       tags:
-      - 0.16.82-1-g319aee79e
+      - 0.16.83-1-gd2e95df1a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: update flake deps (#3638)'
-      sha: 319aee79eb30e07ebf9f336c2b404c5b960be094
+      commitTitle: 'feat(pay): add galoy pay (#3618)...'
+      sha: d2e95df1a5f41a9e4243e9504e8d0f998e5b0f01
       tags:
-      - 0.16.82-1-g319aee79e
+      - 0.16.83-1-gd2e95df1a
     path: ./
   path: ./graphql
 kind: LockConfig
