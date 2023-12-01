@@ -44,6 +44,8 @@ afterEach(async () => {
   await WalletInvoice.deleteMany({})
   await Transaction.deleteMany({})
   await TransactionMetadata.deleteMany({})
+
+  jest.restoreAllMocks()
 })
 
 describe("update pending invoices", () => {
@@ -261,7 +263,7 @@ describe("update pending invoices", () => {
         },
       }
       const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
-      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+      jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         defaultPubkey: () => DEFAULT_PUBKEY,
         lookupInvoice: () => lnInvoiceLookup,
@@ -314,12 +316,6 @@ describe("update pending invoices", () => {
       expect(lnReceiveLedgerMetadataSpy).toHaveBeenCalledTimes(1)
       const args = recordReceiveOffChainSpy.mock.calls[0][0]
       expect(args.metadata.type).toBe(LedgerTransactionType.Invoice)
-
-      // Restore system state
-      lndServiceSpy.mockRestore()
-      displayAmountsConverterSpy.mockRestore()
-      lnReceiveLedgerMetadataSpy.mockRestore()
-      recordReceiveOffChainSpy.mockRestore()
     })
   })
 })

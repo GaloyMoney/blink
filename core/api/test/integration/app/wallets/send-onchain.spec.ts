@@ -64,6 +64,8 @@ beforeEach(async () => {
 afterEach(async () => {
   await Transaction.deleteMany()
   await TransactionMetadata.deleteMany()
+
+  jest.restoreAllMocks()
 })
 
 const amount = toSats(10040)
@@ -351,11 +353,6 @@ describe("onChainPay", () => {
       expect(onChainSendLedgerMetadataSpy).toHaveBeenCalledTimes(1)
       const args = recordOnChainSendSpy.mock.calls[0][0]
       expect(args.metadata.type).toBe(LedgerTransactionType.OnchainPayment)
-
-      // Restore system state
-      displayAmountsConverterSpy.mockRestore()
-      onChainSendLedgerMetadataSpy.mockRestore()
-      recordOnChainSendSpy.mockRestore()
     })
   })
 
@@ -749,11 +746,6 @@ describe("onChainPay", () => {
       expect(onChainTradeIntraAccountLedgerMetadataSpy).toHaveBeenCalledTimes(1)
       const args = recordIntraledgerSpy.mock.calls[0][0]
       expect(args.metadata.type).toBe(LedgerTransactionType.OnChainTradeIntraAccount)
-
-      // Restore system state
-      displayAmountsConverterSpy.mockRestore()
-      onChainTradeIntraAccountLedgerMetadataSpy.mockRestore()
-      recordIntraledgerSpy.mockRestore()
     })
 
     it("records transaction with onchain-intraledger metadata on intraledger send", async () => {
@@ -825,11 +817,6 @@ describe("onChainPay", () => {
       expect(onChainIntraledgerLedgerMetadataSpy).toHaveBeenCalledTimes(1)
       const args = recordIntraledgerSpy.mock.calls[0][0]
       expect(args.metadata.type).toBe(LedgerTransactionType.OnchainIntraLedger)
-
-      // Restore system state
-      displayAmountsConverterSpy.mockRestore()
-      onChainIntraledgerLedgerMetadataSpy.mockRestore()
-      recordIntraledgerSpy.mockRestore()
     })
   })
 })

@@ -87,6 +87,8 @@ afterEach(async () => {
   await TransactionMetadata.deleteMany({})
   await WalletInvoice.deleteMany({})
   await LnPayment.deleteMany({})
+
+  jest.restoreAllMocks()
 })
 
 const amount = toSats(10040)
@@ -492,7 +494,7 @@ describe("initiated via lightning", () => {
     it("records transaction with lightning metadata on ln send", async () => {
       // Setup mocks
       const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
-      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+      jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         defaultPubkey: (): Pubkey => DEFAULT_PUBKEY,
         listAllPubkeys: () => [],
@@ -537,18 +539,12 @@ describe("initiated via lightning", () => {
       expect(lnSendLedgerMetadataSpy).toHaveBeenCalledTimes(1)
       const args = recordOffChainSendSpy.mock.calls[0][0]
       expect(args.metadata.type).toBe(LedgerTransactionType.Payment)
-
-      // Restore system state
-      lndServiceSpy.mockRestore()
-      displayAmountsConverterSpy.mockRestore()
-      lnSendLedgerMetadataSpy.mockRestore()
-      recordOffChainSendSpy.mockRestore()
     })
 
     it("records transaction with fee reimbursement metadata on ln send", async () => {
       // Setup mocks
       const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
-      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+      jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         defaultPubkey: (): Pubkey => DEFAULT_PUBKEY,
         listAllPubkeys: () => [],
@@ -605,12 +601,6 @@ describe("initiated via lightning", () => {
       // Note: 1st call is funding balance in test, 2nd call is fee reimbursement
       const args = recordOffChainReceiveSpy.mock.calls[1][0]
       expect(args.metadata.type).toBe(LedgerTransactionType.LnFeeReimbursement)
-
-      // Restore system state
-      lndServiceSpy.mockRestore()
-      displayAmountsConverterSpy.mockRestore()
-      lnFeeReimbursementReceiveLedgerMetadataSpy.mockRestore()
-      recordOffChainReceiveSpy.mockRestore()
     })
   })
 
@@ -991,7 +981,7 @@ describe("initiated via lightning", () => {
     it("records transaction with ln-trade-intra-account metadata on intraledger send", async () => {
       // Setup mocks
       const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
-      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+      jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         listAllPubkeys: () => [noAmountLnInvoice.destination],
         cancelInvoice: () => true,
@@ -1053,18 +1043,12 @@ describe("initiated via lightning", () => {
       expect(lnTradeIntraAccountLedgerMetadataSpy).toHaveBeenCalledTimes(1)
       const args = recordIntraledgerSpy.mock.calls[0][0]
       expect(args.metadata.type).toBe(LedgerTransactionType.LnTradeIntraAccount)
-
-      // Restore system state
-      lnTradeIntraAccountLedgerMetadataSpy.mockRestore()
-      displayAmountsConverterSpy.mockRestore()
-      recordIntraledgerSpy.mockRestore()
-      lndServiceSpy.mockRestore()
     })
 
     it("records transaction with ln-intraledger metadata on intraledger send", async () => {
       // Setup mocks
       const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
-      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+      jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         listAllPubkeys: () => [noAmountLnInvoice.destination],
         cancelInvoice: () => true,
@@ -1127,12 +1111,6 @@ describe("initiated via lightning", () => {
       expect(lnIntraledgerLedgerMetadataSpy).toHaveBeenCalledTimes(1)
       const args = recordIntraledgerSpy.mock.calls[0][0]
       expect(args.metadata.type).toBe(LedgerTransactionType.LnIntraLedger)
-
-      // Restore system state
-      lnIntraledgerLedgerMetadataSpy.mockRestore()
-      displayAmountsConverterSpy.mockRestore()
-      recordIntraledgerSpy.mockRestore()
-      lndServiceSpy.mockRestore()
     })
   })
 })
