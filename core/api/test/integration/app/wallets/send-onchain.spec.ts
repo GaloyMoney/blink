@@ -680,5 +680,80 @@ describe("onChainPay", () => {
       // Restore system state
       pushNotificationsServiceSpy.mockRestore()
     })
+
+    it("records transaction with onchain-trade-intra-account metadata on intraledger send", async () => {
+      // Setup mocks
+      const displayAmountsConverterSpy = jest.spyOn(
+        DisplayAmountsConverterImpl,
+        "DisplayAmountsConverter",
+      )
+
+      const onChainTradeIntraAccountLedgerMetadataSpy = jest.spyOn(
+        LedgerFacadeImpl,
+        "OnChainTradeIntraAccountLedgerMetadata",
+      )
+      const recordIntraledgerSpy = jest.spyOn(LedgerFacadeImpl, "recordIntraledger")
+
+      // Create users
+      const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
+        await createRandomUserAndWallets()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      const recipientWalletIdAddress = await Wallets.createOnChainAddress({
+        walletId: usdWalletDescriptor.id,
+      })
+      if (recipientWalletIdAddress instanceof Error) throw recipientWalletIdAddress
+
+      // Execute payment
+      const paymentResult = await Payments.payOnChainByWalletIdForBtcWallet({
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        amount,
+        address: recipientWalletIdAddress,
+        speed: PayoutSpeed.Fast,
+        memo,
+      })
+      if (paymentResult instanceof Error) throw paymentResult
+      expect(paymentResult).toEqual({
+        status: PaymentSendStatus.Success,
+        transaction: expect.objectContaining({
+          walletId: newWalletDescriptor.id,
+          status: "success",
+          settlementAmount: amount * -1,
+          settlementCurrency: "BTC",
+          initiationVia: expect.objectContaining({
+            type: "onchain",
+            address: recipientWalletIdAddress,
+          }),
+          settlementVia: expect.objectContaining({
+            type: "intraledger",
+          }),
+        }),
+      })
+
+      // Check record function was called with right metadata
+      expect(displayAmountsConverterSpy).toHaveBeenCalledTimes(2)
+      expect(onChainTradeIntraAccountLedgerMetadataSpy).toHaveBeenCalledTimes(1)
+      const args = recordIntraledgerSpy.mock.calls[0][0]
+      expect(args.metadata.type).toBe(LedgerTransactionType.OnChainTradeIntraAccount)
+
+      // Restore system state
+      displayAmountsConverterSpy.mockRestore()
+      onChainTradeIntraAccountLedgerMetadataSpy.mockRestore()
+      recordIntraledgerSpy.mockRestore()
+    })
   })
 })
