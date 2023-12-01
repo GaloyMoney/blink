@@ -1,6 +1,7 @@
 import { addPendingTransaction } from "@/app/wallets"
 
 import { WalletCurrency } from "@/domain/shared"
+import * as DisplayAmountsConverterImpl from "@/domain/fiat"
 
 import { WalletOnChainAddressesRepository } from "@/services/mongoose"
 import { Wallet, WalletOnChainPendingReceive } from "@/services/mongoose/schema"
@@ -55,5 +56,36 @@ describe("addPendingTransaction", () => {
 
     // Restore system state
     pushNotificationsServiceSpy.mockRestore()
+  })
+
+  it("calls DisplayConverter on pending onchain receive", async () => {
+    // Setup mocks
+    const displayAmountsConverterSpy = jest.spyOn(
+      DisplayAmountsConverterImpl,
+      "DisplayAmountsConverter",
+    )
+
+    // Create user
+    const { btcWalletDescriptor } = await createRandomUserAndWallets()
+
+    // Add address to user wallet
+    await WalletOnChainAddressesRepository().persistNew({
+      walletId: btcWalletDescriptor.id,
+      onChainAddress: { address },
+    })
+
+    // Add pending transaction
+    await addPendingTransaction({
+      txId: "txId" as OnChainTxHash,
+      vout: 0 as OnChainTxVout,
+      satoshis: btcAmount,
+      address,
+    })
+
+    // Expect sent notification
+    expect(displayAmountsConverterSpy).toHaveBeenCalledTimes(1)
+
+    // Restore system state
+    displayAmountsConverterSpy.mockRestore()
   })
 })

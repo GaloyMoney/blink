@@ -23,7 +23,7 @@ import { baseLogger } from "@/services/logger"
 import { LedgerService } from "@/services/ledger"
 import { DealerPriceService } from "@/services/dealer-price"
 import { NotificationsService } from "@/services/notifications"
-import { DisplayAmountsConverter } from "@/domain/fiat/display-amounts-converter"
+import { DisplayAmountsConverter } from "@/domain/fiat"
 
 const dealer = DealerPriceService()
 const { dustThreshold } = getOnChainWalletConfig()
