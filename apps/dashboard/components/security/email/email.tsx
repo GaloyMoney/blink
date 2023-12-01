@@ -67,7 +67,7 @@ function EmailSettings({ emailData }: EmailSettingsProps) {
           </Box>
           <Typography id="modal-desc" textColor="text.tertiary" textAlign="center">
             Are you sure you want to remove this email from your account? You will not be
-            able to log in via this email again.
+            able to log in with this email again.
           </Typography>
           <Button
             variant="outlined"
