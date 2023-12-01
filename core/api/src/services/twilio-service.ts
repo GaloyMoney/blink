@@ -2,7 +2,7 @@ import twilio from "twilio"
 import { isAxiosError } from "axios"
 import disposablePhoneList from "@ip1sms/disposable-phone-numbers"
 
-import { wrapAsyncFunctionsToRunInSpan } from "./tracing"
+import { recordExceptionInCurrentSpan, wrapAsyncFunctionsToRunInSpan } from "./tracing"
 
 import {
   TWILIO_ACCOUNT_SID,
@@ -50,6 +50,10 @@ export const TwilioClient = (): IPhoneProviderService => {
   }): Promise<true | PhoneProviderServiceError> => {
     try {
       if (isDisposablePhoneNumber(to)) {
+        recordExceptionInCurrentSpan({
+          error: new InvalidTypePhoneProviderError("disposable"),
+          attributes: { invalidTypePhoneReason: "disposable" },
+        })
         return new InvalidTypePhoneProviderError("disposable")
       }
 
@@ -58,6 +62,10 @@ export const TwilioClient = (): IPhoneProviderService => {
       })
       // https://www.twilio.com/docs/lookup/v2-api/line-type-intelligence#type-property-values
       if (lookup.lineTypeIntelligence.type === "nonFixedVoip") {
+        recordExceptionInCurrentSpan({
+          error: new InvalidTypePhoneProviderError("nonFixedVoip"),
+          attributes: { invalidTypePhoneReason: "nonFixedVoip" },
+        })
         return new InvalidTypePhoneProviderError("nonFixedVoip")
       }
 
