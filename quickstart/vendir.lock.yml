@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(dashboard): message changes (#3643)...'
-      sha: 8709e34944c0f9c3d1f23647476a65f358e299dd
+      commitTitle: 'build: catch json parse issues in audit script (#3645)'
+      sha: c4b57e0a9107455e354b9a0bb698af81367da4f3
       tags:
-      - 0.16.83-4-g8709e3494
+      - 0.16.83-6-gc4b57e0a9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(dashboard): message changes (#3643)...'
-      sha: 8709e34944c0f9c3d1f23647476a65f358e299dd
+      commitTitle: 'build: catch json parse issues in audit script (#3645)'
+      sha: c4b57e0a9107455e354b9a0bb698af81367da4f3
       tags:
-      - 0.16.83-4-g8709e3494
+      - 0.16.83-6-gc4b57e0a9
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(dashboard): message changes (#3643)...'
-      sha: 8709e34944c0f9c3d1f23647476a65f358e299dd
+      commitTitle: 'build: catch json parse issues in audit script (#3645)'
+      sha: c4b57e0a9107455e354b9a0bb698af81367da4f3
       tags:
-      - 0.16.83-4-g8709e3494
+      - 0.16.83-6-gc4b57e0a9
     path: ./
   path: ./graphql
 kind: LockConfig
