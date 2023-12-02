@@ -1,3 +1,5 @@
+import { createHash } from "crypto"
+
 import { Storage } from "@google-cloud/storage"
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 
@@ -133,6 +135,7 @@ export const uploadBackup =
             Bucket: LND_SCB_BACKUP_BUCKET_NAME,
             Key: `lnd_scb/${filename}`,
             Body: backup,
+            ContentMD5: createHash("md5").update(backup).digest("base64"),
           })
           try {
             client.send(command)
