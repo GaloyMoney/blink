@@ -26,18 +26,11 @@ type WalletInvoiceBuilderConfig = {
 }
 
 type WalletInvoiceBuilder = {
-  withDescription: ({
-    description,
-    descriptionHash,
-  }: {
-    description: string
-    descriptionHash?: string
-  }) => WIBWithDescription
+  withDescription: ({ description }: { description: string }) => WIBWithDescription
 }
 
 type WIBWithDescriptionState = WalletInvoiceBuilderConfig & {
   description: string
-  descriptionHash?: string
 }
 
 type WIBWithDescription = {

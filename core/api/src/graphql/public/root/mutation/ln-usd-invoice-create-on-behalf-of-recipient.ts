@@ -24,7 +24,6 @@ const LnUsdInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
       description:
         "Optional memo for the lightning invoice. Acts as a note to the recipient.",
     },
-    descriptionHash: { type: Hex32Bytes },
     expiresIn: {
       type: Minutes,
       description: "Optional invoice expiration time in minutes.",
@@ -45,8 +44,8 @@ const LnUsdInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
     input: { type: GT.NonNull(LnUsdInvoiceCreateOnBehalfOfRecipientInput) },
   },
   resolve: async (_, args) => {
-    const { recipientWalletId, amount, memo, descriptionHash, expiresIn } = args.input
-    for (const input of [recipientWalletId, amount, memo, descriptionHash, expiresIn]) {
+    const { recipientWalletId, amount, memo, expiresIn } = args.input
+    for (const input of [recipientWalletId, amount, memo, expiresIn]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
@@ -56,7 +55,7 @@ const LnUsdInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
       recipientWalletId,
       amount,
       memo,
-      descriptionHash,
+
       expiresIn,
     })
 

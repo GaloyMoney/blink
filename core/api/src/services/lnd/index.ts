@@ -491,7 +491,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
     paymentHash,
     sats,
     description,
-    descriptionHash,
     expiresAt,
   }: RegisterInvoiceArgs & { lnd: AuthenticatedLnd }): Promise<
     RegisteredInvoice | LightningServiceError
@@ -500,7 +499,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
       lnd,
       id: paymentHash,
       description,
-      description_hash: descriptionHash,
       tokens: sats as number,
       expires_at: expiresAt.toISOString(),
     }
@@ -526,7 +524,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
     paymentHash,
     sats,
     description,
-    descriptionHash,
     expiresAt,
   }: RegisterInvoiceArgs): Promise<RegisteredInvoice | LightningServiceError> => {
     const lnds = listActiveLnd()
@@ -536,7 +533,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
         paymentHash,
         sats,
         description,
-        descriptionHash,
         expiresAt,
       })
       if (isConnectionError(result)) continue
