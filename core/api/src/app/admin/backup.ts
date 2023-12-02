@@ -22,6 +22,7 @@ import {
   asyncRunInSpan,
   recordExceptionInCurrentSpan,
 } from "@/services/tracing"
+import { createHash } from "crypto"
 
 export const uploadBackup =
   (logger: Logger) =>
@@ -133,6 +134,7 @@ export const uploadBackup =
             Bucket: LND_SCB_BACKUP_BUCKET_NAME,
             Key: `lnd_scb/${filename}`,
             Body: backup,
+            ContentMD5: createHash("md5").update(backup).digest("base64"),
           })
           try {
             client.send(command)
