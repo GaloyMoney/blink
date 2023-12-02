@@ -440,7 +440,7 @@ grep_in_trigger_logs() {
   payout_id=$(bria_cli submit-payout \
     -w dev-wallet \
     -q dev-queue \
-    -d bc1qxnjv6rqqzxc6kglyasljmwupwrlv5n5uqkyuk0 \
+    -d bcrt1qs758ursh4q9z627kt3pp5yysm78ddny6txaqgw \
     -a 1000000000 \
     | jq -r '.id'
   )
