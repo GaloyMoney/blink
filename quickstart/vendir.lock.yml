@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: s3 backup (#3648)...'
-      sha: 140129c575b3356701a761147483119760877796
+      commitTitle: 'test(core): correct external address to random regtest one (#3650)'
+      sha: 2ff91f6319189848c77ae457212c717c76c562ce
       tags:
-      - 0.16.83-8-g140129c57
+      - 0.16.83-10-g2ff91f631
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: s3 backup (#3648)...'
-      sha: 140129c575b3356701a761147483119760877796
+      commitTitle: 'test(core): correct external address to random regtest one (#3650)'
+      sha: 2ff91f6319189848c77ae457212c717c76c562ce
       tags:
-      - 0.16.83-8-g140129c57
+      - 0.16.83-10-g2ff91f631
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: s3 backup (#3648)...'
-      sha: 140129c575b3356701a761147483119760877796
+      commitTitle: 'test(core): correct external address to random regtest one (#3650)'
+      sha: 2ff91f6319189848c77ae457212c717c76c562ce
       tags:
-      - 0.16.83-8-g140129c57
+      - 0.16.83-10-g2ff91f631
     path: ./
   path: ./graphql
 kind: LockConfig
