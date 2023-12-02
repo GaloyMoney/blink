@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build: catch json parse issues in audit script (#3645)'
-      sha: c4b57e0a9107455e354b9a0bb698af81367da4f3
+      commitTitle: 'fix: s3 backup (#3648)...'
+      sha: 140129c575b3356701a761147483119760877796
       tags:
-      - 0.16.83-6-gc4b57e0a9
+      - 0.16.83-8-g140129c57
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build: catch json parse issues in audit script (#3645)'
-      sha: c4b57e0a9107455e354b9a0bb698af81367da4f3
+      commitTitle: 'fix: s3 backup (#3648)...'
+      sha: 140129c575b3356701a761147483119760877796
       tags:
-      - 0.16.83-6-gc4b57e0a9
+      - 0.16.83-8-g140129c57
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'build: catch json parse issues in audit script (#3645)'
-      sha: c4b57e0a9107455e354b9a0bb698af81367da4f3
+      commitTitle: 'fix: s3 backup (#3648)...'
+      sha: 140129c575b3356701a761147483119760877796
       tags:
-      - 0.16.83-6-gc4b57e0a9
+      - 0.16.83-8-g140129c57
     path: ./
   path: ./graphql
 kind: LockConfig
