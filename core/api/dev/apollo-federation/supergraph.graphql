@@ -1146,7 +1146,7 @@ type Mutation
   userPhoneRegistrationInitiate(input: UserPhoneRegistrationInitiateInput!): SuccessPayload! @join__field(graph: PUBLIC)
   userPhoneRegistrationValidate(input: UserPhoneRegistrationValidateInput!): UserPhoneRegistrationValidatePayload! @join__field(graph: PUBLIC)
   userTotpDelete(input: UserTotpDeleteInput!): UserTotpDeletePayload! @join__field(graph: PUBLIC)
-  userTotpRegistrationInitiate(input: UserTotpRegistrationInitiateInput!): UserTotpRegistrationInitiatePayload! @join__field(graph: PUBLIC)
+  userTotpRegistrationInitiate: UserTotpRegistrationInitiatePayload! @join__field(graph: PUBLIC)
   userTotpRegistrationValidate(input: UserTotpRegistrationValidateInput!): UserTotpRegistrationValidatePayload! @join__field(graph: PUBLIC)
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload! @join__field(graph: PUBLIC)
   userUpdateUsername(input: UserUpdateUsernameInput!): UserUpdateUsernamePayload! @join__field(graph: PUBLIC) @deprecated(reason: "Username will be moved to @Handle in Accounts. Also SetUsername naming should be used instead of UpdateUsername to reflect the idempotency of Handles")
@@ -1992,12 +1992,6 @@ type UserTotpDeletePayload
   me: User
 }
 
-input UserTotpRegistrationInitiateInput
-  @join__type(graph: PUBLIC)
-{
-  authToken: AuthToken!
-}
-
 type UserTotpRegistrationInitiatePayload
   @join__type(graph: PUBLIC)
 {
@@ -2009,7 +2003,6 @@ type UserTotpRegistrationInitiatePayload
 input UserTotpRegistrationValidateInput
   @join__type(graph: PUBLIC)
 {
-  authToken: AuthToken!
   totpCode: TotpCode!
   totpRegistrationId: TotpRegistrationId!
 }

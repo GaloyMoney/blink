@@ -1,18 +1,15 @@
 import { GT } from "@/graphql/index"
-
+import { AuthWithPhonePasswordlessService } from "@/services/kratos"
 import { Authentication } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
-import AuthToken from "@/graphql/shared/types/scalar/auth-token"
 import TotpCode from "@/graphql/public/types/scalar/totp-code"
 import TotpRegistrationId from "@/graphql/public/types/scalar/totp-verify-id"
 import UserTotpRegistrationValidatePayload from "@/graphql/public/types/payload/user-totp-registration-validate"
+import { kratosPublic } from "@/services/kratos/private"
 
 const UserTotpRegistrationValidateInput = GT.Input({
   name: "UserTotpRegistrationValidateInput",
   fields: () => ({
-    authToken: {
-      type: GT.NonNull(AuthToken),
-    },
     totpCode: {
       type: GT.NonNull(TotpCode),
     },
@@ -27,7 +24,6 @@ const UserTotpRegistrationValidateMutation = GT.Field<
   GraphQLPublicContextAuth,
   {
     input: {
-      authToken: AuthToken | InputValidationError
       totpCode: TotpCode | InputValidationError
       totpRegistrationId: TotpRegistrationId | InputValidationError
     }
@@ -41,17 +37,26 @@ const UserTotpRegistrationValidateMutation = GT.Field<
     input: { type: GT.NonNull(UserTotpRegistrationValidateInput) },
   },
   resolve: async (_, args, { user }) => {
-    const { authToken, totpCode, totpRegistrationId } = args.input
+    const { totpCode, totpRegistrationId } = args.input
+    const { phone } = user
 
-    if (authToken instanceof Error) {
-      return { errors: [{ message: authToken.message }] }
-    }
     if (totpCode instanceof Error) {
       return { errors: [{ message: totpCode.message }] }
     }
+
     if (totpRegistrationId instanceof Error) {
       return { errors: [{ message: totpRegistrationId.message }] }
     }
+
+    const authService = AuthWithPhonePasswordlessService()
+
+    if (phone === undefined) {
+      return { errors: [{ message: "Phone is undefined" }] }
+    }
+
+    const kratosResult = await authService.loginToken({ phone })
+    if (kratosResult instanceof Error) return kratosResult
+    const { authToken } = kratosResult
 
     const me = await Authentication.validateTotpRegistration({
       authToken,
@@ -59,6 +64,10 @@ const UserTotpRegistrationValidateMutation = GT.Field<
       totpRegistrationId,
       userId: user.id,
     })
+
+    const res = await kratosPublic.toSession({ xSessionToken: authToken })
+    const sessionId = res.data.id as SessionId
+    await authService.logoutToken({ sessionId })
 
     if (me instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(me)], success: false }

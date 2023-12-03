@@ -886,7 +886,7 @@ type Mutation {
   userPhoneRegistrationInitiate(input: UserPhoneRegistrationInitiateInput!): SuccessPayload!
   userPhoneRegistrationValidate(input: UserPhoneRegistrationValidateInput!): UserPhoneRegistrationValidatePayload!
   userTotpDelete(input: UserTotpDeleteInput!): UserTotpDeletePayload!
-  userTotpRegistrationInitiate(input: UserTotpRegistrationInitiateInput!): UserTotpRegistrationInitiatePayload!
+  userTotpRegistrationInitiate: UserTotpRegistrationInitiatePayload!
   userTotpRegistrationValidate(input: UserTotpRegistrationValidateInput!): UserTotpRegistrationValidatePayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
   userUpdateUsername(input: UserUpdateUsernameInput!): UserUpdateUsernamePayload! @deprecated(reason: "Username will be moved to @Handle in Accounts. Also SetUsername naming should be used instead of UpdateUsername to reflect the idempotency of Handles")
@@ -1554,10 +1554,6 @@ type UserTotpDeletePayload {
   me: User
 }
 
-input UserTotpRegistrationInitiateInput {
-  authToken: AuthToken!
-}
-
 type UserTotpRegistrationInitiatePayload {
   errors: [Error!]!
   totpRegistrationId: TotpRegistrationId
@@ -1565,7 +1561,6 @@ type UserTotpRegistrationInitiatePayload {
 }
 
 input UserTotpRegistrationValidateInput {
-  authToken: AuthToken!
   totpCode: TotpCode!
   totpRegistrationId: TotpRegistrationId!
 }
