@@ -80,7 +80,6 @@ const LnNoAmountInvoiceCreateMutation = GT.Field({
       const invoiceString = CreateLightningInvoice.data["data"]["invoice"]["bolt11"]
       const decodedInvoice = decodeInvoice(invoiceString)
       if (decodedInvoice instanceof Error) {
-        console.log("DEBUGGING: decodedInvoice instanceof Error", decodedInvoice)
         return { errors: [mapAndParseErrorForGqlResponse(decodedInvoice)] }
       }
       const lnInvoice = {

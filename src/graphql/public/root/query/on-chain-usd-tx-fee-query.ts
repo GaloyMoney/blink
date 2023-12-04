@@ -34,11 +34,9 @@ const OnChainUsdTxFeeQuery = GT.Field<null, GraphQLPublicContextAuth>({
   },
   resolve: async (_, args, { domainAccount }) => {
     const { walletId, address, amount, speed } = args
-    console.log("IBEX on-chain fee", address)
     for (const input of [walletId, address, amount, speed]) {
       if (input instanceof Error) throw input
     }
-    console.log("IBEX on-chain speed", speed)
     if (!domainAccount) throw new Error("Authentication required")
     // FLASH FORK: use IBEX to send on-chain payment
     // const fee = await Wallets.getOnChainFeeForUsdWallet({
@@ -62,10 +60,6 @@ const OnChainUsdTxFeeQuery = GT.Field<null, GraphQLPublicContextAuth>({
         amount: BigInt(Math.round(PayOnChainFee.data["data"]["fee"] * 100)),
         currency: WalletCurrency.Usd,
       }
-      console.log(
-        "IBEX on-chain fee",
-        Math.round(PayOnChainFee.data["data"]["fee"] * 100),
-      )
 
       if (fee instanceof Error) throw mapError(fee)
 

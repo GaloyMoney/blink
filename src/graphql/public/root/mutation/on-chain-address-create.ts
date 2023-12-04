@@ -41,7 +41,6 @@ const OnChainAddressCreateMutation = GT.Field({
         accountId: walletId,
       },
     )
-    console.log("CreateOnChain", JSON.stringify(CreateOnChain, null, 2))
     if (!CreateOnChain || !CreateOnChain.data || !CreateOnChain.data["data"]) {
       console.error({ error: "unable to get CreateOnChain" })
     } else {
@@ -50,7 +49,6 @@ const OnChainAddressCreateMutation = GT.Field({
       if (address instanceof Error) {
         return { errors: [mapAndParseErrorForGqlResponse(address)] }
       }
-      console.log("IBEX Bitcoin address", address)
       return {
         errors: [],
         address,

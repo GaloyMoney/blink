@@ -73,7 +73,6 @@ const LnUsdInvoiceFeeProbeMutation = GT.Field<
 
     const PayLightningFeeInfo = await requestIBexPlugin("GET", feeEndpoint, {}, {})
 
-    console.log("FeeInfo", PayLightningFeeInfo)
     if (
       PayLightningFeeInfo.data &&
       PayLightningFeeInfo.data["data"] &&

@@ -88,6 +88,22 @@ const LnInvoicePaymentSendMutation = GT.Field<
       },
     )
 
+    // Check for the specific error and handle it
+    if (
+      PayLightningInvoice &&
+      PayLightningInvoice.data &&
+      PayLightningInvoice.data["error"] == "'daily limit exceeded'"
+    ) {
+      return {
+        status: "failed",
+        errors: [
+          {
+            message:
+              "Daily transaction limit has been exceeded. Please try again tomorrow.",
+          },
+        ],
+      }
+    }
     if (
       PayLightningInvoice &&
       PayLightningInvoice.data &&
@@ -115,9 +131,19 @@ const LnInvoicePaymentSendMutation = GT.Field<
         return { status: "failed", errors: [mapAndParseErrorForGqlResponse(status)] }
       }
       return {
-        errors: [],
+        errors: [
+          {
+            message:
+              "Daily transaction limit has been exceeded. Please try again tomorrow.",
+          },
+        ],
         status: status.value,
       }
+    }
+    // Fallback error if no conditions met
+    return {
+      status: "failed",
+      errors: [{ message: "An unexpected error occurred. Please try again later." }],
     }
   },
 })

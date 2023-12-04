@@ -16,4 +16,6 @@ export const IbexRoutes = {
   OnChain: "/onchain/",
   OnChainPayment: "/onchain/sendToAddress/",
   OnChainFee: "/onchain/fee",
+
+  Transactions: "/transaction/",
 }
