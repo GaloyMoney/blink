@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.8.4",
-    "@apollo/experimental-nextjs-app-support": "^0.4.3",
+    "@apollo/experimental-nextjs-app-support": "^0.5.2",
     "@emotion/cache": "^11.11.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
