@@ -1,7 +1,7 @@
 "use client"
 
-import Card from "./components/card"
-import MainContent from "./components/main-container"
+import Card from "../components/card"
+import MainContent from "../components/main-container"
 
 export default function Error({ reset }: { error: Error; reset: () => void }) {
   return (

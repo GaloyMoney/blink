@@ -14,12 +14,12 @@ import LoginLink from "../login-link"
 
 import { getCaptchaChallenge } from "@/app/login/phone/server-actions"
 
-import PrimaryButton from "@/app/components/button/primary-button-component"
-import SecondaryButton from "@/app/components/button/secondary-button-component"
-import { CaptchaChallenge } from "@/app/components/captcha-challenge"
+import PrimaryButton from "@/components/button/primary-button-component"
+import SecondaryButton from "@/components/button/secondary-button-component"
+import { CaptchaChallenge } from "@/components/captcha-challenge"
 
-import FormComponent from "@/app/components/form-component"
-import Separator from "@/app/components/separator"
+import FormComponent from "@/components/form-component"
+import Separator from "@/components/separator"
 
 import { SubmitValue } from "@/app/types/index.types"
 
@@ -28,9 +28,9 @@ import "react-phone-number-input/style.css"
 // eslint-disable-next-line import/no-unassigned-import
 import "./phone-input-styles.css"
 
-import SelectComponent from "@/app/components/select"
+import SelectComponent from "@/components/select"
 
-import RegisterLink from "@/app/components/register-link"
+import RegisterLink from "@/components/register-link"
 
 import { GetCaptchaChallengeResponse } from "@/app/types/phone-auth.types"
 

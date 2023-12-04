@@ -5,12 +5,12 @@ import { useFormState } from "react-dom"
 import Link from "next/link"
 import { toast } from "react-toastify"
 
-import InputComponent from "../components/input-component"
-import FormComponent from "../components/form-component"
-import Separator from "../components/separator"
-import PrimaryButton from "../components/button/primary-button-component"
-import SecondaryButton from "../components/button/secondary-button-component"
-import RegisterLink from "../components/register-link"
+import InputComponent from "../../components/input-component"
+import FormComponent from "../../components/form-component"
+import Separator from "../../components/separator"
+import PrimaryButton from "../../components/button/primary-button-component"
+import SecondaryButton from "../../components/button/secondary-button-component"
+import RegisterLink from "../../components/register-link"
 
 import { SubmitValue } from "../types/index.types"
 

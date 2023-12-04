@@ -3,12 +3,12 @@ import React from "react"
 import { cookies } from "next/headers"
 
 import { hydraClient } from "../../services/hydra"
-import MainContent from "../components/main-container"
-import Logo from "../components/logo"
-import Heading from "../components/heading"
-import SubHeading from "../components/sub-heading"
+import MainContent from "../../components/main-container"
+import Logo from "../../components/logo"
+import Heading from "../../components/heading"
+import SubHeading from "../../components/sub-heading"
 
-import Card from "../components/card"
+import Card from "../../components/card"
 
 import EmailLoginForm from "./email-login-form"
 

@@ -5,8 +5,8 @@ import { useFormState } from "react-dom"
 
 import { toast } from "react-toastify"
 
-import TwoFaVerificationForm from "../../components/varification-components/two-fa-verification-code-form"
-import VerificationCodeForm from "../../components/varification-components/verification-code-form"
+import TwoFaVerificationForm from "../../../components/varification-components/two-fa-verification-code-form"
+import VerificationCodeForm from "../../../components/varification-components/verification-code-form"
 
 import { submitFormTotp, submitForm } from "./server-actions"
 import { VerificationCodeResponse, VerificationTotpResponse } from "./verification.types"

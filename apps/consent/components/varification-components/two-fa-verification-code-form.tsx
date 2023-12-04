@@ -1,7 +1,7 @@
 import React from "react"
 
-import InputComponent from "@/app/components/input-component"
-import PrimaryButtonComponent from "@/app/components/button/primary-button-component"
+import InputComponent from "@/components/input-component"
+import PrimaryButtonComponent from "@/components/button/primary-button-component"
 
 interface TwoFaVerificationFormProps {
   /* eslint @typescript-eslint/ban-ts-comment: "off" */
