@@ -52,7 +52,7 @@ const Transaction = GT.Object<WalletTransaction>({
           // If not pending, we would like this to error in the next step with invalid source.id
           source.status === DomainTxStatus.Pending
         ) {
-          return settlementVia
+          return { ...settlementVia, parent: source }
         }
 
         let result: LedgerTransactionMetadata | undefined | RepositoryError
@@ -62,7 +62,8 @@ const Transaction = GT.Object<WalletTransaction>({
         } catch (err) {
           result = parseErrorFromUnknown(err)
         }
-        if (result instanceof Error || result === undefined) return settlementVia
+        if (result instanceof Error || result === undefined)
+          return { ...settlementVia, parent: source }
 
         const updatedSettlementVia = { ...settlementVia }
         for (const key of Object.keys(settlementVia)) {
@@ -73,7 +74,7 @@ const Transaction = GT.Object<WalletTransaction>({
             result[key] !== undefined ? result[key] : settlementVia[key]
         }
 
-        return updatedSettlementVia
+        return { ...updatedSettlementVia, parent: source }
       },
     },
     settlementAmount: {
