@@ -1,8 +1,8 @@
 "use client"
 import React, { useState, useEffect } from "react"
 
-import InputComponent from "@/app/components/input-component"
-import PrimaryButtonComponent from "@/app/components/button/primary-button-component"
+import InputComponent from "@/components/input-component"
+import PrimaryButtonComponent from "@/components/button/primary-button-component"
 
 interface VerificationCodeFormProps {
   /* eslint @typescript-eslint/ban-ts-comment: "off" */

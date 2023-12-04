@@ -1,6 +1,6 @@
 import React from "react"
 
-import PhoneAuth from "@/app/components/phone-auth"
+import PhoneAuth from "@/components/phone-auth"
 
 interface LoginProps {
   login_challenge: string

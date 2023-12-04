@@ -8,11 +8,11 @@ import PhoneAuthForm from "./phone-auth-form"
 import { getSupportedCountryCodes } from "@/app/graphql/queries/get-supported-countries"
 
 import { hydraClient } from "@/services/hydra"
-import Card from "@/app/components/card"
-import MainContent from "@/app/components/main-container"
-import Logo from "@/app/components/logo"
-import Heading from "@/app/components/heading"
-import SubHeading from "@/app/components/sub-heading"
+import Card from "@/components/card"
+import MainContent from "@/components/main-container"
+import Logo from "@/components/logo"
+import Heading from "@/components/heading"
+import SubHeading from "@/components/sub-heading"
 
 interface PhoneAuth {
   login_challenge: string

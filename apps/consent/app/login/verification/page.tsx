@@ -3,9 +3,9 @@ import { cookies } from "next/headers"
 
 import VerificationForm from "./form"
 
-import MainContent from "@/app/components/main-container"
-import Card from "@/app/components/card"
-import Logo from "@/app/components/logo"
+import MainContent from "@/components/main-container"
+import Card from "@/components/card"
+import Logo from "@/components/logo"
 import { LoginType } from "@/app/types/index.types"
 
 interface VerificationProps {
