@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): correct external address to random regtest one (#3650)'
-      sha: 2ff91f6319189848c77ae457212c717c76c562ce
+      commitTitle: 'chore(consent): moving components folder (#3653)...'
+      sha: 1f008b6c2a836fc4176e82e9d3e0be1cf6fe27ae
       tags:
-      - 0.16.83-10-g2ff91f631
+      - 0.16.84-1-g1f008b6c2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): correct external address to random regtest one (#3650)'
-      sha: 2ff91f6319189848c77ae457212c717c76c562ce
+      commitTitle: 'chore(consent): moving components folder (#3653)...'
+      sha: 1f008b6c2a836fc4176e82e9d3e0be1cf6fe27ae
       tags:
-      - 0.16.83-10-g2ff91f631
+      - 0.16.84-1-g1f008b6c2
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(core): correct external address to random regtest one (#3650)'
-      sha: 2ff91f6319189848c77ae457212c717c76c562ce
+      commitTitle: 'chore(consent): moving components folder (#3653)...'
+      sha: 1f008b6c2a836fc4176e82e9d3e0be1cf6fe27ae
       tags:
-      - 0.16.83-10-g2ff91f631
+      - 0.16.84-1-g1f008b6c2
     path: ./
   path: ./graphql
 kind: LockConfig
