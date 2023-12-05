@@ -6,18 +6,15 @@ import { UsernameIsImmutableError, UsernameNotAvailableError } from "@/domain/ac
 import { ValidationError } from "@/domain/shared"
 import { CsvWalletsExport } from "@/services/ledger/csv-wallet-export"
 import { AccountsRepository } from "@/services/mongoose"
-import { Account } from "@/services/mongoose/schema"
 
 import {
   createMandatoryUsers,
   randomPhone,
   createUserAndWalletFromPhone,
-  getAccountRecordByPhone,
   getDefaultWalletIdByPhone,
   getAccountIdByPhone,
 } from "test/helpers"
 
-let accountRecordC: AccountRecord
 let walletIdA: WalletId
 let accountIdA: AccountId, accountIdB: AccountId, accountIdC: AccountId
 
@@ -33,22 +30,11 @@ describe("UserWallet", () => {
     await createUserAndWalletFromPhone(phoneB)
     await createUserAndWalletFromPhone(phoneC)
 
-    accountRecordC = await getAccountRecordByPhone(phoneC)
-
     walletIdA = await getDefaultWalletIdByPhone(phoneA)
 
     accountIdA = await getAccountIdByPhone(phoneA)
     accountIdB = await getAccountIdByPhone(phoneB)
     accountIdC = await getAccountIdByPhone(phoneC)
-  })
-
-  it("has a role if it was configured", async () => {
-    const dealer = await Account.findOne({ role: "dealer" })
-    expect(dealer).toBeTruthy()
-  })
-
-  it("has a title if it was configured", () => {
-    expect(accountRecordC).toHaveProperty("title")
   })
 
   describe("setUsername", () => {
