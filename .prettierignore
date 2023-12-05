@@ -1,0 +1,14 @@
+coverage
+dist
+tmp
+charts
+protos
+.vscode
+quickstart
+
+.github
+ci/**/*
+
+**/*.md
+**/*.yaml
+**/*.yml
