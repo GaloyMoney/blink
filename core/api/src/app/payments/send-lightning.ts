@@ -747,16 +747,15 @@ const executePaymentViaLn = async ({
             })
     }
 
-    // Fire-and-forget update to 'lnPayments' collection
     if (!(payResult instanceof LnAlreadyPaidError)) {
-      LnPaymentsRepository().persistNew({
+      await LnPaymentsRepository().persistNew({
         paymentHash: decodedInvoice.paymentHash,
         paymentRequest: decodedInvoice.paymentRequest,
         sentFromPubkey: outgoingNodePubkey || lndService.defaultPubkey(),
       })
 
       if (!(payResult instanceof Error))
-        LedgerFacade.updateMetadataByHash({
+        await LedgerFacade.updateMetadataByHash({
           hash: paymentHash,
           revealedPreImage: payResult.revealedPreImage,
         })

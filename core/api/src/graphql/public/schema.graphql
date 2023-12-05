@@ -434,6 +434,9 @@ type InitiationViaIntraLedger {
 
 type InitiationViaLn {
   paymentHash: PaymentHash!
+
+  """Bolt11 invoice"""
+  paymentRequest: LnPaymentRequest!
 }
 
 type InitiationViaOnChain {

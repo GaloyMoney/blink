@@ -226,7 +226,7 @@ interface ILightningService {
     pubkey,
     paymentHash,
   }: {
-    pubkey: Pubkey
+    pubkey?: Pubkey
     paymentHash: PaymentHash
   }): Promise<LnInvoiceLookup | LightningServiceError>
 

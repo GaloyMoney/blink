@@ -550,29 +550,22 @@ export const LndService = (): ILightningService | LightningServiceError => {
     pubkey,
     paymentHash,
   }: {
-    pubkey: Pubkey
+    pubkey?: Pubkey
     paymentHash: PaymentHash
   }): Promise<LnInvoiceLookup | LightningServiceError> => {
-    try {
-      const lnd = getLndFromPubkey({ pubkey })
-      if (lnd instanceof Error) return lnd
+    if (pubkey) return lookupInvoiceByPubkeyAndHash({ pubkey, paymentHash })
 
-      const invoice: GetInvoiceResult = await getInvoice({
-        lnd,
-        id: paymentHash,
+    const offchainLnds = getLnds({ type: "offchain" })
+    for (const { pubkey } of offchainLnds) {
+      const invoice = await lookupInvoiceByPubkeyAndHash({
+        pubkey: pubkey as Pubkey,
+        paymentHash,
       })
-
-      return translateLnInvoiceLookup(invoice)
-    } catch (err) {
-      const errDetails = parseLndErrorDetails(err)
-      const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
-      switch (true) {
-        case match(KnownLndErrorDetails.InvoiceNotFound):
-          return new InvoiceNotFoundError()
-        default:
-          return handleCommonLightningServiceErrors(err)
-      }
+      if (invoice instanceof Error) continue
+      return invoice
     }
+
+    return new InvoiceNotFoundError(JSON.stringify({ paymentHash, pubkey }))
   }
 
   const lookupPayment = async ({
@@ -954,6 +947,35 @@ export const LndService = (): ILightningService | LightningServiceError => {
       payInvoiceViaPaymentDetails,
     },
   })
+}
+
+const lookupInvoiceByPubkeyAndHash = async ({
+  pubkey,
+  paymentHash,
+}: {
+  pubkey: Pubkey
+  paymentHash: PaymentHash
+}): Promise<LnInvoiceLookup | LightningServiceError> => {
+  try {
+    const lnd = getLndFromPubkey({ pubkey })
+    if (lnd instanceof Error) return lnd
+
+    const invoice: GetInvoiceResult = await getInvoice({
+      lnd,
+      id: paymentHash,
+    })
+
+    return translateLnInvoiceLookup(invoice)
+  } catch (err) {
+    const errDetails = parseLndErrorDetails(err)
+    const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
+    switch (true) {
+      case match(KnownLndErrorDetails.InvoiceNotFound):
+        return new InvoiceNotFoundError()
+      default:
+        return handleCommonLightningServiceErrors(err)
+    }
+  }
 }
 
 const lookupPaymentByPubkeyAndHash = async ({

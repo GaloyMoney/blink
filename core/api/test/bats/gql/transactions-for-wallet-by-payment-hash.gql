@@ -32,6 +32,7 @@ query transactionsForWalletByPaymentHash(
             }
             ... on InitiationViaLn {
               paymentHash
+              paymentRequest
             }
             ... on InitiationViaOnChain {
               address

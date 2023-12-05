@@ -4,5 +4,13 @@ mutation lnInvoicePaymentSend($input: LnInvoicePaymentInput!) {
       message
     }
     status
+    transaction {
+      initiationVia {
+        ... on InitiationViaLn {
+          paymentHash
+          paymentRequest
+        }
+      }
+    }
   }
 }

@@ -37,6 +37,10 @@ const Transaction = GT.Object<WalletTransaction>({
     initiationVia: {
       type: GT.NonNull(InitiationVia),
       description: "From which protocol the payment has been initiated.",
+      resolve: async (source) => {
+        const { initiationVia } = source
+        return { ...initiationVia, parent: source }
+      },
     },
     settlementVia: {
       type: GT.NonNull(SettlementVia),

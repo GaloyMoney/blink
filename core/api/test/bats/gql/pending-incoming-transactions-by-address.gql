@@ -31,6 +31,7 @@ query pendingIncomingTransactionsByAddress($address: OnChainAddress!) {
             }
             ... on InitiationViaLn {
               paymentHash
+              paymentRequest
             }
             ... on InitiationViaOnChain {
               address
