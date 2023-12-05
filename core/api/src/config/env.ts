@@ -116,7 +116,6 @@ export const env = createEnv({
       .pipe(z.coerce.number())
       .default(50052),
 
-    DROPBOX_ACCESS_TOKEN: z.string().min(1).optional(),
     GCS_APPLICATION_CREDENTIALS_PATH: z.string().min(1).optional(),
     NEXTCLOUD_URL: z.string().min(1).optional(),
     NEXTCLOUD_USER: z.string().min(1).optional(),
@@ -215,7 +214,6 @@ export const env = createEnv({
     PRICE_HISTORY_HOST: process.env.PRICE_HISTORY_HOST,
     PRICE_HISTORY_PORT: process.env.PRICE_HISTORY_PORT,
 
-    DROPBOX_ACCESS_TOKEN: process.env.DROPBOX_ACCESS_TOKEN,
     GCS_APPLICATION_CREDENTIALS_PATH: process.env.GCS_APPLICATION_CREDENTIALS_PATH,
     NEXTCLOUD_URL: process.env.NEXTCLOUD_URL,
     NEXTCLOUD_USER: process.env.NEXTCLOUD_USER,

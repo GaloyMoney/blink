@@ -6,7 +6,6 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import axios from "axios"
 
 import {
-  DROPBOX_ACCESS_TOKEN,
   GCS_APPLICATION_CREDENTIALS_PATH,
   LND_SCB_BACKUP_BUCKET_NAME,
   NETWORK,
@@ -33,7 +32,6 @@ export const uploadBackup =
 
     if (
       !(
-        DROPBOX_ACCESS_TOKEN ||
         GCS_APPLICATION_CREDENTIALS_PATH ||
         (NEXTCLOUD_URL && NEXTCLOUD_USER && NEXTCLOUD_PASSWORD) ||
         (AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY)
@@ -44,42 +42,6 @@ export const uploadBackup =
       )
       logger.error(err)
       recordExceptionInCurrentSpan({ error: err, level: ErrorLevel.Critical })
-    }
-
-    if (!DROPBOX_ACCESS_TOKEN) {
-      addAttributesToCurrentSpan({ ["uploadBackup.destination.dropbox"]: "false" })
-    } else {
-      addAttributesToCurrentSpan({ ["uploadBackup.destination.dropbox"]: "true" })
-      asyncRunInSpan(
-        "app.admin.backup.uploadBackup.dropbox",
-        {
-          attributes: {
-            [SemanticAttributes.CODE_FUNCTION]: "uploadBackup.dropbox",
-            [SemanticAttributes.CODE_NAMESPACE]: "app.admin.backup",
-          },
-        },
-        async () => {
-          try {
-            await axios.post(`https://content.dropboxapi.com/2/files/upload`, backup, {
-              headers: {
-                "Authorization": `Bearer ${DROPBOX_ACCESS_TOKEN}`,
-                "Content-Type": `Application/octet-stream`,
-                "Dropbox-API-Arg": `{"autorename":false,"mode":"add","mute":true,"path":"/${filename}","strict_conflict":false}`,
-              },
-            })
-            logger.info({ backup }, "Static channel backup to Dropbox successful.")
-            addEventToCurrentSpan("Static channel backup to Dropbox successful.")
-          } catch (error) {
-            const fallbackMsg = "Static channel backup to Dropbox failed."
-            logger.error({ error }, fallbackMsg)
-            recordExceptionInCurrentSpan({
-              error: error,
-              level: ErrorLevel.Warn,
-              fallbackMsg,
-            })
-          }
-        },
-      )
     }
 
     if (!GCS_APPLICATION_CREDENTIALS_PATH) {
