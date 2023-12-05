@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: return batchInclusionEstimatedAt from sendOnChain (#3626)...'
-      sha: b72569ed94e31f7840b82333120d41b767948480
+      commitTitle: 'feat(core): add paymentRequest to InitiationViaLn (#3654)...'
+      sha: 2ef192a11ca65184d2f024cecb4217a6d7ab23f6
       tags:
-      - 0.16.86-1-gb72569ed9
+      - 0.16.87-1-g2ef192a11
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: return batchInclusionEstimatedAt from sendOnChain (#3626)...'
-      sha: b72569ed94e31f7840b82333120d41b767948480
+      commitTitle: 'feat(core): add paymentRequest to InitiationViaLn (#3654)...'
+      sha: 2ef192a11ca65184d2f024cecb4217a6d7ab23f6
       tags:
-      - 0.16.86-1-gb72569ed9
+      - 0.16.87-1-g2ef192a11
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: return batchInclusionEstimatedAt from sendOnChain (#3626)...'
-      sha: b72569ed94e31f7840b82333120d41b767948480
+      commitTitle: 'feat(core): add paymentRequest to InitiationViaLn (#3654)...'
+      sha: 2ef192a11ca65184d2f024cecb4217a6d7ab23f6
       tags:
-      - 0.16.86-1-gb72569ed9
+      - 0.16.87-1-g2ef192a11
     path: ./
   path: ./graphql
 kind: LockConfig

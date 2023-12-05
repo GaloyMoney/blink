@@ -55,6 +55,7 @@ fragment TransactionList on TransactionConnection {
         }
         ... on InitiationViaLn {
           paymentHash
+          paymentRequest
         }
         ... on InitiationViaOnChain {
           address

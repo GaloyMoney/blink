@@ -29,6 +29,7 @@ query transactionForWalletById($walletId: WalletId!, $transactionId: ID!) {
             }
             ... on InitiationViaLn {
               paymentHash
+              paymentRequest
             }
             ... on InitiationViaOnChain {
               address
