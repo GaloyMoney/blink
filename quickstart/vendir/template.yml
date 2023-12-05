@@ -8,7 +8,7 @@ directories:
   contents:
   - path: ./
     git:
-      url: https://github.com/GaloyMoney/galoy.git
+      url: #@ data.values.galoy_repo_url
       ref: #@ data.values.galoy_git_ref
     includePaths:
     - core/api/dev/**/*
@@ -20,7 +20,7 @@ directories:
   contents:
   - path: ./
     git:
-      url: https://github.com/GaloyMoney/galoy.git
+      url: #@ data.values.galoy_repo_url
       ref: #@ data.values.galoy_git_ref
     includePaths:
     - core/api/dev/**/*
@@ -38,7 +38,7 @@ directories:
   contents:
   - path: ./
     git:
-      url: https://github.com/GaloyMoney/galoy.git
+      url: #@ data.values.galoy_repo_url
       ref: #@ data.values.galoy_git_ref
     includePaths:
     - core/api/src/graphql/public/schema.graphql

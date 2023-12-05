@@ -19,7 +19,7 @@ jobs:
       - name: Test quickstart
         run: |
           cd quickstart
-          ./bin/bump-galoy-git-ref.sh ${{ github.event.pull_request.head.sha }}
+          ./bin/bump-galoy-git-ref.sh ${{ github.event.pull_request.head.sha }} ${{ github.event.pull_request.head.repo.clone_url }}
           ./bin/bump-galoy-image-digest.sh api local
           ./bin/bump-galoy-image-digest.sh trigger local
           ./bin/bump-mongodb-migrate-image-digest.sh local
