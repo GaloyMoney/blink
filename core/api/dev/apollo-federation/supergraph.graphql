@@ -596,6 +596,9 @@ type InitiationViaLn
   @join__type(graph: PUBLIC)
 {
   paymentHash: PaymentHash!
+
+  """Bolt11 invoice"""
+  paymentRequest: LnPaymentRequest!
 }
 
 type InitiationViaOnChain

@@ -2,10 +2,14 @@ import WalletId from "../scalar/wallet-id"
 import Username from "../scalar/username"
 import OnChainAddress from "../scalar/on-chain-address"
 import PaymentHash from "../scalar/payment-hash"
+import LnPaymentRequest from "../scalar/ln-payment-request"
 
 import { PaymentInitiationMethod } from "@/domain/wallets"
 
 import { GT } from "@/graphql/index"
+import { Lightning } from "@/app"
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
+import { ErrorLevel } from "@/domain/shared"
 
 const InitiationViaIntraLedger = GT.Object({
   name: "InitiationViaIntraLedger",
@@ -27,6 +31,24 @@ const InitiationViaLn = GT.Object({
   fields: () => ({
     paymentHash: {
       type: GT.NonNull(PaymentHash),
+    },
+    paymentRequest: {
+      type: GT.NonNull(LnPaymentRequest),
+      description: "Bolt11 invoice",
+      resolve: async (source) => {
+        const paymentRequest = await Lightning.getPaymentRequestByTransactionId({
+          ledgerTransactionId: source.parent.id,
+        })
+        if (paymentRequest instanceof Error) {
+          recordExceptionInCurrentSpan({
+            error: paymentRequest,
+            level: ErrorLevel.Critical,
+            attributes: { ["error.parentId"]: source.parent.id },
+          })
+          return ""
+        }
+        return paymentRequest
+      },
     },
   }),
 })

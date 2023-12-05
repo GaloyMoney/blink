@@ -90,6 +90,12 @@ usd_amount=50
   send_status="$(graphql_output '.data.lnInvoicePaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
+  transaction_payment_hash="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentHash')"
+  [[ "${transaction_payment_hash}" == "${payment_hash}" ]] || exit 1
+
+  transaction_payment_request="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
+  [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
+
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 
@@ -119,6 +125,12 @@ usd_amount=50
   exec_graphql "$token_name" 'ln-invoice-payment-send' "$variables"
   send_status="$(graphql_output '.data.lnInvoicePaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  transaction_payment_hash="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentHash')"
+  [[ "${transaction_payment_hash}" == "${payment_hash}" ]] || exit 1
+
+  transaction_payment_request="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
+  [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
 
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
@@ -154,6 +166,12 @@ usd_amount=50
   send_status="$(graphql_output '.data.lnInvoicePaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
+  transaction_payment_hash="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentHash')"
+  [[ "${transaction_payment_hash}" == "${payment_hash}" ]] || exit 1
+
+  transaction_payment_request="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
+  [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
+
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 
@@ -183,6 +201,12 @@ usd_amount=50
   exec_graphql "$token_name" 'ln-invoice-payment-send' "$variables"
   send_status="$(graphql_output '.data.lnInvoicePaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  transaction_payment_hash="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentHash')"
+  [[ "${transaction_payment_hash}" == "${payment_hash}" ]] || exit 1
+
+  transaction_payment_request="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
+  [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
 
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
@@ -381,6 +405,12 @@ usd_amount=50
   send_status="$(graphql_output '.data.lnInvoicePaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
+  transaction_payment_hash="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentHash')"
+  [[ "${transaction_payment_hash}" == "${payment_hash}" ]] || exit 1
+
+  transaction_payment_request="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
+  [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
+
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
   check_for_ln_initiated_settled "$recipient_token_name" "$payment_hash"
@@ -438,6 +468,12 @@ usd_amount=50
   exec_graphql "$token_name" 'ln-invoice-payment-send' "$variables"
   send_status="$(graphql_output '.data.lnInvoicePaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  transaction_payment_hash="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentHash')"
+  [[ "${transaction_payment_hash}" == "${payment_hash}" ]] || exit 1
+
+  transaction_payment_request="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
+  [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
 
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
@@ -603,6 +639,12 @@ usd_amount=50
   send_status="$(graphql_output '.data.lnInvoicePaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
+  transaction_payment_hash="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentHash')"
+  [[ "${transaction_payment_hash}" == "${payment_hash}" ]] || exit 1
+
+  transaction_payment_request="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
+  [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
+
   # Check for txns
   retry 15 1 check_num_txns "3"
   balance_after_success="$(balance_for_wallet $token_name 'BTC')"
@@ -661,6 +703,12 @@ usd_amount=50
   send_status="$(graphql_output '.data.lnInvoicePaymentSend.status')"
   [[ "${send_status}" = "PENDING" ]] || exit 1
 
+  transaction_payment_hash="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentHash')"
+  [[ "${transaction_payment_hash}" == "${payment_hash}" ]] || exit 1
+
+  transaction_payment_request="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
+  [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
+
   # Check for txns
   retry 15 1 check_num_txns "3"
   check_for_ln_initiated_pending "$token_name" "$payment_hash" "10" \
@@ -717,6 +765,12 @@ usd_amount=50
   exec_graphql "$token_name" 'ln-invoice-payment-send' "$variables"
   send_status="$(graphql_output '.data.lnInvoicePaymentSend.status')"
   [[ "${send_status}" = "PENDING" ]] || exit 1
+
+  transaction_payment_hash="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentHash')"
+  [[ "${transaction_payment_hash}" == "${payment_hash}" ]] || exit 1
+
+  transaction_payment_request="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
+  [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
 
   # Check for txns
   retry 15 1 check_num_txns "1"
