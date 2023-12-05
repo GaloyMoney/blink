@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: remove dropbox backups (#3633)'
-      sha: c548798e4dacf9e0b0b7ebce0a417112bbb0e5c3
+      commitTitle: 'chore: return batchInclusionEstimatedAt from sendOnChain (#3626)...'
+      sha: b72569ed94e31f7840b82333120d41b767948480
       tags:
-      - 0.16.85-1-gc548798e4
+      - 0.16.86-1-gb72569ed9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: remove dropbox backups (#3633)'
-      sha: c548798e4dacf9e0b0b7ebce0a417112bbb0e5c3
+      commitTitle: 'chore: return batchInclusionEstimatedAt from sendOnChain (#3626)...'
+      sha: b72569ed94e31f7840b82333120d41b767948480
       tags:
-      - 0.16.85-1-gc548798e4
+      - 0.16.86-1-gb72569ed9
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: remove dropbox backups (#3633)'
-      sha: c548798e4dacf9e0b0b7ebce0a417112bbb0e5c3
+      commitTitle: 'chore: return batchInclusionEstimatedAt from sendOnChain (#3626)...'
+      sha: b72569ed94e31f7840b82333120d41b767948480
       tags:
-      - 0.16.85-1-gc548798e4
+      - 0.16.86-1-gb72569ed9
     path: ./
   path: ./graphql
 kind: LockConfig
