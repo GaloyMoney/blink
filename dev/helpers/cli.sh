@@ -24,3 +24,7 @@ kratos_pg() {
 
   docker exec "${COMPOSE_PROJECT_NAME}-kratos-pg-1" psql -U $DB_USER -d $DB_NAME -t "$@"
 }
+
+mongo_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-mongodb-1" mongosh --quiet mongodb://localhost:27017/galoy --eval $@
+}
