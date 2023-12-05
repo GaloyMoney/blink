@@ -226,7 +226,7 @@ export const OnChainService = (): IOnChainService => {
 
   const findPayoutByLedgerJournalId = async (
     journalId: LedgerJournalId,
-  ): Promise<PayoutId | OnChainServiceError> => {
+  ): Promise<OnChainPayout | OnChainServiceError> => {
     try {
       const request = new GetPayoutRequest()
       request.setExternalId(journalId)
@@ -235,7 +235,11 @@ export const OnChainService = (): IOnChainService => {
       const foundPayout = response.getPayout()
 
       if (foundPayout === undefined) return new PayoutNotFoundError()
-      return foundPayout.getId() as PayoutId
+      return {
+        id: foundPayout.getId() as PayoutId,
+        journalId: foundPayout.getExternalId() as LedgerJournalId,
+        batchInclusionEstimatedAt: foundPayout.getBatchInclusionEstimatedAt(),
+      }
     } catch (err) {
       if (
         err &&
@@ -255,7 +259,7 @@ export const OnChainService = (): IOnChainService => {
     amount,
     speed,
     journalId,
-  }: QueuePayoutToAddressArgs): Promise<PayoutId | OnChainServiceError> => {
+  }: QueuePayoutToAddressArgs): Promise<OnChainPayout | OnChainServiceError> => {
     try {
       const request = new SubmitPayoutRequest()
       request.setWalletName(briaConfig.hotWalletName)
@@ -269,7 +273,11 @@ export const OnChainService = (): IOnChainService => {
 
       const response = await submitPayout(request, metadata)
 
-      return response.getId() as PayoutId
+      return {
+        id: response.getId() as PayoutId,
+        journalId,
+        batchInclusionEstimatedAt: response.getBatchInclusionEstimatedAt(),
+      }
     } catch (err) {
       const errMsg = parseErrorMessageFromUnknown(err)
       if (

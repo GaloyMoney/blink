@@ -1583,6 +1583,7 @@ type SettlementViaLn
 type SettlementViaOnChain
   @join__type(graph: PUBLIC)
 {
+  arrivalInMempoolEstimatedAt: Timestamp
   transactionHash: OnChainTxHash
   vout: Int
 }

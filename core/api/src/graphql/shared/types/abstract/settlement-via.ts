@@ -4,6 +4,8 @@ import OnChainTxHash from "../scalar/onchain-tx-hash"
 
 import LnPaymentSecret from "../scalar/ln-payment-secret"
 
+import { OnChain } from "@/app"
+
 import { GT } from "@/graphql/index"
 
 import { SettlementMethod } from "@/domain/wallets"
@@ -13,6 +15,8 @@ import WalletId from "@/graphql/shared/types/scalar/wallet-id"
 import Username from "@/graphql/shared/types/scalar/username"
 
 import LnPaymentPreImage from "@/graphql/shared/types/scalar/ln-payment-preimage"
+
+import Timestamp from "@/graphql/shared/types/scalar/timestamp"
 
 const SettlementViaIntraLedger = GT.Object({
   name: "SettlementViaIntraLedger",
@@ -52,6 +56,16 @@ const SettlementViaOnChain = GT.Object({
   fields: () => ({
     transactionHash: { type: OnChainTxHash },
     vout: { type: GT.Int },
+    arrivalInMempoolEstimatedAt: {
+      type: Timestamp,
+      resolve: async (source) => {
+        const estimation = await OnChain.getBatchInclusionEstimatedAt(source.parent.id)
+        if (estimation instanceof Error) {
+          return null
+        }
+        return estimation
+      },
+    },
   }),
 })
 
