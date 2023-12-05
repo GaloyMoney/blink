@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(consent): moving components folder (#3653)...'
-      sha: 1f008b6c2a836fc4176e82e9d3e0be1cf6fe27ae
+      commitTitle: 'chore: remove dropbox backups (#3633)'
+      sha: c548798e4dacf9e0b0b7ebce0a417112bbb0e5c3
       tags:
-      - 0.16.84-1-g1f008b6c2
+      - 0.16.85-1-gc548798e4
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(consent): moving components folder (#3653)...'
-      sha: 1f008b6c2a836fc4176e82e9d3e0be1cf6fe27ae
+      commitTitle: 'chore: remove dropbox backups (#3633)'
+      sha: c548798e4dacf9e0b0b7ebce0a417112bbb0e5c3
       tags:
-      - 0.16.84-1-g1f008b6c2
+      - 0.16.85-1-gc548798e4
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(consent): moving components folder (#3653)...'
-      sha: 1f008b6c2a836fc4176e82e9d3e0be1cf6fe27ae
+      commitTitle: 'chore: remove dropbox backups (#3633)'
+      sha: c548798e4dacf9e0b0b7ebce0a417112bbb0e5c3
       tags:
-      - 0.16.84-1-g1f008b6c2
+      - 0.16.85-1-gc548798e4
     path: ./
   path: ./graphql
 kind: LockConfig
