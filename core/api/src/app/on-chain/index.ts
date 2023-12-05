@@ -14,9 +14,11 @@ export const getColdBalance = async (): Promise<BtcPaymentAmount | ApplicationEr
   return service.getColdBalance()
 }
 
-export const getBatchInclusionEstimatedAt = async (
-  ledgerTransactionId: LedgerTransactionId,
-): Promise<number | undefined | ApplicationError> => {
+export const getBatchInclusionEstimatedAt = async ({
+  ledgerTransactionId,
+}: {
+  ledgerTransactionId: LedgerTransactionId
+}): Promise<number | undefined | ApplicationError> => {
   const ledgerTransaction = await LedgerService().getTransactionById(ledgerTransactionId)
   if (ledgerTransaction instanceof Error) {
     return ledgerTransaction
