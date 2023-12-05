@@ -42,17 +42,18 @@ export const getPaymentRequestByHash = async ({
   paymentHash: PaymentHash
 }): Promise<EncodedPaymentRequest | ApplicationError> => {
   const lnPayment = await LnPaymentsRepository().findByPaymentHash(paymentHash)
-  if (lnPayment instanceof Error || !lnPayment.paymentRequest) {
-    const lndPayment = await lookupPaymentByHash(paymentHash)
-    if (lndPayment instanceof Error) return lndPayment
-
-    if ("paymentRequest" in lndPayment && lndPayment.paymentRequest) {
-      return lndPayment.paymentRequest
-    }
-
-    return new CouldNotFindLnPaymentFromHashError(paymentHash)
+  if ("paymentRequest" in lnPayment && lnPayment.paymentRequest) {
+    return lnPayment.paymentRequest
   }
-  return lnPayment.paymentRequest
+
+  const lndPayment = await lookupPaymentByHash(paymentHash)
+  if (lndPayment instanceof Error) return lndPayment
+
+  if ("paymentRequest" in lndPayment && lndPayment.paymentRequest) {
+    return lndPayment.paymentRequest
+  }
+
+  return new CouldNotFindLnPaymentFromHashError(paymentHash)
 }
 
 export const getInvoiceRequestByHash = async ({
@@ -61,17 +62,16 @@ export const getInvoiceRequestByHash = async ({
   paymentHash: PaymentHash
 }): Promise<EncodedPaymentRequest | ApplicationError> => {
   const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(paymentHash)
-  if (walletInvoice instanceof Error) return walletInvoice
-
-  if (walletInvoice instanceof Error || !walletInvoice.lnInvoice?.paymentRequest) {
-    const lndInvoice = await lookupInvoiceByHash(paymentHash)
-    if (lndInvoice instanceof Error) return lndInvoice
-
-    if (lndInvoice.lnInvoice?.paymentRequest) {
-      return lndInvoice.lnInvoice.paymentRequest
-    }
-
-    return new CouldNotFindWalletInvoiceError(paymentHash)
+  if ("lnInvoice" in walletInvoice && walletInvoice.lnInvoice?.paymentRequest) {
+    return walletInvoice.lnInvoice.paymentRequest
   }
-  return walletInvoice.lnInvoice.paymentRequest
+
+  const lndInvoice = await lookupInvoiceByHash(paymentHash)
+  if (lndInvoice instanceof Error) return lndInvoice
+
+  if (lndInvoice.lnInvoice?.paymentRequest) {
+    return lndInvoice.lnInvoice.paymentRequest
+  }
+
+  return new CouldNotFindWalletInvoiceError(paymentHash)
 }
