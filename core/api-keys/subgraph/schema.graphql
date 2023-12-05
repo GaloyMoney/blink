@@ -5,7 +5,7 @@ type ApiKey {
 	revoked: Boolean!
 	expired: Boolean!
 	lastUsedAt: Timestamp
-	expiresAt: Timestamp!
+	expiresAt: Timestamp
 	readOnly: Boolean!
 }
 

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT\n                i.id AS identity_id,\n                a.id AS api_key_id,\n                    a.name,\n                    a.created_at,\n                    a.expires_at,\n                    revoked,\n                    expires_at < NOW() AS \"expired!\",\n                    read_only,\n                    last_used_at\n            FROM\n                identities i\n            JOIN\n                identity_api_keys a\n                ON i.id = a.identity_id\n            WHERE\n                i.subject_id = $1\n            ",
+  "query": "\n            SELECT\n                i.id AS identity_id,\n                a.id AS api_key_id,\n                    a.name,\n                    a.created_at,\n                    a.expires_at,\n                    revoked,\n                    (expires_at IS NOT NULL AND expires_at < NOW()) AS \"expired!\",\n                    read_only,\n                    last_used_at\n            FROM\n                identities i\n            JOIN\n                identity_api_keys a\n                ON i.id = a.identity_id\n            WHERE\n                i.subject_id = $1\n            ",
   "describe": {
     "columns": [
       {
@@ -59,12 +59,12 @@
       false,
       false,
       false,
-      false,
+      true,
       false,
       null,
       false,
       true
     ]
   },
-  "hash": "fa550a28f90f8cdbacf62f56e642ee52d743b27cebe180e712ea808cef3798da"
+  "hash": "5ef27d047a37d388491505f9aed978df81900c98888852a594e80732673775b7"
 }

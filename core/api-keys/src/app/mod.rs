@@ -10,7 +10,7 @@ pub use error::*;
 
 #[derive(Clone)]
 pub struct ApiKeysApp {
-    config: AppConfig,
+    _config: AppConfig,
     identities: Identities,
     pool: Pool<Postgres>,
 }
@@ -22,7 +22,7 @@ impl ApiKeysApp {
                 pool.clone(),
                 std::sync::Arc::new(format!("{}_", config.key_prefix)),
             ),
-            config,
+            _config: config,
             pool,
         }
     }
@@ -48,10 +48,9 @@ impl ApiKeysApp {
             .identities
             .find_or_create_identity_for_subject_in_tx(&mut tx, subject_id)
             .await?;
-        let expiry = chrono::Utc::now()
-            + expire_in_days
-                .map(|days| std::time::Duration::from_secs(days as u64 * 24 * 60 * 60))
-                .unwrap_or_else(|| self.config.default_expiry());
+        let expiry = expire_in_days.map(|days| {
+            chrono::Utc::now() + std::time::Duration::from_secs(days as u64 * 24 * 60 * 60)
+        });
         let key = self
             .identities
             .create_key_for_identity_in_tx(&mut tx, id, name, expiry, read_only)

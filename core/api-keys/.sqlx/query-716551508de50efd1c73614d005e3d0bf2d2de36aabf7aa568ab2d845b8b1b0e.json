@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "UPDATE identity_api_keys k\n               SET revoked = true,\n                   revoked_at = NOW()\n               FROM identities i\n               WHERE k.identity_id = i.id\n               AND i.subject_id = $1\n               AND k.id = $2\n               RETURNING\n               k.name,\n               k.identity_id,\n               k.created_at,\n               k.expires_at,\n               k.revoked,\n               expires_at < NOW() AS \"expired!\",\n               k.read_only,\n               k.last_used_at\n            ",
+  "query": "UPDATE identity_api_keys k\n               SET revoked = true,\n                   revoked_at = NOW()\n               FROM identities i\n               WHERE k.identity_id = i.id\n               AND i.subject_id = $1\n               AND k.id = $2\n               RETURNING\n               k.name,\n               k.identity_id,\n               k.created_at,\n               k.expires_at,\n               k.revoked,\n               (expires_at IS NOT NULL AND expires_at < NOW()) AS \"expired!\",\n               k.read_only,\n               k.last_used_at\n            ",
   "describe": {
     "columns": [
       {
@@ -54,12 +54,12 @@
       false,
       false,
       false,
-      false,
+      true,
       false,
       null,
       false,
       true
     ]
   },
-  "hash": "f53f91f541e68cc541117f51440989b17bde77e7bfef55430bbe2ba75b1dfcbd"
+  "hash": "716551508de50efd1c73614d005e3d0bf2d2de36aabf7aa568ab2d845b8b1b0e"
 }

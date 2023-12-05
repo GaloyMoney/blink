@@ -16,7 +16,7 @@ pub struct IdentityApiKey {
     pub id: IdentityApiKeyId,
     pub identity_id: IdentityId,
     pub created_at: chrono::DateTime<chrono::Utc>,
-    pub expires_at: chrono::DateTime<chrono::Utc>,
+    pub expires_at: Option<chrono::DateTime<chrono::Utc>>,
     pub last_used_at: Option<chrono::DateTime<chrono::Utc>>,
     pub revoked: bool,
     pub expired: bool,
@@ -62,7 +62,7 @@ impl Identities {
         tx: &mut sqlx::Transaction<'_, Postgres>,
         identity_id: IdentityId,
         name: String,
-        expires_at: chrono::DateTime<chrono::Utc>,
+        expires_at: Option<chrono::DateTime<chrono::Utc>>,
         read_only: bool,
     ) -> Result<(IdentityApiKey, ApiKeySecret), IdentityError> {
         let code = Alphanumeric.sample_string(&mut rand::thread_rng(), 64);
@@ -112,7 +112,7 @@ impl Identities {
                  WHERE k.identity_id = i.id
                  AND k.revoked = false
                  AND k.encrypted_key = crypt($1, k.encrypted_key)
-                 AND k.expires_at > NOW()
+                 AND (k.expires_at > NOW() OR k.expires_at IS NULL)
                  RETURNING k.id, i.subject_id, k.read_only
                )
                SELECT id, subject_id, read_only FROM updated_key"#,
@@ -145,7 +145,7 @@ impl Identities {
                     a.created_at,
                     a.expires_at,
                     revoked,
-                    expires_at < NOW() AS "expired!",
+                    (expires_at IS NOT NULL AND expires_at < NOW()) AS "expired!",
                     read_only,
                     last_used_at
             FROM
@@ -198,7 +198,7 @@ impl Identities {
                k.created_at,
                k.expires_at,
                k.revoked,
-               expires_at < NOW() AS "expired!",
+               (expires_at IS NOT NULL AND expires_at < NOW()) AS "expired!",
                k.read_only,
                k.last_used_at
             "#,
