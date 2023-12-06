@@ -351,6 +351,16 @@ teardown() {
 }
 
 @test "onchain-receive: process received batch transaction via legacy lnd" {
+  create_user 'alice'
+  user_update_username 'alice'
+  fund_user_onchain 'alice' 'btc_wallet'
+  fund_user_onchain 'alice' 'usd_wallet'
+
+  create_user 'bob'
+  user_update_username 'bob'
+  fund_user_onchain 'bob' 'btc_wallet'
+  fund_user_onchain 'bob' 'usd_wallet'
+  
   alice_btc_wallet_name="alice.btc_wallet_id"
   alice_usd_wallet_name="alice.usd_wallet_id"
   bob_btc_wallet_name="bob.btc_wallet_id"
