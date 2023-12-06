@@ -4,7 +4,7 @@ import { useRouter } from "next/router"
 import React from "react"
 import { Image, OverlayTrigger, Tooltip } from "react-bootstrap"
 
-import { env } from "../../env"
+import { getClientSidePayDomain } from "../../config/config"
 
 import styles from "./app-layout.module.css"
 
@@ -19,7 +19,7 @@ const AppLayout = ({ children, username }: Props) => {
   const [openSideBar, setOpenSideBar] = React.useState<boolean>(false)
   const [copied, setCopied] = React.useState<boolean>(false)
   const lightningAddr = username
-    ? `${username?.toString().toLowerCase()}@${env.NEXT_PUBLIC_PAY_DOMAIN}`
+    ? `${username?.toString().toLowerCase()}@${getClientSidePayDomain()}`
     : ""
 
   const cashRegisterLink = username ? `/${username}` : "#"

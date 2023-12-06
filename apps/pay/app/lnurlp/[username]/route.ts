@@ -70,7 +70,7 @@ export async function GET(
 
   const metadata = JSON.stringify([
     ["text/plain", `Payment to ${username}`],
-    ["text/identifier", `${username}@${env.NEXT_PUBLIC_PAY_DOMAIN}`],
+    ["text/identifier", `${username}@${env.PAY_DOMAIN}`],
   ])
 
   const callback = `${env.PAY_URL}/lnurlp/${username}/callback`

@@ -43,7 +43,7 @@ export async function getServerSideProps({
     props: {
       qrCodeURL,
       username,
-      userHeader: `Pay ${username}@${env.NEXT_PUBLIC_PAY_DOMAIN}`,
+      userHeader: `Pay ${username}@${env.PAY_DOMAIN}`,
     },
   }
 }

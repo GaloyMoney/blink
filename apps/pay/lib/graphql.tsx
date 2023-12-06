@@ -14,15 +14,15 @@ import { onError } from "@apollo/client/link/error"
 
 import { createClient } from "graphql-ws"
 
-import { env } from "../env"
+import { getClientSideGqlConfig } from "../config/config"
 
 const httpLink = new HttpLink({
-  uri: env.NEXT_PUBLIC_CORE_GQL_URL,
+  uri: getClientSideGqlConfig().coreGqlUrl,
 })
 
 const wsLink = new GraphQLWsLink(
   createClient({
-    url: env.NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL,
+    url: getClientSideGqlConfig().coreGqlWebSocketUrl,
     retryAttempts: 12,
     connectionParams: {},
     shouldRetry: (errOrCloseEvent) => {

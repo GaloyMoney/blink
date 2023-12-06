@@ -9,8 +9,8 @@ import { gql, useQuery } from "@apollo/client"
 
 import { useRouter } from "next/router"
 
-import { env } from "../env"
 import CurrencyDropdown from "../components/Currency/currency-dropdown"
+import { getClientSideGqlConfig } from "../config/config"
 
 const GET_NODE_STATS = gql`
   query nodeIds {
@@ -21,7 +21,7 @@ const GET_NODE_STATS = gql`
 `
 
 function Home() {
-  const nodeUrl = env.NEXT_PUBLIC_CORE_GQL_URL.includes("staging")
+  const nodeUrl = getClientSideGqlConfig().coreGqlUrl.includes("staging")
     ? `https://mempool.space/signet/lightning/node/`
     : `https://mempool.space/lightning/node/`
   const { loading, error, data } = useQuery(GET_NODE_STATS)

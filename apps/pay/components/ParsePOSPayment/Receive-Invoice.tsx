@@ -9,8 +9,7 @@ import Tooltip from "react-bootstrap/Tooltip"
 import { QRCode } from "react-qrcode-logo"
 import { useScreenshot } from "use-react-screenshot"
 
-import { USD_INVOICE_EXPIRE_INTERVAL } from "../../config/config"
-import { env } from "../../env"
+import { USD_INVOICE_EXPIRE_INTERVAL, getClientSidePayDomain } from "../../config/config"
 import useCreateInvoice from "../../hooks/use-Create-Invoice"
 import { LnInvoiceObject } from "../../lib/graphql/index.types.d"
 import useSatPrice from "../../lib/use-sat-price"
@@ -53,7 +52,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
 
   const shareUrl =
     !amount && !unit && !memo
-      ? `https://${env.NEXT_PUBLIC_PAY_DOMAIN}/${username}?amount=${
+      ? `https://${getClientSidePayDomain()}/${username}?amount=${
           state.currentAmount
         }&sats=${usdToSats(
           state.currentAmount,
