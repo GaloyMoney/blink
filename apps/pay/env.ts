@@ -3,8 +3,8 @@ import { z } from "zod"
 
 export const env = createEnv({
   server: {
-    CORE_GQL_URL_INTRANET: z.string(), // Use intranet URL to preserve tracing headers
-    PAY_URL: z.string(),
+    CORE_GQL_URL_INTRANET: z.string().default("http://localhost:4455/graphql"), // Use intranet URL to preserve tracing headers
+    PAY_URL: z.string().default("http://localhost:3002"),
     NOSTR_PUBKEY: z.string().optional(),
     REDIS_PASSWORD: z.string().optional(),
     REDIS_MASTER_NAME: z.string().optional(),
@@ -13,9 +13,11 @@ export const env = createEnv({
     REDIS_2_DNS: z.string().optional(),
   },
   client: {
-    NEXT_PUBLIC_CORE_GQL_URL: z.string(),
-    NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL: z.string(),
-    NEXT_PUBLIC_PAY_DOMAIN: z.string(),
+    NEXT_PUBLIC_CORE_GQL_URL: z.string().default("http://localhost:4455/graphql"),
+    NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL: z
+      .string()
+      .default("ws://localhost:4455/graphql"),
+    NEXT_PUBLIC_PAY_DOMAIN: z.string().default("localhost:3002"),
   },
   runtimeEnv: {
     CORE_GQL_URL_INTRANET: process.env.CORE_GQL_URL_INTRANET,
