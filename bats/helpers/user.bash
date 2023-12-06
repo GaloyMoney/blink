@@ -1,5 +1,6 @@
 CURRENT_FILE=${BASH_SOURCE:-bats/helpers/.}
 source "$(dirname "$CURRENT_FILE")/_common.bash"
+source "$(dirname "$CURRENT_FILE")/cli.bash"
 
 login_user() {
   local token_name=$1
@@ -36,6 +37,41 @@ create_user() {
 
   login_user "$token_name" "$phone"
   cache_value "$token_name.phone" "$phone"
+}
+
+create_user_with_metadata() {
+  local token_name=$1
+  create_user "$token_name"
+
+  # Add phone metadata
+  mongo_command=$(echo "db.users.updateOne(
+        { phone: \"$(read_value $token_name.phone)\" },
+        {
+          \$set: {
+            phoneMetadata: {
+              carrier: { type: \"mobile\" },
+              countryCode: \"SV\"
+            }
+          }
+        }
+      );" | tr -d '[:space:]')
+  mongo_cli "$mongo_command"
+
+  # Add IP metadata
+  exec_graphql "$token_name" 'default-account'
+  account_id=$(graphql_output '.data.me.defaultAccount.id')
+
+  mongo_command=$(echo "db.accountips.insertOne(
+        {
+          ip: \"138.186.249.229\",
+          accountId: \"$account_id\",
+          metadata: {
+            isoCode: \"SV\",
+            asn: \"AS27773\"
+          }
+        }
+      );" | tr -d '[:space:]')
+  mongo_cli "$mongo_command"
 }
 
 random_phone() {
