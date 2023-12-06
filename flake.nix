@@ -218,6 +218,7 @@
           api-cron = tscDerivation {pkgName = "api-cron";};
           consent = nextDerivation {pkgName = "consent";};
           dashboard = nextDerivation {pkgName = "dashboard";};
+          pay = nextDerivation {pkgName = "pay";};
           api-keys = rustDerivation {pkgName = "api-keys";};
 
           dockerImage = dockerTools.buildImage {
