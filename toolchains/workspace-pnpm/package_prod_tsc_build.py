@@ -24,6 +24,12 @@ if __name__ == "__main__":
         help="Path to `dist` scripts",
     )
     parser.add_argument(
+        "--deps-src",
+        action="append",
+        metavar="DST=SRC",
+        help="Adds a dependency source into the source tree"
+    )
+    parser.add_argument(
         "out_path",
         help="Path to output directory",
     )
@@ -49,5 +55,27 @@ if __name__ == "__main__":
             ),
             symlinks=True,
         )
+
+        for arg in args.deps_src or []:
+            dst, src = arg.split("=")
+
+            parent_dir = os.path.dirname(dst)
+            if parent_dir:
+                dst_dir = os.path.join(lib_dir, parent_dir)
+                if not os.path.isdir(dst_dir):
+                    os.makedirs(dst_dir, exist_ok=True)
+            abspath_src = os.path.abspath(src)
+            if os.path.isdir(abspath_src):
+                shutil.copytree(
+                    abspath_src,
+                    os.path.join(lib_dir, dst),
+                    symlinks=True,
+                    dirs_exist_ok=True,
+                )
+            else:
+                shutil.copy(
+                    abspath_src,
+                    os.path.join(lib_dir, dst),
+                )
 
         shutil.move(lib_dir, args.out_path)

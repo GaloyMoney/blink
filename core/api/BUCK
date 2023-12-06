@@ -79,6 +79,7 @@ tsc_build(
 
 prod_tsc_build(
   name = "prod_build",
+  prod_deps_srcs = prod_deps_srcs,
   visibility = ["PUBLIC"],
 )
 
