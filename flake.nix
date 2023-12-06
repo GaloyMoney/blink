@@ -251,6 +251,7 @@
                   google-cloud-sdk
                   openssh
                   rsync
+                  git-cliff
                 ];
 
               pathsToLink = ["/bin"];
