@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): get payment request for failed payments(void) (#3662)'
-      sha: 955b193d1028d7e34c63ef198e619168399ba098
+      commitTitle: 'ci: add git cliff to flake.nix (#3663)'
+      sha: 93e7a5d5fd9ff83403bf4c9095685e08ce1f70ae
       tags:
-      - 0.16.88-2-g955b193d1
+      - 0.16.89-1-g93e7a5d5f
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): get payment request for failed payments(void) (#3662)'
-      sha: 955b193d1028d7e34c63ef198e619168399ba098
+      commitTitle: 'ci: add git cliff to flake.nix (#3663)'
+      sha: 93e7a5d5fd9ff83403bf4c9095685e08ce1f70ae
       tags:
-      - 0.16.88-2-g955b193d1
+      - 0.16.89-1-g93e7a5d5f
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(core): get payment request for failed payments(void) (#3662)'
-      sha: 955b193d1028d7e34c63ef198e619168399ba098
+      commitTitle: 'ci: add git cliff to flake.nix (#3663)'
+      sha: 93e7a5d5fd9ff83403bf4c9095685e08ce1f70ae
       tags:
-      - 0.16.88-2-g955b193d1
+      - 0.16.89-1-g93e7a5d5f
     path: ./
   path: ./graphql
 kind: LockConfig
