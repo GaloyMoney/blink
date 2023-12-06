@@ -26,14 +26,11 @@ export const getPaymentRequestByTransactionId = async ({
     return new CouldNotFindTransactionError()
   }
 
-  const isSettledIntraledger =
-    type === LedgerTransactionType.LnIntraLedger ||
-    type === LedgerTransactionType.LnTradeIntraAccount
-  if (isSettledIntraledger || ledgerTransaction.credit > 0) {
-    return getInvoiceRequestByHash({ paymentHash })
+  if (type === LedgerTransactionType.Payment) {
+    return getPaymentRequestByHash({ paymentHash })
   }
 
-  return getPaymentRequestByHash({ paymentHash })
+  return getInvoiceRequestByHash({ paymentHash })
 }
 
 export const getPaymentRequestByHash = async ({
