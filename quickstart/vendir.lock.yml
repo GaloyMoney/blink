@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: add git cliff to flake.nix (#3663)'
-      sha: 93e7a5d5fd9ff83403bf4c9095685e08ce1f70ae
+      commitTitle: 'fix(core): check batchInclusionEstimation exists (#3665)'
+      sha: c7d448ce94526f57614fbdd84b58e40b920adbca
       tags:
-      - 0.16.89-1-g93e7a5d5f
+      - 0.16.91-2-gc7d448ce9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: add git cliff to flake.nix (#3663)'
-      sha: 93e7a5d5fd9ff83403bf4c9095685e08ce1f70ae
+      commitTitle: 'fix(core): check batchInclusionEstimation exists (#3665)'
+      sha: c7d448ce94526f57614fbdd84b58e40b920adbca
       tags:
-      - 0.16.89-1-g93e7a5d5f
+      - 0.16.91-2-gc7d448ce9
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: add git cliff to flake.nix (#3663)'
-      sha: 93e7a5d5fd9ff83403bf4c9095685e08ce1f70ae
+      commitTitle: 'fix(core): check batchInclusionEstimation exists (#3665)'
+      sha: c7d448ce94526f57614fbdd84b58e40b920adbca
       tags:
-      - 0.16.89-1-g93e7a5d5f
+      - 0.16.91-2-gc7d448ce9
     path: ./
   path: ./graphql
 kind: LockConfig
