@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(core): add paymentRequest to InitiationViaLn (#3654)...'
-      sha: 2ef192a11ca65184d2f024cecb4217a6d7ab23f6
+      commitTitle: 'fix(core): get payment request for failed payments(void) (#3662)'
+      sha: 955b193d1028d7e34c63ef198e619168399ba098
       tags:
-      - 0.16.87-1-g2ef192a11
+      - 0.16.88-2-g955b193d1
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(core): add paymentRequest to InitiationViaLn (#3654)...'
-      sha: 2ef192a11ca65184d2f024cecb4217a6d7ab23f6
+      commitTitle: 'fix(core): get payment request for failed payments(void) (#3662)'
+      sha: 955b193d1028d7e34c63ef198e619168399ba098
       tags:
-      - 0.16.87-1-g2ef192a11
+      - 0.16.88-2-g955b193d1
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(core): add paymentRequest to InitiationViaLn (#3654)...'
-      sha: 2ef192a11ca65184d2f024cecb4217a6d7ab23f6
+      commitTitle: 'fix(core): get payment request for failed payments(void) (#3662)'
+      sha: 955b193d1028d7e34c63ef198e619168399ba098
       tags:
-      - 0.16.87-1-g2ef192a11
+      - 0.16.88-2-g955b193d1
     path: ./
   path: ./graphql
 kind: LockConfig
