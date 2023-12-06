@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): check batchInclusionEstimation exists (#3665)'
-      sha: c7d448ce94526f57614fbdd84b58e40b920adbca
+      commitTitle: 'chore: bump deps (#3664)...'
+      sha: 1976df4f93b0a8ebcf6df400ebbce631b5c9d055
       tags:
-      - 0.16.91-2-gc7d448ce9
+      - 0.16.92-1-g1976df4f9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): check batchInclusionEstimation exists (#3665)'
-      sha: c7d448ce94526f57614fbdd84b58e40b920adbca
+      commitTitle: 'chore: bump deps (#3664)...'
+      sha: 1976df4f93b0a8ebcf6df400ebbce631b5c9d055
       tags:
-      - 0.16.91-2-gc7d448ce9
+      - 0.16.92-1-g1976df4f9
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(core): check batchInclusionEstimation exists (#3665)'
-      sha: c7d448ce94526f57614fbdd84b58e40b920adbca
+      commitTitle: 'chore: bump deps (#3664)...'
+      sha: 1976df4f93b0a8ebcf6df400ebbce631b5c9d055
       tags:
-      - 0.16.91-2-gc7d448ce9
+      - 0.16.92-1-g1976df4f9
     path: ./
   path: ./graphql
 kind: LockConfig
