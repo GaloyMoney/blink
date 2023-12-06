@@ -1,22 +1,3 @@
-load(
-  "@toolchains//workspace-pnpm:macros.bzl",
-  "build_node_modules",
-)
-
-export_file(
-    name = "package.json",
-    visibility = ["PUBLIC"],
-)
-
-build_node_modules(
-    name = "node_modules",
-)
-
-build_node_modules(
-  name = "node_modules_prod",
-  prod_only = True,
-)
-
 filegroup(
     name = "src",
     srcs = glob([
