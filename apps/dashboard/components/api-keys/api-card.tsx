@@ -47,7 +47,9 @@ const ApiKeysCard: React.FC<ApiKeysCardProps> = ({
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <Typography fontSize={13}>Expires At</Typography>
-              <Typography fontSize={13}>{key.expiresAt ? formatDate(key.expiresAt) : "Never"}</Typography>
+              <Typography fontSize={13}>
+                {key.expiresAt ? formatDate(key.expiresAt) : "Never"}
+              </Typography>
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <Typography fontSize={13}>Scope</Typography>

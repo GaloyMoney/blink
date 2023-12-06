@@ -50,7 +50,7 @@ const ApiKeysList: React.FC<ApiKeysListProps> = ({
                 <td>{name}</td>
                 <td>{id}</td>
                 <td>{getScopeText(readOnly)}</td>
-                <td>{expiresAt ? formatDate(expiresAt) : "Never" }</td>
+                <td>{expiresAt ? formatDate(expiresAt) : "Never"}</td>
                 <td>{lastUsedAt ? formatDate(lastUsedAt) : "Never"}</td>
                 <td style={{ textAlign: "right" }}>
                   <RevokeKey id={id} />
@@ -110,7 +110,9 @@ const ApiKeysList: React.FC<ApiKeysListProps> = ({
               <td>{id}</td>
               <td>{getScopeText(readOnly)}</td>
               <td>{formatDate(createdAt)}</td>
-              <td style={{ textAlign: "right" }}>{expiresAt ? formatDate(expiresAt) : "Never"}</td>
+              <td style={{ textAlign: "right" }}>
+                {expiresAt ? formatDate(expiresAt) : "Never"}
+              </td>
             </tr>
           ))}
         </tbody>
