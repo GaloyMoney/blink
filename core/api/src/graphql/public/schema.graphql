@@ -885,7 +885,7 @@ type Mutation {
   userPhoneDelete: UserPhoneDeletePayload!
   userPhoneRegistrationInitiate(input: UserPhoneRegistrationInitiateInput!): SuccessPayload!
   userPhoneRegistrationValidate(input: UserPhoneRegistrationValidateInput!): UserPhoneRegistrationValidatePayload!
-  userTotpDelete(input: UserTotpDeleteInput!): UserTotpDeletePayload!
+  userTotpDelete: UserTotpDeletePayload!
   userTotpRegistrationInitiate: UserTotpRegistrationInitiatePayload!
   userTotpRegistrationValidate(input: UserTotpRegistrationValidateInput!): UserTotpRegistrationValidatePayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
@@ -1543,10 +1543,6 @@ type UserPhoneRegistrationValidatePayload {
 type UserQuizQuestion {
   completed: Boolean!
   question: QuizQuestion!
-}
-
-input UserTotpDeleteInput {
-  authToken: AuthToken!
 }
 
 type UserTotpDeletePayload {

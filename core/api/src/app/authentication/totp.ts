@@ -1,37 +1,99 @@
-import { AuthTokenUserIdMismatchError } from "@/domain/authentication/errors"
+import {
+  AuthTokenUserIdMismatchError,
+  IdentifierNotFoundError,
+} from "@/domain/authentication/errors"
 import {
   validateKratosToken,
   kratosValidateTotp,
   kratosInitiateTotp,
   kratosElevatingSessionWithTotp,
   kratosRemoveTotp,
+  AuthWithPhonePasswordlessService,
+  AuthWithEmailPasswordlessService,
 } from "@/services/kratos"
+import { kratosAdmin, kratosPublic } from "@/services/kratos/private"
 
 import { UsersRepository } from "@/services/mongoose"
 
 export const initiateTotpRegistration = async ({
-  authToken,
+  userId,
 }: {
-  authToken: AuthToken
+  userId: UserId
 }): Promise<InitiateTotpRegistrationResult | KratosError> => {
-  return kratosInitiateTotp(authToken)
+  const { data } = await kratosAdmin.getIdentity({ id: userId })
+
+  let authToken: AuthToken | null = null
+  const phone = data?.traits?.phone
+  const email = data?.traits?.email
+
+  const authService = AuthWithPhonePasswordlessService()
+
+  if (phone) {
+    const kratosResult = await authService.loginToken({ phone })
+    if (kratosResult instanceof Error) return kratosResult
+    authToken = kratosResult.authToken
+  } else if (email) {
+    const emailAuthService = AuthWithEmailPasswordlessService()
+    const kratosResult = await emailAuthService.loginToken({ email })
+    if (kratosResult instanceof Error) return kratosResult
+    authToken = kratosResult.authToken
+  }
+
+  if (!authToken) {
+    return new IdentifierNotFoundError()
+  }
+
+  const initiateResponse = kratosInitiateTotp(authToken)
+
+  const sessionResponse = await kratosPublic.toSession({ xSessionToken: authToken })
+  const sessionId = sessionResponse.data.id as SessionId
+  await authService.logoutToken({ sessionId })
+
+  return initiateResponse
 }
 
 export const validateTotpRegistration = async ({
-  authToken,
   totpCode,
   totpRegistrationId,
   userId,
 }: {
-  authToken: AuthToken
   totpCode: TotpCode
   totpRegistrationId: TotpRegistrationId
   userId: UserId
 }): Promise<User | ApplicationError> => {
+  const { data } = await kratosAdmin.getIdentity({ id: userId })
+
+  let authToken: AuthToken | null = null
+  const phone = data?.traits?.phone
+  const email = data?.traits?.email
+
+  const authService = AuthWithPhonePasswordlessService()
+
+  if (phone) {
+    const kratosResult = await authService.loginToken({ phone })
+    if (kratosResult instanceof Error) return kratosResult
+    authToken = kratosResult.authToken
+  } else if (email) {
+    const emailAuthService = AuthWithEmailPasswordlessService()
+    const kratosResult = await emailAuthService.loginToken({ email })
+    if (kratosResult instanceof Error) return kratosResult
+    authToken = kratosResult.authToken
+  }
+
+  if (!authToken) {
+    return new IdentifierNotFoundError()
+  }
+
   const validation = await kratosValidateTotp({ authToken, totpCode, totpRegistrationId })
+
   if (validation instanceof Error) return validation
 
   const res = await validateKratosToken(authToken)
+
+  const sessionResponse = await kratosPublic.toSession({ xSessionToken: authToken })
+  const sessionId = sessionResponse.data.id as SessionId
+  await authService.logoutToken({ sessionId })
+
   if (res instanceof Error) return res
 
   if (res.kratosUserId !== userId) return new AuthTokenUserIdMismatchError()
@@ -53,19 +115,40 @@ export const elevatingSessionWithTotp = async ({
 }
 
 export const removeTotp = async ({
-  authToken,
   userId,
 }: {
-  authToken: AuthToken
   userId: UserId
 }): Promise<User | ApplicationError> => {
-  const res = await validateKratosToken(authToken)
-  if (res instanceof Error) return res
+  const { data } = await kratosAdmin.getIdentity({ id: userId })
 
-  if (res.kratosUserId !== userId) return new AuthTokenUserIdMismatchError()
+  let authToken: AuthToken | null = null
+  const phone = data?.traits?.phone
+  const email = data?.traits?.email
 
-  const res2 = await kratosRemoveTotp(authToken)
+  const authService = AuthWithPhonePasswordlessService()
+
+  if (phone) {
+    const kratosResult = await authService.loginToken({ phone })
+    if (kratosResult instanceof Error) return kratosResult
+    authToken = kratosResult.authToken
+  } else if (email) {
+    const emailAuthService = AuthWithEmailPasswordlessService()
+    const kratosResult = await emailAuthService.loginToken({ email })
+    if (kratosResult instanceof Error) return kratosResult
+    authToken = kratosResult.authToken
+  }
+
+  if (!authToken) {
+    return new IdentifierNotFoundError()
+  }
+
+  const res2 = await kratosRemoveTotp(userId)
+
   if (res2 instanceof Error) return res2
+
+  const sessionResponse = await kratosPublic.toSession({ xSessionToken: authToken })
+  const sessionId = sessionResponse.data.id as SessionId
+  await authService.logoutToken({ sessionId })
 
   const me = await UsersRepository().findById(userId)
   if (me instanceof Error) return me

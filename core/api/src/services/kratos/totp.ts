@@ -8,7 +8,7 @@ import {
   SessionRefreshRequiredError,
   UnknownKratosError,
 } from "./errors"
-import { kratosPublic } from "./private"
+import { kratosAdmin, kratosPublic } from "./private"
 
 import { KRATOS_MASTER_USER_PASSWORD } from "@/config"
 import { LikelyNoUserWithThisPhoneExistError } from "@/domain/authentication/errors"
@@ -128,34 +128,15 @@ const refreshToken = async (authToken: AuthToken): Promise<void | KratosError> =
   }
 }
 
-export const kratosRemoveTotp = async (token: AuthToken) => {
-  let flow: string
-
-  const res = await refreshToken(token)
-  if (res instanceof Error) return res
-
+export const kratosRemoveTotp = async (userId: UserId) => {
   try {
-    const res = await kratosPublic.createNativeSettingsFlow({ xSessionToken: token })
-    flow = res.data.id
-  } catch (err) {
-    return new UnknownKratosError(err)
-  }
-
-  try {
-    await kratosPublic.updateSettingsFlow({
-      flow,
-      updateSettingsFlowBody: {
-        method: "totp",
-        totp_unlink: true,
-      },
-      xSessionToken: token,
+    const removeTotpResponse = await kratosAdmin.deleteIdentityCredentials({
+      id: userId,
+      type: "totp",
     })
+
+    if (removeTotpResponse instanceof Error) return removeTotpResponse
   } catch (err) {
-    if (isAxiosError(err)) {
-      if (err.response?.data?.error?.id === "session_refresh_required") {
-        return new SessionRefreshRequiredError()
-      }
-    }
     return new UnknownKratosError(err)
   }
 }

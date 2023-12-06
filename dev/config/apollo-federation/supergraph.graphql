@@ -1145,7 +1145,7 @@ type Mutation
   userPhoneDelete: UserPhoneDeletePayload! @join__field(graph: PUBLIC)
   userPhoneRegistrationInitiate(input: UserPhoneRegistrationInitiateInput!): SuccessPayload! @join__field(graph: PUBLIC)
   userPhoneRegistrationValidate(input: UserPhoneRegistrationValidateInput!): UserPhoneRegistrationValidatePayload! @join__field(graph: PUBLIC)
-  userTotpDelete(input: UserTotpDeleteInput!): UserTotpDeletePayload! @join__field(graph: PUBLIC)
+  userTotpDelete: UserTotpDeletePayload! @join__field(graph: PUBLIC)
   userTotpRegistrationInitiate: UserTotpRegistrationInitiatePayload! @join__field(graph: PUBLIC)
   userTotpRegistrationValidate(input: UserTotpRegistrationValidateInput!): UserTotpRegistrationValidatePayload! @join__field(graph: PUBLIC)
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload! @join__field(graph: PUBLIC)
@@ -1977,12 +1977,6 @@ type UserQuizQuestion
 {
   completed: Boolean!
   question: QuizQuestion!
-}
-
-input UserTotpDeleteInput
-  @join__type(graph: PUBLIC)
-{
-  authToken: AuthToken!
 }
 
 type UserTotpDeletePayload
