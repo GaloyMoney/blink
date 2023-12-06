@@ -13,7 +13,7 @@ interface ApiKey {
   readonly revoked: boolean
   readonly expired: boolean
   readonly lastUsedAt?: number | null
-  readonly expiresAt: number
+  readonly expiresAt?: number | null
   readonly readOnly: boolean
 }
 
@@ -47,7 +47,7 @@ const ApiKeysCard: React.FC<ApiKeysCardProps> = ({
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <Typography fontSize={13}>Expires At</Typography>
-              <Typography fontSize={13}>{formatDate(key.expiresAt)}</Typography>
+              <Typography fontSize={13}>{key.expiresAt ? formatDate(key.expiresAt) : "Never"}</Typography>
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <Typography fontSize={13}>Scope</Typography>

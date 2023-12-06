@@ -211,7 +211,7 @@ const ApiKeyCreate = () => {
                       sx={{
                         padding: "0.6em",
                       }}
-                      placeholder="Expires In"
+                      placeholder="Never"
                       onChange={(_, v) => {
                         if (v === "custom") {
                           setEnableCustomExpiresInDays(true)
