@@ -65,11 +65,16 @@ filegroup(
   ])
 )
 
+prod_deps_srcs = {
+  "lib/gt3-server-node-express-sdk": "//lib/gt3-server-node-express-sdk:src",
+}
+
 tsc_build(
   name = "build",
   tsconfig = "tsconfig-build.json",
   srcs = [":src"],
-  additional_dist_files = [":protos", ":locales"]
+  additional_dist_files = [":protos", ":locales"],
+  prod_deps_srcs = prod_deps_srcs,
 )
 
 prod_tsc_build(

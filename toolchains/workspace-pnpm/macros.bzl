@@ -266,6 +266,12 @@ _tsc_build = rule(
         "node_modules": attrs.source(
             doc = """Target which builds package `node_modules`.""",
         ),
+        "prod_deps_srcs": attrs.dict(
+            attrs.string(),
+            attrs.source(allow_directory = True),
+            default = {},
+            doc = """Mapping of dependent prod package paths to source files to track.""",
+        ),
         "_python_toolchain": attrs.toolchain_dep(
             default = "toolchains//:python",
             providers = [PythonToolchainInfo],
@@ -559,6 +565,10 @@ def prepare_build_context(ctx: AnalysisContext) -> BuildContext:
     for src in ctx.attrs.srcs:
         cmd.add("--src")
         cmd.add(cmd_args(src, format = ctx.label.package + "={}"))
+    if hasattr(ctx.attrs, 'prod_deps_srcs'):
+        for (name, src) in ctx.attrs.prod_deps_srcs.items():
+            cmd.add("--src")
+            cmd.add(cmd_args(src, format = name + "={}"))
     if hasattr(ctx.attrs, 'dev_deps_srcs'):
         for (name, src) in ctx.attrs.dev_deps_srcs.items():
             cmd.add("--src")
