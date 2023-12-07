@@ -10,9 +10,17 @@ import * as LedgerFacadeImpl from "@/services/ledger/facade"
 import * as LndImpl from "@/services/lnd"
 import * as MongooseImpl from "@/services/mongoose"
 
-import { createRandomUserAndBtcWallet, recordSendLnPayment } from "test/helpers"
+import {
+  createMandatoryUsers,
+  createRandomUserAndBtcWallet,
+  recordSendLnPayment,
+} from "test/helpers"
 
 const calc = AmountCalculator()
+
+beforeAll(async () => {
+  await createMandatoryUsers()
+})
 
 afterEach(() => {
   jest.restoreAllMocks()
