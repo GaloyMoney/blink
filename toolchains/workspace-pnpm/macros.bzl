@@ -1145,6 +1145,12 @@ _jest_test = rule(
         "node_modules": attrs.source(
             doc = """Target which builds package `node_modules`.""",
         ),
+        "prod_deps_srcs": attrs.dict(
+            attrs.string(),
+            attrs.source(allow_directory = True),
+            default = {},
+            doc = """Mapping of dependent prod package paths to source files to track.""",
+        ),
         "_inject_test_env": attrs.default_only(
             attrs.dep(default = "prelude//test/tools:inject_test_env"),
         ),
