@@ -59,6 +59,9 @@ const SettlementViaOnChain = GT.Object({
     arrivalInMempoolEstimatedAt: {
       type: Timestamp,
       resolve: async (source) => {
+        if (source.parent.settlementAmount > 0) {
+          return null
+        }
         const estimation = await OnChain.getBatchInclusionEstimatedAt({
           ledgerTransactionId: source.parent.id,
         })
