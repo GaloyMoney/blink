@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump lnd and bitcoin core versions (#3420)'
-      sha: 85f3f7f6f251445b7f5ea1ff2c17ad7bb4746d2a
+      commitTitle: 'chore(pay): clean up pay (#3646)...'
+      sha: fe228a8646458df637e4a5b8124f40a078f5f0d1
       tags:
-      - 0.17.0-1-g85f3f7f6f
+      - 0.17.1-2-gfe228a864
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump lnd and bitcoin core versions (#3420)'
-      sha: 85f3f7f6f251445b7f5ea1ff2c17ad7bb4746d2a
+      commitTitle: 'chore(pay): clean up pay (#3646)...'
+      sha: fe228a8646458df637e4a5b8124f40a078f5f0d1
       tags:
-      - 0.17.0-1-g85f3f7f6f
+      - 0.17.1-2-gfe228a864
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump lnd and bitcoin core versions (#3420)'
-      sha: 85f3f7f6f251445b7f5ea1ff2c17ad7bb4746d2a
+      commitTitle: 'chore(pay): clean up pay (#3646)...'
+      sha: fe228a8646458df637e4a5b8124f40a078f5f0d1
       tags:
-      - 0.17.0-1-g85f3f7f6f
+      - 0.17.1-2-gfe228a864
     path: ./
   path: ./graphql
 kind: LockConfig
