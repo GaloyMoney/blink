@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#3664)...'
-      sha: 1976df4f93b0a8ebcf6df400ebbce631b5c9d055
+      commitTitle: 'docs: galoy backend features update (#3666)'
+      sha: 8f2cccdc43e0b5418c474d8b23cc467377e590c8
       tags:
-      - 0.16.92-1-g1976df4f9
+      - 0.16.93-1-g8f2cccdc4
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#3664)...'
-      sha: 1976df4f93b0a8ebcf6df400ebbce631b5c9d055
+      commitTitle: 'docs: galoy backend features update (#3666)'
+      sha: 8f2cccdc43e0b5418c474d8b23cc467377e590c8
       tags:
-      - 0.16.92-1-g1976df4f9
+      - 0.16.93-1-g8f2cccdc4
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#3664)...'
-      sha: 1976df4f93b0a8ebcf6df400ebbce631b5c9d055
+      commitTitle: 'docs: galoy backend features update (#3666)'
+      sha: 8f2cccdc43e0b5418c474d8b23cc467377e590c8
       tags:
-      - 0.16.92-1-g1976df4f9
+      - 0.16.93-1-g8f2cccdc4
     path: ./
   path: ./graphql
 kind: LockConfig
