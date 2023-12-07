@@ -10,7 +10,7 @@ import { useRef } from "react"
 import { NextRequest } from "next/server"
 import originalUrl from "original-url"
 
-import { URL_HOST_DOMAIN } from "../../config/config"
+import { env } from "../../env"
 
 export async function getServerSideProps({
   req,
@@ -43,7 +43,7 @@ export async function getServerSideProps({
     props: {
       qrCodeURL,
       username,
-      userHeader: `Pay ${username}@${URL_HOST_DOMAIN}`,
+      userHeader: `Pay ${username}@${env.PAY_DOMAIN}`,
     },
   }
 }

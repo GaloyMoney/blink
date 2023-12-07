@@ -8,8 +8,7 @@ import { gql } from "@apollo/client"
 
 import Redis from "ioredis"
 
-import { URL_HOST_DOMAIN } from "../../../../config/config"
-import { NOSTR_PUBKEY } from "../../../../lib/config"
+import { env } from "../../../../env"
 import {
   AccountDefaultWalletDocument,
   AccountDefaultWalletQuery,
@@ -42,29 +41,29 @@ gql`
   }
 `
 
-const nostrEnabled = !!NOSTR_PUBKEY
+const nostrEnabled = !!env.NOSTR_PUBKEY
 
 let redis: Redis | null = null
 
 if (nostrEnabled) {
   const connectionObj = {
-    sentinelPassword: process.env.REDIS_PASSWORD,
+    sentinelPassword: env.REDIS_PASSWORD,
     sentinels: [
       {
-        host: `${process.env.REDIS_0_DNS}`,
+        host: `${env.REDIS_0_DNS}`,
         port: 26379,
       },
       {
-        host: `${process.env.REDIS_1_DNS}`,
+        host: `${env.REDIS_1_DNS}`,
         port: 26379,
       },
       {
-        host: `${process.env.REDIS_2_DNS}`,
+        host: `${env.REDIS_2_DNS}`,
         port: 26379,
       },
     ],
-    name: process.env.REDIS_MASTER_NAME ?? "mymaster",
-    password: process.env.REDIS_PASSWORD,
+    name: env.REDIS_MASTER_NAME ?? "mymaster",
+    password: env.REDIS_PASSWORD,
   }
 
   redis = new Redis(connectionObj)
@@ -76,8 +75,6 @@ export async function GET(
   request: Request,
   { params }: { params: { username: string } },
 ) {
-  console.log(NOSTR_PUBKEY)
-
   const { searchParams } = new URL(request.url)
 
   const username = params.username
@@ -119,7 +116,7 @@ export async function GET(
 
   const metadata = JSON.stringify([
     ["text/plain", `Payment to ${username}`],
-    ["text/identifier", `${username}@${URL_HOST_DOMAIN}`],
+    ["text/identifier", `${username}@${env.PAY_DOMAIN}`],
   ])
 
   // lnurl generate invoice

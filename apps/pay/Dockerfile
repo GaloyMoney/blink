@@ -1,42 +1,32 @@
-# Install dependencies only when needed
-FROM node:20-alpine AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat python3 make g++
-WORKDIR /app
-COPY package.json yarn.lock ./
-RUN yarn global add node-gyp \
-    && yarn install --frozen-lockfile
+FROM nixos/nix:latest AS builder
+ARG APP=pay
 
-# Rebuild the source code only when needed
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY . .
-COPY --from=deps /app/node_modules ./node_modules
-RUN yarn build && yarn install --production --ignore-scripts --prefer-offline
+COPY . /workdir
+WORKDIR /workdir
 
-# Production image, copy all the files and run next
-FROM node:20-alpine AS runner
-WORKDIR /app
+RUN set -eux; \
+    nix \
+        --extra-experimental-features "nix-command flakes impure-derivations ca-derivations" \
+        --option filter-syscalls false \
+        build \
+        ".#$APP";
 
-ENV NODE_ENV production
+RUN mkdir -p /tmp/nix-store-closure /tmp/local-bin
+RUN cp -R $(nix-store --query --requisites result/) /tmp/nix-store-closure
+RUN ln -snf $(nix-store --query result/)/bin/* /tmp/local-bin/
 
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
+FROM gcr.io/distroless/static-debian11 AS final
+ARG APP=pay
 
-# You only need to copy next.config.js if you are NOT using the default configuration
-# COPY --from=builder /app/next.config.js ./
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+WORKDIR /app/$APP
+COPY --from=builder /tmp/nix-store-closure /nix/store
+COPY --from=builder /tmp/local-bin/* /usr/local/bin/
 
-USER nextjs
+USER 1000
 
-EXPOSE 3000
-
-ARG BUILDTIME
 ARG COMMITHASH
-ENV BUILDTIME ${BUILDTIME}
 ENV COMMITHASH ${COMMITHASH}
 
-CMD ["node_modules/.bin/next", "start"]
+CMD [ \
+  "/usr/local/bin/run" \
+]
