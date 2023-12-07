@@ -2,6 +2,7 @@ import { randomUUID } from "crypto"
 
 import { MS_PER_DAY } from "@/config"
 
+import * as LedgerFacadeImpl from "@/services/ledger/facade"
 import * as LndImpl from "@/services/lnd"
 
 import * as DeclinePendingInvoiceImpl from "@/app/wallets/decline-single-pending-invoice"
@@ -13,7 +14,9 @@ import { updatePendingInvoice } from "@/app/wallets/update-single-pending-invoic
 import { toMilliSatsFromNumber, toSats } from "@/domain/bitcoin"
 import { decodeInvoice, getSecretAndPaymentHash } from "@/domain/bitcoin/lightning"
 import { DEFAULT_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
+import { LedgerTransactionType } from "@/domain/ledger"
 import { WalletCurrency } from "@/domain/shared"
+import * as DisplayAmountsConverterImpl from "@/domain/fiat"
 
 import { baseLogger } from "@/services/logger"
 import { WalletInvoicesRepository } from "@/services/mongoose"
@@ -41,6 +44,8 @@ afterEach(async () => {
   await WalletInvoice.deleteMany({})
   await Transaction.deleteMany({})
   await TransactionMetadata.deleteMany({})
+
+  jest.restoreAllMocks()
 })
 
 describe("update pending invoices", () => {
@@ -228,6 +233,89 @@ describe("update pending invoices", () => {
 
       // Restore system state
       lndServiceSpy.mockRestore()
+    })
+
+    it("records transaction with ln-receive metadata on ln receive", async () => {
+      const invoiceAmount = toSats(1)
+      const { paymentHash } = getSecretAndPaymentHash()
+      const btcDelayMs = DEFAULT_EXPIRATIONS.BTC.delay * 1000
+      const timeBuffer = 1000 // buffer for any time library discrepancies
+      const pastCreatedAt = new Date(Date.now() - (btcDelayMs + timeBuffer))
+
+      const walletInvoices = WalletInvoicesRepository()
+
+      // Setup mocks
+      const lnInvoiceLookup: LnInvoiceLookup = {
+        paymentHash,
+        createdAt: pastCreatedAt,
+        confirmedAt: undefined,
+        isSettled: false,
+        isHeld: true,
+        heldAt: undefined,
+        roundedDownReceived: invoiceAmount,
+        milliSatsReceived: toMilliSatsFromNumber(1000),
+        secretPreImage: "secretPreImage" as SecretPreImage,
+        lnInvoice: {
+          description: "",
+          paymentRequest: undefined,
+          expiresAt: new Date(Date.now() + MS_PER_DAY),
+          roundedDownAmount: invoiceAmount,
+        },
+      }
+      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
+      jest.spyOn(LndImpl, "LndService").mockReturnValue({
+        ...LnServiceOrig(),
+        defaultPubkey: () => DEFAULT_PUBKEY,
+        lookupInvoice: () => lnInvoiceLookup,
+        settleInvoice: () => true,
+      })
+
+      const displayAmountsConverterSpy = jest.spyOn(
+        DisplayAmountsConverterImpl,
+        "DisplayAmountsConverter",
+      )
+
+      const lnReceiveLedgerMetadataSpy = jest.spyOn(
+        LedgerFacadeImpl,
+        "LnReceiveLedgerMetadata",
+      )
+      const recordReceiveOffChainSpy = jest.spyOn(
+        LedgerFacadeImpl,
+        "recordReceiveOffChain",
+      )
+
+      // Setup BTC wallet and invoice
+      const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
+
+      const btcWalletInvoice = {
+        paymentHash,
+        secret: "secretPreImage" as SecretPreImage,
+        selfGenerated: true,
+        pubkey: "pubkey" as Pubkey,
+        recipientWalletDescriptor,
+        paid: false,
+        lnInvoice: mockLnInvoice,
+        processingCompleted: false,
+      }
+
+      const persisted = await walletInvoices.persistNew(btcWalletInvoice)
+      if (persisted instanceof Error) throw persisted
+
+      await WalletInvoice.findOneAndUpdate(
+        { _id: paymentHash },
+        { timestamp: pastCreatedAt },
+      )
+
+      // Call invoice update
+      const walletInvoice = await walletInvoices.findByPaymentHash(paymentHash)
+      if (walletInvoice instanceof Error) throw walletInvoice
+      await updatePendingInvoice({ walletInvoice, logger: baseLogger })
+
+      // Check record function was called with right metadata
+      expect(displayAmountsConverterSpy).toHaveBeenCalledTimes(1)
+      expect(lnReceiveLedgerMetadataSpy).toHaveBeenCalledTimes(1)
+      const args = recordReceiveOffChainSpy.mock.calls[0][0]
+      expect(args.metadata.type).toBe(LedgerTransactionType.Invoice)
     })
   })
 })
