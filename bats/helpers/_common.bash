@@ -13,6 +13,23 @@ if ! type fail &>/dev/null; then
   }
 fi
 
+is_number() {
+  if ! [[ $1 =~ ^-?[0-9]+$ ]]; then
+    echo "Error: $2 input is not a number: $1"
+    exit 1
+  fi
+}
+
+abs() {
+  is_number $1 || return 1
+
+  if [[ $1 -lt 0 ]]; then
+    echo "$((- $1))"
+  else
+    echo "$1"
+  fi
+}
+
 # Run the given command in the background. Useful for starting a
 # node and then moving on with commands that exercise it for the
 # test.

@@ -5,6 +5,7 @@ load "../../helpers/user.bash"
 load "../../helpers/onchain.bash"
 load "../../helpers/ln.bash"
 load "../../helpers/wallet.bash"
+load "../../helpers/ledger.bash"
 
 setup_file() {
   create_user 'alice'
@@ -16,6 +17,12 @@ setup_file() {
   user_update_username 'bob'
   fund_user_onchain 'bob' 'btc_wallet'
   fund_user_onchain 'bob' 'usd_wallet'
+}
+
+teardown() {
+   if [[ "$(balance_for_check)" != 0 ]]; then
+     fail "Error: balance_for_check failed"
+   fi
 }
 
 @test "onchain-receive: btc wallet, can create new address if current one is unused" {
@@ -344,6 +351,16 @@ setup_file() {
 }
 
 @test "onchain-receive: process received batch transaction via legacy lnd" {
+  create_user 'alice'
+  user_update_username 'alice'
+  fund_user_onchain 'alice' 'btc_wallet'
+  fund_user_onchain 'alice' 'usd_wallet'
+
+  create_user 'bob'
+  user_update_username 'bob'
+  fund_user_onchain 'bob' 'btc_wallet'
+  fund_user_onchain 'bob' 'usd_wallet'
+  
   alice_btc_wallet_name="alice.btc_wallet_id"
   alice_usd_wallet_name="alice.usd_wallet_id"
   bob_btc_wallet_name="bob.btc_wallet_id"

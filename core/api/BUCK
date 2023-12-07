@@ -206,6 +206,13 @@ dev_pnpm_task_binary(
 )
 
 dev_pnpm_task_binary(
+  name = "dev-exporter",
+  command = "dev:api-exporter",
+  srcs = [":src"],
+  visibility = ["PUBLIC"],
+)
+
+dev_pnpm_task_binary(
   name = "dev-ws-server",
   command = "dev:api-ws-server",
   srcs = [":src"],
