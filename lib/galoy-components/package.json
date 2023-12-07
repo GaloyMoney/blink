@@ -7,7 +7,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "build:ts": "tsc",
-    "build:css": "postcss ./src/index.css -o ./tailwind.css",
+    "build:css": "postcss ./src/index.css -o ./src/tailwind.css",
     "build": "pnpm run build:ts && pnpm run build:css"
   },
   "dependencies": {
