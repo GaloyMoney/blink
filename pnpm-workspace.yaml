@@ -6,3 +6,4 @@ packages:
   - apps/pay
   - lib/eslint-config
   - lib/gt3-server-node-express-sdk
+  - lib/galoy-components

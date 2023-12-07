@@ -7,7 +7,8 @@ pnpm_workspace(
     "//apps/consent:package.json",
     "//apps/dashboard:package.json",
     "//apps/pay:package.json",
-    "//lib/eslint-config:package.json"
+    "//lib/eslint-config:package.json",
+    "//lib/galoy-components:package.json"
   ],
   visibility = ["PUBLIC"],
 )

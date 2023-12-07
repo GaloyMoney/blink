@@ -1,0 +1,12 @@
+export_file(
+    name = "package.json",
+    visibility = ["PUBLIC"],
+)
+
+filegroup(
+    name = "src",
+    srcs = [
+        "./src",
+    ],
+    visibility = ["PUBLIC"],
+)

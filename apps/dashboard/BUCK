@@ -65,6 +65,7 @@ next_build_bin(
 
 dev_deps_srcs = {
     "lib/eslint-config": "//lib/eslint-config:src",
+    "lib/galoy-components": "//lib/galoy-components:src",
 }
 
 audit(
