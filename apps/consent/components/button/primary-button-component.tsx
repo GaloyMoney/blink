@@ -1,5 +1,6 @@
 "use client"
 import React, { ButtonHTMLAttributes } from "react"
+import { Button } from "@galoy/galoy-components"
 
 import { useFormStatus } from "react-dom"
 
@@ -19,17 +20,9 @@ const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   const { pending } = useFormStatus()
   const loadOrDisable = pending || disabled
   return (
-    <button
-      disabled={loadOrDisable}
-      {...buttonProps}
-      className={`flex-1 ${
-        !loadOrDisable
-          ? "bg-[var(--primaryButtonBackground)]"
-          : "bg-[var(--primaryButtonBackground)]"
-      } text-[var(--primaryButtonFont)] p-2 rounded-lg text-sm hover:bg-[var(--primaryButtonBackground)]`}
-    >
+    <Button variant="default" disabled={loadOrDisable} {...buttonProps}>
       {loadOrDisable ? <Loader size="15px" /> : children}
-    </button>
+    </Button>
   )
 }
 
