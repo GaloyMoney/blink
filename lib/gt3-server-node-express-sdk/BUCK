@@ -1,0 +1,7 @@
+filegroup(
+    name = "src",
+    srcs = glob([
+        "*.js",
+    ]),
+    visibility = ["PUBLIC"],
+)

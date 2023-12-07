@@ -266,6 +266,12 @@ _tsc_build = rule(
         "node_modules": attrs.source(
             doc = """Target which builds package `node_modules`.""",
         ),
+        "prod_deps_srcs": attrs.dict(
+            attrs.string(),
+            attrs.source(allow_directory = True),
+            default = {},
+            doc = """Mapping of dependent prod package paths to source files to track.""",
+        ),
         "_python_toolchain": attrs.toolchain_dep(
             default = "toolchains//:python",
             providers = [PythonToolchainInfo],
@@ -299,8 +305,13 @@ def prod_tsc_build_impl(ctx: AnalysisContext) -> list[[DefaultInfo, ProdBuildInf
         ctx.attrs.node_modules_prod[DefaultInfo].default_outputs[0],
         "--dist-path",
         dist_path,
-        out.as_output()
     )
+
+    if hasattr(ctx.attrs, 'prod_deps_srcs'):
+        for (name, src) in ctx.attrs.prod_deps_srcs.items():
+            cmd.add("--deps-src")
+            cmd.add(cmd_args(src, format = name + "={}"))
+    cmd.add(out.as_output())
 
     ctx.actions.run(cmd, category = "prod_tsc_build")
 
@@ -329,6 +340,12 @@ _prod_tsc_build = rule(
         ),
         "node_modules_prod": attrs.dep(
             doc = """Target which builds package `node_modules` with prod-only modules.""",
+        ),
+        "prod_deps_srcs": attrs.dict(
+            attrs.string(),
+            attrs.source(allow_directory = True),
+            default = {},
+            doc = """Mapping of dependent prod package paths to source files to track.""",
         ),
         "_python_toolchain": attrs.toolchain_dep(
             default = "toolchains//:python",
@@ -559,6 +576,10 @@ def prepare_build_context(ctx: AnalysisContext) -> BuildContext:
     for src in ctx.attrs.srcs:
         cmd.add("--src")
         cmd.add(cmd_args(src, format = ctx.label.package + "={}"))
+    if hasattr(ctx.attrs, 'prod_deps_srcs'):
+        for (name, src) in ctx.attrs.prod_deps_srcs.items():
+            cmd.add("--src")
+            cmd.add(cmd_args(src, format = name + "={}"))
     if hasattr(ctx.attrs, 'dev_deps_srcs'):
         for (name, src) in ctx.attrs.dev_deps_srcs.items():
             cmd.add("--src")
@@ -1123,6 +1144,12 @@ _jest_test = rule(
         ),
         "node_modules": attrs.source(
             doc = """Target which builds package `node_modules`.""",
+        ),
+        "prod_deps_srcs": attrs.dict(
+            attrs.string(),
+            attrs.source(allow_directory = True),
+            default = {},
+            doc = """Mapping of dependent prod package paths to source files to track.""",
         ),
         "_inject_test_env": attrs.default_only(
             attrs.dep(default = "prelude//test/tools:inject_test_env"),
