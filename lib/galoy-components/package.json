@@ -1,14 +1,13 @@
 {
   "name": "@galoy/galoy-components",
   "version": "1.0.0",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "src/index.ts",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "build:ts": "tsc",
-    "build:css": "postcss ./src/index.css -o ./lib/tailwind.css",
+    "build:css": "postcss ./src/index.css -o ./tailwind.css",
     "build": "pnpm run build:ts && pnpm run build:css"
   },
   "dependencies": {
@@ -53,9 +52,5 @@
     "typescript": "^5.3.2",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4"
-  },
-  "exports": {
-    ".": "./lib/index.js",
-    "./components/*": "./lib/components/*.js"
   }
 }

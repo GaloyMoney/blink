@@ -1,6 +1,8 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./globals.css"
 // eslint-disable-next-line import/no-unassigned-import
+import "@galoy/galoy-components/tailwind.css"
+// eslint-disable-next-line import/no-unassigned-import
 import "react-toastify/dist/ReactToastify.css"
 import Script from "next/script"
 import type { Metadata } from "next"

@@ -34,9 +34,13 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends Omit<
+      React.ButtonHTMLAttributes<HTMLButtonElement>,
+      "contentEditable"
+    >,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  contentEditable?: "inherit" | "true" | "false" | boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
