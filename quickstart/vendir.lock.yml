@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'Revert "test(core): move legacy tx-display integration tests (#3636)"
-        (#3673)...'
-      sha: 44557866d6b0e39137527a1d4844c6b9c7ebe603
+      commitTitle: 'test(core): move legacy tx-display integration tests (#3674)...'
+      sha: 3650b96bd4263ad4569f892bc4db9375ead3dbb3
       tags:
-      - 0.17.1-5-g44557866d
+      - 0.17.2-2-g3650b96bd
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'Revert "test(core): move legacy tx-display integration tests (#3636)"
-        (#3673)...'
-      sha: 44557866d6b0e39137527a1d4844c6b9c7ebe603
+      commitTitle: 'test(core): move legacy tx-display integration tests (#3674)...'
+      sha: 3650b96bd4263ad4569f892bc4db9375ead3dbb3
       tags:
-      - 0.17.1-5-g44557866d
+      - 0.17.2-2-g3650b96bd
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'Revert "test(core): move legacy tx-display integration tests (#3636)"
-        (#3673)...'
-      sha: 44557866d6b0e39137527a1d4844c6b9c7ebe603
+      commitTitle: 'test(core): move legacy tx-display integration tests (#3674)...'
+      sha: 3650b96bd4263ad4569f892bc4db9375ead3dbb3
       tags:
-      - 0.17.1-5-g44557866d
+      - 0.17.2-2-g3650b96bd
     path: ./
   path: ./graphql
 kind: LockConfig
