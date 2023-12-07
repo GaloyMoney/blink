@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(pay): clean up pay (#3646)...'
-      sha: fe228a8646458df637e4a5b8124f40a078f5f0d1
+      commitTitle: 'Revert "test(core): move legacy tx-display integration tests (#3636)"
+        (#3673)...'
+      sha: 44557866d6b0e39137527a1d4844c6b9c7ebe603
       tags:
-      - 0.17.1-2-gfe228a864
+      - 0.17.1-5-g44557866d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(pay): clean up pay (#3646)...'
-      sha: fe228a8646458df637e4a5b8124f40a078f5f0d1
+      commitTitle: 'Revert "test(core): move legacy tx-display integration tests (#3636)"
+        (#3673)...'
+      sha: 44557866d6b0e39137527a1d4844c6b9c7ebe603
       tags:
-      - 0.17.1-2-gfe228a864
+      - 0.17.1-5-g44557866d
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(pay): clean up pay (#3646)...'
-      sha: fe228a8646458df637e4a5b8124f40a078f5f0d1
+      commitTitle: 'Revert "test(core): move legacy tx-display integration tests (#3636)"
+        (#3673)...'
+      sha: 44557866d6b0e39137527a1d4844c6b9c7ebe603
       tags:
-      - 0.17.1-2-gfe228a864
+      - 0.17.1-5-g44557866d
     path: ./
   path: ./graphql
 kind: LockConfig
