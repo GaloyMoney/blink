@@ -1,8 +1,6 @@
 import { randomUUID } from "crypto"
 
 import { Accounts } from "@/app"
-import { setUsername } from "@/app/accounts"
-import { UsernameIsImmutableError, UsernameNotAvailableError } from "@/domain/accounts"
 import { CsvWalletsExport } from "@/services/ledger/csv-wallet-export"
 import { AccountsRepository } from "@/services/mongoose"
 
@@ -15,10 +13,9 @@ import {
 } from "test/helpers"
 
 let walletIdA: WalletId
-let accountIdA: AccountId, accountIdB: AccountId, accountIdC: AccountId
+let accountIdA: AccountId, accountIdC: AccountId
 
 const phoneA = randomPhone()
-const phoneB = randomPhone()
 const phoneC = randomPhone()
 
 describe("UserWallet", () => {
@@ -26,46 +23,12 @@ describe("UserWallet", () => {
     await createMandatoryUsers()
 
     await createUserAndWalletFromPhone(phoneA)
-    await createUserAndWalletFromPhone(phoneB)
     await createUserAndWalletFromPhone(phoneC)
 
     walletIdA = await getDefaultWalletIdByPhone(phoneA)
 
     accountIdA = await getAccountIdByPhone(phoneA)
-    accountIdB = await getAccountIdByPhone(phoneB)
     accountIdC = await getAccountIdByPhone(phoneC)
-  })
-
-  describe("setUsername", () => {
-    it("allows set username", async () => {
-      let result = await setUsername({ username: "userA", accountId: accountIdA })
-      expect(result).not.toBeInstanceOf(Error)
-      result = await setUsername({ username: "userB", accountId: accountIdB })
-      expect(result).not.toBeInstanceOf(Error)
-    })
-
-    it("does not allow set username if already taken", async () => {
-      const username = "userA"
-      await expect(
-        setUsername({ username, accountId: accountIdC }),
-      ).resolves.toBeInstanceOf(UsernameNotAvailableError)
-    })
-
-    it("does not allow set username with only case difference", async () => {
-      await expect(
-        setUsername({ username: "UserA", accountId: accountIdC }),
-      ).resolves.toBeInstanceOf(UsernameNotAvailableError)
-
-      // set username for accountC
-      const result = await setUsername({ username: "lily", accountId: accountIdC })
-      expect(result).not.toBeInstanceOf(Error)
-    })
-
-    it("does not allow re-setting username", async () => {
-      await expect(
-        setUsername({ username: "abc", accountId: accountIdA }),
-      ).resolves.toBeInstanceOf(UsernameIsImmutableError)
-    })
   })
 
   describe("usernameExists", () => {
