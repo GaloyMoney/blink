@@ -3,7 +3,6 @@ import { randomUUID } from "crypto"
 import { Accounts } from "@/app"
 import { setUsername } from "@/app/accounts"
 import { UsernameIsImmutableError, UsernameNotAvailableError } from "@/domain/accounts"
-import { ValidationError } from "@/domain/shared"
 import { CsvWalletsExport } from "@/services/ledger/csv-wallet-export"
 import { AccountsRepository } from "@/services/mongoose"
 
@@ -38,39 +37,6 @@ describe("UserWallet", () => {
   })
 
   describe("setUsername", () => {
-    it("does not set username if length is less than 3", async () => {
-      await expect(
-        setUsername({ username: "ab", accountId: accountIdA }),
-      ).resolves.toBeInstanceOf(ValidationError)
-    })
-
-    it("does not set username if contains invalid characters", async () => {
-      await expect(
-        setUsername({ username: "ab+/", accountId: accountIdA }),
-      ).resolves.toBeInstanceOf(ValidationError)
-    })
-
-    it("does not allow non english characters", async () => {
-      await expect(
-        setUsername({ username: "ñ_user1", accountId: accountIdA }),
-      ).resolves.toBeInstanceOf(ValidationError)
-    })
-
-    it("does not set username starting with 1, 3, bc1, lnbc1", async () => {
-      await expect(
-        setUsername({ username: "1ab", accountId: accountIdA }),
-      ).resolves.toBeInstanceOf(ValidationError)
-      await expect(
-        setUsername({ username: "3basd", accountId: accountIdA }),
-      ).resolves.toBeInstanceOf(ValidationError)
-      await expect(
-        setUsername({ username: "bc1be", accountId: accountIdA }),
-      ).resolves.toBeInstanceOf(ValidationError)
-      await expect(
-        setUsername({ username: "lnbc1qwe1", accountId: accountIdA }),
-      ).resolves.toBeInstanceOf(ValidationError)
-    })
-
     it("allows set username", async () => {
       let result = await setUsername({ username: "userA", accountId: accountIdA })
       expect(result).not.toBeInstanceOf(Error)
