@@ -154,7 +154,7 @@ services:
     environment:
       - MONGO_INITDB_DATABASE=galoy
   lnd1:
-    image: lightninglabs/lnd:v0.16.2-beta
+    image: lightninglabs/lnd:v0.17.1-beta
     ports:
       - "10009:10009"
     volumes:
@@ -268,13 +268,13 @@ services:
       - SSL_KEYFILE=/tls.key
     command: ["Fulcrum", "/fulcrum.conf"]
   bitcoind:
-    image: lncm/bitcoind:v24.0.1
+    image: lncm/bitcoind:v25.1
     ports:
       - "18443:18443"
     volumes:
       - ${HOST_PROJECT_PATH:-.}/config/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
   bitcoind-signer:
-    image: lncm/bitcoind:v24.0.1
+    image: lncm/bitcoind:v25.1
     ports: []
     volumes:
       - ${HOST_PROJECT_PATH:-.}/config/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
