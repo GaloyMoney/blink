@@ -97,7 +97,7 @@ services:
     ports:
     - 5434:5432
   galoy:
-    image: us.gcr.io/galoy-org/galoy-api@sha256:f5e4e2869661218f97c85699a93def89856a02dd39425d2d7ae7c90644870fda
+    image: us.gcr.io/galoy-org/galoy-api@sha256:1a55fc58273dce6ae4fdd2032134db9b80d032dc0fd56bf8efd83b0f40e82771
     env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/.env.galoy
     depends_on:
     - trigger
@@ -115,7 +115,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:d782333e84cfdadb98471917fa71294f5bf5184bc1786254670cc645fb468cf8
+    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:744b794f7922517d41c0308c848ffe04d74cff9bcaaa085c68c6fd7a39986a58
     env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/.env.galoy
     depends_on:
     - lnd1
@@ -136,7 +136,7 @@ services:
     - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
     - MONGO_INITDB_DATABASE=galoy
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-app-migrate@sha256:19f33b91808caed007b32418232d5c1d55aa97042acf0c63b0a0c9d9347ca248
+    image: us.gcr.io/galoy-org/galoy-app-migrate@sha256:8ccd791dc7fb4b9eae18505a0a0e26cc84a8f57daec77ac1e396e804cba70cf2
     depends_on:
     - mongodb
     environment:
@@ -186,13 +186,13 @@ services:
     - POSTGRES_PASSWORD=galoy-price-pwd
     - POSTGRES_DB=galoy-price-history
   bitcoind:
-    image: lncm/bitcoind:v24.0.1
+    image: lncm/bitcoind:v25.1
     ports:
     - 18443:18443
     volumes:
     - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
   bitcoind-signer:
-    image: lncm/bitcoind:v24.0.1
+    image: lncm/bitcoind:v25.1
     ports:
     - 18543:18443
     volumes:
@@ -206,7 +206,7 @@ services:
     - |
       bitcoind -connect=bitcoind:18444
   lnd1:
-    image: lightninglabs/lnd:v0.16.2-beta
+    image: lightninglabs/lnd:v0.17.1-beta
     ports:
     - 10009:10009
     volumes:
@@ -229,7 +229,7 @@ services:
       cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
       /bin/lnd
   lnd-outside-1:
-    image: lightninglabs/lnd:v0.16.2-beta
+    image: lightninglabs/lnd:v0.17.1-beta
     ports:
     - 10012:10009
     volumes:

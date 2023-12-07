@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'docs: galoy backend features update (#3666)'
-      sha: 8f2cccdc43e0b5418c474d8b23cc467377e590c8
+      commitTitle: 'chore: bump lnd and bitcoin core versions (#3420)'
+      sha: 85f3f7f6f251445b7f5ea1ff2c17ad7bb4746d2a
       tags:
-      - 0.16.93-1-g8f2cccdc4
+      - 0.17.0-1-g85f3f7f6f
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'docs: galoy backend features update (#3666)'
-      sha: 8f2cccdc43e0b5418c474d8b23cc467377e590c8
+      commitTitle: 'chore: bump lnd and bitcoin core versions (#3420)'
+      sha: 85f3f7f6f251445b7f5ea1ff2c17ad7bb4746d2a
       tags:
-      - 0.16.93-1-g8f2cccdc4
+      - 0.17.0-1-g85f3f7f6f
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'docs: galoy backend features update (#3666)'
-      sha: 8f2cccdc43e0b5418c474d8b23cc467377e590c8
+      commitTitle: 'chore: bump lnd and bitcoin core versions (#3420)'
+      sha: 85f3f7f6f251445b7f5ea1ff2c17ad7bb4746d2a
       tags:
-      - 0.16.93-1-g8f2cccdc4
+      - 0.17.0-1-g85f3f7f6f
     path: ./
   path: ./graphql
 kind: LockConfig
