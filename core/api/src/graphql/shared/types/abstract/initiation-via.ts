@@ -42,7 +42,7 @@ const InitiationViaLn = GT.Object({
         if (paymentRequest instanceof Error) {
           recordExceptionInCurrentSpan({
             error: paymentRequest,
-            level: ErrorLevel.Critical,
+            level: ErrorLevel.Warn,
             attributes: { ["error.parentId"]: source.parent.id },
           })
           return ""
