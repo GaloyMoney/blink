@@ -80,7 +80,7 @@ const usdPaymentAmount: UsdPaymentAmount = {
   currency: WalletCurrency.Usd,
 }
 
-const receiveAmounts = { btc: calc.mul(btcPaymentAmount, 3n), usd: usdPaymentAmount }
+const receiveAmounts = { btc: calc.mul(btcPaymentAmount, 10n), usd: usdPaymentAmount }
 
 const receiveBankFee = {
   btc: { amount: 100n, currency: WalletCurrency.Btc },
