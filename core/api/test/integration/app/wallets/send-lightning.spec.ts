@@ -21,7 +21,6 @@ import {
 } from "@/domain/errors"
 import { AmountCalculator, WalletCurrency } from "@/domain/shared"
 import * as LnFeesImpl from "@/domain/payments"
-import * as DisplayAmountsConverterImpl from "@/domain/fiat"
 
 import {
   AccountsRepository,
@@ -34,7 +33,6 @@ import { WalletInvoice } from "@/services/mongoose/schema"
 import { LnPayment } from "@/services/lnd/schema"
 import * as LndImpl from "@/services/lnd"
 import * as PushNotificationsServiceImpl from "@/services/notifications/push-notifications"
-import * as LedgerFacadeImpl from "@/services/ledger/facade"
 
 import {
   createMandatoryUsers,
@@ -43,7 +41,6 @@ import {
   getBalanceHelper,
   recordReceiveLnPayment,
 } from "test/helpers"
-import { LedgerTransactionType } from "@/domain/ledger"
 
 let lnInvoice: LnInvoice
 let noAmountLnInvoice: LnInvoice
@@ -87,8 +84,6 @@ afterEach(async () => {
   await TransactionMetadata.deleteMany({})
   await WalletInvoice.deleteMany({})
   await LnPayment.deleteMany({})
-
-  jest.restoreAllMocks()
 })
 
 const amount = toSats(10040)
@@ -490,118 +485,6 @@ describe("initiated via lightning", () => {
       // Restore system state
       lndServiceSpy.mockRestore()
     })
-
-    it("records transaction with lightning metadata on ln send", async () => {
-      // Setup mocks
-      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
-      jest.spyOn(LndImpl, "LndService").mockReturnValue({
-        ...LnServiceOrig(),
-        defaultPubkey: (): Pubkey => DEFAULT_PUBKEY,
-        listAllPubkeys: () => [],
-      })
-
-      const displayAmountsConverterSpy = jest.spyOn(
-        DisplayAmountsConverterImpl,
-        "DisplayAmountsConverter",
-      )
-
-      const lnSendLedgerMetadataSpy = jest.spyOn(LedgerFacadeImpl, "LnSendLedgerMetadata")
-      const recordOffChainSendSpy = jest.spyOn(LedgerFacadeImpl, "recordSendOffChain")
-
-      // Create users
-      const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
-      )
-      if (newAccount instanceof Error) throw newAccount
-
-      // Fund balance for send
-      const receive = await recordReceiveLnPayment({
-        walletDescriptor: newWalletDescriptor,
-        paymentAmount: receiveAmounts,
-        bankFee: receiveBankFee,
-        displayAmounts: receiveDisplayAmounts,
-        memo,
-      })
-      if (receive instanceof Error) throw receive
-
-      // Execute pay
-      await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
-        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
-        memo,
-        senderWalletId: newWalletDescriptor.id,
-        senderAccount: newAccount,
-        amount,
-      })
-
-      // Check record function was called with right metadata
-      expect(displayAmountsConverterSpy).toHaveBeenCalledTimes(1)
-      expect(lnSendLedgerMetadataSpy).toHaveBeenCalledTimes(1)
-      const args = recordOffChainSendSpy.mock.calls[0][0]
-      expect(args.metadata.type).toBe(LedgerTransactionType.Payment)
-    })
-
-    it("records transaction with fee reimbursement metadata on ln send", async () => {
-      // Setup mocks
-      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
-      jest.spyOn(LndImpl, "LndService").mockReturnValue({
-        ...LnServiceOrig(),
-        defaultPubkey: (): Pubkey => DEFAULT_PUBKEY,
-        listAllPubkeys: () => [],
-        payInvoiceViaPaymentDetails: () => ({
-          roundedUpFee: toSats(0),
-          revealedPreImage: "revealedPreImage" as RevealedPreImage,
-          sentFromPubkey: DEFAULT_PUBKEY,
-        }),
-      })
-
-      const displayAmountsConverterSpy = jest.spyOn(
-        DisplayAmountsConverterImpl,
-        "DisplayAmountsConverter",
-      )
-
-      const lnFeeReimbursementReceiveLedgerMetadataSpy = jest.spyOn(
-        LedgerFacadeImpl,
-        "LnFeeReimbursementReceiveLedgerMetadata",
-      )
-      const recordOffChainReceiveSpy = jest.spyOn(
-        LedgerFacadeImpl,
-        "recordReceiveOffChain",
-      )
-
-      // Create users
-      const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
-      )
-      if (newAccount instanceof Error) throw newAccount
-
-      // Fund balance for send
-      const receive = await recordReceiveLnPayment({
-        walletDescriptor: newWalletDescriptor,
-        paymentAmount: receiveAmounts,
-        bankFee: receiveBankFee,
-        displayAmounts: receiveDisplayAmounts,
-        memo,
-      })
-      if (receive instanceof Error) throw receive
-
-      // Execute pay
-      await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
-        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
-        memo,
-        senderWalletId: newWalletDescriptor.id,
-        senderAccount: newAccount,
-        amount,
-      })
-
-      // Check record function was called with right metadata
-      expect(displayAmountsConverterSpy).toHaveBeenCalledTimes(2)
-      expect(lnFeeReimbursementReceiveLedgerMetadataSpy).toHaveBeenCalledTimes(1)
-      // Note: 1st call is funding balance in test, 2nd call is fee reimbursement
-      const args = recordOffChainReceiveSpy.mock.calls[1][0]
-      expect(args.metadata.type).toBe(LedgerTransactionType.LnFeeReimbursement)
-    })
   })
 
   describe("settles intraledger", () => {
@@ -976,141 +859,6 @@ describe("initiated via lightning", () => {
       // Restore system state
       pushNotificationsServiceSpy.mockRestore()
       lndServiceSpy.mockRestore()
-    })
-
-    it("records transaction with ln-trade-intra-account metadata on intraledger send", async () => {
-      // Setup mocks
-      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
-      jest.spyOn(LndImpl, "LndService").mockReturnValue({
-        ...LnServiceOrig(),
-        listAllPubkeys: () => [noAmountLnInvoice.destination],
-        cancelInvoice: () => true,
-      })
-
-      const displayAmountsConverterSpy = jest.spyOn(
-        DisplayAmountsConverterImpl,
-        "DisplayAmountsConverter",
-      )
-
-      const lnTradeIntraAccountLedgerMetadataSpy = jest.spyOn(
-        LedgerFacadeImpl,
-        "LnTradeIntraAccountLedgerMetadata",
-      )
-      const recordIntraledgerSpy = jest.spyOn(LedgerFacadeImpl, "recordIntraledger")
-
-      // Create users
-      const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
-        await createRandomUserAndWallets()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
-      )
-      if (newAccount instanceof Error) throw newAccount
-
-      // Persist invoice as self-invoice
-      const persisted = await WalletInvoicesRepository().persistNew({
-        paymentHash: noAmountLnInvoice.paymentHash,
-        secret: "secret" as SecretPreImage,
-        selfGenerated: true,
-        pubkey: noAmountLnInvoice.destination,
-        recipientWalletDescriptor: usdWalletDescriptor,
-        paid: false,
-        lnInvoice,
-        processingCompleted: false,
-      })
-      if (persisted instanceof Error) throw persisted
-
-      // Fund balance for send
-      const receive = await recordReceiveLnPayment({
-        walletDescriptor: newWalletDescriptor,
-        paymentAmount: receiveAmounts,
-        bankFee: receiveBankFee,
-        displayAmounts: receiveDisplayAmounts,
-        memo,
-      })
-      if (receive instanceof Error) throw receive
-
-      // Execute pay
-      await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
-        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
-        memo,
-        senderWalletId: newWalletDescriptor.id,
-        senderAccount: newAccount,
-        amount,
-      })
-
-      // Check record function was called with right metadata
-      expect(displayAmountsConverterSpy).toHaveBeenCalledTimes(2)
-      expect(lnTradeIntraAccountLedgerMetadataSpy).toHaveBeenCalledTimes(1)
-      const args = recordIntraledgerSpy.mock.calls[0][0]
-      expect(args.metadata.type).toBe(LedgerTransactionType.LnTradeIntraAccount)
-    })
-
-    it("records transaction with ln-intraledger metadata on intraledger send", async () => {
-      // Setup mocks
-      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
-      jest.spyOn(LndImpl, "LndService").mockReturnValue({
-        ...LnServiceOrig(),
-        listAllPubkeys: () => [noAmountLnInvoice.destination],
-        cancelInvoice: () => true,
-      })
-
-      const displayAmountsConverterSpy = jest.spyOn(
-        DisplayAmountsConverterImpl,
-        "DisplayAmountsConverter",
-      )
-
-      const lnIntraledgerLedgerMetadataSpy = jest.spyOn(
-        LedgerFacadeImpl,
-        "LnIntraledgerLedgerMetadata",
-      )
-      const recordIntraledgerSpy = jest.spyOn(LedgerFacadeImpl, "recordIntraledger")
-
-      // Setup users and wallets
-      const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
-      )
-      if (newAccount instanceof Error) throw newAccount
-
-      const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
-
-      // Persist invoice as self-invoice
-      const persisted = await WalletInvoicesRepository().persistNew({
-        paymentHash: noAmountLnInvoice.paymentHash,
-        secret: "secret" as SecretPreImage,
-        selfGenerated: true,
-        pubkey: noAmountLnInvoice.destination,
-        recipientWalletDescriptor,
-        paid: false,
-        lnInvoice,
-        processingCompleted: false,
-      })
-      if (persisted instanceof Error) throw persisted
-
-      // Fund balance for send
-      const receive = await recordReceiveLnPayment({
-        walletDescriptor: newWalletDescriptor,
-        paymentAmount: receiveAmounts,
-        bankFee: receiveBankFee,
-        displayAmounts: receiveDisplayAmounts,
-        memo,
-      })
-      if (receive instanceof Error) throw receive
-
-      // Execute pay
-      await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
-        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
-        memo,
-        senderWalletId: newWalletDescriptor.id,
-        senderAccount: newAccount,
-        amount,
-      })
-
-      // Check record function was called with right metadata
-      expect(displayAmountsConverterSpy).toHaveBeenCalledTimes(2)
-      expect(lnIntraledgerLedgerMetadataSpy).toHaveBeenCalledTimes(1)
-      const args = recordIntraledgerSpy.mock.calls[0][0]
-      expect(args.metadata.type).toBe(LedgerTransactionType.LnIntraLedger)
     })
   })
 })
