@@ -187,6 +187,10 @@ plan:
 #@   "dashboard": {
 #@     "YAML_PATH": ".image.digest",
 #@     "CHART": "api-dashboard"
+#@   },
+#@   "pay": {
+#@     "YAML_PATH": ".image.digest",
+#@     "CHART": "galoy-pay"
 #@   }
 #@ }
 name: #@ bump_image_in_chart_name(app)
