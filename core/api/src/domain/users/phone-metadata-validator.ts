@@ -1,3 +1,6 @@
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
+import { CarrierType } from "@/domain/phone-provider"
+
 import {
   InvalidCarrierForPhoneMetadataError,
   InvalidCarrierTypeForPhoneMetadataError,
@@ -6,7 +9,7 @@ import {
   InvalidMobileCountryCodeForPhoneMetadataError,
 } from "./errors"
 
-import { CarrierType } from "@/domain/phone-provider"
+import { ErrorLevel } from "../shared"
 
 const checkedToCarrierType = (
   rawCarrierType: string | undefined | null,
@@ -47,7 +50,10 @@ export const PhoneMetadataValidator = (): PhoneMetadataValidator => {
     }
 
     if (typeof mobile_country_code !== "string") {
-      return new InvalidMobileCountryCodeForPhoneMetadataError(mobile_country_code)
+      recordExceptionInCurrentSpan({
+        error: new InvalidMobileCountryCodeForPhoneMetadataError(mobile_country_code),
+        level: ErrorLevel.Critical,
+      })
     }
 
     if (typeof countryCode !== "string") {
