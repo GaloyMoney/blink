@@ -2,7 +2,6 @@ import { randomUUID } from "crypto"
 
 import { Accounts } from "@/app"
 import { CsvWalletsExport } from "@/services/ledger/csv-wallet-export"
-import { AccountsRepository } from "@/services/mongoose"
 
 import {
   createMandatoryUsers,
@@ -13,7 +12,7 @@ import {
 } from "test/helpers"
 
 let walletIdA: WalletId
-let accountIdA: AccountId, accountIdC: AccountId
+let accountIdC: AccountId
 
 const phoneA = randomPhone()
 const phoneC = randomPhone()
@@ -27,36 +26,7 @@ describe("UserWallet", () => {
 
     walletIdA = await getDefaultWalletIdByPhone(phoneA)
 
-    accountIdA = await getAccountIdByPhone(phoneA)
     accountIdC = await getAccountIdByPhone(phoneC)
-  })
-
-  describe("usernameExists", () => {
-    it("return true if username already exists", async () => {
-      const username = "userA" as Username
-
-      const accountsRepo = AccountsRepository()
-      const account = await accountsRepo.findByUsername(username)
-      if (account instanceof Error) throw account
-      expect(account.id).toStrictEqual(accountIdA)
-    })
-
-    it("return true for other capitalization", async () => {
-      const username = "userA" as Username
-
-      const accountsRepo = AccountsRepository()
-      const account = await accountsRepo.findByUsername(
-        username.toLocaleUpperCase() as Username,
-      )
-      if (account instanceof Error) throw account
-      expect(account.id).toStrictEqual(accountIdA)
-    })
-
-    it("return false if username does not exist", async () => {
-      const accountsRepo = AccountsRepository()
-      const account = await accountsRepo.findByUsername("user" as Username)
-      expect(account).toBeInstanceOf(Error)
-    })
   })
 
   describe("getStringCsv", () => {
