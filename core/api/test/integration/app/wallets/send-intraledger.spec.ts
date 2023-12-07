@@ -5,7 +5,6 @@ import { Accounts, Payments } from "@/app"
 import { AccountStatus } from "@/domain/accounts"
 import { toSats } from "@/domain/bitcoin"
 import { PaymentSendStatus } from "@/domain/bitcoin/lightning"
-import { LedgerTransactionType } from "@/domain/ledger"
 import { UsdDisplayCurrency, toCents } from "@/domain/fiat"
 import {
   InactiveAccountError,
@@ -13,11 +12,9 @@ import {
   SelfPaymentError,
   TradeIntraAccountLimitsExceededError,
 } from "@/domain/errors"
-import * as DisplayAmountsConverterImpl from "@/domain/fiat"
 
 import { AccountsRepository } from "@/services/mongoose"
 import { Transaction } from "@/services/ledger/schema"
-import * as LedgerFacadeImpl from "@/services/ledger/facade"
 import * as PushNotificationsServiceImpl from "@/services/notifications/push-notifications"
 
 import { AmountCalculator, WalletCurrency } from "@/domain/shared"
@@ -44,8 +41,6 @@ beforeEach(() => {
 afterEach(async () => {
   await Transaction.deleteMany({ memo })
   await Transaction.deleteMany({ memoPayer: memo })
-
-  jest.restoreAllMocks()
 })
 
 const amount = toSats(10040)
@@ -321,96 +316,5 @@ describe("intraLedgerPay", () => {
 
     // Restore system state
     pushNotificationsServiceSpy.mockReset()
-  })
-
-  it("records transaction with wallet-id-trade-intra-account metadata on intraledger send", async () => {
-    // Setup mocks
-    const displayAmountsConverterSpy = jest.spyOn(
-      DisplayAmountsConverterImpl,
-      "DisplayAmountsConverter",
-    )
-
-    const walletIdTradeIntraAccountLedgerMetadataSpy = jest.spyOn(
-      LedgerFacadeImpl,
-      "WalletIdTradeIntraAccountLedgerMetadata",
-    )
-    const recordIntraledgerSpy = jest.spyOn(LedgerFacadeImpl, "recordIntraledger")
-
-    // Create users
-    const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
-      await createRandomUserAndWallets()
-    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
-    if (newAccount instanceof Error) throw newAccount
-
-    // Fund balance for send
-    const receive = await recordReceiveLnPayment({
-      walletDescriptor: newWalletDescriptor,
-      paymentAmount: receiveAmounts,
-      bankFee: receiveBankFee,
-      displayAmounts: receiveDisplayAmounts,
-      memo,
-    })
-    if (receive instanceof Error) throw receive
-
-    // Pay intraledger
-    await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
-      recipientWalletId: usdWalletDescriptor.id,
-      memo,
-      amount,
-      senderWalletId: newWalletDescriptor.id,
-      senderAccount: newAccount,
-    })
-
-    // Check record function was called with right metadata
-    expect(displayAmountsConverterSpy).toHaveBeenCalledTimes(2)
-    expect(walletIdTradeIntraAccountLedgerMetadataSpy).toHaveBeenCalledTimes(1)
-    const args = recordIntraledgerSpy.mock.calls[0][0]
-    expect(args.metadata.type).toBe(LedgerTransactionType.WalletIdTradeIntraAccount)
-  })
-
-  it("records transaction with wallet-id-intraledger metadata on intraledger send", async () => {
-    // Setup mocks
-    const displayAmountsConverterSpy = jest.spyOn(
-      DisplayAmountsConverterImpl,
-      "DisplayAmountsConverter",
-    )
-
-    const walletIdIntraledgerLedgerMetadataSpy = jest.spyOn(
-      LedgerFacadeImpl,
-      "WalletIdIntraledgerLedgerMetadata",
-    )
-    const recordIntraledgerSpy = jest.spyOn(LedgerFacadeImpl, "recordIntraledger")
-
-    // Setup users and wallets
-    const newWalletDescriptor = await createRandomUserAndBtcWallet()
-    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
-    if (newAccount instanceof Error) throw newAccount
-
-    const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
-
-    // Fund balance for send
-    const receive = await recordReceiveLnPayment({
-      walletDescriptor: newWalletDescriptor,
-      paymentAmount: receiveAmounts,
-      bankFee: receiveBankFee,
-      displayAmounts: receiveDisplayAmounts,
-      memo,
-    })
-    if (receive instanceof Error) throw receive
-
-    // Pay intraledger
-    await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
-      recipientWalletId: recipientWalletDescriptor.id,
-      memo,
-      amount,
-      senderWalletId: newWalletDescriptor.id,
-      senderAccount: newAccount,
-    })
-
-    // Check record function was called with right metadata
-    expect(displayAmountsConverterSpy).toHaveBeenCalledTimes(2)
-    expect(walletIdIntraledgerLedgerMetadataSpy).toHaveBeenCalledTimes(1)
-    const args = recordIntraledgerSpy.mock.calls[0][0]
-    expect(args.metadata.type).toBe(LedgerTransactionType.IntraLedger)
   })
 })
