@@ -3,6 +3,7 @@
 [![Mattermost](https://img.shields.io/badge/chat-on%20mattermost-blue?style=social&logo=mattermost)](https://chat.galoy.io)
 [![GitHub Repo stars](https://img.shields.io/github/stars/GaloyMoney/galoy?style=social)](https://github.com/GaloyMoney/galoy/stargazers)
 [![Twitter Follow](https://img.shields.io/twitter/follow/GaloyMoney?style=social)](https://twitter.com/GaloyMoney)
+
 ## 💡 Get help
 [Q&A](https://github.com/GaloyMoney/galoy/discussions) or [Mattermost 💬](https://chat.galoy.io)
 
@@ -12,11 +13,10 @@ Galoy is an opinionated Bitcoin banking platform.
 
 This repo represents the main API that brings all functionality together.
 
-
 ## Responsible Disclosure
 
 Found critical bugs/vulnerabilities?
-Please email them security@galoy.io Thanks!
+Please contact our team by email at security@galoy.io . 
 
 ## Get Started
 
@@ -25,35 +25,49 @@ Want to try it out and contribute? Check out the [dev documentation](./docs/DEVE
 If you have questions, you can [join our Workspace](https://chat.galoy.io)
 
 For an overview of all relevant repositories checkout [awesome-galoy](https://github.com/GaloyMoney/awesome-galoy).
+
 ## Galoy-Backend features
 
-- GraphqlAPI:
+- GraphQL API:
   - Public API following industry best practices
-  - For [end clients](./core/api/src/graphql/public/schema.graphql). [Documentation](https://galoymoney.github.io/galoy/)
-  - For [admin activities](./core/api/src/graphql/admin/schema.graphql)
+  - [Schema for end clients](./core/api/src/graphql/public/schema.graphql)
+    - [Reference](https://dev.galoy.io/public-api-reference.html)
+    - [Documentation for the Blink hosted instance](https://dev.blink.sv)
+  - [Schema for admin activities](./core/api/src/graphql/admin/schema.graphql)
+    - [Reference](https://dev.galoy.io/admin-api-reference.html)
 - Authentication:
-  - Code is sent via Twillio to end user's phone number which can be exchanged for JWT auth token
-  - OAuth integration (in progress)
-  - Account scoped API keys (in progress)
+  - Dedicated REST API to obtain an authentication token by logging in with:
+    - phone by receiving a code via SMS or Whatsapp using Twilio
+    - email by receiving a code via email
+  - OAuth is integrated to be used in the Dashboard (example: [Blink Dashboard](https://dashboard.blink.sv))
+  - Account scoped API keys can be created in the Dashboard with custom permissions and expiry
 - Internal ledger:
   - Records all account activity via double entry accounting
-  - Support for integrating fiat currencies (in progress)
+  - Supports several fiat currencies
   - CSV based export of all accounting data
 - Contact list for frequent transaction partners
 - Price
   - Sub-second [price data](https://github.com/GaloyMoney/price) polled from the largest exchanges to record USD value at settlement
   - Historical price data can be queried for display for different time frames
 - Send / Receive BTC payments
-  - External settlement via OnChain or lightning
+  - External settlement via lightning or onchain
   - Automatic internal settlement when payer & payee are on the same galoy instance
   - Fees can be applied for sending / receiving for all settlement methods
   - Support for tipping via [dedicated web-frontend](https://github.com/GaloyMoney/galoy-pay)
-  - Include memo to payment
+  - Include memos to payments
+  - Advanced onchain functions via [Bria](https://github.com/GaloyMoney/bria)
+    - advanced fee estimation
+    - automatic transaction batching
+    - automated CPFP to avoid stuck payments
+    - PSBT based remote signing
 - Lightning Network
-  - Support for clearnet and TOR
+  - Support for clearnet and Tor
   - Support for invoices with and without a specified amount
   - Route probing to pre-display an accurate fee and mitigate attacks based on expensive routing
-  - Channel data backup to S3 and Google Cloud storage
+  - Static Channel Backup backup to S3 and Google Cloud storage
+  - Automatic liquidity management
+    - Balancing of channels between the internal nodes
+    - Submarine swaps
 - Custodial storage of all user assets
   - Limited funds stored in hot-wallet (keys kept on servers)
   - Threshold based rebalancing to cold-storage (keys stored on offline hardware devices)
@@ -65,7 +79,7 @@ For an overview of all relevant repositories checkout [awesome-galoy](https://gi
     - via rate limiting infront of critical APIs
     - via geetest CAPTCHA
 - Resilience
-  - Databases (MongoDB and Redis) are run by default in high availability/resilience mode. If one pod/node goes down, there is an automatic failover on another pod/node.
+  - Databases (PostgreSQl, MongoDB and Redis) are run by default in high availability/resilience mode. If one pod/node goes down, there is an automatic failover on another pod/node.
 - Production ready
   - Supports horizontal scaling and highly available deployments via k8s
   - Client side load balancing across multiple LND nodes
@@ -78,7 +92,7 @@ For an overview of all relevant repositories checkout [awesome-galoy](https://gi
   - Map of in-network merchants
 - Notifications
   - Mobile clients can receive notifications of balance changes in real-time
-  - Daily notification of balance for active end users
+  - Optional notification of balance for active end users
 
 ## Local Development Setup
 
