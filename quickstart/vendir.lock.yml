@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): move legacy tx-display integration tests (#3674)...'
-      sha: 3650b96bd4263ad4569f892bc4db9375ead3dbb3
+      commitTitle: 'fix: set warn for paymentRequest alert (#3675)'
+      sha: 55fbb69721f33c5a9b1e51ed94d826dd22c50bae
       tags:
-      - 0.17.2-2-g3650b96bd
+      - 0.17.4-1-g55fbb6972
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): move legacy tx-display integration tests (#3674)...'
-      sha: 3650b96bd4263ad4569f892bc4db9375ead3dbb3
+      commitTitle: 'fix: set warn for paymentRequest alert (#3675)'
+      sha: 55fbb69721f33c5a9b1e51ed94d826dd22c50bae
       tags:
-      - 0.17.2-2-g3650b96bd
+      - 0.17.4-1-g55fbb6972
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(core): move legacy tx-display integration tests (#3674)...'
-      sha: 3650b96bd4263ad4569f892bc4db9375ead3dbb3
+      commitTitle: 'fix: set warn for paymentRequest alert (#3675)'
+      sha: 55fbb69721f33c5a9b1e51ed94d826dd22c50bae
       tags:
-      - 0.17.2-2-g3650b96bd
+      - 0.17.4-1-g55fbb6972
     path: ./
   path: ./graphql
 kind: LockConfig
