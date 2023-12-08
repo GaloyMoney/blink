@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#3670)...'
-      sha: cee15469755f35e0c5a9c9d6929ecf6d9d80cf14
+      commitTitle: 'fix(pay): include .well-known folder in build (#3679)'
+      sha: 6934227ed5b4b04117225e0a0fb63cc64039f261
       tags:
-      - 0.17.7-3-gcee154697
+      - 0.17.8-1-g6934227ed
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#3670)...'
-      sha: cee15469755f35e0c5a9c9d6929ecf6d9d80cf14
+      commitTitle: 'fix(pay): include .well-known folder in build (#3679)'
+      sha: 6934227ed5b4b04117225e0a0fb63cc64039f261
       tags:
-      - 0.17.7-3-gcee154697
+      - 0.17.8-1-g6934227ed
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#3670)...'
-      sha: cee15469755f35e0c5a9c9d6929ecf6d9d80cf14
+      commitTitle: 'fix(pay): include .well-known folder in build (#3679)'
+      sha: 6934227ed5b4b04117225e0a0fb63cc64039f261
       tags:
-      - 0.17.7-3-gcee154697
+      - 0.17.8-1-g6934227ed
     path: ./
   path: ./graphql
 kind: LockConfig
