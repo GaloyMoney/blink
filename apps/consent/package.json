@@ -23,7 +23,7 @@
     "@opentelemetry/resources": "^1.17.0",
     "@opentelemetry/sdk-node": "^0.43.0",
     "@opentelemetry/sdk-trace-node": "^1.17.0",
-    "@opentelemetry/semantic-conventions": "^1.17.0",
+    "@opentelemetry/semantic-conventions": "^1.18.1",
     "@ory/hydra-client": "^2.2.0-rc.3",
     "@t3-oss/env-nextjs": "^0.6.1",
     "axios": "^1.6.2",
