@@ -523,6 +523,20 @@ enum InvoicePaymentStatus {
 
 scalar Language
 
+"""LNURL Lightning address"""
+scalar LnAddress
+
+input LnAddressPaymentSendInput {
+  """Amount in satoshis."""
+  amount: SatAmount!
+
+  """Lightning address to send to."""
+  lnAddress: LnAddress!
+
+  """Wallet ID to send bitcoin from."""
+  walletId: WalletId!
+}
+
 type LnInvoice implements Invoice {
   createdAt: Timestamp!
   paymentHash: PaymentHash!
@@ -743,6 +757,20 @@ input LnUsdInvoiceFeeProbeInput {
   walletId: WalletId!
 }
 
+"""Lnurl string"""
+scalar Lnurl
+
+input LnurlPaymentSendInput {
+  """Amount in satoshis."""
+  amount: SatAmount!
+
+  """Lnurl string to send to."""
+  lnurl: Lnurl!
+
+  """Wallet ID to send bitcoin from."""
+  walletId: WalletId!
+}
+
 type MapInfo {
   coordinates: Coordinates!
   title: String!
@@ -793,6 +821,9 @@ type Mutation {
   failed, pending, already_paid).
   """
   intraLedgerUsdPaymentSend(input: IntraLedgerUsdPaymentSendInput!): PaymentSendPayload!
+
+  """Sends a payment to a lightning address."""
+  lnAddressPaymentSend(input: LnAddressPaymentSendInput!): PaymentSendPayload!
 
   """
   Returns a lightning invoice for an associated wallet.
@@ -870,6 +901,9 @@ type Mutation {
   """
   lnUsdInvoiceCreateOnBehalfOfRecipient(input: LnUsdInvoiceCreateOnBehalfOfRecipientInput!): LnInvoicePayload!
   lnUsdInvoiceFeeProbe(input: LnUsdInvoiceFeeProbeInput!): SatAmountPayload!
+
+  """Sends a payment to a lightning address."""
+  lnurlPaymentSend(input: LnurlPaymentSendInput!): PaymentSendPayload!
   onChainAddressCreate(input: OnChainAddressCreateInput!): OnChainAddressPayload!
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload!
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!

@@ -1,0 +1,12 @@
+mutation lnurlPaymentSend($input: LnurlPaymentSendInput!) {
+  lnurlPaymentSend(input: $input) {
+    errors {
+      message
+      path
+    }
+    status
+    transaction {
+      id
+    }
+  }
+}

@@ -6,6 +6,7 @@ import * as CallbackErrors from "@/domain/callback/errors"
 import * as CommErrors from "@/domain/comm/errors"
 import * as OnChainErrors from "@/domain/bitcoin/onchain/errors"
 import * as LightningErrors from "@/domain/bitcoin/lightning/errors"
+import * as LnurlErrors from "@/domain/bitcoin/lnurl/errors"
 import * as PriceServiceErrors from "@/domain/price/errors"
 import * as LockServiceErrors from "@/domain/lock/errors"
 import * as RateLimitServiceErrors from "@/domain/rate-limit/errors"
@@ -35,6 +36,7 @@ export const ApplicationErrors = {
   ...CommErrors,
   ...OnChainErrors,
   ...LightningErrors,
+  ...LnurlErrors,
   ...PriceServiceErrors,
   ...LockServiceErrors,
   ...RateLimitServiceErrors,

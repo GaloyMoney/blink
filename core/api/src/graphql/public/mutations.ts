@@ -10,6 +10,10 @@ import AccountEnableNotificationChannelMutation from "./root/mutation/account-en
 
 import AccountDisableNotificationChannelMutation from "./root/mutation/account-disable-notification-channel"
 
+import LnAddressPaymentSendMutation from "./root/mutation/ln-address-payment-send"
+
+import LnurlPaymentSendMutation from "./root/mutation/lnurl-payment-send"
+
 import { GT } from "@/graphql/index"
 
 import DeviceNotificationTokenCreateMutation from "@/graphql/public/root/mutation/device-notification-token-create"
@@ -111,6 +115,9 @@ export const mutationFields = {
     atWalletLevel: {
       intraLedgerPaymentSend: IntraLedgerPaymentSendMutation,
       intraLedgerUsdPaymentSend: IntraLedgerUsdPaymentSendMutation,
+
+      lnAddressPaymentSend: LnAddressPaymentSendMutation,
+      lnurlPaymentSend: LnurlPaymentSendMutation,
 
       lnInvoiceFeeProbe: LnInvoiceFeeProbeMutation,
       lnUsdInvoiceFeeProbe: LnUsdInvoiceFeeProbeMutation,

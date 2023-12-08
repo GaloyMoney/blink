@@ -723,6 +723,23 @@ enum link__Purpose {
   EXECUTION
 }
 
+"""LNURL Lightning address"""
+scalar LnAddress
+  @join__type(graph: PUBLIC)
+
+input LnAddressPaymentSendInput
+  @join__type(graph: PUBLIC)
+{
+  """Amount in satoshis."""
+  amount: SatAmount!
+
+  """Lightning address to send to."""
+  lnAddress: LnAddress!
+
+  """Wallet ID to send bitcoin from."""
+  walletId: WalletId!
+}
+
 type LnInvoice implements Invoice
   @join__implements(graph: PUBLIC, interface: "Invoice")
   @join__type(graph: PUBLIC)
@@ -929,6 +946,23 @@ type LnUpdate
   walletId: WalletId! @deprecated(reason: "Deprecated in favor of transaction")
 }
 
+"""Lnurl string"""
+scalar Lnurl
+  @join__type(graph: PUBLIC)
+
+input LnurlPaymentSendInput
+  @join__type(graph: PUBLIC)
+{
+  """Amount in satoshis."""
+  amount: SatAmount!
+
+  """Lnurl string to send to."""
+  lnurl: Lnurl!
+
+  """Wallet ID to send bitcoin from."""
+  walletId: WalletId!
+}
+
 input LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput
   @join__type(graph: PUBLIC)
 {
@@ -1054,6 +1088,9 @@ type Mutation
   """
   intraLedgerUsdPaymentSend(input: IntraLedgerUsdPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
 
+  """Sends a payment to a lightning address."""
+  lnAddressPaymentSend(input: LnAddressPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
+
   """
   Returns a lightning invoice for an associated wallet.
   When invoice is paid the value will be credited to a BTC wallet.
@@ -1130,6 +1167,9 @@ type Mutation
   """
   lnUsdInvoiceCreateOnBehalfOfRecipient(input: LnUsdInvoiceCreateOnBehalfOfRecipientInput!): LnInvoicePayload! @join__field(graph: PUBLIC)
   lnUsdInvoiceFeeProbe(input: LnUsdInvoiceFeeProbeInput!): SatAmountPayload! @join__field(graph: PUBLIC)
+
+  """Sends a payment to a lightning address."""
+  lnurlPaymentSend(input: LnurlPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
   onChainAddressCreate(input: OnChainAddressCreateInput!): OnChainAddressPayload! @join__field(graph: PUBLIC)
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload! @join__field(graph: PUBLIC)
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
