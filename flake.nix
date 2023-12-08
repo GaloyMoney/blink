@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    concourse-shared.url = "github:galoymoney/concourse-shared";
 
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
@@ -18,6 +19,7 @@
     self,
     nixpkgs,
     flake-utils,
+    concourse-shared,
     rust-overlay,
   }:
     flake-utils.lib.eachDefaultSystem (system: let
@@ -208,6 +210,8 @@
             cp -rpv "build/$name-$system/bin" "$out/"
           '';
         };
+
+      gh-token = concourse-shared.packages.${system}.gh-token;
     in
       with pkgs; {
         packages = {
@@ -250,6 +254,7 @@
                   bash
                   yq-go
                   google-cloud-sdk
+                  gh-token
                   openssh
                   rsync
                   git-cliff
