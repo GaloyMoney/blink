@@ -1,9 +1,14 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "com.galoyapp",
-    "sha256_cert_fingerprints":
-    ["DE:C0:07:80:F0:D9:22:00:BB:E4:B2:2F:A9:1D:CD:5D:C9:8B:B8:18:12:EA:3A:76:3A:53:40:88:57:4B:4B:01"]
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.galoyapp",
+      "sha256_cert_fingerprints": [
+        "DE:C0:07:80:F0:D9:22:00:BB:E4:B2:2F:A9:1D:CD:5D:C9:8B:B8:18:12:EA:3A:76:3A:53:40:88:57:4B:4B:01"
+      ]
+    }
   }
-}]
+]
