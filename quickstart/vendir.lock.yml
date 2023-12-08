@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: set warn for paymentRequest alert (#3675)'
-      sha: 55fbb69721f33c5a9b1e51ed94d826dd22c50bae
+      commitTitle: 'build: add gh-token to dev img (#3669)'
+      sha: f682dc5c197e7452f2a169371414f5e01c4a04ab
       tags:
-      - 0.17.4-1-g55fbb6972
+      - 0.17.6-1-gf682dc5c1
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: set warn for paymentRequest alert (#3675)'
-      sha: 55fbb69721f33c5a9b1e51ed94d826dd22c50bae
+      commitTitle: 'build: add gh-token to dev img (#3669)'
+      sha: f682dc5c197e7452f2a169371414f5e01c4a04ab
       tags:
-      - 0.17.4-1-g55fbb6972
+      - 0.17.6-1-gf682dc5c1
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: set warn for paymentRequest alert (#3675)'
-      sha: 55fbb69721f33c5a9b1e51ed94d826dd22c50bae
+      commitTitle: 'build: add gh-token to dev img (#3669)'
+      sha: f682dc5c197e7452f2a169371414f5e01c4a04ab
       tags:
-      - 0.17.4-1-g55fbb6972
+      - 0.17.6-1-gf682dc5c1
     path: ./
   path: ./graphql
 kind: LockConfig
