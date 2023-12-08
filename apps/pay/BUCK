@@ -51,6 +51,7 @@ filegroup(
     "pages/**",
     "utils/**",
     "public/**",
+    "public/.well-known/**",
     "next.config.js",
     "tsconfig.json",
     "*.ts", # env.ts / middleware.ts / instrumentation.ts
