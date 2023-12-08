@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build: add gh-token to dev img (#3669)'
-      sha: f682dc5c197e7452f2a169371414f5e01c4a04ab
+      commitTitle: 'chore: bump @opentelemetry/core from 1.17.0 to 1.18.1 (#3671)...'
+      sha: f029f7a87ada9ae787531de6791ec0968cfe31e5
       tags:
-      - 0.17.6-1-gf682dc5c1
+      - 0.17.7-1-gf029f7a87
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build: add gh-token to dev img (#3669)'
-      sha: f682dc5c197e7452f2a169371414f5e01c4a04ab
+      commitTitle: 'chore: bump @opentelemetry/core from 1.17.0 to 1.18.1 (#3671)...'
+      sha: f029f7a87ada9ae787531de6791ec0968cfe31e5
       tags:
-      - 0.17.6-1-gf682dc5c1
+      - 0.17.7-1-gf029f7a87
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'build: add gh-token to dev img (#3669)'
-      sha: f682dc5c197e7452f2a169371414f5e01c4a04ab
+      commitTitle: 'chore: bump @opentelemetry/core from 1.17.0 to 1.18.1 (#3671)...'
+      sha: f029f7a87ada9ae787531de6791ec0968cfe31e5
       tags:
-      - 0.17.6-1-gf682dc5c1
+      - 0.17.7-1-gf029f7a87
     path: ./
   path: ./graphql
 kind: LockConfig
