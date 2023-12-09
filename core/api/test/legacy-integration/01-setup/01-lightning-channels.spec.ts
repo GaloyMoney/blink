@@ -1,21 +1,16 @@
-import { onChannelUpdated, updateEscrows } from "@/services/lnd/utils"
 import { ledgerAdmin } from "@/services/mongodb"
 import { sleep } from "@/utils"
 
 import {
   checkIsBalanced,
-  closeChannel,
   getChannel,
   getChannels,
   lnd1,
   lnd2,
   lndOutside1,
   lndOutside2,
-  mineBlockAndSync,
   openChannelTesting,
   setChannelFees,
-  subscribeToChannels,
-  waitFor,
   waitUntilSync,
 } from "test/helpers"
 
@@ -156,41 +151,5 @@ describe("Lightning channels", () => {
     const { base_fee_mtokens, fee_rate } = policies[0]
     expect(base_fee_mtokens).toBe("0")
     expect(fee_rate).toEqual(5000)
-  })
-
-  // FIXME: we need a way to calculate the closing fee
-  // lnd doesn't give it back to us (undefined)
-  // and bitcoind doesn't give fee for "outside" wallet
-  it.skip("opensAndCloses channel from lnd1 to lndOutside1", async () => {
-    const socket = `lnd-outside-1:9735`
-
-    await openChannelTesting({ lnd: lnd1, lndPartner: lndOutside1, socket })
-
-    const { channels } = await getChannels({ lnd: lnd1 })
-    expect(channels.length).toEqual(channelLengthMain + 1)
-
-    // @ts-ignore-next-line no-implicit-any error
-    let closedChannel
-    const sub = subscribeToChannels({ lnd: lnd1 })
-    sub.on("channel_closed", async (channel) => {
-      await onChannelUpdated({ channel, lnd: lnd1, stateChange: "closed" })
-      closedChannel = channel
-    })
-
-    await closeChannel({ lnd: lnd1, id: channels[channels.length - 1].id })
-
-    // @ts-ignore-next-line no-implicit-any error
-    await Promise.all([waitFor(() => closedChannel), mineBlockAndSync({ lnds })])
-
-    // FIXME
-    // expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
-    sub.removeAllListeners()
-
-    await updateEscrows()
-
-    {
-      const { channels } = await getChannels({ lnd: lnd1 })
-      expect(channels.length).toEqual(channelLengthMain)
-    }
   })
 })

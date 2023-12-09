@@ -13,6 +13,7 @@ import {
   lnd1,
   lndOutside1,
   mineAndConfirm,
+  resetLegacyIntegrationLnds,
 } from "test/helpers"
 import { BitcoindWalletClient } from "test/helpers/bitcoind"
 
@@ -20,6 +21,7 @@ let bitcoindOutside: BitcoindWalletClient
 
 beforeAll(async () => {
   await createMandatoryUsers()
+  await resetLegacyIntegrationLnds()
 })
 
 afterAll(async () => {
