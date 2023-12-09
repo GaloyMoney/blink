@@ -57,6 +57,7 @@ import { ErrorLevel } from "@/domain/shared"
 import { consumeLimiter } from "@/services/rate-limit"
 import { RateLimitConfig } from "@/domain/rate-limit"
 import { RateLimiterExceededError } from "@/domain/rate-limit/errors"
+import { kratosAdmin } from "@/services/kratos/private"
 
 export const loginWithPhoneToken = async ({
   phone,
@@ -400,3 +401,36 @@ const checkDeviceLoginAttemptPerAppcheckJtiLimits = async (
     rateLimitConfig: RateLimitConfig.deviceAccountCreate,
     keyToConsume: appcheckJti,
   })
+
+export const getAuthTokenFromUserId = async (
+  userId: UserId,
+): Promise<AuthToken | AuthenticationError> => {
+  const { data } = await kratosAdmin.getIdentity({ id: userId })
+  let authToken = null
+  let kratosResult = null
+
+  const phone = data?.traits?.phone
+  const email = data?.traits?.email
+
+  if (phone) {
+    const authService = AuthWithPhonePasswordlessService()
+    kratosResult = await authService.loginToken({ phone })
+  } else if (email) {
+    const emailAuthService = AuthWithEmailPasswordlessService()
+    kratosResult = await emailAuthService.loginToken({ email })
+  } else {
+    return new IdentifierNotFoundError()
+  }
+
+  if (kratosResult instanceof Error) {
+    return kratosResult
+  }
+
+  authToken = kratosResult?.authToken
+
+  if (!authToken) {
+    return new IdentifierNotFoundError()
+  }
+
+  return authToken
+}

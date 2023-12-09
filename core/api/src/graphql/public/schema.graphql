@@ -1557,6 +1557,7 @@ type UserTotpRegistrationInitiatePayload {
 }
 
 input UserTotpRegistrationValidateInput {
+  authToken: AuthToken
   totpCode: TotpCode!
   totpRegistrationId: TotpRegistrationId!
 }

@@ -1,11 +1,8 @@
 import { UiNodeTextAttributes } from "@ory/client"
 
-import { isAxiosError } from "axios"
-
 import {
   AuthenticationKratosError,
   MissingTotpKratosError,
-  SessionRefreshRequiredError,
   UnknownKratosError,
 } from "./errors"
 import { kratosAdmin, kratosPublic } from "./private"
