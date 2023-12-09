@@ -30,6 +30,7 @@ import {
   recordExceptionInCurrentSpan,
   tracer,
 } from "@/services/tracing"
+import { checkedToReferralAppId } from "@/domain/accounts"
 
 const authRouter = express.Router({ caseSensitive: true })
 
@@ -355,10 +356,20 @@ authRouter.post("/phone/login", async (req: Request, res: Response) => {
   const phone = checkedToPhoneNumber(phoneRaw)
   if (phone instanceof Error) return res.status(400).json({ error: "invalid phone" })
 
+  let referralAppId: ReferralAppId | undefined
+  const appIdRaw = req.body.appId
+  if (appIdRaw) {
+    const appIdCheck = checkedToReferralAppId(appIdRaw)
+    if (appIdCheck instanceof Error)
+      return res.status(400).json({ error: "invalid appId" })
+    referralAppId = appIdCheck
+  }
+
   const loginResp = await Authentication.loginWithPhoneToken({
     phone,
     code,
     ip,
+    referralAppId,
   })
   if (loginResp instanceof Error) {
     return res.status(500).send({ error: mapError(loginResp).message })

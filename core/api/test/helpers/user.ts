@@ -76,6 +76,8 @@ export const createUserAndWalletFromPhone = async (
     account = await createAccountWithPhoneIdentifier({
       newAccountInfo: { phone, kratosUserId },
       config: getDefaultAccountsConfig(),
+      referralCode: undefined,
+      referralAppId: undefined,
     })
     if (account instanceof Error) throw account
 
@@ -164,6 +166,8 @@ export const createUserAndWallet = async (
     account = await createAccountWithPhoneIdentifier({
       newAccountInfo: { phone, kratosUserId },
       config: getDefaultAccountsConfig(),
+      referralCode: undefined,
+      referralAppId: undefined,
     })
     if (account instanceof Error) throw account
 

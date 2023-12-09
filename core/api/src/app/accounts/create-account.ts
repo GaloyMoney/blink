@@ -13,10 +13,14 @@ const initializeCreatedAccount = async ({
   account,
   config,
   phone,
+  referralCode,
+  referralAppId,
 }: {
   account: Account
   config: AccountsConfig
   phone?: PhoneNumber
+  referralCode: ReferralCode | undefined
+  referralAppId: ReferralAppId | undefined
 }): Promise<Account | ApplicationError> => {
   const walletsEnabledConfig = config.initialWallets
 
@@ -50,6 +54,8 @@ const initializeCreatedAccount = async ({
 
   account.statusHistory = [{ status: config.initialStatus, comment: "Initial Status" }]
   account.level = config.initialLevel
+  account.referralCode = referralCode
+  account.referralAppId = referralAppId
 
   const updatedAccount = await AccountsRepository().update(account)
   if (updatedAccount instanceof Error) return updatedAccount
@@ -76,6 +82,8 @@ export const createAccountForDeviceAccount = async ({
   return initializeCreatedAccount({
     account: accountNew,
     config: levelZeroAccountsConfig,
+    referralCode: undefined,
+    referralAppId: undefined,
   })
 }
 
@@ -83,10 +91,14 @@ export const createAccountWithPhoneIdentifier = async ({
   newAccountInfo: { kratosUserId, phone },
   config,
   phoneMetadata,
+  referralCode,
+  referralAppId,
 }: {
   newAccountInfo: NewAccountWithPhoneIdentifier
   config: AccountsConfig
   phoneMetadata?: PhoneMetadata
+  referralCode: ReferralCode | undefined
+  referralAppId: ReferralAppId | undefined
 }): Promise<Account | RepositoryError> => {
   const user = await UsersRepository().update({ id: kratosUserId, phone, phoneMetadata })
   if (user instanceof Error) return user
@@ -98,6 +110,8 @@ export const createAccountWithPhoneIdentifier = async ({
     account: accountNew,
     config,
     phone,
+    referralCode,
+    referralAppId,
   })
   if (account instanceof Error) return account
 

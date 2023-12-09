@@ -107,6 +107,8 @@ type Account = {
   readonly contacts: AccountContact[]
   kratosUserId: UserId
   displayCurrency: DisplayCurrency
+  referralCode?: ReferralCode
+  referralAppId?: ReferralAppId
   // temp
   role?: string
 }

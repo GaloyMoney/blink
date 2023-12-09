@@ -1,10 +1,12 @@
 CURRENT_FILE=${BASH_SOURCE:-bats/helpers/.}
+echo "Sourcing file: $CURRENT_FILE"
 source "$(dirname "$CURRENT_FILE")/_common.bash"
 source "$(dirname "$CURRENT_FILE")/cli.bash"
 
 login_user() {
   local token_name=$1
   local phone=$2
+  local referralCode=$3
 
   local code="000000"
 
@@ -13,7 +15,8 @@ login_user() {
     jq -n \
     --arg phone "$phone" \
     --arg code "$code" \
-    '{input: {phone: $phone, code: $code}}'
+    --arg referralCode "$referralCode" \
+    '{input: {phone: $phone, code: $code, referralCode: $referralCode}}'
   )
   exec_graphql 'anon' 'user-login' "$variables"
   auth_token="$(graphql_output '.data.userLogin.authToken')"

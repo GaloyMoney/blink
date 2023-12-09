@@ -89,6 +89,8 @@ interface AccountRecord {
   onchain: OnChainObjectForUser[]
   defaultWalletId: WalletId
   displayCurrency?: string
+  referralAppId?: string
+  referralCode?: string
 
   // mongoose in-built functions
   save: () => Promise<AccountRecord>

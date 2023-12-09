@@ -14,7 +14,12 @@ import {
   InvalidWithdrawFeeError,
   InvalidUserId,
   InvalidAccountLevelError,
+  InvalidReferralCodeError,
+  InvalidReferralAppIdError,
 } from "@/domain/errors"
+
+const UuidRegex =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 export * from "./errors"
 export * from "./limits-checker"
@@ -110,4 +115,22 @@ export const checkedToAccountId = (
 export const checkedToAccountLevel = (level: number): AccountLevel | ValidationError => {
   if (Object.values<number>(AccountLevel).includes(level)) return level as AccountLevel
   return new InvalidAccountLevelError()
+}
+
+export const checkedToReferralCode = (
+  referral: string,
+): ReferralCode | ValidationError => {
+  if (referral.length > 12) {
+    return new InvalidReferralCodeError(referral)
+  }
+  return referral as ReferralCode
+}
+
+export const checkedToReferralAppId = (
+  appId: string,
+): ReferralAppId | ValidationError => {
+  if (!appId.match(UuidRegex)) {
+    return new InvalidReferralAppIdError(appId)
+  }
+  return appId as ReferralAppId
 }

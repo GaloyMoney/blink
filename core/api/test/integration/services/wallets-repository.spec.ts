@@ -5,7 +5,7 @@ import mongoose from "mongoose"
 import {
   CouldNotFindAccountFromIdError,
   CouldNotFindWalletFromAccountIdAndCurrencyError,
-  MultipleWalletsFoundForAccountIdAndCurrency,
+  MultipleWalletsFoundForAccountIdAndCurrencyError,
   RepositoryError,
 } from "@/domain/errors"
 import { WalletCurrency } from "@/domain/shared"
@@ -72,7 +72,9 @@ describe("WalletsRepository", () => {
       await newWallet(WalletCurrency.Usd)
 
       const accountWallets = await wallets.findAccountWalletsByAccountId(accountId)
-      expect(accountWallets).toBeInstanceOf(MultipleWalletsFoundForAccountIdAndCurrency)
+      expect(accountWallets).toBeInstanceOf(
+        MultipleWalletsFoundForAccountIdAndCurrencyError,
+      )
       expect((accountWallets as RepositoryError).message).toBe(WalletCurrency.Btc)
     })
 
@@ -82,7 +84,9 @@ describe("WalletsRepository", () => {
       await newWallet(WalletCurrency.Usd)
 
       const accountWallets = await wallets.findAccountWalletsByAccountId(accountId)
-      expect(accountWallets).toBeInstanceOf(MultipleWalletsFoundForAccountIdAndCurrency)
+      expect(accountWallets).toBeInstanceOf(
+        MultipleWalletsFoundForAccountIdAndCurrencyError,
+      )
       expect((accountWallets as RepositoryError).message).toBe(WalletCurrency.Usd)
     })
   })
