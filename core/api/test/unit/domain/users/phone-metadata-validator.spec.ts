@@ -3,7 +3,6 @@ import {
   InvalidCarrierTypeForPhoneMetadataError,
   InvalidCountryCodeForPhoneMetadataError,
   InvalidErrorCodeForPhoneMetadataError,
-  InvalidMobileCountryCodeForPhoneMetadataError,
 } from "@/domain/users/errors"
 import { PhoneMetadataValidator } from "@/domain/users"
 
@@ -70,30 +69,6 @@ describe("PhoneMetadataValidator", () => {
 
       const phoneMetadata = PhoneMetadataValidator().validate(invalidRawPhoneMetadata)
       expect(phoneMetadata).toBeInstanceOf(InvalidErrorCodeForPhoneMetadataError)
-    }
-  })
-
-  it("returns error for invalid mobile country code type", async () => {
-    // Missing
-    {
-      const invalidRawPhoneMetadata = {
-        carrier: { type: "mobile", error_code: "" },
-        countryCode: "US",
-      }
-
-      const phoneMetadata = PhoneMetadataValidator().validate(invalidRawPhoneMetadata)
-      expect(phoneMetadata).toBeInstanceOf(InvalidMobileCountryCodeForPhoneMetadataError)
-    }
-
-    // Incorrect type
-    {
-      const invalidRawPhoneMetadata = {
-        carrier: { type: "mobile", error_code: "", mobile_country_code: null },
-        countryCode: "US",
-      }
-
-      const phoneMetadata = PhoneMetadataValidator().validate(invalidRawPhoneMetadata)
-      expect(phoneMetadata).toBeInstanceOf(InvalidMobileCountryCodeForPhoneMetadataError)
     }
   })
 

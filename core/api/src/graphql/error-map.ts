@@ -674,7 +674,6 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "InvalidCarrierForPhoneMetadataError":
     case "InvalidCarrierTypeForPhoneMetadataError":
     case "InvalidErrorCodeForPhoneMetadataError":
-    case "InvalidMobileCountryCodeForPhoneMetadataError":
     case "InvalidCountryCodeForPhoneMetadataError":
     case "MultipleWalletsFoundForAccountIdAndCurrency":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${

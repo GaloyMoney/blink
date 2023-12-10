@@ -1,11 +1,14 @@
+import { ErrorLevel } from "../shared"
+
 import {
   InvalidCarrierForPhoneMetadataError,
   InvalidCarrierTypeForPhoneMetadataError,
   InvalidCountryCodeForPhoneMetadataError,
   InvalidErrorCodeForPhoneMetadataError,
-  InvalidMobileCountryCodeForPhoneMetadataError,
+  PhoneMetadataValidationError,
 } from "./errors"
 
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
 import { CarrierType } from "@/domain/phone-provider"
 
 const checkedToCarrierType = (
@@ -47,7 +50,12 @@ export const PhoneMetadataValidator = (): PhoneMetadataValidator => {
     }
 
     if (typeof mobile_country_code !== "string") {
-      return new InvalidMobileCountryCodeForPhoneMetadataError(mobile_country_code)
+      recordExceptionInCurrentSpan({
+        error: new PhoneMetadataValidationError(
+          `mobile_country_code is not a string: ${mobile_country_code}`,
+        ),
+        level: ErrorLevel.Warn,
+      })
     }
 
     if (typeof countryCode !== "string") {

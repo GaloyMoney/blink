@@ -22,8 +22,8 @@ type ChannelType =
 type PhoneMetadata = {
   // from twilio
   carrier: {
-    error_code: string // check this is the right syntax
-    mobile_country_code: string
+    error_code: string | null
+    mobile_country_code: string | null
     mobile_network_code: string | null
     name: string | null
     type: CarrierType | null
