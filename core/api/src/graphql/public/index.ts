@@ -9,7 +9,7 @@ import { ALL_INTERFACE_TYPES } from "@/graphql/public/types"
 export { queryFields } from "./queries"
 export { mutationFields } from "./mutations"
 
-export const gqlMainSchema = new GraphQLSchema({
+export const gqlPublicSchema = new GraphQLSchema({
   query: QueryType,
   mutation: MutationType,
   subscription: SubscriptionType,

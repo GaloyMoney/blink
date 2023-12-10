@@ -17,7 +17,7 @@ import { scopeMiddleware } from "./middlewares/scope"
 import { GALOY_API_PORT, UNSECURE_IP_FROM_REQUEST_OBJECT } from "@/config"
 
 import { AuthorizationError } from "@/graphql/error"
-import { gqlMainSchema, mutationFields, queryFields } from "@/graphql/public"
+import { gqlPublicSchema, mutationFields, queryFields } from "@/graphql/public"
 
 import { baseLogger } from "@/services/logger"
 
@@ -104,7 +104,7 @@ export async function startApolloServerForCoreSchema() {
   )
 
   const schema = applyMiddleware(
-    gqlMainSchema,
+    gqlPublicSchema,
     permissions,
     walletIdMiddleware,
     scopeMiddleware,
