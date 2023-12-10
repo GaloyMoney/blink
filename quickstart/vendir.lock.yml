@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(pay): include .well-known folder in build (#3679)'
-      sha: 6934227ed5b4b04117225e0a0fb63cc64039f261
+      commitTitle: 'chore: do not return error on InvalidMobileCountryCodeForPhoneMetadat…
+        (#3668)...'
+      sha: cde34591ba17cc85759a07006034eb275236c3fe
       tags:
-      - 0.17.8-1-g6934227ed
+      - 0.17.9-2-gcde34591b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(pay): include .well-known folder in build (#3679)'
-      sha: 6934227ed5b4b04117225e0a0fb63cc64039f261
+      commitTitle: 'chore: do not return error on InvalidMobileCountryCodeForPhoneMetadat…
+        (#3668)...'
+      sha: cde34591ba17cc85759a07006034eb275236c3fe
       tags:
-      - 0.17.8-1-g6934227ed
+      - 0.17.9-2-gcde34591b
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(pay): include .well-known folder in build (#3679)'
-      sha: 6934227ed5b4b04117225e0a0fb63cc64039f261
+      commitTitle: 'chore: do not return error on InvalidMobileCountryCodeForPhoneMetadat…
+        (#3668)...'
+      sha: cde34591ba17cc85759a07006034eb275236c3fe
       tags:
-      - 0.17.8-1-g6934227ed
+      - 0.17.9-2-gcde34591b
     path: ./
   path: ./graphql
 kind: LockConfig
