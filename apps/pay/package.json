@@ -46,7 +46,7 @@
     "@graphql-codegen/client-preset": "^4.1.0",
     "@graphql-codegen/typescript": "^3.0.2",
     "@graphql-codegen/typescript-operations": "^3.0.2",
-    "@graphql-codegen/typescript-react-apollo": "^3.3.7",
+    "@graphql-codegen/typescript-react-apollo": "^4.1.0",
     "@types/eslint": "^8.2.0",
     "@types/lodash.debounce": "^4.0.6",
     "@types/node": "^20.8.9",
