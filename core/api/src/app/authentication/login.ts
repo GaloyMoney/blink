@@ -8,6 +8,7 @@ import {
 import { createAccountForDeviceAccount } from "@/app/accounts/create-account"
 
 import {
+  AuthenticationError,
   EmailUnverifiedError,
   IdentifierNotFoundError,
 } from "@/domain/authentication/errors"
@@ -406,8 +407,11 @@ export const getAuthTokenFromUserId = async (
   userId: UserId,
 ): Promise<AuthToken | AuthenticationError> => {
   const { data } = await kratosAdmin.getIdentity({ id: userId })
-  let authToken = null
-  let kratosResult = null
+  let kratosResult:
+    | IAuthWithEmailPasswordlessService
+    | LoginWithPhoneNoPasswordSchemaResponse
+    | KratosError
+    | null = null
 
   const phone = data?.traits?.phone
   const email = data?.traits?.email
@@ -426,11 +430,5 @@ export const getAuthTokenFromUserId = async (
     return kratosResult
   }
 
-  authToken = kratosResult?.authToken
-
-  if (!authToken) {
-    return new IdentifierNotFoundError()
-  }
-
-  return authToken
+  return kratosResult?.authToken
 }

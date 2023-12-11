@@ -28,7 +28,7 @@ const UserTotpRegistrationValidateMutation = GT.Field<
     input: {
       totpCode: TotpCode | InputValidationError
       totpRegistrationId: TotpRegistrationId | InputValidationError
-      authToken: AuthToken | null
+      authToken: AuthToken | null | InputValidationError
     }
   }
 >({
@@ -48,6 +48,10 @@ const UserTotpRegistrationValidateMutation = GT.Field<
 
     if (totpRegistrationId instanceof Error) {
       return { errors: [{ message: totpRegistrationId.message }] }
+    }
+
+    if (authToken instanceof Error) {
+      return { errors: [{ message: authToken.message }] }
     }
 
     const me = await Authentication.validateTotpRegistration({

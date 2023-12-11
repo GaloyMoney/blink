@@ -52,7 +52,7 @@ export const validateTotpRegistration = async ({
   })
 }
 
-export const validateTotpRegistrationWithoutToken = async ({
+const validateTotpRegistrationWithoutToken = async ({
   totpCode,
   totpRegistrationId,
   userId,
@@ -79,7 +79,7 @@ export const validateTotpRegistrationWithoutToken = async ({
   return me
 }
 
-export const validateTotpRegistrationWithToken = async ({
+const validateTotpRegistrationWithToken = async ({
   authToken,
   totpCode,
   totpRegistrationId,
