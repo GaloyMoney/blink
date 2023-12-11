@@ -254,6 +254,7 @@
                   bash
                   yq-go
                   google-cloud-sdk
+                  gh
                   gh-token
                   openssh
                   rsync
