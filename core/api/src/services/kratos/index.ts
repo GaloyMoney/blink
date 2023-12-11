@@ -1,3 +1,4 @@
+import { AuthWithPhonePasswordlessService } from "./auth-phone-no-password"
 import { AuthenticationKratosError, UnknownKratosError } from "./errors"
 import { kratosAdmin, kratosPublic, toDomainSession } from "./private"
 
@@ -88,4 +89,11 @@ export const listSessions = async (userId: UserId): Promise<Session[] | KratosEr
   } catch (err) {
     return new UnknownKratosError(err)
   }
+}
+
+export const logoutSessionByAuthToken = async (authToken: AuthToken) => {
+  const authService = AuthWithPhonePasswordlessService()
+  const sessionResponse = await kratosPublic.toSession({ xSessionToken: authToken })
+  const sessionId = sessionResponse.data.id as SessionId
+  await authService.logoutToken({ sessionId })
 }

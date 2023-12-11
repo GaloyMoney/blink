@@ -193,8 +193,7 @@ generateTotpCode() {
   sleep 2
 
   # Initiate TOTP Registration
-  variables="{\"input\": {\"authToken\": \"$authToken\"}}"
-  exec_graphql 'charlie' 'user-totp-registration-initiate' "$variables"
+  exec_graphql 'charlie' 'user-totp-registration-initiate' 
 
   totpRegistrationId="$(graphql_output '.data.userTotpRegistrationInitiate.totpRegistrationId')"
   [[ "$totpRegistrationId" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]] || exit 1
@@ -241,10 +240,7 @@ generateTotpCode() {
 }
 
 @test "auth: removing totp" {
-  authToken=$(read_value "$TOKEN_NAME")
-  variables="{\"input\": {\"authToken\": \"$authToken\"}}"
-
-  exec_graphql 'charlie' 'user-totp-delete' "$variables"
+  exec_graphql 'charlie' 'user-totp-delete'
   [[ "$(graphql_output '.data.userTotpDelete.me.totpEnabled')" = "false" ]] || exit 1
 }
 

@@ -1,5 +1,5 @@
-mutation userTotpDelete($input: UserTotpDeleteInput!) {
-  userTotpDelete(input: $input) {
+mutation userTotpDelete {
+  userTotpDelete {
     errors {
       message
     }

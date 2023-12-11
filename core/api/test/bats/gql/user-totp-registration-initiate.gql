@@ -1,5 +1,5 @@
-mutation userTotpRegistrationInitiate($input: UserTotpRegistrationInitiateInput!) {
-  userTotpRegistrationInitiate(input: $input) {
+mutation userTotpRegistrationInitiate {
+  userTotpRegistrationInitiate {
     errors {
       message
     }

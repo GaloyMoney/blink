@@ -1,23 +1,22 @@
 import { GT } from "@/graphql/index"
-
 import { Authentication } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
-import AuthToken from "@/graphql/shared/types/scalar/auth-token"
 import TotpCode from "@/graphql/public/types/scalar/totp-code"
 import TotpRegistrationId from "@/graphql/public/types/scalar/totp-verify-id"
 import UserTotpRegistrationValidatePayload from "@/graphql/public/types/payload/user-totp-registration-validate"
+import AuthToken from "@/graphql/shared/types/scalar/auth-token"
 
 const UserTotpRegistrationValidateInput = GT.Input({
   name: "UserTotpRegistrationValidateInput",
   fields: () => ({
-    authToken: {
-      type: GT.NonNull(AuthToken),
-    },
     totpCode: {
       type: GT.NonNull(TotpCode),
     },
     totpRegistrationId: {
       type: GT.NonNull(TotpRegistrationId),
+    },
+    authToken: {
+      type: AuthToken,
     },
   }),
 })
@@ -27,9 +26,9 @@ const UserTotpRegistrationValidateMutation = GT.Field<
   GraphQLPublicContextAuth,
   {
     input: {
-      authToken: AuthToken | InputValidationError
       totpCode: TotpCode | InputValidationError
       totpRegistrationId: TotpRegistrationId | InputValidationError
+      authToken: AuthToken | null | InputValidationError
     }
   }
 >({
@@ -41,16 +40,18 @@ const UserTotpRegistrationValidateMutation = GT.Field<
     input: { type: GT.NonNull(UserTotpRegistrationValidateInput) },
   },
   resolve: async (_, args, { user }) => {
-    const { authToken, totpCode, totpRegistrationId } = args.input
+    const { totpCode, totpRegistrationId, authToken } = args.input
 
-    if (authToken instanceof Error) {
-      return { errors: [{ message: authToken.message }] }
-    }
     if (totpCode instanceof Error) {
       return { errors: [{ message: totpCode.message }] }
     }
+
     if (totpRegistrationId instanceof Error) {
       return { errors: [{ message: totpRegistrationId.message }] }
+    }
+
+    if (authToken instanceof Error) {
+      return { errors: [{ message: authToken.message }] }
     }
 
     const me = await Authentication.validateTotpRegistration({

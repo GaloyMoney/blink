@@ -156,7 +156,7 @@ describe("phoneNoPassword", () => {
         expect(res2).toBe(true)
       }
 
-      await kratosRemoveTotp(authToken)
+      await kratosRemoveTotp(userId)
 
       // wait for the identity to be updated?
       // some cache or asynchronous method need to run on the kratos side?

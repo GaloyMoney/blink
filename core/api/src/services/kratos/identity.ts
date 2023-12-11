@@ -3,6 +3,9 @@ import { Identity as KratosIdentity } from "@ory/client"
 import { KratosError, UnknownKratosError } from "./errors"
 import { kratosAdmin, toDomainIdentity } from "./private"
 
+import { AuthWithPhonePasswordlessService } from "./auth-phone-no-password"
+import { AuthWithEmailPasswordlessService } from "./auth-email-no-password"
+
 import { IdentifierNotFoundError } from "@/domain/authentication/errors"
 
 export const IdentityRepository = (): IIdentityRepository => {
@@ -85,4 +88,34 @@ export const getNextPageToken = (link: string): string | undefined => {
   }
 
   return undefined
+}
+
+export const getAuthTokenFromUserId = async (
+  userId: UserId,
+): Promise<AuthToken | AuthenticationError> => {
+  const { data } = await kratosAdmin.getIdentity({ id: userId })
+  let kratosResult:
+    | IAuthWithEmailPasswordlessService
+    | LoginWithPhoneNoPasswordSchemaResponse
+    | KratosError
+    | null = null
+
+  const phone = data?.traits?.phone
+  const email = data?.traits?.email
+
+  if (phone) {
+    const authService = AuthWithPhonePasswordlessService()
+    kratosResult = await authService.loginToken({ phone })
+  } else if (email) {
+    const emailAuthService = AuthWithEmailPasswordlessService()
+    kratosResult = await emailAuthService.loginToken({ email })
+  } else {
+    return new IdentifierNotFoundError()
+  }
+
+  if (kratosResult instanceof Error) {
+    return kratosResult
+  }
+
+  return kratosResult?.authToken
 }
