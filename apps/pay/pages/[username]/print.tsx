@@ -8,9 +8,8 @@ import { QRCode } from "react-qrcode-logo"
 import { useRef } from "react"
 
 import { NextRequest } from "next/server"
-import originalUrl from "original-url"
 
-import { env } from "../../env"
+import { getOriginalRequestInfo } from "../../utils/utils"
 
 export async function getServerSideProps({
   req,
@@ -19,23 +18,24 @@ export async function getServerSideProps({
   req: NextRequest
   params: { username: string }
 }) {
-  // eslint-disable-next-line
-  // @ts-ignore
-  const url = originalUrl(req)
+  const originalUrlInfo = getOriginalRequestInfo(req)
 
   const lnurl = bech32.encode(
     "lnurl",
     bech32.toWords(
       Buffer.from(
-        `${url.protocol}//${url.hostname}/.well-known/lnurlp/${username}`,
+        `${originalUrlInfo}://${originalUrlInfo.hostname}${
+          originalUrlInfo.port ? `:${originalUrlInfo.port}` : ""
+        }/.well-known/lnurlp/${username}`,
         "utf8",
       ),
     ),
     1500,
   )
 
-  // Note: add the port to the webURL for local development
-  const webURL = `${url.protocol}//${url.hostname}/${username}`
+  const webURL = `${originalUrlInfo.protocol}//${originalUrlInfo.hostname}${
+    originalUrlInfo.port ? `:${originalUrlInfo.port}` : ""
+  }/${username}`
 
   const qrCodeURL = (webURL + "?lightning=" + lnurl).toUpperCase()
 
@@ -43,7 +43,7 @@ export async function getServerSideProps({
     props: {
       qrCodeURL,
       username,
-      userHeader: `Pay ${username}@${env.PAY_DOMAIN}`,
+      userHeader: `Pay ${username}@${originalUrlInfo.hostname}`,
     },
   }
 }

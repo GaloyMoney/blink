@@ -1,4 +1,5 @@
 import { ParsedUrlQuery } from "querystring"
+import { URL } from "url"
 
 export const usdFormatter = new Intl.NumberFormat("en-US", {
   // style: "currency",
@@ -33,6 +34,22 @@ export function parseDisplayCurrency(query: ParsedUrlQuery) {
 
   return {
     display: display ?? localStorage.getItem("display") ?? "USD",
+  }
+}
+
+export const getOriginalRequestInfo = (request: Request) => {
+  const url = new URL(request.url)
+  const hostname = request.headers.get("x-forwarded-host")
+    ? request.headers.get("x-forwarded-host")?.split(":")[0]
+    : url.hostname
+  const protocol =
+    request.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "")
+  const port = request.headers.get("x-forwarded-port") ?? url.port
+
+  return {
+    hostname,
+    protocol,
+    port,
   }
 }
 
