@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: add gh to dev img (#3691)'
-      sha: fc8c308d5231030012445ba137907b50ad93b669
+      commitTitle: 'chore(core)!: update totp mutation to start kratos session (#3651)...'
+      sha: cc990bc8a52e5e2cd79f3b20e80e16e00c615d37
       tags:
-      - 0.17.11-1-gfc8c308d5
+      - 0.17.12-1-gcc990bc8a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: add gh to dev img (#3691)'
-      sha: fc8c308d5231030012445ba137907b50ad93b669
+      commitTitle: 'chore(core)!: update totp mutation to start kratos session (#3651)...'
+      sha: cc990bc8a52e5e2cd79f3b20e80e16e00c615d37
       tags:
-      - 0.17.11-1-gfc8c308d5
+      - 0.17.12-1-gcc990bc8a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: add gh to dev img (#3691)'
-      sha: fc8c308d5231030012445ba137907b50ad93b669
+      commitTitle: 'chore(core)!: update totp mutation to start kratos session (#3651)...'
+      sha: cc990bc8a52e5e2cd79f3b20e80e16e00c615d37
       tags:
-      - 0.17.11-1-gfc8c308d5
+      - 0.17.12-1-gcc990bc8a
     path: ./
   path: ./graphql
 kind: LockConfig
