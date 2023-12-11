@@ -12,7 +12,7 @@ Galoy-Pay uses query, mutation, and subscription operations from the Galoy's gra
 
 ## How to run this repo locally ?
 
-`.env.local` is set with values that works for local dev.
+`.env.local` is set with values that work for local dev.
 
 for staging, use `.env.local` with the following properties
 
