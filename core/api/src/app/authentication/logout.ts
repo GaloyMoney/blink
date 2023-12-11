@@ -3,7 +3,6 @@ import {
   AuthWithPhonePasswordlessService,
   MissingSessionIdError,
 } from "@/services/kratos"
-import { kratosPublic } from "@/services/kratos/private"
 
 export const logoutToken = async ({
   userId,
@@ -27,11 +26,4 @@ export const logoutToken = async ({
   }
 
   return true
-}
-
-export const logoutSessionByAuthToken = async (authToken: AuthToken) => {
-  const authService = AuthWithPhonePasswordlessService()
-  const sessionResponse = await kratosPublic.toSession({ xSessionToken: authToken })
-  const sessionId = sessionResponse.data.id as SessionId
-  await authService.logoutToken({ sessionId })
 }
