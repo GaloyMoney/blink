@@ -5,10 +5,10 @@ import {
   kratosInitiateTotp,
   kratosElevatingSessionWithTotp,
   kratosRemoveTotp,
+  getAuthTokenFromUserId,
 } from "@/services/kratos"
 
 import { UsersRepository } from "@/services/mongoose"
-import { getAuthTokenFromUserId } from "@/app/authentication/login"
 import { logoutSessionByAuthToken } from "@/app/authentication/logout"
 
 export const initiateTotpRegistration = async ({
