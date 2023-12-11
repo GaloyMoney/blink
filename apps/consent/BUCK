@@ -65,6 +65,7 @@ prod_deps_srcs = {
 next_build(
     name = "build",
     srcs = [":src"],
+    prod_deps_srcs = prod_deps_srcs
 )
 
 next_build_bin(
