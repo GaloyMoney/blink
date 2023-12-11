@@ -53,6 +53,15 @@ filegroup(
     ]),
 )
 
+dev_deps_srcs = {
+  "lib/eslint-config": "//lib/eslint-config:src",
+}
+
+prod_deps_srcs = {
+  "lib/galoy-components": "//lib/galoy-components:src",
+}
+
+
 next_build(
     name = "build",
     srcs = [":src"],
@@ -61,11 +70,6 @@ next_build(
 next_build_bin(
     name = "consent",
 )
-
-dev_deps_srcs = {
-    "lib/eslint-config": "//lib/eslint-config:src",
-    "lib/galoy-components": "//lib/galoy-components:src",
-}
 
 audit(
     name = "audit",
