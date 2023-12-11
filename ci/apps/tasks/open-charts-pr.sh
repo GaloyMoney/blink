@@ -16,6 +16,23 @@ github_url=$(grep "digest: \"${old_digest}\"" "./charts/${CHART}/values.yaml" \
 old_ref=$(grep "digest: \"${old_digest}\"" "./charts/${CHART}/values.yaml" \
   | sed -n 's/.*commit_ref=\([^;]*\);.*/\1/p' | tr -d ' \n')
 
+pushd ../repo
+
+app_src_files=$(buck2 cquery 'kind("filegroup", deps("'"//apps/${APP}:"'", 0))' --output-attribute src 2>/dev/null | jq -r '[.[]["srcs"][] | sub("root//"; "")]' | jq -r '.[]')
+
+relevant_commits=()
+
+for commit in $(git log --format="%H" ${old_ref}..${ref}); do
+  changed_files=$(git diff-tree --no-commit-id --name-only -r $commit)
+
+  for file in ${changed_files[@]}; do
+    if [[ " ${app_src_files[*]} " == *"$file"* ]]; then
+      relevant_commits+=($commit)
+      break
+    fi
+  done
+done
+
 cat <<EOF >> ../body.md
 # Bump ${APP} image
 
@@ -23,6 +40,17 @@ Code diff contained in this image:
 
 ${github_url}/compare/${old_ref}...${ref}
 
+Relevant commits:
+EOF
+
+for commit in ${relevant_commits[@]}; do
+  cat <<EOF >> ../body.md
+- ${github_url}/commit/${commit}
+
+EOF
+done
+
+cat <<EOF >> ../body.md
 The ${APP} image will be bumped to digest:
 \`\`\`
 ${digest}
