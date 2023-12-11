@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: do not return error on InvalidMobileCountryCodeForPhoneMetadat…
-        (#3668)...'
-      sha: cde34591ba17cc85759a07006034eb275236c3fe
+      commitTitle: 'chore: better variable name (#3684)...'
+      sha: 9b344c8062b61e4148dabcdae7a4f82e4cf52d0e
       tags:
-      - 0.17.9-2-gcde34591b
+      - 0.17.9-4-g9b344c806
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: do not return error on InvalidMobileCountryCodeForPhoneMetadat…
-        (#3668)...'
-      sha: cde34591ba17cc85759a07006034eb275236c3fe
+      commitTitle: 'chore: better variable name (#3684)...'
+      sha: 9b344c8062b61e4148dabcdae7a4f82e4cf52d0e
       tags:
-      - 0.17.9-2-gcde34591b
+      - 0.17.9-4-g9b344c806
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: do not return error on InvalidMobileCountryCodeForPhoneMetadat…
-        (#3668)...'
-      sha: cde34591ba17cc85759a07006034eb275236c3fe
+      commitTitle: 'chore: better variable name (#3684)...'
+      sha: 9b344c8062b61e4148dabcdae7a4f82e4cf52d0e
       tags:
-      - 0.17.9-2-gcde34591b
+      - 0.17.9-4-g9b344c806
     path: ./
   path: ./graphql
 kind: LockConfig
