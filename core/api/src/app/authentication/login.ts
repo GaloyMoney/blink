@@ -400,4 +400,3 @@ const checkDeviceLoginAttemptPerAppcheckJtiLimits = async (
     rateLimitConfig: RateLimitConfig.deviceAccountCreate,
     keyToConsume: appcheckJti,
   })
-

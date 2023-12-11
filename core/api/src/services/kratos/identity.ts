@@ -3,9 +3,10 @@ import { Identity as KratosIdentity } from "@ory/client"
 import { KratosError, UnknownKratosError } from "./errors"
 import { kratosAdmin, toDomainIdentity } from "./private"
 
-import { IdentifierNotFoundError } from "@/domain/authentication/errors"
 import { AuthWithPhonePasswordlessService } from "./auth-phone-no-password"
 import { AuthWithEmailPasswordlessService } from "./auth-email-no-password"
+
+import { IdentifierNotFoundError } from "@/domain/authentication/errors"
 
 export const IdentityRepository = (): IIdentityRepository => {
   const getIdentity = async (
