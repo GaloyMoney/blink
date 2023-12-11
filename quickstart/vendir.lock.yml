@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core)!: update totp mutation to start kratos session (#3651)...'
-      sha: cc990bc8a52e5e2cd79f3b20e80e16e00c615d37
+      commitTitle: 'fix(pay): use req url for ln address (#3692)'
+      sha: 7cddaa36b8aabafa32ae8ce170955f9f546f1976
       tags:
-      - 0.17.12-1-gcc990bc8a
+      - 0.18.0-1-g7cddaa36b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core)!: update totp mutation to start kratos session (#3651)...'
-      sha: cc990bc8a52e5e2cd79f3b20e80e16e00c615d37
+      commitTitle: 'fix(pay): use req url for ln address (#3692)'
+      sha: 7cddaa36b8aabafa32ae8ce170955f9f546f1976
       tags:
-      - 0.17.12-1-gcc990bc8a
+      - 0.18.0-1-g7cddaa36b
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(core)!: update totp mutation to start kratos session (#3651)...'
-      sha: cc990bc8a52e5e2cd79f3b20e80e16e00c615d37
+      commitTitle: 'fix(pay): use req url for ln address (#3692)'
+      sha: 7cddaa36b8aabafa32ae8ce170955f9f546f1976
       tags:
-      - 0.17.12-1-gcc990bc8a
+      - 0.18.1
     path: ./
   path: ./graphql
 kind: LockConfig
