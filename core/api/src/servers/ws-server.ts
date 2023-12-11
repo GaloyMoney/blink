@@ -25,9 +25,9 @@ import {
 import { getJwksArgs, UNSECURE_IP_FROM_REQUEST_OBJECT, WEBSOCKET_PORT } from "@/config"
 import { parseIps } from "@/domain/accounts-ips"
 import { ErrorLevel } from "@/domain/shared"
-import { gqlMainSchema } from "@/graphql/public"
+import { gqlPublicSchema } from "@/graphql/public"
 
-const schema = gqlMainSchema
+const schema = gqlPublicSchema
 
 const port = WEBSOCKET_PORT
 const path = "/graphql"
