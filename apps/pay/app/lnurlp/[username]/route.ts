@@ -8,6 +8,8 @@ import {
   RealtimePriceInitialQuery,
 } from "../../../lib/graphql/generated"
 
+import { getOriginalRequestInfo } from "../../../utils/utils"
+
 import { client } from "./graphql"
 
 const COMMENT_SIZE = 2000 // 2000 characters max for GET
@@ -68,12 +70,16 @@ export async function GET(
     })
   }
 
+  const originalUrlInfo = getOriginalRequestInfo(request)
+
   const metadata = JSON.stringify([
     ["text/plain", `Payment to ${username}`],
-    ["text/identifier", `${username}@${env.PAY_DOMAIN}`],
+    ["text/identifier", `${username}@${originalUrlInfo.hostname}`],
   ])
 
-  const callback = `${env.PAY_URL}/lnurlp/${username}/callback`
+  const callback = `${originalUrlInfo.protocol}://${originalUrlInfo.hostname}${
+    originalUrlInfo.port ? `:${originalUrlInfo.port}` : ""
+  }/lnurlp/${username}/callback`
 
   let minSendable = 1000 // 1 sat in millisat
   let maxSendable = 100000000000 // 1 BTC in millisat

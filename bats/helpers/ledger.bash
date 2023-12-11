@@ -2,7 +2,7 @@ CURRENT_FILE=${BASH_SOURCE:-bats/helpers/.}
 source "$(dirname "$CURRENT_FILE")/_common.bash"
 source "$(dirname "$CURRENT_FILE")/cli.bash"
 
-METRICS_ENDPOINT="localhost:3002/metrics"
+METRICS_ENDPOINT="localhost:3003/metrics"
 
 balance_for_check() {
   redis_cli FLUSHALL > /dev/null 2>&1 || true
