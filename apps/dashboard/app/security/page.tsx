@@ -24,9 +24,7 @@ export default async function Home() {
         }}
       >
         {email ? <EmailSettings emailData={email}></EmailSettings> : null}
-        {email ? (
-          <TwoFactorAuthSettings totpEnabled={totpEnabled}></TwoFactorAuthSettings>
-        ) : null}
+        <TwoFactorAuthSettings totpEnabled={totpEnabled}></TwoFactorAuthSettings>
       </Box>
     </ContentContainer>
   )

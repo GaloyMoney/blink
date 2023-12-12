@@ -7,7 +7,7 @@ import VerifyTwoFactorAuth from "./verify-form"
 
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
-export default async function VerifyEmail() {
+export default async function VerifyTwoFactorAuthPage() {
   const session = await getServerSession(authOptions)
   const token = session?.accessToken
   const totpEnabled = session?.userData.data.me?.totpEnabled
