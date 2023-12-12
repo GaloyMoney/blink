@@ -22,13 +22,11 @@ gql`
   mutation lnInvoiceCreateOnBehalfOfRecipient(
     $walletId: WalletId!
     $amount: SatAmount!
-    $descriptionHash: Hex32Bytes!
   ) {
     mutationData: lnInvoiceCreateOnBehalfOfRecipient(
       input: {
         recipientWalletId: $walletId
         amount: $amount
-        descriptionHash: $descriptionHash
       }
     ) {
       errors {
@@ -136,20 +134,11 @@ export async function GET(
       })
     }
 
-    let descriptionHash: string
-
-    if (nostrEnabled && nostr) {
-      descriptionHash = crypto.createHash("sha256").update(nostr).digest("hex")
-    } else {
-      descriptionHash = crypto.createHash("sha256").update(metadata).digest("hex")
-    }
-
     const result = await client.mutate<LnInvoiceCreateOnBehalfOfRecipientMutation>({
       mutation: LnInvoiceCreateOnBehalfOfRecipientDocument,
       variables: {
         walletId,
         amount: amountSats,
-        descriptionHash,
       },
     })
 

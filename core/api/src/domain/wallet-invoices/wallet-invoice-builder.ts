@@ -13,17 +13,10 @@ import { toSeconds } from "@/domain/primitives"
 export const WalletInvoiceBuilder = (
   config: WalletInvoiceBuilderConfig,
 ): WalletInvoiceBuilder => {
-  const withDescription = ({
-    description,
-    descriptionHash,
-  }: {
-    description: string
-    descriptionHash?: string
-  }) => {
+  const withDescription = ({ description }: { description: string }) => {
     return WIBWithDescription({
       ...config,
       description,
-      descriptionHash,
     })
   }
 
@@ -134,7 +127,6 @@ export const WIBWithAmount = (state: WIBWithAmountState): WIBWithAmount => {
     const registeredInvoice = await state.lnRegisterInvoice({
       paymentHash,
       description: state.description,
-      descriptionHash: state.descriptionHash,
       btcPaymentAmount: state.btcAmount,
       expiresAt: state.invoiceExpiration,
     })

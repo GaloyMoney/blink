@@ -64,7 +64,6 @@ describe("WalletInvoiceBuilder", () => {
     const invoice: RegisteredInvoice = {
       invoice: lnInvoice,
       pubkey: "pubkey" as Pubkey,
-      descriptionHash: args.descriptionHash,
     }
 
     return invoice

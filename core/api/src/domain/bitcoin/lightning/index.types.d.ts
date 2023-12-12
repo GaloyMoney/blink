@@ -116,7 +116,6 @@ type LnInvoice = {
 type RegisterInvoiceArgs = {
   paymentHash: PaymentHash
   description: string
-  descriptionHash?: string
   sats: Satoshis
   expiresAt: InvoiceExpiration
 }
@@ -124,7 +123,6 @@ type RegisterInvoiceArgs = {
 type NewRegisterInvoiceArgs = {
   paymentHash: PaymentHash
   description: string
-  descriptionHash?: string
   btcPaymentAmount: BtcPaymentAmount
   expiresAt: InvoiceExpiration
 }
@@ -132,7 +130,6 @@ type NewRegisterInvoiceArgs = {
 type RegisteredInvoice = {
   invoice: LnInvoice
   pubkey: Pubkey
-  descriptionHash?: string // TODO: proper type
 }
 
 type PayInvoiceResult = {

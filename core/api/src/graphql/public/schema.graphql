@@ -422,9 +422,6 @@ type GraphQLApplicationError implements Error {
   path: [String]
 }
 
-"""Hex-encoded string of 32 bytes"""
-scalar Hex32Bytes
-
 union InitiationVia = InitiationViaIntraLedger | InitiationViaLn | InitiationViaOnChain
 
 type InitiationViaIntraLedger {
@@ -547,7 +544,6 @@ input LnInvoiceCreateInput {
 input LnInvoiceCreateOnBehalfOfRecipientInput {
   """Amount in satoshis."""
   amount: SatAmount!
-  descriptionHash: Hex32Bytes
 
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
@@ -691,7 +687,6 @@ type LnUpdate {
 input LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput {
   """Amount in satoshis."""
   amount: SatAmount!
-  descriptionHash: Hex32Bytes
 
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
@@ -722,7 +717,6 @@ input LnUsdInvoiceCreateInput {
 input LnUsdInvoiceCreateOnBehalfOfRecipientInput {
   """Amount in USD cents."""
   amount: CentAmount!
-  descriptionHash: Hex32Bytes
 
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes

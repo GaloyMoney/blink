@@ -116,7 +116,6 @@ const addInvoiceForRecipient = async ({
   recipientWalletId,
   walletAmount,
   memo = "",
-  descriptionHash,
   expiresIn,
 }: AddInvoiceForRecipientArgs): Promise<WalletInvoice | ApplicationError> =>
   addInvoice({
@@ -127,7 +126,7 @@ const addInvoiceForRecipient = async ({
       recipientWalletDescriptor,
     }: BuildWIBWithAmountFnArgs) =>
       walletInvoiceBuilder
-        .withDescription({ description: memo, descriptionHash })
+        .withDescription({ description: memo })
         .generatedForRecipient()
         .withRecipientWallet(recipientWalletDescriptor)
         .withExpiration(expiresIn)
@@ -153,7 +152,6 @@ export const addInvoiceForRecipientForBtcWallet = async (
     recipientWalletId,
     walletAmount,
     expiresIn,
-    descriptionHash: args.descriptionHash,
     memo: args.memo,
   })
 }
@@ -177,7 +175,6 @@ export const addInvoiceForRecipientForUsdWallet = async (
     recipientWalletId,
     walletAmount,
     expiresIn,
-    descriptionHash: args.descriptionHash,
     memo: args.memo,
   })
 }
@@ -201,7 +198,6 @@ export const addInvoiceForRecipientForUsdWalletAndBtcAmount = async (
     recipientWalletId,
     walletAmount,
     expiresIn,
-    descriptionHash: args.descriptionHash,
     memo: args.memo,
   })
 }

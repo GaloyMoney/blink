@@ -24,7 +24,6 @@ type AddInvoiceForRecipientArgs = {
   recipientWalletId: WalletId
   walletAmount: PaymentAmount<WalletCurrency>
   memo?: string
-  descriptionHash?: string
   expiresIn: Minutes
 }
 
@@ -32,7 +31,6 @@ type AddInvoiceForRecipientForBtcWalletArgs = {
   recipientWalletId: string
   amount: number
   memo?: string
-  descriptionHash?: string
   expiresIn?: number
 }
 
