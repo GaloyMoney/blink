@@ -143,9 +143,19 @@ eslint(
     allow_warnings = True,
 )
 
+dev_pnpm_task_test(
+  name = "dev-check-lint",
+  command = "eslint-check",
+)
+
 typescript_check(
     name = "check-type",
     srcs = [":src"] + [":test_src"],
+)
+
+dev_pnpm_task_test(
+  name = "dev-check-type",
+  command = "tsc-check",
 )
 
 yaml_check(
@@ -196,6 +206,14 @@ test_suite(
         ":public-schema-diff",
         ":admin-schema-diff",
         ":unit-tests",
+    ],
+)
+
+test_suite(
+    name = "dev-check-code",
+    tests = [
+        ":dev-check-lint",
+        ":dev-check-type",
     ],
 )
 
