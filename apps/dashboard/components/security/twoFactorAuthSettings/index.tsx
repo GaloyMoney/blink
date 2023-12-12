@@ -127,7 +127,7 @@ function TwoFactorAuthSettings({ totpEnabled }: twoFactorAuthSettingsProps) {
           ) : (
             <Link href={"/security/2fa/add"}>
               <Button
-                data-testid="security-add-email-btn"
+                data-testid="security-add-totp-btn"
                 variant="outlined"
                 color="primary"
               >
