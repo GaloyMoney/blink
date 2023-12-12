@@ -1,7 +1,8 @@
 interface Account {
   callbackEndpoints: [CallbackEndpoint!]!
   csvTransactions(walletIds: [WalletId!]!): String!
-  defaultWalletId: WalletId!
+  defaultWallet: PublicWallet!
+  defaultWalletId: WalletId! @deprecated(reason: "Shifting property to 'defaultWallet.id'")
   displayCurrency: DisplayCurrency!
   id: ID!
   invoices(
@@ -256,6 +257,7 @@ type ConsumerAccount implements Account {
   return CSV stream, base64 encoded, of the list of transactions in the wallet
   """
   csvTransactions(walletIds: [WalletId!]!): String!
+  defaultWallet: PublicWallet!
   defaultWalletId: WalletId!
   displayCurrency: DisplayCurrency!
   id: ID!
@@ -1122,8 +1124,9 @@ type PricePoint {
 A public view of a generic wallet which stores value in one of our supported currencies.
 """
 type PublicWallet {
+  currency: WalletCurrency!
   id: ID!
-  walletCurrency: WalletCurrency!
+  walletCurrency: WalletCurrency! @deprecated(reason: "Shifting property to 'currency'")
 }
 
 type Query {

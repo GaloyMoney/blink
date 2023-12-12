@@ -12,6 +12,7 @@ import { connectionArgs } from "@/graphql/connections"
 import WalletId from "@/graphql/shared/types/scalar/wallet-id"
 import AccountLimits from "@/graphql/public/types/object/account-limits"
 import RealtimePrice from "@/graphql/public/types/object/realtime-price"
+import PublicWallet from "@/graphql/public/types/object/public-wallet"
 import DisplayCurrency from "@/graphql/shared/types/scalar/display-currency"
 import Transaction, {
   TransactionConnection,
@@ -32,6 +33,10 @@ const IAccount = GT.Interface({
     },
     defaultWalletId: {
       type: GT.NonNull(WalletId),
+      deprecationReason: "Shifting property to 'defaultWallet.id'",
+    },
+    defaultWallet: {
+      type: GT.NonNull(PublicWallet),
     },
     displayCurrency: {
       type: GT.NonNull(DisplayCurrency),

@@ -12,6 +12,8 @@ import CallbackEndpoint from "./callback-endpoint"
 
 import { NotificationSettings } from "./notification-settings"
 
+import PublicWallet from "./public-wallet"
+
 import { Accounts, Prices, Wallets } from "@/app"
 
 import {
@@ -81,6 +83,20 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
     defaultWalletId: {
       type: GT.NonNull(WalletId),
       resolve: (source) => source.defaultWalletId,
+    },
+
+    defaultWallet: {
+      type: GT.NonNull(PublicWallet),
+      resolve: async (source) => {
+        const wallet = await Wallets.getWalletForAccountById({
+          accountId: source.id,
+          walletId: source.defaultWalletId,
+        })
+        if (wallet instanceof Error) {
+          throw mapError(wallet)
+        }
+        return wallet
+      },
     },
 
     displayCurrency: {
