@@ -173,6 +173,11 @@ madge_check(
     srcs = [":src"],
 )
 
+dev_pnpm_task_test(
+  name = "dev-check-circular-dependencies",
+  command = "circular-deps-check",
+)
+
 jest_test(
     name = "unit-tests",
     srcs = [":src"] + [":test_src"] + glob([".env", "galoy.yaml"]),
@@ -214,6 +219,7 @@ test_suite(
     tests = [
         ":dev-check-lint",
         ":dev-check-type",
+        ":dev-check-circular-dependencies",
     ],
 )
 
