@@ -51,11 +51,16 @@ const BusinessAccount = GT.Object({
 
     defaultWallet: {
       type: GT.NonNull(PublicWallet),
-      resolve: (source) =>
-        Wallets.getWalletForAccountById({
+      resolve: async (source) => {
+        const wallet = await Wallets.getWalletForAccountById({
           accountId: source.id,
           walletId: source.defaultWalletId,
-        }),
+        })
+        if (wallet instanceof Error) {
+          throw mapError(wallet)
+        }
+        return wallet
+      },
     },
 
     level: {
