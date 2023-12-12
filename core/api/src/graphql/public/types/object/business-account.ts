@@ -13,6 +13,8 @@ import Transaction, {
 import RealtimePrice from "./realtime-price"
 import { NotificationSettings } from "./notification-settings"
 
+import PublicWallet from "./public-wallet"
+
 import { connectionArgs } from "@/graphql/connections"
 import { GT } from "@/graphql/index"
 import { mapError } from "@/graphql/error-map"
@@ -45,6 +47,15 @@ const BusinessAccount = GT.Object({
       type: GT.NonNull(WalletId),
       resolve: (source, args, { domainAccount }: { domainAccount: Account }) =>
         domainAccount.defaultWalletId,
+    },
+
+    defaultWallet: {
+      type: GT.NonNull(PublicWallet),
+      resolve: (source) =>
+        Wallets.getWalletForAccountById({
+          accountId: source.id,
+          walletId: source.defaultWalletId,
+        }),
     },
 
     level: {
