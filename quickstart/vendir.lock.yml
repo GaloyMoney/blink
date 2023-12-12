@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(pay): use req url for ln address (#3692)'
-      sha: 7cddaa36b8aabafa32ae8ce170955f9f546f1976
+      commitTitle: 'chore(core): bump deps (#3689)...'
+      sha: e5d77779e36cdb94792b6cdb18f4eea0fd2891cf
       tags:
-      - 0.18.0-1-g7cddaa36b
+      - 0.18.1-2-ge5d77779e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(pay): use req url for ln address (#3692)'
-      sha: 7cddaa36b8aabafa32ae8ce170955f9f546f1976
+      commitTitle: 'chore(core): bump deps (#3689)...'
+      sha: e5d77779e36cdb94792b6cdb18f4eea0fd2891cf
       tags:
-      - 0.18.0-1-g7cddaa36b
+      - 0.18.1-2-ge5d77779e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(pay): use req url for ln address (#3692)'
-      sha: 7cddaa36b8aabafa32ae8ce170955f9f546f1976
+      commitTitle: 'chore(core): bump deps (#3689)...'
+      sha: e5d77779e36cdb94792b6cdb18f4eea0fd2891cf
       tags:
-      - 0.18.1
+      - 0.18.2
     path: ./
   path: ./graphql
 kind: LockConfig
