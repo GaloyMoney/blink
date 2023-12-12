@@ -1,7 +1,9 @@
 query invoices($walletIds: [WalletId], $first: Int, $after: String) {
   me {
     defaultAccount {
-      defaultWalletId
+      defaultWallet {
+        id
+      }
       invoices(walletIds: $walletIds, first: $first, after: $after) {
         ...InvoiceList
       }

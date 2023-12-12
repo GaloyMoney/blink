@@ -26,6 +26,7 @@ interface Account
 {
   callbackEndpoints: [CallbackEndpoint!]!
   csvTransactions(walletIds: [WalletId!]!): String!
+  defaultWallet: PublicWallet!
   defaultWalletId: WalletId!
   displayCurrency: DisplayCurrency!
   id: ID!
@@ -375,6 +376,7 @@ type ConsumerAccount implements Account
   return CSV stream, base64 encoded, of the list of transactions in the wallet
   """
   csvTransactions(walletIds: [WalletId!]!): String!
+  defaultWallet: PublicWallet!
   defaultWalletId: WalletId!
   displayCurrency: DisplayCurrency!
   id: ID!
@@ -1454,8 +1456,9 @@ A public view of a generic wallet which stores value in one of our supported cur
 type PublicWallet
   @join__type(graph: PUBLIC)
 {
+  currency: WalletCurrency!
   id: ID!
-  walletCurrency: WalletCurrency!
+  walletCurrency: WalletCurrency! @deprecated(reason: "Shifting property to 'currency'")
 }
 
 type Query

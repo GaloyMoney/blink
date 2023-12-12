@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): bump deps (#3689)...'
-      sha: e5d77779e36cdb94792b6cdb18f4eea0fd2891cf
+      commitTitle: 'feat: add default wallet field (#3697)...'
+      sha: 23a46db00175ab246c7284b8c3deaaf5b3a62368
       tags:
-      - 0.18.1-2-ge5d77779e
+      - 0.18.2-2-g23a46db00
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): bump deps (#3689)...'
-      sha: e5d77779e36cdb94792b6cdb18f4eea0fd2891cf
+      commitTitle: 'feat: add default wallet field (#3697)...'
+      sha: 23a46db00175ab246c7284b8c3deaaf5b3a62368
       tags:
-      - 0.18.1-2-ge5d77779e
+      - 0.18.2-2-g23a46db00
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(core): bump deps (#3689)...'
-      sha: e5d77779e36cdb94792b6cdb18f4eea0fd2891cf
+      commitTitle: 'feat: add default wallet field (#3697)...'
+      sha: 23a46db00175ab246c7284b8c3deaaf5b3a62368
       tags:
-      - 0.18.2
+      - 0.18.2-2-g23a46db00
     path: ./
   path: ./graphql
 kind: LockConfig
