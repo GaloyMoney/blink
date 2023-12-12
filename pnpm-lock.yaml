@@ -134,8 +134,8 @@ importers:
         specifier: 10.4.16
         version: 10.4.16(postcss@8.4.32)
       cypress:
-        specifier: ^13.3.0
-        version: 13.3.1
+        specifier: ^13.6.1
+        version: 13.6.1
       eslint:
         specifier: 8.55.0
         version: 8.55.0
@@ -14908,57 +14908,6 @@ packages:
       ally.js: 1.4.1
     dev: false
 
-  /cypress@13.3.1:
-    resolution: {integrity: sha512-g4mJLZxYN+UAF2LMy3Znd4LBnUmS59Vynd81VES59RdW48Yt+QtR2cush3melOoVNz0PPbADpWr8DcUx6mif8Q==}
-    engines: {node: ^16.0.0 || ^18.0.0 || >=20.0.0}
-    hasBin: true
-    requiresBuild: true
-    dependencies:
-      '@cypress/request': 3.0.1
-      '@cypress/xvfb': 1.2.4(supports-color@8.1.1)
-      '@types/node': 18.18.14
-      '@types/sinonjs__fake-timers': 8.1.1
-      '@types/sizzle': 2.3.4
-      arch: 2.2.0
-      blob-util: 2.0.2
-      bluebird: 3.7.2
-      buffer: 5.7.1
-      cachedir: 2.4.0
-      chalk: 4.1.2
-      check-more-types: 2.24.0
-      cli-cursor: 3.1.0
-      cli-table3: 0.6.3
-      commander: 6.2.1
-      common-tags: 1.8.2
-      dayjs: 1.11.10
-      debug: 4.3.4(supports-color@8.1.1)
-      enquirer: 2.4.1
-      eventemitter2: 6.4.7
-      execa: 4.1.0
-      executable: 4.1.1
-      extract-zip: 2.0.1(supports-color@8.1.1)
-      figures: 3.2.0
-      fs-extra: 9.1.0
-      getos: 3.2.1
-      is-ci: 3.0.1
-      is-installed-globally: 0.4.0
-      lazy-ass: 1.6.0
-      listr2: 3.14.0(enquirer@2.4.1)
-      lodash: 4.17.21
-      log-symbols: 4.1.0
-      minimist: 1.2.8
-      ospath: 1.2.2
-      pretty-bytes: 5.6.0
-      process: 0.11.10
-      proxy-from-env: 1.0.0
-      request-progress: 3.0.0
-      semver: 7.5.4
-      supports-color: 8.1.1
-      tmp: 0.2.1
-      untildify: 4.0.0
-      yauzl: 2.10.0
-    dev: true
-
   /cypress@13.6.1:
     resolution: {integrity: sha512-k1Wl5PQcA/4UoTffYKKaxA0FJKwg8yenYNYRzLt11CUR0Kln+h7Udne6mdU1cUIdXBDTVZWtmiUjzqGs7/pEpw==}
     engines: {node: ^16.0.0 || ^18.0.0 || >=20.0.0}
@@ -21996,7 +21945,7 @@ packages:
       '@opentelemetry/api': 1.7.0
       '@swc/helpers': 0.5.2
       busboy: 1.6.0
-      caniuse-lite: 1.0.30001561
+      caniuse-lite: 1.0.30001568
       graceful-fs: 4.2.11
       postcss: 8.4.31
       react: 18.2.0
