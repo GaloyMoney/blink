@@ -8,7 +8,6 @@ import { GT } from "@/graphql/index"
 import WalletId from "@/graphql/shared/types/scalar/wallet-id"
 import SatAmount from "@/graphql/shared/types/scalar/sat-amount"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
-import Lnurl from "@/graphql/shared/types/scalar/lnurl"
 
 const LnurlPaymentSendInput = GT.Input({
   name: "LnurlPaymentSendInput",
@@ -19,7 +18,7 @@ const LnurlPaymentSendInput = GT.Input({
     },
     amount: { type: GT.NonNull(SatAmount), description: "Amount in satoshis." },
     lnurl: {
-      type: GT.NonNull(Lnurl),
+      type: GT.NonNull(GT.String),
       description: "Lnurl string to send to.",
     },
   }),

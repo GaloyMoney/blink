@@ -1,7 +1,11 @@
 import { utils, requestInvoice } from "lnurl-pay"
 
 import { toSats } from "@/domain/bitcoin"
-import { ErrorFetchingLnurlInvoice } from "@/domain/bitcoin/lnurl/errors"
+import {
+  ErrorFetchingLnurlInvoice,
+  LnurlError,
+  UnknownLnurlError,
+} from "@/domain/bitcoin/lnurl/errors"
 
 export const LnurlPayService = (): ILnurlPayService => {
   const fetchInvoiceFromLnAddressOrLnurl = async ({
@@ -10,7 +14,7 @@ export const LnurlPayService = (): ILnurlPayService => {
   }: {
     amount: BtcPaymentAmount
     lnAddressOrLnurl: string
-  }): Promise<string | ApplicationError> => {
+  }): Promise<string | LnurlError> => {
     try {
       const invoice = await requestInvoice({
         lnUrlOrAddress: lnAddressOrLnurl,
@@ -28,7 +32,7 @@ export const LnurlPayService = (): ILnurlPayService => {
       if (err instanceof Error) {
         return new ErrorFetchingLnurlInvoice(err.message)
       }
-      return new ErrorFetchingLnurlInvoice("Unknown error fetching LnUrl invoice")
+      return new UnknownLnurlError(err)
     }
   }
 

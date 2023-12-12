@@ -523,15 +523,12 @@ enum InvoicePaymentStatus {
 
 scalar Language
 
-"""LNURL Lightning address"""
-scalar LnAddress
-
 input LnAddressPaymentSendInput {
   """Amount in satoshis."""
   amount: SatAmount!
 
   """Lightning address to send to."""
-  lnAddress: LnAddress!
+  lnAddress: String!
 
   """Wallet ID to send bitcoin from."""
   walletId: WalletId!
@@ -757,15 +754,12 @@ input LnUsdInvoiceFeeProbeInput {
   walletId: WalletId!
 }
 
-"""Lnurl string"""
-scalar Lnurl
-
 input LnurlPaymentSendInput {
   """Amount in satoshis."""
   amount: SatAmount!
 
   """Lnurl string to send to."""
-  lnurl: Lnurl!
+  lnurl: String!
 
   """Wallet ID to send bitcoin from."""
   walletId: WalletId!

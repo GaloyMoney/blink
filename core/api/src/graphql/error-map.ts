@@ -477,7 +477,6 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "InvalidPaginatedQueryArgsError":
       message = error.message
       return new ValidationInternalError({ message, logger: baseLogger })
-    case "LnurlError":
     case "ErrorFetchingLnurlInvoice":
       message = error.message
       return new LnurlRequestInvoiceError({ message, logger: baseLogger })
@@ -661,6 +660,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "ExpectedAddressInfoMissingInEventError":
     case "MissingCreatedAtKratosError":
     case "MissingExpiredAtKratosError":
+    case "LnurlError":
     case "InvalidIdentitySessionKratosError":
     case "MissingTotpKratosError":
     case "IncompatibleSchemaUpgradeError":
@@ -730,6 +730,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "UnknownOnChainServiceError":
     case "UnknownNotificationsServiceError":
     case "UnknownIpFetcherServiceError":
+    case "UnknownLnurlError":
     case "UnknownCacheServiceError":
     case "UnknownPhoneProviderServiceError":
     case "UnknownDealerPriceServiceError":

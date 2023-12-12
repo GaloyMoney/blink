@@ -723,10 +723,6 @@ enum link__Purpose {
   EXECUTION
 }
 
-"""LNURL Lightning address"""
-scalar LnAddress
-  @join__type(graph: PUBLIC)
-
 input LnAddressPaymentSendInput
   @join__type(graph: PUBLIC)
 {
@@ -734,7 +730,7 @@ input LnAddressPaymentSendInput
   amount: SatAmount!
 
   """Lightning address to send to."""
-  lnAddress: LnAddress!
+  lnAddress: String!
 
   """Wallet ID to send bitcoin from."""
   walletId: WalletId!
@@ -946,10 +942,6 @@ type LnUpdate
   walletId: WalletId! @deprecated(reason: "Deprecated in favor of transaction")
 }
 
-"""Lnurl string"""
-scalar Lnurl
-  @join__type(graph: PUBLIC)
-
 input LnurlPaymentSendInput
   @join__type(graph: PUBLIC)
 {
@@ -957,7 +949,7 @@ input LnurlPaymentSendInput
   amount: SatAmount!
 
   """Lnurl string to send to."""
-  lnurl: Lnurl!
+  lnurl: String!
 
   """Wallet ID to send bitcoin from."""
   walletId: WalletId!
