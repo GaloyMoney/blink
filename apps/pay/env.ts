@@ -4,6 +4,7 @@ import { z } from "zod"
 export const env = createEnv({
   server: {
     CORE_GQL_URL_INTRANET: z.string().default("http://localhost:4455/graphql"), // Use intranet URL to preserve tracing headers
+    PAY_URL: z.string().default("http://localhost:3002"),
     NOSTR_PUBKEY: z.string().optional(),
     REDIS_PASSWORD: z.string().optional(),
     REDIS_MASTER_NAME: z.string().optional(),
@@ -20,6 +21,7 @@ export const env = createEnv({
   runtimeEnv: {
     CORE_GQL_URL_INTRANET: process.env.CORE_GQL_URL_INTRANET,
     NEXT_PUBLIC_CORE_GQL_URL: process.env.NEXT_PUBLIC_CORE_GQL_URL,
+    PAY_URL: process.env.PAY_URL,
     NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL: process.env.NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL,
     NEXT_PUBLIC_PAY_DOMAIN: process.env.NEXT_PUBLIC_PAY_DOMAIN,
     NOSTR_PUBKEY: process.env.NOSTR_PUBKEY, // Optional but required for Nostr Zaps
