@@ -1,0 +1,3 @@
+query usernameAvailable($username: Username!) {
+  usernameAvailable(username: $username)
+}
