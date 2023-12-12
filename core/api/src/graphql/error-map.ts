@@ -33,6 +33,7 @@ import {
   UnauthorizedIPError,
   UnauthorizedIPMetadataProxyError,
   UnauthorizedIPMetadataCountryError,
+  LikelyBadCoreError,
 } from "@/graphql/error"
 import { baseLogger } from "@/services/logger"
 
@@ -467,9 +468,14 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
 
     case "UnauthorizedIPMetadataCountryError":
       return new UnauthorizedIPMetadataCountryError({ logger: baseLogger })
+
     case "InvalidPaginatedQueryArgsError":
       message = error.message
       return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "LikelyBadCoreError":
+      message = error.message
+      return new LikelyBadCoreError({ message, logger: baseLogger })
 
     // ----------
     // Unhandled below here
@@ -731,7 +737,6 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
         error.message ? ": " + error.message : ""
       })`
       return new UnknownClientError({ message, logger: baseLogger })
-
     default:
       return assertUnreachable(errorName)
   }

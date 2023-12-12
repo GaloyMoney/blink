@@ -1,3 +1,5 @@
+import { isAxiosError } from "axios"
+
 import { UiNodeTextAttributes } from "@ory/client"
 
 import {
@@ -7,8 +9,10 @@ import {
 } from "./errors"
 import { kratosAdmin, kratosPublic } from "./private"
 
-import { KRATOS_MASTER_USER_PASSWORD } from "@/config"
-import { LikelyNoUserWithThisPhoneExistError } from "@/domain/authentication/errors"
+import {
+  LikelyBadCoreError,
+  LikelyNoUserWithThisPhoneExistError,
+} from "@/domain/authentication/errors"
 
 export const kratosInitiateTotp = async (token: AuthToken) => {
   try {
@@ -47,6 +51,13 @@ export const kratosValidateTotp = async ({
       xSessionToken: authToken,
     })
   } catch (err) {
+    if (isAxiosError(err)) {
+      if (err.response?.status === 400 && err.response.statusText === "Bad Request") {
+        return new LikelyBadCoreError()
+      }
+    }
+    console.log(err, "err123")
+
     return new UnknownKratosError(err)
   }
 }

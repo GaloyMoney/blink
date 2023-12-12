@@ -66,6 +66,17 @@ export class SelfPaymentError extends CustomGraphQLError {
   }
 }
 
+export class LikelyBadCoreError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
+    super({
+      ...errData,
+      code: "BAD_ERROR_CODE",
+      forwardToClient: true,
+      message: "An error occurred. It's likely that the code you entered is not correct",
+    })
+  }
+}
+
 export class ValidationInternalError extends CustomGraphQLError {
   constructor(errData: CustomGraphQLErrorData) {
     super({ code: "INVALID_INPUT", forwardToClient: true, ...errData })
