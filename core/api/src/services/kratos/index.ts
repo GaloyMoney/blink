@@ -2,6 +2,8 @@ import { AuthWithPhonePasswordlessService } from "./auth-phone-no-password"
 import { AuthenticationKratosError, UnknownKratosError } from "./errors"
 import { kratosAdmin, kratosPublic, toDomainSession } from "./private"
 
+import { KRATOS_MASTER_USER_PASSWORD } from "@/config"
+
 import { InvalidFlowId, InvalidTotpCode } from "@/domain/errors"
 
 export * from "./auth-phone-no-password"
@@ -96,4 +98,35 @@ export const logoutSessionByAuthToken = async (authToken: AuthToken) => {
   const sessionResponse = await kratosPublic.toSession({ xSessionToken: authToken })
   const sessionId = sessionResponse.data.id as SessionId
   await authService.logoutToken({ sessionId })
+}
+
+export const refreshToken = async (authToken: AuthToken): Promise<void | KratosError> => {
+  const method = "password"
+  const password = KRATOS_MASTER_USER_PASSWORD
+
+  const session = await kratosPublic.toSession({ xSessionToken: authToken })
+  const identifier =
+    session.data.identity?.traits?.phone || session.data.identity?.traits?.email
+
+  if (!identifier) {
+    return new UnknownKratosError("No identifier found")
+  }
+
+  try {
+    const flow = await kratosPublic.createNativeLoginFlow({
+      refresh: true,
+      xSessionToken: authToken,
+    })
+    await kratosPublic.updateLoginFlow({
+      flow: flow.data.id,
+      updateLoginFlowBody: {
+        identifier,
+        method,
+        password,
+      },
+      xSessionToken: authToken,
+    })
+  } catch (err) {
+    return new UnknownKratosError(err)
+  }
 }

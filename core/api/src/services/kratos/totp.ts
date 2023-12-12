@@ -37,10 +37,6 @@ export const kratosValidateTotp = async ({
   totpCode: string
   totpRegistrationId: string
 }) => {
-  // TODO: instead of refreshing, we could ask the user to re-authenticate
-  const res = await refreshToken(authToken)
-  if (res instanceof Error) return res
-
   try {
     await kratosPublic.updateSettingsFlow({
       flow,
@@ -92,37 +88,6 @@ export const kratosElevatingSessionWithTotp = async ({
   }
 
   return true
-}
-
-const refreshToken = async (authToken: AuthToken): Promise<void | KratosError> => {
-  const method = "password"
-  const password = KRATOS_MASTER_USER_PASSWORD
-
-  const session = await kratosPublic.toSession({ xSessionToken: authToken })
-  const identifier =
-    session.data.identity?.traits?.phone || session.data.identity?.traits?.email
-
-  if (!identifier) {
-    return new UnknownKratosError("No identifier found")
-  }
-
-  try {
-    const flow = await kratosPublic.createNativeLoginFlow({
-      refresh: true,
-      xSessionToken: authToken,
-    })
-    await kratosPublic.updateLoginFlow({
-      flow: flow.data.id,
-      updateLoginFlowBody: {
-        identifier,
-        method,
-        password,
-      },
-      xSessionToken: authToken,
-    })
-  } catch (err) {
-    return new UnknownKratosError(err)
-  }
 }
 
 export const kratosRemoveTotp = async (userId: UserId) => {
