@@ -265,6 +265,7 @@ export const configSchema = {
         onChainAddressCreateAttempt: rateLimitConfigSchema,
         deviceAccountCreateAttempt: rateLimitConfigSchema,
         requestCodePerAppcheckJti: rateLimitConfigSchema,
+        addEarnPerIp: rateLimitConfigSchema,
       },
       required: [
         "requestCodePerLoginIdentifier",
@@ -276,6 +277,7 @@ export const configSchema = {
         "onChainAddressCreateAttempt",
         "deviceAccountCreateAttempt",
         "requestCodePerAppcheckJti",
+        "addEarnPerIp",
       ],
       additionalProperties: false,
       default: {
@@ -323,6 +325,11 @@ export const configSchema = {
           points: 3,
           duration: 3600,
           blockDuration: 3600,
+        },
+        addEarnPerIp: {
+          points: 60,
+          duration: 3600,
+          blockDuration: 86400,
         },
       },
     },

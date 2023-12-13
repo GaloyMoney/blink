@@ -212,6 +212,9 @@ export const getDeviceAccountCreateAttemptLimits = () =>
 export const getAppcheckJtiAttemptLimits = () =>
   getRateLimits(yamlConfig.rateLimits.requestCodePerAppcheckJti)
 
+export const getAddEarnPerIpLimits = () =>
+  getRateLimits(yamlConfig.rateLimits.addEarnPerIp)
+
 export const getOnChainWalletConfig = () => ({
   dustThreshold: yamlConfig.onChainWallet.dustThreshold,
 })

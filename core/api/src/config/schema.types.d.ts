@@ -79,6 +79,7 @@ type YamlSchema = {
     onChainAddressCreateAttempt: RateLimitInput
     deviceAccountCreateAttempt: RateLimitInput
     requestCodePerAppcheckJti: RateLimitInput
+    addEarnPerIp: RateLimitInput
   }
   accounts: {
     initialStatus: string

@@ -83,6 +83,10 @@ rateLimits:
     points: 3
     duration: 3600
     blockDuration: 3600
+  addEarnPerIp:
+    points: 60
+    duration: 3600
+    blockDuration: 86400
 accounts:
   initialStatus: active
   initialWallets:

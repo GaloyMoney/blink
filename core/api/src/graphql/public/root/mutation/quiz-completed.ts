@@ -23,12 +23,13 @@ const QuizCompletedMutation = GT.Field<
   args: {
     input: { type: GT.NonNull(QuizCompletedInput) },
   },
-  resolve: async (_, args, { domainAccount }) => {
+  resolve: async (_, args, { domainAccount, ip }) => {
     const { id } = args.input
 
     const question = await Payments.addEarn({
       quizQuestionId: id,
       accountId: domainAccount.id,
+      ip,
     })
     if (question instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(question)] }
