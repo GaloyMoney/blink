@@ -28,7 +28,7 @@ await_api_is_up() {
     [[ "${network}" = "regtest" ]] || exit 1
   }
 
-  retry 300 1 server_is_up
+  retry 360 1 server_is_up
 }
 
 await_pay_is_up() {
@@ -36,7 +36,7 @@ await_pay_is_up() {
     curl localhost:3002 || exit 1
   }
 
-  retry 300 1 pay_is_up
+  retry 360 1 pay_is_up
 }
 
 await_api_keys_is_up() {
@@ -44,5 +44,5 @@ await_api_keys_is_up() {
     curl localhost:5397/auth/check || exit 1
   }
 
-  retry 300 1 api_keys_is_up
+  retry 360 1 api_keys_is_up
 }
