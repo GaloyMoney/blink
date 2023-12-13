@@ -6,9 +6,7 @@
     "preinstall": "npx only-allow pnpm",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "build:ts": "tsc",
-    "build:css": "postcss ./src/index.css -o ./src/tailwind.css",
-    "build": "pnpm run build:ts && pnpm run build:css"
+    "build:css": "postcss ./src/index.css -o ./src/tailwind.css"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.2",
