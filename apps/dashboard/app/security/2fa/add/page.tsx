@@ -11,7 +11,7 @@ export default async function VerifyTwoFactorAuthPage() {
   const session = await getServerSession(authOptions)
   const token = session?.accessToken
   const totpEnabled = session?.userData.data.me?.totpEnabled
-  let totpIdentifier =
+  const totpIdentifier =
     session?.userData.data.me?.username ||
     session?.userData.data.me?.email?.address ||
     session?.userData.data.me?.phone ||
