@@ -30,10 +30,23 @@ import FormSubmitButton from "@/components/form-submit-button"
 type VerifyTwoFactorAuth = {
   totpRegistrationId: string
   totpSecret: string
+  totpIdentifier: string
 }
+
+const AuthenticatorQRCode = ({
+  account,
+  secret,
+}: {
+  account: string
+  secret: string
+}) => {
+  return `otpauth://totp/Blink:${account}?secret=${secret}&issuer=Blink`
+}
+
 export default function VerifyTwoFactorAuth({
   totpRegistrationId,
   totpSecret,
+  totpIdentifier,
 }: VerifyTwoFactorAuth) {
   const [copied, setCopied] = useState(false)
   const [state, formAction] = useFormState<TotpValidateResponse, FormData>(
@@ -112,7 +125,13 @@ export default function VerifyTwoFactorAuth({
         </Box>
 
         <Box>
-          <QRCode size={300} value={totpSecret} />
+          <QRCode
+            size={300}
+            value={AuthenticatorQRCode({
+              account: totpIdentifier,
+              secret: totpSecret,
+            })}
+          />
         </Box>
         <FormControl
           sx={{

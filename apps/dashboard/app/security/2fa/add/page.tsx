@@ -11,6 +11,12 @@ export default async function VerifyTwoFactorAuthPage() {
   const session = await getServerSession(authOptions)
   const token = session?.accessToken
   const totpEnabled = session?.userData.data.me?.totpEnabled
+  let totpIdentifier =
+    session?.userData.data.me?.username ||
+    session?.userData.data.me?.email?.address ||
+    session?.userData.data.me?.phone ||
+    session?.userData.data.me?.id ||
+    "Blink User"
 
   if (!token || typeof token !== "string" || totpEnabled === true) {
     redirect("/security")
@@ -22,11 +28,11 @@ export default async function VerifyTwoFactorAuthPage() {
     const errorMessage = message || "Something Went Wrong"
     throw new Error(errorMessage)
   }
-
   return (
     <VerifyTwoFactorAuth
       totpRegistrationId={responsePayload.totpRegistrationId}
       totpSecret={responsePayload.totpSecret}
+      totpIdentifier={totpIdentifier}
     ></VerifyTwoFactorAuth>
   )
 }
