@@ -37,23 +37,23 @@ done
 git commit -m "Commit state of \`${APP}\` at \`${old_ref}\`"
 
 # create a branch from the old state
-git branch ${APP}-${new_ref}
-git checkout ${new_ref}
+git branch ${APP}-${ref}
+git checkout ${ref}
 app_src_files=($(buck2 uquery 'inputs(deps("'"//apps/${APP}:"'"))' 2>/dev/null))
 
 # commit the new state of the app
-git checkout ${APP}-${new_ref}
+git checkout ${APP}-${ref}
 for file in "${app_src_files[@]}"; do
-  git checkout "$new_ref" -- "$file"
+  git checkout "$ref" -- "$file"
 done
-git commit -m "Commit state of \`${APP}\` at \`${new_ref}\`"
+git commit -m "Commit state of \`${APP}\` at \`${ref}\`"
 
 cat <<EOF >> ../body.md
 # Bump ${APP} image
 
 Code diff contained in this image:
 
-${github_url}/compare/${APP}-${old_ref}...${APP}-${new_ref}
+${github_url}/compare/${APP}-${old_ref}...${APP}-${ref}
 
 The ${APP} image will be bumped to digest:
 \`\`\`
