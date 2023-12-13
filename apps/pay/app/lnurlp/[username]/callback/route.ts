@@ -16,6 +16,7 @@ import {
   LnInvoiceCreateOnBehalfOfRecipientMutation,
 } from "../../../../lib/graphql/generated"
 import { client } from "../graphql"
+import { getOriginalRequestInfo } from "../../../../utils/utils"
 
 gql`
   mutation lnInvoiceCreateOnBehalfOfRecipient(
@@ -114,9 +115,11 @@ export async function GET(
     })
   }
 
+  const originalUrlInfo = getOriginalRequestInfo(request)
+
   const metadata = JSON.stringify([
     ["text/plain", `Payment to ${username}`],
-    ["text/identifier", `${username}@${env.PAY_DOMAIN}`],
+    ["text/identifier", `${username}@${originalUrlInfo.hostname}`],
   ])
 
   // lnurl generate invoice
