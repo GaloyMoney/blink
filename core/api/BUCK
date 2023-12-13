@@ -143,9 +143,19 @@ eslint(
     allow_warnings = True,
 )
 
+dev_pnpm_task_test(
+  name = "dev-check-lint",
+  command = "eslint-check",
+)
+
 typescript_check(
     name = "check-type",
     srcs = [":src"] + [":test_src"],
+)
+
+dev_pnpm_task_test(
+  name = "dev-check-type",
+  command = "tsc-check",
 )
 
 yaml_check(
@@ -161,6 +171,11 @@ yaml_check(
 madge_check(
     name = "check-circular-dependencies",
     srcs = [":src"],
+)
+
+dev_pnpm_task_test(
+  name = "dev-check-circular-dependencies",
+  command = "circular-deps-check",
 )
 
 jest_test(
@@ -196,6 +211,15 @@ test_suite(
         ":public-schema-diff",
         ":admin-schema-diff",
         ":unit-tests",
+    ],
+)
+
+test_suite(
+    name = "dev-check-code",
+    tests = [
+        ":dev-check-lint",
+        ":dev-check-type",
+        ":dev-check-circular-dependencies",
     ],
 )
 
