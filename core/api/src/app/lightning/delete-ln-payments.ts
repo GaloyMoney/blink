@@ -1,17 +1,20 @@
-import { UnknownLightningServiceError } from "@/domain/bitcoin/lightning"
+import { ErrorLevel } from "@/domain/shared"
 import { CouldNotFindLnPaymentFromHashError } from "@/domain/errors"
-import { LndService } from "@/services/lnd"
-import { LnPaymentsRepository } from "@/services/mongoose"
+import { UnknownLightningServiceError } from "@/domain/bitcoin/lightning"
+
 import {
   addAttributesToCurrentSpan,
   asyncRunInSpan,
+  recordExceptionInCurrentSpan,
   SemanticAttributes,
 } from "@/services/tracing"
+import { LndService } from "@/services/lnd"
+import { LnPaymentsRepository } from "@/services/mongoose"
 
 export const deleteLnPaymentsBefore = async (
   timestamp: Date,
 ): Promise<true | ApplicationError> => {
-  const paymentHashesBefore = await listAllPaymentsBefore(timestamp)
+  const paymentHashesBefore = listAllPaymentsBefore(timestamp)
 
   for await (const paymentHash of paymentHashesBefore) {
     if (paymentHash instanceof Error) return paymentHash
@@ -43,6 +46,7 @@ const checkAndDeletePaymentForHash = async ({
       const lnPayment = await LnPaymentsRepository().findByPaymentHash(paymentHash)
       if (lnPayment instanceof Error) {
         if (lnPayment instanceof CouldNotFindLnPaymentFromHashError) {
+          recordExceptionInCurrentSpan({ error: lnPayment, level: ErrorLevel.Critical })
           // Attempt to get paymentRequest from lnd
           const lndService = LndService()
           if (lndService instanceof Error) return lndService

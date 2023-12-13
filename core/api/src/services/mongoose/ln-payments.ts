@@ -58,7 +58,7 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
         payment,
         { new: true },
       )
-      if (!result) return new CouldNotFindLnPaymentFromHashError()
+      if (!result) return new CouldNotFindLnPaymentFromHashError(payment.paymentHash)
       return lnPaymentFromRaw(result)
     } catch (err) {
       return parseRepositoryError(err)
