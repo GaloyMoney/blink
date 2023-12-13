@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: remove alert on bad code for totp (#3700)...'
-      sha: b6c0adbf2a9a4196e21d1c704d8403f553012711
+      commitTitle: 'chore(core): add dev-check-code buck rules (#3701)...'
+      sha: e9fb41388f42043ee0469dee8094842553a82ad8
       tags:
-      - 0.18.4-2-gb6c0adbf2
+      - 0.18.6-1-ge9fb41388
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: remove alert on bad code for totp (#3700)...'
-      sha: b6c0adbf2a9a4196e21d1c704d8403f553012711
+      commitTitle: 'chore(core): add dev-check-code buck rules (#3701)...'
+      sha: e9fb41388f42043ee0469dee8094842553a82ad8
       tags:
-      - 0.18.4-2-gb6c0adbf2
+      - 0.18.6-1-ge9fb41388
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: remove alert on bad code for totp (#3700)...'
-      sha: b6c0adbf2a9a4196e21d1c704d8403f553012711
+      commitTitle: 'chore(core): add dev-check-code buck rules (#3701)...'
+      sha: e9fb41388f42043ee0469dee8094842553a82ad8
       tags:
-      - 0.18.4-2-gb6c0adbf2
+      - 0.18.6-1-ge9fb41388
     path: ./
   path: ./graphql
 kind: LockConfig
