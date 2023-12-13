@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: add default wallet field (#3697)...'
-      sha: 23a46db00175ab246c7284b8c3deaaf5b3a62368
+      commitTitle: 'fix(core): remove critical level from CouldNotFindLnPaymentFromHashError
+        (#3702)'
+      sha: 7c9899450a8118323b42e10b36705f7e757027db
       tags:
-      - 0.18.2-2-g23a46db00
+      - 0.18.3-1-g7c9899450
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: add default wallet field (#3697)...'
-      sha: 23a46db00175ab246c7284b8c3deaaf5b3a62368
+      commitTitle: 'fix(core): remove critical level from CouldNotFindLnPaymentFromHashError
+        (#3702)'
+      sha: 7c9899450a8118323b42e10b36705f7e757027db
       tags:
-      - 0.18.2-2-g23a46db00
+      - 0.18.3-1-g7c9899450
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: add default wallet field (#3697)...'
-      sha: 23a46db00175ab246c7284b8c3deaaf5b3a62368
+      commitTitle: 'fix(core): remove critical level from CouldNotFindLnPaymentFromHashError
+        (#3702)'
+      sha: 7c9899450a8118323b42e10b36705f7e757027db
       tags:
-      - 0.18.2-2-g23a46db00
+      - 0.18.4
     path: ./
   path: ./graphql
 kind: LockConfig
