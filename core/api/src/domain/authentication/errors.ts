@@ -3,6 +3,7 @@ import { DomainError, ValidationError, ErrorLevel } from "@/domain/shared"
 export class AuthenticationError extends DomainError {}
 export class LikelyNoUserWithThisPhoneExistError extends AuthenticationError {}
 export class LikelyUserAlreadyExistError extends AuthenticationError {}
+export class LikelyBadCoreError extends AuthenticationError {}
 
 export class AccountHasPositiveBalanceError extends AuthenticationError {}
 export class PhoneAlreadyExistsError extends AuthenticationError {}
