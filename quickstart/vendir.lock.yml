@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): remove critical level from CouldNotFindLnPaymentFromHashError
-        (#3702)'
-      sha: 7c9899450a8118323b42e10b36705f7e757027db
+      commitTitle: 'chore: remove alert on bad code for totp (#3700)...'
+      sha: b6c0adbf2a9a4196e21d1c704d8403f553012711
       tags:
-      - 0.18.3-1-g7c9899450
+      - 0.18.4-2-gb6c0adbf2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): remove critical level from CouldNotFindLnPaymentFromHashError
-        (#3702)'
-      sha: 7c9899450a8118323b42e10b36705f7e757027db
+      commitTitle: 'chore: remove alert on bad code for totp (#3700)...'
+      sha: b6c0adbf2a9a4196e21d1c704d8403f553012711
       tags:
-      - 0.18.3-1-g7c9899450
+      - 0.18.4-2-gb6c0adbf2
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(core): remove critical level from CouldNotFindLnPaymentFromHashError
-        (#3702)'
-      sha: 7c9899450a8118323b42e10b36705f7e757027db
+      commitTitle: 'chore: remove alert on bad code for totp (#3700)...'
+      sha: b6c0adbf2a9a4196e21d1c704d8403f553012711
       tags:
-      - 0.18.4
+      - 0.18.4-2-gb6c0adbf2
     path: ./
   path: ./graphql
 kind: LockConfig
