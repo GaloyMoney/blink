@@ -1,0 +1,35 @@
+.index {
+  list-style: none;
+  border: none;
+  background-color: #e0e3f3;
+  color: rgb(99, 116, 195);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+  border-radius: 50%;
+  width: fit-content;
+  padding: 0.1rem 0.675rem;
+}
+
+.text {
+  color: rgba(54, 47, 120, 1);
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.desktop {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  row-gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .desktop {
+    flex-direction: row;
+    row-gap: 0;
+    column-gap: 2rem;
+  }
+}
