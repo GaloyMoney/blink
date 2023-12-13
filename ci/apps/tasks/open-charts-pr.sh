@@ -18,27 +18,42 @@ old_ref=$(grep "digest: \"${old_digest}\"" "./charts/${CHART}/values.yaml" \
 
 pushd ../repo
 
+if [[ -z $(git config --global user.email) ]]; then
+  git config --global user.email "bot@galoy.io"
+fi
+if [[ -z $(git config --global user.name) ]]; then
+  git config --global user.name "CI Bot"
+fi
+
+git checkout ${old_ref}
 app_src_files=($(buck2 uquery 'inputs(deps("'"//apps/${APP}:"'"))' 2>/dev/null))
 
-# relevant_commits=()
+# create a branch with the old state of the app
+git checkout --orphan ${APP}-${old_ref}
+git rm -rf . > /dev/null
+for file in "${app_src_files[@]}"; do
+  git checkout "$old_ref" -- "$file"
+done
+git commit -m "Commit state of \`${APP}\` at \`${old_ref}\`"
 
-# for commit in $(git log --format="%H" ${old_ref}..${ref}); do
-#   changed_files=$(git diff-tree --no-commit-id --name-only -r $commit)
+# create a branch from the old state
+git branch ${APP}-${new_ref}
+git checkout ${new_ref}
+app_src_files=($(buck2 uquery 'inputs(deps("'"//apps/${APP}:"'"))' 2>/dev/null))
 
-#   for file in ${changed_files[@]}; do
-#     if [[ " ${app_src_files[*]} " == *"$file"* ]]; then
-#       relevant_commits+=($commit)
-#       break
-#     fi
-#   done
-# done
+# commit the new state of the app
+git checkout ${APP}-${new_ref}
+for file in "${app_src_files[@]}"; do
+  git checkout "$new_ref" -- "$file"
+done
+git commit -m "Commit state of \`${APP}\` at \`${new_ref}\`"
 
 cat <<EOF >> ../body.md
 # Bump ${APP} image
 
 Code diff contained in this image:
 
-${github_url}/compare/${old_ref}...${ref}
+${github_url}/compare/${APP}-${old_ref}...${APP}-${new_ref}
 
 The ${APP} image will be bumped to digest:
 \`\`\`
