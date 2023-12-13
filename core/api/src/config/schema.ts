@@ -327,9 +327,9 @@ export const configSchema = {
           blockDuration: 3600,
         },
         addEarnPerIp: {
-          points: 30,
-          duration: 3600,
-          blockDuration: 86400,
+          points: 125,
+          duration: 86400,
+          blockDuration: 604800,
         },
       },
     },
