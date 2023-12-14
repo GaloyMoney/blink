@@ -6,59 +6,23 @@ import ReactToPrint from "react-to-print"
 import { bech32 } from "bech32"
 import { QRCode } from "react-qrcode-logo"
 import { useRef } from "react"
+import { useRouter } from "next/router"
 
-import { NextRequest } from "next/server"
+export default function Print() {
+  const componentRef = useRef<HTMLDivElement | null>(null)
 
-import { getOriginalRequestInfo } from "../../utils/utils"
-
-export async function getServerSideProps({
-  req,
-  params: { username },
-}: {
-  req: NextRequest
-  params: { username: string }
-}) {
-  const originalUrlInfo = getOriginalRequestInfo(req)
-
+  const router = useRouter()
+  const username = router.query.username as string
+  const url = new URL(window.location.href)
+  const unencodedLnurl = `${url.protocol}//${url.host}/.well-known/lnurlp/${username}`
   const lnurl = bech32.encode(
     "lnurl",
-    bech32.toWords(
-      Buffer.from(
-        `${originalUrlInfo}://${originalUrlInfo.hostname}${
-          originalUrlInfo.port ? `:${originalUrlInfo.port}` : ""
-        }/.well-known/lnurlp/${username}`,
-        "utf8",
-      ),
-    ),
+    bech32.toWords(Buffer.from(unencodedLnurl, "utf8")),
     1500,
   )
-
-  const webURL = `${originalUrlInfo.protocol}//${originalUrlInfo.hostname}${
-    originalUrlInfo.port ? `:${originalUrlInfo.port}` : ""
-  }/${username}`
-
+  const webURL = `${url.protocol}//${url.host}/${username}`
   const qrCodeURL = (webURL + "?lightning=" + lnurl).toUpperCase()
-
-  return {
-    props: {
-      qrCodeURL,
-      username,
-      userHeader: `Pay ${username}@${originalUrlInfo.hostname}`,
-    },
-  }
-}
-
-export default function Print({
-  qrCodeURL,
-  username,
-  userHeader,
-}: {
-  lightningAddress: string
-  qrCodeURL: string
-  username: string
-  userHeader: string
-}) {
-  const componentRef = useRef<HTMLDivElement | null>(null)
+  const userHeader = `Pay ${username}@${url.hostname}`
 
   return (
     <>
