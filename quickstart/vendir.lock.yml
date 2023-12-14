@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(dasboard): adding totp in dashboard (#3696)...'
-      sha: ffce1c5765eaf0c7bf4a57942e621b824093234e
+      commitTitle: 'chore(deps-dev): bump eslint-plugin-testing-library from 5.11.1
+        to 6.2.0 (#3695)...'
+      sha: dc1771c052b05722d1ac9ebec7032fc979f96df9
       tags:
-      - 0.18.8-2-gffce1c576
+      - 0.18.9-3-gdc1771c05
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(dasboard): adding totp in dashboard (#3696)...'
-      sha: ffce1c5765eaf0c7bf4a57942e621b824093234e
+      commitTitle: 'chore(deps-dev): bump eslint-plugin-testing-library from 5.11.1
+        to 6.2.0 (#3695)...'
+      sha: dc1771c052b05722d1ac9ebec7032fc979f96df9
       tags:
-      - 0.18.8-2-gffce1c576
+      - 0.18.9-3-gdc1771c05
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(dasboard): adding totp in dashboard (#3696)...'
-      sha: ffce1c5765eaf0c7bf4a57942e621b824093234e
+      commitTitle: 'chore(deps-dev): bump eslint-plugin-testing-library from 5.11.1
+        to 6.2.0 (#3695)...'
+      sha: dc1771c052b05722d1ac9ebec7032fc979f96df9
       tags:
-      - 0.18.9
+      - 0.18.10
     path: ./
   path: ./graphql
 kind: LockConfig
