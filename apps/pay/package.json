@@ -34,7 +34,7 @@
     "react-lottie": "^1.2.3",
     "react-qrcode-logo": "^2.9.0",
     "react-to-print": "^2.14.12",
-    "use-debounce": "^8.0.4",
+    "use-debounce": "^10.0.0",
     "use-react-screenshot": "^3.0.0",
     "zod": "^3.22.4"
   },

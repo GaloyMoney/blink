@@ -366,8 +366,8 @@ importers:
         specifier: ^2.14.12
         version: 2.14.15(react-dom@18.2.0)(react@18.2.0)
       use-debounce:
-        specifier: ^8.0.4
-        version: 8.0.4(react@18.2.0)
+        specifier: ^10.0.0
+        version: 10.0.0(react@18.2.0)
       use-react-screenshot:
         specifier: ^3.0.0
         version: 3.0.0(html2canvas@1.4.1)(react@18.2.0)
@@ -3584,7 +3584,7 @@ packages:
       '@babel/core': ^7.0.0-0
     dependencies:
       '@babel/core': 7.23.5
-      '@babel/helper-compilation-targets': 7.22.15
+      '@babel/helper-compilation-targets': 7.23.6
       '@babel/helper-function-name': 7.23.0
       '@babel/helper-plugin-utils': 7.22.5
     dev: true
@@ -26658,9 +26658,9 @@ packages:
       tslib: 2.6.2
     dev: true
 
-  /use-debounce@8.0.4(react@18.2.0):
-    resolution: {integrity: sha512-fGqsYQzl8kLHF2QpQSgIwgOgJmnh6j5L6SIzQiHdLfwp3q1egUL3btq5Bg2SJysH6A0ILLgT2IqXZKoNJr0nFw==}
-    engines: {node: '>= 10.0.0'}
+  /use-debounce@10.0.0(react@18.2.0):
+    resolution: {integrity: sha512-XRjvlvCB46bah9IBXVnq/ACP2lxqXyZj0D9hj4K5OzNroMDpTEBg8Anuh1/UfRTRs7pLhQ+RiNxxwZu9+MVl1A==}
+    engines: {node: '>= 16.0.0'}
     peerDependencies:
       react: '>=16.8.0'
     dependencies:
