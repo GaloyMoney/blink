@@ -98,8 +98,8 @@ ${api_keys_digest}
 \`\`\`
 EOF
 
-pushd ../repo
-  git cliff --config ../pipeline-tasks/ci/vendor/config/git-cliff.toml ${old_ref}..${ref} > ../charts-repo/release_notes.md
+git cliff --config ../pipeline-tasks/ci/vendor/config/git-cliff.toml ${old_ref}..${ref} > ../charts-repo/release_notes.md
+
 popd
 
 breaking=""
