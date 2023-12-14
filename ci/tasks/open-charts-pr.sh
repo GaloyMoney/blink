@@ -9,6 +9,7 @@ export cron_digest=$(cat ./cron-edge-image/digest)
 export migrate_digest=$(cat ./migrate-edge-image/digest)
 export websocket_digest=$(cat ./websocket-edge-image/digest)
 export api_keys_digest=$(cat ./api-keys-edge-image/digest)
+export github_url=https://github.com/GaloyMoney/galoy
 
 pushd charts-repo
 
