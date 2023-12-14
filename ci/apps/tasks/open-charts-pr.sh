@@ -16,12 +16,51 @@ github_url=$(grep "digest: \"${old_digest}\"" "./charts/${CHART}/values.yaml" \
 old_ref=$(grep "digest: \"${old_digest}\"" "./charts/${CHART}/values.yaml" \
   | sed -n 's/.*commit_ref=\([^;]*\);.*/\1/p' | tr -d ' \n')
 
+pushd ../repo
+
+if [[ -z $(git config --global user.email) ]]; then
+  git config --global user.email "bot@galoy.io"
+fi
+if [[ -z $(git config --global user.name) ]]; then
+  git config --global user.name "CI Bot"
+fi
+
+export GH_TOKEN="$(gh-token generate -b "${GH_APP_PRIVATE_KEY}" -i "${GH_APP_ID}" | jq -r '.token')"
+gh auth setup-git
+# switch to https to use the token
+git remote set-url origin ${github_url}
+
+git checkout ${old_ref}
+app_src_files=($(buck2 uquery 'inputs(deps("'"//apps/${APP}:"'"))' 2>/dev/null))
+
+# create a branch with the old state of the app
+git checkout --orphan ${APP}-${old_ref}
+git rm -rf . > /dev/null
+for file in "${app_src_files[@]}"; do
+  git checkout "$old_ref" -- "$file"
+done
+git commit -m "Commit state of \`${APP}\` at \`${old_ref}\`"
+git push -fu origin ${APP}-${old_ref}
+
+# create a branch from the old state
+git branch ${APP}-${ref}
+git checkout ${ref}
+app_src_files=($(buck2 uquery 'inputs(deps("'"//apps/${APP}:"'"))' 2>/dev/null))
+
+# commit the new state of the app
+git checkout ${APP}-${ref}
+for file in "${app_src_files[@]}"; do
+  git checkout "$ref" -- "$file"
+done
+git commit -m "Commit state of \`${APP}\` at \`${ref}\`"
+git push -fu origin ${APP}-${ref}
+
 cat <<EOF >> ../body.md
 # Bump ${APP} image
 
 Code diff contained in this image:
 
-${github_url}/compare/${old_ref}...${ref}
+${github_url}/compare/${APP}-${old_ref}...${APP}-${ref}
 
 The ${APP} image will be bumped to digest:
 \`\`\`
@@ -29,11 +68,9 @@ ${digest}
 \`\`\`
 EOF
 
-pushd ../repo
-  git cliff --config ../pipeline-tasks/ci/vendor/config/git-cliff.toml ${old_ref}..${ref} > ../charts-repo/release_notes.md
-popd
+git cliff --config ../pipeline-tasks/ci/vendor/config/git-cliff.toml ${old_ref}..${ref} > ../charts-repo/release_notes.md
 
-export GH_TOKEN="$(gh-token generate -b "${GH_APP_PRIVATE_KEY}" -i "${GH_APP_ID}" | jq -r '.token')"
+popd
 
 breaking=""
 if [[ $(cat release_notes.md | grep breaking) != '' ]]; then

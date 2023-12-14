@@ -239,7 +239,7 @@ plan:
   - task: open-charts-pr
     config:
       platform: linux
-      image_resource: #@ release_task_image_config()
+      image_resource: #@ task_image_config()
       inputs:
         - name: #@ app_src_resource_name(app)
           path: repo
