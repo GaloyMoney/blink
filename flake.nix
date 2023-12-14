@@ -240,9 +240,9 @@
             # Optional base image to bring in extra binaries for debugging etc.
             fromImage = dockerTools.pullImage {
               imageName = "ubuntu";
-              imageDigest = "sha256:4c32aacd0f7d1d3a29e82bee76f892ba9bb6a63f17f9327ca0d97c3d39b9b0ee";
-              sha256 = "f1661f16a23427d0eda033ffbf7df647a6f71673b78ee24961fae27978691d4f";
-              finalImageTag = "mantic-20231011";
+              imageDigest = "sha256:8d093e0651575a6437cc4a3d561f892a345d263aeac6156ef378fe6a4ccabd4c";
+              sha256 = "sha256-+AewgMn2iviqYRqdNi3BjYrqvxGVm5SShBf7ngEAAxo=";
+              finalImageTag = "mantic-20231128";
               finalImageName = "ubuntu";
             };
 
