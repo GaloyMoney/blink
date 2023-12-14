@@ -805,7 +805,7 @@ jobs:
       - task: open-charts-pr
         config:
           platform: linux
-          image_resource: #@ release_task_image_config()
+          image_resource: #@ galoy_dev_image_config()
           inputs:
             - name: repo
             - name: pipeline-tasks
