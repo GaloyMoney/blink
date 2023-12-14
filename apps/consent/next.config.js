@@ -5,5 +5,6 @@ module.exports = {
     outputFileTracingRoot: require("path").join(__dirname, "../../"),
     instrumentationHook: true,
   },
+  transpilePackages: ["@galoy/galoy-components"],
   output: "standalone",
 }
