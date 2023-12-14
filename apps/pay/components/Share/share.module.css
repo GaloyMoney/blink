@@ -1,0 +1,40 @@
+.container {
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.select_share_type,
+.error {
+  background-color: rgba(243, 243, 243, 0.908);
+  display: flex;
+  justify-content: center;
+  column-gap: 1rem;
+  align-items: center;
+  position: relative;
+  padding: 2rem 2rem 0.9rem 2rem;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.select_share_type > button {
+  color: rgba(83, 111, 242, 1);
+  font-weight: 500;
+  background-color: #fff;
+  border: 1px solid rgba(83, 111, 242, 1);
+  border-radius: 4px;
+}
+
+.select_share_type > .close_btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: transparent;
+  border: none;
+}
+
+.error {
+  color: red;
+}
