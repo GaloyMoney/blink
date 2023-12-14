@@ -494,6 +494,12 @@ _next_build = rule(
             default = "toolchains//:workspace_pnpm",
             providers = [WorkspacePnpmToolchainInfo],
         ),
+        "prod_deps_srcs": attrs.dict(
+            attrs.string(),
+            attrs.source(allow_directory = True),
+            default = {},
+            doc = """Mapping of dependent prod package paths to source files to track.""",
+        ),
     },
 )
 
