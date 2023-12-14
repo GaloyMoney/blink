@@ -27,6 +27,8 @@ fi
 
 export GH_TOKEN="$(gh-token generate -b "${GH_APP_PRIVATE_KEY}" -i "${GH_APP_ID}" | jq -r '.token')"
 gh auth setup-git
+# switch to https to use the token
+git remote set-url origin ${github_url}
 
 git checkout ${old_ref}
 app_src_files=($(buck2 uquery 'inputs(deps("'"//apps/${APP}:"'"))' 2>/dev/null))
