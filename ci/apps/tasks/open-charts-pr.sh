@@ -40,7 +40,7 @@ for file in "${app_src_files[@]}"; do
   git checkout "$old_ref" -- "$file"
 done
 git commit -m "Commit state of \`${APP}\` at \`${old_ref}\`"
-git push -u origin ${APP}-${old_ref}
+git push -fu origin ${APP}-${old_ref}
 
 # create a branch from the old state
 git branch ${APP}-${ref}
@@ -53,7 +53,7 @@ for file in "${app_src_files[@]}"; do
   git checkout "$ref" -- "$file"
 done
 git commit -m "Commit state of \`${APP}\` at \`${ref}\`"
-git push -u origin ${APP}-${ref}
+git push -fu origin ${APP}-${ref}
 
 cat <<EOF >> ../body.md
 # Bump ${APP} image
