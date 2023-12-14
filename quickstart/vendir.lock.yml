@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: adding shared component lib (#3676)...'
-      sha: 7ed0eb9f5b98172e6a9a05ea52786ac1111dc2c7
+      commitTitle: 'feat(dasboard): adding totp in dashboard (#3696)...'
+      sha: ffce1c5765eaf0c7bf4a57942e621b824093234e
       tags:
-      - 0.18.7-2-g7ed0eb9f5
+      - 0.18.8-2-gffce1c576
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: adding shared component lib (#3676)...'
-      sha: 7ed0eb9f5b98172e6a9a05ea52786ac1111dc2c7
+      commitTitle: 'feat(dasboard): adding totp in dashboard (#3696)...'
+      sha: ffce1c5765eaf0c7bf4a57942e621b824093234e
       tags:
-      - 0.18.8
+      - 0.18.8-2-gffce1c576
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: adding shared component lib (#3676)...'
-      sha: 7ed0eb9f5b98172e6a9a05ea52786ac1111dc2c7
+      commitTitle: 'feat(dasboard): adding totp in dashboard (#3696)...'
+      sha: ffce1c5765eaf0c7bf4a57942e621b824093234e
       tags:
-      - 0.18.8
+      - 0.18.9
     path: ./
   path: ./graphql
 kind: LockConfig
