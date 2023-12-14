@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): add dev-check-code buck rules (#3701)...'
-      sha: e9fb41388f42043ee0469dee8094842553a82ad8
+      commitTitle: 'chore: adding shared component lib (#3676)...'
+      sha: 7ed0eb9f5b98172e6a9a05ea52786ac1111dc2c7
       tags:
-      - 0.18.6-1-ge9fb41388
+      - 0.18.7-2-g7ed0eb9f5
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): add dev-check-code buck rules (#3701)...'
-      sha: e9fb41388f42043ee0469dee8094842553a82ad8
+      commitTitle: 'chore: adding shared component lib (#3676)...'
+      sha: 7ed0eb9f5b98172e6a9a05ea52786ac1111dc2c7
       tags:
-      - 0.18.6-1-ge9fb41388
+      - 0.18.8
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(core): add dev-check-code buck rules (#3701)...'
-      sha: e9fb41388f42043ee0469dee8094842553a82ad8
+      commitTitle: 'chore: adding shared component lib (#3676)...'
+      sha: 7ed0eb9f5b98172e6a9a05ea52786ac1111dc2c7
       tags:
-      - 0.18.6-1-ge9fb41388
+      - 0.18.8
     path: ./
   path: ./graphql
 kind: LockConfig
