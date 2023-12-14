@@ -10,10 +10,28 @@ import {
   paymentAmountFromNumber,
   WalletCurrency,
 } from "@/domain/shared"
+import { getFunderWalletId } from "@/services/ledger/caching"
 import { baseLogger } from "@/services/logger"
 import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
 
-import { createAccount, fundWallet, getBalanceHelper } from "test/helpers"
+import {
+  bitcoindClient,
+  createAccount,
+  createMandatoryUsers,
+  createSignerWallet,
+  fundLnd,
+  fundWallet,
+  fundWalletIdFromOnchain,
+  getBalanceHelper,
+  lnd1,
+  lnd2,
+  lndOutside1,
+  lndOutside2,
+  mineAndConfirm,
+  openChannelTesting,
+  resetLegacyIntegrationLnds,
+} from "test/helpers"
+import { BitcoindWalletClient } from "test/helpers/bitcoind"
 
 class ZeroAmountForUsdRecipientError extends Error {}
 
@@ -40,6 +58,77 @@ type AccountAndWallets = {
   newBtcWallet: Wallet
   newUsdWallet: Wallet
   newAccount: Account
+}
+
+beforeAll(async () => {
+  createMandatoryUsers()
+  await resetLegacyIntegrationLnds()
+  await bootstrapDeps()
+})
+
+const bootstrapDeps = async () => {
+  // Create bria signer wallet
+  const signerWalletName = "dev"
+  await createSignerWallet(signerWalletName)
+
+  // Create outside wallet
+  const outsideWalletName = "outside"
+  await bitcoindClient.createWallet({ walletName: outsideWalletName })
+  const bitcoindOutside = new BitcoindWalletClient(outsideWalletName)
+
+  // Fund outside wallet
+  const numOfBlocks = 10
+  const bitcoindAddress = await bitcoindOutside.getNewAddress()
+  await mineAndConfirm({
+    walletClient: bitcoindOutside,
+    numOfBlocks,
+    address: bitcoindAddress,
+  })
+
+  // Fund outside lnd node
+  const amountInBitcoin = 1
+  await fundLnd(lndOutside1, amountInBitcoin)
+
+  // Fund lnd1 node
+  const funderWalletId = await getFunderWalletId()
+  await fundWalletIdFromOnchain({
+    walletId: funderWalletId,
+    amountInBitcoin,
+    lnd: lnd1,
+  })
+
+  // Open channel lnd1 -> lnd2
+  const lnd2Socket = `lnd2:9735`
+  await openChannelTesting({
+    lnd: lnd1,
+    lndPartner: lnd2,
+    socket: lnd2Socket,
+  })
+
+  // Open channel lnd1 -> lndOutside1
+  const lndOutside1socket = `lnd-outside-1:9735`
+  await openChannelTesting({
+    lnd: lnd1,
+    lndPartner: lndOutside1,
+    socket: lndOutside1socket,
+  })
+
+  // Open channel lndOutside1 -> lnd1
+  const lnd1Socket = `lnd1:9735`
+  await openChannelTesting({
+    lnd: lndOutside1,
+    lndPartner: lnd1,
+    socket: lnd1Socket,
+  })
+
+  // Open channel lndOutside1 -> lndOutside2
+  const lndOutside2socket = `lnd-outside-2:9735`
+  await openChannelTesting({
+    lnd: lndOutside1,
+    lndPartner: lndOutside2,
+    socket: lndOutside2socket,
+    is_private: true,
+  })
 }
 
 const btcAmountFromUsdNumber = async (
