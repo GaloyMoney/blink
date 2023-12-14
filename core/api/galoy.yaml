@@ -1,0 +1,164 @@
+lightningAddressDomain: pay.domain.com
+lightningAddressDomainAliases:
+  - pay1.domain.com
+  - pay2.domain.com
+locale: en
+displayCurrency:
+  code: USD
+  symbol: $
+funder: FunderWallet
+dealer:
+  usd:
+    hedgingEnabled: false
+ratioPrecision: 1000000
+buildVersion:
+  android:
+    minBuildNumber: 362
+    lastBuildNumber: 362
+  ios:
+    minBuildNumber: 362
+    lastBuildNumber: 362
+rewards:
+  enableIpProxyCheck: true
+  allowPhoneCountries: []
+  denyPhoneCountries: []
+  allowIPCountries: []
+  denyIPCountries: []
+  allowASNs: []
+  denyASNs: []
+coldStorage:
+  minOnChainHotWalletBalance: 1000000
+  minRebalanceSize: 10000000
+  maxHotWalletBalance: 200000000
+bria:
+  hotWalletName: dev-wallet
+  queueNames:
+    fast: dev-queue
+  coldStorage:
+    walletName: cold
+    hotToColdRebalanceQueueName: dev-queue
+lndScbBackupBucketName: lnd-static-channel-backups
+admin_accounts:
+  - role: dealer
+    phone: "+16505554327"
+  - role: funder
+    phone: "+16505554325"
+  - role: bankowner
+    phone: "+16505554334"
+test_accounts: []
+rateLimits:
+  requestCodePerLoginIdentifier:
+    points: 4
+    duration: 3600
+    blockDuration: 10800
+  requestCodePerIp:
+    points: 16
+    duration: 3600
+    blockDuration: 86400
+  failedLoginAttemptPerLoginIdentifier:
+    points: 8
+    duration: 1200
+    blockDuration: 3600
+  failedLoginAttemptPerIp:
+    points: 20
+    duration: 21600
+    blockDuration: 86400
+  invoiceCreateAttempt:
+    points: 20
+    duration: 120
+    blockDuration: 300
+  invoiceCreateForRecipientAttempt:
+    points: 20
+    duration: 120
+    blockDuration: 300
+  onChainAddressCreateAttempt:
+    points: 20
+    duration: 3600
+    blockDuration: 14400
+  deviceAccountCreateAttempt:
+    points: 2
+    duration: 86400
+    blockDuration: 86400
+  requestCodePerAppcheckJti:
+    points: 3
+    duration: 3600
+    blockDuration: 3600
+  addEarnPerIp:
+    points: 125
+    duration: 86400
+    blockDuration: 604800
+accounts:
+  initialStatus: active
+  initialWallets:
+    - BTC
+    - USD
+  enablePhoneCheck: false
+  enableIpCheck: false
+  enableIpProxyCheck: false
+  allowPhoneCountries: []
+  denyPhoneCountries: []
+  allowIPCountries: []
+  denyIPCountries: []
+  allowASNs: []
+  denyASNs: []
+accountLimits:
+  withdrawal:
+    level:
+      "0": 12500
+      "1": 100000
+      "2": 5000000
+  intraLedger:
+    level:
+      "0": 12500
+      "1": 200000
+      "2": 5000000
+  tradeIntraAccount:
+    level:
+      "0": 200000
+      "1": 5000000
+      "2": 20000000
+spamLimits:
+  memoSharingSatsThreshold: 1000
+  memoSharingCentsThreshold: 50
+ipRecording:
+  enabled: false
+  proxyChecking:
+    enabled: false
+fees:
+  withdraw:
+    method: flat
+    defaultMin: 2000
+    ratioAsBasisPoints: 50
+    threshold: 1000000
+    daysLookback: 30
+  deposit:
+    defaultMin: 3000
+    threshold: 1000000
+    ratioAsBasisPoints: 30
+onChainWallet:
+  dustThreshold: 5000
+  minConfirmations: 2
+  scanDepth: 360
+  scanDepthOutgoing: 2
+  scanDepthChannelUpdate: 8
+swap:
+  loopOutWhenHotWalletLessThan: 200000000
+  swapOutAmount: 50000000
+  swapProviders:
+    - Loop
+  lnd1loopRestEndpoint: https://localhost:8081
+  lnd1loopRpcEndpoint: localhost:11010
+  lnd2loopRestEndpoint: https://localhost:8082
+  lnd2loopRpcEndpoint: localhost:11011
+  feeAccountingEnabled: true
+userActivenessMonthlyVolumeThreshold: 100
+cronConfig:
+  rebalanceEnabled: true
+  swapEnabled: true
+captcha:
+  mandatory: false
+skipFeeProbeConfig:
+  pubkey: []
+  chanId: []
+smsAuthUnsupportedCountries: []
+whatsAppAuthUnsupportedCountries: []

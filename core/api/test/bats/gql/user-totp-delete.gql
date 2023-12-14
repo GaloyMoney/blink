@@ -1,0 +1,14 @@
+mutation userTotpDelete {
+  userTotpDelete {
+    errors {
+      message
+    }
+    me {
+      totpEnabled
+      email {
+        address
+        verified
+      }
+    }
+  }
+}
