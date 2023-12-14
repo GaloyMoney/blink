@@ -533,6 +533,8 @@ export type InitiationViaIntraLedger = {
 export type InitiationViaLn = {
   readonly __typename: 'InitiationViaLn';
   readonly paymentHash: Scalars['PaymentHash']['output'];
+  /** Bolt11 invoice */
+  readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
 };
 
 export type InitiationViaOnChain = {
@@ -1154,16 +1156,6 @@ export type MutationUserPhoneRegistrationValidateArgs = {
 };
 
 
-export type MutationUserTotpDeleteArgs = {
-  input: UserTotpDeleteInput;
-};
-
-
-export type MutationUserTotpRegistrationInitiateArgs = {
-  input: UserTotpRegistrationInitiateInput;
-};
-
-
 export type MutationUserTotpRegistrationValidateArgs = {
   input: UserTotpRegistrationValidateInput;
 };
@@ -1556,6 +1548,7 @@ export type SettlementViaLn = {
 
 export type SettlementViaOnChain = {
   readonly __typename: 'SettlementViaOnChain';
+  readonly arrivalInMempoolEstimatedAt?: Maybe<Scalars['Timestamp']['output']>;
   readonly transactionHash?: Maybe<Scalars['OnChainTxHash']['output']>;
   readonly vout?: Maybe<Scalars['Int']['output']>;
 };
@@ -1890,18 +1883,10 @@ export type UserQuizQuestion = {
   readonly question: QuizQuestion;
 };
 
-export type UserTotpDeleteInput = {
-  readonly authToken: Scalars['AuthToken']['input'];
-};
-
 export type UserTotpDeletePayload = {
   readonly __typename: 'UserTotpDeletePayload';
   readonly errors: ReadonlyArray<Error>;
   readonly me?: Maybe<User>;
-};
-
-export type UserTotpRegistrationInitiateInput = {
-  readonly authToken: Scalars['AuthToken']['input'];
 };
 
 export type UserTotpRegistrationInitiatePayload = {
@@ -1912,7 +1897,7 @@ export type UserTotpRegistrationInitiatePayload = {
 };
 
 export type UserTotpRegistrationValidateInput = {
-  readonly authToken: Scalars['AuthToken']['input'];
+  readonly authToken?: InputMaybe<Scalars['AuthToken']['input']>;
   readonly totpCode: Scalars['TotpCode']['input'];
   readonly totpRegistrationId: Scalars['TotpRegistrationId']['input'];
 };
@@ -2087,6 +2072,23 @@ export type UserEmailDeleteMutationVariables = Exact<{ [key: string]: never; }>;
 
 
 export type UserEmailDeleteMutation = { readonly __typename: 'Mutation', readonly userEmailDelete: { readonly __typename: 'UserEmailDeletePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly code?: string | null, readonly message: string }> } };
+
+export type UserTotpRegistrationInitiateMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type UserTotpRegistrationInitiateMutation = { readonly __typename: 'Mutation', readonly userTotpRegistrationInitiate: { readonly __typename: 'UserTotpRegistrationInitiatePayload', readonly totpRegistrationId?: string | null, readonly totpSecret?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly code?: string | null, readonly message: string, readonly path?: ReadonlyArray<string | null> | null }> } };
+
+export type UserTotpDeleteMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type UserTotpDeleteMutation = { readonly __typename: 'Mutation', readonly userTotpDelete: { readonly __typename: 'UserTotpDeletePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly code?: string | null, readonly message: string, readonly path?: ReadonlyArray<string | null> | null }> } };
+
+export type UserTotpRegistrationValidateMutationVariables = Exact<{
+  input: UserTotpRegistrationValidateInput;
+}>;
+
+
+export type UserTotpRegistrationValidateMutation = { readonly __typename: 'Mutation', readonly userTotpRegistrationValidate: { readonly __typename: 'UserTotpRegistrationValidatePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly code?: string | null, readonly message: string, readonly path?: ReadonlyArray<string | null> | null }>, readonly me?: { readonly __typename: 'User', readonly id: string } | null } };
 
 export type ApiKeysQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2385,6 +2387,120 @@ export function useUserEmailDeleteMutation(baseOptions?: Apollo.MutationHookOpti
 export type UserEmailDeleteMutationHookResult = ReturnType<typeof useUserEmailDeleteMutation>;
 export type UserEmailDeleteMutationResult = Apollo.MutationResult<UserEmailDeleteMutation>;
 export type UserEmailDeleteMutationOptions = Apollo.BaseMutationOptions<UserEmailDeleteMutation, UserEmailDeleteMutationVariables>;
+export const UserTotpRegistrationInitiateDocument = gql`
+    mutation UserTotpRegistrationInitiate {
+  userTotpRegistrationInitiate {
+    totpRegistrationId
+    totpSecret
+    errors {
+      code
+      message
+      path
+    }
+  }
+}
+    `;
+export type UserTotpRegistrationInitiateMutationFn = Apollo.MutationFunction<UserTotpRegistrationInitiateMutation, UserTotpRegistrationInitiateMutationVariables>;
+
+/**
+ * __useUserTotpRegistrationInitiateMutation__
+ *
+ * To run a mutation, you first call `useUserTotpRegistrationInitiateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUserTotpRegistrationInitiateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [userTotpRegistrationInitiateMutation, { data, loading, error }] = useUserTotpRegistrationInitiateMutation({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useUserTotpRegistrationInitiateMutation(baseOptions?: Apollo.MutationHookOptions<UserTotpRegistrationInitiateMutation, UserTotpRegistrationInitiateMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UserTotpRegistrationInitiateMutation, UserTotpRegistrationInitiateMutationVariables>(UserTotpRegistrationInitiateDocument, options);
+      }
+export type UserTotpRegistrationInitiateMutationHookResult = ReturnType<typeof useUserTotpRegistrationInitiateMutation>;
+export type UserTotpRegistrationInitiateMutationResult = Apollo.MutationResult<UserTotpRegistrationInitiateMutation>;
+export type UserTotpRegistrationInitiateMutationOptions = Apollo.BaseMutationOptions<UserTotpRegistrationInitiateMutation, UserTotpRegistrationInitiateMutationVariables>;
+export const UserTotpDeleteDocument = gql`
+    mutation UserTotpDelete {
+  userTotpDelete {
+    errors {
+      code
+      message
+      path
+    }
+  }
+}
+    `;
+export type UserTotpDeleteMutationFn = Apollo.MutationFunction<UserTotpDeleteMutation, UserTotpDeleteMutationVariables>;
+
+/**
+ * __useUserTotpDeleteMutation__
+ *
+ * To run a mutation, you first call `useUserTotpDeleteMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUserTotpDeleteMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [userTotpDeleteMutation, { data, loading, error }] = useUserTotpDeleteMutation({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useUserTotpDeleteMutation(baseOptions?: Apollo.MutationHookOptions<UserTotpDeleteMutation, UserTotpDeleteMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UserTotpDeleteMutation, UserTotpDeleteMutationVariables>(UserTotpDeleteDocument, options);
+      }
+export type UserTotpDeleteMutationHookResult = ReturnType<typeof useUserTotpDeleteMutation>;
+export type UserTotpDeleteMutationResult = Apollo.MutationResult<UserTotpDeleteMutation>;
+export type UserTotpDeleteMutationOptions = Apollo.BaseMutationOptions<UserTotpDeleteMutation, UserTotpDeleteMutationVariables>;
+export const UserTotpRegistrationValidateDocument = gql`
+    mutation UserTotpRegistrationValidate($input: UserTotpRegistrationValidateInput!) {
+  userTotpRegistrationValidate(input: $input) {
+    errors {
+      code
+      message
+      path
+    }
+    me {
+      id
+    }
+  }
+}
+    `;
+export type UserTotpRegistrationValidateMutationFn = Apollo.MutationFunction<UserTotpRegistrationValidateMutation, UserTotpRegistrationValidateMutationVariables>;
+
+/**
+ * __useUserTotpRegistrationValidateMutation__
+ *
+ * To run a mutation, you first call `useUserTotpRegistrationValidateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUserTotpRegistrationValidateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [userTotpRegistrationValidateMutation, { data, loading, error }] = useUserTotpRegistrationValidateMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUserTotpRegistrationValidateMutation(baseOptions?: Apollo.MutationHookOptions<UserTotpRegistrationValidateMutation, UserTotpRegistrationValidateMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UserTotpRegistrationValidateMutation, UserTotpRegistrationValidateMutationVariables>(UserTotpRegistrationValidateDocument, options);
+      }
+export type UserTotpRegistrationValidateMutationHookResult = ReturnType<typeof useUserTotpRegistrationValidateMutation>;
+export type UserTotpRegistrationValidateMutationResult = Apollo.MutationResult<UserTotpRegistrationValidateMutation>;
+export type UserTotpRegistrationValidateMutationOptions = Apollo.BaseMutationOptions<UserTotpRegistrationValidateMutation, UserTotpRegistrationValidateMutationVariables>;
 export const ApiKeysDocument = gql`
     query ApiKeys {
   me {
@@ -2425,8 +2541,13 @@ export function useApiKeysLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Ap
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<ApiKeysQuery, ApiKeysQueryVariables>(ApiKeysDocument, options);
         }
+export function useApiKeysSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<ApiKeysQuery, ApiKeysQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<ApiKeysQuery, ApiKeysQueryVariables>(ApiKeysDocument, options);
+        }
 export type ApiKeysQueryHookResult = ReturnType<typeof useApiKeysQuery>;
 export type ApiKeysLazyQueryHookResult = ReturnType<typeof useApiKeysLazyQuery>;
+export type ApiKeysSuspenseQueryHookResult = ReturnType<typeof useApiKeysSuspenseQuery>;
 export type ApiKeysQueryResult = Apollo.QueryResult<ApiKeysQuery, ApiKeysQueryVariables>;
 export const CallbackEndpointsDocument = gql`
     query CallbackEndpoints {
@@ -2464,8 +2585,13 @@ export function useCallbackEndpointsLazyQuery(baseOptions?: Apollo.LazyQueryHook
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<CallbackEndpointsQuery, CallbackEndpointsQueryVariables>(CallbackEndpointsDocument, options);
         }
+export function useCallbackEndpointsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<CallbackEndpointsQuery, CallbackEndpointsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<CallbackEndpointsQuery, CallbackEndpointsQueryVariables>(CallbackEndpointsDocument, options);
+        }
 export type CallbackEndpointsQueryHookResult = ReturnType<typeof useCallbackEndpointsQuery>;
 export type CallbackEndpointsLazyQueryHookResult = ReturnType<typeof useCallbackEndpointsLazyQuery>;
+export type CallbackEndpointsSuspenseQueryHookResult = ReturnType<typeof useCallbackEndpointsSuspenseQuery>;
 export type CallbackEndpointsQueryResult = Apollo.QueryResult<CallbackEndpointsQuery, CallbackEndpointsQueryVariables>;
 export const GetPaginatedTransactionsDocument = gql`
     query GetPaginatedTransactions($first: Int, $after: String, $before: String) {
@@ -2559,8 +2685,13 @@ export function useGetPaginatedTransactionsLazyQuery(baseOptions?: Apollo.LazyQu
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<GetPaginatedTransactionsQuery, GetPaginatedTransactionsQueryVariables>(GetPaginatedTransactionsDocument, options);
         }
+export function useGetPaginatedTransactionsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<GetPaginatedTransactionsQuery, GetPaginatedTransactionsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetPaginatedTransactionsQuery, GetPaginatedTransactionsQueryVariables>(GetPaginatedTransactionsDocument, options);
+        }
 export type GetPaginatedTransactionsQueryHookResult = ReturnType<typeof useGetPaginatedTransactionsQuery>;
 export type GetPaginatedTransactionsLazyQueryHookResult = ReturnType<typeof useGetPaginatedTransactionsLazyQuery>;
+export type GetPaginatedTransactionsSuspenseQueryHookResult = ReturnType<typeof useGetPaginatedTransactionsSuspenseQuery>;
 export type GetPaginatedTransactionsQueryResult = Apollo.QueryResult<GetPaginatedTransactionsQuery, GetPaginatedTransactionsQueryVariables>;
 export const GetFirstTransactionsDocument = gql`
     query GetFirstTransactions($first: Int) {
@@ -2652,8 +2783,13 @@ export function useGetFirstTransactionsLazyQuery(baseOptions?: Apollo.LazyQueryH
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<GetFirstTransactionsQuery, GetFirstTransactionsQueryVariables>(GetFirstTransactionsDocument, options);
         }
+export function useGetFirstTransactionsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<GetFirstTransactionsQuery, GetFirstTransactionsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetFirstTransactionsQuery, GetFirstTransactionsQueryVariables>(GetFirstTransactionsDocument, options);
+        }
 export type GetFirstTransactionsQueryHookResult = ReturnType<typeof useGetFirstTransactionsQuery>;
 export type GetFirstTransactionsLazyQueryHookResult = ReturnType<typeof useGetFirstTransactionsLazyQuery>;
+export type GetFirstTransactionsSuspenseQueryHookResult = ReturnType<typeof useGetFirstTransactionsSuspenseQuery>;
 export type GetFirstTransactionsQueryResult = Apollo.QueryResult<GetFirstTransactionsQuery, GetFirstTransactionsQueryVariables>;
 export const MeDocument = gql`
     query me {
@@ -2708,8 +2844,13 @@ export function useMeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeQuery
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<MeQuery, MeQueryVariables>(MeDocument, options);
         }
+export function useMeSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<MeQuery, MeQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MeQuery, MeQueryVariables>(MeDocument, options);
+        }
 export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
 export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
+export type MeSuspenseQueryHookResult = ReturnType<typeof useMeSuspenseQuery>;
 export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
 
 
@@ -2984,9 +3125,7 @@ export type ResolversTypes = {
   UserPhoneRegistrationValidateInput: UserPhoneRegistrationValidateInput;
   UserPhoneRegistrationValidatePayload: ResolverTypeWrapper<UserPhoneRegistrationValidatePayload>;
   UserQuizQuestion: ResolverTypeWrapper<UserQuizQuestion>;
-  UserTotpDeleteInput: UserTotpDeleteInput;
   UserTotpDeletePayload: ResolverTypeWrapper<UserTotpDeletePayload>;
-  UserTotpRegistrationInitiateInput: UserTotpRegistrationInitiateInput;
   UserTotpRegistrationInitiatePayload: ResolverTypeWrapper<UserTotpRegistrationInitiatePayload>;
   UserTotpRegistrationValidateInput: UserTotpRegistrationValidateInput;
   UserTotpRegistrationValidatePayload: ResolverTypeWrapper<UserTotpRegistrationValidatePayload>;
@@ -3178,9 +3317,7 @@ export type ResolversParentTypes = {
   UserPhoneRegistrationValidateInput: UserPhoneRegistrationValidateInput;
   UserPhoneRegistrationValidatePayload: UserPhoneRegistrationValidatePayload;
   UserQuizQuestion: UserQuizQuestion;
-  UserTotpDeleteInput: UserTotpDeleteInput;
   UserTotpDeletePayload: UserTotpDeletePayload;
-  UserTotpRegistrationInitiateInput: UserTotpRegistrationInitiateInput;
   UserTotpRegistrationInitiatePayload: UserTotpRegistrationInitiatePayload;
   UserTotpRegistrationValidateInput: UserTotpRegistrationValidateInput;
   UserTotpRegistrationValidatePayload: UserTotpRegistrationValidatePayload;
@@ -3481,6 +3618,7 @@ export type InitiationViaIntraLedgerResolvers<ContextType = any, ParentType exte
 
 export type InitiationViaLnResolvers<ContextType = any, ParentType extends ResolversParentTypes['InitiationViaLn'] = ResolversParentTypes['InitiationViaLn']> = {
   paymentHash?: Resolver<ResolversTypes['PaymentHash'], ParentType, ContextType>;
+  paymentRequest?: Resolver<ResolversTypes['LnPaymentRequest'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -3657,8 +3795,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   userPhoneDelete?: Resolver<ResolversTypes['UserPhoneDeletePayload'], ParentType, ContextType>;
   userPhoneRegistrationInitiate?: Resolver<ResolversTypes['SuccessPayload'], ParentType, ContextType, RequireFields<MutationUserPhoneRegistrationInitiateArgs, 'input'>>;
   userPhoneRegistrationValidate?: Resolver<ResolversTypes['UserPhoneRegistrationValidatePayload'], ParentType, ContextType, RequireFields<MutationUserPhoneRegistrationValidateArgs, 'input'>>;
-  userTotpDelete?: Resolver<ResolversTypes['UserTotpDeletePayload'], ParentType, ContextType, RequireFields<MutationUserTotpDeleteArgs, 'input'>>;
-  userTotpRegistrationInitiate?: Resolver<ResolversTypes['UserTotpRegistrationInitiatePayload'], ParentType, ContextType, RequireFields<MutationUserTotpRegistrationInitiateArgs, 'input'>>;
+  userTotpDelete?: Resolver<ResolversTypes['UserTotpDeletePayload'], ParentType, ContextType>;
+  userTotpRegistrationInitiate?: Resolver<ResolversTypes['UserTotpRegistrationInitiatePayload'], ParentType, ContextType>;
   userTotpRegistrationValidate?: Resolver<ResolversTypes['UserTotpRegistrationValidatePayload'], ParentType, ContextType, RequireFields<MutationUserTotpRegistrationValidateArgs, 'input'>>;
   userUpdateLanguage?: Resolver<ResolversTypes['UserUpdateLanguagePayload'], ParentType, ContextType, RequireFields<MutationUserUpdateLanguageArgs, 'input'>>;
   userUpdateUsername?: Resolver<ResolversTypes['UserUpdateUsernamePayload'], ParentType, ContextType, RequireFields<MutationUserUpdateUsernameArgs, 'input'>>;
@@ -3897,6 +4035,7 @@ export type SettlementViaLnResolvers<ContextType = any, ParentType extends Resol
 };
 
 export type SettlementViaOnChainResolvers<ContextType = any, ParentType extends ResolversParentTypes['SettlementViaOnChain'] = ResolversParentTypes['SettlementViaOnChain']> = {
+  arrivalInMempoolEstimatedAt?: Resolver<Maybe<ResolversTypes['Timestamp']>, ParentType, ContextType>;
   transactionHash?: Resolver<Maybe<ResolversTypes['OnChainTxHash']>, ParentType, ContextType>;
   vout?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
