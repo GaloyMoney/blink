@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps-dev): bump eslint-plugin-testing-library from 5.11.1
-        to 6.2.0 (#3695)...'
-      sha: dc1771c052b05722d1ac9ebec7032fc979f96df9
+      commitTitle: 'fix(pay): print paycode page (#3708)'
+      sha: 2f1058868c49f49318ea70f96ee5b3ee689b792d
       tags:
-      - 0.18.9-3-gdc1771c05
+      - 0.18.10-2-g2f1058868
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps-dev): bump eslint-plugin-testing-library from 5.11.1
-        to 6.2.0 (#3695)...'
-      sha: dc1771c052b05722d1ac9ebec7032fc979f96df9
+      commitTitle: 'fix(pay): print paycode page (#3708)'
+      sha: 2f1058868c49f49318ea70f96ee5b3ee689b792d
       tags:
-      - 0.18.9-3-gdc1771c05
+      - 0.18.10-2-g2f1058868
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(deps-dev): bump eslint-plugin-testing-library from 5.11.1
-        to 6.2.0 (#3695)...'
-      sha: dc1771c052b05722d1ac9ebec7032fc979f96df9
+      commitTitle: 'fix(pay): print paycode page (#3708)'
+      sha: 2f1058868c49f49318ea70f96ee5b3ee689b792d
       tags:
-      - 0.18.10
+      - 0.18.10-2-g2f1058868
     path: ./
   path: ./graphql
 kind: LockConfig
