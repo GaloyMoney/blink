@@ -1,0 +1,23 @@
+.item_container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: var(--grey5);
+  border-radius: 0.5rem;
+  margin-bottom: 0.5em;
+  position: relative;
+  color: var(--inputColor);
+  background-color: var(--inputBackground);
+}
+
+.custom_label {
+  position: relative;
+  cursor: pointer;
+  flex-grow: 1;
+}
+
+.text-gray-700 {
+  color: #4a4a4a;
+}
