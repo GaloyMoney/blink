@@ -61,22 +61,22 @@ ${digest}
 \`\`\`
 EOF
 
-pushd ../repo
-  git cliff --config ../pipeline-tasks/ci/vendor/config/git-cliff.toml ${old_ref}..${ref} > ../charts-repo/release_notes.md
-popd
+# pushd ../repo
+#   git cliff --config ../pipeline-tasks/ci/vendor/config/git-cliff.toml ${old_ref}..${ref} > ../charts-repo/release_notes.md
+# popd
 
 export GH_TOKEN="$(gh-token generate -b "${GH_APP_PRIVATE_KEY}" -i "${GH_APP_ID}" | jq -r '.token')"
 
-breaking=""
-if [[ $(cat release_notes.md | grep breaking) != '' ]]; then
-  breaking="--label breaking"
-fi
+# breaking=""
+# if [[ $(cat release_notes.md | grep breaking) != '' ]]; then
+#   breaking="--label breaking"
+# fi
 
-gh pr close ${BOT_BRANCH} || true
-gh pr create \
-  --title "chore(deps): bump-${APP}-image-${ref}" \
-  --body-file ../body.md \
-  --base ${BRANCH} \
-  --head ${BOT_BRANCH} \
-  --label galoybot \
-  --label galoy ${breaking}
+# gh pr close ${BOT_BRANCH} || true
+# gh pr create \
+#   --title "chore(deps): bump-${APP}-image-${ref}" \
+#   --body-file ../body.md \
+#   --base ${BRANCH} \
+#   --head ${BOT_BRANCH} \
+#   --label galoybot \
+#   --label galoy ${breaking}
