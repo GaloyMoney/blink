@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -eu
-
+exit 1
 export digest=$(cat ./edge-image/digest)
 export ref=$(cat ./repo/.git/short_ref)
 
