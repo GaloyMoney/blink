@@ -67,6 +67,11 @@ sh_binary(
 )
 
 sh_binary(
+  name = "init-lightning",
+  main = "bin/init-lightning.sh",
+)
+
+sh_binary(
   name = "init-user",
   main = "bin/init-user.sh",
 )

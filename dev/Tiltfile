@@ -356,6 +356,19 @@ local_resource(
   ]
 )
 
+local_resource(
+  name='init-lightning',
+  labels = ['bitcoin'],
+  cmd='buck2 run //dev:init-lightning',
+  allow_parallel = True,
+  resource_deps = [
+    "init-onchain",
+    "lnd1",
+    "lnd-outside-1",
+    "lnd-outside-2",
+  ]
+)
+
 api_keys_target = "//core/api-keys:api-keys"
 local_resource(
     "api-keys",
