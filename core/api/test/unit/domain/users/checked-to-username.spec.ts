@@ -11,13 +11,28 @@ describe("username-check", () => {
     expect(username).toBeInstanceOf(Error)
   })
 
+  it("Fails if starting with 1", () => {
+    const username = checkedToUsername("1ab")
+    expect(username).toBeInstanceOf(Error)
+  })
+
   it("Fails wrapped segwit address", () => {
     const username = checkedToUsername("32ksNi7zSt3t2aesvoEWhGMUEwCFg9UCCG")
     expect(username).toBeInstanceOf(Error)
   })
 
+  it("Fails if starting with 3", () => {
+    const username = checkedToUsername("3basd")
+    expect(username).toBeInstanceOf(Error)
+  })
+
   it("Fails segwit address", () => {
     const username = checkedToUsername("bc1qpl8ehyzu44yhwu92w892uxwxdfp9dhu3d0zj2g")
+    expect(username).toBeInstanceOf(Error)
+  })
+
+  it("Fails if starting with bc1", () => {
+    const username = checkedToUsername("bc1be")
     expect(username).toBeInstanceOf(Error)
   })
 
@@ -28,8 +43,28 @@ describe("username-check", () => {
     expect(username).toBeInstanceOf(Error)
   })
 
+  it("Fails if starting with lnbc1", () => {
+    const username = checkedToUsername("lnbc1qwe1")
+    expect(username).toBeInstanceOf(Error)
+  })
+
   it("Fails non-underscore special characters", () => {
     const username = checkedToUsername("alice-12")
+    expect(username).toBeInstanceOf(Error)
+  })
+
+  it("Fails if length is less than 3", () => {
+    const username = checkedToUsername("ab")
+    expect(username).toBeInstanceOf(Error)
+  })
+
+  it("Fails if contains invalid characters", () => {
+    const username = checkedToUsername("ab+/")
+    expect(username).toBeInstanceOf(Error)
+  })
+
+  it("Fails if non english characters", () => {
+    const username = checkedToUsername("ñ_user1")
     expect(username).toBeInstanceOf(Error)
   })
 })

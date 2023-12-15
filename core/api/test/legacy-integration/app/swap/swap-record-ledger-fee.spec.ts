@@ -1,6 +1,11 @@
 import { DuplicateError } from "@/domain/errors"
 import { SwapState, SwapType } from "@/domain/swap"
 import { admin as LedgerAdmin } from "@/services/ledger/admin"
+import { createMandatoryUsers } from "test/helpers"
+
+beforeAll(async () => {
+  await createMandatoryUsers()
+})
 
 describe("Swap Record ledger Fee", () => {
   let entryId: LedgerTransactionId[] = []
