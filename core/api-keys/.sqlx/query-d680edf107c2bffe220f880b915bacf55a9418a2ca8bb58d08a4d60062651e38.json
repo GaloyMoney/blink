@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO identities (subject_id) VALUES ($1)\n               ON CONFLICT (subject_id) DO UPDATE SET subject_id = $1\n               RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "d680edf107c2bffe220f880b915bacf55a9418a2ca8bb58d08a4d60062651e38"
+}
