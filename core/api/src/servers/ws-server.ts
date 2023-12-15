@@ -69,12 +69,13 @@ const getContext = async (
 
       const ip = parseIps(ipString)
 
+      const apiKey = connectionParams?.["X-API-KEY"] as AuthToken | undefined
       const authz = connectionParams?.Authorization as string | undefined
-      const kratosToken = authz?.slice(7) as AuthToken
+      const bearerToken = authz?.slice(7) as AuthToken
 
       // make request to oathkeeper
       // if the kratosToken is undefined, then oathkeeper will create a subject with "anon"
-      const jwtToken = await sendOathkeeperRequestGraphql(kratosToken)
+      const jwtToken = await sendOathkeeperRequestGraphql({ apiKey, bearerToken })
       // TODO: see how returning an error affect the websocket connection
       if (jwtToken instanceof Error) return jwtToken
 
@@ -165,6 +166,10 @@ const server = () =>
             if (typeof ctx.connectionParams?.Authorization === "string") {
               authorizedContexts[ctx.connectionParams.Authorization] = context
             }
+            if (typeof ctx.connectionParams?.["X-API-KEY"] === "string") {
+              const key = ctx.connectionParams["X-API-KEY"]
+              authorizedContexts[key] = context
+            }
 
             return true
           },
@@ -173,6 +178,11 @@ const server = () =>
             if (typeof ctx.connectionParams?.Authorization === "string") {
               addAttributesToCurrentSpan({ "ws.authType": "bearer" })
               return authorizedContexts[ctx.connectionParams?.Authorization]
+            }
+            if (typeof ctx.connectionParams?.["X-API-KEY"] === "string") {
+              addAttributesToCurrentSpan({ "ws.authType": "apikey" })
+              const key = ctx.connectionParams["X-API-KEY"]
+              return authorizedContexts[key]
             }
             // anon context
             addAttributesToCurrentSpan({ "ws.authType": "anon" })

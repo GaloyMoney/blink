@@ -9,9 +9,13 @@ import {
   UnknownOathkeeperServiceError,
 } from "@/domain/oathkeeper/errors"
 
-export const sendOathkeeperRequestGraphql = async (
-  token: AuthToken | undefined,
-): Promise<JwtToken | OathkeeperError> => {
+export const sendOathkeeperRequestGraphql = async ({
+  bearerToken,
+  apiKey,
+}: {
+  bearerToken: AuthToken | undefined
+  apiKey: AuthToken | undefined
+}): Promise<JwtToken | OathkeeperError> => {
   const decisionsApi = `${OATHKEEPER_DECISION_ENDPOINT}/decisions`
   const requestUrl = `${decisionsApi}/graphql`
 
@@ -19,8 +23,10 @@ export const sendOathkeeperRequestGraphql = async (
     "Content-Type": "application/json",
   }
 
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`
+  if (bearerToken) {
+    headers["Authorization"] = `Bearer ${bearerToken}`
+  } else if (apiKey) {
+    headers["X-API-KEY"] = apiKey
   }
 
   try {
