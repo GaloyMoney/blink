@@ -9,6 +9,7 @@ export cron_digest=$(cat ./cron-edge-image/digest)
 export migrate_digest=$(cat ./migrate-edge-image/digest)
 export websocket_digest=$(cat ./websocket-edge-image/digest)
 export api_keys_digest=$(cat ./api-keys-edge-image/digest)
+export github_url=https://github.com/GaloyMoney/galoy
 
 pushd charts-repo
 
@@ -16,12 +17,50 @@ ref=$(yq e '.galoy.images.app.git_ref' charts/galoy/values.yaml)
 git checkout ${BRANCH}
 old_ref=$(yq e '.galoy.images.app.git_ref' charts/galoy/values.yaml)
 
+pushd ../repo
+if [[ -z $(git config --global user.email) ]]; then
+  git config --global user.email "bot@galoy.io"
+fi
+if [[ -z $(git config --global user.name) ]]; then
+  git config --global user.name "CI Bot"
+fi
+
+export GH_TOKEN="$(gh-token generate -b "${GH_APP_PRIVATE_KEY}" -i "${GH_APP_ID}" | jq -r '.token')"
+gh auth setup-git
+# switch to https to use the token
+git remote set-url origin ${github_url}
+
+git checkout ${old_ref}
+app_src_files=($(buck2 uquery 'inputs(deps("//core/..."))' 2>/dev/null))
+
+# create a branch with the old state of core
+git checkout --orphan core-${old_ref}
+git rm -rf . > /dev/null
+for file in "${app_src_files[@]}"; do
+  git checkout "$old_ref" -- "$file"
+done
+git commit -m "Commit state of \`core\` at \`${old_ref}\`"
+git push -fu origin core-${old_ref}
+
+# create a branch from the old state
+git branch core-${ref}
+git checkout ${ref}
+app_src_files=($(buck2 uquery 'inputs(deps("//core/..."))' 2>/dev/null))
+
+# commit the new state of core
+git checkout core-${ref}
+for file in "${app_src_files[@]}"; do
+  git checkout "$ref" -- "$file"
+done
+git commit -m "Commit state of \`core\` at \`${ref}\`"
+git push -fu origin core-${ref}
+
 cat <<EOF >> ../body.md
 # Bump galoy image
 
 Code diff contained in this image:
 
-https://github.com/GaloyMoney/galoy/compare/${old_ref}...${ref}
+${github_url}/compare/core-${old_ref}...core-${ref}
 
 The galoy api image will be bumped to digest:
 \`\`\`
@@ -59,11 +98,9 @@ ${api_keys_digest}
 \`\`\`
 EOF
 
-pushd ../repo
-  git cliff --config ../pipeline-tasks/ci/vendor/config/git-cliff.toml ${old_ref}..${ref} > ../charts-repo/release_notes.md
-popd
+git cliff --config ../pipeline-tasks/ci/vendor/config/git-cliff.toml ${old_ref}..${ref} > ../charts-repo/release_notes.md
 
-export GH_TOKEN="$(ghtoken generate -b "${GH_APP_PRIVATE_KEY}" -i "${GH_APP_ID}" | jq -r '.token')"
+popd
 
 breaking=""
 if [[ $(cat release_notes.md | grep breaking) != '' ]]; then
