@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: add pnpm store to gitignore (#3709)'
-      sha: 74444b2c3b9097afd0be046c5d61487212a85583
+      commitTitle: 'build: add init-lightning script (#3718)...'
+      sha: 1fda3f1798a563acf87aacc722f9efa1f7b33b84
       tags:
-      - 0.18.12-1-g74444b2c3
+      - 0.18.13-3-g1fda3f179
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: add pnpm store to gitignore (#3709)'
-      sha: 74444b2c3b9097afd0be046c5d61487212a85583
+      commitTitle: 'build: add init-lightning script (#3718)...'
+      sha: 1fda3f1798a563acf87aacc722f9efa1f7b33b84
       tags:
-      - 0.18.12-1-g74444b2c3
+      - 0.18.13-3-g1fda3f179
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: add pnpm store to gitignore (#3709)'
-      sha: 74444b2c3b9097afd0be046c5d61487212a85583
+      commitTitle: 'build: add init-lightning script (#3718)...'
+      sha: 1fda3f1798a563acf87aacc722f9efa1f7b33b84
       tags:
-      - 0.18.12-1-g74444b2c3
+      - 0.18.13-3-g1fda3f179
     path: ./
   path: ./graphql
 kind: LockConfig
