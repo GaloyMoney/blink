@@ -52,15 +52,21 @@ git checkout core-${ref}
 for file in "${app_src_files[@]}"; do
   git checkout "$ref" -- "$file"
 done
-git commit -m "Commit state of \`core\` at \`${ref}\`"
-git push -fu origin core-${ref}
+
+if [[ $(git status --porcelain -u no) != '' ]]; then
+  git commit -m "Commit state of \`core\` at \`${ref}\`"
+  git push -fu origin core-${ref}
+  github_diff_url="${github_url}/compare/core-${old_ref}...core-${ref}"
+else
+  github_diff_url="${github_url}/compare/${old_ref}...${ref}"
+fi
 
 cat <<EOF >> ../body.md
 # Bump galoy image
 
 Code diff contained in this image:
 
-${github_url}/compare/core-${old_ref}...core-${ref}
+${github_diff_url}
 
 The galoy api image will be bumped to digest:
 \`\`\`
