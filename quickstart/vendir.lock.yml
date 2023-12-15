@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): remove legacy "02" tests (#3677)...'
-      sha: a30469d68283eeac5f527d19d16363d508d5dce7
+      commitTitle: 'chore: add pnpm store to gitignore (#3709)'
+      sha: 74444b2c3b9097afd0be046c5d61487212a85583
       tags:
-      - 0.18.11-1-ga30469d68
+      - 0.18.12-1-g74444b2c3
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): remove legacy "02" tests (#3677)...'
-      sha: a30469d68283eeac5f527d19d16363d508d5dce7
+      commitTitle: 'chore: add pnpm store to gitignore (#3709)'
+      sha: 74444b2c3b9097afd0be046c5d61487212a85583
       tags:
-      - 0.18.11-1-ga30469d68
+      - 0.18.12-1-g74444b2c3
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(core): remove legacy "02" tests (#3677)...'
-      sha: a30469d68283eeac5f527d19d16363d508d5dce7
+      commitTitle: 'chore: add pnpm store to gitignore (#3709)'
+      sha: 74444b2c3b9097afd0be046c5d61487212a85583
       tags:
-      - 0.18.11-1-ga30469d68
+      - 0.18.12-1-g74444b2c3
     path: ./
   path: ./graphql
 kind: LockConfig
