@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build: add init-lightning script (#3718)...'
-      sha: 1fda3f1798a563acf87aacc722f9efa1f7b33b84
+      commitTitle: 'fix(api-keys): connect with api key to WS (#3716)...'
+      sha: 22b3575ec82e2ca02b8304d4d4983ee426df9112
       tags:
-      - 0.18.13-3-g1fda3f179
+      - 0.18.14-1-g22b3575ec
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build: add init-lightning script (#3718)...'
-      sha: 1fda3f1798a563acf87aacc722f9efa1f7b33b84
+      commitTitle: 'fix(api-keys): connect with api key to WS (#3716)...'
+      sha: 22b3575ec82e2ca02b8304d4d4983ee426df9112
       tags:
-      - 0.18.13-3-g1fda3f179
+      - 0.18.14-1-g22b3575ec
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'build: add init-lightning script (#3718)...'
-      sha: 1fda3f1798a563acf87aacc722f9efa1f7b33b84
+      commitTitle: 'fix(api-keys): connect with api key to WS (#3716)...'
+      sha: 22b3575ec82e2ca02b8304d4d4983ee426df9112
       tags:
-      - 0.18.13-3-g1fda3f179
+      - 0.18.14-1-g22b3575ec
     path: ./
   path: ./graphql
 kind: LockConfig
