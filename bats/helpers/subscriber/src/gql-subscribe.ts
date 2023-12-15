@@ -15,7 +15,9 @@ const authToken = process.argv[5]
 const variablesString = process.argv[6] || "{}"
 const client = createClient({
   url,
-  connectionParams: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
+  connectionParams: authToken ? authToken.startsWith("dev_") ? {
+    "X-API-KEY": authToken,
+  } : { Authorization: `Bearer ${authToken}` } : undefined,
   webSocketImpl: WebSocket,
 })
 

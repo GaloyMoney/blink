@@ -1,6 +1,7 @@
 #!/usr/bin/env bats
 
 load "../../helpers/user.bash"
+load "../../helpers/subscriber.bash"
 
 random_uuid() {
   if [[ -e /proc/sys/kernel/random/uuid ]]; then
@@ -52,6 +53,16 @@ new_key_name() {
 
   keyName="$(graphql_output '.data.me.apiKeys[-1].name')"
   [[ "${keyName}" = "$(read_value 'key_name')" ]] || exit 1
+}
+
+@test "api-keys: can subscribe" {
+  subscribe_to 'api-key-secret' 'my-updates-sub'
+  retry 10 1 grep 'Data' "${SUBSCRIBER_LOG_FILE}"
+  if grep -q 'Data: {"errors"' "${SUBSCRIBER_LOG_FILE}"; then
+    echo "errors found in the log file."
+    exit 1
+  fi
+  stop_subscriber
 }
 
 @test "api-keys: can revoke key" {
