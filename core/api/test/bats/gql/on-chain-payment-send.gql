@@ -1,0 +1,8 @@
+mutation onChainPaymentSend($input: OnChainPaymentSendInput!) {
+  onChainPaymentSend(input: $input) {
+    errors {
+      message
+    }
+    status
+  }
+}

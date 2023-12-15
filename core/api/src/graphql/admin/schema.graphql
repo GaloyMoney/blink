@@ -1,0 +1,636 @@
+type AccountDetailPayload {
+  accountDetails: AuditedAccount
+  errors: [Error!]!
+}
+
+"""Unique identifier of an account"""
+scalar AccountId
+
+enum AccountLevel {
+  ONE
+  TWO
+  ZERO
+}
+
+enum AccountStatus {
+  ACTIVE
+  CLOSED
+  LOCKED
+  NEW
+  PENDING
+}
+
+input AccountUpdateLevelInput {
+  accountId: AccountId!
+  level: AccountLevel!
+}
+
+input AccountUpdateStatusInput {
+  accountId: AccountId!
+  comment: String
+  status: AccountStatus!
+}
+
+input AdminPushNotificationSendInput {
+  accountId: String!
+  body: String!
+  data: Object
+  notificationCategory: NotificationCategory
+  title: String!
+}
+
+type AdminPushNotificationSendPayload {
+  errors: [Error!]!
+  success: Boolean
+}
+
+"""
+Accounts are core to the Galoy architecture. they have users, and own wallets
+"""
+type AuditedAccount {
+  """
+  GPS coordinates for the account that can be used to place the related business on a map
+  """
+  coordinates: Coordinates
+  createdAt: Timestamp!
+  id: ID!
+  level: AccountLevel!
+  owner: AuditedUser!
+  status: AccountStatus!
+  title: String
+  username: Username
+  wallets: [Wallet!]!
+}
+
+type AuditedUser {
+  createdAt: Timestamp!
+
+  """Email address"""
+  email: Email
+  id: ID!
+  language: Language!
+  phone: Phone
+}
+
+"""
+A wallet belonging to an account which contains a BTC balance and a list of transactions.
+"""
+type BTCWallet implements Wallet {
+  accountId: ID!
+
+  """A balance stored in BTC."""
+  balance: SignedAmount!
+  id: ID!
+  invoiceByPaymentHash(paymentHash: PaymentHash!): Invoice!
+
+  """A list of all invoices associated with walletIds optionally passed."""
+  invoices(
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+  ): InvoiceConnection
+
+  """An unconfirmed incoming onchain balance."""
+  pendingIncomingBalance: SignedAmount!
+  pendingIncomingTransactions: [Transaction!]!
+  pendingIncomingTransactionsByAddress(
+    """Returns the items that include this address."""
+    address: OnChainAddress!
+  ): [Transaction!]!
+  transactionById(transactionId: ID!): Transaction!
+
+  """A list of BTC transactions associated with this wallet."""
+  transactions(
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+  ): TransactionConnection
+  transactionsByAddress(
+    """Returns the items that include this address."""
+    address: OnChainAddress!
+
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+  ): TransactionConnection
+  transactionsByPaymentHash(paymentHash: PaymentHash!): [Transaction!]!
+  walletCurrency: WalletCurrency!
+}
+
+input BusinessDeleteMapInfoInput {
+  username: Username!
+}
+
+input BusinessUpdateMapInfoInput {
+  latitude: Float!
+  longitude: Float!
+  title: String!
+  username: Username!
+}
+
+type Coordinates {
+  latitude: Float!
+  longitude: Float!
+}
+
+"""Display currency of an account"""
+scalar DisplayCurrency
+
+type Email {
+  address: EmailAddress
+  verified: Boolean
+}
+
+"""Email address"""
+scalar EmailAddress
+
+interface Error {
+  code: String
+  message: String!
+  path: [String]
+}
+
+type GraphQLApplicationError implements Error {
+  code: String
+  message: String!
+  path: [String]
+}
+
+union InitiationVia = InitiationViaIntraLedger | InitiationViaLn | InitiationViaOnChain
+
+type InitiationViaIntraLedger {
+  counterPartyUsername: Username
+  counterPartyWalletId: WalletId
+}
+
+type InitiationViaLn {
+  paymentHash: PaymentHash!
+
+  """Bolt11 invoice"""
+  paymentRequest: LnPaymentRequest!
+}
+
+type InitiationViaOnChain {
+  address: OnChainAddress!
+}
+
+"""A lightning invoice."""
+interface Invoice {
+  createdAt: Timestamp!
+
+  """The payment hash of the lightning invoice."""
+  paymentHash: PaymentHash!
+
+  """The bolt11 invoice to be paid."""
+  paymentRequest: LnPaymentRequest!
+
+  """
+  The payment secret of the lightning invoice. This is not the preimage of the payment hash.
+  """
+  paymentSecret: LnPaymentSecret!
+
+  """The payment status of the invoice."""
+  paymentStatus: InvoicePaymentStatus!
+}
+
+"""A connection to a list of items."""
+type InvoiceConnection {
+  """A list of edges."""
+  edges: [InvoiceEdge!]
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+}
+
+"""An edge in a connection."""
+type InvoiceEdge {
+  """A cursor for use in pagination"""
+  cursor: String!
+
+  """The item at the end of the edge"""
+  node: Invoice!
+}
+
+enum InvoicePaymentStatus {
+  EXPIRED
+  PAID
+  PENDING
+}
+
+scalar Language
+
+type LightningInvoice {
+  confirmedAt: Timestamp
+  createdAt: Timestamp!
+  description: String!
+  expiresAt: Timestamp
+  isSettled: Boolean!
+  received: SatAmount!
+  request: LnPaymentRequest
+  secretPreImage: LnPaymentPreImage!
+}
+
+type LightningPayment {
+  amount: SatAmount
+  confirmedAt: Timestamp
+  createdAt: Timestamp
+  destination: LnPubkey
+  request: LnPaymentRequest
+  revealedPreImage: LnPaymentPreImage
+  roundedUpFee: SatAmount
+  status: LnPaymentStatus
+}
+
+scalar LnPaymentPreImage
+
+"""BOLT11 lightning invoice payment request with the amount included"""
+scalar LnPaymentRequest
+
+scalar LnPaymentSecret
+
+enum LnPaymentStatus {
+  FAILED
+  PENDING
+  SETTLED
+}
+
+scalar LnPubkey
+
+"""Text field in a lightning payment transaction"""
+scalar Memo
+
+type Mutation {
+  accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
+  accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
+  adminPushNotificationSend(input: AdminPushNotificationSendInput!): AdminPushNotificationSendPayload!
+  businessDeleteMapInfo(input: BusinessDeleteMapInfoInput!): AccountDetailPayload!
+  businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
+  userUpdatePhone(input: UserUpdatePhoneInput!): AccountDetailPayload!
+}
+
+scalar NotificationCategory
+
+scalar Object
+
+"""An address for an on-chain bitcoin destination"""
+scalar OnChainAddress
+
+scalar OnChainTxHash
+
+"""Information about pagination in a connection."""
+type PageInfo {
+  """When paginating forwards, the cursor to continue."""
+  endCursor: String
+
+  """When paginating forwards, are there more items?"""
+  hasNextPage: Boolean!
+
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
+
+  """When paginating backwards, the cursor to continue."""
+  startCursor: String
+}
+
+scalar PaymentHash
+
+"""Phone number which includes country code"""
+scalar Phone
+
+interface PriceInterface {
+  base: SafeInt!
+  currencyUnit: String! @deprecated(reason: "Deprecated due to type renaming")
+  offset: Int!
+}
+
+"""
+Price of 1 sat or 1 usd cent in base/offset. To calculate, use: `base / 10^offset`
+"""
+type PriceOfOneSettlementMinorUnitInDisplayMinorUnit implements PriceInterface {
+  base: SafeInt!
+  currencyUnit: String! @deprecated(reason: "Deprecated due to type renaming")
+  formattedAmount: String! @deprecated(reason: "Deprecated please use `base / 10^offset`")
+  offset: Int!
+}
+
+type Query {
+  accountDetailsByAccountId(accountId: ID!): AuditedAccount!
+  accountDetailsByEmail(email: EmailAddress!): AuditedAccount!
+  accountDetailsByUserId(userId: ID!): AuditedAccount!
+  accountDetailsByUserPhone(phone: Phone!): AuditedAccount!
+  accountDetailsByUsername(username: Username!): AuditedAccount!
+  allLevels: [AccountLevel!]!
+  lightningInvoice(hash: PaymentHash!): LightningInvoice!
+  lightningPayment(hash: PaymentHash!): LightningPayment!
+  listWalletIds(walletCurrency: WalletCurrency!): [WalletId!]!
+  transactionById(id: ID!): Transaction
+  transactionsByHash(hash: PaymentHash!): [Transaction]
+  wallet(walletId: WalletId!): Wallet!
+}
+
+"""
+Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1
+"""
+scalar SafeInt
+
+"""(Positive) Satoshi amount"""
+scalar SatAmount
+
+union SettlementVia = SettlementViaIntraLedger | SettlementViaLn | SettlementViaOnChain
+
+type SettlementViaIntraLedger {
+  """
+  Settlement destination: Could be null if the payee does not have a username
+  """
+  counterPartyUsername: Username
+  counterPartyWalletId: WalletId
+}
+
+type SettlementViaLn {
+  paymentSecret: LnPaymentSecret @deprecated(reason: "Shifting property to 'preImage' to improve granularity of the LnPaymentSecret type")
+  preImage: LnPaymentPreImage
+}
+
+type SettlementViaOnChain {
+  arrivalInMempoolEstimatedAt: Timestamp
+  transactionHash: OnChainTxHash
+  vout: Int
+}
+
+"""An amount (of a currency) that can be negative (e.g. in a transaction)"""
+scalar SignedAmount
+
+"""
+A string amount (of a currency) that can be negative (e.g. in a transaction)
+"""
+scalar SignedDisplayMajorAmount
+
+"""
+Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)
+"""
+scalar Timestamp
+
+"""
+Give details about an individual transaction.
+Galoy have a smart routing system which is automatically
+settling intraledger when both the payer and payee use the same wallet
+therefore it's possible the transactions is being initiated onchain
+or with lightning but settled intraledger.
+"""
+type Transaction {
+  createdAt: Timestamp!
+  direction: TxDirection!
+  id: ID!
+
+  """From which protocol the payment has been initiated."""
+  initiationVia: InitiationVia!
+  memo: Memo
+
+  """Amount of the settlement currency sent or received."""
+  settlementAmount: SignedAmount!
+
+  """Wallet currency for transaction."""
+  settlementCurrency: WalletCurrency!
+  settlementDisplayAmount: SignedDisplayMajorAmount!
+  settlementDisplayCurrency: DisplayCurrency!
+  settlementDisplayFee: SignedDisplayMajorAmount!
+  settlementFee: SignedAmount!
+
+  """Price in WALLETCURRENCY/SETTLEMENTUNIT at time of settlement."""
+  settlementPrice: PriceOfOneSettlementMinorUnitInDisplayMinorUnit!
+
+  """To which protocol the payment has settled on."""
+  settlementVia: SettlementVia!
+  status: TxStatus!
+}
+
+"""A connection to a list of items."""
+type TransactionConnection {
+  """A list of edges."""
+  edges: [TransactionEdge!]
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+}
+
+"""An edge in a connection."""
+type TransactionEdge {
+  """A cursor for use in pagination"""
+  cursor: String!
+
+  """The item at the end of the edge"""
+  node: Transaction!
+}
+
+enum TxDirection {
+  RECEIVE
+  SEND
+}
+
+enum TxStatus {
+  FAILURE
+  PENDING
+  SUCCESS
+}
+
+"""
+A wallet belonging to an account which contains a USD balance and a list of transactions.
+"""
+type UsdWallet implements Wallet {
+  accountId: ID!
+  balance: SignedAmount!
+  id: ID!
+  invoiceByPaymentHash(paymentHash: PaymentHash!): Invoice!
+
+  """A list of all invoices associated with walletIds optionally passed."""
+  invoices(
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+  ): InvoiceConnection
+
+  """An unconfirmed incoming onchain balance."""
+  pendingIncomingBalance: SignedAmount!
+  pendingIncomingTransactions: [Transaction!]!
+  pendingIncomingTransactionsByAddress(
+    """Returns the items that include this address."""
+    address: OnChainAddress!
+  ): [Transaction!]!
+  transactionById(transactionId: ID!): Transaction!
+  transactions(
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+  ): TransactionConnection
+  transactionsByAddress(
+    """Returns the items that include this address."""
+    address: OnChainAddress!
+
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+  ): TransactionConnection
+  transactionsByPaymentHash(paymentHash: PaymentHash!): [Transaction!]!
+  walletCurrency: WalletCurrency!
+}
+
+input UserUpdatePhoneInput {
+  accountId: AccountId!
+  phone: Phone!
+}
+
+"""Unique identifier of a user"""
+scalar Username
+
+"""
+A generic wallet which stores value in one of our supported currencies.
+"""
+interface Wallet {
+  accountId: ID!
+  balance: SignedAmount!
+  id: ID!
+  invoiceByPaymentHash(
+    """
+    The lightning invoice with the matching paymentHash belonging to this wallet.
+    """
+    paymentHash: PaymentHash!
+  ): Invoice!
+  invoices(
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+  ): InvoiceConnection
+  pendingIncomingBalance: SignedAmount!
+
+  """
+  Pending incoming OnChain transactions. When transactions
+  are confirmed they will receive a new id and be found in the transactions
+  list. Transactions are ordered anti-chronologically,
+  ie: the newest transaction will be first
+  """
+  pendingIncomingTransactions: [Transaction!]!
+
+  """
+  Pending incoming OnChain transactions. When transactions
+  are confirmed they will receive a new id and be found in the transactions
+  list. Transactions are ordered anti-chronologically,
+  ie: the newest transaction will be first
+  """
+  pendingIncomingTransactionsByAddress(
+    """Returns the items that include this address."""
+    address: OnChainAddress!
+  ): [Transaction!]!
+  transactionById(transactionId: ID!): Transaction!
+
+  """
+  Transactions are ordered anti-chronologically,
+  ie: the newest transaction will be first
+  """
+  transactions(
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+  ): TransactionConnection
+
+  """
+  Transactions are ordered anti-chronologically,
+  ie: the newest transaction will be first
+  """
+  transactionsByAddress(
+    """Returns the items that include this address."""
+    address: OnChainAddress!
+
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+  ): TransactionConnection
+
+  """
+  Returns the transactions that include this paymentHash. This should be a list of size one for a received lightning payment. This can be more that one transaction for a sent lightning payment.
+  """
+  transactionsByPaymentHash(
+    """The payment hash of the lightning invoice paid in this transaction."""
+    paymentHash: PaymentHash!
+  ): [Transaction!]!
+  walletCurrency: WalletCurrency!
+}
+
+enum WalletCurrency {
+  BTC
+  USD
+}
+
+"""Unique identifier of a wallet"""
+scalar WalletId

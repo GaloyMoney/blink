@@ -1,0 +1,6 @@
+mutation userLogout {
+  userLogout {
+    success
+    __typename
+  }
+}
