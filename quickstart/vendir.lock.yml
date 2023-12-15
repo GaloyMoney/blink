@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): remove legacy trigger tests (#3710)'
-      sha: c736e3f776a97243ad7c6ef8ea9a4f6e36704fcf
+      commitTitle: 'chore(core): remove legacy "02" tests (#3677)...'
+      sha: a30469d68283eeac5f527d19d16363d508d5dce7
       tags:
-      - 0.18.10-4-gc736e3f77
+      - 0.18.11-1-ga30469d68
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): remove legacy trigger tests (#3710)'
-      sha: c736e3f776a97243ad7c6ef8ea9a4f6e36704fcf
+      commitTitle: 'chore(core): remove legacy "02" tests (#3677)...'
+      sha: a30469d68283eeac5f527d19d16363d508d5dce7
       tags:
-      - 0.18.10-4-gc736e3f77
+      - 0.18.11-1-ga30469d68
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(core): remove legacy trigger tests (#3710)'
-      sha: c736e3f776a97243ad7c6ef8ea9a4f6e36704fcf
+      commitTitle: 'chore(core): remove legacy "02" tests (#3677)...'
+      sha: a30469d68283eeac5f527d19d16363d508d5dce7
       tags:
-      - 0.18.10-4-gc736e3f77
+      - 0.18.11-1-ga30469d68
     path: ./
   path: ./graphql
 kind: LockConfig
