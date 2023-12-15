@@ -234,8 +234,18 @@ core_serve_env = {
   "LND1_TYPE": "offchain,onchain",
   "SVIX_SECRET": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2OTE2NzIwMTQsImV4cCI6MjAwNzAzMjAxNCwibmJmIjoxNjkxNjcyMDE0LCJpc3MiOiJzdml4LXNlcnZlciIsInN1YiI6Im9yZ18yM3JiOFlkR3FNVDBxSXpwZ0d3ZFhmSGlyTXUifQ.b9s0aWSisNdUNki4edabBEToLNSwjC9-AiJQr4J3y4E",
   "SVIX_ENDPOINT": "http://localhost:8071",
+  "SVIX_CALLBACK_URL": "http://bats-tests:8080/webhook/",
   "EXPORTER_PORT": "3003"
 }
+
+callback_target = "//bats/helpers/callback:run"
+local_resource(
+    "callback",
+    labels = ["test"],
+    serve_cmd = "buck2 run {}".format(callback_target),
+    allow_parallel = True,
+    deps = _buck2_dep_inputs(callback_target),
+)
 
 api_target = "//core/api:dev"
 if is_ci:
