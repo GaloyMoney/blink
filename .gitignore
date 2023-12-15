@@ -60,3 +60,6 @@ target
 
 # vendir
 /.vendir-tmp/
+
+#pnpm
+.pnpm-store
