@@ -1,0 +1,59 @@
+import { createClient } from "graphql-ws"
+import WebSocket from "ws"
+
+// % node --loader ts-node/esm src/debug/websocket.ts
+// tsconfig: module: ESNext
+// "type": "module",
+
+const client = createClient({
+  url: "ws://localhost:4002/graphqlws",
+  // url: "ws://localhost:4002/graphql",
+  webSocketImpl: WebSocket,
+})
+
+// subscription
+const onNext = (value) => {
+  console.log("onNext", value)
+  /* handle incoming values */
+}
+
+let unsubscribe = () => {
+  console.log("unsubscribe")
+  /* complete the subscription */
+}
+
+const paymentRequest =
+  "lnbcrt10u1pjf26n4pp5hxs4htpwvgh6gdkymspphcvfdl9ezx345d3qvemd0rs73agg0xfshp5p6zx5m5k4t3kx2fghufjppd0fskldzcz4d20hyeavgdsyl2vazqscqzzsxqyz5vqsp5fxd48lphe5jvncdteac40rycfugq8dtyy9j5wfan42h6eszrlrzq9qyyssqsn6mpv33cn4grr8ntwjxhlg04f70vqj4ugemzw2ajluqche6mj2jdsfum7r4u7ehjp54fxufmn83s7yh9ylamq6ulyxqlgff3khgg7gppzwv0s"
+
+try {
+  await new Promise((resolve, reject) => {
+    unsubscribe = client.subscribe(
+      {
+        query: `subscription lnInvoicePaymentStatusSubscription($input: LnInvoicePaymentStatusInput!) {
+          lnInvoicePaymentStatus(input: $input) {
+            errors {
+              message
+            }
+            status
+          }
+        }`,
+        variables: {
+          input: {
+            paymentRequest,
+          },
+        },
+      },
+      {
+        next: onNext,
+        error: reject,
+        complete: () => resolve(undefined),
+      },
+    )
+  })
+
+  console.log("subscription completed")
+  unsubscribe()
+  //   expect(onNext).toHaveBeenCalledTimes(5) // we say "Hi" in 5 languages
+} catch (err) {
+  console.error(err)
+}
