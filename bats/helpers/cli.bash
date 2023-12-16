@@ -51,3 +51,7 @@ tilt_cli() {
 mongo_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-mongodb-1" mongosh --quiet mongodb://localhost:27017/galoy --eval $@
 }
+
+redis_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-redis-1" redis-cli $@
+}
