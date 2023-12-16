@@ -10,6 +10,14 @@ lnd_cli() {
       $@
 }
 
+lnd_outside_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-lnd-outside-1-1" \
+    lncli \
+      --macaroonpath /root/.lnd/admin.macaroon \
+      --tlscertpath /root/.lnd/tls.cert \
+      $@
+}
+
 bria_cli() {
  docker exec "${COMPOSE_PROJECT_NAME}-bria-1" bria $@ 
 }
