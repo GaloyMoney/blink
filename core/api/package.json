@@ -150,7 +150,7 @@
     "@types/node": "^20.10.4",
     "@types/node-jose": "^1.1.13",
     "@types/nodemon": "^1.19.6",
-    "@types/react": "^18.2.43",
+    "@types/react": "^18.2.45",
     "@types/set-cookie-parser": "^2.4.7",
     "@types/ws": "^8.5.10",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
