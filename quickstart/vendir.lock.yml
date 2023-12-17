@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(api-keys): connect with api key to WS (#3716)...'
-      sha: 22b3575ec82e2ca02b8304d4d4983ee426df9112
+      commitTitle: 'chore: bump deps (#3704)...'
+      sha: 02efeeade818957ddf258789922bd37a31f84b67
       tags:
-      - 0.18.14-1-g22b3575ec
+      - 0.18.15-1-g02efeeade
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(api-keys): connect with api key to WS (#3716)...'
-      sha: 22b3575ec82e2ca02b8304d4d4983ee426df9112
+      commitTitle: 'chore: bump deps (#3704)...'
+      sha: 02efeeade818957ddf258789922bd37a31f84b67
       tags:
-      - 0.18.14-1-g22b3575ec
+      - 0.18.15-1-g02efeeade
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(api-keys): connect with api key to WS (#3716)...'
-      sha: 22b3575ec82e2ca02b8304d4d4983ee426df9112
+      commitTitle: 'chore: bump deps (#3704)...'
+      sha: 02efeeade818957ddf258789922bd37a31f84b67
       tags:
-      - 0.18.14-1-g22b3575ec
+      - 0.18.16
     path: ./
   path: ./graphql
 kind: LockConfig
