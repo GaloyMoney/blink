@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#3704)...'
-      sha: 02efeeade818957ddf258789922bd37a31f84b67
+      commitTitle: 'fix: account update (#3720)'
+      sha: b52b55ddc09db87e65e8a2c216a2269f631f3a20
       tags:
-      - 0.18.15-1-g02efeeade
+      - 0.18.16-2-gb52b55ddc
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#3704)...'
-      sha: 02efeeade818957ddf258789922bd37a31f84b67
+      commitTitle: 'fix: account update (#3720)'
+      sha: b52b55ddc09db87e65e8a2c216a2269f631f3a20
       tags:
-      - 0.18.15-1-g02efeeade
+      - 0.18.16-2-gb52b55ddc
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#3704)...'
-      sha: 02efeeade818957ddf258789922bd37a31f84b67
+      commitTitle: 'fix: account update (#3720)'
+      sha: b52b55ddc09db87e65e8a2c216a2269f631f3a20
       tags:
-      - 0.18.16
+      - 0.18.16-2-gb52b55ddc
     path: ./
   path: ./graphql
 kind: LockConfig
