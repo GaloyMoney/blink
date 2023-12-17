@@ -1,4 +1,9 @@
-import { checkedCoordinates, checkedMapTitle, checkedToUsername } from "@/domain/accounts"
+import {
+  AccountValidator,
+  checkedCoordinates,
+  checkedMapTitle,
+  checkedToUsername,
+} from "@/domain/accounts"
 import { AccountsRepository } from "@/services/mongoose/accounts"
 
 export const updateBusinessMapInfo = async ({
@@ -17,6 +22,8 @@ export const updateBusinessMapInfo = async ({
 
   const account = await accountsRepo.findByUsername(usernameChecked)
   if (account instanceof Error) return account
+  const accountValidator = AccountValidator(account)
+  if (accountValidator instanceof Error) return accountValidator
 
   const coordinates = checkedCoordinates({ latitude, longitude })
   if (coordinates instanceof Error) return coordinates

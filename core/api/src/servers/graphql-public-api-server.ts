@@ -28,6 +28,7 @@ import {
 } from "@/services/tracing"
 
 import { parseIps } from "@/domain/accounts-ips"
+import { AccountStatus } from "@/domain/accounts"
 
 const isAuthenticated = rule({ cache: "contextual" })((
   _parent,
@@ -35,6 +36,15 @@ const isAuthenticated = rule({ cache: "contextual" })((
   ctx: GraphQLPublicContext,
 ) => {
   return "domainAccount" in ctx && !!ctx.domainAccount
+})
+
+const hasMutationPermissions = rule({ cache: "contextual" })((
+  _parent,
+  _args,
+  ctx: GraphQLPublicContext | GraphQLPublicContextAuth,
+) => {
+  const isAuthenticated = "domainAccount" in ctx && !!ctx.domainAccount
+  return isAuthenticated && ctx.domainAccount.status === AccountStatus.Active
 })
 
 const setGqlContext = async (
@@ -89,7 +99,7 @@ export async function startApolloServerForCoreSchema() {
     ...mutationFields.authed.atAccountLevel,
     ...mutationFields.authed.atWalletLevel,
   })) {
-    authedMutationFields[key] = isAuthenticated
+    authedMutationFields[key] = hasMutationPermissions
   }
 
   const permissions = shield(

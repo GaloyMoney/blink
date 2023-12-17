@@ -207,3 +207,36 @@ is_contact() {
   )
   [[ "$fetched_username" == "$contact_username" ]] || return 1
 }
+
+exec_admin_graphql() {
+  local token=$1
+  local query_name=$2
+  local variables=${3:-"{}"}
+  echo "GQL query -  token: ${token} -  query: ${query_name} -  vars: ${variables}"
+  echo "{\"query\": \"$(gql_admin_query $query_name)\", \"variables\": $variables}"
+
+  if [[ "${BATS_TEST_DIRNAME}" != "" ]]; then
+    run_cmd="run"
+  else
+    run_cmd=""
+  fi
+
+  gql_route="admin/graphql"
+
+  ${run_cmd} curl -s \
+    -X POST \
+    -H "Oauth2-Token: $token" \
+    -H "Content-Type: application/json" \
+    -d "{\"query\": \"$(gql_admin_query $query_name)\", \"variables\": $variables}" \
+    "${GALOY_ENDPOINT}/${gql_route}"
+
+  echo "GQL output: '$output'"
+}
+
+gql_admin_query() {
+  cat "$(gql_admin_file $1)" | tr '\n' ' ' | sed 's/"/\\"/g'
+}
+
+gql_admin_file() {
+  echo "${BATS_TEST_DIRNAME:-${CORE_ROOT}/test/bats}/admin-gql/$1.gql"
+}

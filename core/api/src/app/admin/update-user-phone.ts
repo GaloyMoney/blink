@@ -1,9 +1,11 @@
 import { markAccountForDeletion } from "@/app/accounts"
-import { checkedToAccountId } from "@/domain/accounts"
-import { AuthWithPhonePasswordlessService } from "@/services/kratos"
-import { AccountsRepository } from "@/services/mongoose/accounts"
+
+import { AccountValidator, checkedToAccountId } from "@/domain/accounts"
+
 import { UsersRepository } from "@/services/mongoose/users"
 import { addAttributesToCurrentSpan } from "@/services/tracing"
+import { AccountsRepository } from "@/services/mongoose/accounts"
+import { AuthWithPhonePasswordlessService } from "@/services/kratos"
 
 export const updateUserPhone = async ({
   accountId: accountIdRaw,
@@ -20,10 +22,11 @@ export const updateUserPhone = async ({
   const accountsRepo = AccountsRepository()
   const account = await accountsRepo.findById(accountId)
   if (account instanceof Error) return account
+  const accountValidator = AccountValidator(account)
+  if (accountValidator instanceof Error) return accountValidator
   const kratosUserId = account.kratosUserId
 
   const usersRepo = UsersRepository()
-
   const newUser = await usersRepo.findByPhone(phone)
   if (!(newUser instanceof Error)) {
     // if newUser exists, then we need to delete it (only if balance is 0
