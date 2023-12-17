@@ -35,7 +35,6 @@ export default function CurrencyDropdown({
     <select
       style={style ?? { border: "none" }}
       name={name ?? "display"}
-      placeholder={selectedDisplayCurrency}
       required
       value={selectedDisplayCurrency}
       onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
