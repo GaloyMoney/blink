@@ -1,0 +1,54 @@
+type ApiKey {
+	id: ID!
+	name: String!
+	createdAt: Timestamp!
+	revoked: Boolean!
+	expired: Boolean!
+	lastUsedAt: Timestamp
+	expiresAt: Timestamp
+	readOnly: Boolean!
+}
+
+input ApiKeyCreateInput {
+	name: String!
+	expireInDays: Int
+	readOnly: Boolean! = false
+}
+
+type ApiKeyCreatePayload {
+	apiKey: ApiKey!
+	apiKeySecret: String!
+}
+
+input ApiKeyRevokeInput {
+	id: ID!
+}
+
+type ApiKeyRevokePayload {
+	apiKey: ApiKey!
+}
+
+
+
+
+
+type Mutation {
+	apiKeyCreate(input: ApiKeyCreateInput!): ApiKeyCreatePayload!
+	apiKeyRevoke(input: ApiKeyRevokeInput!): ApiKeyRevokePayload!
+}
+
+
+
+scalar Timestamp
+
+extend type User @key(fields: "id") {
+	id: ID! @external
+	apiKeys: [ApiKey!]!
+}
+
+extend schema @link(
+	url: "https://specs.apollo.dev/federation/v2.3",
+	import: ["@key", "@tag", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@composeDirective", "@interfaceObject"]
+)
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT

@@ -1,0 +1,14 @@
+mutation userTotpRegistrationValidate($input: UserTotpRegistrationValidateInput!) {
+  userTotpRegistrationValidate(input: $input) {
+    errors {
+      message
+    }
+    me {
+      totpEnabled
+      email {
+        address
+        verified
+      }
+    }
+  }
+}

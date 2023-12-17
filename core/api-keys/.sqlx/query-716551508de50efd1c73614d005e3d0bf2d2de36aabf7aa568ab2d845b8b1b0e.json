@@ -1,0 +1,65 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE identity_api_keys k\n               SET revoked = true,\n                   revoked_at = NOW()\n               FROM identities i\n               WHERE k.identity_id = i.id\n               AND i.subject_id = $1\n               AND k.id = $2\n               RETURNING\n               k.name,\n               k.identity_id,\n               k.created_at,\n               k.expires_at,\n               k.revoked,\n               (expires_at IS NOT NULL AND expires_at < NOW()) AS \"expired!\",\n               k.read_only,\n               k.last_used_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "identity_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 3,
+        "name": "expires_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "revoked",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 5,
+        "name": "expired!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 6,
+        "name": "read_only",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
+        "name": "last_used_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      null,
+      false,
+      true
+    ]
+  },
+  "hash": "716551508de50efd1c73614d005e3d0bf2d2de36aabf7aa568ab2d845b8b1b0e"
+}

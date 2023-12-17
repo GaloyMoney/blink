@@ -1,0 +1,14 @@
+{
+  "reimbursements": [
+    {
+      "recipientWalletId": "11d2a204-9981-420f-a148-020b7d52607f",
+      "amount": 10,
+      "memo": "test"
+    },
+    {
+      "recipientWalletId": "d7d03fea-7e8f-4d38-8f4f-169ae455341b",
+      "amount": 11,
+      "memo": "test1"
+    }
+  ]
+}
