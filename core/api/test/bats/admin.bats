@@ -14,40 +14,6 @@ TESTER_TOKEN_NAME="tester"
 TESTER_PHONE="+19876543210"
 username="user1"
 
-exec_admin_graphql() {
-  local token=$1
-  local query_name=$2
-  local variables=${3:-"{}"}
-  echo "GQL query -  token: ${token} -  query: ${query_name} -  vars: ${variables}"
-  echo "{\"query\": \"$(gql_admin_query $query_name)\", \"variables\": $variables}"
-
-  if [[ "${BATS_TEST_DIRNAME}" != "" ]]; then
-    run_cmd="run"
-  else
-    run_cmd=""
-  fi
-
-  gql_route="admin/graphql"
-
-  ${run_cmd} curl -s \
-    -X POST \
-    -H "Oauth2-Token: $token" \
-    -H "Content-Type: application/json" \
-    -d "{\"query\": \"$(gql_admin_query $query_name)\", \"variables\": $variables}" \
-    "${GALOY_ENDPOINT}/${gql_route}"
-
-  echo "GQL output: '$output'"
-}
-
-gql_admin_query() {
-  cat "$(gql_admin_file $1)" | tr '\n' ' ' | sed 's/"/\\"/g'
-}
-
-gql_admin_file() {
-  echo "${BATS_TEST_DIRNAME:-${CORE_ROOT}/test/bats}/admin-gql/$1.gql"
-}
-
-
 @test "admin: perform admin queries/mutations" {
   client=$(curl -L -s -X POST $HYDRA_ADMIN_API/admin/clients \
     -H 'Content-Type: application/json' \
@@ -63,7 +29,7 @@ gql_admin_file() {
   -H 'Content-Type: application/x-www-form-urlencoded' \
   -u "$client_id:$client_secret" \
   -d "grant_type=client_credentials" | jq -r '.access_token'
-  ) 
+  )
 
   echo "admin_token: $admin_token"
 
@@ -122,7 +88,7 @@ gql_admin_file() {
   exec_admin_graphql "$admin_token" 'account-details-by-username' "$variables"
   refetched_id="$(graphql_output '.data.accountDetailsByUsername.id')"
   [[ "$refetched_id" == "$id" ]] || exit 1
-  
+
   variables=$(
     jq -n \
     --arg level "TWO" \
@@ -150,6 +116,23 @@ gql_admin_file() {
   account_status="$(graphql_output '.data.accountUpdateStatus.accountDetails.status')"
   [[ "$account_status" == "LOCKED" ]] || exit 1
 
+  # User cannot delete the account if it is locked
+  exec_graphql "$TESTER_TOKEN_NAME" 'account-delete'
+  delete_error_message="$(graphql_output '.errors[0].message')"
+  [[ "$delete_error_message" == "Not authorized" ]] || exit 1
+
+  # Admin cannot update the phone if it is locked
+  new_phone="$(random_phone)"
+  variables=$(
+    jq -n \
+    --arg phone "$new_phone" \
+    --arg accountId "$id" \
+    '{input: {phone: $phone, accountId:$accountId}}'
+  )
+  exec_admin_graphql $admin_token 'user-update-phone' "$variables"
+  update_error_message="$(graphql_output '.data.userUpdatePhone.errors[0].message')"
+  [[ "$update_error_message" == "Account is inactive." ]] || exit 1
+
   variables=$(
     jq -n \
     --arg accountId "$id" \
@@ -162,7 +145,7 @@ gql_admin_file() {
 
   userId="$(graphql_output '.data.accountDetailsByAccountId.owner.id')"
   echo "userId: $userId"
-  
+
   variables=$(
     jq -n \
     --arg userId "$userId" \
@@ -175,6 +158,6 @@ gql_admin_file() {
 
 
   # TODO: add check by email
-  
+
   # TODO: business update map info
 }
