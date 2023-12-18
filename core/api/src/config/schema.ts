@@ -258,7 +258,7 @@ export const configSchema = {
       properties: {
         requestCodePerLoginIdentifier: rateLimitConfigSchema,
         requestCodePerIp: rateLimitConfigSchema,
-        failedLoginAttemptPerLoginIdentifier: rateLimitConfigSchema,
+        loginAttemptPerLoginIdentifier: rateLimitConfigSchema,
         failedLoginAttemptPerIp: rateLimitConfigSchema,
         invoiceCreateAttempt: rateLimitConfigSchema,
         invoiceCreateForRecipientAttempt: rateLimitConfigSchema,
@@ -270,7 +270,7 @@ export const configSchema = {
       required: [
         "requestCodePerLoginIdentifier",
         "requestCodePerIp",
-        "failedLoginAttemptPerLoginIdentifier",
+        "loginAttemptPerLoginIdentifier",
         "failedLoginAttemptPerIp",
         "invoiceCreateAttempt",
         "invoiceCreateForRecipientAttempt",
@@ -291,10 +291,10 @@ export const configSchema = {
           duration: 3600,
           blockDuration: 86400,
         },
-        failedLoginAttemptPerLoginIdentifier: {
-          points: 8,
-          duration: 1200,
-          blockDuration: 3600,
+        loginAttemptPerLoginIdentifier: {
+          points: 6,
+          duration: 3600,
+          blockDuration: 7200,
         },
         failedLoginAttemptPerIp: {
           points: 20,

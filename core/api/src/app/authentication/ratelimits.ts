@@ -1,7 +1,4 @@
-import {
-  getFailedLoginAttemptPerIpLimits,
-  getFailedLoginAttemptPerLoginIdentifierLimits,
-} from "@/config"
+import { getFailedLoginAttemptPerIpLimits } from "@/config"
 
 import { RateLimitConfig, RateLimitPrefix } from "@/domain/rate-limit"
 import { RateLimiterExceededError } from "@/domain/rate-limit/errors"
@@ -26,21 +23,10 @@ export const rewardFailedLoginAttemptPerIpLimits = async (
   return limiter.reward(ip)
 }
 
-export const checkFailedLoginAttemptPerLoginIdentifierLimits = async (
+export const checkLoginAttemptPerLoginIdentifierLimits = async (
   loginIdentifier: LoginIdentifier,
 ): Promise<true | RateLimiterExceededError> =>
   consumeLimiter({
-    rateLimitConfig: RateLimitConfig.failedLoginAttemptPerLoginIdentifier,
+    rateLimitConfig: RateLimitConfig.loginAttemptPerLoginIdentifier,
     keyToConsume: loginIdentifier,
   })
-
-export const rewardFailedLoginAttemptPerLoginIdentifierLimits = async (
-  loginIdentifier: LoginIdentifier,
-): Promise<true | RateLimiterExceededError> => {
-  const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.failedLoginAttemptPerLoginIdentifier,
-    limitOptions: getFailedLoginAttemptPerLoginIdentifierLimits(),
-  })
-
-  return limiter.reward(loginIdentifier)
-}

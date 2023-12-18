@@ -55,10 +55,10 @@ rateLimits:
     points: 16
     duration: 3600
     blockDuration: 86400
-  failedLoginAttemptPerLoginIdentifier:
-    points: 8
-    duration: 1200
-    blockDuration: 3600
+  loginAttemptPerLoginIdentifier:
+    points: 6
+    duration: 3600
+    blockDuration: 7200
   failedLoginAttemptPerIp:
     points: 20
     duration: 21600

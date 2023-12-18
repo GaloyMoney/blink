@@ -1,8 +1,7 @@
 import {
   checkFailedLoginAttemptPerIpLimits,
-  checkFailedLoginAttemptPerLoginIdentifierLimits,
+  checkLoginAttemptPerLoginIdentifierLimits,
   rewardFailedLoginAttemptPerIpLimits,
-  rewardFailedLoginAttemptPerLoginIdentifierLimits,
 } from "./ratelimits"
 
 import { PhoneAlreadyExistsError } from "@/domain/authentication/errors"
@@ -30,7 +29,7 @@ export const verifyPhone = async ({
   }
 
   {
-    const limitOk = await checkFailedLoginAttemptPerLoginIdentifierLimits(phone)
+    const limitOk = await checkLoginAttemptPerLoginIdentifierLimits(phone)
     if (limitOk instanceof Error) return limitOk
   }
 
@@ -38,7 +37,6 @@ export const verifyPhone = async ({
   if (validCode instanceof Error) return validCode
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
-  await rewardFailedLoginAttemptPerLoginIdentifierLimits(phone)
 
   const users = UsersRepository()
 

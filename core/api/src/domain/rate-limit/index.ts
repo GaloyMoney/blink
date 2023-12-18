@@ -14,7 +14,7 @@ import {
 import {
   getDeviceAccountCreateAttemptLimits,
   getFailedLoginAttemptPerIpLimits,
-  getFailedLoginAttemptPerLoginIdentifierLimits,
+  getLoginAttemptPerLoginIdentifierLimits,
   getInvoiceCreateAttemptLimits,
   getInvoiceCreateForRecipientAttemptLimits,
   getOnChainAddressCreateAttemptLimits,
@@ -27,7 +27,7 @@ import {
 export const RateLimitPrefix = {
   requestCodeAttemptPerLoginIdentifier: "request_code_attempt_id",
   requestCodeAttemptPerIp: "request_code_attempt_ip",
-  failedLoginAttemptPerLoginIdentifier: "login_attempt_id",
+  loginAttemptPerLoginIdentifier: "login_attempt_id",
   failedLoginAttemptPerIp: "login_attempt_ip",
   invoiceCreate: "invoice_create",
   invoiceCreateForRecipient: "invoice_create_for_recipient",
@@ -50,9 +50,9 @@ export const RateLimitConfig: { [key in RateLimitPrefixKey]: RateLimitConfig } =
     limits: getRequestCodePerIpLimits(),
     error: UserCodeAttemptIpRateLimiterExceededError,
   },
-  failedLoginAttemptPerLoginIdentifier: {
-    key: RateLimitPrefix.failedLoginAttemptPerLoginIdentifier,
-    limits: getFailedLoginAttemptPerLoginIdentifierLimits(),
+  loginAttemptPerLoginIdentifier: {
+    key: RateLimitPrefix.loginAttemptPerLoginIdentifier,
+    limits: getLoginAttemptPerLoginIdentifierLimits(),
     error: UserLoginIdentifierRateLimiterExceededError,
   },
   failedLoginAttemptPerIp: {
