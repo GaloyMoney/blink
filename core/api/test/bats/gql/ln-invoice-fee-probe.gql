@@ -1,0 +1,8 @@
+mutation LnInvoiceFeeProbe($input: LnInvoiceFeeProbeInput!) {
+  lnInvoiceFeeProbe(input: $input) {
+    errors {
+      message
+    }
+    amount
+  }
+}

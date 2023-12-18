@@ -1,0 +1,14 @@
+mutation userEmailRegistrationValidate($input: UserEmailRegistrationValidateInput!) {
+  userEmailRegistrationValidate(input: $input) {
+    errors {
+      message
+    }
+    me {
+      id
+      email {
+        address
+        verified
+      }
+    }
+  }
+}

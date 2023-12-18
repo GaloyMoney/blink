@@ -1,0 +1,22 @@
+subscription realtimePrice($currency: DisplayCurrency!) {
+  realtimePrice(input: { currency: $currency }) {
+    errors {
+      message
+    }
+    realtimePrice {
+      id
+      timestamp
+      denominatorCurrency
+      btcSatPrice {
+        base
+        offset
+        currencyUnit
+      }
+      usdCentPrice {
+        base
+        offset
+        currencyUnit
+      }
+    }
+  }
+}

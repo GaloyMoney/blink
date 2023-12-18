@@ -1,0 +1,10 @@
+query callbackEndpointsList {
+  me {
+    defaultAccount {
+      callbackEndpoints {
+        id
+        url
+      }
+    }
+  }
+}

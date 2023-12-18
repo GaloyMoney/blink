@@ -1,0 +1,15 @@
+mutation accountEnableNotificationChannel($input: AccountEnableNotificationChannelInput!) {
+  accountEnableNotificationChannel(input: $input) {
+    errors {
+      message
+    }
+    account {
+      notificationSettings {
+        push {
+          enabled
+          disabledCategories
+        }
+      }
+    }
+  }
+}
