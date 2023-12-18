@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): better auth logic in test subscriber (#3724)'
-      sha: 2562c625cab32026cebcea8a07107545fb9d7088
+      commitTitle: 'test: update lnd version (#3725)...'
+      sha: 90badbbee775b5ea8d8d24721f2f81ae0d56ce03
       tags:
-      - 0.18.17-3-g2562c625c
+      - 0.18.19-1-g90badbbee
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): better auth logic in test subscriber (#3724)'
-      sha: 2562c625cab32026cebcea8a07107545fb9d7088
+      commitTitle: 'test: update lnd version (#3725)...'
+      sha: 90badbbee775b5ea8d8d24721f2f81ae0d56ce03
       tags:
-      - 0.18.17-3-g2562c625c
+      - 0.18.19-1-g90badbbee
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(core): better auth logic in test subscriber (#3724)'
-      sha: 2562c625cab32026cebcea8a07107545fb9d7088
+      commitTitle: 'test: update lnd version (#3725)...'
+      sha: 90badbbee775b5ea8d8d24721f2f81ae0d56ce03
       tags:
-      - 0.18.17-3-g2562c625c
+      - 0.18.19-1-g90badbbee
     path: ./
   path: ./graphql
 kind: LockConfig

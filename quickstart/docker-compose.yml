@@ -97,7 +97,7 @@ services:
     ports:
     - 5434:5432
   galoy:
-    image: us.gcr.io/galoy-org/galoy-api@sha256:dfee926d5b4ff8e6ddc5b8300cf4d08288d3254b369e0f40a212efec049d33d7
+    image: us.gcr.io/galoy-org/galoy-api@sha256:521ade8da5c81bba3c5f0a9aa5d47787a241464c6e45a73d999bfdb414345e5d
     env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/.env.galoy
     depends_on:
     - trigger
@@ -115,7 +115,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:fae46f7dfc9e17bc55f0baa5dbb568819db45b947ad78051f7ebfcc6f1b08efb
+    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:52cd486833a862ef90402ce5c539ed8e55395fd7daefcdb3e463f7386dc8f06c
     env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/.env.galoy
     depends_on:
     - lnd1
@@ -136,7 +136,7 @@ services:
     - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
     - MONGO_INITDB_DATABASE=galoy
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-app-migrate@sha256:9cd637647d8265524fd59b682813e3a396d6d4524bd9359fcc465d2fb5e42e09
+    image: us.gcr.io/galoy-org/galoy-app-migrate@sha256:575c40bf5b220ee0faef21860c5456610dac4931416c8017f72db3acf43ccacd
     depends_on:
     - mongodb
     environment:
@@ -206,7 +206,7 @@ services:
     - |
       bitcoind -connect=bitcoind:18444
   lnd1:
-    image: lightninglabs/lnd:v0.17.1-beta
+    image: lightninglabs/lnd:v0.17.3-beta
     ports:
     - 10009:10009
     volumes:
@@ -229,7 +229,7 @@ services:
       cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
       /bin/lnd
   lnd-outside-1:
-    image: lightninglabs/lnd:v0.17.1-beta
+    image: lightninglabs/lnd:v0.17.3-beta
     ports:
     - 10012:10009
     volumes:
