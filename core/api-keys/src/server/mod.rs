@@ -72,12 +72,12 @@ async fn check_handler(
 ) -> Result<Json<CheckResponse>, ApplicationError> {
     tracing::extract_tracing(&headers);
     let key = headers.get(header).ok_or(ApplicationError::MissingApiKey)?;
-    let (id, sub, read_only) = app.lookup_authenticated_subject(key.to_str()?).await?;
-    let scope = if read_only {
-        crate::scope::read_only_scope()
-    } else {
-        crate::scope::read_write_scope()
-    };
+    let (id, sub, scopes) = app.lookup_authenticated_subject(key.to_str()?).await?;
+    let scope = scopes
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>()
+        .join(" ");
     let span = tracing::Span::current();
     span.record("key_id", &tracing::field::display(id));
     span.record("sub", &sub);
