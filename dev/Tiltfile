@@ -271,6 +271,7 @@ local_resource(
         "redis",
         "mongodb",
         "oathkeeper",
+        "svix",
     ]
 )
 
