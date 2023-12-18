@@ -55,7 +55,7 @@ done
 
 if [[ $(git status --porcelain -u no) != '' ]]; then
   git commit -m "Commit state of \`core\` at \`${ref}\`"
-  git push -fu origin core-${ref}
+  git push -fu origin ${APP}-${ref}
   github_diff_url="${github_url}/compare/${app}-${old_ref}...${app}-${ref}"
 else
   github_diff_url="${github_url}/compare/${old_ref}...${ref}"
