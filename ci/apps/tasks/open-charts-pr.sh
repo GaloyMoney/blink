@@ -30,10 +30,13 @@ gh auth setup-git
 # switch to https to use the token
 git remote set-url origin ${github_url}
 
+git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+
 git checkout ${ref}
 app_src_files=($(buck2 uquery 'inputs(deps("'"//apps/${APP}:"'"))' 2>/dev/null))
 
 # create a branch from the old state and commit the new state of the app
+git fetch origin ${APP}-${old_ref}
 git checkout ${APP}-${old_ref}
 git checkout -b ${APP}-${ref}
 for file in "${app_src_files[@]}"; do

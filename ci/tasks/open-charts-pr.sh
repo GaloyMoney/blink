@@ -18,6 +18,7 @@ git checkout ${BRANCH}
 old_ref=$(yq e '.galoy.images.app.git_ref' charts/galoy/values.yaml)
 
 pushd ../repo
+
 if [[ -z $(git config --global user.email) ]]; then
   git config --global user.email "bot@galoy.io"
 fi
@@ -30,10 +31,13 @@ gh auth setup-git
 # switch to https to use the token
 git remote set-url origin ${github_url}
 
+git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+
 git checkout ${ref}
 app_src_files=($(buck2 uquery 'inputs(deps("//core/..."))' 2>/dev/null))
 
 # create a branch from the old state and commit the new state of core
+git fetch origin core-${old_ref}
 git checkout core-${old_ref}
 git checkout -b core-${ref}
 for file in "${app_src_files[@]}"; do
