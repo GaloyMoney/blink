@@ -80,3 +80,8 @@ sh_binary(
   name = "setup-hydra-client",
   main = "bin/setup-hydra-client.sh",
 )
+
+sh_binary(
+  name = "stoppable-trigger",
+  main = "bin/run-stoppable-trigger.sh",
+)

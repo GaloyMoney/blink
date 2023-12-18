@@ -282,7 +282,7 @@ local_resource(
     "api-trigger",
     labels = ["core"],
     cmd = "buck2 build {}".format(api_trigger_target),
-    serve_cmd = "buck2 run {}".format(api_trigger_target),
+    serve_cmd = "buck2 run //dev:stoppable-trigger {}".format(api_trigger_target),
     serve_env = core_serve_env,
     allow_parallel = True,
     readiness_probe = probe(
