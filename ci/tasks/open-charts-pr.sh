@@ -38,6 +38,16 @@ app_src_files=($(buck2 uquery 'inputs(deps("//core/..."))' 2>/dev/null))
 
 # create a branch from the old state and commit the new state of core
 git fetch origin core-${old_ref}
+if [[ $? -eq 128 ]]; then
+  git checkout --orphan core-${old_ref}
+  git rm -rf . > /dev/null
+  for file in "${app_src_files[@]}"; do
+    git checkout "$old_ref" -- "$file"
+  done
+  git commit -m "Commit state of \`core\` at \`${old_ref}\`"
+  git push -fu origin core-${old_ref}
+fi
+
 git checkout core-${old_ref}
 git checkout -b core-${ref}
 for file in "${app_src_files[@]}"; do
