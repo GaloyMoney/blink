@@ -36,6 +36,7 @@ git checkout ${ref}
 app_src_files=($(buck2 uquery 'inputs(deps("'"//apps/${APP}:"'"))' 2>/dev/null))
 
 # create a branch from the old state and commit the new state of the app
+set +e
 git fetch origin ${APP}-${old_ref}
 # if the above exits with 128, it means the branch doesn't exist yet
 if [[ $? -eq 128 ]]; then
@@ -47,6 +48,7 @@ if [[ $? -eq 128 ]]; then
   git commit -m "Commit state of \`${APP}\` at \`${old_ref}\`"
   git push -fu origin ${APP}-${old_ref}
 fi
+set -e
 
 git checkout ${APP}-${old_ref}
 git checkout -b ${APP}-${ref}
