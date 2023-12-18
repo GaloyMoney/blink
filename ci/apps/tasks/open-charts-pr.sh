@@ -52,15 +52,21 @@ git checkout ${APP}-${ref}
 for file in "${app_src_files[@]}"; do
   git checkout "$ref" -- "$file"
 done
-git commit -m "Commit state of \`${APP}\` at \`${ref}\`"
-git push -fu origin ${APP}-${ref}
+
+if [[ $(git status --porcelain -u no) != '' ]]; then
+  git commit -m "Commit state of \`core\` at \`${ref}\`"
+  git push -fu origin core-${ref}
+  github_diff_url="${github_url}/compare/${app}-${old_ref}...${app}-${ref}"
+else
+  github_diff_url="${github_url}/compare/${old_ref}...${ref}"
+fi
 
 cat <<EOF >> ../body.md
 # Bump ${APP} image
 
 Code diff contained in this image:
 
-${github_url}/compare/${APP}-${old_ref}...${APP}-${ref}
+${github_diff_url}
 
 The ${APP} image will be bumped to digest:
 \`\`\`
