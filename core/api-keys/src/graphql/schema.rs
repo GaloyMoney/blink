@@ -1,11 +1,11 @@
 use async_graphql::*;
 use chrono::{DateTime, TimeZone, Utc};
 
-use crate::{app::ApiKeysApp, identity::IdentityApiKeyId};
+use crate::{app::ApiKeysApp, identity::IdentityApiKeyId, scope::*};
 
 pub struct AuthSubject {
     pub id: String,
-    pub read_only: bool,
+    pub can_write: bool,
 }
 
 #[derive(Clone, Copy)]
@@ -61,7 +61,7 @@ pub(super) struct ApiKey {
     pub expired: bool,
     pub last_used_at: Option<Timestamp>,
     pub expires_at: Option<Timestamp>,
-    pub read_only: bool,
+    pub scopes: Vec<Scope>,
 }
 
 #[derive(SimpleObject)]
@@ -104,6 +104,12 @@ struct ApiKeyCreateInput {
     expire_in_days: Option<u16>,
     #[graphql(default)]
     read_only: bool,
+    #[graphql(default_with = "default_scopes()")]
+    scopes: Vec<Scope>,
+}
+
+fn default_scopes() -> Vec<Scope> {
+    vec![Scope::Read]
 }
 
 #[derive(InputObject)]
@@ -120,16 +126,11 @@ impl Mutation {
     ) -> async_graphql::Result<ApiKeyCreatePayload> {
         let app = ctx.data_unchecked::<ApiKeysApp>();
         let subject = ctx.data::<AuthSubject>()?;
-        if subject.read_only {
+        if !subject.can_write {
             return Err("Permission denied".into());
         }
         let key = app
-            .create_api_key_for_subject(
-                &subject.id,
-                input.name,
-                input.expire_in_days,
-                input.read_only,
-            )
+            .create_api_key_for_subject(&subject.id, input.name, input.expire_in_days, input.scopes)
             .await?;
         Ok(ApiKeyCreatePayload::from(key))
     }
