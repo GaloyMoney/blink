@@ -1,0 +1,21 @@
+{
+  "name": "galoy",
+  "version": "1.0.0",
+  "description": "galoy monorepo",
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "nodev": "node -v",
+    "whichnode": "which node"
+  },
+  "engines": {
+    "node": "20",
+    "pnpm": "8"
+  },
+  "resolutions": {
+    "protobufjs": "7.2.5",
+    "http-cache-semantics": "4.1.1",
+    "import-in-the-middle": "1.4.2"
+  },
+  "packageManager": "pnpm@8.7.6"
+}
+

@@ -1,0 +1,17 @@
+.card {
+  padding: 1.5rem;
+  margin: 0.5rem;
+  width: 91%;
+}
+
+@media (min-width: 768px) {
+  .card {
+    background-color: var(--backgroundColor);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow);
+    width: auto;
+    margin: auto;
+    width: 25em;
+    padding: 1.5em;
+  }
+}

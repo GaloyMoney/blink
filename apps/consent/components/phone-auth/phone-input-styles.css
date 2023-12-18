@@ -1,0 +1,23 @@
+.PhoneInput {
+  padding: 0.5em;
+  border: 1px solid rgb(215, 215, 215);
+  border-radius: 0.2em;
+  margin-bottom: 1em;
+  background-color: var(--inputBackground);
+}
+
+.PhoneInput input {
+  background-color: var(--inputBackground);
+}
+
+.PhoneInput input:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: transparent;
+  background-color: var(--inputBackground);
+}
+
+.PhoneInput:focus-within {
+  border: 1px solid rgb(30, 111, 250);
+  background-color: var(--inputBackground);
+}
