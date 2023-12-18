@@ -660,7 +660,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "ExpectedAddressInfoMissingInEventError":
     case "MissingCreatedAtKratosError":
     case "MissingExpiredAtKratosError":
-    case "LnurlError":
+    case "LnurlServiceError":
     case "InvalidIdentitySessionKratosError":
     case "MissingTotpKratosError":
     case "IncompatibleSchemaUpgradeError":
@@ -730,7 +730,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "UnknownOnChainServiceError":
     case "UnknownNotificationsServiceError":
     case "UnknownIpFetcherServiceError":
-    case "UnknownLnurlError":
+    case "UnknownLnurlServiceError":
     case "UnknownCacheServiceError":
     case "UnknownPhoneProviderServiceError":
     case "UnknownDealerPriceServiceError":

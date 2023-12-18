@@ -1,7 +1,7 @@
 import { DomainError, ErrorLevel } from "@/domain/shared"
 
-export class LnurlError extends DomainError {}
-export class ErrorFetchingLnurlInvoice extends LnurlError {}
-export class UnknownLnurlError extends LnurlError {
+export class LnurlServiceError extends DomainError {}
+export class ErrorFetchingLnurlInvoice extends LnurlServiceError {}
+export class UnknownLnurlServiceError extends LnurlServiceError {
   level = ErrorLevel.Critical
 }

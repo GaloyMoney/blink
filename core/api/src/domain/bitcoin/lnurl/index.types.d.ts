@@ -1,7 +1,7 @@
-type LnurlError = import("@/domain/bitcoin/lnurl/errors").LnurlError
+type LnurlServiceError = import("@/domain/bitcoin/lnurl/errors").LnurlServiceError
 interface ILnurlPayService {
   fetchInvoiceFromLnAddressOrLnurl(args: {
     amount: BtcPaymentAmount
     lnAddressOrLnurl: string
-  }): Promise<string | LnurlError>
+  }): Promise<string | LnurlServiceError>
 }
