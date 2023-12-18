@@ -13,12 +13,18 @@ const url = process.argv[3]
 const filePath = process.argv[4]
 const authToken = process.argv[5]
 const variablesString = process.argv[6] || "{}"
+let authParam = undefined
+if (authToken) {
+  if (authToken.startsWith("dev_")) {
+    authParam = { "X-API-KEY": authToken }
+  } else {
+    authParam = { Authorization: `Bearer ${authToken}` }
+  }
+}
 const client = createClient({
   url,
-  connectionParams: authToken ? authToken.startsWith("dev_") ? {
-    "X-API-KEY": authToken,
-  } : { Authorization: `Bearer ${authToken}` } : undefined,
   webSocketImpl: WebSocket,
+  connectionParams: authParam
 })
 
 const startSubscription = async () => {
