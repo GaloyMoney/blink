@@ -13,7 +13,6 @@ import Username from "../../../shared/types/scalar/username"
 import GraphQLEmail from "../../../shared/types/object/email"
 
 import AccountContact from "./account-contact"
-import UserQuizQuestion from "./user-quiz-question"
 
 import { IdentityRepository } from "@/services/kratos"
 import { UnknownClientError } from "@/graphql/error"
@@ -72,15 +71,6 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
       type: GT.NonNull(Language),
       description: dedent`Preferred language for user.
         When value is 'default' the intent is to use preferred language from OS settings.`,
-    },
-
-    quizQuestions: {
-      deprecationReason: `use Quiz from Account instead`,
-      type: GT.NonNullList(UserQuizQuestion),
-      description: "List the quiz questions the user may have completed.",
-      resolve: async (source, args, { domainAccount }) => {
-        return domainAccount?.quizQuestions
-      },
     },
 
     contacts: {

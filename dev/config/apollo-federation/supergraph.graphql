@@ -1476,7 +1476,6 @@ type Query
   onChainTxFee(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainTxFee! @join__field(graph: PUBLIC)
   onChainUsdTxFee(address: OnChainAddress!, amount: CentAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainUsdTxFee! @join__field(graph: PUBLIC)
   onChainUsdTxFeeAsBtcDenominated(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainUsdTxFee! @join__field(graph: PUBLIC)
-  quizQuestions: [QuizQuestion] @join__field(graph: PUBLIC) @deprecated(reason: "TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated")
 
   """Returns 1 Sat and 1 Usd Cent price for the given currency"""
   realtimePrice(currency: DisplayCurrency = "USD"): RealtimePrice! @join__field(graph: PUBLIC)
@@ -1504,14 +1503,6 @@ type QuizCompletedPayload
 {
   errors: [Error!]!
   quiz: Quiz
-}
-
-type QuizQuestion
-  @join__type(graph: PUBLIC)
-{
-  """The earn reward in Satoshis for the quiz question"""
-  earnAmount: SatAmount!
-  id: ID!
 }
 
 type RealtimePrice
@@ -1834,9 +1825,6 @@ type User
   """Phone number with international calling code."""
   phone: Phone @join__field(graph: PUBLIC)
 
-  """List the quiz questions the user may have completed."""
-  quizQuestions: [UserQuizQuestion!]! @join__field(graph: PUBLIC) @deprecated(reason: "use Quiz from Account instead")
-
   """Whether TOTP is enabled for this user."""
   totpEnabled: Boolean! @join__field(graph: PUBLIC)
 
@@ -1973,13 +1961,6 @@ type UserPhoneRegistrationValidatePayload
 {
   errors: [Error!]!
   me: User
-}
-
-type UserQuizQuestion
-  @join__type(graph: PUBLIC)
-{
-  completed: Boolean!
-  question: QuizQuestion!
 }
 
 type UserTotpDeletePayload
