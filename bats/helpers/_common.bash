@@ -137,3 +137,8 @@ cache_value() {
 read_value() {
   cat ${CACHE_DIR}/$1
 }
+
+clear_cache() {
+  rm -r ${CACHE_DIR}
+  mkdir -p ${CACHE_DIR}
+}
