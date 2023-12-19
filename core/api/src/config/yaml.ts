@@ -191,8 +191,8 @@ export const getRequestCodePerLoginIdentifierLimits = () =>
 export const getRequestCodePerIpLimits = () =>
   getRateLimits(yamlConfig.rateLimits.requestCodePerIp)
 
-export const getFailedLoginAttemptPerLoginIdentifierLimits = () =>
-  getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerLoginIdentifier)
+export const getLoginAttemptPerLoginIdentifierLimits = () =>
+  getRateLimits(yamlConfig.rateLimits.loginAttemptPerLoginIdentifier)
 
 export const getFailedLoginAttemptPerIpLimits = () =>
   getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerIp)
