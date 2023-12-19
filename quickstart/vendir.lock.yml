@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: update lnd version (#3725)...'
-      sha: 90badbbee775b5ea8d8d24721f2f81ae0d56ce03
+      commitTitle: 'chore: some limits renaming and adjustments (#3727)...'
+      sha: d6b33b81e87342f6b5823348bb2d774f5220a7d2
       tags:
-      - 0.18.19-1-g90badbbee
+      - 0.18.20-1-gd6b33b81e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: update lnd version (#3725)...'
-      sha: 90badbbee775b5ea8d8d24721f2f81ae0d56ce03
+      commitTitle: 'chore: some limits renaming and adjustments (#3727)...'
+      sha: d6b33b81e87342f6b5823348bb2d774f5220a7d2
       tags:
-      - 0.18.19-1-g90badbbee
+      - 0.18.20-1-gd6b33b81e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test: update lnd version (#3725)...'
-      sha: 90badbbee775b5ea8d8d24721f2f81ae0d56ce03
+      commitTitle: 'chore: some limits renaming and adjustments (#3727)...'
+      sha: d6b33b81e87342f6b5823348bb2d774f5220a7d2
       tags:
-      - 0.18.19-1-g90badbbee
+      - 0.18.20-1-gd6b33b81e
     path: ./
   path: ./graphql
 kind: LockConfig
