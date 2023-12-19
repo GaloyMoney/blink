@@ -266,7 +266,7 @@ local_resource(
 
 api_trigger_target = "//core/api-trigger:dev"
 if is_ci:
-  api_target = "//core/api-trigger:api-trigger"
+  api_trigger_target = "//core/api-trigger:api-trigger"
 local_resource(
     "api-trigger",
     labels = ["core"],
@@ -281,7 +281,7 @@ local_resource(
             port = 4012,
         ),
     ),
-    deps = _buck2_dep_inputs(api_target),
+    deps = _buck2_dep_inputs(api_trigger_target),
     resource_deps = [
         "init-onchain",
         "lnd1",
@@ -320,7 +320,7 @@ local_resource(
 
 api_ws_server_target = "//core/api-ws-server:dev"
 if is_ci:
-  api_target = "//core/api-ws-server:api-ws-server"
+  api_ws_server_target = "//core/api-ws-server:api-ws-server"
 local_resource(
     "api-ws-server",
     labels = ["core"],
@@ -335,7 +335,7 @@ local_resource(
             port = 4012,
         ),
     ),
-    deps = _buck2_dep_inputs(api_target),
+    deps = _buck2_dep_inputs(api_ws_server_target),
     resource_deps = [
         "init-onchain",
         "lnd1",
