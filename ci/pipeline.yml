@@ -78,7 +78,6 @@ groups:
       - bats-tests
       - legacy-bats-tests
       - build-edge-image
-      - build-debug-edge-image
       - build-migrate-edge-image
       - build-websocket-edge-image
       - build-exporter-edge-image
@@ -550,7 +549,6 @@ jobs:
         - get: repo
           trigger: true
           passed:
-            - build-debug-edge-image
             - build-migrate-edge-image
             - build-edge-image
             - build-websocket-edge-image
@@ -630,7 +628,6 @@ jobs:
               - legacy-integration-tests
               - legacy-bats-tests
               - bats-tests
-              - build-debug-edge-image
               - build-migrate-edge-image
               - build-edge-image
               - build-trigger-edge-image
@@ -1025,14 +1022,6 @@ resources:
       username: #@ data.values.docker_registry_user
       password: #@ data.values.docker_registry_password
       repository: #@ galoy_image()
-
-  - name: debug-edge-image
-    type: registry-image
-    source:
-      tag: edge
-      username: #@ data.values.docker_registry_user
-      password: #@ data.values.docker_registry_password
-      repository: #@ debug_galoy_image()
 
   - name: migrate-edge-image
     type: registry-image
