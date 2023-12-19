@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --transparent: rgba(0, 0, 0, 0);
+  --white: #ffffff;
+  --black: #000000;
+  --lightGrey: #cfd9e2;
+  --lighterGrey: #e6ebef;
+  --lightBlue: #3553ff;
+  --darkGrey: #1d1d1d;
+  --blue: #3050c4;
+  --orange: #ff7e1c;
+  --sky: #c3ccff;
+  --primary: #fc5805;
+  --primary3: #fd800b;
+  --primary4: #fe990d;
+  --primary5: #ffad0d;
+  --blue5: #4453e2;
+  --grey0: #3a3c51;
+  --grey1: #61637a;
+  --grey2: #9292a0;
+  --grey3: #aeaeb8;
+  --grey4: #e2e2e4;
+  --grey5: #f2f2f4;
+  --loaderForeground: #ecebeb;
+  --loaderBackground: #f3f3f3;
+  --green: #00a700;
+  --error: #dc2626;
+  --error9: #fee2e2;
+  --warning: #f59e0b;
+}
+
+[data-theme="light"] {
+  --backgroundColor: var(--white);
+  --overlayBackground: rgba(255, 255, 255, 0.746);
+  --backColor: var(--black);
+  --primaryButtonBackground: var(--orange);
+  --primaryButtonFont: var(--white);
+  --inputBackground: var(--grey5);
+  --inputColor: var(--black);
+  --inputSecondary: var(--grey2);
+  --shadow: 
+    rgba(0, 0, 0, 0.144) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.144) 0px 0px 0px 1px;
+}
+
+[data-theme="dark"] {
+  --backgroundColor: var(--black);
+  --overlayBackground: rgba(16, 16, 16, 0.746);
+  --backColor: var(--white);
+  --primaryButtonBackground: var(--primary4);
+  --primaryButtonFont: var(--black);
+  --inputBackground: var(--darkGrey);
+  --inputColor: var(--white);
+  --inputSecondary: var(--grey3);
+  --shadow: 
+    rgba(255, 255, 255, 0.144) 0px 1px 3px 0px,
+    rgba(227, 231, 235, 0.144) 0px 0px 0px 1px;
+}
+
