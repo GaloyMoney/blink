@@ -52,7 +52,7 @@
     "@opentelemetry/instrumentation-mongodb": "^0.38.0",
     "@opentelemetry/instrumentation-net": "^0.32.4",
     "@opentelemetry/resources": "^1.18.1",
-    "@opentelemetry/sdk-trace-base": "^1.18.1",
+    "@opentelemetry/sdk-trace-base": "^1.19.0",
     "@opentelemetry/sdk-trace-node": "^1.18.1",
     "@opentelemetry/semantic-conventions": "^1.18.1",
     "@ory/client": "^1.4.6",
