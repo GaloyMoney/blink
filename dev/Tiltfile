@@ -267,6 +267,7 @@ local_resource(
     deps = _buck2_dep_inputs(api_target),
     resource_deps = [
         "init-onchain",
+        "init-lightning",
         "lnd1",
         "redis",
         "mongodb",
