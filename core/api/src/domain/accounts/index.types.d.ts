@@ -107,7 +107,6 @@ type Account = {
   coordinates: Coordinates | null
   contactEnabled: boolean
   readonly contacts: AccountContact[]
-  readonly quizQuestions: UserQuizQuestion[] // deprecated
   readonly quiz: Quiz[]
   notificationSettings: NotificationSettings
   kratosUserId: UserId

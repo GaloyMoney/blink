@@ -523,6 +523,17 @@ enum InvoicePaymentStatus {
 
 scalar Language
 
+input LnAddressPaymentSendInput {
+  """Amount in satoshis."""
+  amount: SatAmount!
+
+  """Lightning address to send to."""
+  lnAddress: String!
+
+  """Wallet ID to send bitcoin from."""
+  walletId: WalletId!
+}
+
 type LnInvoice implements Invoice {
   createdAt: Timestamp!
   paymentHash: PaymentHash!
@@ -743,6 +754,17 @@ input LnUsdInvoiceFeeProbeInput {
   walletId: WalletId!
 }
 
+input LnurlPaymentSendInput {
+  """Amount in satoshis."""
+  amount: SatAmount!
+
+  """Lnurl string to send to."""
+  lnurl: String!
+
+  """Wallet ID to send bitcoin from."""
+  walletId: WalletId!
+}
+
 type MapInfo {
   coordinates: Coordinates!
   title: String!
@@ -793,6 +815,9 @@ type Mutation {
   failed, pending, already_paid).
   """
   intraLedgerUsdPaymentSend(input: IntraLedgerUsdPaymentSendInput!): PaymentSendPayload!
+
+  """Sends a payment to a lightning address."""
+  lnAddressPaymentSend(input: LnAddressPaymentSendInput!): PaymentSendPayload!
 
   """
   Returns a lightning invoice for an associated wallet.
@@ -870,6 +895,9 @@ type Mutation {
   """
   lnUsdInvoiceCreateOnBehalfOfRecipient(input: LnUsdInvoiceCreateOnBehalfOfRecipientInput!): LnInvoicePayload!
   lnUsdInvoiceFeeProbe(input: LnUsdInvoiceFeeProbeInput!): SatAmountPayload!
+
+  """Sends a payment to a lightning address."""
+  lnurlPaymentSend(input: LnurlPaymentSendInput!): PaymentSendPayload!
   onChainAddressCreate(input: OnChainAddressCreateInput!): OnChainAddressPayload!
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload!
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!
@@ -1141,7 +1169,6 @@ type Query {
   onChainTxFee(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainTxFee!
   onChainUsdTxFee(address: OnChainAddress!, amount: CentAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainUsdTxFee!
   onChainUsdTxFeeAsBtcDenominated(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainUsdTxFee!
-  quizQuestions: [QuizQuestion] @deprecated(reason: "TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated")
 
   """Returns 1 Sat and 1 Usd Cent price for the given currency"""
   realtimePrice(currency: DisplayCurrency = "USD"): RealtimePrice!
@@ -1163,12 +1190,6 @@ input QuizCompletedInput {
 type QuizCompletedPayload {
   errors: [Error!]!
   quiz: Quiz
-}
-
-type QuizQuestion {
-  """The earn reward in Satoshis for the quiz question"""
-  earnAmount: SatAmount!
-  id: ID!
 }
 
 type RealtimePrice {
@@ -1436,9 +1457,6 @@ type User {
   """Phone number with international calling code."""
   phone: Phone
 
-  """List the quiz questions the user may have completed."""
-  quizQuestions: [UserQuizQuestion!]! @deprecated(reason: "use Quiz from Account instead")
-
   """Whether TOTP is enabled for this user."""
   totpEnabled: Boolean!
 
@@ -1541,11 +1559,6 @@ input UserPhoneRegistrationValidateInput {
 type UserPhoneRegistrationValidatePayload {
   errors: [Error!]!
   me: User
-}
-
-type UserQuizQuestion {
-  completed: Boolean!
-  question: QuizQuestion!
 }
 
 type UserTotpDeletePayload {
