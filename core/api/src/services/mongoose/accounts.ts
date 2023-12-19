@@ -218,17 +218,6 @@ const translateToAccount = (result: AccountRecord): Account => ({
       disabledCategories: result.notificationSettings?.push?.disabledCategories || [],
     },
   },
-  // TODO: remove
-  quizQuestions:
-    result.earn?.map(
-      (questionId): UserQuizQuestion => ({
-        question: {
-          id: questionId as QuizQuestionId,
-          earnAmount: OnboardingEarn[questionId as QuizQuestionId],
-        },
-        completed: true,
-      }),
-    ) || [],
 
   quiz: Object.entries(OnboardingEarn).map(([id, amount]) => ({
     id: id as QuizQuestionId,
