@@ -117,3 +117,17 @@ type PayOnChainByWalletIdArgs = PayOnChainByWalletIdWithoutCurrencyArgs & {
   amountCurrency: WalletCurrency | undefined
   sendAll: boolean
 }
+
+type LnAddressPaymentSendArgs = {
+  senderWalletId: WalletId
+  senderAccount: Account
+  lnAddress: string
+  amount: number
+}
+
+type LnurlPaymentSendArgs = {
+  senderWalletId: WalletId
+  senderAccount: Account
+  lnurl: string
+  amount: number
+}

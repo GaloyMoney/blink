@@ -468,3 +468,13 @@ export class PhoneAlreadyExistsError extends CustomGraphQLError {
     })
   }
 }
+
+export class LnurlRequestInvoiceError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
+    super({
+      code: "LNURL_REQUEST_INVOICE_ERROR",
+      forwardToClient: true,
+      ...errData,
+    })
+  }
+}
