@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: correct targets in tiltfile (#3730)'
-      sha: 6ff10e2d820af71203d1a47e5f29d1058f5eecb2
+      commitTitle: 'chore: remove debug code (#3734)...'
+      sha: d6915fcb827f0fbbfde9da22ac6c1656fe5c2465
       tags:
-      - 0.18.24-2-g6ff10e2d8
+      - 0.18.25-2-gd6915fcb8
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: correct targets in tiltfile (#3730)'
-      sha: 6ff10e2d820af71203d1a47e5f29d1058f5eecb2
+      commitTitle: 'chore: remove debug code (#3734)...'
+      sha: d6915fcb827f0fbbfde9da22ac6c1656fe5c2465
       tags:
-      - 0.18.24-2-g6ff10e2d8
+      - 0.18.25-2-gd6915fcb8
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: correct targets in tiltfile (#3730)'
-      sha: 6ff10e2d820af71203d1a47e5f29d1058f5eecb2
+      commitTitle: 'chore: remove debug code (#3734)...'
+      sha: d6915fcb827f0fbbfde9da22ac6c1656fe5c2465
       tags:
-      - 0.18.24-2-g6ff10e2d8
+      - 0.18.25-2-gd6915fcb8
     path: ./
   path: ./graphql
 kind: LockConfig
