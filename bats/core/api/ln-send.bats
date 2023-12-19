@@ -395,3 +395,160 @@ usd_amount=50
   run is_contact "$BOB" "$token_name"
   [[ "$status" == "0" ]] || exit 1
 }
+
+@test "ln-send: intraledger settled - lnInvoicePaymentSend from usd to btc" {
+  token_name="$ALICE"
+  usd_wallet_name="$token_name.usd_wallet_id"
+
+  create_user "$BOB"
+  user_update_username "$BOB"
+  bob_btc_wallet_name="$BOB.btc_wallet_id"
+
+  initial_recipient_balance="$(balance_for_wallet $BOB 'BTC')"
+  initial_lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
+    --arg amount "$btc_amount" \
+    '{input: {walletId: $wallet_id, amount: $amount}}'
+  )
+  exec_graphql "$BOB" 'ln-invoice-create' "$variables"
+  invoice="$(graphql_output '.data.lnInvoiceCreate.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    --arg payment_request "$payment_request" \
+    '{input: {walletId: $wallet_id, paymentRequest: $payment_request}}'
+  )
+
+  exec_graphql "$token_name" 'ln-usd-invoice-fee-probe' "$variables"
+  fee_amount="$(graphql_output '.data.lnUsdInvoiceFeeProbe.amount')"
+  [[ "${fee_amount}" = "0" ]] || exit 1
+
+  exec_graphql "$token_name" 'ln-invoice-payment-send' "$variables"
+  send_status="$(graphql_output '.data.lnInvoicePaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  transaction_payment_hash="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentHash')"
+  [[ "${transaction_payment_hash}" == "${payment_hash}" ]] || exit 1
+
+  transaction_payment_request="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
+  [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
+
+  # Check for settled
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+  check_for_ln_initiated_settled "$BOB" "$payment_hash"
+
+  final_recipient_balance="$(balance_for_wallet $BOB 'BTC')"
+  recipient_wallet_diff="$(( $final_recipient_balance - $initial_recipient_balance ))"
+  [[ "$recipient_wallet_diff" == "$btc_amount" ]] || exit 1
+
+  final_lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
+  lnd1_diff="$(( $initial_lnd1_balance - $final_lnd1_balance ))"
+  [[ "$lnd1_diff" == "0" ]] || exit 1
+}
+
+@test "ln-send: intraledger settled - lnNoAmountInvoicePaymentSend from btc to usd" {
+  token_name="$ALICE"
+  btc_wallet_name="$token_name.btc_wallet_id"
+
+  create_user "$BOB"
+  user_update_username "$BOB"
+  bob_usd_wallet_name="$BOB.usd_wallet_id"
+
+  initial_balance="$(balance_for_wallet $token_name 'BTC')"
+  initial_lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $bob_usd_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$BOB" 'ln-no-amount-invoice-create' "$variables"
+  invoice="$(graphql_output '.data.lnNoAmountInvoiceCreate.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg payment_request "$payment_request" \
+    --arg amount $btc_amount \
+    '{input: {walletId: $wallet_id, paymentRequest: $payment_request, amount: $amount}}'
+  )
+
+  exec_graphql "$token_name" 'ln-no-amount-invoice-payment-send' "$variables"
+  send_status="$(graphql_output '.data.lnNoAmountInvoicePaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  # Check for settled
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+  check_for_ln_initiated_settled "$BOB" "$payment_hash"
+
+  final_balance="$(balance_for_wallet $token_name 'BTC')"
+  wallet_diff="$(( $initial_balance - $final_balance ))"
+  [[ "$wallet_diff" == "$btc_amount" ]] || exit 1
+
+  final_lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
+  lnd1_diff="$(( $initial_lnd1_balance - $final_lnd1_balance ))"
+  [[ "$lnd1_diff" == "0" ]] || exit 1
+}
+
+@test "ln-send: intraledger settled - lnNoAmountUsdInvoicePaymentSend from usd to usd" {
+  token_name="$ALICE"
+  usd_wallet_name="$token_name.usd_wallet_id"
+
+  create_user "$BOB"
+  user_update_username "$BOB"
+  bob_usd_wallet_name="$BOB.usd_wallet_id"
+
+  initial_balance="$(balance_for_wallet $token_name 'USD')"
+  initial_lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $bob_usd_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$BOB" 'ln-no-amount-invoice-create' "$variables"
+  invoice="$(graphql_output '.data.lnNoAmountInvoiceCreate.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    --arg payment_request "$payment_request" \
+    --arg amount $usd_amount \
+    '{input: {walletId: $wallet_id, paymentRequest: $payment_request, amount: $amount}}'
+  )
+
+  exec_graphql "$token_name" 'ln-no-amount-usd-invoice-payment-send' "$variables"
+  send_status="$(graphql_output '.data.lnNoAmountUsdInvoicePaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  # Check for settled
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+  check_for_ln_initiated_settled "$BOB" "$payment_hash"
+
+  final_balance="$(balance_for_wallet $token_name 'USD')"
+  wallet_diff="$(( $initial_balance - $final_balance ))"
+  [[ "$wallet_diff" == "$usd_amount" ]] || exit 1
+
+  final_lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
+  lnd1_diff="$(( $initial_lnd1_balance - $final_lnd1_balance ))"
+  [[ "$lnd1_diff" == "0" ]] || exit 1
+}
