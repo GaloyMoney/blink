@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: remove debug code (#3734)...'
-      sha: d6915fcb827f0fbbfde9da22ac6c1656fe5c2465
+      commitTitle: 'feat(api): add lnurl payment send mutation (#3681)...'
+      sha: 31069755561943bc0eed75cafae75e488d7e3474
       tags:
-      - 0.18.25-2-gd6915fcb8
+      - 0.18.26-2-g310697555
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: remove debug code (#3734)...'
-      sha: d6915fcb827f0fbbfde9da22ac6c1656fe5c2465
+      commitTitle: 'feat(api): add lnurl payment send mutation (#3681)...'
+      sha: 31069755561943bc0eed75cafae75e488d7e3474
       tags:
-      - 0.18.25-2-gd6915fcb8
+      - 0.18.27
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: remove debug code (#3734)...'
-      sha: d6915fcb827f0fbbfde9da22ac6c1656fe5c2465
+      commitTitle: 'feat(api): add lnurl payment send mutation (#3681)...'
+      sha: 31069755561943bc0eed75cafae75e488d7e3474
       tags:
-      - 0.18.25-2-gd6915fcb8
+      - 0.18.27
     path: ./
   path: ./graphql
 kind: LockConfig
