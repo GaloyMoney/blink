@@ -1,6 +1,6 @@
 import { intraledgerPaymentSendWalletIdForBtcWallet } from "../payments/send-intraledger"
 
-import { getRewardsConfig, OnboardingEarn } from "@/config"
+import { getRewardsConfig } from "@/config"
 
 import { getBalanceForWallet } from "@/app/wallets"
 
@@ -30,6 +30,7 @@ import {
 import { consumeLimiter } from "@/services/rate-limit"
 import { getFunderWalletId } from "@/services/ledger/caching"
 import { AccountsIpsRepository } from "@/services/mongoose/accounts-ips"
+import { OnboardingEarn } from "./config"
 
 export const addEarn = async ({
   quizQuestionId: quizQuestionIdString,

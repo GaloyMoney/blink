@@ -1,6 +1,5 @@
+import { OnboardingEarn } from "@/app/earn/config"
 import { parseRepositoryError } from "./utils"
-
-import { OnboardingEarn } from "@/config"
 
 import { AccountStatus } from "@/domain/accounts"
 import {
