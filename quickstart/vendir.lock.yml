@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: remove debug edge img (#3729)'
-      sha: 507bbc5529b97d6b5800d27175f12d4ead28dd62
+      commitTitle: 'fix: correct targets in tiltfile (#3730)'
+      sha: 6ff10e2d820af71203d1a47e5f29d1058f5eecb2
       tags:
-      - 0.18.23-2-g507bbc552
+      - 0.18.24-2-g6ff10e2d8
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: remove debug edge img (#3729)'
-      sha: 507bbc5529b97d6b5800d27175f12d4ead28dd62
+      commitTitle: 'fix: correct targets in tiltfile (#3730)'
+      sha: 6ff10e2d820af71203d1a47e5f29d1058f5eecb2
       tags:
-      - 0.18.23-2-g507bbc552
+      - 0.18.24-2-g6ff10e2d8
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: remove debug edge img (#3729)'
-      sha: 507bbc5529b97d6b5800d27175f12d4ead28dd62
+      commitTitle: 'fix: correct targets in tiltfile (#3730)'
+      sha: 6ff10e2d820af71203d1a47e5f29d1058f5eecb2
       tags:
-      - 0.18.23-2-g507bbc552
+      - 0.18.24-2-g6ff10e2d8
     path: ./
   path: ./graphql
 kind: LockConfig
