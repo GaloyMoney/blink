@@ -46,6 +46,15 @@ lnd_is_ready() {
   return "$?"
 }
 
+lnd_outside_connect_with_retry() {
+  connection_string="$1"
+  connected=$(lnd_outside_cli connect "$connection_string" 2>&1)
+  connected_success="$?"
+  if [[ "$connected_success" == "0" ]]; then return 0; fi
+  if [[ "$connected" =~ "already connected" ]]; then return 0; fi
+  return 1
+}
+
 mempool_not_empty() {
   echo "Waiting for txn to show up in mempool..."
   local txid="$(bitcoin_cli getrawmempool | jq -r ".[0]")"
@@ -92,7 +101,7 @@ echo "Opening channel: lndoutside1 -> lnd1..."
 retry 30 1 lnd_is_ready lnd_cli
 pubkey_lnd1="$(lnd_cli getinfo | jq -r '.identity_pubkey')"
 endpoint_lnd1="${COMPOSE_PROJECT_NAME}-lnd1-1:9735"
-lnd_outside_cli connect "${pubkey_lnd1}@${endpoint_lnd1}" > /dev/null 2>&1 || true
+retry 10 1 lnd_outside_connect_with_retry "${pubkey_lnd1}@${endpoint_lnd1}"
 retry 10 1 synced_to_graph
 funding_txid=$(lnd_outside_cli openchannel \
   --node_key "$pubkey_lnd1" \
@@ -114,7 +123,7 @@ echo "Opening balanced channel: lndoutside1 -> lndoutside2..."
 retry 30 1 lnd_is_ready lnd_outside_2_cli
 pubkey_lnd_outside_2="$(lnd_outside_2_cli getinfo | jq -r '.identity_pubkey')"
 endpoint_lnd_outside_2="${COMPOSE_PROJECT_NAME}-lnd-outside-2-1:9735"
-lnd_outside_cli connect "${pubkey_lnd_outside_2}@${endpoint_lnd_outside_2}" > /dev/null 2>&1 || true
+retry 10 1 lnd_outside_connect_with_retry "${pubkey_lnd_outside_2}@${endpoint_lnd_outside_2}"
 retry 10 1 synced_to_graph
 funding_txid=$(lnd_outside_cli openchannel \
   --node_key "$pubkey_lnd_outside_2" \
