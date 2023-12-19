@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: some limits renaming and adjustments (#3727)...'
-      sha: d6b33b81e87342f6b5823348bb2d774f5220a7d2
+      commitTitle: 'chore: lower error level of NotEnoughBalanceForRewardError to
+        Warn (#3728)'
+      sha: 228c7ae07d3f956f742c0a583649b61c9beb58d6
       tags:
-      - 0.18.20-1-gd6b33b81e
+      - 0.18.21-1-g228c7ae07
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: some limits renaming and adjustments (#3727)...'
-      sha: d6b33b81e87342f6b5823348bb2d774f5220a7d2
+      commitTitle: 'chore: lower error level of NotEnoughBalanceForRewardError to
+        Warn (#3728)'
+      sha: 228c7ae07d3f956f742c0a583649b61c9beb58d6
       tags:
-      - 0.18.20-1-gd6b33b81e
+      - 0.18.21-1-g228c7ae07
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: some limits renaming and adjustments (#3727)...'
-      sha: d6b33b81e87342f6b5823348bb2d774f5220a7d2
+      commitTitle: 'chore: lower error level of NotEnoughBalanceForRewardError to
+        Warn (#3728)'
+      sha: 228c7ae07d3f956f742c0a583649b61c9beb58d6
       tags:
-      - 0.18.20-1-gd6b33b81e
+      - 0.18.21-1-g228c7ae07
     path: ./
   path: ./graphql
 kind: LockConfig
