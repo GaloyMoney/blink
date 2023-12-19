@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(api): add lnurl payment send mutation (#3681)...'
-      sha: 31069755561943bc0eed75cafae75e488d7e3474
+      commitTitle: 'chore: removing deprecated earnquestion endpoint (#3733)...'
+      sha: fbcaf2ea97e03095c9a807d4147de292b3a3542d
       tags:
-      - 0.18.26-2-g310697555
+      - 0.18.27-2-gfbcaf2ea9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(api): add lnurl payment send mutation (#3681)...'
-      sha: 31069755561943bc0eed75cafae75e488d7e3474
+      commitTitle: 'chore: removing deprecated earnquestion endpoint (#3733)...'
+      sha: fbcaf2ea97e03095c9a807d4147de292b3a3542d
       tags:
-      - 0.18.27
+      - 0.18.27-2-gfbcaf2ea9
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(api): add lnurl payment send mutation (#3681)...'
-      sha: 31069755561943bc0eed75cafae75e488d7e3474
+      commitTitle: 'chore: removing deprecated earnquestion endpoint (#3733)...'
+      sha: fbcaf2ea97e03095c9a807d4147de292b3a3542d
       tags:
-      - 0.18.27
+      - 0.18.27-2-gfbcaf2ea9
     path: ./
   path: ./graphql
 kind: LockConfig

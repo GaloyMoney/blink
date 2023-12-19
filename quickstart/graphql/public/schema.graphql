@@ -1169,7 +1169,6 @@ type Query {
   onChainTxFee(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainTxFee!
   onChainUsdTxFee(address: OnChainAddress!, amount: CentAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainUsdTxFee!
   onChainUsdTxFeeAsBtcDenominated(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainUsdTxFee!
-  quizQuestions: [QuizQuestion] @deprecated(reason: "TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated")
 
   """Returns 1 Sat and 1 Usd Cent price for the given currency"""
   realtimePrice(currency: DisplayCurrency = "USD"): RealtimePrice!
@@ -1191,12 +1190,6 @@ input QuizCompletedInput {
 type QuizCompletedPayload {
   errors: [Error!]!
   quiz: Quiz
-}
-
-type QuizQuestion {
-  """The earn reward in Satoshis for the quiz question"""
-  earnAmount: SatAmount!
-  id: ID!
 }
 
 type RealtimePrice {
@@ -1464,9 +1457,6 @@ type User {
   """Phone number with international calling code."""
   phone: Phone
 
-  """List the quiz questions the user may have completed."""
-  quizQuestions: [UserQuizQuestion!]! @deprecated(reason: "use Quiz from Account instead")
-
   """Whether TOTP is enabled for this user."""
   totpEnabled: Boolean!
 
@@ -1569,11 +1559,6 @@ input UserPhoneRegistrationValidateInput {
 type UserPhoneRegistrationValidatePayload {
   errors: [Error!]!
   me: User
-}
-
-type UserQuizQuestion {
-  completed: Boolean!
-  question: QuizQuestion!
 }
 
 type UserTotpDeletePayload {
