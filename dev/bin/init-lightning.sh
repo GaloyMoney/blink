@@ -4,26 +4,10 @@
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-quickstart}"
 
 DEV_DIR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
+source "${DEV_DIR}/bin/_retry.sh"
 source "${DEV_DIR}/helpers/cli.sh"
 
 # Setup helper functions
-retry() {
-  local attempts=$1
-  shift
-  local delay=$1
-  shift
-  local i
-
-  for ((i = 0; i < attempts; i++)); do
-    "$@"
-    if [[ "$?" -eq 0 ]]; then return 0; fi
-    sleep "$delay"
-  done
-
-  echo "Command \"$*\" failed $attempts times. Output: $output"
-  false
-}
-
 mempool_not_empty() {
   echo "Waiting for txn to show up in mempool..."
   local txid="$(bitcoin_cli getrawmempool | jq -r ".[0]")"
