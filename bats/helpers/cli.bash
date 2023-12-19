@@ -40,6 +40,14 @@ lnd_outside_rest() {
   > "$LNDS_REST_LOG"
 }
 
+lnd_outside_2_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-lnd-outside-2-1" \
+    lncli \
+      --macaroonpath /root/.lnd/admin.macaroon \
+      --tlscertpath /root/.lnd/tls.cert \
+      $@
+}
+
 bria_cli() {
  docker exec "${COMPOSE_PROJECT_NAME}-bria-1" bria $@ 
 }
