@@ -1,13 +1,16 @@
 #!/usr/bin/env bats
 
-ALICE='alice'
-
 load "../../helpers/callback.bash"
+load "../../helpers/cli.bash"
 load "../../helpers/ledger.bash"
 load "../../helpers/ln.bash"
 load "../../helpers/onchain.bash"
 load "../../helpers/subscriber.bash"
 load "../../helpers/user.bash"
+
+ALICE='alice'
+
+TRIGGER_STOP_FILE="$BATS_ROOT_DIR/.stop_trigger"
 
 setup_file() {
   create_user "$ALICE"
@@ -258,4 +261,138 @@ usd_amount=50
 
   # Check for subscriber event
   check_for_ln_update "$payment_hash" || exit 1
+}
+
+@test "ln-receive: settles btc-wallet invoices created while trigger down" {
+  token_name="$ALICE"
+  btc_wallet_name="$token_name.btc_wallet_id"
+
+  # Stop trigger
+  touch $TRIGGER_STOP_FILE
+
+  # Generate invoice
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$token_name" 'ln-no-amount-invoice-create' "$variables"
+  invoice="$(graphql_output '.data.lnNoAmountInvoiceCreate.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
+  # Start trigger
+  rm $TRIGGER_STOP_FILE
+  sleep 5
+
+  # Pay invoice & check for settled
+  lnd_outside_cli payinvoice -f \
+    --pay_req "$payment_request" \
+    --amt "$btc_amount"
+
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+}
+
+@test "ln-receive: settles usd-wallet invoices created while trigger down" {
+  token_name="$ALICE"
+  usd_wallet_name="$token_name.usd_wallet_id"
+
+  # Stop trigger
+  touch $TRIGGER_STOP_FILE
+
+  # Generate invoice
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$token_name" 'ln-no-amount-invoice-create' "$variables"
+  invoice="$(graphql_output '.data.lnNoAmountInvoiceCreate.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
+  # Start trigger
+  rm $TRIGGER_STOP_FILE
+  sleep 5
+
+  # Pay invoice & check for settled
+  lnd_outside_cli payinvoice -f \
+    --pay_req "$payment_request" \
+    --amt "$btc_amount"
+
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+}
+
+@test "ln-receive: settles btc-wallet invoices created & paid while trigger down" {
+  token_name="$ALICE"
+  btc_wallet_name="$token_name.btc_wallet_id"
+
+  # Stop trigger
+  touch $TRIGGER_STOP_FILE
+
+  # Generate invoice
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$token_name" 'ln-no-amount-invoice-create' "$variables"
+  invoice="$(graphql_output '.data.lnNoAmountInvoiceCreate.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
+  # Pay invoice
+  lnd_outside_cli payinvoice -f \
+    --pay_req "$payment_request" \
+    --amt "$btc_amount" \
+    &
+
+  # Start trigger
+  rm $TRIGGER_STOP_FILE
+
+  # Check for settled
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+}
+
+@test "ln-receive: settles usd-wallet invoices created & paid while trigger down" {
+  token_name="$ALICE"
+  usd_wallet_name="$token_name.usd_wallet_id"
+
+  # Stop trigger
+  touch $TRIGGER_STOP_FILE
+
+  # Generate invoice
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$token_name" 'ln-no-amount-invoice-create' "$variables"
+  invoice="$(graphql_output '.data.lnNoAmountInvoiceCreate.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
+  # Pay invoice
+  lnd_outside_cli payinvoice -f \
+    --pay_req "$payment_request" \
+    --amt "$btc_amount" \
+    &
+
+  # Start trigger
+  rm $TRIGGER_STOP_FILE
+
+  # Check for settled
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
