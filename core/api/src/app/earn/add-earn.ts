@@ -1,4 +1,4 @@
-import { intraledgerPaymentSendWalletIdForBtcWallet } from "./send-intraledger"
+import { intraledgerPaymentSendWalletIdForBtcWallet } from "../payments/send-intraledger"
 
 import { getRewardsConfig, OnboardingEarn } from "@/config"
 

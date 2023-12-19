@@ -1,6 +1,6 @@
 import crypto from "crypto"
 
-import { Payments } from "@/app"
+import { Earn } from "@/app"
 
 import { InvalidIpMetadataError } from "@/domain/errors"
 import {
@@ -18,7 +18,7 @@ afterEach(async () => {
 
 describe("addEarn", () => {
   it("fails if ip is undefined", async () => {
-    const result = await Payments.addEarn({
+    const result = await Earn.addEarn({
       accountId: crypto.randomUUID() as AccountId,
       quizQuestionId: "fakeQuizQuestionId",
       ip: undefined,
@@ -39,7 +39,7 @@ describe("addEarn", () => {
         consume: () => new RateLimiterExceededError(),
       })
 
-    const result = await Payments.addEarn({
+    const result = await Earn.addEarn({
       accountId: crypto.randomUUID() as AccountId,
       quizQuestionId: "fakeQuizQuestionId",
       ip: "192.168.13.13" as IpAddress,
