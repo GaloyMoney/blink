@@ -45,7 +45,7 @@ if is_ci:
 local_resource(
     "dashboard",
     labels = ["apps"],
-    cmd = "buck2 build {}".format(dashboard_target),
+    cmd = "buck2 run //dev:build-with-retry {}".format(dashboard_target),
     serve_cmd = ". .envs/dashboard.env && buck2 run {}".format(dashboard_target),
     serve_env = {
       "NEXTAUTH_URL": "http://localhost:3001",
@@ -71,7 +71,7 @@ if is_ci:
 local_resource(
     "pay",
     labels = ["apps"],
-    cmd = "buck2 build {}".format(pay_target),
+    cmd = "buck2 run //dev:build-with-retry {}".format(pay_target),
     serve_cmd = "buck2 run {}".format(pay_target),
     serve_env = {
       "PORT": "3002",
@@ -165,7 +165,7 @@ if is_ci:
 local_resource(
     "consent",
     labels = ["auth"],
-    cmd = "buck2 build {}".format(consent_target),
+    cmd = "buck2 run //dev:build-with-retry {}".format(consent_target),
     serve_cmd = "buck2 run {}".format(consent_target),
     deps = _buck2_dep_inputs(consent_target),
     allow_parallel = True,
@@ -243,7 +243,7 @@ if is_ci:
 local_resource(
     "api",
     labels = ["core"],
-    cmd = "buck2 build {}".format(api_target),
+    cmd = "buck2 run //dev:build-with-retry {}".format(api_target),
     serve_cmd = "buck2 run {}".format(api_target),
     serve_env = core_serve_env,
     allow_parallel = True,
@@ -270,7 +270,7 @@ if is_ci:
 local_resource(
     "api-trigger",
     labels = ["core"],
-    cmd = "buck2 build {}".format(api_trigger_target),
+    cmd = "buck2 run //dev:build-with-retry {}".format(api_trigger_target),
     serve_cmd = "buck2 run {}".format(api_trigger_target),
     serve_env = core_serve_env,
     allow_parallel = True,
@@ -297,7 +297,7 @@ if is_ci:
 local_resource(
     "api-exporter",
     labels = ["core"],
-    cmd = "buck2 build {}".format(api_exporter_target),
+    cmd = "buck2 run //dev:build-with-retry {}".format(api_exporter_target),
     serve_cmd = "buck2 run {}".format(api_exporter_target),
     serve_env = core_serve_env,
     allow_parallel = True,
@@ -324,7 +324,7 @@ if is_ci:
 local_resource(
     "api-ws-server",
     labels = ["core"],
-    cmd = "buck2 build {}".format(api_ws_server_target),
+    cmd = "buck2 run //dev:build-with-retry {}".format(api_ws_server_target),
     serve_cmd = "buck2 run {}".format(api_ws_server_target),
     serve_env = core_serve_env,
     allow_parallel = True,
@@ -373,7 +373,7 @@ api_keys_target = "//core/api-keys:api-keys"
 local_resource(
     "api-keys",
     labels = ["auth"],
-    cmd = "buck2 build {}".format(api_keys_target),
+    cmd = "buck2 run //dev:build-with-retry {}".format(api_keys_target),
     serve_cmd = "buck2 run {}".format(api_keys_target),
     serve_env = {
       "PG_CON": "postgres://user:password@localhost:5431/pg",
