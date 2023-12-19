@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: lower error level of NotEnoughBalanceForRewardError to
-        Warn (#3728)'
-      sha: 228c7ae07d3f956f742c0a583649b61c9beb58d6
+      commitTitle: 'chore(deps): bump zerocopy from 0.7.21 to 0.7.31 (#3712)...'
+      sha: db1f39638622777757902c9791232bc16c8caa3b
       tags:
-      - 0.18.21-1-g228c7ae07
+      - 0.18.22-2-gdb1f39638
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: lower error level of NotEnoughBalanceForRewardError to
-        Warn (#3728)'
-      sha: 228c7ae07d3f956f742c0a583649b61c9beb58d6
+      commitTitle: 'chore(deps): bump zerocopy from 0.7.21 to 0.7.31 (#3712)...'
+      sha: db1f39638622777757902c9791232bc16c8caa3b
       tags:
-      - 0.18.21-1-g228c7ae07
+      - 0.18.23
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: lower error level of NotEnoughBalanceForRewardError to
-        Warn (#3728)'
-      sha: 228c7ae07d3f956f742c0a583649b61c9beb58d6
+      commitTitle: 'chore(deps): bump zerocopy from 0.7.21 to 0.7.31 (#3712)...'
+      sha: db1f39638622777757902c9791232bc16c8caa3b
       tags:
-      - 0.18.21-1-g228c7ae07
+      - 0.18.23
     path: ./
   path: ./graphql
 kind: LockConfig
