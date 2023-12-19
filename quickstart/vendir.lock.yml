@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump zerocopy from 0.7.21 to 0.7.31 (#3712)...'
-      sha: db1f39638622777757902c9791232bc16c8caa3b
+      commitTitle: 'ci: remove debug edge img (#3729)'
+      sha: 507bbc5529b97d6b5800d27175f12d4ead28dd62
       tags:
-      - 0.18.22-2-gdb1f39638
+      - 0.18.23-2-g507bbc552
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump zerocopy from 0.7.21 to 0.7.31 (#3712)...'
-      sha: db1f39638622777757902c9791232bc16c8caa3b
+      commitTitle: 'ci: remove debug edge img (#3729)'
+      sha: 507bbc5529b97d6b5800d27175f12d4ead28dd62
       tags:
-      - 0.18.23
+      - 0.18.23-2-g507bbc552
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump zerocopy from 0.7.21 to 0.7.31 (#3712)...'
-      sha: db1f39638622777757902c9791232bc16c8caa3b
+      commitTitle: 'ci: remove debug edge img (#3729)'
+      sha: 507bbc5529b97d6b5800d27175f12d4ead28dd62
       tags:
-      - 0.18.23
+      - 0.18.23-2-g507bbc552
     path: ./
   path: ./graphql
 kind: LockConfig
