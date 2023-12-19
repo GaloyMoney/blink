@@ -45,7 +45,7 @@ export const resetUserLoginPhoneRateLimits = async (
   phone: PhoneNumber,
 ): Promise<true | RateLimitServiceError> =>
   resetLimiter({
-    rateLimitConfig: RateLimitConfig.failedLoginAttemptPerLoginIdentifier,
+    rateLimitConfig: RateLimitConfig.loginAttemptPerLoginIdentifier,
     keyToConsume: phone,
   })
 

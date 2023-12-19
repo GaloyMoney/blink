@@ -1,8 +1,7 @@
 import {
   checkFailedLoginAttemptPerIpLimits,
-  checkFailedLoginAttemptPerLoginIdentifierLimits,
+  checkLoginAttemptPerLoginIdentifierLimits,
   rewardFailedLoginAttemptPerIpLimits,
-  rewardFailedLoginAttemptPerLoginIdentifierLimits,
 } from "./ratelimits"
 
 import { createAccountForDeviceAccount } from "@/app/accounts/create-account"
@@ -73,7 +72,7 @@ export const loginWithPhoneToken = async ({
   }
 
   {
-    const limitOk = await checkFailedLoginAttemptPerLoginIdentifierLimits(phone)
+    const limitOk = await checkLoginAttemptPerLoginIdentifierLimits(phone)
     if (limitOk instanceof Error) return limitOk
   }
 
@@ -85,7 +84,6 @@ export const loginWithPhoneToken = async ({
   if (validCode instanceof Error) return validCode
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
-  await rewardFailedLoginAttemptPerLoginIdentifierLimits(phone)
 
   const authService = AuthWithPhonePasswordlessService()
 
@@ -184,7 +182,7 @@ export const loginDeviceUpgradeWithPhone = async ({
     if (limitOk instanceof Error) return limitOk
   }
   {
-    const limitOk = await checkFailedLoginAttemptPerLoginIdentifierLimits(phone)
+    const limitOk = await checkLoginAttemptPerLoginIdentifierLimits(phone)
     if (limitOk instanceof Error) return limitOk
   }
 
@@ -192,7 +190,6 @@ export const loginDeviceUpgradeWithPhone = async ({
   if (validCode instanceof Error) return validCode
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
-  await rewardFailedLoginAttemptPerLoginIdentifierLimits(phone)
 
   const identities = IdentityRepository()
   const userId = await identities.getUserIdFromIdentifier(phone)
