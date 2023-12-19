@@ -303,46 +303,6 @@ jobs:
         params:
           image: image/image.tar
 
-  - name: build-debug-edge-image
-    serial: true
-    plan:
-      - in_parallel:
-          - { get: repo, trigger: true }
-          - { get: pipeline-tasks }
-      - task: prepare-docker-build
-        config:
-          platform: linux
-          image_resource: #@ galoy_dev_image_config()
-          inputs:
-            - name: pipeline-tasks
-            - name: repo
-          outputs:
-            - name: repo
-          run:
-            path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
-      - task: build
-        attempts: 2
-        privileged: true
-        config:
-          platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: vito/oci-build-task
-          inputs:
-            - name: repo
-          outputs:
-            - name: image
-          params:
-            CONTEXT: repo
-            BUILD_ARGS_FILE: repo/.build-args
-            DOCKERFILE: "repo/core/api/Dockerfile-debug"
-          run:
-            path: build
-      - put: debug-edge-image
-        params:
-          image: image/image.tar
-
   - name: build-migrate-edge-image
     serial: true
     plan:
