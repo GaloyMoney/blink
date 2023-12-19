@@ -91,3 +91,28 @@ check_for_ln_update() {
 
   [[ "$paid_status" == "PAID" ]] || exit 1
 }
+
+fund_user_lightning() {
+  local token_name=$1
+  local wallet_id_name=$2
+  local amount=$3
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $wallet_id_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$token_name" 'ln-no-amount-invoice-create' "$variables"
+  invoice="$(graphql_output '.data.lnNoAmountInvoiceCreate.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]]
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]]
+
+  lnd_outside_cli payinvoice -f \
+    --pay_req "$payment_request" \
+    --amt "$amount"
+
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+}
