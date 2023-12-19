@@ -34,6 +34,7 @@ import {
   UnauthorizedIPMetadataProxyError,
   UnauthorizedIPMetadataCountryError,
   LikelyBadCoreError,
+  LnurlRequestInvoiceError,
 } from "@/graphql/error"
 import { baseLogger } from "@/services/logger"
 
@@ -476,6 +477,9 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "InvalidPaginatedQueryArgsError":
       message = error.message
       return new ValidationInternalError({ message, logger: baseLogger })
+    case "ErrorFetchingLnurlInvoice":
+      message = error.message
+      return new LnurlRequestInvoiceError({ message, logger: baseLogger })
 
     case "LikelyBadCoreError":
       message = error.message
@@ -656,6 +660,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "ExpectedAddressInfoMissingInEventError":
     case "MissingCreatedAtKratosError":
     case "MissingExpiredAtKratosError":
+    case "LnurlServiceError":
     case "InvalidIdentitySessionKratosError":
     case "MissingTotpKratosError":
     case "IncompatibleSchemaUpgradeError":
@@ -725,6 +730,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "UnknownOnChainServiceError":
     case "UnknownNotificationsServiceError":
     case "UnknownIpFetcherServiceError":
+    case "UnknownLnurlServiceError":
     case "UnknownCacheServiceError":
     case "UnknownPhoneProviderServiceError":
     case "UnknownDealerPriceServiceError":

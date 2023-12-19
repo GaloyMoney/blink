@@ -22,3 +22,12 @@ jobs:
       - name: Run bats tests
         run: |
           nix develop -c bats --setup-suite-file bats/ci_setup_suite.bash -t bats/core/**
+      - name: Rename Tilt log
+        if: always()
+        run: mv bats/.e2e-tilt.log bats/e2e-tilt.log
+      - name: Upload Tilt log
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: Tilt log
+          path: bats/e2e-tilt.log

@@ -82,11 +82,11 @@ user_update_username() {
   local token_name="$1"
 
   # Check if username is already set an username present
-  if $(read_value "$token_name.username" 2>/dev/null); then
+  if read_value "$token_name.username" >/dev/null 2>&1; then
     return
   fi
 
-  local username="${token_name}_$RANDOM"
+  local username="${2:-${token_name}_$RANDOM}"
 
   local variables=$(
     jq -n \
@@ -95,10 +95,24 @@ user_update_username() {
   )
   exec_graphql "$token_name" 'user-update-username' "$variables"
   num_errors="$(graphql_output '.data.userUpdateUsername.errors | length')"
-  username="$(graphql_output '.data.userUpdateUsername.user.username')"
-  [[ "$num_errors" == "0" || "$username" == "$token_name" ]] || exit 1
+  [[ "$num_errors" == "0"  ]] || exit 1
 
   cache_value "$token_name.username" "$username"
+}
+
+ensure_username_is_present() {
+  local variables=$(
+    jq -n \
+    --arg username "$1" \
+    '{username: $username}'
+  )
+  exec_graphql 'anon' 'username-available' "$variables"
+  username_available="$(graphql_output '.data.usernameAvailable')"
+
+  if [[ "$username_available" == "true" ]]; then
+    create_user "$1"
+    user_update_username "$1" "$1"
+  fi
 }
 
 is_contact() {
