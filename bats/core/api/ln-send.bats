@@ -15,7 +15,7 @@ setup_file() {
   clear_cache
 
   lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
-  if [[ $lnd1_balance == "0" ]]; then
+  if [[ $lnd1_balance -lt "1000000" ]]; then
     create_user 'lnd_funding'
     fund_user_lightning 'lnd_funding' 'lnd_funding.btc_wallet_id' '5000000'
   fi
