@@ -34,8 +34,7 @@ import DisplayCurrency from "@/graphql/shared/types/scalar/display-currency"
 
 import { listEndpoints } from "@/app/callback"
 import { IInvoiceConnection } from "@/graphql/shared/types/abstract/invoice"
-
-import { getQuizzesByAccountId } from "@/services/quiz"
+import { getQuizzesByAccountId } from "@/app/quiz"
 
 const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
   name: "ConsumerAccount",

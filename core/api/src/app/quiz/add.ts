@@ -1,6 +1,6 @@
 import { intraledgerPaymentSendWalletIdForBtcWallet } from "../payments/send-intraledger"
 
-import { QuizzesValue } from "./config"
+import { QuizzesValue } from "@/domain/earn"
 
 import { getQuizzesConfig } from "@/config"
 

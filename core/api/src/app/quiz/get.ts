@@ -1,6 +1,5 @@
-import { QuizRepository } from "../mongoose"
-
-import { QuizzesValue } from "@/app/quiz/config"
+import { QuizzesValue } from "@/domain/earn/config"
+import { QuizRepository } from "@/services/mongoose"
 
 export const getQuizzesByAccountId = async (accountId: AccountId) => {
   const quizzes = await QuizRepository(accountId).fetchAll()
