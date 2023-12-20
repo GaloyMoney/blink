@@ -18,6 +18,7 @@ git checkout ${BRANCH}
 old_ref=$(yq e '.galoy.images.app.git_ref' charts/galoy/values.yaml)
 
 pushd ../repo
+
 if [[ -z $(git config --global user.email) ]]; then
   git config --global user.email "bot@galoy.io"
 fi
@@ -30,43 +31,41 @@ gh auth setup-git
 # switch to https to use the token
 git remote set-url origin ${github_url}
 
-git checkout ${old_ref}
-app_src_files=($(buck2 uquery 'inputs(deps("//core/..."))' 2>/dev/null))
+git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 
-# create a branch with the old state of core
-git checkout --orphan core-${old_ref}
-git rm -rf . > /dev/null
-for file in "${app_src_files[@]}"; do
-  git checkout "$old_ref" -- "$file"
-done
-git commit -m "Commit state of \`core\` at \`${old_ref}\`"
-git push -fu origin core-${old_ref}
-
-# create a branch from the old state
-git branch core-${ref}
 git checkout ${ref}
 app_src_files=($(buck2 uquery 'inputs(deps("//core/..."))' 2>/dev/null))
 
-# commit the new state of core
-git checkout core-${ref}
+# create a branch from the old state and commit the new state of core
+set +e
+git fetch origin core-${old_ref}
+# if the above exits with 128, it means the branch doesn't exist yet
+if [[ $? -eq 128 ]]; then
+  git checkout --orphan core-${old_ref}
+  git rm -rf . > /dev/null
+  for file in "${app_src_files[@]}"; do
+    git checkout "$old_ref" -- "$file"
+  done
+  git commit -m "Commit state of \`core\` at \`${old_ref}\`"
+  git push -fu origin core-${old_ref}
+fi
+set -e
+
+git checkout core-${old_ref}
+git checkout -b core-${ref}
 for file in "${app_src_files[@]}"; do
   git checkout "$ref" -- "$file"
 done
 
-if [[ $(git status --porcelain -u no) != '' ]]; then
-  git commit -m "Commit state of \`core\` at \`${ref}\`"
-  git push -fu origin core-${ref}
-  github_diff_url="${github_url}/compare/core-${old_ref}...core-${ref}"
-else
-  github_diff_url="${github_url}/compare/${old_ref}...${ref}"
-fi
+git commit -m "Commit state of \`core\` at \`${ref}\`" --allow-empty
+git push -fu origin core-${ref}
 
 cat <<EOF >> ../body.md
 # Bump galoy image
 
 Code diff contained in this image:
 
-${github_diff_url}
+${github_url}/compare/core-${old_ref}...core-${ref}
 
 The galoy api image will be bumped to digest:
 \`\`\`
