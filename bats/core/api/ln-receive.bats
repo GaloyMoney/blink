@@ -18,7 +18,7 @@ setup_file() {
   fund_user_onchain "$ALICE" 'btc_wallet'
 
   subscribe_to "$ALICE" my-updates-sub
-  sleep 3
+  retry 10 1 subscriber_is_up
 }
 
 teardown_file() {
