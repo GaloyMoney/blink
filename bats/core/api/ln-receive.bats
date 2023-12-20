@@ -6,11 +6,10 @@ load "../../helpers/ledger.bash"
 load "../../helpers/ln.bash"
 load "../../helpers/onchain.bash"
 load "../../helpers/subscriber.bash"
+load "../../helpers/trigger.bash"
 load "../../helpers/user.bash"
 
 ALICE='alice'
-
-TRIGGER_STOP_FILE="$BATS_ROOT_DIR/.stop_trigger"
 
 setup_file() {
   create_user "$ALICE"
@@ -269,6 +268,7 @@ usd_amount=50
 
   # Stop trigger
   touch $TRIGGER_STOP_FILE
+  retry 10 1 trigger_is_stopped || exit 1
 
   # Generate invoice
   variables=$(
@@ -286,7 +286,7 @@ usd_amount=50
 
   # Start trigger
   rm $TRIGGER_STOP_FILE
-  sleep 5
+  retry 10 1 trigger_is_started
 
   # Pay invoice & check for settled
   lnd_outside_cli payinvoice -f \
@@ -302,6 +302,7 @@ usd_amount=50
 
   # Stop trigger
   touch $TRIGGER_STOP_FILE
+  retry 10 1 trigger_is_stopped || exit 1
 
   # Generate invoice
   variables=$(
@@ -319,7 +320,7 @@ usd_amount=50
 
   # Start trigger
   rm $TRIGGER_STOP_FILE
-  sleep 5
+  retry 10 1 trigger_is_started
 
   # Pay invoice & check for settled
   lnd_outside_cli payinvoice -f \
