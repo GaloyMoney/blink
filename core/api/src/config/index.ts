@@ -13,7 +13,7 @@ export * from "./schema"
 import { ConfigError } from "./error"
 
 import { toDays } from "@/domain/primitives"
-import { OnboardingEarn } from "@/app/earn/config"
+import { QuizzesValue } from "@/app/quiz/config"
 
 export const MS_PER_SEC = 1000 as MilliSeconds
 export const MS_PER_5_MINS = (60 * 5 * MS_PER_SEC) as MilliSeconds
@@ -85,7 +85,7 @@ export const getLoopConfig = () => {
 export const memoSharingConfig = {
   memoSharingSatsThreshold: MEMO_SHARING_SATS_THRESHOLD,
   memoSharingCentsThreshold: MEMO_SHARING_CENTS_THRESHOLD,
-  authorizedMemos: Object.keys(OnboardingEarn),
+  authorizedMemos: Object.keys(QuizzesValue),
 } as const
 
 export const getCallbackServiceConfig = (): SvixConfig => {

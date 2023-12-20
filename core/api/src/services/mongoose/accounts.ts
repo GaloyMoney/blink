@@ -1,4 +1,3 @@
-import { OnboardingEarn } from "@/app/earn/config"
 import { parseRepositoryError } from "./utils"
 
 import { AccountStatus } from "@/domain/accounts"
@@ -217,12 +216,6 @@ const translateToAccount = (result: AccountRecord): Account => ({
       disabledCategories: result.notificationSettings?.push?.disabledCategories || [],
     },
   },
-
-  quiz: Object.entries(OnboardingEarn).map(([id, amount]) => ({
-    id: id as QuizQuestionId,
-    amount,
-    completed: result.earn.indexOf(id) > -1,
-  })),
 
   kratosUserId: result.kratosUserId as UserId,
   displayCurrency: (result.displayCurrency || UsdDisplayCurrency) as DisplayCurrency,

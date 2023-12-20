@@ -14,7 +14,7 @@ type CaptchaConfig = {
   mandatory: boolean
 }
 
-type RewardsConfig = {
+type QuizzesConfig = {
   phoneMetadataValidationSettings: PhoneMetadataValidationSettings
   ipMetadataValidationSettings: IpMetadataValidationSettings
 }

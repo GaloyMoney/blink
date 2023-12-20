@@ -7,7 +7,7 @@ export class PhoneCarrierTypeNotAllowedError extends UnauthorizedPhoneError {}
 export class PhoneCountryNotAllowedError extends UnauthorizedPhoneError {}
 
 export class InvalidPhoneForOnboardingError extends UnauthorizedPhoneError {}
-export class InvalidPhoneForRewardError extends UnauthorizedPhoneError {}
+export class InvalidPhoneForQuizError extends UnauthorizedPhoneError {}
 export class InvalidPhoneMetadataForOnboardingError extends UnauthorizedPhoneError {
   level = ErrorLevel.Critical
 }

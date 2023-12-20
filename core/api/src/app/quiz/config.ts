@@ -1,5 +1,4 @@
-// onboarding
-export const OnboardingEarn: Record<QuizQuestionId, Satoshis> = {
+export const QuizzesValue: Record<QuizQuestionId, Satoshis> = {
   walletDownloaded: 1 as Satoshis,
   walletActivated: 1 as Satoshis,
   whatIsBitcoin: 1 as Satoshis,

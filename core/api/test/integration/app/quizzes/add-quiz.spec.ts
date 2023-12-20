@@ -1,11 +1,11 @@
 import crypto from "crypto"
 
-import { Earn } from "@/app"
+import { Quiz } from "@/app"
 
 import { InvalidIpMetadataError } from "@/domain/errors"
 import {
   RateLimiterExceededError,
-  UserAddEarnAttemptIpRateLimiterExceededError,
+  UserAddQuizAttemptIpRateLimiterExceededError,
 } from "@/domain/rate-limit/errors"
 
 import * as RateLimitImpl from "@/services/rate-limit"
@@ -16,9 +16,9 @@ afterEach(async () => {
   jest.restoreAllMocks()
 })
 
-describe("addEarn", () => {
+describe("addQuiz", () => {
   it("fails if ip is undefined", async () => {
-    const result = await Earn.addEarn({
+    const result = await Quiz.completeQuiz({
       accountId: crypto.randomUUID() as AccountId,
       quizQuestionId: "fakeQuizQuestionId",
       ip: undefined,
@@ -33,19 +33,19 @@ describe("addEarn", () => {
       .spyOn(RateLimitImpl, "RedisRateLimitService")
       .mockReturnValue({
         ...RedisRateLimitService({
-          keyPrefix: RateLimitConfig.addEarnAttemptPerIp.key,
-          limitOptions: RateLimitConfig.addEarnAttemptPerIp.limits,
+          keyPrefix: RateLimitConfig.addQuizAttemptPerIp.key,
+          limitOptions: RateLimitConfig.addQuizAttemptPerIp.limits,
         }),
         consume: () => new RateLimiterExceededError(),
       })
 
-    const result = await Earn.addEarn({
+    const result = await Quiz.completeQuiz({
       accountId: crypto.randomUUID() as AccountId,
       quizQuestionId: "fakeQuizQuestionId",
       ip: "192.168.13.13" as IpAddress,
     })
 
-    expect(result).toBeInstanceOf(UserAddEarnAttemptIpRateLimiterExceededError)
+    expect(result).toBeInstanceOf(UserAddQuizAttemptIpRateLimiterExceededError)
 
     // Restore system state
     rateLimitServiceSpy.mockReset()
