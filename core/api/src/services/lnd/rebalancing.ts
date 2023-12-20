@@ -12,6 +12,7 @@ import { LndService } from "."
 import { delayWhile } from "@/utils"
 
 import { baseLogger } from "@/services/logger"
+import { addAttributesToCurrentSpan } from "@/services/tracing"
 
 export const rebalancingInternalChannels = async () => {
   const lndService = LndService()
@@ -57,7 +58,7 @@ export const rebalancingInternalChannels = async () => {
     const amount = Math.abs(diff)
 
     if (diff > 0) {
-      const { request } = await createInvoice({
+      const { id, request } = await createInvoice({
         lnd: selfLnd,
         tokens: amount,
         is_including_private_channels: true,
@@ -66,11 +67,17 @@ export const rebalancingInternalChannels = async () => {
       await payViaPaymentRequest({
         lnd: otherLnd,
         request,
+      })
+
+      addAttributesToCurrentSpan({
+        "payment.request.hash": id,
+        "payment.request.amount": amount,
+        "payment.request": request,
       })
 
       await delayWhile({ func: internalChannelsHavePendingHtlcs, maxRetries: 10 })
     } else if (diff < 0) {
-      const { request } = await createInvoice({
+      const { id, request } = await createInvoice({
         lnd: otherLnd,
         tokens: amount,
         is_including_private_channels: true,
@@ -80,6 +87,13 @@ export const rebalancingInternalChannels = async () => {
         lnd: selfLnd,
         request,
       })
+
+      addAttributesToCurrentSpan({
+        "payment.request.hash": id,
+        "payment.request.amount": amount,
+        "payment.request": request,
+      })
+
       await delayWhile({ func: internalChannelsHavePendingHtlcs, maxRetries: 10 })
     } else {
       baseLogger.info("no rebalancing needed")
