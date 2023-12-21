@@ -7,7 +7,7 @@ import {
 import { PhoneMetadataAuthorizer } from "@/domain/users"
 
 beforeEach(async () => {
-  yamlConfig.rewards = {
+  yamlConfig.quizzes = {
     denyPhoneCountries: ["in"],
     allowPhoneCountries: ["sv", "US"],
     denyIPCountries: [],
