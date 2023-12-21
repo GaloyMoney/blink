@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: removing deprecated earnquestion endpoint (#3733)...'
-      sha: fbcaf2ea97e03095c9a807d4147de292b3a3542d
+      commitTitle: 'chore: update yaml (#3738)...'
+      sha: 51df627f4f74d250930f4d33ea2abefa2f10db79
       tags:
-      - 0.18.27-2-gfbcaf2ea9
+      - 0.18.28-3-g51df627f4
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: removing deprecated earnquestion endpoint (#3733)...'
-      sha: fbcaf2ea97e03095c9a807d4147de292b3a3542d
+      commitTitle: 'chore: update yaml (#3738)...'
+      sha: 51df627f4f74d250930f4d33ea2abefa2f10db79
       tags:
-      - 0.18.27-2-gfbcaf2ea9
+      - 0.18.28-3-g51df627f4
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: removing deprecated earnquestion endpoint (#3733)...'
-      sha: fbcaf2ea97e03095c9a807d4147de292b3a3542d
+      commitTitle: 'chore: update yaml (#3738)...'
+      sha: 51df627f4f74d250930f4d33ea2abefa2f10db79
       tags:
-      - 0.18.27-2-gfbcaf2ea9
+      - 0.18.28-3-g51df627f4
     path: ./
   path: ./graphql
 kind: LockConfig
