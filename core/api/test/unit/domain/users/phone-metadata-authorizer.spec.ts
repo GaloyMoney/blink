@@ -1,4 +1,4 @@
-import { getRewardsConfig, yamlConfig } from "@/config"
+import { getQuizzesConfig, yamlConfig } from "@/config"
 import {
   PhoneCountryNotAllowedError,
   PhoneCarrierTypeNotAllowedError,
@@ -18,8 +18,8 @@ beforeEach(async () => {
   }
 })
 
-const getPhoneMetadataRewardsSettings = () =>
-  getRewardsConfig().phoneMetadataValidationSettings
+const getPhoneMetadataQuizzesSettings = () =>
+  getQuizzesConfig().phoneMetadataValidationSettings
 
 describe("PhoneMetadataAuthorizer - validate", () => {
   it("returns true for empty config", () => {
@@ -42,7 +42,7 @@ describe("PhoneMetadataAuthorizer - validate", () => {
 
   it("returns true for a valid country", () => {
     const authorizersSV = PhoneMetadataAuthorizer(
-      getPhoneMetadataRewardsSettings(),
+      getPhoneMetadataQuizzesSettings(),
     ).authorize({
       carrier: {
         error_code: "",
@@ -56,7 +56,7 @@ describe("PhoneMetadataAuthorizer - validate", () => {
     expect(authorizersSV).toBe(true)
 
     const authorizersSV1 = PhoneMetadataAuthorizer(
-      getPhoneMetadataRewardsSettings(),
+      getPhoneMetadataQuizzesSettings(),
     ).authorize({
       carrier: {
         error_code: "",
@@ -70,7 +70,7 @@ describe("PhoneMetadataAuthorizer - validate", () => {
     expect(authorizersSV1).toBe(true)
 
     const validatorUS = PhoneMetadataAuthorizer(
-      getPhoneMetadataRewardsSettings(),
+      getPhoneMetadataQuizzesSettings(),
     ).authorize({
       carrier: {
         error_code: "",
@@ -102,7 +102,7 @@ describe("PhoneMetadataAuthorizer - validate", () => {
 
   it("returns error for invalid country", () => {
     const validator = PhoneMetadataAuthorizer(
-      getPhoneMetadataRewardsSettings(),
+      getPhoneMetadataQuizzesSettings(),
     ).authorize({
       carrier: {
         error_code: "",
@@ -154,14 +154,14 @@ describe("PhoneMetadataAuthorizer - validate", () => {
 
   it("returns error with undefined metadata", () => {
     const validator = PhoneMetadataAuthorizer(
-      getPhoneMetadataRewardsSettings(),
+      getPhoneMetadataQuizzesSettings(),
     ).authorize(undefined)
     expect(validator).toBeInstanceOf(ExpectedPhoneMetadataMissingError)
   })
 
   it("returns error with voip type", () => {
     const validator = PhoneMetadataAuthorizer(
-      getPhoneMetadataRewardsSettings(),
+      getPhoneMetadataQuizzesSettings(),
     ).authorize({
       carrier: {
         error_code: "",

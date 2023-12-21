@@ -29,7 +29,6 @@ describe("PaymentInputValidator", () => {
     },
     contactEnabled: true,
     contacts: [],
-    quiz: [],
     kratosUserId: "kratosUserId" as UserId,
     displayCurrency: UsdDisplayCurrency,
   }

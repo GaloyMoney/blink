@@ -66,7 +66,7 @@ export class CouldNotFindAccountFromPhoneError extends CouldNotFindError {}
 export class CouldNotFindTransactionsForAccountError extends CouldNotFindError {}
 export class CouldNotFindAccountFromKratosIdError extends CouldNotFindError {}
 
-export class RewardAlreadyPresentError extends DomainError {}
+export class QuizAlreadyPresentError extends DomainError {}
 
 export class NotImplementedError extends DomainError {}
 export class NotReachableError extends DomainError {}
@@ -116,7 +116,7 @@ export class MissingIPMetadataError extends ValidationError {}
 export class InvalidIpMetadataError extends ValidationError {
   level = ErrorLevel.Critical
 }
-export class NotEnoughBalanceForRewardError extends ValidationError {
+export class NotEnoughBalanceForQuizError extends ValidationError {
   level = ErrorLevel.Warn
 }
 

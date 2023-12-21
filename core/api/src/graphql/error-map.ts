@@ -274,7 +274,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
         "Too many login attempts on same network, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
-    case "UserAddEarnAttemptIpRateLimiterExceededError":
+    case "UserAddQuizAttemptIpRateLimiterExceededError":
       message = "Too many attempts, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
@@ -286,13 +286,13 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = "Invalid push notification setting was passed."
       return new ValidationInternalError({ message, logger: baseLogger })
 
-    case "RewardAlreadyPresentError":
-      message = "Reward for quiz question was already claimed."
+    case "QuizAlreadyPresentError":
+      message = "Quiz question was already claimed."
       return new ValidationInternalError({ message, logger: baseLogger })
 
-    case "NotEnoughBalanceForRewardError":
+    case "NotEnoughBalanceForQuizError":
       message =
-        "Rewards wallet temporarily depleted. Please contact support if problem persists."
+        "Quiz wallet temporarily depleted. Please contact support if problem persists."
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "SubOneCentSatAmountForUsdSelfSendError":
@@ -300,8 +300,8 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = "Amount sent was too low for recipient's usd wallet."
       return new ValidationInternalError({ message, logger: baseLogger })
 
-    case "InvalidPhoneForRewardError":
-      message = "Unsupported phone carrier for rewards."
+    case "InvalidPhoneForQuizError":
+      message = "Unsupported phone carrier for quiz."
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "InvalidIpMetadataError":

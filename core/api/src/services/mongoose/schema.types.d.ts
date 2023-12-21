@@ -86,7 +86,6 @@ interface AccountRecord {
   statusHistory: AccountStatusHistory
 
   withdrawFee?: number
-  earn: string[]
   contactEnabled: boolean
   contacts: ContactObjectForUser[]
   created_at: Date
@@ -101,6 +100,12 @@ interface AccountRecord {
 
   // mongoose in-built functions
   save: () => Promise<AccountRecord>
+}
+
+interface QuizRecord {
+  accountId: string
+  quizId: string
+  createdAt: Date
 }
 
 interface AccountIpsRecord {
