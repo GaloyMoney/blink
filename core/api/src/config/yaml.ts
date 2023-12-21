@@ -212,7 +212,7 @@ export const getDeviceAccountCreateAttemptLimits = () =>
 export const getAppcheckJtiAttemptLimits = () =>
   getRateLimits(yamlConfig.rateLimits.requestCodePerAppcheckJti)
 
-export const getAddEarnPerIpLimits = () =>
+export const getAddQuizPerIpLimits = () =>
   getRateLimits(yamlConfig.rateLimits.addQuizPerIp)
 
 export const getOnChainWalletConfig = () => ({
@@ -268,7 +268,7 @@ export const getCronConfig = (config = yamlConfig): CronConfig => config.cronCon
 
 export const getCaptcha = (config = yamlConfig): CaptchaConfig => config.captcha
 
-export const getRewardsConfig = (): RewardsConfig => {
+export const getQuizzesConfig = (): QuizzesConfig => {
   const denyPhoneCountries = yamlConfig.quizzes.denyPhoneCountries || []
   const allowPhoneCountries = yamlConfig.quizzes.allowPhoneCountries || []
   const denyIPCountries = yamlConfig.quizzes.denyIPCountries || []

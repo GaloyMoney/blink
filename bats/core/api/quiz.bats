@@ -14,10 +14,9 @@ setup_file() {
     "alice.btc_wallet_id" \
     "funder.btc_wallet_id" \
     "10000"
-
 }
 
-@test "earn: completes a quiz question and gets paid once" {
+@test "quiz: completes a quiz question and gets paid once" {
   token_name="alice"
   question_id="sat"
 
@@ -29,7 +28,11 @@ setup_file() {
     .balance
   ')
 
-  # Do earn
+  exec_graphql $token_name 'quiz'
+  completed=$(graphql_output '.data.me.defaultAccount.quiz' | jq '.[] | select(.id == "sat") | .completed')
+  [[ "${completed}" == "false" ]] || exit 1
+
+  # Do quiz
     variables=$(
     jq -n \
     --arg question_id "$question_id" \
@@ -41,21 +44,25 @@ setup_file() {
   quiz_completed=$(graphql_output '.data.quizCompleted.quiz.completed')
   [[ "${quiz_completed}" == "true" ]] || exit 1
 
+  exec_graphql $token_name 'quiz'
+  completed=$(graphql_output '.data.me.defaultAccount.quiz' | jq '.[] | select(.id == "sat") | .completed')
+  [[ "${completed}" == "true" ]] || exit 1
+
   # Check balance after complete
   exec_graphql $token_name 'wallets-for-account'
-  btc_balance_after_earn=$(graphql_output '
+  btc_balance_after_quiz=$(graphql_output '
     .data.me.defaultAccount.wallets[]
     | select(.walletCurrency == "BTC")
     .balance
   ')
-  [[ "$btc_balance_after_earn" -gt "$btc_initial_balance" ]] || exit 1
+  [[ "$btc_balance_after_quiz" -gt "$btc_initial_balance" ]] || exit 1
 
   # Check memo
   exec_graphql "$token_name" 'transactions' '{"first": 1}'
   txn_memo=$(graphql_output '.data.me.defaultAccount.transactions.edges[0].node.memo')
   [[ "${txn_memo}" == "${question_id}" ]] || exit 1
 
-  # Retry earn
+  # Retry quiz
   exec_graphql "$token_name" 'quiz-question' "$variables"
   errors=$(graphql_output '.data.quizCompleted.errors')
   [[ "${errors}" != "null" ]] || exit 1
@@ -69,5 +76,5 @@ setup_file() {
     | select(.walletCurrency == "BTC")
     .balance
   ')
-  [[ "$btc_balance_after_retry" == "$btc_balance_after_earn" ]] || exit 1
+  [[ "$btc_balance_after_retry" == "$btc_balance_after_quiz" ]] || exit 1
 }

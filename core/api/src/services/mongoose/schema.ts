@@ -158,10 +158,6 @@ const AccountSchema = new Schema<AccountRecord>(
       type: Date,
       default: Date.now,
     },
-    earn: {
-      type: [String],
-      default: [],
-    },
     role: {
       type: String,
       // FIXME: role is a mix between 2 things here
@@ -306,6 +302,26 @@ AccountSchema.index({
 })
 
 export const Account = mongoose.model<AccountRecord>("Account", AccountSchema)
+
+const QuizSchema = new Schema<QuizRecord>({
+  accountId: {
+    type: String,
+    ref: "Account",
+    required: true,
+  },
+  quizId: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+})
+
+QuizSchema.index({ accountId: 1, quizId: 1 }, { unique: true })
+
+export const Quiz = mongoose.model<QuizRecord>("Quiz", QuizSchema)
 
 const AccountIpsSchema = new Schema<AccountIpsRecord>({
   ip: {

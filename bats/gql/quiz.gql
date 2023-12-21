@@ -1,0 +1,15 @@
+query myQuizQuestions {
+  me {
+    id
+    defaultAccount {
+      id
+      ... on ConsumerAccount {
+        quiz {
+          id
+          amount
+          completed
+        }
+      }
+    }
+  }
+}

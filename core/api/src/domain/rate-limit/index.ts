@@ -8,7 +8,7 @@ import {
   UserCodeAttemptIdentifierRateLimiterExceededError,
   DeviceAccountCreateRateLimiterExceededError,
   UserCodeAttemptAppcheckJtiLimiterExceededError,
-  UserAddEarnAttemptIpRateLimiterExceededError,
+  UserAddQuizAttemptIpRateLimiterExceededError,
 } from "./errors"
 
 import {
@@ -21,7 +21,7 @@ import {
   getRequestCodePerIpLimits,
   getRequestCodePerLoginIdentifierLimits,
   getAppcheckJtiAttemptLimits,
-  getAddEarnPerIpLimits,
+  getAddQuizPerIpLimits,
 } from "@/config"
 
 export const RateLimitPrefix = {
@@ -34,7 +34,7 @@ export const RateLimitPrefix = {
   onChainAddressCreate: "onchain_address_create",
   deviceAccountCreate: "device_account_create",
   requestCodeAttemptPerAppcheckJti: "request_code_attempt_appcheck_jti",
-  addEarnAttemptPerIp: "add_earn_attempt_ip",
+  addQuizAttemptPerIp: "add_quiz_attempt_ip",
 } as const
 
 type RateLimitPrefixKey = keyof typeof RateLimitPrefix
@@ -85,9 +85,9 @@ export const RateLimitConfig: { [key in RateLimitPrefixKey]: RateLimitConfig } =
     limits: getAppcheckJtiAttemptLimits(),
     error: UserCodeAttemptAppcheckJtiLimiterExceededError,
   },
-  addEarnAttemptPerIp: {
-    key: RateLimitPrefix.addEarnAttemptPerIp,
-    limits: getAddEarnPerIpLimits(),
-    error: UserAddEarnAttemptIpRateLimiterExceededError,
+  addQuizAttemptPerIp: {
+    key: RateLimitPrefix.addQuizAttemptPerIp,
+    limits: getAddQuizPerIpLimits(),
+    error: UserAddQuizAttemptIpRateLimiterExceededError,
   },
 }

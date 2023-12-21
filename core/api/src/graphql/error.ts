@@ -381,9 +381,9 @@ export class InvalidPhoneForOnboardingError extends CustomGraphQLError {
 export class UnauthorizedIPMetadataCountryError extends CustomGraphQLError {
   constructor(errData: CustomGraphQLErrorData) {
     super({
-      message: "Country not not authorized for rewards.",
+      message: "Country not not authorized for quizzes.",
       forwardToClient: true,
-      code: "UNAUTHORIZED_COUNTRY_IP_FOR_REWARD",
+      code: "UNAUTHORIZED_COUNTRY_IP_FOR_QUIZZES",
       ...errData,
     })
   }
@@ -392,9 +392,9 @@ export class UnauthorizedIPMetadataCountryError extends CustomGraphQLError {
 export class UnauthorizedIPMetadataProxyError extends CustomGraphQLError {
   constructor(errData: CustomGraphQLErrorData) {
     super({
-      message: "VPN ips are not authorized for rewards.",
+      message: "VPN ips are not authorized for quizzes.",
       forwardToClient: true,
-      code: "UNAUTHORIZED_VPN_IP_FOR_REWARD",
+      code: "UNAUTHORIZED_VPN_IP_FOR_QUIZZES",
       ...errData,
     })
   }
@@ -403,9 +403,9 @@ export class UnauthorizedIPMetadataProxyError extends CustomGraphQLError {
 export class UnauthorizedIPError extends CustomGraphQLError {
   constructor(errData: CustomGraphQLErrorData) {
     super({
-      message: "This ip is unauthorized for rewards.",
+      message: "This ip is unauthorized for quizzes.",
       forwardToClient: true,
-      code: "UNAUTHORIZED_IP_FOR_REWARD",
+      code: "UNAUTHORIZED_IP_FOR_QUIZZES",
       ...errData,
     })
   }

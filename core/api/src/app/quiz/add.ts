@@ -1,6 +1,8 @@
-import { intraledgerPaymentSendWalletIdForBtcWallet } from "./send-intraledger"
+import { intraledgerPaymentSendWalletIdForBtcWallet } from "../payments/send-intraledger"
 
-import { getRewardsConfig, OnboardingEarn } from "@/config"
+import { QuizzesValue } from "@/domain/earn"
+
+import { getQuizzesConfig } from "@/config"
 
 import { getBalanceForWallet } from "@/app/wallets"
 
@@ -9,7 +11,7 @@ import {
   InvalidQuizQuestionIdError,
   MissingIPMetadataError,
   NoBtcWalletExistsForAccountError,
-  NotEnoughBalanceForRewardError,
+  NotEnoughBalanceForQuizError,
   UnauthorizedIPError,
   UnknownRepositoryError,
 } from "@/domain/errors"
@@ -17,13 +19,13 @@ import { WalletCurrency } from "@/domain/shared"
 import { RateLimitConfig } from "@/domain/rate-limit"
 import { checkedToAccountId } from "@/domain/accounts"
 import { PhoneMetadataAuthorizer } from "@/domain/users"
-import { InvalidPhoneForRewardError } from "@/domain/users/errors"
+import { InvalidPhoneForQuizError } from "@/domain/users/errors"
 import { RateLimiterExceededError } from "@/domain/rate-limit/errors"
 import { IPMetadataAuthorizer } from "@/domain/accounts-ips/ip-metadata-authorizer"
 
 import {
   AccountsRepository,
-  RewardsRepository,
+  QuizRepository,
   WalletsRepository,
   UsersRepository,
 } from "@/services/mongoose"
@@ -31,7 +33,7 @@ import { consumeLimiter } from "@/services/rate-limit"
 import { getFunderWalletId } from "@/services/ledger/caching"
 import { AccountsIpsRepository } from "@/services/mongoose/accounts-ips"
 
-export const addEarn = async ({
+export const completeQuiz = async ({
   quizQuestionId: quizQuestionIdString,
   accountId: accountIdRaw,
   ip,
@@ -40,18 +42,18 @@ export const addEarn = async ({
   accountId: string
   ip: IpAddress | undefined
 }): Promise<QuizQuestion | ApplicationError> => {
-  const check = await checkAddEarnAttemptPerIpLimits(ip)
+  const check = await checkAddQuizAttemptPerIpLimits(ip)
   if (check instanceof Error) return check
 
   const accountId = checkedToAccountId(accountIdRaw)
   if (accountId instanceof Error) return accountId
 
-  const rewardsConfig = getRewardsConfig()
+  const quizzesConfig = getQuizzesConfig()
 
   // TODO: quizQuestionId checkedFor
-  const quizQuestionId = quizQuestionIdString as QuizQuestionId
+  const quizId = quizQuestionIdString as QuizQuestionId
 
-  const amount = OnboardingEarn[quizQuestionId]
+  const amount = QuizzesValue[quizId]
   if (!amount) return new InvalidQuizQuestionIdError()
 
   const funderWalletId = await getFunderWalletId()
@@ -67,18 +69,18 @@ export const addEarn = async ({
   if (user instanceof Error) return user
 
   const validatedPhoneMetadata = PhoneMetadataAuthorizer(
-    rewardsConfig.phoneMetadataValidationSettings,
+    quizzesConfig.phoneMetadataValidationSettings,
   ).authorize(user.phoneMetadata)
 
   if (validatedPhoneMetadata instanceof Error) {
-    return new InvalidPhoneForRewardError(validatedPhoneMetadata.name)
+    return new InvalidPhoneForQuizError(validatedPhoneMetadata.name)
   }
 
   const accountIP = await AccountsIpsRepository().findLastByAccountId(recipientAccount.id)
   if (accountIP instanceof Error) return accountIP
 
   const validatedIPMetadata = IPMetadataAuthorizer(
-    rewardsConfig.ipMetadataValidationSettings,
+    quizzesConfig.ipMetadataValidationSettings,
   ).authorize(accountIP.metadata)
   if (validatedIPMetadata instanceof Error) {
     if (validatedIPMetadata instanceof MissingIPMetadataError)
@@ -86,7 +88,7 @@ export const addEarn = async ({
 
     if (validatedIPMetadata instanceof UnauthorizedIPError) return validatedIPMetadata
 
-    return new UnknownRepositoryError("add earn error")
+    return new UnknownRepositoryError("add quiz error")
   }
 
   const recipientWallets = await WalletsRepository().listByAccountId(accountId)
@@ -98,8 +100,8 @@ export const addEarn = async ({
   if (recipientBtcWallet === undefined) return new NoBtcWalletExistsForAccountError()
   const recipientWalletId = recipientBtcWallet.id
 
-  const shouldGiveReward = await RewardsRepository(accountId).add(quizQuestionId)
-  if (shouldGiveReward instanceof Error) return shouldGiveReward
+  const shouldGiveSats = await QuizRepository().add({ quizId, accountId })
+  if (shouldGiveSats instanceof Error) return shouldGiveSats
 
   const funderBalance = await getBalanceForWallet({ walletId: funderWalletId })
   if (funderBalance instanceof Error) return funderBalance
@@ -114,21 +116,21 @@ export const addEarn = async ({
     senderWalletId: funderWalletId,
     recipientWalletId,
     amount,
-    memo: quizQuestionId,
+    memo: quizId,
     senderAccount: funderAccount,
   })
   if (payment instanceof Error) return payment
 
-  return { id: quizQuestionId, earnAmount: amount }
+  return { id: quizId, earnAmount: amount }
 }
 
-const checkAddEarnAttemptPerIpLimits = async (
+const checkAddQuizAttemptPerIpLimits = async (
   ip: IpAddress | undefined,
 ): Promise<true | RateLimiterExceededError> => {
   if (!ip) return new InvalidIpMetadataError()
 
   return consumeLimiter({
-    rateLimitConfig: RateLimitConfig.addEarnAttemptPerIp,
+    rateLimitConfig: RateLimitConfig.addQuizAttemptPerIp,
     keyToConsume: ip,
   })
 }
@@ -142,7 +144,7 @@ const FunderBalanceChecker = () => {
     amountToSend: Satoshis
   }): ValidationError | true => {
     if (balance < amountToSend) {
-      return new NotEnoughBalanceForRewardError(JSON.stringify({ balance, amountToSend }))
+      return new NotEnoughBalanceForQuizError(JSON.stringify({ balance, amountToSend }))
     }
 
     return true
