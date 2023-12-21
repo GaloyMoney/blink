@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3002",
-    "start": "next start",
+    "start": "next start -p 3002",
     "build": "next build",
     "lint:fix": "eslint --fix --ext .ts,.tsx .",
     "codegen": "graphql-codegen --config codegen.yml",
