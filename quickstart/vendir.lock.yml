@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: earn migration part 2 (#3740)...'
-      sha: e7393fcb454fb444bbdca83cd746dfe8ea366083
+      commitTitle: 'test: move ln tests to top level bats (#3719)...'
+      sha: 4e405964ec8c305a44c1cdffafd44c8d11a417f9
       tags:
-      - 0.19.0-2-ge7393fcb4
+      - 0.19.1-2-g4e405964e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: earn migration part 2 (#3740)...'
-      sha: e7393fcb454fb444bbdca83cd746dfe8ea366083
+      commitTitle: 'test: move ln tests to top level bats (#3719)...'
+      sha: 4e405964ec8c305a44c1cdffafd44c8d11a417f9
       tags:
-      - 0.19.0-2-ge7393fcb4
+      - 0.19.1-2-g4e405964e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: earn migration part 2 (#3740)...'
-      sha: e7393fcb454fb444bbdca83cd746dfe8ea366083
+      commitTitle: 'test: move ln tests to top level bats (#3719)...'
+      sha: 4e405964ec8c305a44c1cdffafd44c8d11a417f9
       tags:
-      - 0.19.0-2-ge7393fcb4
+      - 0.19.1-2-g4e405964e
     path: ./
   path: ./graphql
 kind: LockConfig
