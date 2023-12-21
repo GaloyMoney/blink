@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: update yaml (#3738)...'
-      sha: 51df627f4f74d250930f4d33ea2abefa2f10db79
+      commitTitle: 'chore!: refactoring quiz for it to be time based (#3732)...'
+      sha: acfcd79ff54e19a802d1bd21f969fd366e2c451b
       tags:
-      - 0.18.28-3-g51df627f4
+      - 0.18.29-1-gacfcd79ff
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: update yaml (#3738)...'
-      sha: 51df627f4f74d250930f4d33ea2abefa2f10db79
+      commitTitle: 'chore!: refactoring quiz for it to be time based (#3732)...'
+      sha: acfcd79ff54e19a802d1bd21f969fd366e2c451b
       tags:
-      - 0.18.28-3-g51df627f4
+      - 0.18.29-1-gacfcd79ff
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: update yaml (#3738)...'
-      sha: 51df627f4f74d250930f4d33ea2abefa2f10db79
+      commitTitle: 'chore!: refactoring quiz for it to be time based (#3732)...'
+      sha: acfcd79ff54e19a802d1bd21f969fd366e2c451b
       tags:
-      - 0.18.28-3-g51df627f4
+      - 0.18.29-1-gacfcd79ff
     path: ./
   path: ./graphql
 kind: LockConfig
