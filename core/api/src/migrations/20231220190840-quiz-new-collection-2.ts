@@ -7,5 +7,11 @@ module.exports = {
       .collection("accounts")
       .updateMany({}, { $unset: { earn: 1 } }, { multi: true })
     console.log({ res }, `end earn removal`)
+
+    console.log("renaming createdAt")
+    const res2 = await db
+      .collection("quizzes")
+      .updateMany({}, { $rename: { createAt: "createdAt" } })
+    console.log({ res2 }, `end renaming createdAt"`)
   },
 }
