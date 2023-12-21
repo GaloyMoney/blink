@@ -107,7 +107,7 @@ export const configSchema = {
       required: ["ios", "android"],
       additionalProperties: false,
     },
-    rewards: {
+    quizzes: {
       type: "object",
       properties: {
         enableIpProxyCheck: { type: "boolean" },
@@ -265,7 +265,7 @@ export const configSchema = {
         onChainAddressCreateAttempt: rateLimitConfigSchema,
         deviceAccountCreateAttempt: rateLimitConfigSchema,
         requestCodePerAppcheckJti: rateLimitConfigSchema,
-        addEarnPerIp: rateLimitConfigSchema,
+        addQuizPerIp: rateLimitConfigSchema,
       },
       required: [
         "requestCodePerLoginIdentifier",
@@ -277,7 +277,7 @@ export const configSchema = {
         "onChainAddressCreateAttempt",
         "deviceAccountCreateAttempt",
         "requestCodePerAppcheckJti",
-        "addEarnPerIp",
+        "addQuizPerIp",
       ],
       additionalProperties: false,
       default: {
@@ -326,7 +326,7 @@ export const configSchema = {
           duration: 3600,
           blockDuration: 3600,
         },
-        addEarnPerIp: {
+        addQuizPerIp: {
           points: 125,
           duration: 86400,
           blockDuration: 604800,
@@ -645,7 +645,7 @@ export const configSchema = {
     "dealer",
     "ratioPrecision",
     "buildVersion",
-    "rewards",
+    "quizzes",
     "coldStorage",
     "bria",
     "lndScbBackupBucketName",

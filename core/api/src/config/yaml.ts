@@ -213,7 +213,7 @@ export const getAppcheckJtiAttemptLimits = () =>
   getRateLimits(yamlConfig.rateLimits.requestCodePerAppcheckJti)
 
 export const getAddEarnPerIpLimits = () =>
-  getRateLimits(yamlConfig.rateLimits.addEarnPerIp)
+  getRateLimits(yamlConfig.rateLimits.addQuizPerIp)
 
 export const getOnChainWalletConfig = () => ({
   dustThreshold: yamlConfig.onChainWallet.dustThreshold,
@@ -269,12 +269,12 @@ export const getCronConfig = (config = yamlConfig): CronConfig => config.cronCon
 export const getCaptcha = (config = yamlConfig): CaptchaConfig => config.captcha
 
 export const getRewardsConfig = (): RewardsConfig => {
-  const denyPhoneCountries = yamlConfig.rewards.denyPhoneCountries || []
-  const allowPhoneCountries = yamlConfig.rewards.allowPhoneCountries || []
-  const denyIPCountries = yamlConfig.rewards.denyIPCountries || []
-  const allowIPCountries = yamlConfig.rewards.allowIPCountries || []
-  const denyASNs = yamlConfig.rewards.denyASNs || []
-  const allowASNs = yamlConfig.rewards.allowASNs || []
+  const denyPhoneCountries = yamlConfig.quizzes.denyPhoneCountries || []
+  const allowPhoneCountries = yamlConfig.quizzes.allowPhoneCountries || []
+  const denyIPCountries = yamlConfig.quizzes.denyIPCountries || []
+  const allowIPCountries = yamlConfig.quizzes.allowIPCountries || []
+  const denyASNs = yamlConfig.quizzes.denyASNs || []
+  const allowASNs = yamlConfig.quizzes.allowASNs || []
 
   return {
     phoneMetadataValidationSettings: {
@@ -286,7 +286,7 @@ export const getRewardsConfig = (): RewardsConfig => {
       allowCountries: allowIPCountries.map((c) => c.toUpperCase()),
       denyASNs: denyASNs.map((c) => c.toUpperCase()),
       allowASNs: allowASNs.map((c) => c.toUpperCase()),
-      checkProxy: yamlConfig.rewards.enableIpProxyCheck,
+      checkProxy: yamlConfig.quizzes.enableIpProxyCheck,
     },
   }
 }

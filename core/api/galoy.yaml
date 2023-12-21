@@ -18,7 +18,7 @@ buildVersion:
   ios:
     minBuildNumber: 362
     lastBuildNumber: 362
-rewards:
+quizzes:
   enableIpProxyCheck: true
   allowPhoneCountries: []
   denyPhoneCountries: []
@@ -83,7 +83,7 @@ rateLimits:
     points: 3
     duration: 3600
     blockDuration: 3600
-  addEarnPerIp:
+  addQuizPerIp:
     points: 125
     duration: 86400
     blockDuration: 604800
