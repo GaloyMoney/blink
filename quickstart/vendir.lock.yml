@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore!: refactoring quiz for it to be time based (#3732)...'
-      sha: acfcd79ff54e19a802d1bd21f969fd366e2c451b
+      commitTitle: 'chore: earn migration part 2 (#3740)...'
+      sha: e7393fcb454fb444bbdca83cd746dfe8ea366083
       tags:
-      - 0.18.29-1-gacfcd79ff
+      - 0.19.0-2-ge7393fcb4
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore!: refactoring quiz for it to be time based (#3732)...'
-      sha: acfcd79ff54e19a802d1bd21f969fd366e2c451b
+      commitTitle: 'chore: earn migration part 2 (#3740)...'
+      sha: e7393fcb454fb444bbdca83cd746dfe8ea366083
       tags:
-      - 0.18.29-1-gacfcd79ff
+      - 0.19.0-2-ge7393fcb4
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore!: refactoring quiz for it to be time based (#3732)...'
-      sha: acfcd79ff54e19a802d1bd21f969fd366e2c451b
+      commitTitle: 'chore: earn migration part 2 (#3740)...'
+      sha: e7393fcb454fb444bbdca83cd746dfe8ea366083
       tags:
-      - 0.18.29-1-gacfcd79ff
+      - 0.19.0-2-ge7393fcb4
     path: ./
   path: ./graphql
 kind: LockConfig
