@@ -36,7 +36,7 @@ type YamlSchema = {
     android: BuildNumberInput
     ios: BuildNumberInput
   }
-  rewards: {
+  quizzes: {
     enableIpProxyCheck: boolean
     denyPhoneCountries: string[]
     allowPhoneCountries: string[]
@@ -79,7 +79,7 @@ type YamlSchema = {
     onChainAddressCreateAttempt: RateLimitInput
     deviceAccountCreateAttempt: RateLimitInput
     requestCodePerAppcheckJti: RateLimitInput
-    addEarnPerIp: RateLimitInput
+    addQuizPerIp: RateLimitInput
   }
   accounts: {
     initialStatus: string
