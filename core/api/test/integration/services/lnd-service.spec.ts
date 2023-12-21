@@ -306,7 +306,7 @@ describe("Lnd", () => {
       expect(paid).toBeInstanceOf(RouteNotFoundError)
     })
 
-    it("probes across route with fee higher than payment amount", async () => {
+    it("fails to probe across route with fee higher than payment amount", async () => {
       const amountInvoice = 1
 
       // Change channel policy
@@ -350,9 +350,9 @@ describe("Lnd", () => {
       // Confirm payment exists in lnd
       const retrievedPayment = await lndService.lookupPayment({ paymentHash })
       expect(retrievedPayment).not.toBeInstanceOf(Error)
-      if (retrievedPayment instanceof Error) return retrievedPayment
+      if (retrievedPayment instanceof Error) throw retrievedPayment
       expect(retrievedPayment.status).toBe(PaymentStatus.Settled)
-      if (retrievedPayment.status !== PaymentStatus.Settled) return
+      if (retrievedPayment.status !== PaymentStatus.Settled) throw new Error()
       expect(retrievedPayment.confirmedDetails?.revealedPreImage).toBe(revealedPreImage)
 
       // Delete payment
