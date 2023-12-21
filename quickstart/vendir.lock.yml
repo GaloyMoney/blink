@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: move ln tests to top level bats (#3719)...'
-      sha: 4e405964ec8c305a44c1cdffafd44c8d11a417f9
+      commitTitle: 'chore(core): add additional span attrs to rebalance (#3737)'
+      sha: 54836c30044823489574c43d1f594cc113762362
       tags:
-      - 0.19.1-2-g4e405964e
+      - 0.19.1-4-g54836c300
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: move ln tests to top level bats (#3719)...'
-      sha: 4e405964ec8c305a44c1cdffafd44c8d11a417f9
+      commitTitle: 'chore(core): add additional span attrs to rebalance (#3737)'
+      sha: 54836c30044823489574c43d1f594cc113762362
       tags:
-      - 0.19.1-2-g4e405964e
+      - 0.19.1-4-g54836c300
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test: move ln tests to top level bats (#3719)...'
-      sha: 4e405964ec8c305a44c1cdffafd44c8d11a417f9
+      commitTitle: 'chore(core): add additional span attrs to rebalance (#3737)'
+      sha: 54836c30044823489574c43d1f594cc113762362
       tags:
-      - 0.19.1-2-g4e405964e
+      - 0.19.1-4-g54836c300
     path: ./
   path: ./graphql
 kind: LockConfig
