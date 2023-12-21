@@ -21,7 +21,7 @@ jobs:
             //core/api-keys //apps/dashboard //apps/consent //apps/pay
       - name: Run bats tests
         run: |
-          nix develop -c bats --setup-suite-file bats/ci_setup_suite.bash -t bats/core/**
+          . ./.env && nix develop -c bats --setup-suite-file bats/ci_setup_suite.bash -t bats/core/**
       - name: Rename Tilt log
         if: always()
         run: mv bats/.e2e-tilt.log bats/e2e-tilt.log
