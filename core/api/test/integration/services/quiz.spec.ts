@@ -5,32 +5,32 @@ import { QuizRepository } from "@/services/mongoose"
 
 describe("QuizRepository", () => {
   const accountId = crypto.randomUUID() as AccountId
-  const quizQuestionId = "fakeQuizQuestionId" as QuizQuestionId
+  const quizId = "fakeQuizQuestionId" as QuizQuestionId
 
   it("add quiz", async () => {
-    const result = await QuizRepository(accountId).add(quizQuestionId)
+    const result = await QuizRepository().add({ quizId, accountId })
     expect(result).toBe(true)
   })
 
   it("can't add quiz twice", async () => {
-    const result = await QuizRepository(accountId).add(quizQuestionId)
+    const result = await QuizRepository().add({ quizId, accountId })
     expect(result).toBeInstanceOf(QuizAlreadyPresentError)
   })
 
   it("fetch quiz", async () => {
-    const result = await QuizRepository(accountId).fetchAll()
+    const result = await QuizRepository().fetchAll(accountId)
     expect(result).toHaveLength(1)
   })
 
   it("fetch quizzes", async () => {
     const quiz2 = "fakeQuizQuestionId2" as QuizQuestionId
-    await QuizRepository(accountId).add(quiz2)
+    await QuizRepository().add({ accountId, quizId: quiz2 })
 
-    const result = await QuizRepository(accountId).fetchAll()
+    const result = await QuizRepository().fetchAll(accountId)
     expect(result).toMatchObject([
       {
         accountId,
-        quizId: quizQuestionId,
+        quizId: quizId,
       },
       {
         accountId,

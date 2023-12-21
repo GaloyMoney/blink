@@ -51,9 +51,9 @@ export const completeQuiz = async ({
   const quizzesConfig = getQuizzesConfig()
 
   // TODO: quizQuestionId checkedFor
-  const quizQuestionId = quizQuestionIdString as QuizQuestionId
+  const quizId = quizQuestionIdString as QuizQuestionId
 
-  const amount = QuizzesValue[quizQuestionId]
+  const amount = QuizzesValue[quizId]
   if (!amount) return new InvalidQuizQuestionIdError()
 
   const funderWalletId = await getFunderWalletId()
@@ -100,7 +100,7 @@ export const completeQuiz = async ({
   if (recipientBtcWallet === undefined) return new NoBtcWalletExistsForAccountError()
   const recipientWalletId = recipientBtcWallet.id
 
-  const shouldGiveSats = await QuizRepository(accountId).add(quizQuestionId)
+  const shouldGiveSats = await QuizRepository().add({ quizId, accountId })
   if (shouldGiveSats instanceof Error) return shouldGiveSats
 
   const funderBalance = await getBalanceForWallet({ walletId: funderWalletId })
@@ -116,12 +116,12 @@ export const completeQuiz = async ({
     senderWalletId: funderWalletId,
     recipientWalletId,
     amount,
-    memo: quizQuestionId,
+    memo: quizId,
     senderAccount: funderAccount,
   })
   if (payment instanceof Error) return payment
 
-  return { id: quizQuestionId, earnAmount: amount }
+  return { id: quizId, earnAmount: amount }
 }
 
 const checkAddQuizAttemptPerIpLimits = async (

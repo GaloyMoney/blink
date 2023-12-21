@@ -2,7 +2,7 @@ import { QuizzesValue } from "@/domain/earn/config"
 import { QuizRepository } from "@/services/mongoose"
 
 export const getQuizzesByAccountId = async (accountId: AccountId) => {
-  const quizzes = await QuizRepository(accountId).fetchAll()
+  const quizzes = await QuizRepository().fetchAll(accountId)
   if (quizzes instanceof Error) return quizzes
 
   const solvedQuizId = quizzes.map((quiz) => quiz.quizId)

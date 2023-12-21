@@ -6,8 +6,14 @@ interface ExtendedError extends Error {
   code?: number
 }
 
-export const QuizRepository = (accountId: AccountId) => {
-  const add = async (quizId: QuizQuestionId) => {
+export const QuizRepository = () => {
+  const add = async ({
+    quizId,
+    accountId,
+  }: {
+    quizId: QuizQuestionId
+    accountId: AccountId
+  }) => {
     try {
       await Quiz.create({ accountId, quizId })
 
@@ -22,7 +28,7 @@ export const QuizRepository = (accountId: AccountId) => {
     }
   }
 
-  const fetchAll = async () => {
+  const fetchAll = async (accountId: AccountId) => {
     try {
       const result = await Quiz.find({ accountId })
       return result
