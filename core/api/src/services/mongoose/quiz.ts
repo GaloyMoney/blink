@@ -24,7 +24,7 @@ export const QuizRepository = () => {
         if (error?.code === 11000) return new QuizAlreadyPresentError()
       }
 
-      return new UnknownRepositoryError("quiz issue")
+      return new UnknownRepositoryError(err)
     }
   }
 
@@ -33,7 +33,7 @@ export const QuizRepository = () => {
       const result = await Quiz.find({ accountId })
       return result
     } catch (err) {
-      return new UnknownRepositoryError("quiz issue")
+      return new UnknownRepositoryError(err)
     }
   }
 
