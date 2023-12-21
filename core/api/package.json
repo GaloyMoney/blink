@@ -91,6 +91,7 @@
     "libphonenumber-js": "^1.10.51",
     "lightning": "^10.2.0",
     "ln-service": "^57.2.0",
+    "lnurl-pay": "^3.0.1",
     "lodash.debounce": "^4.0.8",
     "lodash.groupby": "^4.6.0",
     "lodash.map": "^4.6.0",
