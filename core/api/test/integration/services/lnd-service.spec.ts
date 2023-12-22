@@ -1,8 +1,11 @@
 import {
   createInvoice,
+  deleteForwardingReputations,
   getChannel,
   getChannels,
-  deleteForwardingReputations,
+  LightningError as LnError,
+  payViaPaymentDetails,
+  payViaRoutes,
 } from "lightning"
 
 import { LND1_PUBKEY } from "@/config"
@@ -20,12 +23,14 @@ import {
 import { LnFees } from "@/domain/payments"
 
 import { LndService } from "@/services/lnd"
+import { parseLndErrorDetails } from "@/services/lnd/config"
 
 import { sleep } from "@/utils"
 
 import {
   bitcoindClient,
   fundLnd,
+  getError,
   lnd1,
   lndOutside1,
   lndOutside2,
@@ -209,160 +214,281 @@ afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
-describe("LndService", () => {
-  const lndService = LndService()
-  if (lndService instanceof Error) throw lndService
+describe("Lnd", () => {
+  describe("LndService", () => {
+    const lndService = LndService()
+    if (lndService instanceof Error) throw lndService
 
-  it("fails when repaying invoice", async () => {
-    // Create invoice
-    const { request } = await createInvoice({
-      lnd: lndOutside1,
-      tokens: amountInvoice,
-    })
-    const lnInvoice = decodeInvoice(request)
-    if (lnInvoice instanceof Error) throw lnInvoice
+    it("fails when repaying invoice", async () => {
+      // Create invoice
+      const { request } = await createInvoice({
+        lnd: lndOutside1,
+        tokens: amountInvoice,
+      })
+      const lnInvoice = decodeInvoice(request)
+      if (lnInvoice instanceof Error) throw lnInvoice
 
-    const paid = await lndService.payInvoiceViaPaymentDetails({
-      decodedInvoice: lnInvoice,
-      btcPaymentAmount,
-      maxFeeAmount: undefined,
-    })
-    if (paid instanceof Error) throw paid
-    expect(paid.revealedPreImage).toHaveLength(64)
+      const paid = await lndService.payInvoiceViaPaymentDetails({
+        decodedInvoice: lnInvoice,
+        btcPaymentAmount,
+        maxFeeAmount: undefined,
+      })
+      if (paid instanceof Error) throw paid
+      expect(paid.revealedPreImage).toHaveLength(64)
 
-    const retryPaid = await lndService.payInvoiceViaPaymentDetails({
-      decodedInvoice: lnInvoice,
-      btcPaymentAmount,
-      maxFeeAmount: undefined,
+      const retryPaid = await lndService.payInvoiceViaPaymentDetails({
+        decodedInvoice: lnInvoice,
+        btcPaymentAmount,
+        maxFeeAmount: undefined,
+      })
+      expect(retryPaid).toBeInstanceOf(LnAlreadyPaidError)
     })
-    expect(retryPaid).toBeInstanceOf(LnAlreadyPaidError)
+
+    it("fails to pay when channel capacity exceeded", async () => {
+      const { request } = await createInvoice({ lnd: lndOutside1, tokens: 1500000 })
+      const lnInvoice = decodeInvoice(request)
+      if (lnInvoice instanceof Error) throw lnInvoice
+
+      const paid = await lndService.payInvoiceViaPaymentDetails({
+        decodedInvoice: lnInvoice,
+        btcPaymentAmount,
+        maxFeeAmount: undefined,
+      })
+      expect(paid).toBeInstanceOf(PaymentRejectedByDestinationError)
+    })
+
+    it("pay invoice with High CLTV Delta", async () => {
+      // Create invoice
+      const { request } = await createInvoice({
+        lnd: lndOutside1,
+        tokens: amountInvoice,
+        cltv_delta: 200,
+      })
+      const lnInvoice = decodeInvoice(request)
+      if (lnInvoice instanceof Error) throw lnInvoice
+
+      const paid = await lndService.payInvoiceViaPaymentDetails({
+        decodedInvoice: lnInvoice,
+        btcPaymentAmount,
+        maxFeeAmount: undefined,
+      })
+      if (paid instanceof Error) throw paid
+      expect(paid.revealedPreImage).toHaveLength(64)
+    })
+
+    it("pays high fee route with no max limit", async () => {
+      const lnInvoice = await createPrivateInvoice({
+        lnd: lndOutside2,
+      })
+
+      const paid = await lndService.payInvoiceViaPaymentDetails({
+        decodedInvoice: lnInvoice,
+        btcPaymentAmount,
+        maxFeeAmount: undefined,
+      })
+      if (paid instanceof Error) throw paid
+      expect(paid.revealedPreImage).toHaveLength(64)
+      expect(paid.roundedUpFee).toEqual(
+        Number(btcPaymentAmount.amount) * ROUTE_PPM_PERCENT,
+      )
+    })
+
+    it("fails to pay high fee route with max limit set", async () => {
+      const lnInvoice = await createPrivateInvoice({
+        lnd: lndOutside2,
+      })
+
+      const paid = await lndService.payInvoiceViaPaymentDetails({
+        decodedInvoice: lnInvoice,
+        btcPaymentAmount,
+        maxFeeAmount: LnFees().maxProtocolAndBankFee(btcPaymentAmount),
+      })
+      expect(paid).toBeInstanceOf(RouteNotFoundError)
+    })
+
+    it("fails to probe across route with fee higher than payment amount", async () => {
+      const amountInvoice = 1
+
+      // Change channel policy
+      await setFeesOnChannel({
+        localLnd: lndOutside1,
+        partnerLnd: lndOutside2,
+        base: 10,
+        rate: ROUTE_PPM_RATE,
+      })
+
+      // Create invoice
+      const lnInvoice = await createPrivateInvoice({
+        lnd: lndOutside2,
+        tokens: amountInvoice,
+      })
+
+      // Execute probe and check result
+      const probed = await lndService.findRouteForInvoice({
+        invoice: lnInvoice,
+      })
+      expect(probed).toBeInstanceOf(RouteNotFoundError)
+
+      // Reset lnd mission control
+      await deleteForwardingReputations({ lnd: lnd1 })
+    })
+
+    it("deletes payment", async () => {
+      const { request, secret } = await createInvoice({ lnd: lndOutside1 })
+      const revealedPreImage = secret as RevealedPreImage
+      const lnInvoice = decodeInvoice(request)
+      if (lnInvoice instanceof Error) throw lnInvoice
+      const { paymentHash } = lnInvoice
+
+      const paid = await lndService.payInvoiceViaPaymentDetails({
+        decodedInvoice: lnInvoice,
+        btcPaymentAmount,
+        maxFeeAmount: undefined,
+      })
+      if (paid instanceof Error) throw paid
+
+      // Confirm payment exists in lnd
+      const retrievedPayment = await lndService.lookupPayment({ paymentHash })
+      expect(retrievedPayment).not.toBeInstanceOf(Error)
+      if (retrievedPayment instanceof Error) throw retrievedPayment
+      expect(retrievedPayment.status).toBe(PaymentStatus.Settled)
+      if (retrievedPayment.status !== PaymentStatus.Settled) throw new Error()
+      expect(retrievedPayment.confirmedDetails?.revealedPreImage).toBe(revealedPreImage)
+
+      // Delete payment
+      const deleted = await lndService.deletePaymentByHash({
+        paymentHash,
+        pubkey: LND1_PUBKEY,
+      })
+      expect(deleted).not.toBeInstanceOf(Error)
+
+      // Check that payment no longer exists
+      const retrievedDeletedPayment = await lndService.lookupPayment({ paymentHash })
+      expect(retrievedDeletedPayment).toBeInstanceOf(PaymentNotFoundError)
+
+      // Check that deleting missing payment doesn't return error
+      const deletedAttempt = await lndService.deletePaymentByHash({
+        paymentHash,
+        pubkey: LND1_PUBKEY,
+      })
+      expect(deletedAttempt).not.toBeInstanceOf(Error)
+    })
   })
 
-  it("fails to pay when channel capacity exceeded", async () => {
-    const { request } = await createInvoice({ lnd: lndOutside1, tokens: 1500000 })
-    const lnInvoice = decodeInvoice(request)
-    if (lnInvoice instanceof Error) throw lnInvoice
+  describe("'lightning' library error handling", () => {
+    // Test construction taken from:
+    // https://github.com/alexbosworth/lightning/blob/edcaf671e6a0bd2d8f8aa39b51ef816b2a633560/test/lnd_methods/offchain/test_pay_via_routes.js#L28
+    it("parses error message when no additional details are found", async () => {
+      const payArgs = { id: "id", lnd: lnd1, routes: [] }
+      const err = await getError<LnError>(() => payViaRoutes(payArgs))
+      expect(err).toHaveLength(2)
+      expect(err[0]).toEqual(400)
 
-    const paid = await lndService.payInvoiceViaPaymentDetails({
-      decodedInvoice: lnInvoice,
-      btcPaymentAmount,
-      maxFeeAmount: undefined,
-    })
-    expect(paid).toBeInstanceOf(PaymentRejectedByDestinationError)
-  })
-
-  it("pay invoice with High CLTV Delta", async () => {
-    // Create invoice
-    const { request } = await createInvoice({
-      lnd: lndOutside1,
-      tokens: amountInvoice,
-      cltv_delta: 200,
-    })
-    const lnInvoice = decodeInvoice(request)
-    if (lnInvoice instanceof Error) throw lnInvoice
-
-    const paid = await lndService.payInvoiceViaPaymentDetails({
-      decodedInvoice: lnInvoice,
-      btcPaymentAmount,
-      maxFeeAmount: undefined,
-    })
-    if (paid instanceof Error) throw paid
-    expect(paid.revealedPreImage).toHaveLength(64)
-  })
-
-  it("pays high fee route with no max limit", async () => {
-    const lnInvoice = await createPrivateInvoice({
-      lnd: lndOutside2,
+      const parsedErr = parseLndErrorDetails(err)
+      expect(parsedErr).toBe("ExpectedStandardHexPaymentHashId")
     })
 
-    const paid = await lndService.payInvoiceViaPaymentDetails({
-      decodedInvoice: lnInvoice,
-      btcPaymentAmount,
-      maxFeeAmount: undefined,
+    it("parses error message from err object", async () => {
+      const { request } = await createInvoice({
+        lnd: lndOutside1,
+        tokens: 1000,
+      })
+      const decodedInvoice = decodeInvoice(request as EncodedPaymentRequest)
+      expect(decodedInvoice).not.toBeInstanceOf(Error)
+      if (decodedInvoice instanceof Error) throw decodedInvoice
+
+      const paymentDetailsArgs = {
+        lnd: lnd1,
+        id: decodedInvoice.paymentHash,
+        destination: decodedInvoice.destination,
+        mtokens: decodedInvoice.milliSatsAmount.toString(),
+        payment: decodedInvoice.paymentSecret as string,
+        cltv_delta: decodedInvoice.cltvDelta || undefined,
+        features: decodedInvoice.features
+          ? decodedInvoice.features.map((f) => ({
+              bit: f.bit,
+              is_required: f.isRequired,
+              type: f.type,
+            }))
+          : undefined,
+        routes: [],
+      }
+
+      await payViaPaymentDetails(paymentDetailsArgs)
+
+      const err = await getError<LnError>(() => payViaPaymentDetails(paymentDetailsArgs))
+      expect(err).toHaveLength(3)
+      expect(err[0]).toEqual(503)
+      expect(err[1]).toBe("UnexpectedPaymentError")
+      expect(err[2]).toHaveProperty("err")
+      expect(err[2]).not.toHaveProperty("failures")
+
+      const nestedErrObj = err[2].err
+      expect(nestedErrObj).toBeInstanceOf(Error)
+      expect(nestedErrObj).toHaveProperty("code")
+      expect(nestedErrObj).toHaveProperty("metadata")
+
+      const expectedDetails = "invoice is already paid"
+      expect(nestedErrObj).toHaveProperty("details", expectedDetails)
+
+      const parsedErr = parseLndErrorDetails(err)
+      expect(parsedErr).toBe(expectedDetails)
     })
-    if (paid instanceof Error) throw paid
-    expect(paid.revealedPreImage).toHaveLength(64)
-    expect(paid.roundedUpFee).toEqual(Number(btcPaymentAmount.amount) * ROUTE_PPM_PERCENT)
-  })
 
-  it("fails to pay high fee route with max limit set", async () => {
-    const lnInvoice = await createPrivateInvoice({
-      lnd: lndOutside2,
+    it("parses error message from failures object", async () => {
+      const payArgs = {
+        lnd: lnd1,
+        routes: [
+          {
+            fee: 1,
+            fee_mtokens: "1000",
+            hops: [
+              {
+                channel: "1x1x1",
+                channel_capacity: 1,
+                fee: 1,
+                fee_mtokens: "1000",
+                forward: 1,
+                forward_mtokens: "1000",
+                public_key: Buffer.alloc(33).toString("hex"),
+                timeout: 100,
+              },
+            ],
+            mtokens: "1000",
+            timeout: 100,
+            tokens: 1,
+          },
+        ],
+      }
+
+      const err = await getError<LnError<{ failures: LnError }>>(() =>
+        payViaRoutes(payArgs),
+      )
+      expect(err).toHaveLength(3)
+      expect(err[0]).toEqual(503)
+      expect(err[1]).toBe("UnexpectedErrorWhenPayingViaRoute")
+
+      const nestedFailureErr = err[2].failures[0]
+      expect(nestedFailureErr).toHaveLength(3)
+
+      /* eslint @typescript-eslint/ban-ts-comment: "off" */
+      // @ts-ignore-next-line no-implicit-any error
+      expect(nestedFailureErr[0]).toEqual(err[0])
+
+      // @ts-ignore-next-line no-implicit-any error
+      expect(nestedFailureErr[1]).toBe(err[1])
+
+      // @ts-ignore-next-line no-implicit-any error
+      const nestedErrObj = nestedFailureErr[2].err
+      expect(nestedErrObj).toBeInstanceOf(Error)
+      expect(nestedErrObj).toHaveProperty("code")
+      expect(nestedErrObj).toHaveProperty("metadata")
+
+      const expectedDetails = "invalid public key: unsupported format: 0"
+      expect(nestedErrObj).toHaveProperty("details", expectedDetails)
+
+      const parsedErr = parseLndErrorDetails(err)
+      expect(parsedErr).toBe(expectedDetails)
     })
-
-    const paid = await lndService.payInvoiceViaPaymentDetails({
-      decodedInvoice: lnInvoice,
-      btcPaymentAmount,
-      maxFeeAmount: LnFees().maxProtocolAndBankFee(btcPaymentAmount),
-    })
-    expect(paid).toBeInstanceOf(RouteNotFoundError)
-  })
-
-  it("probes across route with fee higher than payment amount", async () => {
-    const amountInvoice = 1
-
-    // Change channel policy
-    await setFeesOnChannel({
-      localLnd: lndOutside1,
-      partnerLnd: lndOutside2,
-      base: 10,
-      rate: ROUTE_PPM_RATE,
-    })
-
-    // Create invoice
-    const lnInvoice = await createPrivateInvoice({
-      lnd: lndOutside2,
-      tokens: amountInvoice,
-    })
-
-    // Execute probe and check result
-    const probed = await lndService.findRouteForInvoice({
-      invoice: lnInvoice,
-    })
-    expect(probed).toBeInstanceOf(RouteNotFoundError)
-
-    // Reset lnd mission control
-    await deleteForwardingReputations({ lnd: lnd1 })
-  })
-
-  it("deletes payment", async () => {
-    const { request, secret } = await createInvoice({ lnd: lndOutside1 })
-    const revealedPreImage = secret as RevealedPreImage
-    const lnInvoice = decodeInvoice(request)
-    if (lnInvoice instanceof Error) throw lnInvoice
-    const { paymentHash } = lnInvoice
-
-    const paid = await lndService.payInvoiceViaPaymentDetails({
-      decodedInvoice: lnInvoice,
-      btcPaymentAmount,
-      maxFeeAmount: undefined,
-    })
-    if (paid instanceof Error) throw paid
-
-    // Confirm payment exists in lnd
-    const retrievedPayment = await lndService.lookupPayment({ paymentHash })
-    expect(retrievedPayment).not.toBeInstanceOf(Error)
-    if (retrievedPayment instanceof Error) return retrievedPayment
-    expect(retrievedPayment.status).toBe(PaymentStatus.Settled)
-    if (retrievedPayment.status !== PaymentStatus.Settled) return
-    expect(retrievedPayment.confirmedDetails?.revealedPreImage).toBe(revealedPreImage)
-
-    // Delete payment
-    const deleted = await lndService.deletePaymentByHash({
-      paymentHash,
-      pubkey: LND1_PUBKEY,
-    })
-    expect(deleted).not.toBeInstanceOf(Error)
-
-    // Check that payment no longer exists
-    const retrievedDeletedPayment = await lndService.lookupPayment({ paymentHash })
-    expect(retrievedDeletedPayment).toBeInstanceOf(PaymentNotFoundError)
-
-    // Check that deleting missing payment doesn't return error
-    const deletedAttempt = await lndService.deletePaymentByHash({
-      paymentHash,
-      pubkey: LND1_PUBKEY,
-    })
-    expect(deletedAttempt).not.toBeInstanceOf(Error)
   })
 })
