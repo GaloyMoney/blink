@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): bump deps (#3713)...'
-      sha: 2c5a6ba847fc8c9fd1f7a3cc4cd0bfd563c8c7e3
+      commitTitle: 'chore(deps-dev): bump storybook from 7.6.3 to 7.6.6 (#3746)...'
+      sha: 035c1761c2821d4ab6bd903eaabf33eb75925ef3
       tags:
-      - 0.19.1-9-g2c5a6ba84
+      - 0.19.2-1-g035c1761c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): bump deps (#3713)...'
-      sha: 2c5a6ba847fc8c9fd1f7a3cc4cd0bfd563c8c7e3
+      commitTitle: 'chore(deps-dev): bump storybook from 7.6.3 to 7.6.6 (#3746)...'
+      sha: 035c1761c2821d4ab6bd903eaabf33eb75925ef3
       tags:
-      - 0.19.1-9-g2c5a6ba84
+      - 0.19.2-1-g035c1761c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(core): bump deps (#3713)...'
-      sha: 2c5a6ba847fc8c9fd1f7a3cc4cd0bfd563c8c7e3
+      commitTitle: 'chore(deps-dev): bump storybook from 7.6.3 to 7.6.6 (#3746)...'
+      sha: 035c1761c2821d4ab6bd903eaabf33eb75925ef3
       tags:
-      - 0.19.1-9-g2c5a6ba84
+      - 0.19.2-1-g035c1761c
     path: ./
   path: ./graphql
 kind: LockConfig
