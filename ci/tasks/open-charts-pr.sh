@@ -36,6 +36,18 @@ git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 git checkout ${ref}
 app_src_files=($(buck2 uquery 'inputs(deps("//core/..."))' 2>/dev/null))
 
+relevant_commits=()
+for commit in $(git log --format="%H" ${old_ref}..${ref}); do
+  changed_files=$(git diff-tree --no-commit-id --name-only -r $commit)
+
+  for file in ${changed_files[@]}; do
+    if [[ " ${app_src_files[*]} " == *"$file"* ]]; then
+      relevant_commits+=($commit)
+      break
+    fi
+  done
+done
+
 # create a branch from the old state and commit the new state of core
 set +e
 git fetch origin core-${old_ref}
@@ -57,6 +69,10 @@ for file in "${app_src_files[@]}"; do
   git checkout "$ref" -- "$file"
 done
 
+# put the relevant commits as a json array in a file
+echo "${relevant_commits[@]}" > relevant_commits.json
+git add relevant_commits.json
+
 git commit -m "Commit state of \`core\` at \`${ref}\`" --allow-empty
 git push -fu origin core-${ref}
 
@@ -66,6 +82,17 @@ cat <<EOF >> ../body.md
 Code diff contained in this image:
 
 ${github_url}/compare/core-${old_ref}...core-${ref}
+
+Relevant commits:
+EOF
+
+for commit in "${relevant_commits[@]}"; do
+  cat <<EOF >> ../body.md
+- ${github_url}/commit/${commit}
+EOF
+done
+
+cat <<EOF >> ../body.md
 
 The galoy api image will be bumped to digest:
 \`\`\`
