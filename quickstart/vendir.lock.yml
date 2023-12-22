@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): add additional span attrs to rebalance (#3737)'
-      sha: 54836c30044823489574c43d1f594cc113762362
+      commitTitle: 'test: move "01"-dependent tests (#3694)...'
+      sha: 211928536871b686c4e681d99467b1a42d7df3ea
       tags:
-      - 0.19.1-4-g54836c300
+      - 0.19.1-6-g211928536
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): add additional span attrs to rebalance (#3737)'
-      sha: 54836c30044823489574c43d1f594cc113762362
+      commitTitle: 'test: move "01"-dependent tests (#3694)...'
+      sha: 211928536871b686c4e681d99467b1a42d7df3ea
       tags:
-      - 0.19.1-4-g54836c300
+      - 0.19.1-6-g211928536
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(core): add additional span attrs to rebalance (#3737)'
-      sha: 54836c30044823489574c43d1f594cc113762362
+      commitTitle: 'test: move "01"-dependent tests (#3694)...'
+      sha: 211928536871b686c4e681d99467b1a42d7df3ea
       tags:
-      - 0.19.1-4-g54836c300
+      - 0.19.1-6-g211928536
     path: ./
   path: ./graphql
 kind: LockConfig
