@@ -17,7 +17,7 @@
     "@galoy/galoy-components": "workspace:^",
     "@opentelemetry/api": "^1.7.0",
     "@opentelemetry/core": "1.18.1",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.45.1",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.46.0",
     "@opentelemetry/instrumentation-graphql": "^0.36.0",
     "@opentelemetry/instrumentation-http": "^0.45.1",
     "@opentelemetry/instrumentation-net": "^0.32.4",

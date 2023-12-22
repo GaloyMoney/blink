@@ -28,8 +28,8 @@ importers:
         specifier: 1.18.1
         version: 1.18.1(@opentelemetry/api@1.7.0)
       '@opentelemetry/exporter-trace-otlp-http':
-        specifier: ^0.45.1
-        version: 0.45.1(@opentelemetry/api@1.7.0)
+        specifier: ^0.46.0
+        version: 0.46.0(@opentelemetry/api@1.7.0)
       '@opentelemetry/instrumentation-graphql':
         specifier: ^0.36.0
         version: 0.36.0(@opentelemetry/api@1.7.0)
@@ -185,8 +185,8 @@ importers:
         specifier: 1.18.1
         version: 1.18.1(@opentelemetry/api@1.7.0)
       '@opentelemetry/exporter-trace-otlp-http':
-        specifier: ^0.45.1
-        version: 0.45.1(@opentelemetry/api@1.7.0)
+        specifier: ^0.46.0
+        version: 0.46.0(@opentelemetry/api@1.7.0)
       '@opentelemetry/instrumentation-graphql':
         specifier: ^0.36.0
         version: 0.36.0(@opentelemetry/api@1.7.0)
@@ -11649,7 +11649,7 @@ packages:
   /@types/clean-css@4.2.11:
     resolution: {integrity: sha512-Y8n81lQVTAfP2TOdtJJEsCoYl1AnOkqDqMvXb9/7pfgZZ7r8YrEyurrAvAoAjHOGXKRybay+5CsExqIH6liccw==}
     dependencies:
-      '@types/node': 20.10.1
+      '@types/node': 20.10.4
       source-map: 0.6.1
     dev: true
 
@@ -11663,7 +11663,7 @@ packages:
     resolution: {integrity: sha512-n6Cr2xS1h4uAulPRdlw6Jl6s1oG8KrVilPN2yUITEs+K48EzMJJ3W1xy8K5eWuFvjp3R74AOIGSmp2UfBJ8HFw==}
     dependencies:
       '@types/express-serve-static-core': 4.17.41
-      '@types/node': 20.10.1
+      '@types/node': 20.10.4
     dev: true
 
   /@types/connect@3.4.35:
@@ -11690,7 +11690,7 @@ packages:
   /@types/cross-spawn@6.0.6:
     resolution: {integrity: sha512-fXRhhUkG4H3TQk5dBhQ7m/JDdSNHKwR2BBia62lhwEIq9xGiQKLxd6LymNhn47SjXhsUEPmxi+PKw2OkW4LLjA==}
     dependencies:
-      '@types/node': 20.10.3
+      '@types/node': 20.10.4
     dev: true
 
   /@types/dedent@0.7.2:
@@ -11820,7 +11820,7 @@ packages:
   /@types/http-proxy@1.17.14:
     resolution: {integrity: sha512-SSrD0c1OQzlFX7pGu1eXxSEjemej64aaNPRhhVYUGqXh0BtldAAx37MG8btcumvpgKyZp1F5Gn3JkktdxiFv6w==}
     dependencies:
-      '@types/node': 20.10.1
+      '@types/node': 20.10.4
     dev: true
 
   /@types/i18n@0.13.10:
@@ -12044,7 +12044,7 @@ packages:
   /@types/npmlog@4.1.6:
     resolution: {integrity: sha512-0l3z16vnlJGl2Mi/rgJFrdwfLZ4jfNYgE6ZShEpjqhHuGTqdEzNles03NpYHwUMVYZa+Tj46UxKIEpE78lQ3DQ==}
     dependencies:
-      '@types/node': 20.10.3
+      '@types/node': 20.10.4
     dev: true
 
   /@types/original-url@1.2.3:
@@ -12268,7 +12268,7 @@ packages:
   /@types/webpack-sources@3.2.3:
     resolution: {integrity: sha512-4nZOdMwSPHZ4pTEZzSp0AsTM4K7Qmu40UKW4tJDiOVs20UzYF9l+qUe4s0ftfN0pin06n+5cWWDJXH+sbhAiDw==}
     dependencies:
-      '@types/node': 20.10.1
+      '@types/node': 20.10.4
       '@types/source-list-map': 0.1.6
       source-map: 0.7.4
     dev: true
