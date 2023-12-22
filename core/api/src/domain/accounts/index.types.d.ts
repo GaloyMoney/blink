@@ -114,24 +114,6 @@ type Account = {
   role?: string
 }
 
-// deprecated
-type QuizQuestion = {
-  readonly id: QuizQuestionId
-  readonly earnAmount: Satoshis
-}
-
-// deprecated
-type UserQuizQuestion = {
-  readonly question: QuizQuestion
-  completed: boolean
-}
-
-type Quiz = {
-  readonly id: QuizQuestionId
-  readonly amount: Satoshis
-  readonly completed: boolean
-}
-
 type BusinessMapTitle = string & { readonly brand: unique symbol }
 type Coordinates = {
   longitude: number

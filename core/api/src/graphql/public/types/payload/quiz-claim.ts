@@ -3,17 +3,16 @@ import Quiz from "../object/quiz"
 
 import { GT } from "@/graphql/index"
 
-// deprecated
-const QuizCompletedPayload = GT.Object({
-  name: "QuizCompletedPayload",
+const QuizClaimPayload = GT.Object({
+  name: "QuizClaimPayload",
   fields: () => ({
     errors: {
       type: GT.NonNullList(IError),
     },
-    quiz: {
-      type: Quiz,
+    quizzes: {
+      type: GT.List(Quiz),
     },
   }),
 })
 
-export default QuizCompletedPayload
+export default QuizClaimPayload

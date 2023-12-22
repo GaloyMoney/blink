@@ -723,6 +723,19 @@ enum link__Purpose {
   EXECUTION
 }
 
+input LnAddressPaymentSendInput
+  @join__type(graph: PUBLIC)
+{
+  """Amount in satoshis."""
+  amount: SatAmount!
+
+  """Lightning address to send to."""
+  lnAddress: String!
+
+  """Wallet ID to send bitcoin from."""
+  walletId: WalletId!
+}
+
 type LnInvoice implements Invoice
   @join__implements(graph: PUBLIC, interface: "Invoice")
   @join__type(graph: PUBLIC)
@@ -929,6 +942,19 @@ type LnUpdate
   walletId: WalletId! @deprecated(reason: "Deprecated in favor of transaction")
 }
 
+input LnurlPaymentSendInput
+  @join__type(graph: PUBLIC)
+{
+  """Amount in satoshis."""
+  amount: SatAmount!
+
+  """Lnurl string to send to."""
+  lnurl: String!
+
+  """Wallet ID to send bitcoin from."""
+  walletId: WalletId!
+}
+
 input LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput
   @join__type(graph: PUBLIC)
 {
@@ -1054,6 +1080,9 @@ type Mutation
   """
   intraLedgerUsdPaymentSend(input: IntraLedgerUsdPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
 
+  """Sends a payment to a lightning address."""
+  lnAddressPaymentSend(input: LnAddressPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
+
   """
   Returns a lightning invoice for an associated wallet.
   When invoice is paid the value will be credited to a BTC wallet.
@@ -1130,13 +1159,17 @@ type Mutation
   """
   lnUsdInvoiceCreateOnBehalfOfRecipient(input: LnUsdInvoiceCreateOnBehalfOfRecipientInput!): LnInvoicePayload! @join__field(graph: PUBLIC)
   lnUsdInvoiceFeeProbe(input: LnUsdInvoiceFeeProbeInput!): SatAmountPayload! @join__field(graph: PUBLIC)
+
+  """Sends a payment to a lightning address."""
+  lnurlPaymentSend(input: LnurlPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
   onChainAddressCreate(input: OnChainAddressCreateInput!): OnChainAddressPayload! @join__field(graph: PUBLIC)
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload! @join__field(graph: PUBLIC)
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
   onChainPaymentSendAll(input: OnChainPaymentSendAllInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
   onChainUsdPaymentSend(input: OnChainUsdPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
   onChainUsdPaymentSendAsBtcDenominated(input: OnChainUsdPaymentSendAsBtcDenominatedInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
-  quizCompleted(input: QuizCompletedInput!): QuizCompletedPayload! @join__field(graph: PUBLIC)
+  quizClaim(input: QuizClaimInput!): QuizClaimPayload! @join__field(graph: PUBLIC)
+  quizCompleted(input: QuizCompletedInput!): QuizCompletedPayload! @join__field(graph: PUBLIC) @deprecated(reason: "Use quizClaim instead")
   userContactUpdateAlias(input: UserContactUpdateAliasInput!): UserContactUpdateAliasPayload! @join__field(graph: PUBLIC) @deprecated(reason: "will be moved to AccountContact")
   userEmailDelete: UserEmailDeletePayload! @join__field(graph: PUBLIC)
   userEmailRegistrationInitiate(input: UserEmailRegistrationInitiateInput!): UserEmailRegistrationInitiatePayload! @join__field(graph: PUBLIC)
@@ -1490,6 +1523,20 @@ type Quiz
   amount: SatAmount!
   completed: Boolean!
   id: ID!
+  notBefore: Timestamp
+}
+
+input QuizClaimInput
+  @join__type(graph: PUBLIC)
+{
+  id: ID!
+}
+
+type QuizClaimPayload
+  @join__type(graph: PUBLIC)
+{
+  errors: [Error!]!
+  quizzes: [Quiz]
 }
 
 input QuizCompletedInput

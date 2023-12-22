@@ -1,6 +1,8 @@
+import { QuizQuestionId } from "./index.types"
+
+export const milliSecondsBetweenSections = 60 * 60 * 12 * 1000
+
 export const QuizzesValue: Record<QuizQuestionId, Satoshis> = {
-  walletDownloaded: 1 as Satoshis,
-  walletActivated: 1 as Satoshis,
   whatIsBitcoin: 1 as Satoshis,
   sat: 1 as Satoshis,
   whereBitcoinExist: 1 as Satoshis,

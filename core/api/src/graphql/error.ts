@@ -77,6 +77,17 @@ export class LikelyBadCoreError extends CustomGraphQLError {
   }
 }
 
+export class QuizClaimedTooEarlyError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
+    super({
+      ...errData,
+      code: "QUIZ_CLAIMED_TOO_EARLY",
+      forwardToClient: true,
+      message: "Quiz can't be claimed yet",
+    })
+  }
+}
+
 export class ValidationInternalError extends CustomGraphQLError {
   constructor(errData: CustomGraphQLErrorData) {
     super({ code: "INVALID_INPUT", forwardToClient: true, ...errData })

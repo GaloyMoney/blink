@@ -2,6 +2,7 @@ import crypto from "crypto"
 
 import { QuizAlreadyPresentError } from "@/domain/errors"
 import { QuizRepository } from "@/services/mongoose"
+import { QuizQuestionId } from "@/domain/quiz/index.types"
 
 describe("QuizRepository", () => {
   const accountId = crypto.randomUUID() as AccountId
@@ -29,11 +30,9 @@ describe("QuizRepository", () => {
     const result = await QuizRepository().fetchAll(accountId)
     expect(result).toMatchObject([
       {
-        accountId,
         quizId: quizId,
       },
       {
-        accountId,
         quizId: quiz2,
       },
     ])

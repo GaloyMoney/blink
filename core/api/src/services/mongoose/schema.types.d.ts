@@ -102,7 +102,7 @@ interface AccountRecord {
   save: () => Promise<AccountRecord>
 }
 
-interface QuizRecord {
+interface QuizCompletedRecord {
   accountId: string
   quizId: string
   createdAt: Date

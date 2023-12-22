@@ -1,6 +1,8 @@
 import { intraledgerPaymentSendWalletIdForBtcWallet } from "../payments/send-intraledger"
 
-import { QuizzesValue } from "@/domain/earn"
+import { listQuizzesByAccountId } from "./list"
+
+import { QuizzesValue } from "@/domain/quiz"
 
 import { getQuizzesConfig } from "@/config"
 
@@ -12,6 +14,7 @@ import {
   MissingIPMetadataError,
   NoBtcWalletExistsForAccountError,
   NotEnoughBalanceForQuizError,
+  QuizClaimedTooEarlyError,
   UnauthorizedIPError,
   UnknownRepositoryError,
 } from "@/domain/errors"
@@ -32,16 +35,26 @@ import {
 import { consumeLimiter } from "@/services/rate-limit"
 import { getFunderWalletId } from "@/services/ledger/caching"
 import { AccountsIpsRepository } from "@/services/mongoose/accounts-ips"
+import { QuizQuestionId } from "@/domain/quiz/index.types"
 
-export const completeQuiz = async ({
+type ClaimQuizResult = {
+  id: QuizQuestionId
+  amount: Satoshis
+  completed: boolean
+  notBefore: Date | undefined
+}[]
+
+export const claimQuiz = async ({
   quizQuestionId: quizQuestionIdString,
   accountId: accountIdRaw,
   ip,
+  legacy,
 }: {
   quizQuestionId: string
   accountId: string
   ip: IpAddress | undefined
-}): Promise<QuizQuestion | ApplicationError> => {
+  legacy: boolean
+}): Promise<ClaimQuizResult | ApplicationError> => {
   const check = await checkAddQuizAttemptPerIpLimits(ip)
   if (check instanceof Error) return check
 
@@ -88,7 +101,18 @@ export const completeQuiz = async ({
 
     if (validatedIPMetadata instanceof UnauthorizedIPError) return validatedIPMetadata
 
-    return new UnknownRepositoryError("add quiz error")
+    return new UnknownRepositoryError("claim quiz error")
+  }
+
+  const quizzesBefore = await listQuizzesByAccountId(accountId)
+  if (quizzesBefore instanceof Error) return quizzesBefore
+
+  if (!legacy) {
+    const quiz = quizzesBefore.find((quiz) => quiz.id === quizId)
+    if (quiz === undefined) return new InvalidQuizQuestionIdError()
+
+    if (quiz.notBefore && quiz.notBefore > new Date())
+      return new QuizClaimedTooEarlyError()
   }
 
   const recipientWallets = await WalletsRepository().listByAccountId(accountId)
@@ -121,7 +145,10 @@ export const completeQuiz = async ({
   })
   if (payment instanceof Error) return payment
 
-  return { id: quizId, earnAmount: amount }
+  const quizzesAfter = await listQuizzesByAccountId(accountId)
+  if (quizzesAfter instanceof Error) return quizzesAfter
+
+  return quizzesAfter
 }
 
 const checkAddQuizAttemptPerIpLimits = async (

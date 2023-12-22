@@ -904,7 +904,8 @@ type Mutation {
   onChainPaymentSendAll(input: OnChainPaymentSendAllInput!): PaymentSendPayload!
   onChainUsdPaymentSend(input: OnChainUsdPaymentSendInput!): PaymentSendPayload!
   onChainUsdPaymentSendAsBtcDenominated(input: OnChainUsdPaymentSendAsBtcDenominatedInput!): PaymentSendPayload!
-  quizCompleted(input: QuizCompletedInput!): QuizCompletedPayload!
+  quizClaim(input: QuizClaimInput!): QuizClaimPayload!
+  quizCompleted(input: QuizCompletedInput!): QuizCompletedPayload! @deprecated(reason: "Use quizClaim instead")
   userContactUpdateAlias(input: UserContactUpdateAliasInput!): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
   userEmailDelete: UserEmailDeletePayload!
   userEmailRegistrationInitiate(input: UserEmailRegistrationInitiateInput!): UserEmailRegistrationInitiatePayload!
@@ -1181,6 +1182,16 @@ type Quiz {
   amount: SatAmount!
   completed: Boolean!
   id: ID!
+  notBefore: Timestamp
+}
+
+input QuizClaimInput {
+  id: ID!
+}
+
+type QuizClaimPayload {
+  errors: [Error!]!
+  quizzes: [Quiz]
 }
 
 input QuizCompletedInput {

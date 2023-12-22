@@ -34,7 +34,7 @@ import DisplayCurrency from "@/graphql/shared/types/scalar/display-currency"
 
 import { listEndpoints } from "@/app/callback"
 import { IInvoiceConnection } from "@/graphql/shared/types/abstract/invoice"
-import { getQuizzesByAccountId } from "@/app/quiz"
+import { listQuizzesByAccountId } from "@/app/quiz"
 
 const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
   name: "ConsumerAccount",
@@ -165,12 +165,13 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
       resolve: (source) => source,
     },
 
+    // TODO: should be quizzes
     quiz: {
       type: GT.NonNullList(Quiz),
       description: "List the quiz questions of the consumer account",
       resolve: async (source) => {
         const accountId = source.id
-        const result = await getQuizzesByAccountId(accountId)
+        const result = await listQuizzesByAccountId(accountId)
 
         if (result instanceof Error) {
           throw mapError(result)
