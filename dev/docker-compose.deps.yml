@@ -308,7 +308,7 @@ services:
     ports:
       - 8071:8071
     extra_hosts:
-      - bats-tests:host-gateway
+      - dockerhost-alias:host-gateway
   svix-pg:
     image: postgres:14.1
     environment:

@@ -237,15 +237,6 @@ core_serve_env = {
   "EXPORTER_PORT": "3003"
 }
 
-callback_target = "//bats/helpers/callback:run"
-local_resource(
-    "callback",
-    labels = ["test"],
-    serve_cmd = "buck2 run {}".format(callback_target),
-    allow_parallel = True,
-    deps = _buck2_dep_inputs(callback_target),
-)
-
 api_target = "//core/api:dev"
 if is_ci:
   api_target = "//core/api:api"
@@ -266,7 +257,6 @@ local_resource(
     deps = _buck2_dep_inputs(api_target),
     resource_deps = [
         "init-onchain",
-        "init-lightning",
         "lnd1",
         "redis",
         "mongodb",
