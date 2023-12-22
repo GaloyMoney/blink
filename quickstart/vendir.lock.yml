@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: debug concourse (#3747)...'
-      sha: 88cc854580e78f2c18bea21b4ace30014590c69c
+      commitTitle: 'chore: remove SVIX_CALLBACK_URL from environment (#3748)'
+      sha: aef44370cadbf9c320c03105bc8346b5fbbb4f4a
       tags:
-      - 0.19.3-1-g88cc85458
+      - 0.19.4-1-gaef44370c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: debug concourse (#3747)...'
-      sha: 88cc854580e78f2c18bea21b4ace30014590c69c
+      commitTitle: 'chore: remove SVIX_CALLBACK_URL from environment (#3748)'
+      sha: aef44370cadbf9c320c03105bc8346b5fbbb4f4a
       tags:
-      - 0.19.3-1-g88cc85458
+      - 0.19.5
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: debug concourse (#3747)...'
-      sha: 88cc854580e78f2c18bea21b4ace30014590c69c
+      commitTitle: 'chore: remove SVIX_CALLBACK_URL from environment (#3748)'
+      sha: aef44370cadbf9c320c03105bc8346b5fbbb4f4a
       tags:
-      - 0.19.3-1-g88cc85458
+      - 0.19.5
     path: ./
   path: ./graphql
 kind: LockConfig
