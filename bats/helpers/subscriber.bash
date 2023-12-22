@@ -29,3 +29,7 @@ stop_subscriber() {
   [[ -f "$SUBSCRIBER_PID_FILE" ]] && kill $(cat $SUBSCRIBER_PID_FILE) > /dev/null || true
 }
 
+subscriber_is_up() {
+  grep "Data:" "$SUBSCRIBER_LOG_FILE"
+  return "$?"
+}
