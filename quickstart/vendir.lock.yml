@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps-dev): bump storybook from 7.6.3 to 7.6.6 (#3746)...'
-      sha: 035c1761c2821d4ab6bd903eaabf33eb75925ef3
+      commitTitle: 'chore: debug concourse (#3747)...'
+      sha: 88cc854580e78f2c18bea21b4ace30014590c69c
       tags:
-      - 0.19.2-1-g035c1761c
+      - 0.19.3-1-g88cc85458
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps-dev): bump storybook from 7.6.3 to 7.6.6 (#3746)...'
-      sha: 035c1761c2821d4ab6bd903eaabf33eb75925ef3
+      commitTitle: 'chore: debug concourse (#3747)...'
+      sha: 88cc854580e78f2c18bea21b4ace30014590c69c
       tags:
-      - 0.19.2-1-g035c1761c
+      - 0.19.3-1-g88cc85458
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(deps-dev): bump storybook from 7.6.3 to 7.6.6 (#3746)...'
-      sha: 035c1761c2821d4ab6bd903eaabf33eb75925ef3
+      commitTitle: 'chore: debug concourse (#3747)...'
+      sha: 88cc854580e78f2c18bea21b4ace30014590c69c
       tags:
-      - 0.19.2-1-g035c1761c
+      - 0.19.3-1-g88cc85458
     path: ./
   path: ./graphql
 kind: LockConfig
