@@ -13,14 +13,9 @@ trigger_is_stopped() {
 }
 
 trigger_is_started() {
-  local NUM_LINES=18
-  cat $TILT_LOG_FILE | grep 'api-trigger │' \
-    | tail -n $NUM_LINES \
-    | grep "Successfully stopped trigger"
+    lastLineNum=$(grep -n 'Successfully stopped trigger' "$TILT_LOG_FILE" | tail -1 | cut -d: -f1)
+    if [[ -z "$lastLineNum" ]]; then lastLineNum=0; fi
 
-  if [[ "$?" == "0" ]]; then
-    return 1
-  else
-    return 0
-  fi
+    tail -n +$((lastLineNum + 1)) "$TILT_LOG_FILE" | grep -q 'finish updating pending invoices'
+    return $?
 }
