@@ -4,6 +4,8 @@ export BATS_ROOT_DIR="${REPO_ROOT}/bats"
 CACHE_DIR=${BATS_TMPDIR:-tmp/bats}/galoy-bats-cache
 mkdir -p "$CACHE_DIR"
 
+TILT_LOG_FILE="${REPO_ROOT}/bats/.e2e-tilt.log"
+
 OATHKEEPER_PROXY=${OATHKEEPER_PROXY:-localhost:4455}
 
 if ! type fail &>/dev/null; then
@@ -134,4 +136,9 @@ cache_value() {
 
 read_value() {
   cat ${CACHE_DIR}/$1
+}
+
+clear_cache() {
+  rm -r ${CACHE_DIR}
+  mkdir -p ${CACHE_DIR}
 }
