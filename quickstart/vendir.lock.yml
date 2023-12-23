@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'revert: concourse debug changes (#3749)...'
-      sha: 3bea5a921fa6e1ab2ab560c9daaa63bec1e54ed8
+      commitTitle: 'test: move ln tests to top level bats (#3719) (#3744) (#3750)...'
+      sha: 2a6c74435f76a5fdfebc714292c3ebb224943d4d
       tags:
-      - 0.19.5-2-g3bea5a921
+      - 0.19.6-2-g2a6c74435
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'revert: concourse debug changes (#3749)...'
-      sha: 3bea5a921fa6e1ab2ab560c9daaa63bec1e54ed8
+      commitTitle: 'test: move ln tests to top level bats (#3719) (#3744) (#3750)...'
+      sha: 2a6c74435f76a5fdfebc714292c3ebb224943d4d
       tags:
-      - 0.19.5-2-g3bea5a921
+      - 0.19.6-2-g2a6c74435
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'revert: concourse debug changes (#3749)...'
-      sha: 3bea5a921fa6e1ab2ab560c9daaa63bec1e54ed8
+      commitTitle: 'test: move ln tests to top level bats (#3719) (#3744) (#3750)...'
+      sha: 2a6c74435f76a5fdfebc714292c3ebb224943d4d
       tags:
-      - 0.19.5-2-g3bea5a921
+      - 0.19.6-2-g2a6c74435
     path: ./
   path: ./graphql
 kind: LockConfig
