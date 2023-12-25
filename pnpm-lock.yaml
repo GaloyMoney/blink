@@ -73,8 +73,8 @@ importers:
         specifier: ^16.8.1
         version: 16.8.1
       libphonenumber-js:
-        specifier: ^1.10.51
-        version: 1.10.51
+        specifier: ^1.10.52
+        version: 1.10.52
       next:
         specifier: 14.0.1
         version: 14.0.1(@babel/core@7.23.6)(@opentelemetry/api@1.7.0)(react-dom@18.2.0)(react@18.2.0)
@@ -21380,10 +21380,6 @@ packages:
       type-check: 0.4.0
     dev: true
 
-  /libphonenumber-js@1.10.51:
-    resolution: {integrity: sha512-vY2I+rQwrDQzoPds0JeTEpeWzbUJgqoV0O4v31PauHBb/e+1KCXKylHcDnBMgJZ9fH9mErsEbROJY3Z3JtqEmg==}
-    dev: false
-
   /libphonenumber-js@1.10.52:
     resolution: {integrity: sha512-6vCuCHgem+OW1/VCAKgkasfegItCea8zIT7s9/CG/QxdCMIM7GfzbEBG5d7lGO3rzipjt5woOQL3DiHa8Fy78Q==}
     dev: false
@@ -24586,7 +24582,7 @@ packages:
       classnames: 2.3.2
       country-flag-icons: 1.5.7
       input-format: 0.3.8
-      libphonenumber-js: 1.10.51
+      libphonenumber-js: 1.10.52
       prop-types: 15.8.1
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
