@@ -79,7 +79,7 @@ setup_file() {
   [[ "$btc_balance_after_retry" == "$btc_balance_after_quiz" ]] || exit 1
 }
 
-@test "quiz: new mutation" {
+@test "quiz: completes a quiz question and gets paid once - time based quiz mutation" {
   token_name="alice"
   question_id="whatIsBitcoin"
 

@@ -1,5 +1,3 @@
-import { QuizQuestionId } from "./index.types"
-
 export const milliSecondsBetweenSections = 60 * 60 * 12 * 1000
 
 export const QuizzesValue: Record<QuizQuestionId, Satoshis> = {

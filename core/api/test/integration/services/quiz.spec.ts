@@ -2,7 +2,6 @@ import crypto from "crypto"
 
 import { QuizAlreadyPresentError } from "@/domain/errors"
 import { QuizRepository } from "@/services/mongoose"
-import { QuizQuestionId } from "@/domain/quiz/index.types"
 
 describe("QuizRepository", () => {
   const accountId = crypto.randomUUID() as AccountId

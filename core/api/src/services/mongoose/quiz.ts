@@ -3,7 +3,6 @@ import { Quiz } from "./schema"
 import { QuizCompleted } from "@/domain/quiz"
 
 import { QuizAlreadyPresentError, UnknownRepositoryError } from "@/domain/errors"
-import { QuizQuestionId } from "@/domain/quiz/index.types"
 
 interface ExtendedError extends Error {
   code?: number

@@ -10,7 +10,7 @@ const QuizClaimPayload = GT.Object({
       type: GT.NonNullList(IError),
     },
     quizzes: {
-      type: GT.List(Quiz),
+      type: GT.NonNullList(Quiz),
     },
   }),
 })

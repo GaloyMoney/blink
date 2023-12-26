@@ -27,11 +27,10 @@ const QuizCompletedMutation = GT.Field<
   resolve: async (_, args, { domainAccount, ip }) => {
     const { id } = args.input
 
-    const quizzes = await Quiz.claimQuiz({
+    const quizzes = await Quiz.claimQuizLegacy({
       quizQuestionId: id,
       accountId: domainAccount.id,
       ip,
-      legacy: true,
     })
     if (quizzes instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(quizzes)] }

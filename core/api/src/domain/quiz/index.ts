@@ -1,7 +1,6 @@
 export * from "./config"
 
 import { QuizzesValue, milliSecondsBetweenSections } from "./config"
-import { QuizQuestionId } from "./index.types"
 import { QuizzesSectionsConfig } from "./sections"
 
 export interface QuizCompleted {

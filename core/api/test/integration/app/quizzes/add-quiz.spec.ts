@@ -22,7 +22,6 @@ describe("addQuiz", () => {
       accountId: crypto.randomUUID() as AccountId,
       quizQuestionId: "fakeQuizQuestionId",
       ip: undefined,
-      legacy: true,
     })
     expect(result).toBeInstanceOf(InvalidIpMetadataError)
   })
@@ -44,7 +43,6 @@ describe("addQuiz", () => {
       accountId: crypto.randomUUID() as AccountId,
       quizQuestionId: "fakeQuizQuestionId",
       ip: "192.168.13.13" as IpAddress,
-      legacy: true,
     })
 
     expect(result).toBeInstanceOf(UserAddQuizAttemptIpRateLimiterExceededError)

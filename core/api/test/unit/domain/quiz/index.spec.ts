@@ -1,5 +1,4 @@
 import { fillQuizInformation } from "@/domain/quiz"
-import { QuizQuestionId } from "@/domain/quiz/index.types"
 
 describe("quiz", () => {
   it("completed is false by default", () => {
@@ -13,7 +12,7 @@ describe("quiz", () => {
     expect(filledInfo.quizzes[0].notBefore).toBe(undefined)
   })
 
-  it("one element completed", () => {
+  it("test that we are on section 0 after 1 element has been completed", () => {
     const quizCompleted = { quizId: "sat" as QuizQuestionId, createdAt: new Date() }
     const filledInfo = fillQuizInformation([quizCompleted])
 
@@ -28,20 +27,29 @@ describe("quiz", () => {
     expect(filledInfo.currentSection).toBe(0)
   })
 
-  it("two elements completed", () => {
+  it("test that we are on section 0 after 2 elements has been completed", () => {
     const quizzesCompleted = [
       { quizId: "sat" as QuizQuestionId, createdAt: new Date() },
       { quizId: "whereBitcoinExist" as QuizQuestionId, createdAt: new Date() },
     ]
     const filledInfo = fillQuizInformation(quizzesCompleted)
 
-    expect(filledInfo.quizzes.find((quiz) => quiz.completed === true)).toEqual({
-      amount: 1,
-      completed: true,
-      id: "sat",
-      section: 0,
-      notBefore: undefined,
-    })
+    expect(filledInfo.quizzes.filter((quiz) => quiz.completed === true)).toEqual([
+      {
+        amount: 1,
+        completed: true,
+        id: "sat",
+        section: 0,
+        notBefore: undefined,
+      },
+      {
+        amount: 1,
+        completed: true,
+        id: "whereBitcoinExist",
+        section: 0,
+        notBefore: undefined,
+      },
+    ])
 
     expect(filledInfo.currentSection).toBe(0)
   })
@@ -56,9 +64,6 @@ describe("quiz", () => {
     ]
     const filledInfo = fillQuizInformation(quizzesCompleted)
     expect(filledInfo.currentSection).toBe(1)
-
-    console.log(filledInfo.quizzes[4])
-    console.log(filledInfo.quizzes[5])
 
     expect(filledInfo.quizzes[4].notBefore).toBeUndefined()
     expect(filledInfo.quizzes[5].notBefore?.getTime()).toBeCloseTo(

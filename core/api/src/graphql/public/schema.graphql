@@ -1191,7 +1191,7 @@ input QuizClaimInput {
 
 type QuizClaimPayload {
   errors: [Error!]!
-  quizzes: [Quiz]
+  quizzes: [Quiz!]!
 }
 
 input QuizCompletedInput {

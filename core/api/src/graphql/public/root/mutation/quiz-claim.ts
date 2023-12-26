@@ -30,10 +30,9 @@ const QuizClaimMutation = GT.Field<
       quizQuestionId: id,
       accountId: domainAccount.id,
       ip,
-      legacy: false,
     })
     if (quizzes instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(quizzes)] }
+      return { errors: [mapAndParseErrorForGqlResponse(quizzes)], quizzes: [] }
     }
 
     return {

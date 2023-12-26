@@ -1536,7 +1536,7 @@ type QuizClaimPayload
   @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
-  quizzes: [Quiz]
+  quizzes: [Quiz!]!
 }
 
 input QuizCompletedInput
