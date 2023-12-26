@@ -322,9 +322,9 @@ export const configSchema = {
           blockDuration: 86400,
         },
         requestCodePerAppcheckJti: {
-          points: 3,
-          duration: 3600,
-          blockDuration: 3600,
+          points: 6,
+          duration: 86400,
+          blockDuration: 86400,
         },
         addQuizPerIp: {
           points: 125,
