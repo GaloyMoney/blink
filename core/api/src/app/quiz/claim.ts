@@ -1,6 +1,8 @@
 import { intraledgerPaymentSendWalletIdForBtcWallet } from "../payments/send-intraledger"
 
-import { QuizzesValue } from "@/domain/earn"
+import { listQuizzesByAccountId } from "./list"
+
+import { QuizzesValue } from "@/domain/quiz"
 
 import { getQuizzesConfig } from "@/config"
 
@@ -12,8 +14,7 @@ import {
   MissingIPMetadataError,
   NoBtcWalletExistsForAccountError,
   NotEnoughBalanceForQuizError,
-  UnauthorizedIPError,
-  UnknownRepositoryError,
+  QuizClaimedTooEarlyError,
 } from "@/domain/errors"
 import { WalletCurrency } from "@/domain/shared"
 import { RateLimitConfig } from "@/domain/rate-limit"
@@ -33,7 +34,14 @@ import { consumeLimiter } from "@/services/rate-limit"
 import { getFunderWalletId } from "@/services/ledger/caching"
 import { AccountsIpsRepository } from "@/services/mongoose/accounts-ips"
 
-export const completeQuiz = async ({
+type ClaimQuizResult = {
+  id: QuizQuestionId
+  amount: Satoshis
+  completed: boolean
+  notBefore: Date | undefined
+}[]
+
+export const claimQuizLegacy = async ({
   quizQuestionId: quizQuestionIdString,
   accountId: accountIdRaw,
   ip,
@@ -41,7 +49,7 @@ export const completeQuiz = async ({
   quizQuestionId: string
   accountId: string
   ip: IpAddress | undefined
-}): Promise<QuizQuestion | ApplicationError> => {
+}): Promise<ClaimQuizResult | ApplicationError> => {
   const check = await checkAddQuizAttemptPerIpLimits(ip)
   if (check instanceof Error) return check
 
@@ -86,10 +94,11 @@ export const completeQuiz = async ({
     if (validatedIPMetadata instanceof MissingIPMetadataError)
       return new InvalidIpMetadataError(validatedIPMetadata)
 
-    if (validatedIPMetadata instanceof UnauthorizedIPError) return validatedIPMetadata
-
-    return new UnknownRepositoryError("add quiz error")
+    return validatedIPMetadata
   }
+
+  const quizzesBefore = await listQuizzesByAccountId(accountId)
+  if (quizzesBefore instanceof Error) return quizzesBefore
 
   const recipientWallets = await WalletsRepository().listByAccountId(accountId)
   if (recipientWallets instanceof Error) return recipientWallets
@@ -121,7 +130,10 @@ export const completeQuiz = async ({
   })
   if (payment instanceof Error) return payment
 
-  return { id: quizId, earnAmount: amount }
+  const quizzesAfter = await listQuizzesByAccountId(accountId)
+  if (quizzesAfter instanceof Error) return quizzesAfter
+
+  return quizzesAfter
 }
 
 const checkAddQuizAttemptPerIpLimits = async (
@@ -133,6 +145,106 @@ const checkAddQuizAttemptPerIpLimits = async (
     rateLimitConfig: RateLimitConfig.addQuizAttemptPerIp,
     keyToConsume: ip,
   })
+}
+
+export const claimQuiz = async ({
+  quizQuestionId: quizQuestionIdString,
+  accountId: accountIdRaw,
+  ip,
+}: {
+  quizQuestionId: string
+  accountId: string
+  ip: IpAddress | undefined
+}): Promise<ClaimQuizResult | ApplicationError> => {
+  const check = await checkAddQuizAttemptPerIpLimits(ip)
+  if (check instanceof Error) return check
+
+  const accountId = checkedToAccountId(accountIdRaw)
+  if (accountId instanceof Error) return accountId
+
+  const quizzesConfig = getQuizzesConfig()
+
+  // TODO: quizQuestionId checkedFor
+  const quizId = quizQuestionIdString as QuizQuestionId
+
+  const amount = QuizzesValue[quizId]
+  if (!amount) return new InvalidQuizQuestionIdError()
+
+  const funderWalletId = await getFunderWalletId()
+  const funderWallet = await WalletsRepository().findById(funderWalletId)
+  if (funderWallet instanceof Error) return funderWallet
+  const funderAccount = await AccountsRepository().findById(funderWallet.accountId)
+  if (funderAccount instanceof Error) return funderAccount
+
+  const recipientAccount = await AccountsRepository().findById(accountId)
+  if (recipientAccount instanceof Error) return recipientAccount
+
+  const user = await UsersRepository().findById(recipientAccount.kratosUserId)
+  if (user instanceof Error) return user
+
+  const validatedPhoneMetadata = PhoneMetadataAuthorizer(
+    quizzesConfig.phoneMetadataValidationSettings,
+  ).authorize(user.phoneMetadata)
+
+  if (validatedPhoneMetadata instanceof Error) {
+    return new InvalidPhoneForQuizError(validatedPhoneMetadata.name)
+  }
+
+  const accountIP = await AccountsIpsRepository().findLastByAccountId(recipientAccount.id)
+  if (accountIP instanceof Error) return accountIP
+
+  const validatedIPMetadata = IPMetadataAuthorizer(
+    quizzesConfig.ipMetadataValidationSettings,
+  ).authorize(accountIP.metadata)
+  if (validatedIPMetadata instanceof Error) {
+    if (validatedIPMetadata instanceof MissingIPMetadataError)
+      return new InvalidIpMetadataError(validatedIPMetadata)
+
+    return validatedIPMetadata
+  }
+
+  const quizzesBefore = await listQuizzesByAccountId(accountId)
+  if (quizzesBefore instanceof Error) return quizzesBefore
+
+  const quiz = quizzesBefore.find((quiz) => quiz.id === quizId)
+  if (quiz === undefined) return new InvalidQuizQuestionIdError()
+
+  if (quiz.notBefore && quiz.notBefore > new Date()) return new QuizClaimedTooEarlyError()
+
+  const recipientWallets = await WalletsRepository().listByAccountId(accountId)
+  if (recipientWallets instanceof Error) return recipientWallets
+
+  const recipientBtcWallet = recipientWallets.find(
+    (wallet) => wallet.currency === WalletCurrency.Btc,
+  )
+  if (recipientBtcWallet === undefined) return new NoBtcWalletExistsForAccountError()
+  const recipientWalletId = recipientBtcWallet.id
+
+  const shouldGiveSats = await QuizRepository().add({ quizId, accountId })
+  if (shouldGiveSats instanceof Error) return shouldGiveSats
+
+  const funderBalance = await getBalanceForWallet({ walletId: funderWalletId })
+  if (funderBalance instanceof Error) return funderBalance
+
+  const sendCheck = FunderBalanceChecker().check({
+    balance: funderBalance as Satoshis,
+    amountToSend: amount,
+  })
+  if (sendCheck instanceof Error) return sendCheck
+
+  const payment = await intraledgerPaymentSendWalletIdForBtcWallet({
+    senderWalletId: funderWalletId,
+    recipientWalletId,
+    amount,
+    memo: quizId,
+    senderAccount: funderAccount,
+  })
+  if (payment instanceof Error) return payment
+
+  const quizzesAfter = await listQuizzesByAccountId(accountId)
+  if (quizzesAfter instanceof Error) return quizzesAfter
+
+  return quizzesAfter
 }
 
 const FunderBalanceChecker = () => {

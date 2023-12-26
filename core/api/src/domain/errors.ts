@@ -111,6 +111,7 @@ export class NoContactForUsernameError extends ValidationError {}
 export class NoWalletExistsForUserError extends ValidationError {}
 export class NoBtcWalletExistsForAccountError extends ValidationError {}
 export class InvalidQuizQuestionIdError extends ValidationError {}
+export class QuizClaimedTooEarlyError extends ValidationError {}
 export class MissingIPMetadataError extends ValidationError {}
 
 export class InvalidIpMetadataError extends ValidationError {

@@ -13,7 +13,7 @@ export * from "./schema"
 import { ConfigError } from "./error"
 
 import { toDays } from "@/domain/primitives"
-import { QuizzesValue } from "@/domain/earn"
+import { QuizzesValue } from "@/domain/quiz"
 
 export const MS_PER_SEC = 1000 as MilliSeconds
 export const MS_PER_5_MINS = (60 * 5 * MS_PER_SEC) as MilliSeconds

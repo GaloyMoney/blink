@@ -29,11 +29,9 @@ describe("QuizRepository", () => {
     const result = await QuizRepository().fetchAll(accountId)
     expect(result).toMatchObject([
       {
-        accountId,
         quizId: quizId,
       },
       {
-        accountId,
         quizId: quiz2,
       },
     ])

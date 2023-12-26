@@ -2,16 +2,16 @@ import { Quiz } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import { GT } from "@/graphql/index"
 
-import QuizCompleted from "@/graphql/public/types/payload/quiz-completed"
+import QuizClaim from "@/graphql/public/types/payload/quiz-claim"
 
-const QuizCompletedInput = GT.Input({
-  name: "QuizCompletedInput",
+const QuizClaimInput = GT.Input({
+  name: "QuizClaimInput",
   fields: () => ({
     id: { type: GT.NonNull(GT.ID) },
   }),
 })
 
-const QuizCompletedMutation = GT.Field<
+const QuizClaimMutation = GT.Field<
   null,
   GraphQLPublicContextAuth,
   { input: { id: string } }
@@ -19,28 +19,27 @@ const QuizCompletedMutation = GT.Field<
   extensions: {
     complexity: 120,
   },
-  deprecationReason: "Use quizClaim instead",
-  type: GT.NonNull(QuizCompleted),
+  type: GT.NonNull(QuizClaim),
   args: {
-    input: { type: GT.NonNull(QuizCompletedInput) },
+    input: { type: GT.NonNull(QuizClaimInput) },
   },
   resolve: async (_, args, { domainAccount, ip }) => {
     const { id } = args.input
 
-    const quizzes = await Quiz.claimQuizLegacy({
+    const quizzes = await Quiz.claimQuiz({
       quizQuestionId: id,
       accountId: domainAccount.id,
       ip,
     })
     if (quizzes instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(quizzes)] }
+      return { errors: [mapAndParseErrorForGqlResponse(quizzes)], quizzes: [] }
     }
 
     return {
       errors: [],
-      quiz: quizzes.find((q) => q.id === id),
+      quizzes,
     }
   },
 })
 
-export default QuizCompletedMutation
+export default QuizClaimMutation

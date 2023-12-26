@@ -8,6 +8,7 @@ query myQuizQuestions {
           id
           amount
           completed
+          notBefore
         }
       }
     }
