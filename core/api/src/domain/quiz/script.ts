@@ -1,3 +1,7 @@
+// this script generates the content saved to ./sections.ts
+// it assumes:
+// - galoy-mobile is the source of truth for the different sections
+// - galoy-mobile is in the same root as galoy repo
 // pnpm tsx src/domain/earn/script.ts
 /* eslint @typescript-eslint/ban-ts-comment: "off" */
 // @ts-nocheck

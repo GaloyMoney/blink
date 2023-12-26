@@ -51,13 +51,13 @@ export const fillQuizInformation = (
       QuizzesSections.find((section) => section.quiz.includes(id as QuizQuestionId))
         ?.order ?? NaN
 
-    const lastQuizCreatedAt =
-      quizzesCompleted[quizzesCompleted.length - 1]?.createdAt ?? new Date()
-
-    const completed = Boolean(quizCompleted)
+    const completed = !!quizCompleted
 
     let notBefore: Date | undefined = undefined
     if (section !== 0 && !completed) {
+      const lastQuizCreatedAt =
+        quizzesCompleted[quizzesCompleted.length - 1]?.createdAt ?? new Date()
+
       notBefore = new Date(lastQuizCreatedAt.getTime() + milliSecondsBetweenSections)
     }
 
