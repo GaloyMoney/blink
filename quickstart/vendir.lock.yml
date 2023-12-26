@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: move ln tests to top level bats (#3719) (#3744) (#3750)...'
-      sha: 2a6c74435f76a5fdfebc714292c3ebb224943d4d
+      commitTitle: 'chore: update some galoy.yaml values (#3754)...'
+      sha: f02263e79f119602d6e63a8d9c2ca8914e3a8c08
       tags:
-      - 0.19.6-2-g2a6c74435
+      - 0.19.7-2-gf02263e79
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: move ln tests to top level bats (#3719) (#3744) (#3750)...'
-      sha: 2a6c74435f76a5fdfebc714292c3ebb224943d4d
+      commitTitle: 'chore: update some galoy.yaml values (#3754)...'
+      sha: f02263e79f119602d6e63a8d9c2ca8914e3a8c08
       tags:
-      - 0.19.6-2-g2a6c74435
+      - 0.19.7-2-gf02263e79
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test: move ln tests to top level bats (#3719) (#3744) (#3750)...'
-      sha: 2a6c74435f76a5fdfebc714292c3ebb224943d4d
+      commitTitle: 'chore: update some galoy.yaml values (#3754)...'
+      sha: f02263e79f119602d6e63a8d9c2ca8914e3a8c08
       tags:
-      - 0.19.6-2-g2a6c74435
+      - 0.19.7-2-gf02263e79
     path: ./
   path: ./graphql
 kind: LockConfig
