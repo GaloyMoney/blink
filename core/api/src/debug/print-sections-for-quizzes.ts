@@ -2,11 +2,11 @@
 // it assumes:
 // - galoy-mobile is the source of truth for the different sections
 // - galoy-mobile is in the same root as galoy repo
-// pnpm tsx src/domain/earn/script.ts
+// pnpm tsx src/debug/print-sections-for-quizzes.ts
 /* eslint @typescript-eslint/ban-ts-comment: "off" */
 // @ts-nocheck
 
-import en from "../../../../../../galoy-mobile/app/i18n/en/index"
+import en from "../../../../../galoy-mobile/app/i18n/en/index"
 
 const earnSection = en.EarnScreen.earnSections
 
