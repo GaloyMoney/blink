@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: update some galoy.yaml values (#3754)...'
-      sha: f02263e79f119602d6e63a8d9c2ca8914e3a8c08
+      commitTitle: 'feat: introduce time based quizzes (#3743)...'
+      sha: 736c51b4048ba54d107a07a2070bd5e0b7e31b0e
       tags:
-      - 0.19.7-2-gf02263e79
+      - 0.19.7-4-g736c51b40
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: update some galoy.yaml values (#3754)...'
-      sha: f02263e79f119602d6e63a8d9c2ca8914e3a8c08
+      commitTitle: 'feat: introduce time based quizzes (#3743)...'
+      sha: 736c51b4048ba54d107a07a2070bd5e0b7e31b0e
       tags:
-      - 0.19.7-2-gf02263e79
+      - 0.19.7-4-g736c51b40
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: update some galoy.yaml values (#3754)...'
-      sha: f02263e79f119602d6e63a8d9c2ca8914e3a8c08
+      commitTitle: 'feat: introduce time based quizzes (#3743)...'
+      sha: 736c51b4048ba54d107a07a2070bd5e0b7e31b0e
       tags:
-      - 0.19.7-2-gf02263e79
+      - 0.19.7-4-g736c51b40
     path: ./
   path: ./graphql
 kind: LockConfig
