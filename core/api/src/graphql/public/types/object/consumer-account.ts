@@ -14,7 +14,7 @@ import { NotificationSettings } from "./notification-settings"
 
 import PublicWallet from "./public-wallet"
 
-import { Accounts, Prices, Wallets } from "@/app"
+import { Accounts, Prices, Wallets, Quiz as QuizApp } from "@/app"
 
 import {
   majorToMinorUnit,
@@ -34,7 +34,6 @@ import DisplayCurrency from "@/graphql/shared/types/scalar/display-currency"
 
 import { listEndpoints } from "@/app/callback"
 import { IInvoiceConnection } from "@/graphql/shared/types/abstract/invoice"
-import { listQuizzesByAccountId } from "@/app/quiz"
 
 const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
   name: "ConsumerAccount",
@@ -171,7 +170,7 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
       description: "List the quiz questions of the consumer account",
       resolve: async (source) => {
         const accountId = source.id
-        const result = await listQuizzesByAccountId(accountId)
+        const result = await QuizApp.listQuizzesByAccountId(accountId)
 
         if (result instanceof Error) {
           throw mapError(result)
