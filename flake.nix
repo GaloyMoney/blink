@@ -259,6 +259,7 @@
                   openssh
                   rsync
                   git-cliff
+                  unixtools.xxd
                 ];
 
               pathsToLink = ["/bin"];

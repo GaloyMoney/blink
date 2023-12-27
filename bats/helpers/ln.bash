@@ -75,6 +75,10 @@ check_for_ln_initiated_settled() {
   check_for_ln_initiated_status "SUCCESS" "$@"
 }
 
+check_for_ln_initiated_pending() {
+  check_for_ln_initiated_status "PENDING" "$@"
+}
+
 check_for_ln_update() {
   payment_hash=$1
 
