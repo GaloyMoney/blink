@@ -1,7 +1,7 @@
 CURRENT_FILE=${BASH_SOURCE:-bats/helpers/.}
 source "$(dirname "$CURRENT_FILE")/_common.bash"
 
-SVIX_CALLBACK_URL=${SVIX_CALLBACK_URL:-"http://bats-tests:8080/webhook/"}
+SVIX_CALLBACK_URL="http://bats-tests:8080/webhook/"
 
 add_callback() {
   local token_name=$1

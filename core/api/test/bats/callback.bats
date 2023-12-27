@@ -3,6 +3,8 @@
 load "helpers/setup-and-teardown"
 load "helpers/ln"
 
+SVIX_CALLBACK_URL="http://bats-tests:8080/webhook/"
+
 setup_file() {
   clear_cache
 
