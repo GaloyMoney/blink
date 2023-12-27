@@ -5,6 +5,7 @@ load "../../helpers/user.bash"
 load "../../helpers/onchain.bash"
 load "../../helpers/wallet.bash"
 load "../../helpers/ledger.bash"
+load "../../helpers/trigger.bash"
 
 setup_file() {
   create_user 'alice'
@@ -24,13 +25,11 @@ teardown() {
    fi
 }
 
-generate_trigger_logs() {
-  tilt_cli logs api-trigger > .e2e-trigger.log
-}
-
 grep_in_trigger_logs() {
-  generate_trigger_logs
-  grep $1 .e2e-trigger.log
+  cat_trigger \
+    | awk -F'│ ' '{print $2}' \
+    | grep $1
+  return "$?"
 }
 
 wait_for_new_payout_id() {
@@ -472,7 +471,7 @@ wait_for_new_payout_id() {
   retry 10 1 grep_in_trigger_logs "sequence.*payout_submitted.*${payout_id}"
 
   last_sequence=$(
-    grep "sequence" .e2e-trigger.log \
+    grep_in_trigger_logs "sequence" \
     | tail -n 1 \
     | jq -r '.sequence'
   )

@@ -19,3 +19,7 @@ trigger_is_started() {
     tail -n +$((lastLineNum + 1)) "$TILT_LOG_FILE" | grep -q 'finish updating pending invoices'
     return $?
 }
+
+cat_trigger() {
+  cat "$TILT_LOG_FILE" | grep 'api-trigger │ '
+}
