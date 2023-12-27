@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: introduce time based quizzes (#3743)...'
-      sha: 736c51b4048ba54d107a07a2070bd5e0b7e31b0e
+      commitTitle: 'test(core): optimize payout_id checks in bats (#3756)...'
+      sha: ffef6b29091269dcc5142bba8c227a3bb9f24021
       tags:
-      - 0.19.7-4-g736c51b40
+      - 0.19.8-1-gffef6b290
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: introduce time based quizzes (#3743)...'
-      sha: 736c51b4048ba54d107a07a2070bd5e0b7e31b0e
+      commitTitle: 'test(core): optimize payout_id checks in bats (#3756)...'
+      sha: ffef6b29091269dcc5142bba8c227a3bb9f24021
       tags:
-      - 0.19.7-4-g736c51b40
+      - 0.19.8-1-gffef6b290
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: introduce time based quizzes (#3743)...'
-      sha: 736c51b4048ba54d107a07a2070bd5e0b7e31b0e
+      commitTitle: 'test(core): optimize payout_id checks in bats (#3756)...'
+      sha: ffef6b29091269dcc5142bba8c227a3bb9f24021
       tags:
-      - 0.19.7-4-g736c51b40
+      - 0.19.8-1-gffef6b290
     path: ./
   path: ./graphql
 kind: LockConfig
