@@ -117,4 +117,62 @@ describe("quiz", () => {
       -3,
     )
   })
+
+  it("can only do next session when Date is older than 12 hours", () => {
+    const dateFromLastWeek = new Date()
+    dateFromLastWeek.setDate(dateFromLastWeek.getDate() - 7)
+
+    const quizzesCompleted = [
+      { quizId: "whatIsBitcoin" as QuizQuestionId, createdAt: dateFromLastWeek },
+      { quizId: "sat" as QuizQuestionId, createdAt: dateFromLastWeek },
+      { quizId: "whereBitcoinExist" as QuizQuestionId, createdAt: dateFromLastWeek },
+      { quizId: "whoControlsBitcoin" as QuizQuestionId, createdAt: dateFromLastWeek },
+      { quizId: "copyBitcoin" as QuizQuestionId, createdAt: dateFromLastWeek },
+    ]
+    const filledInfo = fillQuizInformation(quizzesCompleted)
+    expect(filledInfo.currentSection).toBe(1)
+
+    expect(filledInfo.quizzes[4].notBefore).toBeUndefined()
+
+    const currentQuiz = filledInfo.quizzes[5]
+    expect(currentQuiz.notBefore?.getTime()).toBeCloseTo(
+      dateFromLastWeek.getTime() + 12 * 60 * 60 * 1000,
+      -3,
+    )
+    expect(currentQuiz.notBefore && currentQuiz.notBefore > new Date()).toBe(false)
+  })
+
+  it("check that the algo use most recent date properly", () => {
+    const dateFromLastWeek = new Date()
+    dateFromLastWeek.setDate(dateFromLastWeek.getDate() - 7)
+
+    const dateFromLastHour = new Date()
+    dateFromLastHour.setHours(dateFromLastHour.getHours() - 1)
+
+    const quizzesCompleted = [
+      { quizId: "sat" as QuizQuestionId, createdAt: dateFromLastWeek },
+      { quizId: "whereBitcoinExist" as QuizQuestionId, createdAt: dateFromLastWeek },
+      { quizId: "whoControlsBitcoin" as QuizQuestionId, createdAt: dateFromLastWeek },
+      { quizId: "copyBitcoin" as QuizQuestionId, createdAt: dateFromLastWeek },
+      { quizId: "moneySocialAgreement" as QuizQuestionId, createdAt: dateFromLastHour },
+      { quizId: "coincidenceOfWants" as QuizQuestionId, createdAt: dateFromLastHour },
+      { quizId: "moneyEvolution" as QuizQuestionId, createdAt: dateFromLastHour },
+      { quizId: "whyStonesShellGold" as QuizQuestionId, createdAt: dateFromLastHour },
+      { quizId: "moneyIsImportant" as QuizQuestionId, createdAt: dateFromLastHour },
+      {
+        quizId: "moneyImportantGovernement" as QuizQuestionId,
+        createdAt: dateFromLastHour,
+      },
+      { quizId: "whatIsBitcoin" as QuizQuestionId, createdAt: dateFromLastWeek },
+    ]
+    const filledInfo = fillQuizInformation(quizzesCompleted)
+    expect(filledInfo.currentSection).toBe(2)
+
+    const currentQuiz = filledInfo.quizzes[11]
+    expect(currentQuiz.notBefore?.getTime()).toBeCloseTo(
+      dateFromLastHour.getTime() + 12 * 60 * 60 * 1000,
+      -3,
+    )
+    expect(currentQuiz.notBefore && currentQuiz.notBefore > new Date()).toBe(true)
+  })
 })
