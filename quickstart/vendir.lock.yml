@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): move and unskip xxd ln-send tests to new suite (#3759)...'
-      sha: 4ef81d3c9a209bbab20e6a613ea88b0bded71217
+      commitTitle: 'chore: do not consider quiz rewarded if funder balance is empty
+        (#3760)...'
+      sha: 9e73db3b0da9693a10cc05f4fd2e7038caa99ee6
       tags:
-      - 0.19.10-1-g4ef81d3c9
+      - 0.19.11-2-g9e73db3b0
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): move and unskip xxd ln-send tests to new suite (#3759)...'
-      sha: 4ef81d3c9a209bbab20e6a613ea88b0bded71217
+      commitTitle: 'chore: do not consider quiz rewarded if funder balance is empty
+        (#3760)...'
+      sha: 9e73db3b0da9693a10cc05f4fd2e7038caa99ee6
       tags:
-      - 0.19.10-1-g4ef81d3c9
+      - 0.19.11-2-g9e73db3b0
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(core): move and unskip xxd ln-send tests to new suite (#3759)...'
-      sha: 4ef81d3c9a209bbab20e6a613ea88b0bded71217
+      commitTitle: 'chore: do not consider quiz rewarded if funder balance is empty
+        (#3760)...'
+      sha: 9e73db3b0da9693a10cc05f4fd2e7038caa99ee6
       tags:
-      - 0.19.10-1-g4ef81d3c9
+      - 0.19.11-2-g9e73db3b0
     path: ./
   path: ./graphql
 kind: LockConfig
