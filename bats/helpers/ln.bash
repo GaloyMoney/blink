@@ -79,10 +79,7 @@ check_for_ln_update() {
   payment_hash=$1
 
   retry 10 1 \
-    grep "Data.*LnUpdate.*$payment_hash" "$SUBSCRIBER_LOG_FILE" \
-    | awk '{print $2}' \
-    | jq -r --arg hash "$payment_hash" 'select(.data.myUpdates.update.paymentHash == $hash)' \
-  || exit 1
+    grep "Data.*LnUpdate.*$payment_hash" "$SUBSCRIBER_LOG_FILE" || exit 1
 
   paid_status=$( \
     grep 'Data.*LnUpdate' "$SUBSCRIBER_LOG_FILE" \
