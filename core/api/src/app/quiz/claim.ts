@@ -109,9 +109,6 @@ export const claimQuizLegacy = async ({
   if (recipientBtcWallet === undefined) return new NoBtcWalletExistsForAccountError()
   const recipientWalletId = recipientBtcWallet.id
 
-  const shouldGiveSats = await QuizRepository().add({ quizId, accountId })
-  if (shouldGiveSats instanceof Error) return shouldGiveSats
-
   const funderBalance = await getBalanceForWallet({ walletId: funderWalletId })
   if (funderBalance instanceof Error) return funderBalance
 
@@ -120,6 +117,9 @@ export const claimQuizLegacy = async ({
     amountToSend: amount,
   })
   if (sendCheck instanceof Error) return sendCheck
+
+  const shouldGiveSats = await QuizRepository().add({ quizId, accountId })
+  if (shouldGiveSats instanceof Error) return shouldGiveSats
 
   const payment = await intraledgerPaymentSendWalletIdForBtcWallet({
     senderWalletId: funderWalletId,
@@ -220,9 +220,6 @@ export const claimQuiz = async ({
   if (recipientBtcWallet === undefined) return new NoBtcWalletExistsForAccountError()
   const recipientWalletId = recipientBtcWallet.id
 
-  const shouldGiveSats = await QuizRepository().add({ quizId, accountId })
-  if (shouldGiveSats instanceof Error) return shouldGiveSats
-
   const funderBalance = await getBalanceForWallet({ walletId: funderWalletId })
   if (funderBalance instanceof Error) return funderBalance
 
@@ -231,6 +228,9 @@ export const claimQuiz = async ({
     amountToSend: amount,
   })
   if (sendCheck instanceof Error) return sendCheck
+
+  const shouldGiveSats = await QuizRepository().add({ quizId, accountId })
+  if (shouldGiveSats instanceof Error) return shouldGiveSats
 
   const payment = await intraledgerPaymentSendWalletIdForBtcWallet({
     senderWalletId: funderWalletId,
