@@ -1,5 +1,7 @@
 import SatAmount from "../../../shared/types/scalar/sat-amount"
 
+import Timestamp from "@/graphql/shared/types/scalar/timestamp"
+
 import { GT } from "@/graphql/index"
 
 const Quiz = GT.Object({
@@ -11,6 +13,7 @@ const Quiz = GT.Object({
       description: "The reward in Satoshis for the quiz question",
     },
     completed: { type: GT.NonNull(GT.Boolean) },
+    notBefore: { type: Timestamp },
   }),
 })
 

@@ -1,5 +1,7 @@
 import { Quiz } from "./schema"
 
+import { QuizCompleted } from "@/domain/quiz"
+
 import { QuizAlreadyPresentError, UnknownRepositoryError } from "@/domain/errors"
 
 interface ExtendedError extends Error {
@@ -28,10 +30,12 @@ export const QuizRepository = () => {
     }
   }
 
-  const fetchAll = async (accountId: AccountId) => {
+  const fetchAll = async (
+    accountId: AccountId,
+  ): Promise<QuizCompleted[] | RepositoryError> => {
     try {
       const result = await Quiz.find({ accountId })
-      return result
+      return result.map(translateToQuiz)
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
@@ -42,3 +46,8 @@ export const QuizRepository = () => {
     fetchAll,
   }
 }
+
+const translateToQuiz = (result: QuizCompletedRecord): QuizCompleted => ({
+  quizId: result.quizId as QuizQuestionId,
+  createdAt: new Date(result.createdAt),
+})

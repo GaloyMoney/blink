@@ -303,7 +303,7 @@ AccountSchema.index({
 
 export const Account = mongoose.model<AccountRecord>("Account", AccountSchema)
 
-const QuizSchema = new Schema<QuizRecord>({
+const QuizSchema = new Schema<QuizCompletedRecord>({
   accountId: {
     type: String,
     ref: "Account",
@@ -321,7 +321,7 @@ const QuizSchema = new Schema<QuizRecord>({
 
 QuizSchema.index({ accountId: 1, quizId: 1 }, { unique: true })
 
-export const Quiz = mongoose.model<QuizRecord>("Quiz", QuizSchema)
+export const Quiz = mongoose.model<QuizCompletedRecord>("Quiz", QuizSchema)
 
 const AccountIpsSchema = new Schema<AccountIpsRecord>({
   ip: {

@@ -35,6 +35,7 @@ import {
   UnauthorizedIPMetadataCountryError,
   LikelyBadCoreError,
   LnurlRequestInvoiceError,
+  QuizClaimedTooEarlyError,
 } from "@/graphql/error"
 import { baseLogger } from "@/services/logger"
 
@@ -484,6 +485,10 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "LikelyBadCoreError":
       message = error.message
       return new LikelyBadCoreError({ message, logger: baseLogger })
+
+    case "QuizClaimedTooEarlyError":
+      message = error.message
+      return new QuizClaimedTooEarlyError({ message, logger: baseLogger })
 
     // ----------
     // Unhandled below here

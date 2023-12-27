@@ -18,7 +18,7 @@ afterEach(async () => {
 
 describe("addQuiz", () => {
   it("fails if ip is undefined", async () => {
-    const result = await Quiz.completeQuiz({
+    const result = await Quiz.claimQuiz({
       accountId: crypto.randomUUID() as AccountId,
       quizQuestionId: "fakeQuizQuestionId",
       ip: undefined,
@@ -39,7 +39,7 @@ describe("addQuiz", () => {
         consume: () => new RateLimiterExceededError(),
       })
 
-    const result = await Quiz.completeQuiz({
+    const result = await Quiz.claimQuiz({
       accountId: crypto.randomUUID() as AccountId,
       quizQuestionId: "fakeQuizQuestionId",
       ip: "192.168.13.13" as IpAddress,
