@@ -16,6 +16,7 @@ import {
   InvalidOrApprovedVerificationError,
   InvalidPhoneNumberPhoneProviderError,
   InvalidTypePhoneProviderError,
+  MissingTypePhoneProviderError,
   PhoneCodeInvalidError,
   PhoneProviderConnectionError,
   PhoneProviderRateLimitExceededError,
@@ -57,6 +58,9 @@ export const TwilioClient = (): IPhoneProviderService => {
         fields: "line_type_intelligence",
       })
       // https://www.twilio.com/docs/lookup/v2-api/line-type-intelligence#type-property-values
+      if (!lookup.lineTypeIntelligence) {
+        return new MissingTypePhoneProviderError()
+      }
       if (lookup.lineTypeIntelligence.type === "nonFixedVoip") {
         return new InvalidTypePhoneProviderError("nonFixedVoip")
       }

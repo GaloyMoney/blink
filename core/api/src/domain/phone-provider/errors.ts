@@ -10,6 +10,9 @@ export class RestrictedRegionPhoneProviderError extends PhoneProviderServiceErro
 export class UnsubscribedRecipientPhoneProviderError extends PhoneProviderServiceError {}
 export class RestrictedRecipientPhoneNumberError extends PhoneProviderServiceError {}
 export class InvalidOrApprovedVerificationError extends PhoneProviderServiceError {}
+export class MissingTypePhoneProviderError extends PhoneProviderServiceError {
+  level = ErrorLevel.Critical
+}
 
 export class PhoneCodeInvalidError extends PhoneProviderServiceError {}
 
