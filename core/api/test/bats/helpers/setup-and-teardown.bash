@@ -57,17 +57,6 @@ subscribe_to() {
   echo $! > $SUBSCRIBER_PID_FILE
 }
 
-add_callback() {
-  local token_name=$1
-
-  local variables=$(
-    jq -n \
-    --arg url "$SVIX_CALLBACK_URL" \
-    '{input: {url: $url}}'
-  )
-  exec_graphql "$token_name" 'callback-endpoint-add' "$variables"
-}
-
 start_ws_server() {
   stop_ws_server > /dev/null 2>&1 || true
 
