@@ -5,6 +5,7 @@ load "../../helpers/user.bash"
 load "../../helpers/onchain.bash"
 load "../../helpers/wallet.bash"
 load "../../helpers/ledger.bash"
+load "../../helpers/trigger.bash"
 
 setup_file() {
   create_user 'alice'
@@ -24,13 +25,27 @@ teardown() {
    fi
 }
 
-generate_trigger_logs() {
-  tilt_cli logs api-trigger > .e2e-trigger.log
+grep_in_trigger_logs() {
+  cat_trigger \
+    | awk -F'│ ' '{print $2}' \
+    | grep $1
+  return "$?"
 }
 
-grep_in_trigger_logs() {
-  generate_trigger_logs
-  grep $1 .e2e-trigger.log
+wait_for_new_payout_id() {
+  prior_id="$1"
+
+  payout_id=$(
+    grep_in_trigger_logs "sequence.*payout_submitted" \
+    | tail -n 1 \
+    | jq -r '.id'
+  )
+
+  if [[ "$payout_id" == "$prior_id" ]]; then
+    return 1
+  else
+    return 0
+  fi
 }
 
 @test "onchain-send: settle trade intraccount" {
@@ -456,7 +471,7 @@ grep_in_trigger_logs() {
   retry 10 1 grep_in_trigger_logs "sequence.*payout_submitted.*${payout_id}"
 
   last_sequence=$(
-    grep "sequence" .e2e-trigger.log \
+    grep_in_trigger_logs "sequence" \
     | tail -n 1 \
     | jq -r '.sequence'
   )
@@ -470,17 +485,12 @@ grep_in_trigger_logs() {
   btc_wallet_name="alice.btc_wallet_id"
   usd_wallet_name="alice.usd_wallet_id"
 
-  # Get last sequence
-  last_sequence=$(
-    grep "sequence" .e2e-trigger.log \
+  # Fetch prior payout_id
+  prior_id=$(
+    grep_in_trigger_logs "sequence.*payout_submitted" \
     | tail -n 1 \
-    | jq -r '.sequence'
+    | jq -r '.id'
   )
-  if [[ -z "${last_sequence}" ]]; then
-    sequence=1
-  else
-    sequence="$(( $last_sequence + 1 ))"
-  fi
 
   # Initiate internal payout
   on_chain_payment_send_address=$(bitcoin_cli getnewaddress)
@@ -498,9 +508,9 @@ grep_in_trigger_logs() {
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
   # Parse payout_id value
-  retry 10 1 grep_in_trigger_logs "sequence\":${sequence}.*payout_submitted"
+  retry 10 1 wait_for_new_payout_id "$prior_id"
   payout_id=$(
-    grep "sequence.*payout_submitted" .e2e-trigger.log \
+    grep_in_trigger_logs "sequence.*payout_submitted" \
     | tail -n 1 \
     | jq -r '.id'
   )
