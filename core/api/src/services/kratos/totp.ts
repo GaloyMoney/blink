@@ -28,7 +28,7 @@ export const kratosInitiateTotp = async (token: AuthToken) => {
       .text as TotpSecret
     return { totpSecret, totpRegistrationId: res.data.id as TotpRegistrationId }
   } catch (err) {
-    return new UnknownKratosError(err)
+    return handleKratosErrors(err)
   }
 }
 
@@ -56,7 +56,6 @@ export const kratosValidateTotp = async ({
         return new LikelyBadCoreError()
       }
     }
-    console.log(err, "err123")
 
     return new UnknownKratosError(err)
   }
