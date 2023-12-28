@@ -179,6 +179,10 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = "Invalid phone number type. Please use a mobile number."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "MissingTypePhoneProviderError":
+      message = "Issue checking phone number. Please try again later or contact support."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "RestrictedRegionPhoneProviderError":
       message = "Phone number is not from a valid region"
       return new ValidationInternalError({ message, logger: baseLogger })
