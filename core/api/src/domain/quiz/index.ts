@@ -24,9 +24,18 @@ type FillQuizInformationResult = {
   }[]
 }
 
-const lastSectionCompleted = (quizzesCompleted: QuizCompleted[]): number => {
-  const quizzesCompletedIds = quizzesCompleted.map((quiz) => quiz.quizId)
-  const lastQuizCompleted = quizzesCompletedIds[quizzesCompletedIds.length - 1]
+const orderedKeys = Object.keys(QuizzesValue)
+
+const reorderQuizzes = (quizzesCompleted: QuizCompleted[]) => {
+  return quizzesCompleted.sort((a, b) => {
+    const indexA = orderedKeys.indexOf(a.quizId)
+    const indexB = orderedKeys.indexOf(b.quizId)
+    return indexA - indexB
+  })
+}
+
+const lastSectionCompleted = (orderedQuizzes: QuizCompleted[]): number => {
+  const lastQuizCompleted = orderedQuizzes[orderedQuizzes.length - 1]?.quizId
 
   // which section are we?
   const index = QuizzesSections.findIndex((section) =>
@@ -43,10 +52,11 @@ const lastSectionCompleted = (quizzesCompleted: QuizCompleted[]): number => {
 export const fillQuizInformation = (
   quizzesCompleted: QuizCompleted[],
 ): FillQuizInformationResult => {
-  const currentSection = lastSectionCompleted(quizzesCompleted)
+  const orderedQuizzes = reorderQuizzes(quizzesCompleted)
+  const currentSection = lastSectionCompleted(orderedQuizzes)
 
   const quizzes = Object.entries(QuizzesValue).map(([id, amount]) => {
-    const quizCompleted = quizzesCompleted.find((quiz) => quiz.quizId === id)
+    const quizCompleted = orderedQuizzes.find((quiz) => quiz.quizId === id)
     const section =
       QuizzesSections.find((section) => section.quiz.includes(id as QuizQuestionId))
         ?.order ?? NaN
@@ -56,7 +66,7 @@ export const fillQuizInformation = (
     let notBefore: Date | undefined = undefined
     if (section !== 0 && !completed) {
       const lastQuizCreatedAt =
-        quizzesCompleted[quizzesCompleted.length - 1]?.createdAt ?? new Date()
+        orderedQuizzes[orderedQuizzes.length - 1]?.createdAt ?? new Date()
 
       notBefore = new Date(lastQuizCreatedAt.getTime() + milliSecondsBetweenSections)
     }
