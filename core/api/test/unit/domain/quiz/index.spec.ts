@@ -175,4 +175,36 @@ describe("quiz", () => {
     )
     expect(currentQuiz.notBefore && currentQuiz.notBefore > new Date()).toBe(true)
   })
+
+  it("ensure notBefore date is calculated correctly - based on the last one from previous section", () => {
+    const dateFromLastWeek = new Date()
+    dateFromLastWeek.setDate(dateFromLastWeek.getDate() - 7)
+
+    const dateFromLastHour = new Date()
+    dateFromLastHour.setHours(dateFromLastHour.getHours() - 1)
+
+    const quizzesCompleted = [
+      { quizId: "whatIsBitcoin" as QuizQuestionId, createdAt: dateFromLastWeek },
+      { quizId: "sat" as QuizQuestionId, createdAt: dateFromLastWeek },
+      { quizId: "whereBitcoinExist" as QuizQuestionId, createdAt: dateFromLastWeek },
+      { quizId: "whoControlsBitcoin" as QuizQuestionId, createdAt: dateFromLastWeek },
+      { quizId: "copyBitcoin" as QuizQuestionId, createdAt: dateFromLastWeek },
+      { quizId: "moneySocialAgreement" as QuizQuestionId, createdAt: dateFromLastHour },
+    ]
+
+    const filledInfo = fillQuizInformation(quizzesCompleted)
+    expect(filledInfo.currentSection).toBe(1)
+
+    console.log(filledInfo.quizzes[5])
+    console.log(filledInfo.quizzes[6])
+    console.log(filledInfo.quizzes[7])
+
+    const currentQuiz = filledInfo.quizzes[6]
+    expect(currentQuiz.notBefore?.getTime()).toBeCloseTo(
+      dateFromLastWeek.getTime() + 12 * 60 * 60 * 1000,
+      -3,
+    )
+
+    expect(currentQuiz.notBefore && currentQuiz.notBefore > new Date()).toBe(false)
+  })
 })
