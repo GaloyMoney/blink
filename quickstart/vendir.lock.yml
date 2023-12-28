@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: do not consider quiz rewarded if funder balance is empty
-        (#3760)...'
-      sha: 9e73db3b0da9693a10cc05f4fd2e7038caa99ee6
+      commitTitle: 'fix: check if ''lineTypeIntelligence'' property exists (#3758)'
+      sha: 3eb3ed36200b80967c884463fb10fbaffda353b7
       tags:
-      - 0.19.11-2-g9e73db3b0
+      - 0.19.11-4-g3eb3ed362
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: do not consider quiz rewarded if funder balance is empty
-        (#3760)...'
-      sha: 9e73db3b0da9693a10cc05f4fd2e7038caa99ee6
+      commitTitle: 'fix: check if ''lineTypeIntelligence'' property exists (#3758)'
+      sha: 3eb3ed36200b80967c884463fb10fbaffda353b7
       tags:
-      - 0.19.11-2-g9e73db3b0
+      - 0.19.11-4-g3eb3ed362
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: do not consider quiz rewarded if funder balance is empty
-        (#3760)...'
-      sha: 9e73db3b0da9693a10cc05f4fd2e7038caa99ee6
+      commitTitle: 'fix: check if ''lineTypeIntelligence'' property exists (#3758)'
+      sha: 3eb3ed36200b80967c884463fb10fbaffda353b7
       tags:
-      - 0.19.11-2-g9e73db3b0
+      - 0.19.11-4-g3eb3ed362
     path: ./
   path: ./graphql
 kind: LockConfig
