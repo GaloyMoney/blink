@@ -68,9 +68,6 @@ for file in "${app_src_files[@]}"; do
   git checkout "$ref" -- "$file"
 done
 
-echo "${relevant_commits[@]}" > relevant_commits.json
-git add relevant_commits.json
-
 git commit -m "Commit state of \`${APP}\` at \`${ref}\`" --allow-empty
 git push -fu origin ${APP}-${ref}
 
