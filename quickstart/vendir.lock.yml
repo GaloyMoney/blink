@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: check if ''lineTypeIntelligence'' property exists (#3758)'
-      sha: 3eb3ed36200b80967c884463fb10fbaffda353b7
+      commitTitle: 'fix: using the right timing for the quizzes (#3763)'
+      sha: dd9c56187e00c12d966616ab52851cfd8eb0d3d8
       tags:
-      - 0.19.11-4-g3eb3ed362
+      - 0.19.13-1-gdd9c56187
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: check if ''lineTypeIntelligence'' property exists (#3758)'
-      sha: 3eb3ed36200b80967c884463fb10fbaffda353b7
+      commitTitle: 'fix: using the right timing for the quizzes (#3763)'
+      sha: dd9c56187e00c12d966616ab52851cfd8eb0d3d8
       tags:
-      - 0.19.11-4-g3eb3ed362
+      - 0.19.13-1-gdd9c56187
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: check if ''lineTypeIntelligence'' property exists (#3758)'
-      sha: 3eb3ed36200b80967c884463fb10fbaffda353b7
+      commitTitle: 'fix: using the right timing for the quizzes (#3763)'
+      sha: dd9c56187e00c12d966616ab52851cfd8eb0d3d8
       tags:
-      - 0.19.11-4-g3eb3ed362
+      - 0.19.14
     path: ./
   path: ./graphql
 kind: LockConfig
