@@ -16,6 +16,7 @@ import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
 
 import {
   bitcoindClient,
+  bitcoindOutside,
   createAccount,
   createMandatoryUsers,
   fundLnd,
@@ -24,11 +25,11 @@ import {
   getBalanceHelper,
   lnd1,
   lndOutside1,
+  loadBitcoindWallet,
   mineAndConfirm,
   openChannelTesting,
   resetLegacyIntegrationLnds,
 } from "test/helpers"
-import { BitcoindWalletClient } from "test/helpers/bitcoind"
 
 class ZeroAmountForUsdRecipientError extends Error {}
 
@@ -58,17 +59,18 @@ type AccountAndWallets = {
 }
 
 beforeAll(async () => {
-  createMandatoryUsers()
+  await createMandatoryUsers()
+  await loadBitcoindWallet("outside")
   await resetLegacyIntegrationLnds()
   await bootstrapLndNodes()
 })
 
-const bootstrapLndNodes = async () => {
-  // Create and fund outside wallet to fund lnd nodes
-  const outsideWalletName = "outside"
-  await bitcoindClient.createWallet({ walletName: outsideWalletName })
-  const bitcoindOutside = new BitcoindWalletClient(outsideWalletName)
+afterAll(async () => {
+  await bitcoindClient.unloadWallet({ walletName: "outside" })
+})
 
+const bootstrapLndNodes = async () => {
+  // Fund outside wallet to fund lnd nodes
   const numOfBlocks = 10
   const bitcoindAddress = await bitcoindOutside.getNewAddress()
   await mineAndConfirm({
