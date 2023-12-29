@@ -3,6 +3,7 @@
 load "../../helpers/_common.bash"
 load "../../helpers/cli.bash"
 load "../../helpers/ledger.bash"
+load "../../helpers/ln.bash"
 load "../../helpers/subscriber.bash"
 load "../../helpers/user.bash"
 
@@ -141,4 +142,28 @@ usd_amount=50
   # Check for settled with subscription
   retry 10 1 grep "Data.*lnInvoicePaymentStatus.*PAID" "$SUBSCRIBER_LOG_FILE"
   stop_subscriber
+}
+
+@test "public-ln-receive: receive via invoice - can receive on usd invoice" {
+  token_name="$ALICE"
+  usd_wallet_name="$token_name.usd_wallet_id"
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    --arg amount "$usd_amount" \
+    '{input: {recipientWalletId: $wallet_id, amount: $amount}}'
+  )
+  exec_graphql 'anon' 'ln-usd-invoice-create-on-behalf-of-recipient' "$variables"
+  invoice="$(graphql_output '.data.lnUsdInvoiceCreateOnBehalfOfRecipient.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+
+  # Receive payment
+  lnd_outside_cli payinvoice -f \
+    --pay_req "$payment_request" \
+
+  # Check for settled with query
+  retry 15 1 check_ln_payment_settled "$payment_request"
 }
