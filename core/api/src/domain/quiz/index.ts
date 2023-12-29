@@ -56,19 +56,18 @@ export const fillQuizInformation = (
   const currentSection = lastSectionCompleted(orderedQuizzes)
 
   const quizzes = Object.entries(QuizzesValue).map(([id, amount]) => {
-    const quizCompleted = orderedQuizzes.find((quiz) => quiz.quizId === id)
+    const completed = !!orderedQuizzes.find((quiz) => quiz.quizId === id)
     const section =
       QuizzesSections.find((section) => section.quiz.includes(id as QuizQuestionId))
         ?.order ?? NaN
 
-    const completed = !!quizCompleted
-
     let notBefore: Date | undefined = undefined
     if (section !== 0 && !completed) {
-      const lastQuizCreatedAt =
-        orderedQuizzes[orderedQuizzes.length - 1]?.createdAt ?? new Date()
-
-      notBefore = new Date(lastQuizCreatedAt.getTime() + milliSecondsBetweenSections)
+      const lastSection = QuizzesSections[section - 1]
+      const lastQuizId = lastSection.quiz[lastSection.quiz.length - 1]
+      const lastQuizCompleted = orderedQuizzes.find((quiz) => quiz.quizId === lastQuizId)
+      const lastSectionCompletedAt = lastQuizCompleted?.createdAt ?? new Date()
+      notBefore = new Date(lastSectionCompletedAt.getTime() + milliSecondsBetweenSections)
     }
 
     return {
