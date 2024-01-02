@@ -82,11 +82,15 @@ ${github_url}/compare/core-${old_ref}...core-${ref}
 Relevant commits:
 EOF
 
-for commit in "${relevant_commits[@]}"; do
-  cat <<EOF >> ../body.md
-- ${github_url}/commit/${commit}
-EOF
-done
+if [[ "${#relevant_commits[@]}" -eq 0 ]]; then
+  echo "- No relevant commits found" >> ../body.md
+else
+  for commit in "${relevant_commits[@]}"; do
+    cat <<-EOF >> ../body.md
+		- ${github_url}/commit/${commit}
+		EOF
+  done
+fi
 
 cat <<EOF >> ../body.md
 
