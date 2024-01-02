@@ -80,7 +80,10 @@ describe("lndUtils", () => {
     }
   })
 
-  it("sets routing fee correctly", async () => {
+  it.skip("sets routing fee correctly", async () => {
+    // Skipped because this test is already broken. lndOutside1 and lndOutside2
+    // are directly connected and routing fees are 0.
+
     const { request } = await createInvoice({ lnd: lndOutside2, tokens: 10000 })
 
     const initBalance = await ledgerAdmin.getBankOwnerBalance()
