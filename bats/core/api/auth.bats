@@ -5,6 +5,7 @@ load "../../helpers/user.bash"
 
 KRATOS_ADMIN_API="http://localhost:4434"
 KRATOS_PG_CON="postgres://dbuser:secret@localhost:5432/default?sslmode=disable"
+GALOY_ENDPOINT="localhost:4455"
 
 setup_file() {
   clear_cache
@@ -76,4 +77,26 @@ getEmailCode() {
   exec_graphql 'charlie' 'user-email-registration-validate' "$variables"
   [[ "$(graphql_output '.data.userEmailRegistrationValidate.me.email.address')" == "$email" ]] || exit 1
   [[ "$(graphql_output '.data.userEmailRegistrationValidate.me.email.verified')" == "true" ]] || exit 1
+}
+
+@test "auth: log in with email" {
+  email=$(read_value 'charlie.email')
+
+  # code request
+  curl_request "http://${GALOY_ENDPOINT}/auth/email/code" "{ \"email\": \"$email\" }"
+  emailLoginId=$(curl_output '.result')
+  [ -n "$emailLoginId" ] || exit 1
+
+  code=$(getEmailCode "$email")
+  [ -n "$code" ] || exit 1
+
+  # validate code
+  curl_request "http://${GALOY_ENDPOINT}/auth/email/login" "{ \"code\": \"$code\", \"emailLoginId\": \"$emailLoginId\" }"
+  authToken=$(curl_output '.result.authToken')
+  [ -n "$authToken" ] || exit 1
+
+  authTokenLength=$(echo -n "$authToken" | wc -c)
+  [ "$authTokenLength" -eq 39 ] || exit 1
+
+  # TODO: check the response when the login request has expired
 }
