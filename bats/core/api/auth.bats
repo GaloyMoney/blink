@@ -40,6 +40,12 @@ getEmailCount() {
   echo $count
 }
 
+generateTotpCode() {
+  local secret=$1
+  buck2 run //bats/helpers/totp:generate "$secret" | tail -n 1
+}
+
+
 @test "auth: create user" {
   create_user 'charlie'
 
@@ -154,4 +160,26 @@ getEmailCount() {
   # Remove phone.
   exec_graphql "charlie" "user-phone-delete"
   [[ "$(graphql_output '.data.userPhoneDelete.me.phone')" == "null" ]] || exit 1
+}
+
+@test "auth: adding totp" {
+  authToken=$(read_value 'charlie')
+
+  # Initiate TOTP Registration
+  exec_graphql 'charlie' 'user-totp-registration-initiate'
+
+  totpRegistrationId="$(graphql_output '.data.userTotpRegistrationInitiate.totpRegistrationId')"
+  [[ "$totpRegistrationId" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]] || exit 1
+
+  totpSecret="$(graphql_output '.data.userTotpRegistrationInitiate.totpSecret')"
+  [ -n "$totpSecret" ] || exit 1
+
+  # Validate TOTP Registration
+  totpCode=$(generateTotpCode "$totpSecret")
+  variables="{\"input\": {\"totpCode\": \"$totpCode\", \"totpRegistrationId\": \"$totpRegistrationId\", \"authToken\": \"$authToken\"}}"
+  exec_graphql 'charlie' 'user-totp-registration-validate' "$variables"
+
+  # Checking the response structure
+  totpEnabled="$(graphql_output '.data.userTotpRegistrationValidate.me.totpEnabled')"
+  [ "$totpEnabled" == "true" ] || exit 1
 }

@@ -1,0 +1,11 @@
+{
+  "name": "totp",
+  "scripts": {
+    "generate": "tsx src/totp-generate.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "otplib": "^12.0.1",
+    "tsx": "^4.2.0"
+  }
+}

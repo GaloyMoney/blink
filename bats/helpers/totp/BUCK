@@ -1,0 +1,9 @@
+load(
+  "@toolchains//workspace-pnpm:macros.bzl",
+  "dev_pnpm_task_binary",
+)
+
+dev_pnpm_task_binary(
+  name = "generate",
+  command = "generate",
+)
