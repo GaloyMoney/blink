@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: using the right timing for the quizzes (#3763)'
-      sha: dd9c56187e00c12d966616ab52851cfd8eb0d3d8
+      commitTitle: 'chore(flake): bump flake.lock (#3767)'
+      sha: c02b2003e728227afff93c19338d9e824d6143a0
       tags:
-      - 0.19.13-1-gdd9c56187
+      - 0.19.14-3-gc02b2003e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: using the right timing for the quizzes (#3763)'
-      sha: dd9c56187e00c12d966616ab52851cfd8eb0d3d8
+      commitTitle: 'chore(flake): bump flake.lock (#3767)'
+      sha: c02b2003e728227afff93c19338d9e824d6143a0
       tags:
-      - 0.19.13-1-gdd9c56187
+      - 0.19.14-3-gc02b2003e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: using the right timing for the quizzes (#3763)'
-      sha: dd9c56187e00c12d966616ab52851cfd8eb0d3d8
+      commitTitle: 'chore(flake): bump flake.lock (#3767)'
+      sha: c02b2003e728227afff93c19338d9e824d6143a0
       tags:
-      - 0.19.14
+      - 0.19.14-3-gc02b2003e
     path: ./
   path: ./graphql
 kind: LockConfig
