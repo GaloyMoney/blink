@@ -29,6 +29,17 @@ getEmailCode() {
   echo "$code"
 }
 
+getEmailCount() {
+  local email="$1"
+  local table="courier_messages"
+  local query="SELECT COUNT(*) FROM $table WHERE recipient = '$email';"
+
+  # Make the query
+  local count=$(psql $KRATOS_PG_CON -t -c "${query}")
+
+  echo $count
+}
+
 @test "auth: create user" {
   create_user 'charlie'
 
@@ -99,4 +110,48 @@ getEmailCode() {
   [ "$authTokenLength" -eq 39 ] || exit 1
 
   # TODO: check the response when the login request has expired
+}
+
+@test "auth: remove email" {
+  email=$(read_value 'charlie.email')
+  countInit=$(getEmailCount "$email")
+  echo "count for $email is: $countInit"
+  [ "$countInit" -eq 2 ] || exit 1
+
+  exec_graphql 'charlie' 'user-email-delete'
+  [[ "$(graphql_output '.data.userEmailDelete.me.email.address')" == "null" ]] || exit 1
+  [[ "$(graphql_output '.data.userEmailDelete.me.email.verified')" == "false" ]] || exit 1
+
+  curl_request "http://${GALOY_ENDPOINT}/auth/email/code" "{ \"email\": \"${email}\" }"
+  flowId=$(curl_output '.result')
+  [[ "$flowId" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]] || exit 1
+
+  exec_graphql 'charlie' 'identity'
+  [[ "$(graphql_output '.data.me.email.address')" == "null" ]] || exit 1
+  [[ "$(graphql_output '.data.me.totpEnabled')" == "false" ]] || exit 1
+
+  count=$(getEmailCount "$email")
+  [[ "$count" -eq "$countInit" ]] || exit 1
+
+  # TODO: email to the sender highlighting the email was removed
+}
+
+@test "auth: remove phone login" {
+  email=$(read_value 'charlie.email')
+
+  variables="{\"input\": {\"email\": \"$email\"}}"
+  exec_graphql 'charlie' 'user-email-registration-initiate' "$variables"
+  emailRegistrationId="$(graphql_output '.data.userEmailRegistrationInitiate.emailRegistrationId')"
+
+  code=$(getEmailCode "$email")
+  echo "The code is: $code"
+
+  variables="{\"input\": {\"code\": \"$code\", \"emailRegistrationId\": \"$emailRegistrationId\"}}"
+  exec_graphql 'charlie' 'user-email-registration-validate' "$variables"
+  [[ "$(graphql_output '.data.userEmailRegistrationValidate.me.email.address')" == "$email" ]] || exit 1
+  [[ "$(graphql_output '.data.userEmailRegistrationValidate.me.email.verified')" == "true" ]] || exit 1
+
+  # Remove phone.
+  exec_graphql "charlie" "user-phone-delete"
+  [[ "$(graphql_output '.data.userPhoneDelete.me.phone')" == "null" ]] || exit 1
 }
