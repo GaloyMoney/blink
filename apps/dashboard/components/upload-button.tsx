@@ -1,4 +1,3 @@
-"use client"
 import * as React from "react"
 import SvgIcon from "@mui/joy/SvgIcon"
 import { Button, Card } from "@mui/joy"
@@ -14,9 +13,12 @@ export default function FileUpload({
   file,
   processCsvLoading,
 }: FileUploadButtonProps) {
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       setFile(event.target.files[0])
+      event.target.value = ""
     }
   }
 
@@ -29,6 +31,9 @@ export default function FileUpload({
     if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
       setFile(event.dataTransfer.files[0])
       event.dataTransfer.clearData()
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
     }
   }
 
@@ -72,6 +77,7 @@ export default function FileUpload({
               type="file"
               onChange={handleFileChange}
               accept=".csv"
+              ref={fileInputRef}
               style={{
                 clip: "rect(0 0 0 0)",
                 clipPath: "inset(50%)",

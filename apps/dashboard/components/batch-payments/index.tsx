@@ -222,7 +222,9 @@ export default function BatchPayments() {
               <Details label="Wallet Id" value={paymentDetails.walletDetails.id} />
               <Details
                 label="Wallet Balance"
-                value={String(paymentDetails.walletDetails.balance)}
+                value={`${
+                  paymentDetails.walletDetails.balance
+                } ${getCurrencyFromWalletType(paymentDetails.walletType)}`}
               />
               <Button onClick={processPayments} loading={processPaymentLoading}>
                 Confirm Payment
