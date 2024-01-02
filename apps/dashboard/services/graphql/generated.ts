@@ -87,6 +87,8 @@ export type Scalars = {
 export type Account = {
   readonly callbackEndpoints: ReadonlyArray<CallbackEndpoint>;
   readonly csvTransactions: Scalars['String']['output'];
+  readonly defaultWallet: PublicWallet;
+  /** @deprecated Shifting property to 'defaultWallet.id' */
   readonly defaultWalletId: Scalars['WalletId']['output'];
   readonly displayCurrency: Scalars['DisplayCurrency']['output'];
   readonly id: Scalars['ID']['output'];
@@ -384,6 +386,7 @@ export type ConsumerAccount = Account & {
   readonly callbackEndpoints: ReadonlyArray<CallbackEndpoint>;
   /** return CSV stream, base64 encoded, of the list of transactions in the wallet */
   readonly csvTransactions: Scalars['String']['output'];
+  readonly defaultWallet: PublicWallet;
   readonly defaultWalletId: Scalars['WalletId']['output'];
   readonly displayCurrency: Scalars['DisplayCurrency']['output'];
   readonly id: Scalars['ID']['output'];
@@ -614,6 +617,15 @@ export const InvoicePaymentStatus = {
 } as const;
 
 export type InvoicePaymentStatus = typeof InvoicePaymentStatus[keyof typeof InvoicePaymentStatus];
+export type LnAddressPaymentSendInput = {
+  /** Amount in satoshis. */
+  readonly amount: Scalars['SatAmount']['input'];
+  /** Lightning address to send to. */
+  readonly lnAddress: Scalars['String']['input'];
+  /** Wallet ID to send bitcoin from. */
+  readonly walletId: Scalars['WalletId']['input'];
+};
+
 export type LnInvoice = Invoice & {
   readonly __typename: 'LnInvoice';
   readonly createdAt: Scalars['Timestamp']['output'];
@@ -794,6 +806,15 @@ export type LnUsdInvoiceFeeProbeInput = {
   readonly walletId: Scalars['WalletId']['input'];
 };
 
+export type LnurlPaymentSendInput = {
+  /** Amount in satoshis. */
+  readonly amount: Scalars['SatAmount']['input'];
+  /** Lnurl string to send to. */
+  readonly lnurl: Scalars['String']['input'];
+  /** Wallet ID to send bitcoin from. */
+  readonly walletId: Scalars['WalletId']['input'];
+};
+
 export type MapInfo = {
   readonly __typename: 'MapInfo';
   readonly coordinates: Coordinates;
@@ -842,6 +863,8 @@ export type Mutation = {
    * failed, pending, already_paid).
    */
   readonly intraLedgerUsdPaymentSend: PaymentSendPayload;
+  /** Sends a payment to a lightning address. */
+  readonly lnAddressPaymentSend: PaymentSendPayload;
   /**
    * Returns a lightning invoice for an associated wallet.
    * When invoice is paid the value will be credited to a BTC wallet.
@@ -909,12 +932,16 @@ export type Mutation = {
    */
   readonly lnUsdInvoiceCreateOnBehalfOfRecipient: LnInvoicePayload;
   readonly lnUsdInvoiceFeeProbe: SatAmountPayload;
+  /** Sends a payment to a lightning address. */
+  readonly lnurlPaymentSend: PaymentSendPayload;
   readonly onChainAddressCreate: OnChainAddressPayload;
   readonly onChainAddressCurrent: OnChainAddressPayload;
   readonly onChainPaymentSend: PaymentSendPayload;
   readonly onChainPaymentSendAll: PaymentSendPayload;
   readonly onChainUsdPaymentSend: PaymentSendPayload;
   readonly onChainUsdPaymentSendAsBtcDenominated: PaymentSendPayload;
+  readonly quizClaim: QuizClaimPayload;
+  /** @deprecated Use quizClaim instead */
   readonly quizCompleted: QuizCompletedPayload;
   /** @deprecated will be moved to AccountContact */
   readonly userContactUpdateAlias: UserContactUpdateAliasPayload;
@@ -1011,6 +1038,11 @@ export type MutationIntraLedgerUsdPaymentSendArgs = {
 };
 
 
+export type MutationLnAddressPaymentSendArgs = {
+  input: LnAddressPaymentSendInput;
+};
+
+
 export type MutationLnInvoiceCreateArgs = {
   input: LnInvoiceCreateInput;
 };
@@ -1081,6 +1113,11 @@ export type MutationLnUsdInvoiceFeeProbeArgs = {
 };
 
 
+export type MutationLnurlPaymentSendArgs = {
+  input: LnurlPaymentSendInput;
+};
+
+
 export type MutationOnChainAddressCreateArgs = {
   input: OnChainAddressCreateInput;
 };
@@ -1108,6 +1145,11 @@ export type MutationOnChainUsdPaymentSendArgs = {
 
 export type MutationOnChainUsdPaymentSendAsBtcDenominatedArgs = {
   input: OnChainUsdPaymentSendAsBtcDenominatedInput;
+};
+
+
+export type MutationQuizClaimArgs = {
+  input: QuizClaimInput;
 };
 
 
@@ -1398,7 +1440,9 @@ export type PricePoint = {
 /** A public view of a generic wallet which stores value in one of our supported currencies. */
 export type PublicWallet = {
   readonly __typename: 'PublicWallet';
+  readonly currency: WalletCurrency;
   readonly id: Scalars['ID']['output'];
+  /** @deprecated Shifting property to 'currency' */
   readonly walletCurrency: WalletCurrency;
 };
 
@@ -1415,8 +1459,6 @@ export type Query = {
   readonly onChainTxFee: OnChainTxFee;
   readonly onChainUsdTxFee: OnChainUsdTxFee;
   readonly onChainUsdTxFeeAsBtcDenominated: OnChainUsdTxFee;
-  /** @deprecated TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated */
-  readonly quizQuestions?: Maybe<ReadonlyArray<Maybe<QuizQuestion>>>;
   /** Returns 1 Sat and 1 Usd Cent price for the given currency */
   readonly realtimePrice: RealtimePrice;
   /** @deprecated will be migrated to AccountDefaultWalletId */
@@ -1485,6 +1527,17 @@ export type Quiz = {
   readonly amount: Scalars['SatAmount']['output'];
   readonly completed: Scalars['Boolean']['output'];
   readonly id: Scalars['ID']['output'];
+  readonly notBefore?: Maybe<Scalars['Timestamp']['output']>;
+};
+
+export type QuizClaimInput = {
+  readonly id: Scalars['ID']['input'];
+};
+
+export type QuizClaimPayload = {
+  readonly __typename: 'QuizClaimPayload';
+  readonly errors: ReadonlyArray<Error>;
+  readonly quizzes: ReadonlyArray<Quiz>;
 };
 
 export type QuizCompletedInput = {
@@ -1495,13 +1548,6 @@ export type QuizCompletedPayload = {
   readonly __typename: 'QuizCompletedPayload';
   readonly errors: ReadonlyArray<Error>;
   readonly quiz?: Maybe<Quiz>;
-};
-
-export type QuizQuestion = {
-  readonly __typename: 'QuizQuestion';
-  /** The earn reward in Satoshis for the quiz question */
-  readonly earnAmount: Scalars['SatAmount']['output'];
-  readonly id: Scalars['ID']['output'];
 };
 
 export type RealtimePrice = {
@@ -1760,11 +1806,6 @@ export type User = {
   readonly language: Scalars['Language']['output'];
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']['output']>;
-  /**
-   * List the quiz questions the user may have completed.
-   * @deprecated use Quiz from Account instead
-   */
-  readonly quizQuestions: ReadonlyArray<UserQuizQuestion>;
   /** Whether TOTP is enabled for this user. */
   readonly totpEnabled: Scalars['Boolean']['output'];
   /**
@@ -1875,12 +1916,6 @@ export type UserPhoneRegistrationValidatePayload = {
   readonly __typename: 'UserPhoneRegistrationValidatePayload';
   readonly errors: ReadonlyArray<Error>;
   readonly me?: Maybe<User>;
-};
-
-export type UserQuizQuestion = {
-  readonly __typename: 'UserQuizQuestion';
-  readonly completed: Scalars['Boolean']['output'];
-  readonly question: QuizQuestion;
 };
 
 export type UserTotpDeletePayload = {
@@ -2073,6 +2108,20 @@ export type UserEmailDeleteMutationVariables = Exact<{ [key: string]: never; }>;
 
 export type UserEmailDeleteMutation = { readonly __typename: 'Mutation', readonly userEmailDelete: { readonly __typename: 'UserEmailDeletePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly code?: string | null, readonly message: string }> } };
 
+export type IntraLedgerBtcPaymentSendMutationVariables = Exact<{
+  input: IntraLedgerPaymentSendInput;
+}>;
+
+
+export type IntraLedgerBtcPaymentSendMutation = { readonly __typename: 'Mutation', readonly intraLedgerPaymentSend: { readonly __typename: 'PaymentSendPayload', readonly status?: PaymentSendResult | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly code?: string | null, readonly message: string }> } };
+
+export type IntraLedgerUsdPaymentSendMutationVariables = Exact<{
+  input: IntraLedgerUsdPaymentSendInput;
+}>;
+
+
+export type IntraLedgerUsdPaymentSendMutation = { readonly __typename: 'Mutation', readonly intraLedgerUsdPaymentSend: { readonly __typename: 'PaymentSendPayload', readonly status?: PaymentSendResult | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly code?: string | null, readonly message: string }> } };
+
 export type UserTotpRegistrationInitiateMutationVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2115,6 +2164,13 @@ export type GetFirstTransactionsQueryVariables = Exact<{
 
 
 export type GetFirstTransactionsQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly id: string, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly transactions?: { readonly __typename: 'TransactionConnection', readonly edges?: ReadonlyArray<{ readonly __typename: 'TransactionEdge', readonly cursor: string, readonly node: { readonly __typename: 'Transaction', readonly createdAt: number, readonly direction: TxDirection, readonly id: string, readonly memo?: string | null, readonly settlementAmount: number, readonly settlementCurrency: WalletCurrency, readonly settlementDisplayAmount: string, readonly settlementDisplayCurrency: string, readonly settlementDisplayFee: string, readonly settlementFee: number, readonly status: TxStatus, readonly settlementVia: { readonly __typename: 'SettlementViaIntraLedger', readonly counterPartyUsername?: string | null, readonly counterPartyWalletId?: string | null } | { readonly __typename: 'SettlementViaLn', readonly paymentSecret?: string | null, readonly preImage?: string | null } | { readonly __typename: 'SettlementViaOnChain', readonly transactionHash?: string | null, readonly vout?: number | null }, readonly settlementPrice: { readonly __typename: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit', readonly base: number, readonly currencyUnit: string, readonly formattedAmount: string, readonly offset: number }, readonly initiationVia: { readonly __typename: 'InitiationViaIntraLedger', readonly counterPartyUsername?: string | null, readonly counterPartyWalletId?: string | null } | { readonly __typename: 'InitiationViaLn', readonly paymentHash: string } | { readonly __typename: 'InitiationViaOnChain', readonly address: string } } }> | null, readonly pageInfo: { readonly __typename: 'PageInfo', readonly endCursor?: string | null, readonly hasNextPage: boolean, readonly hasPreviousPage: boolean, readonly startCursor?: string | null } } | null } } | null };
+
+export type GetDefaultWalletByUsernameQueryVariables = Exact<{
+  username: Scalars['Username']['input'];
+}>;
+
+
+export type GetDefaultWalletByUsernameQuery = { readonly __typename: 'Query', readonly accountDefaultWallet: { readonly __typename: 'PublicWallet', readonly id: string, readonly walletCurrency: WalletCurrency } };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2387,6 +2443,80 @@ export function useUserEmailDeleteMutation(baseOptions?: Apollo.MutationHookOpti
 export type UserEmailDeleteMutationHookResult = ReturnType<typeof useUserEmailDeleteMutation>;
 export type UserEmailDeleteMutationResult = Apollo.MutationResult<UserEmailDeleteMutation>;
 export type UserEmailDeleteMutationOptions = Apollo.BaseMutationOptions<UserEmailDeleteMutation, UserEmailDeleteMutationVariables>;
+export const IntraLedgerBtcPaymentSendDocument = gql`
+    mutation IntraLedgerBtcPaymentSend($input: IntraLedgerPaymentSendInput!) {
+  intraLedgerPaymentSend(input: $input) {
+    errors {
+      code
+      message
+    }
+    status
+  }
+}
+    `;
+export type IntraLedgerBtcPaymentSendMutationFn = Apollo.MutationFunction<IntraLedgerBtcPaymentSendMutation, IntraLedgerBtcPaymentSendMutationVariables>;
+
+/**
+ * __useIntraLedgerBtcPaymentSendMutation__
+ *
+ * To run a mutation, you first call `useIntraLedgerBtcPaymentSendMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useIntraLedgerBtcPaymentSendMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [intraLedgerBtcPaymentSendMutation, { data, loading, error }] = useIntraLedgerBtcPaymentSendMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useIntraLedgerBtcPaymentSendMutation(baseOptions?: Apollo.MutationHookOptions<IntraLedgerBtcPaymentSendMutation, IntraLedgerBtcPaymentSendMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<IntraLedgerBtcPaymentSendMutation, IntraLedgerBtcPaymentSendMutationVariables>(IntraLedgerBtcPaymentSendDocument, options);
+      }
+export type IntraLedgerBtcPaymentSendMutationHookResult = ReturnType<typeof useIntraLedgerBtcPaymentSendMutation>;
+export type IntraLedgerBtcPaymentSendMutationResult = Apollo.MutationResult<IntraLedgerBtcPaymentSendMutation>;
+export type IntraLedgerBtcPaymentSendMutationOptions = Apollo.BaseMutationOptions<IntraLedgerBtcPaymentSendMutation, IntraLedgerBtcPaymentSendMutationVariables>;
+export const IntraLedgerUsdPaymentSendDocument = gql`
+    mutation intraLedgerUsdPaymentSend($input: IntraLedgerUsdPaymentSendInput!) {
+  intraLedgerUsdPaymentSend(input: $input) {
+    errors {
+      code
+      message
+    }
+    status
+  }
+}
+    `;
+export type IntraLedgerUsdPaymentSendMutationFn = Apollo.MutationFunction<IntraLedgerUsdPaymentSendMutation, IntraLedgerUsdPaymentSendMutationVariables>;
+
+/**
+ * __useIntraLedgerUsdPaymentSendMutation__
+ *
+ * To run a mutation, you first call `useIntraLedgerUsdPaymentSendMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useIntraLedgerUsdPaymentSendMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [intraLedgerUsdPaymentSendMutation, { data, loading, error }] = useIntraLedgerUsdPaymentSendMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useIntraLedgerUsdPaymentSendMutation(baseOptions?: Apollo.MutationHookOptions<IntraLedgerUsdPaymentSendMutation, IntraLedgerUsdPaymentSendMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<IntraLedgerUsdPaymentSendMutation, IntraLedgerUsdPaymentSendMutationVariables>(IntraLedgerUsdPaymentSendDocument, options);
+      }
+export type IntraLedgerUsdPaymentSendMutationHookResult = ReturnType<typeof useIntraLedgerUsdPaymentSendMutation>;
+export type IntraLedgerUsdPaymentSendMutationResult = Apollo.MutationResult<IntraLedgerUsdPaymentSendMutation>;
+export type IntraLedgerUsdPaymentSendMutationOptions = Apollo.BaseMutationOptions<IntraLedgerUsdPaymentSendMutation, IntraLedgerUsdPaymentSendMutationVariables>;
 export const UserTotpRegistrationInitiateDocument = gql`
     mutation UserTotpRegistrationInitiate {
   userTotpRegistrationInitiate {
@@ -2791,6 +2921,47 @@ export type GetFirstTransactionsQueryHookResult = ReturnType<typeof useGetFirstT
 export type GetFirstTransactionsLazyQueryHookResult = ReturnType<typeof useGetFirstTransactionsLazyQuery>;
 export type GetFirstTransactionsSuspenseQueryHookResult = ReturnType<typeof useGetFirstTransactionsSuspenseQuery>;
 export type GetFirstTransactionsQueryResult = Apollo.QueryResult<GetFirstTransactionsQuery, GetFirstTransactionsQueryVariables>;
+export const GetDefaultWalletByUsernameDocument = gql`
+    query GetDefaultWalletByUsername($username: Username!) {
+  accountDefaultWallet(username: $username) {
+    id
+    walletCurrency
+  }
+}
+    `;
+
+/**
+ * __useGetDefaultWalletByUsernameQuery__
+ *
+ * To run a query within a React component, call `useGetDefaultWalletByUsernameQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetDefaultWalletByUsernameQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetDefaultWalletByUsernameQuery({
+ *   variables: {
+ *      username: // value for 'username'
+ *   },
+ * });
+ */
+export function useGetDefaultWalletByUsernameQuery(baseOptions: Apollo.QueryHookOptions<GetDefaultWalletByUsernameQuery, GetDefaultWalletByUsernameQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetDefaultWalletByUsernameQuery, GetDefaultWalletByUsernameQueryVariables>(GetDefaultWalletByUsernameDocument, options);
+      }
+export function useGetDefaultWalletByUsernameLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetDefaultWalletByUsernameQuery, GetDefaultWalletByUsernameQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetDefaultWalletByUsernameQuery, GetDefaultWalletByUsernameQueryVariables>(GetDefaultWalletByUsernameDocument, options);
+        }
+export function useGetDefaultWalletByUsernameSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<GetDefaultWalletByUsernameQuery, GetDefaultWalletByUsernameQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetDefaultWalletByUsernameQuery, GetDefaultWalletByUsernameQueryVariables>(GetDefaultWalletByUsernameDocument, options);
+        }
+export type GetDefaultWalletByUsernameQueryHookResult = ReturnType<typeof useGetDefaultWalletByUsernameQuery>;
+export type GetDefaultWalletByUsernameLazyQueryHookResult = ReturnType<typeof useGetDefaultWalletByUsernameLazyQuery>;
+export type GetDefaultWalletByUsernameSuspenseQueryHookResult = ReturnType<typeof useGetDefaultWalletByUsernameSuspenseQuery>;
+export type GetDefaultWalletByUsernameQueryResult = Apollo.QueryResult<GetDefaultWalletByUsernameQuery, GetDefaultWalletByUsernameQueryVariables>;
 export const MeDocument = gql`
     query me {
   me {
@@ -3009,6 +3180,7 @@ export type ResolversTypes = {
   InvoiceEdge: ResolverTypeWrapper<InvoiceEdge>;
   InvoicePaymentStatus: InvoicePaymentStatus;
   Language: ResolverTypeWrapper<Scalars['Language']['output']>;
+  LnAddressPaymentSendInput: LnAddressPaymentSendInput;
   LnInvoice: ResolverTypeWrapper<LnInvoice>;
   LnInvoiceCreateInput: LnInvoiceCreateInput;
   LnInvoiceCreateOnBehalfOfRecipientInput: LnInvoiceCreateOnBehalfOfRecipientInput;
@@ -3033,6 +3205,7 @@ export type ResolversTypes = {
   LnUsdInvoiceCreateInput: LnUsdInvoiceCreateInput;
   LnUsdInvoiceCreateOnBehalfOfRecipientInput: LnUsdInvoiceCreateOnBehalfOfRecipientInput;
   LnUsdInvoiceFeeProbeInput: LnUsdInvoiceFeeProbeInput;
+  LnurlPaymentSendInput: LnurlPaymentSendInput;
   MapInfo: ResolverTypeWrapper<MapInfo>;
   MapMarker: ResolverTypeWrapper<MapMarker>;
   Memo: ResolverTypeWrapper<Scalars['Memo']['output']>;
@@ -3078,9 +3251,10 @@ export type ResolversTypes = {
   PublicWallet: ResolverTypeWrapper<PublicWallet>;
   Query: ResolverTypeWrapper<{}>;
   Quiz: ResolverTypeWrapper<Quiz>;
+  QuizClaimInput: QuizClaimInput;
+  QuizClaimPayload: ResolverTypeWrapper<QuizClaimPayload>;
   QuizCompletedInput: QuizCompletedInput;
   QuizCompletedPayload: ResolverTypeWrapper<QuizCompletedPayload>;
-  QuizQuestion: ResolverTypeWrapper<QuizQuestion>;
   RealtimePrice: ResolverTypeWrapper<RealtimePrice>;
   RealtimePriceInput: RealtimePriceInput;
   RealtimePricePayload: ResolverTypeWrapper<RealtimePricePayload>;
@@ -3124,7 +3298,6 @@ export type ResolversTypes = {
   UserPhoneRegistrationInitiateInput: UserPhoneRegistrationInitiateInput;
   UserPhoneRegistrationValidateInput: UserPhoneRegistrationValidateInput;
   UserPhoneRegistrationValidatePayload: ResolverTypeWrapper<UserPhoneRegistrationValidatePayload>;
-  UserQuizQuestion: ResolverTypeWrapper<UserQuizQuestion>;
   UserTotpDeletePayload: ResolverTypeWrapper<UserTotpDeletePayload>;
   UserTotpRegistrationInitiatePayload: ResolverTypeWrapper<UserTotpRegistrationInitiatePayload>;
   UserTotpRegistrationValidateInput: UserTotpRegistrationValidateInput;
@@ -3210,6 +3383,7 @@ export type ResolversParentTypes = {
   InvoiceConnection: InvoiceConnection;
   InvoiceEdge: InvoiceEdge;
   Language: Scalars['Language']['output'];
+  LnAddressPaymentSendInput: LnAddressPaymentSendInput;
   LnInvoice: LnInvoice;
   LnInvoiceCreateInput: LnInvoiceCreateInput;
   LnInvoiceCreateOnBehalfOfRecipientInput: LnInvoiceCreateOnBehalfOfRecipientInput;
@@ -3234,6 +3408,7 @@ export type ResolversParentTypes = {
   LnUsdInvoiceCreateInput: LnUsdInvoiceCreateInput;
   LnUsdInvoiceCreateOnBehalfOfRecipientInput: LnUsdInvoiceCreateOnBehalfOfRecipientInput;
   LnUsdInvoiceFeeProbeInput: LnUsdInvoiceFeeProbeInput;
+  LnurlPaymentSendInput: LnurlPaymentSendInput;
   MapInfo: MapInfo;
   MapMarker: MapMarker;
   Memo: Scalars['Memo']['output'];
@@ -3273,9 +3448,10 @@ export type ResolversParentTypes = {
   PublicWallet: PublicWallet;
   Query: {};
   Quiz: Quiz;
+  QuizClaimInput: QuizClaimInput;
+  QuizClaimPayload: QuizClaimPayload;
   QuizCompletedInput: QuizCompletedInput;
   QuizCompletedPayload: QuizCompletedPayload;
-  QuizQuestion: QuizQuestion;
   RealtimePrice: RealtimePrice;
   RealtimePriceInput: RealtimePriceInput;
   RealtimePricePayload: RealtimePricePayload;
@@ -3316,7 +3492,6 @@ export type ResolversParentTypes = {
   UserPhoneRegistrationInitiateInput: UserPhoneRegistrationInitiateInput;
   UserPhoneRegistrationValidateInput: UserPhoneRegistrationValidateInput;
   UserPhoneRegistrationValidatePayload: UserPhoneRegistrationValidatePayload;
-  UserQuizQuestion: UserQuizQuestion;
   UserTotpDeletePayload: UserTotpDeletePayload;
   UserTotpRegistrationInitiatePayload: UserTotpRegistrationInitiatePayload;
   UserTotpRegistrationValidateInput: UserTotpRegistrationValidateInput;
@@ -3342,6 +3517,7 @@ export type AccountResolvers<ContextType = any, ParentType extends ResolversPare
   __resolveType: TypeResolveFn<'ConsumerAccount', ParentType, ContextType>;
   callbackEndpoints?: Resolver<ReadonlyArray<ResolversTypes['CallbackEndpoint']>, ParentType, ContextType>;
   csvTransactions?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<AccountCsvTransactionsArgs, 'walletIds'>>;
+  defaultWallet?: Resolver<ResolversTypes['PublicWallet'], ParentType, ContextType>;
   defaultWalletId?: Resolver<ResolversTypes['WalletId'], ParentType, ContextType>;
   displayCurrency?: Resolver<ResolversTypes['DisplayCurrency'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -3490,6 +3666,7 @@ export type CentAmountPayloadResolvers<ContextType = any, ParentType extends Res
 export type ConsumerAccountResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConsumerAccount'] = ResolversParentTypes['ConsumerAccount']> = {
   callbackEndpoints?: Resolver<ReadonlyArray<ResolversTypes['CallbackEndpoint']>, ParentType, ContextType>;
   csvTransactions?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<ConsumerAccountCsvTransactionsArgs, 'walletIds'>>;
+  defaultWallet?: Resolver<ResolversTypes['PublicWallet'], ParentType, ContextType>;
   defaultWalletId?: Resolver<ResolversTypes['WalletId'], ParentType, ContextType>;
   displayCurrency?: Resolver<ResolversTypes['DisplayCurrency'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -3764,6 +3941,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   feedbackSubmit?: Resolver<ResolversTypes['SuccessPayload'], ParentType, ContextType, RequireFields<MutationFeedbackSubmitArgs, 'input'>>;
   intraLedgerPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationIntraLedgerPaymentSendArgs, 'input'>>;
   intraLedgerUsdPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationIntraLedgerUsdPaymentSendArgs, 'input'>>;
+  lnAddressPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationLnAddressPaymentSendArgs, 'input'>>;
   lnInvoiceCreate?: Resolver<ResolversTypes['LnInvoicePayload'], ParentType, ContextType, RequireFields<MutationLnInvoiceCreateArgs, 'input'>>;
   lnInvoiceCreateOnBehalfOfRecipient?: Resolver<ResolversTypes['LnInvoicePayload'], ParentType, ContextType, RequireFields<MutationLnInvoiceCreateOnBehalfOfRecipientArgs, 'input'>>;
   lnInvoiceFeeProbe?: Resolver<ResolversTypes['SatAmountPayload'], ParentType, ContextType, RequireFields<MutationLnInvoiceFeeProbeArgs, 'input'>>;
@@ -3778,12 +3956,14 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   lnUsdInvoiceCreate?: Resolver<ResolversTypes['LnInvoicePayload'], ParentType, ContextType, RequireFields<MutationLnUsdInvoiceCreateArgs, 'input'>>;
   lnUsdInvoiceCreateOnBehalfOfRecipient?: Resolver<ResolversTypes['LnInvoicePayload'], ParentType, ContextType, RequireFields<MutationLnUsdInvoiceCreateOnBehalfOfRecipientArgs, 'input'>>;
   lnUsdInvoiceFeeProbe?: Resolver<ResolversTypes['SatAmountPayload'], ParentType, ContextType, RequireFields<MutationLnUsdInvoiceFeeProbeArgs, 'input'>>;
+  lnurlPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationLnurlPaymentSendArgs, 'input'>>;
   onChainAddressCreate?: Resolver<ResolversTypes['OnChainAddressPayload'], ParentType, ContextType, RequireFields<MutationOnChainAddressCreateArgs, 'input'>>;
   onChainAddressCurrent?: Resolver<ResolversTypes['OnChainAddressPayload'], ParentType, ContextType, RequireFields<MutationOnChainAddressCurrentArgs, 'input'>>;
   onChainPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationOnChainPaymentSendArgs, 'input'>>;
   onChainPaymentSendAll?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationOnChainPaymentSendAllArgs, 'input'>>;
   onChainUsdPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationOnChainUsdPaymentSendArgs, 'input'>>;
   onChainUsdPaymentSendAsBtcDenominated?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationOnChainUsdPaymentSendAsBtcDenominatedArgs, 'input'>>;
+  quizClaim?: Resolver<ResolversTypes['QuizClaimPayload'], ParentType, ContextType, RequireFields<MutationQuizClaimArgs, 'input'>>;
   quizCompleted?: Resolver<ResolversTypes['QuizCompletedPayload'], ParentType, ContextType, RequireFields<MutationQuizCompletedArgs, 'input'>>;
   userContactUpdateAlias?: Resolver<ResolversTypes['UserContactUpdateAliasPayload'], ParentType, ContextType, RequireFields<MutationUserContactUpdateAliasArgs, 'input'>>;
   userEmailDelete?: Resolver<ResolversTypes['UserEmailDeletePayload'], ParentType, ContextType>;
@@ -3943,6 +4123,7 @@ export type PricePointResolvers<ContextType = any, ParentType extends ResolversP
 };
 
 export type PublicWalletResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicWallet'] = ResolversParentTypes['PublicWallet']> = {
+  currency?: Resolver<ResolversTypes['WalletCurrency'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   walletCurrency?: Resolver<ResolversTypes['WalletCurrency'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -3960,7 +4141,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   onChainTxFee?: Resolver<ResolversTypes['OnChainTxFee'], ParentType, ContextType, RequireFields<QueryOnChainTxFeeArgs, 'address' | 'amount' | 'speed' | 'walletId'>>;
   onChainUsdTxFee?: Resolver<ResolversTypes['OnChainUsdTxFee'], ParentType, ContextType, RequireFields<QueryOnChainUsdTxFeeArgs, 'address' | 'amount' | 'speed' | 'walletId'>>;
   onChainUsdTxFeeAsBtcDenominated?: Resolver<ResolversTypes['OnChainUsdTxFee'], ParentType, ContextType, RequireFields<QueryOnChainUsdTxFeeAsBtcDenominatedArgs, 'address' | 'amount' | 'speed' | 'walletId'>>;
-  quizQuestions?: Resolver<Maybe<ReadonlyArray<Maybe<ResolversTypes['QuizQuestion']>>>, ParentType, ContextType>;
   realtimePrice?: Resolver<ResolversTypes['RealtimePrice'], ParentType, ContextType, RequireFields<QueryRealtimePriceArgs, 'currency'>>;
   userDefaultWalletId?: Resolver<ResolversTypes['WalletId'], ParentType, ContextType, RequireFields<QueryUserDefaultWalletIdArgs, 'username'>>;
   usernameAvailable?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryUsernameAvailableArgs, 'username'>>;
@@ -3970,18 +4150,19 @@ export type QuizResolvers<ContextType = any, ParentType extends ResolversParentT
   amount?: Resolver<ResolversTypes['SatAmount'], ParentType, ContextType>;
   completed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  notBefore?: Resolver<Maybe<ResolversTypes['Timestamp']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type QuizClaimPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['QuizClaimPayload'] = ResolversParentTypes['QuizClaimPayload']> = {
+  errors?: Resolver<ReadonlyArray<ResolversTypes['Error']>, ParentType, ContextType>;
+  quizzes?: Resolver<ReadonlyArray<ResolversTypes['Quiz']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type QuizCompletedPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['QuizCompletedPayload'] = ResolversParentTypes['QuizCompletedPayload']> = {
   errors?: Resolver<ReadonlyArray<ResolversTypes['Error']>, ParentType, ContextType>;
   quiz?: Resolver<Maybe<ResolversTypes['Quiz']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type QuizQuestionResolvers<ContextType = any, ParentType extends ResolversParentTypes['QuizQuestion'] = ResolversParentTypes['QuizQuestion']> = {
-  earnAmount?: Resolver<ResolversTypes['SatAmount'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4142,7 +4323,6 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   language?: Resolver<ResolversTypes['Language'], ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['Phone']>, ParentType, ContextType>;
-  quizQuestions?: Resolver<ReadonlyArray<ResolversTypes['UserQuizQuestion']>, ParentType, ContextType>;
   totpEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   username?: Resolver<Maybe<ResolversTypes['Username']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -4191,12 +4371,6 @@ export type UserPhoneDeletePayloadResolvers<ContextType = any, ParentType extend
 export type UserPhoneRegistrationValidatePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserPhoneRegistrationValidatePayload'] = ResolversParentTypes['UserPhoneRegistrationValidatePayload']> = {
   errors?: Resolver<ReadonlyArray<ResolversTypes['Error']>, ParentType, ContextType>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type UserQuizQuestionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserQuizQuestion'] = ResolversParentTypes['UserQuizQuestion']> = {
-  completed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  question?: Resolver<ResolversTypes['QuizQuestion'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4350,8 +4524,8 @@ export type Resolvers<ContextType = any> = {
   PublicWallet?: PublicWalletResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Quiz?: QuizResolvers<ContextType>;
+  QuizClaimPayload?: QuizClaimPayloadResolvers<ContextType>;
   QuizCompletedPayload?: QuizCompletedPayloadResolvers<ContextType>;
-  QuizQuestion?: QuizQuestionResolvers<ContextType>;
   RealtimePrice?: RealtimePriceResolvers<ContextType>;
   RealtimePricePayload?: RealtimePricePayloadResolvers<ContextType>;
   SafeInt?: GraphQLScalarType;
@@ -4383,7 +4557,6 @@ export type Resolvers<ContextType = any> = {
   UserEmailRegistrationValidatePayload?: UserEmailRegistrationValidatePayloadResolvers<ContextType>;
   UserPhoneDeletePayload?: UserPhoneDeletePayloadResolvers<ContextType>;
   UserPhoneRegistrationValidatePayload?: UserPhoneRegistrationValidatePayloadResolvers<ContextType>;
-  UserQuizQuestion?: UserQuizQuestionResolvers<ContextType>;
   UserTotpDeletePayload?: UserTotpDeletePayloadResolvers<ContextType>;
   UserTotpRegistrationInitiatePayload?: UserTotpRegistrationInitiatePayloadResolvers<ContextType>;
   UserTotpRegistrationValidatePayload?: UserTotpRegistrationValidatePayloadResolvers<ContextType>;
