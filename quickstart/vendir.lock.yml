@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(flake): bump flake.lock (#3767)'
-      sha: c02b2003e728227afff93c19338d9e824d6143a0
+      commitTitle: 'test(core): move 01-setup steps to hedge tests (#3711)...'
+      sha: df2f48008da940615bec8fb6665b17b7c1bb5878
       tags:
-      - 0.19.14-3-gc02b2003e
+      - 0.19.15-2-gdf2f48008
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(flake): bump flake.lock (#3767)'
-      sha: c02b2003e728227afff93c19338d9e824d6143a0
+      commitTitle: 'test(core): move 01-setup steps to hedge tests (#3711)...'
+      sha: df2f48008da940615bec8fb6665b17b7c1bb5878
       tags:
-      - 0.19.14-3-gc02b2003e
+      - 0.19.15-2-gdf2f48008
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(flake): bump flake.lock (#3767)'
-      sha: c02b2003e728227afff93c19338d9e824d6143a0
+      commitTitle: 'test(core): move 01-setup steps to hedge tests (#3711)...'
+      sha: df2f48008da940615bec8fb6665b17b7c1bb5878
       tags:
-      - 0.19.14-3-gc02b2003e
+      - 0.19.15-2-gdf2f48008
     path: ./
   path: ./graphql
 kind: LockConfig
