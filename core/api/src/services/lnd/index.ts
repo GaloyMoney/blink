@@ -102,7 +102,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     return activeOnchainNode.lnd
   }
 
-  const isLocal = (pubkey: Pubkey): boolean | LightningServiceError =>
+  const isLocal = (pubkey: Pubkey): boolean =>
     getLnds({ type: "offchain" }).some((item) => item.pubkey === pubkey)
 
   const listActivePubkeys = (): Pubkey[] =>

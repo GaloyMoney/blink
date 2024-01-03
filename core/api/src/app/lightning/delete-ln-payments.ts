@@ -46,16 +46,20 @@ const checkAndDeletePaymentForHash = async ({
       const lnPayment = await LnPaymentsRepository().findByPaymentHash(paymentHash)
       if (lnPayment instanceof Error) {
         if (lnPayment instanceof CouldNotFindLnPaymentFromHashError) {
-          recordExceptionInCurrentSpan({ error: lnPayment, level: ErrorLevel.Critical })
           // Attempt to get paymentRequest from lnd
           const lndService = LndService()
           if (lndService instanceof Error) return lndService
           const lnPaymentLookup = await lndService.lookupPayment({ pubkey, paymentHash })
           if (lnPaymentLookup instanceof Error) return lnPaymentLookup
-          const { paymentRequest } =
+          const { paymentRequest, confirmedDetails } =
             "createdAt" in lnPaymentLookup
               ? lnPaymentLookup
-              : { paymentRequest: undefined }
+              : { paymentRequest: undefined, confirmedDetails: undefined }
+
+          // only record exception when payment is not a rebalance
+          if (confirmedDetails && !lndService.isLocal(confirmedDetails.destination)) {
+            recordExceptionInCurrentSpan({ error: lnPayment, level: ErrorLevel.Critical })
+          }
 
           await LnPaymentsRepository().persistNew({
             paymentHash,

@@ -166,3 +166,17 @@ const getBitcoindSignerClient = (walletName?: string) => {
     walletName,
   })
 }
+
+export const loadBitcoindWallet = async (walletName: string) => {
+  const wallets = await bitcoindClient.listWallets()
+  if (!wallets.includes(walletName)) {
+    try {
+      await bitcoindClient.createWallet({ walletName })
+    } catch (err) {
+      const error = err as Error
+      if (error.message.includes("Database already exists")) {
+        await bitcoindClient.loadWallet({ filename: walletName })
+      }
+    }
+  }
+}

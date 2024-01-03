@@ -10,10 +10,26 @@ import {
   paymentAmountFromNumber,
   WalletCurrency,
 } from "@/domain/shared"
+import { getFunderWalletId } from "@/services/ledger/caching"
 import { baseLogger } from "@/services/logger"
 import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
 
-import { createAccount, fundWallet, getBalanceHelper } from "test/helpers"
+import {
+  bitcoindClient,
+  bitcoindOutside,
+  createAccount,
+  createMandatoryUsers,
+  fundLnd,
+  fundWallet,
+  fundWalletIdFromOnchain,
+  getBalanceHelper,
+  lnd1,
+  lndOutside1,
+  loadBitcoindWallet,
+  mineAndConfirm,
+  openChannelTesting,
+  resetLegacyIntegrationLnds,
+} from "test/helpers"
 
 class ZeroAmountForUsdRecipientError extends Error {}
 
@@ -40,6 +56,54 @@ type AccountAndWallets = {
   newBtcWallet: Wallet
   newUsdWallet: Wallet
   newAccount: Account
+}
+
+beforeAll(async () => {
+  await createMandatoryUsers()
+  await loadBitcoindWallet("outside")
+  await resetLegacyIntegrationLnds()
+  await bootstrapLndNodes()
+})
+
+afterAll(async () => {
+  await bitcoindClient.unloadWallet({ walletName: "outside" })
+})
+
+const bootstrapLndNodes = async () => {
+  // Fund outside wallet to fund lnd nodes
+  const numOfBlocks = 10
+  const bitcoindAddress = await bitcoindOutside.getNewAddress()
+  await mineAndConfirm({
+    walletClient: bitcoindOutside,
+    numOfBlocks,
+    address: bitcoindAddress,
+  })
+
+  // Fund lndOutside1 node, open lndOutside1 -> lnd1 channel
+  const amountInBitcoin = 1
+  await fundLnd(lndOutside1, amountInBitcoin)
+
+  const lnd1Socket = `lnd1:9735`
+  await openChannelTesting({
+    lnd: lndOutside1,
+    lndPartner: lnd1,
+    socket: lnd1Socket,
+  })
+
+  // Fund lnd1 node, open lnd1 -> lndOutside1 channel
+  const funderWalletId = await getFunderWalletId()
+  await fundWalletIdFromOnchain({
+    walletId: funderWalletId,
+    amountInBitcoin,
+    lnd: lnd1,
+  })
+
+  const lndOutside1socket = `lnd-outside-1:9735`
+  await openChannelTesting({
+    lnd: lnd1,
+    lndPartner: lndOutside1,
+    socket: lndOutside1socket,
+  })
 }
 
 const btcAmountFromUsdNumber = async (

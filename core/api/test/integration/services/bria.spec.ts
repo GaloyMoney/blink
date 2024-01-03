@@ -13,6 +13,7 @@ import {
   createMandatoryUsers,
   createUserAndWalletFromPhone,
   getDefaultWalletIdByPhone,
+  loadBitcoindWallet,
   mineAndConfirm,
   randomPhone,
   sendToAddressAndConfirm,
@@ -24,20 +25,6 @@ let walletIdA: WalletId
 const TIMEOUT_BRIA_EVENT = 60_000
 
 const phone = randomPhone()
-
-const loadBitcoindWallet = async (walletName: string) => {
-  const wallets = await bitcoindClient.listWallets()
-  if (!wallets.includes(walletName)) {
-    try {
-      await bitcoindClient.createWallet({ walletName })
-    } catch (err) {
-      const error = err as Error
-      if (error.message.includes("Database already exists")) {
-        await bitcoindClient.loadWallet({ filename: walletName })
-      }
-    }
-  }
-}
 
 const fundOutsideOnChainWallet = async () => {
   // Setup outside bitcoind
