@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): CouldNotFindLnPaymentFromHashError alert (#3771)'
-      sha: 11ff0b3cf89a837e88658cb9962ecc66b3a72e00
+      commitTitle: 'chore(dashboard): error for zero length batch-payments (#3775)'
+      sha: 54b4b3d7dc75636754d947e13af22f444a27fd08
       tags:
-      - 0.19.16
+      - 0.19.17-1-g54b4b3d7d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): CouldNotFindLnPaymentFromHashError alert (#3771)'
-      sha: 11ff0b3cf89a837e88658cb9962ecc66b3a72e00
+      commitTitle: 'chore(dashboard): error for zero length batch-payments (#3775)'
+      sha: 54b4b3d7dc75636754d947e13af22f444a27fd08
       tags:
-      - 0.19.16
+      - 0.19.17-1-g54b4b3d7d
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(core): CouldNotFindLnPaymentFromHashError alert (#3771)'
-      sha: 11ff0b3cf89a837e88658cb9962ecc66b3a72e00
+      commitTitle: 'chore(dashboard): error for zero length batch-payments (#3775)'
+      sha: 54b4b3d7dc75636754d947e13af22f444a27fd08
       tags:
-      - 0.19.16
+      - 0.19.17-1-g54b4b3d7d
     path: ./
   path: ./graphql
 kind: LockConfig
