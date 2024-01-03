@@ -3,11 +3,14 @@ import { getServerSession } from "next-auth"
 
 import { authOptions } from "../api/auth/[...nextauth]/route"
 
+import { dollarsToCents } from "../utils"
+
 import { CSVRecord } from "./utils"
 
 import { getWalletDetailsByUsername } from "@/services/graphql/queries/get-user-wallet-id"
 import { intraLedgerUsdPaymentSend } from "@/services/graphql/mutations/intra-ledger-payment-send/usd"
 import { intraLedgerBtcPaymentSend } from "@/services/graphql/mutations/intra-ledger-payment-send/btc"
+import { WalletCurrency } from "@/services/graphql/generated"
 
 export type ProcessedRecords = {
   username: string
@@ -21,7 +24,7 @@ export type ProcessedRecords = {
 }
 export const processRecords = async (
   records: CSVRecord[],
-  walletType: string,
+  walletType: WalletCurrency,
 ): Promise<{
   error: boolean
   message: string
@@ -49,7 +52,7 @@ export const processRecords = async (
       }
     }
 
-    const amount = walletType === "USD" ? record.cents : record.sats
+    const amount = walletType === WalletCurrency.Usd ? record.dollars : record.sats
     processedRecords.push({
       username: record.username,
       recipient_wallet_id: getDefaultWalletID?.data.accountDefaultWallet.id,
@@ -91,7 +94,7 @@ export const processPaymentsServerAction = async (
     if (walletDetails.walletCurrency === "USD") {
       response = await intraLedgerUsdPaymentSend({
         token,
-        amount: record.amount,
+        amount: dollarsToCents(record.amount),
         memo: record.memo,
         recipientWalletId: record.recipient_wallet_id,
         walletId: walletDetails.id,

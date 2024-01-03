@@ -9,22 +9,25 @@ import Details from "../details-card/derails"
 
 import BatchPaymentsList from "./list"
 
-import { validateCSV } from "@/app/batch-payments/utils"
+import {
+  displayCurrencyBatchPayments,
+  displayWalletBalanceBatchPayments,
+  validateCSV,
+} from "@/app/batch-payments/utils"
 
 import {
   ProcessedRecords,
   processPaymentsServerAction,
   processRecords,
 } from "@/app/batch-payments/server-actions"
-import { getCurrencyFromWalletType } from "@/app/utils"
 import { WalletCurrency } from "@/services/graphql/generated"
+import { centsToDollars } from "@/app/utils"
 
 type paymentDetails = {
   totalAmount: number
-  walletType: WalletCurrency
   walletDetails?: {
     balance: number
-    walletCurrency: string
+    walletCurrency: WalletCurrency
     id: string
   }
 }
@@ -80,12 +83,12 @@ export default function BatchPayments() {
         }
 
         const walletDetails = userData?.defaultAccount.wallets.find((wallet) => {
-          return wallet.walletCurrency === validationResult.walletType
+          return wallet.walletCurrency === validationResult.walletCurrency
         })
 
         if (
           !walletDetails?.balance ||
-          walletDetails?.balance < validationResult.totalAmount
+          centsToDollars(walletDetails?.balance) < validationResult.totalAmount
         ) {
           setModalDetails({
             open: true,
@@ -98,7 +101,7 @@ export default function BatchPayments() {
 
         const processedRecords = await processRecords(
           validationResult.records,
-          validationResult.walletType,
+          validationResult.walletCurrency,
         )
 
         if (processedRecords.error || !processedRecords.responsePayload) {
@@ -114,11 +117,9 @@ export default function BatchPayments() {
         setCsvData(processedRecords.responsePayload)
         setPaymentDetails({
           totalAmount: validationResult.totalAmount,
-          walletType: validationResult.walletType,
           walletDetails,
         })
       }
-
       reader.readAsText(file)
     }
 
@@ -214,17 +215,23 @@ export default function BatchPayments() {
             <DetailsCard>
               <Details
                 label="Total Amount"
-                value={`${String(paymentDetails.totalAmount)} ${getCurrencyFromWalletType(
-                  paymentDetails.walletType,
-                )}`}
+                value={`${String(
+                  paymentDetails.totalAmount,
+                )} ${displayCurrencyBatchPayments({
+                  walletCurrency: paymentDetails.walletDetails.walletCurrency,
+                })}`}
               />
-              <Details label="Wallet Type" value={paymentDetails.walletType} />
+              <Details
+                label="Wallet Type"
+                value={paymentDetails.walletDetails.walletCurrency}
+              />
               <Details label="Wallet Id" value={paymentDetails.walletDetails.id} />
               <Details
                 label="Wallet Balance"
-                value={`${
-                  paymentDetails.walletDetails.balance
-                } ${getCurrencyFromWalletType(paymentDetails.walletType)}`}
+                value={displayWalletBalanceBatchPayments({
+                  amount: paymentDetails.walletDetails.balance,
+                  walletCurrency: paymentDetails.walletDetails.walletCurrency,
+                })}
               />
               <Button onClick={processPayments} loading={processPaymentLoading}>
                 Confirm Payment
@@ -238,7 +245,7 @@ export default function BatchPayments() {
           </Box>
           <BatchPaymentsList
             processedList={csvData}
-            walletType={paymentDetails.walletType}
+            walletCurrency={paymentDetails.walletDetails.walletCurrency}
           ></BatchPaymentsList>
         </>
       ) : (
