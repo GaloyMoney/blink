@@ -59,6 +59,7 @@ local_resource(
         "api-keys",
         "svix",
         "svix-pg",
+        "test-users-with-username",
     ],
     links = [
         link("http://localhost:3001", "dashboard"),
@@ -151,6 +152,18 @@ local_resource(
   name='init-test-user',
   labels = ['test'],
   cmd='buck2 run //dev:init-user',
+  allow_parallel = True,
+  resource_deps = [
+    "oathkeeper",
+    "kratos",
+    "api",
+  ]
+)
+
+local_resource(
+  name='test-users-with-username',
+  labels = ['test'],
+  cmd='buck2 run //dev:setup-test-users-with-username',
   allow_parallel = True,
   resource_deps = [
     "oathkeeper",
