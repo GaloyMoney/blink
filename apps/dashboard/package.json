@@ -32,6 +32,7 @@
     "@opentelemetry/semantic-conventions": "^1.18.1",
     "@t3-oss/env-core": "^0.7.1",
     "@t3-oss/env-nextjs": "^0.7.1",
+    "csv-parse": "^5.5.3",
     "dotenv": "^16.3.1",
     "graphql": "^16.8.1",
     "next": "14.0.4",
