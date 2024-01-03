@@ -85,3 +85,8 @@ sh_binary(
   name = "stoppable-trigger",
   main = "bin/run-stoppable-trigger.sh",
 )
+
+sh_binary(
+  name = "setup-test-users-with-username",
+  main = "bin/add-test-users-with-username.sh",
+)
