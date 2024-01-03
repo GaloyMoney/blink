@@ -59,6 +59,10 @@ export function validateCSV(fileContent: string):
       totalAmount += Number(amount)
     }
 
+    if (records.length === 0) {
+      return new Error("No records found")
+    }
+
     return {
       records: records as CSVRecord[],
       walletCurrency,
