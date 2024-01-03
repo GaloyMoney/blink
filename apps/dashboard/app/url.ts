@@ -12,4 +12,5 @@ export const URLS: Record<string, UrlInfo> = {
   "/api-keys": { title: "API Keys", protected: true },
   "/callback": { title: "Callback", protected: true },
   "/security/2fa/add": { title: "Add 2FA to Account", protected: true },
+  "/batch-payments": { title: "Batch Payments", protected: true },
 }

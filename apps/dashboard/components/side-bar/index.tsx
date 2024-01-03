@@ -10,6 +10,7 @@ import LinkIcon from "@mui/icons-material/Link"
 import { usePathname } from "next/navigation"
 import SecurityIcon from "@mui/icons-material/Security"
 import KeyIcon from "@mui/icons-material/Key"
+import PaymentsIcon from "@mui/icons-material/Payments"
 
 import Logo from "./../logo"
 import { SidebarStyles } from "./side-bar-style"
@@ -113,6 +114,13 @@ const Sidebar: React.FC = () => {
             label="Callback Endpoints"
             isCurrentPath={isCurrentPath}
             dataTestid="sidebar-callback-link"
+          />
+          <NavigationLink
+            href="/batch-payments"
+            icon={<PaymentsIcon />}
+            label="Batch Payments"
+            isCurrentPath={isCurrentPath}
+            dataTestid="sidebar-batch-payments-link"
           />
         </List>
       </Box>
