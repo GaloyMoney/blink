@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): adding batch payments in dashboard (#3768)...'
-      sha: e446eda8d1d62dc73a7903c7af434acaea781fc4
+      commitTitle: 'fix(core): CouldNotFindLnPaymentFromHashError alert (#3771)'
+      sha: 11ff0b3cf89a837e88658cb9962ecc66b3a72e00
       tags:
-      - 0.19.15-6-ge446eda8d
+      - 0.19.16
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): adding batch payments in dashboard (#3768)...'
-      sha: e446eda8d1d62dc73a7903c7af434acaea781fc4
+      commitTitle: 'fix(core): CouldNotFindLnPaymentFromHashError alert (#3771)'
+      sha: 11ff0b3cf89a837e88658cb9962ecc66b3a72e00
       tags:
-      - 0.19.15-6-ge446eda8d
+      - 0.19.16
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): adding batch payments in dashboard (#3768)...'
-      sha: e446eda8d1d62dc73a7903c7af434acaea781fc4
+      commitTitle: 'fix(core): CouldNotFindLnPaymentFromHashError alert (#3771)'
+      sha: 11ff0b3cf89a837e88658cb9962ecc66b3a72e00
       tags:
-      - 0.19.15-6-ge446eda8d
+      - 0.19.16
     path: ./
   path: ./graphql
 kind: LockConfig
