@@ -9,6 +9,8 @@ import Details from "../details-card/derails"
 
 import BatchPaymentsList from "./list"
 
+import SampleCSVTable from "./sample-table"
+
 import {
   displayCurrencyBatchPayments,
   displayWalletBalanceBatchPayments,
@@ -21,6 +23,7 @@ import {
   processRecords,
 } from "@/app/batch-payments/server-actions"
 import { WalletCurrency } from "@/services/graphql/generated"
+
 import { centsToDollars } from "@/app/utils"
 
 type paymentDetails = {
@@ -262,13 +265,14 @@ export default function BatchPayments() {
             }}
           >
             {`Please upload a CSV file containing the following columns: "username" (the
-            recipient of the bitcoin), "cents/sats" (this column will indicate the amount;
+            recipient of the bitcoin), "dollars/sats" (this column will indicate the amount;
             the header of this column will determine which wallet to use. If the header is
-            "cents," your USD wallet will be utilized, and the amount will be in cents. If
+            "dollars," your USD wallet will be utilized, and the amount will be in US dollars. If
             "sats" is used, your BTC wallet will be employed, and the amount will be in
             sats), and "memo" (optional)`}
             .
           </Card>
+          <SampleCSVTable />
         </>
       )}
     </div>
