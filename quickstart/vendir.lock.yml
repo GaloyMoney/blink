@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): move 01-setup steps to hedge tests (#3711)...'
-      sha: df2f48008da940615bec8fb6665b17b7c1bb5878
+      commitTitle: 'chore: bump deps (#3687)...'
+      sha: df23f6c0e77935bb15b9f4871f596c4119d795d4
       tags:
-      - 0.19.15-2-gdf2f48008
+      - 0.19.15-4-gdf23f6c0e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): move 01-setup steps to hedge tests (#3711)...'
-      sha: df2f48008da940615bec8fb6665b17b7c1bb5878
+      commitTitle: 'chore: bump deps (#3687)...'
+      sha: df23f6c0e77935bb15b9f4871f596c4119d795d4
       tags:
-      - 0.19.15-2-gdf2f48008
+      - 0.19.15-4-gdf23f6c0e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(core): move 01-setup steps to hedge tests (#3711)...'
-      sha: df2f48008da940615bec8fb6665b17b7c1bb5878
+      commitTitle: 'chore: bump deps (#3687)...'
+      sha: df23f6c0e77935bb15b9f4871f596c4119d795d4
       tags:
-      - 0.19.15-2-gdf2f48008
+      - 0.19.15-4-gdf23f6c0e
     path: ./
   path: ./graphql
 kind: LockConfig
