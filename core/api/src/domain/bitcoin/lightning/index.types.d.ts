@@ -165,7 +165,7 @@ type ListLnInvoicesArgs = {
 }
 
 interface ILightningService {
-  isLocal(pubkey: Pubkey): boolean | LightningServiceError
+  isLocal(pubkey: Pubkey): boolean
 
   defaultPubkey(): Pubkey
 
