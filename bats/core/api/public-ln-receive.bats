@@ -1,31 +1,19 @@
 #!/usr/bin/env bats
 
-load "helpers/setup-and-teardown"
-load "helpers/ln"
+load "../../helpers/_common.bash"
+load "../../helpers/cli.bash"
+load "../../helpers/ledger.bash"
+load "../../helpers/ln.bash"
+load "../../helpers/subscriber.bash"
+load "../../helpers/user.bash"
+
+ALICE='alice'
 
 setup_file() {
   clear_cache
 
-  bitcoind_init
-  start_trigger
-  start_server
-  start_ws_server
-  start_exporter
-
-  lnds_init
-  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
-  user_update_username "$ALICE_TOKEN_NAME"
-}
-
-teardown_file() {
-  stop_trigger
-  stop_server
-  stop_ws_server
-  stop_exporter
-}
-
-setup() {
-  reset_redis
+  create_user "$ALICE"
+  user_update_username "$ALICE"
 }
 
 teardown() {
@@ -38,9 +26,10 @@ btc_amount=1000
 usd_amount=50
 
 @test "public-ln-receive: account details - can fetch with btc default wallet-id from username" {
-  token_name=$ALICE_TOKEN_NAME
+  token_name=$ALICE
   btc_wallet_name="$token_name.btc_wallet_id"
   usd_wallet_name="$token_name.usd_wallet_id"
+  local username="$(read_value $token_name.username)"
 
   # Change default wallet to btc
   variables=$(
@@ -55,7 +44,7 @@ usd_amount=50
   # Fetch btc-wallet-id from username
   variables=$(
     jq -n \
-    --arg username "$token_name" \
+    --arg username "$username" \
     '{username: $username}'
   )
   exec_graphql 'anon' 'account-default-wallet' "$variables"
@@ -65,7 +54,7 @@ usd_amount=50
   # Fetch usd-wallet-id from username
   variables=$(
     jq -n \
-    --arg username "$token_name" \
+    --arg username "$username" \
     '{username: $username, walletCurrency: "USD"}'
   )
   exec_graphql 'anon' 'account-default-wallet' "$variables"
@@ -74,9 +63,10 @@ usd_amount=50
 }
 
 @test "public-ln-receive: account details - can fetch with usd default wallet-id from username" {
-  token_name=$ALICE_TOKEN_NAME
+  token_name=$ALICE
   btc_wallet_name="$token_name.btc_wallet_id"
   usd_wallet_name="$token_name.usd_wallet_id"
+  local username="$(read_value $token_name.username)"
 
   # Change default wallet to usd
   variables=$(
@@ -91,7 +81,7 @@ usd_amount=50
   # Fetch usd-wallet-id from username
   variables=$(
     jq -n \
-    --arg username "$token_name" \
+    --arg username "$username" \
     '{username: $username}'
   )
   exec_graphql 'anon' 'account-default-wallet' "$variables"
@@ -101,7 +91,7 @@ usd_amount=50
   # Fetch btc-wallet-id from username
   variables=$(
     jq -n \
-    --arg username "$token_name" \
+    --arg username "$username" \
     '{username: $username, walletCurrency: "BTC"}'
   )
   exec_graphql 'anon' 'account-default-wallet' "$variables"
@@ -120,7 +110,7 @@ usd_amount=50
 }
 
 @test "public-ln-receive: receive via invoice - can receive on btc invoice, with subscription" {
-  token_name="$ALICE_TOKEN_NAME"
+  token_name="$ALICE"
   btc_wallet_name="$token_name.btc_wallet_id"
 
   variables=$(
@@ -139,23 +129,23 @@ usd_amount=50
   variables=$(
   jq -n \
   --arg payment_request "$payment_request" \
-  '{"input": {"paymentRequest": $payment_request}}'
+  '{input: {paymentRequest: $payment_request}}'
   )
   subscribe_to 'anon' 'ln-invoice-payment-status-sub' "$variables"
   sleep 3
-  retry 10 1 grep "Data.*lnInvoicePaymentStatus.*PENDING" .e2e-subscriber.log
+  retry 10 1 grep "Data.*lnInvoicePaymentStatus.*PENDING" "$SUBSCRIBER_LOG_FILE"
 
   # Receive payment
   lnd_outside_cli payinvoice -f \
     --pay_req "$payment_request" \
 
   # Check for settled with subscription
-  retry 10 1 grep "Data.*lnInvoicePaymentStatus.*PAID" .e2e-subscriber.log
+  retry 10 1 grep "Data.*lnInvoicePaymentStatus.*PAID" "$SUBSCRIBER_LOG_FILE"
   stop_subscriber
 }
 
 @test "public-ln-receive: receive via invoice - can receive on usd invoice" {
-  token_name="$ALICE_TOKEN_NAME"
+  token_name="$ALICE"
   usd_wallet_name="$token_name.usd_wallet_id"
 
   variables=$(
@@ -179,7 +169,7 @@ usd_amount=50
 }
 
 @test "public-ln-receive: receive via invoice - can receive on usd invoice, sats denominated" {
-  token_name="$ALICE_TOKEN_NAME"
+  token_name="$ALICE"
   usd_wallet_name="$token_name.usd_wallet_id"
 
   variables=$(
@@ -203,7 +193,7 @@ usd_amount=50
 }
 
 @test "public-ln-receive: receive via invoice - can receive on btc amountless invoice" {
-  token_name="$ALICE_TOKEN_NAME"
+  token_name="$ALICE"
   btc_wallet_name="$token_name.btc_wallet_id"
 
   variables=$(
@@ -227,7 +217,7 @@ usd_amount=50
 }
 
 @test "public-ln-receive: receive via invoice - can receive on usd amountless invoice" {
-  token_name="$ALICE_TOKEN_NAME"
+  token_name="$ALICE"
   usd_wallet_name="$token_name.usd_wallet_id"
 
   variables=$(
@@ -307,7 +297,7 @@ usd_amount=50
 }
 
 @test "public-ln-receive: fail to create invoice - negative amount" {
-  token_name="$ALICE_TOKEN_NAME"
+  token_name="$ALICE"
   btc_wallet_name="$token_name.btc_wallet_id"
   usd_wallet_name="$token_name.usd_wallet_id"
 
@@ -336,7 +326,7 @@ usd_amount=50
 }
 
 @test "public-ln-receive: fail to create invoice - zero amount" {
-  token_name="$ALICE_TOKEN_NAME"
+  token_name="$ALICE"
   btc_wallet_name="$token_name.btc_wallet_id"
   usd_wallet_name="$token_name.usd_wallet_id"
 

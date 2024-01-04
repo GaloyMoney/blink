@@ -94,6 +94,19 @@ check_for_ln_update() {
   [[ "$paid_status" == "PAID" ]] || exit 1
 }
 
+check_ln_payment_settled() {
+  local payment_request=$1
+
+  variables=$(
+  jq -n \
+  --arg payment_request "$payment_request" \
+  '{"input": {"paymentRequest": $payment_request}}'
+  )
+  exec_graphql 'anon' 'ln-invoice-payment-status' "$variables"
+  payment_status="$(graphql_output '.data.lnInvoicePaymentStatus.status')"
+  [[ "${payment_status}" = "PAID" ]]
+}
+
 fund_user_lightning() {
   local token_name=$1
   local wallet_id_name=$2

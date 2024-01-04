@@ -33,7 +33,8 @@ const startSubscription = async () => {
 
     let variables = undefined
     try {
-      variables = JSON.parse(variablesString)
+      const cleanedVariablesString = variablesString.replace(/\\n/g, '\n')
+      variables = JSON.parse(cleanedVariablesString)
     } catch (err) {
       console.log(err)
     }
