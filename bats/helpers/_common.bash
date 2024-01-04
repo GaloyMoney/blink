@@ -142,3 +142,41 @@ clear_cache() {
   rm -r ${CACHE_DIR}
   mkdir -p ${CACHE_DIR}
 }
+
+curl_request() {
+  local url="$1"
+  local data="${2:-""}"
+  shift 2
+  local headers=("$@")
+
+  echo "Curl request - url: ${url} - data: ${data} - headers:"
+  for header in "${headers[@]}"; do
+    echo "  $header"
+  done
+
+  local run_cmd=""
+  if [[ "${BATS_TEST_DIRNAME}" != "" ]]; then
+    run_cmd="run"
+  fi
+
+  cmd=(${run_cmd} curl -s -X POST -H "Content-Type: application/json")
+
+  for header in "${headers[@]}"; do
+    cmd+=(-H "${header}")
+  done
+
+  if [[ -n "$data" ]]; then
+    cmd+=(-d "${data}")
+  fi
+
+  cmd+=("${url}")
+  echo "Curl input: '${cmd[*]}'"
+
+  "${cmd[@]}"
+
+  echo "Curl output: '$output'"
+}
+
+curl_output() {
+  echo $output | jq -r "$@"
+}
