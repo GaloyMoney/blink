@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(dashboard): error for zero length batch-payments (#3775)'
-      sha: 54b4b3d7dc75636754d947e13af22f444a27fd08
+      commitTitle: 'test(core): move auth bats tests (#3776)...'
+      sha: c42ae827c4eb0a7525fcb00978af9d1dea8468e2
       tags:
-      - 0.19.17-1-g54b4b3d7d
+      - 0.19.18-1-gc42ae827c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(dashboard): error for zero length batch-payments (#3775)'
-      sha: 54b4b3d7dc75636754d947e13af22f444a27fd08
+      commitTitle: 'test(core): move auth bats tests (#3776)...'
+      sha: c42ae827c4eb0a7525fcb00978af9d1dea8468e2
       tags:
-      - 0.19.17-1-g54b4b3d7d
+      - 0.19.18-1-gc42ae827c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(dashboard): error for zero length batch-payments (#3775)'
-      sha: 54b4b3d7dc75636754d947e13af22f444a27fd08
+      commitTitle: 'test(core): move auth bats tests (#3776)...'
+      sha: c42ae827c4eb0a7525fcb00978af9d1dea8468e2
       tags:
-      - 0.19.17-1-g54b4b3d7d
+      - 0.19.18-1-gc42ae827c
     path: ./
   path: ./graphql
 kind: LockConfig
