@@ -4,19 +4,18 @@ import OnChainTxHash from "../scalar/onchain-tx-hash"
 
 import LnPaymentSecret from "../scalar/ln-payment-secret"
 
-import { OnChain } from "@/app"
+import { OnChain, Transactions } from "@/app"
 
-import { GT } from "@/graphql/index"
-
+import { ErrorLevel } from "@/domain/shared"
 import { SettlementMethod } from "@/domain/wallets"
 
-import WalletId from "@/graphql/shared/types/scalar/wallet-id"
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
 
+import { GT } from "@/graphql/index"
 import Username from "@/graphql/shared/types/scalar/username"
-
-import LnPaymentPreImage from "@/graphql/shared/types/scalar/ln-payment-preimage"
-
+import WalletId from "@/graphql/shared/types/scalar/wallet-id"
 import Timestamp from "@/graphql/shared/types/scalar/timestamp"
+import LnPaymentPreImage from "@/graphql/shared/types/scalar/ln-payment-preimage"
 
 const SettlementViaIntraLedger = GT.Object({
   name: "SettlementViaIntraLedger",
@@ -29,6 +28,30 @@ const SettlementViaIntraLedger = GT.Object({
     counterPartyUsername: {
       type: Username,
       description: dedent`Settlement destination: Could be null if the payee does not have a username`,
+    },
+    preImage: {
+      type: LnPaymentPreImage,
+      resolve: async (source) => {
+        if (source.parent.initiationVia.type !== "lightning") {
+          return null
+        }
+        if (source.parent.settlementAmount > 0) {
+          return null
+        }
+
+        const preImage = await Transactions.getInvoicePreImageByHash({
+          paymentHash: source.parent.initiationVia.paymentHash,
+        })
+        if (preImage instanceof Error) {
+          recordExceptionInCurrentSpan({
+            error: preImage,
+            level: ErrorLevel.Warn,
+            attributes: { ["error.parentId"]: source.parent.id },
+          })
+          return null
+        }
+        return preImage
+      },
     },
   }),
 })
