@@ -10,7 +10,7 @@ import * as WalletInvoicesRepositoryImpl from "@/services/mongoose/wallet-invoic
 import { createMockWalletInvoice } from "test/helpers/wallet-invoices"
 
 describe("getInvoicePreImageByHash", () => {
-  it("returns a valid preimage when invoice has being paid", async () => {
+  it("returns a valid preimage when invoice has been paid", async () => {
     const defaultInvoice = createMockWalletInvoice({
       id: crypto.randomUUID() as WalletId,
       currency: WalletCurrency.Btc,
@@ -34,7 +34,7 @@ describe("getInvoicePreImageByHash", () => {
     expect(preImage).toBe(defaultInvoice.secret)
   })
 
-  it("returns error if invoice has not being paid", async () => {
+  it("returns error if invoice has not been paid", async () => {
     const defaultInvoice = createMockWalletInvoice({
       id: crypto.randomUUID() as WalletId,
       currency: WalletCurrency.Btc,
