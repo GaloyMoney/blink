@@ -32,3 +32,15 @@ HYDRA_ADMIN_API="http://localhost:4445"
   [[ -n "$admin_token" ]] || exit 1
   cache_value 'admin.token' "$admin_token"
 }
+
+@test "admin: can query account details by phone" {
+  admin_token="$(read_value 'admin.token')"
+  variables=$(
+    jq -n \
+    --arg phone "$(read_value 'tester.phone')" \
+    '{phone: $phone}'
+  )
+  exec_admin_graphql $admin_token 'account-details-by-user-phone' "$variables"
+  id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
+  [[ "$id" != "null" && "$id" != "" ]] || exit 1
+}
