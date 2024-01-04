@@ -1,14 +1,19 @@
-import { AuthTokenUserIdMismatchError } from "@/domain/authentication/errors"
+import {
+  AuthTokenUserIdMismatchError,
+  IdentifierNotFoundError,
+} from "@/domain/authentication/errors"
 import {
   validateKratosToken,
   kratosValidateTotp,
   kratosInitiateTotp,
   kratosElevatingSessionWithTotp,
   kratosRemoveTotp,
-  getAuthTokenFromUserId,
   logoutSessionByAuthToken,
   refreshToken,
+  AuthWithPhonePasswordlessService,
+  AuthWithEmailPasswordlessService,
 } from "@/services/kratos"
+import { kratosAdmin } from "@/services/kratos/private"
 
 import { UsersRepository } from "@/services/mongoose"
 
@@ -136,4 +141,34 @@ export const removeTotp = async ({
   if (me instanceof Error) return me
 
   return me
+}
+
+const getAuthTokenFromUserId = async (
+  userId: UserId,
+): Promise<AuthToken | AuthenticationError> => {
+  const { data } = await kratosAdmin.getIdentity({ id: userId })
+  let kratosResult:
+    | IAuthWithEmailPasswordlessService
+    | LoginWithPhoneNoPasswordSchemaResponse
+    | KratosError
+    | null = null
+
+  const phone = data?.traits?.phone
+  const email = data?.traits?.email
+
+  if (phone) {
+    const authService = AuthWithPhonePasswordlessService()
+    kratosResult = await authService.loginToken({ phone })
+  } else if (email) {
+    const emailAuthService = AuthWithEmailPasswordlessService()
+    kratosResult = await emailAuthService.loginToken({ email })
+  } else {
+    return new IdentifierNotFoundError()
+  }
+
+  if (kratosResult instanceof Error) {
+    return kratosResult
+  }
+
+  return kratosResult?.authToken
 }
