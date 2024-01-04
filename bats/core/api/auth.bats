@@ -187,8 +187,6 @@ generateTotpCode() {
 }
 
 @test "auth: log in with email with totp activated" {
-  skip "This test needs to be fixed"
-
   email=$(read_value 'charlie.email')
 
   # code request
