@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): bump async-graphql from 6.0.9 to 6.0.11 (#3782)...'
-      sha: bfc5bb8d16f2d413461884c7b318df5f7dafc67b
+      commitTitle: 'chore(api-keys): bump reqwest from 0.11.20 to 0.11.23 (#3780)...'
+      sha: 58250808c098a408f6db21e1188d2a139c6308ea
       tags:
-      - 0.19.20-1-gbfc5bb8d1
+      - 0.19.22-1-g58250808c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): bump async-graphql from 6.0.9 to 6.0.11 (#3782)...'
-      sha: bfc5bb8d16f2d413461884c7b318df5f7dafc67b
+      commitTitle: 'chore(api-keys): bump reqwest from 0.11.20 to 0.11.23 (#3780)...'
+      sha: 58250808c098a408f6db21e1188d2a139c6308ea
       tags:
-      - 0.19.20-1-gbfc5bb8d1
+      - 0.19.22-1-g58250808c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): bump async-graphql from 6.0.9 to 6.0.11 (#3782)...'
-      sha: bfc5bb8d16f2d413461884c7b318df5f7dafc67b
+      commitTitle: 'chore(api-keys): bump reqwest from 0.11.20 to 0.11.23 (#3780)...'
+      sha: 58250808c098a408f6db21e1188d2a139c6308ea
       tags:
-      - 0.19.20-1-gbfc5bb8d1
+      - 0.19.22-1-g58250808c
     path: ./
   path: ./graphql
 kind: LockConfig
