@@ -538,6 +538,42 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "atomic-write-file-0.1.2.crate",
+    sha256 = "edcdbedc2236483ab103a53415653d6b4442ea6141baf1ffa85df29635e88436",
+    strip_prefix = "atomic-write-file-0.1.2",
+    urls = ["https://crates.io/api/v1/crates/atomic-write-file/0.1.2/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "atomic-write-file-0.1.2",
+    srcs = [":atomic-write-file-0.1.2.crate"],
+    crate = "atomic_write_file",
+    crate_root = "atomic-write-file-0.1.2.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "default",
+        "unnamed-tmpfile",
+    ],
+    platform = {
+        "linux-arm64": dict(
+            deps = [":nix-0.27.1"],
+        ),
+        "linux-x86_64": dict(
+            deps = [":nix-0.27.1"],
+        ),
+        "macos-arm64": dict(
+            deps = [":nix-0.27.1"],
+        ),
+        "macos-x86_64": dict(
+            deps = [":nix-0.27.1"],
+        ),
+    },
+    visibility = [],
+    deps = [":rand-0.8.5"],
+)
+
+http_archive(
     name = "autocfg-1.1.0.crate",
     sha256 = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa",
     strip_prefix = "autocfg-1.1.0",
@@ -2879,25 +2915,25 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "libsqlite3-sys-0.26.0.crate",
-    sha256 = "afc22eff61b133b115c6e8c74e818c628d6d5e7a502afea6f64dee076dd94326",
-    strip_prefix = "libsqlite3-sys-0.26.0",
+    name = "libsqlite3-sys-0.27.0.crate",
+    sha256 = "cf4e226dcd58b4be396f7bd3c20da8fdee2911400705297ba7d2d7cc2c30f716",
+    strip_prefix = "libsqlite3-sys-0.27.0",
     sub_targets = [
         "sqlite3/bindgen_bundled_version.rs",
         "sqlite3/sqlite3.c",
         "sqlite3/sqlite3.h",
         "sqlite3/sqlite3ext.h",
     ],
-    urls = ["https://crates.io/api/v1/crates/libsqlite3-sys/0.26.0/download"],
+    urls = ["https://crates.io/api/v1/crates/libsqlite3-sys/0.27.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "libsqlite3-sys-0.26.0",
-    srcs = [":libsqlite3-sys-0.26.0.crate"],
+    name = "libsqlite3-sys-0.27.0",
+    srcs = [":libsqlite3-sys-0.27.0.crate"],
     crate = "libsqlite3_sys",
-    crate_root = "libsqlite3-sys-0.26.0.crate/src/lib.rs",
-    edition = "2018",
+    crate_root = "libsqlite3-sys-0.27.0.crate/src/lib.rs",
+    edition = "2021",
     env = {
         "OUT_DIR": ".",
     },
@@ -2910,18 +2946,18 @@ cargo.rust_library(
         "vcpkg",
     ],
     mapped_srcs = {
-        ":libsqlite3-sys-0.26.0.crate[sqlite3/bindgen_bundled_version.rs]": "libsqlite3-sys-0.26.0.crate/src/bindgen.rs",
+        ":libsqlite3-sys-0.27.0.crate[sqlite3/bindgen_bundled_version.rs]": "libsqlite3-sys-0.27.0.crate/src/bindgen.rs",
     },
     visibility = [],
-    deps = [":libsqlite3-sys-0.26.0-sqlite3"],
+    deps = [":libsqlite3-sys-0.27.0-sqlite3"],
 )
 
 cxx_library(
-    name = "libsqlite3-sys-0.26.0-sqlite3",
-    srcs = [":libsqlite3-sys-0.26.0.crate[sqlite3/sqlite3.c]"],
+    name = "libsqlite3-sys-0.27.0-sqlite3",
+    srcs = [":libsqlite3-sys-0.27.0.crate[sqlite3/sqlite3.c]"],
     headers = [
-        ":libsqlite3-sys-0.26.0.crate[sqlite3/sqlite3.h]",
-        ":libsqlite3-sys-0.26.0.crate[sqlite3/sqlite3ext.h]",
+        ":libsqlite3-sys-0.27.0.crate[sqlite3/sqlite3.h]",
+        ":libsqlite3-sys-0.27.0.crate[sqlite3/sqlite3ext.h]",
     ],
     preferred_linkage = "static",
     preprocessor_flags = [
@@ -3179,6 +3215,34 @@ cargo.rust_library(
         ":mime-0.3.17",
         ":spin-0.9.8",
         ":version_check-0.9.4",
+    ],
+)
+
+http_archive(
+    name = "nix-0.27.1.crate",
+    sha256 = "2eb04e9c688eff1c89d72b407f168cf79bb9e867a9d3323ed6c01519eb9cc053",
+    strip_prefix = "nix-0.27.1",
+    urls = ["https://crates.io/api/v1/crates/nix/0.27.1/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "nix-0.27.1",
+    srcs = [":nix-0.27.1.crate"],
+    crate = "nix",
+    crate_root = "nix-0.27.1.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "default",
+        "feature",
+        "fs",
+        "user",
+    ],
+    visibility = [],
+    deps = [
+        ":bitflags-2.4.1",
+        ":cfg-if-1.0.0",
+        ":libc-0.2.149",
     ],
 )
 
@@ -6324,23 +6388,23 @@ cargo.rust_library(
 
 alias(
     name = "sqlx",
-    actual = ":sqlx-0.7.2",
+    actual = ":sqlx-0.7.3",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "sqlx-0.7.2.crate",
-    sha256 = "0e50c216e3624ec8e7ecd14c6a6a6370aad6ee5d8cfc3ab30b5162eeeef2ed33",
-    strip_prefix = "sqlx-0.7.2",
-    urls = ["https://crates.io/api/v1/crates/sqlx/0.7.2/download"],
+    name = "sqlx-0.7.3.crate",
+    sha256 = "dba03c279da73694ef99763320dea58b51095dfe87d001b1d4b5fe78ba8763cf",
+    strip_prefix = "sqlx-0.7.3",
+    urls = ["https://crates.io/api/v1/crates/sqlx/0.7.3/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "sqlx-0.7.2",
-    srcs = [":sqlx-0.7.2.crate"],
+    name = "sqlx-0.7.3",
+    srcs = [":sqlx-0.7.3.crate"],
     crate = "sqlx",
-    crate_root = "sqlx-0.7.2.crate/src/lib.rs",
+    crate_root = "sqlx-0.7.3.crate/src/lib.rs",
     edition = "2021",
     features = [
         "_rt-tokio",
@@ -6360,27 +6424,27 @@ cargo.rust_library(
     ],
     visibility = [],
     deps = [
-        ":sqlx-core-0.7.2",
-        ":sqlx-macros-0.7.2",
-        ":sqlx-mysql-0.7.2",
-        ":sqlx-postgres-0.7.2",
-        ":sqlx-sqlite-0.7.2",
+        ":sqlx-core-0.7.3",
+        ":sqlx-macros-0.7.3",
+        ":sqlx-mysql-0.7.3",
+        ":sqlx-postgres-0.7.3",
+        ":sqlx-sqlite-0.7.3",
     ],
 )
 
 http_archive(
-    name = "sqlx-core-0.7.2.crate",
-    sha256 = "8d6753e460c998bbd4cd8c6f0ed9a64346fcca0723d6e75e52fdc351c5d2169d",
-    strip_prefix = "sqlx-core-0.7.2",
-    urls = ["https://crates.io/api/v1/crates/sqlx-core/0.7.2/download"],
+    name = "sqlx-core-0.7.3.crate",
+    sha256 = "d84b0a3c3739e220d94b3239fd69fb1f74bc36e16643423bd99de3b43c21bfbd",
+    strip_prefix = "sqlx-core-0.7.3",
+    urls = ["https://crates.io/api/v1/crates/sqlx-core/0.7.3/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "sqlx-core-0.7.2",
-    srcs = [":sqlx-core-0.7.2.crate"],
+    name = "sqlx-core-0.7.3",
+    srcs = [":sqlx-core-0.7.3.crate"],
     crate = "sqlx_core",
-    crate_root = "sqlx-core-0.7.2.crate/src/lib.rs",
+    crate_root = "sqlx-core-0.7.3.crate/src/lib.rs",
     edition = "2021",
     features = [
         "_rt-tokio",
@@ -6440,23 +6504,23 @@ cargo.rust_library(
         ":tracing-0.1.40",
         ":url-2.4.1",
         ":uuid-1.5.0",
-        ":webpki-roots-0.24.0",
+        ":webpki-roots-0.25.2",
     ],
 )
 
 http_archive(
-    name = "sqlx-macros-0.7.2.crate",
-    sha256 = "9a793bb3ba331ec8359c1853bd39eed32cdd7baaf22c35ccf5c92a7e8d1189ec",
-    strip_prefix = "sqlx-macros-0.7.2",
-    urls = ["https://crates.io/api/v1/crates/sqlx-macros/0.7.2/download"],
+    name = "sqlx-macros-0.7.3.crate",
+    sha256 = "89961c00dc4d7dffb7aee214964b065072bff69e36ddb9e2c107541f75e4f2a5",
+    strip_prefix = "sqlx-macros-0.7.3",
+    urls = ["https://crates.io/api/v1/crates/sqlx-macros/0.7.3/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "sqlx-macros-0.7.2",
-    srcs = [":sqlx-macros-0.7.2.crate"],
+    name = "sqlx-macros-0.7.3",
+    srcs = [":sqlx-macros-0.7.3.crate"],
     crate = "sqlx_macros",
-    crate_root = "sqlx-macros-0.7.2.crate/src/lib.rs",
+    crate_root = "sqlx-macros-0.7.3.crate/src/lib.rs",
     edition = "2021",
     features = [
         "_rt-tokio",
@@ -6473,25 +6537,25 @@ cargo.rust_library(
     deps = [
         ":proc-macro2-1.0.69",
         ":quote-1.0.33",
-        ":sqlx-core-0.7.2",
-        ":sqlx-macros-core-0.7.2",
+        ":sqlx-core-0.7.3",
+        ":sqlx-macros-core-0.7.3",
         ":syn-1.0.109",
     ],
 )
 
 http_archive(
-    name = "sqlx-macros-core-0.7.2.crate",
-    sha256 = "0a4ee1e104e00dedb6aa5ffdd1343107b0a4702e862a84320ee7cc74782d96fc",
-    strip_prefix = "sqlx-macros-core-0.7.2",
-    urls = ["https://crates.io/api/v1/crates/sqlx-macros-core/0.7.2/download"],
+    name = "sqlx-macros-core-0.7.3.crate",
+    sha256 = "d0bd4519486723648186a08785143599760f7cc81c52334a55d6a83ea1e20841",
+    strip_prefix = "sqlx-macros-core-0.7.3",
+    urls = ["https://crates.io/api/v1/crates/sqlx-macros-core/0.7.3/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "sqlx-macros-core-0.7.2",
-    srcs = [":sqlx-macros-core-0.7.2.crate"],
+    name = "sqlx-macros-core-0.7.3",
+    srcs = [":sqlx-macros-core-0.7.3.crate"],
     crate = "sqlx_macros_core",
-    crate_root = "sqlx-macros-core-0.7.2.crate/src/lib.rs",
+    crate_root = "sqlx-macros-core-0.7.3.crate/src/lib.rs",
     edition = "2021",
     features = [
         "_rt-tokio",
@@ -6507,6 +6571,7 @@ cargo.rust_library(
     ],
     visibility = [],
     deps = [
+        ":atomic-write-file-0.1.2",
         ":dotenvy-0.15.7",
         ":either-1.9.0",
         ":heck-0.4.1",
@@ -6517,10 +6582,10 @@ cargo.rust_library(
         ":serde-1.0.190",
         ":serde_json-1.0.108",
         ":sha2-0.10.8",
-        ":sqlx-core-0.7.2",
-        ":sqlx-mysql-0.7.2",
-        ":sqlx-postgres-0.7.2",
-        ":sqlx-sqlite-0.7.2",
+        ":sqlx-core-0.7.3",
+        ":sqlx-mysql-0.7.3",
+        ":sqlx-postgres-0.7.3",
+        ":sqlx-sqlite-0.7.3",
         ":syn-1.0.109",
         ":tempfile-3.8.1",
         ":tokio-1.33.0",
@@ -6529,18 +6594,18 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "sqlx-mysql-0.7.2.crate",
-    sha256 = "864b869fdf56263f4c95c45483191ea0af340f9f3e3e7b4d57a61c7c87a970db",
-    strip_prefix = "sqlx-mysql-0.7.2",
-    urls = ["https://crates.io/api/v1/crates/sqlx-mysql/0.7.2/download"],
+    name = "sqlx-mysql-0.7.3.crate",
+    sha256 = "e37195395df71fd068f6e2082247891bc11e3289624bbc776a0cdfa1ca7f1ea4",
+    strip_prefix = "sqlx-mysql-0.7.3",
+    urls = ["https://crates.io/api/v1/crates/sqlx-mysql/0.7.3/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "sqlx-mysql-0.7.2",
-    srcs = [":sqlx-mysql-0.7.2.crate"],
+    name = "sqlx-mysql-0.7.3",
+    srcs = [":sqlx-mysql-0.7.3.crate"],
     crate = "sqlx_mysql",
-    crate_root = "sqlx-mysql-0.7.2.crate/src/lib.rs",
+    crate_root = "sqlx-mysql-0.7.3.crate/src/lib.rs",
     edition = "2021",
     features = [
         "any",
@@ -6583,7 +6648,7 @@ cargo.rust_library(
         ":sha1-0.10.6",
         ":sha2-0.10.8",
         ":smallvec-1.11.1",
-        ":sqlx-core-0.7.2",
+        ":sqlx-core-0.7.3",
         ":stringprep-0.1.4",
         ":thiserror-1.0.50",
         ":tracing-0.1.40",
@@ -6593,18 +6658,18 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "sqlx-postgres-0.7.2.crate",
-    sha256 = "eb7ae0e6a97fb3ba33b23ac2671a5ce6e3cabe003f451abd5a56e7951d975624",
-    strip_prefix = "sqlx-postgres-0.7.2",
-    urls = ["https://crates.io/api/v1/crates/sqlx-postgres/0.7.2/download"],
+    name = "sqlx-postgres-0.7.3.crate",
+    sha256 = "d6ac0ac3b7ccd10cc96c7ab29791a7dd236bd94021f31eec7ba3d46a74aa1c24",
+    strip_prefix = "sqlx-postgres-0.7.3",
+    urls = ["https://crates.io/api/v1/crates/sqlx-postgres/0.7.3/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "sqlx-postgres-0.7.2",
-    srcs = [":sqlx-postgres-0.7.2.crate"],
+    name = "sqlx-postgres-0.7.3",
+    srcs = [":sqlx-postgres-0.7.3.crate"],
     crate = "sqlx_postgres",
-    crate_root = "sqlx-postgres-0.7.2.crate/src/lib.rs",
+    crate_root = "sqlx-postgres-0.7.3.crate/src/lib.rs",
     edition = "2021",
     features = [
         "any",
@@ -6650,7 +6715,7 @@ cargo.rust_library(
         ":sha1-0.10.6",
         ":sha2-0.10.8",
         ":smallvec-1.11.1",
-        ":sqlx-core-0.7.2",
+        ":sqlx-core-0.7.3",
         ":stringprep-0.1.4",
         ":thiserror-1.0.50",
         ":tracing-0.1.40",
@@ -6660,18 +6725,18 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "sqlx-sqlite-0.7.2.crate",
-    sha256 = "d59dc83cf45d89c555a577694534fcd1b55c545a816c816ce51f20bbe56a4f3f",
-    strip_prefix = "sqlx-sqlite-0.7.2",
-    urls = ["https://crates.io/api/v1/crates/sqlx-sqlite/0.7.2/download"],
+    name = "sqlx-sqlite-0.7.3.crate",
+    sha256 = "210976b7d948c7ba9fced8ca835b11cbb2d677c59c79de41ac0d397e14547490",
+    strip_prefix = "sqlx-sqlite-0.7.3",
+    urls = ["https://crates.io/api/v1/crates/sqlx-sqlite/0.7.3/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "sqlx-sqlite-0.7.2",
-    srcs = [":sqlx-sqlite-0.7.2.crate"],
+    name = "sqlx-sqlite-0.7.3",
+    srcs = [":sqlx-sqlite-0.7.3.crate"],
     crate = "sqlx_sqlite",
-    crate_root = "sqlx-sqlite-0.7.2.crate/src/lib.rs",
+    crate_root = "sqlx-sqlite-0.7.3.crate/src/lib.rs",
     edition = "2021",
     features = [
         "any",
@@ -6692,13 +6757,14 @@ cargo.rust_library(
         ":futures-executor-0.3.29",
         ":futures-intrusive-0.5.0",
         ":futures-util-0.3.29",
-        ":libsqlite3-sys-0.26.0",
+        ":libsqlite3-sys-0.27.0",
         ":log-0.4.20",
         ":percent-encoding-2.3.0",
         ":serde-1.0.190",
-        ":sqlx-core-0.7.2",
+        ":sqlx-core-0.7.3",
         ":tracing-0.1.40",
         ":url-2.4.1",
+        ":urlencoding-2.1.3",
         ":uuid-1.5.0",
     ],
 )
@@ -6977,7 +7043,7 @@ cargo.rust_binary(
         ":serde_json-1.0.108",
         ":serde_with-3.4.0",
         ":serde_yaml-0.9.27",
-        ":sqlx-0.7.2",
+        ":sqlx-0.7.3",
         ":thiserror-1.0.50",
         ":tokio-1.33.0",
         ":tracing-0.1.40",
@@ -8289,24 +8355,6 @@ cargo.rust_library(
     edition = "2018",
     visibility = [],
     deps = [":try-lock-0.2.4"],
-)
-
-http_archive(
-    name = "webpki-roots-0.24.0.crate",
-    sha256 = "b291546d5d9d1eab74f069c77749f2cb8504a12caa20f0f2de93ddbf6f411888",
-    strip_prefix = "webpki-roots-0.24.0",
-    urls = ["https://crates.io/api/v1/crates/webpki-roots/0.24.0/download"],
-    visibility = [],
-)
-
-cargo.rust_library(
-    name = "webpki-roots-0.24.0",
-    srcs = [":webpki-roots-0.24.0.crate"],
-    crate = "webpki_roots",
-    crate_root = "webpki-roots-0.24.0.crate/src/lib.rs",
-    edition = "2018",
-    visibility = [],
-    deps = [":rustls-webpki-0.101.7"],
 )
 
 http_archive(
