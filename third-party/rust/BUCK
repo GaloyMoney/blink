@@ -2095,7 +2095,12 @@ cargo.rust_library(
     crate = "getrandom",
     crate_root = "getrandom-0.2.10.crate/src/lib.rs",
     edition = "2018",
-    features = ["std"],
+    features = [
+        "js",
+        "js-sys",
+        "std",
+        "wasm-bindgen",
+    ],
     platform = {
         "linux-arm64": dict(
             deps = [":libc-0.2.149"],
@@ -2754,23 +2759,23 @@ cargo.rust_library(
 
 alias(
     name = "jsonwebtoken",
-    actual = ":jsonwebtoken-9.1.0",
+    actual = ":jsonwebtoken-9.2.0",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "jsonwebtoken-9.1.0.crate",
-    sha256 = "155c4d7e39ad04c172c5e3a99c434ea3b4a7ba7960b38ecd562b270b097cce09",
-    strip_prefix = "jsonwebtoken-9.1.0",
-    urls = ["https://crates.io/api/v1/crates/jsonwebtoken/9.1.0/download"],
+    name = "jsonwebtoken-9.2.0.crate",
+    sha256 = "5c7ea04a7c5c055c175f189b6dc6ba036fd62306b58c66c9f6389036c503a3f4",
+    strip_prefix = "jsonwebtoken-9.2.0",
+    urls = ["https://crates.io/api/v1/crates/jsonwebtoken/9.2.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "jsonwebtoken-9.1.0",
-    srcs = [":jsonwebtoken-9.1.0.crate"],
+    name = "jsonwebtoken-9.2.0",
+    srcs = [":jsonwebtoken-9.2.0.crate"],
     crate = "jsonwebtoken",
-    crate_root = "jsonwebtoken-9.1.0.crate/src/lib.rs",
+    crate_root = "jsonwebtoken-9.2.0.crate/src/lib.rs",
     edition = "2021",
     features = [
         "default",
@@ -2778,11 +2783,30 @@ cargo.rust_library(
         "simple_asn1",
         "use_pem",
     ],
+    platform = {
+        "linux-arm64": dict(
+            deps = [":ring-0.17.5"],
+        ),
+        "linux-x86_64": dict(
+            deps = [":ring-0.17.5"],
+        ),
+        "macos-arm64": dict(
+            deps = [":ring-0.17.5"],
+        ),
+        "macos-x86_64": dict(
+            deps = [":ring-0.17.5"],
+        ),
+        "windows-gnu": dict(
+            deps = [":ring-0.17.5"],
+        ),
+        "windows-msvc": dict(
+            deps = [":ring-0.17.5"],
+        ),
+    },
     visibility = [],
     deps = [
         ":base64-0.21.5",
         ":pem-3.0.2",
-        ":ring-0.17.5",
         ":serde-1.0.190",
         ":serde_json-1.0.108",
         ":simple_asn1-0.6.2",
@@ -4897,6 +4921,7 @@ cargo.rust_library(
         "default",
         "dev_urandom_fallback",
         "std",
+        "wasm32_unknown_unknown_js",
     ],
     platform = {
         "linux-arm64": dict(
@@ -6966,7 +6991,7 @@ cargo.rust_binary(
         ":chrono-0.4.31",
         ":clap-4.4.7",
         ":http-0.2.9",
-        ":jsonwebtoken-9.1.0",
+        ":jsonwebtoken-9.2.0",
         ":opentelemetry-0.20.0",
         ":opentelemetry-http-0.9.0",
         ":opentelemetry-otlp-0.13.0",
