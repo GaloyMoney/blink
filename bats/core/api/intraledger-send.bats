@@ -1,25 +1,23 @@
 #!/usr/bin/env bats
 
-load "helpers/setup-and-teardown"
+load "../../helpers/_common.bash"
+load "../../helpers/cli.bash"
+load "../../helpers/ledger.bash"
+load "../../helpers/onchain.bash"
+load "../../helpers/user.bash"
+
+ALICE='alice'
+BOB='bob'
 
 setup_file() {
   clear_cache
-  reset_redis
 
-  bitcoind_init
-  start_trigger
-  start_exporter
-  start_server
+  create_user "$ALICE"
+  user_update_username "$ALICE"
+  fund_user_onchain "$ALICE" 'btc_wallet'
+  fund_user_onchain "$ALICE" 'usd_wallet'
 
-  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
-  user_update_username "$ALICE_TOKEN_NAME"
-  login_user "$BOB_TOKEN_NAME" "$BOB_PHONE" "$CODE"
-}
-
-teardown_file() {
-  stop_trigger
-  stop_server
-  stop_exporter
+  create_user "$BOB"
 }
 
 teardown() {
@@ -29,15 +27,11 @@ teardown() {
 }
 
 @test "intraledger-send: settle intraledger, from BTC wallet, with contacts check" {
-  local from_token_name="$ALICE_TOKEN_NAME"
+  local from_token_name="$ALICE"
   local from_wallet_name="$from_token_name.btc_wallet_id"
 
-  local to_token_name="user_$RANDOM"
-  to_phone="$(random_phone)"
-  login_user \
-    "$to_token_name" \
-    "$to_phone"  \
-    "$CODE"
+  local to_token_name="user"
+  create_user "$to_token_name"
   user_update_username "$to_token_name"
   local wallet_name_btc="$to_token_name.btc_wallet_id"
   local wallet_name_usd="$to_token_name.usd_wallet_id"
@@ -82,10 +76,10 @@ teardown() {
 }
 
 @test "intraledger-send: settle intraledger, from USD wallet" {
-  local from_token_name="$ALICE_TOKEN_NAME"
+  local from_token_name="$ALICE"
   local from_wallet_name="$from_token_name.usd_wallet_id"
 
-  local to_token_name="$BOB_TOKEN_NAME"
+  local to_token_name="$BOB"
   local wallet_name_btc="$to_token_name.btc_wallet_id"
   local wallet_name_usd="$to_token_name.usd_wallet_id"
   local amount=20
@@ -116,7 +110,7 @@ teardown() {
 }
 
 @test "intraledger-send: settle trade intra-account, from BTC wallet" {
-  local from_token_name="$ALICE_TOKEN_NAME"
+  local from_token_name="$ALICE"
   local from_wallet_name="$from_token_name.btc_wallet_id"
   local to_token_name="$from_token_name"
   local to_wallet_name="$to_token_name.usd_wallet_id"
@@ -136,7 +130,7 @@ teardown() {
 }
 
 @test "intraledger-send: settle trade intra-account, from USD wallet" {
-  local from_token_name="$ALICE_TOKEN_NAME"
+  local from_token_name="$ALICE"
   local from_wallet_name="$from_token_name.usd_wallet_id"
   local to_token_name="$from_token_name"
   local to_wallet_name="$to_token_name.btc_wallet_id"
