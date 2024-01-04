@@ -215,3 +215,23 @@ generateTotpCode() {
   exec_graphql 'charlie' 'identity'
   [[ "$(graphql_output '.data.me.totpEnabled')" = "true" ]] || exit 1
 }
+
+@test "auth: removing totp" {
+  exec_graphql 'charlie' 'user-totp-delete'
+  [[ "$(graphql_output '.data.userTotpDelete.me.totpEnabled')" = "false" ]] || exit 1
+}
+
+@test "auth: add new phone mutation" {
+  local code="000000"
+  local phone="$(read_value 'charlie.phone')"
+
+  # First mutation: UserPhoneRegistrationInitiate
+  variables="{\"input\": {\"phone\": \"$phone\"}}"
+  exec_graphql "charlie" "user-phone-registration-initiate" "$variables"
+  [[ "$(graphql_output '.data.userPhoneRegistrationInitiate.success')" = "true" ]] || exit 1
+
+  # Second mutation: UserPhoneRegistrationValidate
+  variables="{\"input\": {\"phone\": \"$phone\", \"code\": \"$code\"}}"
+  exec_graphql "charlie" "user-phone-registration-validate" "$variables"
+  [[ "$(graphql_output '.data.userPhoneRegistrationValidate.me.phone')" = "$phone" ]] || exit 1
+}
