@@ -1,7 +1,7 @@
 import { Identity as KratosIdentity } from "@ory/client"
 
 import { KratosError, UnknownKratosError } from "./errors"
-import { kratosAdmin, toDomainIdentity } from "./private"
+import { getKratosPostgres, kratosAdmin, toDomainIdentity } from "./private"
 
 import { AuthWithPhonePasswordlessService } from "./auth-phone-no-password"
 import { AuthWithEmailPasswordlessService } from "./auth-email-no-password"
@@ -68,11 +68,34 @@ export const IdentityRepository = (): IIdentityRepository => {
     }
   }
 
+  const getUserIdFromFlowId = async (flowId: string): Promise<UserId | KratosError> => {
+    const kratosDbConnection = getKratosPostgres()
+    const table = "selfservice_recovery_flows"
+
+    try {
+      const res = await kratosDbConnection
+        .select(["id", "recovered_identity_id"])
+        .from(table)
+        .where({ id: flowId })
+
+      await kratosDbConnection.destroy()
+
+      if (res.length === 0) {
+        return new UnknownKratosError(`no identity for flow ${flowId}`)
+      }
+
+      return res[0].recovered_identity_id as UserId
+    } catch (err) {
+      return new UnknownKratosError(err)
+    }
+  }
+
   return {
     getIdentity,
     listIdentities,
-    getUserIdFromIdentifier,
     deleteIdentity,
+    getUserIdFromIdentifier,
+    getUserIdFromFlowId,
   }
 }
 

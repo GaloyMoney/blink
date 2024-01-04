@@ -2,8 +2,6 @@ import { isAxiosError } from "axios"
 
 import { UpdateIdentityBody } from "@ory/client"
 
-import knex from "knex"
-
 import {
   CodeExpiredKratosError,
   EmailAlreadyExistsError,
@@ -15,6 +13,8 @@ import {
 import { kratosAdmin, kratosPublic, toDomainIdentityEmailPhone } from "./private"
 import { SchemaIdType } from "./schema"
 
+import { IdentityRepository } from "./identity"
+
 import { checkedToEmailAddress } from "@/domain/users"
 import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
 import {
@@ -24,32 +24,7 @@ import {
   EmailValidationSubmittedTooOftenError,
   LikelyUserAlreadyExistError,
 } from "@/domain/authentication/errors"
-import { KRATOS_MASTER_USER_PASSWORD, KRATOS_PG_CON } from "@/config"
-
-const getKratosKnex = () =>
-  knex({
-    client: "pg",
-    connection: KRATOS_PG_CON,
-  })
-
-const getIdentityIdFromFlowId = async (flowId: string) => {
-  const knex = getKratosKnex()
-
-  const table = "selfservice_recovery_flows"
-
-  const res = await knex
-    .select(["id", "recovered_identity_id"])
-    .from(table)
-    .where({ id: flowId })
-
-  await knex.destroy()
-
-  if (res.length === 0) {
-    return new UnknownKratosError(`no identity for flow ${flowId}`)
-  }
-
-  return res[0].recovered_identity_id as UserId
-}
+import { KRATOS_MASTER_USER_PASSWORD } from "@/config"
 
 // login with email
 
@@ -172,7 +147,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
             // https://github.com/ory/kratos/issues/3163
             //
 
-            const userIdRaw = await getIdentityIdFromFlowId(flow)
+            const userIdRaw = await IdentityRepository().getUserIdFromFlowId(flow)
             if (userIdRaw instanceof Error) return userIdRaw
 
             kratosUserId = userIdRaw
