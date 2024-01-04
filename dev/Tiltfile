@@ -206,7 +206,7 @@ core_serve_env = {
   "TWILIO_ACCOUNT_SID": "AC_twilio_id",
   "TWILIO_AUTH_TOKEN": "AC_twilio_auth_token",
   "TWILIO_VERIFY_SERVICE_ID": "VA_twilio_service",
-  "KRATOS_PG_CON": "postgres://dbuser:secret@localhost:5433/default?sslmode=disable",
+  "KRATOS_PG_CON": "postgres://dbuser:secret@localhost:5432/default?sslmode=disable",
   "KRATOS_PUBLIC_API": "http://localhost:4433",
   "KRATOS_ADMIN_API": "http://localhost:4434",
   "KRATOS_MASTER_USER_PASSWORD": "passwordHardtoFindWithNumber123",
