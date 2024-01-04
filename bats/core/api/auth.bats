@@ -100,7 +100,8 @@ generateTotpCode() {
   email=$(read_value 'charlie.email')
 
   # code request
-  curl_request "http://${GALOY_ENDPOINT}/auth/email/code" "{ \"email\": \"$email\" }"
+  variables="{\"email\": \"$email\"}"
+  curl_request "http://${GALOY_ENDPOINT}/auth/email/code" "$variables"
   emailLoginId=$(curl_output '.result')
   [ -n "$emailLoginId" ] || exit 1
 
@@ -108,7 +109,8 @@ generateTotpCode() {
   [ -n "$code" ] || exit 1
 
   # validate code
-  curl_request "http://${GALOY_ENDPOINT}/auth/email/login" "{ \"code\": \"$code\", \"emailLoginId\": \"$emailLoginId\" }"
+  variables="{\"code\": \"$code\", \"emailLoginId\": \"$emailLoginId\"}"
+  curl_request "http://${GALOY_ENDPOINT}/auth/email/login" "$variables"
   authToken=$(curl_output '.result.authToken')
   [ -n "$authToken" ] || exit 1
 
@@ -182,4 +184,34 @@ generateTotpCode() {
   # Checking the response structure
   totpEnabled="$(graphql_output '.data.userTotpRegistrationValidate.me.totpEnabled')"
   [ "$totpEnabled" == "true" ] || exit 1
+}
+
+@test "auth: log in with email with totp activated" {
+  skip "This test needs to be fixed"
+
+  email=$(read_value 'charlie.email')
+
+  # code request
+  variables="{\"email\": \"$email\"}"
+  curl_request "http://${GALOY_ENDPOINT}/auth/email/code" "$variables"
+  emailLoginId="$(curl_output '.result')"
+  [ "$emailLoginId" != "null" ]
+
+  code=$(getEmailCode "$email")
+  [ "$code" != "" ]
+
+  # validating email with code
+  variables="{\"code\": \"$code\", \"emailLoginId\": \"$emailLoginId\"}"
+  curl_request "http://${GALOY_ENDPOINT}/auth/email/login" "$variables"
+  authToken="$(curl_output '.result.authToken')"
+  [ -n "$authToken" ] || exit 1
+  totpRequired="$(curl_output '.result.totpRequired')"
+  [ "$totpRequired" == "true" ] || exit 1
+
+  totpCode=$(generateTotpCode "$totpSecret")
+  variables="{\"totpCode\": \"$totpCode\", \"authToken\": \"$authToken\"}"
+  curl_request "http://${GALOY_ENDPOINT}/auth/totp/validate" "$variables"
+
+  exec_graphql 'charlie' 'identity'
+  [[ "$(graphql_output '.data.me.totpEnabled')" = "true" ]] || exit 1
 }
