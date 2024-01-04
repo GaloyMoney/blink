@@ -1,5 +1,7 @@
 import { Identity as KratosIdentity } from "@ory/client"
 
+import { recordExceptionInCurrentSpan } from "../tracing"
+
 import { KratosError, UnknownKratosError } from "./errors"
 import { getKratosPostgres, kratosAdmin, toDomainIdentity } from "./private"
 
@@ -7,6 +9,7 @@ import { AuthWithPhonePasswordlessService } from "./auth-phone-no-password"
 import { AuthWithEmailPasswordlessService } from "./auth-email-no-password"
 
 import { IdentifierNotFoundError } from "@/domain/authentication/errors"
+import { ErrorLevel } from "@/domain/shared"
 
 export const IdentityRepository = (): IIdentityRepository => {
   const getIdentity = async (
@@ -86,6 +89,17 @@ export const IdentityRepository = (): IIdentityRepository => {
 
       return res[0].recovered_identity_id as UserId
     } catch (err) {
+      if (err instanceof AggregateError && err.errors.length) {
+        for (const individualError of err.errors.slice(1)) {
+          recordExceptionInCurrentSpan({
+            error: new UnknownKratosError(individualError),
+            level: ErrorLevel.Critical,
+          })
+        }
+
+        return new UnknownKratosError(err.errors[0])
+      }
+
       return new UnknownKratosError(err)
     }
   }
