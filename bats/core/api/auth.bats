@@ -168,7 +168,14 @@ generateTotpCode() {
   authToken=$(read_value 'charlie')
 
   # Initiate TOTP Registration
-  exec_graphql 'charlie' 'user-totp-registration-initiate'
+  exec_totp_initiate() {
+    exec_graphql 'charlie' 'user-totp-registration-initiate'
+    num_errors="$(graphql_output '.data.userTotpRegistrationInitiate.errors | length')"
+    cache_value 'totp.initiate' $output
+    [[ "$num_errors" == "0" ]] || return 1
+  }
+  retry 5 1 exec_totp_initiate
+  output=$(read_value 'totp.initiate')
 
   totpRegistrationId="$(graphql_output '.data.userTotpRegistrationInitiate.totpRegistrationId')"
   [[ "$totpRegistrationId" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]] || exit 1
