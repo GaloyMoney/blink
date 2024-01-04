@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): move auth bats tests (#3776)...'
-      sha: c42ae827c4eb0a7525fcb00978af9d1dea8468e2
+      commitTitle: 'chore(api-keys): bump async-graphql from 6.0.9 to 6.0.11 (#3782)...'
+      sha: bfc5bb8d16f2d413461884c7b318df5f7dafc67b
       tags:
-      - 0.19.18-1-gc42ae827c
+      - 0.19.20-1-gbfc5bb8d1
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): move auth bats tests (#3776)...'
-      sha: c42ae827c4eb0a7525fcb00978af9d1dea8468e2
+      commitTitle: 'chore(api-keys): bump async-graphql from 6.0.9 to 6.0.11 (#3782)...'
+      sha: bfc5bb8d16f2d413461884c7b318df5f7dafc67b
       tags:
-      - 0.19.18-1-gc42ae827c
+      - 0.19.20-1-gbfc5bb8d1
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(core): move auth bats tests (#3776)...'
-      sha: c42ae827c4eb0a7525fcb00978af9d1dea8468e2
+      commitTitle: 'chore(api-keys): bump async-graphql from 6.0.9 to 6.0.11 (#3782)...'
+      sha: bfc5bb8d16f2d413461884c7b318df5f7dafc67b
       tags:
-      - 0.19.18-1-gc42ae827c
+      - 0.19.20-1-gbfc5bb8d1
     path: ./
   path: ./graphql
 kind: LockConfig
