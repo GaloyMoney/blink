@@ -5,6 +5,7 @@ debug = true
 resolver = "2"
 members = [
     "core/api-keys",
+    "core/notifications",
     "lib/tracing-rs",
 ]
 

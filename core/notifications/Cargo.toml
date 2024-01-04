@@ -1,0 +1,36 @@
+[package]
+name = "notifications"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "lib_notifications"
+
+[[bin]]
+name = "write_sdl"
+path = "src/bin/write_sdl.rs"
+
+[features]
+
+fail-on-warnings = []
+
+[dependencies]
+tracing = { path = "../../lib/tracing-rs" }
+
+anyhow = { workspace = true }
+async-graphql = { workspace = true }
+async-graphql-axum = { workspace = true }
+axum = { workspace = true }
+jsonwebtoken = { workspace = true }
+clap = { workspace = true }
+tokio = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+thiserror = { workspace = true }
+chrono = { workspace = true }
+sqlx = { workspace = true }
+rand = { workspace = true }
+uuid = { workspace = true }
+serde_with = { workspace = true }
