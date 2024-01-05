@@ -35,7 +35,9 @@ const SettlementViaIntraLedger = GT.Object({
         if (source.parent.initiationVia.type !== "lightning") {
           return null
         }
-        if (source.parent.settlementAmount > 0) {
+
+        const isSender = source.parent.settlementAmount > 0
+        if (isSender) {
           return null
         }
 
