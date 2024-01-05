@@ -87,3 +87,38 @@ HYDRA_ADMIN_API="http://localhost:4445"
   refetched_id="$(graphql_output '.data.accountDetailsByUsername.id')"
   [[ "$refetched_id" == "$id" ]] || exit 1
 }
+
+@test "admin: can upgrade account level" {
+  admin_token="$(read_value 'admin.token')"
+  id="$(read_value 'tester.id')"
+
+  variables=$(
+    jq -n \
+    --arg level "TWO" \
+    --arg accountId "$id" \
+    '{input: {level: $level, accountId: $accountId}}'
+  )
+  exec_admin_graphql "$admin_token" 'account-update-level' "$variables"
+  refetched_id="$(graphql_output '.data.accountUpdateLevel.accountDetails.id')"
+  [[ "$refetched_id" == "$id" ]] || exit 1
+  level="$(graphql_output '.data.accountUpdateLevel.accountDetails.level')"
+  [[ "$level" == "TWO" ]] || exit 1
+}
+
+@test "admin: can lock account" {
+  admin_token="$(read_value 'admin.token')"
+  id="$(read_value 'tester.id')"
+
+  variables=$(
+    jq -n \
+    --arg account_status "LOCKED" \
+    --arg accountId "$id" \
+    --arg comment "Test lock of the account" \
+    '{input: {status: $account_status, accountId: $accountId, comment: $comment}}'
+  )
+  exec_admin_graphql "$admin_token" 'account-update-status' "$variables"
+  refetched_id="$(graphql_output '.data.accountUpdateStatus.accountDetails.id')"
+  [[ "$refetched_id" == "$id" ]] || exit 1
+  account_status="$(graphql_output '.data.accountUpdateStatus.accountDetails.status')"
+  [[ "$account_status" == "LOCKED" ]] || exit 1
+}
