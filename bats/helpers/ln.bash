@@ -149,6 +149,37 @@ run_with_lnd() {
   fi
 }
 
+close_partner_initiated_channels_with_external() {
+  close_channels_with_external() {
+    lnd_cli_value="$1"
+    lnd1_pubkey=$(lnd_cli getinfo | jq -r '.identity_pubkey')
+    lnd2_pubkey=$(lnd2_cli getinfo | jq -r '.identity_pubkey')
+
+    partner_initiated_external_channel_filter='
+    .channels[]?
+      | select(.initiator != true)
+      | select(.remote_pubkey != $lnd1_pubkey)
+      | select(.remote_pubkey != $lnd2_pubkey)
+      | .channel_point
+    '
+
+    run_with_lnd "$lnd_cli_value" listchannels \
+      | jq -r \
+        --arg lnd1_pubkey "$lnd1_pubkey" \
+        --arg lnd2_pubkey "$lnd2_pubkey" \
+        "$partner_initiated_external_channel_filter" \
+      | while read -r channel_point; do
+          funding_txid="${channel_point%%:*}"
+          run_with_lnd "$lnd_cli_value" closechannel "$funding_txid"
+        done
+  }
+
+  close_channels_with_external lnd_cli
+  close_channels_with_external lnd2_cli
+  close_channels_with_external lnd_outside_cli
+  close_channels_with_external lnd_outside_2_cli
+}
+
 rebalance_channel() {
     lnd_cli_value="$1"
     lnd_partner_cli_value="$2"
