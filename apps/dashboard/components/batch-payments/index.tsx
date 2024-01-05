@@ -11,10 +11,9 @@ import BatchPaymentsList from "./list"
 
 import SampleCSVTable from "./sample-table"
 
-import { TotalAmountForWallets, validateCSV } from "@/app/batch-payments/utils"
+import { validateCSV } from "@/app/batch-payments/utils"
 
 import {
-  ProcessedRecords,
   processPaymentsServerAction,
   processRecords,
   validatePaymentDetail,
@@ -22,6 +21,7 @@ import {
 import { WalletCurrency } from "@/services/graphql/generated"
 
 import { getDefaultWallet } from "@/app/utils"
+import { ProcessedRecords, TotalAmountForWallets } from "@/app/batch-payments/index.types"
 
 type paymentDetails = {
   totalAmount: TotalAmountForWallets

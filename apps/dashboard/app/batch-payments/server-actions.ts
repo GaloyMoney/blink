@@ -5,7 +5,12 @@ import { authOptions } from "../api/auth/[...nextauth]/route"
 
 import { convertUsdToBtcSats, dollarsToCents, getBTCWallet, getUSDWallet } from "../utils"
 
-import { CSVRecord, AmountCurrency, TotalAmountForWallets } from "./utils"
+import {
+  AmountCurrency,
+  CSVRecord,
+  ProcessedRecords,
+  TotalAmountForWallets,
+} from "./index.types"
 
 import { getWalletDetailsByUsername } from "@/services/graphql/queries/get-user-wallet-id"
 import { intraLedgerUsdPaymentSend } from "@/services/graphql/mutations/intra-ledger-payment-send/usd"
@@ -13,18 +18,6 @@ import { intraLedgerBtcPaymentSend } from "@/services/graphql/mutations/intra-le
 import { WalletCurrency } from "@/services/graphql/generated"
 import { getRealtimePriceQuery } from "@/services/graphql/queries/realtime-price"
 
-export type ProcessedRecords = {
-  username: string
-  recipientWalletId: string
-  currency: AmountCurrency
-  amount: number
-  sendingWallet: WalletCurrency
-  memo?: string
-  status: {
-    failed: boolean
-    message: string | null
-  }
-}
 export const processRecords = async (
   records: CSVRecord[],
 ): Promise<{
@@ -141,10 +134,11 @@ export const processPaymentsServerAction = async (records: ProcessedRecords[]) =
           },
         })
       }
-    } else {
+    } else if (record.sendingWallet === WalletCurrency.Btc) {
       let amount = record.amount
       if (record.currency === AmountCurrency.USD) {
         amount = convertUsdToBtcSats(record.amount, realtimePrice.data)
+        amount = dollarsToCents(amount)
       }
       response = await intraLedgerBtcPaymentSend({
         token,

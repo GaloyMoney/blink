@@ -1,7 +1,7 @@
 import React from "react"
 import Table from "@mui/joy/Table"
 
-import { ProcessedRecords } from "@/app/batch-payments/server-actions"
+import { ProcessedRecords } from "@/app/batch-payments/index.types"
 
 type BatchPaymentListProps = {
   processedList: ProcessedRecords[]

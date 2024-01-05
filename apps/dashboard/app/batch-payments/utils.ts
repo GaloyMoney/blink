@@ -2,6 +2,8 @@ import { parse } from "csv-parse/sync"
 
 import { centsToDollars } from "../utils"
 
+import { AmountCurrency, CSVRecord, TotalAmountForWallets } from "./index.types"
+
 import { WalletCurrency } from "@/services/graphql/generated"
 
 const CSV_HEADER_USERNAME = "username"
@@ -10,29 +12,6 @@ const CSV_HEADER_CURRENCY = "currency"
 // OPTIONAL
 // const CSV_HEADER_WALLET = "wallet"
 // const CSV_HEADER_MEMO = "memo"
-
-export enum AmountCurrency {
-  USD = "USD",
-  SATS = "SATS",
-}
-
-export type CSVRecord = {
-  username: string
-  amount: string
-  currency: AmountCurrency
-  wallet: WalletCurrency
-  memo?: string
-}
-
-export type TotalAmountForWallets = {
-  wallets: {
-    BTC: {
-      SATS: number
-      USD: number
-    }
-    USD: number
-  }
-}
 
 export function validateCSV({
   fileContent,
