@@ -138,7 +138,6 @@ export const processPaymentsServerAction = async (records: ProcessedRecords[]) =
       let amount = record.amount
       if (record.currency === AmountCurrency.USD) {
         amount = convertUsdToBtcSats(record.amount, realtimePrice.data)
-        amount = dollarsToCents(amount)
       }
       response = await intraLedgerBtcPaymentSend({
         token,
