@@ -53,9 +53,11 @@ export default function FileUpload({
           alignItems: "center",
           justifyContent: "center",
           width: "100%",
+          maxWidth: "70em",
           cursor: "pointer",
           minHeight: "13em",
           border: "2px dashed #ccc",
+          margin: "0 auto",
         }}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
@@ -79,7 +81,7 @@ export default function FileUpload({
                 />
               </svg>
             </SvgIcon>
-            {file ? file.name : "Upload a file"}
+            {file ? file.name : "Upload a csv file"}
             <input
               id="file-upload"
               type="file"

@@ -255,21 +255,63 @@ export default function BatchPayments() {
             setFile={setFile}
             onFileProcessed={processFile}
           />
-          <Card
+          <Box
             sx={{
-              margin: "1em auto",
-              padding: "1em",
+              display: "flex",
             }}
           >
-            {`Please upload a CSV file containing the following columns: "username" (the
-            recipient of the bitcoin), "dollars/sats" (this column will indicate the amount;
-            the header of this column will determine which wallet to use. If the header is
-            "dollars," your USD wallet will be utilized, and the amount will be in US dollars. If
-            "sats" is used, your BTC wallet will be employed, and the amount will be in
-            sats), and "memo" (optional)`}
-            .
-          </Card>
-          <SampleCSVTable />
+            <Card
+              sx={{
+                margin: "1em auto",
+                padding: "1em",
+                maxWidth: "60em",
+              }}
+            >
+              <Typography
+                level="h3"
+                component="div"
+                sx={{ fontSize: "h5.fontSize", mb: 2 }}
+              >
+                Instructions for CSV File Upload
+              </Typography>
+
+              <ul>
+                <li>
+                  <Typography component="div" sx={{ mb: 1 }}>
+                    <strong>Username:</strong> This column will be used to determine the
+                    Blink username of the user to whom the payment has to be sent.
+                  </Typography>
+                </li>
+                <li>
+                  <Typography component="div" sx={{ mb: 1 }}>
+                    <strong>Amount:</strong> The amount of SATS or USD you want to send.
+                    The value of sats will be converted to a whole number if not already.
+                  </Typography>
+                </li>
+                <li>
+                  <Typography component="div" sx={{ mb: 1 }}>
+                    <strong>Currency:</strong> The currency of the amount can be USD or
+                    SATS. SATS currency will only work with BTC wallets.
+                  </Typography>
+                </li>
+                <li>
+                  <Typography component="div" sx={{ mb: 1 }}>
+                    <strong>Wallet (optional):</strong> The wallet that will be used to
+                    send the payment in USD or BTC. If not provided, the default wallet
+                    will be used. If the currency is SATS and no wallet is provided, a BTC
+                    wallet will be used.
+                  </Typography>
+                </li>
+                <li>
+                  <Typography component="div" sx={{ mb: 1 }}>
+                    <strong>Memo (optional):</strong> The message you want to attach to
+                    the payment.
+                  </Typography>
+                </li>
+              </ul>
+              <SampleCSVTable />
+            </Card>
+          </Box>
         </>
       )}
     </div>
