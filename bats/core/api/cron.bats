@@ -51,6 +51,12 @@ no_pending_lnd1_channels() {
   fi
 }
 
+synced_to_graph() {
+  lnd_cli_value="$1"
+  is_synced="$(run_with_lnd $lnd_cli_value getinfo | jq -r '.synced_to_graph')"
+  [[ "$is_synced" == "true" ]] || return 1
+}
+
 @test "cron: rebalance hot to cold storage" {
   token_name='alice'
   btc_wallet_name="$token_name.btc_wallet_id"
@@ -103,9 +109,6 @@ no_pending_lnd1_channels() {
 }
 
 @test "cron: rebalance internal channels" {
-  # NOTE: Not an idempotent test because we haven't implemented accounting for
-  #       closing channels initiated from internal lnds as yet.
-
   # Get onchain funds into lnd1
   token_name='alice'
   btc_wallet_name="$token_name.btc_wallet_id"
@@ -137,6 +140,8 @@ no_pending_lnd1_channels() {
   local local_amount="500000"
   lnd2_local_pubkey="$(lnd2_cli getinfo | jq -r '.identity_pubkey')"
   lnd_cli connect "${lnd2_local_pubkey}@${COMPOSE_PROJECT_NAME}-lnd2-1:9735" || true
+  retry 10 1 synced_to_graph lnd_cli
+  retry 5 1 synced_to_graph lnd2_cli
   opened=$(
     lnd_cli openchannel \
       --node_key "$lnd2_local_pubkey" \
