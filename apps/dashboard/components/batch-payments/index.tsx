@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { useSession } from "next-auth/react"
 import { Box, Button, Card, Modal, ModalClose, Sheet, Typography } from "@mui/joy"
 
@@ -11,27 +11,23 @@ import BatchPaymentsList from "./list"
 
 import SampleCSVTable from "./sample-table"
 
-import {
-  displayCurrencyBatchPayments,
-  displayWalletBalanceBatchPayments,
-  validateCSV,
-} from "@/app/batch-payments/utils"
+import { TotalAmountForWallets, validateCSV } from "@/app/batch-payments/utils"
 
 import {
   ProcessedRecords,
   processPaymentsServerAction,
   processRecords,
+  validatePaymentDetail,
 } from "@/app/batch-payments/server-actions"
 import { WalletCurrency } from "@/services/graphql/generated"
 
-import { centsToDollars } from "@/app/utils"
+import { getDefaultWallet } from "@/app/utils"
 
 type paymentDetails = {
-  totalAmount: number
-  walletDetails?: {
-    balance: number
-    walletCurrency: WalletCurrency
-    id: string
+  totalAmount: TotalAmountForWallets
+  userWalletBalance: {
+    BTC: number
+    USD: number
   }
 }
 
@@ -43,8 +39,7 @@ type ModalDetails = {
 
 export default function BatchPayments() {
   const session = useSession()
-  console.log(session)
-  const userData = session?.data?.userData?.data.me
+  const userData = session?.data?.userData?.data
   const [file, setFile] = useState<File | null>(null)
   const [csvData, setCsvData] = useState<ProcessedRecords[]>([])
   const [processCsvLoading, setProcessCsvLoading] = useState<boolean>(false)
@@ -64,81 +59,82 @@ export default function BatchPayments() {
     setPaymentDetails(null)
   }
 
-  useEffect(() => {
-    const processFile = async () => {
-      if (!file) return
-      const reader = new FileReader()
-      reader.onload = async (event) => {
-        if (!event.target?.result) {
-          return
-        }
-
-        const content = event.target.result as string
-        const validationResult = validateCSV(content)
-        if (validationResult instanceof Error) {
-          setModalDetails({
-            open: true,
-            heading: "Error",
-            message: validationResult.message,
-          })
-          setFile(null)
-          return
-        }
-
-        const walletDetails = userData?.defaultAccount.wallets.find((wallet) => {
-          return wallet.walletCurrency === validationResult.walletCurrency
-        })
-
-        if (
-          !walletDetails?.balance ||
-          centsToDollars(walletDetails?.balance) < validationResult.totalAmount
-        ) {
-          setModalDetails({
-            open: true,
-            heading: "Error",
-            message: "Insufficient Balance to complete this batch payment",
-          })
-          setFile(null)
-          return
-        }
-
-        const processedRecords = await processRecords(
-          validationResult.records,
-          validationResult.walletCurrency,
-        )
-
-        if (processedRecords.error || !processedRecords.responsePayload) {
-          setModalDetails({
-            open: true,
-            heading: "Error",
-            message: processedRecords.message,
-          })
-          setFile(null)
-          return
-        }
-
-        setCsvData(processedRecords.responsePayload)
-        setPaymentDetails({
-          totalAmount: validationResult.totalAmount,
-          walletDetails,
-        })
+  const processFile = async (file: File) => {
+    const reader = new FileReader()
+    reader.onload = async (event) => {
+      if (!event.target?.result || !userData) {
+        return
       }
-      reader.readAsText(file)
-    }
 
-    setProcessCsvLoading(true)
-    processFile()
-    setProcessCsvLoading(false)
-  }, [file])
+      const defaultWallet = getDefaultWallet(userData)
+      const defaultWalletCurrency = defaultWallet.currency
+      const content = event.target.result as string
+
+      if (!defaultWalletCurrency || !defaultWallet.currency) {
+        return
+      }
+
+      // VALIDATE PAYMENT
+      const validateCsvResult = validateCSV({
+        fileContent: content,
+        defaultWallet: defaultWalletCurrency as WalletCurrency,
+      })
+
+      if (validateCsvResult instanceof Error) {
+        setModalDetails({
+          open: true,
+          heading: "Error",
+          message: validateCsvResult.message,
+        })
+        setFile(null)
+        return
+      }
+
+      // VALIDATE ENOUGH BALANCE AND PAYMENT DETAILS
+      const validatePaymentResponse = await validatePaymentDetail(
+        validateCsvResult.totalAmount,
+      )
+      if (validatePaymentResponse.error || !validatePaymentResponse.responsePayload) {
+        setModalDetails({
+          open: true,
+          heading: "Error",
+          message: validatePaymentResponse.message,
+        })
+        setFile(null)
+        return
+      }
+
+      //PROCESS RECORDS ADD WALLET ID FOR USERNAME
+      const processedRecords = await processRecords(validateCsvResult.records)
+      if (processedRecords.error || !processedRecords.responsePayload) {
+        setModalDetails({
+          open: true,
+          heading: "Error",
+          message: processedRecords.message,
+        })
+        setFile(null)
+        return
+      }
+
+      setCsvData(processedRecords.responsePayload)
+      setPaymentDetails({
+        totalAmount: validateCsvResult.totalAmount,
+        userWalletBalance: {
+          BTC: validatePaymentResponse.responsePayload?.userWalletBalance
+            .btcWalletBalance,
+          USD: validatePaymentResponse.responsePayload?.userWalletBalance
+            .usdWalletBalance,
+        },
+      })
+    }
+    reader.readAsText(file)
+  }
 
   const processPayments = async () => {
-    if (!csvData || !paymentDetails?.walletDetails) return
+    if (!csvData || !paymentDetails) return
 
     setProcessPaymentLoading(true)
-    const response = await processPaymentsServerAction(
-      csvData,
-      paymentDetails?.walletDetails,
-    )
+    const response = await processPaymentsServerAction(csvData)
     if (
       response.error &&
       response?.responsePayload &&
@@ -204,7 +200,7 @@ export default function BatchPayments() {
         </Sheet>
       </Modal>
 
-      {csvData.length > 0 && paymentDetails && paymentDetails.walletDetails ? (
+      {csvData.length > 0 && paymentDetails && paymentDetails ? (
         <>
           <Box
             sx={{
@@ -217,24 +213,24 @@ export default function BatchPayments() {
           >
             <DetailsCard>
               <Details
-                label="Total Amount"
-                value={`${String(
-                  paymentDetails.totalAmount,
-                )} ${displayCurrencyBatchPayments({
-                  walletCurrency: paymentDetails.walletDetails.walletCurrency,
-                })}`}
+                label="Total Amount for USD Wallet"
+                value={`${paymentDetails.totalAmount.wallets.USD} USD`}
               />
               <Details
-                label="Wallet Type"
-                value={paymentDetails.walletDetails.walletCurrency}
+                label="Total Amount for BTC Wallet for SATS Payments"
+                value={`${paymentDetails.totalAmount.wallets.BTC.SATS} SATS`}
               />
-              <Details label="Wallet Id" value={paymentDetails.walletDetails.id} />
               <Details
-                label="Wallet Balance"
-                value={displayWalletBalanceBatchPayments({
-                  amount: paymentDetails.walletDetails.balance,
-                  walletCurrency: paymentDetails.walletDetails.walletCurrency,
-                })}
+                label="Total Amount for BTC Wallet for USD Payments"
+                value={`${paymentDetails.totalAmount.wallets.BTC.USD} USD`}
+              />
+              <Details
+                label="Total Amount in BTC Wallet"
+                value={`${paymentDetails.userWalletBalance.BTC}`}
+              />
+              <Details
+                label="Total Amount in BTC Wallet"
+                value={`${paymentDetails.userWalletBalance.USD}`}
               />
               <Button onClick={processPayments} loading={processPaymentLoading}>
                 Confirm Payment
@@ -244,19 +240,20 @@ export default function BatchPayments() {
               processCsvLoading={processCsvLoading}
               file={file}
               setFile={setFile}
+              onFileProcessed={processFile}
+              setProcessCsvLoading={setProcessCsvLoading}
             />
           </Box>
-          <BatchPaymentsList
-            processedList={csvData}
-            walletCurrency={paymentDetails.walletDetails.walletCurrency}
-          ></BatchPaymentsList>
+          <BatchPaymentsList processedList={csvData}></BatchPaymentsList>
         </>
       ) : (
         <>
           <FileUpload
+            setProcessCsvLoading={setProcessCsvLoading}
             processCsvLoading={processCsvLoading}
             file={file}
             setFile={setFile}
+            onFileProcessed={processFile}
           />
           <Card
             sx={{
