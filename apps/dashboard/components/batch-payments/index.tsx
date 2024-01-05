@@ -242,6 +242,7 @@ export default function BatchPayments() {
               setFile={setFile}
               onFileProcessed={processFile}
               setProcessCsvLoading={setProcessCsvLoading}
+              resetState={resetState}
             />
           </Box>
           <BatchPaymentsList processedList={csvData}></BatchPaymentsList>
@@ -254,6 +255,7 @@ export default function BatchPayments() {
             file={file}
             setFile={setFile}
             onFileProcessed={processFile}
+            resetState={resetState}
           />
           <Box
             sx={{
@@ -298,7 +300,7 @@ export default function BatchPayments() {
                   <Typography component="div" sx={{ mb: 1 }}>
                     <strong>Wallet (optional):</strong> The wallet that will be used to
                     send the payment in USD or BTC. If not provided, the default wallet
-                    will be used. If the currency is SATS and no wallet is provided, a BTC
+                    will be used. If the currency is SATS and no wallet is provided, BTC
                     wallet will be used.
                   </Typography>
                 </li>

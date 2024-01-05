@@ -8,6 +8,7 @@ type FileUploadButtonProps = {
   processCsvLoading: boolean
   onFileProcessed: (file: File) => Promise<void>
   setProcessCsvLoading: (loading: boolean) => void
+  resetState: () => void
 }
 
 export default function FileUpload({
@@ -16,6 +17,7 @@ export default function FileUpload({
   processCsvLoading,
   onFileProcessed,
   setProcessCsvLoading,
+  resetState,
 }: FileUploadButtonProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -58,6 +60,7 @@ export default function FileUpload({
           minHeight: "13em",
           border: "2px dashed #ccc",
           margin: "0 auto",
+          position: "relative",
         }}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
@@ -66,6 +69,20 @@ export default function FileUpload({
           <Button loading variant="plain"></Button>
         ) : (
           <>
+            {file ? (
+              <Button
+                variant="outlined"
+                color="danger"
+                onClick={resetState}
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                }}
+              >
+                Clear
+              </Button>
+            ) : null}
             <SvgIcon>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
