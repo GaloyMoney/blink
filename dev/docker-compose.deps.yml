@@ -173,6 +173,26 @@ services:
         cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
         cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
         /bin/lnd
+  lnd2:
+    image: lightninglabs/lnd:v0.17.3-beta
+    ports:
+      - "10010:10009"
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.key:/root/.lnd/tls.key
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd2.wallet.db:/root/.lnd/wallet.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd2.macaroons.db:/root/.lnd/macaroons.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd2.admin.macaroon:/root/.lnd/admin.macaroon
+    depends_on: [bitcoind]
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
   lnd-outside-1:
     image: lightninglabs/lnd:v0.17.3-beta
     ports:

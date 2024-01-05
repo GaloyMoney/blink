@@ -138,6 +138,8 @@ run_with_lnd() {
 
   if [[ "$func_name" == "lnd_cli" ]]; then
     lnd_cli "$@"
+  elif [[ "$func_name" == "lnd2_cli" ]]; then
+    lnd2_cli "$@"
   elif [[ "$func_name" == "lnd_outside_cli" ]]; then
     lnd_outside_cli "$@"
   elif [[ "$func_name" == "lnd_outside_2_cli" ]]; then
