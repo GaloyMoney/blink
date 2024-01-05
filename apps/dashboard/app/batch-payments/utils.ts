@@ -6,12 +6,13 @@ import { AmountCurrency, CSVRecord, TotalAmountForWallets } from "./index.types"
 
 import { WalletCurrency } from "@/services/graphql/generated"
 
-const CSV_HEADER_USERNAME = "username"
-const CSV_HEADER_AMOUNT = "amount"
-const CSV_HEADER_CURRENCY = "currency"
-// OPTIONAL
-// const CSV_HEADER_WALLET = "wallet"
-// const CSV_HEADER_MEMO = "memo"
+enum HEADERS {
+  USERNAME = "username",
+  AMOUNT = "amount",
+  CURRENCY = "currency",
+  WALLET = "wallet",
+  MEMO = "memo",
+}
 
 export function validateCSV({
   fileContent,
@@ -51,9 +52,9 @@ export function validateCSV({
 
   const headers = Object.keys(records[0])
   if (
-    !headers.includes(CSV_HEADER_USERNAME) ||
-    !headers.includes(CSV_HEADER_AMOUNT) ||
-    !headers.includes(CSV_HEADER_CURRENCY)
+    !headers.includes(HEADERS.USERNAME) ||
+    !headers.includes(HEADERS.AMOUNT) ||
+    !headers.includes(HEADERS.CURRENCY)
   ) {
     return new Error("Missing required CSV headers")
   }

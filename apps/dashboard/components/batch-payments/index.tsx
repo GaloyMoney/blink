@@ -20,7 +20,7 @@ import {
 } from "@/app/batch-payments/server-actions"
 import { WalletCurrency } from "@/services/graphql/generated"
 
-import { getDefaultWallet } from "@/app/utils"
+import { centsToDollars, getDefaultWallet } from "@/app/utils"
 import { ProcessedRecords, TotalAmountForWallets } from "@/app/batch-payments/index.types"
 
 type paymentDetails = {
@@ -74,7 +74,7 @@ export default function BatchPayments() {
         return
       }
 
-      // VALIDATE PAYMENT
+      // VALIDATE CSV
       const validateCsvResult = validateCSV({
         fileContent: content,
         defaultWallet: defaultWalletCurrency as WalletCurrency,
@@ -104,7 +104,7 @@ export default function BatchPayments() {
         return
       }
 
-      //PROCESS RECORDS ADD WALLET ID FOR USERNAME
+      //PROCESS RECORDS, ADD WALLET ID FOR USERNAME
       const processedRecords = await processRecords(validateCsvResult.records)
       if (processedRecords.error || !processedRecords.responsePayload) {
         setModalDetails({
@@ -213,24 +213,24 @@ export default function BatchPayments() {
           >
             <DetailsCard>
               <Details
-                label="Total Amount for USD Wallet"
-                value={`${paymentDetails.totalAmount.wallets.USD} USD`}
+                label="Total Payable Amount for USD Wallet"
+                value={`$${paymentDetails.totalAmount.wallets.USD} USD`}
               />
               <Details
-                label="Total Amount for BTC Wallet for SATS Payments"
+                label="Total Payable Amount by BTC Wallet for SATS Currency"
                 value={`${paymentDetails.totalAmount.wallets.BTC.SATS} SATS`}
               />
               <Details
-                label="Total Amount for BTC Wallet for USD Payments"
-                value={`${paymentDetails.totalAmount.wallets.BTC.USD} USD`}
+                label="Total Payable Amount by BTC Wallet for USD Currency"
+                value={`$${paymentDetails.totalAmount.wallets.BTC.USD} USD`}
               />
               <Details
-                label="Total Amount in BTC Wallet"
-                value={`${paymentDetails.userWalletBalance.BTC}`}
+                label="Balance in BTC Wallet"
+                value={`${paymentDetails.userWalletBalance.BTC} SATS`}
               />
               <Details
-                label="Total Amount in BTC Wallet"
-                value={`${paymentDetails.userWalletBalance.USD}`}
+                label="Balance in USD Wallet"
+                value={`$${centsToDollars(paymentDetails.userWalletBalance.USD)} USD`}
               />
               <Button onClick={processPayments} loading={processPaymentLoading}>
                 Confirm Payment
