@@ -251,6 +251,13 @@ dev_pnpm_task_binary(
 )
 
 dev_pnpm_task_binary(
+  name = "dev-cron",
+  command = "dev:cron",
+  srcs = [":src"],
+  visibility = ["PUBLIC"],
+)
+
+dev_pnpm_task_binary(
   name = "watch-compile",
   command = "watch:compile",
   srcs = [":src"] + [":test_src"],
