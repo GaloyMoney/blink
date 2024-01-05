@@ -24,7 +24,6 @@ HYDRA_ADMIN_API="http://localhost:4445"
   client_id=$(echo $client | jq -r '.client_id')
   client_secret=$(echo $client | jq -r '.client_secret')
 
-  # get token from client_id and client_secret
   admin_token=$(curl -s -X POST $HYDRA_PUBLIC_API/oauth2/token \
   -H 'Content-Type: application/x-www-form-urlencoded' \
   -u "$client_id:$client_secret" \
@@ -88,6 +87,37 @@ HYDRA_ADMIN_API="http://localhost:4445"
   [[ "$refetched_id" == "$id" ]] || exit 1
 }
 
+@test "admin: can query account details by account id" {
+  admin_token="$(read_value 'admin.token')"
+  id="$(read_value 'tester.id')"
+
+  variables=$(
+    jq -n \
+    --arg accountId "$id" \
+    '{accountId: $accountId}'
+  )
+  exec_admin_graphql "$admin_token" 'account-details-by-account-id' "$variables"
+  returned_id="$(graphql_output '.data.accountDetailsByAccountId.id')"
+  [[ "$returned_id" == "$id" ]] || exit 1
+
+  user_id="$(graphql_output '.data.accountDetailsByAccountId.owner.id')"
+  cache_value 'tester.user_id' "$user_id"
+}
+
+@test "admin: can query account details by user id" {
+  admin_token="$(read_value 'admin.token')"
+  user_id="$(read_value 'tester.user_id')"
+
+  variables=$(
+    jq -n \
+    --arg user_id "$user_id" \
+    '{userId: $user_id}'
+  )
+  exec_admin_graphql "$admin_token" 'account-details-by-user-id' "$variables"
+  returned_id="$(graphql_output '.data.accountDetailsByUserId.owner.id')"
+  [[ "$returned_id" == "$user_id" ]] || exit 1
+}
+
 @test "admin: can upgrade account level" {
   admin_token="$(read_value 'admin.token')"
   id="$(read_value 'tester.id')"
@@ -124,7 +154,6 @@ HYDRA_ADMIN_API="http://localhost:4445"
 }
 
 @test "admin: non-admin user cannot delete locked account" {
-  # User cannot delete the account if it is locked
   exec_graphql 'tester' 'account-delete'
   delete_error_message="$(graphql_output '.errors[0].message')"
   [[ "$delete_error_message" == "Not authorized" ]] || exit 1
@@ -145,3 +174,7 @@ HYDRA_ADMIN_API="http://localhost:4445"
   update_error_message="$(graphql_output '.data.userUpdatePhone.errors[0].message')"
   [[ "$update_error_message" == "Account is inactive." ]] || exit 1
 }
+
+# TODO: add check by email
+
+# TODO: business update map info

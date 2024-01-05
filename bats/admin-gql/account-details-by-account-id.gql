@@ -1,0 +1,8 @@
+query accountDetailsByAccountId($accountId: ID!) {
+  accountDetailsByAccountId(accountId: $accountId) {
+    id
+    owner {
+      id
+    }
+  }
+}
