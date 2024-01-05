@@ -122,3 +122,26 @@ HYDRA_ADMIN_API="http://localhost:4445"
   account_status="$(graphql_output '.data.accountUpdateStatus.accountDetails.status')"
   [[ "$account_status" == "LOCKED" ]] || exit 1
 }
+
+@test "admin: non-admin user cannot delete locked account" {
+  # User cannot delete the account if it is locked
+  exec_graphql 'tester' 'account-delete'
+  delete_error_message="$(graphql_output '.errors[0].message')"
+  [[ "$delete_error_message" == "Not authorized" ]] || exit 1
+}
+
+@test "admin: cannot update phone on locked account" {
+  admin_token="$(read_value 'admin.token')"
+  id="$(read_value 'tester.id')"
+
+  new_phone="$(random_phone)"
+  variables=$(
+    jq -n \
+    --arg phone "$new_phone" \
+    --arg accountId "$id" \
+    '{input: {phone: $phone, accountId:$accountId}}'
+  )
+  exec_admin_graphql $admin_token 'user-update-phone' "$variables"
+  update_error_message="$(graphql_output '.data.userUpdatePhone.errors[0].message')"
+  [[ "$update_error_message" == "Account is inactive." ]] || exit 1
+}
