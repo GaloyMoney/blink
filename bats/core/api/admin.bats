@@ -4,6 +4,8 @@ load "../../helpers/_common.bash"
 load "../../helpers/user.bash"
 
 setup_file() {
+  clear_cache
+
   create_user 'tester'
   user_update_username 'tester'
 }
@@ -43,4 +45,45 @@ HYDRA_ADMIN_API="http://localhost:4445"
   exec_admin_graphql $admin_token 'account-details-by-user-phone' "$variables"
   id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
   [[ "$id" != "null" && "$id" != "" ]] || exit 1
+  cache_value 'tester.id' "$id"
+}
+
+@test "admin: can update user phone number" {
+  admin_token="$(read_value 'admin.token')"
+  id="$(read_value 'tester.id')"
+  new_phone="$(random_phone)"
+  variables=$(
+    jq -n \
+    --arg phone "$new_phone" \
+    --arg accountId "$id" \
+    '{input: {phone: $phone, accountId:$accountId}}'
+  )
+
+  exec_admin_graphql $admin_token 'user-update-phone' "$variables"
+  num_errors="$(graphql_output '.data.userUpdatePhone.errors | length')"
+  [[ "$num_errors" == "0" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg phone "$new_phone" \
+    '{phone: $phone}'
+  )
+  exec_admin_graphql "$admin_token" 'account-details-by-user-phone' "$variables"
+  refetched_id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
+  [[ "$refetched_id" == "$id" ]] || exit 1
+}
+
+@test "admin: can query account details by username" {
+  admin_token="$(read_value 'admin.token')"
+  id="$(read_value 'tester.id')"
+  username="$(read_value 'tester.username')"
+
+  variables=$(
+    jq -n \
+    --arg username "$username" \
+    '{username: $username}'
+  )
+  exec_admin_graphql "$admin_token" 'account-details-by-username' "$variables"
+  refetched_id="$(graphql_output '.data.accountDetailsByUsername.id')"
+  [[ "$refetched_id" == "$id" ]] || exit 1
 }
