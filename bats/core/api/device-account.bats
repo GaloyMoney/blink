@@ -2,10 +2,6 @@ load "../../helpers/_common.bash"
 load "../../helpers/cli.bash"
 load "../../helpers/user.bash"
 
-setup_file() {
-  clear_cache
-}
-
 DEVICE_NAME="device-user"
 
 GALOY_ENDPOINT="localhost:4455"
@@ -49,4 +45,37 @@ jwt="eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiOTdiMjIxLWNhMDgtNGViMi05ZDA5LWE1NzcwZmNjZWI
   refetched_account_id="$(graphql_output '.data.me.defaultAccount.id')"
   echo "'$refetched_account_id' '$account_id'" >> output.log
   [[ "$refetched_account_id" == "$account_id" ]] || exit 1
+}
+
+@test "device-account: upgrade" {
+  token_name="$DEVICE_NAME"
+  code="000000"
+  phone="$(random_phone)"
+  cache_value "$token_name.phone" "$phone"
+
+  variables=$(
+    jq -n \
+    --arg phone "$phone" \
+   --arg code "$code" \
+    '{input: {phone: $phone, code: $code}}'
+  )
+  exec_graphql "$token_name" 'user-login-upgrade' "$variables"
+  upgrade_success="$(graphql_output '.data.userLoginUpgrade.success')"
+  [[ "$upgrade_success" == "true" ]] || exit 1
+
+  # Existing phone accounts return an authToken
+  upgrade_auth_token="$(graphql_output '.data.userLoginUpgrade.authToken')"
+  [[ "$upgrade_auth_token" == "null" ]] || exit 1
+
+  exec_graphql "$token_name" 'account-details'
+  account_level="$(graphql_output '.data.me.defaultAccount.level')"
+  [[ "$account_level" == "ONE" ]] || exit 1
+}
+
+@test "device-account: delete upgraded account" {
+  token_name="$DEVICE_NAME"
+
+  exec_graphql "$token_name" 'account-delete'
+  delete_success="$(graphql_output '.data.accountDelete.success')"
+  [[ "$delete_success" == "true" ]] || exit 1
 }
