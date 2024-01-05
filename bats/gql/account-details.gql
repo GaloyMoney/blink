@@ -1,0 +1,8 @@
+query me {
+  me {
+    defaultAccount {
+      id
+      level
+    }
+  }
+}
