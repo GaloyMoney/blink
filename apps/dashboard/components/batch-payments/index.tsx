@@ -274,7 +274,7 @@ export default function BatchPayments() {
                 component="div"
                 sx={{ fontSize: "h5.fontSize", mb: 2 }}
               >
-                Instructions for CSV File Upload
+                Fields for CSV File
               </Typography>
 
               <ul>
