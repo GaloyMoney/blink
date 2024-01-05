@@ -1,0 +1,68 @@
+#@ load("@ytt:data", "data")
+
+#@ def galoy_dev_image():
+#@   return data.values.docker_registry + "/galoy-dev"
+#@ end
+
+#@ def task_image_config():
+type: registry-image
+source:
+  username: ((docker-creds.username))
+  password: ((docker-creds.password))
+  repository: #@ galoy_dev_image()
+#@ end
+
+#@ def buck_test_name(component):
+#@   return "buck-test-" + component
+#@ end
+
+#@ def buck_test(component):
+name: #@ buck_test_name(component)
+serial: true
+plan:
+  - in_parallel:
+      - get: #@ component_src_resource_name(component)
+        trigger: true
+      - { get: pipeline-tasks }
+  - task: buck-test-unit
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+        - name: pipeline-tasks
+        - name: #@ component_src_resource_name(component)
+          path: repo
+      params:
+        BUCK_TARGET: #@ "//core/" + component + ":test-unit"
+        BUCK_CMD: test
+      run:
+        path: pipeline-tasks/ci/apps/tasks/buck-task.sh
+#@ end
+
+#@ def component_src_resource_name(component):
+#@   return component + "-src"
+#@ end
+
+
+#@ def core_bundle_src_resource():
+#@ bundle_components = ["api", "api-cron", "api-trigger", "api-ws-server", "api-exporter"]
+name: #@ component_src_resource_name("api")
+type: git
+source:
+  paths:
+#@ for component in bundle_components:
+  - #@ "apps/" + component
+  - #@ "apps/" + component + "/*"
+  - #@ "apps/" + component + "/**/*"
+#@ end
+  - flake.nix
+  - flake.lock
+  - toolchains/
+  - toolchains/*
+  - toolchains/**/*
+  - pnpm-lock.yaml
+  fetch_tags: true
+  uri: #@ data.values.git_uri
+  branch: #@ data.values.git_branch
+  private_key: #@ data.values.github_private_key
+#@ end

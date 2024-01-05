@@ -1,0 +1,25 @@
+#@ load("@ytt:data", "data")
+
+#@ load("template.lib.yml",
+#@   "buck_test_name",
+#@   "core_bundle_src_resource",
+#@   "buck_test_name",
+#@   "buck_test")
+
+groups:
+- name: core-bundle
+  jobs:
+    - #@ buck_test_name("api")
+
+jobs:
+- #@ buck_test("api")
+
+resources:
+- #@ core_bundle_src_resource()
+- name: pipeline-tasks
+  type: git
+  source:
+    paths: [ci/core/*]
+    uri: #@ data.values.git_uri
+    branch: #@ data.values.git_branch
+    private_key: #@ data.values.github_private_key
