@@ -1,5 +1,0 @@
-query accountDetailsByUsername($username: Username!) {
-  accountDetailsByUsername(username: $username) {
-    id
-  }
-}
