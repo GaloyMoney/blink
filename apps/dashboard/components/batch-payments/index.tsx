@@ -74,7 +74,7 @@ export default function BatchPayments() {
         return
       }
 
-      // VALIDATE CSV
+      // Validate CSV format
       const validateCsvResult = validateCSV({
         fileContent: content,
         defaultWallet: defaultWalletCurrency as WalletCurrency,
@@ -90,7 +90,7 @@ export default function BatchPayments() {
         return
       }
 
-      // VALIDATE ENOUGH BALANCE AND PAYMENT DETAILS
+      // Validate enough balance, and payment details
       const validatePaymentResponse = await validatePaymentDetail(
         validateCsvResult.totalAmount,
       )
@@ -104,7 +104,7 @@ export default function BatchPayments() {
         return
       }
 
-      //PROCESS RECORDS, ADD WALLET ID FOR USERNAME
+      //Process Records, add Wallet Id's for username
       const processedRecords = await processRecords(validateCsvResult.records)
       if (processedRecords.error || !processedRecords.responsePayload) {
         setModalDetails({

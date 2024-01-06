@@ -200,9 +200,7 @@ export const validatePaymentDetail = async (
 }> => {
   // TODO move this logic to client side by setting up apollo clint
   const session = await getServerSession(authOptions)
-  const token = session?.accessToken
-  const me = session?.userData.data
-  if (!me || !token) {
+  if (!session?.userData.data || !session?.accessToken) {
     return {
       error: true,
       message: "User Not Found",
@@ -210,6 +208,7 @@ export const validatePaymentDetail = async (
     }
   }
 
+  const token = session.accessToken
   const btcWallet = getBTCWallet(session.userData.data)
   const usdWallet = getUSDWallet(session.userData.data)
 
@@ -232,31 +231,32 @@ export const validatePaymentDetail = async (
 
   const totalAmountForBTCWallet =
     TotalAmount.wallets.BTC.SATS +
-    convertUsdToBtcSats(TotalAmount.wallets.USD, realtimePrice.data)
+    convertUsdToBtcSats(TotalAmount.wallets.BTC.USD, realtimePrice.data)
   const totalAmountForUSDWallet = TotalAmount.wallets.USD * 100
+
   if (
-    btcWallet?.balance >= totalAmountForBTCWallet &&
-    usdWallet?.balance >= totalAmountForUSDWallet
+    btcWallet?.balance < totalAmountForBTCWallet ||
+    usdWallet?.balance < totalAmountForUSDWallet
   ) {
     return {
-      error: false,
-      message: "success",
-      responsePayload: {
-        transactionAmount: {
-          totalAmountForBTCWallet,
-          totalAmountForUSDWallet,
-        },
-        userWalletBalance: {
-          btcWalletBalance: btcWallet?.balance,
-          usdWalletBalance: usdWallet?.balance,
-        },
-      },
+      error: true,
+      message: "Insufficient Balance",
+      responsePayload: null,
     }
   }
 
   return {
-    error: true,
-    message: "Insufficient Balance",
-    responsePayload: null,
+    error: false,
+    message: "success",
+    responsePayload: {
+      transactionAmount: {
+        totalAmountForBTCWallet,
+        totalAmountForUSDWallet,
+      },
+      userWalletBalance: {
+        btcWalletBalance: btcWallet?.balance,
+        usdWalletBalance: usdWallet?.balance,
+      },
+    },
   }
 }

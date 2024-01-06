@@ -6,13 +6,13 @@ import { AmountCurrency, CSVRecord, TotalAmountForWallets } from "./index.types"
 
 import { WalletCurrency } from "@/services/graphql/generated"
 
-enum HEADERS {
-  USERNAME = "username",
-  AMOUNT = "amount",
-  CURRENCY = "currency",
-  WALLET = "wallet",
-  MEMO = "memo",
-}
+const HEADERS = {
+  USERNAME: "username",
+  AMOUNT: "amount",
+  CURRENCY: "currency",
+  WALLET: "wallet",
+  MEMO: "memo",
+} as const
 
 export function validateCSV({
   fileContent,
