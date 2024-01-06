@@ -21,10 +21,13 @@ import {
 import { WalletCurrency } from "@/services/graphql/generated"
 
 import { centsToDollars, getDefaultWallet } from "@/app/utils"
-import { ProcessedRecords, TotalAmountForWallets } from "@/app/batch-payments/index.types"
+import {
+  ProcessedRecords,
+  TotalPayingAmountForWallets,
+} from "@/app/batch-payments/index.types"
 
 type paymentDetails = {
-  totalAmount: TotalAmountForWallets
+  totalAmount: TotalPayingAmountForWallets
   userWalletBalance: {
     BTC: number
     USD: number
@@ -214,15 +217,15 @@ export default function BatchPayments() {
             <DetailsCard>
               <Details
                 label="Total Payable Amount for USD Wallet"
-                value={`$${paymentDetails.totalAmount.wallets.USD} USD`}
+                value={`$${paymentDetails.totalAmount.wallets.usdWallet.USD} USD`}
               />
               <Details
                 label="Total Payable Amount by BTC Wallet for SATS Currency"
-                value={`${paymentDetails.totalAmount.wallets.BTC.SATS} SATS`}
+                value={`${paymentDetails.totalAmount.wallets.btcWallet.SATS} SATS`}
               />
               <Details
                 label="Total Payable Amount by BTC Wallet for USD Currency"
-                value={`$${paymentDetails.totalAmount.wallets.BTC.USD} USD`}
+                value={`$${paymentDetails.totalAmount.wallets.btcWallet.USD} USD`}
               />
               <Details
                 label="Balance in BTC Wallet"

@@ -26,12 +26,14 @@ export type CSVRecord = {
   memo?: string
 }
 
-export type TotalAmountForWallets = {
+export type TotalPayingAmountForWallets = {
   wallets: {
-    BTC: {
+    btcWallet: {
       SATS: number
       USD: number
     }
-    USD: number
+    usdWallet: {
+      USD: 0
+    }
   }
 }

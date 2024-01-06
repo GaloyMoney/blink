@@ -2,7 +2,7 @@ import { parse } from "csv-parse/sync"
 
 import { centsToDollars } from "../utils"
 
-import { AmountCurrency, CSVRecord, TotalAmountForWallets } from "./index.types"
+import { AmountCurrency, CSVRecord, TotalPayingAmountForWallets } from "./index.types"
 
 import { WalletCurrency } from "@/services/graphql/generated"
 
@@ -23,7 +23,7 @@ export function validateCSV({
 }):
   | {
       records: CSVRecord[]
-      totalAmount: TotalAmountForWallets
+      totalAmount: TotalPayingAmountForWallets
     }
   | Error {
   let records
@@ -40,13 +40,15 @@ export function validateCSV({
     return new Error("No records found")
   }
 
-  const totalAmount = {
+  const totalAmount: TotalPayingAmountForWallets = {
     wallets: {
-      BTC: {
+      btcWallet: {
         SATS: 0,
         USD: 0,
       },
-      USD: 0,
+      usdWallet: {
+        USD: 0,
+      },
     },
   }
 
@@ -108,12 +110,12 @@ export function validateCSV({
 
     if (record.wallet === WalletCurrency.Btc) {
       if (record.currency === AmountCurrency.SATS) {
-        totalAmount.wallets.BTC.SATS += amount
+        totalAmount.wallets.btcWallet.SATS += amount
       } else {
-        totalAmount.wallets.BTC.USD += amount
+        totalAmount.wallets.btcWallet.USD += amount
       }
     } else {
-      totalAmount.wallets.USD += amount
+      totalAmount.wallets.usdWallet.USD += amount
     }
   }
 

@@ -9,7 +9,7 @@ import {
   AmountCurrency,
   CSVRecord,
   ProcessedRecords,
-  TotalAmountForWallets,
+  TotalPayingAmountForWallets,
 } from "./index.types"
 
 import { getWalletDetailsByUsername } from "@/services/graphql/queries/get-user-wallet-id"
@@ -183,7 +183,7 @@ export const processPaymentsServerAction = async (records: ProcessedRecords[]) =
 }
 
 export const validatePaymentDetail = async (
-  TotalAmount: TotalAmountForWallets,
+  TotalAmount: TotalPayingAmountForWallets,
 ): Promise<{
   error: boolean
   message: string
@@ -230,9 +230,9 @@ export const validatePaymentDetail = async (
   }
 
   const totalAmountForBTCWallet =
-    TotalAmount.wallets.BTC.SATS +
-    convertUsdToBtcSats(TotalAmount.wallets.BTC.USD, realtimePrice.data)
-  const totalAmountForUSDWallet = TotalAmount.wallets.USD * 100
+    TotalAmount.wallets.btcWallet.SATS +
+    convertUsdToBtcSats(TotalAmount.wallets.btcWallet.USD, realtimePrice.data)
+  const totalAmountForUSDWallet = dollarsToCents(TotalAmount.wallets.usdWallet.USD)
 
   if (
     btcWallet?.balance < totalAmountForBTCWallet ||
