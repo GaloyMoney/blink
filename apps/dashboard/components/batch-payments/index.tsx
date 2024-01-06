@@ -303,8 +303,7 @@ export default function BatchPayments() {
                   <Typography component="div" sx={{ mb: 1 }}>
                     <strong>Wallet (optional):</strong> The wallet that will be used to
                     send the payment in USD or BTC. If not provided, the default wallet
-                    will be used. If the currency is SATS and no wallet is provided, BTC
-                    wallet will be used.
+                    will be used.
                   </Typography>
                 </li>
                 <li>

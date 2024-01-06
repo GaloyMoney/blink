@@ -100,8 +100,14 @@ export function validateCSV({
       record.amount = amount
     }
 
-    if (!record.wallet && record.currency === AmountCurrency.SATS) {
-      record.wallet = WalletCurrency.Btc
+    if (
+      !record.wallet &&
+      record.currency === AmountCurrency.SATS &&
+      defaultWallet === WalletCurrency.Usd
+    ) {
+      return new Error(
+        "Your default wallet currency is USD, which doesn't support SATS currency. Please specify BTC Wallet to use SATS currency.",
+      )
     }
 
     if (!record.wallet) {
