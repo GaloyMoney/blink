@@ -85,8 +85,12 @@ plan:
 #@   return "build-" + component + "-edge-image"
 #@ end
 
-#@ def build_edge_image(component):
-name: #@ build_edge_image_name(component)
+#@ def build_edge_image(component, sub_file = ""):
+#@ post_fix = ""
+#@ if sub_file != "":
+#@   post_fix = "-" + sub_file
+#@ end
+name: #@ build_edge_image_name(component + post_fix)
 serial: true
 plan:
   - in_parallel:
@@ -120,17 +124,19 @@ plan:
         - name: image
       params:
         CONTEXT: repo
-        DOCKERFILE: #@ "repo/core/" + component + "/Dockerfile"
+        DOCKERFILE: #@ "repo/core/" + component + "/Dockerfile" + post_fix
         BUILD_ARGS_FILE: repo/.build-args
       run:
         path: build
-  - put: #@ edge_image_resource_name(component)
+  - put: #@ edge_image_resource_name(component + post_fix)
     params:
       image: image/image.tar
 #@ end
 
 #@ def component_src_resource_name(component):
 #@   if component in core_bundle_components:
+#@     return "core-bundle-src"
+#@   elif component == "api-migrate":
 #@     return "core-bundle-src"
 #@   else:
 #@     return component + "-src"
