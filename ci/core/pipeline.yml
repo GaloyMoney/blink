@@ -1,21 +1,52 @@
 #@ load("@ytt:data", "data")
 
 #@ load("template.lib.yml",
-#@   "buck_test_name",
 #@   "core_bundle_src_resource",
 #@   "buck_test_name",
-#@   "buck_test")
+#@   "buck_test_name",
+#@   "buck_test",
+#@   "on_nix_host",
+#@   "core_bundle_components",
+#@   "build_edge_image",
+#@   "build_edge_image_name",
+#@   "component_edge_image")
 
 groups:
 - name: core-bundle
   jobs:
     - #@ buck_test_name("api")
+#@ for component in core_bundle_components:
+    - #@ build_edge_image_name(component)
+#@ end
+    - core-bundle-integration-tests
+    - core-bundle-legacy-integration-tests
+    - core-bundle-bats-tests
+    - core-bundle-legacy-bats-tests
 
 jobs:
 - #@ buck_test("api")
+#@ for component in core_bundle_components:
+- #@ build_edge_image(component)
+#@ end
+- #@ on_nix_host("core-bundle-integration-tests", "api", "tilt --file dev/Tiltfile ci -- --test core")
+- #@ on_nix_host("core-bundle-legacy-integration-tests", "api", "make integration-in-ci", in_dir = "core/api")
+- #@ on_nix_host("core-bundle-bats-tests", "api", "bats --setup-suite-file bats/ci_setup_suite.bash -t bats/core/**")
+- #@ on_nix_host("core-bundle-legacy-bats-tests", "api", "make bats-in-ci", in_dir = "core/api")
 
 resources:
 - #@ core_bundle_src_resource()
+#@ for component in core_bundle_components:
+- #@ component_edge_image(component)
+#@ end
+
+- name: nix-host
+  type: pool
+  source:
+    uri: git@github.com:GaloyMoney/concourse-locks.git
+    branch: main
+    pool: docker-hosts
+    private_key: #@ data.values.github_private_key
+
 - name: pipeline-tasks
   type: git
   source:
