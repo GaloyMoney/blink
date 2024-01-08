@@ -1,25 +1,22 @@
 #!/usr/bin/env bats
 
-load "helpers/setup-and-teardown"
-load "helpers/ln"
+load "../../helpers/_common.bash"
+load "../../helpers/user.bash"
 
 setup_file() {
   clear_cache
 
-  bitcoind_init
-  start_trigger
-  start_server
-  start_ws_server
-  start_exporter
+  create_user 'alice'
+  seed_invoices
+}
 
-  lnds_init
-  login_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
+seed_invoices() {
+  token_name='alice'
 
-  token_name="$ALICE_TOKEN_NAME"
+  # Generate btc invoice
   btc_wallet_name="$token_name.btc_wallet_id"
   btc_amount="1000"
 
-  # Generate btc invoice
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value $btc_wallet_name)" \
@@ -43,7 +40,7 @@ setup_file() {
 }
 
 @test "invoices: get invoices for account" {
-  token_name="$ALICE_TOKEN_NAME"
+  token_name='alice'
 
   exec_graphql "$token_name" 'invoices' '{"first": 3}'
 
@@ -52,7 +49,7 @@ setup_file() {
 }
 
 @test "invoices: get invoices for wallet" {
-  token_name="$ALICE_TOKEN_NAME"
+  token_name='alice'
   btc_wallet_name="$token_name.btc_wallet_id"
 
   variables=$(
@@ -64,16 +61,4 @@ setup_file() {
 
   invoice_count="$(graphql_output '.data.me.defaultAccount.walletById.invoices.edges | length')"
   [[ "$invoice_count" -eq "2" ]] || exit 1
-}
-
-
-teardown_file() {
-  stop_trigger
-  stop_server
-  stop_ws_server
-  stop_exporter
-}
-
-setup() {
-  reset_redis
 }
