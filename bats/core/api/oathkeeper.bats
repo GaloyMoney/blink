@@ -1,16 +1,9 @@
 #!/usr/bin/env bats
 
-load "helpers/setup-and-teardown"
+load "../../helpers/_common.bash"
+load "../../helpers/user.bash"
 
-setup_file() {
-  start_server
-}
-
-teardown_file() {
-  stop_server
-}
-
-OATHKEEPER_ENDPOINT=${OATHKEEPER_ENDPOINT:-"http://127.0.0.1:4456/decisions/"}
+OATHKEEPER_ENDPOINT="http://localhost:4456/decisions/"
 
 check_is_uuid() {
   uuid_string=$1
@@ -109,7 +102,7 @@ oathkeeper_jwt() {
 }
 
 @test "oathkeeper: return userId if bearer assets is present" {
-  login_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
+  create_user 'alice'
 
   exec_oathkeeper 'alice'
   jwt=$(oathkeeper_jwt)
