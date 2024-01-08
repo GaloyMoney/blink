@@ -147,22 +147,12 @@ plan:
 name: #@ component_src_resource_name("api")
 type: git
 source:
-  paths:
-#@ for component in core_bundle_components:
-  - #@ "apps/" + component
-  - #@ "apps/" + component + "/*"
-  - #@ "apps/" + component + "/**/*"
-#@ end
-  - flake.nix
-  - flake.lock
-  - toolchains/
-  - toolchains/*
-  - toolchains/**/*
-  - pnpm-lock.yaml
+  ignore_paths: ["ci/*[^md]"]
   fetch_tags: true
   uri: #@ data.values.git_uri
   branch: #@ data.values.git_branch
   private_key: #@ data.values.github_private_key
+webhook_token: ((webhook.secret))
 #@ end
 
 #@ def edge_image_resource_name(component):

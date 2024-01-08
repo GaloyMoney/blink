@@ -1,7 +1,7 @@
 #@data/values
 ---
 git_uri: git@github.com:GaloyMoney/galoy.git
-git_branch: refactor-core-pipeline
+git_branch: main
 git_charts_uri: git@github.com:GaloyMoney/charts.git
 git_stablesats_uri: git@github.com:GaloyMoney/stablesats-rs.git
 git_price_uri: git@github.com:GaloyMoney/price.git
