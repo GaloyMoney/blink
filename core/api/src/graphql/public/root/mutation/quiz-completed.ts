@@ -1,5 +1,3 @@
-import { Quiz } from "@/app"
-import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import { GT } from "@/graphql/index"
 
 import QuizCompleted from "@/graphql/public/types/payload/quiz-completed"
@@ -11,6 +9,7 @@ const QuizCompletedInput = GT.Input({
   }),
 })
 
+// TODO: remove endpoint after 06/2024
 const QuizCompletedMutation = GT.Field<
   null,
   GraphQLPublicContextAuth,
@@ -24,21 +23,15 @@ const QuizCompletedMutation = GT.Field<
   args: {
     input: { type: GT.NonNull(QuizCompletedInput) },
   },
-  resolve: async (_, args, { domainAccount, ip }) => {
-    const { id } = args.input
-
-    const quizzes = await Quiz.claimQuizLegacy({
-      quizQuestionId: id,
-      accountId: domainAccount.id,
-      ip,
-    })
-    if (quizzes instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(quizzes)] }
-    }
-
+  resolve: async () => {
     return {
-      errors: [],
-      quiz: quizzes.find((q) => q.id === id),
+      errors: [
+        {
+          message: "update the application to the latest version to use this feature",
+          path: "update the application to the latest version to use this feature",
+          code: "update the application to the latest version to use this feature",
+        },
+      ],
     }
   },
 })
