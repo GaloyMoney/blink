@@ -94,9 +94,9 @@ services:
       context: ..
       dockerfile: core/api/Dockerfile-migrate
 #@ elif mongodb_migrate_image_digest.startswith("sha256@"):
-    image: #@ "us.gcr.io/galoy-org/galoy-app-migrate@" + mongodb_migrate_image_digest.replace("@",":")
+    image: #@ "us.gcr.io/galoy-org/galoy-api-migrate@" + mongodb_migrate_image_digest.replace("@",":")
 #@ else:
-    image: #@ "us.gcr.io/galoy-org/galoy-app-migrate:" + mongodb_migrate_image_digest
+    image: #@ "us.gcr.io/galoy-org/galoy-api-migrate:" + mongodb_migrate_image_digest
 #@ end
     depends_on:
     - mongodb

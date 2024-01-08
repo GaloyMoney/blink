@@ -38,6 +38,7 @@ groups:
   - core-bundle-legacy-integration-tests
   - core-bundle-bats-tests
   - core-bundle-legacy-bats-tests
+  - quickstart
   - release-core-bundle
   - bump-core-bundle-images-in-chart
 
@@ -174,8 +175,84 @@ jobs:
       run:
         path: pipeline-tasks/ci/core/tasks/open-core-bundle-charts-pr.sh
 
+- name: quickstart
+  serial: true
+  plan:
+  - in_parallel:
+    - get: #@ component_src_resource_name("api")
+      trigger: true
+      passed:
+      - #@ build_edge_image_name("api")
+      - #@ build_edge_image_name("api-migrate")
+      - #@ build_edge_image_name("api-ws-server")
+      - #@ build_edge_image_name("api-trigger")
+    - get: pipeline-tasks
+#@ for component in ["api", "api-migrate", "api-ws-server", "api-trigger"]:
+    - get: #@ edge_image_resource_name(component)
+      passed:
+      - #@ build_edge_image_name(component)
+      params:
+        format: oci
+#@ end
+    - get: version
+  - task: prep-quickstart
+    config:
+      platform: linux
+      image_resource: #@ release_task_image_config()
+      inputs:
+      - name: #@ component_src_resource_name("api")
+        path: repo
+      - name: api-edge-image
+      - name: api-migrate-edge-image
+      - name: api-trigger-edge-image
+      - name: pipeline-tasks
+      outputs:
+      - name: repo
+      run:
+        path: pipeline-tasks/ci/core/tasks/prep-quickstart.sh
+  - { put: nix-host, params: { acquire: true } }
+  - task: test-on-nix-host
+    attempts: 2
+    timeout: 18m
+    tags: ["galoy-staging"]
+    config:
+      platform: linux
+      image_resource: #@ release_task_image_config()
+      inputs:
+      - name: pipeline-tasks
+      - name: nix-host
+        path: docker-host
+      - name: repo
+        path: galoy-quickstart
+      caches:
+      - path: cargo-home
+      - path: cargo-target-dir
+      params:
+        REPO_PATH: galoy-quickstart/quickstart
+        GOOGLE_CREDENTIALS: ((staging-gcp-creds.creds_json))
+        SSH_PRIVATE_KEY: ((staging-ssh.ssh_private_key))
+        SSH_PUB_KEY: ((staging-ssh.ssh_public_key))
+        TEST_CONTAINER: quickstart-test
+      run:
+        path: pipeline-tasks/ci/vendor/tasks/test-on-docker-host.sh
+    ensure:
+      put: nix-host
+      params:
+        release: nix-host
+  - put: repo-out
+    params:
+          repository: repo
+          rebase: true
+
 resources:
 - #@ core_bundle_src_resource()
+- name: repo-out
+  type: git
+  source:
+    fetch_tags: true
+    uri: #@ data.values.git_uri
+    branch: #@ data.values.git_branch
+    private_key: #@ data.values.github_private_key
 #@ for component in core_bundle_components:
 - #@ component_edge_image(component)
 #@ end
