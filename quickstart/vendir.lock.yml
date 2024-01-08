@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: extract templated core pipeline (#3795)...'
-      sha: 657c01d08858866c73b23c5db6d495b1f41f56eb
+      commitTitle: 'test(core): move callback bats tests (#3791)'
+      sha: bd6b666e6b14addd4b208e57fe4837a96b8f6734
       tags:
-      - 0.19.23-1-g657c01d08
+      - 0.19.26-1-gbd6b666e6
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: extract templated core pipeline (#3795)...'
-      sha: 657c01d08858866c73b23c5db6d495b1f41f56eb
+      commitTitle: 'test(core): move callback bats tests (#3791)'
+      sha: bd6b666e6b14addd4b208e57fe4837a96b8f6734
       tags:
-      - 0.19.23-1-g657c01d08
+      - 0.19.26-1-gbd6b666e6
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: extract templated core pipeline (#3795)...'
-      sha: 657c01d08858866c73b23c5db6d495b1f41f56eb
+      commitTitle: 'test(core): move callback bats tests (#3791)'
+      sha: bd6b666e6b14addd4b208e57fe4837a96b8f6734
       tags:
-      - 0.19.23-1-g657c01d08
+      - 0.19.26-1-gbd6b666e6
     path: ./
   path: ./graphql
 kind: LockConfig
