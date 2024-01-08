@@ -1,21 +1,15 @@
 #!/usr/bin/env bats
 
-load "helpers/setup-and-teardown"
+load "../../helpers/_common.bash"
+load "../../helpers/onchain.bash"
+load "../../helpers/user.bash"
 
 setup_file() {
   clear_cache
-  reset_redis
 
-  bitcoind_init
-  start_trigger
-  start_server
-
-  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
-}
-
-teardown_file() {
-  stop_trigger
-  stop_server
+  create_user 'alice'
+  fund_user_onchain 'alice' 'btc_wallet'
+  fund_user_onchain 'alice' 'usd_wallet'
 }
 
 count_transactions_by_currency() {
@@ -36,7 +30,7 @@ currency_for_wallet() {
 }
 
 @test "transactions: by account" {
-  token_name="$ALICE_TOKEN_NAME"
+  token_name='alice'
   account_transactions_query='.data.me.defaultAccount.transactions.edges[]'
 
   exec_graphql "$token_name" 'transactions' '{"first": 3}'
@@ -53,7 +47,7 @@ currency_for_wallet() {
 }
 
 @test "transactions: by account, filtered by wallet" {
-  token_name="$ALICE_TOKEN_NAME"
+  token_name='alice'
   usd_wallet_name="$token_name.usd_wallet_id"
   account_transactions_query='.data.me.defaultAccount.transactions.edges[]'
 
@@ -76,7 +70,7 @@ currency_for_wallet() {
 }
 
 @test "transactions: by wallet" {
-  token_name="$ALICE_TOKEN_NAME"
+  token_name='alice'
   btc_wallet_name="$token_name.btc_wallet_id"
   usd_wallet_name="$token_name.usd_wallet_id"
 

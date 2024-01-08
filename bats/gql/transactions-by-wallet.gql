@@ -1,11 +1,24 @@
-query transactions($walletIds: [WalletId], $first: Int, $after: String) {
+query transactionsByWallet($first: Int, $after: String) {
   me {
     defaultAccount {
-      defaultWallet {
-        id
-      }
-      transactions(walletIds: $walletIds, first: $first, after: $after) {
-        ...TransactionList
+      displayCurrency
+      wallets {
+        ... on BTCWallet {
+          __typename
+          id
+          walletCurrency
+          transactions(first: $first, after: $after) {
+            ...TransactionList
+          }
+        }
+        ... on UsdWallet {
+          __typename
+          id
+          walletCurrency
+          transactions(first: $first, after: $after) {
+            ...TransactionList
+          }
+        }
       }
     }
   }
