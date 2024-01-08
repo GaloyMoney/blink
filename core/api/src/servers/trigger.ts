@@ -504,6 +504,7 @@ const healthCheck = () => {
       checkBriaStatus: false,
     }),
   )
+
   app.listen(port, () => logger.info(`Health check listening on port ${port}!`))
 }
 
