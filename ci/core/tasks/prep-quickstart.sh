@@ -1,8 +1,8 @@
 #!/bin/bash
 
-export api_digest=$(cat ./edge-image/digest | sed 's/:/@/')
-export trigger_digest=$(cat ./trigger-edge-image/digest | sed 's/:/@/')
-export migrate_digest=$(cat ./migrate-edge-image/digest | sed 's/:/@/')
+export api_digest=$(cat ./api-edge-image/digest | sed 's/:/@/')
+export trigger_digest=$(cat ./api-trigger-edge-image/digest | sed 's/:/@/')
+export migrate_digest=$(cat ./api-migrate-edge-image/digest | sed 's/:/@/')
 
 pushd repo/quickstart || exit 1
 

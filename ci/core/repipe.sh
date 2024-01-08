@@ -14,9 +14,9 @@ TMPDIR=""
 TMPDIR=$(mktemp -d -t repipe.XXXXXX)
 trap "rm -rf ${TMPDIR}" INT TERM QUIT EXIT
 
-ytt -f ci/apps > "${TMPDIR}/pipeline.yml"
+ytt -f ci/core > "${TMPDIR}/pipeline.yml"
 
 echo "Updating pipeline @ ${target}"
 
-fly -t "${target}" set-pipeline --team="${team}" -p galoy-apps -c "${TMPDIR}/pipeline.yml"
-fly -t "${target}" unpause-pipeline --team="${team}" -p galoy-apps
+fly -t "${target}" set-pipeline --team="${team}" -p galoy-core -c "${TMPDIR}/pipeline.yml"
+fly -t "${target}" unpause-pipeline --team="${team}" -p galoy-core

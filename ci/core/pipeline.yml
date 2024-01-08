@@ -1,0 +1,306 @@
+#@ load("@ytt:data", "data")
+
+#@ load("template.lib.yml",
+#@   "component_src_resource_name",
+#@   "core_bundle_src_resource",
+#@   "buck_test_name",
+#@   "buck_test_name",
+#@   "buck_test",
+#@   "on_nix_host",
+#@   "core_bundle_components",
+#@   "edge_image_resource_name",
+#@   "build_edge_image",
+#@   "build_edge_image_name",
+#@   "component_edge_image",
+#@   "task_image_config")
+
+#@ def release_pipeline_image():
+#@   return data.values.docker_registry + "/release-pipeline"
+#@ end
+
+#@ def release_task_image_config():
+type: registry-image
+source:
+  username: #@ data.values.docker_registry_user
+  password: #@ data.values.docker_registry_password
+  repository: #@ release_pipeline_image()
+#@ end
+
+groups:
+- name: core-bundle
+  jobs:
+  - #@ buck_test_name("api")
+#@ for component in core_bundle_components:
+  - #@ build_edge_image_name(component)
+#@ end
+  - #@ build_edge_image_name("api-migrate")
+  - core-bundle-integration-tests
+  - core-bundle-legacy-integration-tests
+  - core-bundle-bats-tests
+  - core-bundle-legacy-bats-tests
+  - quickstart
+  - release-core-bundle
+  - bump-core-bundle-images-in-chart
+
+jobs:
+- #@ buck_test("api")
+#@ for component in core_bundle_components:
+- #@ build_edge_image(component)
+#@ end
+- #@ build_edge_image("api", sub_file = "migrate")
+- #@ on_nix_host("core-bundle-integration-tests", "api", "tilt --file dev/Tiltfile ci -- --test core")
+- #@ on_nix_host("core-bundle-legacy-integration-tests", "api", "make integration-in-ci", in_dir = "core/api")
+- #@ on_nix_host("core-bundle-bats-tests", "api", "bats --setup-suite-file bats/ci_setup_suite.bash -t bats/core/**")
+- #@ on_nix_host("core-bundle-legacy-bats-tests", "api", "make bats-in-ci", in_dir = "core/api")
+- name: release-core-bundle
+  plan:
+  - in_parallel:
+    - get: #@ component_src_resource_name("api")
+      trigger: true
+      passed:
+      - #@ buck_test_name("api")
+      - core-bundle-integration-tests
+      - core-bundle-legacy-integration-tests
+      - core-bundle-bats-tests
+      - core-bundle-legacy-bats-tests
+#@ for component in core_bundle_components:
+      - #@ build_edge_image_name(component)
+#@ end
+      - #@ build_edge_image_name("api-migrate")
+    - get: pipeline-tasks
+#@ for component in core_bundle_components:
+    - get: #@ edge_image_resource_name(component)
+      passed:
+      - #@ build_edge_image_name(component)
+      params:
+        format: oci
+#@ end
+    - get: #@ edge_image_resource_name("api-migrate")
+      passed:
+      - #@ build_edge_image_name("api-migrate")
+      params:
+        format: oci
+    - get: version
+  - task: prep-release
+    config:
+      platform: linux
+      image_resource: #@ release_task_image_config()
+      inputs:
+        - name: #@ component_src_resource_name("api")
+          path: repo
+        - name: #@ edge_image_resource_name("api")
+          path: edge-image
+        - name: pipeline-tasks
+        - name: version
+      outputs:
+        - name: version
+        - name: artifacts
+      params:
+        CHART: galoy
+      run:
+        path: pipeline-tasks/ci/tasks/vendor/prep-release-src.sh
+  - in_parallel:
+      - put: gh-release
+        params:
+          name: artifacts/gh-release-name
+          tag: artifacts/gh-release-tag
+          body: artifacts/gh-release-notes.md
+      - put: version
+        params:
+          file: version/version
+
+- name: bump-core-bundle-images-in-chart
+  plan:
+  - in_parallel:
+    - get: #@ component_src_resource_name("api")
+      trigger: true
+      passed: [release-core-bundle]
+    - get: pipeline-tasks
+    - get: version
+      passed: [release-core-bundle]
+#@ for component in core_bundle_components:
+    - get: #@ edge_image_resource_name(component)
+      passed: [release-core-bundle]
+      params:
+        skip_download: true
+#@ end
+    - get: #@ edge_image_resource_name("api-migrate")
+      passed: [release-core-bundle]
+      params:
+        skip_download: true
+    - get: charts-repo
+      params: { skip_download: true }
+  - task: bump-image-digest-in-values
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+        - name: #@ component_src_resource_name("api")
+          path: repo
+#@ for component in core_bundle_components:
+        - name: #@ edge_image_resource_name(component)
+#@ end
+        - name: #@ edge_image_resource_name("api-migrate")
+        - name: pipeline-tasks
+        - name: charts-repo
+        - name: version
+      outputs:
+        - name: charts-repo
+      params:
+        BRANCH: #@ data.values.git_charts_branch
+      run:
+        path: pipeline-tasks/ci/core/tasks/bump-core-bundle-images.sh
+  - put: charts-repo-bot-branch
+    params:
+      repository: charts-repo
+      force: true
+  - task: open-charts-pr
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+        - name: pipeline-tasks
+        - name: #@ component_src_resource_name("api")
+          path: repo
+#@ for component in core_bundle_components:
+        - name: #@ edge_image_resource_name(component)
+#@ end
+        - name: #@ edge_image_resource_name("api-migrate")
+        - name: charts-repo
+      params:
+        GH_APP_ID: #@ data.values.github_app_id
+        GH_APP_PRIVATE_KEY: #@ data.values.github_app_private_key
+        BRANCH: #@ data.values.git_charts_branch
+        BOT_BRANCH: #@ data.values.git_charts_bot_branch
+      run:
+        path: pipeline-tasks/ci/core/tasks/open-core-bundle-charts-pr.sh
+
+- name: quickstart
+  serial: true
+  plan:
+  - in_parallel:
+    - get: #@ component_src_resource_name("api")
+      trigger: true
+      passed:
+      - #@ build_edge_image_name("api")
+      - #@ build_edge_image_name("api-migrate")
+      - #@ build_edge_image_name("api-ws-server")
+      - #@ build_edge_image_name("api-trigger")
+    - get: pipeline-tasks
+#@ for component in ["api", "api-migrate", "api-ws-server", "api-trigger"]:
+    - get: #@ edge_image_resource_name(component)
+      passed:
+      - #@ build_edge_image_name(component)
+      params:
+        format: oci
+#@ end
+    - get: version
+  - task: prep-quickstart
+    config:
+      platform: linux
+      image_resource: #@ release_task_image_config()
+      inputs:
+      - name: #@ component_src_resource_name("api")
+        path: repo
+      - name: api-edge-image
+      - name: api-migrate-edge-image
+      - name: api-trigger-edge-image
+      - name: pipeline-tasks
+      outputs:
+      - name: repo
+      run:
+        path: pipeline-tasks/ci/core/tasks/prep-quickstart.sh
+  - { put: nix-host, params: { acquire: true } }
+  - task: test-on-nix-host
+    attempts: 2
+    timeout: 18m
+    tags: ["galoy-staging"]
+    config:
+      platform: linux
+      image_resource: #@ release_task_image_config()
+      inputs:
+      - name: pipeline-tasks
+      - name: nix-host
+        path: docker-host
+      - name: repo
+        path: galoy-quickstart
+      caches:
+      - path: cargo-home
+      - path: cargo-target-dir
+      params:
+        REPO_PATH: galoy-quickstart/quickstart
+        GOOGLE_CREDENTIALS: ((staging-gcp-creds.creds_json))
+        SSH_PRIVATE_KEY: ((staging-ssh.ssh_private_key))
+        SSH_PUB_KEY: ((staging-ssh.ssh_public_key))
+        TEST_CONTAINER: quickstart-test
+      run:
+        path: pipeline-tasks/ci/vendor/tasks/test-on-docker-host.sh
+    ensure:
+      put: nix-host
+      params:
+        release: nix-host
+  - put: repo-out
+    params:
+          repository: repo
+          rebase: true
+
+resources:
+- #@ core_bundle_src_resource()
+- name: repo-out
+  type: git
+  source:
+    fetch_tags: true
+    uri: #@ data.values.git_uri
+    branch: #@ data.values.git_branch
+    private_key: #@ data.values.github_private_key
+#@ for component in core_bundle_components:
+- #@ component_edge_image(component)
+#@ end
+- #@ component_edge_image("api-migrate")
+
+- name: nix-host
+  type: pool
+  source:
+    uri: git@github.com:GaloyMoney/concourse-locks.git
+    branch: main
+    pool: docker-hosts
+    private_key: #@ data.values.github_private_key
+
+- name: pipeline-tasks
+  type: git
+  source:
+    paths: [ci/core/*]
+    uri: #@ data.values.git_uri
+    branch: #@ data.values.git_branch
+    private_key: #@ data.values.github_private_key
+
+- name: version
+  type: semver
+  source:
+    initial_version: 0.0.0
+    driver: git
+    file: version
+    uri: #@ data.values.git_uri
+    branch: #@ data.values.git_version_branch
+    private_key: #@ data.values.github_private_key
+
+- name: gh-release
+  type: github-release
+  source:
+    owner: #@ data.values.gh_org
+    repository: #@ data.values.gh_repository
+    access_token: #@ data.values.github_token
+
+- name: charts-repo
+  type: git
+  source:
+    uri: #@ data.values.git_charts_uri
+    branch: #@ data.values.git_charts_branch
+    private_key: #@ data.values.github_private_key
+
+- name: charts-repo-bot-branch
+  type: git
+  source:
+    uri: #@ data.values.git_charts_uri
+    branch: #@ data.values.git_charts_bot_branch
+    private_key: #@ data.values.github_private_key

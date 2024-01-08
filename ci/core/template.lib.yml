@@ -1,0 +1,170 @@
+#@ load("@ytt:data", "data")
+
+#@ core_bundle_components = ["api", "api-cron", "api-trigger", "api-ws-server", "api-exporter"]
+
+#@ def galoy_dev_image():
+#@   return data.values.docker_registry + "/galoy-dev"
+#@ end
+
+#@ def task_image_config():
+type: registry-image
+source:
+  username: ((docker-creds.username))
+  password: ((docker-creds.password))
+  repository: #@ galoy_dev_image()
+#@ end
+
+#@ def buck_test_name(component):
+#@   return "buck-test-" + component
+#@ end
+
+#@ def buck_test(component):
+name: #@ buck_test_name(component)
+serial: true
+plan:
+  - in_parallel:
+      - get: #@ component_src_resource_name(component)
+        trigger: true
+      - { get: pipeline-tasks }
+  - task: buck-test-unit
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+        - name: pipeline-tasks
+        - name: #@ component_src_resource_name(component)
+          path: repo
+      params:
+        BUCK_TARGET: #@ "//core/" + component + ":test-unit"
+        BUCK_CMD: test
+      run:
+        path: pipeline-tasks/ci/apps/tasks/buck-task.sh
+#@ end
+
+#@ def on_nix_host(name, component, cmd, in_dir = ""):
+#@ params = {}
+#@ params["REPO_PATH"] = data.values.gh_repository + "-" + name
+#@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
+#@ params["SSH_PRIVATE_KEY"] = "((staging-ssh.ssh_private_key))"
+#@ params["SSH_PUB_KEY"] = "((staging-ssh.ssh_public_key))"
+#@ params["JEST_TIMEOUT"] = 90000
+#@ params["CMD"] = cmd
+#@ if in_dir != "":
+#@   params["PACKAGE_DIR"] = "core/api"
+#@ end
+name: #@ name
+serial: true
+plan:
+- { put: nix-host, params: { acquire: true } }
+- in_parallel:
+  - get: #@ component_src_resource_name(component)
+    trigger: true
+  - { get: pipeline-tasks }
+- task: #@ name
+  attempts: 2
+  timeout: 18m
+  tags: ["galoy-staging"]
+  config:
+    platform: linux
+    image_resource: #@ task_image_config()
+    inputs:
+    - name: pipeline-tasks
+    - name: nix-host
+    - name: #@ component_src_resource_name(component)
+      path: #@ data.values.gh_repository + "-" + name
+    params: #@ params
+    run:
+      path: pipeline-tasks/ci/core/tasks/run-on-nix-host.sh
+  ensure:
+    put: nix-host
+    params:
+      release: nix-host
+#@ end
+
+#@ def build_edge_image_name(component):
+#@   return "build-" + component + "-edge-image"
+#@ end
+
+#@ def build_edge_image(component, sub_file = ""):
+#@ post_fix = ""
+#@ if sub_file != "":
+#@   post_fix = "-" + sub_file
+#@ end
+name: #@ build_edge_image_name(component + post_fix)
+serial: true
+plan:
+  - in_parallel:
+      - get: #@ component_src_resource_name(component)
+        trigger: true
+      - { get: pipeline-tasks }
+  - task: prepare-docker-build
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+        - name: pipeline-tasks
+        - name: #@ component_src_resource_name(component)
+          path: repo
+      outputs:
+        - name: repo
+      run:
+        path: pipeline-tasks/ci/core/tasks/prepare-docker-build.sh
+  - task: build
+    attempts: 2
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: vito/oci-build-task
+      inputs:
+        - name: repo
+      outputs:
+        - name: image
+      params:
+        CONTEXT: repo
+        DOCKERFILE: #@ "repo/core/" + component + "/Dockerfile" + post_fix
+        BUILD_ARGS_FILE: repo/.build-args
+      run:
+        path: build
+  - put: #@ edge_image_resource_name(component + post_fix)
+    params:
+      image: image/image.tar
+#@ end
+
+#@ def component_src_resource_name(component):
+#@   if component in core_bundle_components:
+#@     return "core-bundle-src"
+#@   elif component == "api-migrate":
+#@     return "core-bundle-src"
+#@   else:
+#@     return component + "-src"
+#@   end
+#@ end
+
+#@ def core_bundle_src_resource():
+name: #@ component_src_resource_name("api")
+type: git
+source:
+  ignore_paths: ["ci/*[^md]"]
+  fetch_tags: true
+  uri: #@ data.values.git_uri
+  branch: #@ data.values.git_branch
+  private_key: #@ data.values.github_private_key
+webhook_token: ((webhook.secret))
+#@ end
+
+#@ def edge_image_resource_name(component):
+#@   return component + "-edge-image"
+#@ end
+
+#@ def component_edge_image(component):
+name: #@ edge_image_resource_name(component)
+type: registry-image
+source:
+  tag: edge
+  username: #@ data.values.docker_registry_user
+  password: #@ data.values.docker_registry_password
+  repository: #@ data.values.docker_registry + "/galoy-" + component
+#@ end
