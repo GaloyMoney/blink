@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): bump reqwest from 0.11.20 to 0.11.23 (#3780)...'
-      sha: 58250808c098a408f6db21e1188d2a139c6308ea
+      commitTitle: 'ci: extract templated core pipeline (#3795)...'
+      sha: 657c01d08858866c73b23c5db6d495b1f41f56eb
       tags:
-      - 0.19.22-1-g58250808c
+      - 0.19.23-1-g657c01d08
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): bump reqwest from 0.11.20 to 0.11.23 (#3780)...'
-      sha: 58250808c098a408f6db21e1188d2a139c6308ea
+      commitTitle: 'ci: extract templated core pipeline (#3795)...'
+      sha: 657c01d08858866c73b23c5db6d495b1f41f56eb
       tags:
-      - 0.19.22-1-g58250808c
+      - 0.19.23-1-g657c01d08
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(api-keys): bump reqwest from 0.11.20 to 0.11.23 (#3780)...'
-      sha: 58250808c098a408f6db21e1188d2a139c6308ea
+      commitTitle: 'ci: extract templated core pipeline (#3795)...'
+      sha: 657c01d08858866c73b23c5db6d495b1f41f56eb
       tags:
-      - 0.19.22-1-g58250808c
+      - 0.19.23-1-g657c01d08
     path: ./
   path: ./graphql
 kind: LockConfig
