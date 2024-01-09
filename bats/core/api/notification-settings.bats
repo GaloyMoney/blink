@@ -1,26 +1,18 @@
 #!/usr/bin/env bats
 
-load "helpers/setup-and-teardown"
+load "../../helpers/_common.bash"
+load "../../helpers/user.bash"
+
 
 setup_file() {
   clear_cache
-  reset_redis
 
-  bitcoind_init
-  start_trigger
-  start_server
-
-  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
-}
-
-teardown_file() {
-  stop_trigger
-  stop_server
+  create_user 'alice'
 }
 
 
 @test "notification-settings: disable/enable notification channel" {
-  token_name="$ALICE_TOKEN_NAME" 
+  token_name='alice' 
 
   variables=$( 
       jq -n \
@@ -37,7 +29,7 @@ teardown_file() {
 }
 
 @test "notification-settings: disable/enable notification category" {
-  token_name="$ALICE_TOKEN_NAME" 
+  token_name='alice' 
 
   variables=$( 
       jq -n \
