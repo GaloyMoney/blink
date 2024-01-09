@@ -1,0 +1,13 @@
+type MutationRoot {
+	helloWorldMutation: String!
+}
+
+type QueryRoot {
+	helloWorld: String!
+}
+
+
+schema {
+	query: QueryRoot
+	mutation: MutationRoot
+}
