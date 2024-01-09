@@ -73,6 +73,8 @@ def rustfmt_check_impl(ctx: AnalysisContext) -> list[[
     run_cmd_args = cmd_args(
         ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
         galoy_rust_toolchain.rustfmt_check[DefaultInfo].default_outputs,
+        "--config-path",
+        galoy_rust_toolchain.rustfmt_toml[DefaultInfo].default_outputs,
         cmd_args(
             [crate_ctx.srcs_tree, ctx.label.package, ctx.attrs.crate_root],
             delimiter = "/",
