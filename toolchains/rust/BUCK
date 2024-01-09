@@ -1,0 +1,14 @@
+export_file(
+  name = "clippy_output.py",
+  visibility = ["PUBLIC"],
+)
+
+export_file(
+  name = "crate_context.py",
+  visibility = ["PUBLIC"],
+)
+
+export_file(
+  name = "rustfmt_check.py",
+  visibility = ["PUBLIC"],
+)

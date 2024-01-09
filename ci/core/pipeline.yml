@@ -1,6 +1,7 @@
 #@ load("@ytt:data", "data")
 
 #@ load("template.lib.yml",
+#@   "component_src_resource",
 #@   "component_src_resource_name",
 #@   "core_bundle_src_resource",
 #@   "buck_test_name",
@@ -26,6 +27,8 @@ source:
   repository: #@ release_pipeline_image()
 #@ end
 
+#@ components = ["api-keys"]
+
 groups:
 - name: core-bundle
   jobs:
@@ -41,8 +44,17 @@ groups:
   - quickstart
   - release-core-bundle
   - bump-core-bundle-images-in-chart
+#@ for component in components:
+- name: #@ component
+  jobs:
+  - #@ buck_test_name(component)
+#@ end
 
 jobs:
+#@ for component in components:
+- #@ buck_test(component)
+#@ end
+
 - #@ buck_test("api")
 #@ for component in core_bundle_components:
 - #@ build_edge_image(component)
@@ -246,6 +258,11 @@ jobs:
 
 resources:
 - #@ core_bundle_src_resource()
+
+#@ for component in components:
+- #@ component_src_resource(component)
+#@ end
+
 - name: repo-out
   type: git
   source:

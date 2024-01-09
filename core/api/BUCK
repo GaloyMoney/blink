@@ -201,7 +201,7 @@ jest_test(
 )
 
 test_suite(
-    name = "test-unit",
+    name = "test",
     tests = [
         ":audit",
         ":check-lint",

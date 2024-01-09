@@ -26,7 +26,7 @@ plan:
       - get: #@ component_src_resource_name(component)
         trigger: true
       - { get: pipeline-tasks }
-  - task: buck-test-unit
+  - task: buck-test
     config:
       platform: linux
       image_resource: #@ task_image_config()
@@ -35,7 +35,7 @@ plan:
         - name: #@ component_src_resource_name(component)
           path: repo
       params:
-        BUCK_TARGET: #@ "//core/" + component + ":test-unit"
+        BUCK_TARGET: #@ "//core/" + component + ":test"
         BUCK_CMD: test
       run:
         path: pipeline-tasks/ci/apps/tasks/buck-task.sh
@@ -153,6 +153,27 @@ source:
   branch: #@ data.values.git_branch
   private_key: #@ data.values.github_private_key
 webhook_token: ((webhook.secret))
+#@ end
+
+#@ def component_src_resource(component):
+name: #@ component_src_resource_name(component)
+type: git
+source:
+  paths:
+  - #@ "core/" + component
+  - #@ "core/" + component + "/*"
+  - #@ "core/" + component + "/**/*"
+  - flake.nix
+  - flake.lock
+  - toolchains/
+  - toolchains/*
+  - toolchains/**/*
+  - third-party/rust/**/*
+  - Cargo.lock
+  fetch_tags: true
+  uri: #@ data.values.git_uri
+  branch: #@ data.values.git_branch
+  private_key: #@ data.values.github_private_key
 #@ end
 
 #@ def edge_image_resource_name(component):

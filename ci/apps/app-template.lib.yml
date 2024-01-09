@@ -27,7 +27,7 @@ plan:
       - get: #@ app_src_resource_name(app)
         trigger: true
       - { get: pipeline-tasks }
-  - task: buck-test-unit
+  - task: buck-test
     config:
       platform: linux
       image_resource: #@ task_image_config()
@@ -36,7 +36,7 @@ plan:
         - name: #@ app_src_resource_name(app)
           path: repo
       params:
-        BUCK_TARGET: #@ "//apps/" + app + ":test-unit"
+        BUCK_TARGET: #@ "//apps/" + app + ":test"
         BUCK_CMD: test
       run:
         path: pipeline-tasks/ci/apps/tasks/buck-task.sh
