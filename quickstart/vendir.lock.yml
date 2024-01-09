@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: add rust buck tests (#3803)...'
-      sha: cf2996c227da3d6feeca33dd2f369fb776bb77c6
+      commitTitle: 'test(core): move invoices bats tests (#3800)'
+      sha: 4afff9ada2c07bf8e5d25c0388632b3e8562bfdd
       tags:
-      - 0.19.27-1-gcf2996c22
+      - 0.19.28-3-g4afff9ada
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: add rust buck tests (#3803)...'
-      sha: cf2996c227da3d6feeca33dd2f369fb776bb77c6
+      commitTitle: 'test(core): move invoices bats tests (#3800)'
+      sha: 4afff9ada2c07bf8e5d25c0388632b3e8562bfdd
       tags:
-      - 0.19.27-1-gcf2996c22
+      - 0.19.28-3-g4afff9ada
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: add rust buck tests (#3803)...'
-      sha: cf2996c227da3d6feeca33dd2f369fb776bb77c6
+      commitTitle: 'test(core): move invoices bats tests (#3800)'
+      sha: 4afff9ada2c07bf8e5d25c0388632b3e8562bfdd
       tags:
-      - 0.19.27-1-gcf2996c22
+      - 0.19.28-3-g4afff9ada
     path: ./
   path: ./graphql
 kind: LockConfig
