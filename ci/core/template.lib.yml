@@ -41,6 +41,91 @@ plan:
         path: pipeline-tasks/ci/apps/tasks/buck-task.sh
 #@ end
 
+#@ def component_bats_tests_name(component):
+#@   return component + "-bats-tests"
+#@ end
+
+#@ def component_bats_tests(component):
+#@   return on_nix_host(component_bats_tests_name(component), component, "bats --setup-suite-file bats/ci_setup_suite.bash -t bats/core/" + component)
+#@ end
+
+#@ def bump_image_in_chart_name(component):
+#@   return "bump-" + component + "-in-chart"
+#@ end
+
+#@ def bump_image_in_chart(component):
+#@ component_lookup = {
+#@   "api-keys": {
+#@     "YAML_PATH": ".galoy.images.apiKeys.digest",
+#@     "CHART": "galoy"
+#@   }
+#@ }
+name: #@ bump_image_in_chart_name(component)
+serial: true
+plan:
+  - in_parallel:
+      - get: #@ component_src_resource_name(component)
+        trigger: true
+        passed:
+          - #@ build_edge_image_name(component)
+          - #@ buck_test_name(component)
+          - #@ component_bats_tests_name(component)
+      - get: #@ edge_image_resource_name(component)
+        passed:
+          - #@ build_edge_image_name(component)
+        params: { skip_download: true }
+      - get: charts-repo
+        params:
+          branch: #@ data.values.git_charts_branch
+      - get: pipeline-tasks
+  - task: bump-image-digest-in-values
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+        - name: #@ component_src_resource_name(component)
+          path: repo
+        - name: #@ edge_image_resource_name(component)
+          path: edge-image
+        - name: charts-repo
+        - name: pipeline-tasks
+      outputs:
+        - name: charts-repo
+      params:
+        BRANCH: #@ data.values.git_charts_branch
+        COMPONENT: #@ component
+        YAML_PATH: #@ component_lookup[component]["YAML_PATH"]
+        CHART: #@ component_lookup[component]["CHART"]
+      run:
+        path: pipeline-tasks/ci/core/tasks/bump-image-digest.sh
+  - put: charts-repo-out
+    params:
+      repository: charts-repo
+      force: true
+      branch: #@ "bump-" + component + "-component"
+  - task: open-charts-pr
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+        - name: #@ component_src_resource_name(component)
+          path: repo
+        - name: #@ edge_image_resource_name(component)
+          path: edge-image
+        - name: charts-repo
+        - name: pipeline-tasks
+      params:
+        GH_APP_ID: #@ data.values.github_app_id
+        GH_APP_PRIVATE_KEY: #@ data.values.github_app_private_key
+        COMPONENT: #@ component
+        BRANCH: #@ data.values.git_charts_branch
+        BOT_BRANCH: #@ "bump-" + component + "-component"
+        YAML_PATH: #@ component_lookup[component]["YAML_PATH"]
+        CHART: #@ component_lookup[component]["CHART"]
+      run:
+        path: pipeline-tasks/ci/core/tasks/open-charts-pr.sh
+#@ end
+
 #@ def on_nix_host(name, component, cmd, in_dir = ""):
 #@ params = {}
 #@ params["REPO_PATH"] = data.values.gh_repository + "-" + name
@@ -163,6 +248,9 @@ source:
   - #@ "core/" + component
   - #@ "core/" + component + "/*"
   - #@ "core/" + component + "/**/*"
+  - #@ "bats/core/" + component
+  - #@ "bats/core/" + component + "/*"
+  - #@ "bats/core/" + component + "/**/*"
   - flake.nix
   - flake.lock
   - toolchains/
