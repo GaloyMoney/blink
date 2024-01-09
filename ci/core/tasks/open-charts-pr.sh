@@ -33,7 +33,7 @@ git remote set-url origin ${github_url}
 git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 
 git checkout ${ref}
-app_src_files=($(buck2 uquery 'inputs(deps("'"//core/${COMPONENT}"'"))' 2>/dev/null))
+app_src_files=($(buck2 uquery 'inputs(deps("'"//core/${COMPONENT}:"'"))' 2>/dev/null))
 
 relevant_commits=()
 for commit in $(git log --format="%H" ${old_ref}..${ref}); do
