@@ -1032,18 +1032,7 @@ def madge_check(
         **kwargs,
     )
 
-def dict_to_env_string(input_dict):
-    env_strings = []
-
-    # TODO: handle different types of 'value' instead of casting everything to string
-    for key, value in input_dict.items():
-        env_strings.append('export ' + key +'="' + str(value) + '"')
-
-    return '\n'.join(env_strings)
-
 def pnpm_task_binary_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
-    env_file = ctx.actions.write(".env", dict_to_env_string(ctx.attrs.env), is_executable = True)
-
     script = ctx.actions.write("pnpm-run.sh", """\
 #!/usr/bin/env bash
 set -euo pipefail
@@ -1059,7 +1048,9 @@ if [ "$install_node_modules" = "True" ]; then
     pnpm install --frozen-lockfile
 fi
 
-source "$env_file"
+if [[ -f "$env_file" ]]; then
+    source "$env_file"
+fi
 
 if [ "${*:5}" ]; then
     exec pnpm run --report-summary "$npm_run_command" -- "${@:5}"
@@ -1068,6 +1059,7 @@ else
 fi
 """, is_executable = True)
 
+    env_file = ctx.attrs.env_file if ctx.attrs.env_file else ""
     args = cmd_args([
         script,
         str(ctx.attrs.local_node_modules),
@@ -1085,12 +1077,10 @@ dev_pnpm_task_binary = rule(impl = pnpm_task_binary_impl, attrs = {
     "local_node_modules": attrs.bool(default = True, doc = """Need to run pnpm install first?"""),
     "srcs": attrs.list(attrs.source(), default = [], doc = """List of sources we require"""),
     "deps": attrs.list(attrs.source(), default = [], doc = """List of dependencies we require"""),
-    "env": attrs.dict(
-        key = attrs.string(),
-        value = attrs.arg(),
-        sorted = False,
-        default = {},
-        doc = """Env values to inject for pnpm command run"""
+    "env_file": attrs.option(
+        attrs.string(),
+        doc = """File name and relative path for env variables required.""",
+        default = None,
     ),
 })
 
