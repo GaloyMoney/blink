@@ -9,7 +9,7 @@ pushd charts-repo
 
 yq -i e "${YAML_PATH} = strenv(digest)" "./charts/${CHART}/values.yaml"
 
-sed -i "s|\(${YAML_PATH##*.}: \"${digest}\"\).*$|\1 # METADATA:: repository=https://github.com/GaloyMoney/galoy;commit_ref=${ref};app=${APP};|g" "./charts/${CHART}/values.yaml"
+sed -i "s|\(${YAML_PATH##*.}: \"${digest}\"\).*$|\1 # METADATA:: repository=https://github.com/GaloyMoney/galoy;commit_ref=${ref};app=${COMPONENT};|g" "./charts/${CHART}/values.yaml"
 
 
 if [[ -z $(git config --global user.email) ]]; then
@@ -24,5 +24,5 @@ fi
   git merge --no-edit "${BRANCH}"
   git add -A
   git status
-  git commit -m "chore(deps): bump '${APP}' image to '${digest}'"
+  git commit -m "chore(deps): bump '${COMPONENT}' image to '${digest}'"
 )
