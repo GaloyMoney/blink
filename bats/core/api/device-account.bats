@@ -1,16 +1,10 @@
-load "helpers/setup-and-teardown"
-
-setup_file() {
-  start_server
-}
-
-teardown_file() {
-  stop_server
-}
+load "../../helpers/_common.bash"
+load "../../helpers/cli.bash"
+load "../../helpers/user.bash"
 
 DEVICE_NAME="device-user"
-DEVICE_PHONE="+16505554353"
 
+GALOY_ENDPOINT="localhost:4455"
 url="http://${GALOY_ENDPOINT}/auth/create/device-account"
 
 # gen-test-jwt.ts
@@ -49,13 +43,15 @@ jwt="eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiOTdiMjIxLWNhMDgtNGViMi05ZDA5LWE1NzcwZmNjZWI
 
   exec_graphql "$token_name" 'account-details'
   refetched_account_id="$(graphql_output '.data.me.defaultAccount.id')"
+  echo "'$refetched_account_id' '$account_id'" >> output.log
   [[ "$refetched_account_id" == "$account_id" ]] || exit 1
 }
 
 @test "device-account: upgrade" {
   token_name="$DEVICE_NAME"
-  phone="$DEVICE_PHONE"
-  code="$CODE"
+  code="000000"
+  phone="$(random_phone)"
+  cache_value "$token_name.phone" "$phone"
 
   variables=$(
     jq -n \
@@ -63,7 +59,6 @@ jwt="eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiOTdiMjIxLWNhMDgtNGViMi05ZDA5LWE1NzcwZmNjZWI
    --arg code "$code" \
     '{input: {phone: $phone, code: $code}}'
   )
-
   exec_graphql "$token_name" 'user-login-upgrade' "$variables"
   upgrade_success="$(graphql_output '.data.userLoginUpgrade.success')"
   [[ "$upgrade_success" == "true" ]] || exit 1
