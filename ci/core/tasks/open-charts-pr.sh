@@ -33,7 +33,7 @@ git remote set-url origin ${github_url}
 git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 
 git checkout ${ref}
-app_src_files=($(buck2 uquery 'inputs(deps("'"//apps/${APP}:"'"))' 2>/dev/null))
+app_src_files=($(buck2 uquery 'inputs(deps("'"//apps/${COMPONENT}:"'"))' 2>/dev/null))
 
 relevant_commits=()
 for commit in $(git log --format="%H" ${old_ref}..${ref}); do
@@ -49,34 +49,34 @@ done
 
 # create a branch from the old state and commit the new state of the app
 set +e
-git fetch origin ${APP}-${old_ref}
+git fetch origin ${COMPONENT}-${old_ref}
 # if the above exits with 128, it means the branch doesn't exist yet
 if [[ $? -eq 128 ]]; then
-  git checkout --orphan ${APP}-${old_ref}
+  git checkout --orphan ${COMPONENT}-${old_ref}
   git rm -rf . > /dev/null
   for file in "${app_src_files[@]}"; do
     git checkout "$old_ref" -- "$file"
   done
-  git commit -m "Commit state of \`${APP}\` at \`${old_ref}\`"
-  git push -fu origin ${APP}-${old_ref}
+  git commit -m "Commit state of \`${COMPONENT}\` at \`${old_ref}\`"
+  git push -fu origin ${COMPONENT}-${old_ref}
 fi
 set -e
 
-git checkout ${APP}-${old_ref}
-git checkout -b ${APP}-${ref}
+git checkout ${COMPONENT}-${old_ref}
+git checkout -b ${COMPONENT}-${ref}
 for file in "${app_src_files[@]}"; do
   git checkout "$ref" -- "$file"
 done
 
-git commit -m "Commit state of \`${APP}\` at \`${ref}\`" --allow-empty
-git push -fu origin ${APP}-${ref}
+git commit -m "Commit state of \`${COMPONENT}\` at \`${ref}\`" --allow-empty
+git push -fu origin ${COMPONENT}-${ref}
 
 cat <<EOF >> ../body.md
-# Bump ${APP} image
+# Bump ${COMPONENT} image
 
 Code diff contained in this image:
 
-${github_url}/compare/${APP}-${old_ref}...${APP}-${ref}
+${github_url}/compare/${COMPONENT}-${old_ref}...${COMPONENT}-${ref}
 
 Relevant commits:
 EOF
@@ -93,7 +93,7 @@ fi
 
 cat <<EOF >> ../body.md
 
-The ${APP} image will be bumped to digest:
+The ${COMPONENT} image will be bumped to digest:
 \`\`\`
 ${digest}
 \`\`\`
@@ -110,7 +110,7 @@ fi
 
 gh pr close ${BOT_BRANCH} || true
 gh pr create \
-  --title "chore(deps): bump-${APP}-image-${ref}" \
+  --title "chore(deps): bump-${COMPONENT}-image-${ref}" \
   --body-file ../body.md \
   --base ${BRANCH} \
   --head ${BOT_BRANCH} \
