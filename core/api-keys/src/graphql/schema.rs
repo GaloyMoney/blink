@@ -17,9 +17,9 @@ impl From<DateTime<Utc>> for Timestamp {
     }
 }
 
-impl Into<DateTime<Utc>> for Timestamp {
-    fn into(self) -> DateTime<Utc> {
-        self.0
+impl From<Timestamp> for DateTime<Utc> {
+    fn from(Timestamp(dt): Timestamp) -> Self {
+        dt
     }
 }
 

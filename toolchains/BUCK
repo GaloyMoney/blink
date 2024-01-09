@@ -47,3 +47,10 @@ rover_toolchain(
   name = "rover",
   visibility = ["PUBLIC"],
 )
+
+load("@toolchains//rust:toolchain.bzl", "galoy_rust_toolchain")
+
+galoy_rust_toolchain(
+  name = "galoy_rust",
+  visibility = ["PUBLIC"],
+)

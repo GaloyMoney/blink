@@ -18,6 +18,16 @@ pay:
   - pnpm-lock.yaml
 
 core:
-  - core/**/*
+  - core/api/*
+  - core/api-cron/*
+  - core/api-exporter/*
+  - core/api-trigger/*
+  - core/api-ws-server/*
   - flake.lock
   - pnpm-lock.yaml
+
+api-keys:
+  - third-party/rust/*
+  - core/api-keys/*
+  - flake.lock
+  - Cargo.lock

@@ -23,7 +23,7 @@ jobs:
           ${{ toJSON(github.event.pull_request.labels.*.name) }}
           EOF
 
-          DEFAULT_LABELS=("dashboard" "consent" "pay" "core")
+          DEFAULT_LABELS=("dashboard" "consent" "pay" "core", "api-keys")
           LABELS=($(jq -r '.[]' < labels.json))
           if [ ${#LABELS[@]} -eq 0 ]; then
               LABELS=("${DEFAULT_LABELS[@]}")
@@ -32,10 +32,13 @@ jobs:
           for LABEL in "${LABELS[@]}"; do
             case "$LABEL" in
               dashboard|consent|pay)
-                ARGS+=" //apps/$LABEL:test-unit"
+                ARGS+=" //apps/$LABEL:test"
                 ;;
               core)
-                ARGS+=" //core/api:test-unit"
+                ARGS+=" //core/api:test"
+                ;;
+              api-keys)
+                ARGS+=" //core/$LABEL:test"
                 ;;
             esac
           done

@@ -1,4 +1,5 @@
 load("@toolchains//rover:macros.bzl", "sdl", "diff_check", "dev_update_file")
+load("@toolchains//rust:macros.bzl", "rustfmt_check", "clippy_check")
 
 sdl(
   name = "sdl",
@@ -73,4 +74,65 @@ rust_library(
         "CARGO_MANIFEST_DIR": ".",
         "SQLX_OFFLINE": "true",
     }
+)
+
+rust_test(
+    name = "test-unit",
+    edition = "2021",
+    srcs = glob([
+      "src/**/*.rs",
+      ".sqlx/*",
+      "migrations/*",
+      "api-keys.yml"
+    ]),
+    crate_root = "src/lib.rs",
+    deps = [
+        "//lib/tracing-rs:tracing",
+        "//third-party/rust:tokio",
+        "//third-party/rust:anyhow",
+        "//third-party/rust:async-graphql",
+        "//third-party/rust:async-graphql-axum",
+        "//third-party/rust:axum",
+        "//third-party/rust:jsonwebtoken",
+        "//third-party/rust:clap",
+        "//third-party/rust:reqwest",
+        "//third-party/rust:serde",
+        "//third-party/rust:serde_yaml",
+        "//third-party/rust:serde_json",
+        "//third-party/rust:thiserror",
+        "//third-party/rust:chrono",
+        "//third-party/rust:sqlx",
+        "//third-party/rust:rand",
+        "//third-party/rust:uuid",
+        "//third-party/rust:serde_with",
+    ],
+    env = {
+        "CARGO_MANIFEST_DIR": ".",
+        "SQLX_OFFLINE": "true",
+    }
+)
+
+rustfmt_check(
+    name = "check-format-rust",
+    srcs = glob([
+      "src/**/*.rs",
+      ".sqlx/*",
+      "migrations/*",
+      "api-keys.yml"
+    ]),
+    crate_root = "src/lib.rs",
+)
+
+clippy_check(
+    name = "check-lint-rust-lib",
+    clippy_txt_dep = ":lib-api-keys[clippy.txt]",
+)
+
+test_suite(
+    name = "test",
+    tests = [
+        ":check-format-rust",
+        ":check-lint-rust-lib",
+        ":test-unit"
+    ],
 )

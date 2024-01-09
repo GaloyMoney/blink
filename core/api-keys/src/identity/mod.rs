@@ -210,7 +210,7 @@ impl Identities {
 
         match record {
             Some(record) => Ok(IdentityApiKey {
-                id: IdentityApiKeyId::from(key_id),
+                id: key_id,
                 name: record.name,
                 identity_id: IdentityId::from(record.identity_id),
                 created_at: record.created_at,

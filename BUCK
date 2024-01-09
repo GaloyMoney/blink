@@ -12,3 +12,8 @@ pnpm_workspace(
   ],
   visibility = ["PUBLIC"],
 )
+
+export_file(
+    name = "rustfmt.toml",
+    visibility = ["PUBLIC"],
+)
