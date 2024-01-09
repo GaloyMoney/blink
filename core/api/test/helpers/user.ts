@@ -2,7 +2,7 @@ import { lndOutside1, safePay } from "./lightning"
 
 import { randomPhone, randomUserId } from "."
 
-import { addWallet, createAccountWithPhoneIdentifier } from "@/app/accounts"
+import { createAccountWithPhoneIdentifier } from "@/app/accounts"
 import { addWalletIfNonexistent } from "@/app/accounts/add-wallet"
 import { getAdminAccounts, getDefaultAccountsConfig } from "@/config"
 
@@ -286,11 +286,10 @@ export const addNewWallet = async ({
   accountId: AccountId
   currency: WalletCurrency
 }): Promise<Wallet> => {
-  // Create wallet for account (phone number)
-  const wallet = await addWallet({
-    currency,
+  const wallet = await WalletsRepository().persistNew({
     accountId,
     type: WalletType.Checking,
+    currency,
   })
   if (wallet instanceof Error) throw wallet
 
