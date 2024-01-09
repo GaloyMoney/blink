@@ -256,15 +256,7 @@ dev_pnpm_task_binary(
   srcs = [":src"],
   visibility = ["PUBLIC"],
   env = {
-    "REDIS_0_PORT": "6379",
-    "REDIS_TYPE": "standalone",
-
     "MONGODB_CON": "mongodb://localhost:27017/galoy",
-    "BRIA_HOST": "localhost",
-    "BRIA_API_KEY": "bria_dev_000000000000000000000",
-    "REDIS_MASTER_NAME": "mymaster",
-    "REDIS_PASSWORD": "",
-    "REDIS_0_DNS": "localhost",
   
     "HELMREVISION": "dummy",
     "KRATOS_PG_CON": "pg://dummy",
@@ -277,6 +269,11 @@ dev_pnpm_task_binary(
     "KRATOS_ADMIN_API": "http://dummy",
     "KRATOS_MASTER_USER_PASSWORD": "dummy",
     "KRATOS_CALLBACK_API_KEY": "dummy",
+    "BRIA_HOST": "dummy",
+    "BRIA_API_KEY": "dummy",
+    "REDIS_MASTER_NAME": "dummy",
+    "REDIS_PASSWORD": "dummy",
+    "REDIS_0_DNS": "dummy",
   },
 )
 
