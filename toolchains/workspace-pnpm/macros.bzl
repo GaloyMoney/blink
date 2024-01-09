@@ -1037,7 +1037,7 @@ def dict_to_env_string(input_dict):
 
     # TODO: handle different types of 'value' instead of casting everything to string
     for key, value in input_dict.items():
-        env_strings.append('export ' + key +'="' + str(value) + '"')
+        env_strings.append('export ' + key +'=' + str(value))
 
     return '\n'.join(env_strings)
 
