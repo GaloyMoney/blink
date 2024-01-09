@@ -1,34 +1,43 @@
+use anyhow::Context;
 use serde::{Deserialize, Serialize};
+use tracing::TracingConfig;
 
-use crate::admin_client::{AdminClientConfig, OAuthGrantConfig};
-use crate::graphql::ServerConfig;
+use std::path::Path;
+
+use super::db::*;
+use crate::{app::AppConfig, server::ServerConfig};
 
 #[derive(Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
-    pub admin: AdminClientConfig,
-    #[serde(default)]
-    pub hydra: OAuthGrantConfig,
+    pub db: DbConfig,
     #[serde(default)]
     pub server: ServerConfig,
+    #[serde(default)]
+    pub app: AppConfig,
+    #[serde(default = "default_tracing_config")]
+    pub tracing: TracingConfig,
+}
+
+fn default_tracing_config() -> TracingConfig {
+    TracingConfig {
+        service_name: "api-keys".to_string(),
+    }
 }
 
 pub struct EnvOverride {
-    pub client_id: String,
-    pub client_secret: String,
+    pub db_con: String,
 }
 
 impl Config {
-    pub fn from_env(
-        EnvOverride {
-            client_id,
-            client_secret,
-        }: EnvOverride,
+    pub fn from_path(
+        path: impl AsRef<Path>,
+        EnvOverride { db_con }: EnvOverride,
     ) -> anyhow::Result<Self> {
-        let mut config: Config = Config::default();
-
-        config.hydra.client_id = client_id;
-        config.hydra.client_secret = client_secret;
+        let config_file = std::fs::read_to_string(path).context("Couldn't read config file")?;
+        let mut config: Config =
+            serde_yaml::from_str(&config_file).context("Couldn't parse config file")?;
+        config.db.pg_con = db_con;
 
         Ok(config)
     }

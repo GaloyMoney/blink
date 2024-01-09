@@ -1,49 +1,39 @@
 pub mod config;
+mod db;
 
-use clap::{Parser, Subcommand};
+use clap::Parser;
+use std::path::PathBuf;
 
 use self::config::{Config, EnvOverride};
-use crate::admin_client::AdminClient;
 
 #[derive(Parser)]
 #[clap(long_about = None)]
 struct Cli {
-    #[clap(subcommand)]
-    command: Command,
-}
-
-#[derive(Subcommand)]
-enum Command {
-    Run {
-        #[clap(env = "CLIENT_ID")]
-        client_id: String,
-
-        #[clap(env = "CLIENT_SECRET")]
-        client_secret: String,
-    },
+    #[clap(
+        short,
+        long,
+        env = "API_KEYS_CONFIG",
+        default_value = "api-keys.yml",
+        value_name = "FILE"
+    )]
+    config: PathBuf,
+    #[clap(env = "PG_CON")]
+    pg_con: String,
 }
 
 pub async fn run() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
-    match cli.command {
-        Command::Run {
-            client_id,
-            client_secret,
-        } => {
-            let config = Config::from_env(EnvOverride {
-                client_id,
-                client_secret,
-            })?;
+    let config = Config::from_path(cli.config, EnvOverride { db_con: cli.pg_con })?;
 
-            run_cmd(config).await?
-        }
-    }
+    run_cmd(config).await?;
+
     Ok(())
 }
 
 async fn run_cmd(config: Config) -> anyhow::Result<()> {
-    println!("Running server");
-    crate::graphql::run_server(config.server, AdminClient::new(config.admin, config.hydra)).await;
-    Ok(())
+    tracing::init_tracer(config.tracing)?;
+    let pool = db::init_pool(&config.db).await?;
+    let app = crate::app::ApiKeysApp::new(pool, config.app);
+    crate::server::run_server(config.server, app).await
 }
