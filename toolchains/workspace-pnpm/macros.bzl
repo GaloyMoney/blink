@@ -1032,7 +1032,18 @@ def madge_check(
         **kwargs,
     )
 
+def dict_to_env_string(input_dict):
+    env_strings = []
+
+    # TODO: handle different types of 'value' instead of casting everything to string
+    for key, value in input_dict.items():
+        env_strings.append('export ' + key +'="' + str(value) + '"')
+
+    return '\n'.join(env_strings)
+
 def pnpm_task_binary_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
+    env_file = ctx.actions.write(".env", dict_to_env_string(ctx.attrs.env), is_executable = True)
+
     script = ctx.actions.write("pnpm-run.sh", """\
 #!/usr/bin/env bash
 set -euo pipefail
@@ -1040,21 +1051,33 @@ set -euo pipefail
 rootpath="$(git rev-parse --show-toplevel)"
 install_node_modules="$1"
 npm_package_path="$2"
-npm_run_command="$3"
+env_file="$3"
+npm_run_command="$4"
 
 cd "$rootpath/$npm_package_path"
 if [ "$install_node_modules" = "True" ]; then
     pnpm install --frozen-lockfile
 fi
-if [ "${*:4}" ]; then
-    exec pnpm run --report-summary "$npm_run_command" -- "${@:4}"
+
+source "$env_file"
+
+if [ "${*:5}" ]; then
+    exec pnpm run --report-summary "$npm_run_command" -- "${@:5}"
 else
     exec pnpm run --report-summary "$npm_run_command"
 fi
 """, is_executable = True)
-    args = cmd_args([script, str(ctx.attrs.local_node_modules), ctx.label.package, ctx.attrs.command])
+
+    args = cmd_args([
+        script,
+        str(ctx.attrs.local_node_modules),
+        ctx.label.package,
+        env_file,
+        ctx.attrs.command
+    ])
     args.hidden([ctx.attrs.deps])
     args.hidden([ctx.attrs.srcs])
+
     return [DefaultInfo(), RunInfo(args = args)]
 
 dev_pnpm_task_binary = rule(impl = pnpm_task_binary_impl, attrs = {
@@ -1062,6 +1085,13 @@ dev_pnpm_task_binary = rule(impl = pnpm_task_binary_impl, attrs = {
     "local_node_modules": attrs.bool(default = True, doc = """Need to run pnpm install first?"""),
     "srcs": attrs.list(attrs.source(), default = [], doc = """List of sources we require"""),
     "deps": attrs.list(attrs.source(), default = [], doc = """List of dependencies we require"""),
+    "env": attrs.dict(
+        key = attrs.string(),
+        value = attrs.arg(),
+        sorted = False,
+        default = {},
+        doc = """Env values to inject for pnpm command run"""
+    ),
 })
 
 def pnpm_task_test_impl(ctx: AnalysisContext) -> list[[DefaultInfo, ExternalRunnerTestInfo]]:

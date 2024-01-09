@@ -1,24 +1,16 @@
 #!/usr/bin/env bats
 
-load "helpers/setup-and-teardown"
-load "helpers/ln"
+load "../../helpers/_common.bash"
+load "../../helpers/cli.bash"
+load "../../helpers/ledger.bash"
+load "../../helpers/ln.bash"
+load "../../helpers/user.bash"
+
 
 setup_file() {
   clear_cache
 
-  bitcoind_init
-  start_trigger
-  start_server
-  start_exporter
-
-  lnds_init
-  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
-}
-
-teardown_file() {
-  stop_trigger
-  stop_server
-  stop_exporter
+  create_user 'alice'
 }
 
 teardown() {
@@ -27,12 +19,12 @@ teardown() {
   fi
 }
 
-no_pending_lnd1_channels() {
-  pending_channel="$(lnd_cli pendingchannels | jq -r '.pending_open_channels[0]')"
-  if [[ "$pending_channel" != "null" ]]; then
-    bitcoin_cli -generate 6
-    exit 1
-  fi
+teardown_file() {
+  ./dev/bin/init-lightning.sh
+}
+
+run_cron() {
+  buck2 run //core/api:dev-cron > .e2e-cron.log
 }
 
 wait_for_bria_hot_balance_at_least() {
@@ -43,12 +35,30 @@ wait_for_bria_hot_balance_at_least() {
     | jq -r '.effectiveSettled'
   )
 
-  [[ "$amount" -lt "$bria_settled_hot_balance" ]] || return 1
+  [[ "$amount" -le "$bria_settled_hot_balance" ]] || return 1
+}
+
+mempool_not_empty() {
+  local txid="$(bitcoin_cli getrawmempool | jq -r ".[0]")"
+  [[ "$txid" != "null" ]] || exit 1
+}
+
+no_pending_lnd1_channels() {
+  pending_channel="$(lnd_cli pendingchannels | jq -r '.pending_open_channels[0]')"
+  if [[ "$pending_channel" != "null" ]]; then
+    bitcoin_cli -generate 6
+    exit 1
+  fi
+}
+
+synced_to_graph() {
+  lnd_cli_value="$1"
+  is_synced="$(run_with_lnd $lnd_cli_value getinfo | jq -r '.synced_to_graph')"
+  [[ "$is_synced" == "true" ]] || return 1
 }
 
 @test "cron: rebalance hot to cold storage" {
-  login_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
-  token_name="$ALICE_TOKEN_NAME"
+  token_name='alice'
   btc_wallet_name="$token_name.btc_wallet_id"
 
   # Create address
@@ -67,7 +77,7 @@ wait_for_bria_hot_balance_at_least() {
 
   local key1="tpubDEaDfeS1EXpqLVASNCW7qAHW1TFPBpk2Z39gUXjFnsfctomZ7N8iDpy6RuGwqdXAAZ5sr5kQZrxyuEn15tqPJjM4mcPSuXzV27AWRD3p9Q4"
   local key2="tpubDEPCxBfMFRNdfJaUeoTmepLJ6ZQmeTiU1Sko2sdx1R3tmPpZemRUjdAHqtmLfaVrBg1NBx2Yx3cVrsZ2FTyBuhiH9mPSL5ozkaTh1iZUTZx"
-  
+
   bria_cli import-xpub -x "${key1}" -n cold-key1 -d m/48h/1h/0h/2h || true
   bria_cli import-xpub -x "${key2}" -n cold-key2 -d m/48h/1h/0h/2h || true
   bria_cli create-wallet -n cold sorted-multisig -x cold-key1 cold-key2 -t 1 || true
@@ -99,11 +109,8 @@ wait_for_bria_hot_balance_at_least() {
 }
 
 @test "cron: rebalance internal channels" {
-  # NOTE: Not an idempotent test because we haven't implemented accounting for
-  #       closing channels initiated from internal lnds as yet.
-
   # Get onchain funds into lnd1
-  token_name="$ALICE_TOKEN_NAME"
+  token_name='alice'
   btc_wallet_name="$token_name.btc_wallet_id"
 
   variables=$(
@@ -133,6 +140,8 @@ wait_for_bria_hot_balance_at_least() {
   local local_amount="500000"
   lnd2_local_pubkey="$(lnd2_cli getinfo | jq -r '.identity_pubkey')"
   lnd_cli connect "${lnd2_local_pubkey}@${COMPOSE_PROJECT_NAME}-lnd2-1:9735" || true
+  retry 10 1 synced_to_graph lnd_cli
+  retry 5 1 synced_to_graph lnd2_cli
   opened=$(
     lnd_cli openchannel \
       --node_key "$lnd2_local_pubkey" \

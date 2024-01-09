@@ -12,6 +12,14 @@ lnd_cli() {
       $@
 }
 
+lnd2_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-lnd2-1" \
+    lncli \
+      --macaroonpath /root/.lnd/admin.macaroon \
+      --tlscertpath /root/.lnd/tls.cert \
+      $@
+}
+
 lnd_outside_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-lnd-outside-1-1" \
     lncli \
