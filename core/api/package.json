@@ -28,7 +28,8 @@
     "dev:api": "tsx src/servers/graphql-main-server.ts",
     "dev:api-trigger": "tsx src/servers/trigger.ts",
     "dev:api-exporter": "tsx src/servers/exporter.ts",
-    "dev:api-ws-server": "tsx src/servers/ws-server.ts"
+    "dev:api-ws-server": "tsx src/servers/ws-server.ts",
+    "dev:cron": "tsx src/servers/cron.ts"
   },
   "engines": {
     "node": "20"
