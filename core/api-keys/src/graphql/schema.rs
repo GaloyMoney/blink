@@ -10,16 +10,14 @@ pub struct AuthSubject {
 
 #[derive(Clone, Copy)]
 pub struct Timestamp(DateTime<Utc>);
-
 impl From<DateTime<Utc>> for Timestamp {
     fn from(dt: DateTime<Utc>) -> Self {
         Timestamp(dt)
     }
 }
-
-impl Into<DateTime<Utc>> for Timestamp {
-    fn into(self) -> DateTime<Utc> {
-        self.0
+impl From<Timestamp> for DateTime<Utc> {
+    fn from(Timestamp(dt): Timestamp) -> Self {
+        dt
     }
 }
 
