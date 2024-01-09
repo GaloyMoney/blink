@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): move invoices bats tests (#3800)'
-      sha: 4afff9ada2c07bf8e5d25c0388632b3e8562bfdd
+      commitTitle: 'ci: complete component ci (#3804)'
+      sha: 2eec9260b6a1e9ce71320299eb410b4e7235d857
       tags:
-      - 0.19.28-3-g4afff9ada
+      - 0.19.28-10-g2eec9260b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): move invoices bats tests (#3800)'
-      sha: 4afff9ada2c07bf8e5d25c0388632b3e8562bfdd
+      commitTitle: 'ci: complete component ci (#3804)'
+      sha: 2eec9260b6a1e9ce71320299eb410b4e7235d857
       tags:
-      - 0.19.28-3-g4afff9ada
+      - 0.19.28-10-g2eec9260b
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(core): move invoices bats tests (#3800)'
-      sha: 4afff9ada2c07bf8e5d25c0388632b3e8562bfdd
+      commitTitle: 'ci: complete component ci (#3804)'
+      sha: 2eec9260b6a1e9ce71320299eb410b4e7235d857
       tags:
-      - 0.19.28-3-g4afff9ada
+      - 0.19.28-10-g2eec9260b
     path: ./
   path: ./graphql
 kind: LockConfig
