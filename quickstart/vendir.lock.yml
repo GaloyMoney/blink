@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: complete component ci (#3804)'
-      sha: 2eec9260b6a1e9ce71320299eb410b4e7235d857
+      commitTitle: 'fix: env variables issue with ''dev_pnpm_task_binary'' bats rule
+        (#3805)...'
+      sha: 44757971fa92779f5811ee7f3a921568405f48b3
       tags:
-      - 0.19.28-10-g2eec9260b
+      - 0.19.28-15-g44757971f
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: complete component ci (#3804)'
-      sha: 2eec9260b6a1e9ce71320299eb410b4e7235d857
+      commitTitle: 'fix: env variables issue with ''dev_pnpm_task_binary'' bats rule
+        (#3805)...'
+      sha: 44757971fa92779f5811ee7f3a921568405f48b3
       tags:
-      - 0.19.28-10-g2eec9260b
+      - 0.19.28-15-g44757971f
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: complete component ci (#3804)'
-      sha: 2eec9260b6a1e9ce71320299eb410b4e7235d857
+      commitTitle: 'fix: env variables issue with ''dev_pnpm_task_binary'' bats rule
+        (#3805)...'
+      sha: 44757971fa92779f5811ee7f3a921568405f48b3
       tags:
-      - 0.19.28-10-g2eec9260b
+      - 0.19.29
     path: ./
   path: ./graphql
 kind: LockConfig
