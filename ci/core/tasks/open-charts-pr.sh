@@ -40,7 +40,7 @@ for commit in $(git log --format="%H" ${old_ref}..${ref}); do
   changed_files=$(git diff-tree --no-commit-id --name-only -r $commit)
 
   for file in ${changed_files[@]}; do
-    if [[ " ${app_src_files[*]} " == *"$file"* ]]; then
+    if printf '%s\n' "${app_src_files[@]}" | grep -Fxq "$file"; then
       relevant_commits+=($commit)
       break
     fi
