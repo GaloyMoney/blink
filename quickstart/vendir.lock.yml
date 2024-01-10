@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): move admin bats tests (#3790)...'
-      sha: 1b90a051813e6deb77b8cb213cfe042e481f5f89
+      commitTitle: 'refactor(core): change debug script to create usd wallet for locked
+        accounts (#3810)'
+      sha: d79c72c7070ff55b4e6668a63468524ef38d55c4
       tags:
-      - 0.19.34-2-g1b90a0518
+      - 0.19.35-2-gd79c72c70
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): move admin bats tests (#3790)...'
-      sha: 1b90a051813e6deb77b8cb213cfe042e481f5f89
+      commitTitle: 'refactor(core): change debug script to create usd wallet for locked
+        accounts (#3810)'
+      sha: d79c72c7070ff55b4e6668a63468524ef38d55c4
       tags:
-      - 0.19.34-2-g1b90a0518
+      - 0.19.35-2-gd79c72c70
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(core): move admin bats tests (#3790)...'
-      sha: 1b90a051813e6deb77b8cb213cfe042e481f5f89
+      commitTitle: 'refactor(core): change debug script to create usd wallet for locked
+        accounts (#3810)'
+      sha: d79c72c7070ff55b4e6668a63468524ef38d55c4
       tags:
-      - 0.19.35
+      - 0.19.36
     path: ./
   path: ./graphql
 kind: LockConfig
