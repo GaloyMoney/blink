@@ -4,7 +4,7 @@ import { WalletCurrency } from "@/domain/shared"
 export const createMockWalletInvoice = (recipientWalletDescriptor: {
   currency: WalletCurrency
   id: WalletId
-}) => {
+}): WalletInvoice => {
   return {
     ...getSecretAndPaymentHash(),
     selfGenerated: false,
