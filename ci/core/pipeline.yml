@@ -16,7 +16,10 @@
 #@   "build_edge_image",
 #@   "build_edge_image_name",
 #@   "component_edge_image",
-#@   "task_image_config")
+#@   "task_image_config",
+#@   "sync_proto",
+#@   "sync_proto_name")
+
 
 #@ def release_pipeline_image():
 #@   return data.values.docker_registry + "/release-pipeline"
@@ -31,6 +34,8 @@ source:
 #@ end
 
 #@ components = ["api-keys", "notifications"]
+
+#@ proto_sync_targets = [ "stablesats", "price-history", "price-realtime", "bria-api" ]
 
 groups:
 - name: core-bundle
@@ -54,6 +59,9 @@ groups:
   - #@ component_bats_tests_name(component)
   - #@ build_edge_image_name(component)
   - #@ bump_image_in_chart_name(component)
+#@ end
+#@ for target in proto_sync_targets:
+  - #@ sync_proto_name(target)
 #@ end
 
 jobs:
@@ -263,6 +271,10 @@ jobs:
     params:
           repository: repo
           rebase: true
+
+#@ for target in proto_sync_targets:
+- #@ sync_proto(target)
+#@ end
 
 resources:
 #@ for component in components:
