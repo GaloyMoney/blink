@@ -28,7 +28,7 @@ export const kratosInitiateTotp = async (token: AuthToken) => {
       .text as TotpSecret
     return { totpSecret, totpRegistrationId: res.data.id as TotpRegistrationId }
   } catch (err) {
-    return new UnknownKratosError(err)
+    return handleKratosErrors(err)
   }
 }
 
@@ -56,7 +56,6 @@ export const kratosValidateTotp = async ({
         return new LikelyBadCoreError()
       }
     }
-    console.log(err, "err123")
 
     return new UnknownKratosError(err)
   }
@@ -87,15 +86,7 @@ export const kratosElevatingSessionWithTotp = async ({
       xSessionToken: authToken,
     })
   } catch (err) {
-    if (err instanceof Error && err.message === "Request failed with status code 400") {
-      return new LikelyNoUserWithThisPhoneExistError(err.message)
-    }
-
-    if (err instanceof Error && err.message === "Request failed with status code 401") {
-      return new AuthenticationKratosError(err.message)
-    }
-
-    return new UnknownKratosError(err)
+    return handleKratosErrors(err)
   }
 
   return true
@@ -113,3 +104,24 @@ export const kratosRemoveTotp = async (userId: UserId) => {
     return new UnknownKratosError(err)
   }
 }
+
+const handleKratosErrors = (err: Error | unknown) => {
+  if (!(err instanceof Error)) {
+    return new UnknownKratosError(err)
+  }
+
+  const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(err.message)
+  switch (true) {
+    case match(KnownKratosErrorDetails.BadRequestError):
+      return new LikelyNoUserWithThisPhoneExistError(err.message)
+    case match(KnownKratosErrorDetails.UnauthorizedError):
+      return new AuthenticationKratosError(err.message)
+    default:
+      return new UnknownKratosError(err.message)
+  }
+}
+
+const KnownKratosErrorDetails = {
+  BadRequestError: /Request failed with status code 400/,
+  UnauthorizedError: /Request failed with status code 401/,
+} as const

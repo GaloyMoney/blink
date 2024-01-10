@@ -1,3 +1,5 @@
+import knex from "knex"
+
 import { Configuration, FrontendApi, IdentityApi } from "@ory/client"
 
 import {
@@ -12,7 +14,7 @@ import { SchemaIdType } from "./schema"
 import { ErrorLevel } from "@/domain/shared"
 import { recordExceptionInCurrentSpan } from "@/services/tracing"
 
-import { KRATOS_ADMIN_API, KRATOS_PUBLIC_API } from "@/config"
+import { KRATOS_ADMIN_API, KRATOS_PG_CON, KRATOS_PUBLIC_API } from "@/config"
 
 export const kratosPublic = new FrontendApi(
   new Configuration({ basePath: KRATOS_PUBLIC_API }),
@@ -21,6 +23,12 @@ export const kratosPublic = new FrontendApi(
 export const kratosAdmin = new IdentityApi(
   new Configuration({ basePath: KRATOS_ADMIN_API }),
 )
+
+export const getKratosPostgres = () =>
+  knex({
+    client: "pg",
+    connection: KRATOS_PG_CON,
+  })
 
 export const toDomainSession = (session: KratosSession): Session => {
   // is throw ok? this should not happen I (nb) believe but the type say it can
