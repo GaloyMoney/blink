@@ -2,6 +2,8 @@ export const parseErrorMessageFromUnknown = (error: unknown): string => {
   const errMsg =
     error instanceof Error
       ? error.message
+        ? error.message
+        : error.name
       : typeof error === "string"
         ? error
         : error instanceof Object

@@ -1,12 +1,12 @@
 import { Identity as KratosIdentity } from "@ory/client"
 
-import { KratosError, UnknownKratosError } from "./errors"
-import { kratosAdmin, toDomainIdentity } from "./private"
+import { recordExceptionInCurrentSpan } from "../tracing"
 
-import { AuthWithPhonePasswordlessService } from "./auth-phone-no-password"
-import { AuthWithEmailPasswordlessService } from "./auth-email-no-password"
+import { KratosError, UnknownKratosError } from "./errors"
+import { getKratosPostgres, kratosAdmin, toDomainIdentity } from "./private"
 
 import { IdentifierNotFoundError } from "@/domain/authentication/errors"
+import { ErrorLevel } from "@/domain/shared"
 
 export const IdentityRepository = (): IIdentityRepository => {
   const getIdentity = async (
@@ -68,11 +68,45 @@ export const IdentityRepository = (): IIdentityRepository => {
     }
   }
 
+  const getUserIdFromFlowId = async (flowId: string): Promise<UserId | KratosError> => {
+    const kratosDbConnection = getKratosPostgres()
+    const table = "selfservice_recovery_flows"
+
+    try {
+      const res = await kratosDbConnection
+        .select(["id", "recovered_identity_id"])
+        .from(table)
+        .where({ id: flowId })
+
+      await kratosDbConnection.destroy()
+
+      if (res.length === 0) {
+        return new UnknownKratosError(`no identity for flow ${flowId}`)
+      }
+
+      return res[0].recovered_identity_id as UserId
+    } catch (err) {
+      if (err instanceof AggregateError && err.errors.length) {
+        for (const individualError of err.errors.slice(1)) {
+          recordExceptionInCurrentSpan({
+            error: new UnknownKratosError(individualError),
+            level: ErrorLevel.Critical,
+          })
+        }
+
+        return new UnknownKratosError(err.errors[0])
+      }
+
+      return new UnknownKratosError(err)
+    }
+  }
+
   return {
     getIdentity,
     listIdentities,
-    getUserIdFromIdentifier,
     deleteIdentity,
+    getUserIdFromIdentifier,
+    getUserIdFromFlowId,
   }
 }
 
@@ -88,34 +122,4 @@ export const getNextPageToken = (link: string): string | undefined => {
   }
 
   return undefined
-}
-
-export const getAuthTokenFromUserId = async (
-  userId: UserId,
-): Promise<AuthToken | AuthenticationError> => {
-  const { data } = await kratosAdmin.getIdentity({ id: userId })
-  let kratosResult:
-    | IAuthWithEmailPasswordlessService
-    | LoginWithPhoneNoPasswordSchemaResponse
-    | KratosError
-    | null = null
-
-  const phone = data?.traits?.phone
-  const email = data?.traits?.email
-
-  if (phone) {
-    const authService = AuthWithPhonePasswordlessService()
-    kratosResult = await authService.loginToken({ phone })
-  } else if (email) {
-    const emailAuthService = AuthWithEmailPasswordlessService()
-    kratosResult = await emailAuthService.loginToken({ email })
-  } else {
-    return new IdentifierNotFoundError()
-  }
-
-  if (kratosResult instanceof Error) {
-    return kratosResult
-  }
-
-  return kratosResult?.authToken
 }
