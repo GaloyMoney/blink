@@ -4,4 +4,5 @@
 mod account_notification_settings;
 mod app;
 mod cli;
+pub mod graphql;
 mod primitives;

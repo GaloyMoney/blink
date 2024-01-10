@@ -46,6 +46,7 @@ rust_library(
     edition = "2021",
     deps = [
         "//lib/tracing-rs:tracing",
+        "//lib/es-entity-rs:es-entity",
         "//third-party/rust:tokio",
         "//third-party/rust:anyhow",
         "//third-party/rust:async-graphql",
@@ -53,6 +54,7 @@ rust_library(
         "//third-party/rust:axum",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:clap",
+        "//third-party/rust:derive_builder",
         "//third-party/rust:reqwest",
         "//third-party/rust:serde",
         "//third-party/rust:serde_yaml",
@@ -88,6 +90,7 @@ rust_test(
     crate_root = "src/lib.rs",
     deps = [
         "//lib/tracing-rs:tracing",
+        "//lib/es-entity-rs:es-entity",
         "//third-party/rust:tokio",
         "//third-party/rust:anyhow",
         "//third-party/rust:async-graphql",
@@ -95,6 +98,7 @@ rust_test(
         "//third-party/rust:axum",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:clap",
+        "//third-party/rust:derive_builder",
         "//third-party/rust:reqwest",
         "//third-party/rust:serde",
         "//third-party/rust:serde_yaml",
