@@ -19,7 +19,7 @@ path = "top/main.rs"
 # List of packages to be imported, with version constraints, features and all
 # options Cargo supports.
 [dependencies]
-anyhow = "1.0.75"
+anyhow = "1.0.79"
 async-graphql = { version = "6.0.11", default-features = false, features = ["tracing", "chrono", "playground"] }
 async-graphql-axum = "6.0.9"
 axum = { version = "0.6.20", features = ["headers", "macros"] }
@@ -29,7 +29,7 @@ tokio = { version = "1.33.0", features = ["full"] }
 serde = { version = "1.0.158", features = ["derive"] }
 reqwest = { version = "0.11.23", default-features = false, features = ["json", "rustls-tls"] }
 thiserror = "1.0.49"
-serde_yaml = "0.9.25"
+serde_yaml = "0.9.30"
 serde_json = "1.0.107"
 chrono = { version = "0.4.28", features = ["clock", "serde"], default-features = false }
 sqlx = { version = "0.7.2", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono"] }
@@ -37,7 +37,7 @@ rand = "0.8.5"
 uuid = { version = "1.4.1", features = ["serde", "v4"] }
 serde_with = "3.3.0"
 tracing = "0.1.37"
-tracing-subscriber = { version = "0.3.16", features = ["env-filter", "json"] }
+tracing-subscriber = { version = "0.3.18", features = ["env-filter", "json"] }
 tracing-opentelemetry = "0.20.0"
 opentelemetry-otlp = { version = "0.13.0", features = ["http-proto", "reqwest-client"] }
 opentelemetry = { version = "0.20.0", features = ["trace", "rt-tokio"]}
