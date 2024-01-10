@@ -232,7 +232,16 @@ plan:
 name: #@ component_src_resource_name("api")
 type: git
 source:
-  ignore_paths: ["ci/*[^md]"]
+  ignore_paths:
+  - "ci/*[^md]"
+  - third-party/rust/
+  - third-party/rust/*
+  - third-party/rust/**/*
+  - Cargo.lock
+  - Cargo.toml
+  - lib/*-rs/
+  - lib/*-rs/*
+  - lib/*-rs/**/*
   fetch_tags: true
   uri: #@ data.values.git_uri
   branch: #@ data.values.git_branch
