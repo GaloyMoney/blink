@@ -125,7 +125,7 @@ rustfmt_check(
 
 clippy_check(
     name = "check-lint-rust-lib",
-    clippy_txt_dep = ":lib-api-keys[clippy.txt]",
+    clippy_txt_dep = ":lib-notifications[clippy.txt]",
 )
 
 test_suite(

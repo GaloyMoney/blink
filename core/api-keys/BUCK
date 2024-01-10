@@ -46,6 +46,7 @@ rust_library(
     edition = "2021",
     deps = [
         "//lib/tracing-rs:tracing",
+        "//lib/es-entity-rs:es-entity",
         "//third-party/rust:tokio",
         "//third-party/rust:anyhow",
         "//third-party/rust:async-graphql",

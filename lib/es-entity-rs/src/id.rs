@@ -2,6 +2,7 @@
 macro_rules! entity_id {
     ($name:ident) => {
         #[derive(
+            sqlx::Type,
             Debug,
             Clone,
             Copy,
@@ -10,7 +11,6 @@ macro_rules! entity_id {
             PartialOrd,
             Ord,
             Hash,
-            sqlx::Type,
             serde::Deserialize,
             serde::Serialize,
         )]
@@ -18,8 +18,8 @@ macro_rules! entity_id {
         #[sqlx(transparent)]
         pub struct $name(uuid::Uuid);
 
-        #[allow(clippy::new_without_default)]
         impl $name {
+            #[allow(clippy::new_without_default)]
             pub fn new() -> Self {
                 uuid::Uuid::new_v4().into()
             }
@@ -33,6 +33,12 @@ macro_rules! entity_id {
 
         impl From<$name> for uuid::Uuid {
             fn from(id: $name) -> Self {
+                id.0
+            }
+        }
+
+        impl From<&$name> for uuid::Uuid {
+            fn from(id: &$name) -> Self {
                 id.0
             }
         }

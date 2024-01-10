@@ -16,6 +16,7 @@ fail-on-warnings = []
 
 [dependencies]
 tracing = { path = "../../lib/tracing-rs" }
+es-entity = { path = "../../lib/es-entity-rs" }
 
 anyhow = { workspace = true }
 async-graphql = { workspace = true }

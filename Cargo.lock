@@ -134,6 +134,7 @@ dependencies = [
  "axum",
  "chrono",
  "clap",
+ "es-entity",
  "jsonwebtoken",
  "rand",
  "reqwest",
@@ -776,8 +777,11 @@ name = "es-entity"
 version = "0.1.0"
 dependencies = [
  "derive_builder",
+ "serde",
  "serde_json",
+ "sqlx",
  "thiserror",
+ "uuid",
 ]
 
 [[package]]

@@ -5,6 +5,9 @@ rust_library(
         "//third-party/rust:thiserror",
         "//third-party/rust:derive_builder",
         "//third-party/rust:serde_json",
+        "//third-party/rust:serde",
+        "//third-party/rust:sqlx",
+        "//third-party/rust:uuid",
     ],
     srcs = glob(["src/**/*.rs"]),
     env = {

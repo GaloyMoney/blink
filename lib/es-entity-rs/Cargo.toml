@@ -11,3 +11,6 @@ fail-on-warnings = []
 thiserror = { workspace = true }
 derive_builder = { workspace = true }
 serde_json = { workspace = true }
+serde = { workspace = true }
+uuid = { workspace = true }
+sqlx = { workspace = true }

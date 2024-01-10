@@ -7,8 +7,8 @@ use std::sync::Arc;
 
 pub use error::*;
 
-crate::entity_id! { IdentityApiKeyId }
-crate::entity_id! { IdentityId }
+es_entity::entity_id! { IdentityApiKeyId }
+es_entity::entity_id! { IdentityId }
 
 #[derive(Debug)]
 pub struct IdentityApiKey {
