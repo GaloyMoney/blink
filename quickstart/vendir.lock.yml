@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): add preimage for txs initiated via ln but settle intraledger
-        (#3777)...'
-      sha: 566f2a2d84f1ed9ae71f2a18040367949f490ca2
+      commitTitle: 'feat(dashboard): update csv schema in batch payments (#3789)...'
+      sha: 5a379157eb86cba9d924e6b4f34b97694f02403f
       tags:
-      - 0.19.29-4-g566f2a2d8
+      - 0.19.30-2-g5a379157e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): add preimage for txs initiated via ln but settle intraledger
-        (#3777)...'
-      sha: 566f2a2d84f1ed9ae71f2a18040367949f490ca2
+      commitTitle: 'feat(dashboard): update csv schema in batch payments (#3789)...'
+      sha: 5a379157eb86cba9d924e6b4f34b97694f02403f
       tags:
-      - 0.19.29-4-g566f2a2d8
+      - 0.19.30-2-g5a379157e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(core): add preimage for txs initiated via ln but settle intraledger
-        (#3777)...'
-      sha: 566f2a2d84f1ed9ae71f2a18040367949f490ca2
+      commitTitle: 'feat(dashboard): update csv schema in batch payments (#3789)...'
+      sha: 5a379157eb86cba9d924e6b4f34b97694f02403f
       tags:
-      - 0.19.29-4-g566f2a2d8
+      - 0.19.30-2-g5a379157e
     path: ./
   path: ./graphql
 kind: LockConfig
