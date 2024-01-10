@@ -24,6 +24,7 @@ supergraph(
   config = "config/apollo-federation/supergraph-config.yaml",
   subgraphs = {
     "API_KEYS_SCHEMA": "//core/api-keys:sdl",
+    "NOTIFICATIONS_SCHEMA": "//core/notifications:sdl",
     "PUBLIC_SCHEMA": "//core/api:public-sdl",
   },
 )
@@ -41,6 +42,7 @@ test_suite(
         "//core/api:public-schema-diff",
         "//core/api:admin-schema-diff",
         "//core/api-keys:schema-diff",
+        "//core/notifications:schema-diff",
     ],
 )
 

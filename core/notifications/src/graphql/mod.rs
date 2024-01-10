@@ -7,8 +7,8 @@ pub use schema::*;
 
 use crate::app::NotificationsApp;
 
-pub fn schema(app: Option<NotificationsApp>) -> Schema<Query, EmptyMutation, EmptySubscription> {
-    let schema = Schema::build(Query, EmptyMutation, EmptySubscription);
+pub fn schema(app: Option<NotificationsApp>) -> Schema<Query, Mutation, EmptySubscription> {
+    let schema = Schema::build(Query, Mutation, EmptySubscription);
     if let Some(app) = app {
         schema.data(app).finish()
     } else {

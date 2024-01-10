@@ -87,6 +87,12 @@ input AccountDisableNotificationChannelInput
   channel: NotificationChannel!
 }
 
+input AccountDisableNotificationChannelInputAlt
+  @join__type(graph: NOTIFICATIONS)
+{
+  channel: String!
+}
+
 input AccountEnableNotificationCategoryInput
   @join__type(graph: PUBLIC)
 {
@@ -169,6 +175,12 @@ type AccountUpdateNotificationSettingsPayload
 {
   account: ConsumerAccount
   errors: [Error!]!
+}
+
+type AccountUpdateNotificationSettingsPayloadAlt
+  @join__type(graph: NOTIFICATIONS)
+{
+  dummy: String!
 }
 
 type ApiKey
@@ -368,18 +380,20 @@ type CentAmountPayload
 
 type ConsumerAccount implements Account
   @join__implements(graph: PUBLIC, interface: "Account")
+  @join__type(graph: NOTIFICATIONS, key: "id", extension: true)
   @join__type(graph: PUBLIC)
 {
-  callbackEndpoints: [CallbackEndpoint!]!
+  id: ID!
+  notificationSettingsAlt: NotificationSettingsAlt! @join__field(graph: NOTIFICATIONS)
+  callbackEndpoints: [CallbackEndpoint!]! @join__field(graph: PUBLIC)
 
   """
   return CSV stream, base64 encoded, of the list of transactions in the wallet
   """
-  csvTransactions(walletIds: [WalletId!]!): String!
-  defaultWallet: PublicWallet!
-  defaultWalletId: WalletId!
-  displayCurrency: DisplayCurrency!
-  id: ID!
+  csvTransactions(walletIds: [WalletId!]!): String! @join__field(graph: PUBLIC)
+  defaultWallet: PublicWallet! @join__field(graph: PUBLIC)
+  defaultWalletId: WalletId! @join__field(graph: PUBLIC)
+  displayCurrency: DisplayCurrency! @join__field(graph: PUBLIC)
 
   """A list of all invoices associated with walletIds optionally passed."""
   invoices(
@@ -395,15 +409,15 @@ type ConsumerAccount implements Account
     """Returns the last n items from the list."""
     last: Int
     walletIds: [WalletId]
-  ): InvoiceConnection
-  level: AccountLevel!
-  limits: AccountLimits!
-  notificationSettings: NotificationSettings!
-  pendingIncomingTransactions(walletIds: [WalletId]): [Transaction!]!
+  ): InvoiceConnection @join__field(graph: PUBLIC)
+  level: AccountLevel! @join__field(graph: PUBLIC)
+  limits: AccountLimits! @join__field(graph: PUBLIC)
+  notificationSettings: NotificationSettings! @join__field(graph: PUBLIC)
+  pendingIncomingTransactions(walletIds: [WalletId]): [Transaction!]! @join__field(graph: PUBLIC)
 
   """List the quiz questions of the consumer account"""
-  quiz: [Quiz!]!
-  realtimePrice: RealtimePrice!
+  quiz: [Quiz!]! @join__field(graph: PUBLIC)
+  realtimePrice: RealtimePrice! @join__field(graph: PUBLIC)
 
   """
   A list of all transactions associated with walletIds optionally passed.
@@ -421,9 +435,9 @@ type ConsumerAccount implements Account
     """Returns the last n items from the list."""
     last: Int
     walletIds: [WalletId]
-  ): TransactionConnection
-  walletById(walletId: WalletId!): Wallet!
-  wallets: [Wallet!]!
+  ): TransactionConnection @join__field(graph: PUBLIC)
+  walletById(walletId: WalletId!): Wallet! @join__field(graph: PUBLIC)
+  wallets: [Wallet!]! @join__field(graph: PUBLIC)
 }
 
 """
@@ -703,6 +717,7 @@ scalar join__FieldSet
 
 enum join__Graph {
   API_KEYS @join__graph(name: "api_keys", url: "http://bats-tests:5397/graphql")
+  NOTIFICATIONS @join__graph(name: "notifications", url: "http://bats-tests:5399/graphql")
   PUBLIC @join__graph(name: "public", url: "http://bats-tests:4012/graphql")
 }
 
@@ -1048,10 +1063,12 @@ type MobileVersions
 
 type Mutation
   @join__type(graph: API_KEYS)
+  @join__type(graph: NOTIFICATIONS)
   @join__type(graph: PUBLIC)
 {
   apiKeyCreate(input: ApiKeyCreateInput!): ApiKeyCreatePayload! @join__field(graph: API_KEYS)
   apiKeyRevoke(input: ApiKeyRevokeInput!): ApiKeyRevokePayload! @join__field(graph: API_KEYS)
+  accountDisableNotificationChannelAlt(input: AccountDisableNotificationChannelInputAlt!): AccountUpdateNotificationSettingsPayloadAlt! @join__field(graph: NOTIFICATIONS)
   accountDelete: AccountDeletePayload! @join__field(graph: PUBLIC)
   accountDisableNotificationCategory(input: AccountDisableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
   accountDisableNotificationChannel(input: AccountDisableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
@@ -1224,6 +1241,12 @@ type NotificationSettings
   @join__type(graph: PUBLIC)
 {
   push: NotificationChannelSettings!
+}
+
+type NotificationSettingsAlt
+  @join__type(graph: NOTIFICATIONS)
+{
+  hello: String!
 }
 
 """An address for an on-chain bitcoin destination"""
@@ -1496,6 +1519,7 @@ type PublicWallet
 
 type Query
   @join__type(graph: API_KEYS)
+  @join__type(graph: NOTIFICATIONS)
   @join__type(graph: PUBLIC)
 {
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet! @join__field(graph: PUBLIC)
