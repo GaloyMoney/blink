@@ -23,7 +23,7 @@ jobs:
           ${{ toJSON(github.event.pull_request.labels.*.name) }}
           EOF
 
-          DEFAULT_LABELS=("dashboard" "consent" "pay" "core", "api-keys")
+          DEFAULT_LABELS=("dashboard" "consent" "pay" "core", "api-keys", "notfications")
           LABELS=($(jq -r '.[]' < labels.json))
           if [ ${#LABELS[@]} -eq 0 ]; then
               LABELS=("${DEFAULT_LABELS[@]}")
@@ -37,7 +37,7 @@ jobs:
               core)
                 ARGS+=" //core/api:test"
                 ;;
-              api-keys)
+              api-keys|notifications)
                 ARGS+=" //core/$LABEL:test"
                 ;;
             esac

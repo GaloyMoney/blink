@@ -31,3 +31,9 @@ api-keys:
   - core/api-keys/*
   - flake.lock
   - Cargo.lock
+
+notifications:
+  - third-party/rust/*
+  - core/notifications/*
+  - flake.lock
+  - Cargo.lock

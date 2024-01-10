@@ -1,0 +1,16 @@
+[package]
+name = "es-entity"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+
+fail-on-warnings = []
+
+[dependencies]
+thiserror = { workspace = true }
+derive_builder = { workspace = true }
+serde_json = { workspace = true }
+serde = { workspace = true }
+uuid = { workspace = true }
+sqlx = { workspace = true }

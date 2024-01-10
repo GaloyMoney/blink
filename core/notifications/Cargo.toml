@@ -1,10 +1,10 @@
 [package]
-name = "api-keys"
+name = "notifications"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "lib_api_keys"
+name = "lib_notifications"
 
 [[bin]]
 name = "write_sdl"
@@ -16,7 +16,6 @@ fail-on-warnings = []
 
 [dependencies]
 tracing = { path = "../../lib/tracing-rs" }
-es-entity = { path = "../../lib/es-entity-rs" }
 
 anyhow = { workspace = true }
 async-graphql = { workspace = true }

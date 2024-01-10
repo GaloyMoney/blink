@@ -25,28 +25,27 @@ rust_binary(
     crate_root = "src/bin/write_sdl.rs",
     srcs = glob(["src/**/*.rs"]),
     deps = [
-        ":lib-api-keys",
+        ":lib-notifications",
         "//third-party/rust:async-graphql",
     ],
 )
 
 rust_binary(
-    name = "api-keys",
+    name = "notifications",
     edition = "2021",
     srcs = glob(["src/**/*.rs"]),
     deps = [
-        ":lib-api-keys",
+        ":lib-notifications",
         "//third-party/rust:tokio",
         "//third-party/rust:anyhow",
     ],
 )
 
 rust_library(
-    name = "lib-api-keys",
+    name = "lib-notifications",
     edition = "2021",
     deps = [
         "//lib/tracing-rs:tracing",
-        "//lib/es-entity-rs:es-entity",
         "//third-party/rust:tokio",
         "//third-party/rust:anyhow",
         "//third-party/rust:async-graphql",
@@ -69,7 +68,7 @@ rust_library(
       "src/**/*.rs",
       ".sqlx/*",
       "migrations/*",
-      "api-keys.yml"
+      "notifications.yml"
     ]),
     env = {
         "CARGO_MANIFEST_DIR": ".",
@@ -89,7 +88,6 @@ rust_test(
     crate_root = "src/lib.rs",
     deps = [
         "//lib/tracing-rs:tracing",
-        "//lib/es-entity-rs:es-entity",
         "//third-party/rust:tokio",
         "//third-party/rust:anyhow",
         "//third-party/rust:async-graphql",
@@ -127,7 +125,7 @@ rustfmt_check(
 
 clippy_check(
     name = "check-lint-rust-lib",
-    clippy_txt_dep = ":lib-api-keys[clippy.txt]",
+    clippy_txt_dep = ":lib-notifications[clippy.txt]",
 )
 
 test_suite(

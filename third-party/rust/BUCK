@@ -1309,6 +1309,31 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "darling-0.14.4.crate",
+    sha256 = "7b750cb3417fd1b327431a470f388520309479ab0bf5e323505daf0290cd3850",
+    strip_prefix = "darling-0.14.4",
+    urls = ["https://crates.io/api/v1/crates/darling/0.14.4/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "darling-0.14.4",
+    srcs = [":darling-0.14.4.crate"],
+    crate = "darling",
+    crate_root = "darling-0.14.4.crate/src/lib.rs",
+    edition = "2018",
+    features = [
+        "default",
+        "suggestions",
+    ],
+    visibility = [],
+    deps = [
+        ":darling_core-0.14.4",
+        ":darling_macro-0.14.4",
+    ],
+)
+
+http_archive(
     name = "darling-0.20.3.crate",
     sha256 = "0209d94da627ab5605dcccf08bb18afa5009cfbef48d8a8b7d7bdbc79be25c5e",
     strip_prefix = "darling-0.20.3",
@@ -1330,6 +1355,35 @@ cargo.rust_library(
     deps = [
         ":darling_core-0.20.3",
         ":darling_macro-0.20.3",
+    ],
+)
+
+http_archive(
+    name = "darling_core-0.14.4.crate",
+    sha256 = "109c1ca6e6b7f82cc233a97004ea8ed7ca123a9af07a8230878fcfda9b158bf0",
+    strip_prefix = "darling_core-0.14.4",
+    urls = ["https://crates.io/api/v1/crates/darling_core/0.14.4/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "darling_core-0.14.4",
+    srcs = [":darling_core-0.14.4.crate"],
+    crate = "darling_core",
+    crate_root = "darling_core-0.14.4.crate/src/lib.rs",
+    edition = "2018",
+    features = [
+        "strsim",
+        "suggestions",
+    ],
+    visibility = [],
+    deps = [
+        ":fnv-1.0.7",
+        ":ident_case-1.0.1",
+        ":proc-macro2-1.0.76",
+        ":quote-1.0.35",
+        ":strsim-0.10.0",
+        ":syn-1.0.109",
     ],
 )
 
@@ -1359,6 +1413,29 @@ cargo.rust_library(
         ":quote-1.0.35",
         ":strsim-0.10.0",
         ":syn-2.0.48",
+    ],
+)
+
+http_archive(
+    name = "darling_macro-0.14.4.crate",
+    sha256 = "a4aab4dbc9f7611d8b55048a3a16d2d010c2c8334e46304b40ac1cc14bf3b48e",
+    strip_prefix = "darling_macro-0.14.4",
+    urls = ["https://crates.io/api/v1/crates/darling_macro/0.14.4/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "darling_macro-0.14.4",
+    srcs = [":darling_macro-0.14.4.crate"],
+    crate = "darling_macro",
+    crate_root = "darling_macro-0.14.4.crate/src/lib.rs",
+    edition = "2018",
+    proc_macro = True,
+    visibility = [],
+    deps = [
+        ":darling_core-0.14.4",
+        ":quote-1.0.35",
+        ":syn-1.0.109",
     ],
 )
 
@@ -1460,6 +1537,79 @@ cargo.rust_library(
     deps = [
         ":powerfmt-0.2.0",
         ":serde-1.0.195",
+    ],
+)
+
+alias(
+    name = "derive_builder",
+    actual = ":derive_builder-0.12.0",
+    visibility = ["PUBLIC"],
+)
+
+http_archive(
+    name = "derive_builder-0.12.0.crate",
+    sha256 = "8d67778784b508018359cbc8696edb3db78160bab2c2a28ba7f56ef6932997f8",
+    strip_prefix = "derive_builder-0.12.0",
+    urls = ["https://crates.io/api/v1/crates/derive_builder/0.12.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "derive_builder-0.12.0",
+    srcs = [":derive_builder-0.12.0.crate"],
+    crate = "derive_builder",
+    crate_root = "derive_builder-0.12.0.crate/src/lib.rs",
+    edition = "2015",
+    features = [
+        "default",
+        "std",
+    ],
+    visibility = [],
+    deps = [":derive_builder_macro-0.12.0"],
+)
+
+http_archive(
+    name = "derive_builder_core-0.12.0.crate",
+    sha256 = "c11bdc11a0c47bc7d37d582b5285da6849c96681023680b906673c5707af7b0f",
+    strip_prefix = "derive_builder_core-0.12.0",
+    urls = ["https://crates.io/api/v1/crates/derive_builder_core/0.12.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "derive_builder_core-0.12.0",
+    srcs = [":derive_builder_core-0.12.0.crate"],
+    crate = "derive_builder_core",
+    crate_root = "derive_builder_core-0.12.0.crate/src/lib.rs",
+    edition = "2015",
+    visibility = [],
+    deps = [
+        ":darling-0.14.4",
+        ":proc-macro2-1.0.76",
+        ":quote-1.0.35",
+        ":syn-1.0.109",
+    ],
+)
+
+http_archive(
+    name = "derive_builder_macro-0.12.0.crate",
+    sha256 = "ebcda35c7a396850a55ffeac740804b40ffec779b98fffbb1738f4033f0ee79e",
+    strip_prefix = "derive_builder_macro-0.12.0",
+    urls = ["https://crates.io/api/v1/crates/derive_builder_macro/0.12.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "derive_builder_macro-0.12.0",
+    srcs = [":derive_builder_macro-0.12.0.crate"],
+    crate = "derive_builder_macro",
+    crate_root = "derive_builder_macro-0.12.0.crate/src/lib.rs",
+    edition = "2015",
+    proc_macro = True,
+    visibility = [],
+    deps = [
+        ":derive_builder_core-0.12.0",
+        ":syn-1.0.109",
     ],
 )
 
@@ -7064,6 +7214,7 @@ cargo.rust_binary(
         ":axum-0.6.20",
         ":chrono-0.4.31",
         ":clap-4.4.7",
+        ":derive_builder-0.12.0",
         ":http-0.2.9",
         ":jsonwebtoken-9.2.0",
         ":opentelemetry-0.20.0",
