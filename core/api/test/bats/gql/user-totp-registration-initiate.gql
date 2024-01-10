@@ -1,9 +1,0 @@
-mutation userTotpRegistrationInitiate {
-  userTotpRegistrationInitiate {
-    errors {
-      message
-    }
-    totpRegistrationId
-    totpSecret
-  }
-}

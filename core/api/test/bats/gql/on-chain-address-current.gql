@@ -1,8 +1,0 @@
-mutation onChainAddressCurrent($input: OnChainAddressCurrentInput!) {
-  onChainAddressCurrent(input: $input) {
-    address
-    errors {
-      message
-    }
-  }
-}

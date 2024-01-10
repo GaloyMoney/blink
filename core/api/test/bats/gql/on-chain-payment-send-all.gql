@@ -1,8 +1,0 @@
-mutation onChainPaymentSendAll($input: OnChainPaymentSendAllInput!) {
-  onChainPaymentSendAll(input: $input) {
-    errors {
-      message
-    }
-    status
-  }
-}
