@@ -1,0 +1,12 @@
+rust_library(
+    name = "es-entity",
+    edition = "2021",
+    deps = [
+    ],
+    srcs = glob(["src/**/*.rs"]),
+    env = {
+        "CARGO_PKG_NAME": "es-entity" ,
+        "CARGO_PKG_VERSION": "0.1.0" ,
+    },
+    visibility = ["PUBLIC"],
+)
