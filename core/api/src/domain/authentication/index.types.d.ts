@@ -150,6 +150,7 @@ interface IIdentityRepository {
   listIdentities(): AsyncGenerator<AnyIdentity | KratosError>
   deleteIdentity(id: UserId): Promise<void | KratosError>
   getUserIdFromIdentifier(identifier: string): Promise<UserId | KratosError>
+  getUserIdFromFlowId(flowId: string): Promise<UserId | KratosError>
 }
 
 // CCA2 country code such as "US" or "FR"
