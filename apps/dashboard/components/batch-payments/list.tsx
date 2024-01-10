@@ -1,19 +1,13 @@
 import React from "react"
 import Table from "@mui/joy/Table"
 
-import { ProcessedRecords } from "@/app/batch-payments/server-actions"
-import { WalletCurrency } from "@/services/graphql/generated"
-import { displayCurrencyBatchPayments } from "@/app/batch-payments/utils"
+import { ProcessedRecords } from "@/app/batch-payments/index.types"
 
 type BatchPaymentListProps = {
   processedList: ProcessedRecords[]
-  walletCurrency: WalletCurrency
 }
 
-const BatchPaymentsList: React.FC<BatchPaymentListProps> = ({
-  processedList,
-  walletCurrency,
-}) => {
+const BatchPaymentsList: React.FC<BatchPaymentListProps> = ({ processedList }) => {
   const renderTable = (transactions: ProcessedRecords[]) => (
     <>
       {transactions.length > 0 && (
@@ -25,6 +19,7 @@ const BatchPaymentsList: React.FC<BatchPaymentListProps> = ({
                 <th>Username</th>
                 <th>Recipient Wallet Id</th>
                 <th>Amount</th>
+                <th>Wallet Using</th>
                 <th>Memo</th>
                 <th>Status</th>
               </tr>
@@ -34,13 +29,11 @@ const BatchPaymentsList: React.FC<BatchPaymentListProps> = ({
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>{record.username}</td>
-                  <td>{record.recipient_wallet_id}</td>
+                  <td>{record.recipientWalletId}</td>
                   <td>
-                    {record.amount}{" "}
-                    {displayCurrencyBatchPayments({
-                      walletCurrency,
-                    })}
+                    {record.amount} {record.currency}
                   </td>
+                  <td>{record.sendingWallet}</td>
                   <td>{record.memo}</td>
                   <td>
                     {record.status.failed === true
