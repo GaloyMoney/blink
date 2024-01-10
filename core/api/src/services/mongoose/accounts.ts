@@ -17,22 +17,21 @@ const caseInsensitiveRegex = (input: string) => {
 }
 
 export const AccountsRepository = (): IAccountsRepository => {
-  const listUnlockedAccounts = async function* ():
-    | AsyncGenerator<Account>
-    | RepositoryError {
-    let accounts
-    try {
-      accounts = Account.find({
-        $expr: { $eq: [{ $last: "$statusHistory.status" }, AccountStatus.Active] },
-      })
-    } catch (err) {
-      return parseRepositoryError(err)
-    }
+  const listAccountsByStatus = (accountStatus: AccountStatus) =>
+    async function* (): AsyncGenerator<Account> | RepositoryError {
+      let accounts
+      try {
+        accounts = Account.find({
+          $expr: { $eq: [{ $last: "$statusHistory.status" }, accountStatus] },
+        })
+      } catch (err) {
+        return parseRepositoryError(err)
+      }
 
-    for await (const account of accounts) {
-      yield translateToAccount(account)
+      for await (const account of accounts) {
+        yield translateToAccount(account)
+      }
     }
-  }
 
   const findById = async (accountId: AccountId): Promise<Account | RepositoryError> => {
     try {
@@ -174,7 +173,8 @@ export const AccountsRepository = (): IAccountsRepository => {
   return {
     persistNew,
     findByUserId,
-    listUnlockedAccounts,
+    listUnlockedAccounts: listAccountsByStatus(AccountStatus.Active),
+    listLockedAccounts: listAccountsByStatus(AccountStatus.Locked),
     findById,
     findByUsername,
     listBusinessesForMap,

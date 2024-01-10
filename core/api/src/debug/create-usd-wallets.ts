@@ -14,7 +14,7 @@ import { AccountsRepository } from "@/services/mongoose"
 const createUsdWallets = async () => {
   await setupMongoConnection()
 
-  const accounts = AccountsRepository().listUnlockedAccounts()
+  const accounts = AccountsRepository().listLockedAccounts()
   if (accounts instanceof Error) return accounts
   let progress = 0
   for await (const account of accounts) {
