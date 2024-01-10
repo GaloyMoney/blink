@@ -377,6 +377,10 @@ usd_amount=50
   transaction_payment_request="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
   [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
 
+  transaction_payment_pre_image="$(graphql_output '.data.lnInvoicePaymentSend.transaction.settlementVia.preImage')"
+  transaction_payment_hash_from_pre_image=$(echo -n $transaction_payment_pre_image | xxd -r -p | sha256sum | cut -d ' ' -f1)
+  [[ "${transaction_payment_hash_from_pre_image}" == "${payment_hash}" ]] || exit 1
+
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
   check_for_ln_initiated_settled "$BOB" "$payment_hash"
@@ -441,6 +445,10 @@ usd_amount=50
 
   transaction_payment_request="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
   [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
+
+  transaction_payment_pre_image="$(graphql_output '.data.lnInvoicePaymentSend.transaction.settlementVia.preImage')"
+  transaction_payment_hash_from_pre_image=$(echo -n $transaction_payment_pre_image | xxd -r -p | sha256sum | cut -d ' ' -f1)
+  [[ "${transaction_payment_hash_from_pre_image}" == "${payment_hash}" ]] || exit 1
 
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"

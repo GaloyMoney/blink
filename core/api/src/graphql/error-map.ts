@@ -510,6 +510,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "LightningServiceError":
     case "CouldNotDecodeReturnedPaymentRequest":
     case "InvoiceNotFoundError":
+    case "InvoiceNotPaidError":
     case "LnPaymentPendingError":
     case "LnAlreadyPaidError":
     case "PaymentNotFoundError":

@@ -11,6 +11,14 @@ mutation lnInvoicePaymentSend($input: LnInvoicePaymentInput!) {
           paymentRequest
         }
       }
+      settlementVia {
+        ... on SettlementViaIntraLedger {
+          preImage
+        }
+        ... on SettlementViaLn {
+          preImage
+        }
+      }
     }
   }
 }
