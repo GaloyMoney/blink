@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(api-keys): extract es-entity-rs boilerplate (#3808)...'
-      sha: 9bc63859728b9952b5d77a5c4a5730d7939f8a62
+      commitTitle: 'chore(core): genericise kratos errors (#3764)...'
+      sha: c872f5949f604b4c0211424d6e3d90dea8cc4c39
       tags:
-      - 0.19.32-1-g9bc638597
+      - 0.19.33-4-gc872f5949
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(api-keys): extract es-entity-rs boilerplate (#3808)...'
-      sha: 9bc63859728b9952b5d77a5c4a5730d7939f8a62
+      commitTitle: 'chore(core): genericise kratos errors (#3764)...'
+      sha: c872f5949f604b4c0211424d6e3d90dea8cc4c39
       tags:
-      - 0.19.32-1-g9bc638597
+      - 0.19.33-4-gc872f5949
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'refactor(api-keys): extract es-entity-rs boilerplate (#3808)...'
-      sha: 9bc63859728b9952b5d77a5c4a5730d7939f8a62
+      commitTitle: 'chore(core): genericise kratos errors (#3764)...'
+      sha: c872f5949f604b4c0211424d6e3d90dea8cc4c39
       tags:
-      - 0.19.32-1-g9bc638597
+      - 0.19.33-4-gc872f5949
     path: ./
   path: ./graphql
 kind: LockConfig
