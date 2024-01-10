@@ -2,29 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: env variables issue with ''dev_pnpm_task_binary'' bats rule
-        (#3805)...'
-      sha: 44757971fa92779f5811ee7f3a921568405f48b3
+      commitTitle: 'fix(core): add preimage for txs initiated via ln but settle intraledger
+        (#3777)...'
+      sha: 566f2a2d84f1ed9ae71f2a18040367949f490ca2
       tags:
-      - 0.19.28-15-g44757971f
+      - 0.19.29-4-g566f2a2d8
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: env variables issue with ''dev_pnpm_task_binary'' bats rule
-        (#3805)...'
-      sha: 44757971fa92779f5811ee7f3a921568405f48b3
+      commitTitle: 'fix(core): add preimage for txs initiated via ln but settle intraledger
+        (#3777)...'
+      sha: 566f2a2d84f1ed9ae71f2a18040367949f490ca2
       tags:
-      - 0.19.28-15-g44757971f
+      - 0.19.29-4-g566f2a2d8
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: env variables issue with ''dev_pnpm_task_binary'' bats rule
-        (#3805)...'
-      sha: 44757971fa92779f5811ee7f3a921568405f48b3
+      commitTitle: 'fix(core): add preimage for txs initiated via ln but settle intraledger
+        (#3777)...'
+      sha: 566f2a2d84f1ed9ae71f2a18040367949f490ca2
       tags:
-      - 0.19.29
+      - 0.19.29-4-g566f2a2d8
     path: ./
   path: ./graphql
 kind: LockConfig
