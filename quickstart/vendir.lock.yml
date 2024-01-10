@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump rust deps (#3807)'
-      sha: cbd357dbfa0ac9469adee90b8d31ff4b3436426f
+      commitTitle: 'refactor(api-keys): extract es-entity-rs boilerplate (#3808)...'
+      sha: 9bc63859728b9952b5d77a5c4a5730d7939f8a62
       tags:
-      - 0.19.31-1-gcbd357dbf
+      - 0.19.32-1-g9bc638597
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump rust deps (#3807)'
-      sha: cbd357dbfa0ac9469adee90b8d31ff4b3436426f
+      commitTitle: 'refactor(api-keys): extract es-entity-rs boilerplate (#3808)...'
+      sha: 9bc63859728b9952b5d77a5c4a5730d7939f8a62
       tags:
-      - 0.19.31-1-gcbd357dbf
+      - 0.19.32-1-g9bc638597
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump rust deps (#3807)'
-      sha: cbd357dbfa0ac9469adee90b8d31ff4b3436426f
+      commitTitle: 'refactor(api-keys): extract es-entity-rs boilerplate (#3808)...'
+      sha: 9bc63859728b9952b5d77a5c4a5730d7939f8a62
       tags:
-      - 0.19.31-1-gcbd357dbf
+      - 0.19.32-1-g9bc638597
     path: ./
   path: ./graphql
 kind: LockConfig
