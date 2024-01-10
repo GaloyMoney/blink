@@ -89,6 +89,7 @@ rust_test(
     crate_root = "src/lib.rs",
     deps = [
         "//lib/tracing-rs:tracing",
+        "//lib/es-entity-rs:es-entity",
         "//third-party/rust:tokio",
         "//third-party/rust:anyhow",
         "//third-party/rust:async-graphql",
