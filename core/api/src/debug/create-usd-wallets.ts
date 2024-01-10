@@ -3,13 +3,36 @@
  * yarn ts-node --files -r tsconfig-paths/register src/debug/create-usd-wallets.ts
  */
 
-import { Accounts as AccountsWithSpans } from "@/app"
 import { WalletCurrency } from "@/domain/shared"
 import { WalletType } from "@/domain/wallets"
 import { isUp } from "@/services/lnd/health"
 import { lndsConnect } from "@/services/lnd/auth"
 import { setupMongoConnection } from "@/services/mongodb"
-import { AccountsRepository } from "@/services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
+
+const addWalletIfNonexistent = async ({
+  accountId,
+  type,
+  currency,
+}: {
+  accountId: AccountId
+  type: WalletType
+  currency: WalletCurrency
+}): Promise<Wallet | ApplicationError> => {
+  const wallets = await WalletsRepository().listByAccountId(accountId)
+  if (wallets instanceof Error) return wallets
+
+  const walletOfTypeAndCurrency = wallets.find(
+    (wallet) => wallet.currency === currency && wallet.type === type,
+  )
+  if (walletOfTypeAndCurrency) return walletOfTypeAndCurrency
+
+  return WalletsRepository().persistNew({
+    accountId,
+    type,
+    currency,
+  })
+}
 
 const createUsdWallets = async () => {
   await setupMongoConnection()
@@ -18,7 +41,7 @@ const createUsdWallets = async () => {
   if (accounts instanceof Error) return accounts
   let progress = 0
   for await (const account of accounts) {
-    await AccountsWithSpans.addWalletIfNonexistent({
+    await addWalletIfNonexistent({
       accountId: account.id,
       type: WalletType.Checking,
       currency: WalletCurrency.Usd,

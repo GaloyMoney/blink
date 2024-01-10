@@ -3,7 +3,6 @@ import { lndOutside1, safePay } from "./lightning"
 import { randomPhone, randomUserId } from "."
 
 import { createAccountWithPhoneIdentifier } from "@/app/accounts"
-import { addWalletIfNonexistent } from "@/app/accounts/add-wallet"
 import { getAdminAccounts, getDefaultAccountsConfig } from "@/config"
 
 import { CouldNotFindAccountFromKratosIdError, CouldNotFindError } from "@/domain/errors"
@@ -155,12 +154,6 @@ export const createUserAndWalletFromPhone = async (
     const accountIP = await AccountsIpsRepository().update(accountIp)
     if (!(accountIP instanceof CouldNotFindError) && accountIP instanceof Error)
       throw accountIP
-
-    await addWalletIfNonexistent({
-      currency: WalletCurrency.Usd,
-      accountId: account.id,
-      type: WalletType.Checking,
-    })
   }
 
   if (account instanceof Error) throw account
@@ -190,20 +183,14 @@ export const createRandomUserAndWallets = async (): Promise<{
   const phone = randomPhone()
   const btcWalletDescriptor = await createUserAndWallet(phone)
 
-  const usdWallet = await addWalletIfNonexistent({
-    currency: WalletCurrency.Usd,
-    accountId: btcWalletDescriptor.accountId,
-    type: WalletType.Checking,
-  })
-  if (usdWallet instanceof Error) throw usdWallet
+  const accountWallets = await WalletsRepository().findAccountWalletsByAccountId(
+    btcWalletDescriptor.accountId,
+  )
+  if (accountWallets instanceof Error) throw accountWallets
 
   return {
     btcWalletDescriptor,
-    usdWalletDescriptor: {
-      id: usdWallet.id,
-      currency: WalletCurrency.Usd,
-      accountId: usdWallet.accountId,
-    },
+    usdWalletDescriptor: accountWallets.USD,
   }
 }
 
@@ -256,12 +243,6 @@ export const createUserAndWallet = async (
     const accountIP = await AccountsIpsRepository().update(accountIp)
     if (!(accountIP instanceof CouldNotFindError) && accountIP instanceof Error)
       throw accountIP
-
-    await addWalletIfNonexistent({
-      currency: WalletCurrency.Usd,
-      accountId: account.id,
-      type: WalletType.Checking,
-    })
   }
 
   if (account instanceof Error) throw account
