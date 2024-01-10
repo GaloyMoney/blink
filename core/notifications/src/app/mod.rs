@@ -3,6 +3,8 @@ mod error;
 
 use sqlx::{Pool, Postgres};
 
+use crate::{account_notification_settings::*, primitives::*};
+
 pub use config::*;
 pub use error::*;
 
@@ -18,5 +20,12 @@ impl NotificationsApp {
             _config: config,
             pool,
         }
+    }
+
+    pub async fn notification_settings_for_account_id(
+        &self,
+        galoy_account_id: GaloyAccountId,
+    ) -> Result<AccountNotificationSettings, ApplicationError> {
+        unimplemented!()
     }
 }

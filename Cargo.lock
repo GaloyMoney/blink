@@ -1438,6 +1438,8 @@ dependencies = [
  "axum",
  "chrono",
  "clap",
+ "derive_builder",
+ "es-entity",
  "jsonwebtoken",
  "rand",
  "reqwest",
