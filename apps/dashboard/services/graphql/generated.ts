@@ -2177,6 +2177,13 @@ export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type MeQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly createdAt: number, readonly id: string, readonly language: string, readonly phone?: string | null, readonly totpEnabled: boolean, readonly username?: string | null, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly defaultWalletId: string, readonly displayCurrency: string, readonly id: string, readonly level: AccountLevel, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly accountId: string, readonly balance: number, readonly id: string, readonly pendingIncomingBalance: number, readonly walletCurrency: WalletCurrency } | { readonly __typename: 'UsdWallet', readonly accountId: string, readonly balance: number, readonly id: string, readonly pendingIncomingBalance: number, readonly walletCurrency: WalletCurrency }> }, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null } | null };
 
+export type RealtimePriceQueryVariables = Exact<{
+  currency?: InputMaybe<Scalars['DisplayCurrency']['input']>;
+}>;
+
+
+export type RealtimePriceQuery = { readonly __typename: 'Query', readonly realtimePrice: { readonly __typename: 'RealtimePrice', readonly denominatorCurrency: string, readonly id: string, readonly timestamp: number, readonly btcSatPrice: { readonly __typename: 'PriceOfOneSatInMinorUnit', readonly base: number, readonly offset: number }, readonly usdCentPrice: { readonly __typename: 'PriceOfOneUsdCentInMinorUnit', readonly base: number, readonly offset: number } } };
+
 
 export const ApiKeyCreateDocument = gql`
     mutation ApiKeyCreate($input: ApiKeyCreateInput!) {
@@ -3023,6 +3030,56 @@ export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
 export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
 export type MeSuspenseQueryHookResult = ReturnType<typeof useMeSuspenseQuery>;
 export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
+export const RealtimePriceDocument = gql`
+    query RealtimePrice($currency: DisplayCurrency) {
+  realtimePrice(currency: $currency) {
+    btcSatPrice {
+      base
+      offset
+    }
+    denominatorCurrency
+    id
+    timestamp
+    usdCentPrice {
+      base
+      offset
+    }
+  }
+}
+    `;
+
+/**
+ * __useRealtimePriceQuery__
+ *
+ * To run a query within a React component, call `useRealtimePriceQuery` and pass it any options that fit your needs.
+ * When your component renders, `useRealtimePriceQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useRealtimePriceQuery({
+ *   variables: {
+ *      currency: // value for 'currency'
+ *   },
+ * });
+ */
+export function useRealtimePriceQuery(baseOptions?: Apollo.QueryHookOptions<RealtimePriceQuery, RealtimePriceQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<RealtimePriceQuery, RealtimePriceQueryVariables>(RealtimePriceDocument, options);
+      }
+export function useRealtimePriceLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<RealtimePriceQuery, RealtimePriceQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<RealtimePriceQuery, RealtimePriceQueryVariables>(RealtimePriceDocument, options);
+        }
+export function useRealtimePriceSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<RealtimePriceQuery, RealtimePriceQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<RealtimePriceQuery, RealtimePriceQueryVariables>(RealtimePriceDocument, options);
+        }
+export type RealtimePriceQueryHookResult = ReturnType<typeof useRealtimePriceQuery>;
+export type RealtimePriceLazyQueryHookResult = ReturnType<typeof useRealtimePriceLazyQuery>;
+export type RealtimePriceSuspenseQueryHookResult = ReturnType<typeof useRealtimePriceSuspenseQuery>;
+export type RealtimePriceQueryResult = Apollo.QueryResult<RealtimePriceQuery, RealtimePriceQueryVariables>;
 
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;

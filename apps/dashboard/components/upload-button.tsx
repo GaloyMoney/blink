@@ -6,18 +6,28 @@ type FileUploadButtonProps = {
   setFile: (file: File | null) => void
   file: File | null
   processCsvLoading: boolean
+  onFileProcessed: (file: File) => Promise<void>
+  setProcessCsvLoading: (loading: boolean) => void
+  resetState: () => void
 }
 
 export default function FileUpload({
   setFile,
   file,
   processCsvLoading,
+  onFileProcessed,
+  setProcessCsvLoading,
+  resetState,
 }: FileUploadButtonProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      setFile(event.target.files[0])
+      const selectedFile = event.target.files[0]
+      setFile(selectedFile)
+      setProcessCsvLoading(true)
+      await onFileProcessed(selectedFile)
+      setProcessCsvLoading(false)
       event.target.value = ""
     }
   }
@@ -45,9 +55,12 @@ export default function FileUpload({
           alignItems: "center",
           justifyContent: "center",
           width: "100%",
+          maxWidth: "70em",
           cursor: "pointer",
           minHeight: "13em",
           border: "2px dashed #ccc",
+          margin: "0 auto",
+          position: "relative",
         }}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
@@ -56,6 +69,20 @@ export default function FileUpload({
           <Button loading variant="plain"></Button>
         ) : (
           <>
+            {file ? (
+              <Button
+                variant="outlined"
+                color="danger"
+                onClick={resetState}
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                }}
+              >
+                Clear
+              </Button>
+            ) : null}
             <SvgIcon>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -71,7 +98,7 @@ export default function FileUpload({
                 />
               </svg>
             </SvgIcon>
-            {file ? file.name : "Upload a file"}
+            {file ? file.name : "Upload a csv file"}
             <input
               id="file-upload"
               type="file"
