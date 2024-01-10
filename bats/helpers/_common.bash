@@ -80,6 +80,14 @@ gql_file() {
   echo "${REPO_ROOT}/bats/gql/$1.gql"
 }
 
+gql_admin_query() {
+  cat "$(gql_admin_file $1)" | tr '\n' ' ' | sed 's/"/\\"/g'
+}
+
+gql_admin_file() {
+  echo "${REPO_ROOT}/bats/admin-gql/$1.gql"
+}
+
 new_idempotency_key() {
   random_uuid
 }
@@ -113,6 +121,31 @@ exec_graphql() {
     -H "Content-Type: application/json" \
     -H "X-Idempotency-Key: $(new_idempotency_key)" \
     -d "{\"query\": \"$(gql_query "$query_name")\", \"variables\": $variables}" \
+    "${OATHKEEPER_PROXY}/${gql_route}"
+
+  echo "GQL output: '$output'"
+}
+
+exec_admin_graphql() {
+  local token=$1
+  local query_name=$2
+  local variables=${3:-"{}"}
+  echo "GQL query -  token: ${token} -  query: ${query_name} -  vars: ${variables}"
+  echo "{\"query\": \"$(gql_admin_query $query_name)\", \"variables\": $variables}"
+
+  if [[ "${BATS_TEST_DIRNAME}" != "" ]]; then
+    run_cmd="run"
+  else
+    run_cmd=""
+  fi
+
+  gql_route="admin/graphql"
+
+  ${run_cmd} curl -s \
+    -X POST \
+    -H "Oauth2-Token: $token" \
+    -H "Content-Type: application/json" \
+    -d "{\"query\": \"$(gql_admin_query $query_name)\", \"variables\": $variables}" \
     "${OATHKEEPER_PROXY}/${gql_route}"
 
   echo "GQL output: '$output'"

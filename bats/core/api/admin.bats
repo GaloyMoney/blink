@@ -1,20 +1,20 @@
 #!/usr/bin/env bats
 
-load "helpers/setup-and-teardown"
+load "../../helpers/_common.bash"
+load "../../helpers/user.bash"
 
 setup_file() {
-  start_server
+  clear_cache
+
+  create_user 'tester'
+  user_update_username 'tester'
 }
 
-teardown_file() {
-  stop_server
-}
+HYDRA_PUBLIC_API="http://localhost:4444"
+HYDRA_ADMIN_API="http://localhost:4445"
 
-TESTER_TOKEN_NAME="tester"
-TESTER_PHONE="+19876543210"
-username="user1"
 
-@test "admin: perform admin queries/mutations" {
+@test "admin: can retrieve admin token" {
   client=$(curl -L -s -X POST $HYDRA_ADMIN_API/admin/clients \
     -H 'Content-Type: application/json' \
     -d '{
@@ -24,39 +24,32 @@ username="user1"
   client_id=$(echo $client | jq -r '.client_id')
   client_secret=$(echo $client | jq -r '.client_secret')
 
-  # get token from client_id and client_secret
   admin_token=$(curl -s -X POST $HYDRA_PUBLIC_API/oauth2/token \
   -H 'Content-Type: application/x-www-form-urlencoded' \
   -u "$client_id:$client_secret" \
   -d "grant_type=client_credentials" | jq -r '.access_token'
   )
-
   echo "admin_token: $admin_token"
+  [[ -n "$admin_token" ]] || exit 1
+  cache_value 'admin.token' "$admin_token"
+}
 
-  login_user \
-    "$TESTER_TOKEN_NAME" \
-    "$TESTER_PHONE"  \
-    "$CODE"
-
-  variables=$(
-      jq -n \
-      --arg username "$username" \
-      '{input: {username: $username}}'
-  )
-  exec_graphql "$TESTER_TOKEN_NAME" 'user-update-username' "$variables"
-
+@test "admin: can query account details by phone" {
+  admin_token="$(read_value 'admin.token')"
   variables=$(
     jq -n \
-    --arg phone "$TESTER_PHONE" \
+    --arg phone "$(read_value 'tester.phone')" \
     '{phone: $phone}'
   )
-
   exec_admin_graphql $admin_token 'account-details-by-user-phone' "$variables"
   id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
   [[ "$id" != "null" && "$id" != "" ]] || exit 1
+  cache_value 'tester.id' "$id"
+}
 
-  echo "id: $id"
-
+@test "admin: can update user phone number" {
+  admin_token="$(read_value 'admin.token')"
+  id="$(read_value 'tester.id')"
   new_phone="$(random_phone)"
   variables=$(
     jq -n \
@@ -74,20 +67,60 @@ username="user1"
     --arg phone "$new_phone" \
     '{phone: $phone}'
   )
-
   exec_admin_graphql "$admin_token" 'account-details-by-user-phone' "$variables"
   refetched_id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
   [[ "$refetched_id" == "$id" ]] || exit 1
+}
+
+@test "admin: can query account details by username" {
+  admin_token="$(read_value 'admin.token')"
+  id="$(read_value 'tester.id')"
+  username="$(read_value 'tester.username')"
 
   variables=$(
     jq -n \
     --arg username "$username" \
     '{username: $username}'
   )
-
   exec_admin_graphql "$admin_token" 'account-details-by-username' "$variables"
   refetched_id="$(graphql_output '.data.accountDetailsByUsername.id')"
   [[ "$refetched_id" == "$id" ]] || exit 1
+}
+
+@test "admin: can query account details by account id" {
+  admin_token="$(read_value 'admin.token')"
+  id="$(read_value 'tester.id')"
+
+  variables=$(
+    jq -n \
+    --arg accountId "$id" \
+    '{accountId: $accountId}'
+  )
+  exec_admin_graphql "$admin_token" 'account-details-by-account-id' "$variables"
+  returned_id="$(graphql_output '.data.accountDetailsByAccountId.id')"
+  [[ "$returned_id" == "$id" ]] || exit 1
+
+  user_id="$(graphql_output '.data.accountDetailsByAccountId.owner.id')"
+  cache_value 'tester.user_id' "$user_id"
+}
+
+@test "admin: can query account details by user id" {
+  admin_token="$(read_value 'admin.token')"
+  user_id="$(read_value 'tester.user_id')"
+
+  variables=$(
+    jq -n \
+    --arg user_id "$user_id" \
+    '{userId: $user_id}'
+  )
+  exec_admin_graphql "$admin_token" 'account-details-by-user-id' "$variables"
+  returned_id="$(graphql_output '.data.accountDetailsByUserId.owner.id')"
+  [[ "$returned_id" == "$user_id" ]] || exit 1
+}
+
+@test "admin: can upgrade account level" {
+  admin_token="$(read_value 'admin.token')"
+  id="$(read_value 'tester.id')"
 
   variables=$(
     jq -n \
@@ -95,12 +128,16 @@ username="user1"
     --arg accountId "$id" \
     '{input: {level: $level, accountId: $accountId}}'
   )
-
-  exec_admin_graphql "$admin_token" 'account-status-level-update' "$variables"
+  exec_admin_graphql "$admin_token" 'account-update-level' "$variables"
   refetched_id="$(graphql_output '.data.accountUpdateLevel.accountDetails.id')"
   [[ "$refetched_id" == "$id" ]] || exit 1
   level="$(graphql_output '.data.accountUpdateLevel.accountDetails.level')"
   [[ "$level" == "TWO" ]] || exit 1
+}
+
+@test "admin: can lock account" {
+  admin_token="$(read_value 'admin.token')"
+  id="$(read_value 'tester.id')"
 
   variables=$(
     jq -n \
@@ -109,19 +146,23 @@ username="user1"
     --arg comment "Test lock of the account" \
     '{input: {status: $account_status, accountId: $accountId, comment: $comment}}'
   )
-
   exec_admin_graphql "$admin_token" 'account-update-status' "$variables"
   refetched_id="$(graphql_output '.data.accountUpdateStatus.accountDetails.id')"
   [[ "$refetched_id" == "$id" ]] || exit 1
   account_status="$(graphql_output '.data.accountUpdateStatus.accountDetails.status')"
   [[ "$account_status" == "LOCKED" ]] || exit 1
+}
 
-  # User cannot delete the account if it is locked
-  exec_graphql "$TESTER_TOKEN_NAME" 'account-delete'
+@test "admin: non-admin user cannot delete locked account" {
+  exec_graphql 'tester' 'account-delete'
   delete_error_message="$(graphql_output '.errors[0].message')"
   [[ "$delete_error_message" == "Not authorized" ]] || exit 1
+}
 
-  # Admin cannot update the phone if it is locked
+@test "admin: cannot update phone on locked account" {
+  admin_token="$(read_value 'admin.token')"
+  id="$(read_value 'tester.id')"
+
   new_phone="$(random_phone)"
   variables=$(
     jq -n \
@@ -132,32 +173,8 @@ username="user1"
   exec_admin_graphql $admin_token 'user-update-phone' "$variables"
   update_error_message="$(graphql_output '.data.userUpdatePhone.errors[0].message')"
   [[ "$update_error_message" == "Account is inactive." ]] || exit 1
-
-  variables=$(
-    jq -n \
-    --arg accountId "$id" \
-    '{accountId: $accountId}'
-  )
-
-  exec_admin_graphql "$admin_token" 'account-details-by-account-id' "$variables"
-  returnedId="$(graphql_output '.data.accountDetailsByAccountId.id')"
-  [[ "$returnedId" == "$id" ]] || exit 1
-
-  userId="$(graphql_output '.data.accountDetailsByAccountId.owner.id')"
-  echo "userId: $userId"
-
-  variables=$(
-    jq -n \
-    --arg userId "$userId" \
-    '{userId: $userId}'
-  )
-
-  exec_admin_graphql "$admin_token" 'account-details-by-user-id' "$variables"
-  returnedId="$(graphql_output '.data.accountDetailsByUserId.owner.id')"
-  [[ "$returnedId" == "$userId" ]] || exit 1
-
-
-  # TODO: add check by email
-
-  # TODO: business update map info
 }
+
+# TODO: add check by email
+
+# TODO: business update map info
