@@ -35,6 +35,6 @@ async fn run_cmd(config: Config) -> anyhow::Result<()> {
     tracing::init_tracer(config.tracing)?;
     let pool = db::init_pool(&config.db).await?;
     let app = crate::app::NotificationsApp::new(pool, config.app);
-    // crate::server::run_server(config.server, app).await
-    Ok(())
+    println!("Starting notifications graphql server");
+    crate::graphql::server::run_server(config.server, app).await
 }

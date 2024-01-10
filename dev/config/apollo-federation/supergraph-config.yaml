@@ -8,7 +8,3 @@ subgraphs:
     routing_url: http://bats-tests:5397/graphql
     schema:
       file: ${env.API_KEYS_SCHEMA:-../../../core/api-keys/subgraph/schema.graphql}
-  notifications:
-    routing_url: http://bats-tests:5399/graphql
-    schema:
-      file: ${env.NOTIFICATIONS_SCHEMA:-../../../core/notifications/subgraph/schema.graphql}
