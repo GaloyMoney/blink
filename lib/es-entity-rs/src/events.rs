@@ -77,22 +77,13 @@ where
         Ok(n_persisted)
     }
 
-    pub fn load_n<E: Entity<Event = T>>(
+    pub fn load_first<E: Entity<Event = T>>(
         events: impl IntoIterator<Item = GenericEvent>,
-        n: usize,
-    ) -> Result<(Vec<E>, bool), EntityError> {
-        let mut ret: Vec<E> = Vec::new();
+    ) -> Result<E, EntityError> {
         let mut current_id = None;
         let mut current = None;
         for e in events {
-            if current_id != Some(e.id) {
-                if let Some(current) = current.take() {
-                    ret.push(E::try_from(current)?);
-                    if ret.len() == n {
-                        return Ok((ret, true));
-                    }
-                }
-
+            if current_id.is_none() {
                 current_id = Some(e.id);
                 current = Some(Self {
                     entity_id: e.id.into(),
@@ -100,24 +91,83 @@ where
                     new_events: Vec::new(),
                 });
             }
+            if current_id != Some(e.id) {
+                break;
+            }
             current
                 .as_mut()
                 .expect("Could not get current")
                 .persisted_events
                 .push(serde_json::from_value(e.event).expect("Could not deserialize event"));
         }
-        if let Some(current) = current.take() {
-            ret.push(E::try_from(current)?);
+        if current.is_none() {
+            Err(EntityError::NoEvents)
+        } else {
+            E::try_from(current.expect("Could not get current"))
         }
-        Ok((ret, false))
     }
 
     pub fn iter(&self) -> impl DoubleEndedIterator<Item = &T> {
         self.persisted_events.iter().chain(self.new_events.iter())
     }
 
-    pub fn last_persisted(&self, n: usize) -> impl Iterator<Item = &T> {
-        let start = self.persisted_events.len() - n - 1;
-        self.persisted_events[start..].iter()
+    pub fn into_iter(self) -> impl DoubleEndedIterator<Item = T> {
+        self.persisted_events
+            .into_iter()
+            .chain(self.new_events.into_iter())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Debug, serde::Serialize, serde::Deserialize)]
+    enum DummyEvent {
+        Created(String),
+    }
+    impl EntityEvent for DummyEvent {
+        type EntityId = uuid::Uuid;
+
+        fn event_table_name() -> &'static str {
+            "dummy_events"
+        }
+    }
+    struct DummyEntity {
+        name: String,
+    }
+    impl Entity for DummyEntity {
+        type Event = DummyEvent;
+    }
+    impl TryFrom<EntityEvents<DummyEvent>> for DummyEntity {
+        type Error = EntityError;
+        fn try_from(events: EntityEvents<DummyEvent>) -> Result<Self, Self::Error> {
+            let name = events
+                .into_iter()
+                .find_map(|e| match e {
+                    DummyEvent::Created(name) => Some(name),
+                })
+                .expect("Could not find name");
+            Ok(Self { name })
+        }
+    }
+
+    #[test]
+    fn load_zero_events() {
+        let generic_events = vec![];
+        let res = EntityEvents::load_first::<DummyEntity>(generic_events);
+        assert!(matches!(res, Err(EntityError::NoEvents)));
+    }
+
+    #[test]
+    fn load_first() {
+        let generic_events = vec![GenericEvent {
+            id: uuid::Uuid::new_v4(),
+            sequence: 1,
+            event: serde_json::to_value(DummyEvent::Created("dummy-name".to_owned()))
+                .expect("Could not serialize"),
+        }];
+        let entity: DummyEntity = EntityEvents::load_first(generic_events).expect("Could not load");
+        assert!(entity.name == "dummy-name");
     }
 }
