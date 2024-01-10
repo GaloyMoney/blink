@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): update csv schema in batch payments (#3789)...'
-      sha: 5a379157eb86cba9d924e6b4f34b97694f02403f
+      commitTitle: 'chore(deps): bump rust deps (#3807)'
+      sha: cbd357dbfa0ac9469adee90b8d31ff4b3436426f
       tags:
-      - 0.19.30-2-g5a379157e
+      - 0.19.31-1-gcbd357dbf
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): update csv schema in batch payments (#3789)...'
-      sha: 5a379157eb86cba9d924e6b4f34b97694f02403f
+      commitTitle: 'chore(deps): bump rust deps (#3807)'
+      sha: cbd357dbfa0ac9469adee90b8d31ff4b3436426f
       tags:
-      - 0.19.30-2-g5a379157e
+      - 0.19.31-1-gcbd357dbf
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): update csv schema in batch payments (#3789)...'
-      sha: 5a379157eb86cba9d924e6b4f34b97694f02403f
+      commitTitle: 'chore(deps): bump rust deps (#3807)'
+      sha: cbd357dbfa0ac9469adee90b8d31ff4b3436426f
       tags:
-      - 0.19.30-2-g5a379157e
+      - 0.19.31-1-gcbd357dbf
     path: ./
   path: ./graphql
 kind: LockConfig
