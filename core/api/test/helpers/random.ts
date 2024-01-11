@@ -9,3 +9,5 @@ export const randomPhone = () =>
   `+1415${Math.floor(Math.random() * 9000000 + 1000000)}` as PhoneNumber
 
 export const randomUserId = () => randomUUID() as UserId
+
+export const randomDeviceId = () => randomUUID() as DeviceId
