@@ -31,6 +31,7 @@ serde_yaml = { workspace = true }
 thiserror = { workspace = true }
 chrono = { workspace = true }
 sqlx = { workspace = true }
+mongodb = { workspace = true }
 rand = { workspace = true }
 uuid = { workspace = true }
 serde_with = { workspace = true }

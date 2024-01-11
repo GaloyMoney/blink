@@ -34,6 +34,7 @@ serde_yaml = "0.9.30"
 serde_json = "1.0.107"
 chrono = { version = "0.4.28", features = ["clock", "serde"], default-features = false }
 sqlx = { version = "0.7.2", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono"] }
+mongodb = "2.8.0"
 rand = "0.8.5"
 uuid = { version = "1.4.1", features = ["serde", "v4"] }
 serde_with = "3.3.0"
