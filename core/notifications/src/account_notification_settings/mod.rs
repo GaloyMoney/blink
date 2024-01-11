@@ -1,6 +1,7 @@
 mod entity;
-pub mod error;
 mod repo;
+
+pub mod error;
 
 pub use entity::*;
 pub use repo::*;

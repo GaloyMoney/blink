@@ -52,15 +52,11 @@ impl Mutation {
             return Err("Permission denied".into());
         }
         let app = ctx.data_unchecked::<NotificationsApp>();
-        app.disable_channel_on_account(GaloyAccountId::from(subject.id.clone()), input.channel)
+        let res: NotificationSettingsAlt = app
+            .disable_channel_on_account(GaloyAccountId::from(subject.id.clone()), input.channel)
             .await?;
         Ok(AccountUpdateNotificationSettingsPayloadAlt {
-            notification_settings: NotificationSettingsAlt {
-                push: NotificationChannelSettingsAlt {
-                    enabled: false,
-                    disabled_categories: vec![],
-                },
-            },
+            notification_settings: res,
         })
     }
 }

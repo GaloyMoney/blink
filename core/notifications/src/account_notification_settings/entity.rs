@@ -31,7 +31,7 @@ pub struct AccountNotificationSettings {
     pub(super) events: EntityEvents<AccountNotificationSettingsEvent>,
 }
 
-impl Entity for AccountNotificationSettings {
+impl EsEntity for AccountNotificationSettings {
     type Event = AccountNotificationSettingsEvent;
 }
 
@@ -40,6 +40,10 @@ impl AccountNotificationSettings {
         // check if its already disabled -> NoOp
         self.events
             .push(AccountNotificationSettingsEvent::ChannelDisabled { channel });
+    }
+
+    pub fn project<T: EsEntityProjection<AccountNotificationSettingsEvent>>(&self) -> T {
+        self.events.project()
     }
 }
 

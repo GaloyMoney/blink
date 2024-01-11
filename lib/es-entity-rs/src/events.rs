@@ -17,8 +17,15 @@ pub trait EntityEvent: DeserializeOwned + Serialize {
         Self: Sized;
 }
 
-pub trait Entity: TryFrom<EntityEvents<<Self as Entity>::Event>, Error = EntityError> {
+pub trait EsEntity: TryFrom<EntityEvents<<Self as EsEntity>::Event>, Error = EntityError> {
     type Event: EntityEvent;
+}
+
+pub trait EsEntityProjection<E>
+where
+    Self: Default,
+{
+    fn apply(&mut self, event: &E) -> Self;
 }
 
 pub struct EntityEvents<T: EntityEvent> {
@@ -44,6 +51,16 @@ where
 
     pub fn push(&mut self, event: T) {
         self.new_events.push(event);
+    }
+
+    pub fn project<P: EsEntityProjection<T>>(&self) -> P {
+        self.persisted_events
+            .iter()
+            .chain(self.new_events.iter())
+            .fold(P::default(), |mut acc, event| {
+                acc = acc.apply(event);
+                acc
+            })
     }
 
     pub async fn persist(
@@ -85,7 +102,7 @@ where
         Ok(n_persisted)
     }
 
-    pub fn load_first<E: Entity<Event = T>>(
+    pub fn load_first<E: EsEntity<Event = T>>(
         events: impl IntoIterator<Item = GenericEvent>,
     ) -> Result<E, EntityError> {
         let mut current_id = None;
@@ -150,7 +167,7 @@ mod tests {
     struct DummyEntity {
         name: String,
     }
-    impl Entity for DummyEntity {
+    impl EsEntity for DummyEntity {
         type Event = DummyEvent;
     }
     impl TryFrom<EntityEvents<DummyEvent>> for DummyEntity {
