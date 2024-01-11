@@ -7,11 +7,7 @@ use axum::{routing::get, Extension, Router};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-
-use crate::{
-    app::{NotificationsApp},
-    graphql,
-};
+use crate::{app::NotificationsApp, graphql};
 
 pub use config::*;
 use jwks::*;

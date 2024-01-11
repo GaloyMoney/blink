@@ -4,5 +4,3 @@ use serde::{Deserialize, Serialize};
 #[serde_with::serde_as]
 #[derive(Default)]
 pub struct AppConfig {}
-
-

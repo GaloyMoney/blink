@@ -58,6 +58,10 @@ plan:
 #@   "api-keys": {
 #@     "YAML_PATH": ".galoy.images.apiKeys.digest",
 #@     "CHART": "galoy"
+#@   },
+#@   "notifications": {
+#@     "YAML_PATH": ".galoy.images.notifications.digest",
+#@     "CHART": "galoy"
 #@   }
 #@ }
 name: #@ bump_image_in_chart_name(component)
