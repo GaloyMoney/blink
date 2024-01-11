@@ -35,7 +35,12 @@ source:
 
 #@ components = ["api-keys", "notifications"]
 
-#@ proto_sync_targets = [ "stablesats", "price-history", "price-realtime", "bria-api" ]
+#@ proto_sync_targets = [
+#@   {"name": "stablesats", "src_path": "proto/price", "dst_path": "src/services/dealer-price/proto/services/price/v1", "buf_config_path": "src/services/dealer-price/proto"},
+#@   {"name": "price-history", "src_path": "history/src/servers/protos", "dst_path": "src/services/price/protos"},
+#@   {"name": "price-realtime", "src_path": "realtime/src/servers/protos", "dst_path": "src/services/price/protos"},
+#@   {"name": "bria-api", "src_path": "proto/api", "dst_path": "src/services/bria/proto", "buf_config_path": "src/services/bria/proto"}
+#@ ]
 
 groups:
 - name: core-bundle
@@ -60,8 +65,8 @@ groups:
   - #@ build_edge_image_name(component)
   - #@ bump_image_in_chart_name(component)
 #@ end
-#@ for target in proto_sync_targets:
-  - #@ sync_proto_name(target)
+#@ for i in range(len(proto_sync_targets)):
+  - #@ sync_proto_name(proto_sync_targets[i]["name"])
 #@ end
 
 jobs:
@@ -272,8 +277,8 @@ jobs:
           repository: repo
           rebase: true
 
-#@ for target in proto_sync_targets:
-- #@ sync_proto(target)
+#@ for i in range(len(proto_sync_targets)):
+- #@ sync_proto(proto_sync_targets[i]["name"], proto_sync_targets[i]["src_path"], proto_sync_targets[i]["dst_path"], proto_sync_targets[i]["buf_config_path"] if "buf_config_path" in proto_sync_targets[i] else "")
 #@ end
 
 resources:
