@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build(ci): add lnd2 to tilt bitcoin group (#3819)'
-      sha: e9d1ab47e7ff663f759a7dea8a3528bf5c77dfc0
+      commitTitle: 'revert(core): move lnd-health integration tests (#3820)...'
+      sha: 9252eaf2a081015be97d039386566016c1abb2f9
       tags:
-      - 0.19.38-7-ge9d1ab47e
+      - 0.19.38-9-g9252eaf2a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build(ci): add lnd2 to tilt bitcoin group (#3819)'
-      sha: e9d1ab47e7ff663f759a7dea8a3528bf5c77dfc0
+      commitTitle: 'revert(core): move lnd-health integration tests (#3820)...'
+      sha: 9252eaf2a081015be97d039386566016c1abb2f9
       tags:
-      - 0.19.38-7-ge9d1ab47e
+      - 0.19.38-9-g9252eaf2a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'build(ci): add lnd2 to tilt bitcoin group (#3819)'
-      sha: e9d1ab47e7ff663f759a7dea8a3528bf5c77dfc0
+      commitTitle: 'revert(core): move lnd-health integration tests (#3820)...'
+      sha: 9252eaf2a081015be97d039386566016c1abb2f9
       tags:
-      - 0.19.38-7-ge9d1ab47e
+      - 0.19.38-9-g9252eaf2a
     path: ./
   path: ./graphql
 kind: LockConfig
