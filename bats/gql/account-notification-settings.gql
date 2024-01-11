@@ -1,0 +1,11 @@
+query accountNotificationSettings {
+  me {
+    id
+    defaultAccount {
+      id
+      ... on ConsumerAccount {
+        notificationSettingsAlt
+      }
+    }
+  }
+}

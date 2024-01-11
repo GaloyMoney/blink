@@ -1,4 +1,18 @@
+input AccountDisableNotificationCategoryInputAlt {
+	channel: NotificationChannelAlt!
+	category: NotificationCategoryAlt!
+}
+
 input AccountDisableNotificationChannelInputAlt {
+	channel: NotificationChannelAlt!
+}
+
+input AccountEnableNotificationCategoryInputAlt {
+	channel: NotificationChannelAlt!
+	category: NotificationCategoryAlt!
+}
+
+input AccountEnableNotificationChannelInputAlt {
 	channel: NotificationChannelAlt!
 }
 
@@ -16,6 +30,9 @@ extend type ConsumerAccount @key(fields: "id") {
 
 type Mutation {
 	accountDisableNotificationChannelAlt(input: AccountDisableNotificationChannelInputAlt!): AccountUpdateNotificationSettingsPayloadAlt!
+	accountEnableNotificationChannelAlt(input: AccountEnableNotificationChannelInputAlt!): AccountUpdateNotificationSettingsPayloadAlt!
+	accountDisableNotificationCategoryAlt(input: AccountDisableNotificationCategoryInputAlt!): AccountUpdateNotificationSettingsPayloadAlt!
+	accountEnableNotificationCategoryAlt(input: AccountEnableNotificationCategoryInputAlt!): AccountUpdateNotificationSettingsPayloadAlt!
 }
 
 enum NotificationCategoryAlt {

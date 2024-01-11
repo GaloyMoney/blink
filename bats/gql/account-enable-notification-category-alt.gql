@@ -1,0 +1,12 @@
+mutation accountEnableNotificationCategory(
+  $input: AccountEnableNotificationCategoryInputAlt!
+) {
+  accountEnableNotificationCategoryAlt(input: $input) {
+    notificationSettings {
+      push {
+        enabled
+        disabledCategories
+      }
+    }
+  }
+}

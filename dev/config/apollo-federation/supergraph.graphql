@@ -81,6 +81,13 @@ input AccountDisableNotificationCategoryInput
   channel: NotificationChannel
 }
 
+input AccountDisableNotificationCategoryInputAlt
+  @join__type(graph: NOTIFICATIONS)
+{
+  channel: NotificationChannelAlt!
+  category: NotificationCategoryAlt!
+}
+
 input AccountDisableNotificationChannelInput
   @join__type(graph: PUBLIC)
 {
@@ -100,10 +107,23 @@ input AccountEnableNotificationCategoryInput
   channel: NotificationChannel
 }
 
+input AccountEnableNotificationCategoryInputAlt
+  @join__type(graph: NOTIFICATIONS)
+{
+  channel: NotificationChannelAlt!
+  category: NotificationCategoryAlt!
+}
+
 input AccountEnableNotificationChannelInput
   @join__type(graph: PUBLIC)
 {
   channel: NotificationChannel!
+}
+
+input AccountEnableNotificationChannelInputAlt
+  @join__type(graph: NOTIFICATIONS)
+{
+  channel: NotificationChannelAlt!
 }
 
 enum AccountLevel
@@ -1068,6 +1088,9 @@ type Mutation
   apiKeyCreate(input: ApiKeyCreateInput!): ApiKeyCreatePayload! @join__field(graph: API_KEYS)
   apiKeyRevoke(input: ApiKeyRevokeInput!): ApiKeyRevokePayload! @join__field(graph: API_KEYS)
   accountDisableNotificationChannelAlt(input: AccountDisableNotificationChannelInputAlt!): AccountUpdateNotificationSettingsPayloadAlt! @join__field(graph: NOTIFICATIONS)
+  accountEnableNotificationChannelAlt(input: AccountEnableNotificationChannelInputAlt!): AccountUpdateNotificationSettingsPayloadAlt! @join__field(graph: NOTIFICATIONS)
+  accountDisableNotificationCategoryAlt(input: AccountDisableNotificationCategoryInputAlt!): AccountUpdateNotificationSettingsPayloadAlt! @join__field(graph: NOTIFICATIONS)
+  accountEnableNotificationCategoryAlt(input: AccountEnableNotificationCategoryInputAlt!): AccountUpdateNotificationSettingsPayloadAlt! @join__field(graph: NOTIFICATIONS)
   accountDelete: AccountDeletePayload! @join__field(graph: PUBLIC)
   accountDisableNotificationCategory(input: AccountDisableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
   accountDisableNotificationChannel(input: AccountDisableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)

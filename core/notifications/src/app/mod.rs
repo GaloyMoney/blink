@@ -40,4 +40,55 @@ impl NotificationsApp {
         self.settings.persist(&mut account_settings).await?;
         Ok(account_settings)
     }
+
+    pub async fn enable_channel_on_account(
+        &self,
+        account_id: GaloyAccountId,
+        channel: NotificationChannel,
+    ) -> Result<AccountNotificationSettings, ApplicationError> {
+        let mut account_settings =
+            if let Some(settings) = self.settings.find_for_account_id(&account_id).await? {
+                settings
+            } else {
+                AccountNotificationSettings::new(account_id)
+            };
+            
+        account_settings.enable_channel(channel);
+        self.settings.persist(&mut account_settings).await?;
+        Ok(account_settings)
+    }
+
+    pub async fn disable_category_on_account(
+        &self,
+        account_id: GaloyAccountId,
+        channel: NotificationChannel,
+        category: NotificationCategory,
+    ) -> Result<AccountNotificationSettings, ApplicationError> {
+        let mut account_settings =
+            if let Some(settings) = self.settings.find_for_account_id(&account_id).await? {
+                settings
+            } else {
+                AccountNotificationSettings::new(account_id)
+            };
+        account_settings.disable_category(channel, category);
+        self.settings.persist(&mut account_settings).await?;
+        Ok(account_settings)
+    }
+
+    pub async fn enable_category_on_account(
+        &self,
+        account_id: GaloyAccountId,
+        channel: NotificationChannel,
+        category: NotificationCategory,
+    ) -> Result<AccountNotificationSettings, ApplicationError> {
+        let mut account_settings =
+            if let Some(settings) = self.settings.find_for_account_id(&account_id).await? {
+                settings
+            } else {
+                AccountNotificationSettings::new(account_id)
+            };
+        account_settings.enable_category(channel, category);
+        self.settings.persist(&mut account_settings).await?;
+        Ok(account_settings)
+    }
 }
