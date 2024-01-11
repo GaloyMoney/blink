@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(core): change debug script to create usd wallet for locked
-        accounts (#3810)'
-      sha: d79c72c7070ff55b4e6668a63468524ef38d55c4
+      commitTitle: 'chore: bump @mui/joy from 5.0.0-beta.17 to 5.0.0-beta.21 (#3778)...'
+      sha: 475bd685efb97c4ae8e75214b07201be49bc1377
       tags:
-      - 0.19.35-2-gd79c72c70
+      - 0.19.36-2-g475bd685e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(core): change debug script to create usd wallet for locked
-        accounts (#3810)'
-      sha: d79c72c7070ff55b4e6668a63468524ef38d55c4
+      commitTitle: 'chore: bump @mui/joy from 5.0.0-beta.17 to 5.0.0-beta.21 (#3778)...'
+      sha: 475bd685efb97c4ae8e75214b07201be49bc1377
       tags:
-      - 0.19.35-2-gd79c72c70
+      - 0.19.36-2-g475bd685e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'refactor(core): change debug script to create usd wallet for locked
-        accounts (#3810)'
-      sha: d79c72c7070ff55b4e6668a63468524ef38d55c4
+      commitTitle: 'chore: bump @mui/joy from 5.0.0-beta.17 to 5.0.0-beta.21 (#3778)...'
+      sha: 475bd685efb97c4ae8e75214b07201be49bc1377
       tags:
-      - 0.19.36
+      - 0.19.36-2-g475bd685e
     path: ./
   path: ./graphql
 kind: LockConfig
