@@ -1,0 +1,37 @@
+input AccountDisableNotificationChannelInputAlt {
+	channel: String!
+}
+
+type AccountUpdateNotificationSettingsPayloadAlt {
+	notificationSettings: NotificationSettingsAlt!
+}
+
+
+extend type ConsumerAccount @key(fields: "id") {
+	id: ID! @external
+}
+
+
+
+
+type Mutation {
+	accountDisableNotificationChannelAlt(input: AccountDisableNotificationChannelInputAlt!): AccountUpdateNotificationSettingsPayloadAlt!
+}
+
+type NotificationChannelSettingsAlt {
+	enabled: Boolean!
+	disabledCategories: [String!]!
+}
+
+type NotificationSettingsAlt {
+	push: NotificationChannelSettingsAlt!
+}
+
+
+
+extend schema @link(
+	url: "https://specs.apollo.dev/federation/v2.3",
+	import: ["@key", "@tag", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@composeDirective", "@interfaceObject"]
+)
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
