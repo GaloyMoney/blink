@@ -21,6 +21,13 @@ setup_file() {
 
   [[ "$channel_enabled" == "false" ]] || exit 1
 
+    # Ensure notification settings exist on account
+    exec_graphql "$token_name" 'account-notification-settings'
+    account_channel_enabled="$(graphql_output '.data.me.defaultAccount.notificationSettingsAlt.push.enabled')"
+
+    [[ "$account_channel_enabled" == "false" ]] || exit 1
+
+
     exec_graphql "$token_name" 'account-enable-notification-channel-alt' "$variables"
     channel_enabled="$(graphql_output '.data.accountEnableNotificationChannelAlt.notificationSettings.push.enabled')"
   [[ "$channel_enabled" == "true" ]] || exit 1

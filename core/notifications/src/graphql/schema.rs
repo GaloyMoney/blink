@@ -26,7 +26,25 @@ struct ConsumerAccount {
     id: ID,
 }
 #[ComplexObject]
-impl ConsumerAccount {}
+impl ConsumerAccount {
+    async fn notification_settings_alt(
+        &self,
+        ctx: &Context<'_>,
+    ) -> async_graphql::Result<NotificationSettingsAlt> {
+        let app = ctx.data_unchecked::<NotificationsApp>();
+        
+        // TODO: we should be using account_id but the mutations currently use subject.id
+        // let account_id = GaloyAccountId::from(self.id.0.clone());
+
+        let subject = ctx.data::<AuthSubject>()?;
+
+        let settings = app
+            .notification_settings_for_account(GaloyAccountId::from(subject.id.clone()))
+            .await?;
+
+        Ok(NotificationSettingsAlt::from(settings))
+    }
+}
 
 #[derive(SimpleObject)]
 pub struct AccountUpdateNotificationSettingsPayloadAlt {

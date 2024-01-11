@@ -23,6 +23,7 @@ type AccountUpdateNotificationSettingsPayloadAlt {
 
 extend type ConsumerAccount @key(fields: "id") {
 	id: ID! @external
+	notificationSettingsAlt: NotificationSettingsAlt!
 }
 
 

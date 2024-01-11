@@ -404,6 +404,7 @@ type ConsumerAccount implements Account
   @join__type(graph: PUBLIC)
 {
   id: ID!
+  notificationSettingsAlt: NotificationSettingsAlt! @join__field(graph: NOTIFICATIONS)
   callbackEndpoints: [CallbackEndpoint!]! @join__field(graph: PUBLIC)
 
   """

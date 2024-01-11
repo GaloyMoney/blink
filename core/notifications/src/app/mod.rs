@@ -25,6 +25,17 @@ impl NotificationsApp {
         }
     }
 
+    pub async fn notification_settings_for_account(
+        &self,
+        account_id: GaloyAccountId,
+    ) -> Result<AccountNotificationSettings, ApplicationError> {
+        if let Some(settings) = self.settings.find_for_account_id(&account_id).await? {
+            Ok(settings)
+        } else {
+            Ok(AccountNotificationSettings::new(account_id))
+        }
+    }
+
     pub async fn disable_channel_on_account(
         &self,
         account_id: GaloyAccountId,

@@ -1,3 +1,5 @@
+use async_graphql::ID;
+
 use super::types::*;
 use crate::{account_notification_settings::*, primitives::*};
 

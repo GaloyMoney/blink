@@ -4,7 +4,11 @@ query accountNotificationSettings {
     defaultAccount {
       id
       ... on ConsumerAccount {
-        notificationSettingsAlt
+        notificationSettingsAlt {
+          push {
+            enabled
+          }
+        }
       }
     }
   }
