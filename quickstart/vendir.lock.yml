@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump @mui/joy from 5.0.0-beta.17 to 5.0.0-beta.21 (#3778)...'
-      sha: 475bd685efb97c4ae8e75214b07201be49bc1377
+      commitTitle: 'test(core): move in-place integration tests (#3818)...'
+      sha: 7eaa8f0f7cd02f51b54c72d4e4b9830b23c58e25
       tags:
-      - 0.19.36-2-g475bd685e
+      - 0.19.38-2-g7eaa8f0f7
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump @mui/joy from 5.0.0-beta.17 to 5.0.0-beta.21 (#3778)...'
-      sha: 475bd685efb97c4ae8e75214b07201be49bc1377
+      commitTitle: 'test(core): move in-place integration tests (#3818)...'
+      sha: 7eaa8f0f7cd02f51b54c72d4e4b9830b23c58e25
       tags:
-      - 0.19.36-2-g475bd685e
+      - 0.19.38-2-g7eaa8f0f7
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump @mui/joy from 5.0.0-beta.17 to 5.0.0-beta.21 (#3778)...'
-      sha: 475bd685efb97c4ae8e75214b07201be49bc1377
+      commitTitle: 'test(core): move in-place integration tests (#3818)...'
+      sha: 7eaa8f0f7cd02f51b54c72d4e4b9830b23c58e25
       tags:
-      - 0.19.36-2-g475bd685e
+      - 0.19.38-2-g7eaa8f0f7
     path: ./
   path: ./graphql
 kind: LockConfig
