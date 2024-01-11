@@ -35,13 +35,23 @@ git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 git checkout ${ref}
 app_src_files=($(buck2 uquery 'inputs(deps("'"//apps/${APP}:"'"))' 2>/dev/null))
 
-relevant_commits=()
+declare -A relevant_commits
 for commit in $(git log --format="%H" ${old_ref}..${ref}); do
   changed_files=$(git diff-tree --no-commit-id --name-only -r $commit)
 
   for file in ${changed_files[@]}; do
     if printf '%s\n' "${app_src_files[@]}" | grep -Fxq "$file"; then
-      relevant_commits+=($commit)
+      commit_message=$(git log --format="%s" -n 1 $commit)
+      pr_number=$(echo "$commit_message" | grep -oE '#[0-9]+' | grep -oE '[0-9]+')
+
+      if [[ -n "$pr_number" ]]; then
+        pr_link="${github_url}/pull/${pr_number}"
+        commit_message="${commit_message/ (#$pr_number)/}"
+        relevant_commits[$commit]="[$commit_message (#$pr_number)]($pr_link)"
+      else
+        relevant_commits[$commit]="$commit_message"
+      fi
+
       break
     fi
   done
@@ -84,9 +94,9 @@ EOF
 if [[ "${#relevant_commits[@]}" -eq 0 ]]; then
   echo "- No relevant commits found" >> ../body.md
 else
-  for commit in "${relevant_commits[@]}"; do
+  for commit in "${!relevant_commits[@]}"; do
     cat <<-EOF >> ../body.md
-		- ${github_url}/commit/${commit}
+		- ${github_url}/commit/${commit} - ${relevant_commits[$commit]}
 		EOF
   done
 fi
