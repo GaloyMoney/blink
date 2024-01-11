@@ -55,9 +55,9 @@ impl Mutation {
     async fn account_disable_notification_channel_alt(
         &self,
         ctx: &Context<'_>,
-        input: AccountDisableNotificationChannelInputAlt,
+        _input: AccountDisableNotificationChannelInputAlt,
     ) -> async_graphql::Result<AccountUpdateNotificationSettingsPayloadAlt> {
-        let app = ctx.data_unchecked::<NotificationsApp>();
+        let _app = ctx.data_unchecked::<NotificationsApp>();
         let subject = ctx.data::<AuthSubject>()?;
         if subject.read_only {
             return Err("Permission denied".into());

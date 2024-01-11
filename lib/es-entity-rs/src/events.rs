@@ -100,21 +100,27 @@ where
                 .persisted_events
                 .push(serde_json::from_value(e.event).expect("Could not deserialize event"));
         }
-        if current.is_none() {
-            Err(EntityError::NoEvents)
+        if let Some(current) = current {
+            E::try_from(current)
         } else {
-            E::try_from(current.expect("Could not get current"))
+            Err(EntityError::NoEvents)
         }
     }
 
     pub fn iter(&self) -> impl DoubleEndedIterator<Item = &T> {
         self.persisted_events.iter().chain(self.new_events.iter())
     }
+}
 
-    pub fn into_iter(self) -> impl DoubleEndedIterator<Item = T> {
-        self.persisted_events
-            .into_iter()
-            .chain(self.new_events.into_iter())
+impl<T> IntoIterator for EntityEvents<T>
+where
+    T: DeserializeOwned + Serialize + 'static + EntityEvent,
+{
+    type Item = T;
+    type IntoIter = std::iter::Chain<std::vec::IntoIter<T>, std::vec::IntoIter<T>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.persisted_events.into_iter().chain(self.new_events)
     }
 }
 

@@ -7,7 +7,7 @@ use mongodb::{
     Client,
 };
 
-async fn get_client(mongodb_config: MongodbConfig, mongodb_pw: String) -> anyhow::Result<Client> {
+async fn _get_client(mongodb_config: MongodbConfig, mongodb_pw: String) -> anyhow::Result<Client> {
     let port = mongodb_config.port;
     let client_options = ClientOptions::builder()
         .hosts(

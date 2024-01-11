@@ -2,7 +2,6 @@ use derive_builder::Builder;
 use es_entity::*;
 use serde::{Deserialize, Serialize};
 
-use super::value::*;
 use crate::primitives::*;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -23,6 +22,7 @@ impl EntityEvent for AccountNotificationSettingsEvent {
 
 #[derive(Builder)]
 #[builder(pattern = "owned", build_fn(error = "EntityError"))]
+#[allow(dead_code)]
 pub struct AccountNotificationSettings {
     pub id: AccountNotificationSettingsId,
     pub galoy_account_id: GaloyAccountId,
@@ -31,15 +31,6 @@ pub struct AccountNotificationSettings {
 
 impl Entity for AccountNotificationSettings {
     type Event = AccountNotificationSettingsEvent;
-}
-
-impl AccountNotificationSettings {
-    pub fn notification_settings() -> NotificationSettings {
-        let settings = NotificationSettings::default();
-        // for e in events {
-        // }
-        unimplemented!()
-    }
 }
 
 impl TryFrom<EntityEvents<AccountNotificationSettingsEvent>> for AccountNotificationSettings {

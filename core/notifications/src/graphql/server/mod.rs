@@ -3,13 +3,13 @@ mod jwks;
 
 use async_graphql::*;
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
-use axum::{extract::State, headers::HeaderMap, routing::get, Extension, Json, Router};
+use axum::{routing::get, Extension, Router};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use tracing::instrument;
+
 
 use crate::{
-    app::{ApplicationError, NotificationsApp},
+    app::{NotificationsApp},
     graphql,
 };
 
