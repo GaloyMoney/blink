@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(notifications): complete initial use case e2e (#3815)...'
-      sha: 2905fb8f8892a7647bcb6028affe6836ea3bc87a
+      commitTitle: 'build(ci): add lnd2 to tilt bitcoin group (#3819)'
+      sha: e9d1ab47e7ff663f759a7dea8a3528bf5c77dfc0
       tags:
-      - 0.19.38-4-g2905fb8f8
+      - 0.19.38-7-ge9d1ab47e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(notifications): complete initial use case e2e (#3815)...'
-      sha: 2905fb8f8892a7647bcb6028affe6836ea3bc87a
+      commitTitle: 'build(ci): add lnd2 to tilt bitcoin group (#3819)'
+      sha: e9d1ab47e7ff663f759a7dea8a3528bf5c77dfc0
       tags:
-      - 0.19.38-4-g2905fb8f8
+      - 0.19.38-7-ge9d1ab47e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(notifications): complete initial use case e2e (#3815)...'
-      sha: 2905fb8f8892a7647bcb6028affe6836ea3bc87a
+      commitTitle: 'build(ci): add lnd2 to tilt bitcoin group (#3819)'
+      sha: e9d1ab47e7ff663f759a7dea8a3528bf5c77dfc0
       tags:
-      - 0.19.38-4-g2905fb8f8
+      - 0.19.38-7-ge9d1ab47e
     path: ./
   path: ./graphql
 kind: LockConfig
