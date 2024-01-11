@@ -17,7 +17,7 @@ impl AccountNotificationSettingsRepo {
 
     pub async fn find_for_account_id(
         &self,
-        account_id: GaloyAccountId,
+        account_id: &GaloyAccountId,
     ) -> Result<Option<AccountNotificationSettings>, AccountNotificationSettingsError> {
         let rows = sqlx::query_as!(
             GenericEvent,

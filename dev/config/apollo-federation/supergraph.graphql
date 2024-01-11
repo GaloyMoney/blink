@@ -1227,6 +1227,7 @@ enum NotificationCategoryAlt
   @join__type(graph: NOTIFICATIONS)
 {
   CIRCLES @join__enumValue(graph: NOTIFICATIONS)
+  PAYMENTS @join__enumValue(graph: NOTIFICATIONS)
 }
 
 enum NotificationChannel

@@ -49,6 +49,18 @@ impl EsEntity for AccountNotificationSettings {
 }
 
 impl AccountNotificationSettings {
+    pub fn new(galoy_account_id: GaloyAccountId) -> Self {
+        let id = AccountNotificationSettingsId::new();
+        Self::try_from(EntityEvents::init(
+            id,
+            [AccountNotificationSettingsEvent::Initialized {
+                id,
+                galoy_account_id,
+            }],
+        ))
+        .expect("Could not create default")
+    }
+
     pub fn disable_channel(&mut self, channel: NotificationChannel) {
         if !self.is_channel_enabled(channel) {
             return;

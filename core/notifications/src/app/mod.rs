@@ -31,11 +31,10 @@ impl NotificationsApp {
         channel: NotificationChannel,
     ) -> Result<AccountNotificationSettings, ApplicationError> {
         let mut account_settings =
-            if let Some(settings) = self.settings.find_for_account_id(account_id).await? {
+            if let Some(settings) = self.settings.find_for_account_id(&account_id).await? {
                 settings
             } else {
-                unimplemented!()
-                // AccountNotificationSettings::default()
+                AccountNotificationSettings::new(account_id)
             };
         account_settings.disable_channel(channel);
         self.settings.persist(&mut account_settings).await?;
