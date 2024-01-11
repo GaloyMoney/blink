@@ -14,9 +14,15 @@ impl AsRef<str> for GaloyAccountId {
     }
 }
 
+impl std::fmt::Display for GaloyAccountId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 es_entity::entity_id! { AccountNotificationSettingsId }
 
-#[derive(async_graphql::Enum, Copy, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(async_graphql::Enum, Debug, Copy, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[graphql(name = "NotificationChannelAlt")]
 pub enum NotificationChannel {
     Push,

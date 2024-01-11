@@ -28,12 +28,17 @@ impl NotificationsApp {
     pub async fn disable_channel_on_account(
         &self,
         account_id: GaloyAccountId,
-        _channel: NotificationChannel,
+        channel: NotificationChannel,
     ) -> Result<(), ApplicationError> {
-        let _account_setting = self.settings.find_for_account_id(account_id).await?;
-        // settings.disable_channel(channel)
-        // repo.persist(settings)
-        // Ok(settings)
+        let mut account_settings =
+            if let Some(settings) = self.settings.find_for_account_id(account_id).await? {
+                settings
+            } else {
+                unimplemented!()
+                // AccountNotificationSettings::default()
+            };
+        account_settings.disable_channel(channel);
+        self.settings.persist(&mut account_settings).await?;
         Ok(())
     }
 }

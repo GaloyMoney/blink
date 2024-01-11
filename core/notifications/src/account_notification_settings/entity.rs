@@ -11,6 +11,9 @@ pub enum AccountNotificationSettingsEvent {
         id: AccountNotificationSettingsId,
         galoy_account_id: GaloyAccountId,
     },
+    ChannelDisabled {
+        channel: NotificationChannel,
+    },
 }
 
 impl EntityEvent for AccountNotificationSettingsEvent {
@@ -22,7 +25,6 @@ impl EntityEvent for AccountNotificationSettingsEvent {
 
 #[derive(Builder)]
 #[builder(pattern = "owned", build_fn(error = "EntityError"))]
-#[allow(dead_code)]
 pub struct AccountNotificationSettings {
     pub id: AccountNotificationSettingsId,
     pub galoy_account_id: GaloyAccountId,
@@ -31,6 +33,14 @@ pub struct AccountNotificationSettings {
 
 impl Entity for AccountNotificationSettings {
     type Event = AccountNotificationSettingsEvent;
+}
+
+impl AccountNotificationSettings {
+    pub fn disable_channel(&mut self, channel: NotificationChannel) {
+        // check if its already disabled -> NoOp
+        self.events
+            .push(AccountNotificationSettingsEvent::ChannelDisabled { channel });
+    }
 }
 
 impl TryFrom<EntityEvents<AccountNotificationSettingsEvent>> for AccountNotificationSettings {
@@ -49,6 +59,7 @@ impl TryFrom<EntityEvents<AccountNotificationSettingsEvent>> for AccountNotifica
                     builder = builder.id(*id);
                     builder = builder.galoy_account_id(galoy_account_id.clone());
                 }
+                _ => (),
             }
         }
         builder.events(events).build()

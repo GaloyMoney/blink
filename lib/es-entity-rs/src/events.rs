@@ -42,6 +42,10 @@ where
         }
     }
 
+    pub fn push(&mut self, event: T) {
+        self.new_events.push(event);
+    }
+
     pub async fn persist(
         &mut self,
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
@@ -49,6 +53,10 @@ where
         let uuid: uuid::Uuid = self.entity_id.into();
         let mut events = Vec::new();
         std::mem::swap(&mut events, &mut self.new_events);
+
+        if events.is_empty() {
+            return Ok(0);
+        }
 
         let mut query_builder = sqlx::QueryBuilder::new(format!(
             "INSERT INTO {} (id, sequence, event_type, event)",

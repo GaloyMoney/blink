@@ -36,4 +36,22 @@ impl AccountNotificationSettingsRepo {
         }
         Ok(Some(res?))
     }
+
+    pub async fn persist(
+        &self,
+        settings: &mut AccountNotificationSettings,
+    ) -> Result<(), AccountNotificationSettingsError> {
+        let mut tx = self.pool.begin().await?;
+        sqlx::query!(
+            r#"INSERT INTO account_notification_settings (id, galoy_account_id)
+            VALUES ($1, $2) ON CONFLICT DO NOTHING"#,
+            settings.id as AccountNotificationSettingsId,
+            settings.galoy_account_id.as_ref(),
+        )
+        .execute(&mut *tx)
+        .await?;
+        settings.events.persist(&mut tx).await?;
+        tx.commit().await?;
+        Ok(())
+    }
 }
