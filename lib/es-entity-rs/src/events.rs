@@ -21,13 +21,6 @@ pub trait EsEntity: TryFrom<EntityEvents<<Self as EsEntity>::Event>, Error = Ent
     type Event: EntityEvent;
 }
 
-pub trait EsEntityProjection<E>
-where
-    Self: Default,
-{
-    fn apply(&mut self, event: &E) -> Self;
-}
-
 pub struct EntityEvents<T: EntityEvent> {
     entity_id: <T as EntityEvent>::EntityId,
     persisted_events: Vec<T>,
@@ -51,16 +44,6 @@ where
 
     pub fn push(&mut self, event: T) {
         self.new_events.push(event);
-    }
-
-    pub fn project<P: EsEntityProjection<T>>(&self) -> P {
-        self.persisted_events
-            .iter()
-            .chain(self.new_events.iter())
-            .fold(P::default(), |mut acc, event| {
-                acc = acc.apply(event);
-                acc
-            })
     }
 
     pub async fn persist(

@@ -1,7 +1,6 @@
 mod config;
 mod error;
 
-use es_entity::EsEntityProjection;
 use sqlx::{Pool, Postgres};
 
 use crate::{account_notification_settings::*, primitives::*};
@@ -26,13 +25,11 @@ impl NotificationsApp {
         }
     }
 
-    pub async fn disable_channel_on_account<
-        T: EsEntityProjection<AccountNotificationSettingsEvent>,
-    >(
+    pub async fn disable_channel_on_account(
         &self,
         account_id: GaloyAccountId,
         channel: NotificationChannel,
-    ) -> Result<T, ApplicationError> {
+    ) -> Result<AccountNotificationSettings, ApplicationError> {
         let mut account_settings =
             if let Some(settings) = self.settings.find_for_account_id(account_id).await? {
                 settings
@@ -42,6 +39,6 @@ impl NotificationsApp {
             };
         account_settings.disable_channel(channel);
         self.settings.persist(&mut account_settings).await?;
-        Ok(account_settings.project())
+        Ok(account_settings)
     }
 }
