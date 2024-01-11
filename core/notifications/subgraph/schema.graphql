@@ -1,5 +1,5 @@
 input AccountDisableNotificationChannelInputAlt {
-	channel: String!
+	channel: NotificationChannelAlt!
 }
 
 type AccountUpdateNotificationSettingsPayloadAlt {
@@ -18,9 +18,17 @@ type Mutation {
 	accountDisableNotificationChannelAlt(input: AccountDisableNotificationChannelInputAlt!): AccountUpdateNotificationSettingsPayloadAlt!
 }
 
+enum NotificationCategoryAlt {
+	CIRCLES
+}
+
+enum NotificationChannelAlt {
+	PUSH
+}
+
 type NotificationChannelSettingsAlt {
 	enabled: Boolean!
-	disabledCategories: [String!]!
+	disabledCategories: [NotificationCategoryAlt!]!
 }
 
 type NotificationSettingsAlt {

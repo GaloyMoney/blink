@@ -1,5 +1,6 @@
 use async_graphql::*;
 
+use super::types::*;
 use crate::app::NotificationsApp;
 
 pub struct AuthSubject {
@@ -32,20 +33,9 @@ pub struct AccountUpdateNotificationSettingsPayloadAlt {
     notification_settings: NotificationSettingsAlt,
 }
 
-#[derive(SimpleObject)]
-pub struct NotificationSettingsAlt {
-    push: NotificationChannelSettingsAlt,
-}
-
-#[derive(SimpleObject)]
-pub struct NotificationChannelSettingsAlt {
-    enabled: bool,
-    disabled_categories: Vec<String>,
-}
-
 #[derive(InputObject)]
 struct AccountDisableNotificationChannelInputAlt {
-    channel: String,
+    channel: NotificationChannelAlt,
 }
 
 pub struct Mutation;

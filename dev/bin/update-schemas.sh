@@ -8,6 +8,7 @@ TARGETS=(
     "//core/api:update-public-schema"
     "//core/api:update-admin-schema"
     "//core/api-keys:update-schema"
+    "//core/notifications:update-schema"
 )
 
 buck2 build "${TARGETS[@]}"
