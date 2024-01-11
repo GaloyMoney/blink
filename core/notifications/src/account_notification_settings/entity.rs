@@ -146,15 +146,13 @@ impl TryFrom<EntityEvents<AccountNotificationSettingsEvent>> for AccountNotifica
     ) -> Result<Self, Self::Error> {
         let mut builder = AccountNotificationSettingsBuilder::default();
         for event in events.iter() {
-            match event {
-                AccountNotificationSettingsEvent::Initialized {
-                    id,
-                    galoy_account_id,
-                } => {
-                    builder = builder.id(*id);
-                    builder = builder.galoy_account_id(galoy_account_id.clone());
-                }
-                _ => (),
+            if let AccountNotificationSettingsEvent::Initialized {
+                id,
+                galoy_account_id,
+            } = event
+            {
+                builder = builder.id(*id);
+                builder = builder.galoy_account_id(galoy_account_id.clone());
             }
         }
         builder.events(events).build()
