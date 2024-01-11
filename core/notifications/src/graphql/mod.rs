@@ -1,5 +1,7 @@
 mod convert;
 mod schema;
+mod types;
+
 pub mod server;
 
 use async_graphql::*;

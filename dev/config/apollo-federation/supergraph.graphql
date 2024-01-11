@@ -90,7 +90,7 @@ input AccountDisableNotificationChannelInput
 input AccountDisableNotificationChannelInputAlt
   @join__type(graph: NOTIFICATIONS)
 {
-  channel: String!
+  channel: NotificationChannelAlt!
 }
 
 input AccountEnableNotificationCategoryInput
@@ -1223,10 +1223,23 @@ enum Network
 scalar NotificationCategory
   @join__type(graph: PUBLIC)
 
+enum NotificationCategoryAlt
+  @join__type(graph: NOTIFICATIONS)
+{
+  CIRCLES @join__enumValue(graph: NOTIFICATIONS)
+  PAYMENTS @join__enumValue(graph: NOTIFICATIONS)
+}
+
 enum NotificationChannel
   @join__type(graph: PUBLIC)
 {
   PUSH @join__enumValue(graph: PUBLIC)
+}
+
+enum NotificationChannelAlt
+  @join__type(graph: NOTIFICATIONS)
+{
+  PUSH @join__enumValue(graph: NOTIFICATIONS)
 }
 
 type NotificationChannelSettings
@@ -1240,7 +1253,7 @@ type NotificationChannelSettingsAlt
   @join__type(graph: NOTIFICATIONS)
 {
   enabled: Boolean!
-  disabledCategories: [String!]!
+  disabledCategories: [NotificationCategoryAlt!]!
 }
 
 type NotificationSettings
