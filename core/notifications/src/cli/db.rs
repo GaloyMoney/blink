@@ -14,7 +14,7 @@ pub async fn init_pool(config: &DbConfig) -> anyhow::Result<sqlx::PgPool> {
         .connect(&config.pg_con)
         .await?;
 
-    // sqlx::migrate!().run(&pool).await?;
+    sqlx::migrate!().run(&pool).await?;
 
     Ok(pool)
 }
