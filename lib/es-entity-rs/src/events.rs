@@ -103,7 +103,7 @@ where
         if let Some(current) = current {
             E::try_from(current)
         } else {
-            Err(EntityError::NoEvents)
+            Err(EntityError::NoEntityEventsPresent)
         }
     }
 
@@ -162,7 +162,7 @@ mod tests {
     fn load_zero_events() {
         let generic_events = vec![];
         let res = EntityEvents::load_first::<DummyEntity>(generic_events);
-        assert!(matches!(res, Err(EntityError::NoEvents)));
+        assert!(matches!(res, Err(EntityError::NoEntityEventsPresent)));
     }
 
     #[test]
