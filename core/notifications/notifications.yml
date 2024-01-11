@@ -1,0 +1,6 @@
+# db:
+#   pool_size: 20
+# server:
+#   port: 5397
+#   jwks_url: "http://localhost:4456/.well-known/jwks.json"
+# app:

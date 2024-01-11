@@ -220,10 +220,13 @@
           api-ws-server = tscDerivation {pkgName = "api-ws-server";};
           api-exporter = tscDerivation {pkgName = "api-exporter";};
           api-cron = tscDerivation {pkgName = "api-cron";};
+
           consent = nextDerivation {pkgName = "consent";};
           dashboard = nextDerivation {pkgName = "dashboard";};
           pay = nextDerivation {pkgName = "pay";};
+
           api-keys = rustDerivation {pkgName = "api-keys";};
+          notifications = rustDerivation {pkgName = "notifications";};
 
           dockerImage = dockerTools.buildImage {
             name = "galoy-dev";

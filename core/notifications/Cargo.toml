@@ -16,6 +16,7 @@ fail-on-warnings = []
 
 [dependencies]
 tracing = { path = "../../lib/tracing-rs" }
+es-entity = { path = "../../lib/es-entity-rs" }
 
 anyhow = { workspace = true }
 async-graphql = { workspace = true }
@@ -23,6 +24,7 @@ async-graphql-axum = { workspace = true }
 axum = { workspace = true }
 jsonwebtoken = { workspace = true }
 clap = { workspace = true }
+derive_builder = { workspace = true }
 tokio = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
@@ -31,6 +33,7 @@ serde_yaml = { workspace = true }
 thiserror = { workspace = true }
 chrono = { workspace = true }
 sqlx = { workspace = true }
+mongodb = { workspace = true }
 rand = { workspace = true }
 uuid = { workspace = true }
 serde_with = { workspace = true }

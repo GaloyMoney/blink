@@ -30,7 +30,7 @@ source:
   repository: #@ release_pipeline_image()
 #@ end
 
-#@ components = ["api-keys"]
+#@ components = ["api-keys", "notifications"]
 
 groups:
 - name: core-bundle
