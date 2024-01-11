@@ -96,7 +96,7 @@ if [[ "${#relevant_commits[@]}" -eq 0 ]]; then
 else
   for commit in "${!relevant_commits[@]}"; do
     cat <<-EOF >> ../body.md
-		- ${github_url}/commit/${commit}
+		- ${github_url}/commit/${commit} - \`${relevant_commits[$commit]}\`
 		EOF
   done
 fi
