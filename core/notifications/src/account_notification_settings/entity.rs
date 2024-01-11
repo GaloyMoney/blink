@@ -2,6 +2,8 @@ use derive_builder::Builder;
 use es_entity::*;
 use serde::{Deserialize, Serialize};
 
+use std::collections::HashSet;
+
 use crate::primitives::*;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -16,6 +18,14 @@ pub enum AccountNotificationSettingsEvent {
     },
     ChannelEnabled {
         channel: NotificationChannel,
+    },
+    CategoryDisabled {
+        channel: NotificationChannel,
+        category: NotificationCategory,
+    },
+    CategoryEnabled {
+        channel: NotificationChannel,
+        category: NotificationCategory,
     },
 }
 
@@ -64,6 +74,54 @@ impl AccountNotificationSettings {
                 true
             }
             _ => acc,
+        })
+    }
+
+    pub fn disable_category(
+        &mut self,
+        channel: NotificationChannel,
+        category: NotificationCategory,
+    ) {
+        if self.disabled_categories_for(channel).contains(&category) {
+            return;
+        }
+        self.events
+            .push(AccountNotificationSettingsEvent::CategoryDisabled { channel, category });
+    }
+
+    pub fn enable_category(
+        &mut self,
+        channel: NotificationChannel,
+        category: NotificationCategory,
+    ) {
+        if !self.disabled_categories_for(channel).contains(&category) {
+            return;
+        }
+        self.events
+            .push(AccountNotificationSettingsEvent::CategoryEnabled { channel, category });
+    }
+
+    pub fn disabled_categories_for(
+        &self,
+        channel: NotificationChannel,
+    ) -> HashSet<NotificationCategory> {
+        self.events.iter().fold(HashSet::new(), |mut acc, event| {
+            match event {
+                AccountNotificationSettingsEvent::CategoryDisabled {
+                    channel: c,
+                    category,
+                } if c == &channel => {
+                    acc.insert(*category);
+                }
+                AccountNotificationSettingsEvent::CategoryEnabled {
+                    channel: c,
+                    category,
+                } if c == &channel => {
+                    acc.remove(category);
+                }
+                _ => (),
+            }
+            acc
         })
     }
 }
@@ -130,5 +188,41 @@ mod tests {
         settings.disable_channel(NotificationChannel::Push);
         settings.enable_channel(NotificationChannel::Push);
         assert!(settings.is_channel_enabled(NotificationChannel::Push));
+    }
+
+    #[test]
+    fn no_categories_initially_disabled() {
+        let events = initial_events();
+        let settings = AccountNotificationSettings::try_from(events).expect("Could not hydrate");
+        assert_eq!(
+            settings.disabled_categories_for(NotificationChannel::Push),
+            HashSet::new(),
+        );
+    }
+
+    #[test]
+    fn can_disable_categories() {
+        let events = initial_events();
+        let mut settings =
+            AccountNotificationSettings::try_from(events).expect("Could not hydrate");
+        settings.disable_category(NotificationChannel::Push, NotificationCategory::Circles);
+        assert_eq!(
+            settings.disabled_categories_for(NotificationChannel::Push),
+            HashSet::from([NotificationCategory::Circles])
+        );
+    }
+
+    #[test]
+    fn can_enable_categories() {
+        let events = initial_events();
+        let mut settings =
+            AccountNotificationSettings::try_from(events).expect("Could not hydrate");
+        settings.disable_category(NotificationChannel::Push, NotificationCategory::Circles);
+        settings.disable_category(NotificationChannel::Push, NotificationCategory::Payments);
+        settings.enable_category(NotificationChannel::Push, NotificationCategory::Circles);
+        assert_eq!(
+            settings.disabled_categories_for(NotificationChannel::Push),
+            HashSet::from([NotificationCategory::Payments])
+        );
     }
 }

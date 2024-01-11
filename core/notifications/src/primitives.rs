@@ -28,8 +28,9 @@ pub enum NotificationChannel {
     Push,
 }
 
-#[derive(async_graphql::Enum, Copy, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(async_graphql::Enum, Debug, Hash, Copy, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[graphql(name = "NotificationCategoryAlt")]
 pub enum NotificationCategory {
     Circles,
+    Payments,
 }
