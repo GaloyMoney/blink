@@ -94,7 +94,7 @@ EOF
 if [[ "${#relevant_commits[@]}" -eq 0 ]]; then
   echo "- No relevant commits found" >> ../body.md
 else
-  for commit in "${relevant_commits[@]}"; do
+  for commit in "${!relevant_commits[@]}"; do
     cat <<-EOF >> ../body.md
 		- ${github_url}/commit/${commit}
 		EOF
