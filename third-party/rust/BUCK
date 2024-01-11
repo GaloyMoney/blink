@@ -3825,6 +3825,17 @@ cargo.rust_library(
     crate = "mongodb",
     crate_root = "mongodb-2.8.0.crate/src/lib.rs",
     edition = "2021",
+    env = {
+        "CARGO_MANIFEST_DIR": "mongodb-2.8.0.crate",
+        "CARGO_PKG_AUTHORS": "Saghm Rossi <saghmrossi@gmail.com>:Patrick Freed <patrick.freed@mongodb.com>:Isabel Atkinson <isabel.atkinson@mongodb.com>:Abraham Egnor <abraham.egnor@mongodb.com>:Kaitlin Mahar <kaitlin.mahar@mongodb.com>",
+        "CARGO_PKG_DESCRIPTION": "The official MongoDB driver for Rust",
+        "CARGO_PKG_NAME": "mongodb",
+        "CARGO_PKG_REPOSITORY": "https://github.com/mongodb/mongo-rust-driver",
+        "CARGO_PKG_VERSION": "2.8.0",
+        "CARGO_PKG_VERSION_MAJOR": "2",
+        "CARGO_PKG_VERSION_MINOR": "8",
+        "CARGO_PKG_VERSION_PATCH": "0",
+    },
     features = [
         "default",
         "serde_bytes",
@@ -6274,11 +6285,34 @@ cargo.rust_library(
     crate = "rustc_version_runtime",
     crate_root = "rustc_version_runtime-0.2.1.crate/src/lib.rs",
     edition = "2015",
+    env = {
+        "OUT_DIR": "$(location :rustc_version_runtime-0.2.1-build-script-run[out_dir])",
+    },
     visibility = [],
     deps = [
         ":rustc_version-0.2.3",
         ":semver-0.9.0",
     ],
+)
+
+cargo.rust_binary(
+    name = "rustc_version_runtime-0.2.1-build-script-build",
+    srcs = [":rustc_version_runtime-0.2.1.crate"],
+    crate = "build_script_build",
+    crate_root = "rustc_version_runtime-0.2.1.crate/build.rs",
+    edition = "2015",
+    visibility = [],
+    deps = [
+        ":rustc_version-0.2.3",
+        ":semver-0.9.0",
+    ],
+)
+
+buildscript_run(
+    name = "rustc_version_runtime-0.2.1-build-script-run",
+    package_name = "rustc_version_runtime",
+    buildscript_rule = ":rustc_version_runtime-0.2.1-build-script-build",
+    version = "0.2.1",
 )
 
 http_archive(
@@ -9040,6 +9074,17 @@ cargo.rust_library(
     crate = "trust_dns_resolver",
     crate_root = "trust-dns-resolver-0.21.2.crate/src/lib.rs",
     edition = "2018",
+    env = {
+        "CARGO_MANIFEST_DIR": "trust-dns-resolver-0.21.2.crate",
+        "CARGO_PKG_AUTHORS": "Benjamin Fry <benjaminfry@me.com>",
+        "CARGO_PKG_DESCRIPTION": "Trust-DNS is a safe and secure DNS library. This Resolver library  uses the Client library to perform all DNS queries. The Resolver is intended to be a high-level library for any DNS record resolution see Resolver and AsyncResolver for supported resolution types. The Client can be used for other queries.\n",
+        "CARGO_PKG_NAME": "trust-dns-resolver",
+        "CARGO_PKG_REPOSITORY": "https://github.com/bluejekyll/trust-dns",
+        "CARGO_PKG_VERSION": "0.21.2",
+        "CARGO_PKG_VERSION_MAJOR": "0",
+        "CARGO_PKG_VERSION_MINOR": "21",
+        "CARGO_PKG_VERSION_PATCH": "2",
+    },
     features = [
         "default",
         "ipconfig",
