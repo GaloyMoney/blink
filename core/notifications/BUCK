@@ -107,6 +107,7 @@ rust_test(
         "//third-party/rust:thiserror",
         "//third-party/rust:chrono",
         "//third-party/rust:sqlx",
+        "//third-party/rust:mongodb",
         "//third-party/rust:rand",
         "//third-party/rust:uuid",
         "//third-party/rust:serde_with",
