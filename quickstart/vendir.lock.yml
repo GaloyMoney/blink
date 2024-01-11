@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): move in-place integration tests (#3818)...'
-      sha: 7eaa8f0f7cd02f51b54c72d4e4b9830b23c58e25
+      commitTitle: 'chore(notifications): complete initial use case e2e (#3815)...'
+      sha: 2905fb8f8892a7647bcb6028affe6836ea3bc87a
       tags:
-      - 0.19.38-2-g7eaa8f0f7
+      - 0.19.38-4-g2905fb8f8
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): move in-place integration tests (#3818)...'
-      sha: 7eaa8f0f7cd02f51b54c72d4e4b9830b23c58e25
+      commitTitle: 'chore(notifications): complete initial use case e2e (#3815)...'
+      sha: 2905fb8f8892a7647bcb6028affe6836ea3bc87a
       tags:
-      - 0.19.38-2-g7eaa8f0f7
+      - 0.19.38-4-g2905fb8f8
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(core): move in-place integration tests (#3818)...'
-      sha: 7eaa8f0f7cd02f51b54c72d4e4b9830b23c58e25
+      commitTitle: 'chore(notifications): complete initial use case e2e (#3815)...'
+      sha: 2905fb8f8892a7647bcb6028affe6836ea3bc87a
       tags:
-      - 0.19.38-2-g7eaa8f0f7
+      - 0.19.38-4-g2905fb8f8
     path: ./
   path: ./graphql
 kind: LockConfig
