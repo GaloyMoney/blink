@@ -47,7 +47,7 @@ for commit in $(git log --format="%H" ${old_ref}..${ref}); do
       if [[ -n "$pr_number" ]]; then
         pr_link="${github_url}/pull/${pr_number}"
         commit_message="${commit_message/ (#$pr_number)/}"
-        relevant_commits[$commit]="\`$commit_message\` - [#$pr_number]($pr_link)"
+        relevant_commits[$commit]="[$commit_message (#$pr_number)]($pr_link)"
       else
         relevant_commits[$commit]="$commit_message"
       fi
