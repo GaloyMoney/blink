@@ -243,6 +243,12 @@ source:
   - third-party/rust/**/*
   - Cargo.lock
   - Cargo.toml
+  - apps/*
+  - apps/**/*
+  - core/api-keys/*
+  - core/api-keys/**/*
+  - core/notifications/*
+  - core/notifications/**/*
   - lib/*-rs/
   - lib/*-rs/*
   - lib/*-rs/**/*
