@@ -180,7 +180,7 @@ type AccountUpdateNotificationSettingsPayload
 type AccountUpdateNotificationSettingsPayloadAlt
   @join__type(graph: NOTIFICATIONS)
 {
-  dummy: String!
+  notificationSettings: NotificationSettingsAlt!
 }
 
 type ApiKey
@@ -384,7 +384,6 @@ type ConsumerAccount implements Account
   @join__type(graph: PUBLIC)
 {
   id: ID!
-  notificationSettingsAlt: NotificationSettingsAlt! @join__field(graph: NOTIFICATIONS)
   callbackEndpoints: [CallbackEndpoint!]! @join__field(graph: PUBLIC)
 
   """
@@ -717,7 +716,7 @@ scalar join__FieldSet
 
 enum join__Graph {
   API_KEYS @join__graph(name: "api_keys", url: "http://bats-tests:5397/graphql")
-  NOTIFICATIONS @join__graph(name: "notifications", url: "http://bats-tests:5399/graphql")
+  NOTIFICATIONS @join__graph(name: "notifications", url: "http://bats-tests:6684/graphql")
   PUBLIC @join__graph(name: "public", url: "http://bats-tests:4012/graphql")
 }
 
@@ -1237,6 +1236,13 @@ type NotificationChannelSettings
   enabled: Boolean!
 }
 
+type NotificationChannelSettingsAlt
+  @join__type(graph: NOTIFICATIONS)
+{
+  enabled: Boolean!
+  disabledCategories: [String!]!
+}
+
 type NotificationSettings
   @join__type(graph: PUBLIC)
 {
@@ -1246,7 +1252,7 @@ type NotificationSettings
 type NotificationSettingsAlt
   @join__type(graph: NOTIFICATIONS)
 {
-  hello: String!
+  push: NotificationChannelSettingsAlt!
 }
 
 """An address for an on-chain bitcoin destination"""

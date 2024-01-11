@@ -1,13 +1,30 @@
+input AccountDisableNotificationChannelInputAlt {
+	channel: String!
+}
+
+type AccountUpdateNotificationSettingsPayloadAlt {
+	notificationSettings: NotificationSettingsAlt!
+}
+
+
 extend type ConsumerAccount @key(fields: "id") {
 	id: ID! @external
-	notificationSettings: NotificationSettings!
 }
 
 
 
 
-type NotificationSettings {
-	hello: String!
+type Mutation {
+	accountDisableNotificationChannelAlt(input: AccountDisableNotificationChannelInputAlt!): AccountUpdateNotificationSettingsPayloadAlt!
+}
+
+type NotificationChannelSettingsAlt {
+	enabled: Boolean!
+	disabledCategories: [String!]!
+}
+
+type NotificationSettingsAlt {
+	push: NotificationChannelSettingsAlt!
 }
 
 

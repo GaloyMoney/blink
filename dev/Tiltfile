@@ -371,6 +371,25 @@ local_resource(
     ]
 )
 
+notifications_target = "//core/notifications:notifications"
+local_resource(
+    "notifications",
+    labels = ["core"],
+    cmd = "buck2 build {}".format(notifications_target),
+    serve_cmd = "buck2 run {}".format(notifications_target),
+    serve_env = {
+      "PG_CON": "postgres://user:password@localhost:5433/pg",
+      "NOTIFICATIONS_CONFIG": "../core/notifications/notifications.yml",
+      "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
+    },
+    deps = _buck2_dep_inputs(notifications_target),
+    allow_parallel = True,
+    resource_deps = [
+       "api",
+       "notifications-pg"
+    ]
+)
+
 local_resource(
   name='init-onchain',
   labels = ['bitcoin'],
@@ -427,6 +446,8 @@ docker_groups = {
     "core": [
         "apollo-router",
         "mongodb",
+        "notifications-pg",
+        "oathkeeper",
         "redis",
         "stablesats",
         "svix-pg",

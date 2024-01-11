@@ -24,22 +24,23 @@ struct ConsumerAccount {
     #[graphql(external)]
     id: ID,
 }
+#[ComplexObject]
+impl ConsumerAccount {}
 
 #[derive(SimpleObject)]
 pub struct AccountUpdateNotificationSettingsPayloadAlt {
-    dummy: String,
+    notification_settings: NotificationSettingsAlt,
 }
 
 #[derive(SimpleObject)]
 pub struct NotificationSettingsAlt {
-    hello: String,
+    push: NotificationChannelSettingsAlt,
 }
 
-#[ComplexObject]
-impl ConsumerAccount {
-    async fn notification_settings_alt(&self) -> NotificationSettingsAlt {
-        unimplemented!()
-    }
+#[derive(SimpleObject)]
+pub struct NotificationChannelSettingsAlt {
+    enabled: bool,
+    disabled_categories: Vec<String>,
 }
 
 #[derive(InputObject)]
@@ -61,6 +62,13 @@ impl Mutation {
         if subject.read_only {
             return Err("Permission denied".into());
         }
-        unimplemented!()
+        Ok(AccountUpdateNotificationSettingsPayloadAlt {
+            notification_settings: NotificationSettingsAlt {
+                push: NotificationChannelSettingsAlt {
+                    enabled: false,
+                    disabled_categories: vec![],
+                },
+            },
+        })
     }
 }
