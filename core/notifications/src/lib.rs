@@ -3,6 +3,7 @@
 
 mod account_notification_settings;
 mod app;
+mod data_import;
 mod primitives;
 
 pub mod cli;
