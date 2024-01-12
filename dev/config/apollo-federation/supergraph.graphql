@@ -81,23 +81,10 @@ input AccountDisableNotificationCategoryInput
   channel: NotificationChannel
 }
 
-input AccountDisableNotificationCategoryInputAlt
-  @join__type(graph: NOTIFICATIONS)
-{
-  channel: NotificationChannelAlt!
-  category: NotificationCategoryAlt!
-}
-
 input AccountDisableNotificationChannelInput
   @join__type(graph: PUBLIC)
 {
   channel: NotificationChannel!
-}
-
-input AccountDisableNotificationChannelInputAlt
-  @join__type(graph: NOTIFICATIONS)
-{
-  channel: NotificationChannelAlt!
 }
 
 input AccountEnableNotificationCategoryInput
@@ -107,23 +94,10 @@ input AccountEnableNotificationCategoryInput
   channel: NotificationChannel
 }
 
-input AccountEnableNotificationCategoryInputAlt
-  @join__type(graph: NOTIFICATIONS)
-{
-  channel: NotificationChannelAlt!
-  category: NotificationCategoryAlt!
-}
-
 input AccountEnableNotificationChannelInput
   @join__type(graph: PUBLIC)
 {
   channel: NotificationChannel!
-}
-
-input AccountEnableNotificationChannelInputAlt
-  @join__type(graph: NOTIFICATIONS)
-{
-  channel: NotificationChannelAlt!
 }
 
 enum AccountLevel
@@ -195,12 +169,6 @@ type AccountUpdateNotificationSettingsPayload
 {
   account: ConsumerAccount
   errors: [Error!]!
-}
-
-type AccountUpdateNotificationSettingsPayloadAlt
-  @join__type(graph: NOTIFICATIONS)
-{
-  notificationSettings: NotificationSettingsAlt!
 }
 
 type ApiKey
@@ -400,20 +368,18 @@ type CentAmountPayload
 
 type ConsumerAccount implements Account
   @join__implements(graph: PUBLIC, interface: "Account")
-  @join__type(graph: NOTIFICATIONS, key: "id", extension: true)
   @join__type(graph: PUBLIC)
 {
-  id: ID!
-  notificationSettingsAlt: NotificationSettingsAlt! @join__field(graph: NOTIFICATIONS)
-  callbackEndpoints: [CallbackEndpoint!]! @join__field(graph: PUBLIC)
+  callbackEndpoints: [CallbackEndpoint!]!
 
   """
   return CSV stream, base64 encoded, of the list of transactions in the wallet
   """
-  csvTransactions(walletIds: [WalletId!]!): String! @join__field(graph: PUBLIC)
-  defaultWallet: PublicWallet! @join__field(graph: PUBLIC)
-  defaultWalletId: WalletId! @join__field(graph: PUBLIC)
-  displayCurrency: DisplayCurrency! @join__field(graph: PUBLIC)
+  csvTransactions(walletIds: [WalletId!]!): String!
+  defaultWallet: PublicWallet!
+  defaultWalletId: WalletId!
+  displayCurrency: DisplayCurrency!
+  id: ID!
 
   """A list of all invoices associated with walletIds optionally passed."""
   invoices(
@@ -429,15 +395,15 @@ type ConsumerAccount implements Account
     """Returns the last n items from the list."""
     last: Int
     walletIds: [WalletId]
-  ): InvoiceConnection @join__field(graph: PUBLIC)
-  level: AccountLevel! @join__field(graph: PUBLIC)
-  limits: AccountLimits! @join__field(graph: PUBLIC)
-  notificationSettings: NotificationSettings! @join__field(graph: PUBLIC)
-  pendingIncomingTransactions(walletIds: [WalletId]): [Transaction!]! @join__field(graph: PUBLIC)
+  ): InvoiceConnection
+  level: AccountLevel!
+  limits: AccountLimits!
+  notificationSettings: NotificationSettings!
+  pendingIncomingTransactions(walletIds: [WalletId]): [Transaction!]!
 
   """List the quiz questions of the consumer account"""
-  quiz: [Quiz!]! @join__field(graph: PUBLIC)
-  realtimePrice: RealtimePrice! @join__field(graph: PUBLIC)
+  quiz: [Quiz!]!
+  realtimePrice: RealtimePrice!
 
   """
   A list of all transactions associated with walletIds optionally passed.
@@ -455,9 +421,9 @@ type ConsumerAccount implements Account
     """Returns the last n items from the list."""
     last: Int
     walletIds: [WalletId]
-  ): TransactionConnection @join__field(graph: PUBLIC)
-  walletById(walletId: WalletId!): Wallet! @join__field(graph: PUBLIC)
-  wallets: [Wallet!]! @join__field(graph: PUBLIC)
+  ): TransactionConnection
+  walletById(walletId: WalletId!): Wallet!
+  wallets: [Wallet!]!
 }
 
 """
@@ -1088,10 +1054,10 @@ type Mutation
 {
   apiKeyCreate(input: ApiKeyCreateInput!): ApiKeyCreatePayload! @join__field(graph: API_KEYS)
   apiKeyRevoke(input: ApiKeyRevokeInput!): ApiKeyRevokePayload! @join__field(graph: API_KEYS)
-  accountDisableNotificationChannelAlt(input: AccountDisableNotificationChannelInputAlt!): AccountUpdateNotificationSettingsPayloadAlt! @join__field(graph: NOTIFICATIONS)
-  accountEnableNotificationChannelAlt(input: AccountEnableNotificationChannelInputAlt!): AccountUpdateNotificationSettingsPayloadAlt! @join__field(graph: NOTIFICATIONS)
-  accountDisableNotificationCategoryAlt(input: AccountDisableNotificationCategoryInputAlt!): AccountUpdateNotificationSettingsPayloadAlt! @join__field(graph: NOTIFICATIONS)
-  accountEnableNotificationCategoryAlt(input: AccountEnableNotificationCategoryInputAlt!): AccountUpdateNotificationSettingsPayloadAlt! @join__field(graph: NOTIFICATIONS)
+  userDisableNotificationChannel(input: UserDisableNotificationChannelInput!): UserUpdateNotificationSettingsPayload! @join__field(graph: NOTIFICATIONS)
+  userEnableNotificationChannel(input: UserEnableNotificationChannelInput!): UserUpdateNotificationSettingsPayload! @join__field(graph: NOTIFICATIONS)
+  userDisableNotificationCategory(input: UserDisableNotificationCategoryInput!): UserUpdateNotificationSettingsPayload! @join__field(graph: NOTIFICATIONS)
+  userEnableNotificationCategory(input: UserEnableNotificationCategoryInput!): UserUpdateNotificationSettingsPayload! @join__field(graph: NOTIFICATIONS)
   accountDelete: AccountDeletePayload! @join__field(graph: PUBLIC)
   accountDisableNotificationCategory(input: AccountDisableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
   accountDisableNotificationChannel(input: AccountDisableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
@@ -1247,23 +1213,10 @@ enum Network
 scalar NotificationCategory
   @join__type(graph: PUBLIC)
 
-enum NotificationCategoryAlt
-  @join__type(graph: NOTIFICATIONS)
-{
-  CIRCLES @join__enumValue(graph: NOTIFICATIONS)
-  PAYMENTS @join__enumValue(graph: NOTIFICATIONS)
-}
-
 enum NotificationChannel
   @join__type(graph: PUBLIC)
 {
   PUSH @join__enumValue(graph: PUBLIC)
-}
-
-enum NotificationChannelAlt
-  @join__type(graph: NOTIFICATIONS)
-{
-  PUSH @join__enumValue(graph: NOTIFICATIONS)
 }
 
 type NotificationChannelSettings
@@ -1273,23 +1226,10 @@ type NotificationChannelSettings
   enabled: Boolean!
 }
 
-type NotificationChannelSettingsAlt
-  @join__type(graph: NOTIFICATIONS)
-{
-  enabled: Boolean!
-  disabledCategories: [NotificationCategoryAlt!]!
-}
-
 type NotificationSettings
   @join__type(graph: PUBLIC)
 {
   push: NotificationChannelSettings!
-}
-
-type NotificationSettingsAlt
-  @join__type(graph: NOTIFICATIONS)
-{
-  push: NotificationChannelSettingsAlt!
 }
 
 """An address for an on-chain bitcoin destination"""
@@ -1909,10 +1849,12 @@ type UsdWallet implements Wallet
 
 type User
   @join__type(graph: API_KEYS, key: "id", extension: true)
+  @join__type(graph: NOTIFICATIONS, key: "id", extension: true)
   @join__type(graph: PUBLIC)
 {
   id: ID!
   apiKeys: [ApiKey!]! @join__field(graph: API_KEYS)
+  notificationSettings: UserNotificationSettings! @join__field(graph: NOTIFICATIONS)
 
   """
   Get single contact details.
@@ -1991,6 +1933,19 @@ type UserContactUpdateAliasPayload
   errors: [Error!]!
 }
 
+input UserDisableNotificationCategoryInput
+  @join__type(graph: NOTIFICATIONS)
+{
+  channel: UserNotificationChannel!
+  category: UserNotificationCategory!
+}
+
+input UserDisableNotificationChannelInput
+  @join__type(graph: NOTIFICATIONS)
+{
+  channel: UserNotificationChannel!
+}
+
 type UserEmailDeletePayload
   @join__type(graph: PUBLIC)
 {
@@ -2026,6 +1981,19 @@ type UserEmailRegistrationValidatePayload
   me: User
 }
 
+input UserEnableNotificationCategoryInput
+  @join__type(graph: NOTIFICATIONS)
+{
+  channel: UserNotificationChannel!
+  category: UserNotificationCategory!
+}
+
+input UserEnableNotificationChannelInput
+  @join__type(graph: NOTIFICATIONS)
+{
+  channel: UserNotificationChannel!
+}
+
 input UserLoginInput
   @join__type(graph: PUBLIC)
 {
@@ -2049,6 +2017,32 @@ input UserLogoutInput
 """Unique identifier of a user"""
 scalar Username
   @join__type(graph: PUBLIC)
+
+enum UserNotificationCategory
+  @join__type(graph: NOTIFICATIONS)
+{
+  CIRCLES @join__enumValue(graph: NOTIFICATIONS)
+  PAYMENTS @join__enumValue(graph: NOTIFICATIONS)
+}
+
+enum UserNotificationChannel
+  @join__type(graph: NOTIFICATIONS)
+{
+  PUSH @join__enumValue(graph: NOTIFICATIONS)
+}
+
+type UserNotificationChannelSettings
+  @join__type(graph: NOTIFICATIONS)
+{
+  enabled: Boolean!
+  disabledCategories: [UserNotificationCategory!]!
+}
+
+type UserNotificationSettings
+  @join__type(graph: NOTIFICATIONS)
+{
+  push: UserNotificationChannelSettings!
+}
 
 type UserPhoneDeletePayload
   @join__type(graph: PUBLIC)
@@ -2128,6 +2122,12 @@ type UserUpdateLanguagePayload
 {
   errors: [Error!]!
   user: User
+}
+
+type UserUpdateNotificationSettingsPayload
+  @join__type(graph: NOTIFICATIONS)
+{
+  notificationSettings: UserNotificationSettings!
 }
 
 input UserUpdateUsernameInput

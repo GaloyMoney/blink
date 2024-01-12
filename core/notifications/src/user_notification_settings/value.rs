@@ -1,15 +1,15 @@
 #[derive(Clone, Default, Debug)]
-pub struct NotificationSettings {
-    push: NotificationChannelSettings,
+pub struct UserNotificationSettings {
+    push: UserNotificationChannelSettings,
 }
 
 #[derive(Clone, Debug)]
-pub struct NotificationChannelSettings {
+pub struct UserNotificationChannelSettings {
     enabled: bool,
     disabled_categories: Vec<String>,
 }
 
-impl Default for NotificationChannelSettings {
+impl Default for UserNotificationChannelSettings {
     fn default() -> Self {
         Self {
             enabled: true,

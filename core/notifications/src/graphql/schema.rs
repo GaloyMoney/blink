@@ -13,93 +13,90 @@ pub struct Query;
 #[Object]
 impl Query {
     #[graphql(entity)]
-    async fn consumer_account(&self, id: ID) -> Option<ConsumerAccount> {
-        Some(ConsumerAccount { id })
+    async fn user(&self, id: ID) -> Option<User> {
+        Some(User { id })
     }
 }
 
 #[derive(SimpleObject)]
 #[graphql(extends)]
 #[graphql(complex)]
-struct ConsumerAccount {
+struct User {
     #[graphql(external)]
     id: ID,
 }
 #[ComplexObject]
-impl ConsumerAccount {
-    async fn notification_settings_alt(
+impl User {
+    async fn notification_settings(
         &self,
         ctx: &Context<'_>,
-    ) -> async_graphql::Result<NotificationSettingsAlt> {
+    ) -> async_graphql::Result<UserNotificationSettings> {
         let app = ctx.data_unchecked::<NotificationsApp>();
-        
-        // TODO: we should be using account_id but the mutations currently use subject.id
-        // let account_id = GaloyAccountId::from(self.id.0.clone());
 
         let subject = ctx.data::<AuthSubject>()?;
 
         let settings = app
-            .notification_settings_for_account(GaloyAccountId::from(subject.id.clone()))
+            .notification_settings_for_user(GaloyUserId::from(subject.id.clone()))
             .await?;
 
-        Ok(NotificationSettingsAlt::from(settings))
+        Ok(UserNotificationSettings::from(settings))
     }
 }
 
 #[derive(SimpleObject)]
-pub struct AccountUpdateNotificationSettingsPayloadAlt {
-    notification_settings: NotificationSettingsAlt,
+pub struct UserUpdateNotificationSettingsPayload {
+    notification_settings: UserNotificationSettings,
 }
 
 #[derive(InputObject)]
-struct AccountDisableNotificationChannelInputAlt {
-    channel: NotificationChannel,
+struct UserDisableNotificationChannelInput {
+    channel: UserNotificationChannel,
 }
 
 #[derive(InputObject)]
-struct AccountEnableNotificationChannelInputAlt {
-    channel: NotificationChannel,
+struct UserEnableNotificationChannelInput {
+    channel: UserNotificationChannel,
 }
 
 #[derive(InputObject)]
-struct AccountEnableNotificationCategoryInputAlt {
-    channel: NotificationChannel,
-    category: NotificationCategory,
+struct UserEnableNotificationCategoryInput {
+    channel: UserNotificationChannel,
+    category: UserNotificationCategory,
 }
 
 #[derive(InputObject)]
-struct AccountDisableNotificationCategoryInputAlt {
-    channel: NotificationChannel,
-    category: NotificationCategory,
+struct UserDisableNotificationCategoryInput {
+    channel: UserNotificationChannel,
+    category: UserNotificationCategory,
 }
 
 pub struct Mutation;
 
 #[Object]
 impl Mutation {
-    async fn account_disable_notification_channel_alt(
+    async fn user_disable_notification_channel(
         &self,
         ctx: &Context<'_>,
-        input: AccountDisableNotificationChannelInputAlt,
-    ) -> async_graphql::Result<AccountUpdateNotificationSettingsPayloadAlt> {
+        input: UserDisableNotificationChannelInput,
+    ) -> async_graphql::Result<UserUpdateNotificationSettingsPayload> {
         let subject = ctx.data::<AuthSubject>()?;
         if subject.read_only {
             return Err("Permission denied".into());
         }
         let app = ctx.data_unchecked::<NotificationsApp>();
         let settings = app
-            .disable_channel_on_account(GaloyAccountId::from(subject.id.clone()), input.channel)
+            .disable_channel_on_user(GaloyUserId::from(subject.id.clone()), input.channel)
             .await?;
-        Ok(AccountUpdateNotificationSettingsPayloadAlt {
-            notification_settings: NotificationSettingsAlt::from(settings),
+        Ok(UserUpdateNotificationSettingsPayload {
+            notification_settings: UserNotificationSettings::from(settings),
         })
     }
 
-    async fn account_enable_notification_channel_alt(
+    async fn user_enable_notification_channel(
         &self,
         ctx: &Context<'_>,
-        input: AccountEnableNotificationChannelInputAlt,
-    ) -> async_graphql::Result<AccountUpdateNotificationSettingsPayloadAlt> {
+        input: UserEnableNotificationChannelInput,
+    ) -> async_graphql::Result<UserUpdateNotificationSettingsPayload> {
         let subject = ctx.data::<AuthSubject>()?;
         if subject.read_only {
             return Err("Permission denied".into());
@@ -107,19 +104,19 @@ impl Mutation {
         let app = ctx.data_unchecked::<NotificationsApp>();
 
         let settings = app
-            .enable_channel_on_account(GaloyAccountId::from(subject.id.clone()), input.channel)
+            .enable_channel_on_user(GaloyUserId::from(subject.id.clone()), input.channel)
             .await?;
 
-        Ok(AccountUpdateNotificationSettingsPayloadAlt {
-            notification_settings: NotificationSettingsAlt::from(settings),
+        Ok(UserUpdateNotificationSettingsPayload {
+            notification_settings: UserNotificationSettings::from(settings),
         })
     }
 
-    async fn account_disable_notification_category_alt(
+    async fn user_disable_notification_category(
         &self,
         ctx: &Context<'_>,
-        input: AccountDisableNotificationCategoryInputAlt,
-    ) -> async_graphql::Result<AccountUpdateNotificationSettingsPayloadAlt> {
+        input: UserDisableNotificationCategoryInput,
+    ) -> async_graphql::Result<UserUpdateNotificationSettingsPayload> {
         let subject = ctx.data::<AuthSubject>()?;
         if subject.read_only {
             return Err("Permission denied".into());
@@ -127,23 +124,23 @@ impl Mutation {
         let app = ctx.data_unchecked::<NotificationsApp>();
 
         let settings = app
-            .disable_category_on_account(
-                GaloyAccountId::from(subject.id.clone()),
+            .disable_category_on_user(
+                GaloyUserId::from(subject.id.clone()),
                 input.channel,
                 input.category,
             )
             .await?;
 
-        Ok(AccountUpdateNotificationSettingsPayloadAlt {
-            notification_settings: NotificationSettingsAlt::from(settings),
+        Ok(UserUpdateNotificationSettingsPayload {
+            notification_settings: UserNotificationSettings::from(settings),
         })
     }
 
-    async fn account_enable_notification_category_alt(
+    async fn user_enable_notification_category(
         &self,
         ctx: &Context<'_>,
-        input: AccountEnableNotificationCategoryInputAlt,
-    ) -> async_graphql::Result<AccountUpdateNotificationSettingsPayloadAlt> {
+        input: UserEnableNotificationCategoryInput,
+    ) -> async_graphql::Result<UserUpdateNotificationSettingsPayload> {
         let subject = ctx.data::<AuthSubject>()?;
         if subject.read_only {
             return Err("Permission denied".into());
@@ -151,15 +148,15 @@ impl Mutation {
         let app = ctx.data_unchecked::<NotificationsApp>();
 
         let settings = app
-            .enable_category_on_account(
-                GaloyAccountId::from(subject.id.clone()),
+            .enable_category_on_user(
+                GaloyUserId::from(subject.id.clone()),
                 input.channel,
                 input.category,
             )
             .await?;
 
-        Ok(AccountUpdateNotificationSettingsPayloadAlt {
-            notification_settings: NotificationSettingsAlt::from(settings),
+        Ok(UserUpdateNotificationSettingsPayload {
+            notification_settings: UserNotificationSettings::from(settings),
         })
     }
     

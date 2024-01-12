@@ -1,60 +1,56 @@
-input AccountDisableNotificationCategoryInputAlt {
-	channel: NotificationChannelAlt!
-	category: NotificationCategoryAlt!
-}
-
-input AccountDisableNotificationChannelInputAlt {
-	channel: NotificationChannelAlt!
-}
-
-input AccountEnableNotificationCategoryInputAlt {
-	channel: NotificationChannelAlt!
-	category: NotificationCategoryAlt!
-}
-
-input AccountEnableNotificationChannelInputAlt {
-	channel: NotificationChannelAlt!
-}
-
-type AccountUpdateNotificationSettingsPayloadAlt {
-	notificationSettings: NotificationSettingsAlt!
-}
-
-
-extend type ConsumerAccount @key(fields: "id") {
-	id: ID! @external
-	notificationSettingsAlt: NotificationSettingsAlt!
-}
-
-
-
-
 type Mutation {
-	accountDisableNotificationChannelAlt(input: AccountDisableNotificationChannelInputAlt!): AccountUpdateNotificationSettingsPayloadAlt!
-	accountEnableNotificationChannelAlt(input: AccountEnableNotificationChannelInputAlt!): AccountUpdateNotificationSettingsPayloadAlt!
-	accountDisableNotificationCategoryAlt(input: AccountDisableNotificationCategoryInputAlt!): AccountUpdateNotificationSettingsPayloadAlt!
-	accountEnableNotificationCategoryAlt(input: AccountEnableNotificationCategoryInputAlt!): AccountUpdateNotificationSettingsPayloadAlt!
+	userDisableNotificationChannel(input: UserDisableNotificationChannelInput!): UserUpdateNotificationSettingsPayload!
+	userEnableNotificationChannel(input: UserEnableNotificationChannelInput!): UserUpdateNotificationSettingsPayload!
+	userDisableNotificationCategory(input: UserDisableNotificationCategoryInput!): UserUpdateNotificationSettingsPayload!
+	userEnableNotificationCategory(input: UserEnableNotificationCategoryInput!): UserUpdateNotificationSettingsPayload!
 }
 
-enum NotificationCategoryAlt {
+
+
+extend type User @key(fields: "id") {
+	id: ID! @external
+	notificationSettings: UserNotificationSettings!
+}
+
+input UserDisableNotificationCategoryInput {
+	channel: UserNotificationChannel!
+	category: UserNotificationCategory!
+}
+
+input UserDisableNotificationChannelInput {
+	channel: UserNotificationChannel!
+}
+
+input UserEnableNotificationCategoryInput {
+	channel: UserNotificationChannel!
+	category: UserNotificationCategory!
+}
+
+input UserEnableNotificationChannelInput {
+	channel: UserNotificationChannel!
+}
+
+enum UserNotificationCategory {
 	CIRCLES
 	PAYMENTS
 }
 
-enum NotificationChannelAlt {
+enum UserNotificationChannel {
 	PUSH
 }
 
-type NotificationChannelSettingsAlt {
+type UserNotificationChannelSettings {
 	enabled: Boolean!
-	disabledCategories: [NotificationCategoryAlt!]!
+	disabledCategories: [UserNotificationCategory!]!
 }
 
-type NotificationSettingsAlt {
-	push: NotificationChannelSettingsAlt!
+type UserNotificationSettings {
+	push: UserNotificationChannelSettings!
 }
 
-
+type UserUpdateNotificationSettingsPayload {
+	notificationSettings: UserNotificationSettings!
+}
 
 extend schema @link(
 	url: "https://specs.apollo.dev/federation/v2.3",
