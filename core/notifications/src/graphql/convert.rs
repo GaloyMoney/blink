@@ -1,13 +1,15 @@
-use super::types::*;
-use crate::{account_notification_settings::*, primitives::*};
+use super::types;
+use crate::{primitives::*, user_notification_settings};
 
-impl From<AccountNotificationSettings> for NotificationSettingsAlt {
-    fn from(settings: AccountNotificationSettings) -> Self {
-        NotificationSettingsAlt {
-            push: NotificationChannelSettingsAlt {
-                enabled: settings.is_channel_enabled(NotificationChannel::Push),
+impl From<user_notification_settings::UserNotificationSettings>
+    for types::UserNotificationSettings
+{
+    fn from(settings: user_notification_settings::UserNotificationSettings) -> Self {
+        Self {
+            push: types::UserNotificationChannelSettings {
+                enabled: settings.is_channel_enabled(UserNotificationChannel::Push),
                 disabled_categories: settings
-                    .disabled_categories_for(NotificationChannel::Push)
+                    .disabled_categories_for(UserNotificationChannel::Push)
                     .into_iter()
                     .collect(),
             },
