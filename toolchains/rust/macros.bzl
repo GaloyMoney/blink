@@ -14,10 +14,6 @@ load(
     "@prelude//tests:re_utils.bzl",
     "get_re_executor_from_props",
 )
-load(
-    "@prelude//decls/core_rules.bzl",
-    "genrule",
-)
 
 def rust_protobuf_library(
         name,
