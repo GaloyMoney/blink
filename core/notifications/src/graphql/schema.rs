@@ -33,10 +33,8 @@ impl User {
     ) -> async_graphql::Result<UserNotificationSettings> {
         let app = ctx.data_unchecked::<NotificationsApp>();
 
-        let subject = ctx.data::<AuthSubject>()?;
-
         let settings = app
-            .notification_settings_for_user(GaloyUserId::from(subject.id.clone()))
+            .notification_settings_for_user(GaloyUserId::from(self.id.0.clone()))
             .await?;
 
         Ok(UserNotificationSettings::from(settings))
