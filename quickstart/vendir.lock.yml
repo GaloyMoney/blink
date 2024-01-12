@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'revert(core): move lnd-health integration tests (#3820)...'
-      sha: 9252eaf2a081015be97d039386566016c1abb2f9
+      commitTitle: 'test(core): move create-account integration tests (#3817)...'
+      sha: 11f678dc87f744e92b619eed69e0bb5a40afa2ad
       tags:
-      - 0.19.38-9-g9252eaf2a
+      - 0.19.39-4-g11f678dc8
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'revert(core): move lnd-health integration tests (#3820)...'
-      sha: 9252eaf2a081015be97d039386566016c1abb2f9
+      commitTitle: 'test(core): move create-account integration tests (#3817)...'
+      sha: 11f678dc87f744e92b619eed69e0bb5a40afa2ad
       tags:
-      - 0.19.38-9-g9252eaf2a
+      - 0.19.39-4-g11f678dc8
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'revert(core): move lnd-health integration tests (#3820)...'
-      sha: 9252eaf2a081015be97d039386566016c1abb2f9
+      commitTitle: 'test(core): move create-account integration tests (#3817)...'
+      sha: 11f678dc87f744e92b619eed69e0bb5a40afa2ad
       tags:
-      - 0.19.38-9-g9252eaf2a
+      - 0.19.39-4-g11f678dc8
     path: ./
   path: ./graphql
 kind: LockConfig
