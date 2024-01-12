@@ -3,6 +3,8 @@ import { WalletCurrency } from "@/domain/shared"
 import { WalletInvoicesRepository } from "@/services/mongoose"
 import { createMockWalletInvoice } from "test/helpers/wallet-invoices"
 
+const walletInvoices = WalletInvoicesRepository()
+
 const recipientWalletDescriptor = {
   currency: WalletCurrency.Btc,
   id: crypto.randomUUID() as WalletId,
@@ -11,11 +13,9 @@ const recipientWalletDescriptor = {
 let createdInvoices: WalletInvoice[] = []
 
 beforeAll(async () => {
-  const walletInvoicesRepository = WalletInvoicesRepository()
-
   // Create 5 invoices for the same wallet
   for (let i = 0; i < 5; i++) {
-    const invoice = await walletInvoicesRepository.persistNew(
+    const invoice = await walletInvoices.persistNew(
       createMockWalletInvoice(recipientWalletDescriptor),
     )
     if (invoice instanceof Error) throw invoice
@@ -28,7 +28,7 @@ beforeAll(async () => {
   })
 
   // Create an invoice for a different wallet
-  await walletInvoicesRepository.persistNew(
+  await walletInvoices.persistNew(
     createMockWalletInvoice({
       currency: WalletCurrency.Btc,
       id: crypto.randomUUID() as WalletId,
@@ -37,11 +37,11 @@ beforeAll(async () => {
 })
 
 describe("WalletInvoicesRepository", () => {
-  describe("getInvoicesForWallet", () => {
-    const walletInvoicesRepository = WalletInvoicesRepository()
+  describe("findInvoicesForWallet", () => {
+    const walletInvoices = WalletInvoicesRepository()
 
     it("gets first page of invoices", async () => {
-      const result = await walletInvoicesRepository.findInvoicesForWallets({
+      const result = await walletInvoices.findInvoicesForWallets({
         walletIds: [recipientWalletDescriptor.id],
         paginationArgs: {
           first: 100,
@@ -69,7 +69,7 @@ describe("WalletInvoicesRepository", () => {
     })
 
     it("gets page after cursor", async () => {
-      const result = await walletInvoicesRepository.findInvoicesForWallets({
+      const result = await walletInvoices.findInvoicesForWallets({
         walletIds: [recipientWalletDescriptor.id],
         paginationArgs: {
           first: 2,
@@ -101,7 +101,7 @@ describe("WalletInvoicesRepository", () => {
     })
 
     it("get last page of invoices", async () => {
-      const result = await walletInvoicesRepository.findInvoicesForWallets({
+      const result = await walletInvoices.findInvoicesForWallets({
         walletIds: [recipientWalletDescriptor.id],
         paginationArgs: {
           last: 100,
@@ -120,7 +120,7 @@ describe("WalletInvoicesRepository", () => {
     })
 
     it("get page before cursor", async () => {
-      const result = await walletInvoicesRepository.findInvoicesForWallets({
+      const result = await walletInvoices.findInvoicesForWallets({
         walletIds: [recipientWalletDescriptor.id],
         paginationArgs: {
           last: 2,
@@ -154,7 +154,7 @@ describe("WalletInvoicesRepository", () => {
     })
 
     it("returns empty edges for wallet without invoices", async () => {
-      const result = await walletInvoicesRepository.findInvoicesForWallets({
+      const result = await walletInvoices.findInvoicesForWallets({
         walletIds: [crypto.randomUUID() as WalletId],
         paginationArgs: {
           first: 100,
@@ -171,6 +171,65 @@ describe("WalletInvoicesRepository", () => {
           },
         }),
       )
+    })
+  })
+
+  describe("findByPaymentHash", () => {
+    it("finds an invoice", async () => {
+      const walletInvoice = createdInvoices[0]
+      const { paymentHash } = walletInvoice
+      const lookedUpInvoice = await walletInvoices.findByPaymentHash(paymentHash)
+      if (lookedUpInvoice instanceof Error) throw lookedUpInvoice
+
+      const dateDifference = Math.abs(
+        lookedUpInvoice.createdAt.getTime() - walletInvoice.createdAt.getTime(),
+      )
+      expect(dateDifference).toBeLessThanOrEqual(10) // 10ms
+
+      lookedUpInvoice.createdAt = walletInvoice.createdAt = new Date()
+      expect(lookedUpInvoice).toEqual(walletInvoice)
+    })
+  })
+
+  describe("markAsPaid", () => {
+    it("marks an invoice as paid", async () => {
+      const { paymentHash } = createdInvoices[0]
+
+      const lookedUpInvoice = await walletInvoices.findByPaymentHash(paymentHash)
+      expect(lookedUpInvoice).toHaveProperty("paid", false)
+      expect(lookedUpInvoice).toHaveProperty("processingCompleted", false)
+
+      const updatedResult = await walletInvoices.markAsPaid(paymentHash)
+      expect(updatedResult).not.toBeInstanceOf(Error)
+      expect(updatedResult).toHaveProperty("paid", true)
+      expect(updatedResult).toHaveProperty("processingCompleted", true)
+
+      const lookedUpInvoiceAfter = await walletInvoices.findByPaymentHash(paymentHash)
+      expect(lookedUpInvoiceAfter).not.toBeInstanceOf(Error)
+      expect(lookedUpInvoiceAfter).toEqual(updatedResult)
+      expect(lookedUpInvoiceAfter).toHaveProperty("paid", true)
+      expect(updatedResult).toHaveProperty("processingCompleted", true)
+    })
+  })
+
+  describe("markAsProcessingCompleted", () => {
+    it("marks an invoice as processing completed", async () => {
+      const { paymentHash } = createdInvoices[1]
+
+      const lookedUpInvoice = await walletInvoices.findByPaymentHash(paymentHash)
+      expect(lookedUpInvoice).toHaveProperty("paid", false)
+      expect(lookedUpInvoice).toHaveProperty("processingCompleted", false)
+
+      const updatedResult = await walletInvoices.markAsProcessingCompleted(paymentHash)
+      expect(updatedResult).not.toBeInstanceOf(Error)
+      expect(updatedResult).toHaveProperty("processingCompleted", true)
+      expect(updatedResult).toHaveProperty("paid", false)
+
+      const lookedUpInvoiceAfter = await walletInvoices.findByPaymentHash(paymentHash)
+      expect(lookedUpInvoiceAfter).not.toBeInstanceOf(Error)
+      expect(lookedUpInvoiceAfter).toEqual(updatedResult)
+      expect(updatedResult).toHaveProperty("processingCompleted", true)
+      expect(lookedUpInvoiceAfter).toHaveProperty("paid", false)
     })
   })
 })

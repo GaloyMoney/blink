@@ -2,8 +2,7 @@ import { lndOutside1, safePay } from "./lightning"
 
 import { randomPhone, randomUserId } from "."
 
-import { addWallet, createAccountWithPhoneIdentifier } from "@/app/accounts"
-import { addWalletIfNonexistent } from "@/app/accounts/add-wallet"
+import { createAccountWithPhoneIdentifier } from "@/app/accounts"
 import { getAdminAccounts, getDefaultAccountsConfig } from "@/config"
 
 import { CouldNotFindAccountFromKratosIdError, CouldNotFindError } from "@/domain/errors"
@@ -20,11 +19,9 @@ import { Account } from "@/services/mongoose/schema"
 
 import { baseLogger } from "@/services/logger"
 
-import { Accounts, Wallets } from "@/app"
+import { Wallets } from "@/app"
 
 import { sleep } from "@/utils"
-
-import { AccountLevel, AccountStatus } from "@/domain/accounts"
 
 const accounts = AccountsRepository()
 
@@ -157,12 +154,6 @@ export const createUserAndWalletFromPhone = async (
     const accountIP = await AccountsIpsRepository().update(accountIp)
     if (!(accountIP instanceof CouldNotFindError) && accountIP instanceof Error)
       throw accountIP
-
-    await addWalletIfNonexistent({
-      currency: WalletCurrency.Usd,
-      accountId: account.id,
-      type: WalletType.Checking,
-    })
   }
 
   if (account instanceof Error) throw account
@@ -180,30 +171,6 @@ export const createUserAndWalletFromPhone = async (
   }
 }
 
-export const createAccount = async ({
-  initialWallets,
-  userId,
-}: {
-  initialWallets: WalletCurrency[]
-  userId?: UserId
-}) => {
-  const phone = randomPhone()
-
-  const kratosUserId = userId || randomUserId()
-
-  const account = await Accounts.createAccountWithPhoneIdentifier({
-    newAccountInfo: { phone, kratosUserId },
-    config: {
-      initialStatus: AccountStatus.Active,
-      initialWallets,
-      initialLevel: AccountLevel.One,
-    },
-  })
-  if (account instanceof Error) throw account
-
-  return account
-}
-
 export const createRandomUserAndBtcWallet = async () => {
   const phone = randomPhone()
   return createUserAndWallet(phone)
@@ -216,20 +183,14 @@ export const createRandomUserAndWallets = async (): Promise<{
   const phone = randomPhone()
   const btcWalletDescriptor = await createUserAndWallet(phone)
 
-  const usdWallet = await addWalletIfNonexistent({
-    currency: WalletCurrency.Usd,
-    accountId: btcWalletDescriptor.accountId,
-    type: WalletType.Checking,
-  })
-  if (usdWallet instanceof Error) throw usdWallet
+  const accountWallets = await WalletsRepository().findAccountWalletsByAccountId(
+    btcWalletDescriptor.accountId,
+  )
+  if (accountWallets instanceof Error) throw accountWallets
 
   return {
     btcWalletDescriptor,
-    usdWalletDescriptor: {
-      id: usdWallet.id,
-      currency: WalletCurrency.Usd,
-      accountId: usdWallet.accountId,
-    },
+    usdWalletDescriptor: accountWallets.USD,
   }
 }
 
@@ -282,12 +243,6 @@ export const createUserAndWallet = async (
     const accountIP = await AccountsIpsRepository().update(accountIp)
     if (!(accountIP instanceof CouldNotFindError) && accountIP instanceof Error)
       throw accountIP
-
-    await addWalletIfNonexistent({
-      currency: WalletCurrency.Usd,
-      accountId: account.id,
-      type: WalletType.Checking,
-    })
   }
 
   if (account instanceof Error) throw account
@@ -312,11 +267,10 @@ export const addNewWallet = async ({
   accountId: AccountId
   currency: WalletCurrency
 }): Promise<Wallet> => {
-  // Create wallet for account (phone number)
-  const wallet = await addWallet({
-    currency,
+  const wallet = await WalletsRepository().persistNew({
     accountId,
     type: WalletType.Checking,
+    currency,
   })
   if (wallet instanceof Error) throw wallet
 

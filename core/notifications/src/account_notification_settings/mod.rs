@@ -1,4 +1,7 @@
 mod entity;
-// mod value;
+mod repo;
+
+pub mod error;
 
 pub use entity::*;
+pub use repo::*;
