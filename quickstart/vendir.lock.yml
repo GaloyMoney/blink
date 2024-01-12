@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): move ''accounts'' integration tests (#3806)...'
-      sha: dc988692df674d91f7573d6d7ce6aae672f1a195
+      commitTitle: 'feat(notifications): finish migrating gql functionality (#3821)...'
+      sha: 93a01a0d68f1549cca3d8951ad82b05bbd1b64d7
       tags:
-      - 0.19.41-2-gdc988692d
+      - 0.19.43-2-g93a01a0d6
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): move ''accounts'' integration tests (#3806)...'
-      sha: dc988692df674d91f7573d6d7ce6aae672f1a195
+      commitTitle: 'feat(notifications): finish migrating gql functionality (#3821)...'
+      sha: 93a01a0d68f1549cca3d8951ad82b05bbd1b64d7
       tags:
-      - 0.19.41-2-gdc988692d
+      - 0.19.43-2-g93a01a0d6
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(core): move ''accounts'' integration tests (#3806)...'
-      sha: dc988692df674d91f7573d6d7ce6aae672f1a195
+      commitTitle: 'feat(notifications): finish migrating gql functionality (#3821)...'
+      sha: 93a01a0d68f1549cca3d8951ad82b05bbd1b64d7
       tags:
-      - 0.19.41-2-gdc988692d
+      - 0.19.43-2-g93a01a0d6
     path: ./
   path: ./graphql
 kind: LockConfig
