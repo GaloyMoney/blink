@@ -26,6 +26,9 @@ afterEach(() => {
 })
 
 describe("lndUtils", () => {
+  it("placeholder", () => {
+    expect(true).toBeTruthy()
+  })
   it.skip("sets routing fee correctly", async () => {
     // Skipped because this test is already broken. lndOutside1 and lndOutside2
     // are directly connected and routing fees are 0.
