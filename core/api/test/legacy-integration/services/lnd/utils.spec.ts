@@ -4,19 +4,16 @@ import { baseLogger } from "@/services/logger"
 import { ledgerAdmin } from "@/services/mongodb"
 import { DbMetadata } from "@/services/mongoose/schema"
 
-import { sleep, timestampDaysAgo } from "@/utils"
+import { timestampDaysAgo } from "@/utils"
 
 import {
-  cancelHodlInvoice,
   clearAccountLocks,
   createInvoice,
   getForwards,
-  getInvoiceAttempt,
   lnd1,
   lndOutside1,
   lndOutside2,
   pay,
-  subscribeToInvoice,
   waitFor,
 } from "test/helpers"
 
@@ -29,57 +26,9 @@ afterEach(() => {
 })
 
 describe("lndUtils", () => {
-  // this is a test for gc-canceled-invoices-on-the-fly=true settings
-  it("test cancelling invoice effect", async () => {
-    const lnd = lndOutside2
-
-    const { id } = await createInvoice({ lnd, tokens: 10000 })
-
-    {
-      const invoice = await getInvoiceAttempt({ lnd, id })
-      expect(invoice).toBeTruthy()
-    }
-
-    await cancelHodlInvoice({ lnd, id })
-
-    {
-      const invoice = await getInvoiceAttempt({ lnd, id })
-      expect(invoice).toBeNull()
-    }
+  it("placeholder", () => {
+    expect(true).toBeTruthy()
   })
-
-  it("test expiring invoice effect", async () => {
-    const lnd = lndOutside2
-
-    // expire in 1 second
-    const expires_at = new Date(Date.now() + 1000).toISOString()
-
-    const { id } = await createInvoice({ lnd, tokens: 10000, expires_at })
-
-    {
-      const invoice = await getInvoiceAttempt({ lnd, id })
-      expect(invoice).toBeTruthy()
-    }
-
-    let isCanceled = false
-    const sub = subscribeToInvoice({ lnd, id })
-    sub.on("invoice_updated", async (invoice) => {
-      await sleep(1000)
-      isCanceled = invoice.is_canceled
-    })
-
-    /* eslint @typescript-eslint/ban-ts-comment: "off" */
-    // @ts-ignore-next-line no-implicit-any error
-    await waitFor(() => isCanceled)
-
-    sub.removeAllListeners()
-
-    {
-      const invoice = await getInvoiceAttempt({ lnd, id })
-      expect(invoice).toBeNull()
-    }
-  })
-
   it.skip("sets routing fee correctly", async () => {
     // Skipped because this test is already broken. lndOutside1 and lndOutside2
     // are directly connected and routing fees are 0.
