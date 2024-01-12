@@ -44,8 +44,9 @@ for commit in $(git log --format="%H" ${old_ref}..${ref}); do
     if printf '%s\n' "${app_src_files[@]}" | grep -Fxq "$file"; then
       echo "Found relevant commit $commit"
       commit_message=$(git log --format="%s" -n 1 $commit)
+      echo "Commit message: $commit_message"
       pr_number=$(echo "$commit_message" | grep -oE '#[0-9]+' | grep -oE '[0-9]+')
-
+      echo "PR number: $pr_number"
       if [[ -n "$pr_number" ]]; then
         pr_link="${github_url}/pull/${pr_number}"
         commit_message="${commit_message/ (#$pr_number)/}"
