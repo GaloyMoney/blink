@@ -1,7 +1,12 @@
-import { sleep } from "@/utils"
-import { LockService } from "@/services/lock"
+import { Redis } from "ioredis"
 
 import { ResourceAttemptsRedlockServiceError } from "@/domain/lock"
+
+import { LockService } from "@/services/lock"
+import { redis } from "@/services/redis"
+
+import { sleep } from "@/utils"
+
 import { randomWalletId } from "test/helpers"
 
 const lockService = LockService()
@@ -63,6 +68,25 @@ describe("LockService", () => {
       ])
 
       expect(order).toStrictEqual([1, 2, 3, 4])
+    })
+
+    it("releases the lock when error is thrown", async () => {
+      const walletId = randomWalletId()
+
+      const checkLockExist = (client: Redis) =>
+        new Promise((resolve) =>
+          client.get(walletId, (err, res) => {
+            resolve(!!res)
+          }),
+        )
+
+      await lockService.lockWalletId(walletId, async () => {
+        expect(await checkLockExist(redis)).toBeTruthy()
+        await sleep(500)
+        throw Error("dummy error")
+      })
+
+      expect(await checkLockExist(redis)).toBeFalsy()
     })
   })
 })
