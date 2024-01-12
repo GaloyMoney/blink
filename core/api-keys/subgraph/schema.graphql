@@ -31,7 +31,6 @@ type ApiKeyRevokePayload {
 
 
 
-
 type Mutation {
 	apiKeyCreate(input: ApiKeyCreateInput!): ApiKeyCreatePayload!
 	apiKeyRevoke(input: ApiKeyRevokeInput!): ApiKeyRevokePayload!

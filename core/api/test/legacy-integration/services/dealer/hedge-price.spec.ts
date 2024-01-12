@@ -1,7 +1,8 @@
-import { Payments, Wallets } from "@/app"
+import { Accounts, Payments, Wallets } from "@/app"
 import { getMidPriceRatio } from "@/app/prices"
 import { getDealerConfig } from "@/config"
 
+import { AccountLevel, AccountStatus } from "@/domain/accounts"
 import { toSats } from "@/domain/bitcoin"
 import { toCents } from "@/domain/fiat"
 import { SubOneCentSatAmountForUsdSelfSendError } from "@/domain/payments"
@@ -17,7 +18,6 @@ import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
 import {
   bitcoindClient,
   bitcoindOutside,
-  createAccount,
   createMandatoryUsers,
   fundLnd,
   fundWallet,
@@ -28,6 +28,8 @@ import {
   loadBitcoindWallet,
   mineAndConfirm,
   openChannelTesting,
+  randomPhone,
+  randomUserId,
   resetLegacyIntegrationLnds,
 } from "test/helpers"
 
@@ -128,9 +130,15 @@ if (usdFundingAmount instanceof Error) throw usdFundingAmount
 
 const newAccountAndWallets = async () => {
   const initialWallets = [WalletCurrency.Btc, WalletCurrency.Usd]
-  const account: Account | RepositoryError = await createAccount({
-    initialWallets,
+  const account = await Accounts.createAccountWithPhoneIdentifier({
+    newAccountInfo: { phone: randomPhone(), kratosUserId: randomUserId() },
+    config: {
+      initialStatus: AccountStatus.Active,
+      initialWallets,
+      initialLevel: AccountLevel.One,
+    },
   })
+  if (account instanceof Error) throw account
 
   const accountId = account.id
   const accountWallets =
