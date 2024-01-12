@@ -18,19 +18,16 @@ const initializeCreatedAccount = async ({
   config: AccountsConfig
   phone?: PhoneNumber
 }): Promise<Account | ApplicationError> => {
-  const newWallet = (currency: WalletCurrency) =>
-    WalletsRepository().persistNew({
-      accountId: account.id,
-      type: WalletType.Checking,
-      currency,
-    })
-
   const walletsEnabledConfig = config.initialWallets
 
   // Create all wallets
   const enabledWallets: Partial<Record<WalletCurrency, Wallet>> = {}
   for (const currency of walletsEnabledConfig) {
-    const wallet = await newWallet(currency)
+    const wallet = await WalletsRepository().persistNew({
+      accountId: account.id,
+      type: WalletType.Checking,
+      currency,
+    })
     if (wallet instanceof Error) return wallet
     enabledWallets[currency] = wallet
   }
