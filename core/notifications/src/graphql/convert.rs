@@ -1,7 +1,9 @@
 use super::types;
-use crate::{user_notification_settings, primitives::*};
+use crate::{primitives::*, user_notification_settings};
 
-impl From<user_notification_settings::UserNotificationSettings> for types::UserNotificationSettings {
+impl From<user_notification_settings::UserNotificationSettings>
+    for types::UserNotificationSettings
+{
     fn from(settings: user_notification_settings::UserNotificationSettings) -> Self {
         Self {
             push: types::UserNotificationChannelSettings {

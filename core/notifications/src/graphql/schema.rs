@@ -157,5 +157,4 @@ impl Mutation {
             notification_settings: UserNotificationSettings::from(settings),
         })
     }
-    
 }
