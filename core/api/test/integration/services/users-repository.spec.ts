@@ -5,7 +5,7 @@ import { randomUserId, randomPhone } from "test/helpers"
 
 const users = UsersRepository()
 
-describe("Testing Users Repository", () => {
+describe("Users Repository", () => {
   it("return default value if userId doesn't exist", async () => {
     const userId = randomUserId()
 
