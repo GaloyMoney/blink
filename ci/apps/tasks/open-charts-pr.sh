@@ -53,13 +53,13 @@ for commit in $(git log --format="%H" ${old_ref}..${ref}); do
       else
         relevant_commits[$commit]="$commit_message"
       fi
+      echo "${!relevant_commits[*]}"
 
       break
     fi
   done
 done
 
-echo "${!relevant_commits[*]}"
 
 # create a branch from the old state and commit the new state of the app
 set +e
