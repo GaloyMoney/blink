@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO identity_api_keys (encrypted_key, identity_id, name, expires_at, read_only)\n            VALUES (crypt($1, gen_salt('bf')), $2, $3, $4, $5) RETURNING id, created_at",
+  "query": "INSERT INTO identity_api_keys (hashed_key, encrypted_key, identity_id, name, expires_at, read_only)\n            VALUES (digest($1, 'sha256'), crypt($1, gen_salt('bf')), $2, $3, $4, $5)\n            RETURNING id, created_at",
   "describe": {
     "columns": [
       {
@@ -28,5 +28,5 @@
       false
     ]
   },
-  "hash": "d0f9efb8a6ab2c7b36cee50f664b0dec28654d37c9812ddd7a6245cf26cf64ec"
+  "hash": "5057154185b03f6ae8e66a1dab81a94dc74d493856497ed2e4f6cd140d51eab8"
 }
