@@ -37,5 +37,32 @@ describe("LockService", () => {
       const result = await Promise.race([slowLock, fastLock])
       expect(result).toBeInstanceOf(ResourceAttemptsRedlockServiceError)
     })
+
+    it("second loop starts after first loop has ended", async () => {
+      const walletId = randomWalletId()
+
+      const order: number[] = []
+
+      const lock1Fn = async () => {
+        order.push(1)
+        await sleep(500)
+        order.push(2)
+        return "1st"
+      }
+
+      const lock2Fn = async () => {
+        order.push(3)
+        await sleep(500)
+        order.push(4)
+        return "2nd"
+      }
+
+      await Promise.all([
+        lockService.lockWalletId(walletId, lock1Fn),
+        lockService.lockWalletId(walletId, lock2Fn),
+      ])
+
+      expect(order).toStrictEqual([1, 2, 3, 4])
+    })
   })
 })
