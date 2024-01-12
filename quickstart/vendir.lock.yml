@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): move create-account integration tests (#3817)...'
-      sha: 11f678dc87f744e92b619eed69e0bb5a40afa2ad
+      commitTitle: 'test(core): move ''accounts'' integration tests (#3806)...'
+      sha: dc988692df674d91f7573d6d7ce6aae672f1a195
       tags:
-      - 0.19.39-4-g11f678dc8
+      - 0.19.41-2-gdc988692d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): move create-account integration tests (#3817)...'
-      sha: 11f678dc87f744e92b619eed69e0bb5a40afa2ad
+      commitTitle: 'test(core): move ''accounts'' integration tests (#3806)...'
+      sha: dc988692df674d91f7573d6d7ce6aae672f1a195
       tags:
-      - 0.19.39-4-g11f678dc8
+      - 0.19.41-2-gdc988692d
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(core): move create-account integration tests (#3817)...'
-      sha: 11f678dc87f744e92b619eed69e0bb5a40afa2ad
+      commitTitle: 'test(core): move ''accounts'' integration tests (#3806)...'
+      sha: dc988692df674d91f7573d6d7ce6aae672f1a195
       tags:
-      - 0.19.39-4-g11f678dc8
+      - 0.19.41-2-gdc988692d
     path: ./
   path: ./graphql
 kind: LockConfig
