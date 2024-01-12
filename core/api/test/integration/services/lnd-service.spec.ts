@@ -6,9 +6,10 @@ import {
   LightningError as LnError,
   payViaPaymentDetails,
   payViaRoutes,
+  subscribeToInvoice,
 } from "lightning"
 
-import { LND1_PUBKEY } from "@/config"
+import { LND1_PUBKEY, MS_PER_SEC } from "@/config"
 
 import { WalletCurrency } from "@/domain/shared"
 import { toSats } from "@/domain/bitcoin"
@@ -39,6 +40,7 @@ import {
   openChannelTestingNoAccounting,
   resetIntegrationLnds,
   setChannelFees,
+  waitFor,
 } from "test/helpers"
 import { BitcoindWalletClient } from "test/helpers/bitcoind"
 
@@ -398,6 +400,38 @@ describe("Lnd", () => {
         paymentHash,
       })
       if (canceled instanceof Error) throw canceled
+
+      // Retry fetching invoice
+      const invoiceReLookup = await lndService.lookupInvoice({ paymentHash })
+      expect(invoiceReLookup).toBeInstanceOf(InvoiceNotFoundError)
+    })
+
+    it("handles expired invoices", async () => {
+      // Create invoice
+      const expires_at = new Date(Date.now() + MS_PER_SEC).toISOString()
+      const { request } = await createInvoice({
+        lnd: lnd1,
+        tokens: amountInvoice,
+        expires_at,
+      })
+      const lnInvoice = decodeInvoice(request)
+      if (lnInvoice instanceof Error) throw lnInvoice
+      const { paymentHash } = lnInvoice
+
+      // Fetch invoice
+      const invoiceLookup = await lndService.lookupInvoice({ paymentHash })
+      if (invoiceLookup instanceof Error) throw invoiceLookup
+      expect(invoiceLookup.paymentHash).toEqual(paymentHash)
+
+      // Listen for expiry
+      let isCanceled = false
+      const sub = subscribeToInvoice({ lnd: lnd1, id: paymentHash })
+      sub.on("invoice_updated", async (invoice) => {
+        await sleep(1000)
+        isCanceled = invoice.is_canceled
+      })
+      await waitFor(async () => isCanceled)
+      sub.removeAllListeners()
 
       // Retry fetching invoice
       const invoiceReLookup = await lndService.lookupInvoice({ paymentHash })
