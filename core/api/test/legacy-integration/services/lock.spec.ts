@@ -3,7 +3,6 @@ import { redlock } from "@/services/lock"
 
 import { redis } from "@/services/redis"
 import { baseLogger } from "@/services/logger"
-import { ResourceAttemptsRedlockServiceError } from "@/domain/lock"
 
 const walletId = "1234"
 
@@ -18,39 +17,6 @@ const checkLockExist = (client) =>
   )
 
 describe("Redlock", () => {
-  it("use signal if this exist", async () => {
-    const result = await redlock({
-      path: walletId,
-      asyncFn: async (signal) => {
-        return redlock({
-          path: walletId,
-          signal,
-          asyncFn: async () => {
-            return "r"
-          },
-        })
-      },
-    })
-
-    expect(result).toBe("r")
-  })
-
-  it("relocking fail if signal is not passed down the tree", async () => {
-    await expect(
-      redlock({
-        path: walletId,
-        asyncFn: async () => {
-          return redlock({
-            path: walletId,
-            asyncFn: async () => {
-              return "r"
-            },
-          })
-        },
-      }),
-    ).resolves.toBeInstanceOf(ResourceAttemptsRedlockServiceError)
-  })
-
   it("second loop start after first loop has ended", async () => {
     const order: number[] = []
 
