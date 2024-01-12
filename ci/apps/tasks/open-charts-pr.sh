@@ -35,8 +35,6 @@ git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 git checkout ${ref}
 app_src_files=($(buck2 uquery 'inputs(deps("'"//apps/${APP}:"'"))' 2>/dev/null))
 
-echo "app_src_files: ${app_src_files[@]}"
-
 declare -A relevant_commits
 for commit in $(git log --format="%H" ${old_ref}..${ref}); do
   changed_files=$(git diff-tree --no-commit-id --name-only -r $commit)
@@ -58,6 +56,8 @@ for commit in $(git log --format="%H" ${old_ref}..${ref}); do
     fi
   done
 done
+
+echo "${!relevant_commits[*]}"
 
 # create a branch from the old state and commit the new state of the app
 set +e
