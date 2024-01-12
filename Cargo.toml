@@ -39,4 +39,5 @@ opentelemetry-semantic-conventions = "0.12.0"
 opentelemetry-http = "0.9.0"
 http = "0.2.9"
 tonic = "0.10.2"
+tonic-build = { version = "0.10.2", features = ["prost"] }
 prost = "0.12"

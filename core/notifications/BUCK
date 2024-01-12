@@ -1,5 +1,5 @@
 load("@toolchains//rover:macros.bzl", "sdl", "diff_check", "dev_update_file")
-load("@toolchains//rust:macros.bzl", "rustfmt_check", "clippy_check")
+load("@toolchains//rust:macros.bzl", "rust_protobuf_library", "rustfmt_check", "clippy_check")
 
 sdl(
   name = "sdl",
@@ -30,6 +30,7 @@ rust_binary(
     ],
 )
 
+
 rust_binary(
     name = "notifications",
     edition = "2021",
@@ -41,9 +42,12 @@ rust_binary(
     ],
 )
 
-rust_library(
+rust_protobuf_library(
     name = "lib-notifications",
-    edition = "2021",
+    env = {
+        "CARGO_MANIFEST_DIR": ".",
+        "SQLX_OFFLINE": "true",
+    },
     deps = [
         "//lib/tracing-rs:tracing",
         "//lib/es-entity-rs:es-entity",
@@ -66,9 +70,7 @@ rust_library(
         "//third-party/rust:rand",
         "//third-party/rust:uuid",
         "//third-party/rust:serde_with",
-        "//third-party/rust:prost",
         "//third-party/rust:tonic",
-        "//third-party/rust:tonic-build",
     ],
     srcs = glob([
       "src/**/*.rs",
@@ -76,10 +78,8 @@ rust_library(
       "migrations/*",
       "notifications.yml"
     ]),
-    env = {
-        "CARGO_MANIFEST_DIR": ".",
-        "SQLX_OFFLINE": "true"
-    }
+    build_script = "build.rs",
+    protos = ["proto/notifications.proto"],
 )
 
 rust_test(

@@ -14,6 +14,70 @@ load(
     "@prelude//tests:re_utils.bzl",
     "get_re_executor_from_props",
 )
+load(
+    "@prelude//decls/core_rules.bzl",
+    "genrule",
+)
+
+def rust_protobuf_library(
+        name,
+        srcs,
+        build_script,
+        protos,
+        edition = "2021",
+        env = None,
+        build_env = None,
+        deps = [],
+        test_deps = None,
+        doctests = True):
+
+    build_name = name + "-build"
+    proto_name = name + "-proto"
+
+    native.rust_binary(
+        name = build_name,
+        srcs = [build_script],
+        crate_root = build_script,
+        deps = [
+            "//third-party/rust:tonic-build"
+        ],
+    )
+
+    build_env = build_env or {}
+    build_env.update(
+        {
+            "PROTOC": "$(exe //third-party/proto:protoc)",
+            "PROTOC_INCLUDE": "$(location //third-party/proto:google_protobuf)",
+        },
+    )
+
+
+    native.genrule(
+      name = proto_name,
+      srcs = protos + [
+            "//third-party/proto:google_protobuf",
+      ],
+      out = ".",
+      cmd = "$(exe :" + build_name + ")",
+      env = build_env,
+    )
+
+    env = env or {}
+    env.update({
+        "OUT_DIR": "$(location :{})".format(proto_name),
+    })
+    native.rust_library(
+        name = name,
+        env = env,
+        srcs = srcs,
+        edition = edition,
+        doctests = doctests,
+        deps = [
+            "//third-party/rust:prost"
+        ] + (deps or [])
+    )
+
+
 
 def clippy_check_impl(ctx: AnalysisContext) -> list[[
     DefaultInfo,

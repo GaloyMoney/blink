@@ -28,3 +28,12 @@ directories:
     includePaths:
     - shim/third-party/rust/fixups/ring/include/**/*
     newRootPath: shim/third-party/rust/fixups/ring/include
+- path: third-party/proto
+  contents:
+  - path: .
+    git:
+      url: https://github.com/facebook/buck2.git
+      ref: f3c685667ef22d0130687003012b6960abec6b3b
+    includePaths:
+    - shim/third-party/proto/**/*
+    newRootPath: shim/third-party/proto

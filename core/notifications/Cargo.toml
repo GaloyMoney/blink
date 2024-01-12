@@ -41,4 +41,4 @@ tonic = { workspace = true }
 prost = { workspace = true }
 
 [build-dependencies]
-tonic-build = { version = "0.10.2", features = ["prost"] }
+tonic-build = { workspace = true }
