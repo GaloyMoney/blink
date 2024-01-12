@@ -1,16 +1,26 @@
+import { Accounts } from "@/app"
+
+import { AccountLevel, AccountStatus } from "@/domain/accounts"
 import { WalletCurrency } from "@/domain/shared"
+
 import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
 
-import { createAccount } from "test/helpers"
+import { randomPhone, randomUserId } from "test/helpers"
 
-describe("Users - wallets", () => {
-  describe("with 'createUser'", () => {
+describe("createAccountWithPhoneIdentifier", () => {
+  describe("initialWallets", () => {
     it("adds a USD wallet for new user if config is set to true", async () => {
       const initialWallets = [WalletCurrency.Btc, WalletCurrency.Usd]
 
-      let account: Account | RepositoryError = await createAccount({
-        initialWallets,
+      let account = await Accounts.createAccountWithPhoneIdentifier({
+        newAccountInfo: { phone: randomPhone(), kratosUserId: randomUserId() },
+        config: {
+          initialLevel: AccountLevel.One,
+          initialStatus: AccountStatus.Active,
+          initialWallets,
+        },
       })
+      if (account instanceof Error) throw account
 
       // Check all wallets were created
       const wallets = await WalletsRepository().listByAccountId(account.id)
@@ -36,9 +46,16 @@ describe("Users - wallets", () => {
     it("does not add a USD wallet for new user if config is set to false", async () => {
       const initialWallets = [WalletCurrency.Btc]
 
-      let account: Account | RepositoryError = await createAccount({
-        initialWallets,
-      })
+      let account: Account | RepositoryError =
+        await Accounts.createAccountWithPhoneIdentifier({
+          newAccountInfo: { phone: randomPhone(), kratosUserId: randomUserId() },
+          config: {
+            initialLevel: AccountLevel.One,
+            initialStatus: AccountStatus.Active,
+            initialWallets,
+          },
+        })
+      if (account instanceof Error) throw account
 
       // Check all wallets were created
       const wallets = await WalletsRepository().listByAccountId(account.id)
@@ -64,9 +81,16 @@ describe("Users - wallets", () => {
     it("sets USD wallet as default if BTC wallet does not exist", async () => {
       const initialWallets = [WalletCurrency.Usd]
 
-      let account: Account | RepositoryError = await createAccount({
-        initialWallets,
-      })
+      let account: Account | RepositoryError =
+        await Accounts.createAccountWithPhoneIdentifier({
+          newAccountInfo: { phone: randomPhone(), kratosUserId: randomUserId() },
+          config: {
+            initialLevel: AccountLevel.One,
+            initialStatus: AccountStatus.Active,
+            initialWallets,
+          },
+        })
+      if (account instanceof Error) throw account
 
       // Check all wallets were created
       const wallets = await WalletsRepository().listByAccountId(account.id)

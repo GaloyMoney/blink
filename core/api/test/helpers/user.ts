@@ -20,11 +20,9 @@ import { Account } from "@/services/mongoose/schema"
 
 import { baseLogger } from "@/services/logger"
 
-import { Accounts, Wallets } from "@/app"
+import { Wallets } from "@/app"
 
 import { sleep } from "@/utils"
-
-import { AccountLevel, AccountStatus } from "@/domain/accounts"
 
 const accounts = AccountsRepository()
 
@@ -178,30 +176,6 @@ export const createUserAndWalletFromPhone = async (
     id: account.defaultWalletId,
     currency: wallet.currency,
   }
-}
-
-export const createAccount = async ({
-  initialWallets,
-  userId,
-}: {
-  initialWallets: WalletCurrency[]
-  userId?: UserId
-}) => {
-  const phone = randomPhone()
-
-  const kratosUserId = userId || randomUserId()
-
-  const account = await Accounts.createAccountWithPhoneIdentifier({
-    newAccountInfo: { phone, kratosUserId },
-    config: {
-      initialStatus: AccountStatus.Active,
-      initialWallets,
-      initialLevel: AccountLevel.One,
-    },
-  })
-  if (account instanceof Error) throw account
-
-  return account
 }
 
 export const createRandomUserAndBtcWallet = async () => {
