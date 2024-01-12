@@ -8,3 +8,8 @@ mod user_notification_settings;
 
 pub mod cli;
 pub mod graphql;
+
+#[allow(clippy::all)]
+pub mod proto {
+    tonic::include_proto!("helloworld");
+}

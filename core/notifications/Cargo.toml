@@ -37,3 +37,8 @@ mongodb = { workspace = true }
 rand = { workspace = true }
 uuid = { workspace = true }
 serde_with = { workspace = true }
+tonic = { workspace = true }
+prost = { workspace = true }
+
+[build-dependencies]
+tonic-build = { version = "0.10.2", features = ["prost"] }
