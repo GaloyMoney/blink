@@ -11,3 +11,5 @@ export const randomPhone = () =>
 export const randomUserId = () => randomUUID() as UserId
 
 export const randomDeviceId = () => randomUUID() as DeviceId
+
+export const randomWalletId = () => randomUUID() as WalletId

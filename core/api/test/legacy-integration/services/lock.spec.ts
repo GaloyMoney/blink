@@ -1,30 +1,9 @@
 import { sleep } from "@/utils"
-import { LockService, redlock } from "@/services/lock"
+import { redlock } from "@/services/lock"
 
 import { redis } from "@/services/redis"
 import { baseLogger } from "@/services/logger"
 import { ResourceAttemptsRedlockServiceError } from "@/domain/lock"
-
-describe("Lock", () => {
-  describe("lockWalletId", () => {
-    it("returns ResourceAttemptsLockServiceError when exceed attempts", async () => {
-      const walletId = "walletId" as WalletId
-      const lockService = LockService()
-
-      const lock1 = lockService.lockWalletId(walletId, async () => {
-        await sleep(5000)
-        return 1
-      })
-
-      const lock2 = lockService.lockWalletId(walletId, async () => {
-        return 2
-      })
-
-      const result = await Promise.race([lock1, lock2])
-      expect(result).toBeInstanceOf(ResourceAttemptsRedlockServiceError)
-    })
-  })
-})
 
 const walletId = "1234"
 
@@ -39,17 +18,6 @@ const checkLockExist = (client) =>
   )
 
 describe("Redlock", () => {
-  it("return value is passed with a promise", async () => {
-    const result = await redlock({
-      path: walletId,
-      asyncFn: async () => {
-        return "r"
-      },
-    })
-
-    expect(result).toBe("r")
-  })
-
   it("use signal if this exist", async () => {
     const result = await redlock({
       path: walletId,
