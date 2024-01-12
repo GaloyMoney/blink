@@ -37,16 +37,13 @@ app_src_files=($(buck2 uquery 'inputs(deps("'"//apps/${APP}:"'"))' 2>/dev/null))
 
 declare -A relevant_commits
 for commit in $(git log --format="%H" ${old_ref}..${ref}); do
-  echo "Checking commit $commit"
   changed_files=$(git diff-tree --no-commit-id --name-only -r $commit)
 
   for file in ${changed_files[@]}; do
     if printf '%s\n' "${app_src_files[@]}" | grep -Fxq "$file"; then
-      echo "Found relevant commit $commit"
       commit_message=$(git log --format="%s" -n 1 $commit)
-      echo "Commit message: $commit_message"
-      pr_number=$(echo "$commit_message" | grep -oE '#[0-9]+' | grep -oE '[0-9]+')
-      echo "PR number: $pr_number"
+      pr_number=$(echo "$commit_message" | grep -oE '#[0-9]+' | sed 's/#//')
+
       if [[ -n "$pr_number" ]]; then
         pr_link="${github_url}/pull/${pr_number}"
         commit_message="${commit_message/ (#$pr_number)/}"
@@ -54,13 +51,11 @@ for commit in $(git log --format="%H" ${old_ref}..${ref}); do
       else
         relevant_commits[$commit]="$commit_message"
       fi
-      echo "${!relevant_commits[*]}"
 
       break
     fi
   done
 done
-
 
 # create a branch from the old state and commit the new state of the app
 set +e
