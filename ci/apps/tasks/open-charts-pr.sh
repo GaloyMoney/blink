@@ -37,10 +37,12 @@ app_src_files=($(buck2 uquery 'inputs(deps("'"//apps/${APP}:"'"))' 2>/dev/null))
 
 declare -A relevant_commits
 for commit in $(git log --format="%H" ${old_ref}..${ref}); do
+  echo "Checking commit $commit"
   changed_files=$(git diff-tree --no-commit-id --name-only -r $commit)
 
   for file in ${changed_files[@]}; do
     if printf '%s\n' "${app_src_files[@]}" | grep -Fxq "$file"; then
+      echo "Found relevant commit $commit"
       commit_message=$(git log --format="%s" -n 1 $commit)
       pr_number=$(echo "$commit_message" | grep -oE '#[0-9]+' | grep -oE '[0-9]+')
 
