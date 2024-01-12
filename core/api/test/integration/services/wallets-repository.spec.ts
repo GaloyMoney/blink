@@ -1,6 +1,9 @@
 import { randomUUID } from "crypto"
 
+import mongoose from "mongoose"
+
 import {
+  CouldNotFindAccountFromIdError,
   CouldNotFindWalletFromAccountIdAndCurrencyError,
   MultipleWalletsFoundForAccountIdAndCurrency,
   RepositoryError,
@@ -8,6 +11,7 @@ import {
 import { WalletCurrency } from "@/domain/shared"
 import { WalletsRepository } from "@/services/mongoose"
 import { Wallet } from "@/services/mongoose/schema"
+import { WalletType } from "@/domain/wallets"
 
 const wallets = WalletsRepository()
 const accountId = randomUUID() as AccountId
@@ -80,6 +84,19 @@ describe("WalletsRepository", () => {
       const accountWallets = await wallets.findAccountWalletsByAccountId(accountId)
       expect(accountWallets).toBeInstanceOf(MultipleWalletsFoundForAccountIdAndCurrency)
       expect((accountWallets as RepositoryError).message).toBe(WalletCurrency.Usd)
+    })
+  })
+
+  describe("persistNew", () => {
+    it("fail to create a wallet with non-existent account", async () => {
+      const id = new mongoose.Types.ObjectId()
+
+      const newWallet = await wallets.persistNew({
+        accountId: id as unknown as AccountId,
+        type: WalletType.Checking,
+        currency: WalletCurrency.Btc,
+      })
+      expect(newWallet).toBeInstanceOf(CouldNotFindAccountFromIdError)
     })
   })
 })
