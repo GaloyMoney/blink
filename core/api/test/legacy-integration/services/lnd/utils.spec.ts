@@ -7,7 +7,6 @@ import { DbMetadata } from "@/services/mongoose/schema"
 import { sleep, timestampDaysAgo } from "@/utils"
 
 import {
-  cancelHodlInvoice,
   clearAccountLocks,
   createInvoice,
   getForwards,
@@ -29,25 +28,6 @@ afterEach(() => {
 })
 
 describe("lndUtils", () => {
-  // this is a test for gc-canceled-invoices-on-the-fly=true settings
-  it("test cancelling invoice effect", async () => {
-    const lnd = lndOutside2
-
-    const { id } = await createInvoice({ lnd, tokens: 10000 })
-
-    {
-      const invoice = await getInvoiceAttempt({ lnd, id })
-      expect(invoice).toBeTruthy()
-    }
-
-    await cancelHodlInvoice({ lnd, id })
-
-    {
-      const invoice = await getInvoiceAttempt({ lnd, id })
-      expect(invoice).toBeNull()
-    }
-  })
-
   it("test expiring invoice effect", async () => {
     const lnd = lndOutside2
 

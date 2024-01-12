@@ -13,6 +13,7 @@ import { LND1_PUBKEY } from "@/config"
 import { WalletCurrency } from "@/domain/shared"
 import { toSats } from "@/domain/bitcoin"
 import {
+  InvoiceNotFoundError,
   LnAlreadyPaidError,
   PaymentNotFoundError,
   PaymentRejectedByDestinationError,
@@ -372,6 +373,35 @@ describe("Lnd", () => {
         pubkey: LND1_PUBKEY,
       })
       expect(deletedAttempt).not.toBeInstanceOf(Error)
+    })
+
+    it("cancels invoice", async () => {
+      // Note: this is a test for gc-canceled-invoices-on-the-fly=true settings
+
+      // Create invoice
+      const { request } = await createInvoice({
+        lnd: lnd1,
+        tokens: amountInvoice,
+      })
+      const lnInvoice = decodeInvoice(request)
+      if (lnInvoice instanceof Error) throw lnInvoice
+      const { paymentHash } = lnInvoice
+
+      // Fetch invoice
+      const invoiceLookup = await lndService.lookupInvoice({ paymentHash })
+      if (invoiceLookup instanceof Error) throw invoiceLookup
+      expect(invoiceLookup.paymentHash).toEqual(paymentHash)
+
+      // Cancel invoice
+      const canceled = await lndService.cancelInvoice({
+        pubkey: LND1_PUBKEY,
+        paymentHash,
+      })
+      if (canceled instanceof Error) throw canceled
+
+      // Retry fetching invoice
+      const invoiceReLookup = await lndService.lookupInvoice({ paymentHash })
+      expect(invoiceReLookup).toBeInstanceOf(InvoiceNotFoundError)
     })
   })
 
