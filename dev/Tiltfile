@@ -61,6 +61,8 @@ local_resource(
         "api-keys",
         "svix",
         "svix-pg",
+        "add-test-users-with-usernames",
+        "fund-user",
     ],
     links = [
         link("http://localhost:3001", "dashboard"),
@@ -161,6 +163,32 @@ local_resource(
     "api",
   ]
 )
+
+local_resource(
+  name='add-test-users-with-usernames',
+  labels = ['test'],
+  cmd='buck2 run //dev:add-test-users-with-usernames',
+  allow_parallel = True,
+  resource_deps = [
+    "oathkeeper",
+    "kratos",
+    "api",
+  ]
+)
+
+local_resource(
+  name='fund-user',
+  labels = ['test'],
+  cmd='buck2 run //dev:fund-user',
+  allow_parallel = True,
+  resource_deps = [
+    "oathkeeper",
+    "kratos",
+    "api",
+    "init-test-user"
+  ]
+)
+
 
 consent_target = "//apps/consent:dev"
 if is_ci:

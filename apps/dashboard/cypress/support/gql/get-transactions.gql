@@ -1,0 +1,16 @@
+query GetFirstTransactions($first: Int!) {
+  me {
+    defaultAccount {
+      transactions(first: $first) {
+        edges {
+          node {
+            settlementAmount
+            settlementCurrency
+            status
+            settlementDisplayAmount
+          }
+        }
+      }
+    }
+  }
+}

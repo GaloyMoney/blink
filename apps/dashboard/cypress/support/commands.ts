@@ -1,40 +1,11 @@
 /// <reference types="cypress" />
-// ***********************************************
-// This example commands.ts shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
-//
-// declare global {
-//   namespace Cypress {
-//     interface Chainable {
-//       login(email: string, password: string): Chainable<void>
-//       drag(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       dismiss(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       visit(originalFn: CommandOriginalFn, url: string, options: Partial<VisitOptions>): Chainable<Element>
-//     }
-//   }
-// }
+
+type Transaction = {
+  settlementAmount: number
+  settlementCurrency: string
+  status: string
+  settlementDisplayAmount: string
+}
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 declare namespace Cypress {
@@ -43,6 +14,11 @@ declare namespace Cypress {
     getOTP(email: string): Chainable<string>
     requestEmailCode(email: string): Chainable<string>
     flushRedis(): Chainable<void>
+    loginAndGetToken(phone: string, code: string): Chainable<string>
+    getTransactions(
+      authToken: string,
+      numberOfTransactions: number,
+    ): Chainable<Array<Transaction>>
   }
 }
 
@@ -67,5 +43,58 @@ Cypress.Commands.add("flushRedis", () => {
     } else {
       throw new Error("Failed to execute FLUSHALL on Redis")
     }
+  })
+})
+
+Cypress.Commands.add("loginAndGetToken", (phone, code) => {
+  cy.flushRedis()
+  cy.request({
+    method: "POST",
+    url: "http://localhost:4455/auth/phone/login",
+    body: {
+      phone,
+      code,
+    },
+  }).then((response) => {
+    expect(response.body).to.have.property("authToken")
+    return response.body.authToken
+  })
+})
+
+Cypress.Commands.add("getTransactions", (authToken, numberOfTransactions) => {
+  cy.request({
+    method: "POST",
+    url: "http://localhost:4455/graphql",
+    headers: {
+      "Authorization": `Bearer ${authToken}`,
+      "Content-Type": "application/json",
+    },
+    body: {
+      query: `
+        query GetFirstTransactions($first: Int!) {
+          me {
+            defaultAccount {
+              transactions(first: $first) {
+                edges {
+                  node {
+                    settlementAmount
+                    settlementCurrency
+                    status
+                    settlementDisplayAmount
+                  }
+                }
+              }
+            }
+          }
+        }
+      `,
+      variables: {
+        first: numberOfTransactions,
+      },
+    },
+  }).then((response) => {
+    return response.body.data.me.defaultAccount.transactions.edges.map(
+      (edge: { node: Transaction }) => edge.node,
+    )
   })
 })
