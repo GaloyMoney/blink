@@ -28,9 +28,9 @@ export default function FileUpload({
     }
   }
 
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = async (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
-    handleDragOver(event)
+    await handleDragOver(event)
   }
 
   const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
