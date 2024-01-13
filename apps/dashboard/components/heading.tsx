@@ -1,6 +1,6 @@
 "use client"
 import React from "react"
-import { Badge, Box, Typography } from "@mui/joy"
+import { Box, Typography } from "@mui/joy"
 import { usePathname } from "next/navigation"
 
 import { URLS } from "@/app/url"
