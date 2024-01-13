@@ -1,16 +1,16 @@
 interface UrlInfo {
   title: string
-  protected: boolean
+  badge?: string
 }
 
 export const URLS: Record<string, UrlInfo> = {
-  "/": { title: "Home", protected: true },
-  "/transactions": { title: "Transactions", protected: true },
-  "/security": { title: "Security", protected: true },
-  "/security/email/add": { title: "Add Email", protected: true },
-  "/security/email/verify": { title: "Verify Email", protected: true },
-  "/api-keys": { title: "API Keys", protected: true },
-  "/callback": { title: "Callback", protected: true },
-  "/security/2fa/add": { title: "Add 2FA to Account", protected: true },
-  "/batch-payments": { title: "Batch Payments", protected: true },
+  "/": { title: "Home" },
+  "/transactions": { title: "Transactions" },
+  "/security": { title: "Security" },
+  "/security/email/add": { title: "Add Email" },
+  "/security/email/verify": { title: "Verify Email" },
+  "/api-keys": { title: "API Keys" },
+  "/callback": { title: "Callback" },
+  "/security/2fa/add": { title: "Add 2FA to Account" },
+  "/batch-payments": { title: "Batch Payments", badge: "Alpha" },
 }

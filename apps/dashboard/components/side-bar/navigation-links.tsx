@@ -2,7 +2,7 @@ import React from "react"
 import Link from "next/link"
 import ListItem from "@mui/joy/ListItem"
 import ListItemButton from "@mui/joy/ListItemButton"
-import { Typography } from "@mui/joy"
+import { Badge, Typography } from "@mui/joy"
 
 import { closeSidebar } from "./../utils"
 
@@ -12,6 +12,7 @@ interface NavigationLinkProps {
   label: string
   isCurrentPath: (href: string) => boolean
   dataTestid: string
+  badge?: string
 }
 
 export const NavigationLink: React.FC<NavigationLinkProps> = ({
@@ -20,6 +21,7 @@ export const NavigationLink: React.FC<NavigationLinkProps> = ({
   label,
   isCurrentPath,
   dataTestid,
+  badge,
 }) => (
   <Link data-testid={dataTestid} href={href}>
     <ListItem>
@@ -44,7 +46,24 @@ export const NavigationLink: React.FC<NavigationLinkProps> = ({
         }}
       >
         {icon}
-        <Typography level="title-md">{label}</Typography>
+        <Typography level="title-md">
+          {badge ? (
+            <Badge
+              sx={{
+                ".MuiBadge-badge": {
+                  backgroundColor: "var(--primaryColor)",
+                  borderColor: "transparent",
+                  transform: "translate(46.5px, -9px)",
+                },
+              }}
+              badgeContent={badge}
+            >
+              {label}
+            </Badge>
+          ) : (
+            label
+          )}
+        </Typography>
       </ListItemButton>
     </ListItem>
   </Link>
