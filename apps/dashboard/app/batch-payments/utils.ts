@@ -2,7 +2,12 @@ import { parse } from "csv-parse/sync"
 
 import { centsToDollars } from "../utils"
 
-import { AmountCurrency, CSVRecord, TotalPayingAmountForWallets } from "./index.types"
+import {
+  AmountCurrency,
+  CSVRecord,
+  ProcessedRecords,
+  TotalPayingAmountForWallets,
+} from "./index.types"
 
 import { WalletCurrency } from "@/services/graphql/generated"
 
@@ -149,4 +154,12 @@ export const displayCurrencyBatchPayments = ({
   walletCurrency: WalletCurrency
 }) => {
   return walletCurrency === WalletCurrency.Usd ? "USD" : "sats"
+}
+
+export const chunkArray = (array: ProcessedRecords[], chunkSize: number) => {
+  const result = []
+  for (let i = 0, len = array.length; i < len; i += chunkSize) {
+    result.push(array.slice(i, i + chunkSize))
+  }
+  return result
 }

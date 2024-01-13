@@ -11,7 +11,7 @@ import BatchPaymentsList from "./list"
 
 import SampleCSVTable from "./sample-table"
 
-import { validateCSV } from "@/app/batch-payments/utils"
+import { chunkArray, validateCSV } from "@/app/batch-payments/utils"
 
 import {
   processPaymentsServerAction,
@@ -40,6 +40,8 @@ type ModalDetails = {
   message: string
 }
 
+const CHUNK_SIZE = 10
+
 export default function BatchPayments() {
   const session = useSession()
   const userData = session?.data?.userData?.data
@@ -62,7 +64,13 @@ export default function BatchPayments() {
     setPaymentDetails(null)
   }
 
+  const returnProcessFile = () => {
+    setFile(null)
+    setProcessCsvLoading(false)
+  }
+
   const processFile = async (file: File) => {
+    setProcessCsvLoading(true)
     const reader = new FileReader()
     reader.onload = async (event) => {
       if (!event.target?.result || !userData) {
@@ -74,7 +82,7 @@ export default function BatchPayments() {
       const content = event.target.result as string
 
       if (!defaultWalletCurrency || !defaultWallet.currency) {
-        return
+        return returnProcessFile()
       }
 
       // Validate CSV format
@@ -89,8 +97,7 @@ export default function BatchPayments() {
           heading: "Error",
           message: validateCsvResult.message,
         })
-        setFile(null)
-        return
+        return returnProcessFile()
       }
 
       // Validate enough balance, and payment details
@@ -103,8 +110,7 @@ export default function BatchPayments() {
           heading: "Error",
           message: validatePaymentResponse.message,
         })
-        setFile(null)
-        return
+        return returnProcessFile()
       }
 
       //Process Records, add Wallet Id's for username
@@ -115,8 +121,7 @@ export default function BatchPayments() {
           heading: "Error",
           message: processedRecords.message,
         })
-        setFile(null)
-        return
+        return returnProcessFile()
       }
 
       setCsvData(processedRecords.responsePayload)
@@ -129,6 +134,7 @@ export default function BatchPayments() {
             .usdWalletBalance,
         },
       })
+      setProcessCsvLoading(false)
     }
     reader.readAsText(file)
   }
@@ -137,17 +143,26 @@ export default function BatchPayments() {
     if (!csvData || !paymentDetails) return
 
     setProcessPaymentLoading(true)
-    const response = await processPaymentsServerAction(csvData)
-    if (
-      response.error &&
-      response?.responsePayload &&
-      response.responsePayload.length > 0
-    ) {
-      setCsvData(response.responsePayload)
+    const chunks = chunkArray(csvData, CHUNK_SIZE)
+    let allFailedPayments: ProcessedRecords[] = []
+    for (const chunk of chunks) {
+      const response = await processPaymentsServerAction(chunk)
+      if (
+        response.error &&
+        response.responsePayload &&
+        response.responsePayload.length > 0
+      ) {
+        allFailedPayments = allFailedPayments.concat(response.responsePayload)
+      }
+    }
+
+    if (allFailedPayments.length > 0) {
+      setCsvData(allFailedPayments)
       setModalDetails({
         open: true,
         heading: "Payment Failed",
-        message: response.message,
+        message:
+          "Transaction unsuccessful for some orders. Please attempt to retry these failed orders",
       })
     } else {
       setModalDetails({
@@ -244,7 +259,6 @@ export default function BatchPayments() {
               file={file}
               setFile={setFile}
               onFileProcessed={processFile}
-              setProcessCsvLoading={setProcessCsvLoading}
               resetState={resetState}
             />
           </Box>
@@ -253,7 +267,6 @@ export default function BatchPayments() {
       ) : (
         <>
           <FileUpload
-            setProcessCsvLoading={setProcessCsvLoading}
             processCsvLoading={processCsvLoading}
             file={file}
             setFile={setFile}

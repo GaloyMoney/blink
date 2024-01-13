@@ -7,7 +7,6 @@ type FileUploadButtonProps = {
   file: File | null
   processCsvLoading: boolean
   onFileProcessed: (file: File) => Promise<void>
-  setProcessCsvLoading: (loading: boolean) => void
   resetState: () => void
 }
 
@@ -16,7 +15,6 @@ export default function FileUpload({
   file,
   processCsvLoading,
   onFileProcessed,
-  setProcessCsvLoading,
   resetState,
 }: FileUploadButtonProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -25,21 +23,22 @@ export default function FileUpload({
     if (event.target.files) {
       const selectedFile = event.target.files[0]
       setFile(selectedFile)
-      setProcessCsvLoading(true)
       await onFileProcessed(selectedFile)
-      setProcessCsvLoading(false)
       event.target.value = ""
     }
   }
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
+    handleDragOver(event)
   }
 
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
     if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
-      setFile(event.dataTransfer.files[0])
+      const droppedFile = event.dataTransfer.files[0]
+      setFile(droppedFile)
+      await onFileProcessed(droppedFile)
       event.dataTransfer.clearData()
       if (fileInputRef.current) {
         fileInputRef.current.value = ""
