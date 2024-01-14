@@ -2,41 +2,6 @@ DEV_DIR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
 source "${DEV_DIR}/helpers/gql.sh"
 
 
-check_for_onchain_initiated_settled() {
-  local token_name=$1
-  local wallet_id=$2
-  local first=${3:-"1"}
-
-  variables=$(
-  jq -n \
-  --argjson first "$first" \
-  '{"first": $first}'
-  )
-  transactions="$(exec_graphql "$token_name" "transactions" "$variables")"
-  echo "$transactions"
-}
-
-
-retry() {
-  local attempts=$1
-  shift
-  local delay=$1
-  shift
-  local i
-
-  for ((i = 0; i < attempts; i++)); do
-    run "$@"
-
-    if [[ "$status" -eq 0 ]]; then
-      return 0
-    fi
-    sleep "$delay"
-  done
-
-  echo "Command \"$*\" failed $attempts times. Output: $output"
-  false
-}
-
 fund_user_onchain() {
   local token=$1
   local wallet_currency=$2
@@ -51,15 +16,34 @@ fund_user_onchain() {
     --arg wallet_id "$wallet_id" \
     '{input: {walletId: $wallet_id}}'
   )
-  echo "Executing GraphQL query for on-chain address creation"
+
   response=$(exec_graphql "$token" 'on-chain-address-create' "$variables")
-  echo "Parsing address from the response"
   address=$(echo "$response" | jq -r '.data.onChainAddressCreate.address')
   [[ "${address}" != "null" ]] || exit 1
 
-  echo "Sending BTC to address: $address"
-  bitcoin_signer_cli -generate 101
-  bitcoin_signer_cli sendtoaddress "$address" "$btc_amount_in_btc"
-  bitcoin_signer_cli -generate 101
-  check_for_onchain_initiated_settled $token $wallet_id
+  bitcoin_cli sendtoaddress "$address" "$btc_amount_in_btc"
+  bitcoin_cli -generate 4
+
+  variables=$(
+  jq -n \
+  --argjson first "1" \
+  '{"first": $first}'
+  )
+  for i in {1..60}; do
+    response=$(exec_graphql "$token" 'transactions' "$variables")
+    echo "$response"
+    jq_query='.data.me.defaultAccount.transactions.edges[] | select(.node.initiationVia.address == $address) .node'
+    transaction_info=$(echo $response \
+      | jq -r --arg address "$address" "$jq_query")
+    
+    settled_status=$(echo "$transaction_info" | jq -r ".status")
+    settled_currency=$(echo "$transaction_info" | jq -r ".settlementCurrency")
+
+    if [[ "${settled_status}" == "SUCCESS" && "${settled_currency}" == "$wallet_currency" ]]; then
+      echo "Transaction successful with correct settlement currency"
+      break
+    fi
+
+    sleep 1
+  done
 }

@@ -185,7 +185,8 @@ local_resource(
     "oathkeeper",
     "kratos",
     "api",
-    "init-test-user"
+    "init-test-user",
+    "init-onchain"
   ]
 )
 

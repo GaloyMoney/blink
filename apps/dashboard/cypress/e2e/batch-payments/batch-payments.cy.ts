@@ -13,7 +13,7 @@ describe("CSV Upload Component Test", () => {
     cy.visit("/batch-payments")
   })
 
-  it("uploads a CSV file via input and checks transactions", () => {
+  it("Batch Payments Test", () => {
     cy.get("[data-testid=csv-upload-input]").selectFile("cypress/fixtures/template.csv")
     cy.get("[data-testid=confirm-batch-payments-btn]").click()
     cy.get("[data-testid=batch-payments-modal-message]").should(
@@ -37,7 +37,6 @@ describe("CSV Upload Component Test", () => {
         })
 
         expectedTransactions.forEach((expectedTransaction) => {
-          // Exclude the special case transactions
           if (
             !btcPaymentInUSDCurrency.some(
               (btcTx) =>

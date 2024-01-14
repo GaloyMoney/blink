@@ -4,8 +4,9 @@ export const testData = {
   CALLBACK_URL: "https://www.google.com/",
   PHONE: "+16505554350",
   CODE: "000000",
-  CORE_URL: "http://localhost:4455",
 }
+
+export const CORE_URL = "http://localhost:4455"
 
 export const expectedTransactions = [
   {
