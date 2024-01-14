@@ -71,6 +71,7 @@ rust_protobuf_library(
         "//third-party/rust:uuid",
         "//third-party/rust:serde_with",
         "//third-party/rust:tonic",
+        "//third-party/rust:tonic-health",
     ],
     srcs = glob([
       "src/**/*.rs",

@@ -38,6 +38,7 @@ rand = { workspace = true }
 uuid = { workspace = true }
 serde_with = { workspace = true }
 tonic = { workspace = true }
+tonic-health = { workspace = true }
 prost = { workspace = true }
 
 [build-dependencies]

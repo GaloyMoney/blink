@@ -5,7 +5,7 @@ use tracing::TracingConfig;
 use std::path::Path;
 
 use super::db::*;
-use crate::{app::AppConfig, graphql::server::ServerConfig};
+use crate::{app::AppConfig, graphql::server::ServerConfig, grpc::GrpcServerConfig};
 
 #[derive(Clone, Default, Serialize, Deserialize)]
 pub struct Config {
@@ -15,13 +15,15 @@ pub struct Config {
     pub app: AppConfig,
     #[serde(default)]
     pub server: ServerConfig,
+    #[serde(default)]
+    pub grpc_server: GrpcServerConfig,
     #[serde(default = "default_tracing_config")]
     pub tracing: TracingConfig,
 }
 
 fn default_tracing_config() -> TracingConfig {
     TracingConfig {
-        service_name: "api-keys".to_string(),
+        service_name: "notifications".to_string(),
     }
 }
 

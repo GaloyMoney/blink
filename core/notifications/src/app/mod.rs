@@ -25,6 +25,20 @@ impl NotificationsApp {
         }
     }
 
+    pub async fn should_send_notification(
+        &self,
+        user_id: GaloyUserId,
+        channel: UserNotificationChannel,
+        category: UserNotificationCategory,
+    ) -> Result<bool, ApplicationError> {
+        let user_settings = self
+            .settings
+            .find_for_user_id(&user_id)
+            .await?
+            .unwrap_or_else(|| UserNotificationSettings::new(user_id.clone()));
+        Ok(user_settings.should_send_notification(channel, category))
+    }
+
     pub async fn notification_settings_for_user(
         &self,
         user_id: GaloyUserId,

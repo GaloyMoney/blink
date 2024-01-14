@@ -1,20 +1,29 @@
 syntax = "proto3";
 
-package helloworld;
+import "google/protobuf/struct.proto";
 
-// The greeting service definition.
-service Greeter {
-  // Sends a greeting
-  rpc SayHello (HelloRequest) returns (HelloReply) {}
+package services.notifications.v1;
+
+service NotificationsService {
+  rpc ShouldSendNotification (ShouldSendNotificationRequest) returns (ShouldSendNotificationResponse) {}
 }
 
-// The request message containing the user's name.
-message HelloRequest {
-  string name = 1;
+enum NotificationChannel {
+  PUSH = 0;
 }
 
-// The response message containing the greetings.
-message HelloReply {
-  string message = 1;
+enum NotificationCategory {
+  CIRCLES = 0;
+  PAYMENTS = 1;
 }
 
+message ShouldSendNotificationRequest {
+  string user_id = 1;
+  NotificationChannel channel = 2;
+  NotificationCategory category = 3;
+}
+
+message ShouldSendNotificationResponse {
+  string user_id = 1;
+  bool should_send = 2;
+}

@@ -6,4 +6,6 @@ use crate::user_notification_settings::error::*;
 pub enum ApplicationError {
     #[error("{0}")]
     UserNotificationSettingsError(#[from] UserNotificationSettingsError),
+    #[error("{0}")]
+    GrpcServerError(#[from] tonic::transport::Error),
 }
