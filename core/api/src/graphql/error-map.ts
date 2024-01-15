@@ -135,6 +135,10 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = "Invoice has an invalid checksum, please check again"
       return new InvoiceDecodeError({ message, logger: baseLogger })
 
+    case "InvalidFeatureBitsInLndInvoiceError":
+      message = "Invoice has invalid feature bits set, please check again"
+      return new InvoiceDecodeError({ message, logger: baseLogger })
+
     case "LnPaymentRequestInTransitError":
       message = "There is a pending payment for this invoice"
       return new ValidationInternalError({ message, logger: baseLogger })

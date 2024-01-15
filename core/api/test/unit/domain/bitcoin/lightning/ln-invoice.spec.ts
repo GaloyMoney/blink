@@ -1,4 +1,8 @@
-import { LnInvoiceDecodeError, decodeInvoice } from "@/domain/bitcoin/lightning"
+import {
+  InvalidFeatureBitsInLndInvoiceError,
+  LnInvoiceDecodeError,
+  decodeInvoice,
+} from "@/domain/bitcoin/lightning"
 import { toSats } from "@/domain/bitcoin"
 
 describe("decodeInvoice", () => {
@@ -28,5 +32,12 @@ describe("decodeInvoice", () => {
   it("returns a decode error", () => {
     const result = decodeInvoice("bad input data" as EncodedPaymentRequest)
     expect(result).toBeInstanceOf(LnInvoiceDecodeError)
+  })
+
+  it("returns a decode error for feature bit pairs", () => {
+    const bolt11InvoiceWithFeaturePairs =
+      "lnbc210n1pj6fdampp5u2hav4ulqy0kj9m3qrqq282x4jfhzge4zxa838uw4u3vf78ef68qsp5f5shw0zqygzsjzl73x63t78uqk9xfmjdzcjf5lltlatfzrpgshaqdqqcqzynxqyz5vq9qy9scqrzjq03smfrnw9knnsyn2m2nwt8c88vwuwsum0ve8m598s36hx7lhnn0sz3qgyqqzqsqqyqqqqqqqqqqqqqq9qrzjqv7cv43pj3u8qy38rxwt6mm8qv6u34qg4y4w3zuk93yafhqws0sz2z03l5qqpxsqqqqqqqqqqqqq86qqjqrzjq2kklwxkj0wpu3tfhnk7lt047u4fxxhqylwq7rz5fv6vr3hnhxszkzwqdyqq2rgqqqqqqqqqqqqq86qr7qwazn2gu3vjukeeas70vhndmg03sl4pjnasjupmgshh728u8ed3zpp023k3vaxgyppqkcj0p7twg670kmu7m6pvm68v2aws0lrlw07rgqhe4w2g" as EncodedPaymentRequest
+    const result = decodeInvoice(bolt11InvoiceWithFeaturePairs)
+    expect(result).toBeInstanceOf(InvalidFeatureBitsInLndInvoiceError)
   })
 })

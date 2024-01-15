@@ -2,6 +2,7 @@ import { parsePaymentRequest } from "invoices"
 
 import {
   InvalidChecksumForLnInvoiceError,
+  InvalidFeatureBitsInLndInvoiceError,
   LnInvoiceDecodeError,
   LnInvoiceMissingPaymentSecretError,
   UnknownLnInvoiceDecodeError,
@@ -50,6 +51,12 @@ export const decodeInvoice = (
     )
   }
 
+  const features = (decodedInvoice.features || []) as LnInvoiceFeature[]
+  const featureTypes = features.map((feature) => feature.type)
+  if (featureTypes.length > new Set(featureTypes).size) {
+    return new InvalidFeatureBitsInLndInvoiceError()
+  }
+
   return {
     amount,
     paymentAmount,
@@ -63,7 +70,7 @@ export const decodeInvoice = (
     paymentHash: decodedInvoice.id as PaymentHash,
     destination: decodedInvoice.destination as Pubkey,
     milliSatsAmount: toMilliSatsFromNumber(amount ? amount * 1000 : 0),
-    features: (decodedInvoice.features || []) as LnInvoiceFeature[],
+    features,
   }
 }
 
