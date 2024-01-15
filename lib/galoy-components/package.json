@@ -45,7 +45,7 @@
     "storybook": "^7.6.6",
     "storybook-dark-mode": "^3.0.3",
     "style-loader": "^3.3.3",
-    "tailwindcss": "3.3.5",
+    "tailwindcss": "3.4.1",
     "ts-loader": "^9.5.1",
     "typescript": "^5.3.2",
     "webpack": "^5.89.0",
