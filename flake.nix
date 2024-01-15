@@ -72,6 +72,7 @@
           reindeer
           gitMinimal
           protobuf
+          grpcurl
         ]
         ++ buck2NativeBuildInputs
         ++ lib.optionals pkgs.stdenv.isLinux [
