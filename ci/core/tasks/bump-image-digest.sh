@@ -9,7 +9,7 @@ pushd charts-repo
 
 yq -i e "${YAML_PATH} = strenv(digest)" "./charts/${CHART}/values.yaml"
 
-buck_target_pattern=$(grep -o 'buck_target_pattern=[^;]*' "./charts/${CHART}/values.yaml")
+buck_target_pattern=$(grep "$digest" "./charts/${CHART}/values.yaml" | grep -o 'buck_target_pattern=[^;]*')
 sed -i "s|\(${YAML_PATH##*.}: \"${digest}\"\).*\$|\1 # METADATA:: repository=https://github.com/GaloyMoney/galoy;commit_ref=${ref};app=${COMPONENT};${buck_target_pattern};|g" "./charts/${CHART}/values.yaml"
 
 
