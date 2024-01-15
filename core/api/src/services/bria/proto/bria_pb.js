@@ -10168,7 +10168,8 @@ proto.services.bria.v1.PayoutQueueConfig.toObject = function(includeInstance, ms
     manual: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
     intervalSecs: jspb.Message.getFieldWithDefault(msg, 5, 0),
     cpfpPayoutsAfterMins: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    cpfpPayoutsAfterBlocks: jspb.Message.getFieldWithDefault(msg, 7, 0)
+    cpfpPayoutsAfterBlocks: jspb.Message.getFieldWithDefault(msg, 7, 0),
+    forceMinChangeSats: jspb.Message.getFieldWithDefault(msg, 8, 0)
   };
 
   if (includeInstance) {
@@ -10228,6 +10229,10 @@ proto.services.bria.v1.PayoutQueueConfig.deserializeBinaryFromReader = function(
     case 7:
       var value = /** @type {number} */ (reader.readUint32());
       msg.setCpfpPayoutsAfterBlocks(value);
+      break;
+    case 8:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setForceMinChangeSats(value);
       break;
     default:
       reader.skipField();
@@ -10297,6 +10302,13 @@ proto.services.bria.v1.PayoutQueueConfig.serializeBinaryToWriter = function(mess
   if (f != null) {
     writer.writeUint32(
       7,
+      f
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 8));
+  if (f != null) {
+    writer.writeUint64(
+      8,
       f
     );
   }
@@ -10480,6 +10492,42 @@ proto.services.bria.v1.PayoutQueueConfig.prototype.clearCpfpPayoutsAfterBlocks =
  */
 proto.services.bria.v1.PayoutQueueConfig.prototype.hasCpfpPayoutsAfterBlocks = function() {
   return jspb.Message.getField(this, 7) != null;
+};
+
+
+/**
+ * optional uint64 force_min_change_sats = 8;
+ * @return {number}
+ */
+proto.services.bria.v1.PayoutQueueConfig.prototype.getForceMinChangeSats = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.services.bria.v1.PayoutQueueConfig} returns this
+ */
+proto.services.bria.v1.PayoutQueueConfig.prototype.setForceMinChangeSats = function(value) {
+  return jspb.Message.setField(this, 8, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.services.bria.v1.PayoutQueueConfig} returns this
+ */
+proto.services.bria.v1.PayoutQueueConfig.prototype.clearForceMinChangeSats = function() {
+  return jspb.Message.setField(this, 8, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.services.bria.v1.PayoutQueueConfig.prototype.hasForceMinChangeSats = function() {
+  return jspb.Message.getField(this, 8) != null;
 };
 
 
