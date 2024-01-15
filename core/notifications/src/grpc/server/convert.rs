@@ -22,8 +22,6 @@ impl From<proto::NotificationChannel> for UserNotificationChannel {
 
 impl From<ApplicationError> for tonic::Status {
     fn from(err: ApplicationError) -> Self {
-        match err {
-            _ => tonic::Status::internal(err.to_string()),
-        }
+        tonic::Status::internal(err.to_string())
     }
 }
