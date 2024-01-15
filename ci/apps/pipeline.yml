@@ -88,7 +88,7 @@ resources:
     source:
       paths: [ci/apps/*]
       uri: #@ data.values.git_uri
-      branch: ci--add-buck-target-to-metadata
+      branch: #@ data.values.git_branch
       private_key: #@ data.values.github_private_key
 
   - name: charts-repo
