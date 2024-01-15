@@ -1,6 +1,36 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct GaloyAccountId(String);
+pub struct GaloyUserId(String);
+impl From<String> for GaloyUserId {
+    fn from(s: String) -> Self {
+        Self(s)
+    }
+}
 
-es_entity::entity_id! { AccountNotificationSettingsId }
+impl AsRef<str> for GaloyUserId {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::fmt::Display for GaloyUserId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+es_entity::entity_id! { UserNotificationSettingsId }
+
+#[derive(async_graphql::Enum, Debug, Copy, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[graphql(name = "UserNotificationChannel")]
+pub enum UserNotificationChannel {
+    Push,
+}
+
+#[derive(async_graphql::Enum, Debug, Hash, Copy, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[graphql(name = "UserNotificationCategory")]
+pub enum UserNotificationCategory {
+    Circles,
+    Payments,
+}

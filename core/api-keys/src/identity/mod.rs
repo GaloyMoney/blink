@@ -67,8 +67,9 @@ impl Identities {
     ) -> Result<(IdentityApiKey, ApiKeySecret), IdentityError> {
         let code = Alphanumeric.sample_string(&mut rand::thread_rng(), 64);
         let record = sqlx::query!(
-            r#"INSERT INTO identity_api_keys (encrypted_key, identity_id, name, expires_at, read_only)
-            VALUES (crypt($1, gen_salt('bf')), $2, $3, $4, $5) RETURNING id, created_at"#,
+            r#"INSERT INTO identity_api_keys (hashed_key, encrypted_key, identity_id, name, expires_at, read_only)
+            VALUES (digest($1, 'sha256'), crypt($1, gen_salt('bf')), $2, $3, $4, $5)
+            RETURNING id, created_at"#,
             code,
             identity_id as IdentityId,
             name,
@@ -111,7 +112,7 @@ impl Identities {
                  FROM identities i
                  WHERE k.identity_id = i.id
                  AND k.revoked = false
-                 AND k.encrypted_key = crypt($1, k.encrypted_key)
+                 AND k.hashed_key = digest($1, 'sha256')
                  AND (k.expires_at > NOW() OR k.expires_at IS NULL)
                  RETURNING k.id, i.subject_id, k.read_only
                )
@@ -128,7 +129,33 @@ impl Identities {
                 record.read_only,
             ))
         } else {
-            Err(IdentityError::NoActiveKeyFound)
+            // look up by encrypted key and set hashed_key
+            let record = sqlx::query!(
+                r#"WITH updated_key AS (
+                 UPDATE identity_api_keys k
+                 SET last_used_at = NOW(), hashed_key = digest($1, 'sha256')
+                 FROM identities i
+                 WHERE k.identity_id = i.id
+                 AND k.revoked = false
+                 AND k.encrypted_key = crypt($1, k.encrypted_key)
+                 AND (k.expires_at > NOW() OR k.expires_at IS NULL)
+                 RETURNING k.id, i.subject_id, k.read_only
+               )
+               SELECT id, subject_id, read_only FROM updated_key"#,
+                code
+            )
+            .fetch_optional(&self.pool)
+            .await?;
+
+            if let Some(record) = record {
+                Ok((
+                    IdentityApiKeyId::from(record.id),
+                    record.subject_id,
+                    record.read_only,
+                ))
+            } else {
+                Err(IdentityError::NoActiveKeyFound)
+            }
         }
     }
 

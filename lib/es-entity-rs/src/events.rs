@@ -17,7 +17,7 @@ pub trait EntityEvent: DeserializeOwned + Serialize {
         Self: Sized;
 }
 
-pub trait Entity: TryFrom<EntityEvents<<Self as Entity>::Event>, Error = EntityError> {
+pub trait EsEntity: TryFrom<EntityEvents<<Self as EsEntity>::Event>, Error = EntityError> {
     type Event: EntityEvent;
 }
 
@@ -42,6 +42,10 @@ where
         }
     }
 
+    pub fn push(&mut self, event: T) {
+        self.new_events.push(event);
+    }
+
     pub async fn persist(
         &mut self,
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
@@ -49,6 +53,10 @@ where
         let uuid: uuid::Uuid = self.entity_id.into();
         let mut events = Vec::new();
         std::mem::swap(&mut events, &mut self.new_events);
+
+        if events.is_empty() {
+            return Ok(0);
+        }
 
         let mut query_builder = sqlx::QueryBuilder::new(format!(
             "INSERT INTO {} (id, sequence, event_type, event)",
@@ -77,7 +85,7 @@ where
         Ok(n_persisted)
     }
 
-    pub fn load_first<E: Entity<Event = T>>(
+    pub fn load_first<E: EsEntity<Event = T>>(
         events: impl IntoIterator<Item = GenericEvent>,
     ) -> Result<E, EntityError> {
         let mut current_id = None;
@@ -103,7 +111,7 @@ where
         if let Some(current) = current {
             E::try_from(current)
         } else {
-            Err(EntityError::NoEvents)
+            Err(EntityError::NoEntityEventsPresent)
         }
     }
 
@@ -142,7 +150,7 @@ mod tests {
     struct DummyEntity {
         name: String,
     }
-    impl Entity for DummyEntity {
+    impl EsEntity for DummyEntity {
         type Event = DummyEvent;
     }
     impl TryFrom<EntityEvents<DummyEvent>> for DummyEntity {
@@ -162,7 +170,7 @@ mod tests {
     fn load_zero_events() {
         let generic_events = vec![];
         let res = EntityEvents::load_first::<DummyEntity>(generic_events);
-        assert!(matches!(res, Err(EntityError::NoEvents)));
+        assert!(matches!(res, Err(EntityError::NoEntityEventsPresent)));
     }
 
     #[test]
