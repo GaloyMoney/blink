@@ -1,21 +1,21 @@
 use crate::app::ApplicationError;
 use crate::primitives::{UserNotificationCategory, UserNotificationChannel};
 
-impl From<i32> for UserNotificationCategory {
-    fn from(category: i32) -> Self {
+use super::proto;
+
+impl From<proto::NotificationCategory> for UserNotificationCategory {
+    fn from(category: proto::NotificationCategory) -> Self {
         match category {
-            0 => UserNotificationCategory::Circles,
-            1 => UserNotificationCategory::Payments,
-            _ => unimplemented!(),
+            proto::NotificationCategory::Circles => UserNotificationCategory::Circles,
+            proto::NotificationCategory::Payments => UserNotificationCategory::Payments,
         }
     }
 }
 
-impl From<i32> for UserNotificationChannel {
-    fn from(channel: i32) -> Self {
+impl From<proto::NotificationChannel> for UserNotificationChannel {
+    fn from(channel: proto::NotificationChannel) -> Self {
         match channel {
-            0 => UserNotificationChannel::Push,
-            _ => unimplemented!(),
+            proto::NotificationChannel::Push => UserNotificationChannel::Push,
         }
     }
 }

@@ -10,7 +10,10 @@ use tonic::{transport::Server, Request, Response, Status};
 use self::proto::{notifications_service_server::NotificationsService, *};
 
 use super::config::*;
-use crate::app::{ApplicationError, *};
+use crate::{
+    app::{ApplicationError, *},
+    primitives::{UserNotificationCategory, UserNotificationChannel},
+};
 
 pub struct Notifications {
     app: NotificationsApp,
@@ -28,10 +31,15 @@ impl NotificationsService for Notifications {
             channel,
             category,
         } = request;
-
+        let channel = proto::NotificationChannel::try_from(channel)
+            .map(UserNotificationChannel::from)
+            .map_err(|e| Status::invalid_argument(e.to_string()))?;
+        let category = proto::NotificationCategory::try_from(category)
+            .map(UserNotificationCategory::from)
+            .map_err(|e| Status::invalid_argument(e.to_string()))?;
         let should_send = self
             .app
-            .should_send_notification(user_id.clone().into(), channel.into(), category.into())
+            .should_send_notification(user_id.clone().into(), channel, category)
             .await?;
 
         Ok(Response::new(ShouldSendNotificationResponse {
