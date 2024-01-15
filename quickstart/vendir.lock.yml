@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): move lock service integration tests (#3828)...'
-      sha: 2e7e7af42d49ff7a2a4e6daa662a7e6bba1110e9
+      commitTitle: 'test(notifications): add e2e test for grpc server (#3835)...'
+      sha: ef72303a8954a4d611f6d193160c56eecb6efd3e
       tags:
-      - 0.19.44-11-g2e7e7af42
+      - 0.19.44-13-gef72303a8
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): move lock service integration tests (#3828)...'
-      sha: 2e7e7af42d49ff7a2a4e6daa662a7e6bba1110e9
+      commitTitle: 'test(notifications): add e2e test for grpc server (#3835)...'
+      sha: ef72303a8954a4d611f6d193160c56eecb6efd3e
       tags:
-      - 0.19.44-11-g2e7e7af42
+      - 0.19.44-13-gef72303a8
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(core): move lock service integration tests (#3828)...'
-      sha: 2e7e7af42d49ff7a2a4e6daa662a7e6bba1110e9
+      commitTitle: 'test(notifications): add e2e test for grpc server (#3835)...'
+      sha: ef72303a8954a4d611f6d193160c56eecb6efd3e
       tags:
-      - 0.19.44-11-g2e7e7af42
+      - 0.19.44-13-gef72303a8
     path: ./
   path: ./graphql
 kind: LockConfig
