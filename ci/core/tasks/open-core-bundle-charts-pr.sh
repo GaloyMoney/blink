@@ -36,6 +36,7 @@ git checkout ${ref}
 app_src_files=($(buck2 uquery 'inputs(deps("//core/..."))' 2>/dev/null))
 
 declare -A relevant_commits
+relevant_commits=()
 for commit in $(git log --format="%H" ${old_ref}..${ref}); do
   changed_files=$(git diff-tree --no-commit-id --name-only -r $commit)
 
