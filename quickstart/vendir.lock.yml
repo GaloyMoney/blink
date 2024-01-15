@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(notifications): build protos in buck (#3824)...'
-      sha: 6c603e8c38932c68f22f6ed37fc3b36dbaca959c
+      commitTitle: 'chore(core): add ''feature pair exists'' error to lnd handling
+        (#3836)'
+      sha: 6f23ab85db23cbcf0181cb58f8fc8dc569629ad5
       tags:
-      - 0.19.44-6-g6c603e8c3
+      - 0.19.44-9-g6f23ab85d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(notifications): build protos in buck (#3824)...'
-      sha: 6c603e8c38932c68f22f6ed37fc3b36dbaca959c
+      commitTitle: 'chore(core): add ''feature pair exists'' error to lnd handling
+        (#3836)'
+      sha: 6f23ab85db23cbcf0181cb58f8fc8dc569629ad5
       tags:
-      - 0.19.44-6-g6c603e8c3
+      - 0.19.44-9-g6f23ab85d
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(notifications): build protos in buck (#3824)...'
-      sha: 6c603e8c38932c68f22f6ed37fc3b36dbaca959c
+      commitTitle: 'chore(core): add ''feature pair exists'' error to lnd handling
+        (#3836)'
+      sha: 6f23ab85db23cbcf0181cb58f8fc8dc569629ad5
       tags:
-      - 0.19.44-6-g6c603e8c3
+      - 0.19.44-9-g6f23ab85d
     path: ./
   path: ./graphql
 kind: LockConfig
