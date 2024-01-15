@@ -20,6 +20,7 @@ export const KnownLndErrorDetails = {
   TemporaryNodeFailure: /TemporaryNodeFailure/,
   InvoiceAlreadySettled: /invoice already settled/,
   MissingDependentFeature: /missing dependent feature/,
+  FeaturePairExists: /feature pair exists/,
 
   // On-chain
   InsufficientFunds: /insufficient funds available to construct transaction/,
