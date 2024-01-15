@@ -57,6 +57,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
         })
       }
     })
+
   // only network error are managed globally
   if (networkError) {
     console.log(`[Network error]: ${networkError}`)
