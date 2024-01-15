@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): add ''feature pair exists'' error to lnd handling
-        (#3836)'
-      sha: 6f23ab85db23cbcf0181cb58f8fc8dc569629ad5
+      commitTitle: 'test(core): move lock service integration tests (#3828)...'
+      sha: 2e7e7af42d49ff7a2a4e6daa662a7e6bba1110e9
       tags:
-      - 0.19.44-9-g6f23ab85d
+      - 0.19.44-11-g2e7e7af42
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): add ''feature pair exists'' error to lnd handling
-        (#3836)'
-      sha: 6f23ab85db23cbcf0181cb58f8fc8dc569629ad5
+      commitTitle: 'test(core): move lock service integration tests (#3828)...'
+      sha: 2e7e7af42d49ff7a2a4e6daa662a7e6bba1110e9
       tags:
-      - 0.19.44-9-g6f23ab85d
+      - 0.19.44-11-g2e7e7af42
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(core): add ''feature pair exists'' error to lnd handling
-        (#3836)'
-      sha: 6f23ab85db23cbcf0181cb58f8fc8dc569629ad5
+      commitTitle: 'test(core): move lock service integration tests (#3828)...'
+      sha: 2e7e7af42d49ff7a2a4e6daa662a7e6bba1110e9
       tags:
-      - 0.19.44-9-g6f23ab85d
+      - 0.19.44-11-g2e7e7af42
     path: ./
   path: ./graphql
 kind: LockConfig
