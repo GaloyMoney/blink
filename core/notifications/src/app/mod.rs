@@ -1,12 +1,12 @@
 mod config;
-mod error;
+pub mod error;
 
 use sqlx::{Pool, Postgres};
 
 use crate::{primitives::*, user_notification_settings::*};
 
 pub use config::*;
-pub use error::*;
+use error::*;
 
 #[derive(Clone)]
 pub struct NotificationsApp {

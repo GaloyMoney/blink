@@ -11,7 +11,7 @@ use self::proto::{notifications_service_server::NotificationsService, *};
 
 use super::config::*;
 use crate::{
-    app::{ApplicationError, *},
+    app::*,
     primitives::{UserNotificationCategory, UserNotificationChannel},
 };
 
@@ -52,7 +52,7 @@ impl NotificationsService for Notifications {
 pub(crate) async fn start(
     server_config: GrpcServerConfig,
     app: NotificationsApp,
-) -> Result<(), ApplicationError> {
+) -> Result<(), tonic::transport::Error> {
     use proto::notifications_service_server::NotificationsServiceServer;
 
     let notifications = Notifications { app };

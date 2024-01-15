@@ -1,4 +1,4 @@
-use crate::app::ApplicationError;
+use crate::app::error::ApplicationError;
 use crate::primitives::{UserNotificationCategory, UserNotificationChannel};
 
 use super::proto;
