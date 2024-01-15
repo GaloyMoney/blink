@@ -22,10 +22,16 @@ import { toObjectId } from "@/services/mongoose/utils"
 
 import { createMandatoryUsers } from "test/helpers"
 import {
+  recordColdStorageTxReceive,
+  recordColdStorageTxSend,
+  recordLnChannelOpenOrClosingFee,
   recordLnFailedPayment,
   recordLnFeeReimbursement,
   recordLnIntraLedgerPayment,
+  recordLnRoutingRevenue,
   recordLnTradeIntraAccountTxn,
+  recordLndEscrowCredit,
+  recordLndEscrowDebit,
   recordOnChainIntraLedgerPayment,
   recordOnChainTradeIntraAccountTxn,
   recordReceiveLnPayment,
@@ -36,6 +42,7 @@ import {
   recordWalletIdIntraLedgerPayment,
   recordWalletIdTradeIntraAccountTxn,
 } from "test/helpers/ledger"
+import { ModifiedSet, timestampDaysAgo } from "@/utils"
 
 let accountWalletDescriptors: AccountWalletDescriptors
 let accountLimitsLevelOne: IAccountLimits
@@ -119,6 +126,18 @@ describe("Facade", () => {
     amountDisplayCurrency: 24 as DisplayCurrencyBaseAmount,
     feeDisplayCurrency: 12 as DisplayCurrencyBaseAmount,
     displayCurrency: "EUR" as DisplayCurrency,
+  }
+
+  const senderDisplayAmounts = {
+    senderAmountDisplayCurrency: displaySendEurAmounts.amountDisplayCurrency,
+    senderFeeDisplayCurrency: displaySendEurAmounts.feeDisplayCurrency,
+    senderDisplayCurrency: displaySendEurAmounts.displayCurrency,
+  }
+
+  const recipientDisplayAmounts = {
+    recipientAmountDisplayCurrency: displaySendEurAmounts.amountDisplayCurrency,
+    recipientFeeDisplayCurrency: displaySendEurAmounts.feeDisplayCurrency,
+    recipientDisplayCurrency: displaySendEurAmounts.displayCurrency,
   }
 
   describe("record", () => {
@@ -518,7 +537,7 @@ describe("Facade", () => {
     })
   })
 
-  describe("volume", () => {
+  describe("remaining limits", () => {
     const remainingWithdrawalLimit = async ({
       priceRatio,
     }: {
@@ -647,6 +666,340 @@ describe("Facade", () => {
 
         const remaining = await remainingWithdrawalLimit({ priceRatio: sendPriceRatio })
         expect(remaining).toStrictEqual(expectedRemaining)
+      })
+    })
+  })
+
+  describe("volume by tx type", () => {
+    // Define 'ExtendedLedgerTransactionType' and 'UserLedgerTransactionType'
+    const FullLedgerTransactionType = {
+      ...LedgerTransactionType,
+      IntraLedgerSend: LedgerTransactionType.IntraLedger,
+      IntraLedgerReceive: LedgerTransactionType.IntraLedger,
+      LnIntraLedgerSend: LedgerTransactionType.LnIntraLedger,
+      LnIntraLedgerReceive: LedgerTransactionType.LnIntraLedger,
+      OnchainIntraLedgerSend: LedgerTransactionType.OnchainIntraLedger,
+      OnchainIntraLedgerReceive: LedgerTransactionType.OnchainIntraLedger,
+
+      WalletIdTradeIntraAccountOut: LedgerTransactionType.WalletIdTradeIntraAccount,
+      WalletIdTradeIntraAccountIn: LedgerTransactionType.WalletIdTradeIntraAccount,
+      LnTradeIntraAccountOut: LedgerTransactionType.LnTradeIntraAccount,
+      LnTradeIntraAccountIn: LedgerTransactionType.LnTradeIntraAccount,
+      OnChainTradeIntraAccountOut: LedgerTransactionType.OnChainTradeIntraAccount,
+      OnChainTradeIntraAccountIn: LedgerTransactionType.OnChainTradeIntraAccount,
+
+      EscrowCredit: LedgerTransactionType.Escrow,
+      EscrowDebit: LedgerTransactionType.Escrow,
+    } as const
+
+    const {
+      IntraLedger, // eslint-disable-line @typescript-eslint/no-unused-vars
+      LnIntraLedger, // eslint-disable-line @typescript-eslint/no-unused-vars
+      OnchainIntraLedger, // eslint-disable-line @typescript-eslint/no-unused-vars
+      WalletIdTradeIntraAccount, // eslint-disable-line @typescript-eslint/no-unused-vars
+      LnTradeIntraAccount, // eslint-disable-line @typescript-eslint/no-unused-vars
+      OnChainTradeIntraAccount, // eslint-disable-line @typescript-eslint/no-unused-vars
+      Escrow, // eslint-disable-line @typescript-eslint/no-unused-vars
+
+      ...ExtendedLedgerTransactionType
+    } = FullLedgerTransactionType
+
+    const {
+      Fee, // eslint-disable-line @typescript-eslint/no-unused-vars
+      RoutingRevenue, // eslint-disable-line @typescript-eslint/no-unused-vars
+      ToColdStorage, // eslint-disable-line @typescript-eslint/no-unused-vars
+      ToHotWallet, // eslint-disable-line @typescript-eslint/no-unused-vars
+      EscrowCredit, // eslint-disable-line @typescript-eslint/no-unused-vars
+      EscrowDebit, // eslint-disable-line @typescript-eslint/no-unused-vars
+
+      ...UserLedgerTransactionType
+    } = ExtendedLedgerTransactionType
+
+    const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+    const otherBtcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+
+    const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
+    if (timestamp1DayAgo instanceof Error) throw timestamp1DayAgo
+
+    const txTypesForVolumes = (
+      includedTypes: (keyof typeof ExtendedLedgerTransactionType)[],
+    ) => {
+      const excludedTypes = Object.keys(ExtendedLedgerTransactionType)
+        .map((key) => key as keyof typeof ExtendedLedgerTransactionType)
+        .filter(
+          (key: keyof typeof ExtendedLedgerTransactionType) =>
+            !includedTypes.includes(key),
+        )
+
+      const includedTypesSet = new ModifiedSet(includedTypes)
+      const excludedTypesSet = new ModifiedSet(excludedTypes)
+      if (includedTypesSet.intersect(excludedTypesSet).size !== 0) {
+        throw new Error("Issue in separating tx types for volume tests")
+      }
+
+      return { includedTypes, excludedTypes }
+    }
+
+    const externalTxFnForType = {
+      Invoice: recordReceiveLnPayment,
+      OnchainReceipt: recordReceiveOnChainPayment,
+      Payment: recordSendLnPayment,
+      OnchainPayment: recordSendOnChainPayment,
+      LnFeeReimbursement: recordLnFeeReimbursement,
+      LnFailedPayment: recordLnFailedPayment,
+      Fee: recordLnChannelOpenOrClosingFee,
+      EscrowCredit: recordLndEscrowCredit,
+      EscrowDebit: recordLndEscrowDebit,
+      RoutingRevenue: recordLnRoutingRevenue,
+      ToHotWallet: recordColdStorageTxSend,
+      ToColdStorage: recordColdStorageTxReceive,
+    }
+
+    const internalSendTxFnForType = {
+      IntraLedgerSend: recordWalletIdIntraLedgerPayment,
+      OnchainIntraLedgerSend: recordOnChainIntraLedgerPayment,
+      LnIntraLedgerSend: recordLnIntraLedgerPayment,
+      WalletIdTradeIntraAccountOut: recordWalletIdTradeIntraAccountTxn,
+      LnTradeIntraAccountOut: recordLnTradeIntraAccountTxn,
+      OnChainTradeIntraAccountOut: recordOnChainTradeIntraAccountTxn,
+    }
+
+    const internalReceiveTxFnForType = {
+      IntraLedgerReceive: recordWalletIdIntraLedgerPayment,
+      OnchainIntraLedgerReceive: recordOnChainIntraLedgerPayment,
+      LnIntraLedgerReceive: recordLnIntraLedgerPayment,
+      WalletIdTradeIntraAccountIn: recordWalletIdTradeIntraAccountTxn,
+      LnTradeIntraAccountIn: recordLnTradeIntraAccountTxn,
+      OnChainTradeIntraAccountIn: recordOnChainTradeIntraAccountTxn,
+    }
+
+    const reconciliationTxFnForType = {
+      Reconciliation: recordReceiveOnChainFeeReconciliation,
+    }
+
+    describe("All payment tx types, net volume", () => {
+      const allPaymentTxTypes: (keyof typeof UserLedgerTransactionType)[] = [
+        "Payment",
+        "OnchainPayment",
+        "IntraLedgerSend",
+        "OnchainIntraLedgerSend",
+        "LnIntraLedgerSend",
+        "LnFeeReimbursement",
+      ]
+
+      const currentVolumeAmount = async () => {
+        // Uses 'allPaymentVolumeAmountSince'
+        const vol = await LedgerFacade.allPaymentVolumeAmountSince({
+          walletDescriptor: btcWalletDescriptor,
+          timestamp: timestamp1DayAgo,
+        })
+        if (vol instanceof Error) throw vol
+
+        // Uses difference between 'outgoing' & 'incoming'
+        return calc.sub(vol.outgoingBaseAmount, vol.incomingBaseAmount)
+      }
+
+      const {
+        includedTypes: volumeAffectingTypes,
+        excludedTypes: nonVolumeAffectingTypes,
+      } = txTypesForVolumes(allPaymentTxTypes)
+
+      describe("all external transactions", () => {
+        const externalVolumeAffectingTypes = volumeAffectingTypes.filter(
+          (txType) => txType in externalTxFnForType,
+        )
+        if (externalVolumeAffectingTypes.length) {
+          describe("affects volume", () => {
+            for (const txType of externalVolumeAffectingTypes) {
+              const recordTx =
+                externalTxFnForType[txType as keyof typeof externalTxFnForType]
+
+              it(`for ${txType} transaction`, async () => {
+                const expected = calc.add(await currentVolumeAmount(), sendAmount.btc)
+
+                const result = await recordTx({
+                  walletDescriptor: btcWalletDescriptor,
+                  paymentAmount: sendAmount,
+                  bankFee,
+                  displayAmounts: displayReceiveUsdAmounts,
+                })
+                expect(result).not.toBeInstanceOf(Error)
+
+                const actual = await currentVolumeAmount()
+                expect(expected).toStrictEqual(actual)
+              })
+            }
+          })
+        }
+
+        const externalNonVolumeAffectingTypes = nonVolumeAffectingTypes.filter(
+          (txType) => txType in externalTxFnForType,
+        )
+        if (externalNonVolumeAffectingTypes.length) {
+          describe("does not affect volume", () => {
+            for (const txType of externalNonVolumeAffectingTypes) {
+              const recordTx =
+                externalTxFnForType[txType as keyof typeof externalTxFnForType]
+
+              it(`for ${txType} transaction`, async () => {
+                const expected = await currentVolumeAmount()
+
+                const result = await recordTx({
+                  walletDescriptor: btcWalletDescriptor,
+                  paymentAmount: sendAmount,
+                  bankFee,
+                  displayAmounts: displayReceiveUsdAmounts,
+                })
+                expect(result).not.toBeInstanceOf(Error)
+
+                const actual = await currentVolumeAmount()
+                expect(expected).toStrictEqual(actual)
+              })
+            }
+          })
+        }
+      })
+
+      describe("internal send transactions", () => {
+        const internalVolumeAffectingTypes = volumeAffectingTypes.filter(
+          (txType) => txType in internalSendTxFnForType,
+        )
+        if (internalVolumeAffectingTypes.length) {
+          describe("affects volume", () => {
+            for (const txType of internalVolumeAffectingTypes) {
+              const recordTx =
+                internalSendTxFnForType[txType as keyof typeof internalSendTxFnForType]
+
+              it(`for ${txType} transaction`, async () => {
+                const expected = calc.add(await currentVolumeAmount(), sendAmount.btc)
+
+                const result = await recordTx({
+                  senderWalletDescriptor: btcWalletDescriptor,
+                  recipientWalletDescriptor: otherBtcWalletDescriptor,
+                  paymentAmount: sendAmount,
+                  senderDisplayAmounts,
+                  recipientDisplayAmounts,
+                })
+                expect(result).not.toBeInstanceOf(Error)
+
+                const actual = await currentVolumeAmount()
+                expect(expected).toStrictEqual(actual)
+              })
+            }
+          })
+        }
+
+        const internalNonVolumeAffectingTypes = nonVolumeAffectingTypes.filter(
+          (txType) => txType in internalSendTxFnForType,
+        )
+        if (internalNonVolumeAffectingTypes.length) {
+          describe("does not affect volume", () => {
+            for (const txType of internalNonVolumeAffectingTypes) {
+              const recordTx =
+                internalSendTxFnForType[txType as keyof typeof internalSendTxFnForType]
+
+              it(`for ${txType} transaction`, async () => {
+                const expected = await currentVolumeAmount()
+
+                const result = await recordTx({
+                  senderWalletDescriptor: btcWalletDescriptor,
+                  recipientWalletDescriptor: otherBtcWalletDescriptor,
+                  paymentAmount: sendAmount,
+                  senderDisplayAmounts,
+                  recipientDisplayAmounts,
+                })
+                expect(result).not.toBeInstanceOf(Error)
+
+                const actual = await currentVolumeAmount()
+                expect(expected).toStrictEqual(actual)
+              })
+            }
+          })
+        }
+      })
+
+      describe("internal receive transactions", () => {
+        const internalVolumeAffectingTypes = volumeAffectingTypes.filter(
+          (txType) => txType in internalReceiveTxFnForType,
+        )
+        if (internalVolumeAffectingTypes.length) {
+          describe("affects volume", () => {
+            for (const txType of internalVolumeAffectingTypes) {
+              const recordTx =
+                internalReceiveTxFnForType[
+                  txType as keyof typeof internalReceiveTxFnForType
+                ]
+
+              it(`for ${txType} transaction`, async () => {
+                const expected = calc.add(await currentVolumeAmount(), sendAmount.btc)
+
+                const result = await recordTx({
+                  senderWalletDescriptor: otherBtcWalletDescriptor,
+                  recipientWalletDescriptor: btcWalletDescriptor,
+                  paymentAmount: sendAmount,
+                  senderDisplayAmounts,
+                  recipientDisplayAmounts,
+                })
+                expect(result).not.toBeInstanceOf(Error)
+
+                const actual = await currentVolumeAmount()
+                expect(expected).toStrictEqual(actual)
+              })
+            }
+          })
+        }
+
+        const internalNonVolumeAffectingTypes = nonVolumeAffectingTypes.filter(
+          (txType) => txType in internalReceiveTxFnForType,
+        )
+        if (internalNonVolumeAffectingTypes.length) {
+          describe("does not affect volume", () => {
+            for (const txType of internalNonVolumeAffectingTypes) {
+              const recordTx =
+                internalReceiveTxFnForType[
+                  txType as keyof typeof internalReceiveTxFnForType
+                ]
+
+              it(`for ${txType} transaction`, async () => {
+                const expected = await currentVolumeAmount()
+
+                const result = await recordTx({
+                  senderWalletDescriptor: otherBtcWalletDescriptor,
+                  recipientWalletDescriptor: btcWalletDescriptor,
+                  paymentAmount: sendAmount,
+                  senderDisplayAmounts,
+                  recipientDisplayAmounts,
+                })
+                expect(result).not.toBeInstanceOf(Error)
+
+                const actual = await currentVolumeAmount()
+                expect(expected).toStrictEqual(actual)
+              })
+            }
+          })
+        }
+      })
+
+      describe("reconciliation transactions", () => {
+        describe("does not affect volume", () => {
+          for (const txType in reconciliationTxFnForType) {
+            const recordTx =
+              reconciliationTxFnForType[txType as keyof typeof reconciliationTxFnForType]
+
+            it(`for ${txType} transaction`, async () => {
+              const expected = await currentVolumeAmount()
+
+              const result = await recordTx({
+                estimatedFee: bankFee.btc,
+                actualFee: calc.mul(bankFee.btc, 2n),
+              })
+              expect(result).not.toBeInstanceOf(Error)
+
+              const actual = await currentVolumeAmount()
+              expect(expected).toStrictEqual(actual)
+            })
+          }
+        })
       })
     })
   })

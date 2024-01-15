@@ -35,6 +35,8 @@ import {
   recordLnTradeIntraAccountTxn,
 } from "test/helpers/ledger"
 
+import { createMandatoryUsers } from "test/helpers"
+
 const calc = AmountCalculator()
 
 const FullLedgerTransactionType = {
@@ -79,6 +81,10 @@ const {
 
   ...UserLedgerTransactionType
 } = ExtendedLedgerTransactionType
+
+beforeAll(async () => {
+  await createMandatoryUsers()
+})
 
 describe("Volumes", () => {
   const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
@@ -136,7 +142,6 @@ describe("Volumes", () => {
       const currentVolumeAmount = await fetchVolumeAmount(
         walletDescriptor as WalletDescriptor<S>,
       )
-      if (currentVolumeAmount instanceof Error) throw currentVolumeAmount
       const expected = calcFn(currentVolumeAmount, paymentAmount.btc)
 
       const result = await recordTx({
