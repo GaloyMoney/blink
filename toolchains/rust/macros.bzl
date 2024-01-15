@@ -15,65 +15,152 @@ load(
     "get_re_executor_from_props",
 )
 
-def rust_protobuf_library(
+def galoy_rust_bin(
         name,
         srcs,
-        build_script,
-        protos,
+        deps,
+        lib_root = "src/lib.rs",
+        env = {},
         edition = "2021",
-        env = None,
-        build_env = None,
-        deps = [],
-        test_deps = None,
-        doctests = True):
+        visibility = ["PUBLIC"],
+        extra_tests = [],
+        protos = None):
+    lib_name = "lib-{}".format(name)
 
-    build_name = name + "-build"
-    proto_name = name + "-proto"
+    galoy_rust_lib(name = lib_name,
+        srcs = srcs,
+        deps = deps,
+        lib_root = lib_root,
+        env = env,
+        edition = edition,
+        visibility = visibility,
+        extra_tests = extra_tests,
+        protos = protos)
 
     native.rust_binary(
-        name = build_name,
-        srcs = [build_script],
-        crate_root = build_script,
+        name = name,
         deps = [
-            "//third-party/rust:tonic-build"
+            ":lib-{}".format(name),
+            "//third-party/rust:tokio",
+            "//third-party/rust:anyhow",
+        ],
+        srcs = srcs,
+        env = env,
+        edition = edition,
+        visibility = visibility,
+        tests = [
+            ":{}".format(lib_name),
+            ":check-format-rust-bin",
+            ":check-lint-rust-bin",
         ],
     )
 
-    build_env = build_env or {}
-    build_env.update(
-        {
-            "PROTOC": "$(exe //third-party/proto:protoc)",
-            "PROTOC_INCLUDE": "$(location //third-party/proto:google_protobuf)",
-        },
+    rustfmt_check(
+        name = "check-format-rust-bin",
+        srcs = srcs,
+        crate_root = "src/main.rs",
+    )
+
+    clippy_check(
+        name = "check-lint-rust-bin",
+        clippy_txt_dep = ":{}[clippy.txt]".format(name),
     )
 
 
-    native.genrule(
-      name = proto_name,
-      srcs = protos + [
-            "//third-party/proto:google_protobuf",
-      ],
-      out = ".",
-      cmd = "$(exe :" + build_name + ")",
-      env = build_env,
+def galoy_rust_lib(
+        name,
+        srcs,
+        deps,
+        lib_root = "src/lib.rs",
+        build_script = "build.rs",
+        env = {},
+        edition = "2021",
+        visibility = ["PUBLIC"],
+        extra_tests = [],
+        protos = None,
+        build_env = None):
+
+    rustfmt_check(
+        name = "check-format-rust-lib",
+        srcs = srcs,
+        crate_root = lib_root,
+    )
+    
+    clippy_check(
+        name = "check-lint-rust-lib",
+        clippy_txt_dep = ":{}[clippy.txt]".format(name),
+    )
+    
+    native.test_suite(
+        name = "test",
+        tests = [
+            ":check-format-rust-lib",
+            ":check-lint-rust-lib",
+            ":test-unit-rust-lib"
+        ],
     )
 
-    env = env or {}
-    env.update({
-        "OUT_DIR": "$(location :{})".format(proto_name),
-    })
+    if protos != None:
+        build_name = name + "-build"
+        proto_name = name + "-proto"
+
+        native.rust_binary(
+            name = build_name,
+            srcs = [build_script],
+            crate_root = build_script,
+            deps = [
+                "//third-party/rust:tonic-build"
+            ],
+        )
+
+        build_env = build_env or {}
+        build_env.update(
+            {
+                "PROTOC": "$(exe //third-party/proto:protoc)",
+                "PROTOC_INCLUDE": "$(location //third-party/proto:google_protobuf)",
+            },
+        )
+
+
+        native.genrule(
+          name = proto_name,
+          srcs = protos + [
+                "//third-party/proto:google_protobuf",
+          ],
+          out = ".",
+          cmd = "$(exe :" + build_name + ")",
+          env = build_env,
+        )
+
+        env = env or {}
+        env.update({
+            "OUT_DIR": "$(location :{})".format(proto_name),
+        })
+
+    native.rust_test(
+        name = "test-unit-rust-lib",
+        edition = edition,
+        srcs = srcs,
+        crate_root = lib_root,
+        deps = deps,
+        env = env
+    )
+
     native.rust_library(
         name = name,
-        env = env,
+        deps = deps,
         srcs = srcs,
+        env = env,
+        crate_root = lib_root,
         edition = edition,
-        doctests = doctests,
-        deps = [
-            "//third-party/rust:prost"
-        ] + (deps or [])
+        visibility = visibility,
+        tests = [
+            ":check-format-rust-lib",
+            ":check-lint-rust-lib",
+            ":test-unit-rust-lib"
+        ] + extra_tests,
+        features = ["fail-on-warnings"],
     )
-
-
 
 def clippy_check_impl(ctx: AnalysisContext) -> list[[
     DefaultInfo,

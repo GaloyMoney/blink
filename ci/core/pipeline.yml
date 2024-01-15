@@ -64,7 +64,7 @@ jobs:
 - #@ bump_image_in_chart(component)
 #@ end
 
-- #@ buck_test("api")
+- #@ buck_test("api", test_name = "test")
 #@ for component in core_bundle_components:
 - #@ build_edge_image(component)
 #@ end
