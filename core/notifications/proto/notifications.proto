@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+import "google/protobuf/struct.proto";
+
+package services.notifications.v1;
+
+service NotificationsService {
+  rpc ShouldSendNotification (ShouldSendNotificationRequest) returns (ShouldSendNotificationResponse) {}
+}
+
+enum NotificationChannel {
+  PUSH = 0;
+}
+
+enum NotificationCategory {
+  CIRCLES = 0;
+  PAYMENTS = 1;
+}
+
+message ShouldSendNotificationRequest {
+  string user_id = 1;
+  NotificationChannel channel = 2;
+  NotificationCategory category = 3;
+}
+
+message ShouldSendNotificationResponse {
+  string user_id = 1;
+  bool should_send = 2;
+}

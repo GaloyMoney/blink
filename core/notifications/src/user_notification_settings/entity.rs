@@ -129,6 +129,15 @@ impl UserNotificationSettings {
             acc
         })
     }
+
+    pub fn should_send_notification(
+        &self,
+        channel: UserNotificationChannel,
+        category: UserNotificationCategory,
+    ) -> bool {
+        self.is_channel_enabled(channel)
+            && !self.disabled_categories_for(channel).contains(&category)
+    }
 }
 
 impl TryFrom<EntityEvents<UserNotificationSettingsEvent>> for UserNotificationSettings {
@@ -229,5 +238,40 @@ mod tests {
             settings.disabled_categories_for(UserNotificationChannel::Push),
             HashSet::from([UserNotificationCategory::Payments])
         );
+    }
+
+    #[test]
+    fn should_send_notification() {
+        let events = initial_events();
+        let settings = UserNotificationSettings::try_from(events).expect("Could not hydrate");
+        assert!(settings.should_send_notification(
+            UserNotificationChannel::Push,
+            UserNotificationCategory::Circles
+        ));
+    }
+
+    #[test]
+    fn should_not_send_notification_if_category_is_disabled() {
+        let events = initial_events();
+        let mut settings = UserNotificationSettings::try_from(events).expect("Could not hydrate");
+        settings.disable_category(
+            UserNotificationChannel::Push,
+            UserNotificationCategory::Payments,
+        );
+        assert!(!settings.should_send_notification(
+            UserNotificationChannel::Push,
+            UserNotificationCategory::Payments,
+        ));
+    }
+
+    #[test]
+    fn should_not_send_notification_if_channel_is_disabled() {
+        let events = initial_events();
+        let mut settings = UserNotificationSettings::try_from(events).expect("Could not hydrate");
+        settings.disable_channel(UserNotificationChannel::Push);
+        assert!(!settings.should_send_notification(
+            UserNotificationChannel::Push,
+            UserNotificationCategory::Payments,
+        ));
     }
 }

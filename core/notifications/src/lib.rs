@@ -8,3 +8,4 @@ mod user_notification_settings;
 
 pub mod cli;
 pub mod graphql;
+pub mod grpc;

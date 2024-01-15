@@ -18,7 +18,10 @@ source:
 #@   return "buck-test-" + component
 #@ end
 
-#@ def buck_test(component):
+#@ def buck_test(component, test_name = None):
+#@ if test_name == None:
+#@    test_name = component
+#@ end
 name: #@ buck_test_name(component)
 serial: true
 plan:
@@ -35,7 +38,7 @@ plan:
         - name: #@ component_src_resource_name(component)
           path: repo
       params:
-        BUCK_TARGET: #@ "//core/" + component + ":test"
+        BUCK_TARGET: #@ "//core/" + component + ":" + test_name
         BUCK_CMD: test
       run:
         path: pipeline-tasks/ci/apps/tasks/buck-task.sh

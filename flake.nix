@@ -71,6 +71,7 @@
           cargo-watch
           reindeer
           gitMinimal
+          protobuf
         ]
         ++ buck2NativeBuildInputs
         ++ lib.optionals pkgs.stdenv.isLinux [

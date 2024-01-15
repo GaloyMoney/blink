@@ -38,7 +38,7 @@ jobs:
                 ARGS+=" //core/api:test"
                 ;;
               api-keys|notifications)
-                ARGS+=" //core/$LABEL:test"
+                ARGS+=" //core/$LABEL:$LABEL"
                 ;;
             esac
           done
