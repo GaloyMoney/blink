@@ -215,19 +215,20 @@ curl_output() {
 }
 
 grpcurl_request() {
-  local proto_file="$1"
-  local address="$2"
-  local service_method="$3"
-  local data="${4:-""}"
+  local import_path="$1"
+  local proto_file="$2"
+  local address="$3"
+  local service_method="$4"
+  local data="${5:-""}"
 
-  echo "gRPCurl request - proto: ${proto_file} - address: ${address} - service/method: ${service_method} - data: ${data}"
+  echo "gRPCurl request - import-path ${import_path} - proto: ${proto_file} - address: ${address} - service/method: ${service_method} - data: ${data}"
 
   local run_cmd=""
   if [[ "${BATS_TEST_DIRNAME}" != "" ]]; then
     run_cmd="run"
   fi
 
-  cmd=(${run_cmd} grpcurl -plaintext -proto "${proto_file}")
+  cmd=(${run_cmd} grpcurl -plaintext -import-path ${import_path} -proto "${proto_file}")
 
   if [[ -n "$data" ]]; then
     cmd+=(-d "${data}")
