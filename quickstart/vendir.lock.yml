@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(notifications): finish migrating gql functionality (#3821)...'
-      sha: 93a01a0d68f1549cca3d8951ad82b05bbd1b64d7
+      commitTitle: 'chore(notifications): build protos in buck (#3824)...'
+      sha: 6c603e8c38932c68f22f6ed37fc3b36dbaca959c
       tags:
-      - 0.19.43-2-g93a01a0d6
+      - 0.19.44-6-g6c603e8c3
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(notifications): finish migrating gql functionality (#3821)...'
-      sha: 93a01a0d68f1549cca3d8951ad82b05bbd1b64d7
+      commitTitle: 'chore(notifications): build protos in buck (#3824)...'
+      sha: 6c603e8c38932c68f22f6ed37fc3b36dbaca959c
       tags:
-      - 0.19.43-2-g93a01a0d6
+      - 0.19.44-6-g6c603e8c3
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(notifications): finish migrating gql functionality (#3821)...'
-      sha: 93a01a0d68f1549cca3d8951ad82b05bbd1b64d7
+      commitTitle: 'chore(notifications): build protos in buck (#3824)...'
+      sha: 6c603e8c38932c68f22f6ed37fc3b36dbaca959c
       tags:
-      - 0.19.43-2-g93a01a0d6
+      - 0.19.44-6-g6c603e8c3
     path: ./
   path: ./graphql
 kind: LockConfig
