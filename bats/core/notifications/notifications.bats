@@ -9,6 +9,9 @@ setup_file() {
   create_user 'alice'
 }
 
+NOTIFICATIONS_GRPC_ENDPOINT="localhost:2478"
+NOTIFICATIONS_PROTO_FILE="./core/notifications/proto/notifications.proto"
+
 @test "notifications: disable/enable notification channel" {
     token_name='alice' 
 
@@ -48,4 +51,14 @@ setup_file() {
     exec_graphql "$token_name" 'user-enable-notification-category' "$variables"
     disabled_length="$(graphql_output '.data.userEnableNotificationCategory.notificationSettings.push.disabledCategories | length')"
   [[ "$disabled_length" == "0" ]] || exit 1
+}
+
+@test "notifications: should send notification" {
+    service_method="services.notifications.v1.NotificationsService/ShouldSendNotification"
+    request_data=$(jq -n '{"user_id": "user-id", "channel": "PUSH", "category": "CIRCLES"}')
+
+    grpcurl_request $NOTIFICATIONS_PROTO_FILE $NOTIFICATIONS_GRPC_ENDPOINT "$service_method" "$request_data"
+    should_send="$(curl_output '.shouldSend')"
+
+    [[ "$should_send" == "true" ]] || exit 1
 }

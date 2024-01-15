@@ -213,3 +213,30 @@ curl_request() {
 curl_output() {
   echo $output | jq -r "$@"
 }
+
+grpcurl_request() {
+  local proto_file="$1"
+  local address="$2"
+  local service_method="$3"
+  local data="${4:-""}"
+
+  echo "gRPCurl request - proto: ${proto_file} - address: ${address} - service/method: ${service_method} - data: ${data}"
+
+  local run_cmd=""
+  if [[ "${BATS_TEST_DIRNAME}" != "" ]]; then
+    run_cmd="run"
+  fi
+
+  cmd=(${run_cmd} grpcurl -plaintext -proto "${proto_file}")
+
+  if [[ -n "$data" ]]; then
+    cmd+=(-d "${data}")
+  fi
+
+  cmd+=("${address}" "${service_method}")
+  echo "gRPCurl input: '${cmd[*]}'"
+
+  "${cmd[@]}"
+
+  echo "Grpcurl output: '$output'"
+}
