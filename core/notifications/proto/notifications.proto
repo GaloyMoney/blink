@@ -6,6 +6,11 @@ package services.notifications.v1;
 
 service NotificationsService {
   rpc ShouldSendNotification (ShouldSendNotificationRequest) returns (ShouldSendNotificationResponse) {}
+  rpc UserEnableNotificationChannel (UserEnableNotificationChannelRequest) returns (UserEnableNotificationChannelResponse) {}
+  rpc UserDisableNotificationChannel (UserDisableNotificationChannelRequest) returns (UserDisableNotificationChannelResponse) {}
+  rpc UserEnableNotificationCategory (UserEnableNotificationCategoryRequest) returns (UserEnableNotificationCategoryResponse) {}
+  rpc UserDisableNotificationCategory (UserDisableNotificationCategoryRequest) returns (UserDisableNotificationCategoryResponse) {}
+  rpc UserNotificationSettings (UserNotificationSettingsRequest) returns (UserNotificationSettingsResponse) {}
 }
 
 enum NotificationChannel {
@@ -27,3 +32,60 @@ message ShouldSendNotificationResponse {
   string user_id = 1;
   bool should_send = 2;
 }
+
+message UserEnableNotificationChannelRequest {
+  string user_id = 1;
+  NotificationChannel channel = 2;
+}
+
+message UserEnableNotificationChannelResponse {
+  UserNotificationSettings notification_settings = 1;
+}
+
+message UserNotificationSettings {
+  ChannelNotificationSettings push = 1;
+}
+
+message ChannelNotificationSettings {
+  bool enabled = 1;
+  repeated NotificationCategory disabled_categories = 2;
+}
+
+message UserDisableNotificationChannelRequest {
+  string user_id = 1;
+  NotificationChannel channel = 2;
+}
+
+message UserDisableNotificationChannelResponse {
+  UserNotificationSettings notification_settings = 1;
+}
+
+message UserDisableNotificationCategoryRequest {
+  string user_id = 1;
+  NotificationChannel channel = 2;
+  NotificationCategory category = 3;
+}
+
+message UserDisableNotificationCategoryResponse {
+  UserNotificationSettings notification_settings = 1;
+}
+
+message UserEnableNotificationCategoryRequest {
+  string user_id = 1;
+  NotificationChannel channel = 2;
+  NotificationCategory category = 3;
+}
+
+message UserEnableNotificationCategoryResponse {
+  UserNotificationSettings notification_settings = 1;
+}
+
+message UserNotificationSettingsRequest {
+  string user_id = 1;
+}
+
+message UserNotificationSettingsResponse {
+  UserNotificationSettings notification_settings = 1;
+}
+
+
