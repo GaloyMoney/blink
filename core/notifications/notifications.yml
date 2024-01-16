@@ -6,3 +6,5 @@
 # grpc_server:
 #   port: 6685
 # app:
+# mongo_import:
+#   execute_import: false

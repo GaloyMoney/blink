@@ -43,12 +43,14 @@ pub async fn run() -> anyhow::Result<()> {
 async fn run_cmd(config: Config) -> anyhow::Result<()> {
     tracing::init_tracer(config.tracing)?;
 
-    crate::data_import::import_user_notification_settings(config.mongo_import).await?;
-
     let (send, mut receive) = tokio::sync::mpsc::channel(1);
     let mut handles = vec![];
     let pool = db::init_pool(&config.db).await?;
     let app = crate::app::NotificationsApp::new(pool, config.app);
+    if config.mongo_import.execute_import {
+        crate::data_import::import_user_notification_settings(app.clone(), config.mongo_import)
+            .await?;
+    }
 
     println!("Starting notifications graphql server");
     let graphql_send = send.clone();
