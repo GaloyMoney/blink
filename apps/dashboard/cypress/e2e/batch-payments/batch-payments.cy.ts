@@ -15,7 +15,12 @@ describe("CSV Upload Component Test", () => {
 
   it("Batch Payments Test", () => {
     cy.get("[data-testid=csv-upload-input]").selectFile("cypress/fixtures/template.csv")
+
+    cy.get("[data-testid=confirm-batch-payments-btn]").should("exist")
+    cy.get("[data-testid=confirm-batch-payments-btn]").should("be.visible")
+    cy.get("[data-testid=confirm-batch-payments-btn]").should("not.be.disabled")
     cy.get("[data-testid=confirm-batch-payments-btn]").click()
+    
     cy.get("[data-testid=batch-payments-modal-message]").should(
       "contain.text",
       "Batch Payment Completed",
