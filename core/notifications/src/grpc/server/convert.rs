@@ -1,7 +1,7 @@
+use super::proto;
 use crate::app::error::ApplicationError;
 use crate::primitives::{UserNotificationCategory, UserNotificationChannel};
 use crate::user_notification_settings;
-use super::proto;
 
 impl From<proto::NotificationCategory> for UserNotificationCategory {
     fn from(category: proto::NotificationCategory) -> Self {

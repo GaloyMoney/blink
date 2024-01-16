@@ -12,13 +12,12 @@ use self::proto::{notifications_service_server::NotificationsService, *};
 use super::config::*;
 use crate::{
     app::*,
-    primitives::{UserNotificationCategory, UserNotificationChannel, GaloyUserId},
+    primitives::{GaloyUserId, UserNotificationCategory, UserNotificationChannel},
 };
 
 pub struct Notifications {
     app: NotificationsApp,
 }
-
 
 #[tonic::async_trait]
 impl NotificationsService for Notifications {
@@ -54,17 +53,12 @@ impl NotificationsService for Notifications {
         request: Request<UserEnableNotificationChannelRequest>,
     ) -> Result<Response<UserEnableNotificationChannelResponse>, Status> {
         let request = request.into_inner();
-        let UserEnableNotificationChannelRequest {
-            user_id,
-            channel,
-        } = request;
+        let UserEnableNotificationChannelRequest { user_id, channel } = request;
         let channel = proto::NotificationChannel::try_from(channel)
             .map(UserNotificationChannel::from)
             .map_err(|e| Status::invalid_argument(e.to_string()))?;
         let user_id = GaloyUserId::from(user_id);
-        let notification_settings = self.app
-            .enable_channel_on_user(user_id, channel)
-            .await?;
+        let notification_settings = self.app.enable_channel_on_user(user_id, channel).await?;
 
         Ok(Response::new(UserEnableNotificationChannelResponse {
             notification_settings: Some(notification_settings.into()),
@@ -76,17 +70,12 @@ impl NotificationsService for Notifications {
         request: Request<UserDisableNotificationChannelRequest>,
     ) -> Result<Response<UserDisableNotificationChannelResponse>, Status> {
         let request = request.into_inner();
-        let UserDisableNotificationChannelRequest {
-            user_id,
-            channel,
-        } = request;
+        let UserDisableNotificationChannelRequest { user_id, channel } = request;
         let channel = proto::NotificationChannel::try_from(channel)
             .map(UserNotificationChannel::from)
             .map_err(|e| Status::invalid_argument(e.to_string()))?;
         let user_id = GaloyUserId::from(user_id);
-        let notification_settings = self.app
-            .disable_channel_on_user(user_id, channel)
-            .await?;
+        let notification_settings = self.app.disable_channel_on_user(user_id, channel).await?;
 
         Ok(Response::new(UserDisableNotificationChannelResponse {
             notification_settings: Some(notification_settings.into()),
@@ -110,7 +99,8 @@ impl NotificationsService for Notifications {
             .map(UserNotificationCategory::from)
             .map_err(|e| Status::invalid_argument(e.to_string()))?;
         let user_id = GaloyUserId::from(user_id);
-        let notification_settings = self.app
+        let notification_settings = self
+            .app
             .enable_category_on_user(user_id, channel, category)
             .await?;
 
@@ -136,7 +126,8 @@ impl NotificationsService for Notifications {
             .map(UserNotificationCategory::from)
             .map_err(|e| Status::invalid_argument(e.to_string()))?;
         let user_id = GaloyUserId::from(user_id);
-        let notification_settings = self.app
+        let notification_settings = self
+            .app
             .disable_category_on_user(user_id, channel, category)
             .await?;
 
@@ -152,9 +143,7 @@ impl NotificationsService for Notifications {
         let request = request.into_inner();
         let UserNotificationSettingsRequest { user_id } = request;
         let user_id = GaloyUserId::from(user_id);
-        let notification_settings = self.app
-            .notification_settings_for_user(user_id)
-            .await?;
+        let notification_settings = self.app.notification_settings_for_user(user_id).await?;
 
         Ok(Response::new(UserNotificationSettingsResponse {
             notification_settings: Some(notification_settings.into()),
