@@ -51,6 +51,7 @@
       nativeBuildInputs = with pkgs;
         [
           envsubst
+          unzip
           nodejs
           tilt
           typescript
