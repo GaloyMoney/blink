@@ -190,14 +190,6 @@ local_resource(
     "api-trigger",
     "stablesats",
     "price",
-    
-    "trigger",
-    "apollo-router",
-    "mongodb-migrate",
-    "price-history",
-    "price-history-migrate",
-    "svix",
-    "svix-pg",
   ]
 )
 

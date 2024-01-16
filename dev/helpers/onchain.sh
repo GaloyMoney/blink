@@ -51,5 +51,6 @@ fund_user_onchain() {
 
   if [[ $success != true ]]; then
     echo "Failed to fund user"
+    exit 1
   fi
 }
