@@ -5,6 +5,22 @@ import {
 
 import { createPushNotificationContent } from "./create-push-notification-content"
 
+import {
+  UserDisableNotificationCategoryRequest,
+  UserDisableNotificationChannelRequest,
+  UserEnableNotificationCategoryRequest,
+  UserEnableNotificationChannelRequest,
+  UserNotificationSettingsRequest,
+} from "./proto/notifications_pb"
+
+import * as notificationsGrpc from "./grpc-client"
+
+import {
+  grpcNotificationSettingsToNotificationSettings,
+  notificationCategoryToGrpcNotificationCategory,
+  notificationChannelToGrpcNotificationChannel,
+} from "./convert"
+
 import { getCallbackServiceConfig } from "@/config"
 
 import {
@@ -362,6 +378,159 @@ export const NotificationsService = (): INotificationsService => {
     }
   }
 
+  const getUserNotificationSettings = async (
+    userId: UserId,
+  ): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new UserNotificationSettingsRequest()
+      request.setUserId(userId)
+      const response = await notificationsGrpc.userNotificationSettings(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
+
+  const enableNotificationChannel = async ({
+    userId,
+    notificationChannel,
+  }: {
+    userId: UserId
+    notificationChannel: NotificationChannel
+  }): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new UserEnableNotificationChannelRequest()
+      request.setUserId(userId)
+
+      const grpcNotificationChannel =
+        notificationChannelToGrpcNotificationChannel(notificationChannel)
+
+      request.setChannel(grpcNotificationChannel)
+      const response = await notificationsGrpc.userEnableNotificationChannel(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
+
+  const disableNotificationChannel = async ({
+    userId,
+    notificationChannel,
+  }: {
+    userId: UserId
+    notificationChannel: NotificationChannel
+  }): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new UserDisableNotificationChannelRequest()
+      request.setUserId(userId)
+
+      const grpcNotificationChannel =
+        notificationChannelToGrpcNotificationChannel(notificationChannel)
+
+      request.setChannel(grpcNotificationChannel)
+      const response = await notificationsGrpc.userDisableNotificationChannel(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
+
+  const enableNotificationCategory = async ({
+    userId,
+    notificationChannel,
+    notificationCategory,
+  }: {
+    userId: UserId
+    notificationChannel: NotificationChannel
+    notificationCategory: NotificationCategory
+  }): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new UserEnableNotificationCategoryRequest()
+      request.setUserId(userId)
+
+      const grpcNotificationChannel =
+        notificationChannelToGrpcNotificationChannel(notificationChannel)
+      request.setChannel(grpcNotificationChannel)
+
+      const grpcNotificationCategory =
+        notificationCategoryToGrpcNotificationCategory(notificationCategory)
+      request.setCategory(grpcNotificationCategory)
+
+      const response = await notificationsGrpc.userEnableNotificationCatgeory(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
+
+  const disableNotificationCategory = async ({
+    userId,
+    notificationChannel,
+    notificationCategory,
+  }: {
+    userId: UserId
+    notificationChannel: NotificationChannel
+    notificationCategory: NotificationCategory
+  }): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new UserDisableNotificationCategoryRequest()
+      request.setUserId(userId)
+
+      const grpcNotificationChannel =
+        notificationChannelToGrpcNotificationChannel(notificationChannel)
+      request.setChannel(grpcNotificationChannel)
+
+      const grpcNotificationCategory =
+        notificationCategoryToGrpcNotificationCategory(notificationCategory)
+      request.setCategory(grpcNotificationCategory)
+
+      const response = await notificationsGrpc.userDisableNotificationCategory(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
+
   // trace everything except price update because it runs every 30 seconds
   return {
     priceUpdate,
@@ -372,6 +541,11 @@ export const NotificationsService = (): INotificationsService => {
         sendBalance,
         adminPushNotificationSend,
         adminPushNotificationFilteredSend,
+        getUserNotificationSettings,
+        enableNotificationChannel,
+        disableNotificationChannel,
+        enableNotificationCategory,
+        disableNotificationCategory,
       },
     }),
   }

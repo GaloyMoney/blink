@@ -220,6 +220,7 @@ core_serve_env = {
   "PRICE_HISTORY_HOST": "localhost",
   "BRIA_HOST": "localhost",
   "BRIA_API_KEY": "bria_dev_000000000000000000000",
+  "NOTIFICATIONS_HOST": "localhost",
   "MONGODB_CON": "mongodb://localhost:27017/galoy",
   "REDIS_MASTER_NAME": "mymaster",
   "REDIS_PASSWORD": "",

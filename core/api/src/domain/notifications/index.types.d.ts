@@ -53,4 +53,30 @@ interface INotificationsService {
   adminPushNotificationFilteredSend(
     args: SendFilteredPushNotificationArgs,
   ): Promise<true | NotificationsServiceError>
+
+  getUserNotificationSettings(
+    userId: UserId,
+  ): Promise<NotificationSettings | NotificationsServiceError>
+
+  enableNotificationChannel(args: {
+    userId: UserId
+    notificationChannel: NotificationChannel
+  }): Promise<NotificationSettings | NotificationsServiceError>
+
+  disableNotificationChannel(args: {
+    userId: UserId
+    notificationChannel: NotificationChannel
+  }): Promise<NotificationSettings | NotificationsServiceError>
+
+  enableNotificationCategory(args: {
+    userId: UserId
+    notificationChannel: NotificationChannel
+    notificationCategory: NotificationCategory
+  }): Promise<NotificationSettings | NotificationsServiceError>
+
+  disableNotificationCategory(args: {
+    userId: UserId
+    notificationChannel: NotificationChannel
+    notificationCategory: NotificationCategory
+  }): Promise<NotificationSettings | NotificationsServiceError>
 }

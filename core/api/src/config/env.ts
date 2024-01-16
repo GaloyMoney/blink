@@ -50,6 +50,14 @@ export const env = createEnv({
     BRIA_PORT: z.number().min(1).or(z.string()).pipe(z.coerce.number()).default(2742),
     BRIA_API_KEY: z.string().min(1),
 
+    NOTIFICATIONS_HOST: z.string().min(1),
+    NOTIFICATIONS_PORT: z
+      .number()
+      .min(1)
+      .or(z.string())
+      .pipe(z.coerce.number())
+      .default(6685),
+
     GEETEST_ID: z.string().min(1).optional(),
     GEETEST_KEY: z.string().min(1).optional(),
 
@@ -167,6 +175,9 @@ export const env = createEnv({
     BRIA_HOST: process.env.BRIA_HOST,
     BRIA_PORT: process.env.BRIA_PORT,
     BRIA_API_KEY: process.env.BRIA_API_KEY,
+
+    NOTIFICATIONS_HOST: process.env.NOTIFICATIONS_HOST,
+    NOTIFICATIONS_PORT: process.env.NOTIFICATIONS_PORT,
 
     GEETEST_ID: process.env.GEETEST_ID,
     GEETEST_KEY: process.env.GEETEST_KEY,
