@@ -56,6 +56,7 @@ galoy_rust_bin(
         "//third-party/rust:serde_json",
         "//third-party/rust:thiserror",
         "//third-party/rust:chrono",
+        "//third-party/rust:futures",
         "//third-party/rust:sqlx",
         "//third-party/rust:mongodb",
         "//third-party/rust:rand",

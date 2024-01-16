@@ -20,12 +20,20 @@ struct Cli {
     config: PathBuf,
     #[clap(env = "PG_CON")]
     pg_con: String,
+    #[clap(env = "MONGODB_CON")]
+    mongodb_connection: Option<String>,
 }
 
 pub async fn run() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
-    let config = Config::from_path(cli.config, EnvOverride { db_con: cli.pg_con })?;
+    let config = Config::from_path(
+        cli.config,
+        EnvOverride {
+            db_con: cli.pg_con,
+            mongodb_connection: cli.mongodb_connection,
+        },
+    )?;
 
     run_cmd(config).await?;
 
@@ -34,14 +42,19 @@ pub async fn run() -> anyhow::Result<()> {
 
 async fn run_cmd(config: Config) -> anyhow::Result<()> {
     tracing::init_tracer(config.tracing)?;
+
     let (send, mut receive) = tokio::sync::mpsc::channel(1);
     let mut handles = vec![];
     let pool = db::init_pool(&config.db).await?;
     let app = crate::app::NotificationsApp::new(pool, config.app);
+    if config.mongo_import.execute_import && config.mongo_import.connection.is_some() {
+        crate::data_import::import_user_notification_settings(app.clone(), config.mongo_import)
+            .await?;
+    }
 
     println!("Starting notifications graphql server");
     let graphql_send = send.clone();
-    let graphql_config = config.server;
+    let graphql_config = config.subgraph_server;
     let graphql_app = app.clone();
     handles.push(tokio::spawn(async move {
         let _ = graphql_send.try_send(

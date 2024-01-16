@@ -2215,6 +2215,12 @@ cargo.rust_library(
     visibility = [],
 )
 
+alias(
+    name = "futures",
+    actual = ":futures-0.3.30",
+    visibility = ["PUBLIC"],
+)
+
 http_archive(
     name = "futures-0.3.30.crate",
     sha256 = "645c6916888f6cb6350d2550b80fb63e734897a8498abe35cfb732b6487804b0",
@@ -8265,6 +8271,7 @@ cargo.rust_binary(
         ":chrono-0.4.31",
         ":clap-4.4.7",
         ":derive_builder-0.12.0",
+        ":futures-0.3.30",
         ":http-0.2.9",
         ":jsonwebtoken-9.2.0",
         ":mongodb-2.8.0",

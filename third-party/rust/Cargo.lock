@@ -3029,6 +3029,7 @@ dependencies = [
  "chrono",
  "clap",
  "derive_builder",
+ "futures",
  "http",
  "jsonwebtoken",
  "mongodb",

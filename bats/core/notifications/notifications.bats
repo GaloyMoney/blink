@@ -9,7 +9,7 @@ setup_file() {
   create_user 'alice'
 }
 
-NOTIFICATIONS_GRPC_ENDPOINT="localhost:2478"
+NOTIFICATIONS_GRPC_ENDPOINT="localhost:6685"
 IMPORT_PATH="${REPO_ROOT}/core/notifications/proto"
 NOTIFICATIONS_PROTO_FILE="${REPO_ROOT}/core/notifications/proto/notifications.proto"
 
