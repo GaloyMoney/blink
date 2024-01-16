@@ -33,7 +33,6 @@ fund_user_onchain() {
   local success=false
   for i in {1..60}; do
     response=$(exec_graphql "$token" 'transactions' "$variables")
-    echo "$response"
     jq_query='.data.me.defaultAccount.transactions.edges[] | select(.node.initiationVia.address == $address) .node'
     transaction_info=$(echo $response \
       | jq -r --arg address "$address" "$jq_query")
