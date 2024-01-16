@@ -4,7 +4,7 @@ import {
   btcPaymentInUSDCurrency,
 } from "../../support/test-data"
 
-describe("CSV Upload Component Test", () => {
+describe("Batch payments test", () => {
   beforeEach(() => {
     cy.viewport(1920, 1080)
     cy.setCookie("next-auth.session-token", testData.NEXT_AUTH_SESSION_TOKEN, {
@@ -20,11 +20,12 @@ describe("CSV Upload Component Test", () => {
     cy.get("[data-testid=confirm-batch-payments-btn]").should("be.visible")
     cy.get("[data-testid=confirm-batch-payments-btn]").should("not.be.disabled")
     cy.get("[data-testid=confirm-batch-payments-btn]").click()
-    
+
     cy.get("[data-testid=batch-payments-modal-message]").should(
-      "contain.text",
+      "have.text",
       "Batch Payment Completed",
     )
+
     cy.loginAndGetToken(testData.PHONE, testData.CODE).then((token) => {
       const authToken = token
       cy.getTransactions(authToken, 4).then((transactions) => {

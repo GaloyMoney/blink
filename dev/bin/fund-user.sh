@@ -5,7 +5,6 @@
 echo "Setting up DEV_DIR variable"
 DEV_DIR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
 source "${DEV_DIR}/helpers/auth.sh"
-source "${DEV_DIR}/helpers/cli.sh"
 source "${DEV_DIR}/helpers/onchain.sh"
 
 user_phone="+16505554350"

@@ -1,5 +1,6 @@
 DEV_DIR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
 source "${DEV_DIR}/helpers/gql.sh"
+source "${DEV_DIR}/helpers/cli.sh"
 
 
 fund_user_onchain() {
@@ -29,6 +30,7 @@ fund_user_onchain() {
   --argjson first "1" \
   '{"first": $first}'
   )
+  local success=false
   for i in {1..60}; do
     response=$(exec_graphql "$token" 'transactions' "$variables")
     echo "$response"
@@ -41,9 +43,14 @@ fund_user_onchain() {
 
     if [[ "${settled_status}" == "SUCCESS" && "${settled_currency}" == "$wallet_currency" ]]; then
       echo "Transaction successful with correct settlement currency"
+      success=true
       break
     fi
 
     sleep 1
   done
+
+  if [[ $success != true ]]; then
+    echo "Failed to fund user"
+  fi
 }

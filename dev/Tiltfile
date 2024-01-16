@@ -186,7 +186,7 @@ local_resource(
     "kratos",
     "api",
     "init-onchain",
-    "init-user"
+    "init-test-user",
   ]
 )
 
