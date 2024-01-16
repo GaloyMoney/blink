@@ -674,6 +674,9 @@ describe("Facade", () => {
     // Define 'ExtendedLedgerTransactionType' and 'UserLedgerTransactionType'
     const FullLedgerTransactionType = {
       ...LedgerTransactionType,
+
+      LnFailedPayment: LedgerTransactionType.Payment,
+
       IntraLedgerSend: LedgerTransactionType.IntraLedger,
       IntraLedgerReceive: LedgerTransactionType.IntraLedger,
       LnIntraLedgerSend: LedgerTransactionType.LnIntraLedger,
@@ -785,6 +788,7 @@ describe("Facade", () => {
         "OnchainIntraLedgerSend",
         "LnIntraLedgerSend",
         "LnFeeReimbursement",
+        "LnFailedPayment",
       ]
 
       const currentVolumeAmount = async () => {
