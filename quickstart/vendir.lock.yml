@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump bria proto to ''0.1.86'' (#3837)'
-      sha: 4fe2201fe313bfff2094ea0216c3c6cb672d191e
+      commitTitle: 'chore(notifications): implement initial data-import (#3842)...'
+      sha: 7944a76267f24f9af60c67df1469015978cdd709
       tags:
-      - 0.19.44-16-g4fe2201fe
+      - 0.20.0-1-g7944a7626
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump bria proto to ''0.1.86'' (#3837)'
-      sha: 4fe2201fe313bfff2094ea0216c3c6cb672d191e
+      commitTitle: 'chore(notifications): implement initial data-import (#3842)...'
+      sha: 7944a76267f24f9af60c67df1469015978cdd709
       tags:
-      - 0.19.44-16-g4fe2201fe
+      - 0.20.0-1-g7944a7626
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump bria proto to ''0.1.86'' (#3837)'
-      sha: 4fe2201fe313bfff2094ea0216c3c6cb672d191e
+      commitTitle: 'chore(notifications): implement initial data-import (#3842)...'
+      sha: 7944a76267f24f9af60c67df1469015978cdd709
       tags:
-      - 0.19.44-16-g4fe2201fe
+      - 0.20.1
     path: ./
   path: ./graphql
 kind: LockConfig
