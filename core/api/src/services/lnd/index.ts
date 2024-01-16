@@ -52,6 +52,7 @@ import {
   DestinationMissingDependentFeatureError,
   InsufficientBalanceForLnPaymentError,
   InsufficientBalanceForRoutingError,
+  InvalidFeatureBitsForLndInvoiceError,
   InvoiceExpiredOrBadPaymentHashError,
   InvoiceNotFoundError,
   LightningServiceError,
@@ -1211,6 +1212,8 @@ const handleSendPaymentLndErrors = ({
       return new TemporaryNodeFailureError(paymentHash)
     case match(KnownLndErrorDetails.InsufficientBalanceToAttemptPayment):
       return new InsufficientBalanceForLnPaymentError()
+    case match(KnownLndErrorDetails.FeaturePairExists):
+      return new InvalidFeatureBitsForLndInvoiceError()
 
     default:
       return handleCommonLightningServiceErrors(err)
@@ -1244,6 +1247,9 @@ const handleCommonRouteNotFoundErrors = (err: Error | unknown) => {
 
     case match(KnownLndErrorDetails.MissingDependentFeature):
       return new DestinationMissingDependentFeatureError()
+
+    case match(KnownLndErrorDetails.FeaturePairExists):
+      return new InvalidFeatureBitsForLndInvoiceError()
 
     default:
       return new UnknownRouteNotFoundError(msgForUnknown(err as LnError))
