@@ -22,8 +22,11 @@ fund_user_onchain() {
   address=$(echo "$response" | jq -r '.data.onChainAddressCreate.address')
   [[ "${address}" != "null" ]] || exit 1
 
-  bitcoin_cli sendtoaddress "$address" "$btc_amount_in_btc"
-  bitcoin_cli -generate 4
+
+  bitcoin_cli -regtest loadwallet "outside"
+  bitcoin_cli -regtest listwallets
+  bitcoin_cli -regtest sendtoaddress "$address" "$btc_amount_in_btc"
+  bitcoin_cli -regtest -generate 4
 
   variables=$(
   jq -n \
