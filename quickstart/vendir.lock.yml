@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(notifications): implement initial data-import (#3842)...'
-      sha: 7944a76267f24f9af60c67df1469015978cdd709
+      commitTitle: 'fix(notifications): use nix protoc instead of buckified (#3843)'
+      sha: 1589715413f52be82b36c49aee5b37f33c3ee2d1
       tags:
-      - 0.20.0-1-g7944a7626
+      - 0.20.1-2-g158971541
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(notifications): implement initial data-import (#3842)...'
-      sha: 7944a76267f24f9af60c67df1469015978cdd709
+      commitTitle: 'fix(notifications): use nix protoc instead of buckified (#3843)'
+      sha: 1589715413f52be82b36c49aee5b37f33c3ee2d1
       tags:
-      - 0.20.0-1-g7944a7626
+      - 0.20.1-2-g158971541
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(notifications): implement initial data-import (#3842)...'
-      sha: 7944a76267f24f9af60c67df1469015978cdd709
+      commitTitle: 'fix(notifications): use nix protoc instead of buckified (#3843)'
+      sha: 1589715413f52be82b36c49aee5b37f33c3ee2d1
       tags:
-      - 0.20.1
+      - 0.20.1-2-g158971541
     path: ./
   path: ./graphql
 kind: LockConfig
