@@ -14,7 +14,7 @@ pub struct Config {
     #[serde(default)]
     pub app: AppConfig,
     #[serde(default)]
-    pub server: ServerConfig,
+    pub subgraph_server: ServerConfig,
     #[serde(default)]
     pub grpc_server: GrpcServerConfig,
     #[serde(default = "default_tracing_config")]

@@ -56,7 +56,7 @@ pub(crate) async fn start(
     use proto::notifications_service_server::NotificationsServiceServer;
 
     let notifications = Notifications { app };
-    println!("Starting grpc server on port {}", server_config.listen_port);
+    println!("Starting grpc server on port {}", server_config.port);
     let (mut health_reporter, health_service) = tonic_health::server::health_reporter();
     health_reporter
         .set_serving::<NotificationsServiceServer<Notifications>>()
@@ -64,7 +64,7 @@ pub(crate) async fn start(
     Server::builder()
         .add_service(health_service)
         .add_service(NotificationsServiceServer::new(notifications))
-        .serve(([0, 0, 0, 0], server_config.listen_port).into())
+        .serve(([0, 0, 0, 0], server_config.port).into())
         .await?;
     Ok(())
 }

@@ -1,6 +1,8 @@
 # db:
 #   pool_size: 20
-# server:
-#   port: 5397
+# subgraph_server:
+#   port: 6684
 #   jwks_url: "http://localhost:4456/.well-known/jwks.json"
+# grpc_server:
+#   port: 6685
 # app:

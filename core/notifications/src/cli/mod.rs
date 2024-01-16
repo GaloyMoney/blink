@@ -41,7 +41,7 @@ async fn run_cmd(config: Config) -> anyhow::Result<()> {
 
     println!("Starting notifications graphql server");
     let graphql_send = send.clone();
-    let graphql_config = config.server;
+    let graphql_config = config.subgraph_server;
     let graphql_app = app.clone();
     handles.push(tokio::spawn(async move {
         let _ = graphql_send.try_send(
