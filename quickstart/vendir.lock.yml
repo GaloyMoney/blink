@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(notifications): add e2e test for grpc server (#3835)...'
-      sha: ef72303a8954a4d611f6d193160c56eecb6efd3e
+      commitTitle: 'chore(deps): bump bria proto to ''0.1.86'' (#3837)'
+      sha: 4fe2201fe313bfff2094ea0216c3c6cb672d191e
       tags:
-      - 0.19.44-13-gef72303a8
+      - 0.19.44-16-g4fe2201fe
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(notifications): add e2e test for grpc server (#3835)...'
-      sha: ef72303a8954a4d611f6d193160c56eecb6efd3e
+      commitTitle: 'chore(deps): bump bria proto to ''0.1.86'' (#3837)'
+      sha: 4fe2201fe313bfff2094ea0216c3c6cb672d191e
       tags:
-      - 0.19.44-13-gef72303a8
+      - 0.19.44-16-g4fe2201fe
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(notifications): add e2e test for grpc server (#3835)...'
-      sha: ef72303a8954a4d611f6d193160c56eecb6efd3e
+      commitTitle: 'chore(deps): bump bria proto to ''0.1.86'' (#3837)'
+      sha: 4fe2201fe313bfff2094ea0216c3c6cb672d191e
       tags:
-      - 0.19.44-13-gef72303a8
+      - 0.19.44-16-g4fe2201fe
     path: ./
   path: ./graphql
 kind: LockConfig
