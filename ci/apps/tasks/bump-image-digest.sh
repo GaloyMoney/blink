@@ -9,8 +9,8 @@ pushd charts-repo
 
 yq -i e "${YAML_PATH} = strenv(digest)" "./charts/${CHART}/values.yaml"
 
-buck_target_pattern=$(grep "$digest" "./charts/${CHART}/values.yaml" | grep -o 'buck_target_pattern=[^;]*')
-sed -i "s|\(${YAML_PATH##*.}: \"${digest}\"\).*$|\1 # METADATA:: repository=https://github.com/GaloyMoney/galoy;commit_ref=${ref};app=${APP};${buck_target_pattern};|g" "./charts/${CHART}/values.yaml"
+monorepo_subdir=$(grep "$digest" "./charts/${CHART}/values.yaml" | grep -o 'monorepo_subdir=[^;]*')
+sed -i "s|\(${YAML_PATH##*.}: \"${digest}\"\).*$|\1 # METADATA:: repository=https://github.com/GaloyMoney/galoy;commit_ref=${ref};app=${APP};${monorepo_subdir};|g" "./charts/${CHART}/values.yaml"
 
 if [[ -z $(git config --global user.email) ]]; then
   git config --global user.email "bot@galoy.io"
