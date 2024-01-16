@@ -1676,6 +1676,7 @@ dependencies = [
  "clap",
  "derive_builder",
  "es-entity",
+ "futures",
  "jsonwebtoken",
  "mongodb",
  "prost 0.12.3",

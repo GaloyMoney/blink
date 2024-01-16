@@ -20,12 +20,20 @@ struct Cli {
     config: PathBuf,
     #[clap(env = "PG_CON")]
     pg_con: String,
+    #[clap(env = "MONGODB_CON")]
+    mongodb_connection: String,
 }
 
 pub async fn run() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
-    let config = Config::from_path(cli.config, EnvOverride { db_con: cli.pg_con })?;
+    let config = Config::from_path(
+        cli.config,
+        EnvOverride {
+            db_con: cli.pg_con,
+            mongodb_connection: cli.mongodb_connection,
+        },
+    )?;
 
     run_cmd(config).await?;
 
@@ -34,6 +42,9 @@ pub async fn run() -> anyhow::Result<()> {
 
 async fn run_cmd(config: Config) -> anyhow::Result<()> {
     tracing::init_tracer(config.tracing)?;
+
+    crate::data_import::import_user_notification_settings(config.mongo_import).await?;
+
     let (send, mut receive) = tokio::sync::mpsc::channel(1);
     let mut handles = vec![];
     let pool = db::init_pool(&config.db).await?;
