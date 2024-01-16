@@ -114,19 +114,17 @@ def galoy_rust_lib(
         )
 
         build_env = build_env or {}
-        build_env.update(
-            {
-                "PROTOC": "$(exe //third-party/proto:protoc)",
-                "PROTOC_INCLUDE": "$(location //third-party/proto:google_protobuf)",
-            },
-        )
-
+        # When using protoc included via buck:
+        # build_env.update(
+        #     {
+        #         "PROTOC": "$(exe //third-party/proto:protoc)",
+        #         "PROTOC_INCLUDE": "$(location //third-party/proto:google_protobuf)",
+        #     },
+        # )
 
         native.genrule(
           name = proto_name,
-          srcs = protos + [
-                "//third-party/proto:google_protobuf",
-          ],
+          srcs = protos,
           out = ".",
           cmd = "$(exe :" + build_name + ")",
           env = build_env,
