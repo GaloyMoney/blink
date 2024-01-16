@@ -188,6 +188,8 @@ local_resource(
     "init-onchain",
     "init-test-user",
     "api-trigger",
+    "stablesats",
+    "price",
   ]
 )
 

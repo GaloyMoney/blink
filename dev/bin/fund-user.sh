@@ -12,5 +12,6 @@ token="$(login_user "${user_phone}")"
 echo "Fetching wallets for account"
 
 echo "Funding wallets"
+sleep 20
 fund_user_onchain "$token" "USD"
 fund_user_onchain "$token" "BTC"
