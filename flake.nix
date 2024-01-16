@@ -38,6 +38,7 @@
 
       buck2NativeBuildInputs = with pkgs; [
         buck2
+        protobuf
         nodejs
         pnpm
         python3
@@ -71,7 +72,6 @@
           cargo-watch
           reindeer
           gitMinimal
-          protobuf
           grpcurl
         ]
         ++ buck2NativeBuildInputs
