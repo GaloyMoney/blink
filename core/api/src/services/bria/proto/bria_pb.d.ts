@@ -1202,6 +1202,11 @@ export class PayoutQueueConfig extends jspb.Message {
     getCpfpPayoutsAfterBlocks(): number | undefined;
     setCpfpPayoutsAfterBlocks(value: number): PayoutQueueConfig;
 
+    hasForceMinChangeSats(): boolean;
+    clearForceMinChangeSats(): void;
+    getForceMinChangeSats(): number | undefined;
+    setForceMinChangeSats(value: number): PayoutQueueConfig;
+
     getTriggerCase(): PayoutQueueConfig.TriggerCase;
 
     serializeBinary(): Uint8Array;
@@ -1222,6 +1227,7 @@ export namespace PayoutQueueConfig {
         intervalSecs: number,
         cpfpPayoutsAfterMins?: number,
         cpfpPayoutsAfterBlocks?: number,
+        forceMinChangeSats?: number,
     }
 
     export enum TriggerCase {

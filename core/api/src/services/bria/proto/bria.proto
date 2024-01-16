@@ -291,6 +291,7 @@ message PayoutQueueConfig {
   }
   optional uint32 cpfp_payouts_after_mins = 6;
   optional uint32 cpfp_payouts_after_blocks = 7;
+  optional uint64 force_min_change_sats = 8;
 }
 
 enum TxPriority {

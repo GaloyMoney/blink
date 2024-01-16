@@ -352,6 +352,10 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = "Issue with lightning payment, please try again."
       return new LightningPaymentError({ message, logger: baseLogger })
 
+    case "InvalidFeatureBitsForLndInvoiceError":
+      message = "Invoice may have invalid feature bits set, please check again."
+      return new LightningPaymentError({ message, logger: baseLogger })
+
     case "UsernameNotAvailableError":
       message = "username not available"
       return new UsernameError({ message, logger: baseLogger })
