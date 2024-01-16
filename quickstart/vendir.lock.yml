@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(notifications): use nix protoc instead of buckified (#3843)'
-      sha: 1589715413f52be82b36c49aee5b37f33c3ee2d1
+      commitTitle: 'fix(notifications): nix protobuf in buck2NativeDependencies (#3845)...'
+      sha: 4cb909512842f0a7c05f41c4cfa14ede42321778
       tags:
-      - 0.20.1-2-g158971541
+      - 0.20.2-2-g4cb909512
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(notifications): use nix protoc instead of buckified (#3843)'
-      sha: 1589715413f52be82b36c49aee5b37f33c3ee2d1
+      commitTitle: 'fix(notifications): nix protobuf in buck2NativeDependencies (#3845)...'
+      sha: 4cb909512842f0a7c05f41c4cfa14ede42321778
       tags:
-      - 0.20.1-2-g158971541
+      - 0.20.2-2-g4cb909512
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(notifications): use nix protoc instead of buckified (#3843)'
-      sha: 1589715413f52be82b36c49aee5b37f33c3ee2d1
+      commitTitle: 'fix(notifications): nix protobuf in buck2NativeDependencies (#3845)...'
+      sha: 4cb909512842f0a7c05f41c4cfa14ede42321778
       tags:
-      - 0.20.1-2-g158971541
+      - 0.20.2-2-g4cb909512
     path: ./
   path: ./graphql
 kind: LockConfig
