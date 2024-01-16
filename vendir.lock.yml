@@ -24,12 +24,4 @@ directories:
       - 2023-10-15-425-gf3c685667
     path: .
   path: third-party/rust/fixups/ring/include
-- contents:
-  - git:
-      commitTitle: 'client: Fix "ctrl-c was pressed" bug...'
-      sha: f3c685667ef22d0130687003012b6960abec6b3b
-      tags:
-      - 2023-10-15-425-gf3c685667
-    path: .
-  path: third-party/proto
 kind: LockConfig
