@@ -331,7 +331,7 @@ interface ILedgerService {
 
 type GetVolumeAmountFn = <S extends WalletCurrency>(
   args: IGetVolumeAmountArgs<S>,
-) => Promise<TxBaseVolumeAmount<S> | LedgerServiceError>
+) => Promise<PaymentAmount<S> | LedgerServiceError>
 
 type ActivityCheckerConfig = {
   monthlyVolumeThreshold: UsdCents

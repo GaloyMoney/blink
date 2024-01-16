@@ -210,8 +210,6 @@ export const tradeIntraAccountTxBaseVolumeAmountSince = txVolumeAmountFactory.cr
 export const allPaymentVolumeAmountSince = txVolumeAmountFactory.create(
   "allPaymentVolumeSince",
 )
-export const allTxBaseVolumeAmountSince =
-  txVolumeAmountFactory.create("allTxBaseVolumeSince")
 export const onChainTxBaseVolumeAmountSince = txVolumeAmountFactory.create(
   "onChainTxBaseVolumeSince",
 )
