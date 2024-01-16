@@ -21,7 +21,7 @@ struct Cli {
     #[clap(env = "PG_CON")]
     pg_con: String,
     #[clap(env = "MONGODB_CON")]
-    mongodb_connection: String,
+    mongodb_connection: Option<String>,
 }
 
 pub async fn run() -> anyhow::Result<()> {
@@ -47,7 +47,7 @@ async fn run_cmd(config: Config) -> anyhow::Result<()> {
     let mut handles = vec![];
     let pool = db::init_pool(&config.db).await?;
     let app = crate::app::NotificationsApp::new(pool, config.app);
-    if config.mongo_import.execute_import {
+    if config.mongo_import.execute_import && config.mongo_import.connection.is_some() {
         crate::data_import::import_user_notification_settings(app.clone(), config.mongo_import)
             .await?;
     }

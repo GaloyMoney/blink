@@ -33,7 +33,7 @@ fn default_tracing_config() -> TracingConfig {
 
 pub struct EnvOverride {
     pub db_con: String,
-    pub mongodb_connection: String,
+    pub mongodb_connection: Option<String>,
 }
 
 impl Config {
