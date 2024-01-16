@@ -743,13 +743,19 @@ describe("Facade", () => {
       return { includedTypes, excludedTypes }
     }
 
-    const externalTxFnForType = {
-      Invoice: recordReceiveLnPayment,
-      OnchainReceipt: recordReceiveOnChainPayment,
+    const externalOutTxFnForType = {
       Payment: recordSendLnPayment,
       OnchainPayment: recordSendOnChainPayment,
+    }
+
+    const externalInTxFnForType = {
+      Invoice: recordReceiveLnPayment,
+      OnchainReceipt: recordReceiveOnChainPayment,
       LnFeeReimbursement: recordLnFeeReimbursement,
       LnFailedPayment: recordLnFailedPayment,
+    }
+
+    const externalBankTxFnForType = {
       Fee: recordLnChannelOpenOrClosingFee,
       EscrowCredit: recordLndEscrowCredit,
       EscrowDebit: recordLndEscrowDebit,
@@ -808,15 +814,15 @@ describe("Facade", () => {
         excludedTypes: nonVolumeAffectingTypes,
       } = txTypesForVolumes(allPaymentTxTypes)
 
-      describe("all external transactions", () => {
+      describe("external out transactions", () => {
         const externalVolumeAffectingTypes = volumeAffectingTypes.filter(
-          (txType) => txType in externalTxFnForType,
+          (txType) => txType in externalOutTxFnForType,
         )
         if (externalVolumeAffectingTypes.length) {
           describe("affects volume", () => {
             for (const txType of externalVolumeAffectingTypes) {
               const recordTx =
-                externalTxFnForType[txType as keyof typeof externalTxFnForType]
+                externalOutTxFnForType[txType as keyof typeof externalOutTxFnForType]
 
               it(`for ${txType} transaction`, async () => {
                 const expected = calc.add(await currentVolumeAmount(), sendAmount.btc)
@@ -837,13 +843,69 @@ describe("Facade", () => {
         }
 
         const externalNonVolumeAffectingTypes = nonVolumeAffectingTypes.filter(
-          (txType) => txType in externalTxFnForType,
+          (txType) => txType in externalOutTxFnForType,
         )
         if (externalNonVolumeAffectingTypes.length) {
           describe("does not affect volume", () => {
             for (const txType of externalNonVolumeAffectingTypes) {
               const recordTx =
-                externalTxFnForType[txType as keyof typeof externalTxFnForType]
+                externalOutTxFnForType[txType as keyof typeof externalOutTxFnForType]
+
+              it(`for ${txType} transaction`, async () => {
+                const expected = await currentVolumeAmount()
+
+                const result = await recordTx({
+                  walletDescriptor: btcWalletDescriptor,
+                  paymentAmount: sendAmount,
+                  bankFee,
+                  displayAmounts: displayReceiveUsdAmounts,
+                })
+                expect(result).not.toBeInstanceOf(Error)
+
+                const actual = await currentVolumeAmount()
+                expect(expected).toStrictEqual(actual)
+              })
+            }
+          })
+        }
+      })
+
+      describe("external in transactions", () => {
+        const externalVolumeAffectingTypes = volumeAffectingTypes.filter(
+          (txType) => txType in externalInTxFnForType,
+        )
+        if (externalVolumeAffectingTypes.length) {
+          describe("affects volume", () => {
+            for (const txType of externalVolumeAffectingTypes) {
+              const recordTx =
+                externalInTxFnForType[txType as keyof typeof externalInTxFnForType]
+
+              it(`for ${txType} transaction`, async () => {
+                const expected = calc.sub(await currentVolumeAmount(), sendAmount.btc)
+
+                const result = await recordTx({
+                  walletDescriptor: btcWalletDescriptor,
+                  paymentAmount: sendAmount,
+                  bankFee,
+                  displayAmounts: displayReceiveUsdAmounts,
+                })
+                expect(result).not.toBeInstanceOf(Error)
+
+                const actual = await currentVolumeAmount()
+                expect(expected).toStrictEqual(actual)
+              })
+            }
+          })
+        }
+
+        const externalNonVolumeAffectingTypes = nonVolumeAffectingTypes.filter(
+          (txType) => txType in externalInTxFnForType,
+        )
+        if (externalNonVolumeAffectingTypes.length) {
+          describe("does not affect volume", () => {
+            for (const txType of externalNonVolumeAffectingTypes) {
+              const recordTx =
+                externalInTxFnForType[txType as keyof typeof externalInTxFnForType]
 
               it(`for ${txType} transaction`, async () => {
                 const expected = await currentVolumeAmount()
@@ -982,6 +1044,27 @@ describe("Facade", () => {
             }
           })
         }
+      })
+
+      describe("bank transactions", () => {
+        describe("does not affect volume", () => {
+          for (const txType in externalBankTxFnForType) {
+            const recordTx =
+              externalBankTxFnForType[txType as keyof typeof externalBankTxFnForType]
+
+            it(`for ${txType} transaction`, async () => {
+              const expected = await currentVolumeAmount()
+
+              const result = await recordTx({
+                paymentAmount: sendAmount,
+              })
+              expect(result).not.toBeInstanceOf(Error)
+
+              const actual = await currentVolumeAmount()
+              expect(expected).toStrictEqual(actual)
+            })
+          }
+        })
       })
 
       describe("reconciliation transactions", () => {
