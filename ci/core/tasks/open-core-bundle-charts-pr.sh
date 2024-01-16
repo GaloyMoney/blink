@@ -35,8 +35,6 @@ git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 git checkout ${ref}
 app_src_files=($(buck2 uquery 'inputs(deps("//core/api:")) + inputs(deps("//core/api-ws-server:")) + inputs(deps("//core/api-trigger:")) + inputs(deps("//core/api-exporter:")) + inputs(deps("//core/api-cron:"))' 2>/dev/null))
 
-echo "app_src_files: ${app_src_files[@]}"
-
 declare -A relevant_commits
 relevant_commits=()
 for commit in $(git log --format="%H" ${old_ref}..${ref}); do
