@@ -7,7 +7,7 @@ type NotificationType =
 type SendBalanceArgs = {
   balanceAmount: BalanceAmount<WalletCurrency>
   deviceTokens: DeviceToken[]
-  notificationSettings: NotificationSettings
+  recipientUserId: UserId
   displayBalanceAmount?: DisplayAmount<DisplayCurrency>
   recipientLanguage: UserLanguageOrEmpty
 }
@@ -29,9 +29,9 @@ type NotificationChannelSettings = {
 
 type NotificationRecipient = {
   accountId: AccountId
+  userId: UserId
   walletId: WalletId
   deviceTokens: DeviceToken[]
-  notificationSettings: NotificationSettings
   language: UserLanguageOrEmpty
   level: AccountLevel
 }

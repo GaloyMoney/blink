@@ -198,7 +198,7 @@ export const NotificationsService = (): INotificationsService => {
         title,
         body,
         notificationCategory: GaloyNotificationCategories.Payments,
-        notificationSettings: recipient.notificationSettings,
+        userId: recipient.userId,
       })
 
       if (result instanceof Error) return result
@@ -291,7 +291,7 @@ export const NotificationsService = (): INotificationsService => {
   const sendBalance = async ({
     balanceAmount,
     deviceTokens,
-    notificationSettings,
+    recipientUserId,
     displayBalanceAmount,
     recipientLanguage,
   }: SendBalanceArgs): Promise<true | NotificationsServiceError> => {
@@ -313,7 +313,7 @@ export const NotificationsService = (): INotificationsService => {
         title,
         body,
         notificationCategory,
-        notificationSettings,
+        userId: recipientUserId,
       })
 
       if (result instanceof NotificationsServiceError) {
@@ -352,7 +352,7 @@ export const NotificationsService = (): INotificationsService => {
     body,
     data,
     deviceTokens,
-    notificationSettings,
+    userId,
     notificationCategory,
   }: SendFilteredPushNotificationArgs): Promise<true | NotificationsServiceError> => {
     const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
@@ -364,8 +364,8 @@ export const NotificationsService = (): INotificationsService => {
         title,
         body,
         data,
-        notificationSettings,
         notificationCategory,
+        userId,
       })
 
       if (result instanceof NotificationsServiceError) {
