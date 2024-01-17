@@ -10,6 +10,8 @@ import { InvalidAccountLimitTypeError } from "@/domain/errors"
 import * as LedgerFacade from "@/services/ledger/facade"
 import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
 
+import { timestampDaysAgo } from "@/utils"
+
 export const remainingIntraLedgerLimit = async ({
   accountId,
   priceRatio,
@@ -17,22 +19,31 @@ export const remainingIntraLedgerLimit = async ({
   accountId: AccountId
   priceRatio: WalletPriceRatio
 }) => {
+  const timestamp1Day = timestampDaysAgo(ONE_DAY)
+  if (timestamp1Day instanceof Error) return timestamp1Day
+
   const accountWalletDescriptors =
     await WalletsRepository().findAccountWalletsByAccountId(accountId)
   if (accountWalletDescriptors instanceof Error) return accountWalletDescriptors
 
-  const walletVolumes = await LedgerFacade.intraledgerTxBaseVolumeAmountForAccountSince({
-    accountWalletDescriptors,
-    period: ONE_DAY,
+  const btcWalletVolume = await LedgerFacade.outIntraledgerTxBaseVolumeAmountSince({
+    walletDescriptor: accountWalletDescriptors.BTC,
+    timestamp: timestamp1Day,
   })
-  if (walletVolumes instanceof Error) return walletVolumes
+  if (btcWalletVolume instanceof Error) return btcWalletVolume
+
+  const usdWalletVolume = await LedgerFacade.outIntraledgerTxBaseVolumeAmountSince({
+    walletDescriptor: accountWalletDescriptors.USD,
+    timestamp: timestamp1Day,
+  })
+  if (usdWalletVolume instanceof Error) return usdWalletVolume
 
   const account = await AccountsRepository().findById(accountId)
   if (account instanceof Error) return account
   const accountLimits = getAccountLimits({ level: account.level })
   return AccountTxVolumeRemaining(accountLimits).intraLedger({
     priceRatio,
-    walletVolumes,
+    outWalletVolumes: [btcWalletVolume, usdWalletVolume],
   })
 }
 
@@ -67,22 +78,31 @@ export const remainingWithdrawalLimit = async ({
   accountId: AccountId
   priceRatio: WalletPriceRatio
 }) => {
+  const timestamp1Day = timestampDaysAgo(ONE_DAY)
+  if (timestamp1Day instanceof Error) return timestamp1Day
+
   const accountWalletDescriptors =
     await WalletsRepository().findAccountWalletsByAccountId(accountId)
   if (accountWalletDescriptors instanceof Error) return accountWalletDescriptors
 
-  const walletVolumes = await LedgerFacade.externalPaymentVolumeAmountForAccountSince({
-    accountWalletDescriptors,
-    period: ONE_DAY,
+  const btcWalletVolume = await LedgerFacade.netOutExternalPaymentVolumeAmountSince({
+    walletDescriptor: accountWalletDescriptors.BTC,
+    timestamp: timestamp1Day,
   })
-  if (walletVolumes instanceof Error) return walletVolumes
+  if (btcWalletVolume instanceof Error) return btcWalletVolume
+
+  const usdWalletVolume = await LedgerFacade.netOutExternalPaymentVolumeAmountSince({
+    walletDescriptor: accountWalletDescriptors.USD,
+    timestamp: timestamp1Day,
+  })
+  if (usdWalletVolume instanceof Error) return usdWalletVolume
 
   const account = await AccountsRepository().findById(accountId)
   if (account instanceof Error) return account
   const accountLimits = getAccountLimits({ level: account.level })
   return AccountTxVolumeRemaining(accountLimits).withdrawal({
     priceRatio,
-    walletVolumes,
+    netOutWalletVolumes: [btcWalletVolume, usdWalletVolume],
   })
 }
 
@@ -114,23 +134,31 @@ export const remainingTradeIntraAccountLimit = async ({
   accountId: AccountId
   priceRatio: WalletPriceRatio
 }) => {
+  const timestamp1Day = timestampDaysAgo(ONE_DAY)
+  if (timestamp1Day instanceof Error) return timestamp1Day
+
   const accountWalletDescriptors =
     await WalletsRepository().findAccountWalletsByAccountId(accountId)
   if (accountWalletDescriptors instanceof Error) return accountWalletDescriptors
 
-  const walletVolumes =
-    await LedgerFacade.tradeIntraAccountTxBaseVolumeAmountForAccountSince({
-      accountWalletDescriptors,
-      period: ONE_DAY,
-    })
-  if (walletVolumes instanceof Error) return walletVolumes
+  const btcWalletVolume = await LedgerFacade.outTradeIntraAccountTxBaseVolumeAmountSince({
+    walletDescriptor: accountWalletDescriptors.BTC,
+    timestamp: timestamp1Day,
+  })
+  if (btcWalletVolume instanceof Error) return btcWalletVolume
+
+  const usdWalletVolume = await LedgerFacade.outTradeIntraAccountTxBaseVolumeAmountSince({
+    walletDescriptor: accountWalletDescriptors.USD,
+    timestamp: timestamp1Day,
+  })
+  if (usdWalletVolume instanceof Error) return usdWalletVolume
 
   const account = await AccountsRepository().findById(accountId)
   if (account instanceof Error) return account
   const accountLimits = getAccountLimits({ level: account.level })
   return AccountTxVolumeRemaining(accountLimits).tradeIntraAccount({
     priceRatio,
-    walletVolumes,
+    outWalletVolumes: [btcWalletVolume, usdWalletVolume],
   })
 }
 
