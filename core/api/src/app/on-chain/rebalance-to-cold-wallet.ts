@@ -1,4 +1,4 @@
-import * as Lightning  from "../lightning/get-balances"
+import * as Lightning from "../lightning/get-balances"
 
 import { getColdStorageConfig } from "@/config"
 
