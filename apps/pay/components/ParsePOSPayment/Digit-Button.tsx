@@ -10,12 +10,15 @@ interface Props {
 }
 
 function DigitButton({ digit, disabled, dispatch, displayValue }: Props) {
+  const value = displayValue ? displayValue : digit
   return (
     <button
+      data-testid={`digit-${value}-btn`}
+      className="digit-button"
       disabled={disabled}
       onClick={() => dispatch({ type: ACTIONS.ADD_DIGIT, payload: digit })}
     >
-      {displayValue ? displayValue : digit}
+      {value}
     </button>
   )
 }

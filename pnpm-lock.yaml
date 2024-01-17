@@ -435,6 +435,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^5.51.0
         version: 5.62.0(eslint@8.54.0)(typescript@5.2.2)
+      cypress:
+        specifier: ^13.6.1
+        version: 13.6.1
       eslint:
         specifier: ^8.52.0
         version: 8.54.0

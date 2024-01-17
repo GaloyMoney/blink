@@ -58,7 +58,12 @@ const AppLayout = ({ children, username }: Props) => {
         <button className={styles.nav_home} onClick={navigateHome}>
           <Image src="/icons/blink-logo-icon.svg" alt="logo" width="50" height="50" />
         </button>
-        <div onClick={() => setOpenSideBar(!openSideBar)} className={styles.hamburger}>
+        <div
+          role="button"
+          data-testid="menu"
+          onClick={() => setOpenSideBar(!openSideBar)}
+          className={styles.hamburger}
+        >
           <span className={`${openSideBar && styles.toggle}`}></span>
           <span className={`${openSideBar && styles.toggle}`}></span>
           <span className={`${openSideBar && styles.toggle}`}></span>
@@ -79,7 +84,7 @@ const AppLayout = ({ children, username }: Props) => {
             </Link>
           </li>
           <li onClick={closeSideBar}>
-            <Link href={payCodeLink}>
+            <Link data-testid="printable-paycode-link" href={payCodeLink}>
               <>
                 <Image
                   src="/paycode-black&white.svg"

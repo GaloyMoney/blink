@@ -398,6 +398,7 @@ function ParsePayment({ defaultWalletCurrency, walletId, dispatch, state }: Prop
 
           <DigitButton digit={"0"} dispatch={dispatch} />
           <button
+            data-testid="backspace-btn"
             className={styles.backspace_icon}
             onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}
           >
@@ -413,6 +414,7 @@ function ParsePayment({ defaultWalletCurrency, walletId, dispatch, state }: Prop
 
       <div className={styles.pay_btn_container}>
         <button
+          data-testid="pay-btn"
           className={state.createdInvoice ? styles.pay_new_btn : styles.pay_btn}
           onClick={() => {
             if (state.createdInvoice) {
@@ -432,6 +434,7 @@ function ParsePayment({ defaultWalletCurrency, walletId, dispatch, state }: Prop
         </button>
         {!state.createdInvoice && (
           <button
+            data-testid="clear-btn"
             className={styles.clear_btn}
             onClick={() => dispatch({ type: ACTIONS.CLEAR_INPUT })}
           >
