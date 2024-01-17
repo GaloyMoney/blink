@@ -10,7 +10,7 @@ type SendFilteredPushNotificationArgs = {
   title: string
   body: string
   data?: { [key: string]: string }
-  notificationSettings: NotificationSettings
+  userId: UserId
   notificationCategory: NotificationCategory
 }
 

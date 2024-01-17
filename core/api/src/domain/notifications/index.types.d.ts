@@ -7,7 +7,7 @@ type NotificationType =
 type SendBalanceArgs = {
   balanceAmount: BalanceAmount<WalletCurrency>
   deviceTokens: DeviceToken[]
-  notificationSettings: NotificationSettings
+  recipientUserId: UserId
   displayBalanceAmount?: DisplayAmount<DisplayCurrency>
   recipientLanguage: UserLanguageOrEmpty
 }
@@ -29,9 +29,9 @@ type NotificationChannelSettings = {
 
 type NotificationRecipient = {
   accountId: AccountId
+  userId: UserId
   walletId: WalletId
   deviceTokens: DeviceToken[]
-  notificationSettings: NotificationSettings
   language: UserLanguageOrEmpty
   level: AccountLevel
 }
@@ -53,4 +53,30 @@ interface INotificationsService {
   adminPushNotificationFilteredSend(
     args: SendFilteredPushNotificationArgs,
   ): Promise<true | NotificationsServiceError>
+
+  getUserNotificationSettings(
+    userId: UserId,
+  ): Promise<NotificationSettings | NotificationsServiceError>
+
+  enableNotificationChannel(args: {
+    userId: UserId
+    notificationChannel: NotificationChannel
+  }): Promise<NotificationSettings | NotificationsServiceError>
+
+  disableNotificationChannel(args: {
+    userId: UserId
+    notificationChannel: NotificationChannel
+  }): Promise<NotificationSettings | NotificationsServiceError>
+
+  enableNotificationCategory(args: {
+    userId: UserId
+    notificationChannel: NotificationChannel
+    notificationCategory: NotificationCategory
+  }): Promise<NotificationSettings | NotificationsServiceError>
+
+  disableNotificationCategory(args: {
+    userId: UserId
+    notificationChannel: NotificationChannel
+    notificationCategory: NotificationCategory
+  }): Promise<NotificationSettings | NotificationsServiceError>
 }

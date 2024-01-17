@@ -13,6 +13,7 @@ const envVarsWithDefaults = {
   KRATOS_CALLBACK_API_KEY: "dummy",
   BRIA_HOST: "dummy",
   BRIA_API_KEY: "dummy",
+  NOTIFICATIONS_HOST: "dummy",
   MONGODB_CON: "mongodb://dummy",
   REDIS_MASTER_NAME: "dummy",
   REDIS_PASSWORD: "dummy",

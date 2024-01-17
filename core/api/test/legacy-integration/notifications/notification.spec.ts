@@ -31,6 +31,7 @@ const walletId = "walletId" as WalletId
 const paymentHash = "paymentHash" as PaymentHash
 const txHash = "txHash" as OnChainTxHash
 const deviceTokens = ["token" as DeviceToken]
+const userId = "UserId" as UserId
 const language = "" as UserLanguageOrEmpty
 const paymentAmount = {
   amount: 1000n,
@@ -67,13 +68,6 @@ const crcSettlementDisplayPrice = <S extends WalletCurrency>({
     walletAmount,
     walletCurrency,
   })
-
-const unfilteredNotificationSettings: NotificationSettings = {
-  push: {
-    enabled: true,
-    disabledCategories: [],
-  },
-}
 
 beforeAll(async () => {
   const usdDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
@@ -247,7 +241,7 @@ describe("notification", () => {
               walletId,
               deviceTokens,
               language,
-              notificationSettings: unfilteredNotificationSettings,
+              userId,
               level: AccountLevel.One,
             },
             transaction: {
@@ -319,7 +313,7 @@ describe("notification", () => {
               walletId,
               deviceTokens,
               language,
-              notificationSettings: unfilteredNotificationSettings,
+              userId,
               level: AccountLevel.One,
             },
             transaction: {
@@ -392,7 +386,7 @@ describe("notification", () => {
               walletId,
               deviceTokens,
               language,
-              notificationSettings: unfilteredNotificationSettings,
+              userId,
               level: AccountLevel.One,
             },
             transaction: {
@@ -462,7 +456,7 @@ describe("notification", () => {
               walletId,
               deviceTokens,
               language,
-              notificationSettings: unfilteredNotificationSettings,
+              userId,
               level: AccountLevel.One,
             },
             transaction: {
@@ -532,7 +526,7 @@ describe("notification", () => {
               walletId,
               deviceTokens,
               language,
-              notificationSettings: unfilteredNotificationSettings,
+              userId,
               level: AccountLevel.One,
             },
             transaction: {

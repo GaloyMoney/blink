@@ -44,7 +44,7 @@ export const sendAdminPushNotification = async ({
     body,
     data,
     notificationCategory: checkedNotificationCategory,
-    notificationSettings: account.notificationSettings,
+    userId: kratosUserId,
   })
 
   return success
