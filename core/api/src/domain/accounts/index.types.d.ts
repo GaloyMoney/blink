@@ -66,17 +66,17 @@ interface IAccountTxVolumeLimitChecker {
 interface IAccountTxVolumeRemaining {
   intraLedger: (args: {
     priceRatio: WalletPriceRatio
-    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+    outWalletVolumes: PaymentAmount<WalletCurrency>[]
   }) => Promise<UsdPaymentAmount | ValidationError>
 
   withdrawal: (args: {
     priceRatio: WalletPriceRatio
-    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+    netOutWalletVolumes: PaymentAmount<WalletCurrency>[]
   }) => Promise<UsdPaymentAmount | ValidationError>
 
   tradeIntraAccount: (args: {
     priceRatio: WalletPriceRatio
-    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+    outWalletVolumes: PaymentAmount<WalletCurrency>[]
   }) => Promise<UsdPaymentAmount | ValidationError>
 }
 
