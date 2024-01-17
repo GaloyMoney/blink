@@ -47,7 +47,7 @@ describe("ActivityChecker with Sats", () => {
     expect(toCents(usdPaymentAmount.amount)).toBeLessThan(monthlyVolumeThreshold)
 
     const getVolumeAmountFn = (() =>
-      Promise.resolve(btcPaymentAmount)) as GetVolumeAmountFn
+      Promise.resolve(btcPaymentAmount)) as NewGetVolumeAmountSinceFn
     const checker = ActivityChecker({
       priceRatio,
       monthlyVolumeThreshold,
@@ -69,7 +69,7 @@ describe("ActivityChecker with Sats", () => {
     expect(toCents(usdPaymentAmount.amount)).toEqual(monthlyVolumeThreshold)
 
     const getVolumeAmountFn = (() =>
-      Promise.resolve(btcPaymentAmount)) as GetVolumeAmountFn
+      Promise.resolve(btcPaymentAmount)) as NewGetVolumeAmountSinceFn
     const checker = ActivityChecker({
       priceRatio,
       monthlyVolumeThreshold,
@@ -91,7 +91,7 @@ describe("ActivityChecker with Sats", () => {
     expect(toCents(usdPaymentAmount.amount)).toBeGreaterThan(monthlyVolumeThreshold)
 
     const getVolumeAmountFn = (() =>
-      Promise.resolve(btcPaymentAmount)) as GetVolumeAmountFn
+      Promise.resolve(btcPaymentAmount)) as NewGetVolumeAmountSinceFn
     const checker = ActivityChecker({
       priceRatio,
       monthlyVolumeThreshold,
@@ -111,7 +111,7 @@ describe("ActivityChecker with Cents", () => {
     expect(toCents(usdPaymentAmount.amount)).toBeLessThan(monthlyVolumeThreshold)
 
     const getVolumeAmountFn = (() =>
-      Promise.resolve(usdPaymentAmount)) as GetVolumeAmountFn
+      Promise.resolve(usdPaymentAmount)) as NewGetVolumeAmountSinceFn
     const checker = ActivityChecker({
       priceRatio,
       monthlyVolumeThreshold,
@@ -132,7 +132,7 @@ describe("ActivityChecker with Cents", () => {
       Promise.resolve({
         amount: BigInt(100),
         currency: WalletCurrency.Usd,
-      })) as GetVolumeAmountFn
+      })) as NewGetVolumeAmountSinceFn
     const checker = ActivityChecker({
       priceRatio,
       monthlyVolumeThreshold,
@@ -150,7 +150,7 @@ describe("ActivityChecker with Cents", () => {
     expect(toCents(usdPaymentAmount.amount)).toBeGreaterThan(monthlyVolumeThreshold)
 
     const getVolumeAmountFn = (() =>
-      Promise.resolve(usdPaymentAmount)) as GetVolumeAmountFn
+      Promise.resolve(usdPaymentAmount)) as NewGetVolumeAmountSinceFn
     const checker = ActivityChecker({
       priceRatio,
       monthlyVolumeThreshold,

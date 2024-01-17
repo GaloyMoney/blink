@@ -157,12 +157,6 @@ const txVolumeAmountFactory = TxVolumeAmountSinceFactory()
 export const allPaymentVolumeAmountSince = txVolumeAmountFactory.create(
   "allPaymentVolumeSince",
 )
-export const onChainTxBaseVolumeAmountSince = txVolumeAmountFactory.create(
-  "onChainTxBaseVolumeSince",
-)
-export const lightningTxBaseVolumeAmountSince = txVolumeAmountFactory.create(
-  "lightningTxBaseVolumeSince",
-)
 
 export const netOutExternalPaymentVolumeAmountSince = async <S extends WalletCurrency>(
   args: IGetVolumeAmountArgs<S>,

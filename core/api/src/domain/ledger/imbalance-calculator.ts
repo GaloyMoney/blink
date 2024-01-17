@@ -1,49 +1,37 @@
 import { toSats } from "@/domain/bitcoin"
 import { toCents } from "@/domain/fiat"
-import {
-  AmountCalculator,
-  paymentAmountFromNumber,
-  WalletCurrency,
-} from "@/domain/shared"
+import { paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
 import { WithdrawalFeePriceMethod } from "@/domain/wallets"
 
 const MS_PER_HOUR = (60 * 60 * 1000) as MilliSeconds
 const MS_PER_DAY = (24 * MS_PER_HOUR) as MilliSeconds
 
-const calc = AmountCalculator()
-
 export const ImbalanceCalculator = ({
   method,
-  volumeAmountLightningFn,
-  volumeAmountOnChainFn,
+  netInVolumeAmountLightningFn,
+  netInVolumeAmountOnChainFn,
   sinceDaysAgo,
 }: ImbalanceCalculatorConfig): ImbalanceCalculator => {
   const since = new Date(new Date().getTime() - sinceDaysAgo * MS_PER_DAY)
 
   const getNetInboundFlow = async <T extends WalletCurrency>({
-    volumeAmountFn,
+    netInVolumeAmountFn,
     wallet,
     since,
   }: {
-    volumeAmountFn: GetVolumeAmountSinceFn
+    netInVolumeAmountFn: NewGetVolumeAmountSinceFn
     wallet: WalletDescriptor<T>
     since: Date
   }) => {
-    const volumeAmount = await volumeAmountFn({
+    const volumeAmount = await netInVolumeAmountFn({
       walletDescriptor: wallet,
       timestamp: since,
     })
     if (volumeAmount instanceof Error) return volumeAmount
 
     return wallet.currency === WalletCurrency.Btc
-      ? toSats(
-          calc.sub(volumeAmount.incomingBaseAmount, volumeAmount.outgoingBaseAmount)
-            .amount,
-        )
-      : toCents(
-          calc.sub(volumeAmount.incomingBaseAmount, volumeAmount.outgoingBaseAmount)
-            .amount,
-        )
+      ? toSats(volumeAmount.amount)
+      : toCents(volumeAmount.amount)
   }
 
   const getSwapOutImbalanceAmount = async <T extends WalletCurrency>(
@@ -56,14 +44,14 @@ export const ImbalanceCalculator = ({
     const lnNetInbound = await getNetInboundFlow({
       since,
       wallet,
-      volumeAmountFn: volumeAmountLightningFn,
+      netInVolumeAmountFn: netInVolumeAmountLightningFn,
     })
     if (lnNetInbound instanceof Error) return lnNetInbound
 
     const onChainNetInbound = await getNetInboundFlow({
       since,
       wallet,
-      volumeAmountFn: volumeAmountOnChainFn,
+      netInVolumeAmountFn: netInVolumeAmountOnChainFn,
     })
     if (onChainNetInbound instanceof Error) return onChainNetInbound
 
