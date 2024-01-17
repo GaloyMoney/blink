@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(core): proxy notification settings operations (#3849)...'
-      sha: b9e426c55d96f29b8626c86f54f581a098dd22f1
+      commitTitle: 'ci: add buf to dev img (#3857)'
+      sha: 4ce69510f5932b70f59684cb91823b735590ae7b
       tags:
-      - 0.20.4-5-gb9e426c55
+      - 0.20.5-1-g4ce69510f
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(core): proxy notification settings operations (#3849)...'
-      sha: b9e426c55d96f29b8626c86f54f581a098dd22f1
+      commitTitle: 'ci: add buf to dev img (#3857)'
+      sha: 4ce69510f5932b70f59684cb91823b735590ae7b
       tags:
-      - 0.20.4-5-gb9e426c55
+      - 0.20.5-1-g4ce69510f
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat(core): proxy notification settings operations (#3849)...'
-      sha: b9e426c55d96f29b8626c86f54f581a098dd22f1
+      commitTitle: 'ci: add buf to dev img (#3857)'
+      sha: 4ce69510f5932b70f59684cb91823b735590ae7b
       tags:
-      - 0.20.4-5-gb9e426c55
+      - 0.20.5-1-g4ce69510f
     path: ./
   path: ./graphql
 kind: LockConfig

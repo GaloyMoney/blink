@@ -97,7 +97,7 @@ services:
     ports:
     - 5434:5432
   galoy:
-    image: us.gcr.io/galoy-org/galoy-api@sha256:6ab73c92daeddf03d96b8e591c29bd12947b87fccdb6e07d4b3bce6943bd8cfe
+    image: us.gcr.io/galoy-org/galoy-api@sha256:11ff928d8ed700515ab4bb96b30b86d13df464c70ede07d9ef8d0f1956163d77
     env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/.env.galoy
     depends_on:
     - trigger
@@ -115,7 +115,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:36586ff82c3b752bcc9c4d58d1357f93469faafe3657f6e7e4c50bf2fcb0b5a7
+    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:0dc2137dace451d6660414164c0285fe146a7fa630d59c1d31550e6932263c71
     env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/.env.galoy
     depends_on:
     - lnd1
@@ -136,7 +136,7 @@ services:
     - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
     - MONGO_INITDB_DATABASE=galoy
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:23a2f09bd3e58cdd479f934e6bf4994f007e6e7f5fbfe7c24a6d037a62d3adae
+    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:ff6e537351875980de74f9941cf7f1a8db4d440d62738caf1bea086b9001aef0
     depends_on:
     - mongodb
     environment:
