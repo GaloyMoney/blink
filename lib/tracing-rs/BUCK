@@ -13,6 +13,7 @@ galoy_rust_lib(
         "//third-party/rust:tracing-opentelemetry",
         "//third-party/rust:tracing-subscriber",
         "//third-party/rust:http",
+        "//third-party/rust:tonic",
     ],
     srcs = glob(["src/**/*.rs"]),
     env = {
