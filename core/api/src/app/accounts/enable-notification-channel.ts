@@ -1,5 +1,5 @@
-import { enableNotificationChannel as domainEnableNotificationChannel } from "@/domain/notifications"
 import { AccountsRepository } from "@/services/mongoose"
+import { NotificationsService } from "@/services/notifications"
 
 export const enableNotificationChannel = async ({
   accountId,
@@ -11,12 +11,14 @@ export const enableNotificationChannel = async ({
   const account = await AccountsRepository().findById(accountId)
   if (account instanceof Error) return account
 
-  const newNotificationSettings = domainEnableNotificationChannel({
-    notificationSettings: account.notificationSettings,
+  const notificationsService = NotificationsService()
+
+  const newNotificationSettings = await notificationsService.enableNotificationChannel({
+    userId: account.kratosUserId,
     notificationChannel,
   })
 
-  account.notificationSettings = newNotificationSettings
+  if (newNotificationSettings instanceof Error) return newNotificationSettings
 
-  return AccountsRepository().update(account)
+  return account
 }

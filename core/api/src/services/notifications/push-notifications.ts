@@ -3,13 +3,23 @@ import * as admin from "firebase-admin"
 import { Messaging } from "firebase-admin/lib/messaging/messaging"
 
 import {
+  ShouldSendNotificationRequest,
+  NotificationChannel as GrpcNotificationChannel,
+} from "./proto/notifications_pb"
+
+import {
+  shouldSendNotification as grpcShouldSendNotification,
+  notificationsMetadata,
+} from "./grpc-client"
+
+import { notificationCategoryToGrpcNotificationCategory } from "./convert"
+
+import {
   DeviceTokensNotRegisteredNotificationsServiceError,
   InvalidDeviceNotificationsServiceError,
-  NotificationChannel,
   NotificationsServiceError,
   NotificationsServiceUnreachableServerError,
   UnknownNotificationsServiceError,
-  shouldSendNotification,
 } from "@/domain/notifications"
 import { ErrorLevel, parseErrorMessageFromUnknown } from "@/domain/shared"
 import { baseLogger } from "@/services/logger"
@@ -116,17 +126,42 @@ export const PushNotificationsService = (): IPushNotificationsService => {
     })()
   }
 
-  const sendFilteredNotification = async (args: SendFilteredPushNotificationArgs) => {
-    const { notificationSettings, notificationCategory, data, ...sendNotificationArgs } =
-      args
+  const checkShouldSendNotification = async ({
+    userId,
+    notificationCategory,
+  }: {
+    userId: UserId
+    notificationCategory: NotificationCategory
+  }): Promise<boolean | UnknownNotificationsServiceError> => {
+    try {
+      const request = new ShouldSendNotificationRequest()
+      request.setUserId(userId)
+      request.setChannel(GrpcNotificationChannel.PUSH)
+      request.setCategory(
+        notificationCategoryToGrpcNotificationCategory(notificationCategory),
+      )
 
-    if (
-      !shouldSendNotification({
-        notificationCategory,
-        notificationSettings,
-        notificationChannel: NotificationChannel.Push,
-      })
-    ) {
+      const response = await grpcShouldSendNotification(request, notificationsMetadata)
+
+      return response.getShouldSend()
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
+
+  const sendFilteredNotification = async (args: SendFilteredPushNotificationArgs) => {
+    const { notificationCategory, data, ...sendNotificationArgs } = args
+
+    const shouldSendNotification = await checkShouldSendNotification({
+      userId: args.userId,
+      notificationCategory,
+    })
+
+    if (shouldSendNotification instanceof UnknownNotificationsServiceError) {
+      return shouldSendNotification
+    }
+
+    if (!shouldSendNotification) {
       return {
         status: SendFilteredPushNotificationStatus.Filtered,
       }

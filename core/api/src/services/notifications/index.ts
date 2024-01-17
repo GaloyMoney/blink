@@ -5,6 +5,22 @@ import {
 
 import { createPushNotificationContent } from "./create-push-notification-content"
 
+import {
+  UserDisableNotificationCategoryRequest,
+  UserDisableNotificationChannelRequest,
+  UserEnableNotificationCategoryRequest,
+  UserEnableNotificationChannelRequest,
+  UserNotificationSettingsRequest,
+} from "./proto/notifications_pb"
+
+import * as notificationsGrpc from "./grpc-client"
+
+import {
+  grpcNotificationSettingsToNotificationSettings,
+  notificationCategoryToGrpcNotificationCategory,
+  notificationChannelToGrpcNotificationChannel,
+} from "./convert"
+
 import { getCallbackServiceConfig } from "@/config"
 
 import {
@@ -182,7 +198,7 @@ export const NotificationsService = (): INotificationsService => {
         title,
         body,
         notificationCategory: GaloyNotificationCategories.Payments,
-        notificationSettings: recipient.notificationSettings,
+        userId: recipient.userId,
       })
 
       if (result instanceof Error) return result
@@ -275,7 +291,7 @@ export const NotificationsService = (): INotificationsService => {
   const sendBalance = async ({
     balanceAmount,
     deviceTokens,
-    notificationSettings,
+    recipientUserId,
     displayBalanceAmount,
     recipientLanguage,
   }: SendBalanceArgs): Promise<true | NotificationsServiceError> => {
@@ -297,7 +313,7 @@ export const NotificationsService = (): INotificationsService => {
         title,
         body,
         notificationCategory,
-        notificationSettings,
+        userId: recipientUserId,
       })
 
       if (result instanceof NotificationsServiceError) {
@@ -336,7 +352,7 @@ export const NotificationsService = (): INotificationsService => {
     body,
     data,
     deviceTokens,
-    notificationSettings,
+    userId,
     notificationCategory,
   }: SendFilteredPushNotificationArgs): Promise<true | NotificationsServiceError> => {
     const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
@@ -348,8 +364,8 @@ export const NotificationsService = (): INotificationsService => {
         title,
         body,
         data,
-        notificationSettings,
         notificationCategory,
+        userId,
       })
 
       if (result instanceof NotificationsServiceError) {
@@ -359,6 +375,159 @@ export const NotificationsService = (): INotificationsService => {
       return true
     } catch (err) {
       return handleCommonNotificationErrors(err)
+    }
+  }
+
+  const getUserNotificationSettings = async (
+    userId: UserId,
+  ): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new UserNotificationSettingsRequest()
+      request.setUserId(userId)
+      const response = await notificationsGrpc.userNotificationSettings(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
+
+  const enableNotificationChannel = async ({
+    userId,
+    notificationChannel,
+  }: {
+    userId: UserId
+    notificationChannel: NotificationChannel
+  }): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new UserEnableNotificationChannelRequest()
+      request.setUserId(userId)
+
+      const grpcNotificationChannel =
+        notificationChannelToGrpcNotificationChannel(notificationChannel)
+
+      request.setChannel(grpcNotificationChannel)
+      const response = await notificationsGrpc.userEnableNotificationChannel(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
+
+  const disableNotificationChannel = async ({
+    userId,
+    notificationChannel,
+  }: {
+    userId: UserId
+    notificationChannel: NotificationChannel
+  }): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new UserDisableNotificationChannelRequest()
+      request.setUserId(userId)
+
+      const grpcNotificationChannel =
+        notificationChannelToGrpcNotificationChannel(notificationChannel)
+
+      request.setChannel(grpcNotificationChannel)
+      const response = await notificationsGrpc.userDisableNotificationChannel(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
+
+  const enableNotificationCategory = async ({
+    userId,
+    notificationChannel,
+    notificationCategory,
+  }: {
+    userId: UserId
+    notificationChannel: NotificationChannel
+    notificationCategory: NotificationCategory
+  }): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new UserEnableNotificationCategoryRequest()
+      request.setUserId(userId)
+
+      const grpcNotificationChannel =
+        notificationChannelToGrpcNotificationChannel(notificationChannel)
+      request.setChannel(grpcNotificationChannel)
+
+      const grpcNotificationCategory =
+        notificationCategoryToGrpcNotificationCategory(notificationCategory)
+      request.setCategory(grpcNotificationCategory)
+
+      const response = await notificationsGrpc.userEnableNotificationCatgeory(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
+
+  const disableNotificationCategory = async ({
+    userId,
+    notificationChannel,
+    notificationCategory,
+  }: {
+    userId: UserId
+    notificationChannel: NotificationChannel
+    notificationCategory: NotificationCategory
+  }): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new UserDisableNotificationCategoryRequest()
+      request.setUserId(userId)
+
+      const grpcNotificationChannel =
+        notificationChannelToGrpcNotificationChannel(notificationChannel)
+      request.setChannel(grpcNotificationChannel)
+
+      const grpcNotificationCategory =
+        notificationCategoryToGrpcNotificationCategory(notificationCategory)
+      request.setCategory(grpcNotificationCategory)
+
+      const response = await notificationsGrpc.userDisableNotificationCategory(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
     }
   }
 
@@ -372,6 +541,11 @@ export const NotificationsService = (): INotificationsService => {
         sendBalance,
         adminPushNotificationSend,
         adminPushNotificationFilteredSend,
+        getUserNotificationSettings,
+        enableNotificationChannel,
+        disableNotificationChannel,
+        enableNotificationCategory,
+        disableNotificationCategory,
       },
     }),
   }
