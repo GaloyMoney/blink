@@ -26,6 +26,7 @@ import { baseLogger } from "@/services/logger"
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
+  wrapAsyncFunctionsToRunInSpan,
   wrapAsyncToRunInSpan,
 } from "@/services/tracing"
 
@@ -184,7 +185,13 @@ export const PushNotificationsService = (): IPushNotificationsService => {
     }
   }
 
-  return { sendNotification, sendFilteredNotification }
+  return wrapAsyncFunctionsToRunInSpan({
+    namespace: "services.push-notifications",
+    fns: {
+      sendNotification,
+      sendFilteredNotification,
+    },
+  })
 }
 
 export const handleCommonNotificationErrors = (err: Error | string | unknown) => {
