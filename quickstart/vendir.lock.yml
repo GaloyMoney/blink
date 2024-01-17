@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): remove unused error in accounts repo (#3864)'
-      sha: a1f6d626c25ff237d48e765bb9e25f8c47489f61
+      commitTitle: 'build(ci): fix buck2 test labels for gh actions (#3865)'
+      sha: 0064a130f5b50c7e751ceff744d93025b39962a8
       tags:
-      - 0.20.7-3-ga1f6d626c
+      - 0.20.8-1-g0064a130f
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): remove unused error in accounts repo (#3864)'
-      sha: a1f6d626c25ff237d48e765bb9e25f8c47489f61
+      commitTitle: 'build(ci): fix buck2 test labels for gh actions (#3865)'
+      sha: 0064a130f5b50c7e751ceff744d93025b39962a8
       tags:
-      - 0.20.7-3-ga1f6d626c
+      - 0.20.8-1-g0064a130f
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(core): remove unused error in accounts repo (#3864)'
-      sha: a1f6d626c25ff237d48e765bb9e25f8c47489f61
+      commitTitle: 'build(ci): fix buck2 test labels for gh actions (#3865)'
+      sha: 0064a130f5b50c7e751ceff744d93025b39962a8
       tags:
-      - 0.20.7-3-ga1f6d626c
+      - 0.20.8-1-g0064a130f
     path: ./
   path: ./graphql
 kind: LockConfig
