@@ -75,7 +75,6 @@ groups:
       - sync-stablesats-proto
       - sync-price-history-proto
       - sync-price-realtime-proto
-      - sync-bria-api-proto
 
 jobs:
   - name: sync-stablesats-proto
@@ -211,83 +210,9 @@ jobs:
           run:
             path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
 
-  - name: sync-bria-api-proto
-    plan:
-      - in_parallel:
-          - get: repo
-          - get: pipeline-tasks
-          - get: bria-api-proto
-            trigger: true
-      - task: sync-proto
-        config:
-          platform: linux
-          image_resource: #@ nodejs_task_image_config()
-          inputs:
-            - name: repo
-            - name: pipeline-tasks
-            - name: bria-api-proto
-              path: src-repo
-          outputs:
-            - name: repo
-          params:
-            PROTO_FILES_SRC_PATH: proto/api
-            PROTO_FILES_DEST_PATH: src/services/bria/proto
-            BUF_CONFIG_PATH: src/services/bria/proto
-            BRANCH: #@ data.values.git_branch
-            MODULE: bria
-          run:
-            path: pipeline-tasks/ci/tasks/sync-proto.sh
-      - put: bria-api-proto-bot-branch
-        params:
-          repository: repo
-          force: true
-      - task: open-bump-proto-pr
-        config:
-          platform: linux
-          image_resource: #@ nodejs_task_image_config()
-          inputs:
-            - name: pipeline-tasks
-            - name: repo
-          params:
-            BRANCH: #@ data.values.git_branch
-            BOT_BRANCH: #@ data.values.git_bria_api_proto_bot_branch
-            GH_TOKEN: #@ data.values.github_token
-            MODULE: bria-api
-          run:
-            path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
-
 resources:
   -  #@ repo_resource(True)
   -  #@ pipeline_tasks_resource()
-
-  - name: stablesats-proto-bot-branch
-    type: git
-    source:
-      uri: #@ data.values.git_uri
-      branch: #@ data.values.git_stablesats_proto_bot_branch
-      private_key: #@ data.values.github_private_key
-
-  - name: price-history-proto-bot-branch
-    type: git
-    source:
-      uri: #@ data.values.git_uri
-      branch: #@ data.values.git_price_history_proto_bot_branch
-      private_key: #@ data.values.github_private_key
-
-  - name: price-realtime-proto-bot-branch
-    type: git
-    source:
-      uri: #@ data.values.git_uri
-      branch: #@ data.values.git_price_realtime_proto_bot_branch
-      private_key: #@ data.values.github_private_key
-
-  - name: bria-api-proto-bot-branch
-    type: git
-    source:
-      uri: #@ data.values.git_uri
-      branch: #@ data.values.git_bria_api_proto_bot_branch
-      private_key: #@ data.values.github_private_key
-
 
   - name: stablesats-price-proto
     type: git
