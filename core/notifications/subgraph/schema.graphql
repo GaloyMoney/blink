@@ -1,0 +1,60 @@
+type Mutation {
+	userDisableNotificationChannel(input: UserDisableNotificationChannelInput!): UserUpdateNotificationSettingsPayload!
+	userEnableNotificationChannel(input: UserEnableNotificationChannelInput!): UserUpdateNotificationSettingsPayload!
+	userDisableNotificationCategory(input: UserDisableNotificationCategoryInput!): UserUpdateNotificationSettingsPayload!
+	userEnableNotificationCategory(input: UserEnableNotificationCategoryInput!): UserUpdateNotificationSettingsPayload!
+}
+
+
+
+extend type User @key(fields: "id") {
+	id: ID! @external
+	notificationSettings: UserNotificationSettings!
+}
+
+input UserDisableNotificationCategoryInput {
+	channel: UserNotificationChannel!
+	category: UserNotificationCategory!
+}
+
+input UserDisableNotificationChannelInput {
+	channel: UserNotificationChannel!
+}
+
+input UserEnableNotificationCategoryInput {
+	channel: UserNotificationChannel!
+	category: UserNotificationCategory!
+}
+
+input UserEnableNotificationChannelInput {
+	channel: UserNotificationChannel!
+}
+
+enum UserNotificationCategory {
+	CIRCLES
+	PAYMENTS
+}
+
+enum UserNotificationChannel {
+	PUSH
+}
+
+type UserNotificationChannelSettings {
+	enabled: Boolean!
+	disabledCategories: [UserNotificationCategory!]!
+}
+
+type UserNotificationSettings {
+	push: UserNotificationChannelSettings!
+}
+
+type UserUpdateNotificationSettingsPayload {
+	notificationSettings: UserNotificationSettings!
+}
+
+extend schema @link(
+	url: "https://specs.apollo.dev/federation/v2.3",
+	import: ["@key", "@tag", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@composeDirective", "@interfaceObject"]
+)
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
