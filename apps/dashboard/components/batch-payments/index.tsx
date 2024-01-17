@@ -214,7 +214,7 @@ export default function BatchPayments() {
           >
             {modalDetails.heading}
           </Typography>
-          <p>{modalDetails.message}</p>
+          <p data-testid="batch-payments-modal-message">{modalDetails.message}</p>
         </Sheet>
       </Modal>
 
@@ -250,7 +250,11 @@ export default function BatchPayments() {
                 label="Balance in USD Wallet"
                 value={`$${centsToDollars(paymentDetails.userWalletBalance.USD)} USD`}
               />
-              <Button onClick={processPayments} loading={processPaymentLoading}>
+              <Button
+                data-testid="confirm-batch-payments-btn"
+                onClick={processPayments}
+                loading={processPaymentLoading}
+              >
                 Confirm Payment
               </Button>
             </DetailsCard>

@@ -99,14 +99,13 @@ export default function FileUpload({
             </SvgIcon>
             {file ? file.name : "Upload a csv file"}
             <input
+              data-testid="csv-upload-input"
               id="file-upload"
               type="file"
               onChange={handleFileChange}
               accept=".csv"
               ref={fileInputRef}
               style={{
-                clip: "rect(0 0 0 0)",
-                clipPath: "inset(50%)",
                 height: "1px",
                 overflow: "hidden",
                 position: "absolute",
