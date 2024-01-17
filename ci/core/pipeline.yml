@@ -17,13 +17,14 @@
 #@   "build_edge_image",
 #@   "build_edge_image_name",
 #@   "component_edge_image",
-#@   "task_image_config",
+#@   "task_image_config")
+
+#@ load("proto-sync-template.lib.yml",
 #@   "sync_proto",
 #@   "sync_proto_name",
 #@   "proto_src_resource",
 #@   "proto_src_resource_name",
 #@   "proto_bot_branch_resource")
-
 
 #@ def release_pipeline_image():
 #@   return data.values.docker_registry + "/release-pipeline"
