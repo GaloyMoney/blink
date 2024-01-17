@@ -19,7 +19,7 @@ jsonwebtoken = "9.2.0"
 clap = { version = "4.4", features = ["derive", "env"] }
 derive_builder = "0.12.0"
 serde = { version = "1.0.158", features = ["derive"] }
-tokio = { version = "1.33.0", features = ["full"] }
+tokio = { version = "1.35.1", features = ["full"] }
 reqwest = { version = "0.11.23", default-features = false, features = ["json", "rustls-tls"] }
 thiserror = "1.0.49"
 serde_yaml = "0.9.30"
