@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): rebalance to cold storage lint issue (#3860)'
-      sha: b3283e7e9798e80bf3f16ed67b6110767524aa3c
+      commitTitle: 'chore: make returning map values mandatory (#3856)'
+      sha: f321fbb395d678e705880825126d8d77d711bc45
       tags:
-      - 0.20.6-5-gb3283e7e9
+      - 0.20.7-1-gf321fbb39
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): rebalance to cold storage lint issue (#3860)'
-      sha: b3283e7e9798e80bf3f16ed67b6110767524aa3c
+      commitTitle: 'chore: make returning map values mandatory (#3856)'
+      sha: f321fbb395d678e705880825126d8d77d711bc45
       tags:
-      - 0.20.6-5-gb3283e7e9
+      - 0.20.7-1-gf321fbb39
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(core): rebalance to cold storage lint issue (#3860)'
-      sha: b3283e7e9798e80bf3f16ed67b6110767524aa3c
+      commitTitle: 'chore: make returning map values mandatory (#3856)'
+      sha: f321fbb395d678e705880825126d8d77d711bc45
       tags:
-      - 0.20.6-5-gb3283e7e9
+      - 0.20.7-1-gf321fbb39
     path: ./
   path: ./graphql
 kind: LockConfig
