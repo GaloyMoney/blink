@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: add buf to dev img (#3857)'
-      sha: 4ce69510f5932b70f59684cb91823b735590ae7b
+      commitTitle: 'fix(core): rebalance to cold storage lint issue (#3860)'
+      sha: b3283e7e9798e80bf3f16ed67b6110767524aa3c
       tags:
-      - 0.20.5-1-g4ce69510f
+      - 0.20.6-5-gb3283e7e9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: add buf to dev img (#3857)'
-      sha: 4ce69510f5932b70f59684cb91823b735590ae7b
+      commitTitle: 'fix(core): rebalance to cold storage lint issue (#3860)'
+      sha: b3283e7e9798e80bf3f16ed67b6110767524aa3c
       tags:
-      - 0.20.5-1-g4ce69510f
+      - 0.20.6-5-gb3283e7e9
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: add buf to dev img (#3857)'
-      sha: 4ce69510f5932b70f59684cb91823b735590ae7b
+      commitTitle: 'fix(core): rebalance to cold storage lint issue (#3860)'
+      sha: b3283e7e9798e80bf3f16ed67b6110767524aa3c
       tags:
-      - 0.20.5-1-g4ce69510f
+      - 0.20.6-5-gb3283e7e9
     path: ./
   path: ./graphql
 kind: LockConfig
