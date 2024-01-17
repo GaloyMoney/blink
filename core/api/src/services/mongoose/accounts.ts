@@ -2,7 +2,6 @@ import { parseRepositoryError } from "./utils"
 
 import { AccountStatus } from "@/domain/accounts"
 import {
-  CouldNotFindAccountError,
   CouldNotFindAccountFromKratosIdError,
   CouldNotFindAccountFromUsernameError,
   CouldNotFindAccountFromIdError,
