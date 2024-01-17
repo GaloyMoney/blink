@@ -4,6 +4,7 @@
 #@   "component_src_resource",
 #@   "component_src_resource_name",
 #@   "core_bundle_src_resource",
+#@   "galoy_dev_image",
 #@   "buck_test_name",
 #@   "buck_test",
 #@   "component_bats_tests_name",
@@ -40,6 +41,9 @@ source:
 
 #@ proto_sync_targets = [
 #@   {"name": "bria", "src_path": "proto/api", "dst_path": "src/services/bria/proto", "buf_config_path": "src/services/bria/proto", "tagged_versions_only": True},
+#@   {"name": "stablesats", "src_path": "proto/price", "dst_path": "src/services/dealer-price/proto/services/price/v1", "buf_config_path": "src/services/dealer-price/proto", "tagged_versions_only": True},
+#@   {"name": "price-history", "src_path": "history/src/servers/protos", "dst_path": "src/services/price/protos", "tagged_versions_only": False},
+#@   {"name": "price-realtime", "src_path": "realtime/src/servers/protos", "dst_path": "src/services/price/protos", "tagged_versions_only": False},
 #@ ]
 
 groups:
@@ -70,8 +74,42 @@ groups:
 #@ for target in proto_sync_targets:
   - #@ sync_proto_name(target["name"])
 #@ end
+- name: dev-image
+  jobs:
+  - build-galoy-dev-image
 
 jobs:
+- name: build-galoy-dev-image
+  serial: true
+  plan:
+    - get: galoy-dev-image-def
+      trigger: true
+    - task: build
+      attempts: 2
+      privileged: true
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source:
+            repository: nixos/nix
+        inputs:
+          - name: galoy-dev-image-def
+            path: repo
+        outputs:
+          - name: repo
+        run:
+          path: bash
+          args:
+            - -c
+            - |
+              set -eux
+              cd repo
+              nix --extra-experimental-features "nix-command flakes impure-derivations ca-derivations" build .#dockerImage
+              gunzip ./result -c > image.tar
+    - put: galoy-dev-image
+      params:
+        image: repo/image.tar
 #@ for component in components:
 - #@ buck_test(component)
 - #@ component_bats_tests(component)
@@ -368,3 +406,19 @@ resources:
     uri: #@ data.values.git_uri
     branch: #@ data.values.git_branch
     private_key: #@ data.values.github_private_key
+
+- name: galoy-dev-image-def
+  type: git
+  source:
+    paths: [flake.*]
+    uri: #@ data.values.git_uri
+    branch: #@ data.values.git_branch
+    private_key: #@ data.values.github_private_key
+
+- name: galoy-dev-image
+  type: registry-image
+  source:
+    tag: latest
+    username: #@ data.values.docker_registry_user
+    password: #@ data.values.docker_registry_password
+    repository: #@ galoy_dev_image()

@@ -304,7 +304,7 @@ source:
 #@   return name + "-proto"
 #@ end
 
-#@ def proto_src_resource(name, path, tagged = False):
+#@ def proto_src_resource(name, path, tagged):
 name: #@ proto_src_resource_name(name)
 type: git
 source:
@@ -375,7 +375,7 @@ plan:
       params:
         PROTO_NAME: #@ name
         BRANCH: #@ data.values.git_branch
-        BOT_BRANCH: #@ name + "-proto-bot-branch"
+        BOT_BRANCH: #@ "bot-bump-" + name + "-proto"
         GH_TOKEN: #@ data.values.github_token
       run:
         path: pipeline-tasks/ci/core/tasks/open-bump-proto-pr.sh
