@@ -772,7 +772,7 @@ type MapInfo {
 
 type MapMarker {
   mapInfo: MapInfo!
-  username: Username
+  username: Username!
 }
 
 """Text field in a lightning payment transaction"""
@@ -1161,7 +1161,7 @@ type PublicWallet {
 type Query {
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet!
   btcPriceList(range: PriceGraphRange!): [PricePoint]
-  businessMapMarkers: [MapMarker]
+  businessMapMarkers: [MapMarker!]!
   currencyList: [Currency!]!
   globals: Globals
   lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload!

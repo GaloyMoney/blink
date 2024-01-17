@@ -5,7 +5,7 @@ import { mapError } from "@/graphql/error-map"
 import { Accounts } from "@/app"
 
 const BusinessMapMarkersQuery = GT.Field({
-  type: GT.List(MapMarker),
+  type: GT.NonNullList(MapMarker),
   resolve: async (): Promise<BusinessMapMarker[] | { errors: IError[] }> => {
     const businesses = await Accounts.getBusinessMapMarkers()
 

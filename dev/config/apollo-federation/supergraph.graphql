@@ -1028,7 +1028,7 @@ type MapMarker
   @join__type(graph: PUBLIC)
 {
   mapInfo: MapInfo!
-  username: Username
+  username: Username!
 }
 
 """Text field in a lightning payment transaction"""
@@ -1507,7 +1507,7 @@ type Query
 {
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet! @join__field(graph: PUBLIC)
   btcPriceList(range: PriceGraphRange!): [PricePoint] @join__field(graph: PUBLIC)
-  businessMapMarkers: [MapMarker] @join__field(graph: PUBLIC)
+  businessMapMarkers: [MapMarker!]! @join__field(graph: PUBLIC)
   currencyList: [Currency!]! @join__field(graph: PUBLIC)
   globals: Globals @join__field(graph: PUBLIC)
   lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload! @join__field(graph: PUBLIC)
