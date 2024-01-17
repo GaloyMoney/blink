@@ -300,6 +300,33 @@ source:
   repository: #@ data.values.docker_registry + "/galoy-" + component
 #@ end
 
+#@ def proto_src_resource_name(name):
+#@   return name + "-proto"
+#@ end
+
+#@ def proto_src_resource(name, path, tagged = False):
+name: #@ proto_src_resource_name(name)
+type: git
+source:
+  paths: #@ [path]
+  #@ git_uri_var_name = "git_" + name + "_uri"
+  uri: #@ data.values[git_uri_var_name]
+  branch: #@ data.values.git_branch
+  private_key: #@ data.values.github_private_key
+#@ if tagged:
+  tag_regex: .+
+#@ end
+#@ end
+
+#@ def proto_bot_branch_resource(name):
+name: #@ name + "-proto-bot-branch"
+type: git
+source:
+  uri: #@ data.values.git_uri
+  branch: #@ "bot-bump-" + name + "-proto"
+  private_key: #@ data.values.github_private_key
+#@ end
+
 #@ def sync_proto_name(name):
 #@   return "sync-" + name + "-proto"
 #@ end
@@ -318,7 +345,7 @@ plan:
       image_resource: #@ task_image_config()
       inputs:
         - name: pipeline-tasks
-        - name: #@ name + "-proto-bot-branch"
+        - name: #@ name + "-proto"
           path: src-repo
         - name: galoy-repo
       outputs:

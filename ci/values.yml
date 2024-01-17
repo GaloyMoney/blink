@@ -11,7 +11,6 @@ git_charts_bot_branch: bot-bump-galoy-image
 git_stablesats_proto_bot_branch: bot-bump-stablesats-proto
 git_price_history_proto_bot_branch: bot-bump-price-history-proto
 git_price_realtime_proto_bot_branch: bot-bump-price-realtime-proto
-git_bria_api_proto_bot_branch: bot-bump-bria-api-proto
 github_private_key: ((github.private_key))
 github_token: ((github.api_token))
 github_app_id: ((github.github_app_id))
