@@ -6,6 +6,7 @@ pub mod proto {
 }
 
 use tonic::{transport::Server, Request, Response, Status};
+use tracing::{grpc, instrument};
 
 use self::proto::{notifications_service_server::NotificationsService, *};
 
@@ -21,10 +22,12 @@ pub struct Notifications {
 
 #[tonic::async_trait]
 impl NotificationsService for Notifications {
+    #[instrument(name = "notifications.should_send_notification", skip_all, err)]
     async fn should_send_notification(
         &self,
         request: Request<ShouldSendNotificationRequest>,
     ) -> Result<Response<ShouldSendNotificationResponse>, Status> {
+        grpc::extract_tracing(&request);
         let request = request.into_inner();
         let ShouldSendNotificationRequest {
             user_id,
@@ -48,10 +51,12 @@ impl NotificationsService for Notifications {
         }))
     }
 
+    #[instrument(name = "notifications.user_enable_notification_channel", skip_all, err)]
     async fn user_enable_notification_channel(
         &self,
         request: Request<UserEnableNotificationChannelRequest>,
     ) -> Result<Response<UserEnableNotificationChannelResponse>, Status> {
+        grpc::extract_tracing(&request);
         let request = request.into_inner();
         let UserEnableNotificationChannelRequest { user_id, channel } = request;
         let channel = proto::NotificationChannel::try_from(channel)
@@ -65,10 +70,16 @@ impl NotificationsService for Notifications {
         }))
     }
 
+    #[instrument(
+        name = "notifications.user_disable_notification_channel",
+        skip_all,
+        err
+    )]
     async fn user_disable_notification_channel(
         &self,
         request: Request<UserDisableNotificationChannelRequest>,
     ) -> Result<Response<UserDisableNotificationChannelResponse>, Status> {
+        grpc::extract_tracing(&request);
         let request = request.into_inner();
         let UserDisableNotificationChannelRequest { user_id, channel } = request;
         let channel = proto::NotificationChannel::try_from(channel)
@@ -82,10 +93,16 @@ impl NotificationsService for Notifications {
         }))
     }
 
+    #[instrument(
+        name = "notifications.user_enable_notification_category",
+        skip_all,
+        err
+    )]
     async fn user_enable_notification_category(
         &self,
         request: Request<UserEnableNotificationCategoryRequest>,
     ) -> Result<Response<UserEnableNotificationCategoryResponse>, Status> {
+        grpc::extract_tracing(&request);
         let request = request.into_inner();
         let UserEnableNotificationCategoryRequest {
             user_id,
@@ -109,10 +126,16 @@ impl NotificationsService for Notifications {
         }))
     }
 
+    #[instrument(
+        name = "notifications.user_disable_notification_category",
+        skip_all,
+        err
+    )]
     async fn user_disable_notification_category(
         &self,
         request: Request<UserDisableNotificationCategoryRequest>,
     ) -> Result<Response<UserDisableNotificationCategoryResponse>, Status> {
+        grpc::extract_tracing(&request);
         let request = request.into_inner();
         let UserDisableNotificationCategoryRequest {
             user_id,
@@ -136,10 +159,12 @@ impl NotificationsService for Notifications {
         }))
     }
 
+    #[instrument(name = "notifications.user_notification_settings", skip_all, err)]
     async fn user_notification_settings(
         &self,
         request: Request<UserNotificationSettingsRequest>,
     ) -> Result<Response<UserNotificationSettingsResponse>, Status> {
+        grpc::extract_tracing(&request);
         let request = request.into_inner();
         let UserNotificationSettingsRequest { user_id } = request;
         let user_id = GaloyUserId::from(user_id);
