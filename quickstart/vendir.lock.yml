@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(dashboard): added browser tests for batch payments (#3831)...'
-      sha: bd15cd41b92243b9d0bd252fb62bdf1a63c30f8a
+      commitTitle: 'feat(core): proxy notification settings operations (#3849)...'
+      sha: b9e426c55d96f29b8626c86f54f581a098dd22f1
       tags:
-      - 0.20.3-3-gbd15cd41b
+      - 0.20.4-5-gb9e426c55
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(dashboard): added browser tests for batch payments (#3831)...'
-      sha: bd15cd41b92243b9d0bd252fb62bdf1a63c30f8a
+      commitTitle: 'feat(core): proxy notification settings operations (#3849)...'
+      sha: b9e426c55d96f29b8626c86f54f581a098dd22f1
       tags:
-      - 0.20.3-3-gbd15cd41b
+      - 0.20.4-5-gb9e426c55
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test(dashboard): added browser tests for batch payments (#3831)...'
-      sha: bd15cd41b92243b9d0bd252fb62bdf1a63c30f8a
+      commitTitle: 'feat(core): proxy notification settings operations (#3849)...'
+      sha: b9e426c55d96f29b8626c86f54f581a098dd22f1
       tags:
-      - 0.20.3-3-gbd15cd41b
+      - 0.20.4-5-gb9e426c55
     path: ./
   path: ./graphql
 kind: LockConfig
