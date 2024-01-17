@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(notifications): nix protobuf in buck2NativeDependencies (#3845)...'
-      sha: 4cb909512842f0a7c05f41c4cfa14ede42321778
+      commitTitle: 'test(dashboard): added browser tests for batch payments (#3831)...'
+      sha: bd15cd41b92243b9d0bd252fb62bdf1a63c30f8a
       tags:
-      - 0.20.2-2-g4cb909512
+      - 0.20.3-3-gbd15cd41b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(notifications): nix protobuf in buck2NativeDependencies (#3845)...'
-      sha: 4cb909512842f0a7c05f41c4cfa14ede42321778
+      commitTitle: 'test(dashboard): added browser tests for batch payments (#3831)...'
+      sha: bd15cd41b92243b9d0bd252fb62bdf1a63c30f8a
       tags:
-      - 0.20.2-2-g4cb909512
+      - 0.20.3-3-gbd15cd41b
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix(notifications): nix protobuf in buck2NativeDependencies (#3845)...'
-      sha: 4cb909512842f0a7c05f41c4cfa14ede42321778
+      commitTitle: 'test(dashboard): added browser tests for batch payments (#3831)...'
+      sha: bd15cd41b92243b9d0bd252fb62bdf1a63c30f8a
       tags:
-      - 0.20.2-2-g4cb909512
+      - 0.20.3-3-gbd15cd41b
     path: ./
   path: ./graphql
 kind: LockConfig
