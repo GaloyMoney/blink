@@ -8,7 +8,7 @@ const MapMarker = GT.Object({
   name: "MapMarker",
   fields: () => ({
     username: {
-      type: Username,
+      type: GT.NonNull(Username),
     },
     mapInfo: {
       type: GT.NonNull(MapInfo),

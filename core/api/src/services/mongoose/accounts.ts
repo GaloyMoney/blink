@@ -72,10 +72,6 @@ export const AccountsRepository = (): IAccountsRepository => {
         { username: 1, title: 1, coordinates: 1 },
       )
 
-      if (!accounts) {
-        return new CouldNotFindAccountError()
-      }
-
       return accounts.map((account) => ({
         username: account.username as Username,
         mapInfo: {
