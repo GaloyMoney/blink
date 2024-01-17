@@ -18,7 +18,10 @@
 #@   "component_edge_image",
 #@   "task_image_config",
 #@   "sync_proto",
-#@   "sync_proto_name")
+#@   "sync_proto_name",
+#@   "proto_src_resource",
+#@   "proto_src_resource_name",
+#@   "proto_bot_branch_resource")
 
 
 #@ def release_pipeline_image():
@@ -36,10 +39,7 @@ source:
 #@ components = ["api-keys", "notifications"]
 
 #@ proto_sync_targets = [
-#@   {"name": "stablesats", "src_path": "proto/price", "dst_path": "src/services/dealer-price/proto/services/price/v1", "buf_config_path": "src/services/dealer-price/proto"},
-#@   {"name": "price-history", "src_path": "history/src/servers/protos", "dst_path": "src/services/price/protos"},
-#@   {"name": "price-realtime", "src_path": "realtime/src/servers/protos", "dst_path": "src/services/price/protos"},
-#@   {"name": "bria-api", "src_path": "proto/api", "dst_path": "src/services/bria/proto", "buf_config_path": "src/services/bria/proto"}
+#@   {"name": "bria", "src_path": "proto/api", "dst_path": "src/services/bria/proto", "buf_config_path": "src/services/bria/proto", "tagged": True},
 #@ ]
 
 groups:
@@ -65,8 +65,10 @@ groups:
   - #@ build_edge_image_name(component)
   - #@ bump_image_in_chart_name(component)
 #@ end
-#@ for i in range(len(proto_sync_targets)):
-  - #@ sync_proto_name(proto_sync_targets[i]["name"])
+- name: proto-sync
+  jobs:
+#@ for target in proto_sync_targets:
+  - #@ sync_proto_name(target["name"])
 #@ end
 
 jobs:
@@ -277,14 +279,19 @@ jobs:
           repository: repo
           rebase: true
 
-#@ for i in range(len(proto_sync_targets)):
-- #@ sync_proto(proto_sync_targets[i]["name"], proto_sync_targets[i]["src_path"], proto_sync_targets[i]["dst_path"], proto_sync_targets[i]["buf_config_path"] if "buf_config_path" in proto_sync_targets[i] else "")
+#@ for target in proto_sync_targets:
+- #@ sync_proto(target["name"], target["src_path"], target["dst_path"], target["buf_config_path"] if "buf_config_path" in target else "")
 #@ end
 
 resources:
 #@ for component in components:
 - #@ component_src_resource(component)
 - #@ component_edge_image(component)
+#@ end
+
+#@ for target in proto_sync_targets:
+- #@ proto_src_resource(target["name"], target["src_path"], target["tagged"])
+- #@ proto_bot_branch_resource(target["name"])
 #@ end
 
 - #@ core_bundle_src_resource()
@@ -353,4 +360,11 @@ resources:
   source:
     uri: #@ data.values.git_charts_uri
     branch: #@ data.values.git_charts_bot_branch
+    private_key: #@ data.values.github_private_key
+
+- name: galoy-repo
+  type: git
+  source:
+    uri: #@ data.values.git_uri
+    branch: #@ data.values.git_branch
     private_key: #@ data.values.github_private_key
