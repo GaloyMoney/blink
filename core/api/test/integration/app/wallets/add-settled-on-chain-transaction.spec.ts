@@ -23,11 +23,7 @@ beforeAll(async () => {
 afterEach(async () => {
   await Transaction.deleteMany({})
   await TransactionMetadata.deleteMany({})
-  await Wallet.updateMany(
-    {},
-    { $pull: { onchain: { address } } },
-    { multi: true }, // This option updates all matching documents
-  )
+  await Wallet.updateMany({}, { $pull: { onchain: { address } } })
 
   jest.restoreAllMocks()
 })

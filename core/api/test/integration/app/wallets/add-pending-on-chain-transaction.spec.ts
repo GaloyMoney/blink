@@ -15,11 +15,7 @@ const btcAmount = { amount: 100_000n, currency: WalletCurrency.Btc }
 
 afterEach(async () => {
   await WalletOnChainPendingReceive.deleteMany({})
-  await Wallet.updateMany(
-    {},
-    { $pull: { onchain: { address } } },
-    { multi: true }, // This option updates all matching documents
-  )
+  await Wallet.updateMany({}, { $pull: { onchain: { address } } })
 
   jest.restoreAllMocks()
 })
