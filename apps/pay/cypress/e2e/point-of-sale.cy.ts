@@ -22,7 +22,7 @@ describe("Point of Sale", () => {
     cy.get("[data-testid=print-btn]").should("exist")
   })
 
-  it("should have a vaild keyboard", () => {
+  it("should have a valid keyboard", () => {
     cy.visit(cashRegisterUrl)
 
     cy.get("button[data-testid=digit-0-btn]").should("exist")
