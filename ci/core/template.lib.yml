@@ -348,6 +348,7 @@ plan:
         - name: #@ name + "-proto"
           path: src-repo
         - name: galoy-repo
+          path: repo
       outputs:
         - name: galoy-repo
       params:
