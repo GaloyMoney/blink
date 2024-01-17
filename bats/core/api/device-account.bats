@@ -43,7 +43,6 @@ jwt="eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiOTdiMjIxLWNhMDgtNGViMi05ZDA5LWE1NzcwZmNjZWI
 
   exec_graphql "$token_name" 'account-details'
   refetched_account_id="$(graphql_output '.data.me.defaultAccount.id')"
-  echo "'$refetched_account_id' '$account_id'" >> output.log
   [[ "$refetched_account_id" == "$account_id" ]] || exit 1
 }
 
