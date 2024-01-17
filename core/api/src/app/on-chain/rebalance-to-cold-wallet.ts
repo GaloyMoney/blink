@@ -1,4 +1,4 @@
-import { getOffChainBalance } from "../lightning/get-balances"
+import * as Lightning from "../lightning/get-balances"
 
 import { getColdStorageConfig } from "@/config"
 
@@ -29,7 +29,7 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   const onChainBalance = await onChainService.getHotBalance()
   if (onChainBalance instanceof Error) return onChainBalance
 
-  const offChainBalance = await getOffChainBalance()
+  const offChainBalance = await Lightning.getTotalBalance()
   if (offChainBalance instanceof Error) return offChainBalance
 
   const rebalanceAmount = RebalanceChecker(
