@@ -344,4 +344,6 @@ export enum NotificationChannel {
 export enum NotificationCategory {
     CIRCLES = 0,
     PAYMENTS = 1,
+    BALANCE = 2,
+    ADMIN_NOTIFICATION = 3,
 }

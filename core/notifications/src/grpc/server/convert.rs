@@ -8,6 +8,10 @@ impl From<proto::NotificationCategory> for UserNotificationCategory {
         match category {
             proto::NotificationCategory::Circles => UserNotificationCategory::Circles,
             proto::NotificationCategory::Payments => UserNotificationCategory::Payments,
+            proto::NotificationCategory::Balance => UserNotificationCategory::Balance,
+            proto::NotificationCategory::AdminNotification => {
+                UserNotificationCategory::AdminNotification
+            }
         }
     }
 }
@@ -48,6 +52,10 @@ impl From<UserNotificationCategory> for proto::NotificationCategory {
         match category {
             UserNotificationCategory::Circles => proto::NotificationCategory::Circles,
             UserNotificationCategory::Payments => proto::NotificationCategory::Payments,
+            UserNotificationCategory::Balance => proto::NotificationCategory::Balance,
+            UserNotificationCategory::AdminNotification => {
+                proto::NotificationCategory::AdminNotification
+            }
         }
     }
 }
