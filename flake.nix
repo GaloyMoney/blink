@@ -265,6 +265,7 @@
                   rsync
                   git-cliff
                   unixtools.xxd
+                  buf
                 ];
 
               pathsToLink = ["/bin"];
