@@ -2,6 +2,7 @@ mod config;
 pub mod error;
 
 use sqlx::{Pool, Postgres};
+use tracing::instrument;
 
 use crate::{primitives::*, user_notification_settings::*};
 
@@ -25,6 +26,7 @@ impl NotificationsApp {
         }
     }
 
+    #[instrument(name = "app.should_send_notification", skip(self), ret, err)]
     pub async fn should_send_notification(
         &self,
         user_id: GaloyUserId,
@@ -39,6 +41,7 @@ impl NotificationsApp {
         Ok(user_settings.should_send_notification(channel, category))
     }
 
+    #[instrument(name = "app.notification_settings_for_user", skip(self), err)]
     pub async fn notification_settings_for_user(
         &self,
         user_id: GaloyUserId,
@@ -52,6 +55,7 @@ impl NotificationsApp {
         Ok(user_settings)
     }
 
+    #[instrument(name = "app.disable_channel_on_user", skip(self), err)]
     pub async fn disable_channel_on_user(
         &self,
         user_id: GaloyUserId,
@@ -67,6 +71,7 @@ impl NotificationsApp {
         Ok(user_settings)
     }
 
+    #[instrument(name = "app.enable_channel_on_user", skip(self), err)]
     pub async fn enable_channel_on_user(
         &self,
         user_id: GaloyUserId,
@@ -83,6 +88,7 @@ impl NotificationsApp {
         Ok(user_settings)
     }
 
+    #[instrument(name = "app.disable_category_on_user", skip(self), err)]
     pub async fn disable_category_on_user(
         &self,
         user_id: GaloyUserId,
@@ -99,6 +105,7 @@ impl NotificationsApp {
         Ok(user_settings)
     }
 
+    #[instrument(name = "app.enable_category_on_user", skip(self), err)]
     pub async fn enable_category_on_user(
         &self,
         user_id: GaloyUserId,

@@ -73,3 +73,39 @@ pub fn extract_tracing(headers: &http::HeaderMap) {
         opentelemetry::global::get_text_map_propagator(|propagator| propagator.extract(&extractor));
     tracing::Span::current().set_parent(ctx)
 }
+
+pub mod grpc {
+    use opentelemetry::{
+        propagation::{Extractor, TextMapPropagator},
+        sdk::propagation::TraceContextPropagator,
+    };
+    use tracing_opentelemetry::OpenTelemetrySpanExt;
+
+    pub fn extract_tracing<T>(request: &tonic::Request<T>) {
+        let propagator = TraceContextPropagator::new();
+        let parent_cx = propagator.extract(&RequestContextExtractor(request));
+        tracing::Span::current().set_parent(parent_cx)
+    }
+
+    struct RequestContextExtractor<'a, T>(&'a tonic::Request<T>);
+
+    impl<'a, T> Extractor for RequestContextExtractor<'a, T> {
+        fn get(&self, key: &str) -> Option<&str> {
+            self.0.metadata().get(key).and_then(|s| s.to_str().ok())
+        }
+
+        fn keys(&self) -> Vec<&str> {
+            self.0
+                .metadata()
+                .keys()
+                .filter_map(|k| {
+                    if let tonic::metadata::KeyRef::Ascii(key) = k {
+                        Some(key.as_str())
+                    } else {
+                        None
+                    }
+                })
+                .collect()
+        }
+    }
+}
