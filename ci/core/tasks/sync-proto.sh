@@ -4,7 +4,7 @@ set -eu
 
 export ref=$(cat ./src-repo/.git/short_ref)
 
-cp -R src-repo/${PROTO_FILES_SRC_PATH}/* repo/core/api/${PROTO_FILES_DEST_PATH}
+cp -R src-repo/${PROTO_FILES_SRC_PATH}/* repo/core/api/${PROTO_FILES_DST_PATH}
 
 pushd repo/core/api
 
