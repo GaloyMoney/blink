@@ -39,7 +39,7 @@ source:
 #@ components = ["api-keys", "notifications"]
 
 #@ proto_sync_targets = [
-#@   {"name": "bria", "src_path": "proto/api", "dst_path": "src/services/bria/proto", "buf_config_path": "src/services/bria/proto", "tagged": True},
+#@   {"name": "bria", "src_path": "proto/api", "dst_path": "src/services/bria/proto", "buf_config_path": "src/services/bria/proto", "tagged_versions_only": True},
 #@ ]
 
 groups:
@@ -290,7 +290,7 @@ resources:
 #@ end
 
 #@ for target in proto_sync_targets:
-- #@ proto_src_resource(target["name"], target["src_path"], target["tagged"])
+- #@ proto_src_resource(target["name"], target["src_path"], target["tagged_versions_only"])
 - #@ proto_bot_branch_resource(target["name"])
 #@ end
 

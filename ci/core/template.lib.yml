@@ -309,7 +309,7 @@ name: #@ proto_src_resource_name(name)
 type: git
 source:
   paths: #@ [path]
-  #@ git_uri_var_name = "git_" + name + "_uri"
+  #@ git_uri_var_name = "git_" + name.replace("-", "_") + "_uri"
   uri: #@ data.values[git_uri_var_name]
   branch: #@ data.values.git_branch
   private_key: #@ data.values.github_private_key
@@ -351,18 +351,19 @@ plan:
           path: repo
       outputs:
         - name: galoy-repo
+          path: repo
       params:
         PROTO_NAME: #@ name
         PROTO_FILES_SRC_PATH: #@ proto_src_path
         PROTO_FILES_DST_PATH: #@ proto_dst_path
         BUF_CONFIG_PATH: #@ buf_config_path
+        BRANCH: #@ data.values.git_branch
       run:
         path: pipeline-tasks/ci/core/tasks/sync-proto.sh
   - put: #@ name + "-proto-bot-branch"
     params:
       repository: galoy-repo
       force: true
-      branch: #@ name + "-proto-bot-branch"
   - task: open-bump-proto-pr
     config:
       platform: linux
@@ -370,11 +371,12 @@ plan:
       inputs:
         - name: pipeline-tasks
         - name: galoy-repo
+          path: repo
       params:
         PROTO_NAME: #@ name
         BRANCH: #@ data.values.git_branch
         BOT_BRANCH: #@ name + "-proto-bot-branch"
         GH_TOKEN: #@ data.values.github_token
       run:
-        path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
+        path: pipeline-tasks/ci/core/tasks/open-bump-proto-pr.sh
 #@ end
