@@ -107,6 +107,8 @@ type Account = {
   readonly contacts: AccountContact[]
   kratosUserId: UserId
   displayCurrency: DisplayCurrency
+  threadId: ThreadId | undefined
+
   // temp
   role?: string
 }

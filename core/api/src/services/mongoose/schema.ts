@@ -260,6 +260,7 @@ const AccountSchema = new Schema<AccountRecord>(
     },
 
     displayCurrency: String, // FIXME: should be an enum
+    threadId: String,
   },
   { id: false },
 )

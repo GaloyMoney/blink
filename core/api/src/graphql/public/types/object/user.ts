@@ -2,6 +2,7 @@ import dedent from "dedent"
 
 import Account from "../abstract/account"
 
+import SupportMessage from "./support-message"
 import AccountContact from "./account-contact"
 
 import { Accounts, Users } from "@/app"
@@ -18,6 +19,7 @@ import Language from "@/graphql/shared/types/scalar/language"
 import Username from "@/graphql/shared/types/scalar/username"
 import Timestamp from "@/graphql/shared/types/scalar/timestamp"
 import GraphQLEmail from "@/graphql/shared/types/object/email"
+import { getSupportChatMessages } from "@/app/support"
 
 const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
   name: "User",
@@ -121,6 +123,13 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
       type: GT.NonNull(Account),
       resolve: async (source, args, { domainAccount }) => {
         return domainAccount
+      },
+    },
+
+    supportChat: {
+      type: GT.NonNullList(SupportMessage),
+      resolve: async (source, args, { domainAccount }) => {
+        return getSupportChatMessages(domainAccount.id)
       },
     },
 

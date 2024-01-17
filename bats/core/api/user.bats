@@ -24,3 +24,37 @@ setup_file() {
   language="$(graphql_output '.data.me.language')"
   [[ "$language" == "$new_language" ]] || exit 1
 }
+
+@test "support: default support message result" {
+  "skip"
+
+  exec_graphql 'alice' 'support-messages'
+  language="$(graphql_output '.data.me.supportChat')"
+  
+  # expect an empty array
+  [[ "$language" == "[]" ]] || exit 1
+}
+
+@test "support: ask 2 questions" {
+  "skip"
+
+  local variables=$(
+    jq -n \
+    '{input: {message: "Hello"}}'
+  )
+  exec_graphql 'alice' 'support-chat-message-add' "$variables"
+  language="$(graphql_output '.data.supportChatMessageAdd.supportMessage')"
+  length=$(echo "$language" | jq '. | length')
+  [[ $length -eq 2 ]] || exit 1
+
+  local variables=$(
+    jq -n \
+    '{input: {message: "My transaction is stuck"}}'
+  )
+  exec_graphql 'alice' 'support-chat-message-add' "$variables"
+  language="$(graphql_output '.data.supportChatMessageAdd.supportMessage')"
+  length=$(echo "$language" | jq '. | length')
+  [[ $length -eq 4 ]] || exit 1
+
+  echo "$language"
+}
