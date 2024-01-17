@@ -1092,7 +1092,7 @@ describe("Facade", () => {
       })
     })
 
-    describe("External payment (withdrawal) tx types, volume out", () => {
+    describe("External payment (withdrawal) tx types, volume net out", () => {
       const externalPaymentTxTypes: (keyof typeof UserLedgerTransactionType)[] = [
         "Payment",
         "OnchainPayment",
@@ -1101,15 +1101,12 @@ describe("Facade", () => {
       ]
 
       const currentVolumeAmount = async () => {
-        // Uses 'externalPaymentVolumeAmountSince'
-        const vol = await LedgerFacade.externalPaymentVolumeAmountSince({
+        const vol = await LedgerFacade.netOutExternalPaymentVolumeAmountSince({
           walletDescriptor: btcWalletDescriptor,
           timestamp: timestamp1DayAgo,
         })
         if (vol instanceof Error) throw vol
-
-        // Uses difference between 'outgoing' & 'incoming'
-        return calc.sub(vol.outgoingBaseAmount, vol.incomingBaseAmount)
+        return vol
       }
 
       const {
@@ -1401,15 +1398,12 @@ describe("Facade", () => {
       ]
 
       const currentVolumeAmount = async () => {
-        // Uses 'intraledgerTxBaseVolumeAmountSince'
-        const vol = await LedgerFacade.intraledgerTxBaseVolumeAmountSince({
+        const vol = await LedgerFacade.outIntraledgerTxBaseVolumeAmountSince({
           walletDescriptor: btcWalletDescriptor,
           timestamp: timestamp1DayAgo,
         })
         if (vol instanceof Error) throw vol
-
-        // Uses 'outgoing' only
-        return vol.outgoingBaseAmount
+        return vol
       }
 
       const {
@@ -1701,15 +1695,12 @@ describe("Facade", () => {
       ]
 
       const currentVolumeAmount = async () => {
-        // Uses 'tradeIntraAccountTxBaseVolumeAmountSince'
-        const vol = await LedgerFacade.tradeIntraAccountTxBaseVolumeAmountSince({
+        const vol = await LedgerFacade.outTradeIntraAccountTxBaseVolumeAmountSince({
           walletDescriptor: btcWalletDescriptor,
           timestamp: timestamp1DayAgo,
         })
         if (vol instanceof Error) throw vol
-
-        // Uses 'outgoing' only
-        return vol.outgoingBaseAmount
+        return vol
       }
 
       const {
