@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: make returning map values mandatory (#3856)'
-      sha: f321fbb395d678e705880825126d8d77d711bc45
+      commitTitle: 'fix(core): remove unused error in accounts repo (#3864)'
+      sha: a1f6d626c25ff237d48e765bb9e25f8c47489f61
       tags:
-      - 0.20.7-1-gf321fbb39
+      - 0.20.7-3-ga1f6d626c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: make returning map values mandatory (#3856)'
-      sha: f321fbb395d678e705880825126d8d77d711bc45
+      commitTitle: 'fix(core): remove unused error in accounts repo (#3864)'
+      sha: a1f6d626c25ff237d48e765bb9e25f8c47489f61
       tags:
-      - 0.20.7-1-gf321fbb39
+      - 0.20.7-3-ga1f6d626c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: make returning map values mandatory (#3856)'
-      sha: f321fbb395d678e705880825126d8d77d711bc45
+      commitTitle: 'fix(core): remove unused error in accounts repo (#3864)'
+      sha: a1f6d626c25ff237d48e765bb9e25f8c47489f61
       tags:
-      - 0.20.7-1-gf321fbb39
+      - 0.20.7-3-ga1f6d626c
     path: ./
   path: ./graphql
 kind: LockConfig
