@@ -23,7 +23,7 @@ jobs:
           ${{ toJSON(github.event.pull_request.labels.*.name) }}
           EOF
 
-          DEFAULT_LABELS=("dashboard" "consent" "pay" "core", "api-keys", "notfications")
+          DEFAULT_LABELS=("dashboard" "consent" "pay" "core" "api-keys" "notifications")
           LABELS=($(jq -r '.[]' < labels.json))
           if [ ${#LABELS[@]} -eq 0 ]; then
               LABELS=("${DEFAULT_LABELS[@]}")
