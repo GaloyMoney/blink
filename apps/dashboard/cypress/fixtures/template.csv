@@ -1,0 +1,5 @@
+username,amount,currency,wallet,memo
+test_user_a,12,USD,USD,Testing to send 12 USD
+test_user_b,10,USD,USD,Testing to send 10 USD
+test_user_c,5,USD,BTC,Testing to send 5 USD
+test_user_a,100,SATS,BTC,Testing to send 100 SATS

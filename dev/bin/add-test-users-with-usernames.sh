@@ -31,7 +31,7 @@ echo "Starting main execution"
 
 echo "Logging in user $user_a"
 auth_token_a=$(login_user "${user_a}")
-echo "Auth token for $user_a: $auth_token_a"
+echo "Auth token for $user_a: $auth_token_a"  
 
 echo "Logging in user $user_b"
 auth_token_b=$(login_user "${user_b}")
@@ -45,4 +45,4 @@ update_username "$auth_token_a" "$user_a_username"
 update_username "$auth_token_b" "$user_b_username"
 update_username "$auth_token_c" "$user_c_username"
 
-echo "Username update process completed
+echo "Username update process completed"

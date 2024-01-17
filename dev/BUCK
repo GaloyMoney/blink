@@ -87,3 +87,13 @@ sh_binary(
   name = "stoppable-trigger",
   main = "bin/run-stoppable-trigger.sh",
 )
+
+sh_binary(
+  name = "add-test-users-with-usernames",
+  main = "bin/add-test-users-with-usernames.sh",
+)
+
+sh_binary(
+  name = "fund-user",
+  main = "bin/fund-user.sh",
+)
