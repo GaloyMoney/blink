@@ -11,7 +11,7 @@ pushd repo/quickstart || exit 1
 ./bin/bump-galoy-image-digest.sh "api" "$api_digest"
 ./bin/bump-galoy-image-digest.sh "trigger" "$trigger_digest"
 ./bin/bump-mongodb-migrate-image-digest.sh "$migrate_digest"
-make re-render
+./bin/re-render.sh
 
 pushd ../
 
