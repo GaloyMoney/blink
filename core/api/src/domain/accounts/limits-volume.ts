@@ -3,7 +3,6 @@ import { AccountLimitsType } from "./primitives"
 import {
   AmountCalculator,
   paymentAmountFromNumber,
-  UsdPaymentAmount,
   WalletCurrency,
   ZERO_CENTS,
 } from "@/domain/shared"
