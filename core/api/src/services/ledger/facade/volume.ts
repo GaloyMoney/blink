@@ -152,6 +152,28 @@ export const TxVolumeAmountSinceFactory = () => {
   return { create }
 }
 
+export const VolumeCalculator = <S extends WalletCurrency>(
+  txBaseVolumeAmount: TxBaseVolumeAmount<S>,
+): VolumeCalculator<S> => ({
+  in: () => txBaseVolumeAmount.incomingBaseAmount,
+  out: () => txBaseVolumeAmount.outgoingBaseAmount,
+  netIn: () =>
+    calc.sub(
+      txBaseVolumeAmount.incomingBaseAmount,
+      txBaseVolumeAmount.outgoingBaseAmount,
+    ),
+  netOut: () =>
+    calc.sub(
+      txBaseVolumeAmount.outgoingBaseAmount,
+      txBaseVolumeAmount.incomingBaseAmount,
+    ),
+  absolute: () =>
+    calc.add(
+      txBaseVolumeAmount.incomingBaseAmount,
+      txBaseVolumeAmount.outgoingBaseAmount,
+    ),
+})
+
 const txVolumeAmountFactory = TxVolumeAmountSinceFactory()
 
 export const netOutExternalPaymentVolumeAmountSince = async <S extends WalletCurrency>(
@@ -161,10 +183,10 @@ export const netOutExternalPaymentVolumeAmountSince = async <S extends WalletCur
     "externalPaymentVolumeSince",
   )
 
-  const walletVolumes = await externalPaymentVolumeAmountSince(args)
-  if (walletVolumes instanceof Error) return walletVolumes
+  const txBaseVolumeAmount = await externalPaymentVolumeAmountSince(args)
+  if (txBaseVolumeAmount instanceof Error) return txBaseVolumeAmount
 
-  return calc.sub(walletVolumes.outgoingBaseAmount, walletVolumes.incomingBaseAmount)
+  return VolumeCalculator(txBaseVolumeAmount).netOut()
 }
 
 export const outIntraledgerTxBaseVolumeAmountSince = async <S extends WalletCurrency>(
@@ -174,10 +196,10 @@ export const outIntraledgerTxBaseVolumeAmountSince = async <S extends WalletCurr
     "intraledgerTxBaseVolumeSince",
   )
 
-  const walletVolumes = await intraledgerTxBaseVolumeAmountSince(args)
-  if (walletVolumes instanceof Error) return walletVolumes
+  const txBaseVolumeAmount = await intraledgerTxBaseVolumeAmountSince(args)
+  if (txBaseVolumeAmount instanceof Error) return txBaseVolumeAmount
 
-  return walletVolumes.outgoingBaseAmount
+  return VolumeCalculator(txBaseVolumeAmount).out()
 }
 
 export const outTradeIntraAccountTxBaseVolumeAmountSince = async <
@@ -189,10 +211,10 @@ export const outTradeIntraAccountTxBaseVolumeAmountSince = async <
     "tradeIntraAccountTxBaseVolumeSince",
   )
 
-  const walletVolumes = await tradeIntraAccountTxBaseVolumeAmountSince(args)
-  if (walletVolumes instanceof Error) return walletVolumes
+  const txBaseVolumeAmount = await tradeIntraAccountTxBaseVolumeAmountSince(args)
+  if (txBaseVolumeAmount instanceof Error) return txBaseVolumeAmount
 
-  return walletVolumes.outgoingBaseAmount
+  return VolumeCalculator(txBaseVolumeAmount).out()
 }
 
 export const absoluteAllTxBaseVolumeAmountSince = async <S extends WalletCurrency>(
@@ -200,10 +222,10 @@ export const absoluteAllTxBaseVolumeAmountSince = async <S extends WalletCurrenc
 ): Promise<PaymentAmount<S> | LedgerServiceError> => {
   const allTxBaseVolumeAmountSince = txVolumeAmountFactory.create("allTxBaseVolumeSince")
 
-  const walletVolumes = await allTxBaseVolumeAmountSince(args)
-  if (walletVolumes instanceof Error) return walletVolumes
+  const txBaseVolumeAmount = await allTxBaseVolumeAmountSince(args)
+  if (txBaseVolumeAmount instanceof Error) return txBaseVolumeAmount
 
-  return calc.add(walletVolumes.outgoingBaseAmount, walletVolumes.incomingBaseAmount)
+  return VolumeCalculator(txBaseVolumeAmount).absolute()
 }
 
 export const netInOnChainTxBaseVolumeAmountSince = async <S extends WalletCurrency>(
@@ -213,10 +235,10 @@ export const netInOnChainTxBaseVolumeAmountSince = async <S extends WalletCurren
     "onChainTxBaseVolumeSince",
   )
 
-  const walletVolumes = await onChainTxBaseVolumeAmountSince(args)
-  if (walletVolumes instanceof Error) return walletVolumes
+  const txBaseVolumeAmount = await onChainTxBaseVolumeAmountSince(args)
+  if (txBaseVolumeAmount instanceof Error) return txBaseVolumeAmount
 
-  return calc.sub(walletVolumes.incomingBaseAmount, walletVolumes.outgoingBaseAmount)
+  return VolumeCalculator(txBaseVolumeAmount).netIn()
 }
 
 export const netInLightningTxBaseVolumeAmountSince = async <S extends WalletCurrency>(
@@ -226,8 +248,8 @@ export const netInLightningTxBaseVolumeAmountSince = async <S extends WalletCurr
     "lightningTxBaseVolumeSince",
   )
 
-  const walletVolumes = await lightningTxBaseVolumeAmountSince(args)
-  if (walletVolumes instanceof Error) return walletVolumes
+  const txBaseVolumeAmount = await lightningTxBaseVolumeAmountSince(args)
+  if (txBaseVolumeAmount instanceof Error) return txBaseVolumeAmount
 
-  return calc.sub(walletVolumes.incomingBaseAmount, walletVolumes.outgoingBaseAmount)
+  return VolumeCalculator(txBaseVolumeAmount).netIn()
 }
