@@ -14,10 +14,7 @@ export const ActivityChecker = ({
   const aboveThreshold = async (wallets: Wallet[]) => {
     const timestamp30DaysAgo = new Date(Date.now() - MS_PER_30_DAYS)
 
-    const volumeCum = {
-      outgoingUsdAmount: ZERO_CENTS,
-      incomingUsdAmount: ZERO_CENTS,
-    }
+    let allWalletsVolume = ZERO_CENTS
 
     for (const wallet of wallets) {
       const walletVolume = await getVolumeAmountFn({
@@ -26,32 +23,15 @@ export const ActivityChecker = ({
       })
       if (walletVolume instanceof Error) return walletVolume
 
-      let outgoingUsdAmount = walletVolume.outgoingBaseAmount as UsdPaymentAmount
-      let incomingUsdAmount = walletVolume.incomingBaseAmount as UsdPaymentAmount
-      if (walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc) {
-        outgoingUsdAmount = priceRatio.convertFromBtc(
-          walletVolume.outgoingBaseAmount as BtcPaymentAmount,
-        )
-
-        incomingUsdAmount = priceRatio.convertFromBtc(
-          walletVolume.incomingBaseAmount as BtcPaymentAmount,
-        )
+      let usdAmount = walletVolume as UsdPaymentAmount
+      if (walletVolume.currency === WalletCurrency.Btc) {
+        usdAmount = priceRatio.convertFromBtc(walletVolume as BtcPaymentAmount)
       }
 
-      volumeCum.incomingUsdAmount = calc.add(
-        volumeCum.incomingUsdAmount,
-        incomingUsdAmount,
-      )
-      volumeCum.outgoingUsdAmount = calc.add(
-        volumeCum.outgoingUsdAmount,
-        outgoingUsdAmount,
-      )
+      allWalletsVolume = calc.add(allWalletsVolume, usdAmount)
     }
 
-    return (
-      volumeCum.outgoingUsdAmount.amount > monthlyVolumeThreshold ||
-      volumeCum.incomingUsdAmount.amount > monthlyVolumeThreshold
-    )
+    return allWalletsVolume.amount > monthlyVolumeThreshold
   }
 
   return {

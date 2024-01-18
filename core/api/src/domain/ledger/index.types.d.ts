@@ -208,6 +208,10 @@ type GetVolumeAmountSinceFn = <S extends WalletCurrency>(
   args: IGetVolumeAmountArgs<S>,
 ) => Promise<TxBaseVolumeAmount<S> | LedgerServiceError>
 
+type NewGetVolumeAmountSinceFn = <S extends WalletCurrency>(
+  args: IGetVolumeAmountArgs<S>,
+) => Promise<PaymentAmount<S> | LedgerServiceError>
+
 type RevertLightningPaymentArgs = {
   journalId: LedgerJournalId
   paymentHash: PaymentHash
@@ -329,14 +333,10 @@ interface ILedgerService {
   ): Promise<LedgerJournal | LedgerServiceError>
 }
 
-type GetVolumeAmountFn = <S extends WalletCurrency>(
-  args: IGetVolumeAmountArgs<S>,
-) => Promise<TxBaseVolumeAmount<S> | LedgerServiceError>
-
 type ActivityCheckerConfig = {
   monthlyVolumeThreshold: UsdCents
   priceRatio: WalletPriceRatio
-  getVolumeAmountFn: GetVolumeAmountFn
+  getVolumeAmountFn: NewGetVolumeAmountSinceFn
 }
 
 type ActivityChecker = {
@@ -344,8 +344,8 @@ type ActivityChecker = {
 }
 
 type ImbalanceCalculatorConfig = {
-  volumeAmountLightningFn: GetVolumeAmountSinceFn
-  volumeAmountOnChainFn: GetVolumeAmountSinceFn
+  netInVolumeAmountLightningFn: NewGetVolumeAmountSinceFn
+  netInVolumeAmountOnChainFn: NewGetVolumeAmountSinceFn
   sinceDaysAgo: Days
   method: WithdrawalFeePriceMethod
 }

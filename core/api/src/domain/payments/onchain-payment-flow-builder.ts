@@ -449,8 +449,8 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
 
     const imbalanceCalculator = ImbalanceCalculator({
       method: feeConfig.withdrawMethod,
-      volumeAmountLightningFn: state.volumeAmountLightningFn,
-      volumeAmountOnChainFn: state.volumeAmountOnChainFn,
+      netInVolumeAmountLightningFn: state.netInVolumeAmountLightningFn,
+      netInVolumeAmountOnChainFn: state.netInVolumeAmountOnChainFn,
       sinceDaysAgo: feeConfig.withdrawDaysLookback,
     })
     const imbalanceForWallet = await imbalanceCalculator.getSwapOutImbalanceAmount<S>({
