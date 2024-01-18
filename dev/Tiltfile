@@ -317,6 +317,7 @@ local_resource(
     ),
     deps = _buck2_dep_inputs(api_target),
     resource_deps = [
+        "price",
         "init-onchain",
         "init-lightning",
         "lnd1",
@@ -347,8 +348,10 @@ local_resource(
     ),
     deps = _buck2_dep_inputs(api_trigger_target),
     resource_deps = [
+        "price",
         "init-onchain",
         "lnd1",
+        "lnd2",
         "redis",
         "mongodb",
         "oathkeeper",
@@ -374,8 +377,10 @@ local_resource(
     ),
     deps = _buck2_dep_inputs(api_exporter_target),
     resource_deps = [
+        "price",
         "init-onchain",
         "lnd1",
+        "lnd2",
         "redis",
         "mongodb",
         "oathkeeper",
@@ -401,8 +406,10 @@ local_resource(
     ),
     deps = _buck2_dep_inputs(api_ws_server_target),
     resource_deps = [
+        "price",
         "init-onchain",
         "lnd1",
+        "lnd2",
         "redis",
         "mongodb",
         "oathkeeper",
