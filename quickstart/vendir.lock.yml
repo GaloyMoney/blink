@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(core): add new ''absoluteAllTxBaseVolumeAmountSince''
-        method (#3867)...'
-      sha: 013ef43accb57c7c79407cd8fb363801b5e87aa4
+      commitTitle: 'refactor(core): limits related volume methods (#3868)...'
+      sha: 013baf32e550d8b276eeb81eece554838edb5a59
       tags:
-      - 0.20.11
+      - 0.20.12-1-g013baf32e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(core): add new ''absoluteAllTxBaseVolumeAmountSince''
-        method (#3867)...'
-      sha: 013ef43accb57c7c79407cd8fb363801b5e87aa4
+      commitTitle: 'refactor(core): limits related volume methods (#3868)...'
+      sha: 013baf32e550d8b276eeb81eece554838edb5a59
       tags:
-      - 0.20.11
+      - 0.20.12-1-g013baf32e
     path: schemas/
   - git:
-      commitTitle: 'refactor(core): add new ''absoluteAllTxBaseVolumeAmountSince''
-        method (#3867)...'
-      sha: 013ef43accb57c7c79407cd8fb363801b5e87aa4
+      commitTitle: 'refactor(core): limits related volume methods (#3868)...'
+      sha: 013baf32e550d8b276eeb81eece554838edb5a59
       tags:
-      - 0.20.11
+      - 0.20.12-1-g013baf32e
     path: gql/
   path: ./graphql
 kind: LockConfig

@@ -1,0 +1,23 @@
+query accountLimits {
+  me {
+    defaultAccount {
+      limits {
+        convert {
+          interval
+          remainingLimit
+          totalLimit
+        }
+        internalSend {
+          interval
+          remainingLimit
+          totalLimit
+        }
+        withdrawal {
+          interval
+          remainingLimit
+          totalLimit
+        }
+      }
+    }
+  }
+}
