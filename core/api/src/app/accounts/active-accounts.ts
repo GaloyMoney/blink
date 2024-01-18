@@ -22,7 +22,7 @@ export const getRecentlyActiveAccounts = async function* ():
   if (walletPriceRatio instanceof Error) return walletPriceRatio
 
   const activityChecker = ActivityChecker({
-    getVolumeAmountFn: LedgerFacade.allTxBaseVolumeAmountSince,
+    getVolumeAmountFn: LedgerFacade.absoluteAllTxBaseVolumeAmountSince,
     priceRatio: walletPriceRatio,
     monthlyVolumeThreshold: USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD,
   })

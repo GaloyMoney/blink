@@ -13,6 +13,7 @@ import {
   paymentAmountFromNumber,
   ValidationError,
   WalletCurrency,
+  ZERO_SATS,
 } from "@/domain/shared"
 import { OnChainPaymentFlowBuilder } from "@/domain/payments/onchain-payment-flow-builder"
 import { toSats } from "@/domain/bitcoin"
@@ -186,22 +187,16 @@ describe("OnChainPaymentFlowBuilder", () => {
     hedgeSellUsd,
   }
 
-  const volumeAmountLightningFn = async <S extends WalletCurrency>() =>
-    Promise.resolve({
-      outgoingBaseAmount: BtcPaymentAmount(1000n) as PaymentAmount<S>,
-      incomingBaseAmount: BtcPaymentAmount(1000n) as PaymentAmount<S>,
-    })
+  const netInVolumeAmountLightningFn = async <S extends WalletCurrency>() =>
+    Promise.resolve(ZERO_SATS as PaymentAmount<S>)
 
-  const volumeAmountOnChainFn = async <S extends WalletCurrency>() =>
-    Promise.resolve({
-      outgoingBaseAmount: BtcPaymentAmount(1000n) as PaymentAmount<S>,
-      incomingBaseAmount: BtcPaymentAmount(1000n) as PaymentAmount<S>,
-    })
+  const netInVolumeAmountOnChainFn = async <S extends WalletCurrency>() =>
+    Promise.resolve(ZERO_SATS as PaymentAmount<S>)
 
   describe("onchain initiated", () => {
     const onChainBuilder = OnChainPaymentFlowBuilder({
-      volumeAmountLightningFn,
-      volumeAmountOnChainFn,
+      netInVolumeAmountLightningFn,
+      netInVolumeAmountOnChainFn,
       isExternalAddress: async (state) =>
         /* eslint @typescript-eslint/ban-ts-comment: "off" */
         // @ts-ignore-next-line error
@@ -308,8 +303,8 @@ describe("OnChainPaymentFlowBuilder", () => {
 
                 const imbalanceCalculator = ImbalanceCalculator({
                   method: feeConfig.withdrawMethod,
-                  volumeAmountLightningFn,
-                  volumeAmountOnChainFn,
+                  netInVolumeAmountLightningFn,
+                  netInVolumeAmountOnChainFn,
                   sinceDaysAgo: feeConfig.withdrawDaysLookback,
                 })
                 const imbalance = await imbalanceCalculator.getSwapOutImbalanceAmount(
@@ -828,8 +823,8 @@ describe("OnChainPaymentFlowBuilder", () => {
 
                     const imbalanceCalculator = ImbalanceCalculator({
                       method: feeConfig.withdrawMethod,
-                      volumeAmountLightningFn,
-                      volumeAmountOnChainFn,
+                      netInVolumeAmountLightningFn,
+                      netInVolumeAmountOnChainFn,
                       sinceDaysAgo: feeConfig.withdrawDaysLookback,
                     })
                     const imbalanceForWallet =
@@ -1216,8 +1211,8 @@ describe("OnChainPaymentFlowBuilder", () => {
         const minerFee = { amount: 300n, currency: WalletCurrency.Btc }
 
         const payment = await OnChainPaymentFlowBuilder({
-          volumeAmountLightningFn,
-          volumeAmountOnChainFn,
+          netInVolumeAmountLightningFn,
+          netInVolumeAmountOnChainFn,
           isExternalAddress: async () => Promise.resolve(!isIntraLedger),
           sendAll: false,
           dustThreshold,
@@ -1239,8 +1234,8 @@ describe("OnChainPaymentFlowBuilder", () => {
     describe("no recipient wallet despite IntraLedger", () => {
       it("returns InvalidLightningPaymentFlowBuilderStateError", async () => {
         const payment = await OnChainPaymentFlowBuilder({
-          volumeAmountLightningFn,
-          volumeAmountOnChainFn,
+          netInVolumeAmountLightningFn,
+          netInVolumeAmountOnChainFn,
           isExternalAddress: async () => Promise.resolve(false),
           sendAll: false,
           dustThreshold,
@@ -1262,8 +1257,8 @@ describe("OnChainPaymentFlowBuilder", () => {
     describe("sender and recipient are identical", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
         const payment = await OnChainPaymentFlowBuilder({
-          volumeAmountLightningFn,
-          volumeAmountOnChainFn,
+          netInVolumeAmountLightningFn,
+          netInVolumeAmountOnChainFn,
           isExternalAddress: async () => Promise.resolve(false),
           sendAll: false,
           dustThreshold,
@@ -1285,8 +1280,8 @@ describe("OnChainPaymentFlowBuilder", () => {
     describe("btcProposedAmount below dust from withConversion builder", () => {
       it("returns LessThanDustThresholdError", async () => {
         const builder = await OnChainPaymentFlowBuilder({
-          volumeAmountLightningFn,
-          volumeAmountOnChainFn,
+          netInVolumeAmountLightningFn,
+          netInVolumeAmountOnChainFn,
           isExternalAddress: async () => Promise.resolve(true),
           sendAll: false,
           dustThreshold,
