@@ -21,12 +21,6 @@ describe("PaymentInputValidator", () => {
       latitude: 0,
       longitude: 0,
     },
-    notificationSettings: {
-      push: {
-        enabled: true,
-        disabledCategories: [],
-      },
-    },
     contactEnabled: true,
     contacts: [],
     kratosUserId: "kratosUserId" as UserId,

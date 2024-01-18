@@ -29,5 +29,5 @@ export const NotificationChannel = {
 export const GaloyNotificationCategories = {
   Payments: "Payments" as NotificationCategory,
   Balance: "Balance" as NotificationCategory,
-  AdminPushNotification: "AdminPushNotification" as NotificationCategory,
+  AdminNotification: "AdminNotification" as NotificationCategory,
 } as const

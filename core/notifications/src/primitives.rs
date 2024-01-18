@@ -33,4 +33,6 @@ pub enum UserNotificationChannel {
 pub enum UserNotificationCategory {
     Circles,
     Payments,
+    Balance,
+    AdminNotification,
 }
