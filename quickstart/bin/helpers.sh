@@ -81,7 +81,7 @@ bitcoin_signer_cli() {
 }
 
 gql_file() {
-  echo "$GALOY_DIR/galoy/test/bats/gql/$1.gql"
+  echo "$GALOY_DIR/graphql/gql/$1.gql"
 }
 
 gql_query() {

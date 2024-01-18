@@ -1,0 +1,7 @@
+mutation displayCurrencyUpdate($input: AccountUpdateDisplayCurrencyInput!) {
+  accountUpdateDisplayCurrency(input: $input) {
+    account {
+      displayCurrency
+    }
+  }
+}

@@ -1,0 +1,14 @@
+federation_version: =2.3.2
+subgraphs:
+  public:
+    routing_url: http://bats-tests:4012/graphql
+    schema:
+      file: ${env.PUBLIC_SCHEMA:-../../../core/api/src/graphql/public/schema.graphql}
+  api_keys:
+    routing_url: http://bats-tests:5397/graphql
+    schema:
+      file: ${env.API_KEYS_SCHEMA:-../../../core/api-keys/subgraph/schema.graphql}
+  notifications:
+    routing_url: http://bats-tests:6684/graphql
+    schema:
+      file: ${env.NOTIFICATIONS_SCHEMA:-../../../core/notifications/subgraph/schema.graphql}

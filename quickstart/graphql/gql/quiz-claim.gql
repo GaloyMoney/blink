@@ -1,0 +1,15 @@
+mutation quizClaim($input: QuizClaimInput!) {
+  quizClaim(input: $input) {
+    quizzes {
+      amount
+      completed
+      id
+      notBefore
+    }
+    errors {
+      code
+      message
+      path
+    }
+  }
+}

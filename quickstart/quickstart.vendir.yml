@@ -9,7 +9,6 @@ directories:
       url: https://github.com/GaloyMoney/galoy.git
       ref: main
     includePaths:
-    - quickstart/.env.galoy
     - quickstart/docker-compose.yml
     - quickstart/dev/**/*
     - quickstart/graphql/**/*
