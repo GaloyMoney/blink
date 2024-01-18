@@ -269,22 +269,6 @@ const AccountSchema = new Schema<AccountRecord>(
         },
       ],
     },
-    notificationSettings: {
-      type: {
-        push: {
-          type: {
-            enabled: {
-              type: Boolean,
-              default: true,
-            },
-            disabledCategories: {
-              type: [String],
-              default: [],
-            },
-          },
-        },
-      },
-    },
 
     defaultWalletId: {
       type: String,
