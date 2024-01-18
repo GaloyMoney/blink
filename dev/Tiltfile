@@ -72,20 +72,23 @@ local_resource(
 pay_target = "//apps/pay:dev"
 if is_ci:
   pay_target = '//apps/pay:pay'
+pay_env = {
+  "PORT": "3002",
+  "CORE_GQL_URL_INTRANET": "http://localhost:4455/graphql",
+  "NEXT_PUBLIC_CORE_GQL_URL": "http://localhost:4455/graphql",
+  "NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL": "ws://localhost:4455/graphqlws",
+  "NEXT_PUBLIC_PAY_DOMAIN": "localhost:3002",
+}
 local_resource(
     "pay",
     labels = ["apps"],
     cmd = "buck2 build {}".format(pay_target),
     serve_cmd = "buck2 run {}".format(pay_target),
-    serve_env = {
-      "PORT": "3002",
-      "CORE_GQL_URL_INTRANET": "http://localhost:4455/graphql",
-      "NEXT_PUBLIC_CORE_GQL_URL": "http://localhost:4455/graphql",
-      "NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL": "ws://localhost:4455/graphqlws",
-      "NEXT_PUBLIC_PAY_DOMAIN": "localhost:3002",
-    },
+    env = pay_env,
+    serve_env = pay_env,
     deps = _buck2_dep_inputs(pay_target),
     allow_parallel = True,
+    auto_init = run_apps,
     resource_deps = [
         "api",
     ],
@@ -317,6 +320,7 @@ local_resource(
         "init-onchain",
         "init-lightning",
         "lnd1",
+        "lnd2",
         "redis",
         "mongodb",
         "oathkeeper",

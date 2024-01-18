@@ -14,6 +14,6 @@ export default defineConfig({
   screenshotOnRunFailure: false,
   retries: {
     openMode: 1,
-    runMode: 5,
+    runMode: 3,
   },
 })
