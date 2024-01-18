@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build(ci): fix buck2 test labels for gh actions (#3865)'
-      sha: 0064a130f5b50c7e751ceff744d93025b39962a8
+      commitTitle: 'refactor(quickstart): sync from top level dev (#3874)...'
+      sha: 70effc673f5f3b44998548b83c57adc13f2387dd
       tags:
-      - 0.20.8-1-g0064a130f
+      - 0.20.9-2-g70effc673
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build(ci): fix buck2 test labels for gh actions (#3865)'
-      sha: 0064a130f5b50c7e751ceff744d93025b39962a8
+      commitTitle: 'refactor(quickstart): sync from top level dev (#3874)...'
+      sha: 70effc673f5f3b44998548b83c57adc13f2387dd
       tags:
-      - 0.20.8-1-g0064a130f
+      - 0.20.9-2-g70effc673
     path: schemas/
   - git:
-      commitTitle: 'build(ci): fix buck2 test labels for gh actions (#3865)'
-      sha: 0064a130f5b50c7e751ceff744d93025b39962a8
+      commitTitle: 'refactor(quickstart): sync from top level dev (#3874)...'
+      sha: 70effc673f5f3b44998548b83c57adc13f2387dd
       tags:
-      - 0.20.8-1-g0064a130f
+      - 0.20.9-2-g70effc673
     path: gql/
   path: ./graphql
 kind: LockConfig
