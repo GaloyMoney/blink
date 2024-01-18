@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(quickstart): sync from top level dev (#3874)...'
-      sha: 70effc673f5f3b44998548b83c57adc13f2387dd
+      commitTitle: 'revert: "chore(flake): bump deps (#3873)"...'
+      sha: 1bfd1da73257ee1c0aa6a8ff67cbd18b1e14ac5e
       tags:
-      - 0.20.9-2-g70effc673
+      - 0.20.9-5-g1bfd1da73
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(quickstart): sync from top level dev (#3874)...'
-      sha: 70effc673f5f3b44998548b83c57adc13f2387dd
+      commitTitle: 'revert: "chore(flake): bump deps (#3873)"...'
+      sha: 1bfd1da73257ee1c0aa6a8ff67cbd18b1e14ac5e
       tags:
-      - 0.20.9-2-g70effc673
+      - 0.20.9-5-g1bfd1da73
     path: schemas/
   - git:
-      commitTitle: 'refactor(quickstart): sync from top level dev (#3874)...'
-      sha: 70effc673f5f3b44998548b83c57adc13f2387dd
+      commitTitle: 'revert: "chore(flake): bump deps (#3873)"...'
+      sha: 1bfd1da73257ee1c0aa6a8ff67cbd18b1e14ac5e
       tags:
-      - 0.20.9-2-g70effc673
+      - 0.20.9-5-g1bfd1da73
     path: gql/
   path: ./graphql
 kind: LockConfig
