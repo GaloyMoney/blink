@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'revert: "chore(flake): bump deps (#3873)"...'
-      sha: 1bfd1da73257ee1c0aa6a8ff67cbd18b1e14ac5e
+      commitTitle: 'test(core): move ledger volume tests (#3846)...'
+      sha: 6317d61bec953a02c332cbb91e4842e7c2250cd2
       tags:
-      - 0.20.9-5-g1bfd1da73
+      - 0.20.10-1-g6317d61be
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'revert: "chore(flake): bump deps (#3873)"...'
-      sha: 1bfd1da73257ee1c0aa6a8ff67cbd18b1e14ac5e
+      commitTitle: 'test(core): move ledger volume tests (#3846)...'
+      sha: 6317d61bec953a02c332cbb91e4842e7c2250cd2
       tags:
-      - 0.20.9-5-g1bfd1da73
+      - 0.20.10-1-g6317d61be
     path: schemas/
   - git:
-      commitTitle: 'revert: "chore(flake): bump deps (#3873)"...'
-      sha: 1bfd1da73257ee1c0aa6a8ff67cbd18b1e14ac5e
+      commitTitle: 'test(core): move ledger volume tests (#3846)...'
+      sha: 6317d61bec953a02c332cbb91e4842e7c2250cd2
       tags:
-      - 0.20.9-5-g1bfd1da73
+      - 0.20.10-1-g6317d61be
     path: gql/
   path: ./graphql
 kind: LockConfig
