@@ -154,10 +154,6 @@ export const TxVolumeAmountSinceFactory = () => {
 
 const txVolumeAmountFactory = TxVolumeAmountSinceFactory()
 
-export const allPaymentVolumeAmountSince = txVolumeAmountFactory.create(
-  "allPaymentVolumeSince",
-)
-
 export const netOutExternalPaymentVolumeAmountSince = async <S extends WalletCurrency>(
   args: IGetVolumeAmountArgs<S>,
 ): Promise<PaymentAmount<S> | LedgerServiceError> => {
