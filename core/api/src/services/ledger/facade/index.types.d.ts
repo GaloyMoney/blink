@@ -12,3 +12,11 @@ type InitialStaticAccountIds = {
   dealerUsdAccountId: LedgerAccountId | Error
   funderAccountId: LedgerAccountId | Error
 }
+
+type VolumeCalculator<S extends WalletCurrency> = {
+  in: () => PaymentAmount<S>
+  out: () => PaymentAmount<S>
+  netIn: () => PaymentAmount<S>
+  netOut: () => PaymentAmount<S>
+  absolute: () => PaymentAmount<S>
+}

@@ -152,6 +152,28 @@ export const TxVolumeAmountSinceFactory = () => {
   return { create }
 }
 
+export const VolumeCalculator = <S extends WalletCurrency>(
+  txBaseVolumeAmount: TxBaseVolumeAmount<S>,
+): VolumeCalculator<S> => ({
+  in: () => txBaseVolumeAmount.incomingBaseAmount,
+  out: () => txBaseVolumeAmount.outgoingBaseAmount,
+  netIn: () =>
+    calc.sub(
+      txBaseVolumeAmount.incomingBaseAmount,
+      txBaseVolumeAmount.outgoingBaseAmount,
+    ),
+  netOut: () =>
+    calc.sub(
+      txBaseVolumeAmount.outgoingBaseAmount,
+      txBaseVolumeAmount.incomingBaseAmount,
+    ),
+  absolute: () =>
+    calc.add(
+      txBaseVolumeAmount.incomingBaseAmount,
+      txBaseVolumeAmount.outgoingBaseAmount,
+    ),
+})
+
 const txVolumeAmountFactory = TxVolumeAmountSinceFactory()
 
 export const netOutExternalPaymentVolumeAmountSince = async <S extends WalletCurrency>(
