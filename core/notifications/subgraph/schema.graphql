@@ -33,6 +33,8 @@ input UserEnableNotificationChannelInput {
 enum UserNotificationCategory {
 	CIRCLES
 	PAYMENTS
+	BALANCE
+	ADMIN_NOTIFICATION
 }
 
 enum UserNotificationChannel {
