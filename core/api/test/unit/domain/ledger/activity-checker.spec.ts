@@ -1,13 +1,15 @@
 import { toCents } from "@/domain/fiat"
 import { ActivityChecker } from "@/domain/ledger/activity-checker"
 import { WalletPriceRatio } from "@/domain/payments"
-import { WalletCurrency } from "@/domain/shared"
+import { AmountCalculator, ONE_CENT, WalletCurrency } from "@/domain/shared"
 
 let btcWallet: Wallet, usdWallet: Wallet
 
+const calc = AmountCalculator()
+
 const priceRatio = WalletPriceRatio({
-  usd: { amount: BigInt(2), currency: WalletCurrency.Usd },
-  btc: { amount: BigInt(1), currency: WalletCurrency.Btc },
+  usd: { amount: BigInt(1), currency: WalletCurrency.Usd },
+  btc: { amount: BigInt(20), currency: WalletCurrency.Btc },
 }) as WalletPriceRatio
 
 beforeAll(() => {
@@ -30,45 +32,69 @@ beforeAll(() => {
   }
 })
 
+const monthlyVolumeThreshold = toCents(100)
+
 describe("ActivityChecker with Sats", () => {
-  it("aboveThreshold returns false below threshold", async () => {
+  it("aboveThreshold returns false below", async () => {
+    const btcPaymentAmount = {
+      amount: BigInt(1500),
+      currency: WalletCurrency.Btc,
+    }
+
+    const usdPaymentAmount = priceRatio.convertFromBtc(btcPaymentAmount)
+    if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
+
+    expect(toCents(usdPaymentAmount.amount)).toBeLessThan(monthlyVolumeThreshold)
+
     const getVolumeAmountFn = (() =>
-      Promise.resolve({
-        outgoingBaseAmount: { amount: BigInt(11), currency: WalletCurrency.Btc },
-        incomingBaseAmount: { amount: BigInt(10), currency: WalletCurrency.Btc },
-      })) as GetVolumeAmountFn
+      Promise.resolve(btcPaymentAmount)) as GetVolumeAmountFn
     const checker = ActivityChecker({
       priceRatio,
-      monthlyVolumeThreshold: toCents(100),
+      monthlyVolumeThreshold,
       getVolumeAmountFn,
     })
     const resultIncoming = await checker.aboveThreshold([btcWallet])
     expect(resultIncoming).toBe(false)
   })
 
-  it("Returns true if outgoing or incoming sats are above threshold", async () => {
-    let getVolumeAmountFn = (() =>
-      Promise.resolve({
-        outgoingBaseAmount: { amount: BigInt(500), currency: WalletCurrency.Btc },
-        incomingBaseAmount: { amount: BigInt(10), currency: WalletCurrency.Btc },
-      })) as GetVolumeAmountFn
-    let checker = ActivityChecker({
+  it("aboveThreshold returns false at threshold", async () => {
+    const btcPaymentAmount = {
+      amount: BigInt(2000),
+      currency: WalletCurrency.Btc,
+    }
+
+    const usdPaymentAmount = priceRatio.convertFromBtc(btcPaymentAmount)
+    if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
+
+    expect(toCents(usdPaymentAmount.amount)).toEqual(monthlyVolumeThreshold)
+
+    const getVolumeAmountFn = (() =>
+      Promise.resolve(btcPaymentAmount)) as GetVolumeAmountFn
+    const checker = ActivityChecker({
       priceRatio,
-      monthlyVolumeThreshold: toCents(100),
+      monthlyVolumeThreshold,
       getVolumeAmountFn,
     })
+    const resultIncoming = await checker.aboveThreshold([btcWallet])
+    expect(resultIncoming).toBe(false)
+  })
 
-    const resultOutgoing = await checker.aboveThreshold([btcWallet])
-    expect(resultOutgoing).toBe(true)
+  it("aboveThreshold returns true above threshold", async () => {
+    const btcPaymentAmount = {
+      amount: BigInt(2500),
+      currency: WalletCurrency.Btc,
+    }
 
-    getVolumeAmountFn = (() =>
-      Promise.resolve({
-        outgoingBaseAmount: { amount: BigInt(10), currency: WalletCurrency.Btc },
-        incomingBaseAmount: { amount: BigInt(500), currency: WalletCurrency.Btc },
-      })) as GetVolumeAmountFn
-    checker = ActivityChecker({
+    const usdPaymentAmount = priceRatio.convertFromBtc(btcPaymentAmount)
+    if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
+
+    expect(toCents(usdPaymentAmount.amount)).toBeGreaterThan(monthlyVolumeThreshold)
+
+    const getVolumeAmountFn = (() =>
+      Promise.resolve(btcPaymentAmount)) as GetVolumeAmountFn
+    const checker = ActivityChecker({
       priceRatio,
-      monthlyVolumeThreshold: toCents(100),
+      monthlyVolumeThreshold,
       getVolumeAmountFn,
     })
     const resultIncoming = await checker.aboveThreshold([btcWallet])
@@ -78,43 +104,56 @@ describe("ActivityChecker with Sats", () => {
 
 describe("ActivityChecker with Cents", () => {
   it("aboveThreshold returns false below threshold", async () => {
+    const usdPaymentAmount = {
+      amount: BigInt(99),
+      currency: WalletCurrency.Usd,
+    }
+    expect(toCents(usdPaymentAmount.amount)).toBeLessThan(monthlyVolumeThreshold)
+
     const getVolumeAmountFn = (() =>
-      Promise.resolve({
-        outgoingBaseAmount: { amount: BigInt(11), currency: WalletCurrency.Usd },
-        incomingBaseAmount: { amount: BigInt(10), currency: WalletCurrency.Usd },
-      })) as GetVolumeAmountFn
+      Promise.resolve(usdPaymentAmount)) as GetVolumeAmountFn
     const checker = ActivityChecker({
       priceRatio,
-      monthlyVolumeThreshold: toCents(100),
+      monthlyVolumeThreshold,
       getVolumeAmountFn,
     })
     const resultIncoming = await checker.aboveThreshold([usdWallet])
     expect(resultIncoming).toBe(false)
   })
 
-  it("Returns true if outgoing or incoming sats are above threshold", async () => {
-    let getVolumeAmountFn = (() =>
+  it("aboveThreshold returns false at threshold", async () => {
+    const usdPaymentAmount = {
+      amount: BigInt(100),
+      currency: WalletCurrency.Usd,
+    }
+    expect(toCents(usdPaymentAmount.amount)).toEqual(monthlyVolumeThreshold)
+
+    const getVolumeAmountFn = (() =>
       Promise.resolve({
-        outgoingBaseAmount: { amount: BigInt(500), currency: WalletCurrency.Usd },
-        incomingBaseAmount: { amount: BigInt(10), currency: WalletCurrency.Usd },
+        amount: BigInt(100),
+        currency: WalletCurrency.Usd,
       })) as GetVolumeAmountFn
-    let checker = ActivityChecker({
+    const checker = ActivityChecker({
       priceRatio,
-      monthlyVolumeThreshold: toCents(100),
+      monthlyVolumeThreshold,
       getVolumeAmountFn,
     })
+    const resultIncoming = await checker.aboveThreshold([usdWallet])
+    expect(resultIncoming).toBe(false)
+  })
 
-    const resultOutgoing = await checker.aboveThreshold([usdWallet])
-    expect(resultOutgoing).toBe(true)
+  it("aboveThreshold returns true above threshold", async () => {
+    const usdPaymentAmount = {
+      amount: BigInt(101),
+      currency: WalletCurrency.Usd,
+    }
+    expect(toCents(usdPaymentAmount.amount)).toBeGreaterThan(monthlyVolumeThreshold)
 
-    getVolumeAmountFn = (() =>
-      Promise.resolve({
-        outgoingBaseAmount: { amount: BigInt(10), currency: WalletCurrency.Usd },
-        incomingBaseAmount: { amount: BigInt(500), currency: WalletCurrency.Usd },
-      })) as GetVolumeAmountFn
-    checker = ActivityChecker({
+    const getVolumeAmountFn = (() =>
+      Promise.resolve(usdPaymentAmount)) as GetVolumeAmountFn
+    const checker = ActivityChecker({
       priceRatio,
-      monthlyVolumeThreshold: toCents(100),
+      monthlyVolumeThreshold,
       getVolumeAmountFn,
     })
     const resultIncoming = await checker.aboveThreshold([usdWallet])
@@ -123,49 +162,78 @@ describe("ActivityChecker with Cents", () => {
 })
 
 describe("ActivityChecker with Cents+Sats wallets", () => {
-  it("below threshold", async () => {
+  it("aboveThreshold returns false below threshold", async () => {
+    const btcPaymentAmount = {
+      amount: BigInt(1500),
+      currency: WalletCurrency.Btc,
+    }
+
+    const usdPaymentAmount = priceRatio.convertFromBtc(btcPaymentAmount)
+    if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
+
+    const totalUsdPaymentAmount = calc.add(usdPaymentAmount, ONE_CENT)
+    expect(toCents(totalUsdPaymentAmount.amount)).toBeLessThan(monthlyVolumeThreshold)
+
     const getVolumeAmountFn = jest
       .fn()
-      .mockImplementationOnce(() =>
-        Promise.resolve({
-          outgoingBaseAmount: { amount: BigInt(0), currency: WalletCurrency.Btc },
-          incomingBaseAmount: { amount: BigInt(10), currency: WalletCurrency.Btc },
-        }),
-      )
-      .mockImplementationOnce(() =>
-        Promise.resolve({
-          outgoingBaseAmount: { amount: BigInt(0), currency: WalletCurrency.Usd },
-          incomingBaseAmount: { amount: BigInt(50), currency: WalletCurrency.Usd },
-        }),
-      )
+      .mockImplementationOnce(() => Promise.resolve(btcPaymentAmount))
+      .mockImplementationOnce(() => Promise.resolve(ONE_CENT))
 
     const checker = ActivityChecker({
       priceRatio,
-      monthlyVolumeThreshold: toCents(100),
+      monthlyVolumeThreshold,
       getVolumeAmountFn,
     })
     const resultIncoming = await checker.aboveThreshold([btcWallet, usdWallet])
     expect(resultIncoming).toBe(false)
   })
-  it("above threshold", async () => {
+
+  it("aboveThreshold returns false at threshold", async () => {
+    const btcPaymentAmount = {
+      amount: BigInt(1990),
+      currency: WalletCurrency.Btc,
+    }
+
+    const usdPaymentAmount = priceRatio.convertFromBtc(btcPaymentAmount)
+    if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
+
+    const totalUsdPaymentAmount = calc.add(usdPaymentAmount, ONE_CENT)
+    expect(toCents(totalUsdPaymentAmount.amount)).toEqual(monthlyVolumeThreshold)
+
     const getVolumeAmountFn = jest
       .fn()
-      .mockImplementationOnce(() =>
-        Promise.resolve({
-          outgoingBaseAmount: { amount: BigInt(0), currency: WalletCurrency.Btc },
-          incomingBaseAmount: { amount: BigInt(30), currency: WalletCurrency.Btc },
-        }),
-      )
-      .mockImplementationOnce(() =>
-        Promise.resolve({
-          outgoingBaseAmount: { amount: BigInt(0), currency: WalletCurrency.Usd },
-          incomingBaseAmount: { amount: BigInt(90), currency: WalletCurrency.Usd },
-        }),
-      )
+      .mockImplementationOnce(() => Promise.resolve(btcPaymentAmount))
+      .mockImplementationOnce(() => Promise.resolve(ONE_CENT))
 
     const checker = ActivityChecker({
       priceRatio,
-      monthlyVolumeThreshold: toCents(100),
+      monthlyVolumeThreshold,
+      getVolumeAmountFn,
+    })
+    const resultIncoming = await checker.aboveThreshold([btcWallet, usdWallet])
+    expect(resultIncoming).toBe(false)
+  })
+
+  it("aboveThreshold returns true above threshold", async () => {
+    const btcPaymentAmount = {
+      amount: BigInt(2000),
+      currency: WalletCurrency.Btc,
+    }
+
+    const usdPaymentAmount = priceRatio.convertFromBtc(btcPaymentAmount)
+    if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
+
+    const totalUsdPaymentAmount = calc.add(usdPaymentAmount, ONE_CENT)
+    expect(toCents(totalUsdPaymentAmount.amount)).toBeGreaterThan(monthlyVolumeThreshold)
+
+    const getVolumeAmountFn = jest
+      .fn()
+      .mockImplementationOnce(() => Promise.resolve(btcPaymentAmount))
+      .mockImplementationOnce(() => Promise.resolve(ONE_CENT))
+
+    const checker = ActivityChecker({
+      priceRatio,
+      monthlyVolumeThreshold,
       getVolumeAmountFn,
     })
     const resultIncoming = await checker.aboveThreshold([btcWallet, usdWallet])
