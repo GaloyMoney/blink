@@ -157,12 +157,6 @@ const txVolumeAmountFactory = TxVolumeAmountSinceFactory()
 export const allPaymentVolumeAmountSince = txVolumeAmountFactory.create(
   "allPaymentVolumeSince",
 )
-export const onChainTxBaseVolumeAmountSince = txVolumeAmountFactory.create(
-  "onChainTxBaseVolumeSince",
-)
-export const lightningTxBaseVolumeAmountSince = txVolumeAmountFactory.create(
-  "lightningTxBaseVolumeSince",
-)
 
 export const netOutExternalPaymentVolumeAmountSince = async <S extends WalletCurrency>(
   args: IGetVolumeAmountArgs<S>,
@@ -214,4 +208,30 @@ export const absoluteAllTxBaseVolumeAmountSince = async <S extends WalletCurrenc
   if (walletVolumes instanceof Error) return walletVolumes
 
   return calc.add(walletVolumes.outgoingBaseAmount, walletVolumes.incomingBaseAmount)
+}
+
+export const netInOnChainTxBaseVolumeAmountSince = async <S extends WalletCurrency>(
+  args: IGetVolumeAmountArgs<S>,
+): Promise<PaymentAmount<S> | LedgerServiceError> => {
+  const onChainTxBaseVolumeAmountSince = txVolumeAmountFactory.create(
+    "onChainTxBaseVolumeSince",
+  )
+
+  const walletVolumes = await onChainTxBaseVolumeAmountSince(args)
+  if (walletVolumes instanceof Error) return walletVolumes
+
+  return calc.sub(walletVolumes.incomingBaseAmount, walletVolumes.outgoingBaseAmount)
+}
+
+export const netInLightningTxBaseVolumeAmountSince = async <S extends WalletCurrency>(
+  args: IGetVolumeAmountArgs<S>,
+): Promise<PaymentAmount<S> | LedgerServiceError> => {
+  const lightningTxBaseVolumeAmountSince = txVolumeAmountFactory.create(
+    "lightningTxBaseVolumeSince",
+  )
+
+  const walletVolumes = await lightningTxBaseVolumeAmountSince(args)
+  if (walletVolumes instanceof Error) return walletVolumes
+
+  return calc.sub(walletVolumes.incomingBaseAmount, walletVolumes.outgoingBaseAmount)
 }

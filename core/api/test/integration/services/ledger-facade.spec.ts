@@ -2258,22 +2258,19 @@ describe("Facade", () => {
       })
     })
 
-    describe("User onchain (activity) tx types, absolute volume", () => {
+    describe("User onchain (activity) tx types, net in volume", () => {
       const allUserTxTypes: (keyof typeof UserLedgerTransactionType)[] = [
         "OnchainPayment",
         "OnchainReceipt",
       ]
 
       const currentVolumeAmount = async () => {
-        // Uses 'onChainTxBaseVolumeAmountSince'
-        const vol = await LedgerFacade.onChainTxBaseVolumeAmountSince({
+        const vol = await LedgerFacade.netInOnChainTxBaseVolumeAmountSince({
           walletDescriptor: btcWalletDescriptor,
           timestamp: timestamp1DayAgo,
         })
         if (vol instanceof Error) throw vol
-
-        // Uses absolute 'outgoing' & 'incoming'
-        return calc.add(vol.outgoingBaseAmount, vol.incomingBaseAmount)
+        return vol
       }
 
       const {
@@ -2292,7 +2289,7 @@ describe("Facade", () => {
                 externalOutTxFnForType[txType as keyof typeof externalOutTxFnForType]
 
               it(`for ${txType} transaction`, async () => {
-                const expected = calc.add(await currentVolumeAmount(), sendAmount.btc)
+                const expected = calc.sub(await currentVolumeAmount(), sendAmount.btc)
 
                 const result = await recordTx({
                   walletDescriptor: btcWalletDescriptor,
@@ -2557,7 +2554,7 @@ describe("Facade", () => {
       })
     })
 
-    describe("User ln (activity) tx types, absolute volume", () => {
+    describe("User ln (activity) tx types, net in volume", () => {
       const allUserTxTypes: (keyof typeof UserLedgerTransactionType)[] = [
         "Payment",
         "Invoice",
@@ -2566,15 +2563,12 @@ describe("Facade", () => {
       ]
 
       const currentVolumeAmount = async () => {
-        // Uses 'lightningTxBaseVolumeAmountSince'
-        const vol = await LedgerFacade.lightningTxBaseVolumeAmountSince({
+        const vol = await LedgerFacade.netInLightningTxBaseVolumeAmountSince({
           walletDescriptor: btcWalletDescriptor,
           timestamp: timestamp1DayAgo,
         })
         if (vol instanceof Error) throw vol
-
-        // Uses absolute 'outgoing' & 'incoming'
-        return calc.add(vol.outgoingBaseAmount, vol.incomingBaseAmount)
+        return vol
       }
 
       const {
@@ -2593,7 +2587,7 @@ describe("Facade", () => {
                 externalOutTxFnForType[txType as keyof typeof externalOutTxFnForType]
 
               it(`for ${txType} transaction`, async () => {
-                const expected = calc.add(await currentVolumeAmount(), sendAmount.btc)
+                const expected = calc.sub(await currentVolumeAmount(), sendAmount.btc)
 
                 const result = await recordTx({
                   walletDescriptor: btcWalletDescriptor,
