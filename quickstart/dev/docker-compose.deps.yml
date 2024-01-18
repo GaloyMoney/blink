@@ -1,0 +1,355 @@
+---
+version: "3"
+services:
+  price:
+    image: us.gcr.io/galoy-org/price:edge
+    ports:
+    - 50051:50051
+    - 9464:9464
+  price-history:
+    image: us.gcr.io/galoy-org/price-history:edge
+    ports:
+    - 50052:50052
+    command: ./scripts/run-servers-dev.sh
+    environment:
+    - DB_HOST=price-history-pg
+    - DB_PORT=5432
+    - DB_USER=galoy-price-usr
+    - DB_PWD=galoy-price-pwd
+    - DB_DB=galoy-price-history
+    - DB_POOL_MIN=1
+    - DB_POOL_MAX=5
+    - DB_DEBUG=false
+    depends_on:
+    - price-history-pg
+    - price-history-migrate
+  price-history-migrate:
+    image: us.gcr.io/galoy-org/price-history-migrate:edge
+    ports: []
+    environment:
+    - DB_HOST=price-history-pg
+    - DB_PORT=5432
+    - DB_USER=galoy-price-usr
+    - DB_PWD=galoy-price-pwd
+    - DB_DB=galoy-price-history
+    - DB_POOL_MIN=1
+    - DB_POOL_MAX=5
+    - DB_DEBUG=false
+    depends_on:
+    - price-history-pg
+  price-history-pg:
+    image: postgres:14.1
+    environment:
+    - POSTGRES_USER=galoy-price-usr
+    - POSTGRES_PASSWORD=galoy-price-pwd
+    - POSTGRES_DB=galoy-price-history
+  api-keys-pg:
+    image: postgres:14.1
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=pg
+    ports:
+      - "5431:5432"
+  notifications-pg:
+    image: postgres:14.1
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=pg
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 30s
+      retries: 5
+  oathkeeper:
+    image: oryd/oathkeeper:v0.40.6-distroless
+    ports:
+      - "4455:4455"
+      - "4456:4456"
+    extra_hosts:
+      - "bats-tests:host-gateway"
+    command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/ory:/home/ory
+    depends_on:
+      - kratos
+      - hydra
+      - apollo-router
+      - otel-agent
+  hydra:
+    image: oryd/hydra:v2.1.2
+    ports:
+      - "4444:4444" #! Public port
+      - "4445:4445" #! Admin port
+    command: serve -c /home/ory/hydra.yml all --dev
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/ory:/home/ory
+    environment:
+      - DSN=postgres://hydra:secret@hydra-pg:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+    restart: unless-stopped
+    depends_on:
+      - hydra-migrate
+      - hydra-pg
+
+  hydra-migrate:
+    image: oryd/hydra:v2.1.2
+    environment:
+      - DSN=postgres://hydra:secret@hydra-pg:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+    command: migrate -c /home/ory/hydra.yml sql -e --yes
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/ory:/home/ory
+
+    restart: on-failure
+    depends_on:
+      - hydra-pg
+
+  hydra-pg:
+    image: postgres:14.1
+    environment:
+      - POSTGRES_USER=hydra
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=hydra
+  kratos:
+    image: oryd/kratos:v1.0.0
+    extra_hosts:
+      - "bats-tests:host-gateway"
+    ports:
+      - "4433:4433" #! public
+      - "4434:4434" #! admin
+    entrypoint: sh -c
+    command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --watch-courier --sqa-opt-out"'
+    environment:
+      DSN: postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
+    links:
+      - kratos-pg:kratos-pg
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/ory:/home/ory
+  kratos-pg:
+    image: postgres:14.1
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=default
+  apollo-router:
+    image: ghcr.io/apollographql/router:v1.25.0
+    ports:
+      - 4004:4004
+    extra_hosts:
+      - "bats-tests:host-gateway"
+    environment:
+      - APOLLO_ROUTER_SUPERGRAPH_PATH=/repo/dev/supergraph.graphql
+      - APOLLO_ROUTER_CONFIG_PATH=/repo/dev/router.yaml
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/apollo-federation:/repo/dev
+    depends_on:
+      - otel-agent
+  redis:
+    image: redis:7.0.8
+    ports:
+      - "6379:6379"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+  mongodb:
+    image: mongo:7.0.2
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=galoy
+  lnd1:
+    image: lightninglabs/lnd:v0.17.3-beta
+    ports:
+      - "10009:10009"
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.key:/root/.lnd/tls.key
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd1.wallet.db:/root/.lnd/wallet.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd1.macaroons.db:/root/.lnd/macaroons.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd1.admin.macaroon:/root/.lnd/admin.macaroon
+    depends_on: [bitcoind]
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
+  lnd2:
+    image: lightninglabs/lnd:v0.17.3-beta
+    ports:
+      - "10010:10009"
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.key:/root/.lnd/tls.key
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd2.wallet.db:/root/.lnd/wallet.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd2.macaroons.db:/root/.lnd/macaroons.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd2.admin.macaroon:/root/.lnd/admin.macaroon
+    depends_on: [bitcoind]
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
+  lnd-outside-1:
+    image: lightninglabs/lnd:v0.17.3-beta
+    ports:
+      - "10012:10009"
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.key:/root/.lnd/tls.key
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-1.wallet.db:/root/.lnd/wallet.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-1.macaroons.db:/root/.lnd/macaroons.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/admin.macaroon
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
+    depends_on: [bitcoind]
+  lnd-outside-2:
+    image: lightninglabs/lnd:v0.17.3-beta
+    ports:
+      - "10013:10009"
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.key:/root/.lnd/tls.key
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-2.wallet.db:/root/.lnd/wallet.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-2.macaroons.db:/root/.lnd/macaroons.db
+      - ${HOST_PROJECT_PATH:-.}/config/lnd/regtest/lnd-outside-2.admin.macaroon:/root/.lnd/admin.macaroon
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
+    depends_on: [bitcoind]
+  bria:
+    image: us.gcr.io/galoy-org/bria:latest
+    ports:
+      - "2743:2743"
+      - "2742:2742"
+    environment:
+      - PG_CON=postgres://user:password@bria-pg:5432/pg
+      - BITCOIND_SIGNER_ENDPOINT=https://bitcoind-signer:18443
+    command:
+      - bria
+      - daemon
+      - --config
+      - /bria.yml
+      - dev
+      - -x
+      - tpubDDDDGYiFda8HfJRc2AHFJDxVzzEtBPrKsbh35EaW2UGd5qfzrF2G87ewAgeeRyHEz4iB3kvhAYW1sH6dpLepTkFUzAktumBN8AXeXWE9nd1
+      - -d
+      - m/84h/0h/0h
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/bria.yml:/bria.yml
+    depends_on:
+      bitcoind-signer:
+        condition: service_started
+      otel-agent:
+        condition: service_started
+      fulcrum:
+        condition: service_started
+      bria-pg:
+        condition: service_healthy
+  bria-pg:
+    image: postgres:14.1
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=pg
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 30s
+      retries: 5
+  fulcrum:
+    image: cculianu/fulcrum:latest
+    ports:
+      - "50001:50001"
+    depends_on: [bitcoind]
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/fulcrum/fulcrum.conf:/fulcrum.conf
+      - ${HOST_PROJECT_PATH:-.}/config/fulcrum/tls.key:/tls.key
+      - ${HOST_PROJECT_PATH:-.}/config/fulcrum/tls.cert:/tls.cert
+    environment:
+      - DATA_DIR=/db
+      - SSL_CERTFILE=/tls.cert
+      - SSL_KEYFILE=/tls.key
+    command: ["Fulcrum", "/fulcrum.conf"]
+  bitcoind:
+    image: lncm/bitcoind:v25.1
+    ports:
+      - "18443:18443"
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
+  bitcoind-signer:
+    image: lncm/bitcoind:v25.1
+    ports: []
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
+    depends_on: [bitcoind]
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        bitcoind -connect=bitcoind:18444
+  otel-agent:
+    ports:
+      - "4318:4318" #! http receiver
+      - "4317:4317" #! grpc receiver
+    image: otel/opentelemetry-collector-contrib:0.84.0
+    command: ["--config=/etc/otel-agent-config.yaml"]
+    environment:
+      - HONEYCOMB_DATASET=${HONEYCOMB_DATASET}
+      - HONEYCOMB_API_KEY=${HONEYCOMB_API_KEY}
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/otel-agent-config.yaml:/etc/otel-agent-config.yaml
+  svix:
+    image: svix/svix-server:v1.11
+    platform: linux/amd64
+    environment:
+      WAIT_FOR: "true"
+      SVIX_DB_DSN: postgresql://postgres:postgres@svix-pg/postgres
+      SVIX_JWT_SECRET: 8KjzRXrKkd9YFcNyqLSIY8JwiaCeRc6WK4UkMnSW
+      SVIX_WHITELIST_SUBNETS: "[0.0.0.0/0]"
+      SVIX_QUEUE_TYPE: memory
+    depends_on:
+      - svix-pg
+    ports:
+      - 8071:8071
+    extra_hosts:
+      - bats-tests:host-gateway
+  svix-pg:
+    image: postgres:14.1
+    environment:
+      POSTGRES_PASSWORD: postgres
+
+  stablesats:
+    image: us.gcr.io/galoy-org/stablesats-rs:latest
+    ports:
+      - "3325:3325"
+    command: ["stablesats", "run"]
+    working_dir: /repo/config
+    depends_on:
+      - otel-agent
+    restart: on-failure:10
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/:/repo

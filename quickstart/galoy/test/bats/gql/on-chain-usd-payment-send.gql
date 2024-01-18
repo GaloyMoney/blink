@@ -1,8 +1,0 @@
-mutation onChainUsdPaymentSend($input: OnChainUsdPaymentSendInput!) {
-  onChainUsdPaymentSend(input: $input) {
-    errors {
-      message
-    }
-    status
-  }
-}

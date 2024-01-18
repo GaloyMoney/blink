@@ -1,0 +1,8 @@
+app:
+  blockchain:
+    network: regtest
+    electrum_url: fulcrum:50001
+tracing:
+  host: "otel-agent"
+  port: 4318
+  service_name: "bria-dev"

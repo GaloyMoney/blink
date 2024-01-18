@@ -1,7 +1,0 @@
-mutation accountUpdateDefaultWalletId($input: AccountUpdateDefaultWalletIdInput!) {
-  accountUpdateDefaultWalletId(input: $input) {
-    account {
-      defaultWalletId
-    }
-  }
-}
