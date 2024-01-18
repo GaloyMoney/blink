@@ -1,18 +1,15 @@
 import crypto from "crypto"
 
-import { MS_PER_DAY, ONE_DAY, getAccountLimits } from "@/config"
+import { MS_PER_DAY, ONE_DAY } from "@/config"
 
 import {
   AmountCalculator,
   BtcWalletDescriptor,
   UsdWalletDescriptor,
   WalletCurrency,
-  paymentAmountFromNumber,
 } from "@/domain/shared"
-import { AccountLevel, AccountTxVolumeRemaining } from "@/domain/accounts"
 import { UsdDisplayCurrency } from "@/domain/fiat"
 import { LedgerTransactionType } from "@/domain/ledger"
-import { WalletPriceRatio } from "@/domain/payments"
 import { CouldNotFindError } from "@/domain/errors"
 
 import { LedgerService } from "@/services/ledger"
@@ -45,14 +42,11 @@ import {
 import { ModifiedSet, timestampDaysAgo } from "@/utils"
 
 let accountWalletDescriptors: AccountWalletDescriptors
-let accountLimitsLevelOne: IAccountLimits
-let accountLimitAmountsLevelOne: {
-  intraLedgerLimit: UsdPaymentAmount
-  withdrawalLimit: UsdPaymentAmount
-  tradeIntraAccountLimit: UsdPaymentAmount
-}
 
 const calc = AmountCalculator()
+
+const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
+if (timestamp1DayAgo instanceof Error) throw timestamp1DayAgo
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -60,32 +54,6 @@ beforeAll(async () => {
   accountWalletDescriptors = {
     BTC: BtcWalletDescriptor(crypto.randomUUID() as WalletId),
     USD: UsdWalletDescriptor(crypto.randomUUID() as WalletId),
-  }
-
-  accountLimitsLevelOne = getAccountLimits({ level: AccountLevel.One })
-
-  const intraLedgerLimitAmount = paymentAmountFromNumber({
-    amount: accountLimitsLevelOne.intraLedgerLimit,
-    currency: WalletCurrency.Usd,
-  })
-  if (intraLedgerLimitAmount instanceof Error) throw intraLedgerLimitAmount
-
-  const withdrawalLimitAmount = paymentAmountFromNumber({
-    amount: accountLimitsLevelOne.withdrawalLimit,
-    currency: WalletCurrency.Usd,
-  })
-  if (withdrawalLimitAmount instanceof Error) throw withdrawalLimitAmount
-
-  const tradeIntraAccountLimitAmount = paymentAmountFromNumber({
-    amount: accountLimitsLevelOne.tradeIntraAccountLimit,
-    currency: WalletCurrency.Usd,
-  })
-  if (tradeIntraAccountLimitAmount instanceof Error) throw tradeIntraAccountLimitAmount
-
-  accountLimitAmountsLevelOne = {
-    intraLedgerLimit: intraLedgerLimitAmount,
-    withdrawalLimit: withdrawalLimitAmount,
-    tradeIntraAccountLimit: tradeIntraAccountLimitAmount,
   }
 })
 
@@ -537,41 +505,21 @@ describe("Facade", () => {
     })
   })
 
-  describe("remaining limits", () => {
-    const remainingWithdrawalLimit = async ({
-      priceRatio,
-    }: {
-      priceRatio: WalletPriceRatio
-    }) => {
-      const accountVolumeRemaining = AccountTxVolumeRemaining(accountLimitsLevelOne)
-
-      const walletVolumes = await LedgerFacade.externalPaymentVolumeAmountForAccountSince(
-        {
-          accountWalletDescriptors,
-          period: ONE_DAY,
-        },
-      )
-      if (walletVolumes instanceof Error) throw walletVolumes
-
-      const remainingAmount = await accountVolumeRemaining.withdrawal({
-        priceRatio,
-        walletVolumes,
-      })
-      if (remainingAmount instanceof Error) throw remainingAmount
-
-      return remainingAmount
-    }
-
-    describe("withdrawal", () => {
-      const sendPriceRatio = WalletPriceRatio(sendAmount)
-      if (sendPriceRatio instanceof Error) throw sendPriceRatio
+  describe("TxVolumeAmountSinceFactory", () => {
+    describe("txVolumeSince", () => {
+      // Using 'net...' to be able to check incoming and outgoing volume
+      const netTxVolumeAmountSince = LedgerFacade.netOutExternalPaymentVolumeAmountSince
 
       it("returns 0 volume for no transactions", async () => {
-        const remaining = await remainingWithdrawalLimit({ priceRatio: sendPriceRatio })
-        expect(remaining).toStrictEqual(accountLimitAmountsLevelOne.withdrawalLimit)
+        const volume = await netTxVolumeAmountSince({
+          walletDescriptor: accountWalletDescriptors.BTC,
+          timestamp: timestamp1DayAgo,
+        })
+        if (volume instanceof Error) throw volume
+        expect(volume.amount).toStrictEqual(0n)
       })
 
-      it("returns correct volume for a btc and usd transactions", async () => {
+      it("returns correct volume for a btc transactions", async () => {
         const resBtc = await recordSendLnPayment({
           walletDescriptor: accountWalletDescriptors.BTC,
           paymentAmount: sendAmount,
@@ -580,6 +528,15 @@ describe("Facade", () => {
         })
         if (resBtc instanceof Error) throw resBtc
 
+        const volume = await netTxVolumeAmountSince({
+          walletDescriptor: accountWalletDescriptors.BTC,
+          timestamp: timestamp1DayAgo,
+        })
+        if (volume instanceof Error) throw volume
+        expect(volume).toStrictEqual(sendAmount.btc)
+      })
+
+      it("returns correct volume for a usd transactions", async () => {
         const resUsd = await recordSendLnPayment({
           walletDescriptor: accountWalletDescriptors.USD,
           paymentAmount: sendAmount,
@@ -588,13 +545,12 @@ describe("Facade", () => {
         })
         if (resUsd instanceof Error) throw resUsd
 
-        const expectedRemaining = calc.sub(
-          accountLimitAmountsLevelOne.withdrawalLimit,
-          calc.mul(sendAmount.usd, 2n),
-        )
-
-        const remaining = await remainingWithdrawalLimit({ priceRatio: sendPriceRatio })
-        expect(remaining).toStrictEqual(expectedRemaining)
+        const volume = await netTxVolumeAmountSince({
+          walletDescriptor: accountWalletDescriptors.USD,
+          timestamp: timestamp1DayAgo,
+        })
+        if (volume instanceof Error) throw volume
+        expect(volume).toStrictEqual(sendAmount.usd)
       })
 
       it("returns 0 volume for a voided btc transaction", async () => {
@@ -612,34 +568,59 @@ describe("Facade", () => {
         })
         if (voided instanceof Error) return voided
 
-        const remaining = await remainingWithdrawalLimit({ priceRatio: sendPriceRatio })
-        expect(remaining).toStrictEqual(accountLimitAmountsLevelOne.withdrawalLimit)
+        const volume = await netTxVolumeAmountSince({
+          walletDescriptor: accountWalletDescriptors.BTC,
+          timestamp: timestamp1DayAgo,
+        })
+        if (volume instanceof Error) throw volume
+        expect(volume.amount).toStrictEqual(0n)
       })
 
       it("returns 0 volume for a delayed voided btc transaction", async () => {
-        const resUsd = await recordSendLnPayment({
-          walletDescriptor: accountWalletDescriptors.USD,
+        // Make initial transaction
+        const resBtc = await recordSendLnPayment({
+          walletDescriptor: accountWalletDescriptors.BTC,
           paymentAmount: sendAmount,
           bankFee,
           displayAmounts: displaySendEurAmounts,
         })
-        if (resUsd instanceof Error) throw resUsd
-        const { journalId, paymentHash } = resUsd
+        if (resBtc instanceof Error) throw resBtc
+        const { journalId, paymentHash } = resBtc
 
+        let volume = await netTxVolumeAmountSince({
+          walletDescriptor: accountWalletDescriptors.BTC,
+          timestamp: timestamp1DayAgo,
+        })
+        if (volume instanceof Error) throw volume
+        expect(volume).toStrictEqual(sendAmount.btc)
+
+        // Void initial transaction
         const voided = await LedgerFacade.recordLnSendRevert({
           journalId,
           paymentHash,
         })
         if (voided instanceof Error) return voided
 
+        volume = await netTxVolumeAmountSince({
+          walletDescriptor: accountWalletDescriptors.BTC,
+          timestamp: timestamp1DayAgo,
+        })
+        if (volume instanceof Error) throw volume
+        expect(volume.amount).toStrictEqual(0n)
+
+        // Push initial transaction behind 1 day but keep void transaction current
         const newDateTime = new Date(Date.now() - MS_PER_DAY * 2)
         await Transaction.updateMany(
           { _journal: toObjectId(journalId) },
           { timestamp: newDateTime, datetime: newDateTime },
         )
 
-        const remaining = await remainingWithdrawalLimit({ priceRatio: sendPriceRatio })
-        expect(remaining).toStrictEqual(accountLimitAmountsLevelOne.withdrawalLimit)
+        volume = await netTxVolumeAmountSince({
+          walletDescriptor: accountWalletDescriptors.BTC,
+          timestamp: timestamp1DayAgo,
+        })
+        if (volume instanceof Error) throw volume
+        expect(volume.amount).toStrictEqual(0n)
       })
 
       it("returns correct volume for a fee reimbursed btc transaction", async () => {
@@ -659,13 +640,14 @@ describe("Facade", () => {
         })
         if (reimbursed instanceof Error) throw reimbursed
 
-        const expectedRemaining = calc.sub(
-          accountLimitAmountsLevelOne.withdrawalLimit,
-          calc.sub(sendAmount.usd, bankFee.usd),
-        )
+        const expectedVolume = calc.sub(sendAmount.btc, bankFee.btc)
 
-        const remaining = await remainingWithdrawalLimit({ priceRatio: sendPriceRatio })
-        expect(remaining).toStrictEqual(expectedRemaining)
+        const volume = await netTxVolumeAmountSince({
+          walletDescriptor: accountWalletDescriptors.BTC,
+          timestamp: timestamp1DayAgo,
+        })
+        if (volume instanceof Error) throw volume
+        expect(volume).toStrictEqual(expectedVolume)
       })
     })
   })
@@ -720,9 +702,6 @@ describe("Facade", () => {
 
     const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
     const otherBtcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
-
-    const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
-    if (timestamp1DayAgo instanceof Error) throw timestamp1DayAgo
 
     const txTypesForVolumes = (
       includedTypes: (keyof typeof ExtendedLedgerTransactionType)[],
@@ -1092,7 +1071,7 @@ describe("Facade", () => {
       })
     })
 
-    describe("External payment (withdrawal) tx types, volume out", () => {
+    describe("External payment (withdrawal) tx types, volume net out", () => {
       const externalPaymentTxTypes: (keyof typeof UserLedgerTransactionType)[] = [
         "Payment",
         "OnchainPayment",
@@ -1101,15 +1080,12 @@ describe("Facade", () => {
       ]
 
       const currentVolumeAmount = async () => {
-        // Uses 'externalPaymentVolumeAmountSince'
-        const vol = await LedgerFacade.externalPaymentVolumeAmountSince({
+        const vol = await LedgerFacade.netOutExternalPaymentVolumeAmountSince({
           walletDescriptor: btcWalletDescriptor,
           timestamp: timestamp1DayAgo,
         })
         if (vol instanceof Error) throw vol
-
-        // Uses difference between 'outgoing' & 'incoming'
-        return calc.sub(vol.outgoingBaseAmount, vol.incomingBaseAmount)
+        return vol
       }
 
       const {
@@ -1401,15 +1377,12 @@ describe("Facade", () => {
       ]
 
       const currentVolumeAmount = async () => {
-        // Uses 'intraledgerTxBaseVolumeAmountSince'
-        const vol = await LedgerFacade.intraledgerTxBaseVolumeAmountSince({
+        const vol = await LedgerFacade.outIntraledgerTxBaseVolumeAmountSince({
           walletDescriptor: btcWalletDescriptor,
           timestamp: timestamp1DayAgo,
         })
         if (vol instanceof Error) throw vol
-
-        // Uses 'outgoing' only
-        return vol.outgoingBaseAmount
+        return vol
       }
 
       const {
@@ -1701,15 +1674,12 @@ describe("Facade", () => {
       ]
 
       const currentVolumeAmount = async () => {
-        // Uses 'tradeIntraAccountTxBaseVolumeAmountSince'
-        const vol = await LedgerFacade.tradeIntraAccountTxBaseVolumeAmountSince({
+        const vol = await LedgerFacade.outTradeIntraAccountTxBaseVolumeAmountSince({
           walletDescriptor: btcWalletDescriptor,
           timestamp: timestamp1DayAgo,
         })
         if (vol instanceof Error) throw vol
-
-        // Uses 'outgoing' only
-        return vol.outgoingBaseAmount
+        return vol
       }
 
       const {
