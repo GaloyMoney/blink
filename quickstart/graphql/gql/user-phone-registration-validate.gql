@@ -1,0 +1,11 @@
+mutation userPhoneRegistrationValidate($input: UserPhoneRegistrationValidateInput!) {
+  userPhoneRegistrationValidate(input: $input) {
+    errors {
+      message
+    }
+    me {
+      id
+      phone
+    }
+  }
+}

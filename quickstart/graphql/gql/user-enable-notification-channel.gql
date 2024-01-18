@@ -1,0 +1,12 @@
+mutation userEnableNotificationChannel(
+  $input: UserEnableNotificationChannelInput!
+) {
+  userEnableNotificationChannel(input: $input) {
+    notificationSettings {
+      push {
+        enabled
+        disabledCategories
+      }
+    }
+  }
+}

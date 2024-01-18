@@ -18,12 +18,12 @@ jobs:
           only: ytt, vendir
       - name: Test quickstart
         run: |
+          export COMPOSE_PROJECT_NAME="galoy-dev"
           cd quickstart
           ./bin/bump-galoy-git-ref.sh ${{ github.event.pull_request.head.sha }}
           ./bin/bump-galoy-image-digest.sh api local
           ./bin/bump-galoy-image-digest.sh trigger local
           ./bin/bump-mongodb-migrate-image-digest.sh local
-          make re-render
-          source .envrc
-          docker compose up -d
+          ./bin/re-render.sh
+          GALOY_QUICKSTART_PATH="./" docker compose up -d
           ./bin/quickstart.sh

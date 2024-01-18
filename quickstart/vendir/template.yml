@@ -18,7 +18,7 @@ directories:
     newRootPath: dev
 - path: ./graphql
   contents:
-  - path: ./
+  - path: schemas/
     git:
       url: https://github.com/GaloyMoney/galoy.git
       ref: #@ data.values.galoy_git_ref
@@ -26,3 +26,10 @@ directories:
     - core/api/src/graphql/public/schema.graphql
     - core/api/src/graphql/admin/schema.graphql
     newRootPath: core/api/src/graphql
+  - path: gql/
+    git:
+      url: https://github.com/GaloyMoney/galoy.git
+      ref: #@ data.values.galoy_git_ref
+    includePaths:
+    - bats/gql/**/*
+    newRootPath: bats/gql

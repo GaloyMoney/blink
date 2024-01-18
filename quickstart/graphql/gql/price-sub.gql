@@ -1,0 +1,14 @@
+subscription {
+  price(
+    input: { amount: 100 amountCurrencyUnit: BTCSAT priceCurrencyUnit: USDCENT }
+  ) {
+    errors {
+      message
+    }
+    price {
+      base
+      offset
+      currencyUnit
+    }
+  }
+}

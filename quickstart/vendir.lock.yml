@@ -14,6 +14,12 @@ directories:
       sha: 0064a130f5b50c7e751ceff744d93025b39962a8
       tags:
       - 0.20.8-1-g0064a130f
-    path: ./
+    path: schemas/
+  - git:
+      commitTitle: 'build(ci): fix buck2 test labels for gh actions (#3865)'
+      sha: 0064a130f5b50c7e751ceff744d93025b39962a8
+      tags:
+      - 0.20.8-1-g0064a130f
+    path: gql/
   path: ./graphql
 kind: LockConfig

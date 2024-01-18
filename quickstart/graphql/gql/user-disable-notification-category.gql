@@ -1,0 +1,12 @@
+mutation userDisableNotificationCategory(
+  $input: UserDisableNotificationCategoryInput!
+) {
+  userDisableNotificationCategory(input: $input) {
+    notificationSettings {
+      push {
+        enabled
+        disabledCategories
+      }
+    }
+  }
+}

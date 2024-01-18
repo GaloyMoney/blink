@@ -1,0 +1,11 @@
+mutation userUpdateLanguage($input: UserUpdateLanguageInput!) {
+  userUpdateLanguage(input: $input) {
+    user {
+      language
+    }
+    errors {
+      code
+      message
+    }
+  }
+}

@@ -1,0 +1,8 @@
+mutation callbackEndpointAdd($input: CallbackEndpointAddInput!) {
+  callbackEndpointAdd(input: $input) {
+    errors {
+      message
+    }
+    id
+  }
+}

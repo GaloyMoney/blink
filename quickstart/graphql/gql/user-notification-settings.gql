@@ -1,0 +1,10 @@
+query userNotificationSettings {
+  me {
+    id
+    notificationSettings {
+      push {
+        enabled
+      }
+    }
+  }
+}
