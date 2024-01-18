@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): move ledger volume tests (#3846)...'
-      sha: 6317d61bec953a02c332cbb91e4842e7c2250cd2
+      commitTitle: 'refactor(core): add new ''absoluteAllTxBaseVolumeAmountSince''
+        method (#3867)...'
+      sha: 013ef43accb57c7c79407cd8fb363801b5e87aa4
       tags:
-      - 0.20.10-1-g6317d61be
+      - 0.20.11
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): move ledger volume tests (#3846)...'
-      sha: 6317d61bec953a02c332cbb91e4842e7c2250cd2
+      commitTitle: 'refactor(core): add new ''absoluteAllTxBaseVolumeAmountSince''
+        method (#3867)...'
+      sha: 013ef43accb57c7c79407cd8fb363801b5e87aa4
       tags:
-      - 0.20.10-1-g6317d61be
+      - 0.20.11
     path: schemas/
   - git:
-      commitTitle: 'test(core): move ledger volume tests (#3846)...'
-      sha: 6317d61bec953a02c332cbb91e4842e7c2250cd2
+      commitTitle: 'refactor(core): add new ''absoluteAllTxBaseVolumeAmountSince''
+        method (#3867)...'
+      sha: 013ef43accb57c7c79407cd8fb363801b5e87aa4
       tags:
-      - 0.20.10-1-g6317d61be
+      - 0.20.11
     path: gql/
   path: ./graphql
 kind: LockConfig
