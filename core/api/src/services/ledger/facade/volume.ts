@@ -8,9 +8,11 @@ import {
 
 import { timestampDaysAgo } from "@/utils"
 
-import { paymentAmountFromNumber } from "@/domain/shared"
+import { AmountCalculator, paymentAmountFromNumber } from "@/domain/shared"
 import { addAttributesToCurrentSpan } from "@/services/tracing"
 import { MS_PER_DAY } from "@/config"
+
+const calc = AmountCalculator()
 
 export const TxnGroups = {
   allPaymentVolumeSince: [
@@ -208,11 +210,20 @@ export const tradeIntraAccountTxBaseVolumeAmountSince = txVolumeAmountFactory.cr
 export const allPaymentVolumeAmountSince = txVolumeAmountFactory.create(
   "allPaymentVolumeSince",
 )
-export const allTxBaseVolumeAmountSince =
-  txVolumeAmountFactory.create("allTxBaseVolumeSince")
 export const onChainTxBaseVolumeAmountSince = txVolumeAmountFactory.create(
   "onChainTxBaseVolumeSince",
 )
 export const lightningTxBaseVolumeAmountSince = txVolumeAmountFactory.create(
   "lightningTxBaseVolumeSince",
 )
+
+export const absoluteAllTxBaseVolumeAmountSince = async <S extends WalletCurrency>(
+  args: IGetVolumeAmountArgs<S>,
+): Promise<PaymentAmount<S> | LedgerServiceError> => {
+  const allTxBaseVolumeAmountSince = txVolumeAmountFactory.create("allTxBaseVolumeSince")
+
+  const walletVolumes = await allTxBaseVolumeAmountSince(args)
+  if (walletVolumes instanceof Error) return walletVolumes
+
+  return calc.add(walletVolumes.outgoingBaseAmount, walletVolumes.incomingBaseAmount)
+}

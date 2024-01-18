@@ -1999,15 +1999,12 @@ describe("Facade", () => {
       ) as (keyof typeof UserLedgerTransactionType)[]
 
       const currentVolumeAmount = async () => {
-        // Uses 'allTxBaseVolumeAmountSince'
-        const vol = await LedgerFacade.allTxBaseVolumeAmountSince({
+        const volume = await LedgerFacade.absoluteAllTxBaseVolumeAmountSince({
           walletDescriptor: btcWalletDescriptor,
           timestamp: timestamp1DayAgo,
         })
-        if (vol instanceof Error) throw vol
-
-        // Uses absolute 'outgoing' & 'incoming'
-        return calc.add(vol.outgoingBaseAmount, vol.incomingBaseAmount)
+        if (volume instanceof Error) throw volume
+        return volume
       }
 
       const {
