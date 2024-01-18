@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(core): limits related volume methods (#3868)...'
-      sha: 013baf32e550d8b276eeb81eece554838edb5a59
+      commitTitle: 'refactor(core): netIn onchain/ln volume methods (#3869)...'
+      sha: 547b0690bebb1c73d515a2c21880219e70d34104
       tags:
-      - 0.20.12-1-g013baf32e
+      - 0.20.13
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(core): limits related volume methods (#3868)...'
-      sha: 013baf32e550d8b276eeb81eece554838edb5a59
+      commitTitle: 'refactor(core): netIn onchain/ln volume methods (#3869)...'
+      sha: 547b0690bebb1c73d515a2c21880219e70d34104
       tags:
-      - 0.20.12-1-g013baf32e
+      - 0.20.13
     path: schemas/
   - git:
-      commitTitle: 'refactor(core): limits related volume methods (#3868)...'
-      sha: 013baf32e550d8b276eeb81eece554838edb5a59
+      commitTitle: 'refactor(core): netIn onchain/ln volume methods (#3869)...'
+      sha: 547b0690bebb1c73d515a2c21880219e70d34104
       tags:
-      - 0.20.12-1-g013baf32e
+      - 0.20.13
     path: gql/
   path: ./graphql
 kind: LockConfig
