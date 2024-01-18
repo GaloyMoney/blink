@@ -553,6 +553,42 @@ describe("Facade", () => {
         expect(volume).toStrictEqual(sendAmount.usd)
       })
 
+      it("returns 0 volume for a non-external-payment btc transaction", async () => {
+        const resBtc = await recordLnIntraLedgerPayment({
+          senderWalletDescriptor: accountWalletDescriptors.BTC,
+          recipientWalletDescriptor: accountWalletDescriptors.USD,
+          paymentAmount: sendAmount,
+          senderDisplayAmounts,
+          recipientDisplayAmounts,
+        })
+        if (resBtc instanceof Error) throw resBtc
+
+        const volume = await netTxVolumeAmountSince({
+          walletDescriptor: accountWalletDescriptors.BTC,
+          timestamp: timestamp1DayAgo,
+        })
+        if (volume instanceof Error) throw volume
+        expect(volume.amount).toStrictEqual(0n)
+      })
+
+      it("returns 0 volume for a non-external-payment usd transaction", async () => {
+        const resUsd = await recordLnIntraLedgerPayment({
+          senderWalletDescriptor: accountWalletDescriptors.USD,
+          recipientWalletDescriptor: accountWalletDescriptors.BTC,
+          paymentAmount: sendAmount,
+          senderDisplayAmounts,
+          recipientDisplayAmounts,
+        })
+        if (resUsd instanceof Error) throw resUsd
+
+        const volume = await netTxVolumeAmountSince({
+          walletDescriptor: accountWalletDescriptors.USD,
+          timestamp: timestamp1DayAgo,
+        })
+        if (volume instanceof Error) throw volume
+        expect(volume.amount).toStrictEqual(0n)
+      })
+
       it("returns 0 volume for a voided btc transaction", async () => {
         const resBtc = await recordSendLnPayment({
           walletDescriptor: accountWalletDescriptors.BTC,
