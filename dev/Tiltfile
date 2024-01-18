@@ -88,7 +88,6 @@ local_resource(
     allow_parallel = True,
     resource_deps = [
         "api",
-        "add-test-users-with-usernames",
     ],
     links = [
         link("http://localhost:3002", "pay"),
@@ -145,11 +144,12 @@ pay_test_target = "//apps/pay:test-integration"
 local_resource(
   "pay-test",
   labels = ["test"],
-  auto_init = is_ci and DASHBOARD_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and PAY_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(pay_test_target),
   resource_deps = [
     "api",
     "pay",
+    "add-test-users-with-usernames",
   ],
 )
 
