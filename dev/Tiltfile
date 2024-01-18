@@ -76,7 +76,7 @@ local_resource(
     "pay",
     labels = ["apps"],
     cmd = "buck2 build {}".format(pay_target),
-    serve_cmd = "./bin/add-test-users-with-usernames.sh & buck2 run {}".format(pay_target),
+    serve_cmd = "buck2 run {}".format(pay_target),
     serve_env = {
       "PORT": "3002",
       "CORE_GQL_URL_INTRANET": "http://localhost:4455/graphql",
@@ -88,6 +88,7 @@ local_resource(
     allow_parallel = True,
     resource_deps = [
         "api",
+        "add-test-users-with-usernames",
     ],
     links = [
         link("http://localhost:3002", "pay"),
