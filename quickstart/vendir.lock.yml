@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(core): netIn onchain/ln volume methods (#3869)...'
-      sha: 547b0690bebb1c73d515a2c21880219e70d34104
+      commitTitle: 'test(core): remove volume by tx type tests (#3876)...'
+      sha: 49e23ba3a6c85d35e1c83559d3f5881e078d9c81
       tags:
-      - 0.20.13
+      - 0.20.15-1-g49e23ba3a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(core): netIn onchain/ln volume methods (#3869)...'
-      sha: 547b0690bebb1c73d515a2c21880219e70d34104
+      commitTitle: 'test(core): remove volume by tx type tests (#3876)...'
+      sha: 49e23ba3a6c85d35e1c83559d3f5881e078d9c81
       tags:
-      - 0.20.13
+      - 0.20.15-1-g49e23ba3a
     path: schemas/
   - git:
-      commitTitle: 'refactor(core): netIn onchain/ln volume methods (#3869)...'
-      sha: 547b0690bebb1c73d515a2c21880219e70d34104
+      commitTitle: 'test(core): remove volume by tx type tests (#3876)...'
+      sha: 49e23ba3a6c85d35e1c83559d3f5881e078d9c81
       tags:
-      - 0.20.13
+      - 0.20.15-1-g49e23ba3a
     path: gql/
   path: ./graphql
 kind: LockConfig
