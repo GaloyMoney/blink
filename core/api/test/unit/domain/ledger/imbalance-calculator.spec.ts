@@ -13,30 +13,15 @@ const btcWallet: Wallet = {
 }
 
 const VolumeAmountAfterLightningReceiptFn = <S extends WalletCurrency>() =>
-  Promise.resolve({
-    outgoingBaseAmount: ZERO_SATS as PaymentAmount<S>,
-    incomingBaseAmount: BtcPaymentAmount(500n) as PaymentAmount<S>,
-  })
+  Promise.resolve(BtcPaymentAmount(500n) as PaymentAmount<S>)
 const VolumeAmountAfterLightningPaymentFn = <S extends WalletCurrency>() =>
-  Promise.resolve({
-    outgoingBaseAmount: BtcPaymentAmount(600n) as PaymentAmount<S>,
-    incomingBaseAmount: ZERO_SATS as PaymentAmount<S>,
-  })
+  Promise.resolve(BtcPaymentAmount(-600n) as PaymentAmount<S>)
 const VolumeAmountAfterOnChainReceiptFn = <S extends WalletCurrency>() =>
-  Promise.resolve({
-    outgoingBaseAmount: ZERO_SATS as PaymentAmount<S>,
-    incomingBaseAmount: BtcPaymentAmount(700n) as PaymentAmount<S>,
-  })
+  Promise.resolve(BtcPaymentAmount(700n) as PaymentAmount<S>)
 const VolumeAmountAfterOnChainPaymentFn = <S extends WalletCurrency>() =>
-  Promise.resolve({
-    outgoingBaseAmount: BtcPaymentAmount(800n) as PaymentAmount<S>,
-    incomingBaseAmount: ZERO_SATS as PaymentAmount<S>,
-  })
+  Promise.resolve(BtcPaymentAmount(-800n) as PaymentAmount<S>)
 const NoVolumeFn = <S extends WalletCurrency>() =>
-  Promise.resolve({
-    outgoingBaseAmount: ZERO_SATS as PaymentAmount<S>,
-    incomingBaseAmount: ZERO_SATS as PaymentAmount<S>,
-  })
+  Promise.resolve(ZERO_SATS as PaymentAmount<S>)
 
 describe("ImbalanceCalculator", () => {
   describe("for WithdrawalFeePriceMethod.proportionalOnImbalance", () => {
@@ -45,8 +30,8 @@ describe("ImbalanceCalculator", () => {
       const calculator = ImbalanceCalculator({
         method,
         sinceDaysAgo: ONE_DAY,
-        volumeAmountLightningFn: VolumeAmountAfterLightningReceiptFn,
-        volumeAmountOnChainFn: NoVolumeFn,
+        netInVolumeAmountLightningFn: VolumeAmountAfterLightningReceiptFn,
+        netInVolumeAmountOnChainFn: NoVolumeFn,
       })
       const imbalance = await calculator.getSwapOutImbalanceAmount(btcWallet)
       if (imbalance instanceof Error) throw imbalance
@@ -56,8 +41,8 @@ describe("ImbalanceCalculator", () => {
       const calculator = ImbalanceCalculator({
         method,
         sinceDaysAgo: ONE_DAY,
-        volumeAmountLightningFn: VolumeAmountAfterLightningPaymentFn,
-        volumeAmountOnChainFn: NoVolumeFn,
+        netInVolumeAmountLightningFn: VolumeAmountAfterLightningPaymentFn,
+        netInVolumeAmountOnChainFn: NoVolumeFn,
       })
       const imbalance = await calculator.getSwapOutImbalanceAmount(btcWallet)
       if (imbalance instanceof Error) throw imbalance
@@ -67,8 +52,8 @@ describe("ImbalanceCalculator", () => {
       const calculator = ImbalanceCalculator({
         method,
         sinceDaysAgo: ONE_DAY,
-        volumeAmountLightningFn: NoVolumeFn,
-        volumeAmountOnChainFn: VolumeAmountAfterOnChainReceiptFn,
+        netInVolumeAmountLightningFn: NoVolumeFn,
+        netInVolumeAmountOnChainFn: VolumeAmountAfterOnChainReceiptFn,
       })
       const imbalance = await calculator.getSwapOutImbalanceAmount(btcWallet)
       if (imbalance instanceof Error) throw imbalance
@@ -78,8 +63,8 @@ describe("ImbalanceCalculator", () => {
       const calculator = ImbalanceCalculator({
         method,
         sinceDaysAgo: ONE_DAY,
-        volumeAmountLightningFn: NoVolumeFn,
-        volumeAmountOnChainFn: VolumeAmountAfterOnChainPaymentFn,
+        netInVolumeAmountLightningFn: NoVolumeFn,
+        netInVolumeAmountOnChainFn: VolumeAmountAfterOnChainPaymentFn,
       })
       const imbalance = await calculator.getSwapOutImbalanceAmount(btcWallet)
       if (imbalance instanceof Error) throw imbalance
@@ -89,8 +74,8 @@ describe("ImbalanceCalculator", () => {
       const calculator = ImbalanceCalculator({
         method,
         sinceDaysAgo: ONE_DAY,
-        volumeAmountLightningFn: VolumeAmountAfterLightningReceiptFn,
-        volumeAmountOnChainFn: VolumeAmountAfterOnChainPaymentFn,
+        netInVolumeAmountLightningFn: VolumeAmountAfterLightningReceiptFn,
+        netInVolumeAmountOnChainFn: VolumeAmountAfterOnChainPaymentFn,
       })
       const imbalance = await calculator.getSwapOutImbalanceAmount(btcWallet)
       if (imbalance instanceof Error) throw imbalance
@@ -100,8 +85,8 @@ describe("ImbalanceCalculator", () => {
       const calculator = ImbalanceCalculator({
         method,
         sinceDaysAgo: ONE_DAY,
-        volumeAmountLightningFn: VolumeAmountAfterLightningPaymentFn,
-        volumeAmountOnChainFn: VolumeAmountAfterOnChainReceiptFn,
+        netInVolumeAmountLightningFn: VolumeAmountAfterLightningPaymentFn,
+        netInVolumeAmountOnChainFn: VolumeAmountAfterOnChainReceiptFn,
       })
       const imbalance = await calculator.getSwapOutImbalanceAmount(btcWallet)
       if (imbalance instanceof Error) throw imbalance
@@ -115,8 +100,8 @@ describe("ImbalanceCalculator", () => {
       const calculator = ImbalanceCalculator({
         method,
         sinceDaysAgo: ONE_DAY,
-        volumeAmountLightningFn: VolumeAmountAfterLightningReceiptFn,
-        volumeAmountOnChainFn: NoVolumeFn,
+        netInVolumeAmountLightningFn: VolumeAmountAfterLightningReceiptFn,
+        netInVolumeAmountOnChainFn: NoVolumeFn,
       })
       const imbalance = await calculator.getSwapOutImbalanceAmount(btcWallet)
       if (imbalance instanceof Error) throw imbalance

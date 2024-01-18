@@ -63,8 +63,8 @@ const getOnChainFee = async <S extends WalletCurrency>({
   const isExternalAddress = async () => recipientWallet instanceof CouldNotFindError
 
   const withSenderBuilder = OnChainPaymentFlowBuilder<S>({
-    volumeAmountLightningFn: LedgerFacade.lightningTxBaseVolumeAmountSince,
-    volumeAmountOnChainFn: LedgerFacade.onChainTxBaseVolumeAmountSince,
+    netInVolumeAmountLightningFn: LedgerFacade.netInLightningTxBaseVolumeAmountSince,
+    netInVolumeAmountOnChainFn: LedgerFacade.netInOnChainTxBaseVolumeAmountSince,
     isExternalAddress,
     sendAll: false,
     dustThreshold,

@@ -3,7 +3,6 @@ import { AccountLimitsType } from "./primitives"
 import {
   AmountCalculator,
   paymentAmountFromNumber,
-  UsdPaymentAmount,
   WalletCurrency,
   ZERO_CENTS,
 } from "@/domain/shared"
@@ -15,38 +14,24 @@ const WalletVolumesAggregator = ({
   walletVolumes,
   priceRatio,
 }: {
-  walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+  walletVolumes: PaymentAmount<WalletCurrency>[]
   priceRatio: WalletPriceRatio
 }) => {
-  const outgoingUsdAmount = (): UsdPaymentAmount => {
+  const aggregate = (): UsdPaymentAmount => {
     let volumeInUsdAmount = ZERO_CENTS
     for (const walletVolume of walletVolumes) {
-      const outgoingUsdAmount =
-        walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
-          ? priceRatio.convertFromBtc(walletVolume.outgoingBaseAmount as BtcPaymentAmount)
-          : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
+      const usdAmount =
+        walletVolume.currency === WalletCurrency.Btc
+          ? priceRatio.convertFromBtc(walletVolume as BtcPaymentAmount)
+          : (walletVolume as UsdPaymentAmount)
 
-      volumeInUsdAmount = calc.add(volumeInUsdAmount, outgoingUsdAmount)
+      volumeInUsdAmount = calc.add(volumeInUsdAmount, usdAmount)
     }
 
     return volumeInUsdAmount
   }
 
-  const incomingUsdAmount = (): UsdPaymentAmount => {
-    let volumeInUsdAmount = ZERO_CENTS
-    for (const walletVolume of walletVolumes) {
-      const incomingUsdAmount =
-        walletVolume.incomingBaseAmount.currency === WalletCurrency.Btc
-          ? priceRatio.convertFromBtc(walletVolume.incomingBaseAmount as BtcPaymentAmount)
-          : (walletVolume.incomingBaseAmount as UsdPaymentAmount)
-
-      volumeInUsdAmount = calc.add(volumeInUsdAmount, incomingUsdAmount)
-    }
-
-    return volumeInUsdAmount
-  }
-
-  return { outgoingUsdAmount, incomingUsdAmount }
+  return { aggregate }
 }
 
 export const AccountTxVolumeRemaining = (
@@ -54,16 +39,11 @@ export const AccountTxVolumeRemaining = (
 ): IAccountTxVolumeRemaining => {
   const intraLedger = async ({
     priceRatio,
-    walletVolumes,
+    outWalletVolumes,
   }: {
     priceRatio: WalletPriceRatio
-    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+    outWalletVolumes: PaymentAmount<WalletCurrency>[]
   }): Promise<UsdPaymentAmount | ValidationError> => {
-    const outgoingUsdVolumeAmount = WalletVolumesAggregator({
-      walletVolumes,
-      priceRatio,
-    }).outgoingUsdAmount()
-
     const { intraLedgerLimit: limit } = accountLimits
     const limitAmount = paymentAmountFromNumber({
       amount: limit,
@@ -71,31 +51,28 @@ export const AccountTxVolumeRemaining = (
     })
     if (limitAmount instanceof Error) return limitAmount
 
+    const outUsdVolumeAmount = WalletVolumesAggregator({
+      walletVolumes: outWalletVolumes,
+      priceRatio,
+    }).aggregate()
+
     addAttributesToCurrentSpan({
-      "txVolume.outgoingInBase": `${outgoingUsdVolumeAmount.amount}`,
+      "txVolume.inUsd": `${outUsdVolumeAmount.amount}`,
       "txVolume.threshold": `${limitAmount.amount}`,
       "txVolume.limitCheck": AccountLimitsType.IntraLedger,
     })
 
-    const rawVolumeRemaining = calc.sub(limitAmount, outgoingUsdVolumeAmount)
-    return calc.max(ZERO_CENTS, rawVolumeRemaining)
+    const volumeRemaining = calc.sub(limitAmount, outUsdVolumeAmount)
+    return calc.max(ZERO_CENTS, volumeRemaining)
   }
 
   const withdrawal = async ({
     priceRatio,
-    walletVolumes,
+    netOutWalletVolumes,
   }: {
     priceRatio: WalletPriceRatio
-    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+    netOutWalletVolumes: PaymentAmount<WalletCurrency>[]
   }): Promise<UsdPaymentAmount | ValidationError> => {
-    const aggregator = WalletVolumesAggregator({
-      walletVolumes,
-      priceRatio,
-    })
-
-    const outgoingUsdVolumeAmount = aggregator.outgoingUsdAmount()
-    const incomingUsdVolumeAmount = aggregator.incomingUsdAmount()
-
     const { withdrawalLimit: limit } = accountLimits
     const limitAmount = paymentAmountFromNumber({
       amount: limit,
@@ -103,30 +80,28 @@ export const AccountTxVolumeRemaining = (
     })
     if (limitAmount instanceof Error) return limitAmount
 
+    const netUsdVolumeAmount = WalletVolumesAggregator({
+      walletVolumes: netOutWalletVolumes,
+      priceRatio,
+    }).aggregate()
+
     addAttributesToCurrentSpan({
-      "txVolume.outgoingInBase": `${outgoingUsdVolumeAmount.amount}`,
-      "txVolume.incomingInBase": `${incomingUsdVolumeAmount.amount}`,
+      "txVolume.inUsd": `${netUsdVolumeAmount.amount}`,
       "txVolume.threshold": `${limitAmount.amount}`,
       "txVolume.limitCheck": AccountLimitsType.Withdrawal,
     })
 
-    const netVolumeAmount = calc.sub(outgoingUsdVolumeAmount, incomingUsdVolumeAmount)
-    const rawVolumeRemaining = calc.sub(limitAmount, netVolumeAmount)
-    return calc.max(ZERO_CENTS, rawVolumeRemaining)
+    const volumeRemaining = calc.sub(limitAmount, netUsdVolumeAmount)
+    return calc.max(ZERO_CENTS, volumeRemaining)
   }
 
   const tradeIntraAccount = async ({
     priceRatio,
-    walletVolumes,
+    outWalletVolumes,
   }: {
     priceRatio: WalletPriceRatio
-    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+    outWalletVolumes: PaymentAmount<WalletCurrency>[]
   }): Promise<UsdPaymentAmount | ValidationError> => {
-    const outgoingUsdVolumeAmount = WalletVolumesAggregator({
-      walletVolumes,
-      priceRatio,
-    }).outgoingUsdAmount()
-
     const { tradeIntraAccountLimit: limit } = accountLimits
     const limitAmount = paymentAmountFromNumber({
       amount: limit,
@@ -134,13 +109,18 @@ export const AccountTxVolumeRemaining = (
     })
     if (limitAmount instanceof Error) return limitAmount
 
+    const outUsdVolumeAmount = WalletVolumesAggregator({
+      walletVolumes: outWalletVolumes,
+      priceRatio,
+    }).aggregate()
+
     addAttributesToCurrentSpan({
-      "txVolume.outgoingInBase": `${outgoingUsdVolumeAmount.amount}`,
+      "txVolume.inUsd": `${outUsdVolumeAmount.amount}`,
       "txVolume.threshold": `${limitAmount.amount}`,
       "txVolume.limitCheck": AccountLimitsType.SelfTrade,
     })
 
-    const rawVolumeRemaining = calc.sub(limitAmount, outgoingUsdVolumeAmount)
+    const rawVolumeRemaining = calc.sub(limitAmount, outUsdVolumeAmount)
     return calc.max(ZERO_CENTS, rawVolumeRemaining)
   }
 
