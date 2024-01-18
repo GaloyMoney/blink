@@ -88,7 +88,6 @@ local_resource(
     serve_env = pay_env,
     deps = _buck2_dep_inputs(pay_target),
     allow_parallel = True,
-    auto_init = run_apps,
     resource_deps = [
         "api",
     ],
