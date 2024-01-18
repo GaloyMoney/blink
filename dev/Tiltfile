@@ -545,5 +545,5 @@ local_resource(
   labels = ["test"],
   auto_init = is_ci and CORE_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(api_test_target),
-  resource_deps = [res for sublist in docker_groups.values() for res in sublist] + ["notifications"],
+  resource_deps = [res for sublist in docker_groups.values() for res in sublist],
 )
