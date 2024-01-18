@@ -197,7 +197,17 @@ const BusinessAccount = GT.Object({
 
     notificationSettings: {
       type: GT.NonNull(NotificationSettings),
-      resolve: (source) => source.notificationSettings,
+      resolve: async (source) => {
+        const result = await Accounts.getNotificationSettingsForAccount({
+          account: source,
+        })
+
+        if (result instanceof Error) {
+          throw mapError(result)
+        }
+
+        return result
+      },
     },
   }),
 })

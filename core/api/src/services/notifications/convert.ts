@@ -45,6 +45,10 @@ export const grpcNotificationCategoryToNotificationCategory = (
       return GaloyNotificationCategories.Payments
     case GrpcNotificationCategory.CIRCLES:
       return "Circles" as NotificationCategory
+    case GrpcNotificationCategory.BALANCE:
+      return GaloyNotificationCategories.Balance
+    case GrpcNotificationCategory.ADMIN_NOTIFICATION:
+      return GaloyNotificationCategories.AdminNotification
     default:
       return new InvalidPushNotificationSettingError(
         `Invalid notification category: ${category}`,
@@ -61,8 +65,10 @@ export const notificationCategoryToGrpcNotificationCategory = (
       return GrpcNotificationCategory.PAYMENTS
     case "Circles":
       return GrpcNotificationCategory.CIRCLES
-    case GaloyNotificationCategories.AdminPushNotification:
+    case GaloyNotificationCategories.AdminNotification:
+      return GrpcNotificationCategory.ADMIN_NOTIFICATION
     case GaloyNotificationCategories.Balance:
+      return GrpcNotificationCategory.BALANCE
     default:
       throw new Error(`Not implemented: ${category}`)
   }

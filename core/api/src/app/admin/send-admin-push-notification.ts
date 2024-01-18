@@ -22,7 +22,7 @@ export const sendAdminPushNotification = async ({
 }): Promise<true | ApplicationError> => {
   const checkedNotificationCategory = notificationCategory
     ? checkedToNotificationCategory(notificationCategory)
-    : GaloyNotificationCategories.AdminPushNotification
+    : GaloyNotificationCategories.AdminNotification
 
   if (checkedNotificationCategory instanceof Error) return checkedNotificationCategory
 

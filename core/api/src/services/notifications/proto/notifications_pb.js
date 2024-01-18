@@ -2619,7 +2619,9 @@ proto.services.notifications.v1.NotificationChannel = {
  */
 proto.services.notifications.v1.NotificationCategory = {
   CIRCLES: 0,
-  PAYMENTS: 1
+  PAYMENTS: 1,
+  BALANCE: 2,
+  ADMIN_NOTIFICATION: 3
 };
 
 goog.object.extend(exports, proto.services.notifications.v1);

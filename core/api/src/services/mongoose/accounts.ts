@@ -2,7 +2,6 @@ import { parseRepositoryError } from "./utils"
 
 import { AccountStatus } from "@/domain/accounts"
 import {
-  CouldNotFindAccountError,
   CouldNotFindAccountFromKratosIdError,
   CouldNotFindAccountFromUsernameError,
   CouldNotFindAccountFromIdError,
@@ -72,10 +71,6 @@ export const AccountsRepository = (): IAccountsRepository => {
         { username: 1, title: 1, coordinates: 1 },
       )
 
-      if (!accounts) {
-        return new CouldNotFindAccountError()
-      }
-
       return accounts.map((account) => ({
         username: account.username as Username,
         mapInfo: {
@@ -101,7 +96,6 @@ export const AccountsRepository = (): IAccountsRepository => {
     withdrawFee,
     kratosUserId,
     displayCurrency,
-    notificationSettings,
 
     role,
   }: Account): Promise<Account | RepositoryError> => {
@@ -126,7 +120,6 @@ export const AccountsRepository = (): IAccountsRepository => {
           withdrawFee,
           kratosUserId,
           displayCurrency,
-          notificationSettings,
 
           role,
         },
@@ -208,14 +201,6 @@ const translateToAccount = (result: AccountRecord): Account => ({
     [],
   ),
   withdrawFee: result.withdrawFee as Satoshis,
-  notificationSettings: {
-    push: {
-      enabled: result.notificationSettings
-        ? result.notificationSettings.push.enabled
-        : true,
-      disabledCategories: result.notificationSettings?.push?.disabledCategories || [],
-    },
-  },
 
   kratosUserId: result.kratosUserId as UserId,
   displayCurrency: (result.displayCurrency || UsdDisplayCurrency) as DisplayCurrency,
