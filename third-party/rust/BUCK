@@ -4,6 +4,13 @@ load("@prelude//rust:cargo_buildscript.bzl", "buildscript_run")
 load("@prelude//rust:cargo_package.bzl", "cargo")
 load("//third-party/macros:rust_third_party.bzl", "third_party_rust_prebuilt_cxx_library")
 
+git_fetch(
+    name = "novu-rust-f0920fcd4978f15b.git",
+    repo = "https://github.com/novuhq/novu-rust.git",
+    rev = "10e9686d8b8f8657bce4af0ba9c0afcc384558a0",
+    visibility = [],
+)
+
 http_archive(
     name = "Inflector-0.11.4.crate",
     sha256 = "fe438c63458706e03479442743baae6c88256498e6431708f6dfc520a26515d3",
@@ -2176,6 +2183,41 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "foreign-types-0.3.2.crate",
+    sha256 = "f6f339eb8adc052cd2ca78910fda869aefa38d22d5cb648e6485e4d3fc06f3b1",
+    strip_prefix = "foreign-types-0.3.2",
+    urls = ["https://crates.io/api/v1/crates/foreign-types/0.3.2/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "foreign-types-0.3.2",
+    srcs = [":foreign-types-0.3.2.crate"],
+    crate = "foreign_types",
+    crate_root = "foreign-types-0.3.2.crate/src/lib.rs",
+    edition = "2015",
+    visibility = [],
+    deps = [":foreign-types-shared-0.1.1"],
+)
+
+http_archive(
+    name = "foreign-types-shared-0.1.1.crate",
+    sha256 = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b",
+    strip_prefix = "foreign-types-shared-0.1.1",
+    urls = ["https://crates.io/api/v1/crates/foreign-types-shared/0.1.1/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "foreign-types-shared-0.1.1",
+    srcs = [":foreign-types-shared-0.1.1.crate"],
+    crate = "foreign_types_shared",
+    crate_root = "foreign-types-shared-0.1.1.crate/src/lib.rs",
+    edition = "2015",
+    visibility = [],
+)
+
+http_archive(
     name = "form_urlencoded-1.2.0.crate",
     sha256 = "a62bc1cf6f830c2ec14a513a9fb124d0a213a629668a4186f329db21fe045652",
     strip_prefix = "form_urlencoded-1.2.0",
@@ -3057,6 +3099,30 @@ cargo.rust_library(
         ":pin-project-lite-0.2.13",
         ":tokio-1.33.0",
         ":tokio-io-timeout-1.2.0",
+    ],
+)
+
+http_archive(
+    name = "hyper-tls-0.5.0.crate",
+    sha256 = "d6183ddfa99b85da61a140bea0efc93fdf56ceaa041b37d553518030827f9905",
+    strip_prefix = "hyper-tls-0.5.0",
+    urls = ["https://crates.io/api/v1/crates/hyper-tls/0.5.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "hyper-tls-0.5.0",
+    srcs = [":hyper-tls-0.5.0.crate"],
+    crate = "hyper_tls",
+    crate_root = "hyper-tls-0.5.0.crate/src/lib.rs",
+    edition = "2018",
+    visibility = [],
+    deps = [
+        ":bytes-1.5.0",
+        ":hyper-0.14.27",
+        ":native-tls-0.2.11",
+        ":tokio-1.33.0",
+        ":tokio-native-tls-0.3.1",
     ],
 )
 
@@ -3956,6 +4022,65 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "native-tls-0.2.11.crate",
+    sha256 = "07226173c32f2926027b63cce4bcd8076c3552846cbe7925f3aaffeac0a3b92e",
+    strip_prefix = "native-tls-0.2.11",
+    urls = ["https://crates.io/api/v1/crates/native-tls/0.2.11/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "native-tls-0.2.11",
+    srcs = [":native-tls-0.2.11.crate"],
+    crate = "native_tls",
+    crate_root = "native-tls-0.2.11.crate/src/lib.rs",
+    edition = "2015",
+    platform = {
+        "linux-arm64": dict(
+            deps = [
+                ":log-0.4.20",
+                ":openssl-0.10.62",
+                ":openssl-probe-0.1.5",
+                ":openssl-sys-0.9.98",
+            ],
+        ),
+        "linux-x86_64": dict(
+            deps = [
+                ":log-0.4.20",
+                ":openssl-0.10.62",
+                ":openssl-probe-0.1.5",
+                ":openssl-sys-0.9.98",
+            ],
+        ),
+        "macos-arm64": dict(
+            deps = [
+                ":lazy_static-1.4.0",
+                ":libc-0.2.149",
+                ":security-framework-2.9.2",
+                ":security-framework-sys-2.9.1",
+                ":tempfile-3.8.1",
+            ],
+        ),
+        "macos-x86_64": dict(
+            deps = [
+                ":lazy_static-1.4.0",
+                ":libc-0.2.149",
+                ":security-framework-2.9.2",
+                ":security-framework-sys-2.9.1",
+                ":tempfile-3.8.1",
+            ],
+        ),
+        "windows-gnu": dict(
+            deps = [":schannel-0.1.23"],
+        ),
+        "windows-msvc": dict(
+            deps = [":schannel-0.1.23"],
+        ),
+    },
+    visibility = [],
+)
+
+http_archive(
     name = "nom-7.1.3.crate",
     sha256 = "d273983c5a657a70a3e8f2a01329822f3b8c8172b73826411a55751e404a0a4a",
     strip_prefix = "nom-7.1.3",
@@ -3978,6 +4103,28 @@ cargo.rust_library(
     deps = [
         ":memchr-2.6.4",
         ":minimal-lexical-0.2.1",
+    ],
+)
+
+alias(
+    name = "novu",
+    actual = ":novu-0.1.0",
+    visibility = ["PUBLIC"],
+)
+
+cargo.rust_library(
+    name = "novu-0.1.0",
+    srcs = [":novu-rust-f0920fcd4978f15b.git"],
+    crate = "novu",
+    crate_root = "novu-rust-f0920fcd4978f15b/src/lib.rs",
+    edition = "2021",
+    visibility = [],
+    deps = [
+        ":reqwest-0.11.23",
+        ":serde-1.0.195",
+        ":serde_json-1.0.111",
+        ":thiserror-1.0.56",
+        ":tokio-1.33.0",
     ],
 )
 
@@ -4303,6 +4450,93 @@ cargo.rust_library(
         "unstable",
     ],
     visibility = [],
+)
+
+http_archive(
+    name = "openssl-0.10.62.crate",
+    sha256 = "8cde4d2d9200ad5909f8dac647e29482e07c3a35de8a13fce7c9c7747ad9f671",
+    strip_prefix = "openssl-0.10.62",
+    urls = ["https://crates.io/api/v1/crates/openssl/0.10.62/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "openssl-0.10.62",
+    srcs = [":openssl-0.10.62.crate"],
+    crate = "openssl",
+    crate_root = "openssl-0.10.62.crate/src/lib.rs",
+    edition = "2018",
+    features = ["default"],
+    named_deps = {
+        "ffi": ":openssl-sys-0.9.98",
+    },
+    visibility = [],
+    deps = [
+        ":bitflags-2.4.1",
+        ":cfg-if-1.0.0",
+        ":foreign-types-0.3.2",
+        ":libc-0.2.149",
+        ":once_cell-1.18.0",
+        ":openssl-macros-0.1.1",
+    ],
+)
+
+http_archive(
+    name = "openssl-macros-0.1.1.crate",
+    sha256 = "a948666b637a0f465e8564c73e89d4dde00d72d4d473cc972f390fc3dcee7d9c",
+    strip_prefix = "openssl-macros-0.1.1",
+    urls = ["https://crates.io/api/v1/crates/openssl-macros/0.1.1/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "openssl-macros-0.1.1",
+    srcs = [":openssl-macros-0.1.1.crate"],
+    crate = "openssl_macros",
+    crate_root = "openssl-macros-0.1.1.crate/src/lib.rs",
+    edition = "2018",
+    proc_macro = True,
+    visibility = [],
+    deps = [
+        ":proc-macro2-1.0.76",
+        ":quote-1.0.35",
+        ":syn-2.0.48",
+    ],
+)
+
+http_archive(
+    name = "openssl-probe-0.1.5.crate",
+    sha256 = "ff011a302c396a5197692431fc1948019154afc178baf7d8e37367442a4601cf",
+    strip_prefix = "openssl-probe-0.1.5",
+    urls = ["https://crates.io/api/v1/crates/openssl-probe/0.1.5/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "openssl-probe-0.1.5",
+    srcs = [":openssl-probe-0.1.5.crate"],
+    crate = "openssl_probe",
+    crate_root = "openssl-probe-0.1.5.crate/src/lib.rs",
+    edition = "2015",
+    visibility = [],
+)
+
+http_archive(
+    name = "openssl-sys-0.9.98.crate",
+    sha256 = "c1665caf8ab2dc9aef43d1c0023bd904633a6a05cb30b0ad59bec2ae986e57a7",
+    strip_prefix = "openssl-sys-0.9.98",
+    urls = ["https://crates.io/api/v1/crates/openssl-sys/0.9.98/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "openssl-sys-0.9.98",
+    srcs = [":openssl-sys-0.9.98.crate"],
+    crate = "openssl_sys",
+    crate_root = "openssl-sys-0.9.98.crate/src/lib.rs",
+    edition = "2018",
+    visibility = [],
+    deps = [":libc-0.2.149"],
 )
 
 alias(
@@ -5615,24 +5849,33 @@ cargo.rust_library(
         "__rustls",
         "__tls",
         "blocking",
+        "default",
+        "default-tls",
         "hyper-rustls",
+        "hyper-tls",
         "json",
+        "native-tls-crate",
         "rustls",
         "rustls-pemfile",
         "rustls-tls",
         "rustls-tls-webpki-roots",
         "serde_json",
+        "tokio-native-tls",
         "tokio-rustls",
         "webpki-roots",
     ],
     platform = {
         "linux-arm64": dict(
+            named_deps = {
+                "native_tls_crate": ":native-tls-0.2.11",
+            },
             deps = [
                 ":encoding_rs-0.8.33",
                 ":h2-0.3.21",
                 ":http-body-0.4.5",
                 ":hyper-0.14.27",
                 ":hyper-rustls-0.24.2",
+                ":hyper-tls-0.5.0",
                 ":ipnet-2.9.0",
                 ":log-0.4.20",
                 ":mime-0.3.17",
@@ -5642,17 +5885,22 @@ cargo.rust_library(
                 ":rustls-0.21.8",
                 ":rustls-pemfile-1.0.3",
                 ":tokio-1.33.0",
+                ":tokio-native-tls-0.3.1",
                 ":tokio-rustls-0.24.1",
                 ":webpki-roots-0.25.2",
             ],
         ),
         "linux-x86_64": dict(
+            named_deps = {
+                "native_tls_crate": ":native-tls-0.2.11",
+            },
             deps = [
                 ":encoding_rs-0.8.33",
                 ":h2-0.3.21",
                 ":http-body-0.4.5",
                 ":hyper-0.14.27",
                 ":hyper-rustls-0.24.2",
+                ":hyper-tls-0.5.0",
                 ":ipnet-2.9.0",
                 ":log-0.4.20",
                 ":mime-0.3.17",
@@ -5662,17 +5910,22 @@ cargo.rust_library(
                 ":rustls-0.21.8",
                 ":rustls-pemfile-1.0.3",
                 ":tokio-1.33.0",
+                ":tokio-native-tls-0.3.1",
                 ":tokio-rustls-0.24.1",
                 ":webpki-roots-0.25.2",
             ],
         ),
         "macos-arm64": dict(
+            named_deps = {
+                "native_tls_crate": ":native-tls-0.2.11",
+            },
             deps = [
                 ":encoding_rs-0.8.33",
                 ":h2-0.3.21",
                 ":http-body-0.4.5",
                 ":hyper-0.14.27",
                 ":hyper-rustls-0.24.2",
+                ":hyper-tls-0.5.0",
                 ":ipnet-2.9.0",
                 ":log-0.4.20",
                 ":mime-0.3.17",
@@ -5683,17 +5936,22 @@ cargo.rust_library(
                 ":rustls-pemfile-1.0.3",
                 ":system-configuration-0.5.1",
                 ":tokio-1.33.0",
+                ":tokio-native-tls-0.3.1",
                 ":tokio-rustls-0.24.1",
                 ":webpki-roots-0.25.2",
             ],
         ),
         "macos-x86_64": dict(
+            named_deps = {
+                "native_tls_crate": ":native-tls-0.2.11",
+            },
             deps = [
                 ":encoding_rs-0.8.33",
                 ":h2-0.3.21",
                 ":http-body-0.4.5",
                 ":hyper-0.14.27",
                 ":hyper-rustls-0.24.2",
+                ":hyper-tls-0.5.0",
                 ":ipnet-2.9.0",
                 ":log-0.4.20",
                 ":mime-0.3.17",
@@ -5704,17 +5962,22 @@ cargo.rust_library(
                 ":rustls-pemfile-1.0.3",
                 ":system-configuration-0.5.1",
                 ":tokio-1.33.0",
+                ":tokio-native-tls-0.3.1",
                 ":tokio-rustls-0.24.1",
                 ":webpki-roots-0.25.2",
             ],
         ),
         "windows-gnu": dict(
+            named_deps = {
+                "native_tls_crate": ":native-tls-0.2.11",
+            },
             deps = [
                 ":encoding_rs-0.8.33",
                 ":h2-0.3.21",
                 ":http-body-0.4.5",
                 ":hyper-0.14.27",
                 ":hyper-rustls-0.24.2",
+                ":hyper-tls-0.5.0",
                 ":ipnet-2.9.0",
                 ":log-0.4.20",
                 ":mime-0.3.17",
@@ -5724,18 +5987,23 @@ cargo.rust_library(
                 ":rustls-0.21.8",
                 ":rustls-pemfile-1.0.3",
                 ":tokio-1.33.0",
+                ":tokio-native-tls-0.3.1",
                 ":tokio-rustls-0.24.1",
                 ":webpki-roots-0.25.2",
                 ":winreg-0.50.0",
             ],
         ),
         "windows-msvc": dict(
+            named_deps = {
+                "native_tls_crate": ":native-tls-0.2.11",
+            },
             deps = [
                 ":encoding_rs-0.8.33",
                 ":h2-0.3.21",
                 ":http-body-0.4.5",
                 ":hyper-0.14.27",
                 ":hyper-rustls-0.24.2",
+                ":hyper-tls-0.5.0",
                 ":ipnet-2.9.0",
                 ":log-0.4.20",
                 ":mime-0.3.17",
@@ -5745,6 +6013,7 @@ cargo.rust_library(
                 ":rustls-0.21.8",
                 ":rustls-pemfile-1.0.3",
                 ":tokio-1.33.0",
+                ":tokio-native-tls-0.3.1",
                 ":tokio-rustls-0.24.1",
                 ":webpki-roots-0.25.2",
                 ":winreg-0.50.0",
@@ -6740,6 +7009,24 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "schannel-0.1.23.crate",
+    sha256 = "fbc91545643bcf3a0bbb6569265615222618bdf33ce4ffbbd13c4bbd4c093534",
+    strip_prefix = "schannel-0.1.23",
+    urls = ["https://crates.io/api/v1/crates/schannel/0.1.23/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "schannel-0.1.23",
+    srcs = [":schannel-0.1.23.crate"],
+    crate = "schannel",
+    crate_root = "schannel-0.1.23.crate/src/lib.rs",
+    edition = "2018",
+    visibility = [],
+    deps = [":windows-sys-0.52.0"],
+)
+
+http_archive(
     name = "scopeguard-1.2.0.crate",
     sha256 = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49",
     strip_prefix = "scopeguard-1.2.0",
@@ -6774,6 +7061,59 @@ cargo.rust_library(
     deps = [
         ":ring-0.17.5",
         ":untrusted-0.9.0",
+    ],
+)
+
+http_archive(
+    name = "security-framework-2.9.2.crate",
+    sha256 = "05b64fb303737d99b81884b2c63433e9ae28abebe5eb5045dcdd175dc2ecf4de",
+    strip_prefix = "security-framework-2.9.2",
+    urls = ["https://crates.io/api/v1/crates/security-framework/2.9.2/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "security-framework-2.9.2",
+    srcs = [":security-framework-2.9.2.crate"],
+    crate = "security_framework",
+    crate_root = "security-framework-2.9.2.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "OSX_10_9",
+        "default",
+    ],
+    visibility = [],
+    deps = [
+        ":bitflags-1.3.2",
+        ":core-foundation-0.9.4",
+        ":core-foundation-sys-0.8.6",
+        ":libc-0.2.149",
+        ":security-framework-sys-2.9.1",
+    ],
+)
+
+http_archive(
+    name = "security-framework-sys-2.9.1.crate",
+    sha256 = "e932934257d3b408ed8f30db49d85ea163bfe74961f017f405b025af298f0c7a",
+    strip_prefix = "security-framework-sys-2.9.1",
+    urls = ["https://crates.io/api/v1/crates/security-framework-sys/2.9.1/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "security-framework-sys-2.9.1",
+    srcs = [":security-framework-sys-2.9.1.crate"],
+    crate = "security_framework_sys",
+    crate_root = "security-framework-sys-2.9.1.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "OSX_10_9",
+        "default",
+    ],
+    visibility = [],
+    deps = [
+        ":core-foundation-sys-0.8.6",
+        ":libc-0.2.149",
     ],
 )
 
@@ -8275,6 +8615,7 @@ cargo.rust_binary(
         ":http-0.2.11",
         ":jsonwebtoken-9.2.0",
         ":mongodb-2.8.0",
+        ":novu-0.1.0",
         ":opentelemetry-0.20.0",
         ":opentelemetry-http-0.9.0",
         ":opentelemetry-otlp-0.13.0",
@@ -8624,6 +8965,27 @@ cargo.rust_library(
         ":proc-macro2-1.0.76",
         ":quote-1.0.35",
         ":syn-2.0.48",
+    ],
+)
+
+http_archive(
+    name = "tokio-native-tls-0.3.1.crate",
+    sha256 = "bbae76ab933c85776efabc971569dd6119c580d8f5d448769dec1764bf796ef2",
+    strip_prefix = "tokio-native-tls-0.3.1",
+    urls = ["https://crates.io/api/v1/crates/tokio-native-tls/0.3.1/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "tokio-native-tls-0.3.1",
+    srcs = [":tokio-native-tls-0.3.1.crate"],
+    crate = "tokio_native_tls",
+    crate_root = "tokio-native-tls-0.3.1.crate/src/lib.rs",
+    edition = "2018",
+    visibility = [],
+    deps = [
+        ":native-tls-0.2.11",
+        ":tokio-1.33.0",
     ],
 )
 
@@ -10184,6 +10546,36 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "windows-sys-0.52.0.crate",
+    sha256 = "282be5f36a8ce781fad8c8ae18fa3f9beff57ec1b52cb3de0789201425d9a33d",
+    strip_prefix = "windows-sys-0.52.0",
+    urls = ["https://crates.io/api/v1/crates/windows-sys/0.52.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "windows-sys-0.52.0",
+    srcs = [":windows-sys-0.52.0.crate"],
+    crate = "windows_sys",
+    crate_root = "windows-sys-0.52.0.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "Win32",
+        "Win32_Foundation",
+        "Win32_Security",
+        "Win32_Security_Authentication",
+        "Win32_Security_Authentication_Identity",
+        "Win32_Security_Credentials",
+        "Win32_Security_Cryptography",
+        "Win32_System",
+        "Win32_System_Memory",
+        "default",
+    ],
+    visibility = [],
+    deps = [":windows-targets-0.52.0"],
+)
+
+http_archive(
     name = "windows-targets-0.48.5.crate",
     sha256 = "9a2fa6e2155d7247be68c096456083145c183cbbbc2764150dda45a87197940c",
     strip_prefix = "windows-targets-0.48.5",
@@ -10212,6 +10604,34 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "windows-targets-0.52.0.crate",
+    sha256 = "8a18201040b24831fbb9e4eb208f8892e1f50a37feb53cc7ff887feb8f50e7cd",
+    strip_prefix = "windows-targets-0.52.0",
+    urls = ["https://crates.io/api/v1/crates/windows-targets/0.52.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "windows-targets-0.52.0",
+    srcs = [":windows-targets-0.52.0.crate"],
+    crate = "windows_targets",
+    crate_root = "windows-targets-0.52.0.crate/src/lib.rs",
+    edition = "2021",
+    platform = {
+        "linux-x86_64": dict(
+            deps = [":windows_x86_64_gnu-0.52.0"],
+        ),
+        "windows-gnu": dict(
+            deps = [":windows_x86_64_gnu-0.52.0"],
+        ),
+        "windows-msvc": dict(
+            deps = [":windows_x86_64_msvc-0.52.0"],
+        ),
+    },
+    visibility = [],
+)
+
+http_archive(
     name = "windows_x86_64_gnu-0.48.5.crate",
     sha256 = "53d40abd2583d23e4718fddf1ebec84dbff8381c07cae67ff7768bbf19c6718e",
     strip_prefix = "windows_x86_64_gnu-0.48.5",
@@ -10229,6 +10649,23 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "windows_x86_64_gnu-0.52.0.crate",
+    sha256 = "3d6fa32db2bc4a2f5abeacf2b69f7992cd09dca97498da74a151a3132c26befd",
+    strip_prefix = "windows_x86_64_gnu-0.52.0",
+    urls = ["https://crates.io/api/v1/crates/windows_x86_64_gnu/0.52.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "windows_x86_64_gnu-0.52.0",
+    srcs = [":windows_x86_64_gnu-0.52.0.crate"],
+    crate = "windows_x86_64_gnu",
+    crate_root = "windows_x86_64_gnu-0.52.0.crate/src/lib.rs",
+    edition = "2021",
+    visibility = [],
+)
+
+http_archive(
     name = "windows_x86_64_msvc-0.48.5.crate",
     sha256 = "ed94fce61571a4006852b7389a063ab983c02eb1bb37b47f8272ce92d06d9538",
     strip_prefix = "windows_x86_64_msvc-0.48.5",
@@ -10242,6 +10679,23 @@ cargo.rust_library(
     crate = "windows_x86_64_msvc",
     crate_root = "windows_x86_64_msvc-0.48.5.crate/src/lib.rs",
     edition = "2018",
+    visibility = [],
+)
+
+http_archive(
+    name = "windows_x86_64_msvc-0.52.0.crate",
+    sha256 = "dff9641d1cd4be8d1a070daf9e3773c5f67e78b4d9d42263020c057706765c04",
+    strip_prefix = "windows_x86_64_msvc-0.52.0",
+    urls = ["https://crates.io/api/v1/crates/windows_x86_64_msvc/0.52.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "windows_x86_64_msvc-0.52.0",
+    srcs = [":windows_x86_64_msvc-0.52.0.crate"],
+    crate = "windows_x86_64_msvc",
+    crate_root = "windows_x86_64_msvc-0.52.0.crate/src/lib.rs",
+    edition = "2021",
     visibility = [],
 )
 
