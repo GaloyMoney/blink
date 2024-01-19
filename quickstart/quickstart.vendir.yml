@@ -11,6 +11,7 @@ directories:
     includePaths:
     - quickstart/docker-compose.yml
     - quickstart/dev/**/*
+    - quickstart/bin/**/*
     - quickstart/graphql/**/*
     newRootPath: quickstart
 
