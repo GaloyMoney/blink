@@ -28,7 +28,7 @@ chrono = { version = "0.4.28", features = ["clock", "serde"], default-features =
 futures = "0.3.30"
 sqlx = { version = "0.7.2", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono"] }
 mongodb = "2.8.0"
-uuid = { version = "1.4.1", features = ["serde", "v4"] }
+uuid = { version = "1.7.0", features = ["serde", "v4"] }
 rand = "0.8.5"
 serde_with = "3.3.0"
 tracing = "0.1.37"
