@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(quickstart): include bin in quickstart.vendir.yml'
-      sha: c876ec3c8093d7b3d9512a76a1b7465200b0e7a9
+      commitTitle: 'chore(core): remove remaining legacy bats files (#3811)...'
+      sha: 918610b90af8a1059a8b9535cdb1b9bad7b6bc92
       tags:
-      - 0.20.16-2-gc876ec3c8
+      - 0.20.17-3-g918610b90
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(quickstart): include bin in quickstart.vendir.yml'
-      sha: c876ec3c8093d7b3d9512a76a1b7465200b0e7a9
+      commitTitle: 'chore(core): remove remaining legacy bats files (#3811)...'
+      sha: 918610b90af8a1059a8b9535cdb1b9bad7b6bc92
       tags:
-      - 0.20.16-2-gc876ec3c8
+      - 0.20.17-3-g918610b90
     path: schemas/
   - git:
-      commitTitle: 'chore(quickstart): include bin in quickstart.vendir.yml'
-      sha: c876ec3c8093d7b3d9512a76a1b7465200b0e7a9
+      commitTitle: 'chore(core): remove remaining legacy bats files (#3811)...'
+      sha: 918610b90af8a1059a8b9535cdb1b9bad7b6bc92
       tags:
-      - 0.20.16-2-gc876ec3c8
+      - 0.20.17-3-g918610b90
     path: gql/
   path: ./graphql
 kind: LockConfig
