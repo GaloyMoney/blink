@@ -1679,6 +1679,7 @@ dependencies = [
  "futures",
  "jsonwebtoken",
  "mongodb",
+ "novu",
  "prost 0.12.3",
  "rand",
  "reqwest",
@@ -1694,6 +1695,18 @@ dependencies = [
  "tonic-health",
  "tracing 0.1.0",
  "uuid",
+]
+
+[[package]]
+name = "novu"
+version = "0.1.0"
+source = "git+https://github.com/GaloyMoney/novu-rust.git?rev=a98138b#a98138b1551d023f30c5886a76fda2a030da9003"
+dependencies = [
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
 ]
 
 [[package]]

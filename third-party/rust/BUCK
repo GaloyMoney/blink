@@ -4,6 +4,13 @@ load("@prelude//rust:cargo_buildscript.bzl", "buildscript_run")
 load("@prelude//rust:cargo_package.bzl", "cargo")
 load("//third-party/macros:rust_third_party.bzl", "third_party_rust_prebuilt_cxx_library")
 
+git_fetch(
+    name = "novu-rust-67c6cd39f47fe978.git",
+    repo = "https://github.com/GaloyMoney/novu-rust.git",
+    rev = "a98138b1551d023f30c5886a76fda2a030da9003",
+    visibility = [],
+)
+
 http_archive(
     name = "Inflector-0.11.4.crate",
     sha256 = "fe438c63458706e03479442743baae6c88256498e6431708f6dfc520a26515d3",
@@ -3979,6 +3986,28 @@ cargo.rust_library(
     deps = [
         ":memchr-2.6.4",
         ":minimal-lexical-0.2.1",
+    ],
+)
+
+alias(
+    name = "novu",
+    actual = ":novu-0.1.0",
+    visibility = ["PUBLIC"],
+)
+
+cargo.rust_library(
+    name = "novu-0.1.0",
+    srcs = [":novu-rust-67c6cd39f47fe978.git"],
+    crate = "novu",
+    crate_root = "novu-rust-67c6cd39f47fe978/src/lib.rs",
+    edition = "2021",
+    visibility = [],
+    deps = [
+        ":reqwest-0.11.23",
+        ":serde-1.0.195",
+        ":serde_json-1.0.111",
+        ":thiserror-1.0.56",
+        ":tokio-1.33.0",
     ],
 )
 
@@ -8276,6 +8305,7 @@ cargo.rust_binary(
         ":http-0.2.11",
         ":jsonwebtoken-9.2.0",
         ":mongodb-2.8.0",
+        ":novu-0.1.0",
         ":opentelemetry-0.20.0",
         ":opentelemetry-http-0.9.0",
         ":opentelemetry-otlp-0.13.0",

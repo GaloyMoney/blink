@@ -3,6 +3,7 @@
 
 mod app;
 mod data_import;
+mod novu;
 mod primitives;
 mod user_notification_settings;
 
