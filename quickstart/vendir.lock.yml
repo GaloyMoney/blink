@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): remove remaining legacy bats files (#3811)...'
-      sha: 918610b90af8a1059a8b9535cdb1b9bad7b6bc92
+      commitTitle: 'build: add ''env'' variables handling to next_build rule (#3883)...'
+      sha: af49c30f0be3e7404aa5691b3a52e4b4b38d8f19
       tags:
-      - 0.20.17-3-g918610b90
+      - 0.20.19-2-gaf49c30f0
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): remove remaining legacy bats files (#3811)...'
-      sha: 918610b90af8a1059a8b9535cdb1b9bad7b6bc92
+      commitTitle: 'build: add ''env'' variables handling to next_build rule (#3883)...'
+      sha: af49c30f0be3e7404aa5691b3a52e4b4b38d8f19
       tags:
-      - 0.20.17-3-g918610b90
+      - 0.20.19-2-gaf49c30f0
     path: schemas/
   - git:
-      commitTitle: 'chore(core): remove remaining legacy bats files (#3811)...'
-      sha: 918610b90af8a1059a8b9535cdb1b9bad7b6bc92
+      commitTitle: 'build: add ''env'' variables handling to next_build rule (#3883)...'
+      sha: af49c30f0be3e7404aa5691b3a52e4b4b38d8f19
       tags:
-      - 0.20.17-3-g918610b90
+      - 0.20.19-2-gaf49c30f0
     path: gql/
   path: ./graphql
 kind: LockConfig
