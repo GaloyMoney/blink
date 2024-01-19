@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): remove volume by tx type tests (#3876)...'
-      sha: 49e23ba3a6c85d35e1c83559d3f5881e078d9c81
+      commitTitle: 'chore(quickstart): include bin in quickstart.vendir.yml'
+      sha: c876ec3c8093d7b3d9512a76a1b7465200b0e7a9
       tags:
-      - 0.20.15-1-g49e23ba3a
+      - 0.20.16-2-gc876ec3c8
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): remove volume by tx type tests (#3876)...'
-      sha: 49e23ba3a6c85d35e1c83559d3f5881e078d9c81
+      commitTitle: 'chore(quickstart): include bin in quickstart.vendir.yml'
+      sha: c876ec3c8093d7b3d9512a76a1b7465200b0e7a9
       tags:
-      - 0.20.15-1-g49e23ba3a
+      - 0.20.16-2-gc876ec3c8
     path: schemas/
   - git:
-      commitTitle: 'test(core): remove volume by tx type tests (#3876)...'
-      sha: 49e23ba3a6c85d35e1c83559d3f5881e078d9c81
+      commitTitle: 'chore(quickstart): include bin in quickstart.vendir.yml'
+      sha: c876ec3c8093d7b3d9512a76a1b7465200b0e7a9
       tags:
-      - 0.20.15-1-g49e23ba3a
+      - 0.20.16-2-gc876ec3c8
     path: gql/
   path: ./graphql
 kind: LockConfig
