@@ -30,6 +30,7 @@ impl UserNotificationSettingsRepo {
         )
         .fetch_all(&self.pool)
         .await?;
+
         let res = EntityEvents::load_first::<UserNotificationSettings>(rows);
         if matches!(res, Err(EntityError::NoEntityEventsPresent)) {
             return Ok(None);
