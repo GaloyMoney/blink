@@ -21,8 +21,11 @@ def merge_env_from_file(file_path):
     lines = result.stdout.strip().split('\n')
     env_dict = {}
     for line in lines:
-        key, value = line.split('=', 1)
-        env_dict[key] = value
+        if "=" in line:
+            key, value = line.split('=', 1)
+            env_dict[key] = value
+        elif key in env_dict:  # Handle multi-line values
+            env_dict[key] += "\n" + line
 
     return env_dict
 
