@@ -448,8 +448,14 @@ def next_build_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
         build_context.workspace_root,
         "--package-dir",
         ctx.label.package,
-        out.as_output()
     )
+
+    for (key, val) in ctx.attrs.env.items():
+        cmd.add(
+            "--env",
+            cmd_args([key, val], delimiter = "="),
+        )
+    cmd.add(out.as_output())
 
     ctx.actions.run(cmd, category = "next", identifier = "build " + ctx.label.package)
 
@@ -485,6 +491,13 @@ _next_build = rule(
         ),
         "node_modules": attrs.source(
             doc = """Target which builds `node_modules`.""",
+        ),
+        "env": attrs.dict(
+            key = attrs.string(),
+            value = attrs.arg(),
+            sorted = False,
+            default = {},
+            doc = """Include env variables to pass to 'next build' command""",
         ),
         "_python_toolchain": attrs.toolchain_dep(
             default = "toolchains//:python",
