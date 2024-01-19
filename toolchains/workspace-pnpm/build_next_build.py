@@ -19,6 +19,12 @@ if __name__ == "__main__":
         help="Directory of the package",
         )
     parser.add_argument(
+        "--build-env",
+        action="append",
+        default=[],
+        help="Environment variables in the format ENV=path, to pass to next build",
+        )
+    parser.add_argument(
         "out_path",
         help="Path to output directory",
         )
@@ -33,7 +39,12 @@ if __name__ == "__main__":
     app_dir = os.path.join(args.root_dir, args.package_dir)
     build_out_dir = os.path.join(app_dir, ".next")
 
-    exit_code = subprocess.call(next_cmd, cwd=app_dir)
+    env = os.environ.copy()
+    for env_pair in args.build_env:
+        key, val = env_pair.split('=')
+        env[key] = val
+
+    exit_code = subprocess.call(next_cmd, cwd=app_dir, env=env)
 
     shutil.copytree(
         build_out_dir,
