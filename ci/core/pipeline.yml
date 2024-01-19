@@ -58,7 +58,6 @@ groups:
   - core-bundle-integration-tests
   - core-bundle-legacy-integration-tests
   - core-bundle-bats-tests
-  - core-bundle-legacy-bats-tests
   - quickstart
   - release-core-bundle
   - bump-core-bundle-images-in-chart
@@ -126,7 +125,6 @@ jobs:
 - #@ on_nix_host("core-bundle-integration-tests", "api", "tilt --file dev/Tiltfile ci -- --test core")
 - #@ on_nix_host("core-bundle-legacy-integration-tests", "api", "make integration-in-ci", in_dir = "core/api")
 - #@ on_nix_host("core-bundle-bats-tests", "api", "bats --setup-suite-file bats/ci_setup_suite.bash -t bats/core/**")
-- #@ on_nix_host("core-bundle-legacy-bats-tests", "api", "make bats-in-ci", in_dir = "core/api")
 - name: release-core-bundle
   plan:
   - in_parallel:
@@ -137,7 +135,6 @@ jobs:
       - core-bundle-integration-tests
       - core-bundle-legacy-integration-tests
       - core-bundle-bats-tests
-      - core-bundle-legacy-bats-tests
 #@ for component in core_bundle_components:
       - #@ build_edge_image_name(component)
 #@ end

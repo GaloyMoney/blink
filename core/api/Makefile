@@ -87,16 +87,6 @@ reset-integration: reset-deps-integration integration
 
 reset-all-integration: reset-deps-integration legacy-integration integration
 
-bats:
-	pnpm run build && \
-	. ./.env && bats -t test/bats
-
-reset-bats: reset-deps bats
-
-bats-in-ci:
-	pnpm install --frozen-lockfile && \
-	$(MAKE) reset-bats
-
 integration-in-ci:
 	pnpm install --frozen-lockfile && \
 	export NODE_OPTIONS="--max-old-space-size=6144" && \

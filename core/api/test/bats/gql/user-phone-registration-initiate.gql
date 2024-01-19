@@ -1,8 +1,0 @@
-mutation userPhoneRegistrationInitiate($input: UserPhoneRegistrationInitiateInput!) {
-  userPhoneRegistrationInitiate(input: $input) {
-    errors {
-      message
-    }
-    success
-  }
-}
