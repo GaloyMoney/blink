@@ -13,5 +13,6 @@ directories:
     - quickstart/dev/**/*
     - quickstart/bin/**/*
     - quickstart/graphql/**/*
+    - quickstart/.gitignore
     newRootPath: quickstart
 
