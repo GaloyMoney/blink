@@ -19,7 +19,7 @@ if __name__ == "__main__":
         help="Directory of the package",
         )
     parser.add_argument(
-        "--env",
+        "--build-env",
         action="append",
         default=[],
         help="Environment variables in the format ENV=path, to pass to next build",
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     build_out_dir = os.path.join(app_dir, ".next")
 
     env = os.environ.copy()
-    for env_pair in args.env:
+    for env_pair in args.build_env:
         key, val = env_pair.split('=')
         env[key] = val
 

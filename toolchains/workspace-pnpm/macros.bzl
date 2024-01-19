@@ -450,9 +450,9 @@ def next_build_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
         ctx.label.package,
     )
 
-    for (key, val) in ctx.attrs.env.items():
+    for (key, val) in ctx.attrs.build_env.items():
         cmd.add(
-            "--env",
+            "--build-env",
             cmd_args([key, val], delimiter = "="),
         )
     cmd.add(out.as_output())
@@ -492,7 +492,7 @@ _next_build = rule(
         "node_modules": attrs.source(
             doc = """Target which builds `node_modules`.""",
         ),
-        "env": attrs.dict(
+        "build_env": attrs.dict(
             key = attrs.string(),
             value = attrs.arg(),
             sorted = False,
