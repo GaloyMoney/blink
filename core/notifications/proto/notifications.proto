@@ -12,6 +12,8 @@ service NotificationsService {
   rpc DisableNotificationCategory (DisableNotificationCategoryRequest) returns (DisableNotificationCategoryResponse) {}
   rpc GetNotificationSettings (GetNotificationSettingsRequest) returns (GetNotificationSettingsResponse) {}
   rpc UpdateUserLocale (UpdateUserLocaleRequest) returns (UpdateUserLocaleResponse) {}
+  rpc AddPushDeviceToken (AddPushDeviceTokenRequest) returns (AddPushDeviceTokenResponse) {}
+  rpc RemovePushDeviceToken (RemovePushDeviceTokenRequest) returns (RemovePushDeviceTokenResponse) {}
 }
 
 enum NotificationChannel {
@@ -48,6 +50,7 @@ message EnableNotificationChannelResponse {
 message NotificationSettings {
   ChannelNotificationSettings push = 1;
   optional string locale = 2;
+  repeated string push_device_tokens = 3;
 }
 
 message ChannelNotificationSettings {
@@ -98,5 +101,23 @@ message UpdateUserLocaleRequest {
 }
 
 message UpdateUserLocaleResponse {
+  NotificationSettings notification_settings = 1;
+}
+
+message AddPushDeviceTokenRequest {
+  string user_id = 1;
+  string device_token = 2;
+}
+
+message AddPushDeviceTokenResponse {
+  NotificationSettings notification_settings = 1;
+}
+
+message RemovePushDeviceTokenRequest {
+  string user_id = 1;
+  string device_token = 2;
+}
+
+message RemovePushDeviceTokenResponse {
   NotificationSettings notification_settings = 1;
 }
