@@ -11,6 +11,7 @@ import {
   EnableNotificationCategoryRequest,
   EnableNotificationChannelRequest,
   GetNotificationSettingsRequest,
+  UpdateUserLocaleRequest,
 } from "./proto/notifications_pb"
 
 import * as notificationsGrpc from "./grpc-client"
@@ -399,6 +400,32 @@ export const NotificationsService = (): INotificationsService => {
     }
   }
 
+  const updateUserLanguage = async ({
+    userId,
+    language,
+  }: {
+    userId: UserId
+    language: UserLanguage
+  }): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new UpdateUserLocaleRequest()
+      request.setUserId(userId)
+      request.setLocale(language)
+      const response = await notificationsGrpc.updateUserLocale(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
+
   const enableNotificationChannel = async ({
     userId,
     notificationChannel,
@@ -542,6 +569,7 @@ export const NotificationsService = (): INotificationsService => {
         adminPushNotificationSend,
         adminPushNotificationFilteredSend,
         getUserNotificationSettings,
+        updateUserLanguage,
         enableNotificationChannel,
         disableNotificationChannel,
         enableNotificationCategory,

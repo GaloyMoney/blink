@@ -58,6 +58,11 @@ interface INotificationsService {
     userId: UserId,
   ): Promise<NotificationSettings | NotificationsServiceError>
 
+  updateUserLanguage(args: {
+    userId: UserId
+    language: UserLanguage
+  }): Promise<NotificationSettings | NotificationsServiceError>
+
   enableNotificationChannel(args: {
     userId: UserId
     notificationChannel: NotificationChannel

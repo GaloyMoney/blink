@@ -17,6 +17,8 @@ import {
   DisableNotificationChannelResponse,
   GetNotificationSettingsRequest,
   GetNotificationSettingsResponse,
+  UpdateUserLocaleRequest,
+  UpdateUserLocaleResponse,
 } from "./proto/notifications_pb"
 
 import { NOTIFICATIONS_HOST, NOTIFICATIONS_PORT } from "@/config"
@@ -65,3 +67,9 @@ export const getNotificationSettings = promisify<
   Metadata,
   GetNotificationSettingsResponse
 >(notificationsClient.getNotificationSettings.bind(notificationsClient))
+
+export const updateUserLocale = promisify<
+  UpdateUserLocaleRequest,
+  Metadata,
+  UpdateUserLocaleResponse
+>(notificationsClient.updateUserLocale.bind(notificationsClient))
