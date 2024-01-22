@@ -39,6 +39,20 @@ type NotificatioSendTransactionArgs = {
   recipient: NotificationRecipient
   transaction: WalletTransaction
 }
+type SendPushNotificationArgs = {
+  title: string
+  body: string
+  data?: { [key: string]: string }
+  userId: UserId
+}
+
+type SendFilteredPushNotificationArgs = {
+  title: string
+  body: string
+  data?: { [key: string]: string }
+  userId: UserId
+  notificationCategory: NotificationCategory
+}
 
 interface INotificationsService {
   sendTransaction: (

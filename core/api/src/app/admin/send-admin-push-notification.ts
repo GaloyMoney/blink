@@ -4,7 +4,6 @@ import {
   checkedToNotificationCategory,
 } from "@/domain/notifications"
 import { AccountsRepository } from "@/services/mongoose/accounts"
-import { UsersRepository } from "@/services/mongoose/users"
 import { NotificationsService } from "@/services/notifications"
 
 export const sendAdminPushNotification = async ({
@@ -34,12 +33,7 @@ export const sendAdminPushNotification = async ({
   if (account instanceof Error) return account
   const kratosUserId = account.kratosUserId
 
-  const usersRepo = UsersRepository()
-  const user = await usersRepo.findById(kratosUserId)
-  if (user instanceof Error) return user
-
   const success = await NotificationsService().adminPushNotificationFilteredSend({
-    deviceTokens: user.deviceTokens,
     title,
     body,
     data,

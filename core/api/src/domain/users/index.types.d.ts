@@ -58,7 +58,6 @@ type SetLanguageArgs = {
 
 type User = {
   id: UserId
-  deviceTokens: DeviceToken[]
   phoneMetadata: PhoneMetadata | undefined
   phone?: PhoneNumber | undefined
   deletedPhones?: PhoneNumber[]
