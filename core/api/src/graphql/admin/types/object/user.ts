@@ -28,7 +28,7 @@ const User = GT.Object<User>({
     language: {
       type: GT.NonNull(Language),
       resolve: async (source) => {
-        Users.getUserLanguage(source)
+        return Users.getUserLanguage(source)
       },
     },
     createdAt: {
