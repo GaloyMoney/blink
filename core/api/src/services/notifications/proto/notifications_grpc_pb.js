@@ -5,6 +5,28 @@ var grpc = require('@grpc/grpc-js');
 var notifications_pb = require('./notifications_pb.js');
 var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
 
+function serialize_services_notifications_v1_AddPushDeviceTokenRequest(arg) {
+  if (!(arg instanceof notifications_pb.AddPushDeviceTokenRequest)) {
+    throw new Error('Expected argument of type services.notifications.v1.AddPushDeviceTokenRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_AddPushDeviceTokenRequest(buffer_arg) {
+  return notifications_pb.AddPushDeviceTokenRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_AddPushDeviceTokenResponse(arg) {
+  if (!(arg instanceof notifications_pb.AddPushDeviceTokenResponse)) {
+    throw new Error('Expected argument of type services.notifications.v1.AddPushDeviceTokenResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_AddPushDeviceTokenResponse(buffer_arg) {
+  return notifications_pb.AddPushDeviceTokenResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_services_notifications_v1_DisableNotificationCategoryRequest(arg) {
   if (!(arg instanceof notifications_pb.DisableNotificationCategoryRequest)) {
     throw new Error('Expected argument of type services.notifications.v1.DisableNotificationCategoryRequest');
@@ -113,6 +135,28 @@ function serialize_services_notifications_v1_GetNotificationSettingsResponse(arg
 
 function deserialize_services_notifications_v1_GetNotificationSettingsResponse(buffer_arg) {
   return notifications_pb.GetNotificationSettingsResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_RemovePushDeviceTokenRequest(arg) {
+  if (!(arg instanceof notifications_pb.RemovePushDeviceTokenRequest)) {
+    throw new Error('Expected argument of type services.notifications.v1.RemovePushDeviceTokenRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_RemovePushDeviceTokenRequest(buffer_arg) {
+  return notifications_pb.RemovePushDeviceTokenRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_RemovePushDeviceTokenResponse(arg) {
+  if (!(arg instanceof notifications_pb.RemovePushDeviceTokenResponse)) {
+    throw new Error('Expected argument of type services.notifications.v1.RemovePushDeviceTokenResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_RemovePushDeviceTokenResponse(buffer_arg) {
+  return notifications_pb.RemovePushDeviceTokenResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_services_notifications_v1_ShouldSendNotificationRequest(arg) {
@@ -237,6 +281,28 @@ var NotificationsServiceService = exports.NotificationsServiceService = {
     requestDeserialize: deserialize_services_notifications_v1_UpdateUserLocaleRequest,
     responseSerialize: serialize_services_notifications_v1_UpdateUserLocaleResponse,
     responseDeserialize: deserialize_services_notifications_v1_UpdateUserLocaleResponse,
+  },
+  addPushDeviceToken: {
+    path: '/services.notifications.v1.NotificationsService/AddPushDeviceToken',
+    requestStream: false,
+    responseStream: false,
+    requestType: notifications_pb.AddPushDeviceTokenRequest,
+    responseType: notifications_pb.AddPushDeviceTokenResponse,
+    requestSerialize: serialize_services_notifications_v1_AddPushDeviceTokenRequest,
+    requestDeserialize: deserialize_services_notifications_v1_AddPushDeviceTokenRequest,
+    responseSerialize: serialize_services_notifications_v1_AddPushDeviceTokenResponse,
+    responseDeserialize: deserialize_services_notifications_v1_AddPushDeviceTokenResponse,
+  },
+  removePushDeviceToken: {
+    path: '/services.notifications.v1.NotificationsService/RemovePushDeviceToken',
+    requestStream: false,
+    responseStream: false,
+    requestType: notifications_pb.RemovePushDeviceTokenRequest,
+    responseType: notifications_pb.RemovePushDeviceTokenResponse,
+    requestSerialize: serialize_services_notifications_v1_RemovePushDeviceTokenRequest,
+    requestDeserialize: deserialize_services_notifications_v1_RemovePushDeviceTokenRequest,
+    responseSerialize: serialize_services_notifications_v1_RemovePushDeviceTokenResponse,
+    responseDeserialize: deserialize_services_notifications_v1_RemovePushDeviceTokenResponse,
   },
 };
 

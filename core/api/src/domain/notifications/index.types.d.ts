@@ -21,6 +21,7 @@ type NotificationChannel =
 
 type NotificationSettings = Record<NotificationChannel, NotificationChannelSettings> & {
   language: UserLanguageOrEmpty
+  pushDeviceTokens: DeviceToken[]
 }
 
 type NotificationChannelSettings = {

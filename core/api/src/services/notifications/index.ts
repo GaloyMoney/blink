@@ -6,11 +6,13 @@ import {
 import { createPushNotificationContent } from "./create-push-notification-content"
 
 import {
+  AddPushDeviceTokenRequest,
   DisableNotificationCategoryRequest,
   DisableNotificationChannelRequest,
   EnableNotificationCategoryRequest,
   EnableNotificationChannelRequest,
   GetNotificationSettingsRequest,
+  RemovePushDeviceTokenRequest,
   UpdateUserLocaleRequest,
 } from "./proto/notifications_pb"
 
@@ -406,6 +408,60 @@ export const NotificationsService = (): INotificationsService => {
       return true
     } catch (err) {
       return handleCommonNotificationErrors(err)
+    }
+  }
+
+  const addPushDeviceToken = async ({
+    userId,
+    deviceToken,
+  }: {
+    userId: UserId
+    deviceToken: DeviceToken
+  }): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new AddPushDeviceTokenRequest()
+      request.setUserId(userId)
+      request.setDeviceToken(deviceToken)
+
+      const response = await notificationsGrpc.addPushDeviceToken(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
+
+  const removePushDeviceToken = async ({
+    userId,
+    deviceToken,
+  }: {
+    userId: UserId
+    deviceToken: DeviceToken
+  }): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new RemovePushDeviceTokenRequest()
+      request.setUserId(userId)
+      request.setDeviceToken(deviceToken)
+
+      const response = await notificationsGrpc.removePushDeviceToken(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
     }
   }
 
