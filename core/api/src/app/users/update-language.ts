@@ -1,17 +1,26 @@
+import { InvalidLanguageError } from "@/domain/errors"
 import { checkedToLanguage } from "@/domain/users"
 import { UsersRepository } from "@/services/mongoose"
+import { NotificationsService } from "@/services/notifications"
 
 export const updateLanguage = async ({
   userId,
   language,
 }: UpdateLanguageArgs): Promise<User | ApplicationError> => {
-  const users = UsersRepository()
-
   const checkedLanguage = checkedToLanguage(language)
   if (checkedLanguage instanceof Error) return checkedLanguage
+  if (checkedLanguage === "") return new InvalidLanguageError()
 
+  const users = UsersRepository()
   const user = await users.findById(userId)
   if (user instanceof Error) return user
 
-  return users.update({ ...user, language: checkedLanguage })
+  const settings = await NotificationsService().updateUserLanguage({
+    userId: user.id,
+    language: checkedLanguage,
+  })
+
+  if (settings instanceof Error) return settings
+
+  return user
 }

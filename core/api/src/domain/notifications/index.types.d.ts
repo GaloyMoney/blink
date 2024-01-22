@@ -9,7 +9,6 @@ type SendBalanceArgs = {
   deviceTokens: DeviceToken[]
   recipientUserId: UserId
   displayBalanceAmount?: DisplayAmount<DisplayCurrency>
-  recipientLanguage: UserLanguageOrEmpty
 }
 
 type PriceUpdateArgs<C extends DisplayCurrency> = {
@@ -20,7 +19,9 @@ type PriceUpdateArgs<C extends DisplayCurrency> = {
 type NotificationChannel =
   (typeof import("./index").NotificationChannel)[keyof typeof import("./index").NotificationChannel]
 
-type NotificationSettings = Record<NotificationChannel, NotificationChannelSettings>
+type NotificationSettings = Record<NotificationChannel, NotificationChannelSettings> & {
+  language: UserLanguage
+}
 
 type NotificationChannelSettings = {
   enabled: boolean
@@ -32,7 +33,6 @@ type NotificationRecipient = {
   userId: UserId
   walletId: WalletId
   deviceTokens: DeviceToken[]
-  language: UserLanguageOrEmpty
   level: AccountLevel
 }
 

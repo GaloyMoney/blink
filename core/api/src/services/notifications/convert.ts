@@ -28,6 +28,7 @@ export const grpcNotificationSettingsToNotificationSettings = (
     )
 
   const notificationSettings: NotificationSettings = {
+    language: settings.getLocale() as UserLanguage,
     push: {
       enabled: pushSettings.getEnabled(),
       disabledCategories,

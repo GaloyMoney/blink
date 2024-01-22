@@ -200,7 +200,7 @@ describe("notification", () => {
 
         const { title, body } = createPushNotificationContent({
           type: "balance",
-          userLanguage: user.language,
+          userLanguage: "en-US",
           amount: balanceAmount,
           displayAmount: displayPaymentAmount,
         })
@@ -240,7 +240,6 @@ describe("notification", () => {
               accountId,
               walletId,
               deviceTokens,
-              language,
               userId,
               level: AccountLevel.One,
             },
@@ -312,7 +311,6 @@ describe("notification", () => {
               accountId,
               walletId,
               deviceTokens,
-              language,
               userId,
               level: AccountLevel.One,
             },
@@ -385,7 +383,6 @@ describe("notification", () => {
               accountId,
               walletId,
               deviceTokens,
-              language,
               userId,
               level: AccountLevel.One,
             },
@@ -455,7 +452,6 @@ describe("notification", () => {
               accountId,
               walletId,
               deviceTokens,
-              language,
               userId,
               level: AccountLevel.One,
             },
@@ -525,7 +521,6 @@ describe("notification", () => {
               accountId,
               walletId,
               deviceTokens,
-              language,
               userId,
               level: AccountLevel.One,
             },

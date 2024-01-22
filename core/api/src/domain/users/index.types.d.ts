@@ -58,7 +58,6 @@ type SetLanguageArgs = {
 
 type User = {
   id: UserId
-  language: UserLanguageOrEmpty
   deviceTokens: DeviceToken[]
   phoneMetadata: PhoneMetadata | undefined
   phone?: PhoneNumber | undefined
@@ -68,9 +67,8 @@ type User = {
   deletedEmails?: EmailAddress[] | undefined
 }
 
-type UserUpdateInput = Omit<Partial<User>, "language" | "createdAt"> & {
+type UserUpdateInput = Omit<Partial<User>, "createdAt"> & {
   id: UserId
-  language?: UserLanguageOrEmpty
 }
 
 interface IUsersRepository {

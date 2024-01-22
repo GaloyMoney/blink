@@ -180,9 +180,11 @@ export const NotificationsService = (): INotificationsService => {
       const displayAmountMinor = roundToBigInt(
         majorToMinorUnit({ amount: Number(displayAmountMajor), displayCurrency }),
       )
+
+      const userLanguage = "en-US"
       const { title, body } = createPushNotificationContent({
         type,
-        userLanguage: recipient.language,
+        userLanguage,
         amount: {
           amount: roundToBigInt(transaction.settlementAmount),
           currency: transaction.settlementCurrency,
@@ -294,7 +296,6 @@ export const NotificationsService = (): INotificationsService => {
     deviceTokens,
     recipientUserId,
     displayBalanceAmount,
-    recipientLanguage,
   }: SendBalanceArgs): Promise<true | NotificationsServiceError> => {
     const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
     if (!hasDeviceTokens) return true
@@ -302,9 +303,10 @@ export const NotificationsService = (): INotificationsService => {
     try {
       const notificationCategory = GaloyNotificationCategories.Payments
 
+      const userLanguage = "en-US"
       const { title, body } = createPushNotificationContent({
         type: "balance",
-        userLanguage: recipientLanguage,
+        userLanguage,
         amount: balanceAmount,
         displayAmount: displayBalanceAmount,
       })
