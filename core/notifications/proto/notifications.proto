@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-import "google/protobuf/struct.proto";
-
 package services.notifications.v1;
 
 service NotificationsService {
@@ -11,6 +9,7 @@ service NotificationsService {
   rpc UserEnableNotificationCategory (UserEnableNotificationCategoryRequest) returns (UserEnableNotificationCategoryResponse) {}
   rpc UserDisableNotificationCategory (UserDisableNotificationCategoryRequest) returns (UserDisableNotificationCategoryResponse) {}
   rpc UserNotificationSettings (UserNotificationSettingsRequest) returns (UserNotificationSettingsResponse) {}
+  rpc NotifyUserOfCirclesEvent (NotifyUserOfCirclesEventRequest) returns (NotifyUserOfCirclesEventResponse) {}
 }
 
 enum NotificationChannel {
@@ -90,4 +89,36 @@ message UserNotificationSettingsResponse {
   UserNotificationSettings notification_settings = 1;
 }
 
+message NotifyUserOfCirclesEventRequest {
+  string user_id = 1;
+  oneof circles_event {
+    CircleGrew circle_grew = 2;
+    CircleThresholdReached circle_threshold_reached = 3;
+  }
+}
 
+enum CircleType {
+  INNER = 0;
+  OUTER = 1;
+}
+
+message CircleGrew {
+  CircleType circle_type = 1;
+  uint32 this_month_circle_size = 2;
+  uint32 all_time_circle_size = 3;
+}
+
+enum CircleThresholdType {
+  THIS_MONTH = 0;
+  ALL_TIME = 1;
+}
+
+message CircleThresholdReached {
+  CircleType circle_type = 1;
+  CircleThresholdType threshold_type = 2;
+  uint32 threshold = 3;
+}
+
+message NotifyUserOfCirclesEventResponse {
+  bool success = 1;
+}

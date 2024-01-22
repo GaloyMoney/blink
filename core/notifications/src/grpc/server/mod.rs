@@ -174,6 +174,14 @@ impl NotificationsService for Notifications {
             notification_settings: Some(notification_settings.into()),
         }))
     }
+
+    async fn notify_user_of_circles_event(
+        &self,
+        request: Request<NotifyUserOfCirclesEventRequest>,
+    ) -> Result<Response<NotifyUserOfCirclesEventResponse>, Status> {
+        // TODO: implement
+        Err(Status::unimplemented("not implemented"))
+    }
 }
 
 pub(crate) async fn start(

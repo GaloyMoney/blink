@@ -2,6 +2,7 @@
 #![cfg_attr(feature = "fail-on-warnings", deny(clippy::all))]
 
 mod app;
+mod circles_notifications;
 mod data_import;
 mod primitives;
 mod user_notification_settings;

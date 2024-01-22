@@ -1,5 +1,6 @@
 use super::proto;
 use crate::app::error::ApplicationError;
+use crate::circles_notifications::*;
 use crate::primitives::{UserNotificationCategory, UserNotificationChannel};
 use crate::user_notification_settings;
 
@@ -57,5 +58,51 @@ impl From<UserNotificationCategory> for proto::NotificationCategory {
                 proto::NotificationCategory::AdminNotification
             }
         }
+    }
+}
+
+impl From<proto::CircleType> for CircleType {
+    fn from(circle_type: proto::CircleType) -> Self {
+        match circle_type {
+            proto::CircleType::Inner => CircleType::Inner,
+            proto::CircleType::Outer => CircleType::Outer,
+        }
+    }
+}
+
+impl From<proto::CircleThresholdType> for ThresholdType {
+    fn from(threshold_type: proto::CircleThresholdType) -> Self {
+        match threshold_type {
+            proto::CircleThresholdType::ThisMonth => ThresholdType::ThisMonth,
+            proto::CircleThresholdType::AllTime => ThresholdType::AllTime,
+        }
+    }
+}
+
+impl TryFrom<proto::notify_user_of_circles_event_request::CirclesEvent> for CirclesEvent {
+    type Error = prost::DecodeError;
+
+    fn try_from(
+        event: proto::notify_user_of_circles_event_request::CirclesEvent,
+    ) -> Result<Self, Self::Error> {
+        let circles_event = match event {
+            proto::notify_user_of_circles_event_request::CirclesEvent::CircleGrew(event) => {
+                CirclesEvent::CircleGrew {
+                    circle_type: CircleType::from(proto::CircleType::try_from(event.circle_type)?),
+                    this_month_circle_size: event.this_month_circle_size,
+                    all_time_circle_size: event.all_time_circle_size,
+                }
+            }
+            proto::notify_user_of_circles_event_request::CirclesEvent::CircleThresholdReached(
+                event,
+            ) => CirclesEvent::CircleThresholdReached {
+                circle_type: CircleType::from(proto::CircleType::try_from(event.circle_type)?),
+                threshold_type: ThresholdType::from(proto::CircleThresholdType::try_from(
+                    event.threshold_type,
+                )?),
+                threshold: event.threshold,
+            },
+        };
+        Ok(circles_event)
     }
 }
