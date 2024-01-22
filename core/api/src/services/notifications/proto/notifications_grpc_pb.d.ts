@@ -16,6 +16,8 @@ interface INotificationsServiceService extends grpc.ServiceDefinition<grpc.Untyp
     disableNotificationCategory: INotificationsServiceService_IDisableNotificationCategory;
     getNotificationSettings: INotificationsServiceService_IGetNotificationSettings;
     updateUserLocale: INotificationsServiceService_IUpdateUserLocale;
+    addPushDeviceToken: INotificationsServiceService_IAddPushDeviceToken;
+    removePushDeviceToken: INotificationsServiceService_IRemovePushDeviceToken;
 }
 
 interface INotificationsServiceService_IShouldSendNotification extends grpc.MethodDefinition<notifications_pb.ShouldSendNotificationRequest, notifications_pb.ShouldSendNotificationResponse> {
@@ -81,6 +83,24 @@ interface INotificationsServiceService_IUpdateUserLocale extends grpc.MethodDefi
     responseSerialize: grpc.serialize<notifications_pb.UpdateUserLocaleResponse>;
     responseDeserialize: grpc.deserialize<notifications_pb.UpdateUserLocaleResponse>;
 }
+interface INotificationsServiceService_IAddPushDeviceToken extends grpc.MethodDefinition<notifications_pb.AddPushDeviceTokenRequest, notifications_pb.AddPushDeviceTokenResponse> {
+    path: "/services.notifications.v1.NotificationsService/AddPushDeviceToken";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<notifications_pb.AddPushDeviceTokenRequest>;
+    requestDeserialize: grpc.deserialize<notifications_pb.AddPushDeviceTokenRequest>;
+    responseSerialize: grpc.serialize<notifications_pb.AddPushDeviceTokenResponse>;
+    responseDeserialize: grpc.deserialize<notifications_pb.AddPushDeviceTokenResponse>;
+}
+interface INotificationsServiceService_IRemovePushDeviceToken extends grpc.MethodDefinition<notifications_pb.RemovePushDeviceTokenRequest, notifications_pb.RemovePushDeviceTokenResponse> {
+    path: "/services.notifications.v1.NotificationsService/RemovePushDeviceToken";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<notifications_pb.RemovePushDeviceTokenRequest>;
+    requestDeserialize: grpc.deserialize<notifications_pb.RemovePushDeviceTokenRequest>;
+    responseSerialize: grpc.serialize<notifications_pb.RemovePushDeviceTokenResponse>;
+    responseDeserialize: grpc.deserialize<notifications_pb.RemovePushDeviceTokenResponse>;
+}
 
 export const NotificationsServiceService: INotificationsServiceService;
 
@@ -92,6 +112,8 @@ export interface INotificationsServiceServer extends grpc.UntypedServiceImplemen
     disableNotificationCategory: grpc.handleUnaryCall<notifications_pb.DisableNotificationCategoryRequest, notifications_pb.DisableNotificationCategoryResponse>;
     getNotificationSettings: grpc.handleUnaryCall<notifications_pb.GetNotificationSettingsRequest, notifications_pb.GetNotificationSettingsResponse>;
     updateUserLocale: grpc.handleUnaryCall<notifications_pb.UpdateUserLocaleRequest, notifications_pb.UpdateUserLocaleResponse>;
+    addPushDeviceToken: grpc.handleUnaryCall<notifications_pb.AddPushDeviceTokenRequest, notifications_pb.AddPushDeviceTokenResponse>;
+    removePushDeviceToken: grpc.handleUnaryCall<notifications_pb.RemovePushDeviceTokenRequest, notifications_pb.RemovePushDeviceTokenResponse>;
 }
 
 export interface INotificationsServiceClient {
@@ -116,6 +138,12 @@ export interface INotificationsServiceClient {
     updateUserLocale(request: notifications_pb.UpdateUserLocaleRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateUserLocaleResponse) => void): grpc.ClientUnaryCall;
     updateUserLocale(request: notifications_pb.UpdateUserLocaleRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateUserLocaleResponse) => void): grpc.ClientUnaryCall;
     updateUserLocale(request: notifications_pb.UpdateUserLocaleRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateUserLocaleResponse) => void): grpc.ClientUnaryCall;
+    addPushDeviceToken(request: notifications_pb.AddPushDeviceTokenRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.AddPushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
+    addPushDeviceToken(request: notifications_pb.AddPushDeviceTokenRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.AddPushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
+    addPushDeviceToken(request: notifications_pb.AddPushDeviceTokenRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.AddPushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
+    removePushDeviceToken(request: notifications_pb.RemovePushDeviceTokenRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemovePushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
+    removePushDeviceToken(request: notifications_pb.RemovePushDeviceTokenRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemovePushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
+    removePushDeviceToken(request: notifications_pb.RemovePushDeviceTokenRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemovePushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
 }
 
 export class NotificationsServiceClient extends grpc.Client implements INotificationsServiceClient {
@@ -141,4 +169,10 @@ export class NotificationsServiceClient extends grpc.Client implements INotifica
     public updateUserLocale(request: notifications_pb.UpdateUserLocaleRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateUserLocaleResponse) => void): grpc.ClientUnaryCall;
     public updateUserLocale(request: notifications_pb.UpdateUserLocaleRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateUserLocaleResponse) => void): grpc.ClientUnaryCall;
     public updateUserLocale(request: notifications_pb.UpdateUserLocaleRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateUserLocaleResponse) => void): grpc.ClientUnaryCall;
+    public addPushDeviceToken(request: notifications_pb.AddPushDeviceTokenRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.AddPushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
+    public addPushDeviceToken(request: notifications_pb.AddPushDeviceTokenRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.AddPushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
+    public addPushDeviceToken(request: notifications_pb.AddPushDeviceTokenRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.AddPushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
+    public removePushDeviceToken(request: notifications_pb.RemovePushDeviceTokenRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemovePushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
+    public removePushDeviceToken(request: notifications_pb.RemovePushDeviceTokenRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemovePushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
+    public removePushDeviceToken(request: notifications_pb.RemovePushDeviceTokenRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemovePushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
 }

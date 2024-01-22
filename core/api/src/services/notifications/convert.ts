@@ -33,6 +33,7 @@ export const grpcNotificationSettingsToNotificationSettings = (
       enabled: pushSettings.getEnabled(),
       disabledCategories,
     },
+    pushDeviceTokens: settings.getPushDeviceTokensList() as DeviceToken[],
   }
 
   return notificationSettings

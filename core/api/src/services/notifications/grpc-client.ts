@@ -19,6 +19,10 @@ import {
   GetNotificationSettingsResponse,
   UpdateUserLocaleRequest,
   UpdateUserLocaleResponse,
+  AddPushDeviceTokenRequest,
+  AddPushDeviceTokenResponse,
+  RemovePushDeviceTokenRequest,
+  RemovePushDeviceTokenResponse,
 } from "./proto/notifications_pb"
 
 import { NOTIFICATIONS_HOST, NOTIFICATIONS_PORT } from "@/config"
@@ -73,3 +77,15 @@ export const updateUserLocale = promisify<
   Metadata,
   UpdateUserLocaleResponse
 >(notificationsClient.updateUserLocale.bind(notificationsClient))
+
+export const addPushDeviceToken = promisify<
+  AddPushDeviceTokenRequest,
+  Metadata,
+  AddPushDeviceTokenResponse
+>(notificationsClient.addPushDeviceToken.bind(notificationsClient))
+
+export const removePushDeviceToken = promisify<
+  RemovePushDeviceTokenRequest,
+  Metadata,
+  RemovePushDeviceTokenResponse
+>(notificationsClient.removePushDeviceToken.bind(notificationsClient))
