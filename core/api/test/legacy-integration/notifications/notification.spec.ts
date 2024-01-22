@@ -32,7 +32,6 @@ const paymentHash = "paymentHash" as PaymentHash
 const txHash = "txHash" as OnChainTxHash
 const deviceTokens = ["token" as DeviceToken]
 const userId = "UserId" as UserId
-const language = "" as UserLanguageOrEmpty
 const paymentAmount = {
   amount: 1000n,
   currency: WalletCurrency.Btc,

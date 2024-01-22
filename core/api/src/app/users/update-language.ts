@@ -1,4 +1,3 @@
-import { InvalidLanguageError } from "@/domain/errors"
 import { checkedToLanguage } from "@/domain/users"
 import { UsersRepository } from "@/services/mongoose"
 import { NotificationsService } from "@/services/notifications"
