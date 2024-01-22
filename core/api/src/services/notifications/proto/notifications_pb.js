@@ -1154,8 +1154,8 @@ proto.services.notifications.v1.NotificationSettings.serializeBinaryToWriter = f
       proto.services.notifications.v1.ChannelNotificationSettings.serializeBinaryToWriter
     );
   }
-  f = message.getLocale();
-  if (f.length > 0) {
+  f = /** @type {string} */ (jspb.Message.getField(message, 2));
+  if (f != null) {
     writer.writeString(
       2,
       f
@@ -1215,7 +1215,25 @@ proto.services.notifications.v1.NotificationSettings.prototype.getLocale = funct
  * @return {!proto.services.notifications.v1.NotificationSettings} returns this
  */
 proto.services.notifications.v1.NotificationSettings.prototype.setLocale = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setField(this, 2, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.services.notifications.v1.NotificationSettings} returns this
+ */
+proto.services.notifications.v1.NotificationSettings.prototype.clearLocale = function() {
+  return jspb.Message.setField(this, 2, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.services.notifications.v1.NotificationSettings.prototype.hasLocale = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 

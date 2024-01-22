@@ -22,6 +22,26 @@ impl std::fmt::Display for GaloyUserId {
 
 es_entity::entity_id! { UserNotificationSettingsId }
 
+#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
+pub struct Locale(String);
+impl From<String> for Locale {
+    fn from(s: String) -> Self {
+        Self(s)
+    }
+}
+
+impl AsRef<str> for Locale {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::fmt::Display for Locale {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 #[derive(async_graphql::Enum, Debug, Copy, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[graphql(name = "UserNotificationChannel")]
 pub enum UserNotificationChannel {

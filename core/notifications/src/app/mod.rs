@@ -133,7 +133,11 @@ impl NotificationsApp {
             .find_for_user_id(&user_id)
             .await?
             .unwrap_or_else(|| UserNotificationSettings::new(user_id));
-        user_settings.update_locale(locale);
+        if locale.is_empty() {
+            user_settings.set_locale_to_default()
+        } else {
+            user_settings.update_locale(Locale::from(locale));
+        }
         self.settings.persist(&mut user_settings).await?;
         Ok(user_settings)
     }

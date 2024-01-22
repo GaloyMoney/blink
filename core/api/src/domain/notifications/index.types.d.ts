@@ -20,7 +20,7 @@ type NotificationChannel =
   (typeof import("./index").NotificationChannel)[keyof typeof import("./index").NotificationChannel]
 
 type NotificationSettings = Record<NotificationChannel, NotificationChannelSettings> & {
-  language: UserLanguage
+  language: UserLanguageOrEmpty
 }
 
 type NotificationChannelSettings = {
@@ -60,7 +60,7 @@ interface INotificationsService {
 
   updateUserLanguage(args: {
     userId: UserId
-    language: UserLanguage
+    language: UserLanguageOrEmpty
   }): Promise<NotificationSettings | NotificationsServiceError>
 
   enableNotificationChannel(args: {

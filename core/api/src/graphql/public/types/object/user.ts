@@ -17,7 +17,7 @@ import AccountContact from "./account-contact"
 import { IdentityRepository } from "@/services/kratos"
 import { UnknownClientError } from "@/graphql/error"
 import { baseLogger } from "@/services/logger"
-import { Accounts } from "@/app"
+import { Accounts, Users } from "@/app"
 import { mapError } from "@/graphql/error-map"
 import { GT } from "@/graphql/index"
 
@@ -71,6 +71,9 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
       type: GT.NonNull(Language),
       description: dedent`Preferred language for user.
         When value is 'default' the intent is to use preferred language from OS settings.`,
+      resolve: async (source) => {
+        Users.getUserLanguage(source)
+      },
     },
 
     contacts: {

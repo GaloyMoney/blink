@@ -47,7 +47,7 @@ message EnableNotificationChannelResponse {
 
 message NotificationSettings {
   ChannelNotificationSettings push = 1;
-  string locale = 2;
+  optional string locale = 2;
 }
 
 message ChannelNotificationSettings {

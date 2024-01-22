@@ -49,6 +49,27 @@ export const NotificationsService = (): INotificationsService => {
   const pushNotification = PushNotificationsService()
   const callbackService = CallbackService(getCallbackServiceConfig())
 
+  const getUserNotificationSettings = async (
+    userId: UserId,
+  ): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new GetNotificationSettingsRequest()
+      request.setUserId(userId)
+      const response = await notificationsGrpc.getNotificationSettings(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
+
   const sendTransactionPubSubNotification = async ({
     recipient,
     transaction,
@@ -181,10 +202,14 @@ export const NotificationsService = (): INotificationsService => {
         majorToMinorUnit({ amount: Number(displayAmountMajor), displayCurrency }),
       )
 
-      const userLanguage = "en-US"
+      const settings = await getUserNotificationSettings(recipient.userId)
+      if (settings instanceof Error) {
+        return settings
+      }
+
       const { title, body } = createPushNotificationContent({
         type,
-        userLanguage,
+        userLanguage: settings.language,
         amount: {
           amount: roundToBigInt(transaction.settlementAmount),
           currency: transaction.settlementCurrency,
@@ -303,10 +328,13 @@ export const NotificationsService = (): INotificationsService => {
     try {
       const notificationCategory = GaloyNotificationCategories.Payments
 
-      const userLanguage = "en-US"
+      const settings = await getUserNotificationSettings(recipientUserId)
+      if (settings instanceof Error) {
+        return settings
+      }
       const { title, body } = createPushNotificationContent({
         type: "balance",
-        userLanguage,
+        userLanguage: settings.language,
         amount: balanceAmount,
         displayAmount: displayBalanceAmount,
       })
@@ -378,27 +406,6 @@ export const NotificationsService = (): INotificationsService => {
       return true
     } catch (err) {
       return handleCommonNotificationErrors(err)
-    }
-  }
-
-  const getUserNotificationSettings = async (
-    userId: UserId,
-  ): Promise<NotificationSettings | NotificationsServiceError> => {
-    try {
-      const request = new GetNotificationSettingsRequest()
-      request.setUserId(userId)
-      const response = await notificationsGrpc.getNotificationSettings(
-        request,
-        notificationsGrpc.notificationsMetadata,
-      )
-
-      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
-        response.getNotificationSettings(),
-      )
-
-      return notificationSettings
-    } catch (err) {
-      return new UnknownNotificationsServiceError(err)
     }
   }
 

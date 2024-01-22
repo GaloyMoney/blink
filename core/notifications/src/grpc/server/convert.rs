@@ -33,7 +33,7 @@ impl From<ApplicationError> for tonic::Status {
 impl From<user_notification_settings::UserNotificationSettings> for proto::NotificationSettings {
     fn from(settings: user_notification_settings::UserNotificationSettings) -> Self {
         Self {
-            locale: settings.locale(),
+            locale: settings.locale().map(|l| l.to_string()),
             push: Some(proto::ChannelNotificationSettings {
                 enabled: settings.is_channel_enabled(UserNotificationChannel::Push),
                 disabled_categories: settings

@@ -6,8 +6,6 @@ use std::collections::HashSet;
 
 use crate::primitives::*;
 
-const DEFAULT_LOCALE: &str = "en-US";
-
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum UserNotificationSettingsEvent {
@@ -30,8 +28,9 @@ pub enum UserNotificationSettingsEvent {
         category: UserNotificationCategory,
     },
     LocaleUpdated {
-        locale: String,
+        locale: Locale,
     },
+    LocaleSetToDefault,
 }
 
 impl EntityEvent for UserNotificationSettingsEvent {
@@ -63,21 +62,34 @@ impl UserNotificationSettings {
         .expect("Could not create default")
     }
 
-    pub fn update_locale(&mut self, locale: String) {
-        if self.locale() != locale {
+    pub fn update_locale(&mut self, locale: Locale) {
+        if self.locale().as_ref() != Some(&locale) {
             self.events
                 .push(UserNotificationSettingsEvent::LocaleUpdated { locale });
         }
     }
 
-    pub fn locale(&self) -> String {
-        let mut ret = DEFAULT_LOCALE;
+    pub fn set_locale_to_default(&mut self) {
+        if self.locale().is_some() {
+            self.events
+                .push(UserNotificationSettingsEvent::LocaleSetToDefault);
+        }
+    }
+
+    pub fn locale(&self) -> Option<Locale> {
+        let mut ret = None;
         for event in self.events.iter() {
-            if let UserNotificationSettingsEvent::LocaleUpdated { locale } = event {
-                ret = locale;
+            match event {
+                UserNotificationSettingsEvent::LocaleUpdated { locale } => {
+                    ret = Some(locale);
+                }
+                UserNotificationSettingsEvent::LocaleSetToDefault => {
+                    ret = None;
+                }
+                _ => (),
             }
         }
-        ret.to_string()
+        ret.cloned()
     }
 
     pub fn disable_channel(&mut self, channel: UserNotificationChannel) {
@@ -295,5 +307,16 @@ mod tests {
             UserNotificationChannel::Push,
             UserNotificationCategory::Payments,
         ));
+    }
+
+    #[test]
+    fn can_update_and_reset_locale() {
+        let events = initial_events();
+        let mut settings = UserNotificationSettings::try_from(events).expect("Could not hydrate");
+        assert_eq!(settings.locale(), None);
+        settings.update_locale(Locale::from("en_US".to_string()));
+        assert_eq!(settings.locale(), Some(Locale::from("en_US".to_string())));
+        settings.set_locale_to_default();
+        assert_eq!(settings.locale(), None);
     }
 }

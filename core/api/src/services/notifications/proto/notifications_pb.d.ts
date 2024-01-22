@@ -108,7 +108,10 @@ export class NotificationSettings extends jspb.Message {
     clearPush(): void;
     getPush(): ChannelNotificationSettings | undefined;
     setPush(value?: ChannelNotificationSettings): NotificationSettings;
-    getLocale(): string;
+
+    hasLocale(): boolean;
+    clearLocale(): void;
+    getLocale(): string | undefined;
     setLocale(value: string): NotificationSettings;
 
     serializeBinary(): Uint8Array;
@@ -124,7 +127,7 @@ export class NotificationSettings extends jspb.Message {
 export namespace NotificationSettings {
     export type AsObject = {
         push?: ChannelNotificationSettings.AsObject,
-        locale: string,
+        locale?: string,
     }
 }
 

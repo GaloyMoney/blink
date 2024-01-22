@@ -9,7 +9,6 @@ export const updateLanguage = async ({
 }: UpdateLanguageArgs): Promise<User | ApplicationError> => {
   const checkedLanguage = checkedToLanguage(language)
   if (checkedLanguage instanceof Error) return checkedLanguage
-  if (checkedLanguage === "") return new InvalidLanguageError()
 
   const users = UsersRepository()
   const user = await users.findById(userId)
