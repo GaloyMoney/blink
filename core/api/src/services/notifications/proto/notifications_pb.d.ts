@@ -56,72 +56,75 @@ export namespace ShouldSendNotificationResponse {
     }
 }
 
-export class UserEnableNotificationChannelRequest extends jspb.Message { 
+export class EnableNotificationChannelRequest extends jspb.Message { 
     getUserId(): string;
-    setUserId(value: string): UserEnableNotificationChannelRequest;
+    setUserId(value: string): EnableNotificationChannelRequest;
     getChannel(): NotificationChannel;
-    setChannel(value: NotificationChannel): UserEnableNotificationChannelRequest;
+    setChannel(value: NotificationChannel): EnableNotificationChannelRequest;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UserEnableNotificationChannelRequest.AsObject;
-    static toObject(includeInstance: boolean, msg: UserEnableNotificationChannelRequest): UserEnableNotificationChannelRequest.AsObject;
+    toObject(includeInstance?: boolean): EnableNotificationChannelRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: EnableNotificationChannelRequest): EnableNotificationChannelRequest.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UserEnableNotificationChannelRequest, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UserEnableNotificationChannelRequest;
-    static deserializeBinaryFromReader(message: UserEnableNotificationChannelRequest, reader: jspb.BinaryReader): UserEnableNotificationChannelRequest;
+    static serializeBinaryToWriter(message: EnableNotificationChannelRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): EnableNotificationChannelRequest;
+    static deserializeBinaryFromReader(message: EnableNotificationChannelRequest, reader: jspb.BinaryReader): EnableNotificationChannelRequest;
 }
 
-export namespace UserEnableNotificationChannelRequest {
+export namespace EnableNotificationChannelRequest {
     export type AsObject = {
         userId: string,
         channel: NotificationChannel,
     }
 }
 
-export class UserEnableNotificationChannelResponse extends jspb.Message { 
+export class EnableNotificationChannelResponse extends jspb.Message { 
 
     hasNotificationSettings(): boolean;
     clearNotificationSettings(): void;
-    getNotificationSettings(): UserNotificationSettings | undefined;
-    setNotificationSettings(value?: UserNotificationSettings): UserEnableNotificationChannelResponse;
+    getNotificationSettings(): NotificationSettings | undefined;
+    setNotificationSettings(value?: NotificationSettings): EnableNotificationChannelResponse;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UserEnableNotificationChannelResponse.AsObject;
-    static toObject(includeInstance: boolean, msg: UserEnableNotificationChannelResponse): UserEnableNotificationChannelResponse.AsObject;
+    toObject(includeInstance?: boolean): EnableNotificationChannelResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: EnableNotificationChannelResponse): EnableNotificationChannelResponse.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UserEnableNotificationChannelResponse, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UserEnableNotificationChannelResponse;
-    static deserializeBinaryFromReader(message: UserEnableNotificationChannelResponse, reader: jspb.BinaryReader): UserEnableNotificationChannelResponse;
+    static serializeBinaryToWriter(message: EnableNotificationChannelResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): EnableNotificationChannelResponse;
+    static deserializeBinaryFromReader(message: EnableNotificationChannelResponse, reader: jspb.BinaryReader): EnableNotificationChannelResponse;
 }
 
-export namespace UserEnableNotificationChannelResponse {
+export namespace EnableNotificationChannelResponse {
     export type AsObject = {
-        notificationSettings?: UserNotificationSettings.AsObject,
+        notificationSettings?: NotificationSettings.AsObject,
     }
 }
 
-export class UserNotificationSettings extends jspb.Message { 
+export class NotificationSettings extends jspb.Message { 
 
     hasPush(): boolean;
     clearPush(): void;
     getPush(): ChannelNotificationSettings | undefined;
-    setPush(value?: ChannelNotificationSettings): UserNotificationSettings;
+    setPush(value?: ChannelNotificationSettings): NotificationSettings;
+    getLocale(): string;
+    setLocale(value: string): NotificationSettings;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UserNotificationSettings.AsObject;
-    static toObject(includeInstance: boolean, msg: UserNotificationSettings): UserNotificationSettings.AsObject;
+    toObject(includeInstance?: boolean): NotificationSettings.AsObject;
+    static toObject(includeInstance: boolean, msg: NotificationSettings): NotificationSettings.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UserNotificationSettings, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UserNotificationSettings;
-    static deserializeBinaryFromReader(message: UserNotificationSettings, reader: jspb.BinaryReader): UserNotificationSettings;
+    static serializeBinaryToWriter(message: NotificationSettings, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): NotificationSettings;
+    static deserializeBinaryFromReader(message: NotificationSettings, reader: jspb.BinaryReader): NotificationSettings;
 }
 
-export namespace UserNotificationSettings {
+export namespace NotificationSettings {
     export type AsObject = {
         push?: ChannelNotificationSettings.AsObject,
+        locale: string,
     }
 }
 
@@ -150,71 +153,71 @@ export namespace ChannelNotificationSettings {
     }
 }
 
-export class UserDisableNotificationChannelRequest extends jspb.Message { 
+export class DisableNotificationChannelRequest extends jspb.Message { 
     getUserId(): string;
-    setUserId(value: string): UserDisableNotificationChannelRequest;
+    setUserId(value: string): DisableNotificationChannelRequest;
     getChannel(): NotificationChannel;
-    setChannel(value: NotificationChannel): UserDisableNotificationChannelRequest;
+    setChannel(value: NotificationChannel): DisableNotificationChannelRequest;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UserDisableNotificationChannelRequest.AsObject;
-    static toObject(includeInstance: boolean, msg: UserDisableNotificationChannelRequest): UserDisableNotificationChannelRequest.AsObject;
+    toObject(includeInstance?: boolean): DisableNotificationChannelRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: DisableNotificationChannelRequest): DisableNotificationChannelRequest.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UserDisableNotificationChannelRequest, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UserDisableNotificationChannelRequest;
-    static deserializeBinaryFromReader(message: UserDisableNotificationChannelRequest, reader: jspb.BinaryReader): UserDisableNotificationChannelRequest;
+    static serializeBinaryToWriter(message: DisableNotificationChannelRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): DisableNotificationChannelRequest;
+    static deserializeBinaryFromReader(message: DisableNotificationChannelRequest, reader: jspb.BinaryReader): DisableNotificationChannelRequest;
 }
 
-export namespace UserDisableNotificationChannelRequest {
+export namespace DisableNotificationChannelRequest {
     export type AsObject = {
         userId: string,
         channel: NotificationChannel,
     }
 }
 
-export class UserDisableNotificationChannelResponse extends jspb.Message { 
+export class DisableNotificationChannelResponse extends jspb.Message { 
 
     hasNotificationSettings(): boolean;
     clearNotificationSettings(): void;
-    getNotificationSettings(): UserNotificationSettings | undefined;
-    setNotificationSettings(value?: UserNotificationSettings): UserDisableNotificationChannelResponse;
+    getNotificationSettings(): NotificationSettings | undefined;
+    setNotificationSettings(value?: NotificationSettings): DisableNotificationChannelResponse;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UserDisableNotificationChannelResponse.AsObject;
-    static toObject(includeInstance: boolean, msg: UserDisableNotificationChannelResponse): UserDisableNotificationChannelResponse.AsObject;
+    toObject(includeInstance?: boolean): DisableNotificationChannelResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: DisableNotificationChannelResponse): DisableNotificationChannelResponse.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UserDisableNotificationChannelResponse, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UserDisableNotificationChannelResponse;
-    static deserializeBinaryFromReader(message: UserDisableNotificationChannelResponse, reader: jspb.BinaryReader): UserDisableNotificationChannelResponse;
+    static serializeBinaryToWriter(message: DisableNotificationChannelResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): DisableNotificationChannelResponse;
+    static deserializeBinaryFromReader(message: DisableNotificationChannelResponse, reader: jspb.BinaryReader): DisableNotificationChannelResponse;
 }
 
-export namespace UserDisableNotificationChannelResponse {
+export namespace DisableNotificationChannelResponse {
     export type AsObject = {
-        notificationSettings?: UserNotificationSettings.AsObject,
+        notificationSettings?: NotificationSettings.AsObject,
     }
 }
 
-export class UserDisableNotificationCategoryRequest extends jspb.Message { 
+export class DisableNotificationCategoryRequest extends jspb.Message { 
     getUserId(): string;
-    setUserId(value: string): UserDisableNotificationCategoryRequest;
+    setUserId(value: string): DisableNotificationCategoryRequest;
     getChannel(): NotificationChannel;
-    setChannel(value: NotificationChannel): UserDisableNotificationCategoryRequest;
+    setChannel(value: NotificationChannel): DisableNotificationCategoryRequest;
     getCategory(): NotificationCategory;
-    setCategory(value: NotificationCategory): UserDisableNotificationCategoryRequest;
+    setCategory(value: NotificationCategory): DisableNotificationCategoryRequest;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UserDisableNotificationCategoryRequest.AsObject;
-    static toObject(includeInstance: boolean, msg: UserDisableNotificationCategoryRequest): UserDisableNotificationCategoryRequest.AsObject;
+    toObject(includeInstance?: boolean): DisableNotificationCategoryRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: DisableNotificationCategoryRequest): DisableNotificationCategoryRequest.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UserDisableNotificationCategoryRequest, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UserDisableNotificationCategoryRequest;
-    static deserializeBinaryFromReader(message: UserDisableNotificationCategoryRequest, reader: jspb.BinaryReader): UserDisableNotificationCategoryRequest;
+    static serializeBinaryToWriter(message: DisableNotificationCategoryRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): DisableNotificationCategoryRequest;
+    static deserializeBinaryFromReader(message: DisableNotificationCategoryRequest, reader: jspb.BinaryReader): DisableNotificationCategoryRequest;
 }
 
-export namespace UserDisableNotificationCategoryRequest {
+export namespace DisableNotificationCategoryRequest {
     export type AsObject = {
         userId: string,
         channel: NotificationChannel,
@@ -222,48 +225,48 @@ export namespace UserDisableNotificationCategoryRequest {
     }
 }
 
-export class UserDisableNotificationCategoryResponse extends jspb.Message { 
+export class DisableNotificationCategoryResponse extends jspb.Message { 
 
     hasNotificationSettings(): boolean;
     clearNotificationSettings(): void;
-    getNotificationSettings(): UserNotificationSettings | undefined;
-    setNotificationSettings(value?: UserNotificationSettings): UserDisableNotificationCategoryResponse;
+    getNotificationSettings(): NotificationSettings | undefined;
+    setNotificationSettings(value?: NotificationSettings): DisableNotificationCategoryResponse;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UserDisableNotificationCategoryResponse.AsObject;
-    static toObject(includeInstance: boolean, msg: UserDisableNotificationCategoryResponse): UserDisableNotificationCategoryResponse.AsObject;
+    toObject(includeInstance?: boolean): DisableNotificationCategoryResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: DisableNotificationCategoryResponse): DisableNotificationCategoryResponse.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UserDisableNotificationCategoryResponse, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UserDisableNotificationCategoryResponse;
-    static deserializeBinaryFromReader(message: UserDisableNotificationCategoryResponse, reader: jspb.BinaryReader): UserDisableNotificationCategoryResponse;
+    static serializeBinaryToWriter(message: DisableNotificationCategoryResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): DisableNotificationCategoryResponse;
+    static deserializeBinaryFromReader(message: DisableNotificationCategoryResponse, reader: jspb.BinaryReader): DisableNotificationCategoryResponse;
 }
 
-export namespace UserDisableNotificationCategoryResponse {
+export namespace DisableNotificationCategoryResponse {
     export type AsObject = {
-        notificationSettings?: UserNotificationSettings.AsObject,
+        notificationSettings?: NotificationSettings.AsObject,
     }
 }
 
-export class UserEnableNotificationCategoryRequest extends jspb.Message { 
+export class EnableNotificationCategoryRequest extends jspb.Message { 
     getUserId(): string;
-    setUserId(value: string): UserEnableNotificationCategoryRequest;
+    setUserId(value: string): EnableNotificationCategoryRequest;
     getChannel(): NotificationChannel;
-    setChannel(value: NotificationChannel): UserEnableNotificationCategoryRequest;
+    setChannel(value: NotificationChannel): EnableNotificationCategoryRequest;
     getCategory(): NotificationCategory;
-    setCategory(value: NotificationCategory): UserEnableNotificationCategoryRequest;
+    setCategory(value: NotificationCategory): EnableNotificationCategoryRequest;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UserEnableNotificationCategoryRequest.AsObject;
-    static toObject(includeInstance: boolean, msg: UserEnableNotificationCategoryRequest): UserEnableNotificationCategoryRequest.AsObject;
+    toObject(includeInstance?: boolean): EnableNotificationCategoryRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: EnableNotificationCategoryRequest): EnableNotificationCategoryRequest.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UserEnableNotificationCategoryRequest, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UserEnableNotificationCategoryRequest;
-    static deserializeBinaryFromReader(message: UserEnableNotificationCategoryRequest, reader: jspb.BinaryReader): UserEnableNotificationCategoryRequest;
+    static serializeBinaryToWriter(message: EnableNotificationCategoryRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): EnableNotificationCategoryRequest;
+    static deserializeBinaryFromReader(message: EnableNotificationCategoryRequest, reader: jspb.BinaryReader): EnableNotificationCategoryRequest;
 }
 
-export namespace UserEnableNotificationCategoryRequest {
+export namespace EnableNotificationCategoryRequest {
     export type AsObject = {
         userId: string,
         channel: NotificationChannel,
@@ -271,69 +274,115 @@ export namespace UserEnableNotificationCategoryRequest {
     }
 }
 
-export class UserEnableNotificationCategoryResponse extends jspb.Message { 
+export class EnableNotificationCategoryResponse extends jspb.Message { 
 
     hasNotificationSettings(): boolean;
     clearNotificationSettings(): void;
-    getNotificationSettings(): UserNotificationSettings | undefined;
-    setNotificationSettings(value?: UserNotificationSettings): UserEnableNotificationCategoryResponse;
+    getNotificationSettings(): NotificationSettings | undefined;
+    setNotificationSettings(value?: NotificationSettings): EnableNotificationCategoryResponse;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UserEnableNotificationCategoryResponse.AsObject;
-    static toObject(includeInstance: boolean, msg: UserEnableNotificationCategoryResponse): UserEnableNotificationCategoryResponse.AsObject;
+    toObject(includeInstance?: boolean): EnableNotificationCategoryResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: EnableNotificationCategoryResponse): EnableNotificationCategoryResponse.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UserEnableNotificationCategoryResponse, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UserEnableNotificationCategoryResponse;
-    static deserializeBinaryFromReader(message: UserEnableNotificationCategoryResponse, reader: jspb.BinaryReader): UserEnableNotificationCategoryResponse;
+    static serializeBinaryToWriter(message: EnableNotificationCategoryResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): EnableNotificationCategoryResponse;
+    static deserializeBinaryFromReader(message: EnableNotificationCategoryResponse, reader: jspb.BinaryReader): EnableNotificationCategoryResponse;
 }
 
-export namespace UserEnableNotificationCategoryResponse {
+export namespace EnableNotificationCategoryResponse {
     export type AsObject = {
-        notificationSettings?: UserNotificationSettings.AsObject,
+        notificationSettings?: NotificationSettings.AsObject,
     }
 }
 
-export class UserNotificationSettingsRequest extends jspb.Message { 
+export class GetNotificationSettingsRequest extends jspb.Message { 
     getUserId(): string;
-    setUserId(value: string): UserNotificationSettingsRequest;
+    setUserId(value: string): GetNotificationSettingsRequest;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UserNotificationSettingsRequest.AsObject;
-    static toObject(includeInstance: boolean, msg: UserNotificationSettingsRequest): UserNotificationSettingsRequest.AsObject;
+    toObject(includeInstance?: boolean): GetNotificationSettingsRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: GetNotificationSettingsRequest): GetNotificationSettingsRequest.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UserNotificationSettingsRequest, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UserNotificationSettingsRequest;
-    static deserializeBinaryFromReader(message: UserNotificationSettingsRequest, reader: jspb.BinaryReader): UserNotificationSettingsRequest;
+    static serializeBinaryToWriter(message: GetNotificationSettingsRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetNotificationSettingsRequest;
+    static deserializeBinaryFromReader(message: GetNotificationSettingsRequest, reader: jspb.BinaryReader): GetNotificationSettingsRequest;
 }
 
-export namespace UserNotificationSettingsRequest {
+export namespace GetNotificationSettingsRequest {
     export type AsObject = {
         userId: string,
     }
 }
 
-export class UserNotificationSettingsResponse extends jspb.Message { 
+export class GetNotificationSettingsResponse extends jspb.Message { 
 
     hasNotificationSettings(): boolean;
     clearNotificationSettings(): void;
-    getNotificationSettings(): UserNotificationSettings | undefined;
-    setNotificationSettings(value?: UserNotificationSettings): UserNotificationSettingsResponse;
+    getNotificationSettings(): NotificationSettings | undefined;
+    setNotificationSettings(value?: NotificationSettings): GetNotificationSettingsResponse;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UserNotificationSettingsResponse.AsObject;
-    static toObject(includeInstance: boolean, msg: UserNotificationSettingsResponse): UserNotificationSettingsResponse.AsObject;
+    toObject(includeInstance?: boolean): GetNotificationSettingsResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: GetNotificationSettingsResponse): GetNotificationSettingsResponse.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UserNotificationSettingsResponse, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UserNotificationSettingsResponse;
-    static deserializeBinaryFromReader(message: UserNotificationSettingsResponse, reader: jspb.BinaryReader): UserNotificationSettingsResponse;
+    static serializeBinaryToWriter(message: GetNotificationSettingsResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetNotificationSettingsResponse;
+    static deserializeBinaryFromReader(message: GetNotificationSettingsResponse, reader: jspb.BinaryReader): GetNotificationSettingsResponse;
 }
 
-export namespace UserNotificationSettingsResponse {
+export namespace GetNotificationSettingsResponse {
     export type AsObject = {
-        notificationSettings?: UserNotificationSettings.AsObject,
+        notificationSettings?: NotificationSettings.AsObject,
+    }
+}
+
+export class UpdateUserLocaleRequest extends jspb.Message { 
+    getUserId(): string;
+    setUserId(value: string): UpdateUserLocaleRequest;
+    getLocale(): string;
+    setLocale(value: string): UpdateUserLocaleRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): UpdateUserLocaleRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: UpdateUserLocaleRequest): UpdateUserLocaleRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: UpdateUserLocaleRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): UpdateUserLocaleRequest;
+    static deserializeBinaryFromReader(message: UpdateUserLocaleRequest, reader: jspb.BinaryReader): UpdateUserLocaleRequest;
+}
+
+export namespace UpdateUserLocaleRequest {
+    export type AsObject = {
+        userId: string,
+        locale: string,
+    }
+}
+
+export class UpdateUserLocaleResponse extends jspb.Message { 
+
+    hasNotificationSettings(): boolean;
+    clearNotificationSettings(): void;
+    getNotificationSettings(): NotificationSettings | undefined;
+    setNotificationSettings(value?: NotificationSettings): UpdateUserLocaleResponse;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): UpdateUserLocaleResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: UpdateUserLocaleResponse): UpdateUserLocaleResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: UpdateUserLocaleResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): UpdateUserLocaleResponse;
+    static deserializeBinaryFromReader(message: UpdateUserLocaleResponse, reader: jspb.BinaryReader): UpdateUserLocaleResponse;
+}
+
+export namespace UpdateUserLocaleResponse {
+    export type AsObject = {
+        notificationSettings?: NotificationSettings.AsObject,
     }
 }
 

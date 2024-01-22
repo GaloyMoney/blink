@@ -7,16 +7,16 @@ import { NotificationsServiceClient } from "./proto/notifications_grpc_pb"
 import {
   ShouldSendNotificationRequest,
   ShouldSendNotificationResponse,
-  UserDisableNotificationCategoryRequest,
-  UserDisableNotificationCategoryResponse,
-  UserEnableNotificationCategoryRequest,
-  UserEnableNotificationCategoryResponse,
-  UserEnableNotificationChannelRequest,
-  UserEnableNotificationChannelResponse,
-  UserDisableNotificationChannelRequest,
-  UserDisableNotificationChannelResponse,
-  UserNotificationSettingsRequest,
-  UserNotificationSettingsResponse,
+  DisableNotificationCategoryRequest,
+  DisableNotificationCategoryResponse,
+  EnableNotificationCategoryRequest,
+  EnableNotificationCategoryResponse,
+  EnableNotificationChannelRequest,
+  EnableNotificationChannelResponse,
+  DisableNotificationChannelRequest,
+  DisableNotificationChannelResponse,
+  GetNotificationSettingsRequest,
+  GetNotificationSettingsResponse,
 } from "./proto/notifications_pb"
 
 import { NOTIFICATIONS_HOST, NOTIFICATIONS_PORT } from "@/config"
@@ -36,32 +36,32 @@ export const shouldSendNotification = promisify<
   ShouldSendNotificationResponse
 >(notificationsClient.shouldSendNotification.bind(notificationsClient))
 
-export const userEnableNotificationCatgeory = promisify<
-  UserEnableNotificationCategoryRequest,
+export const enableNotificationCatgeory = promisify<
+  EnableNotificationCategoryRequest,
   Metadata,
-  UserEnableNotificationCategoryResponse
->(notificationsClient.userEnableNotificationCategory.bind(notificationsClient))
+  EnableNotificationCategoryResponse
+>(notificationsClient.enableNotificationCategory.bind(notificationsClient))
 
-export const userDisableNotificationCategory = promisify<
-  UserDisableNotificationCategoryRequest,
+export const disableNotificationCategory = promisify<
+  DisableNotificationCategoryRequest,
   Metadata,
-  UserDisableNotificationCategoryResponse
->(notificationsClient.userDisableNotificationCategory.bind(notificationsClient))
+  DisableNotificationCategoryResponse
+>(notificationsClient.disableNotificationCategory.bind(notificationsClient))
 
-export const userEnableNotificationChannel = promisify<
-  UserEnableNotificationChannelRequest,
+export const enableNotificationChannel = promisify<
+  EnableNotificationChannelRequest,
   Metadata,
-  UserEnableNotificationChannelResponse
->(notificationsClient.userEnableNotificationChannel.bind(notificationsClient))
+  EnableNotificationChannelResponse
+>(notificationsClient.enableNotificationChannel.bind(notificationsClient))
 
-export const userDisableNotificationChannel = promisify<
-  UserDisableNotificationChannelRequest,
+export const disableNotificationChannel = promisify<
+  DisableNotificationChannelRequest,
   Metadata,
-  UserDisableNotificationChannelResponse
->(notificationsClient.userDisableNotificationChannel.bind(notificationsClient))
+  DisableNotificationChannelResponse
+>(notificationsClient.disableNotificationChannel.bind(notificationsClient))
 
-export const userNotificationSettings = promisify<
-  UserNotificationSettingsRequest,
+export const getNotificationSettings = promisify<
+  GetNotificationSettingsRequest,
   Metadata,
-  UserNotificationSettingsResponse
->(notificationsClient.userNotificationSettings.bind(notificationsClient))
+  GetNotificationSettingsResponse
+>(notificationsClient.getNotificationSettings.bind(notificationsClient))

@@ -6,11 +6,11 @@ import {
 import { createPushNotificationContent } from "./create-push-notification-content"
 
 import {
-  UserDisableNotificationCategoryRequest,
-  UserDisableNotificationChannelRequest,
-  UserEnableNotificationCategoryRequest,
-  UserEnableNotificationChannelRequest,
-  UserNotificationSettingsRequest,
+  DisableNotificationCategoryRequest,
+  DisableNotificationChannelRequest,
+  EnableNotificationCategoryRequest,
+  EnableNotificationChannelRequest,
+  GetNotificationSettingsRequest,
 } from "./proto/notifications_pb"
 
 import * as notificationsGrpc from "./grpc-client"
@@ -382,9 +382,9 @@ export const NotificationsService = (): INotificationsService => {
     userId: UserId,
   ): Promise<NotificationSettings | NotificationsServiceError> => {
     try {
-      const request = new UserNotificationSettingsRequest()
+      const request = new GetNotificationSettingsRequest()
       request.setUserId(userId)
-      const response = await notificationsGrpc.userNotificationSettings(
+      const response = await notificationsGrpc.getNotificationSettings(
         request,
         notificationsGrpc.notificationsMetadata,
       )
@@ -407,14 +407,14 @@ export const NotificationsService = (): INotificationsService => {
     notificationChannel: NotificationChannel
   }): Promise<NotificationSettings | NotificationsServiceError> => {
     try {
-      const request = new UserEnableNotificationChannelRequest()
+      const request = new EnableNotificationChannelRequest()
       request.setUserId(userId)
 
       const grpcNotificationChannel =
         notificationChannelToGrpcNotificationChannel(notificationChannel)
 
       request.setChannel(grpcNotificationChannel)
-      const response = await notificationsGrpc.userEnableNotificationChannel(
+      const response = await notificationsGrpc.enableNotificationChannel(
         request,
         notificationsGrpc.notificationsMetadata,
       )
@@ -437,14 +437,14 @@ export const NotificationsService = (): INotificationsService => {
     notificationChannel: NotificationChannel
   }): Promise<NotificationSettings | NotificationsServiceError> => {
     try {
-      const request = new UserDisableNotificationChannelRequest()
+      const request = new DisableNotificationChannelRequest()
       request.setUserId(userId)
 
       const grpcNotificationChannel =
         notificationChannelToGrpcNotificationChannel(notificationChannel)
 
       request.setChannel(grpcNotificationChannel)
-      const response = await notificationsGrpc.userDisableNotificationChannel(
+      const response = await notificationsGrpc.disableNotificationChannel(
         request,
         notificationsGrpc.notificationsMetadata,
       )
@@ -469,7 +469,7 @@ export const NotificationsService = (): INotificationsService => {
     notificationCategory: NotificationCategory
   }): Promise<NotificationSettings | NotificationsServiceError> => {
     try {
-      const request = new UserEnableNotificationCategoryRequest()
+      const request = new EnableNotificationCategoryRequest()
       request.setUserId(userId)
 
       const grpcNotificationChannel =
@@ -480,7 +480,7 @@ export const NotificationsService = (): INotificationsService => {
         notificationCategoryToGrpcNotificationCategory(notificationCategory)
       request.setCategory(grpcNotificationCategory)
 
-      const response = await notificationsGrpc.userEnableNotificationCatgeory(
+      const response = await notificationsGrpc.enableNotificationCatgeory(
         request,
         notificationsGrpc.notificationsMetadata,
       )
@@ -505,7 +505,7 @@ export const NotificationsService = (): INotificationsService => {
     notificationCategory: NotificationCategory
   }): Promise<NotificationSettings | NotificationsServiceError> => {
     try {
-      const request = new UserDisableNotificationCategoryRequest()
+      const request = new DisableNotificationCategoryRequest()
       request.setUserId(userId)
 
       const grpcNotificationChannel =
@@ -516,7 +516,7 @@ export const NotificationsService = (): INotificationsService => {
         notificationCategoryToGrpcNotificationCategory(notificationCategory)
       request.setCategory(grpcNotificationCategory)
 
-      const response = await notificationsGrpc.userDisableNotificationCategory(
+      const response = await notificationsGrpc.disableNotificationCategory(
         request,
         notificationsGrpc.notificationsMetadata,
       )

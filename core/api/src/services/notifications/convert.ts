@@ -1,5 +1,5 @@
 import {
-  UserNotificationSettings as GrpcNotificationSettings,
+  NotificationSettings as GrpcNotificationSettings,
   NotificationCategory as GrpcNotificationCategory,
   NotificationChannel as GrpcNotificationChannel,
 } from "./proto/notifications_pb"

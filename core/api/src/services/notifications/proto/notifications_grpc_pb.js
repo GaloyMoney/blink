@@ -5,6 +5,116 @@ var grpc = require('@grpc/grpc-js');
 var notifications_pb = require('./notifications_pb.js');
 var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
 
+function serialize_services_notifications_v1_DisableNotificationCategoryRequest(arg) {
+  if (!(arg instanceof notifications_pb.DisableNotificationCategoryRequest)) {
+    throw new Error('Expected argument of type services.notifications.v1.DisableNotificationCategoryRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_DisableNotificationCategoryRequest(buffer_arg) {
+  return notifications_pb.DisableNotificationCategoryRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_DisableNotificationCategoryResponse(arg) {
+  if (!(arg instanceof notifications_pb.DisableNotificationCategoryResponse)) {
+    throw new Error('Expected argument of type services.notifications.v1.DisableNotificationCategoryResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_DisableNotificationCategoryResponse(buffer_arg) {
+  return notifications_pb.DisableNotificationCategoryResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_DisableNotificationChannelRequest(arg) {
+  if (!(arg instanceof notifications_pb.DisableNotificationChannelRequest)) {
+    throw new Error('Expected argument of type services.notifications.v1.DisableNotificationChannelRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_DisableNotificationChannelRequest(buffer_arg) {
+  return notifications_pb.DisableNotificationChannelRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_DisableNotificationChannelResponse(arg) {
+  if (!(arg instanceof notifications_pb.DisableNotificationChannelResponse)) {
+    throw new Error('Expected argument of type services.notifications.v1.DisableNotificationChannelResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_DisableNotificationChannelResponse(buffer_arg) {
+  return notifications_pb.DisableNotificationChannelResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_EnableNotificationCategoryRequest(arg) {
+  if (!(arg instanceof notifications_pb.EnableNotificationCategoryRequest)) {
+    throw new Error('Expected argument of type services.notifications.v1.EnableNotificationCategoryRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_EnableNotificationCategoryRequest(buffer_arg) {
+  return notifications_pb.EnableNotificationCategoryRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_EnableNotificationCategoryResponse(arg) {
+  if (!(arg instanceof notifications_pb.EnableNotificationCategoryResponse)) {
+    throw new Error('Expected argument of type services.notifications.v1.EnableNotificationCategoryResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_EnableNotificationCategoryResponse(buffer_arg) {
+  return notifications_pb.EnableNotificationCategoryResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_EnableNotificationChannelRequest(arg) {
+  if (!(arg instanceof notifications_pb.EnableNotificationChannelRequest)) {
+    throw new Error('Expected argument of type services.notifications.v1.EnableNotificationChannelRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_EnableNotificationChannelRequest(buffer_arg) {
+  return notifications_pb.EnableNotificationChannelRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_EnableNotificationChannelResponse(arg) {
+  if (!(arg instanceof notifications_pb.EnableNotificationChannelResponse)) {
+    throw new Error('Expected argument of type services.notifications.v1.EnableNotificationChannelResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_EnableNotificationChannelResponse(buffer_arg) {
+  return notifications_pb.EnableNotificationChannelResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_GetNotificationSettingsRequest(arg) {
+  if (!(arg instanceof notifications_pb.GetNotificationSettingsRequest)) {
+    throw new Error('Expected argument of type services.notifications.v1.GetNotificationSettingsRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_GetNotificationSettingsRequest(buffer_arg) {
+  return notifications_pb.GetNotificationSettingsRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_GetNotificationSettingsResponse(arg) {
+  if (!(arg instanceof notifications_pb.GetNotificationSettingsResponse)) {
+    throw new Error('Expected argument of type services.notifications.v1.GetNotificationSettingsResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_GetNotificationSettingsResponse(buffer_arg) {
+  return notifications_pb.GetNotificationSettingsResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_services_notifications_v1_ShouldSendNotificationRequest(arg) {
   if (!(arg instanceof notifications_pb.ShouldSendNotificationRequest)) {
     throw new Error('Expected argument of type services.notifications.v1.ShouldSendNotificationRequest');
@@ -27,114 +137,26 @@ function deserialize_services_notifications_v1_ShouldSendNotificationResponse(bu
   return notifications_pb.ShouldSendNotificationResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_services_notifications_v1_UserDisableNotificationCategoryRequest(arg) {
-  if (!(arg instanceof notifications_pb.UserDisableNotificationCategoryRequest)) {
-    throw new Error('Expected argument of type services.notifications.v1.UserDisableNotificationCategoryRequest');
+function serialize_services_notifications_v1_UpdateUserLocaleRequest(arg) {
+  if (!(arg instanceof notifications_pb.UpdateUserLocaleRequest)) {
+    throw new Error('Expected argument of type services.notifications.v1.UpdateUserLocaleRequest');
   }
   return Buffer.from(arg.serializeBinary());
 }
 
-function deserialize_services_notifications_v1_UserDisableNotificationCategoryRequest(buffer_arg) {
-  return notifications_pb.UserDisableNotificationCategoryRequest.deserializeBinary(new Uint8Array(buffer_arg));
+function deserialize_services_notifications_v1_UpdateUserLocaleRequest(buffer_arg) {
+  return notifications_pb.UpdateUserLocaleRequest.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_services_notifications_v1_UserDisableNotificationCategoryResponse(arg) {
-  if (!(arg instanceof notifications_pb.UserDisableNotificationCategoryResponse)) {
-    throw new Error('Expected argument of type services.notifications.v1.UserDisableNotificationCategoryResponse');
+function serialize_services_notifications_v1_UpdateUserLocaleResponse(arg) {
+  if (!(arg instanceof notifications_pb.UpdateUserLocaleResponse)) {
+    throw new Error('Expected argument of type services.notifications.v1.UpdateUserLocaleResponse');
   }
   return Buffer.from(arg.serializeBinary());
 }
 
-function deserialize_services_notifications_v1_UserDisableNotificationCategoryResponse(buffer_arg) {
-  return notifications_pb.UserDisableNotificationCategoryResponse.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_services_notifications_v1_UserDisableNotificationChannelRequest(arg) {
-  if (!(arg instanceof notifications_pb.UserDisableNotificationChannelRequest)) {
-    throw new Error('Expected argument of type services.notifications.v1.UserDisableNotificationChannelRequest');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_services_notifications_v1_UserDisableNotificationChannelRequest(buffer_arg) {
-  return notifications_pb.UserDisableNotificationChannelRequest.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_services_notifications_v1_UserDisableNotificationChannelResponse(arg) {
-  if (!(arg instanceof notifications_pb.UserDisableNotificationChannelResponse)) {
-    throw new Error('Expected argument of type services.notifications.v1.UserDisableNotificationChannelResponse');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_services_notifications_v1_UserDisableNotificationChannelResponse(buffer_arg) {
-  return notifications_pb.UserDisableNotificationChannelResponse.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_services_notifications_v1_UserEnableNotificationCategoryRequest(arg) {
-  if (!(arg instanceof notifications_pb.UserEnableNotificationCategoryRequest)) {
-    throw new Error('Expected argument of type services.notifications.v1.UserEnableNotificationCategoryRequest');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_services_notifications_v1_UserEnableNotificationCategoryRequest(buffer_arg) {
-  return notifications_pb.UserEnableNotificationCategoryRequest.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_services_notifications_v1_UserEnableNotificationCategoryResponse(arg) {
-  if (!(arg instanceof notifications_pb.UserEnableNotificationCategoryResponse)) {
-    throw new Error('Expected argument of type services.notifications.v1.UserEnableNotificationCategoryResponse');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_services_notifications_v1_UserEnableNotificationCategoryResponse(buffer_arg) {
-  return notifications_pb.UserEnableNotificationCategoryResponse.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_services_notifications_v1_UserEnableNotificationChannelRequest(arg) {
-  if (!(arg instanceof notifications_pb.UserEnableNotificationChannelRequest)) {
-    throw new Error('Expected argument of type services.notifications.v1.UserEnableNotificationChannelRequest');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_services_notifications_v1_UserEnableNotificationChannelRequest(buffer_arg) {
-  return notifications_pb.UserEnableNotificationChannelRequest.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_services_notifications_v1_UserEnableNotificationChannelResponse(arg) {
-  if (!(arg instanceof notifications_pb.UserEnableNotificationChannelResponse)) {
-    throw new Error('Expected argument of type services.notifications.v1.UserEnableNotificationChannelResponse');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_services_notifications_v1_UserEnableNotificationChannelResponse(buffer_arg) {
-  return notifications_pb.UserEnableNotificationChannelResponse.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_services_notifications_v1_UserNotificationSettingsRequest(arg) {
-  if (!(arg instanceof notifications_pb.UserNotificationSettingsRequest)) {
-    throw new Error('Expected argument of type services.notifications.v1.UserNotificationSettingsRequest');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_services_notifications_v1_UserNotificationSettingsRequest(buffer_arg) {
-  return notifications_pb.UserNotificationSettingsRequest.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_services_notifications_v1_UserNotificationSettingsResponse(arg) {
-  if (!(arg instanceof notifications_pb.UserNotificationSettingsResponse)) {
-    throw new Error('Expected argument of type services.notifications.v1.UserNotificationSettingsResponse');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_services_notifications_v1_UserNotificationSettingsResponse(buffer_arg) {
-  return notifications_pb.UserNotificationSettingsResponse.deserializeBinary(new Uint8Array(buffer_arg));
+function deserialize_services_notifications_v1_UpdateUserLocaleResponse(buffer_arg) {
+  return notifications_pb.UpdateUserLocaleResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 
@@ -150,60 +172,71 @@ var NotificationsServiceService = exports.NotificationsServiceService = {
     responseSerialize: serialize_services_notifications_v1_ShouldSendNotificationResponse,
     responseDeserialize: deserialize_services_notifications_v1_ShouldSendNotificationResponse,
   },
-  userEnableNotificationChannel: {
-    path: '/services.notifications.v1.NotificationsService/UserEnableNotificationChannel',
+  enableNotificationChannel: {
+    path: '/services.notifications.v1.NotificationsService/EnableNotificationChannel',
     requestStream: false,
     responseStream: false,
-    requestType: notifications_pb.UserEnableNotificationChannelRequest,
-    responseType: notifications_pb.UserEnableNotificationChannelResponse,
-    requestSerialize: serialize_services_notifications_v1_UserEnableNotificationChannelRequest,
-    requestDeserialize: deserialize_services_notifications_v1_UserEnableNotificationChannelRequest,
-    responseSerialize: serialize_services_notifications_v1_UserEnableNotificationChannelResponse,
-    responseDeserialize: deserialize_services_notifications_v1_UserEnableNotificationChannelResponse,
+    requestType: notifications_pb.EnableNotificationChannelRequest,
+    responseType: notifications_pb.EnableNotificationChannelResponse,
+    requestSerialize: serialize_services_notifications_v1_EnableNotificationChannelRequest,
+    requestDeserialize: deserialize_services_notifications_v1_EnableNotificationChannelRequest,
+    responseSerialize: serialize_services_notifications_v1_EnableNotificationChannelResponse,
+    responseDeserialize: deserialize_services_notifications_v1_EnableNotificationChannelResponse,
   },
-  userDisableNotificationChannel: {
-    path: '/services.notifications.v1.NotificationsService/UserDisableNotificationChannel',
+  disableNotificationChannel: {
+    path: '/services.notifications.v1.NotificationsService/DisableNotificationChannel',
     requestStream: false,
     responseStream: false,
-    requestType: notifications_pb.UserDisableNotificationChannelRequest,
-    responseType: notifications_pb.UserDisableNotificationChannelResponse,
-    requestSerialize: serialize_services_notifications_v1_UserDisableNotificationChannelRequest,
-    requestDeserialize: deserialize_services_notifications_v1_UserDisableNotificationChannelRequest,
-    responseSerialize: serialize_services_notifications_v1_UserDisableNotificationChannelResponse,
-    responseDeserialize: deserialize_services_notifications_v1_UserDisableNotificationChannelResponse,
+    requestType: notifications_pb.DisableNotificationChannelRequest,
+    responseType: notifications_pb.DisableNotificationChannelResponse,
+    requestSerialize: serialize_services_notifications_v1_DisableNotificationChannelRequest,
+    requestDeserialize: deserialize_services_notifications_v1_DisableNotificationChannelRequest,
+    responseSerialize: serialize_services_notifications_v1_DisableNotificationChannelResponse,
+    responseDeserialize: deserialize_services_notifications_v1_DisableNotificationChannelResponse,
   },
-  userEnableNotificationCategory: {
-    path: '/services.notifications.v1.NotificationsService/UserEnableNotificationCategory',
+  enableNotificationCategory: {
+    path: '/services.notifications.v1.NotificationsService/EnableNotificationCategory',
     requestStream: false,
     responseStream: false,
-    requestType: notifications_pb.UserEnableNotificationCategoryRequest,
-    responseType: notifications_pb.UserEnableNotificationCategoryResponse,
-    requestSerialize: serialize_services_notifications_v1_UserEnableNotificationCategoryRequest,
-    requestDeserialize: deserialize_services_notifications_v1_UserEnableNotificationCategoryRequest,
-    responseSerialize: serialize_services_notifications_v1_UserEnableNotificationCategoryResponse,
-    responseDeserialize: deserialize_services_notifications_v1_UserEnableNotificationCategoryResponse,
+    requestType: notifications_pb.EnableNotificationCategoryRequest,
+    responseType: notifications_pb.EnableNotificationCategoryResponse,
+    requestSerialize: serialize_services_notifications_v1_EnableNotificationCategoryRequest,
+    requestDeserialize: deserialize_services_notifications_v1_EnableNotificationCategoryRequest,
+    responseSerialize: serialize_services_notifications_v1_EnableNotificationCategoryResponse,
+    responseDeserialize: deserialize_services_notifications_v1_EnableNotificationCategoryResponse,
   },
-  userDisableNotificationCategory: {
-    path: '/services.notifications.v1.NotificationsService/UserDisableNotificationCategory',
+  disableNotificationCategory: {
+    path: '/services.notifications.v1.NotificationsService/DisableNotificationCategory',
     requestStream: false,
     responseStream: false,
-    requestType: notifications_pb.UserDisableNotificationCategoryRequest,
-    responseType: notifications_pb.UserDisableNotificationCategoryResponse,
-    requestSerialize: serialize_services_notifications_v1_UserDisableNotificationCategoryRequest,
-    requestDeserialize: deserialize_services_notifications_v1_UserDisableNotificationCategoryRequest,
-    responseSerialize: serialize_services_notifications_v1_UserDisableNotificationCategoryResponse,
-    responseDeserialize: deserialize_services_notifications_v1_UserDisableNotificationCategoryResponse,
+    requestType: notifications_pb.DisableNotificationCategoryRequest,
+    responseType: notifications_pb.DisableNotificationCategoryResponse,
+    requestSerialize: serialize_services_notifications_v1_DisableNotificationCategoryRequest,
+    requestDeserialize: deserialize_services_notifications_v1_DisableNotificationCategoryRequest,
+    responseSerialize: serialize_services_notifications_v1_DisableNotificationCategoryResponse,
+    responseDeserialize: deserialize_services_notifications_v1_DisableNotificationCategoryResponse,
   },
-  userNotificationSettings: {
-    path: '/services.notifications.v1.NotificationsService/UserNotificationSettings',
+  getNotificationSettings: {
+    path: '/services.notifications.v1.NotificationsService/GetNotificationSettings',
     requestStream: false,
     responseStream: false,
-    requestType: notifications_pb.UserNotificationSettingsRequest,
-    responseType: notifications_pb.UserNotificationSettingsResponse,
-    requestSerialize: serialize_services_notifications_v1_UserNotificationSettingsRequest,
-    requestDeserialize: deserialize_services_notifications_v1_UserNotificationSettingsRequest,
-    responseSerialize: serialize_services_notifications_v1_UserNotificationSettingsResponse,
-    responseDeserialize: deserialize_services_notifications_v1_UserNotificationSettingsResponse,
+    requestType: notifications_pb.GetNotificationSettingsRequest,
+    responseType: notifications_pb.GetNotificationSettingsResponse,
+    requestSerialize: serialize_services_notifications_v1_GetNotificationSettingsRequest,
+    requestDeserialize: deserialize_services_notifications_v1_GetNotificationSettingsRequest,
+    responseSerialize: serialize_services_notifications_v1_GetNotificationSettingsResponse,
+    responseDeserialize: deserialize_services_notifications_v1_GetNotificationSettingsResponse,
+  },
+  updateUserLocale: {
+    path: '/services.notifications.v1.NotificationsService/UpdateUserLocale',
+    requestStream: false,
+    responseStream: false,
+    requestType: notifications_pb.UpdateUserLocaleRequest,
+    responseType: notifications_pb.UpdateUserLocaleResponse,
+    requestSerialize: serialize_services_notifications_v1_UpdateUserLocaleRequest,
+    requestDeserialize: deserialize_services_notifications_v1_UpdateUserLocaleRequest,
+    responseSerialize: serialize_services_notifications_v1_UpdateUserLocaleResponse,
+    responseDeserialize: deserialize_services_notifications_v1_UpdateUserLocaleResponse,
   },
 };
 
