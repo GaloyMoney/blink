@@ -23,20 +23,20 @@ impl std::fmt::Display for GaloyUserId {
 es_entity::entity_id! { UserNotificationSettingsId }
 
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
-pub struct Locale(String);
-impl From<String> for Locale {
+pub struct GaloyLocale(String);
+impl From<String> for GaloyLocale {
     fn from(s: String) -> Self {
         Self(s)
     }
 }
 
-impl AsRef<str> for Locale {
+impl AsRef<str> for GaloyLocale {
     fn as_ref(&self) -> &str {
         &self.0
     }
 }
 
-impl std::fmt::Display for Locale {
+impl std::fmt::Display for GaloyLocale {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }

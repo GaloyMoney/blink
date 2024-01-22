@@ -28,7 +28,7 @@ pub enum UserNotificationSettingsEvent {
         category: UserNotificationCategory,
     },
     LocaleUpdated {
-        locale: Locale,
+        locale: GaloyLocale,
     },
     LocaleSetToDefault,
 }
@@ -62,7 +62,7 @@ impl UserNotificationSettings {
         .expect("Could not create default")
     }
 
-    pub fn update_locale(&mut self, locale: Locale) {
+    pub fn update_locale(&mut self, locale: GaloyLocale) {
         if self.locale().as_ref() != Some(&locale) {
             self.events
                 .push(UserNotificationSettingsEvent::LocaleUpdated { locale });
@@ -76,7 +76,7 @@ impl UserNotificationSettings {
         }
     }
 
-    pub fn locale(&self) -> Option<Locale> {
+    pub fn locale(&self) -> Option<GaloyLocale> {
         let mut ret = None;
         for event in self.events.iter() {
             match event {
@@ -314,8 +314,11 @@ mod tests {
         let events = initial_events();
         let mut settings = UserNotificationSettings::try_from(events).expect("Could not hydrate");
         assert_eq!(settings.locale(), None);
-        settings.update_locale(Locale::from("en_US".to_string()));
-        assert_eq!(settings.locale(), Some(Locale::from("en_US".to_string())));
+        settings.update_locale(GaloyLocale::from("en_US".to_string()));
+        assert_eq!(
+            settings.locale(),
+            Some(GaloyLocale::from("en_US".to_string()))
+        );
         settings.set_locale_to_default();
         assert_eq!(settings.locale(), None);
     }

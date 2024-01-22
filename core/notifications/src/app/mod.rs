@@ -136,7 +136,7 @@ impl NotificationsApp {
         if locale.is_empty() {
             user_settings.set_locale_to_default()
         } else {
-            user_settings.update_locale(Locale::from(locale));
+            user_settings.update_locale(GaloyLocale::from(locale));
         }
         self.settings.persist(&mut user_settings).await?;
         Ok(user_settings)
