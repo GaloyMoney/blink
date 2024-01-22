@@ -64,7 +64,6 @@ export const settlePayout = async (
     recipient: {
       accountId: wallet.accountId,
       walletId: wallet.id,
-      deviceTokens: user.deviceTokens,
       userId: user.id,
       level: account.level,
     },

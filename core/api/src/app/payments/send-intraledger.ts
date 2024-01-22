@@ -355,7 +355,6 @@ const executePaymentViaIntraledger = async <
       recipient: {
         accountId: recipientAccount.id,
         walletId: recipientWalletDescriptor.id,
-        deviceTokens: recipientUser.deviceTokens,
         userId: recipientUser.id,
         level: recipientAccount.level,
       },
@@ -382,7 +381,6 @@ const executePaymentViaIntraledger = async <
       recipient: {
         accountId: senderAccount.id,
         walletId: senderWalletDescriptor.id,
-        deviceTokens: senderUser.deviceTokens,
         userId: senderUser.id,
         level: senderAccount.level,
       },
