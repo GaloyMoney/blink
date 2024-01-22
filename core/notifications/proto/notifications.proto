@@ -11,6 +11,7 @@ service NotificationsService {
   rpc EnableNotificationCategory (EnableNotificationCategoryRequest) returns (EnableNotificationCategoryResponse) {}
   rpc DisableNotificationCategory (DisableNotificationCategoryRequest) returns (DisableNotificationCategoryResponse) {}
   rpc GetNotificationSettings (GetNotificationSettingsRequest) returns (GetNotificationSettingsResponse) {}
+  rpc UpdateUserLocale (UpdateUserLocaleRequest) returns (UpdateUserLocaleResponse) {}
 }
 
 enum NotificationChannel {
@@ -46,6 +47,7 @@ message EnableNotificationChannelResponse {
 
 message NotificationSettings {
   ChannelNotificationSettings push = 1;
+  string locale = 2;
 }
 
 message ChannelNotificationSettings {
@@ -90,4 +92,11 @@ message GetNotificationSettingsResponse {
   NotificationSettings notification_settings = 1;
 }
 
+message UpdateUserLocaleRequest {
+  string user_id = 1;
+  string locale = 2;
+}
 
+message UpdateUserLocaleResponse {
+  NotificationSettings notification_settings = 1;
+}

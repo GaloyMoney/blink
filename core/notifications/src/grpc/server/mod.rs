@@ -162,6 +162,22 @@ impl NotificationsService for Notifications {
             notification_settings: Some(notification_settings.into()),
         }))
     }
+
+    #[instrument(name = "notifications.update_user_locale", skip_all, err)]
+    async fn update_user_locale(
+        &self,
+        request: Request<UpdateUserLocaleRequest>,
+    ) -> Result<Response<UpdateUserLocaleResponse>, Status> {
+        grpc::extract_tracing(&request);
+        let request = request.into_inner();
+        let UpdateUserLocaleRequest { user_id, locale } = request;
+        let user_id = GaloyUserId::from(user_id);
+        let notification_settings = self.app.update_locale_on_user(user_id, locale).await?;
+
+        Ok(Response::new(UpdateUserLocaleResponse {
+            notification_settings: Some(notification_settings.into()),
+        }))
+    }
 }
 
 pub(crate) async fn start(

@@ -121,4 +121,20 @@ impl NotificationsApp {
         self.settings.persist(&mut user_settings).await?;
         Ok(user_settings)
     }
+
+    #[instrument(name = "app.update_user_locale", skip(self), err)]
+    pub async fn update_locale_on_user(
+        &self,
+        user_id: GaloyUserId,
+        locale: String,
+    ) -> Result<UserNotificationSettings, ApplicationError> {
+        let mut user_settings = self
+            .settings
+            .find_for_user_id(&user_id)
+            .await?
+            .unwrap_or_else(|| UserNotificationSettings::new(user_id));
+        user_settings.update_locale(locale);
+        self.settings.persist(&mut user_settings).await?;
+        Ok(user_settings)
+    }
 }

@@ -6,6 +6,8 @@ use std::collections::HashSet;
 
 use crate::primitives::*;
 
+const DEFAULT_LOCALE: &str = "en-US";
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum UserNotificationSettingsEvent {
@@ -26,6 +28,9 @@ pub enum UserNotificationSettingsEvent {
     CategoryEnabled {
         channel: UserNotificationChannel,
         category: UserNotificationCategory,
+    },
+    LocaleUpdated {
+        locale: String,
     },
 }
 
@@ -56,6 +61,23 @@ impl UserNotificationSettings {
             [UserNotificationSettingsEvent::Initialized { id, galoy_user_id }],
         ))
         .expect("Could not create default")
+    }
+
+    pub fn update_locale(&mut self, locale: String) {
+        if self.locale() != locale {
+            self.events
+                .push(UserNotificationSettingsEvent::LocaleUpdated { locale });
+        }
+    }
+
+    pub fn locale(&self) -> String {
+        let mut ret = DEFAULT_LOCALE;
+        for event in self.events.iter() {
+            if let UserNotificationSettingsEvent::LocaleUpdated { locale } = event {
+                ret = locale;
+            }
+        }
+        ret.to_string()
     }
 
     pub fn disable_channel(&mut self, channel: UserNotificationChannel) {
