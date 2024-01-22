@@ -6,11 +6,11 @@ package services.notifications.v1;
 
 service NotificationsService {
   rpc ShouldSendNotification (ShouldSendNotificationRequest) returns (ShouldSendNotificationResponse) {}
-  rpc UserEnableNotificationChannel (UserEnableNotificationChannelRequest) returns (UserEnableNotificationChannelResponse) {}
-  rpc UserDisableNotificationChannel (UserDisableNotificationChannelRequest) returns (UserDisableNotificationChannelResponse) {}
-  rpc UserEnableNotificationCategory (UserEnableNotificationCategoryRequest) returns (UserEnableNotificationCategoryResponse) {}
-  rpc UserDisableNotificationCategory (UserDisableNotificationCategoryRequest) returns (UserDisableNotificationCategoryResponse) {}
-  rpc UserNotificationSettings (UserNotificationSettingsRequest) returns (UserNotificationSettingsResponse) {}
+  rpc EnableNotificationChannel (EnableNotificationChannelRequest) returns (EnableNotificationChannelResponse) {}
+  rpc DisableNotificationChannel (DisableNotificationChannelRequest) returns (DisableNotificationChannelResponse) {}
+  rpc EnableNotificationCategory (EnableNotificationCategoryRequest) returns (EnableNotificationCategoryResponse) {}
+  rpc DisableNotificationCategory (DisableNotificationCategoryRequest) returns (DisableNotificationCategoryResponse) {}
+  rpc GetNotificationSettings (GetNotificationSettingsRequest) returns (GetNotificationSettingsResponse) {}
 }
 
 enum NotificationChannel {
@@ -35,16 +35,16 @@ message ShouldSendNotificationResponse {
   bool should_send = 2;
 }
 
-message UserEnableNotificationChannelRequest {
+message EnableNotificationChannelRequest {
   string user_id = 1;
   NotificationChannel channel = 2;
 }
 
-message UserEnableNotificationChannelResponse {
-  UserNotificationSettings notification_settings = 1;
+message EnableNotificationChannelResponse {
+  NotificationSettings notification_settings = 1;
 }
 
-message UserNotificationSettings {
+message NotificationSettings {
   ChannelNotificationSettings push = 1;
 }
 
@@ -53,41 +53,41 @@ message ChannelNotificationSettings {
   repeated NotificationCategory disabled_categories = 2;
 }
 
-message UserDisableNotificationChannelRequest {
+message DisableNotificationChannelRequest {
   string user_id = 1;
   NotificationChannel channel = 2;
 }
 
-message UserDisableNotificationChannelResponse {
-  UserNotificationSettings notification_settings = 1;
+message DisableNotificationChannelResponse {
+  NotificationSettings notification_settings = 1;
 }
 
-message UserDisableNotificationCategoryRequest {
-  string user_id = 1;
-  NotificationChannel channel = 2;
-  NotificationCategory category = 3;
-}
-
-message UserDisableNotificationCategoryResponse {
-  UserNotificationSettings notification_settings = 1;
-}
-
-message UserEnableNotificationCategoryRequest {
+message DisableNotificationCategoryRequest {
   string user_id = 1;
   NotificationChannel channel = 2;
   NotificationCategory category = 3;
 }
 
-message UserEnableNotificationCategoryResponse {
-  UserNotificationSettings notification_settings = 1;
+message DisableNotificationCategoryResponse {
+  NotificationSettings notification_settings = 1;
 }
 
-message UserNotificationSettingsRequest {
+message EnableNotificationCategoryRequest {
+  string user_id = 1;
+  NotificationChannel channel = 2;
+  NotificationCategory category = 3;
+}
+
+message EnableNotificationCategoryResponse {
+  NotificationSettings notification_settings = 1;
+}
+
+message GetNotificationSettingsRequest {
   string user_id = 1;
 }
 
-message UserNotificationSettingsResponse {
-  UserNotificationSettings notification_settings = 1;
+message GetNotificationSettingsResponse {
+  NotificationSettings notification_settings = 1;
 }
 
 

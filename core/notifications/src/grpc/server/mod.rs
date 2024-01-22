@@ -51,60 +51,52 @@ impl NotificationsService for Notifications {
         }))
     }
 
-    #[instrument(name = "notifications.user_enable_notification_channel", skip_all, err)]
-    async fn user_enable_notification_channel(
+    #[instrument(name = "notifications.enable_notification_channel", skip_all, err)]
+    async fn enable_notification_channel(
         &self,
-        request: Request<UserEnableNotificationChannelRequest>,
-    ) -> Result<Response<UserEnableNotificationChannelResponse>, Status> {
+        request: Request<EnableNotificationChannelRequest>,
+    ) -> Result<Response<EnableNotificationChannelResponse>, Status> {
         grpc::extract_tracing(&request);
         let request = request.into_inner();
-        let UserEnableNotificationChannelRequest { user_id, channel } = request;
+        let EnableNotificationChannelRequest { user_id, channel } = request;
         let channel = proto::NotificationChannel::try_from(channel)
             .map(UserNotificationChannel::from)
             .map_err(|e| Status::invalid_argument(e.to_string()))?;
         let user_id = GaloyUserId::from(user_id);
         let notification_settings = self.app.enable_channel_on_user(user_id, channel).await?;
 
-        Ok(Response::new(UserEnableNotificationChannelResponse {
+        Ok(Response::new(EnableNotificationChannelResponse {
             notification_settings: Some(notification_settings.into()),
         }))
     }
 
-    #[instrument(
-        name = "notifications.user_disable_notification_channel",
-        skip_all,
-        err
-    )]
-    async fn user_disable_notification_channel(
+    #[instrument(name = "notifications.disable_notification_channel", skip_all, err)]
+    async fn disable_notification_channel(
         &self,
-        request: Request<UserDisableNotificationChannelRequest>,
-    ) -> Result<Response<UserDisableNotificationChannelResponse>, Status> {
+        request: Request<DisableNotificationChannelRequest>,
+    ) -> Result<Response<DisableNotificationChannelResponse>, Status> {
         grpc::extract_tracing(&request);
         let request = request.into_inner();
-        let UserDisableNotificationChannelRequest { user_id, channel } = request;
+        let DisableNotificationChannelRequest { user_id, channel } = request;
         let channel = proto::NotificationChannel::try_from(channel)
             .map(UserNotificationChannel::from)
             .map_err(|e| Status::invalid_argument(e.to_string()))?;
         let user_id = GaloyUserId::from(user_id);
         let notification_settings = self.app.disable_channel_on_user(user_id, channel).await?;
 
-        Ok(Response::new(UserDisableNotificationChannelResponse {
+        Ok(Response::new(DisableNotificationChannelResponse {
             notification_settings: Some(notification_settings.into()),
         }))
     }
 
-    #[instrument(
-        name = "notifications.user_enable_notification_category",
-        skip_all,
-        err
-    )]
-    async fn user_enable_notification_category(
+    #[instrument(name = "notifications.enable_notification_category", skip_all, err)]
+    async fn enable_notification_category(
         &self,
-        request: Request<UserEnableNotificationCategoryRequest>,
-    ) -> Result<Response<UserEnableNotificationCategoryResponse>, Status> {
+        request: Request<EnableNotificationCategoryRequest>,
+    ) -> Result<Response<EnableNotificationCategoryResponse>, Status> {
         grpc::extract_tracing(&request);
         let request = request.into_inner();
-        let UserEnableNotificationCategoryRequest {
+        let EnableNotificationCategoryRequest {
             user_id,
             channel,
             category,
@@ -121,23 +113,19 @@ impl NotificationsService for Notifications {
             .enable_category_on_user(user_id, channel, category)
             .await?;
 
-        Ok(Response::new(UserEnableNotificationCategoryResponse {
+        Ok(Response::new(EnableNotificationCategoryResponse {
             notification_settings: Some(notification_settings.into()),
         }))
     }
 
-    #[instrument(
-        name = "notifications.user_disable_notification_category",
-        skip_all,
-        err
-    )]
-    async fn user_disable_notification_category(
+    #[instrument(name = "notifications.disable_notification_category", skip_all, err)]
+    async fn disable_notification_category(
         &self,
-        request: Request<UserDisableNotificationCategoryRequest>,
-    ) -> Result<Response<UserDisableNotificationCategoryResponse>, Status> {
+        request: Request<DisableNotificationCategoryRequest>,
+    ) -> Result<Response<DisableNotificationCategoryResponse>, Status> {
         grpc::extract_tracing(&request);
         let request = request.into_inner();
-        let UserDisableNotificationCategoryRequest {
+        let DisableNotificationCategoryRequest {
             user_id,
             channel,
             category,
@@ -154,23 +142,23 @@ impl NotificationsService for Notifications {
             .disable_category_on_user(user_id, channel, category)
             .await?;
 
-        Ok(Response::new(UserDisableNotificationCategoryResponse {
+        Ok(Response::new(DisableNotificationCategoryResponse {
             notification_settings: Some(notification_settings.into()),
         }))
     }
 
-    #[instrument(name = "notifications.user_notification_settings", skip_all, err)]
-    async fn user_notification_settings(
+    #[instrument(name = "notifications.notification_settings", skip_all, err)]
+    async fn get_notification_settings(
         &self,
-        request: Request<UserNotificationSettingsRequest>,
-    ) -> Result<Response<UserNotificationSettingsResponse>, Status> {
+        request: Request<GetNotificationSettingsRequest>,
+    ) -> Result<Response<GetNotificationSettingsResponse>, Status> {
         grpc::extract_tracing(&request);
         let request = request.into_inner();
-        let UserNotificationSettingsRequest { user_id } = request;
+        let GetNotificationSettingsRequest { user_id } = request;
         let user_id = GaloyUserId::from(user_id);
         let notification_settings = self.app.notification_settings_for_user(user_id).await?;
 
-        Ok(Response::new(UserNotificationSettingsResponse {
+        Ok(Response::new(GetNotificationSettingsResponse {
             notification_settings: Some(notification_settings.into()),
         }))
     }

@@ -30,9 +30,7 @@ impl From<ApplicationError> for tonic::Status {
     }
 }
 
-impl From<user_notification_settings::UserNotificationSettings>
-    for proto::UserNotificationSettings
-{
+impl From<user_notification_settings::UserNotificationSettings> for proto::NotificationSettings {
     fn from(settings: user_notification_settings::UserNotificationSettings) -> Self {
         Self {
             push: Some(proto::ChannelNotificationSettings {
