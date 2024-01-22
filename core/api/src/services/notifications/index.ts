@@ -359,11 +359,19 @@ export const NotificationsService = (): INotificationsService => {
   }
 
   const adminPushNotificationSend = async ({
-    deviceTokens,
     title,
     body,
     data,
+    userId,
   }: SendPushNotificationArgs): Promise<true | NotificationsServiceError> => {
+    const settings = await getUserNotificationSettings(userId)
+
+    if (settings instanceof Error) {
+      return settings
+    }
+
+    const { pushDeviceTokens: deviceTokens } = settings
+
     const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
     if (!hasDeviceTokens) return true
 

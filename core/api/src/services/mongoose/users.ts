@@ -5,7 +5,6 @@ import { parseRepositoryError } from "./utils"
 import { CouldNotFindUserFromPhoneError, RepositoryError } from "@/domain/errors"
 
 export const translateToUser = (user: UserRecord): User => {
-  const deviceTokens = user.deviceTokens ?? []
   const phoneMetadata = user.phoneMetadata
   const phone = user.phone as PhoneNumber | undefined
   const deletedPhones = user.deletedPhones as PhoneNumber[] | undefined
@@ -15,7 +14,6 @@ export const translateToUser = (user: UserRecord): User => {
 
   return {
     id: user.userId as UserId,
-    deviceTokens: deviceTokens as DeviceToken[],
     phoneMetadata,
     phone,
     deletedPhones,
@@ -57,7 +55,6 @@ export const UsersRepository = (): IUsersRepository => {
 
   const update = async ({
     id,
-    deviceTokens,
     phoneMetadata,
     phone,
     deletedPhones,
@@ -67,7 +64,6 @@ export const UsersRepository = (): IUsersRepository => {
     const updateObject: Partial<UserUpdateInput> & {
       $unset?: { phone?: number; email?: number }
     } = {
-      deviceTokens,
       phoneMetadata,
       deletedPhones,
       deletedEmails,

@@ -24,7 +24,6 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
     fn: async (account: Account): Promise<true | ApplicationError> => {
       const user = await UsersRepository().findById(account.kratosUserId)
       if (user instanceof Error) return user
-      if (user.deviceTokens.length === 0) return true
 
       const wallet = await WalletsRepository().findById(account.defaultWalletId)
       if (wallet instanceof Error) return wallet

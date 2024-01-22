@@ -54,7 +54,6 @@ export const bootstrap = async () => {
 
       const res = await UsersRepository().update({
         id: randomKratosUserId,
-        deviceTokens: [`token-${randomKratosUserId}`] as DeviceToken[],
         phone,
       })
       kratosUserId = randomKratosUserId
