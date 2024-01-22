@@ -61,7 +61,6 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
 
       const result = await NotificationsService().sendBalance({
         balanceAmount,
-        deviceTokens: user.deviceTokens,
         displayBalanceAmount: displayAmount,
         recipientUserId: user.id,
       })

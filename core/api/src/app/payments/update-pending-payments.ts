@@ -279,7 +279,6 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         recipient: {
           accountId: senderWallet.accountId,
           walletId,
-          deviceTokens: senderUser.deviceTokens,
           userId: senderUser.id,
           level: senderAccount.level,
         },

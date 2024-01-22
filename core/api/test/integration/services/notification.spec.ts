@@ -238,7 +238,6 @@ describe("notification", () => {
             recipient: {
               accountId,
               walletId,
-              deviceTokens,
               userId,
               level: AccountLevel.One,
             },
@@ -309,7 +308,6 @@ describe("notification", () => {
             recipient: {
               accountId,
               walletId,
-              deviceTokens,
               userId,
               level: AccountLevel.One,
             },
@@ -381,7 +379,6 @@ describe("notification", () => {
             recipient: {
               accountId,
               walletId,
-              deviceTokens,
               userId,
               level: AccountLevel.One,
             },
@@ -450,7 +447,6 @@ describe("notification", () => {
             recipient: {
               accountId,
               walletId,
-              deviceTokens,
               userId,
               level: AccountLevel.One,
             },
@@ -519,7 +515,6 @@ describe("notification", () => {
             recipient: {
               accountId,
               walletId,
-              deviceTokens,
               userId,
               level: AccountLevel.One,
             },
