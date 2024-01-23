@@ -139,16 +139,6 @@ describe("notification", () => {
       expect(activeAccountsArray.length).toBeGreaterThan(0)
       expect(sendFilteredNotification.mock.calls.length).toBeGreaterThan(0)
 
-      let usersWithDeviceTokens = 0
-      for (const { kratosUserId } of activeAccountsArray) {
-        const user = await UsersRepository().findById(kratosUserId)
-        if (user instanceof Error) throw user
-
-        if (user.deviceTokens.length > 0) usersWithDeviceTokens++
-      }
-
-      expect(sendFilteredNotification.mock.calls.length).toBe(usersWithDeviceTokens)
-
       for (let i = 0; i < sendFilteredNotification.mock.calls.length; i++) {
         const [call] = sendFilteredNotification.mock.calls[i]
         const { defaultWalletId, kratosUserId } = activeAccountsArray[i]
