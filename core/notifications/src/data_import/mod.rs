@@ -10,26 +10,11 @@ pub use config::*;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct MongoChannelSettings {
-    #[serde(default = "bool_true")]
-    enabled: bool,
+struct MongoUser {
     #[serde(default)]
-    disabled_categories: Vec<String>,
-}
-
-#[derive(Debug, Deserialize)]
-struct MongoNotificationSettings {
+    user_id: Option<String>,
     #[serde(default)]
-    push: Option<MongoChannelSettings>,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct MongoAccount {
-    #[serde(default)]
-    kratos_user_id: Option<String>,
-    #[serde(default)]
-    notification_settings: Option<MongoNotificationSettings>,
+    language: String,
 }
 
 pub async fn import_user_notification_settings(
@@ -38,51 +23,29 @@ pub async fn import_user_notification_settings(
 ) -> anyhow::Result<()> {
     let client = mongodb::get_client(config).await?;
     let db = client.default_database().context("default database")?;
-    let accounts = db.collection::<MongoAccount>("accounts");
-    let mut cursor = accounts.find(None, None).await?;
-    let mut total_accounts = 0;
-    while let Some(maybe_account) = cursor.next().await {
-        let account = match maybe_account {
+    let users = db.collection::<MongoUser>("users");
+    let mut cursor = users.find(None, None).await?;
+    let mut total_users = 0;
+    while let Some(maybe_user) = cursor.next().await {
+        let user = match maybe_user {
             Err(e) => {
-                println!("Error deserializing account: {:?}", e);
+                println!("Error deserializing user: {:?}", e);
                 continue;
             }
-            core::result::Result::Ok(account) => account,
+            core::result::Result::Ok(user) => user,
         };
-        if let (Some(kratos_user_id), Some(notification_settings)) =
-            (account.kratos_user_id, account.notification_settings)
-        {
-            let user_id = GaloyUserId::from(kratos_user_id);
-            if let Some(push) = notification_settings.push {
-                for category in push.disabled_categories {
-                    let category = match category.as_ref() {
-                        "Circles" | "circles" => UserNotificationCategory::Circles,
-                        "Payments" | "payments" => UserNotificationCategory::Payments,
-                        _ => continue,
-                    };
-                    app.disable_category_on_user(
-                        user_id.clone(),
-                        UserNotificationChannel::Push,
-                        category,
-                    )
-                    .await?;
-                }
-                if !push.enabled {
-                    app.disable_channel_on_user(user_id, UserNotificationChannel::Push)
-                        .await?;
-                }
+        if let Some(user_id) = user.user_id {
+            if !user.language.is_empty() {
+                let user_id = GaloyUserId::from(user_id);
+                app.update_locale_on_user(user_id, user.language).await?;
             }
         }
-        total_accounts += 1;
-        if total_accounts % 100 == 0 {
-            println!("{total_accounts} accounts sycned");
+        total_users += 1;
+        if total_users % 100 == 0 {
+            println!("{total_users} users synced");
         }
     }
-    println!("SYNCING FINISHED: {total_accounts} accounts sycned");
+    println!("SYNCING FINISHED: {total_users} users sycned");
 
     Ok(())
-}
-
-fn bool_true() -> bool {
-    true
 }

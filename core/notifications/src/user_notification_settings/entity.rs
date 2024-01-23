@@ -27,6 +27,10 @@ pub enum UserNotificationSettingsEvent {
         channel: UserNotificationChannel,
         category: UserNotificationCategory,
     },
+    LocaleUpdated {
+        locale: GaloyLocale,
+    },
+    LocaleSetToDefault,
 }
 
 impl EntityEvent for UserNotificationSettingsEvent {
@@ -56,6 +60,36 @@ impl UserNotificationSettings {
             [UserNotificationSettingsEvent::Initialized { id, galoy_user_id }],
         ))
         .expect("Could not create default")
+    }
+
+    pub fn update_locale(&mut self, locale: GaloyLocale) {
+        if self.locale().as_ref() != Some(&locale) {
+            self.events
+                .push(UserNotificationSettingsEvent::LocaleUpdated { locale });
+        }
+    }
+
+    pub fn set_locale_to_default(&mut self) {
+        if self.locale().is_some() {
+            self.events
+                .push(UserNotificationSettingsEvent::LocaleSetToDefault);
+        }
+    }
+
+    pub fn locale(&self) -> Option<GaloyLocale> {
+        let mut ret = None;
+        for event in self.events.iter() {
+            match event {
+                UserNotificationSettingsEvent::LocaleUpdated { locale } => {
+                    ret = Some(locale);
+                }
+                UserNotificationSettingsEvent::LocaleSetToDefault => {
+                    ret = None;
+                }
+                _ => (),
+            }
+        }
+        ret.cloned()
     }
 
     pub fn disable_channel(&mut self, channel: UserNotificationChannel) {
@@ -273,5 +307,19 @@ mod tests {
             UserNotificationChannel::Push,
             UserNotificationCategory::Payments,
         ));
+    }
+
+    #[test]
+    fn can_update_and_reset_locale() {
+        let events = initial_events();
+        let mut settings = UserNotificationSettings::try_from(events).expect("Could not hydrate");
+        assert_eq!(settings.locale(), None);
+        settings.update_locale(GaloyLocale::from("en_US".to_string()));
+        assert_eq!(
+            settings.locale(),
+            Some(GaloyLocale::from("en_US".to_string()))
+        );
+        settings.set_locale_to_default();
+        assert_eq!(settings.locale(), None);
     }
 }
