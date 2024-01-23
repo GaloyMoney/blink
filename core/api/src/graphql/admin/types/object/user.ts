@@ -1,3 +1,4 @@
+import { Users } from "@/app"
 import { mapError } from "@/graphql/error-map"
 import { GT } from "@/graphql/index"
 import GraphQLEmail from "@/graphql/shared/types/object/email"
@@ -24,7 +25,12 @@ const User = GT.Object<User>({
         return { address: identity.email, verified: identity.emailVerified }
       },
     },
-    language: { type: GT.NonNull(Language) },
+    language: {
+      type: GT.NonNull(Language),
+      resolve: async (source) => {
+        return Users.getUserLanguage(source)
+      },
+    },
     createdAt: {
       type: GT.NonNull(Timestamp),
     },

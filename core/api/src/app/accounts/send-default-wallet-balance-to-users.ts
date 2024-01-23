@@ -63,7 +63,6 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
         balanceAmount,
         deviceTokens: user.deviceTokens,
         displayBalanceAmount: displayAmount,
-        recipientLanguage: user.language,
         recipientUserId: user.id,
       })
 

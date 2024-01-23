@@ -53,12 +53,6 @@ describe("Users Repository", () => {
     expect(user.deviceTokens).toStrictEqual(deviceTokens)
     expect(user.id).toBe(userId)
 
-    expect(user.language).toBe(user0.language)
     expect(user.phoneMetadata).toBe(user0.phoneMetadata)
-
-    const user2 = await users.update({ ...user, language: "es" })
-    if (user2 instanceof Error) throw user2
-    expect(user2.deviceTokens).toStrictEqual(deviceTokens)
-    expect(user2.language).toBe("es")
   })
 })

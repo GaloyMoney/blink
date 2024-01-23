@@ -1,5 +1,5 @@
 import {
-  UserNotificationSettings as GrpcNotificationSettings,
+  NotificationSettings as GrpcNotificationSettings,
   NotificationCategory as GrpcNotificationCategory,
   NotificationChannel as GrpcNotificationChannel,
 } from "./proto/notifications_pb"
@@ -28,6 +28,7 @@ export const grpcNotificationSettingsToNotificationSettings = (
     )
 
   const notificationSettings: NotificationSettings = {
+    language: (settings.getLocale() || "") as UserLanguageOrEmpty,
     push: {
       enabled: pushSettings.getEnabled(),
       disabledCategories,
