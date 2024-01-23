@@ -14,6 +14,7 @@ import {
   UsersRepository,
   WalletsRepository,
 } from "@/services/mongoose"
+import { NotificationsService } from "@/services/notifications"
 import { AccountsIpsRepository } from "@/services/mongoose/accounts-ips"
 import { Account } from "@/services/mongoose/schema"
 
@@ -119,6 +120,12 @@ export const createUserAndWalletFromPhone = async (
       phone,
     })
     if (res instanceof Error) throw res
+
+    const tokenUpdate = await NotificationsService().addPushDeviceToken({
+      userId: kratosUserId,
+      deviceToken: "dummy-device-token" as DeviceToken,
+    })
+    if (tokenUpdate instanceof Error) throw tokenUpdate
   } else {
     if (user instanceof Error) throw user
 
@@ -207,6 +214,12 @@ export const createUserAndWallet = async (
       phone,
     })
     if (res instanceof Error) throw res
+
+    const tokenUpdate = await NotificationsService().addPushDeviceToken({
+      userId: kratosUserId,
+      deviceToken: "dummy-device-token" as DeviceToken,
+    })
+    if (tokenUpdate instanceof Error) throw tokenUpdate
   } else {
     if (user instanceof Error) throw user
 
