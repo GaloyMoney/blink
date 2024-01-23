@@ -210,8 +210,6 @@ impl UserNotificationSettings {
         self.events
             .push(UserNotificationSettingsEvent::PushDeviceTokenRemoved { token })
     }
-
-    // pub fn remove_push_device_token()
 }
 
 impl TryFrom<EntityEvents<UserNotificationSettingsEvent>> for UserNotificationSettings {
