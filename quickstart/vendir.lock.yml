@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build: add ''env'' variables handling to next_build rule (#3883)...'
-      sha: af49c30f0be3e7404aa5691b3a52e4b4b38d8f19
+      commitTitle: 'chore(core): bump deps (#3840)...'
+      sha: e565567c992cf6c8c4bb7326f2cb512e0a9f1328
       tags:
-      - 0.20.19-2-gaf49c30f0
+      - 0.20.20-2-ge565567c9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build: add ''env'' variables handling to next_build rule (#3883)...'
-      sha: af49c30f0be3e7404aa5691b3a52e4b4b38d8f19
+      commitTitle: 'chore(core): bump deps (#3840)...'
+      sha: e565567c992cf6c8c4bb7326f2cb512e0a9f1328
       tags:
-      - 0.20.19-2-gaf49c30f0
+      - 0.20.20-2-ge565567c9
     path: schemas/
   - git:
-      commitTitle: 'build: add ''env'' variables handling to next_build rule (#3883)...'
-      sha: af49c30f0be3e7404aa5691b3a52e4b4b38d8f19
+      commitTitle: 'chore(core): bump deps (#3840)...'
+      sha: e565567c992cf6c8c4bb7326f2cb512e0a9f1328
       tags:
-      - 0.20.19-2-gaf49c30f0
+      - 0.20.20-2-ge565567c9
     path: gql/
   path: ./graphql
 kind: LockConfig
