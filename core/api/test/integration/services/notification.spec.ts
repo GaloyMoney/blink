@@ -30,7 +30,6 @@ const accountId = "AccountId" as AccountId
 const walletId = "walletId" as WalletId
 const paymentHash = "paymentHash" as PaymentHash
 const txHash = "txHash" as OnChainTxHash
-const deviceTokens = ["token" as DeviceToken]
 const userId = "UserId" as UserId
 const paymentAmount = {
   amount: 1000n,
