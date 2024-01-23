@@ -2594,18 +2594,18 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "h2-0.3.21.crate",
-    sha256 = "91fc23aa11be92976ef4729127f1a74adf36d8436f7816b185d18df956790833",
-    strip_prefix = "h2-0.3.21",
-    urls = ["https://crates.io/api/v1/crates/h2/0.3.21/download"],
+    name = "h2-0.3.24.crate",
+    sha256 = "bb2c4422095b67ee78da96fbb51a4cc413b3b25883c7717ff7ca1ab31022c9c9",
+    strip_prefix = "h2-0.3.24",
+    urls = ["https://crates.io/api/v1/crates/h2/0.3.24/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "h2-0.3.21",
-    srcs = [":h2-0.3.21.crate"],
+    name = "h2-0.3.24",
+    srcs = [":h2-0.3.24.crate"],
     crate = "h2",
-    crate_root = "h2-0.3.21.crate/src/lib.rs",
+    crate_root = "h2-0.3.24.crate/src/lib.rs",
     edition = "2018",
     visibility = [],
     deps = [
@@ -2615,7 +2615,7 @@ cargo.rust_library(
         ":futures-sink-0.3.30",
         ":futures-util-0.3.30",
         ":http-0.2.11",
-        ":indexmap-1.9.3",
+        ":indexmap-2.0.2",
         ":slab-0.4.9",
         ":tokio-1.33.0",
         ":tokio-util-0.7.10",
@@ -2997,7 +2997,7 @@ cargo.rust_library(
         ":futures-channel-0.3.30",
         ":futures-core-0.3.30",
         ":futures-util-0.3.30",
-        ":h2-0.3.21",
+        ":h2-0.3.24",
         ":http-0.2.11",
         ":http-body-0.4.5",
         ":httparse-1.8.0",
@@ -5629,7 +5629,7 @@ cargo.rust_library(
         "linux-arm64": dict(
             deps = [
                 ":encoding_rs-0.8.33",
-                ":h2-0.3.21",
+                ":h2-0.3.24",
                 ":http-body-0.4.5",
                 ":hyper-0.14.27",
                 ":hyper-rustls-0.24.2",
@@ -5649,7 +5649,7 @@ cargo.rust_library(
         "linux-x86_64": dict(
             deps = [
                 ":encoding_rs-0.8.33",
-                ":h2-0.3.21",
+                ":h2-0.3.24",
                 ":http-body-0.4.5",
                 ":hyper-0.14.27",
                 ":hyper-rustls-0.24.2",
@@ -5669,7 +5669,7 @@ cargo.rust_library(
         "macos-arm64": dict(
             deps = [
                 ":encoding_rs-0.8.33",
-                ":h2-0.3.21",
+                ":h2-0.3.24",
                 ":http-body-0.4.5",
                 ":hyper-0.14.27",
                 ":hyper-rustls-0.24.2",
@@ -5690,7 +5690,7 @@ cargo.rust_library(
         "macos-x86_64": dict(
             deps = [
                 ":encoding_rs-0.8.33",
-                ":h2-0.3.21",
+                ":h2-0.3.24",
                 ":http-body-0.4.5",
                 ":hyper-0.14.27",
                 ":hyper-rustls-0.24.2",
@@ -5711,7 +5711,7 @@ cargo.rust_library(
         "windows-gnu": dict(
             deps = [
                 ":encoding_rs-0.8.33",
-                ":h2-0.3.21",
+                ":h2-0.3.24",
                 ":http-body-0.4.5",
                 ":hyper-0.14.27",
                 ":hyper-rustls-0.24.2",
@@ -5732,7 +5732,7 @@ cargo.rust_library(
         "windows-msvc": dict(
             deps = [
                 ":encoding_rs-0.8.33",
-                ":h2-0.3.21",
+                ":h2-0.3.24",
                 ":http-body-0.4.5",
                 ":hyper-0.14.27",
                 ":hyper-rustls-0.24.2",
@@ -8829,7 +8829,7 @@ cargo.rust_library(
         ":axum-0.6.20",
         ":base64-0.21.5",
         ":bytes-1.5.0",
-        ":h2-0.3.21",
+        ":h2-0.3.24",
         ":http-0.2.11",
         ":http-body-0.4.5",
         ":hyper-0.14.27",
@@ -8886,7 +8886,7 @@ cargo.rust_library(
         ":bytes-1.5.0",
         ":futures-core-0.3.30",
         ":futures-util-0.3.30",
-        ":h2-0.3.21",
+        ":h2-0.3.24",
         ":http-0.2.11",
         ":http-body-0.4.5",
         ":hyper-0.14.27",
