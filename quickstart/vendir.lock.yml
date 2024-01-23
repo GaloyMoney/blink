@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): bump deps (#3840)...'
-      sha: e565567c992cf6c8c4bb7326f2cb512e0a9f1328
+      commitTitle: 'refactor(notifications): move language to notifications (#3890)...'
+      sha: 81bdf5a2e78a005150afdc04276a309c79a742ba
       tags:
-      - 0.20.20-2-ge565567c9
+      - 0.20.21-2-g81bdf5a2e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): bump deps (#3840)...'
-      sha: e565567c992cf6c8c4bb7326f2cb512e0a9f1328
+      commitTitle: 'refactor(notifications): move language to notifications (#3890)...'
+      sha: 81bdf5a2e78a005150afdc04276a309c79a742ba
       tags:
-      - 0.20.20-2-ge565567c9
+      - 0.20.21-2-g81bdf5a2e
     path: schemas/
   - git:
-      commitTitle: 'chore(core): bump deps (#3840)...'
-      sha: e565567c992cf6c8c4bb7326f2cb512e0a9f1328
+      commitTitle: 'refactor(notifications): move language to notifications (#3890)...'
+      sha: 81bdf5a2e78a005150afdc04276a309c79a742ba
       tags:
-      - 0.20.20-2-ge565567c9
+      - 0.20.21-2-g81bdf5a2e
     path: gql/
   path: ./graphql
 kind: LockConfig

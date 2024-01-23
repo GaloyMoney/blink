@@ -1,8 +1,8 @@
 #@ load("@ytt:data", "data")
 
-#@ galoy_api_image_digest = "sha256@e957dbe446c8a36377e5d4c78b6e945c5ea470fae0bc2b33416bb291d6e505e4"
-#@ galoy_trigger_image_digest = "sha256@bee72e6f1412ab97ac767ff011d286942a6689bc045a0bae515b4abdb07792e0"
-#@ mongodb_migrate_image_digest = "sha256@26986f3b8c9f847c10181c90aec460d1a86b4ef441710c30d60578add6d468c4"
+#@ galoy_api_image_digest = "sha256@c0079fd789d7a6c316d9a523f4f0d267e9d8e184d62a907e1d7781e2088e98bb"
+#@ galoy_trigger_image_digest = "sha256@59ba88e4784692870e2373765899c22187116657150cd72ff70e0e6aaa3b21f4"
+#@ mongodb_migrate_image_digest = "sha256@797c47cd0f0b10e0f6eccc7d5680534d9243bfebd0783ea2a6e3898614768a98"
 
 #@ core_env = [
 #@   "HELMREVISION=dev",
