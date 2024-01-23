@@ -33,7 +33,7 @@ import { Transaction, TransactionMetadata } from "@/services/ledger/schema"
 import { WalletInvoice } from "@/services/mongoose/schema"
 import { LnPayment } from "@/services/lnd/schema"
 import * as LndImpl from "@/services/lnd"
-import * as NotificationsServiceImpl from "@/services/notifications"
+import * as PushNotificationsServiceImpl from "@/services/notifications/push-notifications"
 import * as LedgerFacadeImpl from "@/services/ledger/facade"
 
 import {
@@ -44,6 +44,7 @@ import {
   recordReceiveLnPayment,
 } from "test/helpers"
 import { LedgerTransactionType } from "@/domain/ledger"
+import { NotificationsService } from "@/services/notifications"
 
 let lnInvoice: LnInvoice
 let noAmountLnInvoice: LnInvoice
@@ -896,13 +897,13 @@ describe("initiated via lightning", () => {
     })
 
     it("calls sendFilteredNotification on successful intraledger send", async () => {
-      console.log("TEST START")
       // Setup mocks
-      const sendTransaction = jest.fn()
+      const sendFilteredNotification = jest.fn()
       const pushNotificationsServiceSpy = jest
-        .spyOn(NotificationsServiceImpl, "NotificationsService")
-        .mockImplementationOnce(() => ({
-          sendTransaction,
+        .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+        .mockImplementation(() => ({
+          sendFilteredNotification,
+          sendNotification: jest.fn(),
         }))
 
       const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
@@ -919,6 +920,14 @@ describe("initiated via lightning", () => {
         newWalletDescriptor.accountId,
       )
       if (newAccount instanceof Error) throw newAccount
+
+      // Add push device token
+      const notificationSettings = await NotificationsService().addPushDeviceToken({
+        userId: newAccount.kratosUserId,
+        deviceToken: "123" as DeviceToken,
+      })
+
+      if (notificationSettings instanceof Error) throw notificationSettings
 
       // Persist invoice as self-invoice
       const persisted = await WalletInvoicesRepository().persistNew({
@@ -970,7 +979,8 @@ describe("initiated via lightning", () => {
       })
 
       // Expect sent notification
-      expect(sendTransaction.mock.calls.length).toBe(1)
+      expect(sendFilteredNotification.mock.calls.length).toBe(1)
+      expect(sendFilteredNotification.mock.calls[0][0].title).toBeTruthy()
 
       // Restore system state
       pushNotificationsServiceSpy.mockRestore()

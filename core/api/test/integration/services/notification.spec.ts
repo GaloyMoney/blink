@@ -68,6 +68,13 @@ const crcSettlementDisplayPrice = <S extends WalletCurrency>({
   })
 
 beforeAll(async () => {
+  const addPushDeviceTokenResult = await NotificationsService().addPushDeviceToken({
+    userId,
+    deviceToken: "123" as DeviceToken,
+  })
+
+  if (addPushDeviceTokenResult instanceof Error) throw addPushDeviceTokenResult
+
   const usdDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
     currency: UsdDisplayCurrency,
   })

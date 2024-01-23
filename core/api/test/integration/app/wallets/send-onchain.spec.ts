@@ -43,6 +43,7 @@ import {
 } from "test/helpers"
 import { getBalanceHelper } from "test/helpers/wallet"
 import { LedgerTransactionType } from "@/domain/ledger"
+import { NotificationsService } from "@/services/notifications"
 
 let outsideAddress: OnChainAddress
 let memo: string
@@ -615,7 +616,7 @@ describe("onChainPay", () => {
       const sendFilteredNotification = jest.fn()
       const pushNotificationsServiceSpy = jest
         .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-        .mockImplementationOnce(() => ({
+        .mockImplementation(() => ({
           sendFilteredNotification,
           sendNotification: jest.fn(),
         }))
@@ -627,6 +628,14 @@ describe("onChainPay", () => {
         newWalletDescriptor.accountId,
       )
       if (newAccount instanceof Error) throw newAccount
+
+      // Add push device token
+      const notificationSettings = await NotificationsService().addPushDeviceToken({
+        userId: newAccount.kratosUserId,
+        deviceToken: "123" as DeviceToken,
+      })
+
+      if (notificationSettings instanceof Error) throw notificationSettings
 
       // Fund balance for send
       const receive = await recordReceiveLnPayment({
@@ -671,7 +680,7 @@ describe("onChainPay", () => {
       })
 
       // Expect sent notification
-      expect(sendFilteredNotification.mock.calls.length).toBe(1)
+      expect(sendFilteredNotification.mock.calls.length).toBe(2)
       expect(sendFilteredNotification.mock.calls[0][0].title).toBeTruthy()
 
       // Restore system state
