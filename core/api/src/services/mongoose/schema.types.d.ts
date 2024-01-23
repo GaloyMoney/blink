@@ -126,7 +126,6 @@ interface AccountIpsRecord {
 
 interface UserRecord {
   userId: string
-  language?: string
   deviceTokens: string[]
   phoneMetadata?: TwilioObjectForUser
   phone?: string

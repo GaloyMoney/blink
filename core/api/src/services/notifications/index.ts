@@ -6,11 +6,12 @@ import {
 import { createPushNotificationContent } from "./create-push-notification-content"
 
 import {
-  UserDisableNotificationCategoryRequest,
-  UserDisableNotificationChannelRequest,
-  UserEnableNotificationCategoryRequest,
-  UserEnableNotificationChannelRequest,
-  UserNotificationSettingsRequest,
+  DisableNotificationCategoryRequest,
+  DisableNotificationChannelRequest,
+  EnableNotificationCategoryRequest,
+  EnableNotificationChannelRequest,
+  GetNotificationSettingsRequest,
+  UpdateUserLocaleRequest,
 } from "./proto/notifications_pb"
 
 import * as notificationsGrpc from "./grpc-client"
@@ -47,6 +48,27 @@ export const NotificationsService = (): INotificationsService => {
   const pubsub = PubSubService()
   const pushNotification = PushNotificationsService()
   const callbackService = CallbackService(getCallbackServiceConfig())
+
+  const getUserNotificationSettings = async (
+    userId: UserId,
+  ): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new GetNotificationSettingsRequest()
+      request.setUserId(userId)
+      const response = await notificationsGrpc.getNotificationSettings(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
 
   const sendTransactionPubSubNotification = async ({
     recipient,
@@ -179,9 +201,15 @@ export const NotificationsService = (): INotificationsService => {
       const displayAmountMinor = roundToBigInt(
         majorToMinorUnit({ amount: Number(displayAmountMajor), displayCurrency }),
       )
+
+      const settings = await getUserNotificationSettings(recipient.userId)
+      if (settings instanceof Error) {
+        return settings
+      }
+
       const { title, body } = createPushNotificationContent({
         type,
-        userLanguage: recipient.language,
+        userLanguage: settings.language,
         amount: {
           amount: roundToBigInt(transaction.settlementAmount),
           currency: transaction.settlementCurrency,
@@ -293,7 +321,6 @@ export const NotificationsService = (): INotificationsService => {
     deviceTokens,
     recipientUserId,
     displayBalanceAmount,
-    recipientLanguage,
   }: SendBalanceArgs): Promise<true | NotificationsServiceError> => {
     const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
     if (!hasDeviceTokens) return true
@@ -301,9 +328,13 @@ export const NotificationsService = (): INotificationsService => {
     try {
       const notificationCategory = GaloyNotificationCategories.Payments
 
+      const settings = await getUserNotificationSettings(recipientUserId)
+      if (settings instanceof Error) {
+        return settings
+      }
       const { title, body } = createPushNotificationContent({
         type: "balance",
-        userLanguage: recipientLanguage,
+        userLanguage: settings.language,
         amount: balanceAmount,
         displayAmount: displayBalanceAmount,
       })
@@ -378,13 +409,18 @@ export const NotificationsService = (): INotificationsService => {
     }
   }
 
-  const getUserNotificationSettings = async (
-    userId: UserId,
-  ): Promise<NotificationSettings | NotificationsServiceError> => {
+  const updateUserLanguage = async ({
+    userId,
+    language,
+  }: {
+    userId: UserId
+    language: UserLanguage
+  }): Promise<NotificationSettings | NotificationsServiceError> => {
     try {
-      const request = new UserNotificationSettingsRequest()
+      const request = new UpdateUserLocaleRequest()
       request.setUserId(userId)
-      const response = await notificationsGrpc.userNotificationSettings(
+      request.setLocale(language)
+      const response = await notificationsGrpc.updateUserLocale(
         request,
         notificationsGrpc.notificationsMetadata,
       )
@@ -407,14 +443,14 @@ export const NotificationsService = (): INotificationsService => {
     notificationChannel: NotificationChannel
   }): Promise<NotificationSettings | NotificationsServiceError> => {
     try {
-      const request = new UserEnableNotificationChannelRequest()
+      const request = new EnableNotificationChannelRequest()
       request.setUserId(userId)
 
       const grpcNotificationChannel =
         notificationChannelToGrpcNotificationChannel(notificationChannel)
 
       request.setChannel(grpcNotificationChannel)
-      const response = await notificationsGrpc.userEnableNotificationChannel(
+      const response = await notificationsGrpc.enableNotificationChannel(
         request,
         notificationsGrpc.notificationsMetadata,
       )
@@ -437,14 +473,14 @@ export const NotificationsService = (): INotificationsService => {
     notificationChannel: NotificationChannel
   }): Promise<NotificationSettings | NotificationsServiceError> => {
     try {
-      const request = new UserDisableNotificationChannelRequest()
+      const request = new DisableNotificationChannelRequest()
       request.setUserId(userId)
 
       const grpcNotificationChannel =
         notificationChannelToGrpcNotificationChannel(notificationChannel)
 
       request.setChannel(grpcNotificationChannel)
-      const response = await notificationsGrpc.userDisableNotificationChannel(
+      const response = await notificationsGrpc.disableNotificationChannel(
         request,
         notificationsGrpc.notificationsMetadata,
       )
@@ -469,7 +505,7 @@ export const NotificationsService = (): INotificationsService => {
     notificationCategory: NotificationCategory
   }): Promise<NotificationSettings | NotificationsServiceError> => {
     try {
-      const request = new UserEnableNotificationCategoryRequest()
+      const request = new EnableNotificationCategoryRequest()
       request.setUserId(userId)
 
       const grpcNotificationChannel =
@@ -480,7 +516,7 @@ export const NotificationsService = (): INotificationsService => {
         notificationCategoryToGrpcNotificationCategory(notificationCategory)
       request.setCategory(grpcNotificationCategory)
 
-      const response = await notificationsGrpc.userEnableNotificationCatgeory(
+      const response = await notificationsGrpc.enableNotificationCatgeory(
         request,
         notificationsGrpc.notificationsMetadata,
       )
@@ -505,7 +541,7 @@ export const NotificationsService = (): INotificationsService => {
     notificationCategory: NotificationCategory
   }): Promise<NotificationSettings | NotificationsServiceError> => {
     try {
-      const request = new UserDisableNotificationCategoryRequest()
+      const request = new DisableNotificationCategoryRequest()
       request.setUserId(userId)
 
       const grpcNotificationChannel =
@@ -516,7 +552,7 @@ export const NotificationsService = (): INotificationsService => {
         notificationCategoryToGrpcNotificationCategory(notificationCategory)
       request.setCategory(grpcNotificationCategory)
 
-      const response = await notificationsGrpc.userDisableNotificationCategory(
+      const response = await notificationsGrpc.disableNotificationCategory(
         request,
         notificationsGrpc.notificationsMetadata,
       )
@@ -542,6 +578,7 @@ export const NotificationsService = (): INotificationsService => {
         adminPushNotificationSend,
         adminPushNotificationFilteredSend,
         getUserNotificationSettings,
+        updateUserLanguage,
         enableNotificationChannel,
         disableNotificationChannel,
         enableNotificationCategory,

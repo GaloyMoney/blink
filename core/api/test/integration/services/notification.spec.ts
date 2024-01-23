@@ -32,7 +32,6 @@ const paymentHash = "paymentHash" as PaymentHash
 const txHash = "txHash" as OnChainTxHash
 const deviceTokens = ["token" as DeviceToken]
 const userId = "UserId" as UserId
-const language = "" as UserLanguageOrEmpty
 const paymentAmount = {
   amount: 1000n,
   currency: WalletCurrency.Btc,
@@ -200,7 +199,7 @@ describe("notification", () => {
 
         const { title, body } = createPushNotificationContent({
           type: "balance",
-          userLanguage: user.language,
+          userLanguage: "en-US",
           amount: balanceAmount,
           displayAmount: displayPaymentAmount,
         })
@@ -240,7 +239,6 @@ describe("notification", () => {
               accountId,
               walletId,
               deviceTokens,
-              language,
               userId,
               level: AccountLevel.One,
             },
@@ -312,7 +310,6 @@ describe("notification", () => {
               accountId,
               walletId,
               deviceTokens,
-              language,
               userId,
               level: AccountLevel.One,
             },
@@ -385,7 +382,6 @@ describe("notification", () => {
               accountId,
               walletId,
               deviceTokens,
-              language,
               userId,
               level: AccountLevel.One,
             },
@@ -455,7 +451,6 @@ describe("notification", () => {
               accountId,
               walletId,
               deviceTokens,
-              language,
               userId,
               level: AccountLevel.One,
             },
@@ -525,7 +520,6 @@ describe("notification", () => {
               accountId,
               walletId,
               deviceTokens,
-              language,
               userId,
               level: AccountLevel.One,
             },

@@ -73,6 +73,7 @@
           reindeer
           gitMinimal
           grpcurl
+          buf
         ]
         ++ buck2NativeBuildInputs
         ++ lib.optionals pkgs.stdenv.isLinux [
@@ -265,7 +266,6 @@
                   rsync
                   git-cliff
                   unixtools.xxd
-                  buf
                 ];
 
               pathsToLink = ["/bin"];

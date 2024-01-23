@@ -10,11 +10,12 @@ import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/stru
 
 interface INotificationsServiceService extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
     shouldSendNotification: INotificationsServiceService_IShouldSendNotification;
-    userEnableNotificationChannel: INotificationsServiceService_IUserEnableNotificationChannel;
-    userDisableNotificationChannel: INotificationsServiceService_IUserDisableNotificationChannel;
-    userEnableNotificationCategory: INotificationsServiceService_IUserEnableNotificationCategory;
-    userDisableNotificationCategory: INotificationsServiceService_IUserDisableNotificationCategory;
-    userNotificationSettings: INotificationsServiceService_IUserNotificationSettings;
+    enableNotificationChannel: INotificationsServiceService_IEnableNotificationChannel;
+    disableNotificationChannel: INotificationsServiceService_IDisableNotificationChannel;
+    enableNotificationCategory: INotificationsServiceService_IEnableNotificationCategory;
+    disableNotificationCategory: INotificationsServiceService_IDisableNotificationCategory;
+    getNotificationSettings: INotificationsServiceService_IGetNotificationSettings;
+    updateUserLocale: INotificationsServiceService_IUpdateUserLocale;
 }
 
 interface INotificationsServiceService_IShouldSendNotification extends grpc.MethodDefinition<notifications_pb.ShouldSendNotificationRequest, notifications_pb.ShouldSendNotificationResponse> {
@@ -26,82 +27,95 @@ interface INotificationsServiceService_IShouldSendNotification extends grpc.Meth
     responseSerialize: grpc.serialize<notifications_pb.ShouldSendNotificationResponse>;
     responseDeserialize: grpc.deserialize<notifications_pb.ShouldSendNotificationResponse>;
 }
-interface INotificationsServiceService_IUserEnableNotificationChannel extends grpc.MethodDefinition<notifications_pb.UserEnableNotificationChannelRequest, notifications_pb.UserEnableNotificationChannelResponse> {
-    path: "/services.notifications.v1.NotificationsService/UserEnableNotificationChannel";
+interface INotificationsServiceService_IEnableNotificationChannel extends grpc.MethodDefinition<notifications_pb.EnableNotificationChannelRequest, notifications_pb.EnableNotificationChannelResponse> {
+    path: "/services.notifications.v1.NotificationsService/EnableNotificationChannel";
     requestStream: false;
     responseStream: false;
-    requestSerialize: grpc.serialize<notifications_pb.UserEnableNotificationChannelRequest>;
-    requestDeserialize: grpc.deserialize<notifications_pb.UserEnableNotificationChannelRequest>;
-    responseSerialize: grpc.serialize<notifications_pb.UserEnableNotificationChannelResponse>;
-    responseDeserialize: grpc.deserialize<notifications_pb.UserEnableNotificationChannelResponse>;
+    requestSerialize: grpc.serialize<notifications_pb.EnableNotificationChannelRequest>;
+    requestDeserialize: grpc.deserialize<notifications_pb.EnableNotificationChannelRequest>;
+    responseSerialize: grpc.serialize<notifications_pb.EnableNotificationChannelResponse>;
+    responseDeserialize: grpc.deserialize<notifications_pb.EnableNotificationChannelResponse>;
 }
-interface INotificationsServiceService_IUserDisableNotificationChannel extends grpc.MethodDefinition<notifications_pb.UserDisableNotificationChannelRequest, notifications_pb.UserDisableNotificationChannelResponse> {
-    path: "/services.notifications.v1.NotificationsService/UserDisableNotificationChannel";
+interface INotificationsServiceService_IDisableNotificationChannel extends grpc.MethodDefinition<notifications_pb.DisableNotificationChannelRequest, notifications_pb.DisableNotificationChannelResponse> {
+    path: "/services.notifications.v1.NotificationsService/DisableNotificationChannel";
     requestStream: false;
     responseStream: false;
-    requestSerialize: grpc.serialize<notifications_pb.UserDisableNotificationChannelRequest>;
-    requestDeserialize: grpc.deserialize<notifications_pb.UserDisableNotificationChannelRequest>;
-    responseSerialize: grpc.serialize<notifications_pb.UserDisableNotificationChannelResponse>;
-    responseDeserialize: grpc.deserialize<notifications_pb.UserDisableNotificationChannelResponse>;
+    requestSerialize: grpc.serialize<notifications_pb.DisableNotificationChannelRequest>;
+    requestDeserialize: grpc.deserialize<notifications_pb.DisableNotificationChannelRequest>;
+    responseSerialize: grpc.serialize<notifications_pb.DisableNotificationChannelResponse>;
+    responseDeserialize: grpc.deserialize<notifications_pb.DisableNotificationChannelResponse>;
 }
-interface INotificationsServiceService_IUserEnableNotificationCategory extends grpc.MethodDefinition<notifications_pb.UserEnableNotificationCategoryRequest, notifications_pb.UserEnableNotificationCategoryResponse> {
-    path: "/services.notifications.v1.NotificationsService/UserEnableNotificationCategory";
+interface INotificationsServiceService_IEnableNotificationCategory extends grpc.MethodDefinition<notifications_pb.EnableNotificationCategoryRequest, notifications_pb.EnableNotificationCategoryResponse> {
+    path: "/services.notifications.v1.NotificationsService/EnableNotificationCategory";
     requestStream: false;
     responseStream: false;
-    requestSerialize: grpc.serialize<notifications_pb.UserEnableNotificationCategoryRequest>;
-    requestDeserialize: grpc.deserialize<notifications_pb.UserEnableNotificationCategoryRequest>;
-    responseSerialize: grpc.serialize<notifications_pb.UserEnableNotificationCategoryResponse>;
-    responseDeserialize: grpc.deserialize<notifications_pb.UserEnableNotificationCategoryResponse>;
+    requestSerialize: grpc.serialize<notifications_pb.EnableNotificationCategoryRequest>;
+    requestDeserialize: grpc.deserialize<notifications_pb.EnableNotificationCategoryRequest>;
+    responseSerialize: grpc.serialize<notifications_pb.EnableNotificationCategoryResponse>;
+    responseDeserialize: grpc.deserialize<notifications_pb.EnableNotificationCategoryResponse>;
 }
-interface INotificationsServiceService_IUserDisableNotificationCategory extends grpc.MethodDefinition<notifications_pb.UserDisableNotificationCategoryRequest, notifications_pb.UserDisableNotificationCategoryResponse> {
-    path: "/services.notifications.v1.NotificationsService/UserDisableNotificationCategory";
+interface INotificationsServiceService_IDisableNotificationCategory extends grpc.MethodDefinition<notifications_pb.DisableNotificationCategoryRequest, notifications_pb.DisableNotificationCategoryResponse> {
+    path: "/services.notifications.v1.NotificationsService/DisableNotificationCategory";
     requestStream: false;
     responseStream: false;
-    requestSerialize: grpc.serialize<notifications_pb.UserDisableNotificationCategoryRequest>;
-    requestDeserialize: grpc.deserialize<notifications_pb.UserDisableNotificationCategoryRequest>;
-    responseSerialize: grpc.serialize<notifications_pb.UserDisableNotificationCategoryResponse>;
-    responseDeserialize: grpc.deserialize<notifications_pb.UserDisableNotificationCategoryResponse>;
+    requestSerialize: grpc.serialize<notifications_pb.DisableNotificationCategoryRequest>;
+    requestDeserialize: grpc.deserialize<notifications_pb.DisableNotificationCategoryRequest>;
+    responseSerialize: grpc.serialize<notifications_pb.DisableNotificationCategoryResponse>;
+    responseDeserialize: grpc.deserialize<notifications_pb.DisableNotificationCategoryResponse>;
 }
-interface INotificationsServiceService_IUserNotificationSettings extends grpc.MethodDefinition<notifications_pb.UserNotificationSettingsRequest, notifications_pb.UserNotificationSettingsResponse> {
-    path: "/services.notifications.v1.NotificationsService/UserNotificationSettings";
+interface INotificationsServiceService_IGetNotificationSettings extends grpc.MethodDefinition<notifications_pb.GetNotificationSettingsRequest, notifications_pb.GetNotificationSettingsResponse> {
+    path: "/services.notifications.v1.NotificationsService/GetNotificationSettings";
     requestStream: false;
     responseStream: false;
-    requestSerialize: grpc.serialize<notifications_pb.UserNotificationSettingsRequest>;
-    requestDeserialize: grpc.deserialize<notifications_pb.UserNotificationSettingsRequest>;
-    responseSerialize: grpc.serialize<notifications_pb.UserNotificationSettingsResponse>;
-    responseDeserialize: grpc.deserialize<notifications_pb.UserNotificationSettingsResponse>;
+    requestSerialize: grpc.serialize<notifications_pb.GetNotificationSettingsRequest>;
+    requestDeserialize: grpc.deserialize<notifications_pb.GetNotificationSettingsRequest>;
+    responseSerialize: grpc.serialize<notifications_pb.GetNotificationSettingsResponse>;
+    responseDeserialize: grpc.deserialize<notifications_pb.GetNotificationSettingsResponse>;
+}
+interface INotificationsServiceService_IUpdateUserLocale extends grpc.MethodDefinition<notifications_pb.UpdateUserLocaleRequest, notifications_pb.UpdateUserLocaleResponse> {
+    path: "/services.notifications.v1.NotificationsService/UpdateUserLocale";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<notifications_pb.UpdateUserLocaleRequest>;
+    requestDeserialize: grpc.deserialize<notifications_pb.UpdateUserLocaleRequest>;
+    responseSerialize: grpc.serialize<notifications_pb.UpdateUserLocaleResponse>;
+    responseDeserialize: grpc.deserialize<notifications_pb.UpdateUserLocaleResponse>;
 }
 
 export const NotificationsServiceService: INotificationsServiceService;
 
 export interface INotificationsServiceServer extends grpc.UntypedServiceImplementation {
     shouldSendNotification: grpc.handleUnaryCall<notifications_pb.ShouldSendNotificationRequest, notifications_pb.ShouldSendNotificationResponse>;
-    userEnableNotificationChannel: grpc.handleUnaryCall<notifications_pb.UserEnableNotificationChannelRequest, notifications_pb.UserEnableNotificationChannelResponse>;
-    userDisableNotificationChannel: grpc.handleUnaryCall<notifications_pb.UserDisableNotificationChannelRequest, notifications_pb.UserDisableNotificationChannelResponse>;
-    userEnableNotificationCategory: grpc.handleUnaryCall<notifications_pb.UserEnableNotificationCategoryRequest, notifications_pb.UserEnableNotificationCategoryResponse>;
-    userDisableNotificationCategory: grpc.handleUnaryCall<notifications_pb.UserDisableNotificationCategoryRequest, notifications_pb.UserDisableNotificationCategoryResponse>;
-    userNotificationSettings: grpc.handleUnaryCall<notifications_pb.UserNotificationSettingsRequest, notifications_pb.UserNotificationSettingsResponse>;
+    enableNotificationChannel: grpc.handleUnaryCall<notifications_pb.EnableNotificationChannelRequest, notifications_pb.EnableNotificationChannelResponse>;
+    disableNotificationChannel: grpc.handleUnaryCall<notifications_pb.DisableNotificationChannelRequest, notifications_pb.DisableNotificationChannelResponse>;
+    enableNotificationCategory: grpc.handleUnaryCall<notifications_pb.EnableNotificationCategoryRequest, notifications_pb.EnableNotificationCategoryResponse>;
+    disableNotificationCategory: grpc.handleUnaryCall<notifications_pb.DisableNotificationCategoryRequest, notifications_pb.DisableNotificationCategoryResponse>;
+    getNotificationSettings: grpc.handleUnaryCall<notifications_pb.GetNotificationSettingsRequest, notifications_pb.GetNotificationSettingsResponse>;
+    updateUserLocale: grpc.handleUnaryCall<notifications_pb.UpdateUserLocaleRequest, notifications_pb.UpdateUserLocaleResponse>;
 }
 
 export interface INotificationsServiceClient {
     shouldSendNotification(request: notifications_pb.ShouldSendNotificationRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.ShouldSendNotificationResponse) => void): grpc.ClientUnaryCall;
     shouldSendNotification(request: notifications_pb.ShouldSendNotificationRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.ShouldSendNotificationResponse) => void): grpc.ClientUnaryCall;
     shouldSendNotification(request: notifications_pb.ShouldSendNotificationRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.ShouldSendNotificationResponse) => void): grpc.ClientUnaryCall;
-    userEnableNotificationChannel(request: notifications_pb.UserEnableNotificationChannelRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserEnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
-    userEnableNotificationChannel(request: notifications_pb.UserEnableNotificationChannelRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserEnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
-    userEnableNotificationChannel(request: notifications_pb.UserEnableNotificationChannelRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserEnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
-    userDisableNotificationChannel(request: notifications_pb.UserDisableNotificationChannelRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserDisableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
-    userDisableNotificationChannel(request: notifications_pb.UserDisableNotificationChannelRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserDisableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
-    userDisableNotificationChannel(request: notifications_pb.UserDisableNotificationChannelRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserDisableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
-    userEnableNotificationCategory(request: notifications_pb.UserEnableNotificationCategoryRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserEnableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
-    userEnableNotificationCategory(request: notifications_pb.UserEnableNotificationCategoryRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserEnableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
-    userEnableNotificationCategory(request: notifications_pb.UserEnableNotificationCategoryRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserEnableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
-    userDisableNotificationCategory(request: notifications_pb.UserDisableNotificationCategoryRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserDisableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
-    userDisableNotificationCategory(request: notifications_pb.UserDisableNotificationCategoryRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserDisableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
-    userDisableNotificationCategory(request: notifications_pb.UserDisableNotificationCategoryRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserDisableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
-    userNotificationSettings(request: notifications_pb.UserNotificationSettingsRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserNotificationSettingsResponse) => void): grpc.ClientUnaryCall;
-    userNotificationSettings(request: notifications_pb.UserNotificationSettingsRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserNotificationSettingsResponse) => void): grpc.ClientUnaryCall;
-    userNotificationSettings(request: notifications_pb.UserNotificationSettingsRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserNotificationSettingsResponse) => void): grpc.ClientUnaryCall;
+    enableNotificationChannel(request: notifications_pb.EnableNotificationChannelRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
+    enableNotificationChannel(request: notifications_pb.EnableNotificationChannelRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
+    enableNotificationChannel(request: notifications_pb.EnableNotificationChannelRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
+    disableNotificationChannel(request: notifications_pb.DisableNotificationChannelRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.DisableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
+    disableNotificationChannel(request: notifications_pb.DisableNotificationChannelRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.DisableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
+    disableNotificationChannel(request: notifications_pb.DisableNotificationChannelRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.DisableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
+    enableNotificationCategory(request: notifications_pb.EnableNotificationCategoryRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
+    enableNotificationCategory(request: notifications_pb.EnableNotificationCategoryRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
+    enableNotificationCategory(request: notifications_pb.EnableNotificationCategoryRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
+    disableNotificationCategory(request: notifications_pb.DisableNotificationCategoryRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.DisableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
+    disableNotificationCategory(request: notifications_pb.DisableNotificationCategoryRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.DisableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
+    disableNotificationCategory(request: notifications_pb.DisableNotificationCategoryRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.DisableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
+    getNotificationSettings(request: notifications_pb.GetNotificationSettingsRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.GetNotificationSettingsResponse) => void): grpc.ClientUnaryCall;
+    getNotificationSettings(request: notifications_pb.GetNotificationSettingsRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.GetNotificationSettingsResponse) => void): grpc.ClientUnaryCall;
+    getNotificationSettings(request: notifications_pb.GetNotificationSettingsRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.GetNotificationSettingsResponse) => void): grpc.ClientUnaryCall;
+    updateUserLocale(request: notifications_pb.UpdateUserLocaleRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateUserLocaleResponse) => void): grpc.ClientUnaryCall;
+    updateUserLocale(request: notifications_pb.UpdateUserLocaleRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateUserLocaleResponse) => void): grpc.ClientUnaryCall;
+    updateUserLocale(request: notifications_pb.UpdateUserLocaleRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateUserLocaleResponse) => void): grpc.ClientUnaryCall;
 }
 
 export class NotificationsServiceClient extends grpc.Client implements INotificationsServiceClient {
@@ -109,19 +123,22 @@ export class NotificationsServiceClient extends grpc.Client implements INotifica
     public shouldSendNotification(request: notifications_pb.ShouldSendNotificationRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.ShouldSendNotificationResponse) => void): grpc.ClientUnaryCall;
     public shouldSendNotification(request: notifications_pb.ShouldSendNotificationRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.ShouldSendNotificationResponse) => void): grpc.ClientUnaryCall;
     public shouldSendNotification(request: notifications_pb.ShouldSendNotificationRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.ShouldSendNotificationResponse) => void): grpc.ClientUnaryCall;
-    public userEnableNotificationChannel(request: notifications_pb.UserEnableNotificationChannelRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserEnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
-    public userEnableNotificationChannel(request: notifications_pb.UserEnableNotificationChannelRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserEnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
-    public userEnableNotificationChannel(request: notifications_pb.UserEnableNotificationChannelRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserEnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
-    public userDisableNotificationChannel(request: notifications_pb.UserDisableNotificationChannelRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserDisableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
-    public userDisableNotificationChannel(request: notifications_pb.UserDisableNotificationChannelRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserDisableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
-    public userDisableNotificationChannel(request: notifications_pb.UserDisableNotificationChannelRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserDisableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
-    public userEnableNotificationCategory(request: notifications_pb.UserEnableNotificationCategoryRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserEnableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
-    public userEnableNotificationCategory(request: notifications_pb.UserEnableNotificationCategoryRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserEnableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
-    public userEnableNotificationCategory(request: notifications_pb.UserEnableNotificationCategoryRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserEnableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
-    public userDisableNotificationCategory(request: notifications_pb.UserDisableNotificationCategoryRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserDisableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
-    public userDisableNotificationCategory(request: notifications_pb.UserDisableNotificationCategoryRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserDisableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
-    public userDisableNotificationCategory(request: notifications_pb.UserDisableNotificationCategoryRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserDisableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
-    public userNotificationSettings(request: notifications_pb.UserNotificationSettingsRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserNotificationSettingsResponse) => void): grpc.ClientUnaryCall;
-    public userNotificationSettings(request: notifications_pb.UserNotificationSettingsRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserNotificationSettingsResponse) => void): grpc.ClientUnaryCall;
-    public userNotificationSettings(request: notifications_pb.UserNotificationSettingsRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.UserNotificationSettingsResponse) => void): grpc.ClientUnaryCall;
+    public enableNotificationChannel(request: notifications_pb.EnableNotificationChannelRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
+    public enableNotificationChannel(request: notifications_pb.EnableNotificationChannelRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
+    public enableNotificationChannel(request: notifications_pb.EnableNotificationChannelRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
+    public disableNotificationChannel(request: notifications_pb.DisableNotificationChannelRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.DisableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
+    public disableNotificationChannel(request: notifications_pb.DisableNotificationChannelRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.DisableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
+    public disableNotificationChannel(request: notifications_pb.DisableNotificationChannelRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.DisableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
+    public enableNotificationCategory(request: notifications_pb.EnableNotificationCategoryRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
+    public enableNotificationCategory(request: notifications_pb.EnableNotificationCategoryRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
+    public enableNotificationCategory(request: notifications_pb.EnableNotificationCategoryRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
+    public disableNotificationCategory(request: notifications_pb.DisableNotificationCategoryRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.DisableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
+    public disableNotificationCategory(request: notifications_pb.DisableNotificationCategoryRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.DisableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
+    public disableNotificationCategory(request: notifications_pb.DisableNotificationCategoryRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.DisableNotificationCategoryResponse) => void): grpc.ClientUnaryCall;
+    public getNotificationSettings(request: notifications_pb.GetNotificationSettingsRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.GetNotificationSettingsResponse) => void): grpc.ClientUnaryCall;
+    public getNotificationSettings(request: notifications_pb.GetNotificationSettingsRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.GetNotificationSettingsResponse) => void): grpc.ClientUnaryCall;
+    public getNotificationSettings(request: notifications_pb.GetNotificationSettingsRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.GetNotificationSettingsResponse) => void): grpc.ClientUnaryCall;
+    public updateUserLocale(request: notifications_pb.UpdateUserLocaleRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateUserLocaleResponse) => void): grpc.ClientUnaryCall;
+    public updateUserLocale(request: notifications_pb.UpdateUserLocaleRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateUserLocaleResponse) => void): grpc.ClientUnaryCall;
+    public updateUserLocale(request: notifications_pb.UpdateUserLocaleRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateUserLocaleResponse) => void): grpc.ClientUnaryCall;
 }
