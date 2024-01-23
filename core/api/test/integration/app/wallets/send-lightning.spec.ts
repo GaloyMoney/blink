@@ -33,7 +33,7 @@ import { Transaction, TransactionMetadata } from "@/services/ledger/schema"
 import { WalletInvoice } from "@/services/mongoose/schema"
 import { LnPayment } from "@/services/lnd/schema"
 import * as LndImpl from "@/services/lnd"
-import * as PushNotificationsServiceImpl from "@/services/notifications/push-notifications"
+import * as NotificationsServiceImpl from "@/services/notifications"
 import * as LedgerFacadeImpl from "@/services/ledger/facade"
 
 import {
@@ -896,13 +896,13 @@ describe("initiated via lightning", () => {
     })
 
     it("calls sendFilteredNotification on successful intraledger send", async () => {
+      console.log("TEST START")
       // Setup mocks
-      const sendFilteredNotification = jest.fn()
+      const sendTransaction = jest.fn()
       const pushNotificationsServiceSpy = jest
-        .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+        .spyOn(NotificationsServiceImpl, "NotificationsService")
         .mockImplementationOnce(() => ({
-          sendFilteredNotification,
-          sendNotification: jest.fn(),
+          sendTransaction,
         }))
 
       const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
@@ -970,8 +970,7 @@ describe("initiated via lightning", () => {
       })
 
       // Expect sent notification
-      expect(sendFilteredNotification.mock.calls.length).toBe(1)
-      expect(sendFilteredNotification.mock.calls[0][0].title).toBeTruthy()
+      expect(sendTransaction.mock.calls.length).toBe(1)
 
       // Restore system state
       pushNotificationsServiceSpy.mockRestore()
