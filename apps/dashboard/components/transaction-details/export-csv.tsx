@@ -9,21 +9,24 @@ export default function ExportCsv({ rows }: TransactionDetailsProps) {
 
     csvContent += "Transaction Date,Settle Amount,Wallet Type,Status,Fees\n"
     rows.forEach((row) => {
-      let transactionDate = new Date(row.node.createdAt * 1000).toLocaleString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true,
-      })
+      const transactionDate = new Date(row.node.createdAt * 1000).toLocaleString(
+        "en-US",
+        {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        },
+      )
 
-      let status = row.node.status.toLowerCase()
-      let fees = `${row.node.settlementFee} stats`
-      let formattedTransactionDate = `"${transactionDate}"`
+      const status = row.node.status.toLowerCase()
+      const fees = `${row.node.settlementFee} stats`
+      const formattedTransactionDate = `"${transactionDate}"`
 
-      let rowData = [
+      const rowData = [
         formattedTransactionDate,
         `${row.node.settlementDisplayAmount} ${row.node.settlementDisplayCurrency}`,
         row.node.settlementCurrency,
@@ -34,8 +37,8 @@ export default function ExportCsv({ rows }: TransactionDetailsProps) {
       csvContent += rowData + "\n"
     })
 
-    var encodedUri = encodeURI(csvContent)
-    var link = document.createElement("a")
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement("a")
     link.setAttribute("href", encodedUri)
     link.setAttribute("download", "transactions.csv")
     document.body.appendChild(link)

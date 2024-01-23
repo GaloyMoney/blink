@@ -102,9 +102,7 @@ export default function TransactionTableComponent({ rows }: TransactionDetailsPr
               </td>
 
               <td style={{ padding: "12px 6px" }}>
-                <Typography level="body-md">
-                  {row.node.settlementCurrency}
-                </Typography>
+                <Typography level="body-md">{row.node.settlementCurrency}</Typography>
               </td>
 
               <td style={{ padding: "12px 6px" }}>
