@@ -32,7 +32,7 @@ export default function Print() {
           <br />
           <Row className="justify-content-md-center">
             <Col md="auto">
-              <Card className="text-center">
+              <Card data-testid="qrcode-container" className="text-center">
                 <Card.Body>
                   <Card.Text>
                     <span className="user-header">{userHeader}</span>
@@ -99,7 +99,11 @@ export default function Print() {
       </Container>
       <Row className="justify-content-center">
         <ReactToPrint
-          trigger={() => <button className="print-paycode-button">Print QR Code</button>}
+          trigger={() => (
+            <button data-testid="print-btn" className="print-paycode-button">
+              Print QR Code
+            </button>
+          )}
           content={() => componentRef.current}
           onBeforeGetContent={() => {
             const qrcodeLogo = document.getElementById("react-qrcode-logo")

@@ -68,6 +68,19 @@ next_build_bin(
     name = "pay",
 )
 
+next_build(
+    name = "build-ci",
+    srcs = [":src"],
+    build_env = {
+        "NEXT_PUBLIC_CORE_GQL_URL": "http://localhost:4455/graphql"
+    }
+)
+
+next_build_bin(
+    name = "pay-ci",
+    next_build = ":build-ci",
+)
+
 dev_deps_srcs = {
     "lib/eslint-config": "//lib/eslint-config:src",
 }

@@ -257,6 +257,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
         {data ? (
           <>
             <div
+              data-testid="qrcode-container"
               ref={qrImageRef}
               aria-labelledby="QR code of lightning payment"
               onClick={copyInvoice}
@@ -275,7 +276,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
                 placement="right"
                 overlay={<Tooltip id="copy">Copied!</Tooltip>}
               >
-                <button title="Copy invoice" onClick={copyInvoice}>
+                <button data-testid="copy-btn" title="Copy invoice" onClick={copyInvoice}>
                   <Image
                     src="/icons/copy-icon.svg"
                     alt="copy icon"
@@ -293,6 +294,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
                 shareState={shareState}
               >
                 <span
+                  data-testid="share-lbl"
                   title="Share lightning invoice"
                   className={styles.share_btn}
                   onClick={() => setShareState("not-set")}

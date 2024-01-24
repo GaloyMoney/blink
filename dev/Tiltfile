@@ -72,19 +72,21 @@ local_resource(
 
 pay_target = "//apps/pay:dev"
 if is_ci:
-  pay_target = '//apps/pay:pay'
+  pay_target = '//apps/pay:pay-ci'
+pay_env = {
+  "PORT": "3002",
+  "CORE_GQL_URL_INTRANET": "http://localhost:4455/graphql",
+  "NEXT_PUBLIC_CORE_GQL_URL": "http://localhost:4455/graphql",
+  "NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL": "ws://localhost:4455/graphqlws",
+  "NEXT_PUBLIC_PAY_DOMAIN": "localhost:3002",
+}
 local_resource(
     "pay",
     labels = ["apps"],
     cmd = "buck2 build {}".format(pay_target),
     serve_cmd = "buck2 run {}".format(pay_target),
-    serve_env = {
-      "PORT": "3002",
-      "CORE_GQL_URL_INTRANET": "http://localhost:4455/graphql",
-      "NEXT_PUBLIC_CORE_GQL_URL": "http://localhost:4455/graphql",
-      "NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL": "wss://localhost:4455/graphql",
-      "NEXT_PUBLIC_PAY_DOMAIN": "localhost:3002",
-    },
+    env = pay_env,
+    serve_env = pay_env,
     deps = _buck2_dep_inputs(pay_target),
     allow_parallel = True,
     resource_deps = [
@@ -145,11 +147,12 @@ pay_test_target = "//apps/pay:test-integration"
 local_resource(
   "pay-test",
   labels = ["test"],
-  auto_init = is_ci and DASHBOARD_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and PAY_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(pay_test_target),
   resource_deps = [
     "api",
     "pay",
+    "add-test-users-with-usernames",
   ],
 )
 
@@ -314,9 +317,11 @@ local_resource(
     ),
     deps = _buck2_dep_inputs(api_target),
     resource_deps = [
+        "price",
         "init-onchain",
         "init-lightning",
         "lnd1",
+        "lnd2",
         "redis",
         "mongodb",
         "oathkeeper",
@@ -343,8 +348,10 @@ local_resource(
     ),
     deps = _buck2_dep_inputs(api_trigger_target),
     resource_deps = [
+        "price",
         "init-onchain",
         "lnd1",
+        "lnd2",
         "redis",
         "mongodb",
         "oathkeeper",
@@ -370,8 +377,10 @@ local_resource(
     ),
     deps = _buck2_dep_inputs(api_exporter_target),
     resource_deps = [
+        "price",
         "init-onchain",
         "lnd1",
+        "lnd2",
         "redis",
         "mongodb",
         "oathkeeper",
@@ -397,8 +406,10 @@ local_resource(
     ),
     deps = _buck2_dep_inputs(api_ws_server_target),
     resource_deps = [
+        "price",
         "init-onchain",
         "lnd1",
+        "lnd2",
         "redis",
         "mongodb",
         "oathkeeper",
