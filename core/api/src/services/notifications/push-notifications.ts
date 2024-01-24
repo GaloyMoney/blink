@@ -98,13 +98,13 @@ const sendToDevice = async (
   }
 }
 
-export const PushNotificationsService = (): IPushNotificationsService => {
+export const PushNotificationsService = (): IPushNotificationSenderService => {
   const sendNotification = async ({
     deviceTokens,
     title,
     body,
     data,
-  }: SendPushNotificationArgs): Promise<true | NotificationsServiceError> => {
+  }: PushNotificationArgs): Promise<true | NotificationsServiceError> => {
     const message: MessagingPayload & { notification: NotificationMessagePayload } = {
       // if we set notification, it will appears on both background and quit stage for iOS.
       // if we don't set notification, this will appear for background but not quit stage
@@ -150,7 +150,7 @@ export const PushNotificationsService = (): IPushNotificationsService => {
     }
   }
 
-  const sendFilteredNotification = async (args: SendFilteredPushNotificationArgs) => {
+  const sendFilteredNotification = async (args: FilteredPushNotificationArgs) => {
     const { notificationCategory, data, ...sendNotificationArgs } = args
 
     const shouldSendNotification = await checkShouldSendNotification({

@@ -1,15 +1,24 @@
 import { UsersRepository } from "@/services/mongoose"
+import { NotificationsService } from "@/services/notifications"
 
 export const removeDeviceTokens = async ({
   userId,
   deviceTokens,
 }: RemoveDeviceTokensArgs): Promise<User | ApplicationError> => {
   const usersRepo = UsersRepository()
+  const notificationsService = NotificationsService()
 
   const user = await usersRepo.findById(userId)
   if (user instanceof Error) return user
 
-  const tokens = user.deviceTokens.filter((t) => !deviceTokens.includes(t))
+  for (const token of deviceTokens) {
+    const res = await notificationsService.removePushDeviceToken({
+      userId: user.id,
+      deviceToken: token,
+    })
 
-  return usersRepo.update({ ...user, deviceTokens: tokens })
+    if (res instanceof Error) return res
+  }
+
+  return user
 }

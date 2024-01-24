@@ -5,7 +5,6 @@ import { parseRepositoryError } from "./utils"
 import { CouldNotFindUserFromPhoneError, RepositoryError } from "@/domain/errors"
 
 export const translateToUser = (user: UserRecord): User => {
-  const deviceTokens = user.deviceTokens ?? []
   const phoneMetadata = user.phoneMetadata
   const phone = user.phone as PhoneNumber | undefined
   const deletedPhones = user.deletedPhones as PhoneNumber[] | undefined
@@ -15,7 +14,6 @@ export const translateToUser = (user: UserRecord): User => {
 
   return {
     id: user.userId as UserId,
-    deviceTokens: deviceTokens as DeviceToken[],
     phoneMetadata,
     phone,
     deletedPhones,
@@ -34,8 +32,7 @@ export const UsersRepository = (): IUsersRepository => {
       // we can do because user collection is an optional collection from the backend
       // as authentication is handled outside the stack
       // and user collection is only about metadata for notification and language
-      if (!result)
-        return translateToUser({ userId: id, deviceTokens: [], createdAt: new Date() })
+      if (!result) return translateToUser({ userId: id, createdAt: new Date() })
 
       return translateToUser(result)
     } catch (err) {
@@ -57,7 +54,6 @@ export const UsersRepository = (): IUsersRepository => {
 
   const update = async ({
     id,
-    deviceTokens,
     phoneMetadata,
     phone,
     deletedPhones,
@@ -67,7 +63,6 @@ export const UsersRepository = (): IUsersRepository => {
     const updateObject: Partial<UserUpdateInput> & {
       $unset?: { phone?: number; email?: number }
     } = {
-      deviceTokens,
       phoneMetadata,
       deletedPhones,
       deletedEmails,

@@ -28,6 +28,7 @@ import {
   createRandomUserAndWallets,
   recordReceiveLnPayment,
 } from "test/helpers"
+import { NotificationsService } from "@/services/notifications"
 
 let memo: string
 
@@ -270,7 +271,7 @@ describe("intraLedgerPay", () => {
     const sendFilteredNotification = jest.fn()
     const pushNotificationsServiceSpy = jest
       .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-      .mockImplementationOnce(() => ({
+      .mockImplementation(() => ({
         sendFilteredNotification,
         sendNotification: jest.fn(),
       }))
@@ -280,6 +281,14 @@ describe("intraLedgerPay", () => {
       await createRandomUserAndWallets()
     const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
     if (newAccount instanceof Error) throw newAccount
+
+    // Add push device token
+    const notificationSettings = await NotificationsService().addPushDeviceToken({
+      userId: newAccount.kratosUserId,
+      deviceToken: "123" as DeviceToken,
+    })
+
+    if (notificationSettings instanceof Error) throw notificationSettings
 
     // Fund balance for send
     const receive = await recordReceiveLnPayment({

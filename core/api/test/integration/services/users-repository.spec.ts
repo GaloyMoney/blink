@@ -42,15 +42,15 @@ describe("Users Repository", () => {
   it("updating one field doesn't change the other fields", async () => {
     const userId = randomUserId()
 
-    const deviceTokens = ["token"] as DeviceToken[]
+    const deviceId = "newDeviceId" as DeviceId
 
     const user0 = await users.findById(userId)
     if (user0 instanceof Error) throw user0
     expect(user0.id).toBe(userId)
 
-    const user = await users.update({ id: userId, deviceTokens })
+    const user = await users.update({ id: userId, deviceId: deviceId })
     if (user instanceof Error) throw user
-    expect(user.deviceTokens).toStrictEqual(deviceTokens)
+    expect(user.deviceId).toStrictEqual(deviceId)
     expect(user.id).toBe(userId)
 
     expect(user.phoneMetadata).toBe(user0.phoneMetadata)
