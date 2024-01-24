@@ -63,6 +63,7 @@ local_resource(
         "svix-pg",
         "add-test-users-with-usernames",
         "fund-user",
+        "notifications",
     ],
     links = [
         link("http://localhost:3001", "dashboard"),
