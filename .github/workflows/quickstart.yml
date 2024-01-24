@@ -23,6 +23,7 @@ jobs:
           ./bin/bump-galoy-git-ref.sh ${{ github.event.pull_request.head.sha }}
           ./bin/bump-galoy-image-digest.sh api local
           ./bin/bump-galoy-image-digest.sh trigger local
+          ./bin/bump-galoy-image-digest.sh notifications local
           ./bin/bump-mongodb-migrate-image-digest.sh local
           ./bin/re-render.sh
           GALOY_QUICKSTART_PATH="./" docker compose up -d

@@ -3,6 +3,7 @@
 #@ galoy_api_image_digest = "sha256@bdf405bde1d0af961006e1e7bad71086690db1137e49fd6bc7cb8968b010104f"
 #@ galoy_trigger_image_digest = "sha256@937f952ecb79d2933c4d7161182f955940d6d77697c81037a9441e949ee997fb"
 #@ mongodb_migrate_image_digest = "sha256@43edfb01b098856789fceb60e972cff4bb73a76f1df27f547a36b5b8e51a7f09"
+#@ galoy_notifications_image_digest = "sha256@0c77c25df7c77036ce53b943ef8e32c21d0371019bf09a777095b5791df8bd79"
 
 #@ core_env = [
 #@   "HELMREVISION=dev",
@@ -129,6 +130,23 @@ services:
     - lnd1
     - bria
     - mongodb
+
+  notifications:
+#@ if galoy_notifications_image_digest == "local":
+    build:
+      context: ..
+      dockerfile: core/notifications/Dockerfile
+#@ elif galoy_notifications_image_digest.startswith("sha256@"):
+    image: #@ "us.gcr.io/galoy-org/galoy-notifications@" + galoy_notifications_image_digest.replace("@",":")
+#@ else:
+    image: #@ "us.gcr.io/galoy-org/galoy-notifications:" + galoy_notifications_image_digest
+#@ end
+    environment:
+    - PG_CON=postgres://user:password@notifications-pg:5432/pg
+    - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-agent:4318
+    ports:
+    - 6685:6685
+  notifications-pg: #@ data.values.services["notifications-pg"]
 
   #! Database
   redis: #@ data.values.services["redis"]
