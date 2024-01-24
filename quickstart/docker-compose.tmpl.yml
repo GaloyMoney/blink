@@ -3,7 +3,7 @@
 #@ galoy_api_image_digest = "sha256@cfa1dc46366a984b8350e5ea238569b0811a0dfd8471a59174db8baefead1fe4"
 #@ galoy_trigger_image_digest = "sha256@830d5cf834fd9e20f396a76a3fcc35dbe8f9b95fd4ab63dc1fa1cb7be35c2631"
 #@ mongodb_migrate_image_digest = "sha256@61c3cd3b6694d99c5bcafaae30d793b01adbd4368967f91b0516f79cedaa50ff"
-#@ galoy_notifications_image_digest = "sha256@28de1a2504f3a7bcdf7400269849210d30d78b862a3a945ec7aca67125ddaba4"
+#@ galoy_notifications_image_digest = "sha256@e8646173695d5be79d939e9912c22dfa1791eca73cbeb15b1d58e30004852629"
 
 #@ core_env = [
 #@   "HELMREVISION=dev",

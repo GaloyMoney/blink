@@ -213,7 +213,7 @@ services:
     - bria
     - mongodb
   notifications:
-    image: us.gcr.io/galoy-org/galoy-notifications@sha256:28de1a2504f3a7bcdf7400269849210d30d78b862a3a945ec7aca67125ddaba4
+    image: us.gcr.io/galoy-org/galoy-notifications@sha256:e8646173695d5be79d939e9912c22dfa1791eca73cbeb15b1d58e30004852629
     environment:
     - PG_CON=postgres://user:password@notifications-pg:5432/pg
     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-agent:4318
