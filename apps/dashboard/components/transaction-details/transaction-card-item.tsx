@@ -33,9 +33,9 @@ export default function TransactionCardComponent({ rows }: TransactionDetailsPro
               }}
             >
               <Typography level="body-sm" fontWeight="bold">
-                ID
+                Wallet Type
               </Typography>
-              <Typography level="body-md">{row.node.id}</Typography>
+              <Typography level="body-md">{row.node.settlementCurrency}</Typography>
             </div>
             <div
               style={{

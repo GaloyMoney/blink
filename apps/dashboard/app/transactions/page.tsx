@@ -11,6 +11,7 @@ import {
 } from "@/services/graphql/queries/get-transactions"
 import TransactionCard from "@/components/transaction-details/transaction-card-item"
 import PageNumber from "@/components/transaction-details/page-number"
+import ExportCsv from "@/components/transaction-details/export-csv"
 
 interface TransactionDetailsSearchParams {
   cursor: string
@@ -48,6 +49,7 @@ export default async function page({
     <ContentContainer>
       {rows.length > 0 ? (
         <>
+          <ExportCsv rows={rows} />
           <TransactionDetails rows={rows} />
           <TransactionCard rows={rows} />
           <PageNumber pageInfo={pageInfo}></PageNumber>
