@@ -14,7 +14,7 @@ struct MongoUser {
     #[serde(default)]
     user_id: Option<String>,
     #[serde(default)]
-    language: String,
+    device_tokens: Vec<String>,
 }
 
 pub async fn import_user_notification_settings(
@@ -35,11 +35,15 @@ pub async fn import_user_notification_settings(
             core::result::Result::Ok(user) => user,
         };
         if let Some(user_id) = user.user_id {
-            if !user.language.is_empty() {
+            if !user.device_tokens.is_empty() {
                 let user_id = GaloyUserId::from(user_id);
-                app.update_locale_on_user(user_id, user.language).await?;
+                for device_token in user.device_tokens {
+                    app.add_push_device_token(user_id.clone(), PushDeviceToken::from(device_token))
+                        .await?;
+                }
             }
         }
+
         total_users += 1;
         if total_users % 100 == 0 {
             println!("{total_users} users synced");

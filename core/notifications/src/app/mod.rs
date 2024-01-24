@@ -141,4 +141,36 @@ impl NotificationsApp {
         self.settings.persist(&mut user_settings).await?;
         Ok(user_settings)
     }
+
+    #[instrument(name = "app.add_push_device_token", skip(self), err)]
+    pub async fn add_push_device_token(
+        &self,
+        user_id: GaloyUserId,
+        device_token: PushDeviceToken,
+    ) -> Result<UserNotificationSettings, ApplicationError> {
+        let mut user_settings = self
+            .settings
+            .find_for_user_id(&user_id)
+            .await?
+            .unwrap_or_else(|| UserNotificationSettings::new(user_id));
+        user_settings.add_push_device_token(device_token);
+        self.settings.persist(&mut user_settings).await?;
+        Ok(user_settings)
+    }
+
+    #[instrument(name = "app.remove_push_device_token", skip(self), err)]
+    pub async fn remove_push_device_token(
+        &self,
+        user_id: GaloyUserId,
+        device_token: PushDeviceToken,
+    ) -> Result<UserNotificationSettings, ApplicationError> {
+        let mut user_settings = self
+            .settings
+            .find_for_user_id(&user_id)
+            .await?
+            .unwrap_or_else(|| UserNotificationSettings::new(user_id));
+        user_settings.remove_push_device_token(device_token);
+        self.settings.persist(&mut user_settings).await?;
+        Ok(user_settings)
+    }
 }

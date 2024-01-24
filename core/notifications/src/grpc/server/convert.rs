@@ -42,6 +42,11 @@ impl From<user_notification_settings::UserNotificationSettings> for proto::Notif
                     .map(|category| proto::NotificationCategory::from(category).into())
                     .collect(),
             }),
+            push_device_tokens: settings
+                .push_device_tokens()
+                .into_iter()
+                .map(|token| token.to_string())
+                .collect(),
         }
     }
 }

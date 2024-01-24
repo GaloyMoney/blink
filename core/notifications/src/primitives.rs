@@ -42,6 +42,26 @@ impl std::fmt::Display for GaloyLocale {
     }
 }
 
+#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize, Hash)]
+pub struct PushDeviceToken(String);
+impl From<String> for PushDeviceToken {
+    fn from(s: String) -> Self {
+        Self(s)
+    }
+}
+
+impl AsRef<str> for PushDeviceToken {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::fmt::Display for PushDeviceToken {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 #[derive(async_graphql::Enum, Debug, Copy, Clone, Eq, PartialEq, Deserialize, Serialize)]
 #[graphql(name = "UserNotificationChannel")]
 pub enum UserNotificationChannel {
