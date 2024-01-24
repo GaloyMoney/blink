@@ -71,7 +71,7 @@ local_resource(
 
 pay_target = "//apps/pay:dev"
 if is_ci:
-  pay_target = '//apps/pay:pay'
+  pay_target = '//apps/pay:pay-ci'
 pay_env = {
   "PORT": "3002",
   "CORE_GQL_URL_INTRANET": "http://localhost:4455/graphql",

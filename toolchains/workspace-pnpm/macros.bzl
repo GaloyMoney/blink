@@ -549,7 +549,7 @@ def next_build_bin(**kwargs):
         )
     _next_build_bin(
         next = ":{}".format(next_bin),
-        next_build = ":build",
+        next_build = kwargs.pop("next_build", ":build"),
         **kwargs,
     )
 

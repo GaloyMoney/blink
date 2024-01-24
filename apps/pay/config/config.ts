@@ -6,15 +6,14 @@ export const APP_DESCRIPTION = "Blink official lightning network node"
 // TODO get rid of this by removing the use of build time env vars in the client
 export const getClientSideGqlConfig = () => {
   const hostname = new URL(window.location.href).hostname
-  const hostnameParts = hostname.split(".")
-  const isLocal = hostnameParts.length === 1
+
   let coreGqlUrl
 
   // Allow overriding the coreGqlUrl for local development, otherwise use the default in the URL
-  if (env.NEXT_PUBLIC_CORE_GQL_URL || isLocal || typeof window === "undefined") {
-    coreGqlUrl = env.NEXT_PUBLIC_CORE_GQL_URL || "http://localhost:4455/graphql"
+  if (env.NEXT_PUBLIC_CORE_GQL_URL || typeof window === "undefined") {
+    coreGqlUrl = env.NEXT_PUBLIC_CORE_GQL_URL
   } else {
-    const hostPartsApi = [...hostnameParts]
+    const hostPartsApi = hostname.split(".")
     hostPartsApi[0] = "api"
     coreGqlUrl = `https://${hostPartsApi.join(".")}/graphql`
   }
@@ -22,15 +21,10 @@ export const getClientSideGqlConfig = () => {
   let coreGqlWebSocketUrl
 
   // Allow overriding the coreGqlWebSocketUrl for local development, otherwise use the default in the URL
-  if (
-    env.NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL ||
-    isLocal ||
-    typeof window === "undefined"
-  ) {
-    coreGqlWebSocketUrl =
-      env.NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL || "ws://localhost:4455/graphqlws"
+  if (env.NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL || typeof window === "undefined") {
+    coreGqlWebSocketUrl = env.NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL
   } else {
-    const hostPartsWs = [...hostnameParts]
+    const hostPartsWs = hostname.split(".")
     hostPartsWs[0] = "ws"
     coreGqlWebSocketUrl = `wss://${hostPartsWs.join(".")}/graphql`
   }
