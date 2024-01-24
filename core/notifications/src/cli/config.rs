@@ -38,15 +38,19 @@ pub struct EnvOverride {
 
 impl Config {
     pub fn from_path(
-        path: impl AsRef<Path>,
+        path: Option<impl AsRef<Path>>,
         EnvOverride {
             db_con,
             mongodb_connection,
         }: EnvOverride,
     ) -> anyhow::Result<Self> {
-        let config_file = std::fs::read_to_string(path).context("Couldn't read config file")?;
-        let mut config: Config =
-            serde_yaml::from_str(&config_file).context("Couldn't parse config file")?;
+        let mut config: Config = if let Some(path) = path {
+            let config_file = std::fs::read_to_string(path).context("Couldn't read config file")?;
+            serde_yaml::from_str(&config_file).context("Couldn't parse config file")?
+        } else {
+            println!("No config file provided, using default config");
+            Default::default()
+        };
         config.db.pg_con = db_con;
         config.mongo_import.connection = mongodb_connection;
 
