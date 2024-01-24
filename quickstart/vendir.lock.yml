@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: added notifications as deps (#3895)'
-      sha: ef9e9ceb14049e36b522344777749dcabb141d8e
+      commitTitle: 'chore(quickstart): add notifications to quickstart (#3896)...'
+      sha: 1f54ab3c0acda2f05d6223c8dbf9bb83a2459e40
       tags:
-      - 0.20.23-1-gef9e9ceb1
+      - 0.20.25-2-g1f54ab3c0
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: added notifications as deps (#3895)'
-      sha: ef9e9ceb14049e36b522344777749dcabb141d8e
+      commitTitle: 'chore(quickstart): add notifications to quickstart (#3896)...'
+      sha: 1f54ab3c0acda2f05d6223c8dbf9bb83a2459e40
       tags:
-      - 0.20.23-1-gef9e9ceb1
+      - 0.20.25-2-g1f54ab3c0
     path: schemas/
   - git:
-      commitTitle: 'chore: added notifications as deps (#3895)'
-      sha: ef9e9ceb14049e36b522344777749dcabb141d8e
+      commitTitle: 'chore(quickstart): add notifications to quickstart (#3896)...'
+      sha: 1f54ab3c0acda2f05d6223c8dbf9bb83a2459e40
       tags:
-      - 0.20.23-1-gef9e9ceb1
+      - 0.20.25-2-g1f54ab3c0
     path: gql/
   path: ./graphql
 kind: LockConfig
