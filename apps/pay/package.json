@@ -8,8 +8,8 @@
     "build": "next build",
     "lint:fix": "eslint --fix --ext .ts,.tsx .",
     "codegen": "graphql-codegen --config codegen.yml",
-    "cypress:run": "echo 'Not implemented yet'",
-    "cypress:open": "echo 'Not implemented yet'"
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
   },
   "dependencies": {
     "@apollo/client": "^3.7.12",
@@ -57,6 +57,7 @@
     "@types/react-lottie": "^1.2.6",
     "@typescript-eslint/eslint-plugin": "^5.59.0",
     "@typescript-eslint/parser": "^5.51.0",
+    "cypress": "^13.6.1",
     "eslint": "^8.52.0",
     "eslint-config-next": "14.0.4",
     "eslint-config-react-app": "^7.0.1",

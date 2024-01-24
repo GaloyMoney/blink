@@ -61,7 +61,10 @@ function Home() {
                       <ListGroup variant="flush">
                         <ListGroup.Item>
                           <label>Node Public Key: </label>{" "}
-                          <p style={{ fontSize: "small", overflowWrap: "break-word" }}>
+                          <p
+                            data-testid="node-pubkey-txt"
+                            style={{ fontSize: "small", overflowWrap: "break-word" }}
+                          >
                             {error
                               ? "Unavailable"
                               : loading
@@ -93,6 +96,7 @@ function Home() {
                               username
                             </label>
                             <input
+                              data-testid="username-txt"
                               type="text"
                               name="username"
                               value={username}
@@ -115,7 +119,7 @@ function Home() {
                                 }
                               }}
                             />
-                            <button>Submit</button>
+                            <button data-testid="submit-btn">Submit</button>
                           </form>
                         </ListGroup.Item>
                       </ListGroup>
