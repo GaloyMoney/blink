@@ -150,7 +150,6 @@ export const addPendingTransaction = async ({
       recipient: {
         accountId: wallet.accountId,
         walletId: wallet.id,
-        deviceTokens: recipientUser.deviceTokens,
         userId: recipientUser.id,
         level: account.level,
       },

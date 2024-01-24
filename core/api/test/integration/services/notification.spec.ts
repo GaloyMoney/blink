@@ -30,7 +30,6 @@ const accountId = "AccountId" as AccountId
 const walletId = "walletId" as WalletId
 const paymentHash = "paymentHash" as PaymentHash
 const txHash = "txHash" as OnChainTxHash
-const deviceTokens = ["token" as DeviceToken]
 const userId = "UserId" as UserId
 const paymentAmount = {
   amount: 1000n,
@@ -69,6 +68,13 @@ const crcSettlementDisplayPrice = <S extends WalletCurrency>({
   })
 
 beforeAll(async () => {
+  const addPushDeviceTokenResult = await NotificationsService().addPushDeviceToken({
+    userId,
+    deviceToken: "123" as DeviceToken,
+  })
+
+  if (addPushDeviceTokenResult instanceof Error) throw addPushDeviceTokenResult
+
   const usdDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
     currency: UsdDisplayCurrency,
   })
@@ -139,16 +145,6 @@ describe("notification", () => {
 
       expect(activeAccountsArray.length).toBeGreaterThan(0)
       expect(sendFilteredNotification.mock.calls.length).toBeGreaterThan(0)
-
-      let usersWithDeviceTokens = 0
-      for (const { kratosUserId } of activeAccountsArray) {
-        const user = await UsersRepository().findById(kratosUserId)
-        if (user instanceof Error) throw user
-
-        if (user.deviceTokens.length > 0) usersWithDeviceTokens++
-      }
-
-      expect(sendFilteredNotification.mock.calls.length).toBe(usersWithDeviceTokens)
 
       for (let i = 0; i < sendFilteredNotification.mock.calls.length; i++) {
         const [call] = sendFilteredNotification.mock.calls[i]
@@ -238,7 +234,6 @@ describe("notification", () => {
             recipient: {
               accountId,
               walletId,
-              deviceTokens,
               userId,
               level: AccountLevel.One,
             },
@@ -309,7 +304,6 @@ describe("notification", () => {
             recipient: {
               accountId,
               walletId,
-              deviceTokens,
               userId,
               level: AccountLevel.One,
             },
@@ -381,7 +375,6 @@ describe("notification", () => {
             recipient: {
               accountId,
               walletId,
-              deviceTokens,
               userId,
               level: AccountLevel.One,
             },
@@ -450,7 +443,6 @@ describe("notification", () => {
             recipient: {
               accountId,
               walletId,
-              deviceTokens,
               userId,
               level: AccountLevel.One,
             },
@@ -519,7 +511,6 @@ describe("notification", () => {
             recipient: {
               accountId,
               walletId,
-              deviceTokens,
               userId,
               level: AccountLevel.One,
             },

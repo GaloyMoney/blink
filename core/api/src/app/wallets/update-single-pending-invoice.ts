@@ -315,7 +315,6 @@ const lockedUpdatePendingInvoiceSteps = async ({
     recipient: {
       accountId: recipientAccountId,
       walletId: recipientWalletDescriptor.id,
-      deviceTokens: recipientUser.deviceTokens,
       userId: recipientUser.id,
       level: recipientAccount.level,
     },

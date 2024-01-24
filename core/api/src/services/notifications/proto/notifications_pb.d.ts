@@ -113,6 +113,10 @@ export class NotificationSettings extends jspb.Message {
     clearLocale(): void;
     getLocale(): string | undefined;
     setLocale(value: string): NotificationSettings;
+    clearPushDeviceTokensList(): void;
+    getPushDeviceTokensList(): Array<string>;
+    setPushDeviceTokensList(value: Array<string>): NotificationSettings;
+    addPushDeviceTokens(value: string, index?: number): string;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): NotificationSettings.AsObject;
@@ -128,6 +132,7 @@ export namespace NotificationSettings {
     export type AsObject = {
         push?: ChannelNotificationSettings.AsObject,
         locale?: string,
+        pushDeviceTokensList: Array<string>,
     }
 }
 
@@ -384,6 +389,98 @@ export class UpdateUserLocaleResponse extends jspb.Message {
 }
 
 export namespace UpdateUserLocaleResponse {
+    export type AsObject = {
+        notificationSettings?: NotificationSettings.AsObject,
+    }
+}
+
+export class AddPushDeviceTokenRequest extends jspb.Message { 
+    getUserId(): string;
+    setUserId(value: string): AddPushDeviceTokenRequest;
+    getDeviceToken(): string;
+    setDeviceToken(value: string): AddPushDeviceTokenRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): AddPushDeviceTokenRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: AddPushDeviceTokenRequest): AddPushDeviceTokenRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: AddPushDeviceTokenRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): AddPushDeviceTokenRequest;
+    static deserializeBinaryFromReader(message: AddPushDeviceTokenRequest, reader: jspb.BinaryReader): AddPushDeviceTokenRequest;
+}
+
+export namespace AddPushDeviceTokenRequest {
+    export type AsObject = {
+        userId: string,
+        deviceToken: string,
+    }
+}
+
+export class AddPushDeviceTokenResponse extends jspb.Message { 
+
+    hasNotificationSettings(): boolean;
+    clearNotificationSettings(): void;
+    getNotificationSettings(): NotificationSettings | undefined;
+    setNotificationSettings(value?: NotificationSettings): AddPushDeviceTokenResponse;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): AddPushDeviceTokenResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: AddPushDeviceTokenResponse): AddPushDeviceTokenResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: AddPushDeviceTokenResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): AddPushDeviceTokenResponse;
+    static deserializeBinaryFromReader(message: AddPushDeviceTokenResponse, reader: jspb.BinaryReader): AddPushDeviceTokenResponse;
+}
+
+export namespace AddPushDeviceTokenResponse {
+    export type AsObject = {
+        notificationSettings?: NotificationSettings.AsObject,
+    }
+}
+
+export class RemovePushDeviceTokenRequest extends jspb.Message { 
+    getUserId(): string;
+    setUserId(value: string): RemovePushDeviceTokenRequest;
+    getDeviceToken(): string;
+    setDeviceToken(value: string): RemovePushDeviceTokenRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): RemovePushDeviceTokenRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: RemovePushDeviceTokenRequest): RemovePushDeviceTokenRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: RemovePushDeviceTokenRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): RemovePushDeviceTokenRequest;
+    static deserializeBinaryFromReader(message: RemovePushDeviceTokenRequest, reader: jspb.BinaryReader): RemovePushDeviceTokenRequest;
+}
+
+export namespace RemovePushDeviceTokenRequest {
+    export type AsObject = {
+        userId: string,
+        deviceToken: string,
+    }
+}
+
+export class RemovePushDeviceTokenResponse extends jspb.Message { 
+
+    hasNotificationSettings(): boolean;
+    clearNotificationSettings(): void;
+    getNotificationSettings(): NotificationSettings | undefined;
+    setNotificationSettings(value?: NotificationSettings): RemovePushDeviceTokenResponse;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): RemovePushDeviceTokenResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: RemovePushDeviceTokenResponse): RemovePushDeviceTokenResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: RemovePushDeviceTokenResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): RemovePushDeviceTokenResponse;
+    static deserializeBinaryFromReader(message: RemovePushDeviceTokenResponse, reader: jspb.BinaryReader): RemovePushDeviceTokenResponse;
+}
+
+export namespace RemovePushDeviceTokenResponse {
     export type AsObject = {
         notificationSettings?: NotificationSettings.AsObject,
     }

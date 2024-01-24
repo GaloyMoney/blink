@@ -31,6 +31,12 @@ pub enum UserNotificationSettingsEvent {
         locale: GaloyLocale,
     },
     LocaleSetToDefault,
+    PushDeviceTokenAdded {
+        token: PushDeviceToken,
+    },
+    PushDeviceTokenRemoved {
+        token: PushDeviceToken,
+    },
 }
 
 impl EntityEvent for UserNotificationSettingsEvent {
@@ -171,6 +177,38 @@ impl UserNotificationSettings {
     ) -> bool {
         self.is_channel_enabled(channel)
             && !self.disabled_categories_for(channel).contains(&category)
+    }
+
+    pub fn push_device_tokens(&self) -> HashSet<PushDeviceToken> {
+        self.events.iter().fold(HashSet::new(), |mut acc, event| {
+            match event {
+                UserNotificationSettingsEvent::PushDeviceTokenAdded { token } => {
+                    acc.insert(token.clone());
+                }
+                UserNotificationSettingsEvent::PushDeviceTokenRemoved { token } => {
+                    acc.remove(token);
+                }
+                _ => (),
+            }
+            acc
+        })
+    }
+
+    pub fn add_push_device_token(&mut self, token: PushDeviceToken) {
+        if self.push_device_tokens().contains(&token) {
+            return;
+        }
+        self.events
+            .push(UserNotificationSettingsEvent::PushDeviceTokenAdded { token });
+    }
+
+    pub fn remove_push_device_token(&mut self, token: PushDeviceToken) {
+        if !self.push_device_tokens().contains(&token) {
+            return;
+        }
+
+        self.events
+            .push(UserNotificationSettingsEvent::PushDeviceTokenRemoved { token })
     }
 }
 
@@ -321,5 +359,30 @@ mod tests {
         );
         settings.set_locale_to_default();
         assert_eq!(settings.locale(), None);
+    }
+
+    #[test]
+    fn can_add_and_remove_push_device_tokens() {
+        let events = initial_events();
+        let mut settings = UserNotificationSettings::try_from(events).expect("Could not hydrate");
+        assert_eq!(settings.push_device_tokens(), HashSet::new());
+        settings.add_push_device_token(PushDeviceToken::from("token1".to_string()));
+        assert_eq!(
+            settings.push_device_tokens(),
+            HashSet::from([PushDeviceToken::from("token1".to_string())])
+        );
+        settings.add_push_device_token(PushDeviceToken::from("token2".to_string()));
+        assert_eq!(
+            settings.push_device_tokens(),
+            HashSet::from([
+                PushDeviceToken::from("token1".to_string()),
+                PushDeviceToken::from("token2".to_string())
+            ])
+        );
+        settings.remove_push_device_token(PushDeviceToken::from("token1".to_string()));
+        assert_eq!(
+            settings.push_device_tokens(),
+            HashSet::from([PushDeviceToken::from("token2".to_string())])
+        );
     }
 }

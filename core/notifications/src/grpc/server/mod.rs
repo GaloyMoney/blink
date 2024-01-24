@@ -13,7 +13,7 @@ use self::proto::{notifications_service_server::NotificationsService, *};
 use super::config::*;
 use crate::{
     app::*,
-    primitives::{GaloyUserId, UserNotificationCategory, UserNotificationChannel},
+    primitives::{GaloyUserId, PushDeviceToken, UserNotificationCategory, UserNotificationChannel},
 };
 
 pub struct Notifications {
@@ -175,6 +175,52 @@ impl NotificationsService for Notifications {
         let notification_settings = self.app.update_locale_on_user(user_id, locale).await?;
 
         Ok(Response::new(UpdateUserLocaleResponse {
+            notification_settings: Some(notification_settings.into()),
+        }))
+    }
+
+    #[instrument(name = "notifications.add_push_device_token", skip_all, err)]
+    async fn add_push_device_token(
+        &self,
+        request: Request<AddPushDeviceTokenRequest>,
+    ) -> Result<Response<AddPushDeviceTokenResponse>, Status> {
+        grpc::extract_tracing(&request);
+        let request = request.into_inner();
+        let AddPushDeviceTokenRequest {
+            user_id,
+            device_token,
+        } = request;
+        let user_id = GaloyUserId::from(user_id);
+        let device_token = PushDeviceToken::from(device_token);
+        let notification_settings = self
+            .app
+            .add_push_device_token(user_id, device_token)
+            .await?;
+
+        Ok(Response::new(AddPushDeviceTokenResponse {
+            notification_settings: Some(notification_settings.into()),
+        }))
+    }
+
+    #[instrument(name = "notifications.remove_push_device_token", skip_all, err)]
+    async fn remove_push_device_token(
+        &self,
+        request: Request<RemovePushDeviceTokenRequest>,
+    ) -> Result<Response<RemovePushDeviceTokenResponse>, Status> {
+        grpc::extract_tracing(&request);
+        let request = request.into_inner();
+        let RemovePushDeviceTokenRequest {
+            user_id,
+            device_token,
+        } = request;
+        let user_id = GaloyUserId::from(user_id);
+        let device_token = PushDeviceToken::from(device_token);
+        let notification_settings = self
+            .app
+            .remove_push_device_token(user_id, device_token)
+            .await?;
+
+        Ok(Response::new(RemovePushDeviceTokenResponse {
             notification_settings: Some(notification_settings.into()),
         }))
     }

@@ -6,11 +6,13 @@ import {
 import { createPushNotificationContent } from "./create-push-notification-content"
 
 import {
+  AddPushDeviceTokenRequest,
   DisableNotificationCategoryRequest,
   DisableNotificationChannelRequest,
   EnableNotificationCategoryRequest,
   EnableNotificationChannelRequest,
   GetNotificationSettingsRequest,
+  RemovePushDeviceTokenRequest,
   UpdateUserLocaleRequest,
 } from "./proto/notifications_pb"
 
@@ -190,7 +192,12 @@ export const NotificationsService = (): INotificationsService => {
     transaction,
   }: NotificatioSendTransactionArgs): Promise<true | NotificationsServiceError> => {
     try {
-      const hasDeviceTokens = recipient.deviceTokens && recipient.deviceTokens.length > 0
+      const settings = await getUserNotificationSettings(recipient.userId)
+      if (settings instanceof Error) {
+        return settings
+      }
+
+      const hasDeviceTokens = settings.pushDeviceTokens.length > 0
       if (!hasDeviceTokens) return true
 
       const type = getPushNotificationEventType(transaction)
@@ -201,11 +208,6 @@ export const NotificationsService = (): INotificationsService => {
       const displayAmountMinor = roundToBigInt(
         majorToMinorUnit({ amount: Number(displayAmountMajor), displayCurrency }),
       )
-
-      const settings = await getUserNotificationSettings(recipient.userId)
-      if (settings instanceof Error) {
-        return settings
-      }
 
       const { title, body } = createPushNotificationContent({
         type,
@@ -222,7 +224,7 @@ export const NotificationsService = (): INotificationsService => {
       })
 
       const result = await pushNotification.sendFilteredNotification({
-        deviceTokens: recipient.deviceTokens,
+        deviceTokens: settings.pushDeviceTokens,
         title,
         body,
         notificationCategory: GaloyNotificationCategories.Payments,
@@ -318,13 +320,9 @@ export const NotificationsService = (): INotificationsService => {
 
   const sendBalance = async ({
     balanceAmount,
-    deviceTokens,
     recipientUserId,
     displayBalanceAmount,
   }: SendBalanceArgs): Promise<true | NotificationsServiceError> => {
-    const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
-    if (!hasDeviceTokens) return true
-
     try {
       const notificationCategory = GaloyNotificationCategories.Payments
 
@@ -332,6 +330,9 @@ export const NotificationsService = (): INotificationsService => {
       if (settings instanceof Error) {
         return settings
       }
+      const { pushDeviceTokens: deviceTokens } = settings
+      const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
+      if (!hasDeviceTokens) return true
       const { title, body } = createPushNotificationContent({
         type: "balance",
         userLanguage: settings.language,
@@ -358,11 +359,19 @@ export const NotificationsService = (): INotificationsService => {
   }
 
   const adminPushNotificationSend = async ({
-    deviceTokens,
     title,
     body,
     data,
+    userId,
   }: SendPushNotificationArgs): Promise<true | NotificationsServiceError> => {
+    const settings = await getUserNotificationSettings(userId)
+
+    if (settings instanceof Error) {
+      return settings
+    }
+
+    const { pushDeviceTokens: deviceTokens } = settings
+
     const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
     if (!hasDeviceTokens) return true
 
@@ -382,10 +391,16 @@ export const NotificationsService = (): INotificationsService => {
     title,
     body,
     data,
-    deviceTokens,
     userId,
     notificationCategory,
   }: SendFilteredPushNotificationArgs): Promise<true | NotificationsServiceError> => {
+    const settings = await getUserNotificationSettings(userId)
+    if (settings instanceof Error) {
+      return settings
+    }
+
+    const { pushDeviceTokens: deviceTokens } = settings
+
     const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
     if (!hasDeviceTokens) return true
 
@@ -406,6 +421,60 @@ export const NotificationsService = (): INotificationsService => {
       return true
     } catch (err) {
       return handleCommonNotificationErrors(err)
+    }
+  }
+
+  const addPushDeviceToken = async ({
+    userId,
+    deviceToken,
+  }: {
+    userId: UserId
+    deviceToken: DeviceToken
+  }): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new AddPushDeviceTokenRequest()
+      request.setUserId(userId)
+      request.setDeviceToken(deviceToken)
+
+      const response = await notificationsGrpc.addPushDeviceToken(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
+
+  const removePushDeviceToken = async ({
+    userId,
+    deviceToken,
+  }: {
+    userId: UserId
+    deviceToken: DeviceToken
+  }): Promise<NotificationSettings | NotificationsServiceError> => {
+    try {
+      const request = new RemovePushDeviceTokenRequest()
+      request.setUserId(userId)
+      request.setDeviceToken(deviceToken)
+
+      const response = await notificationsGrpc.removePushDeviceToken(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      const notificationSettings = grpcNotificationSettingsToNotificationSettings(
+        response.getNotificationSettings(),
+      )
+
+      return notificationSettings
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
     }
   }
 
@@ -583,6 +652,8 @@ export const NotificationsService = (): INotificationsService => {
         disableNotificationChannel,
         enableNotificationCategory,
         disableNotificationCategory,
+        addPushDeviceToken,
+        removePushDeviceToken,
       },
     }),
   }

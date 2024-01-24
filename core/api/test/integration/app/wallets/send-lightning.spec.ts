@@ -44,6 +44,7 @@ import {
   recordReceiveLnPayment,
 } from "test/helpers"
 import { LedgerTransactionType } from "@/domain/ledger"
+import { NotificationsService } from "@/services/notifications"
 
 let lnInvoice: LnInvoice
 let noAmountLnInvoice: LnInvoice
@@ -900,7 +901,7 @@ describe("initiated via lightning", () => {
       const sendFilteredNotification = jest.fn()
       const pushNotificationsServiceSpy = jest
         .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-        .mockImplementationOnce(() => ({
+        .mockImplementation(() => ({
           sendFilteredNotification,
           sendNotification: jest.fn(),
         }))
@@ -919,6 +920,14 @@ describe("initiated via lightning", () => {
         newWalletDescriptor.accountId,
       )
       if (newAccount instanceof Error) throw newAccount
+
+      // Add push device token
+      const notificationSettings = await NotificationsService().addPushDeviceToken({
+        userId: newAccount.kratosUserId,
+        deviceToken: "123" as DeviceToken,
+      })
+
+      if (notificationSettings instanceof Error) throw notificationSettings
 
       // Persist invoice as self-invoice
       const persisted = await WalletInvoicesRepository().persistNew({

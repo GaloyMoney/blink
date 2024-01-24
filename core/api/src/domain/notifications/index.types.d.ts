@@ -6,7 +6,6 @@ type NotificationType =
 
 type SendBalanceArgs = {
   balanceAmount: BalanceAmount<WalletCurrency>
-  deviceTokens: DeviceToken[]
   recipientUserId: UserId
   displayBalanceAmount?: DisplayAmount<DisplayCurrency>
 }
@@ -21,6 +20,7 @@ type NotificationChannel =
 
 type NotificationSettings = Record<NotificationChannel, NotificationChannelSettings> & {
   language: UserLanguageOrEmpty
+  pushDeviceTokens: DeviceToken[]
 }
 
 type NotificationChannelSettings = {
@@ -32,13 +32,26 @@ type NotificationRecipient = {
   accountId: AccountId
   userId: UserId
   walletId: WalletId
-  deviceTokens: DeviceToken[]
   level: AccountLevel
 }
 
 type NotificatioSendTransactionArgs = {
   recipient: NotificationRecipient
   transaction: WalletTransaction
+}
+type SendPushNotificationArgs = {
+  title: string
+  body: string
+  data?: { [key: string]: string }
+  userId: UserId
+}
+
+type SendFilteredPushNotificationArgs = {
+  title: string
+  body: string
+  data?: { [key: string]: string }
+  userId: UserId
+  notificationCategory: NotificationCategory
 }
 
 interface INotificationsService {
@@ -83,5 +96,15 @@ interface INotificationsService {
     userId: UserId
     notificationChannel: NotificationChannel
     notificationCategory: NotificationCategory
+  }): Promise<NotificationSettings | NotificationsServiceError>
+
+  addPushDeviceToken(args: {
+    userId: UserId
+    deviceToken: DeviceToken
+  }): Promise<NotificationSettings | NotificationsServiceError>
+
+  removePushDeviceToken(args: {
+    userId: UserId
+    deviceToken: DeviceToken
   }): Promise<NotificationSettings | NotificationsServiceError>
 }

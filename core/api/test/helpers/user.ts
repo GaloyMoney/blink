@@ -116,7 +116,6 @@ export const createUserAndWalletFromPhone = async (
 
     const res = await UsersRepository().update({
       id: kratosUserId,
-      deviceTokens: [`token-${kratosUserId}`] as DeviceToken[],
       phone,
     })
     if (res instanceof Error) throw res
@@ -205,7 +204,6 @@ export const createUserAndWallet = async (
 
     const res = await UsersRepository().update({
       id: kratosUserId,
-      deviceTokens: [`token-${kratosUserId}`] as DeviceToken[],
       phone,
     })
     if (res instanceof Error) throw res
