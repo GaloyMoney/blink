@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(quickstart): for update notifications'
-      sha: 71eaf1667a327bb0218d607ecc0cb684eaa9e793
+      commitTitle: 'test(pay): add cypress e2e (#3850)...'
+      sha: 84f91fb5bda8a47bf8a8855d43533d23b0b736d0
       tags:
-      - 0.20.26-3-g71eaf1667
+      - 0.20.28-1-g84f91fb5b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(quickstart): for update notifications'
-      sha: 71eaf1667a327bb0218d607ecc0cb684eaa9e793
+      commitTitle: 'test(pay): add cypress e2e (#3850)...'
+      sha: 84f91fb5bda8a47bf8a8855d43533d23b0b736d0
       tags:
-      - 0.20.26-3-g71eaf1667
+      - 0.20.28-1-g84f91fb5b
     path: schemas/
   - git:
-      commitTitle: 'chore(quickstart): for update notifications'
-      sha: 71eaf1667a327bb0218d607ecc0cb684eaa9e793
+      commitTitle: 'test(pay): add cypress e2e (#3850)...'
+      sha: 84f91fb5bda8a47bf8a8855d43533d23b0b736d0
       tags:
-      - 0.20.26-3-g71eaf1667
+      - 0.20.28-1-g84f91fb5b
     path: gql/
   path: ./graphql
 kind: LockConfig
