@@ -22,7 +22,7 @@ import jwksRsa from "jwks-rsa"
 
 import { parseUnknownDomainErrorFromUnknown } from "@domain/shared"
 
-import isValidSignature from "@services/IbexHelper/Signatures"
+import isValidSignature from "@services/ibex/Signatures"
 
 import authRouter from "./authorization"
 import kratosCallback from "./event-handlers/kratos"

@@ -1,7 +1,5 @@
 import { InvalidFeeProbeStateError } from "@domain/bitcoin/lightning"
 
-// import { Payments } from "@app"
-
 import { GT } from "@graphql/index"
 import WalletId from "@graphql/shared/types/scalar/wallet-id"
 import SatAmountPayload from "@graphql/public/types/payload/sat-amount"
@@ -11,9 +9,8 @@ import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { normalizePaymentAmount } from "../../../shared/root/mutation"
 
 // FLASH FORK: import ibex dependencies
-import { IbexRoutes } from "../../../../services/IbexHelper/Routes"
-
-import { requestIBexPlugin } from "../../../../services/IbexHelper/IbexHelper"
+import Ibex from "@services/ibex"
+import { IbexEventError } from "@services/ibex/errors"
 
 const LnInvoiceFeeProbeInput = GT.Input({
   name: "LnInvoiceFeeProbeInput",
@@ -49,31 +46,30 @@ const LnInvoiceFeeProbeMutation = GT.Field<
       return { errors: [{ message: paymentRequest.message }] }
 
     // FLASH FORK: create IBEX fee estimation instead of Galoy fee estimation
+    // TODO: Move Ibex call behind payments
     // const { result: feeSatAmount, error } =
     //   await Payments.getLightningFeeEstimationForBtcWallet({
     //     walletId,
     //     uncheckedPaymentRequest: paymentRequest,
     //   })
-    const feeSatAmount: PaymentAmount<WalletCurrency> = {
-      amount: BigInt(0),
-      currency: "BTC",
-    }
-    let error: Error | null = new Error("Unknown error")
+    const resp: any | IbexEventError = await Ibex.getFeeEstimation({
+        // walletId, // we are not checking internal payment flow
+        bolt11: paymentRequest,
+    })
 
-    const feeEndpoint = `${IbexRoutes.LightningInvoicePaymentFee}${paymentRequest}`
+    const error: Error | null = resp instanceof IbexEventError 
+      ? resp
+      : null
 
-    const PayLightningFeeInfo = await requestIBexPlugin("GET", feeEndpoint, {}, {})
-
-    if (
-      PayLightningFeeInfo.data &&
-      PayLightningFeeInfo.data["data"] &&
-      PayLightningFeeInfo.data["data"]["amount"]
-    ) {
-      feeSatAmount.amount = BigInt(
-        Math.round(PayLightningFeeInfo.data["data"]["amount"] / 1000),
-      )
-      error = null
-    }
+    const feeSatAmount: PaymentAmount<WalletCurrency> = (!(resp instanceof IbexEventError) && resp.amount) 
+      ? {
+        amount: BigInt(Math.round(resp.amount / 1000)),
+        currency: "BTC",
+      }
+      : {
+        amount: BigInt(0),
+        currency: "BTC",
+      }
 
     if (feeSatAmount !== null && error instanceof Error) {
       return {

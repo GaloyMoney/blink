@@ -74,15 +74,18 @@ type BaseWalletTransaction = {
   readonly settlementAmount: Satoshis | UsdCents
   readonly settlementFee: Satoshis | UsdCents
   readonly settlementCurrency: WalletCurrency
+  
   readonly settlementDisplayAmount: DisplayCurrencyMajorAmount
   readonly settlementDisplayFee: DisplayCurrencyMajorAmount
   readonly settlementDisplayPrice: WalletMinorUnitDisplayPrice<
     WalletCurrency,
     DisplayCurrency
   >
+  // readonly [x: string]: unknown;
+
   readonly createdAt: Date
 
-  readonly id: LedgerTransactionId
+  readonly id: string // LedgerTransactionId
   readonly status: TxStatus
   readonly memo: string | null
 }

@@ -16,10 +16,8 @@ import OnChainUsdTxFee from "@graphql/public/types/object/onchain-usd-tx-fee"
 import { normalizePaymentAmount } from "../../../shared/root/mutation"
 
 // FLASH FORK: import ibex dependencies
-
-import { IbexRoutes } from "../../../../services/IbexHelper/Routes"
-
-import { requestIBexPlugin } from "../../../../services/IbexHelper/IbexHelper"
+import Ibex from "@services/ibex"
+import { IbexEventError, UnexpectedResponseError } from "@services/ibex/errors"
 
 const OnChainUsdTxFeeQuery = GT.Field<null, GraphQLPublicContextAuth>({
   type: GT.NonNull(OnChainUsdTxFee),
@@ -46,26 +44,23 @@ const OnChainUsdTxFeeQuery = GT.Field<null, GraphQLPublicContextAuth>({
     //   address,
     //   speed,
     // })
-    const feeEndpoint = `${IbexRoutes.OnChainFee}?address=${address}&amount=${
-      amount / 100
-    }&currency=3`
-    const PayOnChainFee = await requestIBexPlugin("GET", feeEndpoint, {}, {})
-    if (
-      PayOnChainFee &&
-      PayOnChainFee.data &&
-      PayOnChainFee.data["data"] &&
-      PayOnChainFee.data["data"]["fee"]
-    ) {
-      const fee: ApplicationError | PaymentAmount<WalletCurrency> = {
-        amount: BigInt(Math.round(PayOnChainFee.data["data"]["fee"] * 100)),
-        currency: WalletCurrency.Usd,
-      }
 
-      if (fee instanceof Error) throw mapError(fee)
+    const resp = await Ibex.estimateFeeV2({
+      "currency-id": "3", // ref/create USD enum/constant
+      address: address,
+      amount: amount / 100,
+    })
 
-      return {
-        amount: normalizePaymentAmount(fee).amount,
-      }
+    if (resp instanceof IbexEventError) return resp
+    if (resp.fee === undefined) return new UnexpectedResponseError("Missing fee field")
+
+    const fee: PaymentAmount<WalletCurrency> = {
+      amount: BigInt(Math.round(resp.fee * 100)),
+      currency: WalletCurrency.Usd,
+    }
+
+    return {
+      amount: normalizePaymentAmount(fee).amount,
     }
   },
 })

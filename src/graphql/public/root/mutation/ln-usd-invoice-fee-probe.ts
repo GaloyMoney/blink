@@ -13,9 +13,10 @@ import { checkedToWalletId } from "@domain/wallets"
 import { normalizePaymentAmount } from "../../../shared/root/mutation"
 
 // FLASH FORK: import ibex dependencies
-import { IbexRoutes } from "../../../../services/IbexHelper/Routes"
-
-import { requestIBexPlugin } from "../../../../services/IbexHelper/IbexHelper"
+import Ibex from "@services/ibex"
+import { IbexEventError } from "@services/ibex/errors"
+// import { IbexRoutes } from "../../../../services/ibex/Routes"
+// import { requestIBexPlugin } from "../../../../services/ibex/IbexHelper"
 
 const LnUsdInvoiceFeeProbeInput = GT.Input({
   name: "LnUsdInvoiceFeeProbeInput",
@@ -63,26 +64,25 @@ const LnUsdInvoiceFeeProbeMutation = GT.Field<
     //     walletId,
     //     uncheckedPaymentRequest: paymentRequest,
     //   })
-    const feeSatAmount: PaymentAmount<WalletCurrency> = {
-      amount: BigInt(0),
-      currency: "BTC",
-    }
-    let error: Error | null = new Error("Unknown error")
 
-    const feeEndpoint = `${IbexRoutes.LightningInvoicePaymentFee}${paymentRequest}`
+    const resp: any | IbexEventError = await Ibex.getFeeEstimation({
+      // walletId, // we are not checking internal payment flow
+      bolt11: paymentRequest,
+    })
 
-    const PayLightningFeeInfo = await requestIBexPlugin("GET", feeEndpoint, {}, {})
+    const error: Error | null = resp instanceof IbexEventError 
+      ? resp
+      : null
 
-    if (
-      PayLightningFeeInfo.data &&
-      PayLightningFeeInfo.data["data"] &&
-      PayLightningFeeInfo.data["data"]["amount"]
-    ) {
-      feeSatAmount.amount = BigInt(
-        Math.round(PayLightningFeeInfo.data["data"]["amount"] / 1000),
-      )
-      error = null
-    }
+    const feeSatAmount: PaymentAmount<WalletCurrency> = (!(resp instanceof IbexEventError) && resp.amount) 
+      ? {
+        amount: BigInt(Math.round(resp.amount / 1000)),
+        currency: "BTC", // USD?????
+      }
+      : {
+        amount: BigInt(0),
+        currency: "BTC",
+      }
 
     if (feeSatAmount !== null && error instanceof Error) {
       return {

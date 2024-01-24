@@ -53,7 +53,7 @@ export const getLightningFeeEstimationForBtcWallet = async (args: {
   const validated = await validateIsBtcWallet(walletIdChecked)
   return validated instanceof Error
     ? PartialResult.err(validated)
-    : getLightningFeeEstimation(args)
+    : getLightningFeeEstimation(args) // change to Ibex.getFeeEstimation
 }
 
 export const getLightningFeeEstimationForUsdWallet = async (args: {

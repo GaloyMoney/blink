@@ -16,7 +16,7 @@ export const getTransactionsForWalletsByAddresses = async ({
   wallets: Wallet[]
   addresses: OnChainAddress[]
   paginationArgs?: PaginationArgs
-}): Promise<PartialResult<PaginatedArray<WalletTransaction>>> => {
+}): Promise<PartialResult<PaginatedArray<BaseWalletTransaction>>> => {
   const walletIds = wallets.map((wallet) => wallet.id)
 
   let pendingHistory =

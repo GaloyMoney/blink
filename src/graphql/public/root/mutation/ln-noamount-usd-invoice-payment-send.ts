@@ -12,9 +12,8 @@ import dedent from "dedent"
 // FLASH FORK: import ibex dependencies
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 
-import { IbexRoutes } from "../../../../services/IbexHelper/Routes"
-
-import { requestIBexPlugin } from "../../../../services/IbexHelper/IbexHelper"
+import Ibex from "@services/ibex"
+import { IbexEventError } from "@services/ibex/errors"
 
 const LnNoAmountUsdInvoicePaymentInput = GT.Input({
   name: "LnNoAmountUsdInvoicePaymentInput",
@@ -84,49 +83,37 @@ const LnNoAmountUsdInvoicePaymentSendMutation = GT.Field<
     // })
     if (!domainAccount) throw new Error("Authentication required")
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let status: PaymentSendStatus | undefined = undefined
-    const PayLightningInvoice = await requestIBexPlugin(
-      "POST",
-      IbexRoutes.LightningInvoicePayment,
-      {},
-      {
-        bolt11: paymentRequest,
-        accountId: walletId,
-        amount: amount / 100,
-      },
-    )
+    
+    const PayLightningInvoice = await Ibex.payInvoiceV2({
+      bolt11: paymentRequest,
+      accountId: walletId,
+      amount: amount / 100,
+    })
 
-    if (
-      PayLightningInvoice &&
-      PayLightningInvoice.data &&
-      PayLightningInvoice.data["data"]["transaction"] &&
-      PayLightningInvoice.data["data"]["transaction"]["payment"] &&
-      PayLightningInvoice.data["data"]["transaction"]["payment"]["status"]
-    ) {
-      switch (
-        PayLightningInvoice.data["data"]["transaction"]["payment"]["status"]["id"]
-      ) {
-        case 1:
-          status = PaymentSendStatus.Pending
-          break
-        case 2:
-          status = PaymentSendStatus.Success
-          break
-        case 3:
-          status = PaymentSendStatus.Failure
-          break
-        default:
-          status = PaymentSendStatus.Pending
-          break
+    if (PayLightningInvoice instanceof IbexEventError) {
+      return { 
+        status: "failed", 
+        errors: [{ message: "An unexpected error occurred. Please try again later." }],
+        // errors: [mapAndParseErrorForGqlResponse(PayLightningInvoice)] }
       }
-      if (status instanceof Error) {
-        return { status: "failed", errors: [mapAndParseErrorForGqlResponse(status)] }
-      }
+    }
+    
+    let status: PaymentSendStatus = PaymentSendStatus.Pending
+    switch(PayLightningInvoice.transaction?.payment?.status?.id) {
+      case 1: 
+        status = PaymentSendStatus.Pending
+        break;
+      case 2: 
+        status = PaymentSendStatus.Success
+        break;
+      case 3: 
+        status = PaymentSendStatus.Failure
+        break;
+    }
 
-      return {
-        errors: [],
-        status: status.value,
-      }
+    return {
+      errors: [],
+      status: status.value
     }
   },
 })

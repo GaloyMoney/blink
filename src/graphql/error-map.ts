@@ -642,6 +642,12 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidCarrierForPhoneMetadataError":
     case "InvalidCarrierTypeForPhoneMetadataError":
     case "InvalidCountryCodeForPhoneMetadataError":
+    // FLASH ERRORS
+    case "IbexEventError":
+    case "IbexAuthenticationError":
+    case "NotImplementedError":
+    case "UnexpectedResponseError":
+    case "IbexApiError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`

@@ -46,3 +46,8 @@ junit.xml
 
 .direnv
 .env.local
+
+.editorconfig
+.gitattributes
+.yarn/
+.yarnrc.yml

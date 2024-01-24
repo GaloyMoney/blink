@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "apis": [
+    {
+      "identifier": "sing-in",
+      "source": "@sing-in/v1.0#cpd51bloegfhl2",
+      "integrity": "sha512-6m3rCceciZaIxr04ddjnI1v/Ob+en8f2Ybghs+7XNmvKsAZ3Mf7wvTv6V75H/9R5XVW5I0qe7DkUaJ/xUPrXfA==",
+      "installerVersion": "6.1.1"
+    }
+  ]
+}

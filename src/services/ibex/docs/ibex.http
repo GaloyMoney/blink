@@ -1,0 +1,78 @@
+
+# SANDBOX - Test server w/ real lightning (capped)
+
+@baseurl = https://api-sandbox.poweredbyibex.io
+@email = mail2michaelennis@gmail.com
+@password = <>
+@accessToken = <>
+@refreshToken = <>
+@walletId = c593736e-5a58-42e4-93fa-dc895856c1f1
+### Sign in
+POST {{baseurl}}/auth/signin HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+    "email": "{{email}}",
+    "password": "{{password}}"
+}
+
+### Forgot password
+POST {{baseurl}}/auth/forgot-password HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+    "email": "{{email}}"
+}
+
+### Change password
+POST {{baseurl}}/auth/change-password HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: {{accessToken}}
+
+{
+    "proposedPassword": "",
+    "previousPassword": ""
+}
+
+### Refresh Access Token
+POST {{baseurl}}/auth/refresh-access-token HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+    "refreshToken": "{{refreshToken}}"
+}
+
+### Revoke Refresh Token and all associated access token
+POST {{baseurl}}/auth/revoke-refresh-token HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+    "refreshToken": "{{refreshToken}}"
+}
+
+### getAccountDetails
+GET {{baseurl}}/v2/account/3d4b7ad7-34d5-4c2e-8fa2-3701cc4a579a HTTP/1.1
+Accept: application/json
+Authorization: {{accessToken}}
+
+### getAccountTransactions 
+GET {{baseurl}}/v2/transaction/account/{{walletId}}/all HTTP/1.1
+Accept: application/json
+Authorization: {{accessToken}}
+
+### getTransactionDetails
+@transactionId = <>
+GET {{baseurl}}/v2/transaction/{{transactionId}} HTTP/1.1
+Accept: application/json
+Authorization: {{accessToken}}
+
+### getPayment (bolt11)
+@bolt11 = lnbc120n1pjeserjpp5k8th9ls3f05ydgvle8tm2rzjjxecf6n34hk6e37pchkfpjmuc80qdp29qezjgr5v4ehggrjv43k26tkv5sxvmrpwd5zqer9wccqzzsxqyz5vqsp52e03c924y4w00z39d3h7xyvjykll78zlwqqgcgarthud0mmjpsgq9qyyssqwfcdp7jy67w8gnhnk68q7726yzapmku7nw79s826g7s95x2v8g9hw0k8wwghz5qwd6ulvyxfxaj85873lee69egmeeyvjr36dmq59acpq94028
+GET {{baseurl}}/payment/from-bolt11/{{bolt11}} HTTP/1.1
+Accept: application/json
+Authorization: {{accessToken}}

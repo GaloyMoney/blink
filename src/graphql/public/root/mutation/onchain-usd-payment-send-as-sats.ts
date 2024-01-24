@@ -13,10 +13,8 @@ import WalletId from "@graphql/shared/types/scalar/wallet-id"
 
 // FLASH FORK: import ibex dependencies
 import { toCents } from "@domain/fiat"
-
-import { IbexRoutes } from "../../../../services/IbexHelper/Routes"
-
-import { requestIBexPlugin } from "../../../../services/IbexHelper/IbexHelper"
+import Ibex from "@services/ibex"
+import { IbexEventError } from "@services/ibex/errors"
 
 const OnChainUsdPaymentSendAsBtcDenominatedInput = GT.Input({
   name: "OnChainUsdPaymentSendAsBtcDenominatedInput",
@@ -81,34 +79,20 @@ const OnChainUsdPaymentSendAsBtcDenominatedMutation = GT.Field<
     //   memo,
     // })
     if (!domainAccount) throw new Error("Authentication required")
-    const PayOnChainAddress = await requestIBexPlugin(
-      "POST",
-      IbexRoutes.OnChainPayment,
-      {},
-      {
-        accountId: walletId,
-        address,
-        amount: toCents(amount),
-      },
-    )
-    if (
-      PayOnChainAddress &&
-      PayOnChainAddress.data &&
-      PayOnChainAddress.data["data"]["status"]
-    ) {
-      const result: PayOnChainByWalletIdResult = {
-        status: { value: PayOnChainAddress.data["data"]["status"] },
-        payoutId: PayOnChainAddress.data["data"]["transactionHub"]["id"],
-      }
 
-      if (result instanceof Error) {
-        return { status: "failed", errors: [mapAndParseErrorForGqlResponse(result)] }
-      }
+    const resp = await Ibex.sendToAddressV2({
+      accountId: walletId,
+      address,
+      amount: toCents(amount),
+    })
 
-      return {
-        errors: [],
-        status: result.status.value,
-      }
+    if (resp instanceof IbexEventError) {
+      return { status: "failed", errors: [mapAndParseErrorForGqlResponse(resp)] }
+    }
+
+    return {
+      errors: [],
+      status: resp.status, // UI expecting type PaymentSendStatus
     }
   },
 })

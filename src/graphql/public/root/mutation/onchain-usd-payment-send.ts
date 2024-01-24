@@ -12,9 +12,8 @@ import WalletId from "@graphql/shared/types/scalar/wallet-id"
 // import { Wallets } from "@app"
 
 // FLASH FORK: import ibex dependencies
-import { IbexRoutes } from "../../../../services/IbexHelper/Routes"
-
-import { requestIBexPlugin } from "../../../../services/IbexHelper/IbexHelper"
+import Ibex from "@services/ibex"
+import { IbexEventError } from "@services/ibex/errors"
 
 const OnChainUsdPaymentSendInput = GT.Input({
   name: "OnChainUsdPaymentSendInput",
@@ -79,48 +78,49 @@ const OnChainUsdPaymentSendMutation = GT.Field<
     //   memo,
     // })
     if (!domainAccount) throw new Error("Authentication required")
-    const PayOnChainAddress = await requestIBexPlugin(
-      "POST",
-      IbexRoutes.OnChainPayment,
-      {},
-      {
-        accountId: walletId,
-        address,
-        amount: amount / 100,
-      },
-    )
-    if (
-      PayOnChainAddress &&
-      PayOnChainAddress.data &&
-      PayOnChainAddress.data["data"]["status"]
-    ) {
-      const result: PayOnChainByWalletIdResult = {
-        status: {
-          value:
-            PayOnChainAddress.data["data"]["status"] === "INITIATED"
-              ? "pending"
-              : PayOnChainAddress.data["data"]["status"] === "MEMPOOL"
-              ? "pending"
-              : PayOnChainAddress.data["data"]["status"] === "BLOCKCHAIN"
-              ? "pending"
-              : PayOnChainAddress.data["data"]["status"] === "CONFIRMED"
-              ? "success"
-              : PayOnChainAddress.data["data"]["status"] === "FAILED"
-              ? "failed"
-              : "pending",
-        },
-        payoutId: PayOnChainAddress.data["data"]["transactionHub"]["id"],
-      }
 
-      if (result instanceof Error) {
-        return { status: "failed", errors: [mapAndParseErrorForGqlResponse(result)] }
-      }
+    const resp = await Ibex.sendToAddressV2({
+      accountId: walletId,
+      address,
+      amount: amount / 100,
+    })
 
-      return {
-        errors: [],
-        status: result.status.value,
-      }
+    if (resp instanceof IbexEventError) {
+      return { status: "failed", errors: [mapAndParseErrorForGqlResponse(resp)] }
     }
+
+    return {
+      errors: [],
+      status: resp.status,
+    }
+
+    // const PayOnChainAddress = await requestIBexPlugin(
+    //   "POST",
+    //   IbexRoutes.OnChainPayment,
+    //   {},
+    //   {
+    //     accountId: walletId,
+    //     address,
+    //     amount: amount / 100,
+    //   },
+    // )
+      // const result: PayOnChainByWalletIdResult = {
+      //   status: {
+      //     value:
+      //       PayOnChainAddress.data["data"]["status"] === "INITIATED"
+      //         ? "pending"
+      //         : PayOnChainAddress.data["data"]["status"] === "MEMPOOL"
+      //         ? "pending"
+      //         : PayOnChainAddress.data["data"]["status"] === "BLOCKCHAIN"
+      //         ? "pending"
+      //         : PayOnChainAddress.data["data"]["status"] === "CONFIRMED"
+      //         ? "success"
+      //         : PayOnChainAddress.data["data"]["status"] === "FAILED"
+      //         ? "failed"
+      //         : "pending",
+      //   },
+      //   payoutId: PayOnChainAddress.data["data"]["transactionHub"]["id"],
+      // }
   },
 })
 

@@ -29,11 +29,6 @@ import {
   recordExceptionInCurrentSpan,
   wrapAsyncFunctionsToRunInSpan,
 } from "@services/tracing"
-
-// FLASH FORK: import ibex dependencies
-import { IbexRoutes } from "../IbexHelper/Routes"
-import { requestIBexPlugin } from "../IbexHelper/IbexHelper"
-
 import { admin } from "./admin"
 import * as adminLegacy from "./admin-legacy"
 import { MainBook, Transaction } from "./books"
@@ -42,6 +37,10 @@ import * as caching from "./caching"
 import { TransactionsMetadataRepository } from "./services"
 import { send } from "./send"
 import { volume } from "./volume"
+
+// FLASH FORK: import ibex dependencies
+import Ibex from "@services/ibex"
+import { IbexApiError, IbexAuthenticationError, IbexEventError } from "@services/ibex/errors"
 
 export { getNonEndUserWalletIds } from "./caching"
 export { translateToLedgerJournal } from "./helpers"
@@ -284,7 +283,7 @@ export const LedgerService = (): ILedgerService => {
 
   const getWalletBalance = async (
     walletId: WalletId,
-  ): Promise<Satoshis | LedgerError> => {
+  ): Promise<Satoshis | LedgerError | IbexEventError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
       let { balance } = await MainBook.balance({
@@ -304,20 +303,20 @@ export const LedgerService = (): ILedgerService => {
           })
         }
       }
-      const GetIbexWalletBalance = await requestIBexPlugin(
-        "GET",
-        `${IbexRoutes.API_GetAccount}${walletId}`,
-        {},
-        {},
-      )
-      if (
-        GetIbexWalletBalance &&
-        GetIbexWalletBalance.data &&
-        GetIbexWalletBalance.data["data"]["balance"]
-      ) {
-        balance = GetIbexWalletBalance.data["data"]["balance"] * 100
+
+      const resp = await Ibex.getAccountDetails({ accountId: walletId })
+      if (resp instanceof IbexApiError ) {
+        console.error(`Ibex Call failed with ${resp.code}: ${resp.message}`)
+        if (resp.code === 403) return toSats(0) // this is a hack for requests to Ibex with accountIds it doesn't recognize
+        return resp
       }
-      return toSats(balance)
+      if (resp instanceof IbexAuthenticationError) {
+        console.error("Failed to get wallet balance.")
+        return resp
+      }
+      if (resp.balance === undefined) return new IbexEventError("Balance not found")
+    
+      return toSats(resp.balance * 100)
     } catch (err) {
       return new UnknownLedgerError(err)
     }

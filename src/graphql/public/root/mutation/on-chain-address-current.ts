@@ -5,9 +5,8 @@ import OnChainAddressPayload from "@graphql/public/types/payload/on-chain-addres
 // import { Wallets } from "@app"
 
 // FLASH FORK: import ibex dependencies
-import { IbexRoutes } from "../../../../services/IbexHelper/Routes"
-
-import { requestIBexPlugin } from "../../../../services/IbexHelper/IbexHelper"
+import Ibex from "@services/ibex"
+import { IbexEventError } from "@services/ibex/errors"
 
 const OnChainAddressCurrentInput = GT.Input({
   name: "OnChainAddressCurrentInput",
@@ -33,27 +32,18 @@ const OnChainAddressCurrentMutation = GT.Field({
     // FLASH FORK: use IBEX to create on-chain address
     // const address = await Wallets.getLastOnChainAddress(walletId)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const CreateOnChain: any = await requestIBexPlugin(
-      "POST",
-      IbexRoutes.OnChain,
-      {},
-      {
-        accountId: walletId,
-      },
-    )
-    if (!CreateOnChain || !CreateOnChain.data || !CreateOnChain.data["data"]) {
-      console.error({ error: "unable to get CreateOnChain" })
-    } else {
-      const address = CreateOnChain.data["data"]
 
-      if (address instanceof Error) {
-        return { errors: [mapAndParseErrorForGqlResponse(address)] }
-      }
+    const resp = await Ibex.generateBitcoinAddress({
+      accountId: walletId,
+    })
 
-      return {
-        errors: [],
-        address,
-      }
+    if (resp instanceof IbexEventError) {
+      return { errors: [mapAndParseErrorForGqlResponse(resp)] } 
+    }
+    
+    return {
+      errors: [],
+      address: resp.address,
     }
   },
 })

@@ -129,8 +129,9 @@ export const env = createEnv({
     SVIX_SECRET: z.string().optional(),
     SVIX_ENDPOINT: z.union([z.string().url().nullish(), z.literal("")]), // optional url
 
-    IBEX_TOKEN: z.string().optional(),
-    IBEX_PLUGIN_BASE_URL: z.union([z.string().url().nullish(), z.literal("")]),
+    IBEX_URL: z.string(),
+    IBEX_EMAIL: z.string(),
+    IBEX_PASSWORD: z.string(),
   },
 
   runtimeEnvStrict: {
@@ -229,7 +230,8 @@ export const env = createEnv({
     SVIX_SECRET: process.env.SVIX_SECRET,
     SVIX_ENDPOINT: process.env.SVIX_ENDPOINT,
 
-    IBEX_TOKEN: process.env.IBEX_TOKEN,
-    IBEX_PLUGIN_BASE_URL: process.env.IBEX_PLUGIN_BASE_URL,
+    IBEX_URL: process.env.IBEX_URL,
+    IBEX_EMAIL: process.env.IBEX_EMAIL,
+    IBEX_PASSWORD: process.env.IBEX_PASSWORD,
   },
 })

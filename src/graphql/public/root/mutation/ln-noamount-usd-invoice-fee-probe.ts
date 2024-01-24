@@ -12,9 +12,8 @@ import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { normalizePaymentAmount } from "../../../shared/root/mutation"
 
 // FLASH FORK: import ibex dependencies
-import { IbexRoutes } from "../../../../services/IbexHelper/Routes"
-
-import { requestIBexPlugin } from "../../../../services/IbexHelper/IbexHelper"
+import Ibex from "@services/ibex"
+import { IbexEventError } from "@services/ibex/errors"
 
 const LnNoAmountUsdInvoiceFeeProbeInput = GT.Input({
   name: "LnNoAmountUsdInvoiceFeeProbeInput",
@@ -49,39 +48,22 @@ const LnNoAmountUsdInvoiceFeeProbeMutation = GT.Field({
     //     amount,
     //     uncheckedPaymentRequest: paymentRequest,
     //   })
+
+    // TODO: Move Ibex call to Payments interface
+    const resp: any | IbexEventError = await Ibex.getFeeEstimation({
+      bolt11: paymentRequest,
+      amount: String(amount / 100),
+      currencyId: "3"
+    })
+
+    if (resp instanceof IbexEventError) {
+      return {
+        errors: [mapAndParseErrorForGqlResponse(resp)],
+      } 
+    }
     const feeSatAmount: PaymentAmount<WalletCurrency> = {
-      amount: BigInt(0),
+      amount: BigInt(Math.round(resp.data["data"]["amount"] * 1000)),
       currency: "USD",
-    }
-    let error: Error | null = new Error("Unknown error")
-
-    const feeEndpoint = `${
-      IbexRoutes.LightningInvoicePaymentFee
-    }${paymentRequest}?amount=${amount / 100}&currencyId=3`
-
-    const PayLightningFeeInfo = await requestIBexPlugin("GET", feeEndpoint, {}, {})
-
-    if (
-      PayLightningFeeInfo.data &&
-      PayLightningFeeInfo.data["data"] &&
-      PayLightningFeeInfo.data["data"]["amount"]
-    ) {
-      feeSatAmount.amount = BigInt(
-        Math.round(PayLightningFeeInfo.data["data"]["amount"] * 1000),
-      )
-      error = null
-    }
-    if (feeSatAmount !== null && error instanceof Error) {
-      return {
-        errors: [mapAndParseErrorForGqlResponse(error)],
-        ...normalizePaymentAmount(feeSatAmount),
-      }
-    }
-
-    if (error instanceof Error) {
-      return {
-        errors: [mapAndParseErrorForGqlResponse(error)],
-      }
     }
 
     if (feeSatAmount === null) {

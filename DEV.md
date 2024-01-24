@@ -26,9 +26,9 @@
 This setup was last tested with the following tools:
 ```
 $ node --version
-v18.12.0
+v20.10.0
 $ yarn --version
-1.22.17
+1.22.21
 $ direnv --version
 2.28.0
 $ jq --version
@@ -38,6 +38,8 @@ Docker version 20.10.8, build f0df350
 $ docker compose version
 Docker Compose version 2.0.0
 ```
+
+To use the correct node version, you can install nvm and run `nvm use 20`. Then enable and inititialize yarn using the [yarn docs](https://yarnpkg.com/getting-started/install)
 
 We use [direnv](https://direnv.net) to load environment variables needed for running the integration tests.
 Don't forget to add the [direnv hook](https://direnv.net/docs/hook.html) to your `shell.rc` file.
@@ -65,6 +67,8 @@ Everytime the dependencies are re-started the environment must be reloaded via `
 
 ## Development
 
+Make sure to add the Ibex email and password to the `.env` file.
+ 
 To start the GraphQL server and its dependencies:
 ```
 $ make start

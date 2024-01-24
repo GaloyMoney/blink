@@ -1,7 +1,4 @@
 import dedent from "dedent"
-
-// import { Wallets } from "@app"
-
 import { GT } from "@graphql/index"
 import Memo from "@graphql/shared/types/scalar/memo"
 import Minutes from "@graphql/public/types/scalar/minutes"
@@ -11,10 +8,8 @@ import LnNoAmountInvoicePayload from "@graphql/public/types/payload/ln-noamount-
 
 // FLASH FORK: import ibex dependencies
 import { decodeInvoice } from "@domain/bitcoin/lightning"
-
-import { IbexRoutes } from "../../../../services/IbexHelper/Routes"
-
-import { requestIBexPlugin } from "../../../../services/IbexHelper/IbexHelper"
+import Ibex from "@services/ibex"
+import { IbexEventError, UnexpectedResponseError } from "@services/ibex/errors"
 
 const LnNoAmountInvoiceCreateInput = GT.Input({
   name: "LnNoAmountInvoiceCreateInput",
@@ -53,36 +48,33 @@ const LnNoAmountInvoiceCreateMutation = GT.Field({
     }
 
     // FLASH FORK: create IBEX invoice instead of Galoy invoice
-    // const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
-    //   walletId,
-    //   memo,
-    //   expiresIn,
-    // })
 
-    const CreateLightningInvoice = await requestIBexPlugin(
-      "POST",
-      IbexRoutes.LightningInvoice,
-      {},
-      {
-        amount: 0,
-        accountId: walletId,
-        memo,
-        expiration: expiresIn,
-        webhookUrl: "http://development.flashapp.me:4002/ibex-endpoint", // TODO: get from env
-        webhookSecret: "secret",
-      },
-    )
-    if (
-      CreateLightningInvoice &&
-      CreateLightningInvoice.data &&
-      CreateLightningInvoice.data["data"]["invoice"]
-    ) {
-      const invoiceString = CreateLightningInvoice.data["data"]["invoice"]["bolt11"]
-      const decodedInvoice = decodeInvoice(invoiceString)
-      if (decodedInvoice instanceof Error) {
-        return { errors: [mapAndParseErrorForGqlResponse(decodedInvoice)] }
-      }
-      const lnInvoice = {
+    // TODO: move this into Wallets.addInvoiceNoAmountForSelf
+    const resp = await Ibex.addInvoice({
+      amount: 0,
+      accountId: walletId,
+      memo,
+      expiration: expiresIn,
+      // webhookUrl: "http://development.flashapp.me:4002/ibex-endpoint", // TODO: get from env
+      // webhookSecret: "secret",
+    })
+
+    if (resp instanceof IbexEventError) {
+      return { errors: [mapAndParseErrorForGqlResponse(resp)] }
+    }
+
+    const invoiceString: string | undefined = resp.invoice?.bolt11
+    if (!invoiceString) {
+      return { errors: [mapAndParseErrorForGqlResponse(new UnexpectedResponseError("Could not find invoice."))] }
+    }
+    const decodedInvoice = decodeInvoice(invoiceString)
+    if (decodedInvoice instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(decodedInvoice)] }
+    }
+    
+    return {
+      errors: [],
+      invoice: {
         destination: decodedInvoice.destination,
         paymentHash: decodedInvoice.paymentHash,
         paymentRequest: decodedInvoice.paymentRequest,
@@ -96,16 +88,7 @@ const LnNoAmountInvoiceCreateMutation = GT.Field({
         features: decodedInvoice.features,
         expiresAt: decodedInvoice.expiresAt,
         isExpired: decodedInvoice.isExpired,
-      }
-
-      if (lnInvoice instanceof Error) {
-        return { errors: [mapAndParseErrorForGqlResponse(lnInvoice)] }
-      }
-
-      return {
-        errors: [],
-        invoice: lnInvoice,
-      }
+      },
     }
   },
 })
