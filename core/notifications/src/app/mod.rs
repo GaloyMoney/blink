@@ -177,11 +177,11 @@ impl NotificationsApp {
     #[instrument(name = "app.handle_circle_grew", skip(self), err)]
     pub async fn handle_circle_grew(
         &self,
-        user_id: GaloyUserId,
-        circle_type: CircleType,
-        this_month_circle_size: u32,
-        all_time_circle_size: u32,
+        _user_id: GaloyUserId,
+        _circle_type: CircleType,
+        _this_month_circle_size: u32,
+        _all_time_circle_size: u32,
     ) -> Result<(), ApplicationError> {
-        unimplemented!()
+        Ok(())
     }
 }
