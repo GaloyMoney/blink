@@ -32,8 +32,7 @@ export const UsersRepository = (): IUsersRepository => {
       // we can do because user collection is an optional collection from the backend
       // as authentication is handled outside the stack
       // and user collection is only about metadata for notification and language
-      if (!result)
-        return translateToUser({ userId: id, deviceTokens: [], createdAt: new Date() })
+      if (!result) return translateToUser({ userId: id, createdAt: new Date() })
 
       return translateToUser(result)
     } catch (err) {
