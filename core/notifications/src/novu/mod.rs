@@ -12,9 +12,14 @@ pub struct NovuExecutor {
 }
 
 impl NovuExecutor {
-    pub fn _init(config: NovuConfig) -> Result<Self, NovuExecutorError> {
+    pub fn init(config: NovuConfig) -> Result<Self, NovuExecutorError> {
         Ok(Self {
             client: Novu::new(config.api_key, None)?,
         })
+    }
+
+    pub async fn do_stuff(&self) -> Result<(), NovuExecutorError> {
+        dbg!(self.client.workflows.list(None, None).await?);
+        Ok(())
     }
 }

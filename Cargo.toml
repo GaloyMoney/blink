@@ -43,5 +43,6 @@ tonic = "0.10.2"
 tonic-build = { version = "0.10.2", features = ["prost"] }
 tonic-health = "0.10.2"
 prost = "0.12"
-novu = { git = "https://github.com/GaloyMoney/novu-rust.git", rev = "a98138b"}
+# novu = { path = "../novu-rust" }
+novu = { git = "https://github.com/GaloyMoney/novu-rust.git", branch = "main"}
 
