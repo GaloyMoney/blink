@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(notifications): move device token to notifications (#3891)...'
-      sha: a773fe4a6dff692036229690f4d41611e237fd46
+      commitTitle: 'chore: added notifications as deps (#3895)'
+      sha: ef9e9ceb14049e36b522344777749dcabb141d8e
       tags:
-      - 0.20.22-3-ga773fe4a6
+      - 0.20.23-1-gef9e9ceb1
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(notifications): move device token to notifications (#3891)...'
-      sha: a773fe4a6dff692036229690f4d41611e237fd46
+      commitTitle: 'chore: added notifications as deps (#3895)'
+      sha: ef9e9ceb14049e36b522344777749dcabb141d8e
       tags:
-      - 0.20.22-3-ga773fe4a6
+      - 0.20.23-1-gef9e9ceb1
     path: schemas/
   - git:
-      commitTitle: 'refactor(notifications): move device token to notifications (#3891)...'
-      sha: a773fe4a6dff692036229690f4d41611e237fd46
+      commitTitle: 'chore: added notifications as deps (#3895)'
+      sha: ef9e9ceb14049e36b522344777749dcabb141d8e
       tags:
-      - 0.20.22-3-ga773fe4a6
+      - 0.20.23-1-gef9e9ceb1
     path: gql/
   path: ./graphql
 kind: LockConfig
