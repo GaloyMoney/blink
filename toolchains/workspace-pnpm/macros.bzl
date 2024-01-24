@@ -540,7 +540,7 @@ def next_build_bin_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
         RunInfo(run_cmd),
     ]
 
-def next_build_bin(**kwargs):
+def next_build_bin(next_build = ":build", **kwargs):
     next_bin = "next_bin"
     if not rule_exists(next_bin):
         npm_bin(
@@ -549,7 +549,7 @@ def next_build_bin(**kwargs):
         )
     _next_build_bin(
         next = ":{}".format(next_bin),
-        next_build = kwargs.pop("next_build", ":build"),
+        next_build = next_build,
         **kwargs,
     )
 
