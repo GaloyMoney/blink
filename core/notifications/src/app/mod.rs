@@ -173,4 +173,15 @@ impl NotificationsApp {
         self.settings.persist(&mut user_settings).await?;
         Ok(user_settings)
     }
+
+    #[instrument(name = "app.handle_circle_grew", skip(self), err)]
+    pub async fn handle_circle_grew(
+        &self,
+        _user_id: GaloyUserId,
+        _circle_type: CircleType,
+        _this_month_circle_size: u32,
+        _all_time_circle_size: u32,
+    ) -> Result<(), ApplicationError> {
+        Ok(())
+    }
 }
