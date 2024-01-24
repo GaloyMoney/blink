@@ -37,15 +37,6 @@ export default function TransactionTableComponent({ rows }: TransactionDetailsPr
           <tr>
             <th
               style={{
-                width: 240,
-                padding: "12px 6px",
-              }}
-            >
-              ID
-            </th>
-
-            <th
-              style={{
                 width: 200,
                 padding: "12px 6px",
               }}
@@ -59,6 +50,15 @@ export default function TransactionTableComponent({ rows }: TransactionDetailsPr
               }}
             >
               Settle Amount
+            </th>
+
+            <th
+              style={{
+                width: 240,
+                padding: "12px 6px",
+              }}
+            >
+              Wallet Type
             </th>
 
             <th
@@ -84,10 +84,6 @@ export default function TransactionTableComponent({ rows }: TransactionDetailsPr
           {rows.map((row, index) => (
             <tr key={index} style={{}}>
               <td style={{ padding: "12px 6px" }}>
-                <Typography level="body-md">{row.node.id}</Typography>
-              </td>
-
-              <td style={{ padding: "12px 6px" }}>
                 <Typography level="body-md">
                   {new Date(row.node.createdAt * 1000).toLocaleString("en-US", {
                     year: "numeric",
@@ -103,6 +99,10 @@ export default function TransactionTableComponent({ rows }: TransactionDetailsPr
                 <Typography level="body-md">
                   {row.node.settlementDisplayAmount} {row.node.settlementDisplayCurrency}
                 </Typography>
+              </td>
+
+              <td style={{ padding: "12px 6px" }}>
+                <Typography level="body-md">{row.node.settlementCurrency}</Typography>
               </td>
 
               <td style={{ padding: "12px 6px" }}>

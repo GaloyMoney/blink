@@ -6,6 +6,7 @@ export interface RowNode {
   settlementDisplayCurrency: string
   status: string
   settlementFee: number
+  settlementCurrency: string
 }
 
 export interface TransactionDetailsProps {
