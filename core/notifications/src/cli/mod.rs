@@ -10,14 +10,8 @@ use self::config::{Config, EnvOverride};
 #[derive(Parser)]
 #[clap(long_about = None)]
 struct Cli {
-    #[clap(
-        short,
-        long,
-        env = "NOTIFICATIONS_CONFIG",
-        default_value = "notifications.yml",
-        value_name = "FILE"
-    )]
-    config: PathBuf,
+    #[clap(short, long, env = "NOTIFICATIONS_CONFIG", value_name = "FILE")]
+    config: Option<PathBuf>,
     #[clap(env = "PG_CON")]
     pg_con: String,
     #[clap(env = "MONGODB_CON")]
