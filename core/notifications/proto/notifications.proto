@@ -14,6 +14,7 @@ service NotificationsService {
   rpc UpdateUserLocale (UpdateUserLocaleRequest) returns (UpdateUserLocaleResponse) {}
   rpc AddPushDeviceToken (AddPushDeviceTokenRequest) returns (AddPushDeviceTokenResponse) {}
   rpc RemovePushDeviceToken (RemovePushDeviceTokenRequest) returns (RemovePushDeviceTokenResponse) {}
+  rpc HandleNotificationEvent (HandleNotificationEventRequest) returns (HandleNotificationEventResponse) {}
 }
 
 enum NotificationChannel {
@@ -120,4 +121,28 @@ message RemovePushDeviceTokenRequest {
 
 message RemovePushDeviceTokenResponse {
   NotificationSettings notification_settings = 1;
+}
+
+message HandleNotificationEventRequest {
+  NotificationEvent event = 1;
+}
+
+message HandleNotificationEventResponse { }
+
+message NotificationEvent {
+  oneof data {
+    CircleGrew circle_grew = 1;
+  }
+}
+
+enum CircleType {
+  INNER = 0;
+  OUTER = 1;
+}
+
+message CircleGrew {
+  string user_id = 1;
+  CircleType circle_type = 2;
+  uint32 this_month_circle_size = 3;
+  uint32 all_time_circle_size = 4;
 }
