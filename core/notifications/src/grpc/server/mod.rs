@@ -13,7 +13,9 @@ use self::proto::{notifications_service_server::NotificationsService, *};
 use super::config::*;
 use crate::{
     app::*,
-    primitives::{GaloyUserId, PushDeviceToken, UserNotificationCategory, UserNotificationChannel},
+    primitives::{
+        self, GaloyUserId, PushDeviceToken, UserNotificationCategory, UserNotificationChannel,
+    },
 };
 
 pub struct Notifications {
@@ -223,6 +225,43 @@ impl NotificationsService for Notifications {
         Ok(Response::new(RemovePushDeviceTokenResponse {
             notification_settings: Some(notification_settings.into()),
         }))
+    }
+
+    #[instrument(name = "notifications.handle_notification_event", skip_all, err)]
+    async fn handle_notification_event(
+        &self,
+        request: Request<HandleNotificationEventRequest>,
+    ) -> Result<Response<HandleNotificationEventResponse>, Status> {
+        grpc::extract_tracing(&request);
+        let request = request.into_inner();
+        let HandleNotificationEventRequest { event } = request;
+
+        match event {
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::CircleGrew(proto::CircleGrew {
+                        user_id,
+                        circle_type,
+                        this_month_circle_size,
+                        all_time_circle_size,
+                    })),
+            }) => {
+                let circle_type = proto::CircleType::try_from(circle_type)
+                    .map(primitives::CircleType::from)
+                    .map_err(|e| Status::invalid_argument(e.to_string()))?;
+                self.app
+                    .handle_circle_grew(
+                        GaloyUserId::from(user_id),
+                        circle_type,
+                        this_month_circle_size,
+                        all_time_circle_size,
+                    )
+                    .await?
+            }
+            _ => return Err(Status::invalid_argument("event is required")),
+        }
+
+        Ok(Response::new(HandleNotificationEventResponse {}))
     }
 }
 
