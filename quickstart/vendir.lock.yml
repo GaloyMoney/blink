@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(notifications): move language to notifications (#3890)...'
-      sha: 81bdf5a2e78a005150afdc04276a309c79a742ba
+      commitTitle: 'refactor(notifications): move device token to notifications (#3891)...'
+      sha: a773fe4a6dff692036229690f4d41611e237fd46
       tags:
-      - 0.20.21-2-g81bdf5a2e
+      - 0.20.22-3-ga773fe4a6
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(notifications): move language to notifications (#3890)...'
-      sha: 81bdf5a2e78a005150afdc04276a309c79a742ba
+      commitTitle: 'refactor(notifications): move device token to notifications (#3891)...'
+      sha: a773fe4a6dff692036229690f4d41611e237fd46
       tags:
-      - 0.20.21-2-g81bdf5a2e
+      - 0.20.22-3-ga773fe4a6
     path: schemas/
   - git:
-      commitTitle: 'refactor(notifications): move language to notifications (#3890)...'
-      sha: 81bdf5a2e78a005150afdc04276a309c79a742ba
+      commitTitle: 'refactor(notifications): move device token to notifications (#3891)...'
+      sha: a773fe4a6dff692036229690f4d41611e237fd46
       tags:
-      - 0.20.21-2-g81bdf5a2e
+      - 0.20.22-3-ga773fe4a6
     path: gql/
   path: ./graphql
 kind: LockConfig
