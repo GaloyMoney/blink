@@ -1,6 +1,6 @@
 use super::proto;
 use crate::app::error::ApplicationError;
-use crate::primitives::{UserNotificationCategory, UserNotificationChannel};
+use crate::primitives::*;
 use crate::user_notification_settings;
 
 impl From<proto::NotificationCategory> for UserNotificationCategory {
@@ -60,6 +60,15 @@ impl From<UserNotificationCategory> for proto::NotificationCategory {
             UserNotificationCategory::AdminNotification => {
                 proto::NotificationCategory::AdminNotification
             }
+        }
+    }
+}
+
+impl From<proto::CircleType> for CircleType {
+    fn from(c_type: proto::CircleType) -> Self {
+        match c_type {
+            proto::CircleType::Inner => CircleType::Inner,
+            proto::CircleType::Outer => CircleType::Outer,
         }
     }
 }

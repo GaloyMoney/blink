@@ -76,3 +76,9 @@ pub enum UserNotificationCategory {
     Balance,
     AdminNotification,
 }
+
+#[derive(Debug)]
+pub enum CircleType {
+    Inner,
+    Outer,
+}
