@@ -17,9 +17,10 @@ type EmailDataProps = {
 
 type EmailSettingsProps = {
   emailData: EmailDataProps
+  disableEmailRemove: boolean
 }
 
-function EmailSettings({ emailData }: EmailSettingsProps) {
+function EmailSettings({ emailData, disableEmailRemove }: EmailSettingsProps) {
   const [open, setOpen] = useState<boolean>(false)
   const [loading, setLoading] = useState(false)
   return (
@@ -139,7 +140,12 @@ function EmailSettings({ emailData }: EmailSettingsProps) {
         <Box>
           {emailData?.verified ? (
             <Link href={""}>
-              <Button onClick={() => setOpen(true)} variant="outlined" color="danger">
+              <Button
+                disabled={disableEmailRemove}
+                onClick={() => setOpen(true)}
+                variant="outlined"
+                color="danger"
+              >
                 {<DeleteIcon />}
               </Button>
             </Link>
@@ -156,7 +162,12 @@ function EmailSettings({ emailData }: EmailSettingsProps) {
                   Verify
                 </Button>
               </Link>
-              <Button onClick={() => setOpen(true)} variant="outlined" color="danger">
+              <Button
+                disabled={disableEmailRemove}
+                onClick={() => setOpen(true)}
+                variant="outlined"
+                color="danger"
+              >
                 {<DeleteIcon />}
               </Button>
             </Box>
