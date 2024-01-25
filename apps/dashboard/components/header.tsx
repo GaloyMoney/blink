@@ -4,6 +4,7 @@ import GlobalStyles from "@mui/joy/GlobalStyles"
 import IconButton from "@mui/joy/IconButton"
 import Sheet from "@mui/joy/Sheet"
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded"
+import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined"
 import { Avatar, Box, Menu, MenuItem, Dropdown, MenuButton, Typography } from "@mui/joy"
@@ -89,13 +90,23 @@ export default function Header() {
               alignItems: "flex-start",
             }}
           >
-            <Typography
+            <Box
+              onClick={() => navigator.clipboard.writeText(userData?.defaultAccount.id)}
               sx={{
-                fontWeight: "500",
+                width: "100%",
+                display: "flex",
+                justifyContent: "space-between",
               }}
             >
-              User ID
-            </Typography>
+              <Typography
+                sx={{
+                  fontWeight: "500",
+                }}
+              >
+                Account ID
+              </Typography>
+              <ContentCopyIcon></ContentCopyIcon>
+            </Box>
             <Typography
               sx={{
                 fontSize: "0.8em",
@@ -103,7 +114,7 @@ export default function Header() {
               }}
             >
               {" "}
-              {userData?.id}
+              {userData?.defaultAccount.id}
             </Typography>
           </MenuItem>
           <MenuItem
