@@ -1,10 +1,6 @@
 mod config;
 pub mod error;
-use novu::{
-    events::*,
-    subscriber::{GetSubscriberResponse, SubscriberPayload},
-    Novu,
-};
+use novu::{events::*, subscriber::*, Novu};
 use std::collections::HashMap;
 
 pub use config::*;
@@ -64,5 +60,13 @@ impl NovuExecutor {
             .get_subscriber(subscriber_id)
             .await?;
         Ok(response)
+    }
+
+    pub async fn create_subscriber(
+        &self,
+        payload: CreateSubscriberPayload,
+    ) -> Result<(), NovuExecutorError> {
+        self.client.subscribers.create(payload).await?;
+        Ok(())
     }
 }
