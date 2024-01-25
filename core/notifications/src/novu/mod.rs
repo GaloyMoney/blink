@@ -1,20 +1,42 @@
 mod config;
 pub mod error;
+
 use novu::{events::*, subscriber::*, Novu};
 use std::collections::HashMap;
+
+use crate::{notification_event::*, primitives::*, user_notification_settings::*};
 
 pub use config::*;
 use error::*;
 
+#[derive(Clone)]
 pub struct NovuExecutor {
     client: novu::Novu,
+    settings: UserNotificationSettingsRepo,
 }
 
 impl NovuExecutor {
-    pub fn init(config: NovuConfig) -> Result<Self, NovuExecutorError> {
+    pub fn init(
+        config: NovuConfig,
+        settings: UserNotificationSettingsRepo,
+    ) -> Result<Self, NovuExecutorError> {
         Ok(Self {
             client: Novu::new(config.api_key, None)?,
+            settings,
         })
+    }
+
+    pub async fn notify_circle_grew(&self, event: CircleGrew) -> Result<(), NovuExecutorError> {
+        let settings = self.settings.find_for_user_id(&event.user_id).await?;
+        if !settings.should_send_notification(
+            UserNotificationChannel::Push,
+            UserNotificationCategory::Circles,
+        ) {
+            return Ok(());
+        }
+        self.create_subscriber_for_galoy_id(&event.user_id).await?;
+        // self.add_push_notification_credentials(
+        Ok(())
     }
 
     pub async fn trigger_email_workflow(
@@ -38,35 +60,22 @@ impl NovuExecutor {
         Ok(())
     }
 
-    pub async fn update_subscriber(
+    async fn create_subscriber_for_galoy_id(
         &self,
-        subscriber_id: String,
-        payload: SubscriberPayload,
+        user_id: &GaloyUserId,
     ) -> Result<(), NovuExecutorError> {
         self.client
             .subscribers
-            .update(subscriber_id.clone(), payload)
+            .create(CreateSubscriberPayload {
+                first_name: None,
+                last_name: None,
+                email: None,
+                phone: None,
+                avatar: None,
+                subscriber_id: user_id.to_string(),
+                data: None,
+            })
             .await?;
-        Ok(())
-    }
-
-    pub async fn get_subscriber(
-        &self,
-        subscriber_id: String,
-    ) -> Result<GetSubscriberResponse, NovuExecutorError> {
-        let response = self
-            .client
-            .subscribers
-            .get_subscriber(subscriber_id)
-            .await?;
-        Ok(response)
-    }
-
-    pub async fn create_subscriber(
-        &self,
-        payload: CreateSubscriberPayload,
-    ) -> Result<(), NovuExecutorError> {
-        self.client.subscribers.create(payload).await?;
         Ok(())
     }
 }

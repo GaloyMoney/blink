@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Serialize, Deserialize)]
-#[serde_with::serde_as]
-#[derive(Default)]
-pub struct AppConfig {}
+use crate::novu::NovuConfig;
+
+#[derive(Clone, Serialize, Deserialize, Default)]
+pub struct AppConfig {
+    pub novu: NovuConfig,
+}

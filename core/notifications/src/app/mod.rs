@@ -4,7 +4,7 @@ pub mod error;
 use sqlx::{Pool, Postgres};
 use tracing::instrument;
 
-use crate::{primitives::*, user_notification_settings::*};
+use crate::{notification_event::*, novu::*, primitives::*, user_notification_settings::*};
 
 pub use config::*;
 use error::*;
@@ -13,17 +13,20 @@ use error::*;
 pub struct NotificationsApp {
     _config: AppConfig,
     settings: UserNotificationSettingsRepo,
+    executor: NovuExecutor,
     _pool: Pool<Postgres>,
 }
 
 impl NotificationsApp {
-    pub fn new(pool: Pool<Postgres>, config: AppConfig) -> Self {
+    pub fn init(pool: Pool<Postgres>, config: AppConfig) -> Result<Self, ApplicationError> {
         let settings = UserNotificationSettingsRepo::new(&pool);
-        Self {
+        let executor = NovuExecutor::init(config.novu.clone(), settings.clone())?;
+        Ok(Self {
             _config: config,
             _pool: pool,
+            executor,
             settings,
-        }
+        })
     }
 
     #[instrument(name = "app.should_send_notification", skip(self), ret, err)]
@@ -33,11 +36,7 @@ impl NotificationsApp {
         channel: UserNotificationChannel,
         category: UserNotificationCategory,
     ) -> Result<bool, ApplicationError> {
-        let user_settings = self
-            .settings
-            .find_for_user_id(&user_id)
-            .await?
-            .unwrap_or_else(|| UserNotificationSettings::new(user_id.clone()));
+        let user_settings = self.settings.find_for_user_id(&user_id).await?;
         Ok(user_settings.should_send_notification(channel, category))
     }
 
@@ -46,11 +45,7 @@ impl NotificationsApp {
         &self,
         user_id: GaloyUserId,
     ) -> Result<UserNotificationSettings, ApplicationError> {
-        let user_settings = self
-            .settings
-            .find_for_user_id(&user_id)
-            .await?
-            .unwrap_or_else(|| UserNotificationSettings::new(user_id));
+        let user_settings = self.settings.find_for_user_id(&user_id).await?;
 
         Ok(user_settings)
     }
@@ -61,11 +56,7 @@ impl NotificationsApp {
         user_id: GaloyUserId,
         channel: UserNotificationChannel,
     ) -> Result<UserNotificationSettings, ApplicationError> {
-        let mut user_settings = self
-            .settings
-            .find_for_user_id(&user_id)
-            .await?
-            .unwrap_or_else(|| UserNotificationSettings::new(user_id));
+        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
         user_settings.disable_channel(channel);
         self.settings.persist(&mut user_settings).await?;
         Ok(user_settings)
@@ -77,11 +68,7 @@ impl NotificationsApp {
         user_id: GaloyUserId,
         channel: UserNotificationChannel,
     ) -> Result<UserNotificationSettings, ApplicationError> {
-        let mut user_settings = self
-            .settings
-            .find_for_user_id(&user_id)
-            .await?
-            .unwrap_or_else(|| UserNotificationSettings::new(user_id));
+        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
 
         user_settings.enable_channel(channel);
         self.settings.persist(&mut user_settings).await?;
@@ -95,11 +82,7 @@ impl NotificationsApp {
         channel: UserNotificationChannel,
         category: UserNotificationCategory,
     ) -> Result<UserNotificationSettings, ApplicationError> {
-        let mut user_settings = self
-            .settings
-            .find_for_user_id(&user_id)
-            .await?
-            .unwrap_or_else(|| UserNotificationSettings::new(user_id));
+        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
         user_settings.disable_category(channel, category);
         self.settings.persist(&mut user_settings).await?;
         Ok(user_settings)
@@ -112,11 +95,7 @@ impl NotificationsApp {
         channel: UserNotificationChannel,
         category: UserNotificationCategory,
     ) -> Result<UserNotificationSettings, ApplicationError> {
-        let mut user_settings = self
-            .settings
-            .find_for_user_id(&user_id)
-            .await?
-            .unwrap_or_else(|| UserNotificationSettings::new(user_id));
+        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
         user_settings.enable_category(channel, category);
         self.settings.persist(&mut user_settings).await?;
         Ok(user_settings)
@@ -128,11 +107,7 @@ impl NotificationsApp {
         user_id: GaloyUserId,
         locale: String,
     ) -> Result<UserNotificationSettings, ApplicationError> {
-        let mut user_settings = self
-            .settings
-            .find_for_user_id(&user_id)
-            .await?
-            .unwrap_or_else(|| UserNotificationSettings::new(user_id));
+        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
         if locale.is_empty() {
             user_settings.set_locale_to_default()
         } else {
@@ -148,11 +123,7 @@ impl NotificationsApp {
         user_id: GaloyUserId,
         device_token: PushDeviceToken,
     ) -> Result<UserNotificationSettings, ApplicationError> {
-        let mut user_settings = self
-            .settings
-            .find_for_user_id(&user_id)
-            .await?
-            .unwrap_or_else(|| UserNotificationSettings::new(user_id));
+        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
         user_settings.add_push_device_token(device_token);
         self.settings.persist(&mut user_settings).await?;
         Ok(user_settings)
@@ -164,24 +135,15 @@ impl NotificationsApp {
         user_id: GaloyUserId,
         device_token: PushDeviceToken,
     ) -> Result<UserNotificationSettings, ApplicationError> {
-        let mut user_settings = self
-            .settings
-            .find_for_user_id(&user_id)
-            .await?
-            .unwrap_or_else(|| UserNotificationSettings::new(user_id));
+        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
         user_settings.remove_push_device_token(device_token);
         self.settings.persist(&mut user_settings).await?;
         Ok(user_settings)
     }
 
     #[instrument(name = "app.handle_circle_grew", skip(self), err)]
-    pub async fn handle_circle_grew(
-        &self,
-        _user_id: GaloyUserId,
-        _circle_type: CircleType,
-        _this_month_circle_size: u32,
-        _all_time_circle_size: u32,
-    ) -> Result<(), ApplicationError> {
+    pub async fn handle_circle_grew(&self, event: CircleGrew) -> Result<(), ApplicationError> {
+        self.executor.notify_circle_grew(event).await?;
         Ok(())
     }
 }

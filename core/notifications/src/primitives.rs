@@ -2,6 +2,12 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GaloyUserId(String);
+impl GaloyUserId {
+    pub fn into_inner(self) -> String {
+        self.0
+    }
+}
+
 impl From<String> for GaloyUserId {
     fn from(s: String) -> Self {
         Self(s)

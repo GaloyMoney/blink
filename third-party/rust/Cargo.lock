@@ -1630,7 +1630,7 @@ dependencies = [
 [[package]]
 name = "novu"
 version = "0.1.0"
-source = "git+https://github.com/GaloyMoney/novu-rust.git?branch=main#95b53bc68c1d73bcc5b1000b1eab04474daf3bc9"
+source = "git+https://github.com/GaloyMoney/novu-rust.git?branch=main#007cc745e03f3984a0c0c23ecc2d9912e65d114a"
 dependencies = [
  "reqwest",
  "serde",
