@@ -7,7 +7,7 @@ load("//third-party/macros:rust_third_party.bzl", "third_party_rust_prebuilt_cxx
 git_fetch(
     name = "novu-rust-67c6cd39f47fe978.git",
     repo = "https://github.com/GaloyMoney/novu-rust.git",
-    rev = "007cc745e03f3984a0c0c23ecc2d9912e65d114a",
+    rev = "ee7c830ff1a4104de907166368f3a549c6c75c98",
     visibility = [],
 )
 
