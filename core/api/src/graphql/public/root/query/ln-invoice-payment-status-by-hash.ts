@@ -4,20 +4,22 @@ import { WalletInvoiceStatus } from "@/domain/wallet-invoices"
 import { GT } from "@/graphql/index"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import LnInvoicePaymentStatusPayload from "@/graphql/public/types/payload/ln-invoice-payment-status"
-import LnInvoicePaymentStatusInput from "@/graphql/public/types/object/ln-invoice-payment-status-input"
+import LnInvoicePaymentStatusByHashInput from "@/graphql/public/types/object/ln-invoice-payment-status-by-hash-input"
 
-const LnInvoicePaymentStatusQuery = GT.Field({
+const LnInvoicePaymentStatusByHashQuery = GT.Field({
   type: GT.NonNull(LnInvoicePaymentStatusPayload),
   args: {
-    input: { type: GT.NonNull(LnInvoicePaymentStatusInput) },
+    input: { type: GT.NonNull(LnInvoicePaymentStatusByHashInput) },
   },
   resolve: async (_, args) => {
-    const { paymentRequest } = args.input
-    if (paymentRequest instanceof Error) {
-      return { errors: [{ message: paymentRequest.message }] }
+    const { paymentHash } = args.input
+    if (paymentHash instanceof Error) {
+      return { errors: [{ message: paymentHash.message }] }
     }
 
-    const paymentStatusChecker = await Lightning.PaymentStatusChecker(paymentRequest)
+    const paymentStatusChecker = await Lightning.PaymentStatusCheckerByHash({
+      paymentHash,
+    })
     if (paymentStatusChecker instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(paymentStatusChecker)] }
     }
@@ -27,7 +29,7 @@ const LnInvoicePaymentStatusQuery = GT.Field({
       return { errors: [mapAndParseErrorForGqlResponse(paid)] }
     }
 
-    const { paymentHash, isExpired } = paymentStatusChecker
+    const { paymentRequest, isExpired } = paymentStatusChecker
 
     if (paid) {
       return { errors: [], paymentHash, paymentRequest, status: WalletInvoiceStatus.Paid }
@@ -38,4 +40,4 @@ const LnInvoicePaymentStatusQuery = GT.Field({
   },
 })
 
-export default LnInvoicePaymentStatusQuery
+export default LnInvoicePaymentStatusByHashQuery

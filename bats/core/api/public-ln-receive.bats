@@ -109,7 +109,7 @@ usd_amount=50
   [[ "$error_msg" == "Account does not exist for username idontexist" ]] || exit 1
 }
 
-@test "public-ln-receive: receive via invoice - can receive on btc invoice, with subscription" {
+@test "public-ln-receive: receive via invoice - can receive on btc invoice, with subscription by payment request" {
   token_name="$ALICE"
   btc_wallet_name="$token_name.btc_wallet_id"
 
@@ -125,7 +125,10 @@ usd_amount=50
   payment_request="$(echo $invoice | jq -r '.paymentRequest')"
   [[ "${payment_request}" != "null" ]] || exit 1
 
-  # Setup subscription
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
+  # Setup subscriptions
   variables=$(
   jq -n \
   --arg payment_request "$payment_request" \
@@ -134,13 +137,59 @@ usd_amount=50
   subscribe_to 'anon' 'ln-invoice-payment-status-sub' "$variables"
   sleep 3
   retry 10 1 grep "Data.*lnInvoicePaymentStatus.*PENDING" "$SUBSCRIBER_LOG_FILE"
+  retry 10 1 grep "Data.*lnInvoicePaymentStatus.*$payment_hash" "$SUBSCRIBER_LOG_FILE"
+  retry 10 1 grep "Data.*lnInvoicePaymentStatus.*$payment_request" "$SUBSCRIBER_LOG_FILE"
+
+  # Receive payment
+  lnd_outside_cli payinvoice -f \
+    --pay_req "$payment_request" \
+
+  # Check for settled with subscriptions
+  retry 10 1 grep "Data.*lnInvoicePaymentStatus.*PAID" "$SUBSCRIBER_LOG_FILE"
+  retry 10 1 grep "Data.*lnInvoicePaymentStatus.*$payment_hash" "$SUBSCRIBER_LOG_FILE"
+  retry 10 1 grep "Data.*lnInvoicePaymentStatus.*$payment_request" "$SUBSCRIBER_LOG_FILE"
+  stop_subscriber
+}
+
+@test "public-ln-receive: receive via invoice - can receive on btc invoice, with subscription by payment hash" {
+  token_name="$ALICE"
+  btc_wallet_name="$token_name.btc_wallet_id"
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg amount "$btc_amount" \
+    '{input: {recipientWalletId: $wallet_id, amount: $amount}}'
+  )
+  exec_graphql 'anon' 'ln-invoice-create-on-behalf-of-recipient' "$variables"
+  invoice="$(graphql_output '.data.lnInvoiceCreateOnBehalfOfRecipient.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
+  # Setup subscription
+  variables=$(
+  jq -n \
+  --arg payment_hash "$payment_hash" \
+  '{input: {paymentHash: $payment_hash}}'
+  )
+  subscribe_to 'anon' 'ln-invoice-payment-status-by-hash-sub' "$variables"
+  sleep 3
+  retry 10 1 grep "Data.*lnInvoicePaymentStatusByHash.*PENDING" "$SUBSCRIBER_LOG_FILE"
+  retry 10 1 grep "Data.*lnInvoicePaymentStatusByHash.*$payment_hash" "$SUBSCRIBER_LOG_FILE"
+  retry 10 1 grep "Data.*lnInvoicePaymentStatusByHash.*$payment_request" "$SUBSCRIBER_LOG_FILE"
 
   # Receive payment
   lnd_outside_cli payinvoice -f \
     --pay_req "$payment_request" \
 
   # Check for settled with subscription
-  retry 10 1 grep "Data.*lnInvoicePaymentStatus.*PAID" "$SUBSCRIBER_LOG_FILE"
+  retry 10 1 grep "Data.*lnInvoicePaymentStatusByHash.*PAID" "$SUBSCRIBER_LOG_FILE"
+  retry 10 1 grep "Data.*lnInvoicePaymentStatusByHash.*$payment_hash" "$SUBSCRIBER_LOG_FILE"
+  retry 10 1 grep "Data.*lnInvoicePaymentStatusByHash.*$payment_request" "$SUBSCRIBER_LOG_FILE"
   stop_subscriber
 }
 
@@ -160,12 +209,16 @@ usd_amount=50
   payment_request="$(echo $invoice | jq -r '.paymentRequest')"
   [[ "${payment_request}" != "null" ]] || exit 1
 
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
   # Receive payment
   lnd_outside_cli payinvoice -f \
     --pay_req "$payment_request" \
 
   # Check for settled with query
-  retry 15 1 check_ln_payment_settled "$payment_request"
+  retry 15 1 check_ln_payment_settled "$payment_request" "$payment_hash"
+  retry 15 1 check_ln_payment_settled_by_hash "$payment_request" "$payment_hash"
 }
 
 @test "public-ln-receive: receive via invoice - can receive on usd invoice, sats denominated" {
@@ -184,12 +237,16 @@ usd_amount=50
   payment_request="$(echo $invoice | jq -r '.paymentRequest')"
   [[ "${payment_request}" != "null" ]] || exit 1
 
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
   # Receive payment
   lnd_outside_cli payinvoice -f \
     --pay_req "$payment_request" \
 
   # Check for settled with query
-  retry 15 1 check_ln_payment_settled "$payment_request"
+  retry 15 1 check_ln_payment_settled "$payment_request" "$payment_hash"
+  retry 15 1 check_ln_payment_settled_by_hash "$payment_request" "$payment_hash"
 }
 
 @test "public-ln-receive: receive via invoice - can receive on btc amountless invoice" {
@@ -207,13 +264,17 @@ usd_amount=50
   payment_request="$(echo $invoice | jq -r '.paymentRequest')"
   [[ "${payment_request}" != "null" ]] || exit 1
 
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
   # Receive payment
   lnd_outside_cli payinvoice -f \
     --pay_req "$payment_request" \
     --amt "$btc_amount"
 
   # Check for settled with query
-  retry 15 1 check_ln_payment_settled "$payment_request"
+  retry 15 1 check_ln_payment_settled "$payment_request" "$payment_hash"
+  retry 15 1 check_ln_payment_settled_by_hash "$payment_request" "$payment_hash"
 }
 
 @test "public-ln-receive: receive via invoice - can receive on usd amountless invoice" {
@@ -231,13 +292,17 @@ usd_amount=50
   payment_request="$(echo $invoice | jq -r '.paymentRequest')"
   [[ "${payment_request}" != "null" ]] || exit 1
 
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
   # Receive payment
   lnd_outside_cli payinvoice -f \
     --pay_req "$payment_request" \
     --amt "$btc_amount"
 
   # Check for settled with query
-  retry 15 1 check_ln_payment_settled "$payment_request"
+  retry 15 1 check_ln_payment_settled "$payment_request" "$payment_hash"
+  retry 15 1 check_ln_payment_settled_by_hash "$payment_request" "$payment_hash"
 }
 
 @test "public-ln-receive: fail to create invoice - invalid wallet-id" {

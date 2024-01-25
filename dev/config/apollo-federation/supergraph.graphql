@@ -811,6 +811,12 @@ input LnInvoicePaymentInput
   walletId: WalletId!
 }
 
+input LnInvoicePaymentStatusByHashInput
+  @join__type(graph: PUBLIC)
+{
+  paymentHash: PaymentHash!
+}
+
 input LnInvoicePaymentStatusInput
   @join__type(graph: PUBLIC)
 {
@@ -821,6 +827,8 @@ type LnInvoicePaymentStatusPayload
   @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
+  paymentHash: PaymentHash
+  paymentRequest: LnPaymentRequest
   status: InvoicePaymentStatus
 }
 
@@ -1546,6 +1554,7 @@ type Query
   currencyList: [Currency!]! @join__field(graph: PUBLIC)
   globals: Globals @join__field(graph: PUBLIC)
   lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload! @join__field(graph: PUBLIC)
+  lnInvoicePaymentStatusByHash(input: LnInvoicePaymentStatusByHashInput!): LnInvoicePaymentStatusPayload! @join__field(graph: PUBLIC)
   me: User @join__field(graph: PUBLIC)
   mobileVersions: [MobileVersions] @join__field(graph: PUBLIC)
   onChainTxFee(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainTxFee! @join__field(graph: PUBLIC)
@@ -1689,6 +1698,7 @@ type Subscription
   @join__type(graph: PUBLIC)
 {
   lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload!
+  lnInvoicePaymentStatusByHash(input: LnInvoicePaymentStatusByHashInput!): LnInvoicePaymentStatusPayload!
   myUpdates: MyUpdatesPayload!
   price(input: PriceInput!): PricePayload!
 

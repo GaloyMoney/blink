@@ -7,32 +7,32 @@ import { baseLogger } from "@/services/logger"
 
 import { GT } from "@/graphql/index"
 import LnInvoicePaymentStatusPayload from "@/graphql/public/types/payload/ln-invoice-payment-status"
-import LnInvoicePaymentStatusInput from "@/graphql/public/types/object/ln-invoice-payment-status-input"
+import LnInvoicePaymentStatusByHashInput from "@/graphql/public/types/object/ln-invoice-payment-status-by-hash-input"
 import { UnknownClientError } from "@/graphql/error"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import { WalletInvoiceStatus } from "@/domain/wallet-invoices"
 
 const pubsub = PubSubService()
 
-type LnInvoicePaymentSubscribeArgs = {
+type LnInvoicePaymentStatusByHashSubscribeArgs = {
   input: {
-    paymentRequest: EncodedPaymentRequest | Error
+    paymentHash: PaymentHash | Error
   }
 }
 
-type LnInvoicePaymentResolveSource = {
+type LnInvoicePaymentStatusByHashResolveSource = {
   errors?: IError[]
   status?: string
   paymentHash?: PaymentHash
   paymentRequest?: EncodedPaymentRequest
 }
 
-const LnInvoicePaymentStatusSubscription = {
+const LnInvoicePaymentStatusByHashSubscription = {
   type: GT.NonNull(LnInvoicePaymentStatusPayload),
   args: {
-    input: { type: GT.NonNull(LnInvoicePaymentStatusInput) },
+    input: { type: GT.NonNull(LnInvoicePaymentStatusByHashInput) },
   },
-  resolve: async (source: LnInvoicePaymentResolveSource | undefined) => {
+  resolve: async (source: LnInvoicePaymentStatusByHashResolveSource | undefined) => {
     if (source === undefined) {
       throw new UnknownClientError({
         message:
@@ -60,16 +60,20 @@ const LnInvoicePaymentStatusSubscription = {
     }
   },
 
-  subscribe: async (_source: unknown, args: LnInvoicePaymentSubscribeArgs) => {
-    const { paymentRequest } = args.input
-    if (paymentRequest instanceof Error) throw paymentRequest
+  subscribe: async (
+    _source: unknown,
+    args: LnInvoicePaymentStatusByHashSubscribeArgs,
+  ) => {
+    const { paymentHash } = args.input
+    if (paymentHash instanceof Error) throw paymentHash
 
-    const paymentStatusChecker = await Lightning.PaymentStatusChecker(paymentRequest)
-
+    const paymentStatusChecker = await Lightning.PaymentStatusCheckerByHash({
+      paymentHash,
+    })
     if (paymentStatusChecker instanceof Error) {
       const lnPaymentStatusTrigger = customPubSubTrigger({
         event: PubSubDefaultTriggers.LnPaymentStatus,
-        suffix: paymentRequest,
+        suffix: paymentHash,
       })
       pubsub.publishDelayed({
         trigger: lnPaymentStatusTrigger,
@@ -79,7 +83,7 @@ const LnInvoicePaymentStatusSubscription = {
       return pubsub.createAsyncIterator({ trigger: lnPaymentStatusTrigger })
     }
 
-    const paymentHash = paymentStatusChecker.paymentHash
+    const paymentRequest = paymentStatusChecker.paymentRequest
     const trigger = customPubSubTrigger({
       event: PubSubDefaultTriggers.LnPaymentStatus,
       suffix: paymentHash,
@@ -120,4 +124,4 @@ const LnInvoicePaymentStatusSubscription = {
   },
 }
 
-export default LnInvoicePaymentStatusSubscription
+export default LnInvoicePaymentStatusByHashSubscription
