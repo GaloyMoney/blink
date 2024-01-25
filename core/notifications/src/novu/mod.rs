@@ -1,13 +1,15 @@
 mod config;
 pub mod error;
-
-use novu::{events::*, Novu};
+use novu::{
+    events::*,
+    subscriber::{GetSubscriberResponse, SubscriberPayload},
+    Novu,
+};
 use std::collections::HashMap;
 
 pub use config::*;
 use error::*;
 
-#[allow(dead_code)]
 pub struct NovuExecutor {
     client: novu::Novu,
 }
@@ -25,7 +27,6 @@ impl NovuExecutor {
         recipient_email: String,
         recipient_id: String,
     ) -> Result<(), NovuExecutorError> {
-        // let client = Novu::new(std::env::var("NOVU_API_KEY").unwrap(), None)?;
         let payload = HashMap::new();
         self.client
             .trigger(novu::events::TriggerPayload {
@@ -39,5 +40,29 @@ impl NovuExecutor {
             })
             .await?;
         Ok(())
+    }
+
+    pub async fn update_subscriber(
+        &self,
+        subscriber_id: String,
+        payload: SubscriberPayload,
+    ) -> Result<(), NovuExecutorError> {
+        self.client
+            .subscribers
+            .update(subscriber_id.clone(), payload)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn get_subscriber(
+        &self,
+        subscriber_id: String,
+    ) -> Result<GetSubscriberResponse, NovuExecutorError> {
+        let response = self
+            .client
+            .subscribers
+            .get_subscriber(subscriber_id)
+            .await?;
+        Ok(response)
     }
 }
