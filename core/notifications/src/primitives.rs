@@ -88,3 +88,12 @@ pub enum CircleType {
     Inner,
     Outer,
 }
+
+impl std::fmt::Display for CircleType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CircleType::Inner => write!(f, "inner"),
+            CircleType::Outer => write!(f, "outer"),
+        }
+    }
+}
