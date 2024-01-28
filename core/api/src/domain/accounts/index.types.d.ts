@@ -103,30 +103,12 @@ type Account = {
   level: AccountLevel
   status: AccountStatus
   statusHistory: AccountStatusHistory
-  title: BusinessMapTitle | null
-  coordinates: Coordinates | null
   contactEnabled: boolean
   readonly contacts: AccountContact[]
   kratosUserId: UserId
   displayCurrency: DisplayCurrency
   // temp
   role?: string
-}
-
-type BusinessMapTitle = string & { readonly brand: unique symbol }
-type Coordinates = {
-  longitude: number
-  latitude: number
-}
-
-type BusinessMapInfo = {
-  title: BusinessMapTitle
-  coordinates: Coordinates
-}
-
-type BusinessMapMarker = {
-  username: Username
-  mapInfo: BusinessMapInfo
 }
 
 type AccountValidator = {
@@ -142,7 +124,6 @@ interface IAccountsRepository {
   persistNew(kratosUserId: UserId): Promise<Account | RepositoryError>
 
   findByUsername(username: Username): Promise<Account | RepositoryError>
-  listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
   update(account: Account): Promise<Account | RepositoryError>
 }
 

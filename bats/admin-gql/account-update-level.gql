@@ -8,16 +8,11 @@ mutation accountUpdateLevel($input: AccountUpdateLevelInput!) {
       username
       level
       status
-      title
       owner {
         id
         language
         phone
         createdAt
-      }
-      coordinates {
-        latitude
-        longitude
       }
       wallets {
         id

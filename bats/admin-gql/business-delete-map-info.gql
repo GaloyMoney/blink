@@ -1,0 +1,7 @@
+mutation businessDeleteMapInfo($input: BusinessDeleteMapInfoInput!) {
+  businessDeleteMapInfo(input: $input) {
+    errors {
+      message
+    }
+  }
+}

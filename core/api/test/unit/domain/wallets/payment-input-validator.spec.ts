@@ -16,11 +16,6 @@ describe("PaymentInputValidator", () => {
     level: AccountLevel.One,
     status: AccountStatus.Active,
     statusHistory: [{ status: AccountStatus.Active }],
-    title: "" as BusinessMapTitle,
-    coordinates: {
-      latitude: 0,
-      longitude: 0,
-    },
     contactEnabled: true,
     contacts: [],
     kratosUserId: "kratosUserId" as UserId,

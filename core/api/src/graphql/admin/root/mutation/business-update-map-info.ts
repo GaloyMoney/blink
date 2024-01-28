@@ -1,5 +1,6 @@
-import { Accounts } from "@/app"
-import AccountDetailPayload from "@/graphql/admin/types/payload/account-detail"
+import MerchantPayload from "../../types/payload/merchant"
+
+import { Merchants } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import { GT } from "@/graphql/index"
 import Username from "@/graphql/shared/types/scalar/username"
@@ -26,7 +27,7 @@ const BusinessUpdateMapInfoMutation = GT.Field<null, GraphQLAdminContext>({
   extensions: {
     complexity: 120,
   },
-  type: GT.NonNull(AccountDetailPayload),
+  type: GT.NonNull(MerchantPayload),
   args: {
     input: { type: GT.NonNull(BusinessUpdateMapInfoInput) },
   },
@@ -44,15 +45,19 @@ const BusinessUpdateMapInfoMutation = GT.Field<null, GraphQLAdminContext>({
       longitude,
     }
 
-    const account = await Accounts.updateBusinessMapInfo({ username, title, coordinates })
+    const merchant = await Merchants.updateBusinessMapInfo({
+      username,
+      title,
+      coordinates,
+    })
 
-    if (account instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(account)] }
+    if (merchant instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(merchant)] }
     }
 
     return {
       errors: [],
-      accountDetails: account,
+      merchant,
     }
   },
 })

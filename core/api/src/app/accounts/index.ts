@@ -13,12 +13,10 @@ export * from "./set-username"
 export * from "./update-account-ip"
 export * from "./update-account-level"
 export * from "./update-account-status"
-export * from "./update-business-map-info"
 export * from "./update-contact-alias"
 export * from "./update-default-walletid"
 export * from "./update-display-currency"
 export * from "./username-available"
-export * from "./delete-business-map-info"
 export * from "./upgrade-device-account"
 export * from "./disable-notification-category"
 export * from "./enable-notification-category"
@@ -50,8 +48,4 @@ export const hasPermissions = async (
   if (wallet instanceof Error) return wallet
 
   return accountId === wallet.accountId
-}
-
-export const getBusinessMapMarkers = async () => {
-  return accounts.listBusinessesForMap()
 }

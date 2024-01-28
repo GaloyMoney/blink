@@ -1,4 +1,4 @@
-import { parseRepositoryError } from "./utils"
+import { caseInsensitiveRegex, parseRepositoryError } from "./utils"
 
 import { AccountStatus } from "@/domain/accounts"
 import {
@@ -10,10 +10,6 @@ import {
 import { UsdDisplayCurrency } from "@/domain/fiat"
 
 import { Account } from "@/services/mongoose/schema"
-
-const caseInsensitiveRegex = (input: string) => {
-  return new RegExp(`^${input}$`, "i")
-}
 
 export const AccountsRepository = (): IAccountsRepository => {
   const listAccountsByStatus = (accountStatus: AccountStatus) =>
@@ -58,39 +54,12 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  // FIXME: could be in a different file? does not return an Account
-  const listBusinessesForMap = async (): Promise<
-    BusinessMapMarker[] | RepositoryError
-  > => {
-    try {
-      const accounts = await Account.find(
-        {
-          title: { $exists: true, $ne: undefined },
-          coordinates: { $exists: true, $ne: undefined },
-        },
-        { username: 1, title: 1, coordinates: 1 },
-      )
-
-      return accounts.map((account) => ({
-        username: account.username as Username,
-        mapInfo: {
-          title: account.title as BusinessMapTitle,
-          coordinates: account.coordinates as Coordinates,
-        },
-      }))
-    } catch (err) {
-      return parseRepositoryError(err)
-    }
-  }
-
   const update = async ({
     id,
     level,
     statusHistory,
-    coordinates,
     contactEnabled,
     contacts,
-    title,
     username,
     defaultWalletId,
     withdrawFee,
@@ -105,8 +74,6 @@ export const AccountsRepository = (): IAccountsRepository => {
         {
           level,
           statusHistory,
-          coordinates,
-          title,
           username,
           contactEnabled,
           contacts: contacts.map(
@@ -170,7 +137,6 @@ export const AccountsRepository = (): IAccountsRepository => {
     listLockedAccounts: listAccountsByStatus(AccountStatus.Locked),
     findById,
     findByUsername,
-    listBusinessesForMap,
     update,
   }
 }
@@ -183,8 +149,6 @@ const translateToAccount = (result: AccountRecord): Account => ({
   level: result.level as AccountLevel,
   status: result.statusHistory.slice(-1)[0].status,
   statusHistory: (result.statusHistory || []) as AccountStatusHistory,
-  title: result.title as BusinessMapTitle,
-  coordinates: result.coordinates as Coordinates,
   contactEnabled: !!result.contactEnabled,
   contacts: result.contacts.reduce(
     (res: AccountContact[], contact: ContactObjectForUser): AccountContact[] => {

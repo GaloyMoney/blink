@@ -1,3 +1,5 @@
+import { deleteMerchantByUsername } from "../merchants"
+
 import { getBalanceForWallet, listWalletsByAccountId } from "@/app/wallets"
 
 import { AccountStatus, AccountValidator } from "@/domain/accounts"
@@ -62,8 +64,10 @@ export const markAccountForDeletion = async ({
     status: AccountStatus.Closed,
     updatedByPrivilegedClientId,
   })
-  account.title = null
-  account.coordinates = null
+
+  if (account.username) {
+    await deleteMerchantByUsername({ username: account.username })
+  }
 
   const newAccount = await accountsRepo.update(account)
   if (newAccount instanceof Error) return newAccount

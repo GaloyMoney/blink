@@ -1,4 +1,4 @@
-import { Accounts } from "@/app"
+import { Merchants } from "@/app"
 import AccountDetailPayload from "@/graphql/admin/types/payload/account-detail"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import { GT } from "@/graphql/index"
@@ -36,7 +36,7 @@ const BusinessDeleteMapInfoMutation = GT.Field<
       return { errors: [{ message: username.message }] }
     }
 
-    const account = await Accounts.deleteBusinessMapInfo({ username })
+    const account = await Merchants.deleteMerchantByUsername({ username })
 
     if (account instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(account)] }
