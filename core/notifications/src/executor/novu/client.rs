@@ -1,6 +1,8 @@
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-use super::{consts::NOVU_API_VERSION, error::NovuError};
+use super::error::NovuError;
+
+const NOVU_API_VERSION: &str = "v1";
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -177,13 +179,6 @@ impl Client {
         match client {
             Ok(data) => Ok(data),
             Err(_) => Err(NovuError::BuildError("client".to_string())),
-        }
-    }
-
-    pub fn clone_client(&self) -> Self {
-        Self {
-            api_url: self.api_url.clone(),
-            client: self.client.clone(),
         }
     }
 }

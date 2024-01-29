@@ -234,10 +234,7 @@ impl Subscribers {
         }
     }
 
-    pub async fn get_subscriber(
-        &self,
-        subscriber_id: String,
-    ) -> Result<GetSubscriberResponse, NovuError> {
+    pub async fn get(&self, subscriber_id: String) -> Result<GetSubscriberResponse, NovuError> {
         let endpoint = format!("/subscribers/{}", subscriber_id);
         let result = self.client.get(endpoint).await?;
 

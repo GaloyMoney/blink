@@ -29,11 +29,11 @@ impl NotificationEvent for CircleGrew {
         [
             (
                 "circle_type".to_string(),
-                AllowedPayloadValues::STRING(self.circle_type.to_string()),
+                AllowedPayloadValues::String(self.circle_type.to_string()),
             ),
             (
                 "this_month_circle_size".to_string(),
-                AllowedPayloadValues::NUMBER(self.this_month_circle_size as i32),
+                AllowedPayloadValues::Number(self.this_month_circle_size as i32),
             ),
         ]
         .into_iter()
@@ -59,7 +59,7 @@ impl NotificationEvent for ThresholdReached {
     fn into_payload(self) -> HashMap<String, AllowedPayloadValues> {
         [(
             "threshold".to_string(),
-            AllowedPayloadValues::NUMBER(self.threshold as i32),
+            AllowedPayloadValues::Number(self.threshold as i32),
         )]
         .into_iter()
         .collect()

@@ -7,14 +7,14 @@ use super::IAttachmentOptions;
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum AllowedPayloadValues {
-    STRING(String),
+    String(String),
     StringArray(Vec<String>),
-    BOOLEAN(bool),
-    NUMBER(i32),
-    UNDEFINED(()),
+    Boolean(bool),
+    Number(i32),
+    Undefined(()),
     AttachmentOptions(IAttachmentOptions),
     AttachmentOptionsArray(Vec<IAttachmentOptions>),
-    RECORD(HashMap<String, String>),
+    Record(HashMap<String, String>),
 }
 
 pub type ITriggerPayload = HashMap<String, AllowedPayloadValues>;
