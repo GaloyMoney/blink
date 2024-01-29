@@ -40,7 +40,7 @@ async fn run_cmd(config: Config) -> anyhow::Result<()> {
     let (send, mut receive) = tokio::sync::mpsc::channel(1);
     let mut handles = vec![];
     let pool = db::init_pool(&config.db).await?;
-    let app = crate::app::NotificationsApp::new(pool, config.app);
+    let app = crate::app::NotificationsApp::init(pool, config.app)?;
     if config.mongo_import.execute_import && config.mongo_import.connection.is_some() {
         crate::data_import::import_user_notification_settings(app.clone(), config.mongo_import)
             .await?;

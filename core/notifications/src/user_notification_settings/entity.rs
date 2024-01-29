@@ -59,7 +59,7 @@ impl EsEntity for UserNotificationSettings {
 }
 
 impl UserNotificationSettings {
-    pub fn new(galoy_user_id: GaloyUserId) -> Self {
+    pub(super) fn new(galoy_user_id: GaloyUserId) -> Self {
         let id = UserNotificationSettingsId::new();
         Self::try_from(EntityEvents::init(
             id,

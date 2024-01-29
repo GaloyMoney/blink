@@ -3,9 +3,11 @@
 
 mod app;
 mod data_import;
-mod primitives;
-mod user_notification_settings;
 
 pub mod cli;
+pub mod executor;
 pub mod graphql;
 pub mod grpc;
+pub mod notification_event;
+pub mod primitives;
+pub mod user_notification_settings;

@@ -2,6 +2,12 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GaloyUserId(String);
+impl GaloyUserId {
+    pub fn into_inner(self) -> String {
+        self.0
+    }
+}
+
 impl From<String> for GaloyUserId {
     fn from(s: String) -> Self {
         Self(s)
@@ -81,4 +87,13 @@ pub enum UserNotificationCategory {
 pub enum CircleType {
     Inner,
     Outer,
+}
+
+impl std::fmt::Display for CircleType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CircleType::Inner => write!(f, "inner"),
+            CircleType::Outer => write!(f, "outer"),
+        }
+    }
 }
