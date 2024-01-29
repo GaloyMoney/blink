@@ -111,7 +111,7 @@ export default function TransactionTableComponent({ rows }: TransactionDetailsPr
                 </Chip>
               </td>
               <td style={{ padding: "12px 6px" }}>
-                <Typography level="body-md">{row.node.settlementFee} stats</Typography>
+                <Typography level="body-md">{row.node.settlementFee} sats</Typography>
               </td>
             </tr>
           ))}

@@ -23,7 +23,7 @@ export default function ExportCsv({ rows }: TransactionDetailsProps) {
       )
 
       const status = row.node.status.toLowerCase()
-      const fees = `${row.node.settlementFee} stats`
+      const fees = `${row.node.settlementFee} sats`
       const formattedTransactionDate = `"${transactionDate}"`
 
       const rowData = [
