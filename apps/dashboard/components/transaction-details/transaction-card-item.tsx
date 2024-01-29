@@ -98,7 +98,7 @@ export default function TransactionCardComponent({ rows }: TransactionDetailsPro
               <Typography level="body-sm" fontWeight="bold">
                 Fees
               </Typography>
-              <Typography level="body-md">{row.node.settlementFee} stats</Typography>
+              <Typography level="body-md">{row.node.settlementFee} sats</Typography>
             </div>
           </CardContent>
         </Card>
