@@ -32,8 +32,6 @@ async fn notify_circle_grew() -> anyhow::Result<()> {
                 all_time_circle_size: 10,
             })
             .await?;
-    } else {
-        panic!()
     }
     Ok(())
 }

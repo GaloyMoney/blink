@@ -146,4 +146,13 @@ impl NotificationsApp {
         self.executor.notify_circle_grew(event).await?;
         Ok(())
     }
+
+    #[instrument(name = "app.handle_threshold_reached", skip(self), err)]
+    pub async fn handle_threshold_reached(
+        &self,
+        event: ThresholdReached,
+    ) -> Result<(), ApplicationError> {
+        self.executor.notify_threshold_reached(event).await?;
+        Ok(())
+    }
 }

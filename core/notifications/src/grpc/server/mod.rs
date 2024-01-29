@@ -259,6 +259,20 @@ impl NotificationsService for Notifications {
                     })
                     .await?
             }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::ThresholdReached(proto::ThresholdReached {
+                        user_id,
+                        threshold,
+                    })),
+            }) => {
+                self.app
+                    .handle_threshold_reached(notification_event::ThresholdReached {
+                        user_id: GaloyUserId::from(user_id),
+                        threshold,
+                    })
+                    .await?
+            }
             _ => return Err(Status::invalid_argument("event is required")),
         }
 

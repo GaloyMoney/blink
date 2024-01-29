@@ -57,6 +57,34 @@ impl NovuExecutor {
         Ok(())
     }
 
+    pub async fn notify_threshold_reached(
+        &self,
+        event: ThresholdReached,
+    ) -> Result<(), NovuExecutorError> {
+        let settings = self.settings.find_for_user_id(&event.user_id).await?;
+        if !settings.should_send_notification(
+            UserNotificationChannel::Push,
+            UserNotificationCategory::Circles,
+        ) {
+            return Ok(());
+        }
+        self.create_subscriber_for_galoy_id(&event.user_id).await?;
+        self.update_push_credentials(&event.user_id, &settings.push_device_tokens())
+            .await?;
+
+        let payload_data: HashMap<String, AllowedPayloadValues> = ([(
+            format!("threshold"),
+            AllowedPayloadValues::NUMBER(event.threshold as i32),
+        )])
+        .into_iter()
+        .collect();
+
+        self.trigger_workflow(&event.user_id, String::from("rust-push-test"), payload_data)
+            .await?;
+
+        Ok(())
+    }
+
     async fn trigger_workflow(
         &self,
         user_id: &GaloyUserId,
