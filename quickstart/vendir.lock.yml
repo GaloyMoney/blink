@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(pay): add cypress e2e (#3850)...'
-      sha: 84f91fb5bda8a47bf8a8855d43533d23b0b736d0
+      commitTitle: 'feat(notifications): e2e circle notification use cases (#3904)...'
+      sha: 6404a73949337016d43411dd2ab488472c54a5ea
       tags:
-      - 0.20.28-1-g84f91fb5b
+      - 0.20.29-3-g6404a7394
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(pay): add cypress e2e (#3850)...'
-      sha: 84f91fb5bda8a47bf8a8855d43533d23b0b736d0
+      commitTitle: 'feat(notifications): e2e circle notification use cases (#3904)...'
+      sha: 6404a73949337016d43411dd2ab488472c54a5ea
       tags:
-      - 0.20.28-1-g84f91fb5b
+      - 0.20.29-3-g6404a7394
     path: schemas/
   - git:
-      commitTitle: 'test(pay): add cypress e2e (#3850)...'
-      sha: 84f91fb5bda8a47bf8a8855d43533d23b0b736d0
+      commitTitle: 'feat(notifications): e2e circle notification use cases (#3904)...'
+      sha: 6404a73949337016d43411dd2ab488472c54a5ea
       tags:
-      - 0.20.28-1-g84f91fb5b
+      - 0.20.29-3-g6404a7394
     path: gql/
   path: ./graphql
 kind: LockConfig
