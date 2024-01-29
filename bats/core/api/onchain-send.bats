@@ -25,13 +25,6 @@ teardown() {
    fi
 }
 
-grep_in_trigger_logs() {
-  cat_trigger \
-    | awk -F'│ ' '{print $2}' \
-    | grep $1
-  return "$?"
-}
-
 wait_for_new_payout_id() {
   prior_id="$1"
 

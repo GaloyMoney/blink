@@ -23,3 +23,10 @@ trigger_is_started() {
 cat_trigger() {
   cat "$TILT_LOG_FILE" | grep 'api-trigger │ '
 }
+
+grep_in_trigger_logs() {
+  cat_trigger \
+    | awk -F'│ ' '{print $2}' \
+    | grep $1
+  return "$?"
+}
