@@ -1628,18 +1628,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "novu"
-version = "0.1.0"
-source = "git+https://github.com/GaloyMoney/novu-rust.git?branch=main#007cc745e03f3984a0c0c23ecc2d9912e65d114a"
-dependencies = [
- "reqwest",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
-]
-
-[[package]]
 name = "nu-ansi-term"
 version = "0.46.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3045,7 +3033,6 @@ dependencies = [
  "http",
  "jsonwebtoken",
  "mongodb",
- "novu",
  "opentelemetry",
  "opentelemetry-http",
  "opentelemetry-otlp",

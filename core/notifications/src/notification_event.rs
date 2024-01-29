@@ -1,8 +1,6 @@
-use novu::events::AllowedPayloadValues;
-
 use std::collections::HashMap;
 
-use crate::primitives::*;
+use crate::{novu::AllowedPayloadValues, primitives::*};
 
 pub trait NotificationEvent {
     fn workflow_name() -> &'static str;

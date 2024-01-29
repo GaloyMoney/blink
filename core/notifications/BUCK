@@ -65,7 +65,6 @@ galoy_rust_bin(
         "//third-party/rust:tonic",
         "//third-party/rust:tonic-health",
         "//third-party/rust:prost",
-        "//third-party/rust:novu",
     ],
     extra_tests = [
         "//lib/tracing-rs:tracing",

@@ -53,6 +53,4 @@ tonic = "0.10.2"
 tonic-health = "0.10.2"
 tonic-build = { version = "0.10.2", features = ["prost"] }
 
-novu = { git = "https://github.com/GaloyMoney/novu-rust.git", branch = "main"}
-
 version_check = "0.9.4" # for some reason reindeer didn't auto-add this

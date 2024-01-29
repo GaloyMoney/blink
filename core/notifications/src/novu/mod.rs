@@ -1,18 +1,20 @@
+mod client;
 mod config;
 pub mod error;
 
-use novu::{events::*, subscriber::*, Novu};
+use client::{events::*, subscriber::*, NovuClient};
 use std::collections::HashMap;
 
 use crate::{notification_event::*, primitives::*, user_notification_settings::*};
 
+pub use client::events::AllowedPayloadValues;
 pub use config::*;
 use error::*;
 
 #[derive(Clone)]
 pub struct NovuExecutor {
     config: NovuConfig,
-    client: novu::Novu,
+    client: NovuClient,
     settings: UserNotificationSettingsRepo,
 }
 
@@ -22,7 +24,7 @@ impl NovuExecutor {
         settings: UserNotificationSettingsRepo,
     ) -> Result<Self, NovuExecutorError> {
         Ok(Self {
-            client: Novu::new(config.api_key.clone(), None)?,
+            client: NovuClient::new(config.api_key.clone(), None)?,
             config,
             settings,
         })
@@ -61,7 +63,7 @@ impl NovuExecutor {
         payload_data: HashMap<String, AllowedPayloadValues>,
     ) -> Result<(), NovuExecutorError> {
         self.client
-            .trigger(novu::events::TriggerPayload {
+            .trigger(TriggerPayload {
                 name: trigger_name,
                 payload: payload_data,
                 to: TriggerRecipientsType::Single(TriggerRecipientBuilder::new(user_id).build()),
@@ -81,7 +83,7 @@ impl NovuExecutor {
             .update_credentials(
                 user_id.to_string(),
                 UpdateCredentialsPayload {
-                    provider_id: "firebase-cloud-messaging-qTItb8E6-".to_string(),
+                    provider_id: ProviderId::PushWebhook,
                     integration_identifier: None,
                     credentials: Credentials {
                         webhook_url: "".to_string(),
@@ -112,7 +114,7 @@ impl NovuExecutor {
     ) -> Result<(), NovuExecutorError> {
         let payload = HashMap::new();
         self.client
-            .trigger(novu::events::TriggerPayload {
+            .trigger(TriggerPayload {
                 name: trigger_name,
                 payload,
                 to: TriggerRecipientsType::Single(
