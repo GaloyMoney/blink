@@ -25,7 +25,7 @@ async fn notify_circle_grew() -> anyhow::Result<()> {
             settings,
         )?;
         executor
-            .notify_circle_grew(CircleGrew {
+            .notify(CircleGrew {
                 user_id: GaloyUserId::from("some-random-user-id".to_string()),
                 circle_type: CircleType::Inner,
                 this_month_circle_size: 4,

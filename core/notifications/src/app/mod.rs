@@ -143,7 +143,7 @@ impl NotificationsApp {
 
     #[instrument(name = "app.handle_circle_grew", skip(self), err)]
     pub async fn handle_circle_grew(&self, event: CircleGrew) -> Result<(), ApplicationError> {
-        self.executor.notify_circle_grew(event).await?;
+        self.executor.notify(event).await?;
         Ok(())
     }
 
@@ -152,7 +152,7 @@ impl NotificationsApp {
         &self,
         event: ThresholdReached,
     ) -> Result<(), ApplicationError> {
-        self.executor.notify_threshold_reached(event).await?;
+        self.executor.notify(event).await?;
         Ok(())
     }
 }
