@@ -69,21 +69,21 @@ pub struct StepFilter {
 #[derive(PartialEq, Eq, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum StepFilterType {
-    BOOLEAN,
-    TEXT,
-    DATE,
-    NUMBER,
-    STATEMENT,
-    LIST,
+    Boolean,
+    Text,
+    Date,
+    Number,
+    Statement,
+    List,
     MultiList,
-    GROUP,
+    Group,
 }
 
 #[derive(PartialEq, Eq, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum StepFilterValue {
-    AND,
-    OR,
+    And,
+    Or,
 }
 
 #[derive(PartialEq, Eq, Debug, Serialize, Deserialize)]
@@ -98,27 +98,27 @@ pub struct FieldFilterPart {
 #[derive(PartialEq, Eq, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum FieldFilterPartOperator {
-    LARGER,
-    SMALLER,
+    Larger,
+    Smaller,
     LargerEqual,
     SmallerEqual,
-    EQUAL,
+    Equal,
     NotEqual,
     AllIn,
     AnyIn,
     NotIn,
-    BETWEEN,
+    Between,
     NotBetween,
-    LIKE,
+    Like,
     NotLike,
-    IN,
+    In,
 }
 
 #[derive(PartialEq, Eq, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum FieldFilterPartOn {
-    SUBSCRIBER,
-    PAYLOAD,
+    Subscriber,
+    Payload,
 }
 
 #[derive(PartialEq, Eq, Debug, Serialize, Deserialize)]

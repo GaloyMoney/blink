@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub mod blueprint;
 pub mod changes;
 pub mod client;
@@ -32,20 +34,20 @@ use workflows::Workflows;
 #[serde(untagged)]
 pub enum ChannelTypeEnum {
     InApp,
-    EMAIL,
-    SMS,
-    CHAT,
-    PUSH,
+    Email,
+    Sms,
+    Chat,
+    Push,
 }
 
 impl Display for ChannelTypeEnum {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ChannelTypeEnum::InApp => write!(f, "in_app"),
-            ChannelTypeEnum::EMAIL => write!(f, "email"),
-            ChannelTypeEnum::SMS => write!(f, "sms"),
-            ChannelTypeEnum::CHAT => write!(f, "chat"),
-            ChannelTypeEnum::PUSH => write!(f, "push"),
+            ChannelTypeEnum::Email => write!(f, "email"),
+            ChannelTypeEnum::Sms => write!(f, "sms"),
+            ChannelTypeEnum::Chat => write!(f, "chat"),
+            ChannelTypeEnum::Push => write!(f, "push"),
         }
     }
 }

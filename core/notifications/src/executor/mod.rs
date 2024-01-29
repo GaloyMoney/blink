@@ -1,28 +1,28 @@
-mod client;
 mod config;
 pub mod error;
+mod novu;
 
-use client::{events::*, subscriber::*, NovuClient};
+use novu::{events::*, subscriber::*, NovuClient};
 use std::collections::HashMap;
 
 use crate::{notification_event::*, primitives::*, user_notification_settings::*};
 
-pub use client::events::AllowedPayloadValues;
 pub use config::*;
 use error::*;
+pub use novu::events::AllowedPayloadValues;
 
 #[derive(Clone)]
-pub struct NovuExecutor {
+pub struct Executor {
     config: NovuConfig,
     client: NovuClient,
     settings: UserNotificationSettingsRepo,
 }
 
-impl NovuExecutor {
+impl Executor {
     pub fn init(
         config: NovuConfig,
         settings: UserNotificationSettingsRepo,
-    ) -> Result<Self, NovuExecutorError> {
+    ) -> Result<Self, ExecutorError> {
         Ok(Self {
             client: NovuClient::new(config.api_key.clone(), None)?,
             config,
@@ -30,7 +30,7 @@ impl NovuExecutor {
         })
     }
 
-    pub async fn notify<T: NotificationEvent>(&self, event: T) -> Result<(), NovuExecutorError> {
+    pub async fn notify<T: NotificationEvent>(&self, event: T) -> Result<(), ExecutorError> {
         let settings = self.settings.find_for_user_id(event.user_id()).await?;
         if !settings.should_send_notification(
             UserNotificationChannel::Push,
@@ -61,7 +61,7 @@ impl NovuExecutor {
         user_id: String,
         trigger_name: String,
         payload_data: HashMap<String, AllowedPayloadValues>,
-    ) -> Result<(), NovuExecutorError> {
+    ) -> Result<(), ExecutorError> {
         self.client
             .trigger(TriggerPayload {
                 name: trigger_name,
@@ -77,7 +77,7 @@ impl NovuExecutor {
         &self,
         user_id: &GaloyUserId,
         push_device_tokens: impl IntoIterator<Item = &PushDeviceToken>,
-    ) -> Result<(), NovuExecutorError> {
+    ) -> Result<(), ExecutorError> {
         self.client
             .subscribers
             .update_credentials(
@@ -111,7 +111,7 @@ impl NovuExecutor {
         trigger_name: String,
         recipient_email: String,
         recipient_id: String,
-    ) -> Result<(), NovuExecutorError> {
+    ) -> Result<(), ExecutorError> {
         let payload = HashMap::new();
         self.client
             .trigger(TriggerPayload {
@@ -130,7 +130,7 @@ impl NovuExecutor {
     async fn create_subscriber_for_galoy_id(
         &self,
         user_id: &GaloyUserId,
-    ) -> Result<(), NovuExecutorError> {
+    ) -> Result<(), ExecutorError> {
         self.client
             .subscribers
             .create(CreateSubscriberPayload {

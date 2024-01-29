@@ -4,7 +4,7 @@ pub mod error;
 use sqlx::{Pool, Postgres};
 use tracing::instrument;
 
-use crate::{notification_event::*, novu::*, primitives::*, user_notification_settings::*};
+use crate::{executor::*, notification_event::*, primitives::*, user_notification_settings::*};
 
 pub use config::*;
 use error::*;
@@ -13,14 +13,14 @@ use error::*;
 pub struct NotificationsApp {
     _config: AppConfig,
     settings: UserNotificationSettingsRepo,
-    executor: NovuExecutor,
+    executor: Executor,
     _pool: Pool<Postgres>,
 }
 
 impl NotificationsApp {
     pub fn init(pool: Pool<Postgres>, config: AppConfig) -> Result<Self, ApplicationError> {
         let settings = UserNotificationSettingsRepo::new(&pool);
-        let executor = NovuExecutor::init(config.novu.clone(), settings.clone())?;
+        let executor = Executor::init(config.novu.clone(), settings.clone())?;
         Ok(Self {
             _config: config,
             _pool: pool,

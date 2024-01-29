@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{novu::AllowedPayloadValues, primitives::*};
+use crate::{executor::AllowedPayloadValues, primitives::*};
 
 pub trait NotificationEvent {
     fn workflow_name() -> &'static str;
@@ -28,11 +28,11 @@ impl NotificationEvent for CircleGrew {
     fn into_payload(self) -> HashMap<String, AllowedPayloadValues> {
         [
             (
-                format!("circle_type"),
+                "circle_type".to_string(),
                 AllowedPayloadValues::STRING(self.circle_type.to_string()),
             ),
             (
-                format!("this_month_circle_size"),
+                "this_month_circle_size".to_string(),
                 AllowedPayloadValues::NUMBER(self.this_month_circle_size as i32),
             ),
         ]
@@ -58,7 +58,7 @@ impl NotificationEvent for ThresholdReached {
 
     fn into_payload(self) -> HashMap<String, AllowedPayloadValues> {
         [(
-            format!("threshold"),
+            "threshold".to_string(),
             AllowedPayloadValues::NUMBER(self.threshold as i32),
         )]
         .into_iter()

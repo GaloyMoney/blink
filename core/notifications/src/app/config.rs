@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::novu::NovuConfig;
+use crate::executor::NovuConfig;
 
 #[derive(Clone, Serialize, Deserialize, Default)]
 pub struct AppConfig {

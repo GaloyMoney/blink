@@ -1,7 +1,7 @@
 use std::env;
 
 use lib_notifications::{
-    notification_event::*, novu::*, primitives::*, user_notification_settings::*,
+    executor::*, notification_event::*, primitives::*, user_notification_settings::*,
 };
 
 pub async fn init_pool() -> anyhow::Result<sqlx::PgPool> {
@@ -18,7 +18,7 @@ pub async fn init_pool() -> anyhow::Result<sqlx::PgPool> {
 async fn notify_circle_grew() -> anyhow::Result<()> {
     if let Ok(novu_api_key) = env::var("NOVU_API_KEY") {
         let settings = UserNotificationSettingsRepo::new(&init_pool().await?);
-        let executor = NovuExecutor::init(
+        let executor = Executor::init(
             NovuConfig {
                 api_key: novu_api_key,
                 ..NovuConfig::default()
