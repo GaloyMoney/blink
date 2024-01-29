@@ -6,5 +6,9 @@
 # grpc_server:
 #   port: 6685
 # app:
+#   novu:
+#     workflows:
+#       circle_grew: circle-grew-workflow-id
+#       threshold_reached: threshold-reached-workflow-id
 # mongo_import:
 #   execute_import: false

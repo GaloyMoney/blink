@@ -18,7 +18,7 @@ impl UserNotificationSettingsRepo {
     pub async fn find_for_user_id(
         &self,
         user_id: &GaloyUserId,
-    ) -> Result<Option<UserNotificationSettings>, UserNotificationSettingsError> {
+    ) -> Result<UserNotificationSettings, UserNotificationSettingsError> {
         let rows = sqlx::query_as!(
             GenericEvent,
             r#"SELECT a.id, e.sequence, e.event
@@ -33,9 +33,9 @@ impl UserNotificationSettingsRepo {
 
         let res = EntityEvents::load_first::<UserNotificationSettings>(rows);
         if matches!(res, Err(EntityError::NoEntityEventsPresent)) {
-            return Ok(None);
+            return Ok(UserNotificationSettings::new(user_id.clone()));
         }
-        Ok(Some(res?))
+        Ok(res?)
     }
 
     pub async fn persist(

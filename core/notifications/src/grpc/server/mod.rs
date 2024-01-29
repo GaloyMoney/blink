@@ -13,6 +13,7 @@ use self::proto::{notifications_service_server::NotificationsService, *};
 use super::config::*;
 use crate::{
     app::*,
+    notification_event,
     primitives::{
         self, GaloyUserId, PushDeviceToken, UserNotificationCategory, UserNotificationChannel,
     },
@@ -250,12 +251,26 @@ impl NotificationsService for Notifications {
                     .map(primitives::CircleType::from)
                     .map_err(|e| Status::invalid_argument(e.to_string()))?;
                 self.app
-                    .handle_circle_grew(
-                        GaloyUserId::from(user_id),
+                    .handle_circle_grew(notification_event::CircleGrew {
+                        user_id: GaloyUserId::from(user_id),
                         circle_type,
                         this_month_circle_size,
                         all_time_circle_size,
-                    )
+                    })
+                    .await?
+            }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::ThresholdReached(proto::ThresholdReached {
+                        user_id,
+                        threshold,
+                    })),
+            }) => {
+                self.app
+                    .handle_threshold_reached(notification_event::ThresholdReached {
+                        user_id: GaloyUserId::from(user_id),
+                        threshold,
+                    })
                     .await?
             }
             _ => return Err(Status::invalid_argument("event is required")),
