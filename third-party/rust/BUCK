@@ -321,7 +321,7 @@ cargo.rust_library(
         ":fnv-1.0.7",
         ":futures-util-0.3.30",
         ":http-0.2.11",
-        ":indexmap-2.0.2",
+        ":indexmap-2.2.1",
         ":mime-0.3.17",
         ":multer-2.1.0",
         ":num-traits-0.2.17",
@@ -329,7 +329,7 @@ cargo.rust_library(
         ":pin-project-lite-0.2.13",
         ":regex-1.10.2",
         ":serde-1.0.195",
-        ":serde_json-1.0.111",
+        ":serde_json-1.0.113",
         ":serde_urlencoded-0.7.1",
         ":static_assertions-1.1.0",
         ":thiserror-1.0.56",
@@ -364,7 +364,7 @@ cargo.rust_library(
         ":axum-0.6.20",
         ":bytes-1.5.0",
         ":futures-util-0.3.30",
-        ":serde_json-1.0.111",
+        ":serde_json-1.0.113",
         ":tokio-1.33.0",
         ":tokio-stream-0.1.14",
         ":tokio-util-0.7.10",
@@ -420,7 +420,7 @@ cargo.rust_library(
         ":async-graphql-value-6.0.11",
         ":pest-2.7.5",
         ":serde-1.0.195",
-        ":serde_json-1.0.111",
+        ":serde_json-1.0.113",
     ],
 )
 
@@ -441,9 +441,9 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":bytes-1.5.0",
-        ":indexmap-2.0.2",
+        ":indexmap-2.2.1",
         ":serde-1.0.195",
-        ":serde_json-1.0.111",
+        ":serde_json-1.0.113",
     ],
 )
 
@@ -608,7 +608,7 @@ cargo.rust_library(
         ":percent-encoding-2.3.0",
         ":pin-project-lite-0.2.13",
         ":serde-1.0.195",
-        ":serde_json-1.0.111",
+        ":serde_json-1.0.113",
         ":serde_path_to_error-0.1.14",
         ":serde_urlencoded-0.7.1",
         ":sha1-0.10.6",
@@ -847,7 +847,7 @@ cargo.rust_library(
         ":rand-0.8.5",
         ":serde-1.0.195",
         ":serde_bytes-0.11.14",
-        ":serde_json-1.0.111",
+        ":serde_json-1.0.113",
         ":time-0.3.30",
         ":uuid-1.7.0",
     ],
@@ -2616,7 +2616,7 @@ cargo.rust_library(
         ":futures-sink-0.3.30",
         ":futures-util-0.3.30",
         ":http-0.2.11",
-        ":indexmap-2.0.2",
+        ":indexmap-2.2.1",
         ":slab-0.4.9",
         ":tokio-1.33.0",
         ":tokio-util-0.7.10",
@@ -3186,18 +3186,18 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "indexmap-2.0.2.crate",
-    sha256 = "8adf3ddd720272c6ea8bf59463c04e0f93d0bbf7c5439b691bca2987e0270897",
-    strip_prefix = "indexmap-2.0.2",
-    urls = ["https://crates.io/api/v1/crates/indexmap/2.0.2/download"],
+    name = "indexmap-2.2.1.crate",
+    sha256 = "433de089bd45971eecf4668ee0ee8f4cec17db4f8bd8f7bc3197a6ce37aa7d9b",
+    strip_prefix = "indexmap-2.2.1",
+    urls = ["https://crates.io/api/v1/crates/indexmap/2.2.1/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "indexmap-2.0.2",
-    srcs = [":indexmap-2.0.2.crate"],
+    name = "indexmap-2.2.1",
+    srcs = [":indexmap-2.2.1.crate"],
     crate = "indexmap",
-    crate_root = "indexmap-2.0.2.crate/src/lib.rs",
+    crate_root = "indexmap-2.2.1.crate/src/lib.rs",
     edition = "2021",
     features = [
         "default",
@@ -3384,7 +3384,7 @@ cargo.rust_library(
         ":base64-0.21.5",
         ":pem-3.0.2",
         ":serde-1.0.195",
-        ":serde_json-1.0.111",
+        ":serde_json-1.0.113",
         ":simple_asn1-0.6.2",
     ],
 )
@@ -4574,7 +4574,7 @@ cargo.rust_library(
         ":percent-encoding-2.3.0",
         ":rand-0.8.5",
         ":regex-1.10.2",
-        ":serde_json-1.0.111",
+        ":serde_json-1.0.113",
         ":thiserror-1.0.56",
         ":tokio-1.33.0",
         ":tokio-stream-0.1.14",
@@ -4829,7 +4829,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":fixedbitset-0.4.2",
-        ":indexmap-2.0.2",
+        ":indexmap-2.2.1",
     ],
 )
 
@@ -5760,7 +5760,7 @@ cargo.rust_library(
         ":futures-util-0.3.30",
         ":http-0.2.11",
         ":serde-1.0.195",
-        ":serde_json-1.0.111",
+        ":serde_json-1.0.113",
         ":serde_urlencoded-0.7.1",
         ":tower-service-0.3.2",
         ":url-2.4.1",
@@ -6894,23 +6894,23 @@ cargo.rust_library(
 
 alias(
     name = "serde_json",
-    actual = ":serde_json-1.0.111",
+    actual = ":serde_json-1.0.113",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "serde_json-1.0.111.crate",
-    sha256 = "176e46fa42316f18edd598015a5166857fc835ec732f5215eac6b7bdbf0a84f4",
-    strip_prefix = "serde_json-1.0.111",
-    urls = ["https://crates.io/api/v1/crates/serde_json/1.0.111/download"],
+    name = "serde_json-1.0.113.crate",
+    sha256 = "69801b70b1c3dac963ecb03a364ba0ceda9cf60c71cfe475e99864759c8b8a79",
+    strip_prefix = "serde_json-1.0.113",
+    urls = ["https://crates.io/api/v1/crates/serde_json/1.0.113/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "serde_json-1.0.111",
-    srcs = [":serde_json-1.0.111.crate"],
+    name = "serde_json-1.0.113",
+    srcs = [":serde_json-1.0.113.crate"],
     crate = "serde_json",
-    crate_root = "serde_json-1.0.111.crate/src/lib.rs",
+    crate_root = "serde_json-1.0.113.crate/src/lib.rs",
     edition = "2021",
     features = [
         "alloc",
@@ -6922,7 +6922,7 @@ cargo.rust_library(
     ],
     visibility = [],
     deps = [
-        ":indexmap-2.0.2",
+        ":indexmap-2.2.1",
         ":itoa-1.0.9",
         ":ryu-1.0.15",
         ":serde-1.0.195",
@@ -7028,7 +7028,7 @@ cargo.rust_library(
     named_deps = {
         "chrono_0_4": ":chrono-0.4.32",
         "indexmap_1": ":indexmap-1.9.3",
-        "indexmap_2": ":indexmap-2.0.2",
+        "indexmap_2": ":indexmap-2.2.1",
         "time_0_3": ":time-0.3.30",
     },
     visibility = [],
@@ -7036,7 +7036,7 @@ cargo.rust_library(
         ":base64-0.21.5",
         ":hex-0.4.3",
         ":serde-1.0.195",
-        ":serde_json-1.0.111",
+        ":serde_json-1.0.113",
         ":serde_with_macros-3.5.0",
     ],
 )
@@ -7111,7 +7111,7 @@ cargo.rust_library(
     edition = "2021",
     visibility = [],
     deps = [
-        ":indexmap-2.0.2",
+        ":indexmap-2.2.1",
         ":itoa-1.0.9",
         ":ryu-1.0.15",
         ":serde-1.0.195",
@@ -7649,7 +7649,7 @@ cargo.rust_library(
         ":futures-util-0.3.30",
         ":hashlink-0.8.4",
         ":hex-0.4.3",
-        ":indexmap-2.0.2",
+        ":indexmap-2.2.1",
         ":log-0.4.20",
         ":memchr-2.6.4",
         ":once_cell-1.18.0",
@@ -7658,7 +7658,7 @@ cargo.rust_library(
         ":rustls-0.21.8",
         ":rustls-pemfile-1.0.3",
         ":serde-1.0.195",
-        ":serde_json-1.0.111",
+        ":serde_json-1.0.113",
         ":sha2-0.10.8",
         ":smallvec-1.11.1",
         ":sqlformat-0.2.2",
@@ -7743,7 +7743,7 @@ cargo.rust_library(
         ":proc-macro2-1.0.76",
         ":quote-1.0.35",
         ":serde-1.0.195",
-        ":serde_json-1.0.111",
+        ":serde_json-1.0.113",
         ":sha2-0.10.8",
         ":sqlx-core-0.7.2",
         ":sqlx-mysql-0.7.2",
@@ -7874,7 +7874,7 @@ cargo.rust_library(
         ":once_cell-1.18.0",
         ":rand-0.8.5",
         ":serde-1.0.195",
-        ":serde_json-1.0.111",
+        ":serde_json-1.0.113",
         ":sha1-0.10.6",
         ":sha2-0.10.8",
         ":smallvec-1.11.1",
@@ -8284,7 +8284,7 @@ cargo.rust_binary(
         ":rand-0.8.5",
         ":reqwest-0.11.23",
         ":serde-1.0.195",
-        ":serde_json-1.0.111",
+        ":serde_json-1.0.113",
         ":serde_with-3.5.0",
         ":serde_yaml-0.9.30",
         ":sqlx-0.7.2",
@@ -8779,7 +8779,7 @@ cargo.rust_library(
     features = ["default"],
     visibility = [],
     deps = [
-        ":indexmap-2.0.2",
+        ":indexmap-2.2.1",
         ":toml_datetime-0.6.5",
         ":winnow-0.5.18",
     ],
@@ -9342,7 +9342,7 @@ cargo.rust_library(
         ":once_cell-1.18.0",
         ":regex-1.10.2",
         ":serde-1.0.195",
-        ":serde_json-1.0.111",
+        ":serde_json-1.0.113",
         ":sharded-slab-0.1.7",
         ":smallvec-1.11.1",
         ":thread_local-1.1.7",
