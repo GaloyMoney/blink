@@ -132,6 +132,7 @@ message HandleNotificationEventResponse { }
 message NotificationEvent {
   oneof data {
     CircleGrew circle_grew = 1;
+    ThresholdReached threshold_reached = 2;
   }
 }
 
@@ -145,4 +146,9 @@ message CircleGrew {
   CircleType circle_type = 2;
   uint32 this_month_circle_size = 3;
   uint32 all_time_circle_size = 4;
+}
+
+message ThresholdReached {
+  string user_id = 1;
+  uint32 threshold = 2;
 }
