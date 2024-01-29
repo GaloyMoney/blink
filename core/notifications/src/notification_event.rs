@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use crate::primitives::*;
 
 pub trait NotificationEvent {
+    fn workflow_name() -> &'static str;
     fn user_id(&self) -> &GaloyUserId;
     fn into_payload(self) -> HashMap<String, AllowedPayloadValues>;
 }
@@ -18,6 +19,10 @@ pub struct CircleGrew {
 }
 
 impl NotificationEvent for CircleGrew {
+    fn workflow_name() -> &'static str {
+        "circle_grew"
+    }
+
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
     }
@@ -45,6 +50,10 @@ pub struct ThresholdReached {
 }
 
 impl NotificationEvent for ThresholdReached {
+    fn workflow_name() -> &'static str {
+        "threshold_reached"
+    }
+
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
     }

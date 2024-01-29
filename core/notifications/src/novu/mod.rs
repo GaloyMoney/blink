@@ -11,6 +11,7 @@ use error::*;
 
 #[derive(Clone)]
 pub struct NovuExecutor {
+    config: NovuConfig,
     client: novu::Novu,
     settings: UserNotificationSettingsRepo,
 }
@@ -21,12 +22,13 @@ impl NovuExecutor {
         settings: UserNotificationSettingsRepo,
     ) -> Result<Self, NovuExecutorError> {
         Ok(Self {
-            client: Novu::new(config.api_key, None)?,
+            client: Novu::new(config.api_key.clone(), None)?,
+            config,
             settings,
         })
     }
 
-    pub async fn notify(&self, event: impl NotificationEvent) -> Result<(), NovuExecutorError> {
+    pub async fn notify<T: NotificationEvent>(&self, event: T) -> Result<(), NovuExecutorError> {
         let settings = self.settings.find_for_user_id(event.user_id()).await?;
         if !settings.should_send_notification(
             UserNotificationChannel::Push,
@@ -42,8 +44,12 @@ impl NovuExecutor {
         let user_id = event.user_id().to_string();
         let payload = event.into_payload();
 
-        self.trigger_workflow(user_id, String::from("rust-push-test"), payload)
-            .await?;
+        let id = self
+            .config
+            .workflows
+            .for_name(<T as NotificationEvent>::workflow_name());
+
+        self.trigger_workflow(user_id, id, payload).await?;
 
         Ok(())
     }

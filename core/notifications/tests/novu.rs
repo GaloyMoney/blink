@@ -21,6 +21,7 @@ async fn notify_circle_grew() -> anyhow::Result<()> {
         let executor = NovuExecutor::init(
             NovuConfig {
                 api_key: novu_api_key,
+                ..NovuConfig::default()
             },
             settings,
         )?;
