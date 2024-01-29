@@ -45,7 +45,10 @@
         "bracketSpacing": true,
         "arrowParens": "always",
         "proseWrap": "preserve",
-        "endOfLine": "lf"
+        "endOfLine": "lf",
+        "importOrder": ["^@(.*)$", "^[./]", "^[../]"],
+        "importOrderSeparation": true,
+        "plugins": ["@trivago/prettier-plugin-sort-imports"]
       }
     ],
 

@@ -6,10 +6,12 @@ module.exports = {
   quoteProps: "consistent",
   // Defaults:
   singleQuote: false,
-  tabWidth: 2,
+  tabWidth: 4,
   useTabs: false,
   bracketSpacing: true,
   arrowParens: "always",
   proseWrap: "preserve",
   endOfLine: "lf",
+  importOrderSeparation: true,
+  plugins: ["@trivago/prettier-plugin-sort-imports"]
 }
