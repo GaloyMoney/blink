@@ -63,3 +63,4 @@ target
 
 #pnpm
 .pnpm-store
+.novu-api-key
