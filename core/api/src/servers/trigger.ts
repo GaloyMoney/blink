@@ -24,29 +24,16 @@ import { briaEventHandler } from "./event-handlers/bria"
 
 import healthzHandler from "./middlewares/healthz"
 
-import {
-  getSwapConfig,
-  MS_PER_5_MINS,
-  NETWORK,
-  ONCHAIN_MIN_CONFIRMATIONS,
-  TRIGGER_PORT,
-} from "@/config"
+import { MS_PER_5_MINS, NETWORK, ONCHAIN_MIN_CONFIRMATIONS, TRIGGER_PORT } from "@/config"
 
-import {
-  Lightning,
-  Payments,
-  Swap as SwapWithSpans,
-  Wallets as WalletWithSpans,
-} from "@/app"
+import { Lightning, Payments, Wallets as WalletWithSpans } from "@/app"
 import { uploadBackup } from "@/app/admin/backup"
-import { lnd1LoopConfig, lnd2LoopConfig } from "@/app/swap/get-active-loopd"
 import * as Prices from "@/app/prices"
 import * as Wallets from "@/app/wallets"
 
 import { TxDecoder } from "@/domain/bitcoin/onchain"
 import { CacheKeys } from "@/domain/cache"
 import { CouldNotFindWalletFromOnChainAddressError } from "@/domain/errors"
-import { SwapTriggerError } from "@/domain/swap/errors"
 import { checkedToDisplayCurrency } from "@/domain/fiat"
 import { DEFAULT_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
@@ -58,7 +45,6 @@ import { LndService } from "@/services/lnd"
 import { activateLndHealthCheck, lndStatusEvent } from "@/services/lnd/health"
 import { onChannelUpdated } from "@/services/lnd/utils"
 import { baseLogger } from "@/services/logger"
-import { LoopService } from "@/services/loopd"
 import { setupMongoConnection } from "@/services/mongodb"
 import { NotificationsService } from "@/services/notifications"
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@/services/tracing"
@@ -426,29 +412,6 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
   })
 }
 
-const startSwapMonitor = async (swapService: ISwapService) => {
-  const isSwapServerUp = await swapService.healthCheck()
-  baseLogger.info({ isSwapServerUp }, "isSwapServerUp")
-  if (isSwapServerUp) {
-    const listener = swapService.swapListener()
-    listener.on("data", (response) => {
-      baseLogger.info({ response }, "Swap Listener Called")
-      SwapWithSpans.handleSwapOutCompleted(response)
-    })
-  }
-}
-
-const listenerSwapMonitor = async () => {
-  try {
-    const loopServiceLnd1 = LoopService(lnd1LoopConfig())
-    const loopServiceLnd2 = LoopService(lnd2LoopConfig())
-    startSwapMonitor(loopServiceLnd1)
-    startSwapMonitor(loopServiceLnd2)
-  } catch (err) {
-    return new SwapTriggerError(err)
-  }
-}
-
 const listenerBria = async () => {
   const wrappedBriaEventHandler = wrapAsyncToRunInSpan({
     namespace: "servers.trigger",
@@ -486,8 +449,6 @@ const main = () => {
   activateLndHealthCheck()
   publishCurrentPrice()
   watchHeldInvoices()
-
-  if (getSwapConfig().feeAccountingEnabled) listenerSwapMonitor()
 
   console.log("trigger server ready")
 }

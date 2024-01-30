@@ -1,4 +1,4 @@
-import { OnChain, Lightning, Wallets, Payments, Swap } from "@/app"
+import { OnChain, Lightning, Wallets, Payments } from "@/app"
 
 import { getCronConfig, TWO_MONTHS_IN_MS } from "@/config"
 
@@ -54,11 +54,6 @@ const deleteLndPaymentsBefore2Months = async () => {
   if (result instanceof Error) throw result
 }
 
-const swapOutJob = async () => {
-  const swapResult = await Swap.swapOut()
-  if (swapResult instanceof Error) throw swapResult
-}
-
 const main = async () => {
   console.log("cronjob started")
   const start = new Date()
@@ -78,7 +73,6 @@ const main = async () => {
     updateRoutingRevenues,
     updateLegacyOnChainReceipt,
     ...(cronConfig.rebalanceEnabled ? [rebalance] : []),
-    ...(cronConfig.swapEnabled ? [swapOutJob] : []),
     deleteExpiredPaymentFlows,
     deleteLndPaymentsBefore2Months,
     deleteFailedPaymentsAttemptAllLnds,

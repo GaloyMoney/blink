@@ -130,20 +130,9 @@ type YamlSchema = {
     scanDepthOutgoing: number
     scanDepthChannelUpdate: number
   }
-  swap: {
-    loopOutWhenHotWalletLessThan: number
-    lnd1loopRestEndpoint: string
-    lnd2loopRestEndpoint: string
-    lnd1loopRpcEndpoint: string
-    lnd2loopRpcEndpoint: string
-    swapOutAmount: number
-    swapProviders: Array<SwapProvider>
-    feeAccountingEnabled: boolean
-  }
   userActivenessMonthlyVolumeThreshold: number
   cronConfig: {
     rebalanceEnabled: boolean
-    swapEnabled: boolean
   }
   captcha: {
     mandatory: boolean
