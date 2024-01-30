@@ -3,7 +3,6 @@
 *.db
 # ignore all folders with lnd data
 /dev/lnd/*
-lnd/loopserver/*
 # except regtest
 !/dev/lnd/regtest/*
 
