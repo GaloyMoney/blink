@@ -89,7 +89,7 @@ impl Client {
         }
     }
 
-    pub async fn delete<T: DeserializeOwned>(
+    pub async fn _delete<T: DeserializeOwned>(
         &self,
         endpoint: impl ToString,
     ) -> Result<Response<T>, NovuError> {
@@ -119,7 +119,7 @@ impl Client {
         }
     }
 
-    pub async fn patch<T: DeserializeOwned>(
+    pub async fn _patch<T: DeserializeOwned>(
         &self,
         endpoint: impl ToString,
         data: Option<&impl Serialize>,

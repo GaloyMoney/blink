@@ -217,7 +217,7 @@ impl Subscribers {
         Self { client }
     }
 
-    pub async fn list(&self, page: i32) -> Result<SubscribersResponse, NovuError> {
+    pub async fn _list(&self, page: i32) -> Result<SubscribersResponse, NovuError> {
         let endpoint = format!("/subscribers/?page={}", page);
         let result: Response<SubscribersResponse> = self.client.get(endpoint).await?;
 
@@ -234,6 +234,7 @@ impl Subscribers {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn get(&self, subscriber_id: String) -> Result<GetSubscriberResponse, NovuError> {
         let endpoint = format!("/subscribers/{}", subscriber_id);
         let result = self.client.get(endpoint).await?;
@@ -251,7 +252,7 @@ impl Subscribers {
         }
     }
 
-    pub async fn update(
+    pub async fn _update(
         &self,
         subscriber_id: String,
         data: SubscriberPayload,
