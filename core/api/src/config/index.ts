@@ -2,7 +2,6 @@ import {
   getBriaPartialConfigFromYaml,
   MEMO_SHARING_CENTS_THRESHOLD,
   MEMO_SHARING_SATS_THRESHOLD,
-  getCronConfig,
 } from "./yaml"
 import { env } from "./env"
 
@@ -65,22 +64,6 @@ export const getGeetestConfig = () => {
 }
 
 export const isRunningJest = typeof jest !== "undefined"
-
-export const getLoopConfig = () => {
-  if (getCronConfig().swapEnabled) {
-    if (!LND1_LOOP_TLS) throw new ConfigError("Missing LND1_LOOP_TLS config")
-    if (!LND2_LOOP_TLS) throw new ConfigError("Missing LND2_LOOP_TLS config")
-    if (!LND1_LOOP_MACAROON) throw new ConfigError("Missing LND1_LOOP_MACAROON config")
-    if (!LND2_LOOP_MACAROON) throw new ConfigError("Missing LND2_LOOP_MACAROON config")
-    return {
-      lnd1LoopTls: LND1_LOOP_TLS,
-      lnd1LoopMacaroon: LND1_LOOP_MACAROON,
-      lnd2LoopTls: LND2_LOOP_TLS,
-      lnd2LoopMacaroon: LND2_LOOP_MACAROON,
-    }
-  }
-  throw new ConfigError("getLoopConfig() was called though swapEnabled is false")
-}
 
 export const memoSharingConfig = {
   memoSharingSatsThreshold: MEMO_SHARING_SATS_THRESHOLD,

@@ -5,7 +5,7 @@
     "eslint-check": "eslint src test --ext .ts",
     "eslint-fix": "eslint src test --ext .ts --fix",
     "circular-deps-check": "madge --circular --extensions ts src",
-    "build": "tsc -p tsconfig-build.json && cp -R src/services/price/protos dist/services/price/ && cp -R src/services/dealer-price/proto dist/services/dealer-price/ && cp -R src/services/loopd/protos dist/services/loopd/ && cp -R src/services/bria/proto dist/services/bria/ && cp -R src/services/notifications/proto dist/services/notifications/ && tscpaths --silent -p tsconfig.json -s ./src -o ./dist",
+    "build": "tsc -p tsconfig-build.json && cp -R src/services/price/protos dist/services/price/ && cp -R src/services/dealer-price/proto dist/services/dealer-price/ && cp -R src/services/bria/proto dist/services/bria/ && cp -R src/services/notifications/proto dist/services/notifications/ && tscpaths --silent -p tsconfig.json -s ./src -o ./dist",
     "trigger": "pnpm run build && node dist/servers/trigger.js | pino-pretty -c -l",
     "ws": "pnpm run build && node dist/servers/ws-server.js | pino-pretty -c -l",
     "watch": "nodemon -V -e ts,graphql -w ./src -x pnpm run start",

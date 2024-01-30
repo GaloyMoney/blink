@@ -2,24 +2,16 @@ import { MainBook, Transaction } from "./books"
 
 import { getBankOwnerWalletId } from "./caching"
 
-import { TransactionsMetadataRepository } from "./services"
-
 import { coldStorageAccountId, lndLedgerAccountId } from "./domain/accounts"
 
 import { translateToLedgerJournal } from "./helpers"
 
 import {
-  CouldNotFindTransactionMetadataError,
   LedgerTransactionType,
   toLiabilitiesWalletId,
   UnknownLedgerError,
 } from "@/domain/ledger"
 import { WalletCurrency } from "@/domain/shared"
-import { DuplicateError } from "@/domain/errors"
-import { SwapProvider } from "@/domain/swap"
-import { sha256 } from "@/domain/bitcoin/lightning"
-
-const txMetadataRepo = TransactionsMetadataRepository()
 
 export const admin = {
   isToHotWalletTxRecorded: async (
@@ -105,61 +97,6 @@ export const admin = {
       return translateToLedgerJournal(savedEntry)
     } catch (err) {
       return new UnknownLedgerError(err)
-    }
-  },
-
-  addSwapFeeTxSend: async (
-    swapResult: SwapStatusResult,
-  ): Promise<LedgerJournal | LedgerServiceError | DuplicateError> => {
-    const swapFeeMetadata: SwapTransactionMetadataUpdate = {
-      hash: sha256(Buffer.from(swapResult.id)) as SwapHash,
-      swapId: swapResult.id as SwapId,
-      swapAmount: Number(swapResult.amt),
-      htlcAddress: swapResult.htlcAddress as OnChainAddress,
-      onchainMinerFee: Number(swapResult.onchainMinerFee),
-      offchainRoutingFee: Number(swapResult.offchainRoutingFee),
-      serviceProviderFee: Number(swapResult.serviceProviderFee),
-      serviceProvider: SwapProvider.Loop,
-      currency: WalletCurrency.Btc,
-      type: LedgerTransactionType.Fee,
-    }
-    const description = `Swap out fee for swapId ${swapFeeMetadata.swapId}`
-    const totalSwapFee =
-      swapFeeMetadata.offchainRoutingFee +
-      swapFeeMetadata.onchainMinerFee +
-      swapFeeMetadata.serviceProviderFee
-    try {
-      // check for duplicates
-      const result = await txMetadataRepo.findByHash(swapFeeMetadata.hash)
-      if (result instanceof CouldNotFindTransactionMetadataError) {
-        const bankOwnerWalletId = await getBankOwnerWalletId()
-        const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
-        const entry = MainBook.entry(description)
-          .credit(lndLedgerAccountId, Number(totalSwapFee), {
-            currency: WalletCurrency.Btc,
-            pending: false,
-            type: LedgerTransactionType.Fee,
-          })
-          .debit(bankOwnerPath, Number(totalSwapFee), {
-            currency: WalletCurrency.Btc,
-            pending: false,
-            type: LedgerTransactionType.Fee,
-          })
-        const saved = await entry.commit()
-        const journalEntry = translateToLedgerJournal(saved)
-        const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
-          id,
-          hash: swapFeeMetadata.hash,
-          swap: swapFeeMetadata,
-        }))
-        const metadataResults = await txMetadataRepo.persistAll(txsMetadataToPersist)
-        if (metadataResults instanceof Error) return metadataResults
-        return journalEntry
-      } else {
-        return new DuplicateError()
-      }
-    } catch (error) {
-      return new UnknownLedgerError(error)
     }
   },
 }
