@@ -61,7 +61,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
     }
   }
 
-  const findByHash = async (hash: PaymentHash | OnChainTxHash | SwapHash) => {
+  const findByHash = async (hash: PaymentHash | OnChainTxHash) => {
     try {
       const result = await TransactionMetadata.findOne({
         hash,

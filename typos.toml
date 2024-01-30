@@ -2,7 +2,6 @@ files.extend-exclude = [
   "dev",
   "core/api/dev",
   "core/api/src/domain/users/languages.ts",
-  "core/api/src/services/loopd/protos",
   "docs/postman-collection/galoy_graphql_main_api.postman_collection.json",
   "core/api/docker-compose.yml",
   "quickstart/*.yml",

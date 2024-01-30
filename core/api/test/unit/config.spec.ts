@@ -108,8 +108,8 @@ describe("config.ts", () => {
 
     it("fails validation missing conditional required", () => {
       const clonedConfig = JSON.parse(JSON.stringify(yamlConfig))
-      clonedConfig.cronConfig.swapEnabled = true
-      delete clonedConfig.cronConfig.swapEnabled
+      clonedConfig.cronConfig.rebalanceEnabled = true
+      delete clonedConfig.cronConfig.rebalanceEnabled
 
       // @ts-ignore-next-line no-implicit-any error
       const valid = validate(clonedConfig)

@@ -148,19 +148,6 @@ type LnLedgerTransactionMetadataUpdate = {
   revealedPreImage?: RevealedPreImage
 }
 
-type SwapTransactionMetadataUpdate = {
-  hash: SwapHash
-  swapAmount: number
-  swapId: SwapId
-  htlcAddress: OnChainAddress
-  onchainMinerFee: number
-  offchainRoutingFee: number
-  serviceProviderFee: number
-  serviceProvider: string
-  currency: WalletCurrency
-  type: LedgerTransactionType
-}
-
 // Repeating 'id' key because can't figure out how to type an empty object
 // and have it still work with the '&' below.
 type IntraledgerLedgerTransactionMetadataUpdate = { id: LedgerTransactionId }
@@ -170,7 +157,6 @@ type LedgerTransactionMetadata = BaseLedgerTransactionMetadata &
     | OnChainLedgerTransactionMetadataUpdate
     | LnLedgerTransactionMetadataUpdate
     | IntraledgerLedgerTransactionMetadataUpdate
-    | SwapTransactionMetadataUpdate
   )
 
 interface ITransactionsMetadataRepository {
@@ -187,7 +173,7 @@ interface ITransactionsMetadataRepository {
   findById(id: LedgerTransactionId): Promise<LedgerTransactionMetadata | RepositoryError>
 
   findByHash(
-    hash: PaymentHash | OnChainTxHash | SwapHash,
+    hash: PaymentHash | OnChainTxHash,
   ): Promise<LedgerTransactionMetadata | RepositoryError>
 
   listByIds(
