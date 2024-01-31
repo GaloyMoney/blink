@@ -83,7 +83,7 @@ impl Executor {
             .update_credentials(
                 user_id.to_string(),
                 UpdateCredentialsPayload {
-                    provider_id: ProviderId::PushWebhook,
+                    provider_id: ProviderId::Fcm,
                     integration_identifier: None,
                     credentials: Credentials {
                         webhook_url: "".to_string(),

@@ -42,12 +42,14 @@ impl NotificationEvent for CircleGrew {
 }
 
 #[derive(Debug)]
-pub struct ThresholdReached {
+pub struct CircleThresholdReached {
     pub user_id: GaloyUserId,
+    pub circle_type: CircleType,
+    pub time_frame: CircleTimeFrame,
     pub threshold: u32,
 }
 
-impl NotificationEvent for ThresholdReached {
+impl NotificationEvent for CircleThresholdReached {
     fn workflow_name() -> &'static str {
         "threshold_reached"
     }
@@ -57,10 +59,20 @@ impl NotificationEvent for ThresholdReached {
     }
 
     fn into_payload(self) -> HashMap<String, AllowedPayloadValues> {
-        [(
-            "threshold".to_string(),
-            AllowedPayloadValues::Number(self.threshold as i32),
-        )]
+        [
+            (
+                "threshold".to_string(),
+                AllowedPayloadValues::Number(self.threshold as i32),
+            ),
+            (
+                "circle_type".to_string(),
+                AllowedPayloadValues::String(self.circle_type.to_string()),
+            ),
+            (
+                "circle_time_frame".to_string(),
+                AllowedPayloadValues::String(self.time_frame.to_string()),
+            ),
+        ]
         .into_iter()
         .collect()
     }
