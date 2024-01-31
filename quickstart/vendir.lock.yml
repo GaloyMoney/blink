@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): remove non-functional routing fee test (#3915)...'
-      sha: 6bd9729717ec70369851fecc298429475fd8c37e
+      commitTitle: 'chore(core): remove loopd configs and dependencies (#3917)'
+      sha: 707b78fff6460df2d6ac026c846abb3acb649cfd
       tags:
-      - 0.20.30-6-g6bd972971
+      - 0.20.31-2-g707b78fff
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): remove non-functional routing fee test (#3915)...'
-      sha: 6bd9729717ec70369851fecc298429475fd8c37e
+      commitTitle: 'chore(core): remove loopd configs and dependencies (#3917)'
+      sha: 707b78fff6460df2d6ac026c846abb3acb649cfd
       tags:
-      - 0.20.30-6-g6bd972971
+      - 0.20.31-2-g707b78fff
     path: schemas/
   - git:
-      commitTitle: 'test(core): remove non-functional routing fee test (#3915)...'
-      sha: 6bd9729717ec70369851fecc298429475fd8c37e
+      commitTitle: 'chore(core): remove loopd configs and dependencies (#3917)'
+      sha: 707b78fff6460df2d6ac026c846abb3acb649cfd
       tags:
-      - 0.20.30-6-g6bd972971
+      - 0.20.31-2-g707b78fff
     path: gql/
   path: ./graphql
 kind: LockConfig
