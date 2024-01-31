@@ -38,7 +38,7 @@ pub struct TriggerRecipient {
 }
 
 impl TriggerRecipient {
-    pub fn builder() -> TriggerRecipientBuilder {
+    pub fn _builder() -> TriggerRecipientBuilder {
         TriggerRecipientBuilder::default()
     }
 }
@@ -62,12 +62,12 @@ impl TriggerRecipientBuilder {
         }
     }
 
-    pub fn first_name(mut self, name: impl ToString) -> TriggerRecipientBuilder {
+    pub fn _first_name(mut self, name: impl ToString) -> TriggerRecipientBuilder {
         self.recipient.first_name = Some(name.to_string());
         self
     }
 
-    pub fn last_name(mut self, name: impl ToString) -> TriggerRecipientBuilder {
+    pub fn _last_name(mut self, name: impl ToString) -> TriggerRecipientBuilder {
         self.recipient.last_name = Some(name.to_string());
         self
     }
@@ -77,12 +77,12 @@ impl TriggerRecipientBuilder {
         self
     }
 
-    pub fn phone_number(mut self, phone_number: impl ToString) -> TriggerRecipientBuilder {
+    pub fn _phone_number(mut self, phone_number: impl ToString) -> TriggerRecipientBuilder {
         self.recipient.phone_number = Some(phone_number.to_string());
         self
     }
 
-    pub fn avatar_url(mut self, avatar_url: impl ToString) -> TriggerRecipientBuilder {
+    pub fn _avatar_url(mut self, avatar_url: impl ToString) -> TriggerRecipientBuilder {
         self.recipient.avatar_url = Some(avatar_url.to_string());
         self
     }
