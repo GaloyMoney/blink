@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): remove loopd configs and dependencies (#3917)'
-      sha: 707b78fff6460df2d6ac026c846abb3acb649cfd
+      commitTitle: 'test: add bats test for map (#3923)...'
+      sha: ee42e71731f91944c5e44ed6b92bb7f74ef89b94
       tags:
-      - 0.20.31-2-g707b78fff
+      - 0.20.33-3-gee42e7173
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): remove loopd configs and dependencies (#3917)'
-      sha: 707b78fff6460df2d6ac026c846abb3acb649cfd
+      commitTitle: 'test: add bats test for map (#3923)...'
+      sha: ee42e71731f91944c5e44ed6b92bb7f74ef89b94
       tags:
-      - 0.20.31-2-g707b78fff
+      - 0.20.33-3-gee42e7173
     path: schemas/
   - git:
-      commitTitle: 'chore(core): remove loopd configs and dependencies (#3917)'
-      sha: 707b78fff6460df2d6ac026c846abb3acb649cfd
+      commitTitle: 'test: add bats test for map (#3923)...'
+      sha: ee42e71731f91944c5e44ed6b92bb7f74ef89b94
       tags:
-      - 0.20.31-2-g707b78fff
+      - 0.20.33-3-gee42e7173
     path: gql/
   path: ./graphql
 kind: LockConfig
