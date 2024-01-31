@@ -261,14 +261,26 @@ impl NotificationsService for Notifications {
             }
             Some(proto::NotificationEvent {
                 data:
-                    Some(proto::notification_event::Data::ThresholdReached(proto::ThresholdReached {
-                        user_id,
-                        threshold,
-                    })),
+                    Some(proto::notification_event::Data::CircleThresholdReached(
+                        proto::CircleThresholdReached {
+                            user_id,
+                            circle_type,
+                            time_frame,
+                            threshold,
+                        },
+                    )),
             }) => {
+                let circle_type = proto::CircleType::try_from(circle_type)
+                    .map(primitives::CircleType::from)
+                    .map_err(|e| Status::invalid_argument(e.to_string()))?;
+                let time_frame = proto::CircleTimeFrame::try_from(time_frame)
+                    .map(primitives::CircleTimeFrame::from)
+                    .map_err(|e| Status::invalid_argument(e.to_string()))?;
                 self.app
-                    .handle_threshold_reached(notification_event::ThresholdReached {
+                    .handle_threshold_reached(notification_event::CircleThresholdReached {
                         user_id: GaloyUserId::from(user_id),
+                        circle_type,
+                        time_frame,
                         threshold,
                     })
                     .await?

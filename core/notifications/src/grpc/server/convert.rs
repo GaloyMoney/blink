@@ -72,3 +72,12 @@ impl From<proto::CircleType> for CircleType {
         }
     }
 }
+
+impl From<proto::CircleTimeFrame> for CircleTimeFrame {
+    fn from(c_type: proto::CircleTimeFrame) -> Self {
+        match c_type {
+            proto::CircleTimeFrame::Month => CircleTimeFrame::Month,
+            proto::CircleTimeFrame::AllTime => CircleTimeFrame::AllTime,
+        }
+    }
+}
