@@ -51,7 +51,7 @@ pub struct CircleThresholdReached {
 
 impl NotificationEvent for CircleThresholdReached {
     fn workflow_name() -> &'static str {
-        "threshold_reached"
+        "circle_threshold_reached"
     }
 
     fn user_id(&self) -> &GaloyUserId {
@@ -69,7 +69,7 @@ impl NotificationEvent for CircleThresholdReached {
                 AllowedPayloadValues::String(self.circle_type.to_string()),
             ),
             (
-                "circle_time_frame".to_string(),
+                "time_frame".to_string(),
                 AllowedPayloadValues::String(self.time_frame.to_string()),
             ),
         ]
