@@ -7001,23 +7001,23 @@ cargo.rust_library(
 
 alias(
     name = "serde_with",
-    actual = ":serde_with-3.5.0",
+    actual = ":serde_with-3.6.0",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "serde_with-3.5.0.crate",
-    sha256 = "f58c3a1b3e418f61c25b2aeb43fc6c95eaa252b8cecdda67f401943e9e08d33f",
-    strip_prefix = "serde_with-3.5.0",
-    urls = ["https://crates.io/api/v1/crates/serde_with/3.5.0/download"],
+    name = "serde_with-3.6.0.crate",
+    sha256 = "1b0ed1662c5a68664f45b76d18deb0e234aff37207086803165c961eb695e981",
+    strip_prefix = "serde_with-3.6.0",
+    urls = ["https://crates.io/api/v1/crates/serde_with/3.6.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "serde_with-3.5.0",
-    srcs = [":serde_with-3.5.0.crate"],
+    name = "serde_with-3.6.0",
+    srcs = [":serde_with-3.6.0.crate"],
     crate = "serde_with",
-    crate_root = "serde_with-3.5.0.crate/src/lib.rs",
+    crate_root = "serde_with-3.6.0.crate/src/lib.rs",
     edition = "2021",
     features = [
         "alloc",
@@ -7037,7 +7037,7 @@ cargo.rust_library(
         ":hex-0.4.3",
         ":serde-1.0.196",
         ":serde_json-1.0.111",
-        ":serde_with_macros-3.5.0",
+        ":serde_with_macros-3.6.0",
     ],
 )
 
@@ -7066,18 +7066,18 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "serde_with_macros-3.5.0.crate",
-    sha256 = "d2068b437a31fc68f25dd7edc296b078f04b45145c199d8eed9866e45f1ff274",
-    strip_prefix = "serde_with_macros-3.5.0",
-    urls = ["https://crates.io/api/v1/crates/serde_with_macros/3.5.0/download"],
+    name = "serde_with_macros-3.6.0.crate",
+    sha256 = "568577ff0ef47b879f736cd66740e022f3672788cdf002a05a4e609ea5a6fb15",
+    strip_prefix = "serde_with_macros-3.6.0",
+    urls = ["https://crates.io/api/v1/crates/serde_with_macros/3.6.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "serde_with_macros-3.5.0",
-    srcs = [":serde_with_macros-3.5.0.crate"],
+    name = "serde_with_macros-3.6.0",
+    srcs = [":serde_with_macros-3.6.0.crate"],
     crate = "serde_with_macros",
-    crate_root = "serde_with_macros-3.5.0.crate/src/lib.rs",
+    crate_root = "serde_with_macros-3.6.0.crate/src/lib.rs",
     edition = "2021",
     proc_macro = True,
     visibility = [],
@@ -8285,7 +8285,7 @@ cargo.rust_binary(
         ":reqwest-0.11.23",
         ":serde-1.0.196",
         ":serde_json-1.0.111",
-        ":serde_with-3.5.0",
+        ":serde_with-3.6.0",
         ":serde_yaml-0.9.31",
         ":sqlx-0.7.2",
         ":thiserror-1.0.56",
