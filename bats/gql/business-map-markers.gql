@@ -1,0 +1,12 @@
+    query businessMapMarkers {
+  businessMapMarkers {
+    username
+    mapInfo {
+      title
+      coordinates {
+        longitude
+        latitude
+      }
+    }
+  }
+}

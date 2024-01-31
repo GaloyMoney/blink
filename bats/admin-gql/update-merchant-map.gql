@@ -1,0 +1,36 @@
+mutation businessUpdateMapInfo($input: BusinessUpdateMapInfoInput!) {
+  businessUpdateMapInfo(input: $input) {
+    errors {
+      message
+    }
+    accountDetails {
+      id
+      username
+      level
+      status
+      title
+      owner {
+        id
+        language
+        phone
+        email {
+          address
+          verified
+        }
+        createdAt
+      }
+      coordinates {
+        latitude
+        longitude
+      }
+      wallets {
+        id
+        walletCurrency
+        accountId
+        balance
+        pendingIncomingBalance
+      }
+      createdAt
+    }
+  }
+}
