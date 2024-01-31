@@ -8,7 +8,9 @@ pub struct NovuConfig {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct NovuWorkflows {
+    #[serde(default = "default_circle_grew_workflow_id")]
     pub circle_grew: String,
+    #[serde(default = "default_circle_threshold_reached_workflow_id")]
     pub threshold_reached: String,
 }
 
@@ -25,12 +27,16 @@ impl NovuWorkflows {
 impl Default for NovuWorkflows {
     fn default() -> Self {
         Self {
-            circle_grew: dummy_workflow(),
-            threshold_reached: dummy_workflow(),
+            circle_grew: default_circle_grew_workflow_id(),
+            threshold_reached: default_circle_threshold_reached_workflow_id(),
         }
     }
 }
 
-fn dummy_workflow() -> String {
-    String::from("dummy-workflow")
+fn default_circle_grew_workflow_id() -> String {
+    String::from("circle_grew")
+}
+
+fn default_circle_threshold_reached_workflow_id() -> String {
+    String::from("circle_threshold_reached")
 }

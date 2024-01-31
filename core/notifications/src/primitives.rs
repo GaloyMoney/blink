@@ -97,3 +97,18 @@ impl std::fmt::Display for CircleType {
         }
     }
 }
+
+#[derive(Debug)]
+pub enum CircleTimeFrame {
+    Month,
+    AllTime,
+}
+
+impl std::fmt::Display for CircleTimeFrame {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CircleTimeFrame::Month => write!(f, "month"),
+            CircleTimeFrame::AllTime => write!(f, "all_time"),
+        }
+    }
+}
