@@ -104,6 +104,7 @@ pub struct TriggerPayload {
     pub payload: ITriggerPayload,
     pub to: TriggerRecipientsType,
     pub name: String,
+    pub overrides: Option<HashMap<String, serde_json::Value>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
