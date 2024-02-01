@@ -55,31 +55,7 @@ type LoginWithPhoneNoPasswordSchemaResponse = {
   authToken: AuthToken
   kratosUserId?: UserId
 }
-type CreateKratosUserForPhoneNoPasswordSchemaResponse = WithSessionResponse & {
-  registrationBody: {
-    identity_id: string
-    phone: string
-    schema_id: string
-  }
-}
-
-type CallbackSecretValidator = {
-  authorize(secret: string | undefined): true | ValidationError
-}
-
-type RegistrationPayload = {
-  userId: UserId
-  phone: PhoneNumber
-  phoneMetadata: PhoneMetadata | undefined
-}
-type RegistrationPayloadValidator = {
-  validate(rawBody: {
-    identity_id?: string
-    phone?: string
-    schema_id?: string
-    transient_payload?: { phoneMetadata?: Record<string, Record<string, string>> }
-  }): RegistrationPayload | ValidationError
-}
+type CreateKratosUserForPhoneNoPasswordSchemaResponse = WithSessionResponse
 
 interface IAuthWithPhonePasswordlessService {
   loginToken(args: {
