@@ -1,0 +1,360 @@
+query accountDetailsByUserPhone($phone: Phone!) {
+  accountDetailsByUserPhone(phone: $phone) {
+    id
+    username
+    level
+    status
+    title
+    owner {
+      id
+      language
+      phone
+      email {
+        address
+        verified
+      }
+      createdAt
+    }
+    coordinates {
+      latitude
+      longitude
+    }
+    wallets {
+      id
+      walletCurrency
+      accountId
+      balance
+      pendingIncomingBalance
+    }
+    createdAt
+  }
+}
+
+query accountDetailsByAccountId($accountId: ID!) {
+  accountDetailsByAccountId(accountId: $accountId) {
+    id
+    username
+    level
+    status
+    title
+    owner {
+      id
+      language
+      phone
+      email {
+        address
+        verified
+      }
+      createdAt
+    }
+    coordinates {
+      latitude
+      longitude
+    }
+    wallets {
+      id
+      walletCurrency
+      accountId
+      balance
+      pendingIncomingBalance
+    }
+    createdAt
+  }
+}
+
+query accountDetailsByEmail($email: EmailAddress!) {
+  accountDetailsByEmail(email: $email) {
+    id
+    username
+    level
+    status
+    title
+    owner {
+      id
+      language
+      phone
+      email {
+        address
+        verified
+      }
+      createdAt
+    }
+    coordinates {
+      latitude
+      longitude
+    }
+    wallets {
+      id
+      walletCurrency
+      accountId
+      balance
+      pendingIncomingBalance
+    }
+    createdAt
+  }
+}
+
+mutation businessDeleteMapInfo($input: BusinessDeleteMapInfoInput!) {
+  businessDeleteMapInfo(input: $input) {
+    errors {
+      message
+    }
+  }
+}
+
+mutation accountUpdateLevel($input: AccountUpdateLevelInput!) {
+  accountUpdateLevel(input: $input) {
+    errors {
+      message
+    }
+    accountDetails {
+      id
+      username
+      level
+      status
+      title
+      owner {
+        id
+        language
+        phone
+        email {
+          address
+          verified
+        }
+        createdAt
+      }
+      coordinates {
+        latitude
+        longitude
+      }
+      wallets {
+        id
+        walletCurrency
+        accountId
+        balance
+        pendingIncomingBalance
+      }
+      createdAt
+    }
+  }
+}
+
+mutation businessUpdateMapInfo($input: BusinessUpdateMapInfoInput!) {
+  businessUpdateMapInfo(input: $input) {
+    errors {
+      message
+    }
+    accountDetails {
+      id
+      username
+      level
+      status
+      title
+      owner {
+        id
+        language
+        phone
+        email {
+          address
+          verified
+        }
+        createdAt
+      }
+      coordinates {
+        latitude
+        longitude
+      }
+      wallets {
+        id
+        walletCurrency
+        accountId
+        balance
+        pendingIncomingBalance
+      }
+      createdAt
+    }
+  }
+}
+
+mutation accountUpdateStatus($input: AccountUpdateStatusInput!) {
+  accountUpdateStatus(input: $input) {
+    errors {
+      message
+    }
+    accountDetails {
+      id
+      username
+      level
+      status
+      title
+      owner {
+        id
+        language
+        phone
+        email {
+          address
+          verified
+        }
+        createdAt
+      }
+      coordinates {
+        latitude
+        longitude
+      }
+      wallets {
+        id
+        walletCurrency
+        accountId
+        balance
+        pendingIncomingBalance
+      }
+      createdAt
+    }
+  }
+}
+
+query accountDetailsByUsername($username: Username!) {
+  accountDetailsByUsername(username: $username) {
+    id
+    username
+    level
+    status
+    title
+    owner {
+      id
+      language
+      phone
+      email {
+        address
+        verified
+      }
+      createdAt
+    }
+    coordinates {
+      latitude
+      longitude
+    }
+    wallets {
+      id
+      walletCurrency
+      accountId
+      balance
+      pendingIncomingBalance
+    }
+    createdAt
+  }
+}
+
+query lightningInvoice($hash: PaymentHash!) {
+  lightningInvoice(hash: $hash) {
+    createdAt
+    confirmedAt
+    description
+    expiresAt
+    isSettled
+    received
+    request
+    secretPreImage
+  }
+}
+
+query lightningPayment($hash: PaymentHash!) {
+  lightningPayment(hash: $hash) {
+    createdAt
+    confirmedAt
+    status
+    amount
+    roundedUpFee
+    revealedPreImage
+    request
+    destination
+  }
+}
+
+query transactionsByHash($hash: PaymentHash!) {
+  transactionsByHash(hash: $hash) {
+    id
+    initiationVia {
+      __typename
+      ... on InitiationViaIntraLedger {
+        counterPartyWalletId
+        counterPartyUsername
+      }
+      ... on InitiationViaLn {
+        paymentHash
+      }
+      ... on InitiationViaOnChain {
+        address
+      }
+    }
+    settlementVia {
+      __typename
+      ... on SettlementViaIntraLedger {
+        counterPartyWalletId
+        counterPartyUsername
+      }
+      ... on SettlementViaLn {
+        paymentSecret
+      }
+      ... on SettlementViaOnChain {
+        transactionHash
+      }
+    }
+    settlementAmount
+    settlementFee
+    settlementPrice {
+      base
+      offset
+      currencyUnit
+      formattedAmount
+    }
+    direction
+    status
+    memo
+    createdAt
+  }
+}
+
+query transactionById($id: ID!) {
+  transactionById(id: $id) {
+    id
+    initiationVia {
+      __typename
+      ... on InitiationViaIntraLedger {
+        counterPartyWalletId
+        counterPartyUsername
+      }
+      ... on InitiationViaLn {
+        paymentHash
+      }
+      ... on InitiationViaOnChain {
+        address
+      }
+    }
+    settlementVia {
+      __typename
+      ... on SettlementViaIntraLedger {
+        counterPartyWalletId
+        counterPartyUsername
+      }
+      ... on SettlementViaLn {
+        paymentSecret
+      }
+      ... on SettlementViaOnChain {
+        transactionHash
+      }
+    }
+    settlementAmount
+    settlementFee
+    settlementPrice {
+      base
+      offset
+      currencyUnit
+      formattedAmount
+    }
+    direction
+    status
+    memo
+    createdAt
+  }
+}

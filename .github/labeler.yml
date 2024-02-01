@@ -17,6 +17,11 @@ pay:
   - flake.lock
   - pnpm-lock.yaml
 
+admin-panel:
+  - apps/admin-panel/*
+  - flake.lock
+  - pnpm-lock.yaml
+
 core:
   - core/api/*
   - core/api-cron/*

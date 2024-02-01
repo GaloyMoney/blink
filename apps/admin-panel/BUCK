@@ -1,0 +1,75 @@
+load(
+    "@toolchains//workspace-pnpm:macros.bzl",
+    "dev_pnpm_task_binary",
+    "dev_pnpm_task_test",
+    "build_node_modules",
+    "next_build",
+    "next_build_bin",
+    "eslint",
+    "audit",
+)
+
+dev_pnpm_task_binary(
+    name="dev",
+    command="dev",
+)
+
+dev_pnpm_task_binary(
+    name="lint-fix",
+    command="lint:fix",
+)
+
+export_file(
+    name="package.json",
+    visibility=["PUBLIC"],
+)
+
+build_node_modules(
+    name="node_modules",
+)
+
+filegroup(
+    name="src",
+    srcs=glob(
+        [
+            "app/**",
+            "public/**",
+            "components/**",
+            "tailwind.config.ts",
+            "postcss.config.js",
+            "next.config.js",
+            "tsconfig.json",
+            "*.ts",
+            "instrumentation.node.ts",
+        ]
+    ),
+)
+
+dev_deps_srcs = {
+    "lib/eslint-config": "//lib/eslint-config:src",
+}
+
+next_build_bin(
+    name="admin-panel",
+)
+
+audit(
+    name="audit",
+    level="critical",
+)
+
+eslint(
+    name="lint",
+    srcs=[":src"] + glob([".eslint*"]),
+    extensions=[".ts", ".tsx"],
+    allow_warnings=True,
+    dev_deps_srcs=dev_deps_srcs,
+)
+
+test_suite(
+    name="test",
+    tests=[
+        ":audit",
+        ":lint",
+    ],
+)

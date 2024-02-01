@@ -6,12 +6,14 @@ CORE_TEST_LABEL = "core"
 CONSENT_TEST_LABEL = "consent"
 DASHBOARD_TEST_LABEL = "dashboard"
 PAY_TEST_LABEL = "pay"
+ADMIN_PANEL_TEST_LABEL = "admin-panel"
 
 TEST_RESOURCES = {
    CORE_TEST_LABEL: "api-test",
    CONSENT_TEST_LABEL: "consent-test",
    DASHBOARD_TEST_LABEL: "dashboard-test",
    PAY_TEST_LABEL: "pay-test",
+   ADMIN_PANEL_TEST_LABEL: "admin-panel-test"
 }
 
 is_ci=("ci" in sys.argv) or cfg.get("bats", False)
@@ -97,6 +99,33 @@ local_resource(
     ],
 )
 
+admin_panel_target = "//apps/admin-panel:dev"
+if is_ci:
+  admin_panel_target = '//apps/admin-panel:admin-panel-ci'
+admin_panel_env = {
+    "PORT": "3004",
+    "ADMIN_CORE_API" : "http://localhost:4455/admin/graphql",
+    "NEXTAUTH_URL" : "http://localhost:3004",
+    "NEXTAUTH_SECRET" : "nextAuthSecret",
+}
+local_resource(
+    "admin-panel",
+    labels = ["apps"],
+    cmd = "buck2 build {}".format(admin_panel_target),
+    serve_cmd = "buck2 run {}".format(admin_panel_target),
+    env = admin_panel_env,
+    serve_env = admin_panel_env,
+    deps = _buck2_dep_inputs(admin_panel_target),
+    allow_parallel = True,
+    resource_deps = [
+        "api",
+        "apollo-router",
+    ],
+    links = [
+        link("http://localhost:3004", "admin-panel"),
+    ],
+)
+
 local_resource(
   name='hydra-dashboard',
   labels = ['apps'],
@@ -153,6 +182,18 @@ local_resource(
     "api",
     "pay",
     "add-test-users-with-usernames",
+  ],
+)
+
+admin_panel_test_target = "//apps/admin-panel:test-integration"
+local_resource(
+  "admin-panel-test",
+  labels = ["test"],
+  auto_init = is_ci and ADMIN_PANEL_TEST_LABEL in cfg.get("test", []),
+  cmd = "buck2 test {}".format(admin_panel_test_target),
+  resource_deps = [
+    "api",
+    "admin-panel",
   ],
 )
 

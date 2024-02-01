@@ -227,6 +227,7 @@
           consent = nextDerivation {pkgName = "consent";};
           dashboard = nextDerivation {pkgName = "dashboard";};
           pay = nextDerivation {pkgName = "pay";};
+          admin-panel = nextDerivation {pkgName = "admin-panel";};
 
           api-keys = rustDerivation {pkgName = "api-keys";};
           notifications = rustDerivation {pkgName = "notifications";};
