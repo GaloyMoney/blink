@@ -132,19 +132,6 @@ selfservice:
             #         name: Authorization
             #         value: The-Value-of-My-Key
             #         in: header
-            - hook: web_hook
-              config:
-                url: http://bats-tests:4012/kratos/registration
-                method: POST
-                response:
-                  parse: false
-                body: file:///home/ory/body.jsonnet # TODO: use a base64 encoding instead
-                auth:
-                  type: api_key
-                  config:
-                    name: Authorization
-                    value: The-Value-of-My-Key
-                    in: header
             - hook: session
 
 log:
