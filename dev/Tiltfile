@@ -101,7 +101,7 @@ local_resource(
 
 admin_panel_target = "//apps/admin-panel:dev"
 if is_ci:
-  admin_panel_target = '//apps/admin-panel:admin-panel-ci'
+  admin_panel_target = '//apps/admin-panel:admin-panel'
 admin_panel_env = {
     "PORT": "3004",
     "ADMIN_CORE_API" : "http://localhost:4455/admin/graphql",
@@ -192,7 +192,6 @@ local_resource(
   auto_init = is_ci and ADMIN_PANEL_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(admin_panel_test_target),
   resource_deps = [
-    "api",
     "admin-panel",
   ],
 )

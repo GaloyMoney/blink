@@ -19,6 +19,16 @@ dev_pnpm_task_binary(
     command="lint:fix",
 )
 
+dev_pnpm_task_binary(
+    name="cypress-open",
+    command="cypress:open",
+)
+
+dev_pnpm_task_test(
+    name="test-integration",
+    command="cypress:run",
+)
+
 export_file(
     name="package.json",
     visibility=["PUBLIC"],
@@ -45,13 +55,18 @@ filegroup(
     ),
 )
 
-dev_deps_srcs = {
-    "lib/eslint-config": "//lib/eslint-config:src",
-}
+next_build(
+    name="build",
+    srcs=[":src"],
+)
 
 next_build_bin(
     name="admin-panel",
 )
+
+dev_deps_srcs = {
+    "lib/eslint-config": "//lib/eslint-config:src",
+}
 
 audit(
     name="audit",
