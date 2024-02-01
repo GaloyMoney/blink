@@ -113,25 +113,6 @@ selfservice:
       after:
         password:
           hooks:
-            # we are not sure if we need this hook yet.
-            # this could be used to check if the user is already registered in the backend
-            # before creating the user in kratos
-            # otherwise response: parse: false happens after kratos user creation
-            #
-            #
-            # - hook: web_hook
-            #   config:
-            #     url: http://bats-tests:4012/kratos/preregistration
-            #     method: POST
-            #     response:
-            #       parse: true
-            #     body: file:///home/ory/body.jsonnet # TODO: use a base64 encoding instead
-            #     auth:
-            #       type: api_key
-            #       config:
-            #         name: Authorization
-            #         value: The-Value-of-My-Key
-            #         in: header
             - hook: session
 
 log:
