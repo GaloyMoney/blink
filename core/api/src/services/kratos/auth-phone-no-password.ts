@@ -97,7 +97,13 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       const authToken = result.data.session_token as AuthToken
       const kratosUserId = result.data.identity.id as UserId
 
-      return { authToken, kratosUserId }
+      const registrationBody = {
+        identity_id: kratosUserId,
+        phone,
+        schema_id: result.data.identity.schema_id,
+      }
+
+      return { authToken, kratosUserId, registrationBody }
     } catch (err) {
       if (err instanceof Error && err.message === "Request failed with status code 400") {
         return new LikelyUserAlreadyExistError(err.message || err)

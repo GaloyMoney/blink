@@ -55,7 +55,13 @@ type LoginWithPhoneNoPasswordSchemaResponse = {
   authToken: AuthToken
   kratosUserId?: UserId
 }
-type CreateKratosUserForPhoneNoPasswordSchemaResponse = WithSessionResponse
+type CreateKratosUserForPhoneNoPasswordSchemaResponse = WithSessionResponse & {
+  registrationBody: {
+    identity_id: string
+    phone: string
+    schema_id: string
+  }
+}
 
 type CallbackSecretValidator = {
   authorize(secret: string | undefined): true | ValidationError
