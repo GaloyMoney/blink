@@ -41,7 +41,6 @@ The "bankowner" user is the account from which revenue and expenses are being ch
 
 Some expenses are not been recorded yet to this account, including:
 - rebalancing from cold storage to the hot wallet
-- usage of loop or pool
 
 
 ## Real time dashboard

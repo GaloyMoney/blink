@@ -4,7 +4,10 @@ import {
   rewardFailedLoginAttemptPerIpLimits,
 } from "./ratelimits"
 
-import { createAccountForDeviceAccount } from "@/app/accounts/create-account"
+import {
+  createAccountForDeviceAccount,
+  createAccountWithPhoneIdentifier,
+} from "@/app/accounts/create-account"
 
 import {
   EmailUnverifiedError,
@@ -38,7 +41,7 @@ import { isPhoneCodeValid, TwilioClient } from "@/services/twilio-service"
 
 import { IPMetadataAuthorizer } from "@/domain/accounts-ips/ip-metadata-authorizer"
 
-import { getAccountsOnboardConfig } from "@/config"
+import { getAccountsOnboardConfig, getDefaultAccountsConfig } from "@/config"
 
 import {
   UnauthorizedIPForOnboardingError,
@@ -103,6 +106,24 @@ export const loginWithPhoneToken = async ({
       phoneMetadata,
     })
     if (kratosResult instanceof Error) return kratosResult
+    const { kratosUserId } = kratosResult
+
+    const account = await createAccountWithPhoneIdentifier({
+      newAccountInfo: { phone, kratosUserId },
+      config: getDefaultAccountsConfig(),
+      phoneMetadata,
+    })
+    if (account instanceof Error) {
+      recordExceptionInCurrentSpan({
+        error: account,
+        level: ErrorLevel.Critical,
+        attributes: {
+          userId: kratosUserId,
+          phone,
+        },
+      })
+      return account
+    }
 
     return {
       authToken: kratosResult.authToken,

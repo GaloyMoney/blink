@@ -48,18 +48,29 @@ type AdminPushNotificationSendPayload {
 Accounts are core to the Galoy architecture. they have users, and own wallets
 """
 type AuditedAccount {
-  """
-  GPS coordinates for the account that can be used to place the related business on a map
-  """
-  coordinates: Coordinates
   createdAt: Timestamp!
   id: ID!
   level: AccountLevel!
   owner: AuditedUser!
   status: AccountStatus!
-  title: String
   username: Username
   wallets: [Wallet!]!
+}
+
+type AuditedMerchant {
+  """
+  GPS coordinates for the merchant that can be used to place the related business on a map
+  """
+  coordinates: Coordinates
+  createdAt: Timestamp!
+  id: ID!
+  title: String!
+
+  """The username of the merchant"""
+  username: Username!
+
+  """Whether the merchant has been validated"""
+  validated: Boolean!
 }
 
 type AuditedUser {
@@ -283,12 +294,17 @@ scalar LnPubkey
 """Text field in a lightning payment transaction"""
 scalar Memo
 
+type MerchantPayload {
+  errors: [Error!]!
+  merchant: AuditedMerchant
+}
+
 type Mutation {
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
   adminPushNotificationSend(input: AdminPushNotificationSendInput!): AdminPushNotificationSendPayload!
   businessDeleteMapInfo(input: BusinessDeleteMapInfoInput!): AccountDetailPayload!
-  businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
+  businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): MerchantPayload!
   userUpdatePhone(input: UserUpdatePhoneInput!): AccountDetailPayload!
 }
 

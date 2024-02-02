@@ -217,22 +217,6 @@ const AccountSchema = new Schema<AccountRecord>(
       default: [],
     },
 
-    title: {
-      type: String,
-      minlength: 3,
-      maxlength: 100,
-    },
-    coordinates: {
-      type: {
-        latitude: {
-          type: Number,
-        },
-        longitude: {
-          type: Number,
-        },
-      },
-    },
-
     statusHistory: {
       type: [
         {
@@ -306,6 +290,54 @@ const QuizSchema = new Schema<QuizCompletedRecord>({
 QuizSchema.index({ accountId: 1, quizId: 1 }, { unique: true })
 
 export const Quiz = mongoose.model<QuizCompletedRecord>("Quiz", QuizSchema)
+
+const pointSchema = new Schema<LocationRecord>({
+  type: {
+    type: String,
+    enum: ["Point"],
+    required: true,
+  },
+  coordinates: {
+    type: [Number],
+    required: true,
+  },
+})
+
+const MerchantSchema = new Schema<MerchantRecord>({
+  id: {
+    type: String,
+    index: true,
+    unique: true,
+    sparse: true,
+    required: true,
+    default: () => crypto.randomUUID(),
+  },
+  username: {
+    type: String,
+    required: true,
+    index: true,
+  },
+  title: {
+    type: String,
+    required: true,
+  },
+  location: {
+    type: pointSchema,
+    index: "2dsphere",
+    // for online commerce, we don't require coordinates
+    required: false,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  validated: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+export const Merchant = mongoose.model<MerchantRecord>("Merchant", MerchantSchema)
 
 const AccountIpsSchema = new Schema<AccountIpsRecord>({
   ip: {

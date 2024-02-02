@@ -95,6 +95,14 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = `Account does not exist for username ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
+    case "CouldNotFindMerchantFromUsernameError":
+      message = `Merchant does not exist for username ${error.message}`
+      return new NotFoundError({ message, logger: baseLogger })
+
+    case "CouldNotFindMerchantFromIdError":
+      message = `Merchant does not exist for ID ${error.message}`
+      return new NotFoundError({ message, logger: baseLogger })
+
     case "WalletInvoiceMissingLnInvoiceError":
       message = `The associated lightning invoice could not be found.`
       return new NotFoundError({ message, logger: baseLogger })
@@ -692,12 +700,6 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "InvalidUrlError":
     case "SvixEventError":
     case "UnknownSvixError":
-    case "MissingSecretForAuthNCallbackError":
-    case "InvalidSecretForAuthNCallbackError":
-    case "MissingRegistrationPayloadPropertiesError":
-    case "UnsupportedSchemaTypeError":
-    case "SecretForAuthNCallbackError":
-    case "RegistrationPayloadValidationError":
     case "UnauthorizedPhoneError":
     case "PhoneMetadataValidationError":
     case "InvalidCarrierForPhoneMetadataError":
