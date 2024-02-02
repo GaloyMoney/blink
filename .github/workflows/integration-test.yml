@@ -31,7 +31,7 @@ jobs:
           for LABEL in "${LABELS[@]}"; do
             case "$LABEL" in
               dashboard|consent|pay|core|admin-panel)
-                ARGS+=" --test $LABEL"
+                ARGS+=" $LABEL"
                 ;;
             esac
           done
@@ -40,4 +40,4 @@ jobs:
           echo "args=$ARGS" >> "$GITHUB_OUTPUT"
       - name: Tilt CI
         if: steps.prepare_args.outputs.args != ''
-        run: nix develop -c xvfb-run tilt --file dev/Tiltfile ci -- ${{ steps.prepare_args.outputs.args }}
+        run: nix develop -c xvfb-run ./dev/bin/tilt-ci.sh ${{ steps.prepare_args.outputs.args }}
