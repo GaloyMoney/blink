@@ -10,7 +10,6 @@ const envVarsWithDefaults = {
   KRATOS_PUBLIC_API: "http://dummy",
   KRATOS_ADMIN_API: "http://dummy",
   KRATOS_MASTER_USER_PASSWORD: "dummy",
-  KRATOS_CALLBACK_API_KEY: "dummy",
   BRIA_HOST: "dummy",
   BRIA_API_KEY: "dummy",
   NOTIFICATIONS_HOST: "dummy",

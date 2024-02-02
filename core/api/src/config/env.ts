@@ -44,7 +44,6 @@ export const env = createEnv({
     KRATOS_PUBLIC_API: z.string().url(),
     KRATOS_ADMIN_API: z.string().url(),
     KRATOS_MASTER_USER_PASSWORD: z.string().min(1),
-    KRATOS_CALLBACK_API_KEY: z.string().min(1),
 
     BRIA_HOST: z.string().min(1),
     BRIA_PORT: z.number().min(1).or(z.string()).pipe(z.coerce.number()).default(2742),
@@ -165,7 +164,6 @@ export const env = createEnv({
     KRATOS_PUBLIC_API: process.env.KRATOS_PUBLIC_API,
     KRATOS_ADMIN_API: process.env.KRATOS_ADMIN_API,
     KRATOS_MASTER_USER_PASSWORD: process.env.KRATOS_MASTER_USER_PASSWORD,
-    KRATOS_CALLBACK_API_KEY: process.env.KRATOS_CALLBACK_API_KEY,
 
     BRIA_HOST: process.env.BRIA_HOST,
     BRIA_PORT: process.env.BRIA_PORT,

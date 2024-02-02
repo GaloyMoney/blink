@@ -251,7 +251,6 @@ core_serve_env = {
   "KRATOS_PUBLIC_API": "http://localhost:4433",
   "KRATOS_ADMIN_API": "http://localhost:4434",
   "KRATOS_MASTER_USER_PASSWORD": "passwordHardtoFindWithNumber123",
-  "KRATOS_CALLBACK_API_KEY": "The-Value-of-My-Key",
   "PRICE_HOST": "localhost",
   "PRICE_HISTORY_HOST": "localhost",
   "BRIA_HOST": "localhost",
