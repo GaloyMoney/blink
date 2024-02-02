@@ -5,7 +5,9 @@
 const nodeCrypto = require("crypto")
 
 async function migrateAccounts(db, batchSize = 100) {
-  const cursor = db.collection("accounts").find({ title: { $exists: true } })
+  const cursor = db.collection("accounts").find({
+    $and: [{ title: { $ne: null } }, { coordinates: { $ne: null } }],
+  })
 
   let batchCount = 0
   while (await cursor.hasNext()) {
