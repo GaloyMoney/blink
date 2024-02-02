@@ -41,3 +41,12 @@ jobs:
       - name: Tilt CI
         if: steps.prepare_args.outputs.args != ''
         run: nix develop -c xvfb-run ./dev/bin/tilt-ci.sh ${{ steps.prepare_args.outputs.args }}
+      - name: Rename Tilt log
+        if: always()
+        run: mv dev/.e2e-tilt.log dev/e2e-tilt.log
+      - name: Upload Tilt log
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: Tilt log
+          path: dev/e2e-tilt.log
