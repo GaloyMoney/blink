@@ -1,0 +1,16 @@
+_version: 1
+
+circle_time_frame.month: " this month"
+circle_time_frame.all_time: ""
+
+circle_type.inner: "inner circle"
+circle_type.outer: "outer circle"
+
+circle_grew.title: "Your Blink Circles are growing!"
+circle_grew.body: "Somebody was just added to your %{circle_type}."
+
+circle_threshold_reached.inner.title: "Nice Inner Circle! 🤙"
+circle_threshold_reached.inner.body: "You have welcomed %{threshold} people to Blink%{time_frame}. Keep it up!"
+
+circle_threshold_reached.outer.title: "Outer Circle gains 💪"
+circle_threshold_reached.outer.body: "Your Outer Circle reached %{threshold} people. You are driving Bitcoin adoption!"

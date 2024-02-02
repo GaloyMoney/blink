@@ -41,6 +41,7 @@ serde_with = { workspace = true }
 tonic = { workspace = true }
 tonic-health = { workspace = true }
 prost = { workspace = true }
+rust-i18n = { workspace = true }
 
 [build-dependencies]
 tonic-build = { workspace = true }
