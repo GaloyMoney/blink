@@ -42,6 +42,7 @@ tonic = { workspace = true }
 tonic-health = { workspace = true }
 prost = { workspace = true }
 rust-i18n = { workspace = true }
+rust-i18n-support = { workspace = true }
 
 [build-dependencies]
 tonic-build = { workspace = true }

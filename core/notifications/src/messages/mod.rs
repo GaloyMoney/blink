@@ -1,6 +1,17 @@
-use rust_i18n::t;
+use rust_i18n::{t, SimpleBackend};
 
 use crate::{notification_event::*, primitives::*};
+
+pub fn load_injected_locales() -> SimpleBackend {
+    let mut backend = SimpleBackend::new();
+    if let Ok(dir) = std::env::var("LOCALES_DIR") {
+        for (k, v) in rust_i18n_support::load_locales(&dir, |_| false) {
+            let translations = v.iter().map(|(k, v)| (k.as_ref(), v.as_ref())).collect();
+            backend.add_translations(&k, &translations);
+        }
+    }
+    backend
+}
 
 pub struct LocalizedMessage {
     pub title: String,
@@ -8,9 +19,7 @@ pub struct LocalizedMessage {
 }
 
 #[allow(dead_code)]
-pub struct Messages {
-    //
-}
+pub struct Messages {}
 
 impl Messages {
     #[allow(dead_code)]
@@ -19,7 +28,7 @@ impl Messages {
     }
 
     #[allow(dead_code)]
-    pub fn circle_grew(&self, locale: &str, event: CircleGrew) -> LocalizedMessage {
+    pub fn circle_grew(&self, locale: &str, event: &CircleGrew) -> LocalizedMessage {
         let circle_type = match event.circle_type {
             CircleType::Inner => t!("circle_type.inner", locale = locale),
             CircleType::Outer => t!("circle_type.outer", locale = locale),
@@ -38,7 +47,7 @@ impl Messages {
     pub fn circle_threshold_reached(
         &self,
         locale: &str,
-        event: CircleThresholdReached,
+        event: &CircleThresholdReached,
     ) -> LocalizedMessage {
         let title = match event.circle_type {
             CircleType::Inner => t!("circle_threshold_reached.inner.title", locale = locale),
@@ -81,7 +90,7 @@ mod tests {
             this_month_circle_size: 1,
             all_time_circle_size: 2,
         };
-        let localized_message = messages.circle_grew("en", event);
+        let localized_message = messages.circle_grew("en", &event);
         assert_eq!(localized_message.title, "Your Blink Circles are growing!");
         assert_eq!(
             localized_message.body,
@@ -98,7 +107,7 @@ mod tests {
             time_frame: CircleTimeFrame::AllTime,
             threshold: 2,
         };
-        let localized_message = messages.circle_threshold_reached("en", event);
+        let localized_message = messages.circle_threshold_reached("en", &event);
         assert_eq!(localized_message.title, "Nice Inner Circle! 🤙");
         assert_eq!(
             localized_message.body,

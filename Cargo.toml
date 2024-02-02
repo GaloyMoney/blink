@@ -44,4 +44,5 @@ tonic-build = { version = "0.10.2", features = ["prost"] }
 tonic-health = "0.10.2"
 prost = "0.12"
 rust-i18n = "3"
+rust-i18n-support = "3"
 

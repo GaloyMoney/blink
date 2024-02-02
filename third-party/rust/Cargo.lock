@@ -3215,6 +3215,7 @@ dependencies = [
  "rand",
  "reqwest",
  "rust-i18n",
+ "rust-i18n-support",
  "serde",
  "serde_json",
  "serde_with 3.5.0",

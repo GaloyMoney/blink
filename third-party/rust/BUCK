@@ -6724,6 +6724,12 @@ cargo.rust_library(
     ],
 )
 
+alias(
+    name = "rust-i18n-support",
+    actual = ":rust-i18n-support-3.0.1",
+    visibility = ["PUBLIC"],
+)
+
 http_archive(
     name = "rust-i18n-support-3.0.1.crate",
     sha256 = "399801f4d955abf1c3ce3ce2215dc76bd40beb4ae39e3a84936b21a79ce2caa5",
@@ -8673,6 +8679,7 @@ cargo.rust_binary(
         ":rand-0.8.5",
         ":reqwest-0.11.23",
         ":rust-i18n-3.0.1",
+        ":rust-i18n-support-3.0.1",
         ":serde-1.0.196",
         ":serde_json-1.0.111",
         ":serde_with-3.5.0",
