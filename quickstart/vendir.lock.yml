@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: add bats test for map (#3923)...'
-      sha: ee42e71731f91944c5e44ed6b92bb7f74ef89b94
+      commitTitle: 'test(core): move integration lnd health check to bats (#3914)'
+      sha: 6ddae2b4dda264dc4b84998e041bb7c3d89d82f0
       tags:
-      - 0.20.33-3-gee42e7173
+      - 0.20.34-5-g6ddae2b4d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: add bats test for map (#3923)...'
-      sha: ee42e71731f91944c5e44ed6b92bb7f74ef89b94
+      commitTitle: 'test(core): move integration lnd health check to bats (#3914)'
+      sha: 6ddae2b4dda264dc4b84998e041bb7c3d89d82f0
       tags:
-      - 0.20.33-3-gee42e7173
+      - 0.20.34-5-g6ddae2b4d
     path: schemas/
   - git:
-      commitTitle: 'test: add bats test for map (#3923)...'
-      sha: ee42e71731f91944c5e44ed6b92bb7f74ef89b94
+      commitTitle: 'test(core): move integration lnd health check to bats (#3914)'
+      sha: 6ddae2b4dda264dc4b84998e041bb7c3d89d82f0
       tags:
-      - 0.20.33-3-gee42e7173
+      - 0.20.34-5-g6ddae2b4d
     path: gql/
   path: ./graphql
 kind: LockConfig
