@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(admin-panel): adding admin-panel to monorepo (#3927)...'
-      sha: 11f6ba8c28a7711400083321cfb269eaeda9ae63
+      commitTitle: 'fix: migration for location (#3935)...'
+      sha: 500123ea65d0e1eb24c7cf64ab00a16af09a1528
       tags:
-      - 0.20.40
+      - 0.20.40-2-g500123ea6
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(admin-panel): adding admin-panel to monorepo (#3927)...'
-      sha: 11f6ba8c28a7711400083321cfb269eaeda9ae63
+      commitTitle: 'fix: migration for location (#3935)...'
+      sha: 500123ea65d0e1eb24c7cf64ab00a16af09a1528
       tags:
-      - 0.20.40
+      - 0.20.40-2-g500123ea6
     path: schemas/
   - git:
-      commitTitle: 'feat(admin-panel): adding admin-panel to monorepo (#3927)...'
-      sha: 11f6ba8c28a7711400083321cfb269eaeda9ae63
+      commitTitle: 'fix: migration for location (#3935)...'
+      sha: 500123ea65d0e1eb24c7cf64ab00a16af09a1528
       tags:
-      - 0.20.40
+      - 0.20.40-2-g500123ea6
     path: gql/
   path: ./graphql
 kind: LockConfig
