@@ -1153,8 +1153,8 @@ importers:
         specifier: ^1.3.7
         version: 1.3.7(@types/react-dom@18.2.17)(@types/react@18.2.45)(less@4.2.0)(postcss@8.4.31)(react-dom@18.2.0)(react@18.2.0)(typescript@5.3.2)(webpack@5.89.0)
       '@storybook/addon-styling-webpack':
-        specifier: ^0.0.5
-        version: 0.0.5(webpack@5.89.0)
+        specifier: ^0.0.6
+        version: 0.0.6(webpack@5.89.0)
       '@storybook/addons':
         specifier: ^7.6.3
         version: 7.6.3(react-dom@18.2.0)(react@18.2.0)
@@ -11395,12 +11395,12 @@ packages:
       - webpack
     dev: true
 
-  /@storybook/addon-styling-webpack@0.0.5(webpack@5.89.0):
-    resolution: {integrity: sha512-8XdE3w+W7qxMeqnK/FDFipFN9XaVKUJFcHyM2ZBlhAAxVWMbTcifqw5lzqeK8jSAA/TUtpUp37gT2Bw/3k6slQ==}
+  /@storybook/addon-styling-webpack@0.0.6(webpack@5.89.0):
+    resolution: {integrity: sha512-JjM2FXFiHpjbJsp7nRUEMhYBRpK6ukBKsbtWzCrAGOfUgoElcGwPY8KhSKSnRknIhebonGK1bxalh3u8bGZ/dw==}
     peerDependencies:
       webpack: ^5.0.0
     dependencies:
-      '@storybook/node-logger': 7.6.3
+      '@storybook/node-logger': 7.6.6
       webpack: 5.89.0(@swc/core@1.3.105)(esbuild@0.18.20)(webpack-cli@5.1.4)
     dev: true
 

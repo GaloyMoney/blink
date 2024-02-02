@@ -26,7 +26,7 @@
     "@storybook/addon-onboarding": "^1.0.9",
     "@storybook/addon-postcss": "^2.0.0",
     "@storybook/addon-styling": "^1.3.7",
-    "@storybook/addon-styling-webpack": "^0.0.5",
+    "@storybook/addon-styling-webpack": "^0.0.6",
     "@storybook/addons": "^7.6.3",
     "@storybook/blocks": "^7.6.3",
     "@storybook/react": "^7.6.3",
