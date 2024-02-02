@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): move integration lnd health check to bats (#3914)'
-      sha: 6ddae2b4dda264dc4b84998e041bb7c3d89d82f0
+      commitTitle: 'refactor(core): remove kratos registration endpoint (#3925)...'
+      sha: 69656466d3a03c3a39efcb107dac099589378c49
       tags:
-      - 0.20.34-5-g6ddae2b4d
+      - 0.20.35-2-g69656466d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): move integration lnd health check to bats (#3914)'
-      sha: 6ddae2b4dda264dc4b84998e041bb7c3d89d82f0
+      commitTitle: 'refactor(core): remove kratos registration endpoint (#3925)...'
+      sha: 69656466d3a03c3a39efcb107dac099589378c49
       tags:
-      - 0.20.34-5-g6ddae2b4d
+      - 0.20.35-2-g69656466d
     path: schemas/
   - git:
-      commitTitle: 'test(core): move integration lnd health check to bats (#3914)'
-      sha: 6ddae2b4dda264dc4b84998e041bb7c3d89d82f0
+      commitTitle: 'refactor(core): remove kratos registration endpoint (#3925)...'
+      sha: 69656466d3a03c3a39efcb107dac099589378c49
       tags:
-      - 0.20.34-5-g6ddae2b4d
+      - 0.20.35-2-g69656466d
     path: gql/
   path: ./graphql
 kind: LockConfig
