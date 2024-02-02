@@ -1,4 +1,4 @@
-import { deleteMerchantByUsername } from "../merchants"
+import { deleteMerchantByUsername } from "@/app/merchants"
 
 import { getBalanceForWallet, listWalletsByAccountId } from "@/app/wallets"
 

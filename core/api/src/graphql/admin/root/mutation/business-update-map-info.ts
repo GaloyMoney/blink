@@ -1,8 +1,7 @@
-import MerchantPayload from "../../types/payload/merchant"
-
 import { Merchants } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import { GT } from "@/graphql/index"
+import MerchantPayload from "@/graphql/admin/types/payload/merchant"
 import Username from "@/graphql/shared/types/scalar/username"
 
 const BusinessUpdateMapInfoInput = GT.Input({

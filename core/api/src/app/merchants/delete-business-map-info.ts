@@ -1,24 +1,24 @@
 import { checkedToUsername } from "@/domain/accounts"
 import { MerchantsRepository } from "@/services/mongoose"
 
-export const deleteBusinessMapInfo = async ({
+export const deleteMerchantById = async ({
   id,
 }: {
   id: MerchantId
-}): Promise<void | ApplicationError> => {
+}): Promise<true | ApplicationError> => {
   const merchantsRepo = MerchantsRepository()
 
   const result = await merchantsRepo.remove(id)
   if (result instanceof Error) return result
 
-  return
+  return true
 }
 
 export const deleteMerchantByUsername = async ({
   username,
 }: {
   username: string
-}): Promise<void | ApplicationError> => {
+}): Promise<true | ApplicationError> => {
   const merchantsRepo = MerchantsRepository()
 
   const usernameChecked = checkedToUsername(username)
@@ -27,12 +27,12 @@ export const deleteMerchantByUsername = async ({
   const merchants = await merchantsRepo.findByUsername(usernameChecked)
   if (merchants instanceof Error) return merchants
 
-  if (merchants.length === 0) return
+  if (merchants.length === 0) return true
 
   for (const merchant of merchants) {
     const result = await merchantsRepo.remove(merchant.id)
     if (result instanceof Error) return result
   }
 
-  return
+  return true
 }

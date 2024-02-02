@@ -6,27 +6,16 @@ import {
   CouldNotFindMerchantFromUsernameError,
 } from "@/domain/errors"
 
-interface IAccountRespotitory {
+interface IMerchantRepository {
   listForMap(): Promise<BusinessMapMarker[] | RepositoryError>
   findByUsername(username: Username): Promise<BusinessMapMarker[] | RepositoryError>
-  create({
-    username,
-    coordinates,
-    title,
-    validated,
-  }: {
+  create(args: {
     username: Username
     coordinates: Coordinates
     title: BusinessMapTitle
     validated: boolean
   }): Promise<BusinessMapMarker | RepositoryError>
-  update({
-    id,
-    coordinates,
-    title,
-    username,
-    validated,
-  }: {
+  update(args: {
     id: MerchantId
     coordinates: Coordinates
     title: BusinessMapTitle
@@ -36,7 +25,7 @@ interface IAccountRespotitory {
   remove(id: MerchantId): Promise<void | RepositoryError>
 }
 
-export const MerchantsRepository = (): IAccountRespotitory => {
+export const MerchantsRepository = (): IMerchantRepository => {
   const findByUsername = async (
     username: Username,
   ): Promise<BusinessMapMarker[] | RepositoryError> => {
