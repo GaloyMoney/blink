@@ -3,6 +3,7 @@ packages:
   - core/api
   - apps/consent
   - apps/dashboard
+  - apps/admin-panel
   - apps/pay
   - lib/eslint-config
   - lib/gt3-server-node-express-sdk
