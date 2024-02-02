@@ -44,7 +44,6 @@ export const env = createEnv({
     KRATOS_PUBLIC_API: z.string().url(),
     KRATOS_ADMIN_API: z.string().url(),
     KRATOS_MASTER_USER_PASSWORD: z.string().min(1),
-    KRATOS_CALLBACK_API_KEY: z.string().min(1),
 
     BRIA_HOST: z.string().min(1),
     BRIA_PORT: z.number().min(1).or(z.string()).pipe(z.coerce.number()).default(2742),
@@ -108,11 +107,6 @@ export const env = createEnv({
       .transform((x) => x.split(",")),
     LND2_NAME: z.string().min(1).default("lnd2"),
 
-    LND1_LOOP_TLS: z.string().min(1).optional(),
-    LND1_LOOP_MACAROON: z.string().min(1).optional(),
-    LND2_LOOP_TLS: z.string().min(1).optional(),
-    LND2_LOOP_MACAROON: z.string().min(1).optional(),
-
     PRICE_HOST: z.string().min(1).default("galoy-price"),
     PRICE_PORT: z.number().min(1).or(z.string()).pipe(z.coerce.number()).default(50051),
 
@@ -170,7 +164,6 @@ export const env = createEnv({
     KRATOS_PUBLIC_API: process.env.KRATOS_PUBLIC_API,
     KRATOS_ADMIN_API: process.env.KRATOS_ADMIN_API,
     KRATOS_MASTER_USER_PASSWORD: process.env.KRATOS_MASTER_USER_PASSWORD,
-    KRATOS_CALLBACK_API_KEY: process.env.KRATOS_CALLBACK_API_KEY,
 
     BRIA_HOST: process.env.BRIA_HOST,
     BRIA_PORT: process.env.BRIA_PORT,
@@ -213,11 +206,6 @@ export const env = createEnv({
     LND2_RPCPORT: process.env.LND2_RPCPORT,
     LND2_TYPE: process.env.LND2_TYPE,
     LND2_NAME: process.env.LND2_NAME,
-
-    LND1_LOOP_TLS: process.env.LND1_LOOP_TLS,
-    LND1_LOOP_MACAROON: process.env.LND1_LOOP_MACAROON,
-    LND2_LOOP_TLS: process.env.LND2_LOOP_TLS,
-    LND2_LOOP_MACAROON: process.env.LND2_LOOP_MACAROON,
 
     PRICE_HOST: process.env.PRICE_HOST,
     PRICE_PORT: process.env.PRICE_PORT,

@@ -692,12 +692,6 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "InvalidUrlError":
     case "SvixEventError":
     case "UnknownSvixError":
-    case "MissingSecretForAuthNCallbackError":
-    case "InvalidSecretForAuthNCallbackError":
-    case "MissingRegistrationPayloadPropertiesError":
-    case "UnsupportedSchemaTypeError":
-    case "SecretForAuthNCallbackError":
-    case "RegistrationPayloadValidationError":
     case "UnauthorizedPhoneError":
     case "PhoneMetadataValidationError":
     case "InvalidCarrierForPhoneMetadataError":
