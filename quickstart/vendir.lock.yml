@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): move hedge tests to new integration (#3922)...'
-      sha: 128addf4aa4762641ae83751224e14dcc641d263
+      commitTitle: 'chore: retrigger pipeline (#3932)...'
+      sha: b7f45570b173cbec266bd76565cad89b56bb4764
       tags:
-      - 0.20.36-2-g128addf4a
+      - 0.20.37-1-gb7f45570b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): move hedge tests to new integration (#3922)...'
-      sha: 128addf4aa4762641ae83751224e14dcc641d263
+      commitTitle: 'chore: retrigger pipeline (#3932)...'
+      sha: b7f45570b173cbec266bd76565cad89b56bb4764
       tags:
-      - 0.20.36-2-g128addf4a
+      - 0.20.37-1-gb7f45570b
     path: schemas/
   - git:
-      commitTitle: 'chore(core): move hedge tests to new integration (#3922)...'
-      sha: 128addf4aa4762641ae83751224e14dcc641d263
+      commitTitle: 'chore: retrigger pipeline (#3932)...'
+      sha: b7f45570b173cbec266bd76565cad89b56bb4764
       tags:
-      - 0.20.36-2-g128addf4a
+      - 0.20.37-1-gb7f45570b
     path: gql/
   path: ./graphql
 kind: LockConfig
