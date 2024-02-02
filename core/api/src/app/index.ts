@@ -11,6 +11,7 @@ import * as TransactionsMod from "./transactions"
 import * as UsersMod from "./users"
 import * as WalletsMod from "./wallets"
 import * as PaymentsMod from "./payments"
+import * as MerchantsMod from "./merchants"
 
 import { wrapAsyncToRunInSpan } from "@/services/tracing"
 
@@ -21,6 +22,7 @@ const allFunctions = {
   Callback: { ...CallbackMod },
   Comm: { ...CommMod },
   Quiz: { ...QuizMod },
+  Merchants: { ...MerchantsMod },
   Lightning: { ...LightningMod },
   OnChain: { ...OnChainMod },
   Prices: { ...PricesMod },
@@ -50,6 +52,7 @@ export const {
   Callback,
   Comm,
   Quiz,
+  Merchants,
   Lightning,
   OnChain,
   Prices,

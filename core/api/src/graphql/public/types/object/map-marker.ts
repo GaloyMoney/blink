@@ -11,6 +11,7 @@ const MapMarker = GT.Object({
       type: GT.NonNull(Username),
     },
     mapInfo: {
+      // TODO: deprecate, use a flat structure
       type: GT.NonNull(MapInfo),
     },
   }),

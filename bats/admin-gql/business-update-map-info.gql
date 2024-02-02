@@ -1,0 +1,18 @@
+mutation businessUpdateMapInfo($input: BusinessUpdateMapInfoInput!) {
+  businessUpdateMapInfo(input: $input) {
+    errors {
+      message
+    }
+    merchant {
+      id
+      title
+      coordinates {
+        latitude
+        longitude
+      }
+      username
+      validated
+      createdAt
+    }
+  }
+}

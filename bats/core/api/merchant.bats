@@ -13,7 +13,7 @@ setup_file() {
   login_admin
 }
 
-@test "merchants: add a merchant with admin api" {
+@test "merchant: add a merchant with admin api" {
   admin_token="$(read_value 'admin.token')"
   latitude=40.712776
   longitude=-74.005974
@@ -28,8 +28,8 @@ setup_file() {
     '{input: {latitude: ($latitude | tonumber), longitude: ($longitude | tonumber), title: $title, username: $username}}'
   )
 
-  exec_admin_graphql $admin_token 'update-merchant-map' "$variables"
-  latitude_result="$(graphql_output '.data.businessUpdateMapInfo.accountDetails.coordinates.latitude')"
+  exec_admin_graphql $admin_token 'business-update-map-info' "$variables"
+  latitude_result="$(graphql_output '.data.businessUpdateMapInfo.merchant.coordinates.latitude')"
   [[ "$latitude_result" == "$latitude" ]] || exit 1
 }
 
@@ -38,4 +38,22 @@ setup_file() {
   exec_graphql 'anon' 'business-map-markers'
   fetch_username="$(graphql_output '.data.businessMapMarkers[0].username')"
   [[ $username = $fetch_username ]] || exit 1
+}
+
+@test "merchant: delete merchant with admin api" {
+  admin_token="$(read_value 'admin.token')"
+  local username="$(read_value merchant.username)"
+
+  variables=$(jq -n \
+    --arg username "$username" \
+    '{input: {username: $username}}'
+  )
+
+  exec_admin_graphql $admin_token 'business-delete-map-info' "$variables"
+
+  exec_graphql 'anon' 'business-map-markers'
+  map_markers="$(graphql_output)"
+  markers_length=$(echo "$map_markers" | jq '.data.businessMapMarkers | length')
+
+  [[ $markers_length -eq 0 ]] || exit 1
 }
