@@ -191,6 +191,10 @@ plan:
 #@   "pay": {
 #@     "YAML_PATH": ".image.digest",
 #@     "CHART": "galoy-pay"
+#@   },
+#@   "admin-panel": {
+#@     "YAML_PATH": ".image.digest",
+#@     "CHART": "admin-panel"
 #@   }
 #@ }
 name: #@ bump_image_in_chart_name(app)
