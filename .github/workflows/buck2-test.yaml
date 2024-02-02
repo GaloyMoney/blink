@@ -27,6 +27,8 @@ jobs:
           LABELS=($(jq -r '.[]' < labels.json))
           if [ ${#LABELS[@]} -eq 0 ]; then
               LABELS=("${DEFAULT_LABELS[@]}")
+          elif [ ${#LABELS[@]} -eq 1 ] && [ "${LABELS[0]}" = "ci" ]; then
+              LABELS=("${DEFAULT_LABELS[@]}")
           fi
 
           for LABEL in "${LABELS[@]}"; do
