@@ -17,7 +17,6 @@
     "daily-notif": "pnpm run build && node dist/servers/daily-balance-notification.js",
     "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit",
     "test:unit": ". ../../.env && LOGLEVEL=warn jest --config ./test/unit/jest.config.js --bail --verbose $TEST",
-    "test:legacy-integration": ". ../../.env && LOGLEVEL=warn jest --config ./test/legacy-integration/jest.config.js --bail --runInBand --verbose $TEST",
     "test:integration": ". ../../.env && LOGLEVEL=warn jest --config ./test/integration/jest.config.js --bail --runInBand --verbose $TEST",
     "build-docs": "npx spectaql spectaql-config.yml -1",
     "fix-yaml": "prettier --write '**/*.(yaml|yml)'",

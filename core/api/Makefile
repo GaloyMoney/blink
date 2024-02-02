@@ -53,7 +53,7 @@ clean-deps:
 reset-deps: clean-deps start-deps
 reset-deps-integration: clean-deps start-deps-integration
 
-test: unit legacy-integration integration
+test: unit integration
 
 test-migrate:
 	docker compose down -v -t 3
@@ -70,29 +70,18 @@ watch-unit:
 del-containers:
 	docker compose rm -sfv
 
-legacy-integration:
-	pnpm run build && \
-	pnpm run test:legacy-integration
-
-reset-legacy-integration: reset-deps-integration legacy-integration
-
 integration:
 	pnpm run build && \
 	. ./.env && pnpm run test:integration
 
 reset-integration: reset-deps-integration integration
 
-reset-all-integration: reset-deps-integration legacy-integration integration
+reset-all-integration: reset-deps-integration integration
 
 integration-in-ci:
 	pnpm install --frozen-lockfile && \
 	export NODE_OPTIONS="--max-old-space-size=6144" && \
 	$(MAKE) reset-all-integration
-
-legacy-integration-in-ci:
-	pnpm install --frozen-lockfile && \
-	export NODE_OPTIONS="--max-old-space-size=6144" && \
-	$(MAKE) reset-legacy-integration
 
 unit-in-ci:
 	. ./.env && \
