@@ -1,18 +1,17 @@
-mutation businessUpdateMapInfo($input: BusinessUpdateMapInfoInput!) {
-  businessUpdateMapInfo(input: $input) {
+mutation merchantMapSuggest($input: MerchantMapSuggestInput!) {
+  merchantMapSuggest(input: $input) {
     errors {
       message
     }
     merchant {
       id
+      validated
       title
       coordinates {
         latitude
         longitude
       }
       username
-      validated
-      createdAt
     }
   }
 }

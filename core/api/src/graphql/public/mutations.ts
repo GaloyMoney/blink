@@ -63,6 +63,7 @@ import UserUpdateUsernameMutation from "@/graphql/public/root/mutation/user-upda
 import CaptchaCreateChallengeMutation from "@/graphql/public/root/mutation/captcha-create-challenge"
 import CaptchaRequestAuthCodeMutation from "@/graphql/public/root/mutation/captcha-request-auth-code"
 import QuizClaimMutation from "@/graphql/public/root/mutation/quiz-claim"
+import MerchantMapSuggest from "@/graphql/public/root/mutation/merchant-map-suggest"
 
 // TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLPublicContext> }
 export const mutationFields = {
@@ -112,6 +113,9 @@ export const mutationFields = {
 
       callbackEndpointAdd: CallbackEndpointAdd,
       callbackEndpointDelete: CallbackEndpointDelete,
+
+      // behind authed to prevent DDOS. not strictly necessary
+      merchantMapSuggest: MerchantMapSuggest,
     },
 
     atWalletLevel: {

@@ -1,11 +1,9 @@
 import { checkedToUsername } from "@/domain/accounts"
 import { MerchantsRepository } from "@/services/mongoose"
 
-export const deleteMerchantById = async ({
-  id,
-}: {
-  id: MerchantId
-}): Promise<true | ApplicationError> => {
+export const deleteMerchantById = async (
+  id: MerchantId,
+): Promise<true | ApplicationError> => {
   const merchantsRepo = MerchantsRepository()
 
   const result = await merchantsRepo.remove(id)

@@ -10,6 +10,7 @@ import ListWalletIdsQuery from "./root/query/all-walletids"
 import WalletQuery from "./root/query/wallet"
 import AccountDetailsByAccountId from "./root/query/account-details-by-account-id"
 import AccountDetailsByUserId from "./root/query/account-details-by-user-id"
+import MerchantsPendingApprovalQuery from "./root/query/merchants-pending-approval-listing"
 
 import { GT } from "@/graphql/index"
 
@@ -28,6 +29,7 @@ export const queryFields = {
     lightningPayment: LightningPaymentQuery,
     listWalletIds: ListWalletIdsQuery,
     wallet: WalletQuery,
+    merchantsPendingApproval: MerchantsPendingApprovalQuery,
   },
 }
 

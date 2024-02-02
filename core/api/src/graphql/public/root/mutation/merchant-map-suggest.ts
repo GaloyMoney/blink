@@ -1,11 +1,11 @@
 import { Merchants } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import { GT } from "@/graphql/index"
-import MerchantPayload from "@/graphql/admin/types/payload/merchant"
+import MerchantPayload from "@/graphql/shared/types/payload/merchant"
 import Username from "@/graphql/shared/types/scalar/username"
 
-const BusinessUpdateMapInfoInput = GT.Input({
-  name: "BusinessUpdateMapInfoInput",
+const MerchantMapSuggestInput = GT.Input({
+  name: "MerchantMapSuggestInput",
   fields: () => ({
     username: {
       type: GT.NonNull(Username),
@@ -22,13 +22,13 @@ const BusinessUpdateMapInfoInput = GT.Input({
   }),
 })
 
-const BusinessUpdateMapInfoMutation = GT.Field<null, GraphQLAdminContext>({
+const MerchantMapSuggestMutation = GT.Field<null, GraphQLPublicContext>({
   extensions: {
     complexity: 120,
   },
   type: GT.NonNull(MerchantPayload),
   args: {
-    input: { type: GT.NonNull(BusinessUpdateMapInfoInput) },
+    input: { type: GT.NonNull(MerchantMapSuggestInput) },
   },
   resolve: async (_, args) => {
     const { username, title, latitude, longitude } = args.input
@@ -44,7 +44,7 @@ const BusinessUpdateMapInfoMutation = GT.Field<null, GraphQLAdminContext>({
       longitude,
     }
 
-    const merchant = await Merchants.updateBusinessMapInfo({
+    const merchant = await Merchants.suggestMerchantMap({
       username,
       title,
       coordinates,
@@ -61,4 +61,4 @@ const BusinessUpdateMapInfoMutation = GT.Field<null, GraphQLAdminContext>({
   },
 })
 
-export default BusinessUpdateMapInfoMutation
+export default MerchantMapSuggestMutation

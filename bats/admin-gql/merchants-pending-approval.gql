@@ -1,0 +1,5 @@
+query merchantsPendingApproval {
+  merchantsPendingApproval {
+    id
+  }
+}
