@@ -7,6 +7,7 @@ fn get_env(key: &str) -> Option<OsString> {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("cargo:rerun-if-changed=migrations");
+    println!("cargo:rerun-if-changed=locales");
 
     let mut tonic = tonic_build::configure();
     if get_env("OUT_DIR").is_none() {
