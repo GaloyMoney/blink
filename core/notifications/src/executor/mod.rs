@@ -45,13 +45,15 @@ impl Executor {
 
         let user_id = event.user_id().to_string();
         let payload = event.into_payload();
+        let overrides = <T as NotificationEvent>::into_overrides();
 
         let id = self
             .config
             .workflows
             .for_name(<T as NotificationEvent>::workflow_name());
 
-        self.trigger_workflow(user_id, id, payload).await?;
+        self.trigger_workflow(user_id, id, payload, overrides)
+            .await?;
 
         Ok(())
     }
@@ -61,12 +63,14 @@ impl Executor {
         user_id: String,
         trigger_name: String,
         payload_data: HashMap<String, AllowedPayloadValues>,
+        overrides: Option<HashMap<String, serde_json::Value>>,
     ) -> Result<(), ExecutorError> {
         self.client
             .trigger(TriggerPayload {
                 name: trigger_name,
                 payload: payload_data,
                 to: TriggerRecipientsType::Single(TriggerRecipientBuilder::new(user_id).build()),
+                overrides,
             })
             .await?;
 
@@ -122,6 +126,7 @@ impl Executor {
                         .email(recipient_email)
                         .build(),
                 ),
+                overrides: None,
             })
             .await?;
         Ok(())

@@ -1,3 +1,4 @@
+use serde_json::Value;
 use std::collections::HashMap;
 
 use crate::{executor::AllowedPayloadValues, primitives::*};
@@ -6,6 +7,7 @@ pub trait NotificationEvent {
     fn workflow_name() -> &'static str;
     fn user_id(&self) -> &GaloyUserId;
     fn into_payload(self) -> HashMap<String, AllowedPayloadValues>;
+    fn into_overrides() -> Option<HashMap<String, Value>>;
 }
 
 #[derive(Debug)]
@@ -38,6 +40,31 @@ impl NotificationEvent for CircleGrew {
         ]
         .into_iter()
         .collect()
+    }
+
+    fn into_overrides() -> Option<HashMap<String, Value>> {
+        Some(
+            [(
+                "fcm".to_string(),
+                Value::Object(
+                    [(
+                        "data".to_string(),
+                        Value::Object(
+                            [(
+                                "linkTo".to_string(),
+                                Value::String("/people/circles".to_string()),
+                            )]
+                            .into_iter()
+                            .collect(),
+                        ),
+                    )]
+                    .into_iter()
+                    .collect(),
+                ),
+            )]
+            .into_iter()
+            .collect(),
+        )
     }
 }
 
@@ -75,5 +102,30 @@ impl NotificationEvent for CircleThresholdReached {
         ]
         .into_iter()
         .collect()
+    }
+
+    fn into_overrides() -> Option<HashMap<String, Value>> {
+        Some(
+            [(
+                "fcm".to_string(),
+                Value::Object(
+                    [(
+                        "data".to_string(),
+                        Value::Object(
+                            [(
+                                "linkTo".to_string(),
+                                Value::String("/people/circles".to_string()),
+                            )]
+                            .into_iter()
+                            .collect(),
+                        ),
+                    )]
+                    .into_iter()
+                    .collect(),
+                ),
+            )]
+            .into_iter()
+            .collect(),
+        )
     }
 }
