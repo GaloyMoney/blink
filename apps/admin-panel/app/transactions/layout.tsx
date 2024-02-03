@@ -1,19 +1,15 @@
 "use client"
 
 import Image from "next/image"
-/* eslint @typescript-eslint/ban-ts-comment: "off" */
-// @ts-ignore-next-line no-implicit-any error
-import { experimental_useFormState as useFormState } from "react-dom"
+
+import { useFormState } from "react-dom"
 
 import SearchIcon from "../../components/icons/search.svg"
-
-/* eslint @typescript-eslint/ban-ts-comment: "off" */
-// @ts-ignore-next-line no-implicit-any error
 
 import { transactionSearch } from "./search-action"
 
 const initialState = {
-  message: null,
+  message: "",
 }
 
 export default function Account({ children }: { children: React.ReactNode }) {
