@@ -12,7 +12,7 @@
 #@   "bump_image_in_chart_name",
 #@   "bump_image_in_chart")
 
-#@ apps = ["consent", "dashboard", "pay", "admin-panel"]
+#@ apps = ["consent", "dashboard", "pay", "admin-panel", "blink-map"]
 
 groups:
   - name: all

@@ -7,6 +7,7 @@ CONSENT_TEST_LABEL = "consent"
 DASHBOARD_TEST_LABEL = "dashboard"
 PAY_TEST_LABEL = "pay"
 ADMIN_PANEL_TEST_LABEL = "admin-panel"
+BLINK_MAP_TEST_LABEL = "blink-map"
 
 TEST_RESOURCES = {
    CORE_TEST_LABEL: "test-api",
@@ -126,6 +127,31 @@ local_resource(
     ],
 )
 
+blink_map_target = "//apps/blink-map:dev"
+if is_ci:
+  blink_map_target = '//apps/blink-map:blink-map'
+blink_map_env = {
+    "PORT": "3005",
+    "CORE_URL" : "http://localhost:4455/graphql",
+}
+local_resource(
+    "blink-map",
+    labels = ["apps"],
+    cmd = "buck2 build {}".format(blink_map_target),
+    serve_cmd = "buck2 run {}".format(blink_map_target),
+    env = blink_map_env,
+    serve_env = blink_map_env,
+    deps = _buck2_dep_inputs(blink_map_target),
+    allow_parallel = True,
+    resource_deps = [
+        "api",
+        "apollo-router",
+    ],
+    links = [
+        link("http://localhost:3005", "blink-map"),
+    ],
+)
+
 local_resource(
   name='hydra-dashboard',
   labels = ['apps'],
@@ -193,6 +219,17 @@ local_resource(
   cmd = "buck2 test {}".format(admin_panel_test_target),
   resource_deps = [
     "admin-panel",
+  ],
+)
+
+blink_map_test_target = "//apps/blink-map:test-integration"
+local_resource(
+  "blink-map-test",
+  labels = ["test"],
+  auto_init = is_ci and BLINK_MAP_TEST_LABEL in cfg.get("test", []),
+  cmd = "buck2 test {}".format(blink_map_test_target),
+  resource_deps = [
+    "blink-map",
   ],
 )
 

@@ -22,6 +22,11 @@ admin-panel:
   - flake.lock
   - pnpm-lock.yaml
 
+blink-map:
+  - apps/blink-map/*
+  - flake.lock
+  - pnpm-lock.yaml
+
 core:
   - core/api/*
   - core/api-cron/*
