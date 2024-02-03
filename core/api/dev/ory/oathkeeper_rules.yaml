@@ -90,7 +90,7 @@
   authenticators:
     - handler: cookie_session
       config:
-        check_session_url: http://host.docker.internal:3002/api/auth/session
+        check_session_url: http://host.docker.internal:3004/api/auth/session
         preserve_path: true
         preserve_query: true
         subject_from: user.email
