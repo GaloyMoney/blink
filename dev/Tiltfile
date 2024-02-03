@@ -9,11 +9,11 @@ PAY_TEST_LABEL = "pay"
 ADMIN_PANEL_TEST_LABEL = "admin-panel"
 
 TEST_RESOURCES = {
-   CORE_TEST_LABEL: "api-test",
-   CONSENT_TEST_LABEL: "consent-test",
-   DASHBOARD_TEST_LABEL: "dashboard-test",
-   PAY_TEST_LABEL: "pay-test",
-   ADMIN_PANEL_TEST_LABEL: "admin-panel-test"
+   CORE_TEST_LABEL: "test-api",
+   CONSENT_TEST_LABEL: "test-consent",
+   DASHBOARD_TEST_LABEL: "test-dashboard",
+   PAY_TEST_LABEL: "test-pay",
+   ADMIN_PANEL_TEST_LABEL: "test-admin-panel"
 }
 
 is_ci=("ci" in sys.argv) or cfg.get("bats", False)
@@ -148,7 +148,7 @@ local_resource(
 
 consent_test_target = "//apps/consent:test-integration"
 local_resource(
-  "consent-test",
+  "test-consent",
   labels = ["test"],
   auto_init = is_ci and CONSENT_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(consent_test_target),
@@ -161,7 +161,7 @@ local_resource(
 
 dashboard_test_target = "//apps/dashboard:test-integration"
 local_resource(
-  "dashboard-test",
+  "test-dashboard",
   labels = ["test"],
   auto_init = is_ci and DASHBOARD_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(dashboard_test_target),
@@ -174,7 +174,7 @@ local_resource(
 
 pay_test_target = "//apps/pay:test-integration"
 local_resource(
-  "pay-test",
+  "test-pay",
   labels = ["test"],
   auto_init = is_ci and PAY_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(pay_test_target),
@@ -187,7 +187,7 @@ local_resource(
 
 admin_panel_test_target = "//apps/admin-panel:test-integration"
 local_resource(
-  "admin-panel-test",
+  "test-admin-panel",
   labels = ["test"],
   auto_init = is_ci and ADMIN_PANEL_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(admin_panel_test_target),
@@ -592,7 +592,7 @@ for service in docker_groups["integration"]:
 
 api_test_target = "//core/api:test-integration"
 local_resource(
-  "api-test",
+  "test-api",
   labels = ["test"],
   auto_init = is_ci and CORE_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(api_test_target),
