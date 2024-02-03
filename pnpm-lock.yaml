@@ -155,34 +155,34 @@ importers:
         specifier: ^3.9.2
         version: 3.9.2(@types/react@18.2.48)(graphql@16.8.1)(react-dom@18.2.0)(react@18.2.0)
       '@opentelemetry/api':
-        specifier: ^1.7.0
+        specifier: ^1.6.0
         version: 1.7.0
       '@opentelemetry/core':
-        specifier: 1.18.1
-        version: 1.18.1(@opentelemetry/api@1.7.0)
+        specifier: ^1.21.0
+        version: 1.21.0(@opentelemetry/api@1.7.0)
       '@opentelemetry/exporter-trace-otlp-http':
-        specifier: ^0.45.1
-        version: 0.45.1(@opentelemetry/api@1.7.0)
+        specifier: ^0.44.0
+        version: 0.44.0(@opentelemetry/api@1.7.0)
       '@opentelemetry/instrumentation-graphql':
-        specifier: ^0.36.0
-        version: 0.36.1(@opentelemetry/api@1.7.0)
+        specifier: ^0.35.2
+        version: 0.35.2(@opentelemetry/api@1.7.0)
       '@opentelemetry/instrumentation-http':
-        specifier: ^0.45.1
-        version: 0.45.1(@opentelemetry/api@1.7.0)
+        specifier: ^0.44.0
+        version: 0.44.0(@opentelemetry/api@1.7.0)
       '@opentelemetry/instrumentation-net':
-        specifier: ^0.32.4
+        specifier: ^0.32.2
         version: 0.32.5(@opentelemetry/api@1.7.0)
       '@opentelemetry/resources':
-        specifier: ^1.18.1
+        specifier: ^1.17.1
         version: 1.21.0(@opentelemetry/api@1.7.0)
       '@opentelemetry/sdk-node':
-        specifier: ^0.45.1
-        version: 0.45.1(@opentelemetry/api@1.7.0)
+        specifier: ^0.48.0
+        version: 0.48.0(@opentelemetry/api@1.7.0)
       '@opentelemetry/sdk-trace-node':
         specifier: ^1.18.1
         version: 1.21.0(@opentelemetry/api@1.7.0)
       '@opentelemetry/semantic-conventions':
-        specifier: ^1.18.1
+        specifier: ^1.17.1
         version: 1.21.0
       '@react-google-maps/api':
         specifier: ^2.19.2
