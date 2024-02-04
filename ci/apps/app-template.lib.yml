@@ -196,9 +196,9 @@ plan:
 #@     "YAML_PATH": ".image.digest",
 #@     "CHART": "admin-panel"
 #@   }
-#@   "blink-map": {
+#@   "map": {
 #@     "YAML_PATH": ".image.digest",
-#@     "CHART": "blink-map"
+#@     "CHART": "map"
 #@   }
 #@ }
 name: #@ bump_image_in_chart_name(app)

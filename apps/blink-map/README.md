@@ -1,2 +1,0 @@
-# Blink Map
-

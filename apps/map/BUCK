@@ -55,7 +55,7 @@ next_build(
 )
 
 next_build_bin(
-    name = "blink-map",
+    name = "map",
 )
 
 dev_deps_srcs = {

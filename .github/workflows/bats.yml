@@ -23,7 +23,7 @@ jobs:
       - name: Buck2 build
         run: |
           nix develop -c buck2 build //core/api //core/api-ws-server \
-            //core/api-keys //apps/dashboard //apps/consent //apps/pay //apps/admin-panel //apps/blink-map \
+            //core/api-keys //apps/dashboard //apps/consent //apps/pay //apps/admin-panel //apps/map \
             //core/notifications
       - name: Run bats tests
         run: |

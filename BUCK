@@ -8,7 +8,7 @@ pnpm_workspace(
     "//apps/dashboard:package.json",
     "//apps/pay:package.json",
     "//apps/admin-panel:package.json",
-    "//apps/blink-map:package.json",
+    "//apps/map:package.json",
     "//lib/eslint-config:package.json",
     "//lib/galoy-components:package.json"
   ],

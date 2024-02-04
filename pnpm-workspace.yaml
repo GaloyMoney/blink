@@ -5,7 +5,7 @@ packages:
   - apps/dashboard
   - apps/admin-panel
   - apps/pay
-  - apps/blink-map
+  - apps/map
   - lib/eslint-config
   - lib/gt3-server-node-express-sdk
   - lib/galoy-components

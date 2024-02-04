@@ -1,5 +1,5 @@
 FROM nixos/nix:latest AS builder
-ARG APP=blink-map
+ARG APP=map
 
 COPY . /workdir
 WORKDIR /workdir
@@ -16,7 +16,7 @@ RUN cp -R $(nix-store --query --requisites result/) /tmp/nix-store-closure
 RUN ln -snf $(nix-store --query result/)/bin/* /tmp/local-bin/
 
 FROM gcr.io/distroless/static-debian11 AS final
-ARG APP=blink-map
+ARG APP=map
 
 WORKDIR /app/$APP
 COPY --from=builder /tmp/nix-store-closure /nix/store
