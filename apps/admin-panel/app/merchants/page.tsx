@@ -6,7 +6,7 @@ import {
 } from "../../generated"
 import { getClient } from "../graphql-rsc"
 
-export default async function () {
+export default async function MerchantScreen() {
   const query = await getClient().query<
     MerchantsPendingApprovalQuery,
     MerchantsPendingApprovalQueryVariables

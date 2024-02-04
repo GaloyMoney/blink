@@ -1,5 +1,6 @@
 import { Merchant } from "../../generated"
 import ConfirmForm from "../confirm"
+
 import { deleteMerchant, validateMerchant } from "./update"
 
 type Props = {

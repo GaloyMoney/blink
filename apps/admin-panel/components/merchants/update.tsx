@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache"
+
 import { getClient } from "../../app/graphql-rsc"
 
 import {
@@ -32,12 +33,13 @@ export const validateMerchant = async (formData: FormData) => {
 
   const id = formData.get("id") as string
 
-  await getClient().mutate<MerchantMapValidateMutation, MerchantMapValidateMutationVariables>(
-    {
-      mutation: MerchantMapValidateDocument,
-      variables: { input: { id } },
-    },
-  )
+  await getClient().mutate<
+    MerchantMapValidateMutation,
+    MerchantMapValidateMutationVariables
+  >({
+    mutation: MerchantMapValidateDocument,
+    variables: { input: { id } },
+  })
 
   revalidatePath("/account")
 }
