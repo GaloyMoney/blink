@@ -1,6 +1,6 @@
 overwrite: true
 schema:
-  - "https://raw.githubusercontent.com/GaloyMoney/galoy/main/core/api/src/graphql/admin/schema.graphql"
+  - "../../core/api/src/graphql/admin/schema.graphql"
 documents:
   - "graphql.gql"
 generates:

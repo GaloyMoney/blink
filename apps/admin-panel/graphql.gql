@@ -4,7 +4,17 @@ query accountDetailsByUserPhone($phone: Phone!) {
     username
     level
     status
-    title
+    merchants {
+      id
+      title
+      coordinates {
+        latitude
+        longitude
+      }
+      createdAt
+      validated
+      username
+    }
     owner {
       id
       language
@@ -14,10 +24,6 @@ query accountDetailsByUserPhone($phone: Phone!) {
         verified
       }
       createdAt
-    }
-    coordinates {
-      latitude
-      longitude
     }
     wallets {
       id
@@ -36,7 +42,17 @@ query accountDetailsByAccountId($accountId: ID!) {
     username
     level
     status
-    title
+    merchants {
+      id
+      title
+      coordinates {
+        latitude
+        longitude
+      }
+      createdAt
+      validated
+      username
+    }
     owner {
       id
       language
@@ -46,10 +62,6 @@ query accountDetailsByAccountId($accountId: ID!) {
         verified
       }
       createdAt
-    }
-    coordinates {
-      latitude
-      longitude
     }
     wallets {
       id
@@ -68,7 +80,17 @@ query accountDetailsByEmail($email: EmailAddress!) {
     username
     level
     status
-    title
+    merchants {
+      id
+      title
+      coordinates {
+        latitude
+        longitude
+      }
+      createdAt
+      validated
+      username
+    }
     owner {
       id
       language
@@ -78,10 +100,6 @@ query accountDetailsByEmail($email: EmailAddress!) {
         verified
       }
       createdAt
-    }
-    coordinates {
-      latitude
-      longitude
     }
     wallets {
       id
@@ -94,8 +112,16 @@ query accountDetailsByEmail($email: EmailAddress!) {
   }
 }
 
-mutation businessDeleteMapInfo($input: BusinessDeleteMapInfoInput!) {
-  businessDeleteMapInfo(input: $input) {
+mutation merchantMapDelete($input: MerchantMapDeleteInput!) {
+  merchantMapDelete(input: $input) {
+    errors {
+      message
+    }
+  }
+}
+
+mutation merchantMapValidate($input: MerchantMapValidateInput!) {
+  merchantMapValidate(input: $input) {
     errors {
       message
     }
@@ -112,7 +138,17 @@ mutation accountUpdateLevel($input: AccountUpdateLevelInput!) {
       username
       level
       status
-      title
+      merchants {
+        id
+        title
+        coordinates {
+          latitude
+          longitude
+        }
+        createdAt
+        validated
+        username
+      }
       owner {
         id
         language
@@ -122,47 +158,6 @@ mutation accountUpdateLevel($input: AccountUpdateLevelInput!) {
           verified
         }
         createdAt
-      }
-      coordinates {
-        latitude
-        longitude
-      }
-      wallets {
-        id
-        walletCurrency
-        accountId
-        balance
-        pendingIncomingBalance
-      }
-      createdAt
-    }
-  }
-}
-
-mutation businessUpdateMapInfo($input: BusinessUpdateMapInfoInput!) {
-  businessUpdateMapInfo(input: $input) {
-    errors {
-      message
-    }
-    accountDetails {
-      id
-      username
-      level
-      status
-      title
-      owner {
-        id
-        language
-        phone
-        email {
-          address
-          verified
-        }
-        createdAt
-      }
-      coordinates {
-        latitude
-        longitude
       }
       wallets {
         id
@@ -186,7 +181,17 @@ mutation accountUpdateStatus($input: AccountUpdateStatusInput!) {
       username
       level
       status
-      title
+      merchants {
+        id
+        title
+        coordinates {
+          latitude
+          longitude
+        }
+        createdAt
+        validated
+        username
+      }
       owner {
         id
         language
@@ -196,10 +201,6 @@ mutation accountUpdateStatus($input: AccountUpdateStatusInput!) {
           verified
         }
         createdAt
-      }
-      coordinates {
-        latitude
-        longitude
       }
       wallets {
         id
@@ -219,7 +220,17 @@ query accountDetailsByUsername($username: Username!) {
     username
     level
     status
-    title
+    merchants {
+      id
+      title
+      coordinates {
+        latitude
+        longitude
+      }
+      createdAt
+      validated
+      username
+    }
     owner {
       id
       language
@@ -229,10 +240,6 @@ query accountDetailsByUsername($username: Username!) {
         verified
       }
       createdAt
-    }
-    coordinates {
-      latitude
-      longitude
     }
     wallets {
       id
@@ -356,5 +363,19 @@ query transactionById($id: ID!) {
     status
     memo
     createdAt
+  }
+}
+
+query merchantsPendingApproval {
+  merchantsPendingApproval {
+    id
+    title
+    coordinates {
+      latitude
+      longitude
+    }
+    createdAt
+    validated
+    username
   }
 }

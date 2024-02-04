@@ -11,7 +11,7 @@ const Merchant: GraphQLObjectType<BusinessMapMarker> = GT.Object<BusinessMapMark
     id: { type: GT.NonNullID },
     title: { type: GT.NonNull(GT.String) },
     coordinates: {
-      type: Coordinates,
+      type: GT.NonNull(Coordinates),
       description:
         "GPS coordinates for the merchant that can be used to place the related business on a map",
     },

@@ -1,3 +1,5 @@
+import { checkedToUsername } from "@/domain/accounts"
+import { CouldNotFindMerchantFromUsernameError } from "@/domain/errors"
 import { MerchantsRepository } from "@/services/mongoose"
 
 export * from "./suggest-merchant-map"
@@ -12,4 +14,19 @@ export const getMerchantsMapMarkers = async () => {
 
 export const getMerchantsPendingApproval = async () => {
   return merchants.listPendingApproval()
+}
+
+export const getMerchantsByUsername = async (username: string) => {
+  const usernameValidated = checkedToUsername(username)
+  if (usernameValidated instanceof Error) {
+    return usernameValidated
+  }
+
+  const result = await merchants.findByUsername(usernameValidated)
+
+  if (result instanceof CouldNotFindMerchantFromUsernameError) {
+    return []
+  }
+
+  return result
 }

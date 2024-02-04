@@ -5,7 +5,7 @@ import { mapError } from "@/graphql/error-map"
 import Merchant from "@/graphql/shared/types/object/merchant"
 
 const MerchantsPendingApprovalQuery = GT.Field({
-  type: GT.List(Merchant),
+  type: GT.NonNullList(Merchant),
   resolve: async (_, { id }) => {
     if (id instanceof Error) throw id
 

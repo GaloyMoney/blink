@@ -1,4 +1,5 @@
 import { Merchants } from "@/app"
+import { checkedToMerchantId } from "@/domain/merchants"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import { GT } from "@/graphql/index"
 import MerchantPayload from "@/graphql/shared/types/payload/merchant"
@@ -12,16 +13,7 @@ const MerchantMapDeleteInput = GT.Input({
   }),
 })
 
-const MerchantMapDeleteMutation = GT.Field<
-  null,
-  GraphQLAdminContext,
-  {
-    input: {
-      // TODO: UUID v4 check
-      id: string | InputValidationError
-    }
-  }
->({
+const MerchantMapDeleteMutation = GT.Field<null, GraphQLAdminContext>({
   extensions: {
     complexity: 120,
   },
@@ -36,7 +28,12 @@ const MerchantMapDeleteMutation = GT.Field<
       return { errors: [{ message: id.message }] }
     }
 
-    const account = await Merchants.deleteMerchantById(id as MerchantId)
+    const merchantId = checkedToMerchantId(id)
+    if (merchantId instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(merchantId)] }
+    }
+
+    const account = await Merchants.deleteMerchantById(merchantId)
 
     if (account instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(account)] }
