@@ -35,6 +35,20 @@ export const getSupportedCountries = ({
   return countries
 }
 
+export const getNextPageToken = (link: string): string | undefined => {
+  const links = link.split(",")
+  const nextLink = links.find((link) => link.includes('rel="next"'))
+
+  if (nextLink) {
+    const matches = nextLink.match(/page_token=([^;&>]+)/)
+    if (matches) {
+      return matches[1]
+    }
+  }
+
+  return undefined
+}
+
 export const checkedToEmailCode = (code: string): EmailCode | ApplicationError => {
   if (!/^[0-9]{6}$/.test(code)) return new EmailCodeInvalidError()
   return code as EmailCode
