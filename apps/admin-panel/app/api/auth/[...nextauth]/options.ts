@@ -1,6 +1,6 @@
 import GoogleProvider from "next-auth/providers/google"
 import GitHubProvider from "next-auth/providers/github"
-import CredentialsProvider from "next-auth/providers/credentials" // Import CredentialsProvider
+import CredentialsProvider from "next-auth/providers/credentials"
 import type { Provider } from "next-auth/providers"
 
 import { CallbacksOptions } from "next-auth"
