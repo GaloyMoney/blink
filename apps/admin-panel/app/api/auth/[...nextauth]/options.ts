@@ -33,7 +33,7 @@ if (env.NODE_ENV === "development") {
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      authorize: async (credentials, req) => {
+      authorize: async (credentials) => {
         if (credentials?.username === "admin" && credentials?.password === "admin") {
           return { id: "1", name: "admin", email: "test@galoy.io" }
         }
