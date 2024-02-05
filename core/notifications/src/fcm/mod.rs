@@ -1,28 +1,27 @@
+mod config;
+mod error;
+
 use google_fcm1::{
     hyper::{client::HttpConnector, Client},
     hyper_rustls::{HttpsConnector, HttpsConnectorBuilder},
     oauth2, FirebaseCloudMessaging,
 };
-use std::{env, fs::File, io::BufReader};
+
+pub use config::*;
+use error::*;
 
 pub struct FcmExecutor {
     pub client: FirebaseCloudMessaging<HttpsConnector<HttpConnector>>,
+    pub config: FcmConfig,
 }
 
 impl FcmExecutor {
-    pub async fn new() -> Self {
-        let credentials_path = env::var("GOOGLE_APPLICATION_CREDENTIALS")
-            .expect("GOOGLE_APPLICATION_CREDENTIALS should be set");
-        let file = File::open(credentials_path)
-            .expect("Failed to open the GOOGLE_APPLICATION_CREDENTIALS file");
-        let reader = BufReader::new(file);
-
-        let secret: oauth2::ServiceAccountKey = serde_json::from_reader(reader)
-            .expect("Failed to parse the GOOGLE_APPLICATION_CREDENTIALS file");
-        let auth = oauth2::ServiceAccountAuthenticator::builder(secret)
-            .build()
-            .await
-            .expect("Failed to create the authenticator");
+    pub async fn new(config: FcmConfig) -> Result<Self, FcmError> {
+        let auth = oauth2::ServiceAccountAuthenticator::builder(
+            config.secret.clone().expect("secret should be set"),
+        )
+        .build()
+        .await?;
 
         let hyper_client = Client::builder().build(
             HttpsConnectorBuilder::new()
@@ -32,6 +31,6 @@ impl FcmExecutor {
                 .build(),
         );
         let client = FirebaseCloudMessaging::new(hyper_client, auth);
-        Self { client }
+        Ok(Self { client, config })
     }
 }

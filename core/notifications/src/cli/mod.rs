@@ -18,6 +18,8 @@ struct Cli {
     mongodb_connection: Option<String>,
     #[clap(env = "NOVU_API_KEY")]
     novu_api_key: Option<String>,
+    #[clap(env = "GOOGLE_APPLICATION_CREDENTIALS")]
+    google_application_credentials: Option<PathBuf>,
 }
 
 pub async fn run() -> anyhow::Result<()> {
@@ -29,6 +31,7 @@ pub async fn run() -> anyhow::Result<()> {
             db_con: cli.pg_con,
             mongodb_connection: cli.mongodb_connection,
             novu_api_key: cli.novu_api_key,
+            google_application_credentials_path: cli.google_application_credentials,
         },
     )?;
 
