@@ -7,7 +7,7 @@ CONSENT_TEST_LABEL = "consent"
 DASHBOARD_TEST_LABEL = "dashboard"
 PAY_TEST_LABEL = "pay"
 ADMIN_PANEL_TEST_LABEL = "admin-panel"
-map_TEST_LABEL = "map"
+MAP_TEST_LABEL = "map"
 
 TEST_RESOURCES = {
    CORE_TEST_LABEL: "test-api",
@@ -226,7 +226,7 @@ map_test_target = "//apps/map:test-integration"
 local_resource(
   "map-test",
   labels = ["test"],
-  auto_init = is_ci and map_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and MAP_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(map_test_target),
   resource_deps = [
     "map",
