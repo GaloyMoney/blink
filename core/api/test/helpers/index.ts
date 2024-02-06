@@ -12,7 +12,6 @@ import { DepositFeeCalculator } from "@/domain/wallets"
 import { AmountCalculator } from "@/domain/shared"
 
 export * from "./bitcoin-core"
-export * from "./bria"
 export * from "./check-is-balanced"
 export * from "./get-error"
 export * from "./generate-hash"
