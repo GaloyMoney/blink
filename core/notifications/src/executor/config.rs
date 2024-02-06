@@ -1,5 +1,6 @@
-use google_fcm1::oauth2::ServiceAccountKey;
 use serde::{Deserialize, Serialize};
+
+use super::fcm::FcmConfig;
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
 pub struct ExecutorConfig {
@@ -19,11 +20,6 @@ pub struct NovuWorkflows {
     pub circle_grew: String,
     #[serde(default = "default_circle_threshold_reached_workflow_id")]
     pub circle_threshold_reached: String,
-}
-
-#[derive(Clone, Default, Debug, Deserialize, Serialize)]
-pub struct FcmConfig {
-    pub service_account_key: Option<ServiceAccountKey>,
 }
 
 impl NovuWorkflows {

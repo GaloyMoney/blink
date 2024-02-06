@@ -2,7 +2,7 @@ use anyhow::Context;
 use serde::{Deserialize, Serialize};
 use tracing::TracingConfig;
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use super::db::*;
 use crate::{
@@ -35,7 +35,6 @@ pub struct EnvOverride {
     pub db_con: String,
     pub mongodb_connection: Option<String>,
     pub novu_api_key: Option<String>,
-    pub google_application_credentials_path: Option<PathBuf>,
 }
 
 impl Config {
@@ -45,7 +44,6 @@ impl Config {
             db_con,
             mongodb_connection,
             novu_api_key,
-            google_application_credentials_path,
         }: EnvOverride,
     ) -> anyhow::Result<Self> {
         let mut config: Config = if let Some(path) = path {
@@ -59,18 +57,10 @@ impl Config {
         config.mongo_import.connection = mongodb_connection;
 
         if let Some(novu_api_key) = novu_api_key {
-            config.app.exectuor.novu.api_key = novu_api_key;
+            config.app.executor.novu.api_key = novu_api_key;
         }
 
-        if let Some(path) = google_application_credentials_path {
-            let file =
-                std::fs::File::open(path).context("Failed to open the service account file")?;
-            let reader = std::io::BufReader::new(file);
-            let service_account_key: google_fcm1::oauth2::ServiceAccountKey =
-                serde_json::from_reader(reader)
-                    .context("Failed to parse the service account file")?;
-            config.app.exectuor.fcm.service_account_key = Some(service_account_key);
-        }
+        config.app.executor.fcm.load_creds()?;
 
         Ok(config)
     }

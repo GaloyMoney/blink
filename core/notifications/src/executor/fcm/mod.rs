@@ -1,4 +1,7 @@
+mod config;
 pub mod error;
+
+pub use config::*;
 
 use google_fcm1::{
     hyper::{client::HttpConnector, Client},
@@ -15,22 +18,21 @@ pub struct FcmClient {
 }
 
 impl FcmClient {
-    pub async fn new(service_account_key: Option<ServiceAccountKey>) -> Result<Self, FcmError> {
-        if let Some(secret) = service_account_key {
-            let auth = oauth2::ServiceAccountAuthenticator::builder(secret.clone())
-                .build()
-                .await?;
+    pub async fn init(service_account_key: ServiceAccountKey) -> Result<Self, FcmError> {
+        let auth = oauth2::ServiceAccountAuthenticator::builder(service_account_key)
+            .build()
+            .await?;
 
-            let hyper_client = Client::builder().build(
-                HttpsConnectorBuilder::new()
-                    .with_native_roots()
-                    .https_or_http()
-                    .enable_http1()
-                    .build(),
-            );
-            let client = FirebaseCloudMessaging::new(hyper_client, auth);
-            return Ok(Self { client });
-        }
-        Err(FcmError::NoServiceAccountKey)
+        let hyper_client = Client::builder().build(
+            HttpsConnectorBuilder::new()
+                .with_native_roots()
+                .https_or_http()
+                .enable_http1()
+                .build(),
+        );
+
+        let client = FirebaseCloudMessaging::new(hyper_client, auth);
+
+        Ok(Self { client })
     }
 }

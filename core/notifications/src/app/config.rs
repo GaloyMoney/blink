@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::executor::ExecutorConfig;
 
-#[derive(Clone, Serialize, Deserialize, Default)]
+#[derive(Clone, Default, Serialize, Deserialize)]
 pub struct AppConfig {
-    pub exectuor: ExecutorConfig,
+    pub executor: ExecutorConfig,
 }
