@@ -1,5 +1,6 @@
 use thiserror::Error;
 
+use super::fcm::error::FcmError;
 use super::novu::error::NovuError;
 use crate::user_notification_settings::error::*;
 
@@ -7,6 +8,8 @@ use crate::user_notification_settings::error::*;
 pub enum ExecutorError {
     #[error("ExecutorError - Novu: {0}")]
     Novu(#[from] NovuError),
+    #[error("ExecutorError - Novu: {0}")]
+    Fcm(#[from] FcmError),
     #[error("ExecutorError - UserNotificationSettingsError: {0}")]
     UserNotificationSettingsError(#[from] UserNotificationSettingsError),
 }

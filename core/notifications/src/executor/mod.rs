@@ -1,7 +1,9 @@
 mod config;
 pub mod error;
+mod fcm;
 mod novu;
 
+use fcm::FcmClient;
 use novu::{events::*, subscriber::*, NovuClient};
 use std::collections::HashMap;
 
@@ -13,20 +15,23 @@ pub use novu::events::AllowedPayloadValues;
 
 #[derive(Clone)]
 pub struct Executor {
-    config: NovuConfig,
-    client: NovuClient,
+    config: ExecutorConfig,
+    novu: NovuClient,
+    _fcm: FcmClient,
     settings: UserNotificationSettingsRepo,
 }
 
 impl Executor {
-    pub fn init(
-        config: NovuConfig,
+    pub async fn init(
+        config: ExecutorConfig,
         settings: UserNotificationSettingsRepo,
     ) -> Result<Self, ExecutorError> {
+        let _fcm = FcmClient::new(config.fcm.service_account_key.clone()).await?;
         Ok(Self {
-            client: NovuClient::new(config.api_key.clone(), None)?,
+            novu: NovuClient::new(config.novu.api_key.clone(), None)?,
             config,
             settings,
+            _fcm,
         })
     }
 
@@ -49,6 +54,7 @@ impl Executor {
 
         let id = self
             .config
+            .novu
             .workflows
             .for_name(<T as NotificationEvent>::workflow_name());
 
@@ -65,7 +71,7 @@ impl Executor {
         payload_data: HashMap<String, AllowedPayloadValues>,
         overrides: Option<HashMap<String, serde_json::Value>>,
     ) -> Result<(), ExecutorError> {
-        self.client
+        self.novu
             .trigger(TriggerPayload {
                 name: trigger_name,
                 payload: payload_data,
@@ -82,7 +88,7 @@ impl Executor {
         user_id: &GaloyUserId,
         push_device_tokens: impl IntoIterator<Item = &PushDeviceToken>,
     ) -> Result<(), ExecutorError> {
-        self.client
+        self.novu
             .subscribers
             .update_credentials(
                 user_id.to_string(),
@@ -117,7 +123,7 @@ impl Executor {
         recipient_id: String,
     ) -> Result<(), ExecutorError> {
         let payload = HashMap::new();
-        self.client
+        self.novu
             .trigger(TriggerPayload {
                 name: trigger_name,
                 payload,
@@ -136,7 +142,7 @@ impl Executor {
         &self,
         user_id: &GaloyUserId,
     ) -> Result<(), ExecutorError> {
-        self.client
+        self.novu
             .subscribers
             .create(CreateSubscriberPayload {
                 first_name: None,

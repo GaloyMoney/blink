@@ -59,16 +59,17 @@ impl Config {
         config.mongo_import.connection = mongodb_connection;
 
         if let Some(novu_api_key) = novu_api_key {
-            config.app.novu.api_key = novu_api_key;
+            config.app.exectuor.novu.api_key = novu_api_key;
         }
 
         if let Some(path) = google_application_credentials_path {
             let file =
                 std::fs::File::open(path).context("Failed to open the service account file")?;
             let reader = std::io::BufReader::new(file);
-            let secret: google_fcm1::oauth2::ServiceAccountKey = serde_json::from_reader(reader)
-                .context("Failed to parse the service account file")?;
-            config.app.fcm.secret = Some(secret);
+            let service_account_key: google_fcm1::oauth2::ServiceAccountKey =
+                serde_json::from_reader(reader)
+                    .context("Failed to parse the service account file")?;
+            config.app.exectuor.fcm.service_account_key = Some(service_account_key);
         }
 
         Ok(config)
