@@ -2,6 +2,8 @@ import { InvalidAccountIdError } from "./errors"
 
 import { AccountLevel, AccountStatus } from "./primitives"
 
+import { UUIDV4 } from "@/utils/uuid"
+
 import { toSats } from "@/domain/bitcoin"
 import {
   InvalidCoordinatesError,
@@ -19,9 +21,6 @@ export * from "./limits-checker"
 export * from "./limits-volume"
 export * from "./account-validator"
 export * from "./primitives"
-
-const UUIDV4 =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 const KratosUserIdRegex = UUIDV4
 const AccountIdRegex = UUIDV4

@@ -324,8 +324,7 @@ const MerchantSchema = new Schema<MerchantRecord>({
   location: {
     type: pointSchema,
     index: "2dsphere",
-    // for online commerce, we don't require coordinates
-    required: false,
+    required: true,
   },
   createdAt: {
     type: Date,
@@ -334,6 +333,7 @@ const MerchantSchema = new Schema<MerchantRecord>({
   validated: {
     type: Boolean,
     default: false,
+    index: true,
   },
 })
 

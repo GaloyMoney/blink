@@ -22,7 +22,6 @@ const allFunctions = {
   Callback: { ...CallbackMod },
   Comm: { ...CommMod },
   Quiz: { ...QuizMod },
-  Merchants: { ...MerchantsMod },
   Lightning: { ...LightningMod },
   OnChain: { ...OnChainMod },
   Prices: { ...PricesMod },
@@ -30,6 +29,7 @@ const allFunctions = {
   Users: { ...UsersMod },
   Wallets: { ...WalletsMod },
   Payments: { ...PaymentsMod },
+  Merchants: { ...MerchantsMod },
 } as const
 
 let subModule: keyof typeof allFunctions
@@ -52,7 +52,6 @@ export const {
   Callback,
   Comm,
   Quiz,
-  Merchants,
   Lightning,
   OnChain,
   Prices,
@@ -60,4 +59,5 @@ export const {
   Users,
   Wallets,
   Payments,
+  Merchants,
 } = allFunctions

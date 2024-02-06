@@ -4,7 +4,7 @@ import AccountStatus from "../scalar/account-status"
 
 import GraphQLUser from "./user"
 
-import { Wallets, Users } from "@/app"
+import { Wallets, Users, Merchants } from "@/app"
 import { GT } from "@/graphql/index"
 import Timestamp from "@/graphql/shared/types/scalar/timestamp"
 import Username from "@/graphql/shared/types/scalar/username"
@@ -12,6 +12,7 @@ import Wallet from "@/graphql/shared/types/abstract/wallet"
 import { mapError } from "@/graphql/error-map"
 
 import AccountLevel from "@/graphql/shared/types/scalar/account-level"
+import Merchant from "@/graphql/shared/types/object/merchant"
 
 const AuditedAccount: GraphQLObjectType<Account> = GT.Object<Account>({
   name: "AuditedAccount",
@@ -26,6 +27,20 @@ const AuditedAccount: GraphQLObjectType<Account> = GT.Object<Account>({
       type: GT.NonNullList(Wallet),
       resolve: async (source) => {
         const result = await Wallets.listWalletsByAccountId(source.id)
+        if (result instanceof Error) throw mapError(result)
+        return result
+      },
+    },
+    merchants: {
+      type: GT.NonNullList(Merchant),
+      resolve: async (source) => {
+        const username = source.username
+        if (!username) {
+          return []
+        }
+
+        const result = await Merchants.getMerchantsByUsername(username)
+
         if (result instanceof Error) throw mapError(result)
         return result
       },

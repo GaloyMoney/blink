@@ -778,6 +778,34 @@ type MapMarker {
 """Text field in a lightning payment transaction"""
 scalar Memo
 
+type Merchant {
+  """
+  GPS coordinates for the merchant that can be used to place the related business on a map
+  """
+  coordinates: Coordinates!
+  createdAt: Timestamp!
+  id: ID!
+  title: String!
+
+  """The username of the merchant"""
+  username: Username!
+
+  """Whether the merchant has been validated"""
+  validated: Boolean!
+}
+
+input MerchantMapSuggestInput {
+  latitude: Float!
+  longitude: Float!
+  title: String!
+  username: Username!
+}
+
+type MerchantPayload {
+  errors: [Error!]!
+  merchant: Merchant
+}
+
 """(Positive) amount of minutes"""
 scalar Minutes
 
@@ -898,6 +926,7 @@ type Mutation {
 
   """Sends a payment to a lightning address."""
   lnurlPaymentSend(input: LnurlPaymentSendInput!): PaymentSendPayload!
+  merchantMapSuggest(input: MerchantMapSuggestInput!): MerchantPayload!
   onChainAddressCreate(input: OnChainAddressCreateInput!): OnChainAddressPayload!
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload!
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!
