@@ -1,12 +1,7 @@
 import { createChainAddress } from "lightning"
 
-import {
-  getBalanceForWallet,
-  getPendingIncomingOnChainTransactionsForWallets,
-  getTransactionsForWallets,
-} from "@/app/wallets"
-import { RepositoryError } from "@/domain/errors"
-import { WalletsRepository, WalletOnChainAddressesRepository } from "@/services/mongoose"
+import { getBalanceForWallet } from "@/app/wallets"
+import { WalletOnChainAddressesRepository } from "@/services/mongoose"
 import { getActiveLnd } from "@/services/lnd/config"
 
 export const getBalanceHelper = async (
@@ -15,26 +10,6 @@ export const getBalanceHelper = async (
   const balance = await getBalanceForWallet({ walletId })
   if (balance instanceof Error) throw balance
   return balance
-}
-
-export const getTransactionsForWalletId = async (
-  walletId: WalletId,
-): Promise<PaginatedQueryResult<WalletTransaction> | ApplicationError> => {
-  const wallets = WalletsRepository()
-  const wallet = await wallets.findById(walletId)
-  if (wallet instanceof RepositoryError) return wallet
-  return getTransactionsForWallets({ wallets: [wallet], rawPaginationArgs: {} })
-}
-
-export const getPendingTransactionsForWalletId = async (
-  walletId: WalletId,
-): Promise<WalletTransaction[] | ApplicationError> => {
-  const wallets = WalletsRepository()
-  const wallet = await wallets.findById(walletId)
-  if (wallet instanceof RepositoryError) return wallet
-  return getPendingIncomingOnChainTransactionsForWallets({
-    wallets: [wallet],
-  })
 }
 
 // This is to test detection of funds coming in on legacy addresses
