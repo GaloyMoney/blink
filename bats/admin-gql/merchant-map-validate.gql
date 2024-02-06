@@ -1,0 +1,11 @@
+mutation merchantMapValidate($input: MerchantMapValidateInput!) {
+  merchantMapValidate(input: $input) {
+    errors {
+      message
+    }
+    merchant {
+      id
+      validated
+    }
+  }
+}

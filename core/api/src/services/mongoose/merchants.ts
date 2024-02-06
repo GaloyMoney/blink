@@ -8,6 +8,8 @@ import {
 
 interface IMerchantRepository {
   listForMap(): Promise<BusinessMapMarker[] | RepositoryError>
+  listPendingApproval(): Promise<BusinessMapMarker[] | RepositoryError>
+  findById(id: MerchantId): Promise<BusinessMapMarker | RepositoryError>
   findByUsername(username: Username): Promise<BusinessMapMarker[] | RepositoryError>
   create(args: {
     username: Username
@@ -26,6 +28,20 @@ interface IMerchantRepository {
 }
 
 export const MerchantsRepository = (): IMerchantRepository => {
+  const findById = async (
+    id: MerchantId,
+  ): Promise<BusinessMapMarker | RepositoryError> => {
+    try {
+      const result = await Merchant.findOne({ id })
+      if (!result) {
+        return new CouldNotFindMerchantFromIdError(id)
+      }
+      return translateToMerchant(result)
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
   const findByUsername = async (
     username: Username,
   ): Promise<BusinessMapMarker[] | RepositoryError> => {
@@ -42,8 +58,18 @@ export const MerchantsRepository = (): IMerchantRepository => {
 
   const listForMap = async (): Promise<BusinessMapMarker[] | RepositoryError> => {
     try {
-      // only return merchants that have a location
-      const merchants = await Merchant.find({ location: { $exists: true } })
+      const merchants = await Merchant.find({ validated: true })
+      return merchants.map(translateToMerchant)
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
+  const listPendingApproval = async (): Promise<
+    BusinessMapMarker[] | RepositoryError
+  > => {
+    try {
+      const merchants = await Merchant.find({ validated: false })
       return merchants.map(translateToMerchant)
     } catch (err) {
       return parseRepositoryError(err)
@@ -130,6 +156,8 @@ export const MerchantsRepository = (): IMerchantRepository => {
 
   return {
     listForMap,
+    listPendingApproval,
+    findById,
     findByUsername,
     create,
     update,

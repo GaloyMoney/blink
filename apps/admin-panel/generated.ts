@@ -105,14 +105,12 @@ export type AdminPushNotificationSendPayload = {
 /** Accounts are core to the Galoy architecture. they have users, and own wallets */
 export type AuditedAccount = {
   readonly __typename: 'AuditedAccount';
-  /** GPS coordinates for the account that can be used to place the related business on a map */
-  readonly coordinates?: Maybe<Coordinates>;
   readonly createdAt: Scalars['Timestamp']['output'];
   readonly id: Scalars['ID']['output'];
   readonly level: AccountLevel;
+  readonly merchants: ReadonlyArray<Merchant>;
   readonly owner: AuditedUser;
   readonly status: AccountStatus;
-  readonly title?: Maybe<Scalars['String']['output']>;
   readonly username?: Maybe<Scalars['Username']['output']>;
   readonly wallets: ReadonlyArray<Wallet>;
 };
@@ -134,12 +132,46 @@ export type BtcWallet = Wallet & {
   /** A balance stored in BTC. */
   readonly balance: Scalars['SignedAmount']['output'];
   readonly id: Scalars['ID']['output'];
+  readonly invoiceByPaymentHash: Invoice;
+  /** A list of all invoices associated with walletIds optionally passed. */
+  readonly invoices?: Maybe<InvoiceConnection>;
   /** An unconfirmed incoming onchain balance. */
   readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
+  readonly pendingIncomingTransactions: ReadonlyArray<Transaction>;
+  readonly pendingIncomingTransactionsByAddress: ReadonlyArray<Transaction>;
+  readonly transactionById: Transaction;
   /** A list of BTC transactions associated with this wallet. */
   readonly transactions?: Maybe<TransactionConnection>;
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
+  readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletInvoiceByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletInvoicesArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletPendingIncomingTransactionsByAddressArgs = {
+  address: Scalars['OnChainAddress']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletTransactionByIdArgs = {
+  transactionId: Scalars['ID']['input'];
 };
 
 
@@ -161,15 +193,10 @@ export type BtcWalletTransactionsByAddressArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
 };
 
-export type BusinessDeleteMapInfoInput = {
-  readonly username: Scalars['Username']['input'];
-};
 
-export type BusinessUpdateMapInfoInput = {
-  readonly latitude: Scalars['Float']['input'];
-  readonly longitude: Scalars['Float']['input'];
-  readonly title: Scalars['String']['input'];
-  readonly username: Scalars['Username']['input'];
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletTransactionsByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
 };
 
 export type Coordinates = {
@@ -208,6 +235,8 @@ export type InitiationViaIntraLedger = {
 export type InitiationViaLn = {
   readonly __typename: 'InitiationViaLn';
   readonly paymentHash: Scalars['PaymentHash']['output'];
+  /** Bolt11 invoice */
+  readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
 };
 
 export type InitiationViaOnChain = {
@@ -215,6 +244,44 @@ export type InitiationViaOnChain = {
   readonly address: Scalars['OnChainAddress']['output'];
 };
 
+/** A lightning invoice. */
+export type Invoice = {
+  readonly createdAt: Scalars['Timestamp']['output'];
+  /** The payment hash of the lightning invoice. */
+  readonly paymentHash: Scalars['PaymentHash']['output'];
+  /** The bolt11 invoice to be paid. */
+  readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
+  /** The payment secret of the lightning invoice. This is not the preimage of the payment hash. */
+  readonly paymentSecret: Scalars['LnPaymentSecret']['output'];
+  /** The payment status of the invoice. */
+  readonly paymentStatus: InvoicePaymentStatus;
+};
+
+/** A connection to a list of items. */
+export type InvoiceConnection = {
+  readonly __typename: 'InvoiceConnection';
+  /** A list of edges. */
+  readonly edges?: Maybe<ReadonlyArray<InvoiceEdge>>;
+  /** Information to aid in pagination. */
+  readonly pageInfo: PageInfo;
+};
+
+/** An edge in a connection. */
+export type InvoiceEdge = {
+  readonly __typename: 'InvoiceEdge';
+  /** A cursor for use in pagination */
+  readonly cursor: Scalars['String']['output'];
+  /** The item at the end of the edge */
+  readonly node: Invoice;
+};
+
+export const InvoicePaymentStatus = {
+  Expired: 'EXPIRED',
+  Paid: 'PAID',
+  Pending: 'PENDING'
+} as const;
+
+export type InvoicePaymentStatus = typeof InvoicePaymentStatus[keyof typeof InvoicePaymentStatus];
 export type LightningInvoice = {
   readonly __typename: 'LightningInvoice';
   readonly confirmedAt?: Maybe<Scalars['Timestamp']['output']>;
@@ -246,13 +313,40 @@ export const LnPaymentStatus = {
 } as const;
 
 export type LnPaymentStatus = typeof LnPaymentStatus[keyof typeof LnPaymentStatus];
+export type Merchant = {
+  readonly __typename: 'Merchant';
+  /** GPS coordinates for the merchant that can be used to place the related business on a map */
+  readonly coordinates: Coordinates;
+  readonly createdAt: Scalars['Timestamp']['output'];
+  readonly id: Scalars['ID']['output'];
+  readonly title: Scalars['String']['output'];
+  /** The username of the merchant */
+  readonly username: Scalars['Username']['output'];
+  /** Whether the merchant has been validated */
+  readonly validated: Scalars['Boolean']['output'];
+};
+
+export type MerchantMapDeleteInput = {
+  readonly id: Scalars['ID']['input'];
+};
+
+export type MerchantMapValidateInput = {
+  readonly id: Scalars['ID']['input'];
+};
+
+export type MerchantPayload = {
+  readonly __typename: 'MerchantPayload';
+  readonly errors: ReadonlyArray<Error>;
+  readonly merchant?: Maybe<Merchant>;
+};
+
 export type Mutation = {
   readonly __typename: 'Mutation';
   readonly accountUpdateLevel: AccountDetailPayload;
   readonly accountUpdateStatus: AccountDetailPayload;
   readonly adminPushNotificationSend: AdminPushNotificationSendPayload;
-  readonly businessDeleteMapInfo: AccountDetailPayload;
-  readonly businessUpdateMapInfo: AccountDetailPayload;
+  readonly merchantMapDelete: MerchantPayload;
+  readonly merchantMapValidate: MerchantPayload;
   readonly userUpdatePhone: AccountDetailPayload;
 };
 
@@ -272,13 +366,13 @@ export type MutationAdminPushNotificationSendArgs = {
 };
 
 
-export type MutationBusinessDeleteMapInfoArgs = {
-  input: BusinessDeleteMapInfoInput;
+export type MutationMerchantMapDeleteArgs = {
+  input: MerchantMapDeleteInput;
 };
 
 
-export type MutationBusinessUpdateMapInfoArgs = {
-  input: BusinessUpdateMapInfoInput;
+export type MutationMerchantMapValidateArgs = {
+  input: MerchantMapValidateInput;
 };
 
 
@@ -328,6 +422,7 @@ export type Query = {
   readonly lightningInvoice: LightningInvoice;
   readonly lightningPayment: LightningPayment;
   readonly listWalletIds: ReadonlyArray<Scalars['WalletId']['output']>;
+  readonly merchantsPendingApproval: ReadonlyArray<Merchant>;
   readonly transactionById?: Maybe<Transaction>;
   readonly transactionsByHash?: Maybe<ReadonlyArray<Maybe<Transaction>>>;
   readonly wallet: Wallet;
@@ -395,6 +490,7 @@ export type SettlementViaIntraLedger = {
   /** Settlement destination: Could be null if the payee does not have a username */
   readonly counterPartyUsername?: Maybe<Scalars['Username']['output']>;
   readonly counterPartyWalletId?: Maybe<Scalars['WalletId']['output']>;
+  readonly preImage?: Maybe<Scalars['LnPaymentPreImage']['output']>;
 };
 
 export type SettlementViaLn = {
@@ -406,6 +502,7 @@ export type SettlementViaLn = {
 
 export type SettlementViaOnChain = {
   readonly __typename: 'SettlementViaOnChain';
+  readonly arrivalInMempoolEstimatedAt?: Maybe<Scalars['Timestamp']['output']>;
   readonly transactionHash?: Maybe<Scalars['OnChainTxHash']['output']>;
   readonly vout?: Maybe<Scalars['Int']['output']>;
 };
@@ -477,11 +574,45 @@ export type UsdWallet = Wallet & {
   readonly accountId: Scalars['ID']['output'];
   readonly balance: Scalars['SignedAmount']['output'];
   readonly id: Scalars['ID']['output'];
+  readonly invoiceByPaymentHash: Invoice;
+  /** A list of all invoices associated with walletIds optionally passed. */
+  readonly invoices?: Maybe<InvoiceConnection>;
   /** An unconfirmed incoming onchain balance. */
   readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
+  readonly pendingIncomingTransactions: ReadonlyArray<Transaction>;
+  readonly pendingIncomingTransactionsByAddress: ReadonlyArray<Transaction>;
+  readonly transactionById: Transaction;
   readonly transactions?: Maybe<TransactionConnection>;
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
+  readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletInvoiceByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletInvoicesArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletPendingIncomingTransactionsByAddressArgs = {
+  address: Scalars['OnChainAddress']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletTransactionByIdArgs = {
+  transactionId: Scalars['ID']['input'];
 };
 
 
@@ -503,6 +634,12 @@ export type UsdWalletTransactionsByAddressArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
 };
 
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletTransactionsByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
 export type UserUpdatePhoneInput = {
   readonly accountId: Scalars['AccountId']['input'];
   readonly phone: Scalars['Phone']['input'];
@@ -513,7 +650,24 @@ export type Wallet = {
   readonly accountId: Scalars['ID']['output'];
   readonly balance: Scalars['SignedAmount']['output'];
   readonly id: Scalars['ID']['output'];
+  readonly invoiceByPaymentHash: Invoice;
+  readonly invoices?: Maybe<InvoiceConnection>;
   readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
+  /**
+   * Pending incoming OnChain transactions. When transactions
+   * are confirmed they will receive a new id and be found in the transactions
+   * list. Transactions are ordered anti-chronologically,
+   * ie: the newest transaction will be first
+   */
+  readonly pendingIncomingTransactions: ReadonlyArray<Transaction>;
+  /**
+   * Pending incoming OnChain transactions. When transactions
+   * are confirmed they will receive a new id and be found in the transactions
+   * list. Transactions are ordered anti-chronologically,
+   * ie: the newest transaction will be first
+   */
+  readonly pendingIncomingTransactionsByAddress: ReadonlyArray<Transaction>;
+  readonly transactionById: Transaction;
   /**
    * Transactions are ordered anti-chronologically,
    * ie: the newest transaction will be first
@@ -524,7 +678,36 @@ export type Wallet = {
    * ie: the newest transaction will be first
    */
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
+  /** Returns the transactions that include this paymentHash. This should be a list of size one for a received lightning payment. This can be more that one transaction for a sent lightning payment. */
+  readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletInvoiceByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletInvoicesArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletPendingIncomingTransactionsByAddressArgs = {
+  address: Scalars['OnChainAddress']['input'];
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletTransactionByIdArgs = {
+  transactionId: Scalars['ID']['input'];
 };
 
 
@@ -546,6 +729,12 @@ export type WalletTransactionsByAddressArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
 };
 
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletTransactionsByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
 export const WalletCurrency = {
   Btc: 'BTC',
   Usd: 'USD'
@@ -557,56 +746,56 @@ export type AccountDetailsByUserPhoneQueryVariables = Exact<{
 }>;
 
 
-export type AccountDetailsByUserPhoneQuery = { readonly __typename: 'Query', readonly accountDetailsByUserPhone: { readonly __typename: 'AuditedAccount', readonly id: string, readonly username?: string | null, readonly level: AccountLevel, readonly status: AccountStatus, readonly title?: string | null, readonly createdAt: number, readonly owner: { readonly __typename: 'AuditedUser', readonly id: string, readonly language: string, readonly phone?: string | null, readonly createdAt: number, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null }, readonly coordinates?: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } | null, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number }> } };
+export type AccountDetailsByUserPhoneQuery = { readonly __typename: 'Query', readonly accountDetailsByUserPhone: { readonly __typename: 'AuditedAccount', readonly id: string, readonly username?: string | null, readonly level: AccountLevel, readonly status: AccountStatus, readonly createdAt: number, readonly merchants: ReadonlyArray<{ readonly __typename: 'Merchant', readonly id: string, readonly title: string, readonly createdAt: number, readonly validated: boolean, readonly username: string, readonly coordinates: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } }>, readonly owner: { readonly __typename: 'AuditedUser', readonly id: string, readonly language: string, readonly phone?: string | null, readonly createdAt: number, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null }, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number }> } };
 
 export type AccountDetailsByAccountIdQueryVariables = Exact<{
   accountId: Scalars['ID']['input'];
 }>;
 
 
-export type AccountDetailsByAccountIdQuery = { readonly __typename: 'Query', readonly accountDetailsByAccountId: { readonly __typename: 'AuditedAccount', readonly id: string, readonly username?: string | null, readonly level: AccountLevel, readonly status: AccountStatus, readonly title?: string | null, readonly createdAt: number, readonly owner: { readonly __typename: 'AuditedUser', readonly id: string, readonly language: string, readonly phone?: string | null, readonly createdAt: number, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null }, readonly coordinates?: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } | null, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number }> } };
+export type AccountDetailsByAccountIdQuery = { readonly __typename: 'Query', readonly accountDetailsByAccountId: { readonly __typename: 'AuditedAccount', readonly id: string, readonly username?: string | null, readonly level: AccountLevel, readonly status: AccountStatus, readonly createdAt: number, readonly merchants: ReadonlyArray<{ readonly __typename: 'Merchant', readonly id: string, readonly title: string, readonly createdAt: number, readonly validated: boolean, readonly username: string, readonly coordinates: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } }>, readonly owner: { readonly __typename: 'AuditedUser', readonly id: string, readonly language: string, readonly phone?: string | null, readonly createdAt: number, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null }, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number }> } };
 
 export type AccountDetailsByEmailQueryVariables = Exact<{
   email: Scalars['EmailAddress']['input'];
 }>;
 
 
-export type AccountDetailsByEmailQuery = { readonly __typename: 'Query', readonly accountDetailsByEmail: { readonly __typename: 'AuditedAccount', readonly id: string, readonly username?: string | null, readonly level: AccountLevel, readonly status: AccountStatus, readonly title?: string | null, readonly createdAt: number, readonly owner: { readonly __typename: 'AuditedUser', readonly id: string, readonly language: string, readonly phone?: string | null, readonly createdAt: number, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null }, readonly coordinates?: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } | null, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number }> } };
+export type AccountDetailsByEmailQuery = { readonly __typename: 'Query', readonly accountDetailsByEmail: { readonly __typename: 'AuditedAccount', readonly id: string, readonly username?: string | null, readonly level: AccountLevel, readonly status: AccountStatus, readonly createdAt: number, readonly merchants: ReadonlyArray<{ readonly __typename: 'Merchant', readonly id: string, readonly title: string, readonly createdAt: number, readonly validated: boolean, readonly username: string, readonly coordinates: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } }>, readonly owner: { readonly __typename: 'AuditedUser', readonly id: string, readonly language: string, readonly phone?: string | null, readonly createdAt: number, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null }, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number }> } };
 
-export type BusinessDeleteMapInfoMutationVariables = Exact<{
-  input: BusinessDeleteMapInfoInput;
+export type MerchantMapDeleteMutationVariables = Exact<{
+  input: MerchantMapDeleteInput;
 }>;
 
 
-export type BusinessDeleteMapInfoMutation = { readonly __typename: 'Mutation', readonly businessDeleteMapInfo: { readonly __typename: 'AccountDetailPayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
+export type MerchantMapDeleteMutation = { readonly __typename: 'Mutation', readonly merchantMapDelete: { readonly __typename: 'MerchantPayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
+
+export type MerchantMapValidateMutationVariables = Exact<{
+  input: MerchantMapValidateInput;
+}>;
+
+
+export type MerchantMapValidateMutation = { readonly __typename: 'Mutation', readonly merchantMapValidate: { readonly __typename: 'MerchantPayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
 
 export type AccountUpdateLevelMutationVariables = Exact<{
   input: AccountUpdateLevelInput;
 }>;
 
 
-export type AccountUpdateLevelMutation = { readonly __typename: 'Mutation', readonly accountUpdateLevel: { readonly __typename: 'AccountDetailPayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly accountDetails?: { readonly __typename: 'AuditedAccount', readonly id: string, readonly username?: string | null, readonly level: AccountLevel, readonly status: AccountStatus, readonly title?: string | null, readonly createdAt: number, readonly owner: { readonly __typename: 'AuditedUser', readonly id: string, readonly language: string, readonly phone?: string | null, readonly createdAt: number, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null }, readonly coordinates?: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } | null, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number }> } | null } };
-
-export type BusinessUpdateMapInfoMutationVariables = Exact<{
-  input: BusinessUpdateMapInfoInput;
-}>;
-
-
-export type BusinessUpdateMapInfoMutation = { readonly __typename: 'Mutation', readonly businessUpdateMapInfo: { readonly __typename: 'AccountDetailPayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly accountDetails?: { readonly __typename: 'AuditedAccount', readonly id: string, readonly username?: string | null, readonly level: AccountLevel, readonly status: AccountStatus, readonly title?: string | null, readonly createdAt: number, readonly owner: { readonly __typename: 'AuditedUser', readonly id: string, readonly language: string, readonly phone?: string | null, readonly createdAt: number, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null }, readonly coordinates?: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } | null, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number }> } | null } };
+export type AccountUpdateLevelMutation = { readonly __typename: 'Mutation', readonly accountUpdateLevel: { readonly __typename: 'AccountDetailPayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly accountDetails?: { readonly __typename: 'AuditedAccount', readonly id: string, readonly username?: string | null, readonly level: AccountLevel, readonly status: AccountStatus, readonly createdAt: number, readonly merchants: ReadonlyArray<{ readonly __typename: 'Merchant', readonly id: string, readonly title: string, readonly createdAt: number, readonly validated: boolean, readonly username: string, readonly coordinates: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } }>, readonly owner: { readonly __typename: 'AuditedUser', readonly id: string, readonly language: string, readonly phone?: string | null, readonly createdAt: number, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null }, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number }> } | null } };
 
 export type AccountUpdateStatusMutationVariables = Exact<{
   input: AccountUpdateStatusInput;
 }>;
 
 
-export type AccountUpdateStatusMutation = { readonly __typename: 'Mutation', readonly accountUpdateStatus: { readonly __typename: 'AccountDetailPayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly accountDetails?: { readonly __typename: 'AuditedAccount', readonly id: string, readonly username?: string | null, readonly level: AccountLevel, readonly status: AccountStatus, readonly title?: string | null, readonly createdAt: number, readonly owner: { readonly __typename: 'AuditedUser', readonly id: string, readonly language: string, readonly phone?: string | null, readonly createdAt: number, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null }, readonly coordinates?: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } | null, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number }> } | null } };
+export type AccountUpdateStatusMutation = { readonly __typename: 'Mutation', readonly accountUpdateStatus: { readonly __typename: 'AccountDetailPayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly accountDetails?: { readonly __typename: 'AuditedAccount', readonly id: string, readonly username?: string | null, readonly level: AccountLevel, readonly status: AccountStatus, readonly createdAt: number, readonly merchants: ReadonlyArray<{ readonly __typename: 'Merchant', readonly id: string, readonly title: string, readonly createdAt: number, readonly validated: boolean, readonly username: string, readonly coordinates: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } }>, readonly owner: { readonly __typename: 'AuditedUser', readonly id: string, readonly language: string, readonly phone?: string | null, readonly createdAt: number, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null }, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number }> } | null } };
 
 export type AccountDetailsByUsernameQueryVariables = Exact<{
   username: Scalars['Username']['input'];
 }>;
 
 
-export type AccountDetailsByUsernameQuery = { readonly __typename: 'Query', readonly accountDetailsByUsername: { readonly __typename: 'AuditedAccount', readonly id: string, readonly username?: string | null, readonly level: AccountLevel, readonly status: AccountStatus, readonly title?: string | null, readonly createdAt: number, readonly owner: { readonly __typename: 'AuditedUser', readonly id: string, readonly language: string, readonly phone?: string | null, readonly createdAt: number, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null }, readonly coordinates?: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } | null, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number }> } };
+export type AccountDetailsByUsernameQuery = { readonly __typename: 'Query', readonly accountDetailsByUsername: { readonly __typename: 'AuditedAccount', readonly id: string, readonly username?: string | null, readonly level: AccountLevel, readonly status: AccountStatus, readonly createdAt: number, readonly merchants: ReadonlyArray<{ readonly __typename: 'Merchant', readonly id: string, readonly title: string, readonly createdAt: number, readonly validated: boolean, readonly username: string, readonly coordinates: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } }>, readonly owner: { readonly __typename: 'AuditedUser', readonly id: string, readonly language: string, readonly phone?: string | null, readonly createdAt: number, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null }, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly accountId: string, readonly balance: number, readonly pendingIncomingBalance: number }> } };
 
 export type LightningInvoiceQueryVariables = Exact<{
   hash: Scalars['PaymentHash']['input'];
@@ -636,6 +825,11 @@ export type TransactionByIdQueryVariables = Exact<{
 
 export type TransactionByIdQuery = { readonly __typename: 'Query', readonly transactionById?: { readonly __typename: 'Transaction', readonly id: string, readonly settlementAmount: number, readonly settlementFee: number, readonly direction: TxDirection, readonly status: TxStatus, readonly memo?: string | null, readonly createdAt: number, readonly initiationVia: { readonly __typename: 'InitiationViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'InitiationViaLn', readonly paymentHash: string } | { readonly __typename: 'InitiationViaOnChain', readonly address: string }, readonly settlementVia: { readonly __typename: 'SettlementViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'SettlementViaLn', readonly paymentSecret?: string | null } | { readonly __typename: 'SettlementViaOnChain', readonly transactionHash?: string | null }, readonly settlementPrice: { readonly __typename: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit', readonly base: number, readonly offset: number, readonly currencyUnit: string, readonly formattedAmount: string } } | null };
 
+export type MerchantsPendingApprovalQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MerchantsPendingApprovalQuery = { readonly __typename: 'Query', readonly merchantsPendingApproval: ReadonlyArray<{ readonly __typename: 'Merchant', readonly id: string, readonly title: string, readonly createdAt: number, readonly validated: boolean, readonly username: string, readonly coordinates: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } }> };
+
 
 export const AccountDetailsByUserPhoneDocument = gql`
     query accountDetailsByUserPhone($phone: Phone!) {
@@ -644,7 +838,17 @@ export const AccountDetailsByUserPhoneDocument = gql`
     username
     level
     status
-    title
+    merchants {
+      id
+      title
+      coordinates {
+        latitude
+        longitude
+      }
+      createdAt
+      validated
+      username
+    }
     owner {
       id
       language
@@ -654,10 +858,6 @@ export const AccountDetailsByUserPhoneDocument = gql`
         verified
       }
       createdAt
-    }
-    coordinates {
-      latitude
-      longitude
     }
     wallets {
       id
@@ -695,8 +895,13 @@ export function useAccountDetailsByUserPhoneLazyQuery(baseOptions?: Apollo.LazyQ
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<AccountDetailsByUserPhoneQuery, AccountDetailsByUserPhoneQueryVariables>(AccountDetailsByUserPhoneDocument, options);
         }
+export function useAccountDetailsByUserPhoneSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<AccountDetailsByUserPhoneQuery, AccountDetailsByUserPhoneQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<AccountDetailsByUserPhoneQuery, AccountDetailsByUserPhoneQueryVariables>(AccountDetailsByUserPhoneDocument, options);
+        }
 export type AccountDetailsByUserPhoneQueryHookResult = ReturnType<typeof useAccountDetailsByUserPhoneQuery>;
 export type AccountDetailsByUserPhoneLazyQueryHookResult = ReturnType<typeof useAccountDetailsByUserPhoneLazyQuery>;
+export type AccountDetailsByUserPhoneSuspenseQueryHookResult = ReturnType<typeof useAccountDetailsByUserPhoneSuspenseQuery>;
 export type AccountDetailsByUserPhoneQueryResult = Apollo.QueryResult<AccountDetailsByUserPhoneQuery, AccountDetailsByUserPhoneQueryVariables>;
 export const AccountDetailsByAccountIdDocument = gql`
     query accountDetailsByAccountId($accountId: ID!) {
@@ -705,7 +910,17 @@ export const AccountDetailsByAccountIdDocument = gql`
     username
     level
     status
-    title
+    merchants {
+      id
+      title
+      coordinates {
+        latitude
+        longitude
+      }
+      createdAt
+      validated
+      username
+    }
     owner {
       id
       language
@@ -715,10 +930,6 @@ export const AccountDetailsByAccountIdDocument = gql`
         verified
       }
       createdAt
-    }
-    coordinates {
-      latitude
-      longitude
     }
     wallets {
       id
@@ -756,8 +967,13 @@ export function useAccountDetailsByAccountIdLazyQuery(baseOptions?: Apollo.LazyQ
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<AccountDetailsByAccountIdQuery, AccountDetailsByAccountIdQueryVariables>(AccountDetailsByAccountIdDocument, options);
         }
+export function useAccountDetailsByAccountIdSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<AccountDetailsByAccountIdQuery, AccountDetailsByAccountIdQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<AccountDetailsByAccountIdQuery, AccountDetailsByAccountIdQueryVariables>(AccountDetailsByAccountIdDocument, options);
+        }
 export type AccountDetailsByAccountIdQueryHookResult = ReturnType<typeof useAccountDetailsByAccountIdQuery>;
 export type AccountDetailsByAccountIdLazyQueryHookResult = ReturnType<typeof useAccountDetailsByAccountIdLazyQuery>;
+export type AccountDetailsByAccountIdSuspenseQueryHookResult = ReturnType<typeof useAccountDetailsByAccountIdSuspenseQuery>;
 export type AccountDetailsByAccountIdQueryResult = Apollo.QueryResult<AccountDetailsByAccountIdQuery, AccountDetailsByAccountIdQueryVariables>;
 export const AccountDetailsByEmailDocument = gql`
     query accountDetailsByEmail($email: EmailAddress!) {
@@ -766,7 +982,17 @@ export const AccountDetailsByEmailDocument = gql`
     username
     level
     status
-    title
+    merchants {
+      id
+      title
+      coordinates {
+        latitude
+        longitude
+      }
+      createdAt
+      validated
+      username
+    }
     owner {
       id
       language
@@ -776,10 +1002,6 @@ export const AccountDetailsByEmailDocument = gql`
         verified
       }
       createdAt
-    }
-    coordinates {
-      latitude
-      longitude
     }
     wallets {
       id
@@ -817,44 +1039,84 @@ export function useAccountDetailsByEmailLazyQuery(baseOptions?: Apollo.LazyQuery
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<AccountDetailsByEmailQuery, AccountDetailsByEmailQueryVariables>(AccountDetailsByEmailDocument, options);
         }
+export function useAccountDetailsByEmailSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<AccountDetailsByEmailQuery, AccountDetailsByEmailQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<AccountDetailsByEmailQuery, AccountDetailsByEmailQueryVariables>(AccountDetailsByEmailDocument, options);
+        }
 export type AccountDetailsByEmailQueryHookResult = ReturnType<typeof useAccountDetailsByEmailQuery>;
 export type AccountDetailsByEmailLazyQueryHookResult = ReturnType<typeof useAccountDetailsByEmailLazyQuery>;
+export type AccountDetailsByEmailSuspenseQueryHookResult = ReturnType<typeof useAccountDetailsByEmailSuspenseQuery>;
 export type AccountDetailsByEmailQueryResult = Apollo.QueryResult<AccountDetailsByEmailQuery, AccountDetailsByEmailQueryVariables>;
-export const BusinessDeleteMapInfoDocument = gql`
-    mutation businessDeleteMapInfo($input: BusinessDeleteMapInfoInput!) {
-  businessDeleteMapInfo(input: $input) {
+export const MerchantMapDeleteDocument = gql`
+    mutation merchantMapDelete($input: MerchantMapDeleteInput!) {
+  merchantMapDelete(input: $input) {
     errors {
       message
     }
   }
 }
     `;
-export type BusinessDeleteMapInfoMutationFn = Apollo.MutationFunction<BusinessDeleteMapInfoMutation, BusinessDeleteMapInfoMutationVariables>;
+export type MerchantMapDeleteMutationFn = Apollo.MutationFunction<MerchantMapDeleteMutation, MerchantMapDeleteMutationVariables>;
 
 /**
- * __useBusinessDeleteMapInfoMutation__
+ * __useMerchantMapDeleteMutation__
  *
- * To run a mutation, you first call `useBusinessDeleteMapInfoMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useBusinessDeleteMapInfoMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useMerchantMapDeleteMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMerchantMapDeleteMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [businessDeleteMapInfoMutation, { data, loading, error }] = useBusinessDeleteMapInfoMutation({
+ * const [merchantMapDeleteMutation, { data, loading, error }] = useMerchantMapDeleteMutation({
  *   variables: {
  *      input: // value for 'input'
  *   },
  * });
  */
-export function useBusinessDeleteMapInfoMutation(baseOptions?: Apollo.MutationHookOptions<BusinessDeleteMapInfoMutation, BusinessDeleteMapInfoMutationVariables>) {
+export function useMerchantMapDeleteMutation(baseOptions?: Apollo.MutationHookOptions<MerchantMapDeleteMutation, MerchantMapDeleteMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<BusinessDeleteMapInfoMutation, BusinessDeleteMapInfoMutationVariables>(BusinessDeleteMapInfoDocument, options);
+        return Apollo.useMutation<MerchantMapDeleteMutation, MerchantMapDeleteMutationVariables>(MerchantMapDeleteDocument, options);
       }
-export type BusinessDeleteMapInfoMutationHookResult = ReturnType<typeof useBusinessDeleteMapInfoMutation>;
-export type BusinessDeleteMapInfoMutationResult = Apollo.MutationResult<BusinessDeleteMapInfoMutation>;
-export type BusinessDeleteMapInfoMutationOptions = Apollo.BaseMutationOptions<BusinessDeleteMapInfoMutation, BusinessDeleteMapInfoMutationVariables>;
+export type MerchantMapDeleteMutationHookResult = ReturnType<typeof useMerchantMapDeleteMutation>;
+export type MerchantMapDeleteMutationResult = Apollo.MutationResult<MerchantMapDeleteMutation>;
+export type MerchantMapDeleteMutationOptions = Apollo.BaseMutationOptions<MerchantMapDeleteMutation, MerchantMapDeleteMutationVariables>;
+export const MerchantMapValidateDocument = gql`
+    mutation merchantMapValidate($input: MerchantMapValidateInput!) {
+  merchantMapValidate(input: $input) {
+    errors {
+      message
+    }
+  }
+}
+    `;
+export type MerchantMapValidateMutationFn = Apollo.MutationFunction<MerchantMapValidateMutation, MerchantMapValidateMutationVariables>;
+
+/**
+ * __useMerchantMapValidateMutation__
+ *
+ * To run a mutation, you first call `useMerchantMapValidateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMerchantMapValidateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [merchantMapValidateMutation, { data, loading, error }] = useMerchantMapValidateMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useMerchantMapValidateMutation(baseOptions?: Apollo.MutationHookOptions<MerchantMapValidateMutation, MerchantMapValidateMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<MerchantMapValidateMutation, MerchantMapValidateMutationVariables>(MerchantMapValidateDocument, options);
+      }
+export type MerchantMapValidateMutationHookResult = ReturnType<typeof useMerchantMapValidateMutation>;
+export type MerchantMapValidateMutationResult = Apollo.MutationResult<MerchantMapValidateMutation>;
+export type MerchantMapValidateMutationOptions = Apollo.BaseMutationOptions<MerchantMapValidateMutation, MerchantMapValidateMutationVariables>;
 export const AccountUpdateLevelDocument = gql`
     mutation accountUpdateLevel($input: AccountUpdateLevelInput!) {
   accountUpdateLevel(input: $input) {
@@ -866,7 +1128,17 @@ export const AccountUpdateLevelDocument = gql`
       username
       level
       status
-      title
+      merchants {
+        id
+        title
+        coordinates {
+          latitude
+          longitude
+        }
+        createdAt
+        validated
+        username
+      }
       owner {
         id
         language
@@ -876,10 +1148,6 @@ export const AccountUpdateLevelDocument = gql`
           verified
         }
         createdAt
-      }
-      coordinates {
-        latitude
-        longitude
       }
       wallets {
         id
@@ -919,70 +1187,6 @@ export function useAccountUpdateLevelMutation(baseOptions?: Apollo.MutationHookO
 export type AccountUpdateLevelMutationHookResult = ReturnType<typeof useAccountUpdateLevelMutation>;
 export type AccountUpdateLevelMutationResult = Apollo.MutationResult<AccountUpdateLevelMutation>;
 export type AccountUpdateLevelMutationOptions = Apollo.BaseMutationOptions<AccountUpdateLevelMutation, AccountUpdateLevelMutationVariables>;
-export const BusinessUpdateMapInfoDocument = gql`
-    mutation businessUpdateMapInfo($input: BusinessUpdateMapInfoInput!) {
-  businessUpdateMapInfo(input: $input) {
-    errors {
-      message
-    }
-    accountDetails {
-      id
-      username
-      level
-      status
-      title
-      owner {
-        id
-        language
-        phone
-        email {
-          address
-          verified
-        }
-        createdAt
-      }
-      coordinates {
-        latitude
-        longitude
-      }
-      wallets {
-        id
-        walletCurrency
-        accountId
-        balance
-        pendingIncomingBalance
-      }
-      createdAt
-    }
-  }
-}
-    `;
-export type BusinessUpdateMapInfoMutationFn = Apollo.MutationFunction<BusinessUpdateMapInfoMutation, BusinessUpdateMapInfoMutationVariables>;
-
-/**
- * __useBusinessUpdateMapInfoMutation__
- *
- * To run a mutation, you first call `useBusinessUpdateMapInfoMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useBusinessUpdateMapInfoMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [businessUpdateMapInfoMutation, { data, loading, error }] = useBusinessUpdateMapInfoMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useBusinessUpdateMapInfoMutation(baseOptions?: Apollo.MutationHookOptions<BusinessUpdateMapInfoMutation, BusinessUpdateMapInfoMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<BusinessUpdateMapInfoMutation, BusinessUpdateMapInfoMutationVariables>(BusinessUpdateMapInfoDocument, options);
-      }
-export type BusinessUpdateMapInfoMutationHookResult = ReturnType<typeof useBusinessUpdateMapInfoMutation>;
-export type BusinessUpdateMapInfoMutationResult = Apollo.MutationResult<BusinessUpdateMapInfoMutation>;
-export type BusinessUpdateMapInfoMutationOptions = Apollo.BaseMutationOptions<BusinessUpdateMapInfoMutation, BusinessUpdateMapInfoMutationVariables>;
 export const AccountUpdateStatusDocument = gql`
     mutation accountUpdateStatus($input: AccountUpdateStatusInput!) {
   accountUpdateStatus(input: $input) {
@@ -994,7 +1198,17 @@ export const AccountUpdateStatusDocument = gql`
       username
       level
       status
-      title
+      merchants {
+        id
+        title
+        coordinates {
+          latitude
+          longitude
+        }
+        createdAt
+        validated
+        username
+      }
       owner {
         id
         language
@@ -1004,10 +1218,6 @@ export const AccountUpdateStatusDocument = gql`
           verified
         }
         createdAt
-      }
-      coordinates {
-        latitude
-        longitude
       }
       wallets {
         id
@@ -1054,7 +1264,17 @@ export const AccountDetailsByUsernameDocument = gql`
     username
     level
     status
-    title
+    merchants {
+      id
+      title
+      coordinates {
+        latitude
+        longitude
+      }
+      createdAt
+      validated
+      username
+    }
     owner {
       id
       language
@@ -1064,10 +1284,6 @@ export const AccountDetailsByUsernameDocument = gql`
         verified
       }
       createdAt
-    }
-    coordinates {
-      latitude
-      longitude
     }
     wallets {
       id
@@ -1105,8 +1321,13 @@ export function useAccountDetailsByUsernameLazyQuery(baseOptions?: Apollo.LazyQu
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<AccountDetailsByUsernameQuery, AccountDetailsByUsernameQueryVariables>(AccountDetailsByUsernameDocument, options);
         }
+export function useAccountDetailsByUsernameSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<AccountDetailsByUsernameQuery, AccountDetailsByUsernameQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<AccountDetailsByUsernameQuery, AccountDetailsByUsernameQueryVariables>(AccountDetailsByUsernameDocument, options);
+        }
 export type AccountDetailsByUsernameQueryHookResult = ReturnType<typeof useAccountDetailsByUsernameQuery>;
 export type AccountDetailsByUsernameLazyQueryHookResult = ReturnType<typeof useAccountDetailsByUsernameLazyQuery>;
+export type AccountDetailsByUsernameSuspenseQueryHookResult = ReturnType<typeof useAccountDetailsByUsernameSuspenseQuery>;
 export type AccountDetailsByUsernameQueryResult = Apollo.QueryResult<AccountDetailsByUsernameQuery, AccountDetailsByUsernameQueryVariables>;
 export const LightningInvoiceDocument = gql`
     query lightningInvoice($hash: PaymentHash!) {
@@ -1147,8 +1368,13 @@ export function useLightningInvoiceLazyQuery(baseOptions?: Apollo.LazyQueryHookO
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<LightningInvoiceQuery, LightningInvoiceQueryVariables>(LightningInvoiceDocument, options);
         }
+export function useLightningInvoiceSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<LightningInvoiceQuery, LightningInvoiceQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<LightningInvoiceQuery, LightningInvoiceQueryVariables>(LightningInvoiceDocument, options);
+        }
 export type LightningInvoiceQueryHookResult = ReturnType<typeof useLightningInvoiceQuery>;
 export type LightningInvoiceLazyQueryHookResult = ReturnType<typeof useLightningInvoiceLazyQuery>;
+export type LightningInvoiceSuspenseQueryHookResult = ReturnType<typeof useLightningInvoiceSuspenseQuery>;
 export type LightningInvoiceQueryResult = Apollo.QueryResult<LightningInvoiceQuery, LightningInvoiceQueryVariables>;
 export const LightningPaymentDocument = gql`
     query lightningPayment($hash: PaymentHash!) {
@@ -1189,8 +1415,13 @@ export function useLightningPaymentLazyQuery(baseOptions?: Apollo.LazyQueryHookO
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<LightningPaymentQuery, LightningPaymentQueryVariables>(LightningPaymentDocument, options);
         }
+export function useLightningPaymentSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<LightningPaymentQuery, LightningPaymentQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<LightningPaymentQuery, LightningPaymentQueryVariables>(LightningPaymentDocument, options);
+        }
 export type LightningPaymentQueryHookResult = ReturnType<typeof useLightningPaymentQuery>;
 export type LightningPaymentLazyQueryHookResult = ReturnType<typeof useLightningPaymentLazyQuery>;
+export type LightningPaymentSuspenseQueryHookResult = ReturnType<typeof useLightningPaymentSuspenseQuery>;
 export type LightningPaymentQueryResult = Apollo.QueryResult<LightningPaymentQuery, LightningPaymentQueryVariables>;
 export const TransactionsByHashDocument = gql`
     query transactionsByHash($hash: PaymentHash!) {
@@ -1262,8 +1493,13 @@ export function useTransactionsByHashLazyQuery(baseOptions?: Apollo.LazyQueryHoo
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<TransactionsByHashQuery, TransactionsByHashQueryVariables>(TransactionsByHashDocument, options);
         }
+export function useTransactionsByHashSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<TransactionsByHashQuery, TransactionsByHashQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<TransactionsByHashQuery, TransactionsByHashQueryVariables>(TransactionsByHashDocument, options);
+        }
 export type TransactionsByHashQueryHookResult = ReturnType<typeof useTransactionsByHashQuery>;
 export type TransactionsByHashLazyQueryHookResult = ReturnType<typeof useTransactionsByHashLazyQuery>;
+export type TransactionsByHashSuspenseQueryHookResult = ReturnType<typeof useTransactionsByHashSuspenseQuery>;
 export type TransactionsByHashQueryResult = Apollo.QueryResult<TransactionsByHashQuery, TransactionsByHashQueryVariables>;
 export const TransactionByIdDocument = gql`
     query transactionById($id: ID!) {
@@ -1335,6 +1571,58 @@ export function useTransactionByIdLazyQuery(baseOptions?: Apollo.LazyQueryHookOp
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<TransactionByIdQuery, TransactionByIdQueryVariables>(TransactionByIdDocument, options);
         }
+export function useTransactionByIdSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<TransactionByIdQuery, TransactionByIdQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<TransactionByIdQuery, TransactionByIdQueryVariables>(TransactionByIdDocument, options);
+        }
 export type TransactionByIdQueryHookResult = ReturnType<typeof useTransactionByIdQuery>;
 export type TransactionByIdLazyQueryHookResult = ReturnType<typeof useTransactionByIdLazyQuery>;
+export type TransactionByIdSuspenseQueryHookResult = ReturnType<typeof useTransactionByIdSuspenseQuery>;
 export type TransactionByIdQueryResult = Apollo.QueryResult<TransactionByIdQuery, TransactionByIdQueryVariables>;
+export const MerchantsPendingApprovalDocument = gql`
+    query merchantsPendingApproval {
+  merchantsPendingApproval {
+    id
+    title
+    coordinates {
+      latitude
+      longitude
+    }
+    createdAt
+    validated
+    username
+  }
+}
+    `;
+
+/**
+ * __useMerchantsPendingApprovalQuery__
+ *
+ * To run a query within a React component, call `useMerchantsPendingApprovalQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMerchantsPendingApprovalQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMerchantsPendingApprovalQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMerchantsPendingApprovalQuery(baseOptions?: Apollo.QueryHookOptions<MerchantsPendingApprovalQuery, MerchantsPendingApprovalQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MerchantsPendingApprovalQuery, MerchantsPendingApprovalQueryVariables>(MerchantsPendingApprovalDocument, options);
+      }
+export function useMerchantsPendingApprovalLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MerchantsPendingApprovalQuery, MerchantsPendingApprovalQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MerchantsPendingApprovalQuery, MerchantsPendingApprovalQueryVariables>(MerchantsPendingApprovalDocument, options);
+        }
+export function useMerchantsPendingApprovalSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<MerchantsPendingApprovalQuery, MerchantsPendingApprovalQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MerchantsPendingApprovalQuery, MerchantsPendingApprovalQueryVariables>(MerchantsPendingApprovalDocument, options);
+        }
+export type MerchantsPendingApprovalQueryHookResult = ReturnType<typeof useMerchantsPendingApprovalQuery>;
+export type MerchantsPendingApprovalLazyQueryHookResult = ReturnType<typeof useMerchantsPendingApprovalLazyQuery>;
+export type MerchantsPendingApprovalSuspenseQueryHookResult = ReturnType<typeof useMerchantsPendingApprovalSuspenseQuery>;
+export type MerchantsPendingApprovalQueryResult = Apollo.QueryResult<MerchantsPendingApprovalQuery, MerchantsPendingApprovalQueryVariables>;
