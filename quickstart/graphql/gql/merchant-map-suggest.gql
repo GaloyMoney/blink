@@ -1,0 +1,17 @@
+mutation merchantMapSuggest($input: MerchantMapSuggestInput!) {
+  merchantMapSuggest(input: $input) {
+    errors {
+      message
+    }
+    merchant {
+      id
+      validated
+      title
+      coordinates {
+        latitude
+        longitude
+      }
+      username
+    }
+  }
+}

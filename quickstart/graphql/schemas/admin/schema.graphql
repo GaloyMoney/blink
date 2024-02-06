@@ -51,26 +51,11 @@ type AuditedAccount {
   createdAt: Timestamp!
   id: ID!
   level: AccountLevel!
+  merchants: [Merchant!]!
   owner: AuditedUser!
   status: AccountStatus!
   username: Username
   wallets: [Wallet!]!
-}
-
-type AuditedMerchant {
-  """
-  GPS coordinates for the merchant that can be used to place the related business on a map
-  """
-  coordinates: Coordinates
-  createdAt: Timestamp!
-  id: ID!
-  title: String!
-
-  """The username of the merchant"""
-  username: Username!
-
-  """Whether the merchant has been validated"""
-  validated: Boolean!
 }
 
 type AuditedUser {
@@ -150,17 +135,6 @@ type BTCWallet implements Wallet {
   ): TransactionConnection
   transactionsByPaymentHash(paymentHash: PaymentHash!): [Transaction!]!
   walletCurrency: WalletCurrency!
-}
-
-input BusinessDeleteMapInfoInput {
-  username: Username!
-}
-
-input BusinessUpdateMapInfoInput {
-  latitude: Float!
-  longitude: Float!
-  title: String!
-  username: Username!
 }
 
 type Coordinates {
@@ -294,17 +268,41 @@ scalar LnPubkey
 """Text field in a lightning payment transaction"""
 scalar Memo
 
+type Merchant {
+  """
+  GPS coordinates for the merchant that can be used to place the related business on a map
+  """
+  coordinates: Coordinates!
+  createdAt: Timestamp!
+  id: ID!
+  title: String!
+
+  """The username of the merchant"""
+  username: Username!
+
+  """Whether the merchant has been validated"""
+  validated: Boolean!
+}
+
+input MerchantMapDeleteInput {
+  id: ID!
+}
+
+input MerchantMapValidateInput {
+  id: ID!
+}
+
 type MerchantPayload {
   errors: [Error!]!
-  merchant: AuditedMerchant
+  merchant: Merchant
 }
 
 type Mutation {
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
   adminPushNotificationSend(input: AdminPushNotificationSendInput!): AdminPushNotificationSendPayload!
-  businessDeleteMapInfo(input: BusinessDeleteMapInfoInput!): AccountDetailPayload!
-  businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): MerchantPayload!
+  merchantMapDelete(input: MerchantMapDeleteInput!): MerchantPayload!
+  merchantMapValidate(input: MerchantMapValidateInput!): MerchantPayload!
   userUpdatePhone(input: UserUpdatePhoneInput!): AccountDetailPayload!
 }
 
@@ -363,6 +361,7 @@ type Query {
   lightningInvoice(hash: PaymentHash!): LightningInvoice!
   lightningPayment(hash: PaymentHash!): LightningPayment!
   listWalletIds(walletCurrency: WalletCurrency!): [WalletId!]!
+  merchantsPendingApproval: [Merchant!]!
   transactionById(id: ID!): Transaction
   transactionsByHash(hash: PaymentHash!): [Transaction]
   wallet(walletId: WalletId!): Wallet!

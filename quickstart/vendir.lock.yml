@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: migration for location (#3935)...'
-      sha: 500123ea65d0e1eb24c7cf64ab00a16af09a1528
+      commitTitle: 'feat: adding suggest and approve endpoint for the map (#3937)'
+      sha: d2f6f35ab4fb67397094684d4b7fc0cf79d47111
       tags:
-      - 0.20.40-2-g500123ea6
+      - 0.20.41-2-gd2f6f35ab
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: migration for location (#3935)...'
-      sha: 500123ea65d0e1eb24c7cf64ab00a16af09a1528
+      commitTitle: 'feat: adding suggest and approve endpoint for the map (#3937)'
+      sha: d2f6f35ab4fb67397094684d4b7fc0cf79d47111
       tags:
-      - 0.20.40-2-g500123ea6
+      - 0.20.41-2-gd2f6f35ab
     path: schemas/
   - git:
-      commitTitle: 'fix: migration for location (#3935)...'
-      sha: 500123ea65d0e1eb24c7cf64ab00a16af09a1528
+      commitTitle: 'feat: adding suggest and approve endpoint for the map (#3937)'
+      sha: d2f6f35ab4fb67397094684d4b7fc0cf79d47111
       tags:
-      - 0.20.40-2-g500123ea6
+      - 0.20.41-2-gd2f6f35ab
     path: gql/
   path: ./graphql
 kind: LockConfig

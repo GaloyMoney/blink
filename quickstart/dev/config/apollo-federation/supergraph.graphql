@@ -1035,6 +1035,40 @@ type MapMarker
 scalar Memo
   @join__type(graph: PUBLIC)
 
+type Merchant
+  @join__type(graph: PUBLIC)
+{
+  """
+  GPS coordinates for the merchant that can be used to place the related business on a map
+  """
+  coordinates: Coordinates!
+  createdAt: Timestamp!
+  id: ID!
+  title: String!
+
+  """The username of the merchant"""
+  username: Username!
+
+  """Whether the merchant has been validated"""
+  validated: Boolean!
+}
+
+input MerchantMapSuggestInput
+  @join__type(graph: PUBLIC)
+{
+  latitude: Float!
+  longitude: Float!
+  title: String!
+  username: Username!
+}
+
+type MerchantPayload
+  @join__type(graph: PUBLIC)
+{
+  errors: [Error!]!
+  merchant: Merchant
+}
+
 """(Positive) amount of minutes"""
 scalar Minutes
   @join__type(graph: PUBLIC)
@@ -1168,6 +1202,7 @@ type Mutation
 
   """Sends a payment to a lightning address."""
   lnurlPaymentSend(input: LnurlPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
+  merchantMapSuggest(input: MerchantMapSuggestInput!): MerchantPayload! @join__field(graph: PUBLIC)
   onChainAddressCreate(input: OnChainAddressCreateInput!): OnChainAddressPayload! @join__field(graph: PUBLIC)
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload! @join__field(graph: PUBLIC)
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
