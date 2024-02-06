@@ -20,7 +20,7 @@ pub struct NotificationsApp {
 impl NotificationsApp {
     pub async fn init(pool: Pool<Postgres>, config: AppConfig) -> Result<Self, ApplicationError> {
         let settings = UserNotificationSettingsRepo::new(&pool);
-        let executor = Executor::init(config.exectuor.clone(), settings.clone()).await?;
+        let executor = Executor::init(config.executor.clone(), settings.clone()).await?;
         Ok(Self {
             _config: config,
             _pool: pool,

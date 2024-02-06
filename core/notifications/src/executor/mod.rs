@@ -23,10 +23,10 @@ pub struct Executor {
 
 impl Executor {
     pub async fn init(
-        config: ExecutorConfig,
+        mut config: ExecutorConfig,
         settings: UserNotificationSettingsRepo,
     ) -> Result<Self, ExecutorError> {
-        let _fcm = FcmClient::new(config.fcm.service_account_key.clone()).await?;
+        let _fcm = FcmClient::init(config.fcm.service_account_key()).await?;
         Ok(Self {
             novu: NovuClient::new(config.novu.api_key.clone(), None)?,
             config,
