@@ -1,7 +1,6 @@
 use thiserror::Error;
 
-use super::fcm::error::FcmError;
-use super::novu::error::NovuError;
+use super::{fcm::error::FcmError, novu::error::NovuError};
 use crate::user_notification_settings::error::*;
 
 #[derive(Error, Debug)]

@@ -25,6 +25,7 @@ pub struct NovuWorkflows {
 pub struct FcmConfig {
     pub service_account_key: Option<ServiceAccountKey>,
 }
+
 impl NovuWorkflows {
     pub fn for_name(&self, name: &str) -> String {
         match name {

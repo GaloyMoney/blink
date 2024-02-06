@@ -29,9 +29,8 @@ impl FcmClient {
                     .build(),
             );
             let client = FirebaseCloudMessaging::new(hyper_client, auth);
-            Ok(Self { client })
-        } else {
-            Err(FcmError::NoServiceAccountKey)
+            return Ok(Self { client });
         }
+        Err(FcmError::NoServiceAccountKey)
     }
 }
