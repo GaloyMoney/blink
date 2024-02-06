@@ -13,13 +13,13 @@ import {
   AccountUpdateStatusDocument,
   AccountUpdateStatusMutation,
   AccountUpdateStatusMutationVariables,
-  AuditedAccount,
 } from "../../generated"
 
-import ConfirmForm from "./confirm"
+import ConfirmForm from "../confirm"
+import { AuditedAccountMainValues } from "../../app/types"
 
 type PropType = {
-  auditedAccount: AuditedAccount
+  auditedAccount: AuditedAccountMainValues
 }
 
 const updateLevel = async (formData: FormData) => {

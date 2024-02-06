@@ -1,6 +1,6 @@
-import BusinessMapUpdate from "../../../components/account/business-map-update"
 import Details from "../../../components/account/details"
 import AccountUpdate from "../../../components/account/update"
+import { Merchants } from "../../../components/merchants/details"
 import {
   AccountDetailsByAccountIdDocument,
   AccountDetailsByAccountIdQuery,
@@ -19,8 +19,6 @@ export default async function AccountDetails({ params }: { params: { uuid: strin
 
   const auditedAccount = data?.accountDetailsByAccountId
 
-  console.log({ auditedAccount }, "data")
-
   return (
     auditedAccount && (
       <>
@@ -31,9 +29,9 @@ export default async function AccountDetails({ params }: { params: { uuid: strin
           <Details auditedAccount={auditedAccount} />
           <div className="grid grid-cols-1 gap-4">
             <AccountUpdate auditedAccount={auditedAccount} />
-            <BusinessMapUpdate auditedAccount={auditedAccount} />
           </div>
         </div>
+        <Merchants merchants={auditedAccount.merchants} />
       </>
     )
   )

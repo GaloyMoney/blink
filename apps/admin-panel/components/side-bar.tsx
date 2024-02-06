@@ -8,6 +8,7 @@ import { signOut } from "next-auth/react"
 
 import PeopleIcon from "./icons/people.svg"
 import TransactionsIcon from "./icons/transactions.svg"
+import GlobeIcon from "./icons/search-globe.svg"
 import LogoutIcon from "./icons/logout.svg"
 
 const dashboardRoutes = [
@@ -20,6 +21,11 @@ const dashboardRoutes = [
     name: "Transactions",
     icon: TransactionsIcon,
     path: "/transactions",
+  },
+  {
+    name: "Merchants",
+    icon: GlobeIcon,
+    path: "/merchants",
   },
 ]
 
