@@ -9,7 +9,6 @@ mod messages;
 
 pub mod cli;
 pub mod executor;
-pub mod fcm;
 pub mod graphql;
 pub mod grpc;
 pub mod notification_event;
