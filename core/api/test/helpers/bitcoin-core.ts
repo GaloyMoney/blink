@@ -1,5 +1,3 @@
-import { authenticatedBitcoind, createWallet, importDescriptors } from "bitcoin-cli-ts"
-
 import {
   BitcoindClient,
   bitcoindDefaultClient,
@@ -7,8 +5,6 @@ import {
   BitcoindWalletClient,
   getBitcoinCoreSignerRPCConfig,
 } from "./bitcoind"
-
-import { descriptors as signerDescriptors } from "./signer-wallet"
 
 import { lndCreateOnChainAddress } from "./wallet"
 
@@ -130,41 +126,6 @@ export const fundWalletIdFromOnchain = async ({
   if (balance instanceof Error) throw balance
 
   return toSats(balance)
-}
-
-export const createSignerWallet = async (walletName: string) => {
-  const bitcoindSigner = getBitcoindSignerClient()
-  const wallet = await createWallet({
-    bitcoind: bitcoindSigner,
-    wallet_name: walletName,
-    disable_private_keys: false,
-    descriptors: true,
-  })
-
-  const bitcoindSignerWallet = getBitcoindSignerClient(walletName)
-  const result = await importDescriptors({
-    bitcoind: bitcoindSignerWallet,
-    requests: signerDescriptors,
-  })
-
-  /* eslint @typescript-eslint/ban-ts-comment: "off" */
-  // @ts-ignore-next-line no-implicit-any error
-  if (result.some((d) => !d.success)) throw new Error("Invalid descriptors")
-
-  return wallet
-}
-
-const getBitcoindSignerClient = (walletName?: string) => {
-  const { host, username, password, port, timeout } = getBitcoinCoreSignerRPCConfig()
-  return authenticatedBitcoind({
-    protocol: "http",
-    host: host || "",
-    username,
-    password,
-    timeout,
-    port,
-    walletName,
-  })
 }
 
 export const loadBitcoindWallet = async (walletName: string) => {
