@@ -824,7 +824,33 @@ export type MapInfo = {
 export type MapMarker = {
   readonly __typename: 'MapMarker';
   readonly mapInfo: MapInfo;
-  readonly username?: Maybe<Scalars['Username']['output']>;
+  readonly username: Scalars['Username']['output'];
+};
+
+export type Merchant = {
+  readonly __typename: 'Merchant';
+  /** GPS coordinates for the merchant that can be used to place the related business on a map */
+  readonly coordinates: Coordinates;
+  readonly createdAt: Scalars['Timestamp']['output'];
+  readonly id: Scalars['ID']['output'];
+  readonly title: Scalars['String']['output'];
+  /** The username of the merchant */
+  readonly username: Scalars['Username']['output'];
+  /** Whether the merchant has been validated */
+  readonly validated: Scalars['Boolean']['output'];
+};
+
+export type MerchantMapSuggestInput = {
+  readonly latitude: Scalars['Float']['input'];
+  readonly longitude: Scalars['Float']['input'];
+  readonly title: Scalars['String']['input'];
+  readonly username: Scalars['Username']['input'];
+};
+
+export type MerchantPayload = {
+  readonly __typename: 'MerchantPayload';
+  readonly errors: ReadonlyArray<Error>;
+  readonly merchant?: Maybe<Merchant>;
 };
 
 export type MobileVersions = {
@@ -934,6 +960,7 @@ export type Mutation = {
   readonly lnUsdInvoiceFeeProbe: SatAmountPayload;
   /** Sends a payment to a lightning address. */
   readonly lnurlPaymentSend: PaymentSendPayload;
+  readonly merchantMapSuggest: MerchantPayload;
   readonly onChainAddressCreate: OnChainAddressPayload;
   readonly onChainAddressCurrent: OnChainAddressPayload;
   readonly onChainPaymentSend: PaymentSendPayload;
@@ -945,9 +972,13 @@ export type Mutation = {
   readonly quizCompleted: QuizCompletedPayload;
   /** @deprecated will be moved to AccountContact */
   readonly userContactUpdateAlias: UserContactUpdateAliasPayload;
+  readonly userDisableNotificationCategory: UserUpdateNotificationSettingsPayload;
+  readonly userDisableNotificationChannel: UserUpdateNotificationSettingsPayload;
   readonly userEmailDelete: UserEmailDeletePayload;
   readonly userEmailRegistrationInitiate: UserEmailRegistrationInitiatePayload;
   readonly userEmailRegistrationValidate: UserEmailRegistrationValidatePayload;
+  readonly userEnableNotificationCategory: UserUpdateNotificationSettingsPayload;
+  readonly userEnableNotificationChannel: UserUpdateNotificationSettingsPayload;
   readonly userLogin: AuthTokenPayload;
   readonly userLoginUpgrade: UpgradePayload;
   readonly userLogout: SuccessPayload;
@@ -1118,6 +1149,11 @@ export type MutationLnurlPaymentSendArgs = {
 };
 
 
+export type MutationMerchantMapSuggestArgs = {
+  input: MerchantMapSuggestInput;
+};
+
+
 export type MutationOnChainAddressCreateArgs = {
   input: OnChainAddressCreateInput;
 };
@@ -1163,6 +1199,16 @@ export type MutationUserContactUpdateAliasArgs = {
 };
 
 
+export type MutationUserDisableNotificationCategoryArgs = {
+  input: UserDisableNotificationCategoryInput;
+};
+
+
+export type MutationUserDisableNotificationChannelArgs = {
+  input: UserDisableNotificationChannelInput;
+};
+
+
 export type MutationUserEmailRegistrationInitiateArgs = {
   input: UserEmailRegistrationInitiateInput;
 };
@@ -1170,6 +1216,16 @@ export type MutationUserEmailRegistrationInitiateArgs = {
 
 export type MutationUserEmailRegistrationValidateArgs = {
   input: UserEmailRegistrationValidateInput;
+};
+
+
+export type MutationUserEnableNotificationCategoryArgs = {
+  input: UserEnableNotificationCategoryInput;
+};
+
+
+export type MutationUserEnableNotificationChannelArgs = {
+  input: UserEnableNotificationChannelInput;
 };
 
 
@@ -1450,7 +1506,7 @@ export type Query = {
   readonly __typename: 'Query';
   readonly accountDefaultWallet: PublicWallet;
   readonly btcPriceList?: Maybe<ReadonlyArray<Maybe<PricePoint>>>;
-  readonly businessMapMarkers?: Maybe<ReadonlyArray<Maybe<MapMarker>>>;
+  readonly businessMapMarkers: ReadonlyArray<MapMarker>;
   readonly currencyList: ReadonlyArray<Currency>;
   readonly globals?: Maybe<Globals>;
   readonly lnInvoicePaymentStatus: LnInvoicePaymentStatusPayload;
@@ -1583,6 +1639,7 @@ export type SettlementViaIntraLedger = {
   /** Settlement destination: Could be null if the payee does not have a username */
   readonly counterPartyUsername?: Maybe<Scalars['Username']['output']>;
   readonly counterPartyWalletId?: Maybe<Scalars['WalletId']['output']>;
+  readonly preImage?: Maybe<Scalars['LnPaymentPreImage']['output']>;
 };
 
 export type SettlementViaLn = {
@@ -1804,6 +1861,7 @@ export type User = {
    * When value is 'default' the intent is to use preferred language from OS settings.
    */
   readonly language: Scalars['Language']['output'];
+  readonly notificationSettings: UserNotificationSettings;
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']['output']>;
   /** Whether TOTP is enabled for this user. */
@@ -1854,6 +1912,15 @@ export type UserContactUpdateAliasPayload = {
   readonly errors: ReadonlyArray<Error>;
 };
 
+export type UserDisableNotificationCategoryInput = {
+  readonly category: UserNotificationCategory;
+  readonly channel: UserNotificationChannel;
+};
+
+export type UserDisableNotificationChannelInput = {
+  readonly channel: UserNotificationChannel;
+};
+
 export type UserEmailDeletePayload = {
   readonly __typename: 'UserEmailDeletePayload';
   readonly errors: ReadonlyArray<Error>;
@@ -1882,6 +1949,15 @@ export type UserEmailRegistrationValidatePayload = {
   readonly me?: Maybe<User>;
 };
 
+export type UserEnableNotificationCategoryInput = {
+  readonly category: UserNotificationCategory;
+  readonly channel: UserNotificationChannel;
+};
+
+export type UserEnableNotificationChannelInput = {
+  readonly channel: UserNotificationChannel;
+};
+
 export type UserLoginInput = {
   readonly code: Scalars['OneTimeAuthCode']['input'];
   readonly phone: Scalars['Phone']['input'];
@@ -1894,6 +1970,30 @@ export type UserLoginUpgradeInput = {
 
 export type UserLogoutInput = {
   readonly deviceToken: Scalars['String']['input'];
+};
+
+export const UserNotificationCategory = {
+  AdminNotification: 'ADMIN_NOTIFICATION',
+  Balance: 'BALANCE',
+  Circles: 'CIRCLES',
+  Payments: 'PAYMENTS'
+} as const;
+
+export type UserNotificationCategory = typeof UserNotificationCategory[keyof typeof UserNotificationCategory];
+export const UserNotificationChannel = {
+  Push: 'PUSH'
+} as const;
+
+export type UserNotificationChannel = typeof UserNotificationChannel[keyof typeof UserNotificationChannel];
+export type UserNotificationChannelSettings = {
+  readonly __typename: 'UserNotificationChannelSettings';
+  readonly disabledCategories: ReadonlyArray<UserNotificationCategory>;
+  readonly enabled: Scalars['Boolean']['output'];
+};
+
+export type UserNotificationSettings = {
+  readonly __typename: 'UserNotificationSettings';
+  readonly push: UserNotificationChannelSettings;
 };
 
 export type UserPhoneDeletePayload = {
@@ -1953,6 +2053,11 @@ export type UserUpdateLanguagePayload = {
   readonly __typename: 'UserUpdateLanguagePayload';
   readonly errors: ReadonlyArray<Error>;
   readonly user?: Maybe<User>;
+};
+
+export type UserUpdateNotificationSettingsPayload = {
+  readonly __typename: 'UserUpdateNotificationSettingsPayload';
+  readonly notificationSettings: UserNotificationSettings;
 };
 
 export type UserUpdateUsernameInput = {
@@ -3266,6 +3371,9 @@ export type ResolversTypes = {
   MapInfo: ResolverTypeWrapper<MapInfo>;
   MapMarker: ResolverTypeWrapper<MapMarker>;
   Memo: ResolverTypeWrapper<Scalars['Memo']['output']>;
+  Merchant: ResolverTypeWrapper<Merchant>;
+  MerchantMapSuggestInput: MerchantMapSuggestInput;
+  MerchantPayload: ResolverTypeWrapper<MerchantPayload>;
   Minutes: ResolverTypeWrapper<Scalars['Minutes']['output']>;
   MobileVersions: ResolverTypeWrapper<MobileVersions>;
   Mutation: ResolverTypeWrapper<{}>;
@@ -3343,14 +3451,22 @@ export type ResolversTypes = {
   UserContact: ResolverTypeWrapper<UserContact>;
   UserContactUpdateAliasInput: UserContactUpdateAliasInput;
   UserContactUpdateAliasPayload: ResolverTypeWrapper<UserContactUpdateAliasPayload>;
+  UserDisableNotificationCategoryInput: UserDisableNotificationCategoryInput;
+  UserDisableNotificationChannelInput: UserDisableNotificationChannelInput;
   UserEmailDeletePayload: ResolverTypeWrapper<UserEmailDeletePayload>;
   UserEmailRegistrationInitiateInput: UserEmailRegistrationInitiateInput;
   UserEmailRegistrationInitiatePayload: ResolverTypeWrapper<UserEmailRegistrationInitiatePayload>;
   UserEmailRegistrationValidateInput: UserEmailRegistrationValidateInput;
   UserEmailRegistrationValidatePayload: ResolverTypeWrapper<UserEmailRegistrationValidatePayload>;
+  UserEnableNotificationCategoryInput: UserEnableNotificationCategoryInput;
+  UserEnableNotificationChannelInput: UserEnableNotificationChannelInput;
   UserLoginInput: UserLoginInput;
   UserLoginUpgradeInput: UserLoginUpgradeInput;
   UserLogoutInput: UserLogoutInput;
+  UserNotificationCategory: UserNotificationCategory;
+  UserNotificationChannel: UserNotificationChannel;
+  UserNotificationChannelSettings: ResolverTypeWrapper<UserNotificationChannelSettings>;
+  UserNotificationSettings: ResolverTypeWrapper<UserNotificationSettings>;
   UserPhoneDeletePayload: ResolverTypeWrapper<UserPhoneDeletePayload>;
   UserPhoneRegistrationInitiateInput: UserPhoneRegistrationInitiateInput;
   UserPhoneRegistrationValidateInput: UserPhoneRegistrationValidateInput;
@@ -3362,6 +3478,7 @@ export type ResolversTypes = {
   UserUpdate: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['UserUpdate']>;
   UserUpdateLanguageInput: UserUpdateLanguageInput;
   UserUpdateLanguagePayload: ResolverTypeWrapper<UserUpdateLanguagePayload>;
+  UserUpdateNotificationSettingsPayload: ResolverTypeWrapper<UserUpdateNotificationSettingsPayload>;
   UserUpdateUsernameInput: UserUpdateUsernameInput;
   UserUpdateUsernamePayload: ResolverTypeWrapper<UserUpdateUsernamePayload>;
   Username: ResolverTypeWrapper<Scalars['Username']['output']>;
@@ -3469,6 +3586,9 @@ export type ResolversParentTypes = {
   MapInfo: MapInfo;
   MapMarker: MapMarker;
   Memo: Scalars['Memo']['output'];
+  Merchant: Merchant;
+  MerchantMapSuggestInput: MerchantMapSuggestInput;
+  MerchantPayload: MerchantPayload;
   Minutes: Scalars['Minutes']['output'];
   MobileVersions: MobileVersions;
   Mutation: {};
@@ -3537,14 +3657,20 @@ export type ResolversParentTypes = {
   UserContact: UserContact;
   UserContactUpdateAliasInput: UserContactUpdateAliasInput;
   UserContactUpdateAliasPayload: UserContactUpdateAliasPayload;
+  UserDisableNotificationCategoryInput: UserDisableNotificationCategoryInput;
+  UserDisableNotificationChannelInput: UserDisableNotificationChannelInput;
   UserEmailDeletePayload: UserEmailDeletePayload;
   UserEmailRegistrationInitiateInput: UserEmailRegistrationInitiateInput;
   UserEmailRegistrationInitiatePayload: UserEmailRegistrationInitiatePayload;
   UserEmailRegistrationValidateInput: UserEmailRegistrationValidateInput;
   UserEmailRegistrationValidatePayload: UserEmailRegistrationValidatePayload;
+  UserEnableNotificationCategoryInput: UserEnableNotificationCategoryInput;
+  UserEnableNotificationChannelInput: UserEnableNotificationChannelInput;
   UserLoginInput: UserLoginInput;
   UserLoginUpgradeInput: UserLoginUpgradeInput;
   UserLogoutInput: UserLogoutInput;
+  UserNotificationChannelSettings: UserNotificationChannelSettings;
+  UserNotificationSettings: UserNotificationSettings;
   UserPhoneDeletePayload: UserPhoneDeletePayload;
   UserPhoneRegistrationInitiateInput: UserPhoneRegistrationInitiateInput;
   UserPhoneRegistrationValidateInput: UserPhoneRegistrationValidateInput;
@@ -3556,6 +3682,7 @@ export type ResolversParentTypes = {
   UserUpdate: ResolversUnionTypes<ResolversParentTypes>['UserUpdate'];
   UserUpdateLanguageInput: UserUpdateLanguageInput;
   UserUpdateLanguagePayload: UserUpdateLanguagePayload;
+  UserUpdateNotificationSettingsPayload: UserUpdateNotificationSettingsPayload;
   UserUpdateUsernameInput: UserUpdateUsernameInput;
   UserUpdateUsernamePayload: UserUpdateUsernamePayload;
   Username: Scalars['Username']['output'];
@@ -3961,13 +4088,29 @@ export type MapInfoResolvers<ContextType = any, ParentType extends ResolversPare
 
 export type MapMarkerResolvers<ContextType = any, ParentType extends ResolversParentTypes['MapMarker'] = ResolversParentTypes['MapMarker']> = {
   mapInfo?: Resolver<ResolversTypes['MapInfo'], ParentType, ContextType>;
-  username?: Resolver<Maybe<ResolversTypes['Username']>, ParentType, ContextType>;
+  username?: Resolver<ResolversTypes['Username'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export interface MemoScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Memo'], any> {
   name: 'Memo';
 }
+
+export type MerchantResolvers<ContextType = any, ParentType extends ResolversParentTypes['Merchant'] = ResolversParentTypes['Merchant']> = {
+  coordinates?: Resolver<ResolversTypes['Coordinates'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  username?: Resolver<ResolversTypes['Username'], ParentType, ContextType>;
+  validated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type MerchantPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['MerchantPayload'] = ResolversParentTypes['MerchantPayload']> = {
+  errors?: Resolver<ReadonlyArray<ResolversTypes['Error']>, ParentType, ContextType>;
+  merchant?: Resolver<Maybe<ResolversTypes['Merchant']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
 
 export interface MinutesScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Minutes'], any> {
   name: 'Minutes';
@@ -4014,6 +4157,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   lnUsdInvoiceCreateOnBehalfOfRecipient?: Resolver<ResolversTypes['LnInvoicePayload'], ParentType, ContextType, RequireFields<MutationLnUsdInvoiceCreateOnBehalfOfRecipientArgs, 'input'>>;
   lnUsdInvoiceFeeProbe?: Resolver<ResolversTypes['SatAmountPayload'], ParentType, ContextType, RequireFields<MutationLnUsdInvoiceFeeProbeArgs, 'input'>>;
   lnurlPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationLnurlPaymentSendArgs, 'input'>>;
+  merchantMapSuggest?: Resolver<ResolversTypes['MerchantPayload'], ParentType, ContextType, RequireFields<MutationMerchantMapSuggestArgs, 'input'>>;
   onChainAddressCreate?: Resolver<ResolversTypes['OnChainAddressPayload'], ParentType, ContextType, RequireFields<MutationOnChainAddressCreateArgs, 'input'>>;
   onChainAddressCurrent?: Resolver<ResolversTypes['OnChainAddressPayload'], ParentType, ContextType, RequireFields<MutationOnChainAddressCurrentArgs, 'input'>>;
   onChainPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationOnChainPaymentSendArgs, 'input'>>;
@@ -4023,9 +4167,13 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   quizClaim?: Resolver<ResolversTypes['QuizClaimPayload'], ParentType, ContextType, RequireFields<MutationQuizClaimArgs, 'input'>>;
   quizCompleted?: Resolver<ResolversTypes['QuizCompletedPayload'], ParentType, ContextType, RequireFields<MutationQuizCompletedArgs, 'input'>>;
   userContactUpdateAlias?: Resolver<ResolversTypes['UserContactUpdateAliasPayload'], ParentType, ContextType, RequireFields<MutationUserContactUpdateAliasArgs, 'input'>>;
+  userDisableNotificationCategory?: Resolver<ResolversTypes['UserUpdateNotificationSettingsPayload'], ParentType, ContextType, RequireFields<MutationUserDisableNotificationCategoryArgs, 'input'>>;
+  userDisableNotificationChannel?: Resolver<ResolversTypes['UserUpdateNotificationSettingsPayload'], ParentType, ContextType, RequireFields<MutationUserDisableNotificationChannelArgs, 'input'>>;
   userEmailDelete?: Resolver<ResolversTypes['UserEmailDeletePayload'], ParentType, ContextType>;
   userEmailRegistrationInitiate?: Resolver<ResolversTypes['UserEmailRegistrationInitiatePayload'], ParentType, ContextType, RequireFields<MutationUserEmailRegistrationInitiateArgs, 'input'>>;
   userEmailRegistrationValidate?: Resolver<ResolversTypes['UserEmailRegistrationValidatePayload'], ParentType, ContextType, RequireFields<MutationUserEmailRegistrationValidateArgs, 'input'>>;
+  userEnableNotificationCategory?: Resolver<ResolversTypes['UserUpdateNotificationSettingsPayload'], ParentType, ContextType, RequireFields<MutationUserEnableNotificationCategoryArgs, 'input'>>;
+  userEnableNotificationChannel?: Resolver<ResolversTypes['UserUpdateNotificationSettingsPayload'], ParentType, ContextType, RequireFields<MutationUserEnableNotificationChannelArgs, 'input'>>;
   userLogin?: Resolver<ResolversTypes['AuthTokenPayload'], ParentType, ContextType, RequireFields<MutationUserLoginArgs, 'input'>>;
   userLoginUpgrade?: Resolver<ResolversTypes['UpgradePayload'], ParentType, ContextType, RequireFields<MutationUserLoginUpgradeArgs, 'input'>>;
   userLogout?: Resolver<ResolversTypes['SuccessPayload'], ParentType, ContextType, Partial<MutationUserLogoutArgs>>;
@@ -4189,7 +4337,7 @@ export type PublicWalletResolvers<ContextType = any, ParentType extends Resolver
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   accountDefaultWallet?: Resolver<ResolversTypes['PublicWallet'], ParentType, ContextType, RequireFields<QueryAccountDefaultWalletArgs, 'username'>>;
   btcPriceList?: Resolver<Maybe<ReadonlyArray<Maybe<ResolversTypes['PricePoint']>>>, ParentType, ContextType, RequireFields<QueryBtcPriceListArgs, 'range'>>;
-  businessMapMarkers?: Resolver<Maybe<ReadonlyArray<Maybe<ResolversTypes['MapMarker']>>>, ParentType, ContextType>;
+  businessMapMarkers?: Resolver<ReadonlyArray<ResolversTypes['MapMarker']>, ParentType, ContextType>;
   currencyList?: Resolver<ReadonlyArray<ResolversTypes['Currency']>, ParentType, ContextType>;
   globals?: Resolver<Maybe<ResolversTypes['Globals']>, ParentType, ContextType>;
   lnInvoicePaymentStatus?: Resolver<ResolversTypes['LnInvoicePaymentStatusPayload'], ParentType, ContextType, RequireFields<QueryLnInvoicePaymentStatusArgs, 'input'>>;
@@ -4263,6 +4411,7 @@ export type SettlementViaResolvers<ContextType = any, ParentType extends Resolve
 export type SettlementViaIntraLedgerResolvers<ContextType = any, ParentType extends ResolversParentTypes['SettlementViaIntraLedger'] = ResolversParentTypes['SettlementViaIntraLedger']> = {
   counterPartyUsername?: Resolver<Maybe<ResolversTypes['Username']>, ParentType, ContextType>;
   counterPartyWalletId?: Resolver<Maybe<ResolversTypes['WalletId']>, ParentType, ContextType>;
+  preImage?: Resolver<Maybe<ResolversTypes['LnPaymentPreImage']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4379,6 +4528,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   email?: Resolver<Maybe<ResolversTypes['Email']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   language?: Resolver<ResolversTypes['Language'], ParentType, ContextType>;
+  notificationSettings?: Resolver<ResolversTypes['UserNotificationSettings'], ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['Phone']>, ParentType, ContextType>;
   totpEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   username?: Resolver<Maybe<ResolversTypes['Username']>, ParentType, ContextType>;
@@ -4416,6 +4566,17 @@ export type UserEmailRegistrationInitiatePayloadResolvers<ContextType = any, Par
 export type UserEmailRegistrationValidatePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserEmailRegistrationValidatePayload'] = ResolversParentTypes['UserEmailRegistrationValidatePayload']> = {
   errors?: Resolver<ReadonlyArray<ResolversTypes['Error']>, ParentType, ContextType>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UserNotificationChannelSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserNotificationChannelSettings'] = ResolversParentTypes['UserNotificationChannelSettings']> = {
+  disabledCategories?: Resolver<ReadonlyArray<ResolversTypes['UserNotificationCategory']>, ParentType, ContextType>;
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UserNotificationSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserNotificationSettings'] = ResolversParentTypes['UserNotificationSettings']> = {
+  push?: Resolver<ResolversTypes['UserNotificationChannelSettings'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4457,6 +4618,11 @@ export type UserUpdateResolvers<ContextType = any, ParentType extends ResolversP
 export type UserUpdateLanguagePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserUpdateLanguagePayload'] = ResolversParentTypes['UserUpdateLanguagePayload']> = {
   errors?: Resolver<ReadonlyArray<ResolversTypes['Error']>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UserUpdateNotificationSettingsPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserUpdateNotificationSettingsPayload'] = ResolversParentTypes['UserUpdateNotificationSettingsPayload']> = {
+  notificationSettings?: Resolver<ResolversTypes['UserNotificationSettings'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4552,6 +4718,8 @@ export type Resolvers<ContextType = any> = {
   MapInfo?: MapInfoResolvers<ContextType>;
   MapMarker?: MapMarkerResolvers<ContextType>;
   Memo?: GraphQLScalarType;
+  Merchant?: MerchantResolvers<ContextType>;
+  MerchantPayload?: MerchantPayloadResolvers<ContextType>;
   Minutes?: GraphQLScalarType;
   MobileVersions?: MobileVersionsResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
@@ -4612,6 +4780,8 @@ export type Resolvers<ContextType = any> = {
   UserEmailDeletePayload?: UserEmailDeletePayloadResolvers<ContextType>;
   UserEmailRegistrationInitiatePayload?: UserEmailRegistrationInitiatePayloadResolvers<ContextType>;
   UserEmailRegistrationValidatePayload?: UserEmailRegistrationValidatePayloadResolvers<ContextType>;
+  UserNotificationChannelSettings?: UserNotificationChannelSettingsResolvers<ContextType>;
+  UserNotificationSettings?: UserNotificationSettingsResolvers<ContextType>;
   UserPhoneDeletePayload?: UserPhoneDeletePayloadResolvers<ContextType>;
   UserPhoneRegistrationValidatePayload?: UserPhoneRegistrationValidatePayloadResolvers<ContextType>;
   UserTotpDeletePayload?: UserTotpDeletePayloadResolvers<ContextType>;
@@ -4619,6 +4789,7 @@ export type Resolvers<ContextType = any> = {
   UserTotpRegistrationValidatePayload?: UserTotpRegistrationValidatePayloadResolvers<ContextType>;
   UserUpdate?: UserUpdateResolvers<ContextType>;
   UserUpdateLanguagePayload?: UserUpdateLanguagePayloadResolvers<ContextType>;
+  UserUpdateNotificationSettingsPayload?: UserUpdateNotificationSettingsPayloadResolvers<ContextType>;
   UserUpdateUsernamePayload?: UserUpdateUsernamePayloadResolvers<ContextType>;
   Username?: GraphQLScalarType;
   Wallet?: WalletResolvers<ContextType>;
