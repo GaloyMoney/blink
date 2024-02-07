@@ -15,6 +15,7 @@ TEST_RESOURCES = {
    DASHBOARD_TEST_LABEL: "test-dashboard",
    PAY_TEST_LABEL: "test-pay",
    ADMIN_PANEL_TEST_LABEL: "test-admin-panel"
+   MAP_TEST_LABEL = "test-map"
 }
 
 is_ci=("ci" in sys.argv) or cfg.get("bats", False)
