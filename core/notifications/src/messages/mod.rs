@@ -7,19 +7,10 @@ pub struct LocalizedMessage {
     pub body: String,
 }
 
-#[allow(dead_code)]
-pub struct Messages {
-    //
-}
+pub struct Messages {}
 
 impl Messages {
-    #[allow(dead_code)]
-    pub fn new() -> Self {
-        Self {}
-    }
-
-    #[allow(dead_code)]
-    pub fn circle_grew(&self, locale: &str, event: CircleGrew) -> LocalizedMessage {
+    pub fn circle_grew(locale: &str, event: &CircleGrew) -> LocalizedMessage {
         let circle_type = match event.circle_type {
             CircleType::Inner => t!("circle_type.inner", locale = locale),
             CircleType::Outer => t!("circle_type.outer", locale = locale),
@@ -34,11 +25,9 @@ impl Messages {
         LocalizedMessage { title, body }
     }
 
-    #[allow(dead_code)]
     pub fn circle_threshold_reached(
-        &self,
         locale: &str,
-        event: CircleThresholdReached,
+        event: &CircleThresholdReached,
     ) -> LocalizedMessage {
         let title = match event.circle_type {
             CircleType::Inner => t!("circle_threshold_reached.inner.title", locale = locale),
@@ -74,14 +63,13 @@ mod tests {
 
     #[test]
     fn test_circle_grew() {
-        let messages = Messages::new();
         let event = CircleGrew {
             user_id: GaloyUserId::from("user_id".to_string()),
             circle_type: CircleType::Inner,
             this_month_circle_size: 1,
             all_time_circle_size: 2,
         };
-        let localized_message = messages.circle_grew("en", event);
+        let localized_message = Messages::circle_grew("en", &event);
         assert_eq!(localized_message.title, "Your Blink Circles are growing!");
         assert_eq!(
             localized_message.body,
@@ -91,18 +79,24 @@ mod tests {
 
     #[test]
     fn test_threshold_reached() {
-        let messages = Messages::new();
         let event = CircleThresholdReached {
             user_id: GaloyUserId::from("user_id".to_string()),
             circle_type: CircleType::Inner,
             time_frame: CircleTimeFrame::AllTime,
             threshold: 2,
         };
-        let localized_message = messages.circle_threshold_reached("en", event);
+        let localized_message = Messages::circle_threshold_reached("en", &event);
         assert_eq!(localized_message.title, "Nice Inner Circle! 🤙");
         assert_eq!(
             localized_message.body,
             "You have welcomed 2 people to Blink. Keep it up!"
+        );
+
+        let localized_message = Messages::circle_threshold_reached("de", &event);
+        assert_eq!(localized_message.title, "Schöner Innerer Kreis! 🤙");
+        assert_eq!(
+            localized_message.body,
+            "Du hast 2 Menschen zu Blink begrüßt. Weiter so!"
         );
     }
 }

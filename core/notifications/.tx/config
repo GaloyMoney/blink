@@ -1,0 +1,12 @@
+[main]
+host = https://app.transifex.com
+
+[o:galoy:p:blink-notifications:r:en-yml]
+file_filter            = ./locales/<lang>.yml
+source_file            = ./locales/en.yml
+type                   = YAML_GENERIC
+minimum_perc           = 0
+resource_name          = en.yml
+replace_edited_strings = false
+keep_translations      = false
+

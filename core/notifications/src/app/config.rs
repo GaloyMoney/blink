@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use crate::executor::NovuConfig;
+use crate::executor::ExecutorConfig;
 
-#[derive(Clone, Serialize, Deserialize, Default)]
+#[derive(Clone, Default, Serialize, Deserialize)]
 pub struct AppConfig {
-    pub novu: NovuConfig,
+    pub executor: ExecutorConfig,
 }
