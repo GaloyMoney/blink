@@ -18,6 +18,11 @@ type formProps = {
 
 export function SuggestMapFormSheet({ latitude, longitude }: formProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [coordinates, setCoordinates] = useState({
+    latitude: latitude,
+    longitude: longitude,
+  })
+
   const [state, formAction] = useFormState<
     {
       error: boolean
@@ -72,19 +77,28 @@ export function SuggestMapFormSheet({ latitude, longitude }: formProps) {
                 required={true}
                 label="Latitude"
                 id="latitude"
-                value={latitude}
+                value={coordinates.latitude}
                 placeholder="Latitude"
                 name="latitude"
                 type="number"
+                onChange={(e) => {
+                  setCoordinates({ ...coordinates, latitude: parseFloat(e.target.value) })
+                }}
               />
               <InputComponent
                 required={true}
                 label="Longitude"
                 id="longitude"
-                value={longitude}
+                value={coordinates.longitude}
                 placeholder="Longitude"
                 name="longitude"
                 type="number"
+                onChange={(e) => {
+                  setCoordinates({
+                    ...coordinates,
+                    longitude: parseFloat(e.target.value),
+                  })
+                }}
               />
               {state.error && <span className="text-red-600">{state.message}</span>}
               <button
