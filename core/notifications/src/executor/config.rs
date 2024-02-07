@@ -10,6 +10,7 @@ pub struct ExecutorConfig {
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
 pub struct NovuConfig {
+    #[serde(default)]
     pub api_key: String,
     pub workflows: NovuWorkflows,
 }
