@@ -30,6 +30,13 @@ es_entity::entity_id! { UserNotificationSettingsId }
 
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct GaloyLocale(String);
+
+impl Default for GaloyLocale {
+    fn default() -> Self {
+        Self("en".to_string())
+    }
+}
+
 impl From<String> for GaloyLocale {
     fn from(s: String) -> Self {
         Self(s)

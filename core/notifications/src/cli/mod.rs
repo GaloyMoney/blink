@@ -16,8 +16,6 @@ struct Cli {
     pg_con: String,
     #[clap(env = "MONGODB_CON")]
     mongodb_connection: Option<String>,
-    #[clap(env = "NOVU_API_KEY")]
-    novu_api_key: Option<String>,
 }
 
 pub async fn run() -> anyhow::Result<()> {
@@ -28,7 +26,6 @@ pub async fn run() -> anyhow::Result<()> {
         EnvOverride {
             db_con: cli.pg_con,
             mongodb_connection: cli.mongodb_connection,
-            novu_api_key: cli.novu_api_key,
         },
     )?;
 
