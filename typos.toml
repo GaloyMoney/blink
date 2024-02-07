@@ -9,6 +9,7 @@ files.extend-exclude = [
   "quickstart/dev",
   "prelude",
   "core/api/test/e2e/servers/kratos.spec.ts",
+  "core/notifications/locales/*.yml"
 ]
 
 default.extend-ignore-identifiers-re = [
