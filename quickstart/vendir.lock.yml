@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(admin-panel): update admin panel otel deps (#3947)...'
-      sha: 97ddc295cfa951be0e8b3cb2c2ee977fe9b62c85
+      commitTitle: 'chore(notifications): fcm use cases (#3948)...'
+      sha: 63708242162d57a15b728df001d4b6f1ae2c5eed
       tags:
-      - 0.20.45-3-g97ddc295c
+      - 0.20.46-1-g637082421
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(admin-panel): update admin panel otel deps (#3947)...'
-      sha: 97ddc295cfa951be0e8b3cb2c2ee977fe9b62c85
+      commitTitle: 'chore(notifications): fcm use cases (#3948)...'
+      sha: 63708242162d57a15b728df001d4b6f1ae2c5eed
       tags:
-      - 0.20.45-3-g97ddc295c
+      - 0.20.46-1-g637082421
     path: schemas/
   - git:
-      commitTitle: 'chore(admin-panel): update admin panel otel deps (#3947)...'
-      sha: 97ddc295cfa951be0e8b3cb2c2ee977fe9b62c85
+      commitTitle: 'chore(notifications): fcm use cases (#3948)...'
+      sha: 63708242162d57a15b728df001d4b6f1ae2c5eed
       tags:
-      - 0.20.45-3-g97ddc295c
+      - 0.20.46-1-g637082421
     path: gql/
   path: ./graphql
 kind: LockConfig
