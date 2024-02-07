@@ -121,7 +121,7 @@ jobs:
   -  #@ build_edge_image(component)
   #@ end
   -  #@ build_edge_image("api", sub_file = "migrate")
-  -  #@ on_nix_host("core-bundle-integration-tests", "api", "tilt --file dev/Tiltfile ci -- --test core")
+  -  #@ on_nix_host("core-bundle-integration-tests", "api", "./dev/bin/tilt-ci.sh core")
   -  #@ on_nix_host("core-bundle-bats-tests", "api", "bats --setup-suite-file bats/ci_setup_suite.bash -t bats/core/**")
   - name: release-core-bundle
     plan:
