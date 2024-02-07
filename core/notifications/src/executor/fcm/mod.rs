@@ -37,6 +37,6 @@ impl FcmClient {
     }
 
     pub async fn _send(&self, message: String) -> Result<(), FcmError> {
-        unimplemnted!()
+        unimplemented!()
     }
 }
