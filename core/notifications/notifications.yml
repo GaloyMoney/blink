@@ -5,10 +5,14 @@
 #   jwks_url: "http://localhost:4456/.well-known/jwks.json"
 # grpc_server:
 #   port: 6685
-# app:
-#   novu:
-#     workflows:
-#       circle_grew: circle-grew-workflow-id
-#       threshold_reached: threshold-reached-workflow-id
 # mongo_import:
 #   execute_import: false
+app:
+  executor:
+    fcm:
+      google_application_credentials_path: "./config/notifications/fake_service_account.json"
+    novu:
+      api_key: ""
+      workflows:
+        circle_grew: circle-grew-workflow-id
+        threshold_reached: threshold-reached-workflow-id
