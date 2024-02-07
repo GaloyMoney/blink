@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: add maximize-space plugin to actions (#3945)...'
-      sha: 3a3c9d3e931eb76d242629b2583dba3781631c6e
+      commitTitle: 'ci: wrap tilt ci tests in script to handle logs (#3933)...'
+      sha: 96c47bbd0f945a8fb4a06cc75c5dfa01377334d1
       tags:
-      - 0.20.42-2-g3a3c9d3e9
+      - 0.20.43-2-g96c47bbd0
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: add maximize-space plugin to actions (#3945)...'
-      sha: 3a3c9d3e931eb76d242629b2583dba3781631c6e
+      commitTitle: 'ci: wrap tilt ci tests in script to handle logs (#3933)...'
+      sha: 96c47bbd0f945a8fb4a06cc75c5dfa01377334d1
       tags:
-      - 0.20.42-2-g3a3c9d3e9
+      - 0.20.43-2-g96c47bbd0
     path: schemas/
   - git:
-      commitTitle: 'ci: add maximize-space plugin to actions (#3945)...'
-      sha: 3a3c9d3e931eb76d242629b2583dba3781631c6e
+      commitTitle: 'ci: wrap tilt ci tests in script to handle logs (#3933)...'
+      sha: 96c47bbd0f945a8fb4a06cc75c5dfa01377334d1
       tags:
-      - 0.20.42-2-g3a3c9d3e9
+      - 0.20.43-2-g96c47bbd0
     path: gql/
   path: ./graphql
 kind: LockConfig
