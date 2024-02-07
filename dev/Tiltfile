@@ -225,7 +225,7 @@ local_resource(
 
 map_test_target = "//apps/map:test-integration"
 local_resource(
-  "map-test",
+  "test-map",
   labels = ["test"],
   auto_init = is_ci and MAP_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(map_test_target),
