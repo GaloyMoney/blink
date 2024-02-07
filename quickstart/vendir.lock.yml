@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: adding suggest and approve endpoint for the map (#3937)'
-      sha: d2f6f35ab4fb67397094684d4b7fc0cf79d47111
+      commitTitle: 'ci: add maximize-space plugin to actions (#3945)...'
+      sha: 3a3c9d3e931eb76d242629b2583dba3781631c6e
       tags:
-      - 0.20.41-2-gd2f6f35ab
+      - 0.20.42-2-g3a3c9d3e9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: adding suggest and approve endpoint for the map (#3937)'
-      sha: d2f6f35ab4fb67397094684d4b7fc0cf79d47111
+      commitTitle: 'ci: add maximize-space plugin to actions (#3945)...'
+      sha: 3a3c9d3e931eb76d242629b2583dba3781631c6e
       tags:
-      - 0.20.41-2-gd2f6f35ab
+      - 0.20.42-2-g3a3c9d3e9
     path: schemas/
   - git:
-      commitTitle: 'feat: adding suggest and approve endpoint for the map (#3937)'
-      sha: d2f6f35ab4fb67397094684d4b7fc0cf79d47111
+      commitTitle: 'ci: add maximize-space plugin to actions (#3945)...'
+      sha: 3a3c9d3e931eb76d242629b2583dba3781631c6e
       tags:
-      - 0.20.41-2-gd2f6f35ab
+      - 0.20.42-2-g3a3c9d3e9
     path: gql/
   path: ./graphql
 kind: LockConfig
