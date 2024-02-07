@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: wrap tilt ci tests in script to handle logs (#3933)...'
-      sha: 96c47bbd0f945a8fb4a06cc75c5dfa01377334d1
+      commitTitle: 'docs: add concourse repipe steps (#3931)'
+      sha: b980416126702bd4a129e19c87c1d3de28c2cf4c
       tags:
-      - 0.20.43-2-g96c47bbd0
+      - 0.20.44-1-gb98041612
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: wrap tilt ci tests in script to handle logs (#3933)...'
-      sha: 96c47bbd0f945a8fb4a06cc75c5dfa01377334d1
+      commitTitle: 'docs: add concourse repipe steps (#3931)'
+      sha: b980416126702bd4a129e19c87c1d3de28c2cf4c
       tags:
-      - 0.20.43-2-g96c47bbd0
+      - 0.20.44-1-gb98041612
     path: schemas/
   - git:
-      commitTitle: 'ci: wrap tilt ci tests in script to handle logs (#3933)...'
-      sha: 96c47bbd0f945a8fb4a06cc75c5dfa01377334d1
+      commitTitle: 'docs: add concourse repipe steps (#3931)'
+      sha: b980416126702bd4a129e19c87c1d3de28c2cf4c
       tags:
-      - 0.20.43-2-g96c47bbd0
+      - 0.20.44-1-gb98041612
     path: gql/
   path: ./graphql
 kind: LockConfig
