@@ -7,7 +7,9 @@ use fcm::FcmClient;
 use novu::{events::*, subscriber::*, NovuClient};
 use std::collections::HashMap;
 
-use crate::{notification_event::*, primitives::*, user_notification_settings::*};
+use crate::{
+    messages::LocalizedMessage, notification_event::*, primitives::*, user_notification_settings::*,
+};
 
 pub use config::*;
 use error::*;
@@ -17,7 +19,7 @@ pub use novu::events::AllowedPayloadValues;
 pub struct Executor {
     config: ExecutorConfig,
     novu: NovuClient,
-    _fcm: FcmClient,
+    fcm: FcmClient,
     settings: UserNotificationSettingsRepo,
 }
 
@@ -31,8 +33,30 @@ impl Executor {
             novu: NovuClient::new(config.novu.api_key.clone(), None)?,
             config,
             settings,
-            _fcm,
+            fcm: _fcm,
         })
+    }
+
+    pub async fn notify_new<T: Into<LocalizedMessage>>(
+        &self,
+        user_id: GaloyUserId,
+        msg: T,
+    ) -> Result<(), ExecutorError> {
+        let settings = self.settings.find_for_user_id(&user_id).await?;
+        if !settings.should_send_notification(
+            UserNotificationChannel::Push,
+            UserNotificationCategory::Circles,
+        ) {
+            return Ok(());
+        }
+
+        let msg = msg.into();
+
+        self.fcm
+            .send(settings.push_device_tokens(), msg, DeepLink::Circles)
+            .await?;
+
+        Ok(())
     }
 
     pub async fn notify<T: NotificationEvent>(&self, event: T) -> Result<(), ExecutorError> {

@@ -50,6 +50,11 @@ impl std::fmt::Display for GaloyLocale {
 
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize, Hash)]
 pub struct PushDeviceToken(String);
+impl PushDeviceToken {
+    pub fn into_inner(self) -> String {
+        self.0
+    }
+}
 impl From<String> for PushDeviceToken {
     fn from(s: String) -> Self {
         Self(s)

@@ -9,24 +9,37 @@ use google_fcm1::{
     FirebaseCloudMessaging,
 };
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+
+use crate::{messages::LocalizedMessage, notification_event::*, primitives::PushDeviceToken};
 
 pub use config::*;
 use error::*;
 
-pub struct NotificationPayload {
-    pub title: String,
-    pub body: String,
-    pub data: HashMap<String, String>,
+impl DeepLink {
+    fn add_to_data(&self, data: &mut HashMap<String, String>) {
+        match self {
+            DeepLink::None => {}
+            DeepLink::Circles => {
+                data.insert("linkTo".to_string(), "people/circles".to_string());
+            }
+        }
+    }
 }
 
 #[derive(Clone)]
 pub struct FcmClient {
+    fcm_project_id: String,
     client: FirebaseCloudMessaging<HttpsConnector<HttpConnector>>,
 }
 
 impl FcmClient {
     pub async fn init(service_account_key: ServiceAccountKey) -> Result<Self, FcmError> {
+        let fcm_project_id = service_account_key
+            .project_id
+            .clone()
+            .expect("Project ID is missing in service account key");
+
         let auth = oauth2::ServiceAccountAuthenticator::builder(service_account_key)
             .build()
             .await?;
@@ -41,29 +54,35 @@ impl FcmClient {
 
         let client = FirebaseCloudMessaging::new(hyper_client, auth);
 
-        Ok(Self { client })
+        Ok(Self {
+            fcm_project_id,
+            client,
+        })
     }
 
-    pub async fn _send(
+    pub async fn send(
         &self,
-        payload: NotificationPayload,
-        device_tokens: Vec<String>,
+        device_tokens: HashSet<PushDeviceToken>,
+        msg: LocalizedMessage,
+        deep_link: DeepLink,
     ) -> Result<(), FcmError> {
-        // should we use tokio here for optimisation ?
+        let mut data = HashMap::new();
+        deep_link.add_to_data(&mut data);
+
         for device_token in device_tokens {
             let notification = Notification {
-                title: Some(payload.title.clone()),
-                body: Some(payload.body.clone()),
+                title: Some(msg.title.clone()),
+                body: Some(msg.body.clone()),
                 ..Default::default()
             };
             let message = Message {
                 notification: Some(notification),
-                token: Some(device_token),
-                data: Some(payload.data.clone()),
+                token: Some(device_token.into_inner()),
+                data: Some(data.clone()),
                 ..Default::default()
             };
 
-            let parent = format!("projects/{}", "project_id");
+            let parent = format!("projects/{}", self.fcm_project_id);
             let request = SendMessageRequest {
                 message: Some(message),
                 ..Default::default()

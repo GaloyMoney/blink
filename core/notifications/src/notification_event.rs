@@ -1,7 +1,7 @@
 use serde_json::Value;
 use std::collections::HashMap;
 
-use crate::{executor::AllowedPayloadValues, primitives::*};
+use crate::{executor::AllowedPayloadValues, messages::*, primitives::*};
 
 pub trait NotificationEvent {
     fn workflow_name() -> &'static str;
@@ -10,12 +10,22 @@ pub trait NotificationEvent {
     fn into_overrides() -> Option<HashMap<String, Value>>;
 }
 
+pub enum DeepLink {
+    None,
+    Circles,
+}
+
 #[derive(Debug)]
 pub struct CircleGrew {
     pub user_id: GaloyUserId,
     pub circle_type: CircleType,
     pub this_month_circle_size: u32,
     pub all_time_circle_size: u32,
+}
+
+pub trait NotificationEventNew: Into<LocalizedMessage> {
+    fn user_id(&self) -> &GaloyUserId;
+    fn deep_link(&self) -> DeepLink;
 }
 
 impl NotificationEvent for CircleGrew {
