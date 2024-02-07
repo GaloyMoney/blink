@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'docs: add concourse repipe steps (#3931)'
-      sha: b980416126702bd4a129e19c87c1d3de28c2cf4c
+      commitTitle: 'chore: add dev codegen rules to all `apps` projects (#3951)...'
+      sha: a71ec38d233bcd80271ced8bd33e685b9c378e76
       tags:
-      - 0.20.44-1-gb98041612
+      - 0.20.45-1-ga71ec38d2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'docs: add concourse repipe steps (#3931)'
-      sha: b980416126702bd4a129e19c87c1d3de28c2cf4c
+      commitTitle: 'chore: add dev codegen rules to all `apps` projects (#3951)...'
+      sha: a71ec38d233bcd80271ced8bd33e685b9c378e76
       tags:
-      - 0.20.44-1-gb98041612
+      - 0.20.45-1-ga71ec38d2
     path: schemas/
   - git:
-      commitTitle: 'docs: add concourse repipe steps (#3931)'
-      sha: b980416126702bd4a129e19c87c1d3de28c2cf4c
+      commitTitle: 'chore: add dev codegen rules to all `apps` projects (#3951)...'
+      sha: a71ec38d233bcd80271ced8bd33e685b9c378e76
       tags:
-      - 0.20.44-1-gb98041612
+      - 0.20.45-1-ga71ec38d2
     path: gql/
   path: ./graphql
 kind: LockConfig
