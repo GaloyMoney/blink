@@ -24,6 +24,11 @@ dev_pnpm_task_binary(
     command="cypress:open",
 )
 
+dev_pnpm_task_binary(
+    name="codegen",
+    command="codegen",
+)
+
 dev_pnpm_task_test(
     name="test-integration",
     command="cypress:run",

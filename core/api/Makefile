@@ -67,8 +67,5 @@ redis-cli:
 redis-flush:
 	docker-compose exec redis redis-cli FLUSHDB
 
-codegen:
-	pnpm run write-sdl
-
 gen-test-jwt:
 	pnpm run gen-test-jwt

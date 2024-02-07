@@ -83,14 +83,19 @@ export type Scalars = {
 export type Account = {
   readonly callbackEndpoints: ReadonlyArray<CallbackEndpoint>;
   readonly csvTransactions: Scalars['String']['output'];
+  readonly defaultWallet: PublicWallet;
+  /** @deprecated Shifting property to 'defaultWallet.id' */
   readonly defaultWalletId: Scalars['WalletId']['output'];
   readonly displayCurrency: Scalars['DisplayCurrency']['output'];
   readonly id: Scalars['ID']['output'];
+  readonly invoices?: Maybe<InvoiceConnection>;
   readonly level: AccountLevel;
   readonly limits: AccountLimits;
   readonly notificationSettings: NotificationSettings;
+  readonly pendingIncomingTransactions: ReadonlyArray<Transaction>;
   readonly realtimePrice: RealtimePrice;
   readonly transactions?: Maybe<TransactionConnection>;
+  readonly walletById: Wallet;
   readonly wallets: ReadonlyArray<Wallet>;
 };
 
@@ -100,12 +105,31 @@ export type AccountCsvTransactionsArgs = {
 };
 
 
+export type AccountInvoicesArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  walletIds?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['WalletId']['input']>>>;
+};
+
+
+export type AccountPendingIncomingTransactionsArgs = {
+  walletIds?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['WalletId']['input']>>>;
+};
+
+
 export type AccountTransactionsArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
   walletIds?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['WalletId']['input']>>>;
+};
+
+
+export type AccountWalletByIdArgs = {
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type AccountDeletePayload = {
@@ -198,12 +222,46 @@ export type BtcWallet = Wallet & {
   /** A balance stored in BTC. */
   readonly balance: Scalars['SignedAmount']['output'];
   readonly id: Scalars['ID']['output'];
+  readonly invoiceByPaymentHash: Invoice;
+  /** A list of all invoices associated with walletIds optionally passed. */
+  readonly invoices?: Maybe<InvoiceConnection>;
   /** An unconfirmed incoming onchain balance. */
   readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
+  readonly pendingIncomingTransactions: ReadonlyArray<Transaction>;
+  readonly pendingIncomingTransactionsByAddress: ReadonlyArray<Transaction>;
+  readonly transactionById: Transaction;
   /** A list of BTC transactions associated with this wallet. */
   readonly transactions?: Maybe<TransactionConnection>;
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
+  readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletInvoiceByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletInvoicesArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletPendingIncomingTransactionsByAddressArgs = {
+  address: Scalars['OnChainAddress']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletTransactionByIdArgs = {
+  transactionId: Scalars['ID']['input'];
 };
 
 
@@ -223,6 +281,12 @@ export type BtcWalletTransactionsByAddressArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletTransactionsByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
 };
 
 export type BuildInformation = {
@@ -285,17 +349,22 @@ export type ConsumerAccount = Account & {
   readonly callbackEndpoints: ReadonlyArray<CallbackEndpoint>;
   /** return CSV stream, base64 encoded, of the list of transactions in the wallet */
   readonly csvTransactions: Scalars['String']['output'];
+  readonly defaultWallet: PublicWallet;
   readonly defaultWalletId: Scalars['WalletId']['output'];
   readonly displayCurrency: Scalars['DisplayCurrency']['output'];
   readonly id: Scalars['ID']['output'];
+  /** A list of all invoices associated with walletIds optionally passed. */
+  readonly invoices?: Maybe<InvoiceConnection>;
   readonly level: AccountLevel;
   readonly limits: AccountLimits;
   readonly notificationSettings: NotificationSettings;
+  readonly pendingIncomingTransactions: ReadonlyArray<Transaction>;
   /** List the quiz questions of the consumer account */
   readonly quiz: ReadonlyArray<Quiz>;
   readonly realtimePrice: RealtimePrice;
   /** A list of all transactions associated with walletIds optionally passed. */
   readonly transactions?: Maybe<TransactionConnection>;
+  readonly walletById: Wallet;
   readonly wallets: ReadonlyArray<Wallet>;
 };
 
@@ -305,12 +374,31 @@ export type ConsumerAccountCsvTransactionsArgs = {
 };
 
 
+export type ConsumerAccountInvoicesArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  walletIds?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['WalletId']['input']>>>;
+};
+
+
+export type ConsumerAccountPendingIncomingTransactionsArgs = {
+  walletIds?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['WalletId']['input']>>>;
+};
+
+
 export type ConsumerAccountTransactionsArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
   walletIds?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['WalletId']['input']>>>;
+};
+
+
+export type ConsumerAccountWalletByIdArgs = {
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type Coordinates = {
@@ -411,6 +499,8 @@ export type InitiationViaIntraLedger = {
 export type InitiationViaLn = {
   readonly __typename: 'InitiationViaLn';
   readonly paymentHash: Scalars['PaymentHash']['output'];
+  /** Bolt11 invoice */
+  readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
 };
 
 export type InitiationViaOnChain = {
@@ -430,11 +520,15 @@ export type IntraLedgerPaymentSendInput = {
 
 export type IntraLedgerUpdate = {
   readonly __typename: 'IntraLedgerUpdate';
+  /** @deprecated Deprecated in favor of transaction */
   readonly amount: Scalars['SatAmount']['output'];
+  /** @deprecated Deprecated in favor of transaction */
   readonly displayCurrencyPerSat: Scalars['Float']['output'];
+  readonly transaction: Transaction;
   readonly txNotificationType: TxNotificationType;
   /** @deprecated updated over displayCurrencyPerSat */
   readonly usdPerSat: Scalars['Float']['output'];
+  /** @deprecated Deprecated in favor of transaction */
   readonly walletId: Scalars['WalletId']['output'];
 };
 
@@ -448,6 +542,37 @@ export type IntraLedgerUsdPaymentSendInput = {
   readonly walletId: Scalars['WalletId']['input'];
 };
 
+/** A lightning invoice. */
+export type Invoice = {
+  readonly createdAt: Scalars['Timestamp']['output'];
+  /** The payment hash of the lightning invoice. */
+  readonly paymentHash: Scalars['PaymentHash']['output'];
+  /** The bolt11 invoice to be paid. */
+  readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
+  /** The payment secret of the lightning invoice. This is not the preimage of the payment hash. */
+  readonly paymentSecret: Scalars['LnPaymentSecret']['output'];
+  /** The payment status of the invoice. */
+  readonly paymentStatus: InvoicePaymentStatus;
+};
+
+/** A connection to a list of items. */
+export type InvoiceConnection = {
+  readonly __typename: 'InvoiceConnection';
+  /** A list of edges. */
+  readonly edges?: Maybe<ReadonlyArray<InvoiceEdge>>;
+  /** Information to aid in pagination. */
+  readonly pageInfo: PageInfo;
+};
+
+/** An edge in a connection. */
+export type InvoiceEdge = {
+  readonly __typename: 'InvoiceEdge';
+  /** A cursor for use in pagination */
+  readonly cursor: Scalars['String']['output'];
+  /** The item at the end of the edge */
+  readonly node: Invoice;
+};
+
 export const InvoicePaymentStatus = {
   Expired: 'EXPIRED',
   Paid: 'PAID',
@@ -455,12 +580,23 @@ export const InvoicePaymentStatus = {
 } as const;
 
 export type InvoicePaymentStatus = typeof InvoicePaymentStatus[keyof typeof InvoicePaymentStatus];
-export type LnInvoice = {
+export type LnAddressPaymentSendInput = {
+  /** Amount in satoshis. */
+  readonly amount: Scalars['SatAmount']['input'];
+  /** Lightning address to send to. */
+  readonly lnAddress: Scalars['String']['input'];
+  /** Wallet ID to send bitcoin from. */
+  readonly walletId: Scalars['WalletId']['input'];
+};
+
+export type LnInvoice = Invoice & {
   readonly __typename: 'LnInvoice';
+  readonly createdAt: Scalars['Timestamp']['output'];
   readonly paymentHash: Scalars['PaymentHash']['output'];
   readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
   readonly paymentSecret: Scalars['LnPaymentSecret']['output'];
-  readonly satoshis?: Maybe<Scalars['SatAmount']['output']>;
+  readonly paymentStatus: InvoicePaymentStatus;
+  readonly satoshis: Scalars['SatAmount']['output'];
 };
 
 export type LnInvoiceCreateInput = {
@@ -516,11 +652,13 @@ export type LnInvoicePaymentStatusPayload = {
   readonly status?: Maybe<InvoicePaymentStatus>;
 };
 
-export type LnNoAmountInvoice = {
+export type LnNoAmountInvoice = Invoice & {
   readonly __typename: 'LnNoAmountInvoice';
+  readonly createdAt: Scalars['Timestamp']['output'];
   readonly paymentHash: Scalars['PaymentHash']['output'];
   readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
   readonly paymentSecret: Scalars['LnPaymentSecret']['output'];
+  readonly paymentStatus: InvoicePaymentStatus;
 };
 
 export type LnNoAmountInvoiceCreateInput = {
@@ -583,8 +721,11 @@ export type LnNoAmountUsdInvoicePaymentInput = {
 
 export type LnUpdate = {
   readonly __typename: 'LnUpdate';
+  /** @deprecated Deprecated in favor of transaction */
   readonly paymentHash: Scalars['PaymentHash']['output'];
   readonly status: InvoicePaymentStatus;
+  readonly transaction: Transaction;
+  /** @deprecated Deprecated in favor of transaction */
   readonly walletId: Scalars['WalletId']['output'];
 };
 
@@ -628,6 +769,15 @@ export type LnUsdInvoiceFeeProbeInput = {
   readonly walletId: Scalars['WalletId']['input'];
 };
 
+export type LnurlPaymentSendInput = {
+  /** Amount in satoshis. */
+  readonly amount: Scalars['SatAmount']['input'];
+  /** Lnurl string to send to. */
+  readonly lnurl: Scalars['String']['input'];
+  /** Wallet ID to send bitcoin from. */
+  readonly walletId: Scalars['WalletId']['input'];
+};
+
 export type MapInfo = {
   readonly __typename: 'MapInfo';
   readonly coordinates: Coordinates;
@@ -637,7 +787,33 @@ export type MapInfo = {
 export type MapMarker = {
   readonly __typename: 'MapMarker';
   readonly mapInfo: MapInfo;
-  readonly username?: Maybe<Scalars['Username']['output']>;
+  readonly username: Scalars['Username']['output'];
+};
+
+export type Merchant = {
+  readonly __typename: 'Merchant';
+  /** GPS coordinates for the merchant that can be used to place the related business on a map */
+  readonly coordinates: Coordinates;
+  readonly createdAt: Scalars['Timestamp']['output'];
+  readonly id: Scalars['ID']['output'];
+  readonly title: Scalars['String']['output'];
+  /** The username of the merchant */
+  readonly username: Scalars['Username']['output'];
+  /** Whether the merchant has been validated */
+  readonly validated: Scalars['Boolean']['output'];
+};
+
+export type MerchantMapSuggestInput = {
+  readonly latitude: Scalars['Float']['input'];
+  readonly longitude: Scalars['Float']['input'];
+  readonly title: Scalars['String']['input'];
+  readonly username: Scalars['Username']['input'];
+};
+
+export type MerchantPayload = {
+  readonly __typename: 'MerchantPayload';
+  readonly errors: ReadonlyArray<Error>;
+  readonly merchant?: Maybe<Merchant>;
 };
 
 export type MobileVersions = {
@@ -674,6 +850,8 @@ export type Mutation = {
    * failed, pending, already_paid).
    */
   readonly intraLedgerUsdPaymentSend: PaymentSendPayload;
+  /** Sends a payment to a lightning address. */
+  readonly lnAddressPaymentSend: PaymentSendPayload;
   /**
    * Returns a lightning invoice for an associated wallet.
    * When invoice is paid the value will be credited to a BTC wallet.
@@ -741,12 +919,17 @@ export type Mutation = {
    */
   readonly lnUsdInvoiceCreateOnBehalfOfRecipient: LnInvoicePayload;
   readonly lnUsdInvoiceFeeProbe: SatAmountPayload;
+  /** Sends a payment to a lightning address. */
+  readonly lnurlPaymentSend: PaymentSendPayload;
+  readonly merchantMapSuggest: MerchantPayload;
   readonly onChainAddressCreate: OnChainAddressPayload;
   readonly onChainAddressCurrent: OnChainAddressPayload;
   readonly onChainPaymentSend: PaymentSendPayload;
   readonly onChainPaymentSendAll: PaymentSendPayload;
   readonly onChainUsdPaymentSend: PaymentSendPayload;
   readonly onChainUsdPaymentSendAsBtcDenominated: PaymentSendPayload;
+  readonly quizClaim: QuizClaimPayload;
+  /** @deprecated Use quizClaim instead */
   readonly quizCompleted: QuizCompletedPayload;
   /** @deprecated will be moved to AccountContact */
   readonly userContactUpdateAlias: UserContactUpdateAliasPayload;
@@ -759,8 +942,6 @@ export type Mutation = {
   readonly userPhoneDelete: UserPhoneDeletePayload;
   readonly userPhoneRegistrationInitiate: SuccessPayload;
   readonly userPhoneRegistrationValidate: UserPhoneRegistrationValidatePayload;
-  /** @deprecated Use QuizCompletedMutation instead */
-  readonly userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedPayload;
   readonly userTotpDelete: UserTotpDeletePayload;
   readonly userTotpRegistrationInitiate: UserTotpRegistrationInitiatePayload;
   readonly userTotpRegistrationValidate: UserTotpRegistrationValidatePayload;
@@ -835,6 +1016,11 @@ export type MutationIntraLedgerUsdPaymentSendArgs = {
 };
 
 
+export type MutationLnAddressPaymentSendArgs = {
+  input: LnAddressPaymentSendInput;
+};
+
+
 export type MutationLnInvoiceCreateArgs = {
   input: LnInvoiceCreateInput;
 };
@@ -905,6 +1091,16 @@ export type MutationLnUsdInvoiceFeeProbeArgs = {
 };
 
 
+export type MutationLnurlPaymentSendArgs = {
+  input: LnurlPaymentSendInput;
+};
+
+
+export type MutationMerchantMapSuggestArgs = {
+  input: MerchantMapSuggestInput;
+};
+
+
 export type MutationOnChainAddressCreateArgs = {
   input: OnChainAddressCreateInput;
 };
@@ -932,6 +1128,11 @@ export type MutationOnChainUsdPaymentSendArgs = {
 
 export type MutationOnChainUsdPaymentSendAsBtcDenominatedArgs = {
   input: OnChainUsdPaymentSendAsBtcDenominatedInput;
+};
+
+
+export type MutationQuizClaimArgs = {
+  input: QuizClaimInput;
 };
 
 
@@ -977,21 +1178,6 @@ export type MutationUserPhoneRegistrationInitiateArgs = {
 
 export type MutationUserPhoneRegistrationValidateArgs = {
   input: UserPhoneRegistrationValidateInput;
-};
-
-
-export type MutationUserQuizQuestionUpdateCompletedArgs = {
-  input: UserQuizQuestionUpdateCompletedInput;
-};
-
-
-export type MutationUserTotpDeleteArgs = {
-  input: UserTotpDeleteInput;
-};
-
-
-export type MutationUserTotpRegistrationInitiateArgs = {
-  input: UserTotpRegistrationInitiateInput;
 };
 
 
@@ -1057,7 +1243,7 @@ export type OnChainAddressPayload = {
 export type OnChainPaymentSendAllInput = {
   readonly address: Scalars['OnChainAddress']['input'];
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly speed?: InputMaybe<PayoutSpeed>;
+  readonly speed?: PayoutSpeed;
   readonly walletId: Scalars['WalletId']['input'];
 };
 
@@ -1065,7 +1251,7 @@ export type OnChainPaymentSendInput = {
   readonly address: Scalars['OnChainAddress']['input'];
   readonly amount: Scalars['SatAmount']['input'];
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly speed?: InputMaybe<PayoutSpeed>;
+  readonly speed?: PayoutSpeed;
   readonly walletId: Scalars['WalletId']['input'];
 };
 
@@ -1076,12 +1262,17 @@ export type OnChainTxFee = {
 
 export type OnChainUpdate = {
   readonly __typename: 'OnChainUpdate';
+  /** @deprecated Deprecated in favor of transaction */
   readonly amount: Scalars['SatAmount']['output'];
+  /** @deprecated Deprecated in favor of transaction */
   readonly displayCurrencyPerSat: Scalars['Float']['output'];
+  readonly transaction: Transaction;
+  /** @deprecated Deprecated in favor of transaction */
   readonly txHash: Scalars['OnChainTxHash']['output'];
   readonly txNotificationType: TxNotificationType;
   /** @deprecated updated over displayCurrencyPerSat */
   readonly usdPerSat: Scalars['Float']['output'];
+  /** @deprecated Deprecated in favor of transaction */
   readonly walletId: Scalars['WalletId']['output'];
 };
 
@@ -1089,7 +1280,7 @@ export type OnChainUsdPaymentSendAsBtcDenominatedInput = {
   readonly address: Scalars['OnChainAddress']['input'];
   readonly amount: Scalars['SatAmount']['input'];
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly speed?: InputMaybe<PayoutSpeed>;
+  readonly speed?: PayoutSpeed;
   readonly walletId: Scalars['WalletId']['input'];
 };
 
@@ -1097,7 +1288,7 @@ export type OnChainUsdPaymentSendInput = {
   readonly address: Scalars['OnChainAddress']['input'];
   readonly amount: Scalars['CentAmount']['input'];
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly speed?: InputMaybe<PayoutSpeed>;
+  readonly speed?: PayoutSpeed;
   readonly walletId: Scalars['WalletId']['input'];
 };
 
@@ -1133,6 +1324,7 @@ export type PaymentSendPayload = {
   readonly __typename: 'PaymentSendPayload';
   readonly errors: ReadonlyArray<Error>;
   readonly status?: Maybe<PaymentSendResult>;
+  readonly transaction?: Maybe<Transaction>;
 };
 
 export const PaymentSendResult = {
@@ -1231,17 +1423,17 @@ export type PricePoint = {
 /** A public view of a generic wallet which stores value in one of our supported currencies. */
 export type PublicWallet = {
   readonly __typename: 'PublicWallet';
+  readonly currency: WalletCurrency;
   readonly id: Scalars['ID']['output'];
+  /** @deprecated Shifting property to 'currency' */
   readonly walletCurrency: WalletCurrency;
 };
 
 export type Query = {
   readonly __typename: 'Query';
   readonly accountDefaultWallet: PublicWallet;
-  /** @deprecated Deprecated in favor of realtimePrice */
-  readonly btcPrice?: Maybe<Price>;
   readonly btcPriceList?: Maybe<ReadonlyArray<Maybe<PricePoint>>>;
-  readonly businessMapMarkers?: Maybe<ReadonlyArray<Maybe<MapMarker>>>;
+  readonly businessMapMarkers: ReadonlyArray<MapMarker>;
   readonly currencyList: ReadonlyArray<Currency>;
   readonly globals?: Maybe<Globals>;
   readonly lnInvoicePaymentStatus: LnInvoicePaymentStatusPayload;
@@ -1250,8 +1442,6 @@ export type Query = {
   readonly onChainTxFee: OnChainTxFee;
   readonly onChainUsdTxFee: OnChainUsdTxFee;
   readonly onChainUsdTxFeeAsBtcDenominated: OnChainUsdTxFee;
-  /** @deprecated TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated */
-  readonly quizQuestions?: Maybe<ReadonlyArray<Maybe<QuizQuestion>>>;
   /** Returns 1 Sat and 1 Usd Cent price for the given currency */
   readonly realtimePrice: RealtimePrice;
   /** @deprecated will be migrated to AccountDefaultWalletId */
@@ -1263,11 +1453,6 @@ export type Query = {
 export type QueryAccountDefaultWalletArgs = {
   username: Scalars['Username']['input'];
   walletCurrency?: InputMaybe<WalletCurrency>;
-};
-
-
-export type QueryBtcPriceArgs = {
-  currency?: Scalars['DisplayCurrency']['input'];
 };
 
 
@@ -1284,7 +1469,7 @@ export type QueryLnInvoicePaymentStatusArgs = {
 export type QueryOnChainTxFeeArgs = {
   address: Scalars['OnChainAddress']['input'];
   amount: Scalars['SatAmount']['input'];
-  speed?: InputMaybe<PayoutSpeed>;
+  speed?: PayoutSpeed;
   walletId: Scalars['WalletId']['input'];
 };
 
@@ -1292,7 +1477,7 @@ export type QueryOnChainTxFeeArgs = {
 export type QueryOnChainUsdTxFeeArgs = {
   address: Scalars['OnChainAddress']['input'];
   amount: Scalars['CentAmount']['input'];
-  speed?: InputMaybe<PayoutSpeed>;
+  speed?: PayoutSpeed;
   walletId: Scalars['WalletId']['input'];
 };
 
@@ -1300,7 +1485,7 @@ export type QueryOnChainUsdTxFeeArgs = {
 export type QueryOnChainUsdTxFeeAsBtcDenominatedArgs = {
   address: Scalars['OnChainAddress']['input'];
   amount: Scalars['SatAmount']['input'];
-  speed?: InputMaybe<PayoutSpeed>;
+  speed?: PayoutSpeed;
   walletId: Scalars['WalletId']['input'];
 };
 
@@ -1325,6 +1510,17 @@ export type Quiz = {
   readonly amount: Scalars['SatAmount']['output'];
   readonly completed: Scalars['Boolean']['output'];
   readonly id: Scalars['ID']['output'];
+  readonly notBefore?: Maybe<Scalars['Timestamp']['output']>;
+};
+
+export type QuizClaimInput = {
+  readonly id: Scalars['ID']['input'];
+};
+
+export type QuizClaimPayload = {
+  readonly __typename: 'QuizClaimPayload';
+  readonly errors: ReadonlyArray<Error>;
+  readonly quizzes: ReadonlyArray<Quiz>;
 };
 
 export type QuizCompletedInput = {
@@ -1335,13 +1531,6 @@ export type QuizCompletedPayload = {
   readonly __typename: 'QuizCompletedPayload';
   readonly errors: ReadonlyArray<Error>;
   readonly quiz?: Maybe<Quiz>;
-};
-
-export type QuizQuestion = {
-  readonly __typename: 'QuizQuestion';
-  /** The earn reward in Satoshis for the quiz question */
-  readonly earnAmount: Scalars['SatAmount']['output'];
-  readonly id: Scalars['ID']['output'];
 };
 
 export type RealtimePrice = {
@@ -1377,6 +1566,7 @@ export type SettlementViaIntraLedger = {
   /** Settlement destination: Could be null if the payee does not have a username */
   readonly counterPartyUsername?: Maybe<Scalars['Username']['output']>;
   readonly counterPartyWalletId?: Maybe<Scalars['WalletId']['output']>;
+  readonly preImage?: Maybe<Scalars['LnPaymentPreImage']['output']>;
 };
 
 export type SettlementViaLn = {
@@ -1388,6 +1578,7 @@ export type SettlementViaLn = {
 
 export type SettlementViaOnChain = {
   readonly __typename: 'SettlementViaOnChain';
+  readonly arrivalInMempoolEstimatedAt?: Maybe<Scalars['Timestamp']['output']>;
   readonly transactionHash?: Maybe<Scalars['OnChainTxHash']['output']>;
   readonly vout?: Maybe<Scalars['Int']['output']>;
 };
@@ -1479,7 +1670,7 @@ export type TxDirection = typeof TxDirection[keyof typeof TxDirection];
 export const TxNotificationType = {
   IntraLedgerPayment: 'IntraLedgerPayment',
   IntraLedgerReceipt: 'IntraLedgerReceipt',
-  LnInvoicePaid: 'LnInvoicePaid',
+  LigtningReceipt: 'LigtningReceipt',
   OnchainPayment: 'OnchainPayment',
   OnchainReceipt: 'OnchainReceipt',
   OnchainReceiptPending: 'OnchainReceiptPending'
@@ -1506,11 +1697,45 @@ export type UsdWallet = Wallet & {
   readonly accountId: Scalars['ID']['output'];
   readonly balance: Scalars['SignedAmount']['output'];
   readonly id: Scalars['ID']['output'];
+  readonly invoiceByPaymentHash: Invoice;
+  /** A list of all invoices associated with walletIds optionally passed. */
+  readonly invoices?: Maybe<InvoiceConnection>;
   /** An unconfirmed incoming onchain balance. */
   readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
+  readonly pendingIncomingTransactions: ReadonlyArray<Transaction>;
+  readonly pendingIncomingTransactionsByAddress: ReadonlyArray<Transaction>;
+  readonly transactionById: Transaction;
   readonly transactions?: Maybe<TransactionConnection>;
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
+  readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletInvoiceByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletInvoicesArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletPendingIncomingTransactionsByAddressArgs = {
+  address: Scalars['OnChainAddress']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletTransactionByIdArgs = {
+  transactionId: Scalars['ID']['input'];
 };
 
 
@@ -1530,6 +1755,12 @@ export type UsdWalletTransactionsByAddressArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletTransactionsByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
 };
 
 export type User = {
@@ -1558,11 +1789,6 @@ export type User = {
   readonly language: Scalars['Language']['output'];
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']['output']>;
-  /**
-   * List the quiz questions the user may have completed.
-   * @deprecated use Quiz from Account instead
-   */
-  readonly quizQuestions: ReadonlyArray<UserQuizQuestion>;
   /** Whether TOTP is enabled for this user. */
   readonly totpEnabled: Scalars['Boolean']['output'];
   /**
@@ -1675,34 +1901,10 @@ export type UserPhoneRegistrationValidatePayload = {
   readonly me?: Maybe<User>;
 };
 
-export type UserQuizQuestion = {
-  readonly __typename: 'UserQuizQuestion';
-  readonly completed: Scalars['Boolean']['output'];
-  readonly question: QuizQuestion;
-};
-
-export type UserQuizQuestionUpdateCompletedInput = {
-  readonly id: Scalars['ID']['input'];
-};
-
-export type UserQuizQuestionUpdateCompletedPayload = {
-  readonly __typename: 'UserQuizQuestionUpdateCompletedPayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly userQuizQuestion?: Maybe<UserQuizQuestion>;
-};
-
-export type UserTotpDeleteInput = {
-  readonly authToken: Scalars['AuthToken']['input'];
-};
-
 export type UserTotpDeletePayload = {
   readonly __typename: 'UserTotpDeletePayload';
   readonly errors: ReadonlyArray<Error>;
   readonly me?: Maybe<User>;
-};
-
-export type UserTotpRegistrationInitiateInput = {
-  readonly authToken: Scalars['AuthToken']['input'];
 };
 
 export type UserTotpRegistrationInitiatePayload = {
@@ -1713,7 +1915,7 @@ export type UserTotpRegistrationInitiatePayload = {
 };
 
 export type UserTotpRegistrationValidateInput = {
-  readonly authToken: Scalars['AuthToken']['input'];
+  readonly authToken?: InputMaybe<Scalars['AuthToken']['input']>;
   readonly totpCode: Scalars['TotpCode']['input'];
   readonly totpRegistrationId: Scalars['TotpRegistrationId']['input'];
 };
@@ -1751,7 +1953,24 @@ export type Wallet = {
   readonly accountId: Scalars['ID']['output'];
   readonly balance: Scalars['SignedAmount']['output'];
   readonly id: Scalars['ID']['output'];
+  readonly invoiceByPaymentHash: Invoice;
+  readonly invoices?: Maybe<InvoiceConnection>;
   readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
+  /**
+   * Pending incoming OnChain transactions. When transactions
+   * are confirmed they will receive a new id and be found in the transactions
+   * list. Transactions are ordered anti-chronologically,
+   * ie: the newest transaction will be first
+   */
+  readonly pendingIncomingTransactions: ReadonlyArray<Transaction>;
+  /**
+   * Pending incoming OnChain transactions. When transactions
+   * are confirmed they will receive a new id and be found in the transactions
+   * list. Transactions are ordered anti-chronologically,
+   * ie: the newest transaction will be first
+   */
+  readonly pendingIncomingTransactionsByAddress: ReadonlyArray<Transaction>;
+  readonly transactionById: Transaction;
   /**
    * Transactions are ordered anti-chronologically,
    * ie: the newest transaction will be first
@@ -1762,7 +1981,36 @@ export type Wallet = {
    * ie: the newest transaction will be first
    */
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
+  /** Returns the transactions that include this paymentHash. This should be a list of size one for a received lightning payment. This can be more that one transaction for a sent lightning payment. */
+  readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletInvoiceByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletInvoicesArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletPendingIncomingTransactionsByAddressArgs = {
+  address: Scalars['OnChainAddress']['input'];
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletTransactionByIdArgs = {
+  transactionId: Scalars['ID']['input'];
 };
 
 
@@ -1782,6 +2030,12 @@ export type WalletTransactionsByAddressArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletTransactionsByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
 };
 
 export const WalletCurrency = {
@@ -1835,8 +2089,13 @@ export function useCountryCodesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptio
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<CountryCodesQuery, CountryCodesQueryVariables>(CountryCodesDocument, options);
         }
+export function useCountryCodesSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<CountryCodesQuery, CountryCodesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<CountryCodesQuery, CountryCodesQueryVariables>(CountryCodesDocument, options);
+        }
 export type CountryCodesQueryHookResult = ReturnType<typeof useCountryCodesQuery>;
 export type CountryCodesLazyQueryHookResult = ReturnType<typeof useCountryCodesLazyQuery>;
+export type CountryCodesSuspenseQueryHookResult = ReturnType<typeof useCountryCodesSuspenseQuery>;
 export type CountryCodesQueryResult = Apollo.QueryResult<CountryCodesQuery, CountryCodesQueryVariables>;
 export const GetUserIdDocument = gql`
     query getUserId {
@@ -1869,6 +2128,11 @@ export function useGetUserIdLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<GetUserIdQuery, GetUserIdQueryVariables>(GetUserIdDocument, options);
         }
+export function useGetUserIdSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<GetUserIdQuery, GetUserIdQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetUserIdQuery, GetUserIdQueryVariables>(GetUserIdDocument, options);
+        }
 export type GetUserIdQueryHookResult = ReturnType<typeof useGetUserIdQuery>;
 export type GetUserIdLazyQueryHookResult = ReturnType<typeof useGetUserIdLazyQuery>;
+export type GetUserIdSuspenseQueryHookResult = ReturnType<typeof useGetUserIdSuspenseQuery>;
 export type GetUserIdQueryResult = Apollo.QueryResult<GetUserIdQuery, GetUserIdQueryVariables>;
