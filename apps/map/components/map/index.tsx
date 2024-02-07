@@ -5,10 +5,14 @@ import { BusinessMapMarkersQuery } from "@/services/galoy/graphql/generated"
 import Link from "next/link"
 import { theme } from "./map-theme"
 import { env } from "@/env"
+import LocationIcon from "../logo/location"
+import { SuggestMapFormSheet } from "./suggest-form"
 
 type MapComponentProps = {
   mapData: BusinessMapMarkersQuery["businessMapMarkers"]
 }
+const DEFAULT_LAT = 13.7942
+const DEFAULT_LNG = -88.8965
 
 export default function MapComponent({ mapData }: MapComponentProps) {
   const mapRef = useRef<google.maps.Map>()
@@ -16,9 +20,18 @@ export default function MapComponent({ mapData }: MapComponentProps) {
     BusinessMapMarkersQuery["businessMapMarkers"][number] | null
   >(null)
   const [currentLocation, setCurrentLocation] = useState({
-    lat: 13.7942,
-    lng: -88.8965,
+    coordinates: {
+      lat: DEFAULT_LAT,
+      lng: DEFAULT_LNG,
+    },
+    userAllowedLocation: false,
   })
+
+  const [draggablePin, setDraggablePin] = useState({
+    coordinates: { lat: 0, lng: 0 },
+    visible: false,
+  })
+
   const libraries = useMemo(() => ["places"], [])
   const onMapLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map
@@ -49,8 +62,8 @@ export default function MapComponent({ mapData }: MapComponentProps) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setCurrentLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
+          coordinates: { lat: position.coords.latitude, lng: position.coords.longitude },
+          userAllowedLocation: true,
         })
       },
       () => {
@@ -76,25 +89,153 @@ export default function MapComponent({ mapData }: MapComponentProps) {
 
   const centerMapOnCurrentLocation = () => {
     if (mapRef.current) {
-      mapRef.current.panTo(currentLocation)
+      mapRef.current.panTo(currentLocation.coordinates)
       mapRef.current.setZoom(14)
     }
   }
 
+  const addDraggablePin = () => {
+    const center = mapRef?.current?.getCenter()
+
+    if (!center) {
+      return
+    }
+
+    setDraggablePin({
+      coordinates: { lat: center?.lat(), lng: center?.lng() },
+      visible: true,
+    })
+  }
+
+  const cancelDraggablePin = () => {
+    setDraggablePin({
+      coordinates: { lat: 0, lng: 0 },
+      visible: false,
+    })
+  }
+
+  const handleDragEnd = (event: google.maps.MapMouseEvent) => {
+    const lat = event?.latLng?.lat()
+    const lng = event?.latLng?.lng()
+
+    if (!lat || !lng) {
+      return
+    }
+
+    setDraggablePin({
+      coordinates: { lat, lng },
+      visible: true,
+    })
+  }
+
+  const onInputChangeDraggablePinLat = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDraggablePin({
+      coordinates: { lat: Number(e.target.value), lng: draggablePin.coordinates.lng },
+      visible: true,
+    })
+
+    if (!mapRef.current) {
+      return
+    }
+    mapRef.current.panTo({
+      lat: Number(e.target.value),
+      lng: draggablePin.coordinates.lng,
+    })
+  }
+
+  const onInputChangeDraggablePinLong = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDraggablePin({
+      coordinates: { lat: draggablePin.coordinates.lat, lng: Number(e.target.value) },
+      visible: true,
+    })
+
+    if (!mapRef.current) {
+      return
+    }
+    mapRef.current.panTo({
+      lat: draggablePin.coordinates.lat,
+      lng: Number(e.target.value),
+    })
+  }
+
   return (
     <>
-      {/* TODO USE LOGO HERE */}
-      <button
-        className="absolute top-4 right-4 z-10 bg-white text-black p-2 rounded-md"
-        onClick={centerMapOnCurrentLocation}
-      >
-        Center Me
-      </button>
+      {draggablePin.visible && (
+        <div className="absolute right-2 top-2 z-10 w-40">
+          <div className="bg-white text-black p-2 rounded-md text-sm drop-shadow-2xl">
+            <div className="flex flex-col mb-4">
+              <label htmlFor="latitude" className="mb-1 text-xs font-bold">
+                LAT
+              </label>
+              <input
+                id="latitude"
+                type="number"
+                min={-90}
+                max={90}
+                placeholder="Latitude"
+                value={draggablePin.coordinates.lat}
+                onChange={onInputChangeDraggablePinLat}
+                className="text-black p-1 rounded-md bg-gray-300  text-xs"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label htmlFor="longitude" className="mb-1 text-xs font-bold">
+                LNG
+              </label>
+              <input
+                id="longitude"
+                type="number"
+                min={-180}
+                max={180}
+                placeholder="Longitude"
+                value={draggablePin.coordinates.lng}
+                onChange={onInputChangeDraggablePinLong}
+                className="text-black p-1 rounded-md bg-gray-300  text-xs"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {draggablePin.visible && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 bg-white text-black p-2 rounded-md flex justify-center gap-8">
+          <button style={{ display: draggablePin.visible ? "block" : "none" }}>
+            <SuggestMapFormSheet
+              latitude={draggablePin.coordinates.lat}
+              longitude={draggablePin.coordinates.lng}
+            />
+          </button>
+          <button
+            onClick={cancelDraggablePin}
+            style={{ display: draggablePin.visible ? "block" : "none" }}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+      {!draggablePin.visible && (
+        <button
+          className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 bg-white text-black p-2 rounded-md"
+          onClick={addDraggablePin}
+          style={{ display: draggablePin.visible ? "none" : "block" }}
+        >
+          Add Business Location
+        </button>
+      )}
+      {currentLocation.userAllowedLocation && (
+        <button
+          className="absolute right-2.5 z-10 bg-white text-black p-2 rounded-md"
+          onClick={centerMapOnCurrentLocation}
+          style={{ zIndex: 10, bottom: "7em" }}
+        >
+          <LocationIcon />
+        </button>
+      )}
       <GoogleMap
         onLoad={onMapLoad}
         options={mapOptions}
         zoom={14}
-        center={currentLocation}
+        center={currentLocation.coordinates}
         mapTypeId={google.maps.MapTypeId.ROADMAP}
         mapContainerStyle={{ width: "100vw", height: "100vh" }}
       >
@@ -117,19 +258,21 @@ export default function MapComponent({ mapData }: MapComponentProps) {
             onClick={() => handleMarkerClick(marker)}
           />
         ))}
-        <MarkerF
-          key="currentLocation"
-          position={currentLocation}
-          icon={{
-            path: google.maps.SymbolPath.CIRCLE,
-            fillColor: "#4285F4",
-            fillOpacity: 1,
-            scale: 6,
-            strokeColor: "white",
-            strokeWeight: 2,
-          }}
-          title="My Current Location"
-        />
+        {currentLocation.userAllowedLocation && (
+          <MarkerF
+            key="currentLocation"
+            position={currentLocation.coordinates}
+            icon={{
+              path: google.maps.SymbolPath.CIRCLE,
+              fillColor: "#4285F4",
+              fillOpacity: 1,
+              scale: 6,
+              strokeColor: "white",
+              strokeWeight: 2,
+            }}
+            title="My Current Location"
+          />
+        )}
         {selectedMarker && (
           <InfoWindow
             position={{
@@ -152,6 +295,13 @@ export default function MapComponent({ mapData }: MapComponentProps) {
               </Link>
             </div>
           </InfoWindow>
+        )}
+        {draggablePin.visible && (
+          <MarkerF
+            position={draggablePin.coordinates}
+            draggable={true}
+            onDragEnd={handleDragEnd}
+          />
         )}
       </GoogleMap>
     </>

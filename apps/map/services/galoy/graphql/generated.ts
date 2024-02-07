@@ -796,6 +796,32 @@ export type MapMarker = {
   readonly username: Scalars['Username']['output'];
 };
 
+export type Merchant = {
+  readonly __typename: 'Merchant';
+  /** GPS coordinates for the merchant that can be used to place the related business on a map */
+  readonly coordinates: Coordinates;
+  readonly createdAt: Scalars['Timestamp']['output'];
+  readonly id: Scalars['ID']['output'];
+  readonly title: Scalars['String']['output'];
+  /** The username of the merchant */
+  readonly username: Scalars['Username']['output'];
+  /** Whether the merchant has been validated */
+  readonly validated: Scalars['Boolean']['output'];
+};
+
+export type MerchantMapSuggestInput = {
+  readonly latitude: Scalars['Float']['input'];
+  readonly longitude: Scalars['Float']['input'];
+  readonly title: Scalars['String']['input'];
+  readonly username: Scalars['Username']['input'];
+};
+
+export type MerchantPayload = {
+  readonly __typename: 'MerchantPayload';
+  readonly errors: ReadonlyArray<Error>;
+  readonly merchant?: Maybe<Merchant>;
+};
+
 export type MobileVersions = {
   readonly __typename: 'MobileVersions';
   readonly currentSupported: Scalars['Int']['output'];
@@ -903,6 +929,7 @@ export type Mutation = {
   readonly lnUsdInvoiceFeeProbe: SatAmountPayload;
   /** Sends a payment to a lightning address. */
   readonly lnurlPaymentSend: PaymentSendPayload;
+  readonly merchantMapSuggest: MerchantPayload;
   readonly onChainAddressCreate: OnChainAddressPayload;
   readonly onChainAddressCurrent: OnChainAddressPayload;
   readonly onChainPaymentSend: PaymentSendPayload;
@@ -1088,6 +1115,11 @@ export type MutationLnUsdInvoiceFeeProbeArgs = {
 
 export type MutationLnurlPaymentSendArgs = {
   input: LnurlPaymentSendInput;
+};
+
+
+export type MutationMerchantMapSuggestArgs = {
+  input: MerchantMapSuggestInput;
 };
 
 
@@ -2103,12 +2135,66 @@ export const WalletCurrency = {
 } as const;
 
 export type WalletCurrency = typeof WalletCurrency[keyof typeof WalletCurrency];
+export type MerchantMapSuggestMutationVariables = Exact<{
+  input: MerchantMapSuggestInput;
+}>;
+
+
+export type MerchantMapSuggestMutation = { readonly __typename: 'Mutation', readonly merchantMapSuggest: { readonly __typename: 'MerchantPayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly code?: string | null, readonly message: string }>, readonly merchant?: { readonly __typename: 'Merchant', readonly createdAt: number, readonly id: string, readonly title: string, readonly username: string, readonly validated: boolean, readonly coordinates: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } } | null } };
+
 export type BusinessMapMarkersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type BusinessMapMarkersQuery = { readonly __typename: 'Query', readonly businessMapMarkers: ReadonlyArray<{ readonly __typename: 'MapMarker', readonly username: string, readonly mapInfo: { readonly __typename: 'MapInfo', readonly title: string, readonly coordinates: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } } }> };
 
 
+export const MerchantMapSuggestDocument = gql`
+    mutation MerchantMapSuggest($input: MerchantMapSuggestInput!) {
+  merchantMapSuggest(input: $input) {
+    errors {
+      code
+      message
+    }
+    merchant {
+      coordinates {
+        latitude
+        longitude
+      }
+      createdAt
+      id
+      title
+      username
+      validated
+    }
+  }
+}
+    `;
+export type MerchantMapSuggestMutationFn = Apollo.MutationFunction<MerchantMapSuggestMutation, MerchantMapSuggestMutationVariables>;
+
+/**
+ * __useMerchantMapSuggestMutation__
+ *
+ * To run a mutation, you first call `useMerchantMapSuggestMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMerchantMapSuggestMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [merchantMapSuggestMutation, { data, loading, error }] = useMerchantMapSuggestMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useMerchantMapSuggestMutation(baseOptions?: Apollo.MutationHookOptions<MerchantMapSuggestMutation, MerchantMapSuggestMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<MerchantMapSuggestMutation, MerchantMapSuggestMutationVariables>(MerchantMapSuggestDocument, options);
+      }
+export type MerchantMapSuggestMutationHookResult = ReturnType<typeof useMerchantMapSuggestMutation>;
+export type MerchantMapSuggestMutationResult = Apollo.MutationResult<MerchantMapSuggestMutation>;
+export type MerchantMapSuggestMutationOptions = Apollo.BaseMutationOptions<MerchantMapSuggestMutation, MerchantMapSuggestMutationVariables>;
 export const BusinessMapMarkersDocument = gql`
     query BusinessMapMarkers {
   businessMapMarkers {
