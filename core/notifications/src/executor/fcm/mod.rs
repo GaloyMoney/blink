@@ -1,6 +1,8 @@
 mod config;
 pub mod error;
 
+use std::collections::HashMap;
+
 pub use config::*;
 
 use google_fcm1::{
@@ -12,6 +14,12 @@ use google_fcm1::{
 };
 
 use error::*;
+
+pub struct NotificationPayload {
+    pub title: String,
+    pub body: String,
+    pub data: HashMap<String, String>,
+}
 
 #[derive(Clone)]
 pub struct FcmClient {
@@ -39,24 +47,20 @@ impl FcmClient {
 
     pub async fn _send(
         &self,
-        title: String,
-        body: String,
+        payload: NotificationPayload,
         device_tokens: Vec<String>,
     ) -> Result<(), FcmError> {
         // should we use tokio here for optimisation ?
         for device_token in device_tokens {
             let notification = Notification {
-                title: Some(title.clone()),
-                body: Some(body.clone()),
+                title: Some(payload.title.clone()),
+                body: Some(payload.body.clone()),
                 ..Default::default()
             };
-            let data = [("linkTo".to_string(), "/people/circles".to_string())]
-                .into_iter()
-                .collect();
             let message = Message {
                 notification: Some(notification),
                 token: Some(device_token),
-                data: Some(data),
+                data: Some(payload.data.clone()),
                 ..Default::default()
             };
 
