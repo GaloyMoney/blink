@@ -64,6 +64,11 @@ sh_binary(
 )
 
 sh_binary(
+  name = "codegen",
+  main = "bin/codegen.sh",
+)
+
+sh_binary(
   name = "init-onchain",
   main = "bin/init-onchain.sh",
 )
