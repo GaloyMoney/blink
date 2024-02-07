@@ -72,10 +72,12 @@ export const toDomainIdentity = (identity: KratosIdentity): AnyIdentity => {
     createdAt = new Date()
   }
 
+  const { username: rawUsername } = identity.traits
   return {
     id: identity.id as UserId,
     phone: identity.traits.phone as PhoneNumber,
     email: identity.traits.email as EmailAddress,
+    username: rawUsername !== undefined ? (rawUsername as IdentityUsername) : rawUsername,
     emailVerified: identity.verifiable_addresses?.[0].verified ?? false,
     totpEnabled: identity?.credentials?.totp?.type === "totp",
     schema: toSchema(identity.schema_id),
@@ -98,10 +100,12 @@ export const toDomainIdentityEmail = (identity: KratosIdentity): IdentityEmail =
     createdAt = new Date()
   }
 
+  const { username: rawUsername } = identity.traits
   return {
     id: identity.id as UserId,
     phone: undefined,
     email: identity.traits.email as EmailAddress,
+    username: rawUsername !== undefined ? (rawUsername as IdentityUsername) : rawUsername,
     emailVerified: identity.verifiable_addresses?.[0].verified ?? false,
     totpEnabled: identity?.credentials?.totp?.type === "totp",
     schema: toSchema(identity.schema_id),
@@ -123,10 +127,12 @@ export const toDomainIdentityPhone = (identity: KratosIdentity): IdentityPhone =
     createdAt = new Date()
   }
 
+  const { username: rawUsername } = identity.traits
   return {
     id: identity.id as UserId,
     phone: identity.traits.phone as PhoneNumber,
     email: undefined,
+    username: rawUsername !== undefined ? (rawUsername as IdentityUsername) : rawUsername,
     emailVerified: undefined,
     totpEnabled: identity?.credentials?.totp?.type === "totp",
     schema: toSchema(identity.schema_id),
@@ -150,10 +156,12 @@ export const toDomainIdentityEmailPhone = (
     createdAt = new Date()
   }
 
+  const { username: rawUsername } = identity.traits
   return {
     id: identity.id as UserId,
     phone: identity.traits.phone as PhoneNumber,
     email: identity.traits.email as EmailAddress,
+    username: rawUsername !== undefined ? (rawUsername as IdentityUsername) : rawUsername,
     emailVerified: identity.verifiable_addresses?.[0].verified ?? false,
     totpEnabled: identity?.credentials?.totp?.type === "totp",
     schema: toSchema(identity.schema_id),

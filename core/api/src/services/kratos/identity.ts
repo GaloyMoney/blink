@@ -8,6 +8,20 @@ import { getKratosPostgres, kratosAdmin, toDomainIdentity } from "./private"
 import { IdentifierNotFoundError } from "@/domain/authentication/errors"
 import { ErrorLevel } from "@/domain/shared"
 
+export const getNextPageToken = (link: string): string | undefined => {
+  const links = link.split(",")
+  const nextLink = links.find((link) => link.includes('rel="next"'))
+
+  if (nextLink) {
+    const matches = nextLink.match(/page_token=([^;&>]+)/)
+    if (matches) {
+      return matches[1]
+    }
+  }
+
+  return undefined
+}
+
 export const IdentityRepository = (): IIdentityRepository => {
   const getIdentity = async (
     kratosUserId: UserId,
@@ -108,18 +122,4 @@ export const IdentityRepository = (): IIdentityRepository => {
     getUserIdFromIdentifier,
     getUserIdFromFlowId,
   }
-}
-
-export const getNextPageToken = (link: string): string | undefined => {
-  const links = link.split(",")
-  const nextLink = links.find((link) => link.includes('rel="next"'))
-
-  if (nextLink) {
-    const matches = nextLink.match(/page_token=([^;&>]+)/)
-    if (matches) {
-      return matches[1]
-    }
-  }
-
-  return undefined
 }

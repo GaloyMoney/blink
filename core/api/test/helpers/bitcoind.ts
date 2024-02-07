@@ -3,7 +3,6 @@ import {
   createWallet,
   generateToAddress,
   getAddressInfo,
-  getBlockchainInfo,
   getBlockCount,
   getNewAddress,
   getTransaction,
@@ -87,10 +86,6 @@ export class BitcoindClient {
 
   async getBlockCount(): Promise<number> {
     return getBlockCount({ bitcoind: this.bitcoind })
-  }
-
-  async getBlockchainInfo(): Promise<{ chain: string }> {
-    return getBlockchainInfo({ bitcoind: this.bitcoind })
   }
 
   async createWallet({
