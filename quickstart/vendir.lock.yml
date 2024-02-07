@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: add dev codegen rules to all `apps` projects (#3951)...'
-      sha: a71ec38d233bcd80271ced8bd33e685b9c378e76
+      commitTitle: 'chore(admin-panel): update admin panel otel deps (#3947)...'
+      sha: 97ddc295cfa951be0e8b3cb2c2ee977fe9b62c85
       tags:
-      - 0.20.45-1-ga71ec38d2
+      - 0.20.45-3-g97ddc295c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: add dev codegen rules to all `apps` projects (#3951)...'
-      sha: a71ec38d233bcd80271ced8bd33e685b9c378e76
+      commitTitle: 'chore(admin-panel): update admin panel otel deps (#3947)...'
+      sha: 97ddc295cfa951be0e8b3cb2c2ee977fe9b62c85
       tags:
-      - 0.20.45-1-ga71ec38d2
+      - 0.20.45-3-g97ddc295c
     path: schemas/
   - git:
-      commitTitle: 'chore: add dev codegen rules to all `apps` projects (#3951)...'
-      sha: a71ec38d233bcd80271ced8bd33e685b9c378e76
+      commitTitle: 'chore(admin-panel): update admin panel otel deps (#3947)...'
+      sha: 97ddc295cfa951be0e8b3cb2c2ee977fe9b62c85
       tags:
-      - 0.20.45-1-ga71ec38d2
+      - 0.20.45-3-g97ddc295c
     path: gql/
   path: ./graphql
 kind: LockConfig
