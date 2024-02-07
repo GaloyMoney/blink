@@ -14,7 +14,7 @@ use error::*;
 
 #[derive(Clone)]
 pub struct FcmClient {
-    pub client: FirebaseCloudMessaging<HttpsConnector<HttpConnector>>,
+    client: FirebaseCloudMessaging<HttpsConnector<HttpConnector>>,
 }
 
 impl FcmClient {
@@ -34,5 +34,9 @@ impl FcmClient {
         let client = FirebaseCloudMessaging::new(hyper_client, auth);
 
         Ok(Self { client })
+    }
+
+    pub async fn _send(&self, message: String) -> Result<(), FcmError> {
+        unimplemnted!()
     }
 }
