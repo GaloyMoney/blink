@@ -51,7 +51,7 @@ export function SuggestMapFormSheet({ latitude, longitude }: formProps) {
         ) : (
           <>
             <SheetDescription>
-              Fill the Details of the Business you want to suggest, with there username.
+              Fill the Details of the Business you want to Add.
             </SheetDescription>
             <form action={formAction} className="grid g py-4">
               <InputComponent

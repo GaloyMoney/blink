@@ -254,7 +254,7 @@ export default function MapComponent({ mapData }: MapComponentProps) {
               lat: marker.mapInfo.coordinates.latitude,
               lng: marker.mapInfo.coordinates.longitude,
             }}
-            title={marker.username as string}
+            title={marker.username}
             onClick={() => handleMarkerClick(marker)}
           />
         ))}

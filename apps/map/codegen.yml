@@ -1,6 +1,6 @@
 overwrite: true
 schema:
-  - "http://localhost:4455/graphql"
+  - "../../core/api/src/graphql/public/schema.graphql"
 documents:
   - "app/**/*.{ts,tsx}"
   - "services/**/*.{ts,tsx}"

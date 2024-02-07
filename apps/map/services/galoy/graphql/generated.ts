@@ -17,39 +17,66 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  /** An Opaque Bearer token */
   AuthToken: { input: string; output: string; }
+  /** (Positive) Cent amount (1/100 of a dollar) */
   CentAmount: { input: number; output: number; }
+  /** An alias name that a user can set for a wallet (with which they have transactions) */
   ContactAlias: { input: string; output: string; }
+  /** A CCA2 country code (ex US, FR, etc) */
   CountryCode: { input: string; output: string; }
+  /** Display currency of an account */
   DisplayCurrency: { input: string; output: string; }
+  /** Email address */
   EmailAddress: { input: string; output: string; }
+  /** An id to be passed between registrationInitiate and registrationValidate for confirming email */
   EmailRegistrationId: { input: string; output: string; }
   EndpointId: { input: string; output: string; }
+  /** Url that will be fetched on events for the account */
   EndpointUrl: { input: string; output: string; }
+  /** Feedback shared with our user */
   Feedback: { input: string; output: string; }
+  /** Hex-encoded string of 32 bytes */
   Hex32Bytes: { input: string; output: string; }
   Language: { input: string; output: string; }
   LnPaymentPreImage: { input: string; output: string; }
+  /** BOLT11 lightning invoice payment request with the amount included */
   LnPaymentRequest: { input: string; output: string; }
   LnPaymentSecret: { input: string; output: string; }
+  /** Text field in a lightning payment transaction */
   Memo: { input: string; output: string; }
+  /** (Positive) amount of minutes */
   Minutes: { input: string; output: string; }
   NotificationCategory: { input: string; output: string; }
+  /** An address for an on-chain bitcoin destination */
   OnChainAddress: { input: string; output: string; }
   OnChainTxHash: { input: string; output: string; }
+  /** An authentication code valid for a single use */
   OneTimeAuthCode: { input: string; output: string; }
   PaymentHash: { input: string; output: string; }
+  /** Phone number which includes country code */
   Phone: { input: string; output: string; }
+  /** Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1 */
   SafeInt: { input: number; output: number; }
+  /** (Positive) Satoshi amount */
   SatAmount: { input: number; output: number; }
+  /** (Positive) amount of seconds */
   Seconds: { input: number; output: number; }
+  /** An amount (of a currency) that can be negative (e.g. in a transaction) */
   SignedAmount: { input: number; output: number; }
+  /** A string amount (of a currency) that can be negative (e.g. in a transaction) */
   SignedDisplayMajorAmount: { input: string; output: string; }
+  /** Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch) */
   Timestamp: { input: number; output: number; }
+  /** A time-based one-time password */
   TotpCode: { input: string; output: string; }
+  /** An id to be passed between set and verify for confirming totp */
   TotpRegistrationId: { input: string; output: string; }
+  /** A secret to generate time-based one-time password */
   TotpSecret: { input: string; output: string; }
+  /** Unique identifier of a user */
   Username: { input: string; output: string; }
+  /** Unique identifier of a wallet */
   WalletId: { input: string; output: string; }
 };
 
@@ -179,39 +206,6 @@ export type AccountUpdateNotificationSettingsPayload = {
   readonly __typename: 'AccountUpdateNotificationSettingsPayload';
   readonly account?: Maybe<ConsumerAccount>;
   readonly errors: ReadonlyArray<Error>;
-};
-
-export type ApiKey = {
-  readonly __typename: 'ApiKey';
-  readonly createdAt: Scalars['Timestamp']['output'];
-  readonly expired: Scalars['Boolean']['output'];
-  readonly expiresAt?: Maybe<Scalars['Timestamp']['output']>;
-  readonly id: Scalars['ID']['output'];
-  readonly lastUsedAt?: Maybe<Scalars['Timestamp']['output']>;
-  readonly name: Scalars['String']['output'];
-  readonly readOnly: Scalars['Boolean']['output'];
-  readonly revoked: Scalars['Boolean']['output'];
-};
-
-export type ApiKeyCreateInput = {
-  readonly expireInDays?: InputMaybe<Scalars['Int']['input']>;
-  readonly name: Scalars['String']['input'];
-  readonly readOnly?: Scalars['Boolean']['input'];
-};
-
-export type ApiKeyCreatePayload = {
-  readonly __typename: 'ApiKeyCreatePayload';
-  readonly apiKey: ApiKey;
-  readonly apiKeySecret: Scalars['String']['output'];
-};
-
-export type ApiKeyRevokeInput = {
-  readonly id: Scalars['ID']['input'];
-};
-
-export type ApiKeyRevokePayload = {
-  readonly __typename: 'ApiKeyRevokePayload';
-  readonly apiKey: ApiKey;
 };
 
 export type AuthTokenPayload = {
@@ -838,8 +832,6 @@ export type Mutation = {
   readonly accountEnableNotificationChannel: AccountUpdateNotificationSettingsPayload;
   readonly accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdPayload;
   readonly accountUpdateDisplayCurrency: AccountUpdateDisplayCurrencyPayload;
-  readonly apiKeyCreate: ApiKeyCreatePayload;
-  readonly apiKeyRevoke: ApiKeyRevokePayload;
   readonly callbackEndpointAdd: CallbackEndpointAddPayload;
   readonly callbackEndpointDelete: SuccessPayload;
   readonly captchaCreateChallenge: CaptchaCreateChallengePayload;
@@ -941,13 +933,9 @@ export type Mutation = {
   readonly quizCompleted: QuizCompletedPayload;
   /** @deprecated will be moved to AccountContact */
   readonly userContactUpdateAlias: UserContactUpdateAliasPayload;
-  readonly userDisableNotificationCategory: UserUpdateNotificationSettingsPayload;
-  readonly userDisableNotificationChannel: UserUpdateNotificationSettingsPayload;
   readonly userEmailDelete: UserEmailDeletePayload;
   readonly userEmailRegistrationInitiate: UserEmailRegistrationInitiatePayload;
   readonly userEmailRegistrationValidate: UserEmailRegistrationValidatePayload;
-  readonly userEnableNotificationCategory: UserUpdateNotificationSettingsPayload;
-  readonly userEnableNotificationChannel: UserUpdateNotificationSettingsPayload;
   readonly userLogin: AuthTokenPayload;
   readonly userLoginUpgrade: UpgradePayload;
   readonly userLogout: SuccessPayload;
@@ -990,16 +978,6 @@ export type MutationAccountUpdateDefaultWalletIdArgs = {
 
 export type MutationAccountUpdateDisplayCurrencyArgs = {
   input: AccountUpdateDisplayCurrencyInput;
-};
-
-
-export type MutationApiKeyCreateArgs = {
-  input: ApiKeyCreateInput;
-};
-
-
-export type MutationApiKeyRevokeArgs = {
-  input: ApiKeyRevokeInput;
 };
 
 
@@ -1168,16 +1146,6 @@ export type MutationUserContactUpdateAliasArgs = {
 };
 
 
-export type MutationUserDisableNotificationCategoryArgs = {
-  input: UserDisableNotificationCategoryInput;
-};
-
-
-export type MutationUserDisableNotificationChannelArgs = {
-  input: UserDisableNotificationChannelInput;
-};
-
-
 export type MutationUserEmailRegistrationInitiateArgs = {
   input: UserEmailRegistrationInitiateInput;
 };
@@ -1185,16 +1153,6 @@ export type MutationUserEmailRegistrationInitiateArgs = {
 
 export type MutationUserEmailRegistrationValidateArgs = {
   input: UserEmailRegistrationValidateInput;
-};
-
-
-export type MutationUserEnableNotificationCategoryArgs = {
-  input: UserEnableNotificationCategoryInput;
-};
-
-
-export type MutationUserEnableNotificationChannelArgs = {
-  input: UserEnableNotificationChannelInput;
 };
 
 
@@ -1807,7 +1765,6 @@ export type UsdWalletTransactionsByPaymentHashArgs = {
 
 export type User = {
   readonly __typename: 'User';
-  readonly apiKeys: ReadonlyArray<ApiKey>;
   /**
    * Get single contact details.
    * Can include the transactions associated with the contact.
@@ -1830,7 +1787,6 @@ export type User = {
    * When value is 'default' the intent is to use preferred language from OS settings.
    */
   readonly language: Scalars['Language']['output'];
-  readonly notificationSettings: UserNotificationSettings;
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']['output']>;
   /** Whether TOTP is enabled for this user. */
@@ -1881,15 +1837,6 @@ export type UserContactUpdateAliasPayload = {
   readonly errors: ReadonlyArray<Error>;
 };
 
-export type UserDisableNotificationCategoryInput = {
-  readonly category: UserNotificationCategory;
-  readonly channel: UserNotificationChannel;
-};
-
-export type UserDisableNotificationChannelInput = {
-  readonly channel: UserNotificationChannel;
-};
-
 export type UserEmailDeletePayload = {
   readonly __typename: 'UserEmailDeletePayload';
   readonly errors: ReadonlyArray<Error>;
@@ -1918,15 +1865,6 @@ export type UserEmailRegistrationValidatePayload = {
   readonly me?: Maybe<User>;
 };
 
-export type UserEnableNotificationCategoryInput = {
-  readonly category: UserNotificationCategory;
-  readonly channel: UserNotificationChannel;
-};
-
-export type UserEnableNotificationChannelInput = {
-  readonly channel: UserNotificationChannel;
-};
-
 export type UserLoginInput = {
   readonly code: Scalars['OneTimeAuthCode']['input'];
   readonly phone: Scalars['Phone']['input'];
@@ -1939,30 +1877,6 @@ export type UserLoginUpgradeInput = {
 
 export type UserLogoutInput = {
   readonly deviceToken: Scalars['String']['input'];
-};
-
-export const UserNotificationCategory = {
-  AdminNotification: 'ADMIN_NOTIFICATION',
-  Balance: 'BALANCE',
-  Circles: 'CIRCLES',
-  Payments: 'PAYMENTS'
-} as const;
-
-export type UserNotificationCategory = typeof UserNotificationCategory[keyof typeof UserNotificationCategory];
-export const UserNotificationChannel = {
-  Push: 'PUSH'
-} as const;
-
-export type UserNotificationChannel = typeof UserNotificationChannel[keyof typeof UserNotificationChannel];
-export type UserNotificationChannelSettings = {
-  readonly __typename: 'UserNotificationChannelSettings';
-  readonly disabledCategories: ReadonlyArray<UserNotificationCategory>;
-  readonly enabled: Scalars['Boolean']['output'];
-};
-
-export type UserNotificationSettings = {
-  readonly __typename: 'UserNotificationSettings';
-  readonly push: UserNotificationChannelSettings;
 };
 
 export type UserPhoneDeletePayload = {
@@ -2022,11 +1936,6 @@ export type UserUpdateLanguagePayload = {
   readonly __typename: 'UserUpdateLanguagePayload';
   readonly errors: ReadonlyArray<Error>;
   readonly user?: Maybe<User>;
-};
-
-export type UserUpdateNotificationSettingsPayload = {
-  readonly __typename: 'UserUpdateNotificationSettingsPayload';
-  readonly notificationSettings: UserNotificationSettings;
 };
 
 export type UserUpdateUsernameInput = {
