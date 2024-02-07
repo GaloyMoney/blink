@@ -16,8 +16,6 @@ struct Cli {
     pg_con: String,
     #[clap(env = "MONGODB_CON")]
     mongodb_connection: Option<String>,
-    #[clap(env = "NOVU_API_KEY")]
-    novu_api_key: Option<String>,
 }
 
 pub async fn run() -> anyhow::Result<()> {
@@ -28,7 +26,6 @@ pub async fn run() -> anyhow::Result<()> {
         EnvOverride {
             db_con: cli.pg_con,
             mongodb_connection: cli.mongodb_connection,
-            novu_api_key: cli.novu_api_key,
         },
     )?;
 
@@ -43,7 +40,7 @@ async fn run_cmd(config: Config) -> anyhow::Result<()> {
     let (send, mut receive) = tokio::sync::mpsc::channel(1);
     let mut handles = vec![];
     let pool = db::init_pool(&config.db).await?;
-    let app = crate::app::NotificationsApp::init(pool, config.app)?;
+    let app = crate::app::NotificationsApp::init(pool, config.app).await?;
     if config.mongo_import.execute_import && config.mongo_import.connection.is_some() {
         crate::data_import::import_user_notification_settings(app.clone(), config.mongo_import)
             .await?;

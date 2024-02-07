@@ -30,6 +30,13 @@ es_entity::entity_id! { UserNotificationSettingsId }
 
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct GaloyLocale(String);
+
+impl Default for GaloyLocale {
+    fn default() -> Self {
+        Self("en".to_string())
+    }
+}
+
 impl From<String> for GaloyLocale {
     fn from(s: String) -> Self {
         Self(s)
@@ -50,6 +57,11 @@ impl std::fmt::Display for GaloyLocale {
 
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize, Hash)]
 pub struct PushDeviceToken(String);
+impl PushDeviceToken {
+    pub fn into_inner(self) -> String {
+        self.0
+    }
+}
 impl From<String> for PushDeviceToken {
     fn from(s: String) -> Self {
         Self(s)

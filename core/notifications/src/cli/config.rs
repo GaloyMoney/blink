@@ -34,7 +34,6 @@ fn default_tracing_config() -> TracingConfig {
 pub struct EnvOverride {
     pub db_con: String,
     pub mongodb_connection: Option<String>,
-    pub novu_api_key: Option<String>,
 }
 
 impl Config {
@@ -43,7 +42,6 @@ impl Config {
         EnvOverride {
             db_con,
             mongodb_connection,
-            novu_api_key,
         }: EnvOverride,
     ) -> anyhow::Result<Self> {
         let mut config: Config = if let Some(path) = path {
@@ -56,9 +54,7 @@ impl Config {
         config.db.pg_con = db_con;
         config.mongo_import.connection = mongodb_connection;
 
-        if let Some(novu_api_key) = novu_api_key {
-            config.app.novu.api_key = novu_api_key;
-        }
+        config.app.executor.fcm.load_creds()?;
 
         Ok(config)
     }

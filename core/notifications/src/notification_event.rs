@@ -1,11 +1,8 @@
-use std::collections::HashMap;
+use crate::{messages::*, primitives::*};
 
-use crate::{executor::AllowedPayloadValues, primitives::*};
-
-pub trait NotificationEvent {
-    fn workflow_name() -> &'static str;
-    fn user_id(&self) -> &GaloyUserId;
-    fn into_payload(self) -> HashMap<String, AllowedPayloadValues>;
+pub enum DeepLink {
+    None,
+    Circles,
 }
 
 #[derive(Debug)]
@@ -16,28 +13,23 @@ pub struct CircleGrew {
     pub all_time_circle_size: u32,
 }
 
-impl NotificationEvent for CircleGrew {
-    fn workflow_name() -> &'static str {
-        "circle_grew"
-    }
+pub trait NotificationEventNew {
+    fn user_id(&self) -> &GaloyUserId;
+    fn deep_link(&self) -> DeepLink;
+    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage;
+}
 
+impl NotificationEventNew for CircleGrew {
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
     }
 
-    fn into_payload(self) -> HashMap<String, AllowedPayloadValues> {
-        [
-            (
-                "circle_type".to_string(),
-                AllowedPayloadValues::String(self.circle_type.to_string()),
-            ),
-            (
-                "this_month_circle_size".to_string(),
-                AllowedPayloadValues::Number(self.this_month_circle_size as i32),
-            ),
-        ]
-        .into_iter()
-        .collect()
+    fn deep_link(&self) -> DeepLink {
+        DeepLink::Circles
+    }
+
+    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
+        Messages::circle_grew(locale.as_ref(), self)
     }
 }
 
@@ -49,31 +41,16 @@ pub struct CircleThresholdReached {
     pub threshold: u32,
 }
 
-impl NotificationEvent for CircleThresholdReached {
-    fn workflow_name() -> &'static str {
-        "circle_threshold_reached"
-    }
-
+impl NotificationEventNew for CircleThresholdReached {
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
     }
 
-    fn into_payload(self) -> HashMap<String, AllowedPayloadValues> {
-        [
-            (
-                "threshold".to_string(),
-                AllowedPayloadValues::Number(self.threshold as i32),
-            ),
-            (
-                "circle_type".to_string(),
-                AllowedPayloadValues::String(self.circle_type.to_string()),
-            ),
-            (
-                "time_frame".to_string(),
-                AllowedPayloadValues::String(self.time_frame.to_string()),
-            ),
-        ]
-        .into_iter()
-        .collect()
+    fn deep_link(&self) -> DeepLink {
+        DeepLink::Circles
+    }
+
+    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
+        Messages::circle_threshold_reached(locale.as_ref(), self)
     }
 }
