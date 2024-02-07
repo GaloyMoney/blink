@@ -1,10 +1,6 @@
 mod config;
 pub mod error;
 
-use std::collections::HashMap;
-
-pub use config::*;
-
 use google_fcm1::{
     api::{Message, Notification, SendMessageRequest},
     hyper::{client::HttpConnector, Client},
@@ -13,6 +9,9 @@ use google_fcm1::{
     FirebaseCloudMessaging,
 };
 
+use std::collections::HashMap;
+
+pub use config::*;
 use error::*;
 
 pub struct NotificationPayload {
