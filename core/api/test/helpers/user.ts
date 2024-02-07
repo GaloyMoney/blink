@@ -7,7 +7,6 @@ import { getAdminAccounts, getDefaultAccountsConfig } from "@/config"
 
 import { CouldNotFindAccountFromKratosIdError, CouldNotFindError } from "@/domain/errors"
 import { WalletCurrency } from "@/domain/shared"
-import { WalletType } from "@/domain/wallets"
 
 import {
   AccountsRepository,
@@ -15,7 +14,6 @@ import {
   WalletsRepository,
 } from "@/services/mongoose"
 import { AccountsIpsRepository } from "@/services/mongoose/accounts-ips"
-import { Account } from "@/services/mongoose/schema"
 
 import { baseLogger } from "@/services/logger"
 
@@ -39,62 +37,9 @@ export const getUserIdByPhone = async (phone: PhoneNumber) => {
   return user.id
 }
 
-export const getAccountIdByPhone = async (phone: PhoneNumber) => {
-  const account = await getAccountByPhone(phone)
-  return account.id
-}
-
 export const getDefaultWalletIdByPhone = async (ref: PhoneNumber) => {
   const account = await getAccountByPhone(ref)
   return account.defaultWalletId
-}
-
-export const getBtcWalletDescriptorByPhone = async (
-  ref: PhoneNumber,
-): Promise<WalletDescriptor<"BTC">> => {
-  const account = await getAccountByPhone(ref)
-
-  const wallets = await WalletsRepository().listByAccountId(account.id)
-  if (wallets instanceof Error) throw wallets
-
-  const wallet = wallets.find((w) => w.currency === WalletCurrency.Btc)
-  if (wallet === undefined) throw Error("no BTC wallet")
-
-  return { id: wallet.id, currency: WalletCurrency.Btc, accountId: wallet.accountId }
-}
-
-export const getUsdWalletDescriptorByPhone = async (
-  ref: PhoneNumber,
-): Promise<WalletDescriptor<"USD">> => {
-  const account = await getAccountByPhone(ref)
-
-  const wallets = await WalletsRepository().listByAccountId(account.id)
-  if (wallets instanceof Error) throw wallets
-
-  const wallet = wallets.find((w) => w.currency === WalletCurrency.Usd)
-  if (wallet === undefined) throw Error("no USD wallet")
-
-  return { id: wallet.id, currency: WalletCurrency.Usd, accountId: wallet.accountId }
-}
-
-export const getUsdWalletIdByPhone = async (phone: PhoneNumber) => {
-  const account = await getAccountByPhone(phone)
-
-  const walletsRepo = WalletsRepository()
-  const wallets = await walletsRepo.listByAccountId(account.id)
-  if (wallets instanceof Error) throw wallets
-
-  const wallet = wallets.find((w) => w.currency === WalletCurrency.Usd)
-  if (wallet === undefined) throw Error("no USD wallet")
-  return wallet.id
-}
-
-export const getAccountRecordByPhone = async (phone: PhoneNumber) => {
-  const user = await UsersRepository().findByPhone(phone)
-  if (user instanceof Error) throw user
-  const accountRecord = await Account.findOne({ kratosUserId: user.id })
-  if (!accountRecord) throw Error("missing account")
-  return accountRecord
 }
 
 export const createMandatoryUsers = async () => {
@@ -256,23 +201,6 @@ export const createUserAndWallet = async (
     id: account.defaultWalletId,
     currency: wallet.currency,
   }
-}
-
-export const addNewWallet = async ({
-  accountId,
-  currency,
-}: {
-  accountId: AccountId
-  currency: WalletCurrency
-}): Promise<Wallet> => {
-  const wallet = await WalletsRepository().persistNew({
-    accountId,
-    type: WalletType.Checking,
-    currency,
-  })
-  if (wallet instanceof Error) throw wallet
-
-  return wallet
 }
 
 export const fundWallet = async ({

@@ -5,10 +5,7 @@ import {
   closeChannel,
   createChainAddress,
   getChainBalance,
-  getChannelBalance,
   getChannels,
-  getInvoice,
-  getNetworkGraph,
   getWalletInfo,
   openChannel,
   pay,
@@ -17,8 +14,6 @@ import {
   subscribeToGraph,
   updateRoutingFees,
 } from "lightning"
-
-import { parsePaymentRequest } from "invoices"
 
 import {
   bitcoindClient,
@@ -42,42 +37,6 @@ export const lnd1 = offchainLnds[0].lnd
 export const lnd2 = offchainLnds[1].lnd
 export const lndonchain = onchainLnds[0].lnd
 
-export const getHash = (request: EncodedPaymentRequest) => {
-  return parsePaymentRequest({ request }).id as PaymentHash
-}
-
-export const getAmount = (request: EncodedPaymentRequest) => {
-  return parsePaymentRequest({ request }).tokens as Satoshis
-}
-
-export const getPubKey = (request: EncodedPaymentRequest) => {
-  return parsePaymentRequest({ request }).destination as Pubkey
-}
-
-export const getInvoiceAttempt = async ({
-  lnd,
-  id,
-}: {
-  lnd: AuthenticatedLnd
-  id: string
-}) => {
-  try {
-    const result = await getInvoice({ lnd, id })
-    return result
-  } catch (err) {
-    const invoiceNotFound = "unable to locate invoice"
-    if (
-      Array.isArray(err) &&
-      err.length === 3 &&
-      err[2]?.err?.details === invoiceNotFound
-    ) {
-      return null
-    }
-    // must be wrapped error?
-    throw err
-  }
-}
-
 // TODO: this could be refactored with lndAuth
 export const lndOutside1 = authenticatedLndGrpc({
   cert: process.env.TLSOUTSIDE1,
@@ -93,7 +52,6 @@ export const lndOutside2 = authenticatedLndGrpc({
 
 export const lndsIntegration = [lnd1, lndOutside1, lndOutside2]
 export const lndsLegacyIntegration = [lnd1, lnd2, lndOutside1, lndOutside2]
-export const lndsE2e = [lnd1, lnd2, lndOutside1, lndOutside2]
 
 export const waitUntilBlockHeight = async ({
   lnd,
@@ -302,7 +260,6 @@ const resetLnds = async (lnds: AuthenticatedLnd[]) => {
 
 export const resetIntegrationLnds = () => resetLnds(lndsIntegration)
 export const resetLegacyIntegrationLnds = () => resetLnds(lndsLegacyIntegration)
-export const resetE2eLnds = () => resetLnds(lndsE2e)
 
 export const closeAllChannels = async ({ lnd }: { lnd: AuthenticatedLnd }) => {
   let channels
@@ -391,14 +348,6 @@ export const mineBlockAndSync = async ({
   await Promise.all(promiseArray)
 }
 
-export const mineBlockAndSyncAll = (newBlock = 6) =>
-  mineBlockAndSync({ lnds: lndsIntegration, newBlock })
-export const mineBlockAndSyncAllE2e = (newBlock = 6) =>
-  mineBlockAndSync({ lnds: lndsE2e, newBlock })
-
-export const waitUntilSyncAll = () => waitUntilSync({ lnds: lndsIntegration })
-export const waitUntilSyncAllE2e = () => waitUntilSync({ lnds: lndsE2e })
-
 export const waitUntilSync = async ({ lnds }: { lnds: Array<AuthenticatedLnd> }) => {
   const promiseArray: Array<Promise<void>> = []
   for (const lnd of lnds) {
@@ -406,50 +355,6 @@ export const waitUntilSync = async ({ lnds }: { lnds: Array<AuthenticatedLnd> })
     promiseArray.push(waitUntilBlockHeight({ lnd }))
   }
   await Promise.all(promiseArray)
-}
-
-const waitUntilChannelBalanceSyncAll = async (lnds: AuthenticatedLnd[]) => {
-  const promiseArray: Array<Promise<void>> = []
-  for (const lnd of lnds) {
-    /* eslint @typescript-eslint/ban-ts-comment: "off" */
-    // @ts-ignore-next-line no-implicit-any error
-    promiseArray.push(waitUntilChannelBalanceSync({ lnd }))
-  }
-  await Promise.all(promiseArray)
-}
-export const waitUntilChannelBalanceSyncIntegration = () =>
-  waitUntilChannelBalanceSyncAll(lndsIntegration)
-
-export const waitUntilChannelBalanceSyncE2e = () =>
-  waitUntilChannelBalanceSyncAll(lndsE2e)
-
-// @ts-ignore-next-line no-implicit-any error
-export const waitUntilChannelBalanceSync = ({ lnd }) =>
-  waitFor(async () => {
-    const { unsettled_balance } = await getChannelBalance({ lnd })
-    return unsettled_balance === 0
-  })
-
-export const waitUntilGraphIsReady = async ({
-  lnd,
-  numNodes = 4,
-}: {
-  lnd: AuthenticatedLnd
-  numNodes: number
-}) => {
-  await waitFor(async () => {
-    const graph = await getNetworkGraph({ lnd })
-    if (graph.nodes.length < numNodes) {
-      baseLogger.warn({ nodeLength: graph.nodes.length }, "missing nodes in graph")
-      return false
-    }
-    if (graph.nodes.every((node) => node.updated_at === "")) {
-      const nodesUpdated = graph.nodes.filter((node) => node.updated_at === "").length
-      baseLogger.warn({ nodesUpdated }, "graph metadata not ready")
-      return false
-    }
-    return true
-  })
 }
 
 // @ts-ignore-next-line no-implicit-any error
@@ -460,14 +365,5 @@ export const safePay = async (args) => {
   } catch (err) {
     // If we get here, error
     expect(err).toBeUndefined()
-  }
-}
-
-// @ts-ignore-next-line no-implicit-any error
-export const safePayNoExpect = async (args) => {
-  try {
-    return await pay(args) // 'await' is explicitly needed here
-  } catch (err) {
-    return err
   }
 }

@@ -24,21 +24,39 @@ type IdentityPhone = IdentityBase & {
   phone: PhoneNumber
   email: undefined
   emailVerified: undefined
+
+  username?: undefined
 }
 
 type IdentityEmail = IdentityBase & {
   phone: undefined
   email: EmailAddress
   emailVerified: boolean
+
+  username?: undefined
 }
 
 type IdentityPhoneEmail = IdentityBase & {
   phone: PhoneNumber
   email: EmailAddress
   emailVerified: boolean
+
+  username?: undefined
 }
 
-type AnyIdentity = IdentityPhone | IdentityEmail | IdentityPhoneEmail
+type IdentityDeviceAccount = IdentityBase & {
+  username: IdentityUsername
+
+  phone?: undefined
+  email?: undefined
+  emailVerified?: undefined
+}
+
+type AnyIdentity =
+  | IdentityPhone
+  | IdentityEmail
+  | IdentityPhoneEmail
+  | IdentityDeviceAccount
 
 type Session = {
   identity: AnyIdentity
