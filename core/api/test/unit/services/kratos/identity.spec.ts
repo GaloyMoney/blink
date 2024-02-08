@@ -1,7 +1,7 @@
 import { getNextPageToken } from "@/services/kratos"
 
 describe("decoding link header", () => {
-  const token = "h9LfEKUiFoLH2R0A"
+  const token = "h9LfEKUiDoLH2R0A"
   const withNext = `</admin/clients?page_size=5&page_token=euKoY1BqY3J8GVax>; rel="first",</admin/clients?page_size=5&page_token=${token}>; rel="next"`
 
   const withoutNext =
