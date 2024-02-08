@@ -21,7 +21,7 @@ impl DeepLink {
         match self {
             DeepLink::None => {}
             DeepLink::Circles => {
-                data.insert("linkTo".to_string(), "people/circles".to_string());
+                data.insert("linkTo".to_string(), "/people/circles".to_string());
             }
         }
     }
