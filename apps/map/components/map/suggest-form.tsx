@@ -37,13 +37,17 @@ export function SuggestMapFormSheet({ latitude, longitude }: formProps) {
   const handleOpen = () => {
     state.error = false
     state.message = ""
+    setCoordinates({
+      latitude,
+      longitude,
+    })
     setIsOpen(true)
   }
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <button className="bg-orange-500 p-1 text-white rounded-md" onClick={handleOpen}>
+        <button className="bg-orange-500 p-1 pr-2 pl-2 text-white rounded-full" onClick={handleOpen}>
           Confirm
         </button>
       </SheetTrigger>
@@ -82,7 +86,7 @@ export function SuggestMapFormSheet({ latitude, longitude }: formProps) {
                 name="latitude"
                 type="number"
                 onChange={(e) => {
-                  setCoordinates({ ...coordinates, latitude: parseFloat(e.target.value) })
+                  setCoordinates({ ...coordinates, latitude: Number(e.target.value) })
                 }}
               />
               <InputComponent
@@ -96,16 +100,16 @@ export function SuggestMapFormSheet({ latitude, longitude }: formProps) {
                 onChange={(e) => {
                   setCoordinates({
                     ...coordinates,
-                    longitude: parseFloat(e.target.value),
+                    longitude: Number(e.target.value),
                   })
                 }}
               />
               {state.error && <span className="text-red-600">{state.message}</span>}
               <button
-                className="mt-2 bg-orange-500 p-2 text-white rounded-lg"
+                className="mt-2 bg-orange-500 p-2 text-white rounded-full"
                 type="submit"
               >
-                Suggest
+                Submit Request
               </button>
             </form>
           </>

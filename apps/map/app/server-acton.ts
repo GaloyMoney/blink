@@ -1,6 +1,7 @@
 "use server"
 
 import { merchantMapSuggest } from "@/services/galoy/graphql/mutation/merchant-map-suggest"
+import { isValidCoordinates } from "./utils"
 
 export const submitMerchantSuggest = async (
   _prevState: {
@@ -32,10 +33,15 @@ export const submitMerchantSuggest = async (
     }
   }
 
-  const lat = parseFloat(latitude)
-  const lon = parseFloat(longitude)
+  const lat = Number(latitude)
+  const lon = Number(longitude)
 
-  if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+  if (
+    isValidCoordinates({
+      latitude: lat,
+      longitude: lon,
+    })
+  ) {
     return {
       error: true,
       message: "Invalid coordinates",

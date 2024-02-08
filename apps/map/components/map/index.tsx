@@ -198,28 +198,20 @@ export default function MapComponent({ mapData }: MapComponentProps) {
       )}
 
       {draggablePin.visible && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 bg-white text-black p-2 rounded-md flex justify-center gap-8">
-          <button style={{ display: draggablePin.visible ? "block" : "none" }}>
-            <SuggestMapFormSheet
-              latitude={draggablePin.coordinates.lat}
-              longitude={draggablePin.coordinates.lng}
-            />
-          </button>
-          <button
-            onClick={cancelDraggablePin}
-            style={{ display: draggablePin.visible ? "block" : "none" }}
-          >
-            Cancel
-          </button>
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 bg-white text-black p-1 rounded-full flex justify-center text-sm gap-4 pr-3 pl-1">
+          <SuggestMapFormSheet
+            latitude={draggablePin.coordinates.lat}
+            longitude={draggablePin.coordinates.lng}
+          />
+          <button onClick={cancelDraggablePin}>Cancel</button>
         </div>
       )}
       {!draggablePin.visible && (
         <button
-          className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 bg-white text-black p-2 rounded-md"
+          className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 bg-white text-black p-2 pr-3 pl-3 rounded-full text-sm"
           onClick={addDraggablePin}
-          style={{ display: draggablePin.visible ? "none" : "block" }}
         >
-          Add Business Location
+          Add New Location
         </button>
       )}
       {currentLocation.userAllowedLocation && (
@@ -239,7 +231,7 @@ export default function MapComponent({ mapData }: MapComponentProps) {
         mapTypeId={google.maps.MapTypeId.ROADMAP}
         mapContainerStyle={{ width: "100vw", height: "100vh" }}
       >
-        {mapData.map((marker) => (
+        {mapData.map((marker, index) => (
           <MarkerF
             icon={{
               path: "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z",
@@ -249,7 +241,7 @@ export default function MapComponent({ mapData }: MapComponentProps) {
               strokeColor: "gold",
               scale: 0.8,
             }}
-            key={marker.username}
+            key={index}
             position={{
               lat: marker.mapInfo.coordinates.latitude,
               lng: marker.mapInfo.coordinates.longitude,
