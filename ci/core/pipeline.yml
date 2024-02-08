@@ -279,31 +279,32 @@ jobs:
             - name: repo
           run:
             path: pipeline-tasks/ci/core/tasks/prep-quickstart.sh
+       #@ name = "test-quickstart"
+       #@ component = "api"
+       #@ cmd = "./dev/bin/test-quickstart.sh"
+       #@ params = {}
+       #@ params["REPO_PATH"] = data.values.gh_repository + "-" + name
+       #@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
+       #@ params["SSH_PRIVATE_KEY"] = "((staging-ssh.ssh_private_key))"
+       #@ params["SSH_PUB_KEY"] = "((staging-ssh.ssh_public_key))"
+       #@ params["JEST_TIMEOUT"] = 90000
+       #@ params["CMD"] = cmd
       - { put: nix-host, params: { acquire: true } }
-      - task: test-on-nix-host
+      - task: #@ name
         attempts: 2
         timeout: 18m
         tags: ["galoy-staging"]
         config:
           platform: linux
-          image_resource: #@ release_task_image_config()
+          image_resource: #@ task_image_config()
           inputs:
-            - name: pipeline-tasks
-            - name: nix-host
-              path: docker-host
-            - name: repo
-              path: galoy-quickstart
-          caches:
-            - path: cargo-home
-            - path: cargo-target-dir
-          params:
-            REPO_PATH: galoy-quickstart/quickstart
-            GOOGLE_CREDENTIALS: ((staging-gcp-creds.creds_json))
-            SSH_PRIVATE_KEY: ((staging-ssh.ssh_private_key))
-            SSH_PUB_KEY: ((staging-ssh.ssh_public_key))
-            TEST_CONTAINER: quickstart-test
+          - name: pipeline-tasks
+          - name: nix-host
+          - name: #@ component_src_resource_name(component)
+            path: #@ data.values.gh_repository + "-" + name
+          params: #@ params
           run:
-            path: pipeline-tasks/ci/vendor/tasks/test-on-docker-host.sh
+            path: pipeline-tasks/ci/core/tasks/run-on-nix-host.sh
         ensure:
           put: nix-host
           params:
