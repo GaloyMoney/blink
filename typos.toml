@@ -8,8 +8,8 @@ files.extend-exclude = [
   "quickstart/galoy",
   "quickstart/dev",
   "prelude",
-  "core/api/test/e2e/servers/kratos.spec.ts",
-  "core/notifications/locales/*.yml"
+  "core/api/test/unit/services/kratos/identity.spec.ts",
+  "core/notifications/locales/*.yml",
 ]
 
 default.extend-ignore-identifiers-re = [
