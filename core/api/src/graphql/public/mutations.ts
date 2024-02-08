@@ -78,6 +78,8 @@ export const mutationFields = {
       LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientMutation,
     lnNoAmountInvoiceCreateOnBehalfOfRecipient:
       LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation,
+
+    merchantMapSuggest: MerchantMapSuggest,
   },
 
   authed: {
@@ -113,9 +115,6 @@ export const mutationFields = {
 
       callbackEndpointAdd: CallbackEndpointAdd,
       callbackEndpointDelete: CallbackEndpointDelete,
-
-      // behind authed to prevent DDOS. not strictly necessary
-      merchantMapSuggest: MerchantMapSuggest,
     },
 
     atWalletLevel: {
