@@ -57,6 +57,10 @@ export default async function Home() {
           </Typography>
           <ApiKeyCreate />
         </Box>
+        <Typography fontSize={17}>
+          Our team will never ask for the API keys. Anyone with access to the key with
+          write access will have full control of the funds on the wallet.
+        </Typography>
         <Box
           sx={{
             display: { xs: "none", md: "flex" },
