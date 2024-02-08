@@ -8,6 +8,7 @@ use google_fcm1::{
     oauth2::{self, ServiceAccountKey},
     FirebaseCloudMessaging,
 };
+use tracing::instrument;
 
 use std::collections::{HashMap, HashSet};
 
@@ -60,6 +61,7 @@ impl FcmClient {
         })
     }
 
+    #[instrument(name = "fcm_client.send", skip(self, device_tokens), err)]
     pub async fn send(
         &self,
         device_tokens: HashSet<PushDeviceToken>,

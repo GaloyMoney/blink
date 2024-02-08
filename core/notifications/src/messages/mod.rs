@@ -2,6 +2,7 @@ use rust_i18n::t;
 
 use crate::{notification_event::*, primitives::*};
 
+#[derive(Debug)]
 pub struct LocalizedMessage {
     pub title: String,
     pub body: String,

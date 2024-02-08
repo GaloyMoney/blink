@@ -2,12 +2,13 @@ mod config;
 pub mod error;
 mod fcm;
 
-use fcm::FcmClient;
+use tracing::instrument;
 
 use crate::{notification_event::*, primitives::*, user_notification_settings::*};
 
 pub use config::*;
 use error::*;
+use fcm::FcmClient;
 
 #[derive(Clone)]
 pub struct Executor {
@@ -28,6 +29,7 @@ impl Executor {
         })
     }
 
+    #[instrument(name = "executor.notify", skip(self, event), err)]
     pub async fn notify<T: NotificationEventNew>(&self, event: T) -> Result<(), ExecutorError> {
         let settings = self.settings.find_for_user_id(event.user_id()).await?;
         if !settings.should_send_notification(

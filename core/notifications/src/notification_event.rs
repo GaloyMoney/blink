@@ -1,5 +1,6 @@
 use crate::{messages::*, primitives::*};
 
+#[derive(Debug)]
 pub enum DeepLink {
     None,
     Circles,
