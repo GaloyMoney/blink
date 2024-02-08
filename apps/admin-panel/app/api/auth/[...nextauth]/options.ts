@@ -1,5 +1,6 @@
 import GoogleProvider from "next-auth/providers/google"
 import GitHubProvider from "next-auth/providers/github"
+import CredentialsProvider from "next-auth/providers/credentials"
 import type { Provider } from "next-auth/providers"
 
 import { CallbacksOptions } from "next-auth"
@@ -24,8 +25,30 @@ const providers: Provider[] = [
   }),
 ]
 
+if (env.NODE_ENV === "development") {
+  providers.push(
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        username: { label: "Username", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+      authorize: async (credentials) => {
+        if (credentials?.username === "admin" && credentials?.password === "admin") {
+          return { id: "1", name: "admin", email: "test@galoy.io" }
+        }
+        return null
+      },
+    }),
+  )
+}
+
 const callbacks: Partial<CallbacksOptions> = {
-  async signIn({ account, profile }) {
+  async signIn({ account, profile, user }) {
+    if (account?.provider === "credentials" && env.NODE_ENV === "development") {
+      return !!user
+    }
+
     if (!account || !profile) {
       return false
     }
