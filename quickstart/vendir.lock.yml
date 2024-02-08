@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: make merchant map suggest publicly accessible for now (#3953)...'
-      sha: 3f5273493e90104421ec5cc952d0a64c1a347a9a
+      commitTitle: 'ci: add test-quickstart task'
+      sha: a921d49bda722074061ce656ff9a53c8e4ab9616
       tags:
-      - 0.20.48-3-g3f5273493
+      - 0.20.50
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: make merchant map suggest publicly accessible for now (#3953)...'
-      sha: 3f5273493e90104421ec5cc952d0a64c1a347a9a
+      commitTitle: 'ci: add test-quickstart task'
+      sha: a921d49bda722074061ce656ff9a53c8e4ab9616
       tags:
-      - 0.20.48-3-g3f5273493
+      - 0.20.50
     path: schemas/
   - git:
-      commitTitle: 'chore: make merchant map suggest publicly accessible for now (#3953)...'
-      sha: 3f5273493e90104421ec5cc952d0a64c1a347a9a
+      commitTitle: 'ci: add test-quickstart task'
+      sha: a921d49bda722074061ce656ff9a53c8e4ab9616
       tags:
-      - 0.20.48-3-g3f5273493
+      - 0.20.50
     path: gql/
   path: ./graphql
 kind: LockConfig
