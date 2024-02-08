@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): move kratos e2e tests and delete e2e dir (#3943)...'
-      sha: 5cabf6b89deaee681856fd0633b7122287df4038
+      commitTitle: 'chore: make merchant map suggest publicly accessible for now (#3953)...'
+      sha: 3f5273493e90104421ec5cc952d0a64c1a347a9a
       tags:
-      - 0.20.47-1-g5cabf6b89
+      - 0.20.48-3-g3f5273493
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): move kratos e2e tests and delete e2e dir (#3943)...'
-      sha: 5cabf6b89deaee681856fd0633b7122287df4038
+      commitTitle: 'chore: make merchant map suggest publicly accessible for now (#3953)...'
+      sha: 3f5273493e90104421ec5cc952d0a64c1a347a9a
       tags:
-      - 0.20.48
+      - 0.20.48-3-g3f5273493
     path: schemas/
   - git:
-      commitTitle: 'chore(core): move kratos e2e tests and delete e2e dir (#3943)...'
-      sha: 5cabf6b89deaee681856fd0633b7122287df4038
+      commitTitle: 'chore: make merchant map suggest publicly accessible for now (#3953)...'
+      sha: 3f5273493e90104421ec5cc952d0a64c1a347a9a
       tags:
-      - 0.20.48
+      - 0.20.48-3-g3f5273493
     path: gql/
   path: ./graphql
 kind: LockConfig
