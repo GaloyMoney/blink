@@ -163,4 +163,13 @@ impl NotificationsApp {
         self.executor.notify(event).await?;
         Ok(())
     }
+
+    #[instrument(name = "app.handle_documents_submitted", skip(self), err)]
+    pub async fn handle_documents_submitted(
+        &self,
+        event: DocumentsSubmitted,
+    ) -> Result<(), ApplicationError> {
+        self.executor.notify(event).await?;
+        Ok(())
+    }
 }

@@ -55,6 +55,12 @@ impl Messages {
         .to_string();
         LocalizedMessage { title, body }
     }
+
+    pub fn documents_submitted(locale: &str, _event: &DocumentsSubmitted) -> LocalizedMessage {
+        let title = t!("documents_submitted.title", locale = locale).to_string();
+        let body = t!("documents_submitted.body", locale = locale).to_string();
+        LocalizedMessage { title, body }
+    }
 }
 
 #[cfg(test)]
