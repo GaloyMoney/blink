@@ -73,7 +73,7 @@ export default function MapComponent({ mapData }: MapComponentProps) {
   }, [])
 
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: env.NEXT_PUBLIC_MAP_API_TOKEN,
+    googleMapsApiKey: env.NEXT_PUBLIC_MAP_API_KEY,
     libraries: libraries as any,
   })
 
