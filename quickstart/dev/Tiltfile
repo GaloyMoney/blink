@@ -7,13 +7,15 @@ CONSENT_TEST_LABEL = "consent"
 DASHBOARD_TEST_LABEL = "dashboard"
 PAY_TEST_LABEL = "pay"
 ADMIN_PANEL_TEST_LABEL = "admin-panel"
+MAP_TEST_LABEL = "map"
 
 TEST_RESOURCES = {
    CORE_TEST_LABEL: "test-api",
    CONSENT_TEST_LABEL: "test-consent",
    DASHBOARD_TEST_LABEL: "test-dashboard",
    PAY_TEST_LABEL: "test-pay",
-   ADMIN_PANEL_TEST_LABEL: "test-admin-panel"
+   ADMIN_PANEL_TEST_LABEL: "test-admin-panel",
+   MAP_TEST_LABEL: "test-map"
 }
 
 is_ci=("ci" in sys.argv) or cfg.get("bats", False)
@@ -126,6 +128,31 @@ local_resource(
     ],
 )
 
+map_target = "//apps/map:dev"
+if is_ci:
+  map_target = '//apps/map:map'
+map_env = {
+    "PORT": "3005",
+    "CORE_URL" : "http://localhost:4455/graphql",
+}
+local_resource(
+    "map",
+    labels = ["apps"],
+    cmd = "buck2 build {}".format(map_target),
+    serve_cmd = "buck2 run {}".format(map_target),
+    env = map_env,
+    serve_env = map_env,
+    deps = _buck2_dep_inputs(map_target),
+    allow_parallel = True,
+    resource_deps = [
+        "api",
+        "apollo-router",
+    ],
+    links = [
+        link("http://localhost:3005", "map"),
+    ],
+)
+
 local_resource(
   name='hydra-dashboard',
   labels = ['apps'],
@@ -193,6 +220,17 @@ local_resource(
   cmd = "buck2 test {}".format(admin_panel_test_target),
   resource_deps = [
     "admin-panel",
+  ],
+)
+
+map_test_target = "//apps/map:test-integration"
+local_resource(
+  "test-map",
+  labels = ["test"],
+  auto_init = is_ci and MAP_TEST_LABEL in cfg.get("test", []),
+  cmd = "buck2 test {}".format(map_test_target),
+  resource_deps = [
+    "map",
   ],
 )
 

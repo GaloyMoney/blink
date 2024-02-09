@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: add test-quickstart task'
-      sha: a921d49bda722074061ce656ff9a53c8e4ab9616
+      commitTitle: 'feat(map): initialising map (#3938)...'
+      sha: 3b0135e3ee8ba715bfe5dabe3ebdcdb8b0681f2b
       tags:
-      - 0.20.50
+      - 0.20.50-2-g3b0135e3e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: add test-quickstart task'
-      sha: a921d49bda722074061ce656ff9a53c8e4ab9616
+      commitTitle: 'feat(map): initialising map (#3938)...'
+      sha: 3b0135e3ee8ba715bfe5dabe3ebdcdb8b0681f2b
       tags:
-      - 0.20.50
+      - 0.20.50-2-g3b0135e3e
     path: schemas/
   - git:
-      commitTitle: 'ci: add test-quickstart task'
-      sha: a921d49bda722074061ce656ff9a53c8e4ab9616
+      commitTitle: 'feat(map): initialising map (#3938)...'
+      sha: 3b0135e3ee8ba715bfe5dabe3ebdcdb8b0681f2b
       tags:
-      - 0.20.50
+      - 0.20.50-2-g3b0135e3e
     path: gql/
   path: ./graphql
 kind: LockConfig
