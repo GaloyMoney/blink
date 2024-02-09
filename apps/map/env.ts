@@ -6,10 +6,10 @@ export const env = createEnv({
     CORE_URL: z.string().default("http://localhost:4455/graphql"),
   },
   client: {
-    NEXT_PUBLIC_MAP_API_TOKEN: z.string().default(""),
+    NEXT_PUBLIC_MAP_API_KEY: z.string().default(""),
   },
   runtimeEnv: {
     CORE_URL: process.env.CORE_URL,
-    NEXT_PUBLIC_MAP_API_TOKEN: process.env.NEXT_PUBLIC_MAP_API_TOKEN,
+    NEXT_PUBLIC_MAP_API_KEY: process.env.NEXT_PUBLIC_MAP_API_KEY,
   },
 })
