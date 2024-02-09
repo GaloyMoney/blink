@@ -212,7 +212,7 @@ local_resource(
         period_secs  = 5,
         http_get = http_get_action(
             path = "healthz",
-            port = 4012,
+            port = 8888,
         ),
     ),
     deps = _buck2_dep_inputs(api_trigger_target),
@@ -241,7 +241,7 @@ local_resource(
         period_secs  = 5,
         http_get = http_get_action(
             path = "healthz",
-            port = 4012,
+            port = 3003,
         ),
     ),
     deps = _buck2_dep_inputs(api_exporter_target),
