@@ -29,20 +29,13 @@ describe("Batch payments test", () => {
     cy.loginAndGetToken(testData.PHONE, testData.CODE).then((token) => {
       const authToken = token
       cy.getTransactions(authToken, 4).then((transactions) => {
-        const btcTransactions = transactions.filter(
-          (transaction) => transaction.settlementCurrency === "BTC",
-        )
-
         btcWalletExpectedTransactions.forEach((expectedBtcTransaction) => {
-          const found = btcTransactions.some(
+          const found = transactions.some(
             (transaction) =>
-              transaction.settlementCurrency ===
-                expectedBtcTransaction.settlementCurrency &&
+              transaction.settlementCurrency === expectedBtcTransaction.settlementCurrency &&
               transaction.status === expectedBtcTransaction.status &&
-              (expectedBtcTransaction.settlementDisplayAmount
-                ? transaction.settlementDisplayAmount ===
-                  expectedBtcTransaction.settlementDisplayAmount
-                : true),
+              (expectedBtcTransaction.settlementDisplayAmount === undefined || transaction.settlementDisplayAmount === expectedBtcTransaction.settlementDisplayAmount) &&
+              (expectedBtcTransaction.settlementAmount === undefined || transaction.settlementAmount === expectedBtcTransaction.settlementAmount)
           )
           expect(found).to.be.true
         })
