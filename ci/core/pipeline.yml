@@ -279,9 +279,9 @@ jobs:
             - name: repo
           run:
             path: pipeline-tasks/ci/core/tasks/prep-quickstart.sh
-       #@ name = "test-quickstart"
+       #@ name = "check-quickstart"
        #@ component = "api"
-       #@ cmd = "./dev/bin/test-quickstart.sh"
+       #@ cmd = "./dev/bin/check-quickstart.sh"
        #@ params = {}
        #@ params["REPO_PATH"] = data.values.gh_repository + "-" + name
        #@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
