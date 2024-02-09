@@ -251,7 +251,7 @@ impl NotificationsService for Notifications {
                     .map(primitives::CircleType::from)
                     .map_err(|e| Status::invalid_argument(e.to_string()))?;
                 self.app
-                    .handle_circle_grew(notification_event::CircleGrew {
+                    .handle_notification_event(notification_event::CircleGrew {
                         user_id: GaloyUserId::from(user_id),
                         circle_type,
                         this_month_circle_size,
@@ -277,7 +277,7 @@ impl NotificationsService for Notifications {
                     .map(primitives::CircleTimeFrame::from)
                     .map_err(|e| Status::invalid_argument(e.to_string()))?;
                 self.app
-                    .handle_threshold_reached(notification_event::CircleThresholdReached {
+                    .handle_notification_event(notification_event::CircleThresholdReached {
                         user_id: GaloyUserId::from(user_id),
                         circle_type,
                         time_frame,
@@ -292,7 +292,7 @@ impl NotificationsService for Notifications {
                     )),
             }) => {
                 self.app
-                    .handle_documents_submitted(notification_event::DocumentsSubmitted {
+                    .handle_notification_event(notification_event::DocumentsSubmitted {
                         user_id: GaloyUserId::from(user_id),
                     })
                     .await?
@@ -304,7 +304,7 @@ impl NotificationsService for Notifications {
                     })),
             }) => {
                 self.app
-                    .handle_documents_approved(notification_event::DocumentsApproved {
+                    .handle_notification_event(notification_event::DocumentsApproved {
                         user_id: GaloyUserId::from(user_id),
                     })
                     .await?
@@ -316,7 +316,7 @@ impl NotificationsService for Notifications {
                     })),
             }) => {
                 self.app
-                    .handle_documents_rejected(notification_event::DocumentsRejected {
+                    .handle_notification_event(notification_event::DocumentsRejected {
                         user_id: GaloyUserId::from(user_id),
                     })
                     .await?
@@ -328,7 +328,7 @@ impl NotificationsService for Notifications {
                     )),
             }) => {
                 self.app
-                    .handle_documents_review_pending(notification_event::DocumentsReviewPending {
+                    .handle_notification_event(notification_event::DocumentsReviewPending {
                         user_id: GaloyUserId::from(user_id),
                     })
                     .await?

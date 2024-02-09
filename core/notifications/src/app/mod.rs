@@ -149,52 +149,10 @@ impl NotificationsApp {
         Ok(user_settings)
     }
 
-    #[instrument(name = "app.handle_circle_grew", skip(self), err)]
-    pub async fn handle_circle_grew(&self, event: CircleGrew) -> Result<(), ApplicationError> {
-        self.executor.notify(event).await?;
-        Ok(())
-    }
-
-    #[instrument(name = "app.handle_threshold_reached", skip(self), err)]
-    pub async fn handle_threshold_reached(
+    #[instrument(name = "app.handle_notification_event", skip(self), err)]
+    pub async fn handle_notification_event<T: NotificationEvent>(
         &self,
-        event: CircleThresholdReached,
-    ) -> Result<(), ApplicationError> {
-        self.executor.notify(event).await?;
-        Ok(())
-    }
-
-    #[instrument(name = "app.handle_documents_submitted", skip(self), err)]
-    pub async fn handle_documents_submitted(
-        &self,
-        event: DocumentsSubmitted,
-    ) -> Result<(), ApplicationError> {
-        self.executor.notify(event).await?;
-        Ok(())
-    }
-
-    #[instrument(name = "app.handle_documents_approved", skip(self), err)]
-    pub async fn handle_documents_approved(
-        &self,
-        event: DocumentsApproved,
-    ) -> Result<(), ApplicationError> {
-        self.executor.notify(event).await?;
-        Ok(())
-    }
-
-    #[instrument(name = "app.handle_documents_rejected", skip(self), err)]
-    pub async fn handle_documents_rejected(
-        &self,
-        event: DocumentsRejected,
-    ) -> Result<(), ApplicationError> {
-        self.executor.notify(event).await?;
-        Ok(())
-    }
-
-    #[instrument(name = "app.handle_documents_review_pending", skip(self), err)]
-    pub async fn handle_documents_review_pending(
-        &self,
-        event: DocumentsReviewPending,
+        event: T,
     ) -> Result<(), ApplicationError> {
         self.executor.notify(event).await?;
         Ok(())
