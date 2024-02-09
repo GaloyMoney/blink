@@ -28,7 +28,7 @@ impl Executor {
         })
     }
 
-    pub async fn notify<T: NotificationEventNew>(&self, event: T) -> Result<(), ExecutorError> {
+    pub async fn notify<T: NotificationEvent>(&self, event: T) -> Result<(), ExecutorError> {
         let settings = self.settings.find_for_user_id(event.user_id()).await?;
         if !settings.should_send_notification(
             UserNotificationChannel::Push,

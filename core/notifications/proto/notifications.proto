@@ -133,6 +133,7 @@ message NotificationEvent {
   oneof data {
     CircleGrew circle_grew = 1;
     CircleThresholdReached circle_threshold_reached = 2;
+    DocumentsSubmitted documents_submitted = 3;
   }
 }
 
@@ -158,4 +159,8 @@ message CircleThresholdReached {
   CircleType circle_type = 2;
   CircleTimeFrame time_frame = 3;
   uint32 threshold = 4;
+}
+
+message DocumentsSubmitted {
+  string user_id = 1;
 }

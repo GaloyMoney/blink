@@ -285,6 +285,18 @@ impl NotificationsService for Notifications {
                     })
                     .await?
             }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::DocumentsSubmitted(
+                        proto::DocumentsSubmitted { user_id },
+                    )),
+            }) => {
+                self.app
+                    .handle_documents_submitted(notification_event::DocumentsSubmitted {
+                        user_id: GaloyUserId::from(user_id),
+                    })
+                    .await?
+            }
             _ => return Err(Status::invalid_argument("event is required")),
         }
 

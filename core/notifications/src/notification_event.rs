@@ -13,13 +13,13 @@ pub struct CircleGrew {
     pub all_time_circle_size: u32,
 }
 
-pub trait NotificationEventNew {
+pub trait NotificationEvent {
     fn user_id(&self) -> &GaloyUserId;
     fn deep_link(&self) -> DeepLink;
     fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage;
 }
 
-impl NotificationEventNew for CircleGrew {
+impl NotificationEvent for CircleGrew {
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
     }
@@ -41,7 +41,7 @@ pub struct CircleThresholdReached {
     pub threshold: u32,
 }
 
-impl NotificationEventNew for CircleThresholdReached {
+impl NotificationEvent for CircleThresholdReached {
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
     }
@@ -52,5 +52,24 @@ impl NotificationEventNew for CircleThresholdReached {
 
     fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
         Messages::circle_threshold_reached(locale.as_ref(), self)
+    }
+}
+
+#[derive(Debug)]
+pub struct DocumentsSubmitted {
+    pub user_id: GaloyUserId,
+}
+
+impl NotificationEvent for DocumentsSubmitted {
+    fn user_id(&self) -> &GaloyUserId {
+        &self.user_id
+    }
+
+    fn deep_link(&self) -> DeepLink {
+        DeepLink::None
+    }
+
+    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
+        Messages::documents_submitted(locale.as_ref(), self)
     }
 }
