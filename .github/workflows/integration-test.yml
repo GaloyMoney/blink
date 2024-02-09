@@ -6,7 +6,7 @@ on:
 
 jobs:
   tests:
-    name: Integration test
+    name: execute via tilt
     runs-on: ubuntu-latest
     steps:
       - name: Maximize build space
