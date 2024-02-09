@@ -443,6 +443,13 @@ local_resource(
     deps = _buck2_dep_inputs(consent_target),
     allow_parallel = True,
     auto_init = run_apps,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3000,
+        ),
+    ),
     resource_deps = [
         "hydra-consent",
         "apollo-router",
