@@ -155,7 +155,7 @@
     "@types/set-cookie-parser": "^2.4.7",
     "@types/ws": "^8.5.10",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
-    "@typescript-eslint/parser": "^6.19.1",
+    "@typescript-eslint/parser": "^6.21.0",
     "@xascode/tscpaths": "0.1.4",
     "axios-mock-adapter": "^1.22.0",
     "eslint": "^8.56.0",
