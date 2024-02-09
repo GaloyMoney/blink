@@ -73,3 +73,60 @@ impl NotificationEvent for DocumentsSubmitted {
         Messages::documents_submitted(locale.as_ref(), self)
     }
 }
+
+#[derive(Debug)]
+pub struct DocumentsApproved {
+    pub user_id: GaloyUserId,
+}
+
+impl NotificationEvent for DocumentsApproved {
+    fn user_id(&self) -> &GaloyUserId {
+        &self.user_id
+    }
+
+    fn deep_link(&self) -> DeepLink {
+        DeepLink::None
+    }
+
+    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
+        Messages::documents_approved(locale.as_ref(), self)
+    }
+}
+
+#[derive(Debug)]
+pub struct DocumentsRejected {
+    pub user_id: GaloyUserId,
+}
+
+impl NotificationEvent for DocumentsRejected {
+    fn user_id(&self) -> &GaloyUserId {
+        &self.user_id
+    }
+
+    fn deep_link(&self) -> DeepLink {
+        DeepLink::None
+    }
+
+    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
+        Messages::documents_rejected(locale.as_ref(), self)
+    }
+}
+
+#[derive(Debug)]
+pub struct DocumentsReviewPending {
+    pub user_id: GaloyUserId,
+}
+
+impl NotificationEvent for DocumentsReviewPending {
+    fn user_id(&self) -> &GaloyUserId {
+        &self.user_id
+    }
+
+    fn deep_link(&self) -> DeepLink {
+        DeepLink::None
+    }
+
+    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
+        Messages::documents_review_pending(locale.as_ref(), self)
+    }
+}
