@@ -7,7 +7,7 @@ import { baseLogger } from "@/services/logger"
 
 import { GT } from "@/graphql/index"
 import LnInvoicePaymentStatusPayload from "@/graphql/public/types/payload/ln-invoice-payment-status"
-import LnInvoicePaymentStatusInput from "@/graphql/public/types/object/ln-invoice-payment-status-input"
+import LnInvoicePaymentStatusByRequestInput from "@/graphql/public/types/object/ln-invoice-payment-status-by-request-input"
 import { UnknownClientError } from "@/graphql/error"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import { WalletInvoiceStatus } from "@/domain/wallet-invoices"
@@ -27,10 +27,10 @@ type LnInvoicePaymentResolveSource = {
   paymentRequest?: EncodedPaymentRequest
 }
 
-const LnInvoicePaymentStatusSubscription = {
+const LnInvoicePaymentStatusByRequestSubscription = {
   type: GT.NonNull(LnInvoicePaymentStatusPayload),
   args: {
-    input: { type: GT.NonNull(LnInvoicePaymentStatusInput) },
+    input: { type: GT.NonNull(LnInvoicePaymentStatusByRequestInput) },
   },
   resolve: async (source: LnInvoicePaymentResolveSource | undefined) => {
     if (source === undefined) {
@@ -120,4 +120,4 @@ const LnInvoicePaymentStatusSubscription = {
   },
 }
 
-export default LnInvoicePaymentStatusSubscription
+export default LnInvoicePaymentStatusByRequestSubscription
