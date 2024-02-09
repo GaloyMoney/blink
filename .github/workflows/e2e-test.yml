@@ -1,4 +1,4 @@
-name: "Bats test"
+name: "E2e test"
 
 on:
   pull_request:
