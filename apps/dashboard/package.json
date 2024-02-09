@@ -43,7 +43,6 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "cypress-plugin-tab": "^1.0.5",
     "@galoy/eslint-config": "workspace:^",
     "@graphql-codegen/add": "^5.0.0",
     "@graphql-codegen/cli": "^5.0.0",
