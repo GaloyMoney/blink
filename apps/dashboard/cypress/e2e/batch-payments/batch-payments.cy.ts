@@ -1,7 +1,7 @@
 import {
   testData,
-  expectedTransactions,
-  btcPaymentInUSDCurrency,
+  usdWalletExpectedTransactions,
+  btcWalletExpectedTransactions,
 } from "../../support/test-data"
 
 describe("Batch payments test", () => {
@@ -29,31 +29,26 @@ describe("Batch payments test", () => {
     cy.loginAndGetToken(testData.PHONE, testData.CODE).then((token) => {
       const authToken = token
       cy.getTransactions(authToken, 4).then((transactions) => {
-        // Check for specific BTC transactions
-        btcPaymentInUSDCurrency.forEach((expectedBtcTransaction) => {
-          const found = transactions.some(
+        const btcTransactions = transactions.filter(
+          (transaction) => transaction.settlementCurrency === "BTC",
+        )
+
+        btcWalletExpectedTransactions.forEach((expectedBtcTransaction) => {
+          const found = btcTransactions.some(
             (transaction) =>
               transaction.settlementCurrency ===
                 expectedBtcTransaction.settlementCurrency &&
               transaction.status === expectedBtcTransaction.status &&
-              transaction.settlementDisplayAmount ===
-                expectedBtcTransaction.settlementDisplayAmount,
+              (expectedBtcTransaction.settlementDisplayAmount
+                ? transaction.settlementDisplayAmount ===
+                  expectedBtcTransaction.settlementDisplayAmount
+                : true),
           )
           expect(found).to.be.true
         })
 
-        expectedTransactions.forEach((expectedTransaction) => {
-          if (
-            !btcPaymentInUSDCurrency.some(
-              (btcTx) =>
-                btcTx.settlementCurrency === expectedTransaction.settlementCurrency &&
-                btcTx.status === expectedTransaction.status &&
-                btcTx.settlementDisplayAmount ===
-                  expectedTransaction.settlementDisplayAmount,
-            )
-          ) {
-            expect(transactions).to.deep.include(expectedTransaction)
-          }
+        usdWalletExpectedTransactions.forEach((expectedUsdTransaction) => {
+          expect(transactions).to.deep.include(expectedUsdTransaction)
         })
       })
     })

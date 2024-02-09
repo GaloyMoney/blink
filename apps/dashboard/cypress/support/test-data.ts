@@ -8,13 +8,7 @@ export const testData = {
 
 export const CORE_URL = "http://localhost:4455"
 
-export const expectedTransactions = [
-  {
-    settlementAmount: -100,
-    settlementCurrency: "BTC",
-    status: "SUCCESS",
-    settlementDisplayAmount: "-0.04",
-  },
+export const usdWalletExpectedTransactions = [
   {
     settlementAmount: -1000,
     settlementCurrency: "USD",
@@ -29,10 +23,15 @@ export const expectedTransactions = [
   },
 ]
 
-export const btcPaymentInUSDCurrency = [
+export const btcWalletExpectedTransactions = [
   {
     settlementCurrency: "BTC",
     status: "SUCCESS",
     settlementDisplayAmount: "-5.00",
+  },
+  {
+    settlementAmount: -100,
+    settlementCurrency: "BTC",
+    status: "SUCCESS",
   },
 ]
