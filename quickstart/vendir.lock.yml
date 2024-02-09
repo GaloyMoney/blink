@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(map): initialising map (#3938)...'
-      sha: 3b0135e3ee8ba715bfe5dabe3ebdcdb8b0681f2b
+      commitTitle: 'ci: separate buck2 build step (#3966)...'
+      sha: 58955fa76c9782de21f722e2651456991fe6659e
       tags:
-      - 0.20.50-2-g3b0135e3e
+      - 0.20.51-5-g58955fa76
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(map): initialising map (#3938)...'
-      sha: 3b0135e3ee8ba715bfe5dabe3ebdcdb8b0681f2b
+      commitTitle: 'ci: separate buck2 build step (#3966)...'
+      sha: 58955fa76c9782de21f722e2651456991fe6659e
       tags:
-      - 0.20.50-2-g3b0135e3e
+      - 0.20.51-5-g58955fa76
     path: schemas/
   - git:
-      commitTitle: 'feat(map): initialising map (#3938)...'
-      sha: 3b0135e3ee8ba715bfe5dabe3ebdcdb8b0681f2b
+      commitTitle: 'ci: separate buck2 build step (#3966)...'
+      sha: 58955fa76c9782de21f722e2651456991fe6659e
       tags:
-      - 0.20.50-2-g3b0135e3e
+      - 0.20.51-5-g58955fa76
     path: gql/
   path: ./graphql
 kind: LockConfig
