@@ -22,15 +22,10 @@ start-main-ci:
 watch:
 	pnpm nodemon -V -e ts,graphql -w ./src -x make start
 
-test: unit integration
-
 test-migrate:
 	docker compose down -v -t 3
 	docker compose build
 	docker compose -f docker-compose.yml up mongodb-migrate --exit-code-from mongodb-migrate
-
-unit:
-	pnpm run test:unit
 
 watch-unit:
 	$(BIN_DIR)/jest --config ./test/unit/jest.config.js --clearCache
@@ -38,10 +33,6 @@ watch-unit:
 
 del-containers:
 	docker compose rm -sfv
-
-integration:
-	pnpm run build && \
-	. ./.env && pnpm run test:integration
 
 create-tmp-env-ci:
 	. ./.env && \
