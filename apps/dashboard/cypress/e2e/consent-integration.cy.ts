@@ -6,6 +6,7 @@ describe("Consent integration Test", () => {
   before(() => {
     cy.flushRedis()
     cy.visit("/api/auth/signin")
+    cy.wait(2000)
   })
 
   it("Consent integration", () => {

@@ -13,6 +13,7 @@ describe("Account ID Test", () => {
         throw new Error("login_challenge is null")
       }
     })
+    cy.wait(2000)
   })
 
   it("Login email Test", () => {
