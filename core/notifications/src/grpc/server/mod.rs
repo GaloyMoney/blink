@@ -297,6 +297,42 @@ impl NotificationsService for Notifications {
                     })
                     .await?
             }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::DocumentsApproved(proto::DocumentsApproved {
+                        user_id,
+                    })),
+            }) => {
+                self.app
+                    .handle_documents_approved(notification_event::DocumentsApproved {
+                        user_id: GaloyUserId::from(user_id),
+                    })
+                    .await?
+            }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::DocumentsRejected(proto::DocumentsRejected {
+                        user_id,
+                    })),
+            }) => {
+                self.app
+                    .handle_documents_rejected(notification_event::DocumentsRejected {
+                        user_id: GaloyUserId::from(user_id),
+                    })
+                    .await?
+            }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::DocumentsReviewPending(
+                        proto::DocumentsReviewPending { user_id },
+                    )),
+            }) => {
+                self.app
+                    .handle_documents_review_pending(notification_event::DocumentsReviewPending {
+                        user_id: GaloyUserId::from(user_id),
+                    })
+                    .await?
+            }
             _ => return Err(Status::invalid_argument("event is required")),
         }
 

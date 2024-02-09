@@ -164,4 +164,31 @@ impl NotificationsApp {
         self.executor.notify(event).await?;
         Ok(())
     }
+
+    #[instrument(name = "app.handle_documents_approved", skip(self), err)]
+    pub async fn handle_documents_approved(
+        &self,
+        event: DocumentsApproved,
+    ) -> Result<(), ApplicationError> {
+        self.executor.notify(event).await?;
+        Ok(())
+    }
+
+    #[instrument(name = "app.handle_documents_rejected", skip(self), err)]
+    pub async fn handle_documents_rejected(
+        &self,
+        event: DocumentsRejected,
+    ) -> Result<(), ApplicationError> {
+        self.executor.notify(event).await?;
+        Ok(())
+    }
+
+    #[instrument(name = "app.handle_documents_review_pending", skip(self), err)]
+    pub async fn handle_documents_review_pending(
+        &self,
+        event: DocumentsReviewPending,
+    ) -> Result<(), ApplicationError> {
+        self.executor.notify(event).await?;
+        Ok(())
+    }
 }
