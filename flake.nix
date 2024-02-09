@@ -229,6 +229,7 @@
           dashboard = nextDerivation {pkgName = "dashboard";};
           pay = nextDerivation {pkgName = "pay";};
           admin-panel = nextDerivation {pkgName = "admin-panel";};
+          map = nextDerivation {pkgName = "map";};
 
           api-keys = rustDerivation {pkgName = "api-keys";};
           notifications = rustDerivation {pkgName = "notifications";};

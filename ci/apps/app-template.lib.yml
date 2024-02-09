@@ -196,6 +196,10 @@ plan:
 #@     "YAML_PATH": ".image.digest",
 #@     "CHART": "admin-panel"
 #@   }
+#@   "map": {
+#@     "YAML_PATH": ".image.digest",
+#@     "CHART": "map"
+#@   }
 #@ }
 name: #@ bump_image_in_chart_name(app)
 serial: true
