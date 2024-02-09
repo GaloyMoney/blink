@@ -47,6 +47,9 @@ jobs:
 
           echo "Prepared args: $ARGS"
           echo "args=$ARGS" >> "$GITHUB_OUTPUT"
+      - name: Buck2 build
+        if: steps.prepare_args.outputs.args != ''
+        run: nix develop -c buck2 build ${{ steps.prepare_args.outputs.args }}
       - name: Buck2 test
         if: steps.prepare_args.outputs.args != ''
         run: nix develop -c buck2 test ${{ steps.prepare_args.outputs.args }}
