@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: separate buck2 build step (#3966)...'
-      sha: 58955fa76c9782de21f722e2651456991fe6659e
+      commitTitle: 'fix(trigger): early return on lnd connection issues (#3968)'
+      sha: 34413514935bc59fc3ef70175ecfe405d3ef8e54
       tags:
-      - 0.20.51-5-g58955fa76
+      - 0.20.52-2-g344135149
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: separate buck2 build step (#3966)...'
-      sha: 58955fa76c9782de21f722e2651456991fe6659e
+      commitTitle: 'fix(trigger): early return on lnd connection issues (#3968)'
+      sha: 34413514935bc59fc3ef70175ecfe405d3ef8e54
       tags:
-      - 0.20.51-5-g58955fa76
+      - 0.20.52-2-g344135149
     path: schemas/
   - git:
-      commitTitle: 'ci: separate buck2 build step (#3966)...'
-      sha: 58955fa76c9782de21f722e2651456991fe6659e
+      commitTitle: 'fix(trigger): early return on lnd connection issues (#3968)'
+      sha: 34413514935bc59fc3ef70175ecfe405d3ef8e54
       tags:
-      - 0.20.51-5-g58955fa76
+      - 0.20.52-2-g344135149
     path: gql/
   path: ./graphql
 kind: LockConfig
