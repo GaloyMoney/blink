@@ -9,6 +9,11 @@ jobs:
     name: execute via buck2
     runs-on: ubuntu-latest
     steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 12288
+          temp-reserve-mb: 12288
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v4
       - name: Run the Magic Nix Cache
