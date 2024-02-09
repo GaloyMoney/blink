@@ -1,20 +1,25 @@
-name: Buck2 test
+name: Check Code & Unit Test
 on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, labeled, unlabeled]
 
 jobs:
-  buck2-test:
-    name: Buck2 Test
+  tests:
+    name: execute via buck2
     runs-on: ubuntu-latest
     steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 12288
+          temp-reserve-mb: 12288
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v4
       - name: Run the Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v2
       - uses: actions/checkout@v3
-      - name: Prepare Buck2 test args from labels
+      - name: Prepare buck2 test args from labels
         id: prepare_args
         run: |
           ARGS=""
@@ -47,6 +52,9 @@ jobs:
 
           echo "Prepared args: $ARGS"
           echo "args=$ARGS" >> "$GITHUB_OUTPUT"
-      - name: Buck2 test
+      - name: Build via buck2
+        if: steps.prepare_args.outputs.args != ''
+        run: nix develop -c buck2 build ${{ steps.prepare_args.outputs.args }}
+      - name: Run checks and tests via buck2
         if: steps.prepare_args.outputs.args != ''
         run: nix develop -c buck2 test ${{ steps.prepare_args.outputs.args }}

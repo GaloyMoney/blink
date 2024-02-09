@@ -1,12 +1,12 @@
-name: "Bats test"
+name: "E2e test"
 
 on:
   pull_request:
     branches: [main]
 
 jobs:
-  integration:
-    name: Bats tests
+  tests:
+    name: execute via bats
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
