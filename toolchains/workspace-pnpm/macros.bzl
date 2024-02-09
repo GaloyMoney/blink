@@ -634,9 +634,10 @@ def _npm_test_impl(
         cmd_args(program_run_info),
     ])
 
-    if hasattr(ctx.attrs, 'env_file'):
-        run_cmd_args.add("--env-file")
-        run_cmd_args.add(ctx.attrs.env_file)
+    if hasattr(ctx.attrs, 'app_env'):
+        for key, val in ctx.attrs.app_env.items():
+            run_cmd_args.add("--app-env")
+            run_cmd_args.add('{}={}'.format(key, str(val).strip('"')))
 
     run_cmd_args.add("--")
     run_cmd_args.add(program_args)
@@ -1165,9 +1166,12 @@ _jest_test = rule(
             default = False,
             doc = "Run all tests serially in the current process"
         ),
-        "env_file": attrs.option(
-            attrs.string(),
-            doc = """File name and relative path for env variables required.""",
+        "app_env": attrs.dict(
+            key = attrs.string(),
+            value = attrs.arg(),
+            sorted = False,
+            default = {},
+            doc = """Set environment variables required by the application.""",
         ),
         "env": attrs.dict(
             key = attrs.string(),
