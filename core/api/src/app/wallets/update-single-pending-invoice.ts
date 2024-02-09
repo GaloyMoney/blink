@@ -96,7 +96,11 @@ const updatePendingInvoiceBeforeFinally = async ({
   })
 
   const lndService = LndService()
-  if (lndService instanceof Error) return lndService
+  if (lndService instanceof Error) {
+    pendingInvoiceLogger.error("Unable to initialize LndService")
+    recordExceptionInCurrentSpan({ error: lndService })
+    return false
+  }
   const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
   if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
     const processingCompletedInvoice =
@@ -226,19 +230,6 @@ const lockedUpdatePendingInvoiceSteps = async ({
     "invoices.finalRecipient": JSON.stringify(recipientWalletDescriptor),
   })
 
-  if (!isSettledInLnd) {
-    const lndService = LndService()
-    if (lndService instanceof Error) return lndService
-    const invoiceSettled = await lndService.settleInvoice({
-      pubkey: walletInvoiceInsideLock.pubkey,
-      secret: walletInvoiceInsideLock.secret,
-    })
-    if (invoiceSettled instanceof Error) return invoiceSettled
-  }
-
-  const invoicePaid = await walletInvoices.markAsPaid(paymentHash)
-  if (invoicePaid instanceof Error) return invoicePaid
-
   const recipientAccount = await AccountsRepository().findById(recipientAccountId)
   if (recipientAccount instanceof Error) return recipientAccount
   const { displayCurrency: recipientDisplayCurrency } = recipientAccount
@@ -279,6 +270,27 @@ const lockedUpdatePendingInvoiceSteps = async ({
     amountDisplayCurrency: toDisplayBaseAmount(displayPaymentAmount),
     displayCurrency: recipientDisplayCurrency,
   })
+
+  if (!isSettledInLnd) {
+    const lndService = LndService()
+    if (lndService instanceof Error) {
+      logger.error("Unable to initialize LndService")
+      recordExceptionInCurrentSpan({ error: lndService })
+      return false
+    }
+    const invoiceSettled = await lndService.settleInvoice({
+      pubkey: walletInvoiceInsideLock.pubkey,
+      secret: walletInvoiceInsideLock.secret,
+    })
+    if (invoiceSettled instanceof Error) {
+      logger.error({ paymentHash }, "Unable to settleInvoice")
+      recordExceptionInCurrentSpan({ error: invoiceSettled })
+      return false
+    }
+  }
+
+  const invoicePaid = await walletInvoices.markAsPaid(paymentHash)
+  if (invoicePaid instanceof Error) return invoicePaid
 
   //TODO: add displayCurrency: displayPaymentAmount.currency,
   const journal = await LedgerFacade.recordReceiveOffChain({
