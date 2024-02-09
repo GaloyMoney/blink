@@ -336,6 +336,13 @@ local_resource(
       "NEXTAUTH_SECRET": "secret",
       "PORT": "3001",
     },
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3001,
+        ),
+    ),
     deps = _buck2_dep_inputs(dashboard_target),
     allow_parallel = True,
     auto_init = run_apps,
@@ -370,6 +377,13 @@ local_resource(
     serve_cmd = "buck2 run {}".format(pay_target),
     env = pay_env,
     serve_env = pay_env,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3002,
+        ),
+    ),
     deps = _buck2_dep_inputs(pay_target),
     allow_parallel = True,
     resource_deps = [
@@ -396,6 +410,13 @@ local_resource(
     serve_cmd = "buck2 run {}".format(admin_panel_target),
     env = admin_panel_env,
     serve_env = admin_panel_env,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3004,
+        ),
+    ),
     deps = _buck2_dep_inputs(admin_panel_target),
     allow_parallel = True,
     resource_deps = [
@@ -421,6 +442,13 @@ local_resource(
     serve_cmd = "buck2 run {}".format(map_target),
     env = map_env,
     serve_env = map_env,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3005,
+        ),
+    ),
     deps = _buck2_dep_inputs(map_target),
     allow_parallel = True,
     resource_deps = [
