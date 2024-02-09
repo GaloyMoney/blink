@@ -195,7 +195,7 @@ plan:
 #@   "admin-panel": {
 #@     "YAML_PATH": ".image.digest",
 #@     "CHART": "admin-panel"
-#@   }
+#@   },
 #@   "map": {
 #@     "YAML_PATH": ".image.digest",
 #@     "CHART": "map"
