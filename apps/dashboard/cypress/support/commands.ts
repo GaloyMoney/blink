@@ -1,5 +1,4 @@
 /// <reference types="cypress" />
-import { CORE_URL } from "./test-data"
 
 type Transaction = {
   settlementAmount: number
@@ -51,7 +50,7 @@ Cypress.Commands.add("loginAndGetToken", (phone, code) => {
   cy.flushRedis()
   cy.request({
     method: "POST",
-    url: `${CORE_URL}/auth/phone/login`,
+    url: `http://localhost:4455/auth/phone/login`,
     body: {
       phone,
       code,
@@ -65,7 +64,7 @@ Cypress.Commands.add("loginAndGetToken", (phone, code) => {
 Cypress.Commands.add("getTransactions", (authToken, numberOfTransactions) => {
   cy.request({
     method: "POST",
-    url: `${CORE_URL}/graphql`,
+    url: `http://localhost:4455/graphql`,
     headers: {
       "Authorization": `Bearer ${authToken}`,
       "Content-Type": "application/json",

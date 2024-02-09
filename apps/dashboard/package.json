@@ -43,6 +43,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "cypress-plugin-tab": "^1.0.5",
     "@galoy/eslint-config": "workspace:^",
     "@graphql-codegen/add": "^5.0.0",
     "@graphql-codegen/cli": "^5.0.0",
@@ -53,8 +54,8 @@
     "@graphql-codegen/typescript-resolvers": "^4.0.1",
     "@graphql-inspector/cli": "^4.0.3",
     "@types/node": "20.10.4",
-    "@types/react": "18.2.45",
-    "@types/react-dom": "18.2.18",
+    "@types/react": "18.2.31",
+    "@types/react-dom": "18.2.14",
     "autoprefixer": "10.4.16",
     "cypress": "^13.6.1",
     "eslint": "8.56.0",
