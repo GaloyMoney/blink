@@ -13,7 +13,7 @@ pub struct CircleGrew {
     pub all_time_circle_size: u32,
 }
 
-pub trait NotificationEvent {
+pub trait NotificationEvent: std::fmt::Debug {
     fn user_id(&self) -> &GaloyUserId;
     fn deep_link(&self) -> DeepLink;
     fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage;
