@@ -4,17 +4,17 @@ import { GoogleMap, MarkerF, InfoWindow, useLoadScript } from "@react-google-map
 import { BusinessMapMarkersQuery } from "@/services/galoy/graphql/generated"
 import Link from "next/link"
 import { theme } from "./map-theme"
-import { env } from "@/env"
 import LocationIcon from "../logo/location"
 import { SuggestMapFormSheet } from "./suggest-form"
 
 type MapComponentProps = {
   mapData: BusinessMapMarkersQuery["businessMapMarkers"]
+  googleMapsApiKey: string
 }
 const DEFAULT_LAT = 13.7942
 const DEFAULT_LNG = -88.8965
 
-export default function MapComponent({ mapData }: MapComponentProps) {
+export default function MapComponent({ mapData, googleMapsApiKey }: MapComponentProps) {
   const mapRef = useRef<google.maps.Map>()
   const [selectedMarker, setSelectedMarker] = useState<
     BusinessMapMarkersQuery["businessMapMarkers"][number] | null
@@ -73,7 +73,7 @@ export default function MapComponent({ mapData }: MapComponentProps) {
   }, [])
 
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: env.NEXT_PUBLIC_MAP_API_KEY,
+    googleMapsApiKey,
     libraries: libraries as any,
   })
 
