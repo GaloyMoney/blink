@@ -1,7 +1,7 @@
 /* eslint @typescript-eslint/ban-ts-comment: "off" */
 // @ts-nocheck
 
-async function migrateAccounts(db, batchSize = 100) {
+async function migrateAccounts(db) {
   db.collection("accounts")
     .updateMany(
       {},
