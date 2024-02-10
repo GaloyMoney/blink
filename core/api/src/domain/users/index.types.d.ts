@@ -4,7 +4,7 @@ type PhoneCode = string & { readonly brand: unique symbol }
 type EmailAddress = string & { readonly brand: unique symbol }
 type EmailCode = string & { readonly brand: unique symbol }
 
-type LoginIdentifier = PhoneNumber | EmailAddress
+type LoginIdentifier = PhoneNumber | EmailAddress | HashedAuthToken
 
 type DeviceId = string & { readonly brand: unique symbol }
 

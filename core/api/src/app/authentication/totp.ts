@@ -1,17 +1,21 @@
+import { createHash } from "crypto"
+
+import { checkLoginAttemptPerLoginIdentifierLimits } from "./ratelimits"
+
 import {
   AuthTokenUserIdMismatchError,
   IdentifierNotFoundError,
 } from "@/domain/authentication/errors"
 import {
-  validateKratosToken,
-  kratosValidateTotp,
-  kratosInitiateTotp,
+  AuthWithEmailPasswordlessService,
+  AuthWithPhonePasswordlessService,
   kratosElevatingSessionWithTotp,
+  kratosInitiateTotp,
   kratosRemoveTotp,
+  kratosValidateTotp,
   logoutSessionByAuthToken,
   refreshToken,
-  AuthWithPhonePasswordlessService,
-  AuthWithEmailPasswordlessService,
+  validateKratosToken,
 } from "@/services/kratos"
 import { kratosAdmin } from "@/services/kratos/private"
 
@@ -119,6 +123,17 @@ export const elevatingSessionWithTotp = async ({
   authToken: AuthToken
   totpCode: TotpCode
 }): Promise<boolean | KratosError> => {
+  // hashing the authToken to use it as a key for the rate limit
+  // this limit exposure of the authToken in redis
+  const hashedAuthToken = createHash("sha256")
+    .update(authToken)
+    .digest("hex") as HashedAuthToken
+
+  {
+    const limitOk = await checkLoginAttemptPerLoginIdentifierLimits(hashedAuthToken)
+    if (limitOk instanceof Error) return limitOk
+  }
+
   return kratosElevatingSessionWithTotp({ authToken, totpCode })
 }
 
