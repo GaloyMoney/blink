@@ -19,6 +19,7 @@ export default function MapComponent({ mapData, googleMapsApiKey }: MapComponent
   const [selectedMarker, setSelectedMarker] = useState<
     BusinessMapMarkersQuery["businessMapMarkers"][number] | null
   >(null)
+  const [viewportHeight, setViewportHeight] = useState("100vh")
   const [currentLocation, setCurrentLocation] = useState({
     coordinates: {
       lat: DEFAULT_LAT,
@@ -26,6 +27,15 @@ export default function MapComponent({ mapData, googleMapsApiKey }: MapComponent
     },
     userAllowedLocation: false,
   })
+
+  useEffect(() => {
+    const calculateViewportHeight = () => {
+      setViewportHeight(`${window.innerHeight}px`)
+    }
+    calculateViewportHeight()
+    window.addEventListener("resize", calculateViewportHeight)
+    return () => window.removeEventListener("resize", calculateViewportHeight)
+  }, [])
 
   const [draggablePin, setDraggablePin] = useState({
     coordinates: { lat: 0, lng: 0 },
@@ -159,7 +169,14 @@ export default function MapComponent({ mapData, googleMapsApiKey }: MapComponent
   }
 
   return (
-    <>
+    <div
+      style={{
+        position: "relative",
+        height: viewportHeight,
+        width: "100vw",
+        overflow: "hidden",
+      }}
+    >
       {draggablePin.visible && (
         <div className="absolute right-2 top-2 z-10 w-40">
           <div className="bg-white text-black p-2 rounded-md text-sm drop-shadow-2xl">
@@ -229,7 +246,7 @@ export default function MapComponent({ mapData, googleMapsApiKey }: MapComponent
         zoom={14}
         center={currentLocation.coordinates}
         mapTypeId={google.maps.MapTypeId.ROADMAP}
-        mapContainerStyle={{ width: "100vw", height: "100vh" }}
+        mapContainerStyle={{ height: "100%", width: "100%" }}
       >
         {mapData.map((marker, index) => (
           <MarkerF
@@ -296,7 +313,7 @@ export default function MapComponent({ mapData, googleMapsApiKey }: MapComponent
           />
         )}
       </GoogleMap>
-    </>
+    </div>
   )
 }
 
