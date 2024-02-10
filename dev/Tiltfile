@@ -284,6 +284,13 @@ local_resource(
     labels = ["auth"],
     cmd = "buck2 build {}".format(consent_target),
     serve_cmd = "buck2 run {}".format(consent_target),
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3000,
+        ),
+    ),
     deps = _buck2_dep_inputs(consent_target),
     allow_parallel = True,
     auto_init = run_apps,
