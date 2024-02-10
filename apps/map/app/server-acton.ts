@@ -37,7 +37,7 @@ export const submitMerchantSuggest = async (
   const lon = Number(longitude)
 
   if (
-    isValidCoordinates({
+    !isValidCoordinates({
       latitude: lat,
       longitude: lon,
     })
