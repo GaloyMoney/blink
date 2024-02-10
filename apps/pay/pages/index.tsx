@@ -12,6 +12,8 @@ import { useRouter } from "next/router"
 import CurrencyDropdown from "../components/Currency/currency-dropdown"
 import { getClientSideGqlConfig } from "../config/config"
 
+import initializeTelemetry from "./otel"
+
 const GET_NODE_STATS = gql`
   query nodeIds {
     globals {
@@ -28,6 +30,8 @@ function Home() {
   const [selectedDisplayCurrency, setSelectedDisplayCurrency] = React.useState(
     localStorage.getItem("display") ?? "USD",
   )
+
+  initializeTelemetry()
 
   const router = useRouter()
   const [username, setUsername] = React.useState<string>("")
@@ -68,8 +72,8 @@ function Home() {
                             {error
                               ? "Unavailable"
                               : loading
-                                ? "Loading..."
-                                : data.globals.nodesIds[0]}
+                              ? "Loading..."
+                              : data.globals.nodesIds[0]}
                           </p>
                         </ListGroup.Item>
                         <ListGroup.Item>
