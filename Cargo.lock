@@ -125,6 +125,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "080e9890a082662b09c1ad45f567faeeb47f22b5fb23895fbe1e651e718e25ca"
 
 [[package]]
+name = "anymap2"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d301b3b94cb4b2f23d7917810addbbaff90738e0ca2be692bd027e70d7e0330c"
+
+[[package]]
 name = "api-keys"
 version = "0.1.0"
 dependencies = [
@@ -505,8 +511,10 @@ checksum = "5bc015644b92d5890fab7489e49d21f879d5c990186827d42ec511919404f38b"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "wasm-bindgen",
  "windows-targets 0.52.0",
 ]
 
@@ -861,6 +869,12 @@ dependencies = [
  "crypto-common",
  "subtle",
 ]
+
+[[package]]
+name = "dotenv"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f"
 
 [[package]]
 name = "dotenvy"
@@ -1555,6 +1569,20 @@ name = "itoa"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af150ab688ff2122fcef229be89cb50dd66af9e01a4ff320cc137eecc9bacc38"
+
+[[package]]
+name = "job-executor"
+version = "0.1.0"
+dependencies = [
+ "derive_builder",
+ "serde",
+ "serde_json",
+ "serde_with 3.5.0",
+ "sqlx",
+ "sqlxmq",
+ "tokio",
+ "tracing 0.1.0",
+]
 
 [[package]]
 name = "js-sys"
@@ -3325,6 +3353,35 @@ dependencies = [
  "tracing 0.1.40",
  "url 2.4.1",
  "uuid",
+]
+
+[[package]]
+name = "sqlxmq"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e914521071581f0413516de0e7931086ebe4a22d719c1100de29eb339c712311"
+dependencies = [
+ "anymap2",
+ "chrono",
+ "dotenv",
+ "log",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "sqlxmq_macros",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "sqlxmq_macros"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd00667edb120f18e14e2b4a71cddb308dc3605171ed7afda3056129d08b9f4f"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]

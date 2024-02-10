@@ -279,6 +279,23 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "anymap2-0.13.0.crate",
+    sha256 = "d301b3b94cb4b2f23d7917810addbbaff90738e0ca2be692bd027e70d7e0330c",
+    strip_prefix = "anymap2-0.13.0",
+    urls = ["https://crates.io/api/v1/crates/anymap2/0.13.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "anymap2-0.13.0",
+    srcs = [":anymap2-0.13.0.crate"],
+    crate = "anymap2",
+    crate_root = "anymap2-0.13.0.crate/src/lib.rs",
+    edition = "2018",
+    visibility = [],
+)
+
+http_archive(
     name = "arc-swap-1.6.0.crate",
     sha256 = "bddcadddf5e9015d310179a59bb28c4d4b9920ad0f11e8e14dbadf654890c9a6",
     strip_prefix = "arc-swap-1.6.0",
@@ -1012,10 +1029,15 @@ cargo.rust_library(
         "alloc",
         "android-tzdata",
         "clock",
+        "default",
         "iana-time-zone",
+        "js-sys",
         "now",
+        "oldtime",
         "serde",
         "std",
+        "wasm-bindgen",
+        "wasmbind",
         "winapi",
         "windows-targets",
     ],
@@ -1965,6 +1987,23 @@ cargo.rust_library(
         ":crypto-common-0.1.6",
         ":subtle-2.5.0",
     ],
+)
+
+http_archive(
+    name = "dotenv-0.15.0.crate",
+    sha256 = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f",
+    strip_prefix = "dotenv-0.15.0",
+    urls = ["https://crates.io/api/v1/crates/dotenv/0.15.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "dotenv-0.15.0",
+    srcs = [":dotenv-0.15.0.crate"],
+    crate = "dotenv",
+    crate_root = "dotenv-0.15.0.crate/src/lib.rs",
+    edition = "2018",
+    visibility = [],
 )
 
 http_archive(
@@ -8769,6 +8808,65 @@ cargo.rust_library(
     ],
 )
 
+alias(
+    name = "sqlxmq",
+    actual = ":sqlxmq-0.5.0",
+    visibility = ["PUBLIC"],
+)
+
+http_archive(
+    name = "sqlxmq-0.5.0.crate",
+    sha256 = "e914521071581f0413516de0e7931086ebe4a22d719c1100de29eb339c712311",
+    strip_prefix = "sqlxmq-0.5.0",
+    urls = ["https://crates.io/api/v1/crates/sqlxmq/0.5.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "sqlxmq-0.5.0",
+    srcs = [":sqlxmq-0.5.0.crate"],
+    crate = "sqlxmq",
+    crate_root = "sqlxmq-0.5.0.crate/src/lib.rs",
+    edition = "2018",
+    features = ["runtime-tokio-rustls"],
+    visibility = [],
+    deps = [
+        ":anymap2-0.13.0",
+        ":chrono-0.4.32",
+        ":dotenv-0.15.0",
+        ":log-0.4.20",
+        ":serde-1.0.196",
+        ":serde_json-1.0.111",
+        ":sqlx-0.7.2",
+        ":sqlxmq_macros-0.5.0",
+        ":tokio-1.33.0",
+        ":uuid-1.7.0",
+    ],
+)
+
+http_archive(
+    name = "sqlxmq_macros-0.5.0.crate",
+    sha256 = "bd00667edb120f18e14e2b4a71cddb308dc3605171ed7afda3056129d08b9f4f",
+    strip_prefix = "sqlxmq_macros-0.5.0",
+    urls = ["https://crates.io/api/v1/crates/sqlxmq_macros/0.5.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "sqlxmq_macros-0.5.0",
+    srcs = [":sqlxmq_macros-0.5.0.crate"],
+    crate = "sqlxmq_macros",
+    crate_root = "sqlxmq_macros-0.5.0.crate/src/lib.rs",
+    edition = "2018",
+    proc_macro = True,
+    visibility = [],
+    deps = [
+        ":proc-macro2-1.0.76",
+        ":quote-1.0.35",
+        ":syn-1.0.109",
+    ],
+)
+
 http_archive(
     name = "stable_deref_trait-1.2.0.crate",
     sha256 = "a8f112729512f8e442d81f95a8a7ddf2b7c6b8a1a6f509a95864142b30cab2d3",
@@ -9162,6 +9260,7 @@ cargo.rust_binary(
         ":serde_with-3.6.1",
         ":serde_yaml-0.9.31",
         ":sqlx-0.7.2",
+        ":sqlxmq-0.5.0",
         ":thiserror-1.0.56",
         ":tokio-1.36.0",
         ":tonic-0.10.2",

@@ -1,0 +1,25 @@
+load("@toolchains//rust:macros.bzl", "galoy_rust_lib")
+
+galoy_rust_lib(
+    name = "job-executor",
+    deps = [
+        "//lib/tracing-rs:tracing",
+        "//third-party/rust:derive_builder",
+        "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
+        "//third-party/rust:serde_with",
+        "//third-party/rust:sqlx",
+        "//third-party/rust:sqlxmq",
+        "//third-party/rust:tokio",
+    ],
+    srcs = glob([
+      "src/**/*.rs",
+      ".sqlx/*"
+    ]),
+    env = {
+        "CARGO_MANIFEST_DIR": ".",
+        "SQLX_OFFLINE": "true",
+        "CARGO_PKG_NAME": "job-executor" ,
+        "CARGO_PKG_VERSION": "0.1.0" ,
+    },
+)
