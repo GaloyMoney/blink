@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(trigger): early return on lnd connection issues (#3968)'
-      sha: 34413514935bc59fc3ef70175ecfe405d3ef8e54
+      commitTitle: 'chore: follow up migration for location refacotring (#3936)...'
+      sha: 02c2e47bc1f69a98c31552c2b4fd88a8fabf79bc
       tags:
-      - 0.20.52-2-g344135149
+      - 0.20.53-5-g02c2e47bc
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(trigger): early return on lnd connection issues (#3968)'
-      sha: 34413514935bc59fc3ef70175ecfe405d3ef8e54
+      commitTitle: 'chore: follow up migration for location refacotring (#3936)...'
+      sha: 02c2e47bc1f69a98c31552c2b4fd88a8fabf79bc
       tags:
-      - 0.20.52-2-g344135149
+      - 0.20.53-5-g02c2e47bc
     path: schemas/
   - git:
-      commitTitle: 'fix(trigger): early return on lnd connection issues (#3968)'
-      sha: 34413514935bc59fc3ef70175ecfe405d3ef8e54
+      commitTitle: 'chore: follow up migration for location refacotring (#3936)...'
+      sha: 02c2e47bc1f69a98c31552c2b4fd88a8fabf79bc
       tags:
-      - 0.20.52-2-g344135149
+      - 0.20.53-5-g02c2e47bc
     path: gql/
   path: ./graphql
 kind: LockConfig
