@@ -1832,46 +1832,47 @@ cargo.rust_library(
 
 alias(
     name = "derive_builder",
-    actual = ":derive_builder-0.12.0",
+    actual = ":derive_builder-0.13.0",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "derive_builder-0.12.0.crate",
-    sha256 = "8d67778784b508018359cbc8696edb3db78160bab2c2a28ba7f56ef6932997f8",
-    strip_prefix = "derive_builder-0.12.0",
-    urls = ["https://crates.io/api/v1/crates/derive_builder/0.12.0/download"],
+    name = "derive_builder-0.13.0.crate",
+    sha256 = "660047478bc508c0fde22c868991eec0c40a63e48d610befef466d48e2bee574",
+    strip_prefix = "derive_builder-0.13.0",
+    urls = ["https://crates.io/api/v1/crates/derive_builder/0.13.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "derive_builder-0.12.0",
-    srcs = [":derive_builder-0.12.0.crate"],
+    name = "derive_builder-0.13.0",
+    srcs = [":derive_builder-0.13.0.crate"],
     crate = "derive_builder",
-    crate_root = "derive_builder-0.12.0.crate/src/lib.rs",
+    crate_root = "derive_builder-0.13.0.crate/src/lib.rs",
     edition = "2015",
     features = [
         "default",
         "std",
     ],
     visibility = [],
-    deps = [":derive_builder_macro-0.12.0"],
+    deps = [":derive_builder_macro-0.13.0"],
 )
 
 http_archive(
-    name = "derive_builder_core-0.12.0.crate",
-    sha256 = "c11bdc11a0c47bc7d37d582b5285da6849c96681023680b906673c5707af7b0f",
-    strip_prefix = "derive_builder_core-0.12.0",
-    urls = ["https://crates.io/api/v1/crates/derive_builder_core/0.12.0/download"],
+    name = "derive_builder_core-0.13.0.crate",
+    sha256 = "9b217e6dd1011a54d12f3b920a411b5abd44b1716ecfe94f5f2f2f7b52e08ab7",
+    strip_prefix = "derive_builder_core-0.13.0",
+    urls = ["https://crates.io/api/v1/crates/derive_builder_core/0.13.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "derive_builder_core-0.12.0",
-    srcs = [":derive_builder_core-0.12.0.crate"],
+    name = "derive_builder_core-0.13.0",
+    srcs = [":derive_builder_core-0.13.0.crate"],
     crate = "derive_builder_core",
-    crate_root = "derive_builder_core-0.12.0.crate/src/lib.rs",
+    crate_root = "derive_builder_core-0.13.0.crate/src/lib.rs",
     edition = "2015",
+    features = ["lib_has_std"],
     visibility = [],
     deps = [
         ":darling-0.14.4",
@@ -1882,23 +1883,24 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "derive_builder_macro-0.12.0.crate",
-    sha256 = "ebcda35c7a396850a55ffeac740804b40ffec779b98fffbb1738f4033f0ee79e",
-    strip_prefix = "derive_builder_macro-0.12.0",
-    urls = ["https://crates.io/api/v1/crates/derive_builder_macro/0.12.0/download"],
+    name = "derive_builder_macro-0.13.0.crate",
+    sha256 = "7a5f77d7e20ac9153428f7ca14a88aba652adfc7a0ef0a06d654386310ef663b",
+    strip_prefix = "derive_builder_macro-0.13.0",
+    urls = ["https://crates.io/api/v1/crates/derive_builder_macro/0.13.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "derive_builder_macro-0.12.0",
-    srcs = [":derive_builder_macro-0.12.0.crate"],
+    name = "derive_builder_macro-0.13.0",
+    srcs = [":derive_builder_macro-0.13.0.crate"],
     crate = "derive_builder_macro",
-    crate_root = "derive_builder_macro-0.12.0.crate/src/lib.rs",
+    crate_root = "derive_builder_macro-0.13.0.crate/src/lib.rs",
     edition = "2015",
+    features = ["lib_has_std"],
     proc_macro = True,
     visibility = [],
     deps = [
-        ":derive_builder_core-0.12.0",
+        ":derive_builder_core-0.13.0",
         ":syn-1.0.109",
     ],
 )
@@ -8832,14 +8834,14 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":anymap2-0.13.0",
-        ":chrono-0.4.32",
+        ":chrono-0.4.34",
         ":dotenv-0.15.0",
         ":log-0.4.20",
         ":serde-1.0.196",
         ":serde_json-1.0.111",
         ":sqlx-0.7.2",
         ":sqlxmq_macros-0.5.0",
-        ":tokio-1.33.0",
+        ":tokio-1.36.0",
         ":uuid-1.7.0",
     ],
 )
@@ -9241,7 +9243,7 @@ cargo.rust_binary(
         ":axum-0.6.20",
         ":chrono-0.4.34",
         ":clap-4.5.0",
-        ":derive_builder-0.12.0",
+        ":derive_builder-0.13.0",
         ":futures-0.3.30",
         ":google-fcm1-5.0.3+20230106",
         ":http-0.2.11",
