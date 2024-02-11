@@ -292,13 +292,16 @@ export default function MapComponent({ mapData, googleMapsApiKey }: MapComponent
           >
             <div className="flex-col min-h-10 min-w-10 justify-center align-middle w-full">
               <h2 className="font-medium text-lg mb-3 text-center">
-                {selectedMarker.username}
+                {selectedMarker.mapInfo.title}
               </h2>
+              <h3 className="font-medium text-md mb-3 text-center">
+                {selectedMarker.username}
+              </h3>
               <Link
                 target="_blank"
                 href={`https://pay.blink.sv/${selectedMarker.username}`}
               >
-                <button className="w-full px-3 py-2 text-xs font-medium text-center bg-yellow-400 rounded-md">
+                <button className="w-full px-3 py-2 text-xs font-medium text-center bg-orange-500 rounded-full text-white">
                   Pay this user
                 </button>
               </Link>
