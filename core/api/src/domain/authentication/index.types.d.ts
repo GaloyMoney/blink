@@ -10,6 +10,9 @@ type UserId = string & { readonly brand: unique symbol }
 type PrivilegedClientId = string & { readonly brand: unique symbol }
 type AuthToken = string & { readonly brand: unique symbol }
 
+// when used in redis for rate limiting
+type HashedAuthToken = string & { readonly brand: unique symbol }
+
 type TotpSecret = string & { readonly brand: unique symbol }
 type TotpCode = string & { readonly brand: unique symbol }
 
