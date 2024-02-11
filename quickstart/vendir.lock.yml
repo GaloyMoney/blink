@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: build - variable not used (#3973)...'
-      sha: 8b68eaeb9511b75433e501ee65b2531690f6f645
+      commitTitle: 'build: improve tilt file waits (#3976)...'
+      sha: edf3a00d1773d2178b7d99a836948cf3b84c7fc5
       tags:
-      - 0.20.54
+      - 0.20.54-3-gedf3a00d1
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: build - variable not used (#3973)...'
-      sha: 8b68eaeb9511b75433e501ee65b2531690f6f645
+      commitTitle: 'build: improve tilt file waits (#3976)...'
+      sha: edf3a00d1773d2178b7d99a836948cf3b84c7fc5
       tags:
-      - 0.20.54
+      - 0.20.54-3-gedf3a00d1
     path: schemas/
   - git:
-      commitTitle: 'fix: build - variable not used (#3973)...'
-      sha: 8b68eaeb9511b75433e501ee65b2531690f6f645
+      commitTitle: 'build: improve tilt file waits (#3976)...'
+      sha: edf3a00d1773d2178b7d99a836948cf3b84c7fc5
       tags:
-      - 0.20.54
+      - 0.20.54-3-gedf3a00d1
     path: gql/
   path: ./graphql
 kind: LockConfig

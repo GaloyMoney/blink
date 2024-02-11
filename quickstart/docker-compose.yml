@@ -98,7 +98,7 @@ services:
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=hydra
   galoy:
-    image: us.gcr.io/galoy-org/galoy-api@sha256:04a11049bd7f6400befb18470492d4559d0831c8e9124e2e1039a0224e05cb69
+    image: us.gcr.io/galoy-org/galoy-api@sha256:43d405f15e0944410f3e68cd47ec2f44030a16f4a57b47ea49f4e8b85e347429
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -161,7 +161,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:07a8ddb35cb63eaedb0550c337e82e34b376a002d0bb6a173c6b2852474e1561
+    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:d581a72ffffe1c139fb78d17d7c010627811e36da710aa6219543c2597646b72
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -248,7 +248,7 @@ services:
     environment:
     - MONGO_INITDB_DATABASE=galoy
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:1b3de236d084440bc9117e3f90b166ff0446f254d4af151051f26389389c39a9
+    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:a2fa37513969c18de4fa6eaac0b4c5fd34225a3ae3af37e6cd21139d40a7999d
     depends_on:
     - mongodb
     environment:
@@ -295,6 +295,13 @@ services:
     - POSTGRES_USER=galoy-price-usr
     - POSTGRES_PASSWORD=galoy-price-pwd
     - POSTGRES_DB=galoy-price-history
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready
+      interval: 5s
+      timeout: 30s
+      retries: 5
   bitcoind:
     image: lncm/bitcoind:v25.1
     ports:
