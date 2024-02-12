@@ -19,7 +19,7 @@ pub struct NotificationsApp {
     _config: AppConfig,
     settings: UserNotificationSettingsRepo,
     executor: Executor,
-    _pool: Pool<Postgres>,
+    pool: Pool<Postgres>,
     _runner: Arc<JobRunnerHandle>,
 }
 
@@ -30,7 +30,7 @@ impl NotificationsApp {
         let runner = job::start_job_runner(&pool).await?;
         Ok(Self {
             _config: config,
-            _pool: pool,
+            pool,
             executor,
             settings,
             _runner: Arc::new(runner),
@@ -154,7 +154,10 @@ impl NotificationsApp {
         &self,
         event: T,
     ) -> Result<(), ApplicationError> {
-        self.executor.notify(event).await?;
+        let mut tx = self.pool.begin().await?;
+        job::spawn_send_push_notification(&mut tx, event.into()).await?;
+        tx.commit().await?;
+        // self.executor.notify(event).await?;
         Ok(())
     }
 }

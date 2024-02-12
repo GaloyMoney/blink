@@ -13,4 +13,6 @@ pub enum ApplicationError {
     JobError(#[from] JobError),
     #[error("{0}")]
     ExecutorError(#[from] ExecutorError),
+    #[error("{0}")]
+    Sqlx(#[from] sqlx::Error),
 }

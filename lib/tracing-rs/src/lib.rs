@@ -67,6 +67,12 @@ fn telemetry_resource(config: &TracingConfig) -> Resource {
     ]))
 }
 
+pub fn insert_error_fields(level: tracing::Level, error: impl std::fmt::Display) {
+    Span::current().record("error", &tracing::field::display("true"));
+    Span::current().record("error.level", &tracing::field::display(level));
+    Span::current().record("error.message", &tracing::field::display(error));
+}
+
 pub fn extract_tracing_data() -> HashMap<String, String> {
     let mut tracing_data = HashMap::new();
     let propagator = TraceContextPropagator::new();

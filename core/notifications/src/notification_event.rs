@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use crate::{messages::*, primitives::*};
 
 pub enum DeepLink {
@@ -5,20 +7,30 @@ pub enum DeepLink {
     Circles,
 }
 
-#[derive(Debug)]
+pub trait NotificationEvent: std::fmt::Debug + Into<NotificationEventPayload> {
+    fn user_id(&self) -> &GaloyUserId;
+    fn deep_link(&self) -> DeepLink;
+    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage;
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum NotificationEventPayload {
+    CircleGrew(CircleGrew),
+    CircleThresholdReached(CircleThresholdReached),
+    DocumentsSubmitted(DocumentsSubmitted),
+    DocumentsApproved(DocumentsApproved),
+    DocumentsRejected(DocumentsRejected),
+    DocumentsReviewPending(DocumentsReviewPending),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CircleGrew {
     pub user_id: GaloyUserId,
     pub circle_type: CircleType,
     pub this_month_circle_size: u32,
     pub all_time_circle_size: u32,
 }
-
-pub trait NotificationEvent: std::fmt::Debug {
-    fn user_id(&self) -> &GaloyUserId;
-    fn deep_link(&self) -> DeepLink;
-    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage;
-}
-
 impl NotificationEvent for CircleGrew {
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
@@ -32,8 +44,13 @@ impl NotificationEvent for CircleGrew {
         Messages::circle_grew(locale.as_ref(), self)
     }
 }
+impl From<CircleGrew> for NotificationEventPayload {
+    fn from(event: CircleGrew) -> Self {
+        NotificationEventPayload::CircleGrew(event)
+    }
+}
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CircleThresholdReached {
     pub user_id: GaloyUserId,
     pub circle_type: CircleType,
@@ -54,8 +71,13 @@ impl NotificationEvent for CircleThresholdReached {
         Messages::circle_threshold_reached(locale.as_ref(), self)
     }
 }
+impl From<CircleThresholdReached> for NotificationEventPayload {
+    fn from(event: CircleThresholdReached) -> Self {
+        NotificationEventPayload::CircleThresholdReached(event)
+    }
+}
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DocumentsSubmitted {
     pub user_id: GaloyUserId,
 }
@@ -73,8 +95,13 @@ impl NotificationEvent for DocumentsSubmitted {
         Messages::documents_submitted(locale.as_ref(), self)
     }
 }
+impl From<DocumentsSubmitted> for NotificationEventPayload {
+    fn from(event: DocumentsSubmitted) -> Self {
+        NotificationEventPayload::DocumentsSubmitted(event)
+    }
+}
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DocumentsApproved {
     pub user_id: GaloyUserId,
 }
@@ -92,8 +119,13 @@ impl NotificationEvent for DocumentsApproved {
         Messages::documents_approved(locale.as_ref(), self)
     }
 }
+impl From<DocumentsApproved> for NotificationEventPayload {
+    fn from(event: DocumentsApproved) -> Self {
+        NotificationEventPayload::DocumentsApproved(event)
+    }
+}
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DocumentsRejected {
     pub user_id: GaloyUserId,
 }
@@ -111,8 +143,13 @@ impl NotificationEvent for DocumentsRejected {
         Messages::documents_rejected(locale.as_ref(), self)
     }
 }
+impl From<DocumentsRejected> for NotificationEventPayload {
+    fn from(event: DocumentsRejected) -> Self {
+        NotificationEventPayload::DocumentsRejected(event)
+    }
+}
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DocumentsReviewPending {
     pub user_id: GaloyUserId,
 }
@@ -128,5 +165,11 @@ impl NotificationEvent for DocumentsReviewPending {
 
     fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
         Messages::documents_review_pending(locale.as_ref(), self)
+    }
+}
+
+impl From<DocumentsReviewPending> for NotificationEventPayload {
+    fn from(event: DocumentsReviewPending) -> Self {
+        NotificationEventPayload::DocumentsReviewPending(event)
     }
 }
