@@ -595,8 +595,18 @@ input LnInvoicePaymentInput {
   walletId: WalletId!
 }
 
+type LnInvoicePaymentStatus {
+  paymentHash: PaymentHash
+  paymentRequest: LnPaymentRequest
+  status: InvoicePaymentStatus
+}
+
 input LnInvoicePaymentStatusByHashInput {
   paymentHash: PaymentHash!
+}
+
+input LnInvoicePaymentStatusByRequestInput {
+  paymentRequest: LnPaymentRequest!
 }
 
 input LnInvoicePaymentStatusInput {
@@ -1199,8 +1209,9 @@ type Query {
   businessMapMarkers: [MapMarker!]!
   currencyList: [Currency!]!
   globals: Globals
-  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload!
-  lnInvoicePaymentStatusByHash(input: LnInvoicePaymentStatusByHashInput!): LnInvoicePaymentStatusPayload!
+  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload! @deprecated(reason: "Deprecated in favor of lnInvoicePaymentStatusByRequest")
+  lnInvoicePaymentStatusByHash(input: LnInvoicePaymentStatusByHashInput!): LnInvoicePaymentStatus!
+  lnInvoicePaymentStatusByRequest(input: LnInvoicePaymentStatusByRequestInput!): LnInvoicePaymentStatus!
   me: User
   mobileVersions: [MobileVersions]
   onChainTxFee(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainTxFee!
@@ -1309,6 +1320,7 @@ scalar SignedDisplayMajorAmount
 type Subscription {
   lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload!
   lnInvoicePaymentStatusByHash(input: LnInvoicePaymentStatusByHashInput!): LnInvoicePaymentStatusPayload!
+  lnInvoicePaymentStatusByRequest(input: LnInvoicePaymentStatusByRequestInput!): LnInvoicePaymentStatusPayload!
   myUpdates: MyUpdatesPayload!
   price(input: PriceInput!): PricePayload!
 
