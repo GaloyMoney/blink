@@ -70,6 +70,7 @@ pub struct CircleGrew {
     pub this_month_circle_size: u32,
     pub all_time_circle_size: u32,
 }
+
 impl NotificationEvent for CircleGrew {
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
@@ -83,6 +84,7 @@ impl NotificationEvent for CircleGrew {
         Messages::circle_grew(locale.as_ref(), self)
     }
 }
+
 impl From<CircleGrew> for NotificationEventPayload {
     fn from(event: CircleGrew) -> Self {
         NotificationEventPayload::CircleGrew(event)
@@ -110,6 +112,7 @@ impl NotificationEvent for CircleThresholdReached {
         Messages::circle_threshold_reached(locale.as_ref(), self)
     }
 }
+
 impl From<CircleThresholdReached> for NotificationEventPayload {
     fn from(event: CircleThresholdReached) -> Self {
         NotificationEventPayload::CircleThresholdReached(event)
@@ -134,6 +137,7 @@ impl NotificationEvent for DocumentsSubmitted {
         Messages::documents_submitted(locale.as_ref(), self)
     }
 }
+
 impl From<DocumentsSubmitted> for NotificationEventPayload {
     fn from(event: DocumentsSubmitted) -> Self {
         NotificationEventPayload::DocumentsSubmitted(event)
@@ -158,6 +162,7 @@ impl NotificationEvent for DocumentsApproved {
         Messages::documents_approved(locale.as_ref(), self)
     }
 }
+
 impl From<DocumentsApproved> for NotificationEventPayload {
     fn from(event: DocumentsApproved) -> Self {
         NotificationEventPayload::DocumentsApproved(event)
@@ -182,6 +187,7 @@ impl NotificationEvent for DocumentsRejected {
         Messages::documents_rejected(locale.as_ref(), self)
     }
 }
+
 impl From<DocumentsRejected> for NotificationEventPayload {
     fn from(event: DocumentsRejected) -> Self {
         NotificationEventPayload::DocumentsRejected(event)
