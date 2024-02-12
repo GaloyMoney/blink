@@ -15,6 +15,7 @@ path = "src/bin/write_sdl.rs"
 fail-on-warnings = []
 
 [dependencies]
+job-executor = { path = "../../lib/job-executor-rs" }
 tracing = { path = "../../lib/tracing-rs" }
 es-entity = { path = "../../lib/es-entity-rs" }
 
@@ -34,6 +35,7 @@ thiserror = { workspace = true }
 chrono = { workspace = true }
 futures = { workspace = true }
 sqlx = { workspace = true }
+sqlxmq = { workspace = true }
 mongodb = { workspace = true }
 rand = { workspace = true }
 uuid = { workspace = true }

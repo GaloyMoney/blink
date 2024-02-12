@@ -2,9 +2,14 @@ mod config;
 pub mod error;
 
 use sqlx::{Pool, Postgres};
+use sqlxmq::JobRunnerHandle;
 use tracing::instrument;
 
-use crate::{executor::*, notification_event::*, primitives::*, user_notification_settings::*};
+use std::sync::Arc;
+
+use crate::{
+    executor::*, job, notification_event::*, primitives::*, user_notification_settings::*,
+};
 
 pub use config::*;
 use error::*;
@@ -15,17 +20,20 @@ pub struct NotificationsApp {
     settings: UserNotificationSettingsRepo,
     executor: Executor,
     _pool: Pool<Postgres>,
+    _runner: Arc<JobRunnerHandle>,
 }
 
 impl NotificationsApp {
     pub async fn init(pool: Pool<Postgres>, config: AppConfig) -> Result<Self, ApplicationError> {
         let settings = UserNotificationSettingsRepo::new(&pool);
         let executor = Executor::init(config.executor.clone(), settings.clone()).await?;
+        let runner = job::start_job_runner(&pool).await?;
         Ok(Self {
             _config: config,
             _pool: pool,
             executor,
             settings,
+            _runner: Arc::new(runner),
         })
     }
 
