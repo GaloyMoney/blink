@@ -70,7 +70,7 @@ async fn check_handler(
     State((header, app)): State<(String, ApiKeysApp)>,
     headers: HeaderMap,
 ) -> Result<Json<CheckResponse>, ApplicationError> {
-    tracing::extract_tracing(&headers);
+    tracing::http::extract_tracing(&headers);
     let key = headers.get(header).ok_or(ApplicationError::MissingApiKey)?;
     let (id, sub, read_only) = app.lookup_authenticated_subject(key.to_str()?).await?;
     let scope = if read_only {
