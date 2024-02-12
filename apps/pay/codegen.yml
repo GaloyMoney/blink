@@ -1,5 +1,5 @@
 overwrite: true
-schema: "https://raw.githubusercontent.com/GaloyMoney/galoy/main/src/graphql/public/schema.graphql"
+schema: "https://raw.githubusercontent.com/GaloyMoney/galoy/main/core/api/src/graphql/public/schema.graphql"
 documents:
   - "components/**/*.ts"
   - "components/**/*.tsx"
@@ -64,3 +64,8 @@ generates:
         join__FieldSet: "string"
         link__Import: "string"
         _FieldSet: "string"
+        LnPubkey: "string"
+        EndpointId: "string"
+        EndpointUrl: "string"
+        Object: "string"
+        NotificationCategory: "string"
