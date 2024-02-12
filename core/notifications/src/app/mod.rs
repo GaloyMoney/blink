@@ -2,9 +2,14 @@ mod config;
 pub mod error;
 
 use sqlx::{Pool, Postgres};
+use sqlxmq::JobRunnerHandle;
 use tracing::instrument;
 
-use crate::{executor::*, notification_event::*, primitives::*, user_notification_settings::*};
+use std::sync::Arc;
+
+use crate::{
+    executor::*, job, notification_event::*, primitives::*, user_notification_settings::*,
+};
 
 pub use config::*;
 use error::*;
@@ -13,19 +18,20 @@ use error::*;
 pub struct NotificationsApp {
     _config: AppConfig,
     settings: UserNotificationSettingsRepo,
-    executor: Executor,
-    _pool: Pool<Postgres>,
+    pool: Pool<Postgres>,
+    _runner: Arc<JobRunnerHandle>,
 }
 
 impl NotificationsApp {
     pub async fn init(pool: Pool<Postgres>, config: AppConfig) -> Result<Self, ApplicationError> {
         let settings = UserNotificationSettingsRepo::new(&pool);
         let executor = Executor::init(config.executor.clone(), settings.clone()).await?;
+        let runner = job::start_job_runner(&pool, executor).await?;
         Ok(Self {
             _config: config,
-            _pool: pool,
-            executor,
+            pool,
             settings,
+            _runner: Arc::new(runner),
         })
     }
 
@@ -141,18 +147,14 @@ impl NotificationsApp {
         Ok(user_settings)
     }
 
-    #[instrument(name = "app.handle_circle_grew", skip(self), err)]
-    pub async fn handle_circle_grew(&self, event: CircleGrew) -> Result<(), ApplicationError> {
-        self.executor.notify(event).await?;
-        Ok(())
-    }
-
-    #[instrument(name = "app.handle_threshold_reached", skip(self), err)]
-    pub async fn handle_threshold_reached(
+    #[instrument(name = "app.handle_notification_event", skip(self), err)]
+    pub async fn handle_notification_event<T: NotificationEvent>(
         &self,
-        event: CircleThresholdReached,
+        event: T,
     ) -> Result<(), ApplicationError> {
-        self.executor.notify(event).await?;
+        let mut tx = self.pool.begin().await?;
+        job::spawn_send_push_notification(&mut tx, event.into()).await?;
+        tx.commit().await?;
         Ok(())
     }
 }

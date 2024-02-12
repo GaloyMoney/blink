@@ -55,6 +55,32 @@ impl Messages {
         .to_string();
         LocalizedMessage { title, body }
     }
+
+    pub fn documents_submitted(locale: &str, _event: &DocumentsSubmitted) -> LocalizedMessage {
+        let title = t!("documents_submitted.title", locale = locale).to_string();
+        let body = t!("documents_submitted.body", locale = locale).to_string();
+        LocalizedMessage { title, body }
+    }
+
+    pub fn documents_approved(locale: &str, _event: &DocumentsApproved) -> LocalizedMessage {
+        let title = t!("documents_approved.title", locale = locale).to_string();
+        let body = t!("documents_approved.body", locale = locale).to_string();
+        LocalizedMessage { title, body }
+    }
+    pub fn documents_rejected(locale: &str, _event: &DocumentsRejected) -> LocalizedMessage {
+        let title = t!("documents_rejected.title", locale = locale).to_string();
+        let body = t!("documents_rejected.body", locale = locale).to_string();
+        LocalizedMessage { title, body }
+    }
+
+    pub fn documents_review_pending(
+        locale: &str,
+        _event: &DocumentsReviewPending,
+    ) -> LocalizedMessage {
+        let title = t!("documents_review_pending.title", locale = locale).to_string();
+        let body = t!("documents_review_pending.body", locale = locale).to_string();
+        LocalizedMessage { title, body }
+    }
 }
 
 #[cfg(test)]
