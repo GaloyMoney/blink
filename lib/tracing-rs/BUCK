@@ -5,6 +5,7 @@ galoy_rust_lib(
     deps = [
         "//third-party/rust:anyhow",
         "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
         "//third-party/rust:opentelemetry-otlp",
         "//third-party/rust:opentelemetry-semantic-conventions",
         "//third-party/rust:opentelemetry",

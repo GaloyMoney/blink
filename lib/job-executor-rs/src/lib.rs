@@ -184,7 +184,7 @@ struct JobData<T> {
     #[serde(flatten)]
     data: Option<T>,
     #[serde(flatten)]
-    tracing_data: HashMap<String, String>,
+    tracing_data: HashMap<String, serde_json::Value>,
 }
 
 impl<'a, T: Deserialize<'a>> JobData<T> {
@@ -207,7 +207,7 @@ struct JobMeta {
     attempts: u32,
     #[serde_as(as = "serde_with::DurationSeconds<u64>")]
     wait_till_next_attempt: Duration,
-    tracing_data: Option<HashMap<String, String>>,
+    tracing_data: Option<HashMap<String, serde_json::Value>>,
 }
 impl Default for JobMeta {
     fn default() -> Self {
