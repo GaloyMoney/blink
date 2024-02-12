@@ -43,6 +43,7 @@ galoy_rust_bin(
     deps = [
         "//lib/tracing-rs:tracing",
         "//lib/es-entity-rs:es-entity",
+        "//lib/job-executor-rs:job-executor",
         "//third-party/rust:tokio",
         "//third-party/rust:anyhow",
         "//third-party/rust:async-graphql",
@@ -59,6 +60,7 @@ galoy_rust_bin(
         "//third-party/rust:chrono",
         "//third-party/rust:futures",
         "//third-party/rust:sqlx",
+        "//third-party/rust:sqlxmq",
         "//third-party/rust:mongodb",
         "//third-party/rust:rand",
         "//third-party/rust:uuid",
@@ -72,6 +74,7 @@ galoy_rust_bin(
     extra_tests = [
         "//lib/tracing-rs:tracing",
         "//lib/es-entity-rs:es-entity",
+        "//lib/job-executor-rs:job-executor",
     ],
     protos = ["proto/notifications.proto"],
     env = {
