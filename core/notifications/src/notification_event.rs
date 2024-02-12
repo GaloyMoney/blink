@@ -24,6 +24,45 @@ pub enum NotificationEventPayload {
     DocumentsReviewPending(DocumentsReviewPending),
 }
 
+impl NotificationEvent for NotificationEventPayload {
+    fn user_id(&self) -> &GaloyUserId {
+        match self {
+            NotificationEventPayload::CircleGrew(event) => event.user_id(),
+            NotificationEventPayload::CircleThresholdReached(event) => event.user_id(),
+            NotificationEventPayload::DocumentsSubmitted(event) => event.user_id(),
+            NotificationEventPayload::DocumentsApproved(event) => event.user_id(),
+            NotificationEventPayload::DocumentsRejected(event) => event.user_id(),
+            NotificationEventPayload::DocumentsReviewPending(event) => event.user_id(),
+        }
+    }
+
+    fn deep_link(&self) -> DeepLink {
+        match self {
+            NotificationEventPayload::CircleGrew(event) => event.deep_link(),
+            NotificationEventPayload::CircleThresholdReached(event) => event.deep_link(),
+            NotificationEventPayload::DocumentsSubmitted(event) => event.deep_link(),
+            NotificationEventPayload::DocumentsApproved(event) => event.deep_link(),
+            NotificationEventPayload::DocumentsRejected(event) => event.deep_link(),
+            NotificationEventPayload::DocumentsReviewPending(event) => event.deep_link(),
+        }
+    }
+
+    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
+        match self {
+            NotificationEventPayload::CircleGrew(event) => event.to_localized_msg(locale),
+            NotificationEventPayload::CircleThresholdReached(event) => {
+                event.to_localized_msg(locale)
+            }
+            NotificationEventPayload::DocumentsSubmitted(event) => event.to_localized_msg(locale),
+            NotificationEventPayload::DocumentsApproved(event) => event.to_localized_msg(locale),
+            NotificationEventPayload::DocumentsRejected(event) => event.to_localized_msg(locale),
+            NotificationEventPayload::DocumentsReviewPending(event) => {
+                event.to_localized_msg(locale)
+            }
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CircleGrew {
     pub user_id: GaloyUserId,

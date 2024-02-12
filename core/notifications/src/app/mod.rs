@@ -18,7 +18,6 @@ use error::*;
 pub struct NotificationsApp {
     _config: AppConfig,
     settings: UserNotificationSettingsRepo,
-    executor: Executor,
     pool: Pool<Postgres>,
     _runner: Arc<JobRunnerHandle>,
 }
@@ -27,11 +26,10 @@ impl NotificationsApp {
     pub async fn init(pool: Pool<Postgres>, config: AppConfig) -> Result<Self, ApplicationError> {
         let settings = UserNotificationSettingsRepo::new(&pool);
         let executor = Executor::init(config.executor.clone(), settings.clone()).await?;
-        let runner = job::start_job_runner(&pool).await?;
+        let runner = job::start_job_runner(&pool, executor).await?;
         Ok(Self {
             _config: config,
             pool,
-            executor,
             settings,
             _runner: Arc::new(runner),
         })
@@ -157,7 +155,6 @@ impl NotificationsApp {
         let mut tx = self.pool.begin().await?;
         job::spawn_send_push_notification(&mut tx, event.into()).await?;
         tx.commit().await?;
-        // self.executor.notify(event).await?;
         Ok(())
     }
 }
