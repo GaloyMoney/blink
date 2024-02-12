@@ -3845,6 +3845,7 @@ dependencies = [
  "opentelemetry-otlp",
  "opentelemetry-semantic-conventions",
  "serde",
+ "serde_json",
  "tonic 0.10.2",
  "tracing 0.1.40",
  "tracing-opentelemetry",
