@@ -5,6 +5,7 @@ rust_i18n::i18n!("locales", fallback = "en");
 
 mod app;
 mod data_import;
+mod job;
 mod messages;
 
 pub mod cli;

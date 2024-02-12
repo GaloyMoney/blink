@@ -251,7 +251,7 @@ impl NotificationsService for Notifications {
                     .map(primitives::CircleType::from)
                     .map_err(|e| Status::invalid_argument(e.to_string()))?;
                 self.app
-                    .handle_circle_grew(notification_event::CircleGrew {
+                    .handle_notification_event(notification_event::CircleGrew {
                         user_id: GaloyUserId::from(user_id),
                         circle_type,
                         this_month_circle_size,
@@ -277,11 +277,59 @@ impl NotificationsService for Notifications {
                     .map(primitives::CircleTimeFrame::from)
                     .map_err(|e| Status::invalid_argument(e.to_string()))?;
                 self.app
-                    .handle_threshold_reached(notification_event::CircleThresholdReached {
+                    .handle_notification_event(notification_event::CircleThresholdReached {
                         user_id: GaloyUserId::from(user_id),
                         circle_type,
                         time_frame,
                         threshold,
+                    })
+                    .await?
+            }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::DocumentsSubmitted(
+                        proto::DocumentsSubmitted { user_id },
+                    )),
+            }) => {
+                self.app
+                    .handle_notification_event(notification_event::DocumentsSubmitted {
+                        user_id: GaloyUserId::from(user_id),
+                    })
+                    .await?
+            }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::DocumentsApproved(proto::DocumentsApproved {
+                        user_id,
+                    })),
+            }) => {
+                self.app
+                    .handle_notification_event(notification_event::DocumentsApproved {
+                        user_id: GaloyUserId::from(user_id),
+                    })
+                    .await?
+            }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::DocumentsRejected(proto::DocumentsRejected {
+                        user_id,
+                    })),
+            }) => {
+                self.app
+                    .handle_notification_event(notification_event::DocumentsRejected {
+                        user_id: GaloyUserId::from(user_id),
+                    })
+                    .await?
+            }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::DocumentsReviewPending(
+                        proto::DocumentsReviewPending { user_id },
+                    )),
+            }) => {
+                self.app
+                    .handle_notification_event(notification_event::DocumentsReviewPending {
+                        user_id: GaloyUserId::from(user_id),
                     })
                     .await?
             }
