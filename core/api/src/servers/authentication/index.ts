@@ -1,25 +1,23 @@
+import basicAuth from "basic-auth"
+import bodyParser from "body-parser"
 import cors from "cors"
 import express, { NextFunction, Request, Response } from "express"
 
-import basicAuth from "basic-auth"
-
-import bodyParser from "body-parser"
+import { mapError } from "@/graphql/error-map"
 
 import { Authentication } from "@/app"
+import { registerCaptchaGeetest } from "@/app/captcha"
 
-import { mapError } from "@/graphql/error-map"
-import {
-  addAttributesToCurrentSpan,
-  recordExceptionInCurrentSpan,
-  tracer,
-} from "@/services/tracing"
+import { UNSECURE_IP_FROM_REQUEST_OBJECT } from "@/config"
 
-import {
-  elevatingSessionWithTotp,
-  loginWithEmailToken,
-  requestEmailCode,
-} from "@/app/authentication"
 import { parseIps } from "@/domain/accounts-ips"
+import { checkedToEmailCode, validOneTimeAuthCodeValue } from "@/domain/authentication"
+import {
+  EmailCodeInvalidError,
+  EmailValidationSubmittedTooOftenError,
+} from "@/domain/authentication/errors"
+import { UserLoginIpRateLimiterExceededError } from "@/domain/rate-limit/errors"
+import { parseErrorMessageFromUnknown } from "@/domain/shared"
 import { checkedToEmailAddress, checkedToPhoneNumber } from "@/domain/users"
 
 import {
@@ -27,21 +25,11 @@ import {
   checkedToEmailLoginId,
   checkedToTotpCode,
 } from "@/services/kratos"
-
-import { UNSECURE_IP_FROM_REQUEST_OBJECT } from "@/config"
-
-import { parseErrorMessageFromUnknown } from "@/domain/shared"
-
-import { checkedToEmailCode, validOneTimeAuthCodeValue } from "@/domain/authentication"
-
 import {
-  EmailCodeInvalidError,
-  EmailValidationSubmittedTooOftenError,
-} from "@/domain/authentication/errors"
-
-import { UserLoginIpRateLimiterExceededError } from "@/domain/rate-limit/errors"
-
-import { registerCaptchaGeetest } from "@/app/captcha"
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+  tracer,
+} from "@/services/tracing"
 
 const authRouter = express.Router({ caseSensitive: true })
 
@@ -136,7 +124,7 @@ authRouter.post("/email/code", async (req: Request, res: Response) => {
   }
 
   try {
-    const emailLoginId = await requestEmailCode({ email, ip })
+    const emailLoginId = await Authentication.requestEmailCode({ email, ip })
     if (emailLoginId instanceof Error) {
       recordExceptionInCurrentSpan({ error: emailLoginId.message })
       return res.status(500).send({ error: emailLoginId.message })
@@ -174,7 +162,11 @@ authRouter.post("/email/login", async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await loginWithEmailToken({ ip, emailFlowId: emailLoginId, code })
+    const result = await Authentication.loginWithEmailToken({
+      ip,
+      emailFlowId: emailLoginId,
+      code,
+    })
     if (result instanceof EmailCodeInvalidError) {
       recordExceptionInCurrentSpan({ error: result })
       return res.status(401).send({ error: "invalid code" })
@@ -224,7 +216,7 @@ authRouter.post("/totp/validate", async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await elevatingSessionWithTotp({
+    const result = await Authentication.elevatingSessionWithTotp({
       totpCode,
       authToken,
     })
