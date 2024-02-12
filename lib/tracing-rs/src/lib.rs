@@ -73,17 +73,30 @@ pub fn insert_error_fields(level: tracing::Level, error: impl std::fmt::Display)
     Span::current().record("error.message", &tracing::field::display(error));
 }
 
-pub fn extract_tracing_data() -> HashMap<String, String> {
+pub fn extract_tracing_data() -> HashMap<String, serde_json::Value> {
     let mut tracing_data = HashMap::new();
     let propagator = TraceContextPropagator::new();
     let context = Span::current().context();
     propagator.inject_context(&context, &mut tracing_data);
     tracing_data
+        .into_iter()
+        .map(|(k, v)| (k, serde_json::Value::String(v)))
+        .collect()
 }
 
-pub fn inject_tracing_data(span: &Span, tracing_data: &HashMap<String, String>) {
+pub fn inject_tracing_data(span: &Span, tracing_data: &HashMap<String, serde_json::Value>) {
+    let data = tracing_data
+        .iter()
+        .filter_map(|(k, v)| {
+            if let serde_json::Value::String(v) = v {
+                Some((k.clone(), v.clone()))
+            } else {
+                None
+            }
+        })
+        .collect::<HashMap<String, String>>();
     let propagator = TraceContextPropagator::new();
-    let context = propagator.extract(tracing_data);
+    let context = propagator.extract(&data);
     span.set_parent(context);
 }
 
