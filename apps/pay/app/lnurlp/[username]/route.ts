@@ -2,8 +2,8 @@ import { NextResponse } from "next/server"
 
 import { env } from "../../../env"
 import {
-  AccountDefaultWalletsDocument,
-  AccountDefaultWalletsQuery,
+  AccountDefaultWalletDocument,
+  AccountDefaultWalletQuery,
   RealtimePriceInitialDocument,
   RealtimePriceInitialQuery,
 } from "../../../lib/graphql/generated"
@@ -50,8 +50,8 @@ export async function GET(
   let walletId: string | null = null
 
   try {
-    const { data } = await client.query<AccountDefaultWalletsQuery>({
-      query: AccountDefaultWalletsDocument,
+    const { data } = await client.query<AccountDefaultWalletQuery>({
+      query: AccountDefaultWalletDocument,
       variables: { username, walletCurrency: "BTC" },
       context: {
         "x-real-ip": request.headers.get("x-real-ip"),
