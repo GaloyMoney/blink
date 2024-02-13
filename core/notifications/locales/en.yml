@@ -21,7 +21,7 @@ identity_verification_approved.body: "The documents for your verification have b
 identity_verification_declined.reason.documents_not_clear: "the uploaded documents were not clear"
 identity_verification_declined.reason.photo_not_clear: "the picture you submitted was not clear"
 identity_verification_declined.title: "Your Identity could not be verified!"
-identity_verification_declined.body: "We were not able to process your documents because ${reason}."
+identity_verification_declined.body: "We were not able to process your documents because %{reason}."
 
 identity_verification_review_pending.title: "Your verification is in process!"
 identity_verification_review_pending.body: "We have received your documents and are processing them."
