@@ -49,7 +49,8 @@ create-tmp-env-ci:
 
 mine-block:
 	container_id=$$(docker ps -q -f status=running -f name="bitcoind-1"); \
-	docker exec -it "$$container_id" /bin/sh -c 'bitcoin-cli createwallet -chain=regtest || ADDR=$$(bitcoin-cli getnewaddress "") && bitcoin-cli generatetoaddress 6 $$ADDR '
+	docker exec -it "$$container_id" /bin/sh -c 'bitcoin-cli createwallet -chain=regtest || ADDR=$$(bitcoin-cli getnewaddress "") && bitcoin-cli generatetoaddress 3 $$ADDR '
+	docker exec -it "$$container_id" /bin/sh -c 'bitcoin-cli createwallet -chain=regtest || ADDR=$$(bitcoin-cli getnewaddress "") && bitcoin-cli generatetoaddress 3 $$ADDR '
 
 lncli-1:
 	docker exec -it $$(docker ps -q -f status=running -f name="lnd1-1") /bin/sh -c 'lncli -n regtest ${command}'
@@ -69,3 +70,6 @@ redis-flush:
 
 gen-test-jwt:
 	pnpm run gen-test-jwt
+
+boltcard:
+	bun run ./apps/boltcard/index.ts

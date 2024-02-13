@@ -1,0 +1,12 @@
+version: "3"
+services:
+  boltcard-pg:
+    image: postgres:14.1
+    ports:
+      - "5436:5432"
+    expose:
+      - "5432"
+    environment:
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=default

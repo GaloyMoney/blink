@@ -1,0 +1,12 @@
+- rate limits
+- passing IP to backend
+- proper link of .gql (instead of copy)
+- Tilt setup
+- verify writing card do the callback/creation of Card entity
+- open telemetry
+
+- generate init auth token from the app
+- type from db
+
+- unify the response from the API
+- be consistent. either searchParams or [id]

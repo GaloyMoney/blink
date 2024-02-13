@@ -101,6 +101,10 @@ export const loginWithPhoneToken = async ({
     const phoneMetadata = await isAllowedToOnboard({ ip, phone })
     if (phoneMetadata instanceof Error) return phoneMetadata
 
+    addAttributesToCurrentSpan({
+      phoneMetadata: phoneMetadata ? JSON.stringify(phoneMetadata) : "undefined",
+    })
+
     const kratosResult = await authService.createIdentityWithSession({
       phone,
       phoneMetadata,
