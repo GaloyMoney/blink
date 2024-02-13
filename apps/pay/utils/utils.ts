@@ -53,7 +53,7 @@ export const getOriginalRequestInfo = (request: Request) => {
   }
 }
 
-export function safeAmount(amount: number | string | string[] | undefined) {
+export function safeAmount(amount: number | string | string[] | undefined | null) {
   try {
     if (isNaN(Number(amount))) return 0
     const theSafeAmount = (

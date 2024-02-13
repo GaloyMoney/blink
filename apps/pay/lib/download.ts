@@ -1,6 +1,12 @@
 export const getOS = () => {
-  // @ts-expect-error: opera browser property is not a standard thing
-  const userAgent = navigator.userAgent || navigator.vendor || window.opera
+  let userAgent
+
+  if (typeof window !== "undefined") {
+    // @ts-expect-error: opera browser property is not a standard thing
+    userAgent = navigator?.userAgent || navigator?.vendor || window.opera
+  } else {
+    return undefined
+  }
 
   // Windows Phone must come first because its UA also contains "Android"
   if (/windows phone/i.test(userAgent)) {

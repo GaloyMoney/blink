@@ -1,5 +1,5 @@
+"use client"
 import Link from "next/link"
-import { useRouter } from "next/router"
 import React from "react"
 import Container from "react-bootstrap/Container"
 import Image from "react-bootstrap/Image"
@@ -8,15 +8,18 @@ import Head from "next/head"
 
 import { gql } from "@apollo/client"
 
-import ParsePayment from "../components/ParsePOSPayment"
-import PinToHomescreen from "../components/PinToHomescreen"
+import { useSearchParams } from "next/navigation"
 
-import CurrencyDropdown from "../components/Currency/currency-dropdown"
+import ParsePayment from "../../components/ParsePOSPayment"
+import PinToHomescreen from "../../components/PinToHomescreen"
 
-import { useAccountDefaultWalletsQuery } from "../lib/graphql/generated"
+import CurrencyDropdown from "../../components/Currency/currency-dropdown"
 
-import reducer, { ACTIONS } from "./_reducer"
-import styles from "./_user.module.css"
+import { useAccountDefaultWalletsQuery } from "../../lib/graphql/generated"
+
+import reducer, { ACTIONS } from "../_reducer"
+
+import styles from "../_user.module.css"
 
 gql`
   query accountDefaultWallets($username: Username!) {
@@ -28,11 +31,18 @@ gql`
   }
 `
 
-function ReceivePayment() {
-  const router = useRouter()
-  const { username, memo, display } = router.query
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+type ReceivePaymentProps = {
+  params: {
+    username: string
+  }
+}
+
+function ReceivePayment({ params }: ReceivePaymentProps) {
+  const searchParams = useSearchParams()
+  const query = searchParams ? Object.fromEntries(searchParams.entries()) : {}
+
+  const { memo, display } = query
+  const { username } = params
 
   let accountUsername: string
   if (!username) {
@@ -81,7 +91,7 @@ function ReceivePayment() {
 
   return (
     <>
-      {router.query.username ? (
+      {username ? (
         <Container className={styles.payment_container}>
           <Head>
             <link
@@ -124,7 +134,7 @@ function ReceivePayment() {
                     style={{
                       border: "none",
                       outline: "none",
-                      width: isIOS || isSafari ? "72px" : "56px",
+                      width: "56px",
                       height: "42px",
                       fontSize: "18px",
                       backgroundColor: "white",
@@ -134,16 +144,17 @@ function ReceivePayment() {
                     showOnlyFlag={true}
                     onSelectedDisplayCurrencyChange={(newDisplayCurrency) => {
                       localStorage.setItem("display", newDisplayCurrency)
-                      router.push(
-                        {
-                          query: { ...router.query, display: newDisplayCurrency },
-                        },
-                        undefined,
-                        { shallow: true },
+                      window.history.pushState(
+                        {},
+                        "",
+                        `${window.location.pathname}?${new URLSearchParams({
+                          ...query,
+                          display: newDisplayCurrency,
+                        }).toString()}`,
                       )
+
                       setTimeout(() => {
-                        // hard reload to re-calculate currency
-                        // in a future PR we can manage state globally for selected display currency
+                        // Hard reload to re-calculate currency
                         window.location.reload()
                       }, 100)
                     }}
@@ -157,6 +168,7 @@ function ReceivePayment() {
                 dispatch={dispatch}
                 defaultWalletCurrency={data?.accountDefaultWallet.walletCurrency}
                 walletId={data?.accountDefaultWallet.id}
+                username={accountUsername}
               />
             </>
           )}

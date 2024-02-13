@@ -1,18 +1,22 @@
-import Row from "react-bootstrap/Row"
+"use client"
 import Col from "react-bootstrap/Col"
+import Row from "react-bootstrap/Row"
 import Card from "react-bootstrap/Card"
 import Container from "react-bootstrap/Container"
 import ReactToPrint from "react-to-print"
 import { bech32 } from "bech32"
 import { QRCode } from "react-qrcode-logo"
 import { useRef } from "react"
-import { useRouter } from "next/router"
 
-export default function Print() {
+export default function Print({
+  params,
+}: {
+  params: {
+    username: string
+  }
+}) {
+  const { username } = params
   const componentRef = useRef<HTMLDivElement | null>(null)
-
-  const router = useRouter()
-  const username = router.query.username as string
   const url = new URL(window.location.href)
   const unencodedLnurl = `${url.protocol}//${url.host}/.well-known/lnurlp/${username}`
   const lnurl = bech32.encode(

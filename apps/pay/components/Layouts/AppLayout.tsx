@@ -1,6 +1,8 @@
-import copy from "copy-to-clipboard"
+"use client"
+
 import Link from "next/link"
-import { useRouter } from "next/router"
+import copy from "copy-to-clipboard"
+import { useRouter, useSearchParams } from "next/navigation"
 import React from "react"
 import { Image, OverlayTrigger, Tooltip } from "react-bootstrap"
 
@@ -15,7 +17,8 @@ type Props = {
 
 const AppLayout = ({ children, username }: Props) => {
   const router = useRouter()
-  const { memo } = useRouter().query
+  const searchParams = useSearchParams()
+  const memo = searchParams?.get("memo")
   const [openSideBar, setOpenSideBar] = React.useState<boolean>(false)
   const [copied, setCopied] = React.useState<boolean>(false)
   const lightningAddr = username
@@ -40,15 +43,9 @@ const AppLayout = ({ children, username }: Props) => {
   const navigateHome = () => {
     let pathname = "/"
     if (username) pathname = `/${username}`
-    router.push(
-      {
-        pathname,
-      },
-      undefined,
-      { shallow: true },
-    )
+    window.history.pushState({}, "", `${pathname}`)
     setTimeout(() => {
-      router.reload() // Force a reload after a short delay to allow location href to update
+      router.refresh() // Force a reload after a short delay to allow location href to update
     }, 200)
   }
 

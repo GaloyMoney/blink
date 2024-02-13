@@ -1,6 +1,6 @@
 import React from "react"
 
-import { ACTIONS, ACTION_TYPE } from "../../pages/_reducer"
+import { ACTIONS, ACTION_TYPE } from "../../app/_reducer"
 
 interface Props {
   digit: string

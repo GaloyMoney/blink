@@ -1,6 +1,5 @@
-import { ParsedUrlQuery } from "querystring"
-
-import { useRouter } from "next/router"
+"use client"
+import { useRouter, useSearchParams } from "next/navigation"
 import React, { useEffect } from "react"
 import Container from "react-bootstrap/Container"
 import Image from "react-bootstrap/Image"
@@ -8,13 +7,8 @@ import Image from "react-bootstrap/Image"
 import CurrencyInput, { formatValue } from "react-currency-input-field"
 
 import useRealtimePrice from "../../lib/use-realtime-price"
-import { ACTION_TYPE, ACTIONS } from "../../pages/_reducer"
-import {
-  formatOperand,
-  parseDisplayCurrency,
-  safeAmount,
-  getLocaleConfig,
-} from "../../utils/utils"
+import { ACTION_TYPE, ACTIONS } from "../../app/_reducer"
+import { formatOperand, safeAmount, getLocaleConfig } from "../../utils/utils"
 import Memo from "../Memo"
 
 import { useDisplayCurrency } from "../../lib/use-display-currency"
@@ -26,6 +20,9 @@ import styles from "./parse-payment.module.css"
 import ReceiveInvoice from "./Receive-Invoice"
 
 function isRunningStandalone() {
+  if (typeof window === "undefined") {
+    return false
+  }
   return window.matchMedia("(display-mode: standalone)").matches
 }
 
@@ -34,6 +31,7 @@ interface Props {
   walletId?: string
   dispatch: React.Dispatch<ACTION_TYPE>
   state: React.ComponentState
+  username: string
 }
 
 interface UpdateAmount {
@@ -56,10 +54,19 @@ const defaultCurrencyMetadata: Currency = {
   __typename: "Currency",
 }
 
-function ParsePayment({ defaultWalletCurrency, walletId, dispatch, state }: Props) {
+function ParsePayment({
+  defaultWalletCurrency,
+  walletId,
+  dispatch,
+  state,
+  username,
+}: Props) {
   const router = useRouter()
-  const { username, amount, sats, unit, memo, currency } = router.query
-  const { display } = parseDisplayCurrency(router.query)
+  const searchParams = useSearchParams()
+  const query = searchParams ? Object.fromEntries(searchParams.entries()) : {}
+  const { amount, sats, unit, memo, currency } = query
+
+  const display = searchParams?.get("display") ?? localStorage.getItem("display") ?? "USD"
   const { currencyToSats, satsToCurrency, hasLoaded } = useRealtimePrice(display)
   const { currencyList } = useDisplayCurrency()
   const [valueInFiat, setValueInFiat] = React.useState(0)
@@ -96,10 +103,11 @@ function ParsePayment({ defaultWalletCurrency, walletId, dispatch, state }: Prop
     const initialAmount = safeAmount(amount).toString()
     const initialSats = safeAmount(sats).toString()
     const initialDisplay = display ?? localStorage.getItem("display") ?? "USD"
-    const initialUsername = router.query.username
-    const initialQuery = { ...router.query }
+    const initialUsername = username
+    const initialQuery = searchParams ? Object.fromEntries(searchParams.entries()) : {}
+
     delete initialQuery?.currency
-    const newQuery: ParsedUrlQuery = {
+    const newQuery = {
       amount: initialAmount,
       sats: initialSats,
       unit: initialUnit,
@@ -108,20 +116,14 @@ function ParsePayment({ defaultWalletCurrency, walletId, dispatch, state }: Prop
       username: initialUsername,
     }
     if (initialQuery !== newQuery) {
-      router.push(
-        {
-          pathname: `${username}`,
-          query: {
-            amount: initialAmount,
-            sats: initialSats,
-            unit: initialUnit,
-            memo: memo ?? "",
-            display: initialDisplay,
-          },
-        },
-        undefined,
-        { shallow: true },
-      )
+      const newUrl = `${username}?${new URLSearchParams({
+        amount: initialAmount,
+        sats: initialSats,
+        unit: initialUnit,
+        memo: memo ?? "",
+        display: initialDisplay,
+      }).toString()}`
+      window.history.pushState({}, "", newUrl)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -136,7 +138,7 @@ function ParsePayment({ defaultWalletCurrency, walletId, dispatch, state }: Prop
       } else if (sats) {
         return {
           shouldUpdate: true,
-          value: sats.toString(),
+          value: sats?.toString(),
         }
       }
     } else {
@@ -152,20 +154,15 @@ function ParsePayment({ defaultWalletCurrency, walletId, dispatch, state }: Prop
   const toggleCurrency = () => {
     const newUnit = unit === AmountUnit.Sat ? AmountUnit.Cent : AmountUnit.Sat
     prevUnit.current = (unit as AmountUnit) || AmountUnit.Cent
-    router.push(
-      {
-        pathname: `${username}`,
-        query: {
-          currency: defaultWalletCurrency,
-          unit: newUnit,
-          memo,
-          display,
-          amount,
-          sats,
-        },
-      },
-      undefined,
-      { shallow: true },
+    router.replace(
+      `${username}?${new URLSearchParams({
+        currency: defaultWalletCurrency || "USD",
+        unit: newUnit.toString(),
+        memo: memo?.toString(),
+        display: display.toString(),
+        amount: amount.toString(),
+        sats: sats?.toString(),
+      }).toString()}`,
     )
   }
 
@@ -192,7 +189,7 @@ function ParsePayment({ defaultWalletCurrency, walletId, dispatch, state }: Prop
     if (isNaN(Number(amt))) return
     const formattedValue = formatValue({
       value: amt,
-      intlConfig: { locale: navigator.language, currency: display },
+      intlConfig: { locale: navigator?.language, currency: display },
     })
     localStorage.setItem("formattedFiatValue", formattedValue)
     setValueInFiat(amt)
@@ -209,21 +206,20 @@ function ParsePayment({ defaultWalletCurrency, walletId, dispatch, state }: Prop
 
     // 3) update the query params
     const newQuery = {
-      amount: amt,
-      sats: satsAmt,
-      currency: defaultWalletCurrency,
-      unit,
-      memo,
-      display,
+      amount: amt.toString(),
+      sats: satsAmt.toString(),
+      currency: defaultWalletCurrency?.toString() || "USD",
+      unit: unit.toString(),
+      memo: memo?.toString(),
+      display: display.toString(),
     }
-    if (router.query !== newQuery && !skipRouterPush) {
-      router.push(
-        {
-          pathname: `${username}`,
-          query: newQuery,
-        },
-        undefined,
-        { shallow: true },
+
+    const initalQuery = searchParams ? Object.fromEntries(searchParams.entries()) : {}
+    if (initalQuery !== newQuery && !skipRouterPush) {
+      window.history.pushState(
+        {},
+        "",
+        `${username}?${new URLSearchParams(newQuery).toString()}`,
       )
     }
   }
@@ -323,7 +319,7 @@ function ParsePayment({ defaultWalletCurrency, walletId, dispatch, state }: Prop
               fontWeight: 600,
             }}
             value={!amount ? 0 : valueInFiat}
-            intlConfig={{ locale: navigator.language, currency: display }}
+            intlConfig={{ locale: navigator?.language, currency: display }}
             readOnly={true}
           />
         </div>
@@ -388,7 +384,7 @@ function ParsePayment({ defaultWalletCurrency, walletId, dispatch, state }: Prop
               dispatch={dispatch}
               disabled={unit === AmountUnit.Sat}
               displayValue={
-                getLocaleConfig({ locale: navigator.language, currency: display })
+                getLocaleConfig({ locale: navigator?.language, currency: display })
                   .decimalSeparator
               }
             />

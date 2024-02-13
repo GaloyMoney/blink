@@ -2,7 +2,7 @@ import { ParsedUrlQuery } from "querystring"
 
 import React, { useState, useEffect } from "react"
 import { useDebouncedCallback } from "use-debounce"
-import { useRouter } from "next/router"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 
 import useSatPrice from "../lib/use-sat-price"
 
@@ -29,9 +29,12 @@ export default function ReceiveAmount({
   recipientWalletCurrency: string
 }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { username } = useParams()
+  const query = searchParams ? Object.fromEntries(searchParams.entries()) : {}
   const { satsToUsd, usdToSats } = useSatPrice()
-  const { amount, currency } = parseQueryAmount(router.query) // USD or SATs
-  const { display } = parseDisplayCurrency(router.query)
+  const { amount, currency } = parseQueryAmount(query) // USD or SATs
+  const { display } = parseDisplayCurrency(query)
 
   function toggleCurrency() {
     const newCurrency = currency === "SATS" ? "USD" : "SATS"
@@ -39,12 +42,15 @@ export default function ReceiveAmount({
       newCurrency === "SATS" ? Math.round(usdToSats(amount)) : satsToUsd(amount)
 
     router.push(
-      getUpdatedURL(router.query, { currency: newCurrency, amount: newAmount, display }),
+      getUpdatedURL(
+        { ...query, username },
+        { currency: newCurrency, amount: newAmount, display },
+      ),
     )
   }
 
   const handleAmountUpdate = useDebouncedCallback(({ numberValue }) => {
-    router.push(getUpdatedURL(router.query, { amount: numberValue }))
+    router.push(getUpdatedURL({ ...query, username }, { amount: numberValue }))
   }, 1000)
 
   const getSatsForInvoice = React.useCallback(() => {

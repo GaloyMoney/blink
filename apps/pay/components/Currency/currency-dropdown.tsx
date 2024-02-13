@@ -1,6 +1,7 @@
+"use client"
 import React, { useEffect } from "react"
 
-import { useRouter } from "next/router"
+import { useSearchParams } from "next/navigation"
 
 import { useCurrencyListQuery } from "../../lib/graphql/generated"
 
@@ -15,18 +16,20 @@ export default function CurrencyDropdown({
   style?: React.CSSProperties
   showOnlyFlag?: boolean
 }) {
-  const router = useRouter()
+  const searchParams = useSearchParams()
+  const display = searchParams?.get("display")
+
   const { data: currencyData } = useCurrencyListQuery()
   const [selectedDisplayCurrency, setSelectedDisplayCurrency] = React.useState(
-    router.query.display && typeof router.query.display === "string"
-      ? router.query.display
+    display && typeof display === "string"
+      ? display
       : localStorage.getItem("display") ?? "USD",
   )
   const [isDropDownOpen, setIsDropDownOpen] = React.useState(false)
 
   useEffect(() => {
-    if (router.query?.display && typeof router.query.display === "string") {
-      setSelectedDisplayCurrency(router.query.display)
+    if (display && typeof display === "string") {
+      setSelectedDisplayCurrency(display)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

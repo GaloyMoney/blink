@@ -1,14 +1,37 @@
-import { useRouter } from "next/router"
-import React from "react"
+"use client"
+import { useRouter } from "next/navigation"
+import React, { useEffect } from "react"
 
 import CurrencyDropdown from "../../components/Currency/currency-dropdown"
 
 const SetupPwa = () => {
   const router = useRouter()
   const [username, setUsername] = React.useState<string>("")
-  const username_from_local = localStorage.getItem("username")
-  const display_currency_from_local = localStorage.getItem("display")
+
+  let username_from_local: string | null = null
+  let display_currency_from_local: string | null = null
+
+  useEffect(() => {
+    username_from_local = localStorage.getItem("username")
+    display_currency_from_local = localStorage.getItem("display")
+  }, [])
+
   const [selectedDisplayCurrency, setSelectedDisplayCurrency] = React.useState("USD")
+
+  React.useEffect(() => {
+    if (username_from_local) {
+      window.history.pushState(
+        {},
+        "",
+        `${username_from_local}??display=${display_currency_from_local}`,
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username_from_local])
+
+  if (!username_from_local || !display_currency_from_local) {
+    return
+  }
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -21,29 +44,8 @@ const SetupPwa = () => {
       localStorage.setItem("display", selectedDisplayCurrency)
     }
 
-    router.push(
-      {
-        pathname: `${username}`,
-        query: { display: selectedDisplayCurrency },
-      },
-      undefined,
-      { shallow: true },
-    )
+    router.push(`${username}?display=${selectedDisplayCurrency}`)
   }
-
-  React.useEffect(() => {
-    if (username_from_local) {
-      router.push(
-        {
-          pathname: `${username_from_local}`,
-          query: { display: display_currency_from_local },
-        },
-        undefined,
-        { shallow: true },
-      )
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [username_from_local])
 
   if (!username_from_local) {
     return (
