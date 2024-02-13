@@ -1,7 +1,7 @@
 use super::proto;
-use crate::app::error::ApplicationError;
-use crate::primitives::*;
-use crate::user_notification_settings;
+use crate::{
+    app::error::ApplicationError, notification_event, primitives::*, user_notification_settings,
+};
 
 impl From<proto::NotificationCategory> for UserNotificationCategory {
     fn from(category: proto::NotificationCategory) -> Self {
@@ -78,6 +78,19 @@ impl From<proto::CircleTimeFrame> for CircleTimeFrame {
         match c_type {
             proto::CircleTimeFrame::Month => CircleTimeFrame::Month,
             proto::CircleTimeFrame::AllTime => CircleTimeFrame::AllTime,
+        }
+    }
+}
+
+impl From<proto::DeclinedReason> for notification_event::IdentityVerificationDeclinedReason {
+    fn from(reason: proto::DeclinedReason) -> Self {
+        match reason {
+            proto::DeclinedReason::DocumentsNotClear => {
+                notification_event::IdentityVerificationDeclinedReason::DocumentsNotClear
+            }
+            proto::DeclinedReason::VerificationPhotoNotClear => {
+                notification_event::IdentityVerificationDeclinedReason::VerificationPhotoNotClear
+            }
         }
     }
 }
