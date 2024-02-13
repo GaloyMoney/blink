@@ -18,7 +18,7 @@ async-graphql-axum = "6.0.11"
 axum = { version = "0.6.20", features = ["headers", "macros"] }
 jsonwebtoken = "9.2.0"
 clap = { version = "4.5", features = ["derive", "env"] }
-derive_builder = "0.13.0"
+derive_builder = "0.13.1"
 serde = { version = "1.0.196", features = ["derive"] }
 tokio = { version = "1.36", features = ["full"] }
 reqwest = { version = "0.11.24", default-features = false, features = ["json", "rustls-tls"] }
