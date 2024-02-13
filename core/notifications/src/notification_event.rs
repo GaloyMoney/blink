@@ -8,6 +8,7 @@ pub enum DeepLink {
 }
 
 pub trait NotificationEvent: std::fmt::Debug + Into<NotificationEventPayload> {
+    fn category(&self) -> UserNotificationCategory;
     fn user_id(&self) -> &GaloyUserId;
     fn deep_link(&self) -> DeepLink;
     fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage;
@@ -24,6 +25,16 @@ pub enum NotificationEventPayload {
 }
 
 impl NotificationEvent for NotificationEventPayload {
+    fn category(&self) -> UserNotificationCategory {
+        match self {
+            NotificationEventPayload::CircleGrew(e) => e.category(),
+            NotificationEventPayload::CircleThresholdReached(e) => e.category(),
+            NotificationEventPayload::IdentityVerificationApproved(e) => e.category(),
+            NotificationEventPayload::IdentityVerificationDeclined(e) => e.category(),
+            NotificationEventPayload::IdentityVerificationReviewPending(e) => e.category(),
+        }
+    }
+
     fn user_id(&self) -> &GaloyUserId {
         match self {
             NotificationEventPayload::CircleGrew(event) => event.user_id(),
@@ -72,6 +83,10 @@ pub struct CircleGrew {
 }
 
 impl NotificationEvent for CircleGrew {
+    fn category(&self) -> UserNotificationCategory {
+        UserNotificationCategory::Circles
+    }
+
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
     }
@@ -100,6 +115,10 @@ pub struct CircleThresholdReached {
 }
 
 impl NotificationEvent for CircleThresholdReached {
+    fn category(&self) -> UserNotificationCategory {
+        UserNotificationCategory::Circles
+    }
+
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
     }
@@ -125,6 +144,10 @@ pub struct IdentityVerificationApproved {
 }
 
 impl NotificationEvent for IdentityVerificationApproved {
+    fn category(&self) -> UserNotificationCategory {
+        UserNotificationCategory::AdminNotification
+    }
+
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
     }
@@ -157,6 +180,10 @@ pub struct IdentityVerificationDeclined {
 }
 
 impl NotificationEvent for IdentityVerificationDeclined {
+    fn category(&self) -> UserNotificationCategory {
+        UserNotificationCategory::AdminNotification
+    }
+
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
     }
@@ -182,6 +209,10 @@ pub struct IdentityVerificationReviewPending {
 }
 
 impl NotificationEvent for IdentityVerificationReviewPending {
+    fn category(&self) -> UserNotificationCategory {
+        UserNotificationCategory::AdminNotification
+    }
+
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
     }
