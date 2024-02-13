@@ -81,3 +81,16 @@ impl From<proto::CircleTimeFrame> for CircleTimeFrame {
         }
     }
 }
+
+impl From<proto::DeclinedReason> for IdentityVerificationDeclinedReason {
+    fn from(reason: proto::DeclinedReason) -> Self {
+        match reason {
+            proto::DeclinedReason::DocumentsNotClear => {
+                IdentityVerificationDeclinedReason::DocumentsNotClear
+            }
+            proto::DeclinedReason::VerificationPhotoNotClear => {
+                IdentityVerificationDeclinedReason::VerificationPhotoNotClear
+            }
+        }
+    }
+}

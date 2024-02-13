@@ -133,10 +133,9 @@ message NotificationEvent {
   oneof data {
     CircleGrew circle_grew = 1;
     CircleThresholdReached circle_threshold_reached = 2;
-    DocumentsSubmitted documents_submitted = 3;
-    DocumentsApproved documents_approved = 4;
-    DocumentsRejected documents_rejected = 5;
-    DocumentsReviewPending documents_review_pending = 6;
+    IdentityVerificationApproved identity_verification_approved = 3;
+    IdentityVerificationDeclined identity_verification_declined = 4;
+    IdentityVerificationReviewPending identity_verification_review_pending = 5;
   }
 }
 
@@ -164,18 +163,20 @@ message CircleThresholdReached {
   uint32 threshold = 4;
 }
 
-message DocumentsSubmitted {
+message IdentityVerificationApproved {
   string user_id = 1;
 }
 
-message DocumentsApproved {
-  string user_id = 1;
+enum DeclinedReason {
+  DOCUMENTS_NOT_CLEAR = 0;
+  VERIFICATION_PHOTO_NOT_CLEAR = 1;
 }
 
-message DocumentsRejected {
+message IdentityVerificationDeclined {
   string user_id = 1;
+  DeclinedReason declined_reason = 2;
 }
 
-message DocumentsReviewPending {
+message IdentityVerificationReviewPending {
   string user_id = 1;
 }

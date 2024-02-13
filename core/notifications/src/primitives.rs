@@ -124,3 +124,9 @@ impl std::fmt::Display for CircleTimeFrame {
         }
     }
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum IdentityVerificationDeclinedReason {
+    DocumentsNotClear,
+    VerificationPhotoNotClear,
+}

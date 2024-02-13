@@ -56,29 +56,33 @@ impl Messages {
         LocalizedMessage { title, body }
     }
 
-    pub fn documents_submitted(locale: &str, _event: &DocumentsSubmitted) -> LocalizedMessage {
-        let title = t!("documents_submitted.title", locale = locale).to_string();
-        let body = t!("documents_submitted.body", locale = locale).to_string();
-        LocalizedMessage { title, body }
-    }
-
-    pub fn documents_approved(locale: &str, _event: &DocumentsApproved) -> LocalizedMessage {
-        let title = t!("documents_approved.title", locale = locale).to_string();
-        let body = t!("documents_approved.body", locale = locale).to_string();
-        LocalizedMessage { title, body }
-    }
-    pub fn documents_rejected(locale: &str, _event: &DocumentsRejected) -> LocalizedMessage {
-        let title = t!("documents_rejected.title", locale = locale).to_string();
-        let body = t!("documents_rejected.body", locale = locale).to_string();
-        LocalizedMessage { title, body }
-    }
-
-    pub fn documents_review_pending(
+    pub fn identity_verification_approved(
         locale: &str,
-        _event: &DocumentsReviewPending,
+        _event: &IdentityVerificationApproved,
     ) -> LocalizedMessage {
-        let title = t!("documents_review_pending.title", locale = locale).to_string();
-        let body = t!("documents_review_pending.body", locale = locale).to_string();
+        let title = t!("identity_verification_approved.title", locale = locale).to_string();
+        let body = t!("identity_verification_approved.body", locale = locale).to_string();
+        LocalizedMessage { title, body }
+    }
+    pub fn identity_verification_declined(
+        locale: &str,
+        _event: &IdentityVerificationDeclined,
+    ) -> LocalizedMessage {
+        let title = t!("identity_verification_declined.title", locale = locale).to_string();
+        let body = t!("identity_verification_declined.body", locale = locale).to_string();
+        LocalizedMessage { title, body }
+    }
+
+    pub fn identity_verification_review_pending(
+        locale: &str,
+        _event: &IdentityVerificationReviewPending,
+    ) -> LocalizedMessage {
+        let title = t!(
+            "identity_verification_review_pending.title",
+            locale = locale
+        )
+        .to_string();
+        let body = t!("identity_verification_review_pending.body", locale = locale).to_string();
         LocalizedMessage { title, body }
     }
 }
