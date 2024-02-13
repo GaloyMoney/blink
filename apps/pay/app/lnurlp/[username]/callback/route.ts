@@ -147,7 +147,7 @@ export async function GET(
     const result = await client.mutate<LnInvoiceCreateOnBehalfOfRecipientsMutation>({
       mutation: LnInvoiceCreateOnBehalfOfRecipientsDocument,
       variables: {
-        walletId,
+        recipientWalletId: walletId,
         amount: amountSats,
         descriptionHash,
       },
