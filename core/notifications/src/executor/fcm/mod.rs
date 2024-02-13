@@ -9,7 +9,7 @@ use google_fcm1::{
     FirebaseCloudMessaging,
 };
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use crate::{messages::LocalizedMessage, notification_event::*, primitives::PushDeviceToken};
 
@@ -62,38 +62,36 @@ impl FcmClient {
 
     pub async fn send(
         &self,
-        device_tokens: HashSet<PushDeviceToken>,
-        msg: LocalizedMessage,
+        device_token: &PushDeviceToken,
+        msg: &LocalizedMessage,
         deep_link: DeepLink,
     ) -> Result<(), FcmError> {
         let mut data = HashMap::new();
         deep_link.add_to_data(&mut data);
 
-        for device_token in device_tokens {
-            let notification = Notification {
-                title: Some(msg.title.clone()),
-                body: Some(msg.body.clone()),
-                ..Default::default()
-            };
-            let message = Message {
-                notification: Some(notification),
-                token: Some(device_token.into_inner()),
-                data: Some(data.clone()),
-                ..Default::default()
-            };
+        let notification = Notification {
+            title: Some(msg.title.clone()),
+            body: Some(msg.body.clone()),
+            ..Default::default()
+        };
+        let message = Message {
+            notification: Some(notification),
+            token: Some(device_token.clone().into_inner()),
+            data: Some(data.clone()),
+            ..Default::default()
+        };
 
-            let parent = format!("projects/{}", self.fcm_project_id);
-            let request = SendMessageRequest {
-                message: Some(message),
-                ..Default::default()
-            };
-            let _response = self
-                .client
-                .projects()
-                .messages_send(request, &parent)
-                .doit()
-                .await?;
-        }
+        let parent = format!("projects/{}", self.fcm_project_id);
+        let request = SendMessageRequest {
+            message: Some(message),
+            ..Default::default()
+        };
+        let _response = self
+            .client
+            .projects()
+            .messages_send(request, &parent)
+            .doit()
+            .await?;
         Ok(())
     }
 }
