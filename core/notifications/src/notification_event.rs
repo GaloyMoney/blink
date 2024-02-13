@@ -145,6 +145,12 @@ impl From<IdentityVerificationApproved> for NotificationEventPayload {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub enum IdentityVerificationDeclinedReason {
+    DocumentsNotClear,
+    VerificationPhotoNotClear,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct IdentityVerificationDeclined {
     pub user_id: GaloyUserId,
     pub declined_reason: IdentityVerificationDeclinedReason,

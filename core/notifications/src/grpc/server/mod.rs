@@ -307,7 +307,7 @@ impl NotificationsService for Notifications {
                     )),
             }) => {
                 let declined_reason = proto::DeclinedReason::try_from(declined_reason)
-                    .map(primitives::IdentityVerificationDeclinedReason::from)
+                    .map(notification_event::IdentityVerificationDeclinedReason::from)
                     .map_err(|e| Status::invalid_argument(e.to_string()))?;
                 self.app
                     .handle_notification_event(notification_event::IdentityVerificationDeclined {

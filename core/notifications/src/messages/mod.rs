@@ -64,12 +64,37 @@ impl Messages {
         let body = t!("identity_verification_approved.body", locale = locale).to_string();
         LocalizedMessage { title, body }
     }
+
     pub fn identity_verification_declined(
         locale: &str,
-        _event: &IdentityVerificationDeclined,
+        event: &IdentityVerificationDeclined,
     ) -> LocalizedMessage {
-        let title = t!("identity_verification_declined.title", locale = locale).to_string();
-        let body = t!("identity_verification_declined.body", locale = locale).to_string();
+        let reason = match event.declined_reason {
+            IdentityVerificationDeclinedReason::DocumentsNotClear => {
+                t!(
+                    "identity_verification_declined.reason.documents_not_clear",
+                    locale = locale
+                )
+            }
+            IdentityVerificationDeclinedReason::VerificationPhotoNotClear => {
+                t!(
+                    "identity_verification_declined.reason.photo_not_clear",
+                    locale = locale
+                )
+            }
+        };
+        let title = t!(
+            "identity_verification_declined.title",
+            locale = locale,
+            reason = reason
+        )
+        .to_string();
+        let body = t!(
+            "identity_verification_declined.body",
+            locale = locale,
+            reason = reason
+        )
+        .to_string();
         LocalizedMessage { title, body }
     }
 
