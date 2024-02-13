@@ -18,10 +18,9 @@ pub trait NotificationEvent: std::fmt::Debug + Into<NotificationEventPayload> {
 pub enum NotificationEventPayload {
     CircleGrew(CircleGrew),
     CircleThresholdReached(CircleThresholdReached),
-    DocumentsSubmitted(DocumentsSubmitted),
-    DocumentsApproved(DocumentsApproved),
-    DocumentsRejected(DocumentsRejected),
-    DocumentsReviewPending(DocumentsReviewPending),
+    IdentityVerificationApproved(IdentityVerificationApproved),
+    IdentityVerificationDeclined(IdentityVerificationDeclined),
+    IdentityVerificationReviewPending(IdentityVerificationReviewPending),
 }
 
 impl NotificationEvent for NotificationEventPayload {
@@ -29,10 +28,9 @@ impl NotificationEvent for NotificationEventPayload {
         match self {
             NotificationEventPayload::CircleGrew(event) => event.user_id(),
             NotificationEventPayload::CircleThresholdReached(event) => event.user_id(),
-            NotificationEventPayload::DocumentsSubmitted(event) => event.user_id(),
-            NotificationEventPayload::DocumentsApproved(event) => event.user_id(),
-            NotificationEventPayload::DocumentsRejected(event) => event.user_id(),
-            NotificationEventPayload::DocumentsReviewPending(event) => event.user_id(),
+            NotificationEventPayload::IdentityVerificationApproved(event) => event.user_id(),
+            NotificationEventPayload::IdentityVerificationDeclined(event) => event.user_id(),
+            NotificationEventPayload::IdentityVerificationReviewPending(event) => event.user_id(),
         }
     }
 
@@ -40,10 +38,9 @@ impl NotificationEvent for NotificationEventPayload {
         match self {
             NotificationEventPayload::CircleGrew(event) => event.deep_link(),
             NotificationEventPayload::CircleThresholdReached(event) => event.deep_link(),
-            NotificationEventPayload::DocumentsSubmitted(event) => event.deep_link(),
-            NotificationEventPayload::DocumentsApproved(event) => event.deep_link(),
-            NotificationEventPayload::DocumentsRejected(event) => event.deep_link(),
-            NotificationEventPayload::DocumentsReviewPending(event) => event.deep_link(),
+            NotificationEventPayload::IdentityVerificationApproved(event) => event.deep_link(),
+            NotificationEventPayload::IdentityVerificationDeclined(event) => event.deep_link(),
+            NotificationEventPayload::IdentityVerificationReviewPending(event) => event.deep_link(),
         }
     }
 
@@ -53,10 +50,13 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::CircleThresholdReached(event) => {
                 event.to_localized_msg(locale)
             }
-            NotificationEventPayload::DocumentsSubmitted(event) => event.to_localized_msg(locale),
-            NotificationEventPayload::DocumentsApproved(event) => event.to_localized_msg(locale),
-            NotificationEventPayload::DocumentsRejected(event) => event.to_localized_msg(locale),
-            NotificationEventPayload::DocumentsReviewPending(event) => {
+            NotificationEventPayload::IdentityVerificationApproved(event) => {
+                event.to_localized_msg(locale)
+            }
+            NotificationEventPayload::IdentityVerificationDeclined(event) => {
+                event.to_localized_msg(locale)
+            }
+            NotificationEventPayload::IdentityVerificationReviewPending(event) => {
                 event.to_localized_msg(locale)
             }
         }
@@ -120,11 +120,11 @@ impl From<CircleThresholdReached> for NotificationEventPayload {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DocumentsSubmitted {
+pub struct IdentityVerificationApproved {
     pub user_id: GaloyUserId,
 }
 
-impl NotificationEvent for DocumentsSubmitted {
+impl NotificationEvent for IdentityVerificationApproved {
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
     }
@@ -134,22 +134,29 @@ impl NotificationEvent for DocumentsSubmitted {
     }
 
     fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
-        Messages::documents_submitted(locale.as_ref(), self)
+        Messages::identity_verification_approved(locale.as_ref(), self)
     }
 }
 
-impl From<DocumentsSubmitted> for NotificationEventPayload {
-    fn from(event: DocumentsSubmitted) -> Self {
-        NotificationEventPayload::DocumentsSubmitted(event)
+impl From<IdentityVerificationApproved> for NotificationEventPayload {
+    fn from(event: IdentityVerificationApproved) -> Self {
+        NotificationEventPayload::IdentityVerificationApproved(event)
     }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DocumentsApproved {
-    pub user_id: GaloyUserId,
+pub enum IdentityVerificationDeclinedReason {
+    DocumentsNotClear,
+    VerificationPhotoNotClear,
 }
 
-impl NotificationEvent for DocumentsApproved {
+#[derive(Debug, Serialize, Deserialize)]
+pub struct IdentityVerificationDeclined {
+    pub user_id: GaloyUserId,
+    pub declined_reason: IdentityVerificationDeclinedReason,
+}
+
+impl NotificationEvent for IdentityVerificationDeclined {
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
     }
@@ -159,22 +166,22 @@ impl NotificationEvent for DocumentsApproved {
     }
 
     fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
-        Messages::documents_approved(locale.as_ref(), self)
+        Messages::identity_verification_declined(locale.as_ref(), self)
     }
 }
 
-impl From<DocumentsApproved> for NotificationEventPayload {
-    fn from(event: DocumentsApproved) -> Self {
-        NotificationEventPayload::DocumentsApproved(event)
+impl From<IdentityVerificationDeclined> for NotificationEventPayload {
+    fn from(event: IdentityVerificationDeclined) -> Self {
+        NotificationEventPayload::IdentityVerificationDeclined(event)
     }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DocumentsRejected {
+pub struct IdentityVerificationReviewPending {
     pub user_id: GaloyUserId,
 }
 
-impl NotificationEvent for DocumentsRejected {
+impl NotificationEvent for IdentityVerificationReviewPending {
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
     }
@@ -184,37 +191,12 @@ impl NotificationEvent for DocumentsRejected {
     }
 
     fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
-        Messages::documents_rejected(locale.as_ref(), self)
+        Messages::identity_verification_review_pending(locale.as_ref(), self)
     }
 }
 
-impl From<DocumentsRejected> for NotificationEventPayload {
-    fn from(event: DocumentsRejected) -> Self {
-        NotificationEventPayload::DocumentsRejected(event)
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct DocumentsReviewPending {
-    pub user_id: GaloyUserId,
-}
-
-impl NotificationEvent for DocumentsReviewPending {
-    fn user_id(&self) -> &GaloyUserId {
-        &self.user_id
-    }
-
-    fn deep_link(&self) -> DeepLink {
-        DeepLink::None
-    }
-
-    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
-        Messages::documents_review_pending(locale.as_ref(), self)
-    }
-}
-
-impl From<DocumentsReviewPending> for NotificationEventPayload {
-    fn from(event: DocumentsReviewPending) -> Self {
-        NotificationEventPayload::DocumentsReviewPending(event)
+impl From<IdentityVerificationReviewPending> for NotificationEventPayload {
+    fn from(event: IdentityVerificationReviewPending) -> Self {
+        NotificationEventPayload::IdentityVerificationReviewPending(event)
     }
 }

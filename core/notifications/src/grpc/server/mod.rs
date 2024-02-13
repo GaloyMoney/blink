@@ -287,50 +287,47 @@ impl NotificationsService for Notifications {
             }
             Some(proto::NotificationEvent {
                 data:
-                    Some(proto::notification_event::Data::DocumentsSubmitted(
-                        proto::DocumentsSubmitted { user_id },
+                    Some(proto::notification_event::Data::IdentityVerificationApproved(
+                        proto::IdentityVerificationApproved { user_id },
                     )),
             }) => {
                 self.app
-                    .handle_notification_event(notification_event::DocumentsSubmitted {
+                    .handle_notification_event(notification_event::IdentityVerificationApproved {
                         user_id: GaloyUserId::from(user_id),
                     })
                     .await?
             }
             Some(proto::NotificationEvent {
                 data:
-                    Some(proto::notification_event::Data::DocumentsApproved(proto::DocumentsApproved {
-                        user_id,
-                    })),
+                    Some(proto::notification_event::Data::IdentityVerificationDeclined(
+                        proto::IdentityVerificationDeclined {
+                            user_id,
+                            declined_reason,
+                        },
+                    )),
             }) => {
+                let declined_reason = proto::DeclinedReason::try_from(declined_reason)
+                    .map(notification_event::IdentityVerificationDeclinedReason::from)
+                    .map_err(|e| Status::invalid_argument(e.to_string()))?;
                 self.app
-                    .handle_notification_event(notification_event::DocumentsApproved {
+                    .handle_notification_event(notification_event::IdentityVerificationDeclined {
                         user_id: GaloyUserId::from(user_id),
+                        declined_reason,
                     })
                     .await?
             }
             Some(proto::NotificationEvent {
                 data:
-                    Some(proto::notification_event::Data::DocumentsRejected(proto::DocumentsRejected {
-                        user_id,
-                    })),
-            }) => {
-                self.app
-                    .handle_notification_event(notification_event::DocumentsRejected {
-                        user_id: GaloyUserId::from(user_id),
-                    })
-                    .await?
-            }
-            Some(proto::NotificationEvent {
-                data:
-                    Some(proto::notification_event::Data::DocumentsReviewPending(
-                        proto::DocumentsReviewPending { user_id },
+                    Some(proto::notification_event::Data::IdentityVerificationReviewPending(
+                        proto::IdentityVerificationReviewPending { user_id },
                     )),
             }) => {
                 self.app
-                    .handle_notification_event(notification_event::DocumentsReviewPending {
-                        user_id: GaloyUserId::from(user_id),
-                    })
+                    .handle_notification_event(
+                        notification_event::IdentityVerificationReviewPending {
+                            user_id: GaloyUserId::from(user_id),
+                        },
+                    )
                     .await?
             }
             _ => return Err(Status::invalid_argument("event is required")),
