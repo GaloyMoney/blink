@@ -1712,7 +1712,7 @@ scalar SignedDisplayMajorAmount
 type Subscription
   @join__type(graph: PUBLIC)
 {
-  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload!
+  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload! @deprecated(reason: "Deprecated in favor of lnInvoicePaymentStatusByRequest")
   lnInvoicePaymentStatusByHash(input: LnInvoicePaymentStatusByHashInput!): LnInvoicePaymentStatusPayload!
   lnInvoicePaymentStatusByRequest(input: LnInvoicePaymentStatusByRequestInput!): LnInvoicePaymentStatusPayload!
   myUpdates: MyUpdatesPayload!

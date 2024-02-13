@@ -1318,7 +1318,7 @@ A string amount (of a currency) that can be negative (e.g. in a transaction)
 scalar SignedDisplayMajorAmount
 
 type Subscription {
-  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload!
+  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload! @deprecated(reason: "Deprecated in favor of lnInvoicePaymentStatusByRequest")
   lnInvoicePaymentStatusByHash(input: LnInvoicePaymentStatusByHashInput!): LnInvoicePaymentStatusPayload!
   lnInvoicePaymentStatusByRequest(input: LnInvoicePaymentStatusByRequestInput!): LnInvoicePaymentStatusPayload!
   myUpdates: MyUpdatesPayload!
