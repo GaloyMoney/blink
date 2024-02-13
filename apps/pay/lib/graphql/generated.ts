@@ -2043,6 +2043,23 @@ export const WalletCurrency = {
 } as const;
 
 export type WalletCurrency = typeof WalletCurrency[keyof typeof WalletCurrency];
+export type LnInvoiceCreateOnBehalfOfRecipientMutationVariables = Exact<{
+  walletId: Scalars['WalletId'];
+  amount: Scalars['SatAmount'];
+  descriptionHash: Scalars['Hex32Bytes'];
+}>;
+
+
+export type LnInvoiceCreateOnBehalfOfRecipientMutation = { readonly __typename: 'Mutation', readonly mutationData: { readonly __typename: 'LnInvoicePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly invoice?: { readonly __typename: 'LnInvoice', readonly paymentRequest: string, readonly paymentHash: string } | null } };
+
+export type AccountDefaultWalletQueryVariables = Exact<{
+  username: Scalars['Username'];
+  walletCurrency: WalletCurrency;
+}>;
+
+
+export type AccountDefaultWalletQuery = { readonly __typename: 'Query', readonly accountDefaultWallet: { readonly __typename: 'PublicWallet', readonly id: string, readonly walletCurrency: WalletCurrency } };
+
 export type LnInvoicePaymentStatusSubscriptionVariables = Exact<{
   input: LnInvoicePaymentStatusInput;
 }>;
@@ -2112,6 +2129,87 @@ export type NodeIdsQueryVariables = Exact<{ [key: string]: never; }>;
 export type NodeIdsQuery = { readonly __typename: 'Query', readonly globals?: { readonly __typename: 'Globals', readonly nodesIds: ReadonlyArray<string> } | null };
 
 
+export const LnInvoiceCreateOnBehalfOfRecipientDocument = gql`
+    mutation lnInvoiceCreateOnBehalfOfRecipient($walletId: WalletId!, $amount: SatAmount!, $descriptionHash: Hex32Bytes!) {
+  mutationData: lnInvoiceCreateOnBehalfOfRecipient(
+    input: {recipientWalletId: $walletId, amount: $amount, descriptionHash: $descriptionHash}
+  ) {
+    errors {
+      message
+    }
+    invoice {
+      paymentRequest
+      paymentHash
+    }
+  }
+}
+    `;
+export type LnInvoiceCreateOnBehalfOfRecipientMutationFn = Apollo.MutationFunction<LnInvoiceCreateOnBehalfOfRecipientMutation, LnInvoiceCreateOnBehalfOfRecipientMutationVariables>;
+
+/**
+ * __useLnInvoiceCreateOnBehalfOfRecipientMutation__
+ *
+ * To run a mutation, you first call `useLnInvoiceCreateOnBehalfOfRecipientMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useLnInvoiceCreateOnBehalfOfRecipientMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [lnInvoiceCreateOnBehalfOfRecipientMutation, { data, loading, error }] = useLnInvoiceCreateOnBehalfOfRecipientMutation({
+ *   variables: {
+ *      walletId: // value for 'walletId'
+ *      amount: // value for 'amount'
+ *      descriptionHash: // value for 'descriptionHash'
+ *   },
+ * });
+ */
+export function useLnInvoiceCreateOnBehalfOfRecipientMutation(baseOptions?: Apollo.MutationHookOptions<LnInvoiceCreateOnBehalfOfRecipientMutation, LnInvoiceCreateOnBehalfOfRecipientMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<LnInvoiceCreateOnBehalfOfRecipientMutation, LnInvoiceCreateOnBehalfOfRecipientMutationVariables>(LnInvoiceCreateOnBehalfOfRecipientDocument, options);
+      }
+export type LnInvoiceCreateOnBehalfOfRecipientMutationHookResult = ReturnType<typeof useLnInvoiceCreateOnBehalfOfRecipientMutation>;
+export type LnInvoiceCreateOnBehalfOfRecipientMutationResult = Apollo.MutationResult<LnInvoiceCreateOnBehalfOfRecipientMutation>;
+export type LnInvoiceCreateOnBehalfOfRecipientMutationOptions = Apollo.BaseMutationOptions<LnInvoiceCreateOnBehalfOfRecipientMutation, LnInvoiceCreateOnBehalfOfRecipientMutationVariables>;
+export const AccountDefaultWalletDocument = gql`
+    query accountDefaultWallet($username: Username!, $walletCurrency: WalletCurrency!) {
+  accountDefaultWallet(username: $username, walletCurrency: $walletCurrency) {
+    __typename
+    id
+    walletCurrency
+  }
+}
+    `;
+
+/**
+ * __useAccountDefaultWalletQuery__
+ *
+ * To run a query within a React component, call `useAccountDefaultWalletQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAccountDefaultWalletQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAccountDefaultWalletQuery({
+ *   variables: {
+ *      username: // value for 'username'
+ *      walletCurrency: // value for 'walletCurrency'
+ *   },
+ * });
+ */
+export function useAccountDefaultWalletQuery(baseOptions: Apollo.QueryHookOptions<AccountDefaultWalletQuery, AccountDefaultWalletQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<AccountDefaultWalletQuery, AccountDefaultWalletQueryVariables>(AccountDefaultWalletDocument, options);
+      }
+export function useAccountDefaultWalletLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<AccountDefaultWalletQuery, AccountDefaultWalletQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<AccountDefaultWalletQuery, AccountDefaultWalletQueryVariables>(AccountDefaultWalletDocument, options);
+        }
+export type AccountDefaultWalletQueryHookResult = ReturnType<typeof useAccountDefaultWalletQuery>;
+export type AccountDefaultWalletLazyQueryHookResult = ReturnType<typeof useAccountDefaultWalletLazyQuery>;
+export type AccountDefaultWalletQueryResult = Apollo.QueryResult<AccountDefaultWalletQuery, AccountDefaultWalletQueryVariables>;
 export const LnInvoicePaymentStatusDocument = gql`
     subscription lnInvoicePaymentStatus($input: LnInvoicePaymentStatusInput!) {
   lnInvoicePaymentStatus(input: $input) {

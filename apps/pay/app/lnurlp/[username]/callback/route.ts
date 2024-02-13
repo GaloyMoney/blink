@@ -10,10 +10,10 @@ import Redis from "ioredis"
 
 import { env } from "../../../../env"
 import {
-  AccountDefaultWalletsDocument,
-  AccountDefaultWalletsQuery,
-  LnInvoiceCreateOnBehalfOfRecipientsDocument,
-  LnInvoiceCreateOnBehalfOfRecipientsMutation,
+  AccountDefaultWalletDocument,
+  AccountDefaultWalletQuery,
+  LnInvoiceCreateOnBehalfOfRecipientDocument,
+  LnInvoiceCreateOnBehalfOfRecipientMutation,
 } from "../../../../lib/graphql/generated"
 import { client } from "../graphql"
 import { getOriginalRequestInfo } from "../../../../utils/utils"
@@ -95,8 +95,8 @@ export async function GET(
   let walletId: string | null = null
 
   try {
-    const { data } = await client.query<AccountDefaultWalletsQuery>({
-      query: AccountDefaultWalletsDocument,
+    const { data } = await client.query<AccountDefaultWalletQuery>({
+      query: AccountDefaultWalletDocument,
       variables: { username, walletCurrency: "BTC" },
       context: {
         "x-real-ip": request.headers.get("x-real-ip"),
@@ -144,17 +144,17 @@ export async function GET(
       descriptionHash = crypto.createHash("sha256").update(metadata).digest("hex")
     }
 
-    const result = await client.mutate<LnInvoiceCreateOnBehalfOfRecipientsMutation>({
-      mutation: LnInvoiceCreateOnBehalfOfRecipientsDocument,
+    const result = await client.mutate<LnInvoiceCreateOnBehalfOfRecipientMutation>({
+      mutation: LnInvoiceCreateOnBehalfOfRecipientDocument,
       variables: {
-        recipientWalletId: walletId,
+        walletId,
         amount: amountSats,
         descriptionHash,
       },
     })
 
     const errors = result.errors
-    const invoice = result.data?.lnInvoiceCreateOnBehalfOfRecipient?.invoice
+    const invoice = result.data?.mutationData?.invoice
 
     if ((errors && errors.length) || !invoice) {
       console.log("error getting invoice", errors)
