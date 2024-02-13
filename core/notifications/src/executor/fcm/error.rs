@@ -14,7 +14,8 @@ impl From<google_fcm1::Error> for FcmError {
     fn from(err: google_fcm1::Error) -> Self {
         match err {
             google_fcm1::Error::BadRequest(ref value) => {
-                if value["error"]["status"].as_str() == Some("NOT_FOUND")
+                if value["error"]["code"].as_u64() == Some(404)
+                    && value["error"]["status"].as_str() == Some("NOT_FOUND")
                     && value["error"]["details"]
                         .as_array()
                         .map_or(false, |details| {
