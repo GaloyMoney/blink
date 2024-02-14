@@ -3,7 +3,7 @@ import { Modal } from "react-bootstrap"
 
 import { useSearchParams, useParams } from "next/navigation"
 
-import { ACTIONS, ACTION_TYPE } from "../../app/_reducer"
+import { ACTIONS, ACTION_TYPE } from "../../app/reducer"
 
 import styles from "./memo.module.css"
 

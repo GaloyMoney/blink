@@ -7,7 +7,7 @@ import Image from "react-bootstrap/Image"
 import CurrencyInput, { formatValue } from "react-currency-input-field"
 
 import useRealtimePrice from "../../lib/use-realtime-price"
-import { ACTION_TYPE, ACTIONS } from "../../app/_reducer"
+import { ACTION_TYPE, ACTIONS } from "../../app/reducer"
 import { formatOperand, safeAmount, getLocaleConfig } from "../../utils/utils"
 import Memo from "../Memo"
 
@@ -27,8 +27,8 @@ function isRunningStandalone() {
 }
 
 interface Props {
-  defaultWalletCurrency?: string
-  walletId?: string
+  defaultWalletCurrency: string
+  walletId: string
   dispatch: React.Dispatch<ACTION_TYPE>
   state: React.ComponentState
   username: string
@@ -64,7 +64,7 @@ function ParsePayment({
   const router = useRouter()
   const searchParams = useSearchParams()
   const query = searchParams ? Object.fromEntries(searchParams.entries()) : {}
-  const { amount, sats, unit, memo, currency } = query
+  const { amount, sats, unit, memo } = query
 
   const display = searchParams?.get("display") ?? localStorage.getItem("display") ?? "USD"
   const { currencyToSats, satsToCurrency, hasLoaded } = useRealtimePrice(display)
@@ -77,24 +77,8 @@ function ParsePayment({
     defaultCurrencyMetadata,
   )
   const [numOfChanges, setNumOfChanges] = React.useState(0)
-
+  const language = typeof navigator !== "undefined" ? navigator?.language : "en"
   const prevUnit = React.useRef(AmountUnit.Cent)
-
-  if (!currency) {
-    const queryString = window.location.search
-    const searchParams = new URLSearchParams(queryString)
-    searchParams.set("currency", defaultWalletCurrency ?? "BTC")
-    const newQueryString = searchParams.toString()
-    window.history.pushState(null, "", "?" + newQueryString)
-  }
-
-  if (!amount) {
-    const queryString = window.location.search
-    const searchParams = new URLSearchParams(queryString)
-    searchParams.set("amount", "0")
-    const newQueryString = searchParams.toString()
-    window.history.pushState(null, "", "?" + newQueryString)
-  }
 
   // onload
   // set all query params on first load, even if they are not passed
@@ -105,7 +89,6 @@ function ParsePayment({
     const initialDisplay = display ?? localStorage.getItem("display") ?? "USD"
     const initialUsername = username
     const initialQuery = searchParams ? Object.fromEntries(searchParams.entries()) : {}
-
     delete initialQuery?.currency
     const newQuery = {
       amount: initialAmount,
@@ -122,8 +105,11 @@ function ParsePayment({
         unit: initialUnit,
         memo: memo ?? "",
         display: initialDisplay,
+        currency: defaultWalletCurrency,
       }).toString()}`
-      window.history.pushState({}, "", newUrl)
+      router.replace(newUrl, {
+        scroll: true,
+      })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -156,12 +142,12 @@ function ParsePayment({
     prevUnit.current = (unit as AmountUnit) || AmountUnit.Cent
     router.replace(
       `${username}?${new URLSearchParams({
-        currency: defaultWalletCurrency || "USD",
-        unit: newUnit.toString(),
-        memo: memo?.toString(),
-        display: display.toString(),
-        amount: amount.toString(),
-        sats: sats?.toString(),
+        currency: defaultWalletCurrency,
+        unit: newUnit,
+        memo,
+        display,
+        amount,
+        sats,
       }).toString()}`,
     )
   }
@@ -187,9 +173,10 @@ function ParsePayment({
           : safeAmt.toFixed(currencyMetadata.fractionDigits)
     }
     if (isNaN(Number(amt))) return
+
     const formattedValue = formatValue({
       value: amt,
-      intlConfig: { locale: navigator?.language, currency: display },
+      intlConfig: { locale: language, currency: display },
     })
     localStorage.setItem("formattedFiatValue", formattedValue)
     setValueInFiat(amt)
@@ -206,21 +193,17 @@ function ParsePayment({
 
     // 3) update the query params
     const newQuery = {
-      amount: amt.toString(),
-      sats: satsAmt.toString(),
-      currency: defaultWalletCurrency?.toString() || "USD",
-      unit: unit.toString(),
-      memo: memo?.toString(),
-      display: display.toString(),
+      amount: amt,
+      sats: satsAmt,
+      currency: defaultWalletCurrency,
+      unit: unit,
+      memo: memo,
+      display: display,
     }
 
     const initalQuery = searchParams ? Object.fromEntries(searchParams.entries()) : {}
     if (initalQuery !== newQuery && !skipRouterPush) {
-      window.history.pushState(
-        {},
-        "",
-        `${username}?${new URLSearchParams(newQuery).toString()}`,
-      )
+      router.replace(`${username}?${new URLSearchParams(newQuery).toString()}`)
     }
   }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -319,7 +302,7 @@ function ParsePayment({
               fontWeight: 600,
             }}
             value={!amount ? 0 : valueInFiat}
-            intlConfig={{ locale: navigator?.language, currency: display }}
+            intlConfig={{ locale: language, currency: display }}
             readOnly={true}
           />
         </div>
@@ -384,8 +367,7 @@ function ParsePayment({
               dispatch={dispatch}
               disabled={unit === AmountUnit.Sat}
               displayValue={
-                getLocaleConfig({ locale: navigator?.language, currency: display })
-                  .decimalSeparator
+                getLocaleConfig({ locale: language, currency: display }).decimalSeparator
               }
             />
           ) : (

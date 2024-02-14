@@ -18,7 +18,7 @@ type Props = {
 const AppLayout = ({ children, username }: Props) => {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const memo = searchParams?.get("memo")
+  const memo = searchParams.get("memo")
   const [openSideBar, setOpenSideBar] = React.useState<boolean>(false)
   const [copied, setCopied] = React.useState<boolean>(false)
   const lightningAddr = username
@@ -43,9 +43,9 @@ const AppLayout = ({ children, username }: Props) => {
   const navigateHome = () => {
     let pathname = "/"
     if (username) pathname = `/${username}`
-    window.history.pushState({}, "", `${pathname}`)
+    router.push(pathname)
     setTimeout(() => {
-      router.refresh() // Force a reload after a short delay to allow location href to update
+      window.location.reload()
     }, 200)
   }
 

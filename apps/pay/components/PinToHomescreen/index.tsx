@@ -2,7 +2,7 @@ import React from "react"
 import { Image } from "react-bootstrap"
 
 import { getOS } from "../../lib/download"
-import { ACTIONS, ACTION_TYPE } from "../../app/_reducer"
+import { ACTIONS, ACTION_TYPE } from "../../app/reducer"
 import Modal from "../CustomModal/modal"
 
 import {

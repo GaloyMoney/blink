@@ -20,17 +20,16 @@ export default function CurrencyDropdown({
   const display = searchParams?.get("display")
 
   const { data: currencyData } = useCurrencyListQuery()
-  const [selectedDisplayCurrency, setSelectedDisplayCurrency] = React.useState(
-    display && typeof display === "string"
-      ? display
-      : localStorage.getItem("display") ?? "USD",
-  )
+  const [selectedDisplayCurrency, setSelectedDisplayCurrency] = React.useState("USD")
   const [isDropDownOpen, setIsDropDownOpen] = React.useState(false)
 
   useEffect(() => {
-    if (display && typeof display === "string") {
-      setSelectedDisplayCurrency(display)
-    }
+    const newDisplay =
+      display && typeof display === "string"
+        ? display
+        : localStorage.getItem("display") ?? "USD"
+    setSelectedDisplayCurrency(newDisplay)
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

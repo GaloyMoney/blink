@@ -7,7 +7,7 @@ import { useReactToPrint } from "react-to-print"
 
 import { gql } from "@apollo/client"
 
-import { ACTIONS, ACTION_TYPE } from "../../app/_reducer"
+import { ACTIONS, ACTION_TYPE } from "../../app/reducer"
 
 import { useLnInvoicePaymentStatusSubscription } from "../../lib/graphql/generated"
 

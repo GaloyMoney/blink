@@ -13,11 +13,13 @@ import { USD_INVOICE_EXPIRE_INTERVAL, getClientSidePayDomain } from "../../confi
 import useCreateInvoice from "../../hooks/use-Create-Invoice"
 import { LnInvoiceObject } from "../../lib/graphql/index.types.d"
 import useSatPrice from "../../lib/use-sat-price"
-import { ACTION_TYPE } from "../../app/_reducer"
+import { ACTION_TYPE } from "../../app/reducer"
 import PaymentOutcome from "../PaymentOutcome"
 import { Share } from "../Share"
 
 import { safeAmount } from "../../utils/utils"
+
+import LoadingComponent from "../Loading"
 
 import styles from "./parse-payment.module.css"
 
@@ -237,11 +239,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
   }
 
   if (loading || invoiceStatus === "loading" || !invoice?.paymentRequest) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.loader}></div>
-      </div>
-    )
+    return <LoadingComponent />
   }
 
   return (

@@ -17,9 +17,11 @@ import CurrencyDropdown from "../../components/Currency/currency-dropdown"
 
 import { useAccountDefaultWalletsQuery } from "../../lib/graphql/generated"
 
-import reducer, { ACTIONS } from "../_reducer"
+import reducer, { ACTIONS } from "../reducer"
 
-import styles from "../_user.module.css"
+import styles from "./username.module.css"
+
+import LoadingComponent from "@/components/Loading"
 
 gql`
   query accountDefaultWallets($username: Username!) {
@@ -41,7 +43,7 @@ function ReceivePayment({ params }: ReceivePaymentProps) {
   const searchParams = useSearchParams()
   const query = searchParams ? Object.fromEntries(searchParams.entries()) : {}
 
-  const { memo, display } = query
+  const { memo } = query
   const { username } = params
 
   let accountUsername: string
@@ -51,21 +53,16 @@ function ReceivePayment({ params }: ReceivePaymentProps) {
     accountUsername = username.toString()
   }
 
-  if (!display) {
-    const displayFromLocal = localStorage.getItem("display") ?? "USD"
-    const queryString = window.location.search
-    const searchParams = new URLSearchParams(queryString)
-    searchParams.set("display", displayFromLocal)
-    const newQueryString = searchParams.toString()
-    window.history.pushState(null, "", "?" + newQueryString)
-  }
-
   const manifestParams = new URLSearchParams()
   if (memo) {
     manifestParams.set("memo", memo.toString())
   }
 
-  const { data, error: usernameError } = useAccountDefaultWalletsQuery({
+  const {
+    data,
+    error: usernameError,
+    loading: usernameLoading,
+  } = useAccountDefaultWalletsQuery({
     variables: { username: accountUsername },
     skip: !accountUsername,
   })
@@ -73,7 +70,7 @@ function ReceivePayment({ params }: ReceivePaymentProps) {
   const [state, dispatch] = React.useReducer(reducer, {
     currentAmount: "",
     createdInvoice: false,
-    walletCurrency: data?.accountDefaultWallet.walletCurrency || "USD",
+    walletCurrency: data?.accountDefaultWallet.walletCurrency,
     username: accountUsername,
     pinnedToHomeScreenModalVisible: false,
   })
@@ -154,22 +151,23 @@ function ReceivePayment({ params }: ReceivePaymentProps) {
                       )
 
                       setTimeout(() => {
-                        // Hard reload to re-calculate currency
                         window.location.reload()
                       }, 100)
                     }}
                   />
                 </div>
               </div>
-              {/* {memo && <p className={styles.memo}>{`Memo: ${memo}`}</p>} */}
-
-              <ParsePayment
-                state={state}
-                dispatch={dispatch}
-                defaultWalletCurrency={data?.accountDefaultWallet.walletCurrency}
-                walletId={data?.accountDefaultWallet.id}
-                username={accountUsername}
-              />
+              {data && !usernameLoading && accountUsername && state ? (
+                <ParsePayment
+                  state={state}
+                  dispatch={dispatch}
+                  defaultWalletCurrency={data?.accountDefaultWallet.walletCurrency}
+                  walletId={data?.accountDefaultWallet.id}
+                  username={accountUsername}
+                />
+              ) : (
+                <LoadingComponent />
+              )}
             </>
           )}
         </Container>
