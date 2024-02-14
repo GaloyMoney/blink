@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): bad linting (#3998)'
-      sha: 36f585fac2e3f6c3b43f48437c1e4aab2c94bd37
+      commitTitle: 'feat(core): add payment status by hash query/subscription (#3899)...'
+      sha: f316a1bedb7a2122aeddac495bc7ae6a96ee8b64
       tags:
-      - 0.20.58-6-g36f585fac
+      - 0.20.59-2-gf316a1bed
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): bad linting (#3998)'
-      sha: 36f585fac2e3f6c3b43f48437c1e4aab2c94bd37
+      commitTitle: 'feat(core): add payment status by hash query/subscription (#3899)...'
+      sha: f316a1bedb7a2122aeddac495bc7ae6a96ee8b64
       tags:
-      - 0.20.58-6-g36f585fac
+      - 0.20.59-2-gf316a1bed
     path: schemas/
   - git:
-      commitTitle: 'fix(core): bad linting (#3998)'
-      sha: 36f585fac2e3f6c3b43f48437c1e4aab2c94bd37
+      commitTitle: 'feat(core): add payment status by hash query/subscription (#3899)...'
+      sha: f316a1bedb7a2122aeddac495bc7ae6a96ee8b64
       tags:
-      - 0.20.58-6-g36f585fac
+      - 0.20.60
     path: gql/
   path: ./graphql
 kind: LockConfig
