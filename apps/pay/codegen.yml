@@ -1,14 +1,11 @@
 overwrite: true
-schema: "https://raw.githubusercontent.com/GaloyMoney/galoy/main/src/graphql/public/schema.graphql"
+schema: "https://raw.githubusercontent.com/GaloyMoney/galoy/main/core/api/src/graphql/public/schema.graphql"
 documents:
-  - "components/**/*.ts"
-  - "components/**/*.tsx"
-  - "lib/**/*.ts"
-  - "lib/**/*.tsx"
-  - "pages/**/*.ts"
-  - "pages/**/*.tsx"
-  - "hooks/**/*.ts"
-  - "hooks/**/*.tsx"
+  - "app/**/*.{ts,tsx}"
+  - "components/**/*.{ts,tsx}"
+  - "lib/**/*.{ts,tsx}"
+  - "pages/**/*.{ts,tsx}"
+  - "hooks/**/*.{ts,tsx}"
 generates:
   lib/graphql/generated.ts:
     plugins:
@@ -64,3 +61,8 @@ generates:
         join__FieldSet: "string"
         link__Import: "string"
         _FieldSet: "string"
+        LnPubkey: "string"
+        EndpointId: "string"
+        EndpointUrl: "string"
+        Object: "string"
+        NotificationCategory: "string"

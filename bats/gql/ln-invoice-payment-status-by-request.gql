@@ -1,0 +1,7 @@
+query LnInvoicePaymentStatusByRequestQuery($input: LnInvoicePaymentStatusByRequestInput!) {
+  lnInvoicePaymentStatusByRequest(input: $input) {
+    status
+    paymentHash
+    paymentRequest
+  }
+}

@@ -96,14 +96,37 @@ check_for_ln_update() {
 
 check_ln_payment_settled() {
   local payment_request=$1
+  local payment_hash=$2
 
   variables=$(
   jq -n \
   --arg payment_request "$payment_request" \
   '{"input": {"paymentRequest": $payment_request}}'
   )
-  exec_graphql 'anon' 'ln-invoice-payment-status' "$variables"
-  payment_status="$(graphql_output '.data.lnInvoicePaymentStatus.status')"
+  exec_graphql 'anon' 'ln-invoice-payment-status-by-request' "$variables"
+  payment_status="$(graphql_output '.data.lnInvoicePaymentStatusByRequest.status')"
+  payment_request_resp="$(graphql_output '.data.lnInvoicePaymentStatusByRequest.paymentRequest')"
+  payment_hash_resp="$(graphql_output '.data.lnInvoicePaymentStatusByRequest.paymentHash')"
+  [[ "${payment_hash}" = "${payment_hash_resp}" ]] || exit 1
+  [[ "${payment_request}" = "${payment_request_resp}" ]] || exit 1
+  [[ "${payment_status}" = "PAID" ]]
+}
+
+check_ln_payment_settled_by_hash() {
+  local payment_request=$1
+  local payment_hash=$2
+
+  variables=$(
+  jq -n \
+  --arg payment_hash "$payment_hash" \
+  '{"input": {"paymentHash": $payment_hash}}'
+  )
+  exec_graphql 'anon' 'ln-invoice-payment-status-by-hash' "$variables"
+  payment_status="$(graphql_output '.data.lnInvoicePaymentStatusByHash.status')"
+  payment_request_resp="$(graphql_output '.data.lnInvoicePaymentStatusByHash.paymentRequest')"
+  payment_hash_resp="$(graphql_output '.data.lnInvoicePaymentStatusByHash.paymentHash')"
+  [[ "${payment_hash}" = "${payment_hash_resp}" ]] || exit 1
+  [[ "${payment_request}" = "${payment_request_resp}" ]] || exit 1
   [[ "${payment_status}" = "PAID" ]]
 }
 
