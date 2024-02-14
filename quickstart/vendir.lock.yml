@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): update schemas (#3995)'
-      sha: 29d320b698602bcc8852eabce951cf2e365e7598
+      commitTitle: 'chore: remove some exporter values (#3996)...'
+      sha: 733d48643d3b6047da3312f2aba0f29d19b4bf24
       tags:
-      - 0.20.58-1-g29d320b69
+      - 0.20.58-4-g733d48643
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): update schemas (#3995)'
-      sha: 29d320b698602bcc8852eabce951cf2e365e7598
+      commitTitle: 'chore: remove some exporter values (#3996)...'
+      sha: 733d48643d3b6047da3312f2aba0f29d19b4bf24
       tags:
-      - 0.20.58-1-g29d320b69
+      - 0.20.58-4-g733d48643
     path: schemas/
   - git:
-      commitTitle: 'chore(core): update schemas (#3995)'
-      sha: 29d320b698602bcc8852eabce951cf2e365e7598
+      commitTitle: 'chore: remove some exporter values (#3996)...'
+      sha: 733d48643d3b6047da3312f2aba0f29d19b4bf24
       tags:
-      - 0.20.58-1-g29d320b69
+      - 0.20.58-4-g733d48643
     path: gql/
   path: ./graphql
 kind: LockConfig
