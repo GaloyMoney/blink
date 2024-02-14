@@ -7,7 +7,7 @@ WorkspacePnpmToolchainInfo = provider(fields = [
   "package_prod_tsc_build_bin",
   "build_next_build",
   "package_next_bin",
-  "run_in_dir",
+  "run_npm_test",
   "run_audit",
 ])
 
@@ -26,7 +26,7 @@ def workspace_pnpm_toolchain_impl(ctx) -> list[[DefaultInfo, WorkspacePnpmToolch
             package_prod_tsc_build_bin = ctx.attrs._package_prod_tsc_build_bin,
             build_next_build = ctx.attrs._build_next_build,
             package_next_bin = ctx.attrs._package_next_bin,
-            run_in_dir = ctx.attrs._run_in_dir,
+            run_npm_test = ctx.attrs._run_npm_test,
             run_audit = ctx.attrs._run_audit,
         )
     ]
@@ -58,8 +58,8 @@ workspace_pnpm_toolchain = rule(
         "_package_next_bin": attrs.dep(
             default = "toolchains//workspace-pnpm:package_next_bin.py",
         ),
-        "_run_in_dir": attrs.dep(
-            default = "toolchains//workspace-pnpm:run_in_dir.py",
+        "_run_npm_test": attrs.dep(
+            default = "toolchains//workspace-pnpm:run_npm_test.py",
         ),
         "_run_audit": attrs.dep(
             default = "toolchains//workspace-pnpm:run_audit.py",

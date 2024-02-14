@@ -39,7 +39,7 @@ export_file(
 )
 
 export_file(
-  name = "run_in_dir.py",
+  name = "run_npm_test.py",
   visibility = ["PUBLIC"],
 )
 

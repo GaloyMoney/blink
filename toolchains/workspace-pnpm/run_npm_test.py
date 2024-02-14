@@ -50,10 +50,14 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    bin_args = args.args[1:] # ignore '--' separator
-    cmd = [os.path.abspath(args.bin), *bin_args]
 
     env = merge_env_from_file(args.env_file)
+
+    bin_args = args.args[1:] # ignore '--' separator
+    if env.get("TEST"):
+        bin_args.append(env.get("TEST"))
+    cmd = [os.path.abspath(args.bin), *bin_args]
+
     exit_code = subprocess.call(cmd, cwd=args.cwd, env=env)
 
     sys.exit(exit_code)

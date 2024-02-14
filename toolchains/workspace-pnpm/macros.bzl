@@ -627,7 +627,7 @@ def _npm_test_impl(
 
     run_cmd_args = cmd_args([
         ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
-        pnpm_toolchain.run_in_dir[DefaultInfo].default_outputs,
+        pnpm_toolchain.run_npm_test[DefaultInfo].default_outputs,
         "--cwd",
         cmd_args([build_context.workspace_root, ctx.label.package], delimiter = "/"),
         "--bin",
