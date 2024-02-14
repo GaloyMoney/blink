@@ -23,7 +23,6 @@ import {
 import { LndService } from "@/services/lnd"
 import { baseLogger } from "@/services/logger"
 import { LedgerService } from "@/services/ledger"
-import { Account } from "@/services/mongoose/schema"
 import { LocalCacheService } from "@/services/cache"
 import { activateLndHealthCheck } from "@/services/lnd/health"
 import { ledgerAdmin, setupMongoConnection } from "@/services/mongodb"
@@ -49,15 +48,6 @@ const main = async () => {
     name: "lightning",
     description: "how much money there is our books for lnd",
     collect: getLndBalance,
-  })
-
-  createGauge({
-    name: "userCount",
-    description: "how much users have registered",
-    collect: async () => {
-      const value = await Account.countDocuments()
-      return value
-    },
   })
 
   createGauge({
@@ -147,15 +137,6 @@ const main = async () => {
       if (balance instanceof Error) return 0
 
       return Number(balance.amount)
-    },
-  })
-
-  createGauge({
-    name: "business",
-    description: "number of businesses in the app",
-    collect: async () => {
-      const value = await Account.countDocuments({ title: { $ne: undefined } })
-      return value
     },
   })
 
