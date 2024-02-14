@@ -3,6 +3,7 @@ load(
   "dev_pnpm_task_binary",
   "dev_pnpm_task_test",
   "build_node_modules",
+  "prepare_build_context",
   "tsc_build",
   "prod_tsc_build",
   "prod_tsc_build_bin",
@@ -129,6 +130,12 @@ dev_update_file(
   name = "update-admin-schema",
   generated = ":admin-sdl",
   out = "src/graphql/admin/schema.graphql"
+)
+
+prepare_build_context(
+    name = "checks_build_context",
+    srcs = [":src"] + [":test_src"],
+    prod_deps_srcs = prod_deps_srcs,
 )
 
 audit(
