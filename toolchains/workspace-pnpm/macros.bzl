@@ -188,8 +188,6 @@ build_node_modules = rule(
 )
 
 def tsc_build_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
-    build_context = prepare_build_context(ctx)
-
     out = ctx.actions.declare_output("dist", dir = True)
     pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
 
@@ -197,7 +195,7 @@ def tsc_build_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
         ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
         pnpm_toolchain.compile_typescript[DefaultInfo].default_outputs,
         "--package-dir",
-        cmd_args([build_context.workspace_root, ctx.label.package], delimiter = "/"),
+        cmd_args([ctx.attrs.build_context, ctx.label.package], delimiter = "/"),
         "--tsc-bin",
         ctx.attrs.tsc[RunInfo],
         "--tsconfig",
@@ -220,6 +218,13 @@ def tsc_build_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
 def tsc_build(
     node_modules = ":node_modules",
     **kwargs):
+    build_context = "tsc_build_context"
+    if not rule_exists(build_context):
+        prepare_build_context(
+            name = build_context,
+            srcs = kwargs["srcs"],
+            prod_deps_srcs = kwargs.get("prod_deps_srcs", {}),
+        )
     tsc_bin = "tsc_bin"
     if not rule_exists(tsc_bin):
         npm_bin(
@@ -236,6 +241,7 @@ def tsc_build(
         tsc = ":{}".format(tsc_bin),
         tscpaths = ":{}".format(tscpaths_bin),
         node_modules = node_modules,
+        build_context = ":{}".format(build_context),
         **kwargs,
     )
 
@@ -265,6 +271,9 @@ _tsc_build = rule(
         ),
         "node_modules": attrs.source(
             doc = """Target which builds package `node_modules`.""",
+        ),
+        "build_context": attrs.source(
+            doc = """Target which builds package `build_context`.""",
         ),
         "prod_deps_srcs": attrs.dict(
             attrs.string(),
@@ -436,8 +445,6 @@ def prod_tsc_build_bin(
     )
 
 def next_build_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
-    build_context = prepare_build_context(ctx)
-
     out = ctx.actions.declare_output("dist", dir = True)
     pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
 
@@ -445,7 +452,7 @@ def next_build_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
         ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
         pnpm_toolchain.build_next_build[DefaultInfo].default_outputs,
         "--root-dir",
-        build_context.workspace_root,
+        ctx.attrs.build_context,
         "--package-dir",
         ctx.label.package,
     )
@@ -466,7 +473,16 @@ def next_build_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
         RunInfo(run_cmd),
     ]
 
-def next_build(**kwargs):
+def next_build(
+    node_modules = ":node_modules",
+    **kwargs):
+    build_context = "next_build_context"
+    if not rule_exists(build_context):
+        prepare_build_context(
+            name = build_context,
+            srcs = kwargs["srcs"],
+            prod_deps_srcs = kwargs.get("prod_deps_srcs", {}),
+        )
     next_bin = "next_bin"
     if not rule_exists(next_bin):
         npm_bin(
@@ -475,7 +491,10 @@ def next_build(**kwargs):
         )
     _next_build(
         next = ":{}".format(next_bin),
-        node_modules = ":node_modules", **kwargs)
+        node_modules = node_modules,
+        build_context = ":{}".format(build_context),
+        **kwargs,
+    )
 
 _next_build = rule(
     impl = next_build_impl,
@@ -491,6 +510,9 @@ _next_build = rule(
         ),
         "node_modules": attrs.source(
             doc = """Target which builds `node_modules`.""",
+        ),
+        "build_context": attrs.source(
+            doc = """Target which builds `build_context`.""",
         ),
         "build_env": attrs.dict(
             key = attrs.string(),
@@ -574,12 +596,8 @@ _next_build_bin = rule(
     },
 )
 
-BuildContext = record(
-    workspace_root = field(Artifact),
-)
-
-def prepare_build_context(ctx: AnalysisContext) -> BuildContext:
-    workspace_root = ctx.actions.declare_output("__workspace", dir = True)
+def prepare_build_context_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
+    out = ctx.actions.declare_output("__workspace", dir = True)
 
     pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
     package_dir = cmd_args(ctx.label.package).relative_to(ctx.label.cell_root)
@@ -603,12 +621,55 @@ def prepare_build_context(ctx: AnalysisContext) -> BuildContext:
         for (name, src) in ctx.attrs.dev_deps_srcs.items():
             cmd.add("--src")
             cmd.add(cmd_args(src, format = name + "={}"))
-    cmd.add(workspace_root.as_output())
+    cmd.add(out.as_output())
 
     ctx.actions.run(cmd, category = "prepare_build_context", identifier = ctx.label.package)
 
-    return BuildContext(
-        workspace_root = workspace_root,
+    return [DefaultInfo(default_output = out)]
+
+_prepare_build_context = rule(
+    impl = prepare_build_context_impl,
+    attrs = {
+        "srcs": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """List of package source files to track.""",
+        ),
+        "dev_deps_srcs": attrs.dict(
+            attrs.string(),
+            attrs.source(allow_directory = True),
+            default = {},
+            doc = """Mapping of dependent dev package paths to source files from to track.""",
+        ),
+        "prod_deps_srcs": attrs.dict(
+            attrs.string(),
+            attrs.source(allow_directory = True),
+            default = {},
+            doc = """Mapping of dependent prod package paths to source files to track.""",
+        ),
+        "node_modules": attrs.source(
+            doc = """Target which builds `node_modules`.""",
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
+
+def prepare_build_context(
+        node_modules = ":node_modules",
+        visibility = ["PUBLIC"],
+        **kwargs):
+
+    _prepare_build_context(
+        node_modules = node_modules,
+        visibility = visibility,
+        **kwargs,
     )
 
 def _npm_test_impl(
@@ -621,15 +682,13 @@ def _npm_test_impl(
     RunInfo,
     ExternalRunnerTestInfo,
 ]]:
-    build_context = prepare_build_context(ctx)
-
     pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
 
     run_cmd_args = cmd_args([
         ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
         pnpm_toolchain.run_npm_test[DefaultInfo].default_outputs,
         "--cwd",
-        cmd_args([build_context.workspace_root, ctx.label.package], delimiter = "/"),
+        cmd_args([ctx.attrs.build_context, ctx.label.package], delimiter = "/"),
         "--bin",
         cmd_args(program_run_info),
     ])
@@ -769,6 +828,9 @@ _eslint = rule(
         "node_modules": attrs.source(
             doc = """Target which builds `node_modules`.""",
         ),
+        "build_context": attrs.source(
+            doc = """Target which builds `build_context`.""",
+        ),
         "env": attrs.dict(
             key = attrs.string(),
             value = attrs.arg(),
@@ -800,6 +862,13 @@ def eslint(
         node_modules = ":node_modules",
         visibility = ["PUBLIC"],
         **kwargs):
+    build_context = "eslint_build_context"
+    if not rule_exists(build_context):
+        prepare_build_context(
+            name = build_context,
+            srcs = kwargs["srcs"],
+            dev_deps_srcs = kwargs.get("dev_deps_srcs", {}),
+        )
     if not rule_exists(eslint_bin):
         npm_bin(
             name = eslint_bin,
@@ -809,6 +878,7 @@ def eslint(
     _eslint(
         eslint = ":{}".format(eslint_bin),
         node_modules = node_modules,
+        build_context = ":{}".format(build_context),
         visibility = visibility,
         **kwargs,
     )
@@ -849,6 +919,9 @@ _typescript_check = rule(
         "node_modules": attrs.source(
             doc = """Target which builds package `node_modules`.""",
         ),
+        "build_context": attrs.source(
+            doc = """Target which builds package `build_context`.""",
+        ),
         "env": attrs.dict(
             key = attrs.string(),
             value = attrs.arg(),
@@ -879,6 +952,12 @@ def typescript_check(
         node_modules = ":node_modules",
         visibility = ["PUBLIC"],
         **kwargs):
+    build_context = "typescript_build_context"
+    if not rule_exists(build_context):
+        prepare_build_context(
+            name = build_context,
+            srcs = kwargs["srcs"],
+        )
     tsc_bin = "tsc_bin"
     if not rule_exists(tsc_bin):
         npm_bin(
@@ -889,6 +968,7 @@ def typescript_check(
     _typescript_check(
         tsc = ":{}".format(tsc_bin),
         node_modules = node_modules,
+        build_context = ":{}".format(build_context),
         visibility = visibility,
         **kwargs,
     )
@@ -924,6 +1004,9 @@ _yaml_check = rule(
         "node_modules": attrs.source(
             doc = """Target which builds package `node_modules`.""",
         ),
+        "build_context": attrs.source(
+            doc = """Target which builds package `build_context`.""",
+        ),
         "env": attrs.dict(
             key = attrs.string(),
             value = attrs.arg(),
@@ -954,6 +1037,12 @@ def yaml_check(
         node_modules = ":node_modules",
         visibility = ["PUBLIC"],
         **kwargs):
+    build_context = "yaml_build_context"
+    if not rule_exists(build_context):
+        prepare_build_context(
+            name = build_context,
+            srcs = kwargs["srcs"],
+        )
     prettier_bin = "prettier_bin"
     if not rule_exists(prettier_bin):
         npm_bin(
@@ -964,6 +1053,7 @@ def yaml_check(
     _yaml_check(
         prettier = ":{}".format(prettier_bin),
         node_modules = node_modules,
+        build_context = ":{}".format(build_context),
         visibility = visibility,
         **kwargs,
     )
@@ -1001,6 +1091,9 @@ _madge_check = rule(
         "node_modules": attrs.source(
             doc = """Target which builds package `node_modules`.""",
         ),
+        "build_context": attrs.source(
+            doc = """Target which builds package `build_context`.""",
+        ),
         "env": attrs.dict(
             key = attrs.string(),
             value = attrs.arg(),
@@ -1031,6 +1124,12 @@ def madge_check(
         node_modules = ":node_modules",
         visibility = ["PUBLIC"],
         **kwargs):
+    build_context = "madge_build_context"
+    if not rule_exists(build_context):
+        prepare_build_context(
+            name = build_context,
+            srcs = kwargs["srcs"],
+        )
     madge_bin = "madge_bin"
     if not rule_exists(madge_bin):
         npm_bin(
@@ -1041,6 +1140,7 @@ def madge_check(
     _madge_check(
         madge = ":{}".format(madge_bin),
         node_modules = node_modules,
+        build_context = ":{}".format(build_context),
         visibility = visibility,
         **kwargs,
     )
@@ -1184,6 +1284,9 @@ _jest_test = rule(
         "node_modules": attrs.source(
             doc = """Target which builds package `node_modules`.""",
         ),
+        "build_context": attrs.source(
+            doc = """Target which builds package `build_context`.""",
+        ),
         "prod_deps_srcs": attrs.dict(
             attrs.string(),
             attrs.source(allow_directory = True),
@@ -1208,6 +1311,13 @@ def jest_test(
         node_modules = ":node_modules",
         visibility = ["PUBLIC"],
         **kwargs):
+    build_context = "jest_build_context"
+    if not rule_exists(build_context):
+        prepare_build_context(
+            name = build_context,
+            srcs = kwargs["srcs"],
+            prod_deps_srcs = kwargs.get("prod_deps_srcs", {}),
+        )
     jest_bin = "jest_bin"
     if not rule_exists(jest_bin):
         npm_bin(
@@ -1218,6 +1328,7 @@ def jest_test(
     _jest_test(
         jest = ":{}".format(jest_bin),
         node_modules = node_modules,
+        build_context = ":{}".format(build_context),
         visibility = visibility,
         **kwargs,
     )
