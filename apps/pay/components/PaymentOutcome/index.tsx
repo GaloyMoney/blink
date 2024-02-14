@@ -14,6 +14,8 @@ import { useLnInvoicePaymentStatusSubscription } from "../../lib/graphql/generat
 import styles from "./payment-outcome.module.css"
 import Receipt from "./receipt"
 
+import { extractSearchParams } from "@/utils/utils"
+
 interface Props {
   paymentRequest: string
   paymentAmount: string | string[] | undefined
@@ -35,9 +37,8 @@ gql`
 
 function PaymentOutcome({ paymentRequest, paymentAmount, dispatch }: Props) {
   const searchParams = useSearchParams()
-  const query = searchParams ? Object.fromEntries(searchParams.entries()) : {}
   const { username } = useParams()
-  const { amount, sats, memo } = query
+  const { amount, sats, memo } = extractSearchParams(searchParams)
   const componentRef = useRef<HTMLDivElement | null>(null)
 
   const printReceipt = useReactToPrint({

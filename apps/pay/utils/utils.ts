@@ -1,5 +1,8 @@
-import { ParsedUrlQuery } from "querystring"
 import { URL } from "url"
+
+import { ParsedUrlQuery } from "querystring"
+
+import { ReadonlyURLSearchParams } from "next/navigation"
 
 export const usdFormatter = new Intl.NumberFormat("en-US", {
   // style: "currency",
@@ -119,4 +122,8 @@ export const getLocaleConfig = (intlConfig?: IntlConfig): LocaleConfig => {
 
     return prev
   }, defaultConfig)
+}
+
+export const extractSearchParams = (searchParams: ReadonlyURLSearchParams) => {
+  return searchParams ? Object.fromEntries(searchParams.entries()) : {}
 }

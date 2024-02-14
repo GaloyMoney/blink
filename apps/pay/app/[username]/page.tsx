@@ -22,6 +22,7 @@ import reducer, { ACTIONS } from "../reducer"
 import styles from "./username.module.css"
 
 import LoadingComponent from "@/components/Loading"
+import { extractSearchParams } from "@/utils/utils"
 
 gql`
   query accountDefaultWallets($username: Username!) {
@@ -55,9 +56,8 @@ function updateCurrencyAndReload(newDisplayCurrency: string): void {
 
 function ReceivePayment({ params }: Props) {
   const searchParams = useSearchParams()
-  const query = searchParams ? Object.fromEntries(searchParams.entries()) : {}
+  const { memo } = extractSearchParams(searchParams)
 
-  const { memo } = query
   const { username } = params
 
   let accountUsername: string
@@ -100,80 +100,73 @@ function ReceivePayment({ params }: Props) {
     dispatch({ type: ACTIONS.UPDATE_USERNAME, payload: username })
   }, [state, username, data])
 
-  return (
-    <>
-      {username ? (
-        <Container className={styles.payment_container}>
-          <Head>
-            <link
-              rel="manifest"
-              href={`/api/${username}/manifest?${manifestParams.toString()}`}
-              id="manifest"
-            />
-          </Head>
-          {usernameError ? (
-            <div className={styles.error}>
-              <p>{`${usernameError.message}.`}</p>
-              <p>Please check the username in your browser URL and try again.</p>
-              <Link
-                href={"/setuppwa"}
-                onClick={() => localStorage.removeItem("username")}
-              >
-                Back
-              </Link>
-            </div>
-          ) : (
-            <>
-              <PinToHomescreen
-                pinnedToHomeScreenModalVisible={state.pinnedToHomeScreenModalVisible}
-                dispatch={dispatch}
-              />
-              <div className={styles.username_container}>
-                {state.createdInvoice && (
-                  <button onClick={() => dispatch({ type: ACTIONS.BACK })}>
-                    <Image
-                      src="/icons/chevron-left-icon.svg"
-                      alt="back button"
-                      width="10px"
-                      height="12px"
-                    />
-                  </button>
-                )}
-                <p className={styles.username}>{`Pay ${username}`}</p>
-                <div style={{ marginLeft: "12px", marginTop: "9px" }}>
-                  <CurrencyDropdown
-                    style={{
-                      border: "none",
-                      outline: "none",
-                      width: "56px",
-                      height: "42px",
-                      fontSize: "18px",
-                      backgroundColor: "white",
-                      textAlign: "center",
-                      verticalAlign: "middle",
-                    }}
-                    showOnlyFlag={true}
-                    onSelectedDisplayCurrencyChange={updateCurrencyAndReload}
-                  />
-                </div>
-              </div>
-              {data && !usernameLoading && accountUsername && state ? (
-                <ParsePayment
-                  state={state}
-                  dispatch={dispatch}
-                  defaultWalletCurrency={data?.accountDefaultWallet.walletCurrency}
-                  walletId={data?.accountDefaultWallet.id}
-                  username={accountUsername}
+  return username ? (
+    <Container className={styles.payment_container}>
+      <Head>
+        <link
+          rel="manifest"
+          href={`/api/${username}/manifest?${manifestParams.toString()}`}
+          id="manifest"
+        />
+      </Head>
+      {usernameError ? (
+        <div className={styles.error}>
+          <p>{`${usernameError.message}.`}</p>
+          <p>Please check the username in your browser URL and try again.</p>
+          <Link href={"/setuppwa"} onClick={() => localStorage.removeItem("username")}>
+            Back
+          </Link>
+        </div>
+      ) : (
+        <>
+          <PinToHomescreen
+            pinnedToHomeScreenModalVisible={state.pinnedToHomeScreenModalVisible}
+            dispatch={dispatch}
+          />
+          <div className={styles.username_container}>
+            {state.createdInvoice && (
+              <button onClick={() => dispatch({ type: ACTIONS.BACK })}>
+                <Image
+                  src="/icons/chevron-left-icon.svg"
+                  alt="back button"
+                  width="10px"
+                  height="12px"
                 />
-              ) : (
-                <LoadingComponent />
-              )}
-            </>
+              </button>
+            )}
+            <p className={styles.username}>{`Pay ${username}`}</p>
+            <div style={{ marginLeft: "12px", marginTop: "9px" }}>
+              <CurrencyDropdown
+                style={{
+                  border: "none",
+                  outline: "none",
+                  width: "56px",
+                  height: "42px",
+                  fontSize: "18px",
+                  backgroundColor: "white",
+                  textAlign: "center",
+                  verticalAlign: "middle",
+                }}
+                showOnlyFlag={true}
+                onSelectedDisplayCurrencyChange={updateCurrencyAndReload}
+              />
+            </div>
+          </div>
+          {data && !usernameLoading && accountUsername && state ? (
+            <ParsePayment
+              state={state}
+              dispatch={dispatch}
+              defaultWalletCurrency={data?.accountDefaultWallet.walletCurrency}
+              walletId={data?.accountDefaultWallet.id}
+              username={accountUsername}
+            />
+          ) : (
+            <LoadingComponent />
           )}
-        </Container>
-      ) : null}
-    </>
-  )
+        </>
+      )}
+    </Container>
+  ) : null
 }
 
 export default ReceivePayment

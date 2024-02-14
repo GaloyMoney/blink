@@ -17,7 +17,7 @@ import { ACTION_TYPE } from "../../app/reducer"
 import PaymentOutcome from "../PaymentOutcome"
 import { Share } from "../Share"
 
-import { safeAmount } from "../../utils/utils"
+import { extractSearchParams, safeAmount } from "../../utils/utils"
 
 import LoadingComponent from "../Loading"
 
@@ -37,7 +37,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
   const deviceDetails = window.navigator?.userAgent
   const searchParams = useSearchParams()
   const { username } = useParams()
-  const query = searchParams ? Object.fromEntries(searchParams.entries()) : {}
+  const query = extractSearchParams(searchParams)
   const { amount, unit, sats, memo } = query
 
   const { usdToSats, satsToUsd } = useSatPrice()

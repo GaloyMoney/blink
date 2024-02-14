@@ -8,7 +8,12 @@ import CurrencyInput, { formatValue } from "react-currency-input-field"
 
 import useRealtimePrice from "../../lib/use-realtime-price"
 import { ACTION_TYPE, ACTIONS } from "../../app/reducer"
-import { formatOperand, safeAmount, getLocaleConfig } from "../../utils/utils"
+import {
+  formatOperand,
+  safeAmount,
+  getLocaleConfig,
+  extractSearchParams,
+} from "../../utils/utils"
 import Memo from "../Memo"
 
 import { useDisplayCurrency } from "../../lib/use-display-currency"
@@ -63,8 +68,7 @@ function ParsePayment({
 }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const query = searchParams ? Object.fromEntries(searchParams.entries()) : {}
-  const { amount, sats, unit, memo } = query
+  const { amount, sats, unit, memo } = extractSearchParams(searchParams)
 
   const display = searchParams?.get("display") ?? localStorage.getItem("display") ?? "USD"
   const { currencyToSats, satsToCurrency, hasLoaded } = useRealtimePrice(display)
@@ -88,7 +92,7 @@ function ParsePayment({
     const initialSats = safeAmount(sats).toString()
     const initialDisplay = display ?? localStorage.getItem("display") ?? "USD"
     const initialUsername = username
-    const initialQuery = searchParams ? Object.fromEntries(searchParams.entries()) : {}
+    const initialQuery = extractSearchParams(searchParams)
     delete initialQuery?.currency
     const newQuery = {
       amount: initialAmount,
@@ -201,7 +205,7 @@ function ParsePayment({
       display: display,
     }
 
-    const initialQuery = searchParams ? Object.fromEntries(searchParams.entries()) : {}
+    const initialQuery = extractSearchParams(searchParams)
     if (initialQuery !== newQuery && !skipRouterPush) {
       router.replace(`${username}?${new URLSearchParams(newQuery).toString()}`)
     }

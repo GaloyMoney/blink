@@ -7,6 +7,8 @@ import { ACTIONS, ACTION_TYPE } from "../../app/reducer"
 
 import styles from "./memo.module.css"
 
+import { extractSearchParams } from "@/utils/utils"
+
 interface Props {
   state: React.ComponentState
   dispatch: React.Dispatch<ACTION_TYPE>
@@ -15,9 +17,8 @@ interface Props {
 const Memo = ({ state, dispatch }: Props) => {
   const searchParams = useSearchParams()
   const { username } = useParams()
-  const query = searchParams ? Object.fromEntries(searchParams.entries()) : {}
+  const { amount, sats, unit, memo, display } = extractSearchParams(searchParams)
 
-  const { amount, sats, unit, memo, display } = query
   const [openModal, setOpenModal] = React.useState<boolean>(false)
   const [note, setNote] = React.useState<string>(memo?.toString() || "")
 

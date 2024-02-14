@@ -6,7 +6,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation"
 
 import useSatPrice from "../lib/use-sat-price"
 
-import { parseDisplayCurrency } from "../utils/utils"
+import { extractSearchParams, parseDisplayCurrency } from "../utils/utils"
 
 import FormattedInput from "./formatted-input"
 import GenerateInvoice from "./generate-invoice"
@@ -31,7 +31,7 @@ export default function ReceiveAmount({
   const router = useRouter()
   const searchParams = useSearchParams()
   const { username } = useParams()
-  const query = searchParams ? Object.fromEntries(searchParams.entries()) : {}
+  const query = extractSearchParams(searchParams)
   const { satsToUsd, usdToSats } = useSatPrice()
   const { amount, currency } = parseQueryAmount(query) // USD or SATs
   const { display } = parseDisplayCurrency(query)
