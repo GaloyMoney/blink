@@ -1,8 +1,8 @@
 import React from "react"
 
-import AppLayout from "@/components/Layouts/AppLayout"
+import UsernameLayoutContainer from "@/components/Layouts/UsernameLayout"
 
-export default function UserNameLayout({
+export default function UsernameLayout({
   children,
   params,
 }: {
@@ -11,5 +11,9 @@ export default function UserNameLayout({
     username: string
   }
 }) {
-  return <AppLayout username={params.username}>{children}</AppLayout>
+  return (
+    <UsernameLayoutContainer username={params.username}>
+      {children}
+    </UsernameLayoutContainer>
+  )
 }
