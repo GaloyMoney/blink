@@ -7,33 +7,32 @@ import { baseLogger } from "@/services/logger"
 
 import { GT } from "@/graphql/index"
 import LnInvoicePaymentStatusPayload from "@/graphql/public/types/payload/ln-invoice-payment-status"
-import LnInvoicePaymentStatusInput from "@/graphql/public/types/object/ln-invoice-payment-status-input"
+import LnInvoicePaymentStatusByRequestInput from "@/graphql/public/types/object/ln-invoice-payment-status-by-request-input"
 import { UnknownClientError } from "@/graphql/error"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import { WalletInvoiceStatus } from "@/domain/wallet-invoices"
 
 const pubsub = PubSubService()
 
-type LnInvoicePaymentSubscribeArgs = {
+type LnInvoicePaymentStatusByRequestSubscribeArgs = {
   input: {
     paymentRequest: EncodedPaymentRequest | Error
   }
 }
 
-type LnInvoicePaymentResolveSource = {
+type LnInvoicePaymentStatusByRequestResolveSource = {
   errors?: IError[]
   status?: string
   paymentHash?: PaymentHash
   paymentRequest?: EncodedPaymentRequest
 }
 
-const LnInvoicePaymentStatusSubscription = {
+const LnInvoicePaymentStatusByRequestSubscription = {
   type: GT.NonNull(LnInvoicePaymentStatusPayload),
-  deprecationReason: "Deprecated in favor of lnInvoicePaymentStatusByRequest",
   args: {
-    input: { type: GT.NonNull(LnInvoicePaymentStatusInput) },
+    input: { type: GT.NonNull(LnInvoicePaymentStatusByRequestInput) },
   },
-  resolve: async (source: LnInvoicePaymentResolveSource | undefined) => {
+  resolve: async (source: LnInvoicePaymentStatusByRequestResolveSource | undefined) => {
     if (source === undefined) {
       throw new UnknownClientError({
         message:
@@ -61,7 +60,10 @@ const LnInvoicePaymentStatusSubscription = {
     }
   },
 
-  subscribe: async (_source: unknown, args: LnInvoicePaymentSubscribeArgs) => {
+  subscribe: async (
+    _source: unknown,
+    args: LnInvoicePaymentStatusByRequestSubscribeArgs,
+  ) => {
     const { paymentRequest } = args.input
     if (paymentRequest instanceof Error) throw paymentRequest
 
@@ -121,4 +123,4 @@ const LnInvoicePaymentStatusSubscription = {
   },
 }
 
-export default LnInvoicePaymentStatusSubscription
+export default LnInvoicePaymentStatusByRequestSubscription

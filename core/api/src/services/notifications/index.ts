@@ -97,7 +97,7 @@ export const NotificationsService = (): INotificationsService => {
         const result = Promise.all([
           pubsub.publish({
             trigger: lnPaymentStatusTrigger,
-            payload: { status: WalletInvoiceStatus.Paid },
+            payload: { paymentHash, status: WalletInvoiceStatus.Paid },
           }),
           pubsub.publish({
             trigger: accountUpdatedTrigger,
