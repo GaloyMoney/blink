@@ -23,7 +23,6 @@ import {
 import { LndService } from "@/services/lnd"
 import { baseLogger } from "@/services/logger"
 import { LedgerService } from "@/services/ledger"
-import { Account } from "@/services/mongoose/schema"
 import { LocalCacheService } from "@/services/cache"
 import { activateLndHealthCheck } from "@/services/lnd/health"
 import { ledgerAdmin, setupMongoConnection } from "@/services/mongodb"
