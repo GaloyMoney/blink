@@ -201,8 +201,8 @@ function ParsePayment({
       display: display,
     }
 
-    const initalQuery = searchParams ? Object.fromEntries(searchParams.entries()) : {}
-    if (initalQuery !== newQuery && !skipRouterPush) {
+    const initialQuery = searchParams ? Object.fromEntries(searchParams.entries()) : {}
+    if (initialQuery !== newQuery && !skipRouterPush) {
       router.replace(`${username}?${new URLSearchParams(newQuery).toString()}`)
     }
   }
