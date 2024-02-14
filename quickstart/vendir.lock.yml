@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build: add buck test filters for local dev (#3958)...'
-      sha: 0e4ee98ae08c0d08c71fbae4e03945ed081cf3d8
+      commitTitle: 'chore(core): update schemas (#3995)'
+      sha: 29d320b698602bcc8852eabce951cf2e365e7598
       tags:
-      - 0.20.57-5-g0e4ee98ae
+      - 0.20.58-1-g29d320b69
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build: add buck test filters for local dev (#3958)...'
-      sha: 0e4ee98ae08c0d08c71fbae4e03945ed081cf3d8
+      commitTitle: 'chore(core): update schemas (#3995)'
+      sha: 29d320b698602bcc8852eabce951cf2e365e7598
       tags:
-      - 0.20.57-5-g0e4ee98ae
+      - 0.20.58-1-g29d320b69
     path: schemas/
   - git:
-      commitTitle: 'build: add buck test filters for local dev (#3958)...'
-      sha: 0e4ee98ae08c0d08c71fbae4e03945ed081cf3d8
+      commitTitle: 'chore(core): update schemas (#3995)'
+      sha: 29d320b698602bcc8852eabce951cf2e365e7598
       tags:
-      - 0.20.57-5-g0e4ee98ae
+      - 0.20.58-1-g29d320b69
     path: gql/
   path: ./graphql
 kind: LockConfig
