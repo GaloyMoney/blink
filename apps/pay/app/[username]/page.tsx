@@ -33,13 +33,27 @@ gql`
   }
 `
 
-type ReceivePaymentProps = {
+type Props = {
   params: {
     username: string
   }
 }
 
-function ReceivePayment({ params }: ReceivePaymentProps) {
+function updateCurrencyAndReload(newDisplayCurrency: string): void {
+  localStorage.setItem("display", newDisplayCurrency)
+
+  const currentURL = new URL(window.location.toString())
+  const searchParams = new URLSearchParams(window.location.search)
+  searchParams.set("display", newDisplayCurrency)
+  currentURL.search = searchParams.toString()
+
+  window.history.pushState({}, "", currentURL.toString())
+  setTimeout(() => {
+    window.location.reload()
+  }, 100)
+}
+
+function ReceivePayment({ params }: Props) {
   const searchParams = useSearchParams()
   const query = searchParams ? Object.fromEntries(searchParams.entries()) : {}
 
@@ -139,21 +153,7 @@ function ReceivePayment({ params }: ReceivePaymentProps) {
                       verticalAlign: "middle",
                     }}
                     showOnlyFlag={true}
-                    onSelectedDisplayCurrencyChange={(newDisplayCurrency) => {
-                      localStorage.setItem("display", newDisplayCurrency)
-                      window.history.pushState(
-                        {},
-                        "",
-                        `${window.location.pathname}?${new URLSearchParams({
-                          ...query,
-                          display: newDisplayCurrency,
-                        }).toString()}`,
-                      )
-
-                      setTimeout(() => {
-                        window.location.reload()
-                      }, 100)
-                    }}
+                    onSelectedDisplayCurrencyChange={updateCurrencyAndReload}
                   />
                 </div>
               </div>
