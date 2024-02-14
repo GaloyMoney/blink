@@ -8,46 +8,46 @@ const SetupPwa = () => {
   const router = useRouter()
   const [username, setUsername] = React.useState<string>("")
 
-  let username_from_local: string | null = null
-  let display_currency_from_local: string | null = null
+  let usernameFromLocal: string | null = null
+  let displayCurrencyFromLocal: string | null = null
 
   useEffect(() => {
-    username_from_local = localStorage.getItem("username")
-    display_currency_from_local = localStorage.getItem("display")
+    usernameFromLocal = localStorage.getItem("username")
+    displayCurrencyFromLocal = localStorage.getItem("display")
   }, [])
 
   const [selectedDisplayCurrency, setSelectedDisplayCurrency] = React.useState("USD")
 
   React.useEffect(() => {
-    if (username_from_local) {
+    if (usernameFromLocal) {
       window.history.pushState(
         {},
         "",
-        `${username_from_local}??display=${display_currency_from_local}`,
+        `${usernameFromLocal}??display=${displayCurrencyFromLocal}`,
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [username_from_local])
+  }, [usernameFromLocal])
 
-  if (!username_from_local || !display_currency_from_local) {
+  if (!usernameFromLocal || !displayCurrencyFromLocal) {
     return
   }
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (!username_from_local) {
+    if (!usernameFromLocal) {
       localStorage.setItem("username", username)
     }
 
-    if (!display_currency_from_local) {
+    if (!displayCurrencyFromLocal) {
       localStorage.setItem("display", selectedDisplayCurrency)
     }
 
     router.push(`${username}?display=${selectedDisplayCurrency}`)
   }
 
-  if (!username_from_local) {
+  if (!usernameFromLocal) {
     return (
       <div className="setup-pwa">
         <form
