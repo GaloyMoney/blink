@@ -45,6 +45,11 @@ jobs:
                 ;;
               core)
                 ARGS+=" //core/api:test"
+                BUILD_ARGS+=" //core/api:eslint_build_context"
+                BUILD_ARGS+=" //core/api:tsc_check_build_context"
+                BUILD_ARGS+=" //core/api:yaml_build_context"
+                BUILD_ARGS+=" //core/api:madge_build_context"
+                BUILD_ARGS+=" //core/api:jest_build_context"
                 BUILD_ARGS+=" //core/api:prod_build"
                 ;;
               api-keys|notifications)

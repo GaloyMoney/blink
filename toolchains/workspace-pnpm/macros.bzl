@@ -952,7 +952,7 @@ def typescript_check(
         node_modules = ":node_modules",
         visibility = ["PUBLIC"],
         **kwargs):
-    build_context = "typescript_build_context"
+    build_context = "tsc_check_build_context"
     if not rule_exists(build_context):
         prepare_build_context(
             name = build_context,

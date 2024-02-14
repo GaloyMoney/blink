@@ -132,15 +132,14 @@ dev_update_file(
   out = "src/graphql/admin/schema.graphql"
 )
 
-prepare_build_context(
-    name = "checks_build_context",
-    srcs = [":src"] + [":test_src"],
-    prod_deps_srcs = prod_deps_srcs,
-)
-
 audit(
     name = "audit",
     level = "critical",
+)
+
+prepare_build_context(
+    name = "eslint_build_context",
+    srcs = [":src"] + [":test_src"] + glob([".eslint*"]),
 )
 
 eslint(
@@ -155,6 +154,11 @@ dev_pnpm_task_test(
   command = "eslint-check",
 )
 
+prepare_build_context(
+    name = "tsc_check_build_context",
+    srcs = [":src"] + [":test_src"],
+)
+
 typescript_check(
     name = "check-type",
     srcs = [":src"] + [":test_src"],
@@ -163,6 +167,16 @@ typescript_check(
 dev_pnpm_task_test(
   name = "dev-check-type",
   command = "tsc-check",
+)
+
+prepare_build_context(
+    name = "yaml_build_context",
+    srcs = glob([
+        ".prettier*",
+        "prettier*",
+        "*.yml",
+        "*.yaml",
+    ]),
 )
 
 yaml_check(
@@ -175,6 +189,11 @@ yaml_check(
     ]),
 )
 
+prepare_build_context(
+    name = "madge_build_context",
+    srcs = [":src"],
+)
+
 madge_check(
     name = "check-circular-dependencies",
     srcs = [":src"],
@@ -183,6 +202,12 @@ madge_check(
 dev_pnpm_task_test(
   name = "dev-check-circular-dependencies",
   command = "circular-deps-check",
+)
+
+prepare_build_context(
+    name = "jest_build_context",
+    srcs = [":src"] + [":test_src"] + glob([".env", "galoy.yaml"]),
+    prod_deps_srcs = prod_deps_srcs,
 )
 
 jest_test(
