@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): use tracing wrappers in email login (#3982)'
-      sha: 6dc4a87f90227d7fa69f0d1441e7ecc5204adb68
+      commitTitle: 'build: add buck test filters for local dev (#3958)...'
+      sha: 0e4ee98ae08c0d08c71fbae4e03945ed081cf3d8
       tags:
-      - 0.20.56-4-g6dc4a87f9
+      - 0.20.57-5-g0e4ee98ae
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): use tracing wrappers in email login (#3982)'
-      sha: 6dc4a87f90227d7fa69f0d1441e7ecc5204adb68
+      commitTitle: 'build: add buck test filters for local dev (#3958)...'
+      sha: 0e4ee98ae08c0d08c71fbae4e03945ed081cf3d8
       tags:
-      - 0.20.56-4-g6dc4a87f9
+      - 0.20.57-5-g0e4ee98ae
     path: schemas/
   - git:
-      commitTitle: 'fix(core): use tracing wrappers in email login (#3982)'
-      sha: 6dc4a87f90227d7fa69f0d1441e7ecc5204adb68
+      commitTitle: 'build: add buck test filters for local dev (#3958)...'
+      sha: 0e4ee98ae08c0d08c71fbae4e03945ed081cf3d8
       tags:
-      - 0.20.56-4-g6dc4a87f9
+      - 0.20.57-5-g0e4ee98ae
     path: gql/
   path: ./graphql
 kind: LockConfig
