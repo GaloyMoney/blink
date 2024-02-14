@@ -52,15 +52,6 @@ const main = async () => {
   })
 
   createGauge({
-    name: "userCount",
-    description: "how much users have registered",
-    collect: async () => {
-      const value = await Account.countDocuments()
-      return value
-    },
-  })
-
-  createGauge({
     name: "lnd",
     description: "how much money in our node",
     collect: async () => {
@@ -147,15 +138,6 @@ const main = async () => {
       if (balance instanceof Error) return 0
 
       return Number(balance.amount)
-    },
-  })
-
-  createGauge({
-    name: "business",
-    description: "number of businesses in the app",
-    collect: async () => {
-      const value = await Account.countDocuments({ title: { $ne: undefined } })
-      return value
     },
   })
 
