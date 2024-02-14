@@ -1,0 +1,16 @@
+_version: 1
+
+circle_time_frame.month: " ez a hónap"
+circle_time_frame.all_time: ""
+
+circle_type.inner: "belső kör"
+circle_type.outer: "külső kör"
+
+circle_grew.title: "Növekednek a Blink Köreid!"
+circle_grew.body: "Valaki éppen hozzá lett adva a(z) %{circle_type} körhöz."
+
+circle_threshold_reached.inner.title: "Szép Belső Kör! \U0001F919"
+circle_threshold_reached.inner.body: "Üdvözöltél %{threshold} embert a Blinkkel%{time_frame}. Így tovább!"
+
+circle_threshold_reached.outer.title: "Erősödik a Külső Kör \U0001F4AA"
+circle_threshold_reached.outer.body: "A Külső Köröd elérte a %{threshold} embert. Terjeszted a Bitcoint!"
