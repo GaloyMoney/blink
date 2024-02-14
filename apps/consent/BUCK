@@ -1,11 +1,13 @@
-load("@toolchains//workspace-pnpm:macros.bzl",
-"dev_pnpm_task_binary",
-"dev_pnpm_task_test",
-"build_node_modules",
-"next_build",
-"next_build_bin",
-"eslint",
-"audit",
+load(
+  "@toolchains//workspace-pnpm:macros.bzl",
+  "dev_pnpm_task_binary",
+  "dev_pnpm_task_test",
+  "build_node_modules",
+  "prepare_build_context",
+  "next_build",
+  "next_build_bin",
+  "eslint",
+  "audit",
 )
 
 dev_pnpm_task_binary(
@@ -80,6 +82,12 @@ next_build_bin(
 audit(
     name = "audit",
     level = "critical",
+)
+
+prepare_build_context(
+    name = "eslint_build_context",
+    srcs = [":src"] + glob([".eslint*"]),
+    dev_deps_srcs = dev_deps_srcs,
 )
 
 eslint(

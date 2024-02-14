@@ -49,7 +49,7 @@ jobs:
             case "$LABEL" in
               dashboard|consent|pay|admin-panel|map)
                 ARGS+=" //apps/$LABEL:test"
-                BUILD_ARGS+=" //apps/$LABEL:node_modules"
+                BUILD_ARGS+=" //apps/$LABEL:eslint_build_context"
                 ;;
               core)
                 ARGS+=" //core/api:test"
