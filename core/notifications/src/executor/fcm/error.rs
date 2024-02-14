@@ -14,17 +14,28 @@ impl From<google_fcm1::Error> for FcmError {
     fn from(err: google_fcm1::Error) -> Self {
         match err {
             google_fcm1::Error::BadRequest(ref value) => {
-                if value["error"]["code"].as_u64() == Some(404)
-                    && value["error"]["status"].as_str() == Some("NOT_FOUND")
-                    && value["error"]["details"]
-                        .as_array()
-                        .map_or(false, |details| {
-                            details
-                                .iter()
-                                .any(|detail| detail["errorCode"].as_str() == Some("UNREGISTERED"))
+                let code = value
+                    .get("error")
+                    .and_then(|e| e.get("code"))
+                    .and_then(|c| c.as_u64());
+                let status = value
+                    .get("error")
+                    .and_then(|e| e.get("status"))
+                    .and_then(|s| s.as_str());
+                let is_unregistered = value
+                    .get("error")
+                    .and_then(|e| e.get("details"))
+                    .and_then(|d| d.as_array())
+                    .map_or(false, |details| {
+                        details.iter().any(|detail| {
+                            detail.get("errorCode").and_then(|e| e.as_str()) == Some("UNREGISTERED")
                         })
-                {
-                    return FcmError::UnrecognizedDeviceToken(err);
+                    });
+
+                if let (Some(code), Some(status)) = (code, status) {
+                    if code == 404 && status == "NOT_FOUND" && is_unregistered {
+                        return FcmError::UnrecognizedDeviceToken(err);
+                    }
                 }
                 FcmError::GoogleFcm1Error(err)
             }
