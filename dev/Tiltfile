@@ -40,9 +40,12 @@ def _buck2_dep_inputs(target):
         "uquery",
         "\"inputs(deps('{}'))\"".format(target),
     ]
-    file_paths = str(local(" ".join(cmd))).splitlines()
+    abs_file_paths = str(local(" ".join(cmd))).splitlines()
 
-    return file_paths
+    repo_root = str(local("git rev-parse --show-toplevel")).strip()
+    rel_file_paths = ["{}/{}".format(repo_root, path) for path in abs_file_paths]
+
+    return rel_file_paths
 
 dashboard_target = "//apps/dashboard:dev"
 if is_ci:
