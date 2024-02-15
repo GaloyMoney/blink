@@ -6,6 +6,11 @@ describe("username-check", () => {
     expect(username).toEqual("alice_12")
   })
 
+  it("Passes usd-tagged username", () => {
+    const username = checkedToUsername("alice_12+usd")
+    expect(username).toEqual("alice_12+usd")
+  })
+
   it("Fails legacy address", () => {
     const username = checkedToUsername("1LKvxGL8ejTsgBjRVUNCGi7adiwaVnM9cn")
     expect(username).toBeInstanceOf(Error)
