@@ -21,7 +21,6 @@ service NotificationsService {
 
 enum NotificationChannel {
   PUSH = 0;
-  EMAIL = 1;
 }
 
 enum NotificationCategory {
