@@ -5,7 +5,7 @@ import MyUpdatesSubscription from "@/graphql/public/root/subscription/my-updates
 import RealtimePriceSubscription from "@/graphql/public/root/subscription/realtime-price"
 import LnInvoicePaymentStatusSubscription from "@/graphql/public/root/subscription/ln-invoice-payment-status"
 import LnInvoicePaymentStatusByHashSubscription from "@/graphql/public/root/subscription/ln-invoice-payment-status-by-hash"
-import LnInvoicePaymentStatusByRequestSubscription from "@/graphql/public/root/subscription/ln-invoice-payment-status-by-request"
+import LnInvoicePaymentStatusByPaymentRequestSubscription from "@/graphql/public/root/subscription/ln-invoice-payment-status-by-payment-request"
 import {
   ACCOUNT_USERNAME,
   addAttributesToCurrentSpan,
@@ -18,7 +18,8 @@ const fields = {
   realtimePrice: RealtimePriceSubscription,
   lnInvoicePaymentStatus: LnInvoicePaymentStatusSubscription,
   lnInvoicePaymentStatusByHash: LnInvoicePaymentStatusByHashSubscription,
-  lnInvoicePaymentStatusByRequest: LnInvoicePaymentStatusByRequestSubscription,
+  lnInvoicePaymentStatusByPaymentRequest:
+    LnInvoicePaymentStatusByPaymentRequestSubscription,
 }
 
 const addTracing = () => {
