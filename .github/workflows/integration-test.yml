@@ -48,11 +48,21 @@ jobs:
       - name: Build/start deps and run tests via tilt
         if: steps.prepare_args.outputs.args != ''
         run: nix develop -c xvfb-run ./dev/bin/tilt-ci.sh ${{ steps.prepare_args.outputs.args }}
-      - name: Rename Tilt log
+      - name: Prepare Tilt log
+        id: prepare_tilt_log
         if: always()
-        run: mv dev/.e2e-tilt.log dev/e2e-tilt.log
+        run: |
+          TILT_LOG="dev/.e2e-tilt.log"
+          TARGET="dev/e2e-tilt.log"
+
+          if [ -f "$TILT_LOG" ]; then
+            mv "$TILT_LOG" "$TARGET"
+            echo "prepared=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prepared=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Upload Tilt log
-        if: always()
+        if: steps.prepare_tilt_log.outputs.prepared == 'true'
         uses: actions/upload-artifact@v2
         with:
           name: Tilt log
