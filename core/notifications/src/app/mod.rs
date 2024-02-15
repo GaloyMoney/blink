@@ -8,7 +8,7 @@ use tracing::instrument;
 use std::sync::Arc;
 
 use crate::{
-    executor::*, job, notification_event::*, primitives::*, user_notification_settings::*,
+    job, notification_event::*, primitives::*, push_executor::*, user_notification_settings::*,
 };
 
 pub use config::*;
@@ -25,7 +25,7 @@ pub struct NotificationsApp {
 impl NotificationsApp {
     pub async fn init(pool: Pool<Postgres>, config: AppConfig) -> Result<Self, ApplicationError> {
         let settings = UserNotificationSettingsRepo::new(&pool);
-        let executor = Executor::init(config.executor.clone(), settings.clone()).await?;
+        let executor = PushExecutor::init(config.executor.clone(), settings.clone()).await?;
         let runner = job::start_job_runner(&pool, executor).await?;
         Ok(Self {
             _config: config,
