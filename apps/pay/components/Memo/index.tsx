@@ -1,7 +1,7 @@
 import React from "react"
 import { Modal } from "react-bootstrap"
 
-import { useSearchParams, useParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 
 import { ACTIONS, ACTION_TYPE } from "../../app/reducer"
 
@@ -14,7 +14,6 @@ interface Props {
 
 const Memo = ({ state, dispatch }: Props) => {
   const searchParams = useSearchParams()
-  const { username } = useParams()
   const amount = searchParams.get("amount") || "0"
   const sats = searchParams.get("sats") || "0"
   const display = searchParams.get("display") || "USD"
