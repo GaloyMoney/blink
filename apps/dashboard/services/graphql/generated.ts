@@ -81,6 +81,8 @@ export type Scalars = {
   Username: { input: string; output: string; }
   /** Unique identifier of a wallet */
   WalletId: { input: string; output: string; }
+  join__FieldSet: { input: string; output: string; }
+  link__Import: { input: string; output: string; }
   _FieldSet: { input: string; output: string; }
 };
 
@@ -690,7 +692,7 @@ export type LnInvoicePaymentStatusByHashInput = {
   readonly paymentHash: Scalars['PaymentHash']['input'];
 };
 
-export type LnInvoicePaymentStatusByRequestInput = {
+export type LnInvoicePaymentStatusByPaymentRequestInput = {
   readonly paymentRequest: Scalars['LnPaymentRequest']['input'];
 };
 
@@ -1526,10 +1528,10 @@ export type Query = {
   readonly businessMapMarkers: ReadonlyArray<MapMarker>;
   readonly currencyList: ReadonlyArray<Currency>;
   readonly globals?: Maybe<Globals>;
-  /** @deprecated Deprecated in favor of lnInvoicePaymentStatusByRequest */
+  /** @deprecated Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest */
   readonly lnInvoicePaymentStatus: LnInvoicePaymentStatusPayload;
   readonly lnInvoicePaymentStatusByHash: LnInvoicePaymentStatus;
-  readonly lnInvoicePaymentStatusByRequest: LnInvoicePaymentStatus;
+  readonly lnInvoicePaymentStatusByPaymentRequest: LnInvoicePaymentStatus;
   readonly me?: Maybe<User>;
   readonly mobileVersions?: Maybe<ReadonlyArray<Maybe<MobileVersions>>>;
   readonly onChainTxFee: OnChainTxFee;
@@ -1564,8 +1566,8 @@ export type QueryLnInvoicePaymentStatusByHashArgs = {
 };
 
 
-export type QueryLnInvoicePaymentStatusByRequestArgs = {
-  input: LnInvoicePaymentStatusByRequestInput;
+export type QueryLnInvoicePaymentStatusByPaymentRequestArgs = {
+  input: LnInvoicePaymentStatusByPaymentRequestInput;
 };
 
 
@@ -1688,9 +1690,10 @@ export type SettlementViaOnChain = {
 
 export type Subscription = {
   readonly __typename: 'Subscription';
+  /** @deprecated Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest */
   readonly lnInvoicePaymentStatus: LnInvoicePaymentStatusPayload;
   readonly lnInvoicePaymentStatusByHash: LnInvoicePaymentStatusPayload;
-  readonly lnInvoicePaymentStatusByRequest: LnInvoicePaymentStatusPayload;
+  readonly lnInvoicePaymentStatusByPaymentRequest: LnInvoicePaymentStatusPayload;
   readonly myUpdates: MyUpdatesPayload;
   readonly price: PricePayload;
   /** Returns the price of 1 satoshi */
@@ -1708,8 +1711,8 @@ export type SubscriptionLnInvoicePaymentStatusByHashArgs = {
 };
 
 
-export type SubscriptionLnInvoicePaymentStatusByRequestArgs = {
-  input: LnInvoicePaymentStatusByRequestInput;
+export type SubscriptionLnInvoicePaymentStatusByPaymentRequestArgs = {
+  input: LnInvoicePaymentStatusByPaymentRequestInput;
 };
 
 
@@ -2208,6 +2211,21 @@ export const WalletCurrency = {
 } as const;
 
 export type WalletCurrency = typeof WalletCurrency[keyof typeof WalletCurrency];
+export const Join__Graph = {
+  ApiKeys: 'API_KEYS',
+  Notifications: 'NOTIFICATIONS',
+  Public: 'PUBLIC'
+} as const;
+
+export type Join__Graph = typeof Join__Graph[keyof typeof Join__Graph];
+export const Link__Purpose = {
+  /** `EXECUTION` features provide metadata necessary for operation execution. */
+  Execution: 'EXECUTION',
+  /** `SECURITY` features provide metadata necessary to securely resolve fields. */
+  Security: 'SECURITY'
+} as const;
+
+export type Link__Purpose = typeof Link__Purpose[keyof typeof Link__Purpose];
 export type ApiKeyCreateMutationVariables = Exact<{
   input: ApiKeyCreateInput;
 }>;
@@ -3393,7 +3411,7 @@ export type ResolversTypes = {
   LnInvoicePaymentInput: LnInvoicePaymentInput;
   LnInvoicePaymentStatus: ResolverTypeWrapper<LnInvoicePaymentStatus>;
   LnInvoicePaymentStatusByHashInput: LnInvoicePaymentStatusByHashInput;
-  LnInvoicePaymentStatusByRequestInput: LnInvoicePaymentStatusByRequestInput;
+  LnInvoicePaymentStatusByPaymentRequestInput: LnInvoicePaymentStatusByPaymentRequestInput;
   LnInvoicePaymentStatusInput: LnInvoicePaymentStatusInput;
   LnInvoicePaymentStatusPayload: ResolverTypeWrapper<LnInvoicePaymentStatusPayload>;
   LnNoAmountInvoice: ResolverTypeWrapper<LnNoAmountInvoice>;
@@ -3530,6 +3548,10 @@ export type ResolversTypes = {
   Wallet: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Wallet']>;
   WalletCurrency: WalletCurrency;
   WalletId: ResolverTypeWrapper<Scalars['WalletId']['output']>;
+  join__FieldSet: ResolverTypeWrapper<Scalars['join__FieldSet']['output']>;
+  join__Graph: Join__Graph;
+  link__Import: ResolverTypeWrapper<Scalars['link__Import']['output']>;
+  link__Purpose: Link__Purpose;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -3611,7 +3633,7 @@ export type ResolversParentTypes = {
   LnInvoicePaymentInput: LnInvoicePaymentInput;
   LnInvoicePaymentStatus: LnInvoicePaymentStatus;
   LnInvoicePaymentStatusByHashInput: LnInvoicePaymentStatusByHashInput;
-  LnInvoicePaymentStatusByRequestInput: LnInvoicePaymentStatusByRequestInput;
+  LnInvoicePaymentStatusByPaymentRequestInput: LnInvoicePaymentStatusByPaymentRequestInput;
   LnInvoicePaymentStatusInput: LnInvoicePaymentStatusInput;
   LnInvoicePaymentStatusPayload: LnInvoicePaymentStatusPayload;
   LnNoAmountInvoice: LnNoAmountInvoice;
@@ -3736,14 +3758,67 @@ export type ResolversParentTypes = {
   Username: Scalars['Username']['output'];
   Wallet: ResolversInterfaceTypes<ResolversParentTypes>['Wallet'];
   WalletId: Scalars['WalletId']['output'];
+  join__FieldSet: Scalars['join__FieldSet']['output'];
+  link__Import: Scalars['link__Import']['output'];
 };
 
-export type DeferDirectiveArgs = {
-  if?: Scalars['Boolean']['input'];
-  label?: Maybe<Scalars['String']['input']>;
+export type Join__EnumValueDirectiveArgs = {
+  graph: Join__Graph;
 };
 
-export type DeferDirectiveResolver<Result, Parent, ContextType = any, Args = DeferDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+export type Join__EnumValueDirectiveResolver<Result, Parent, ContextType = any, Args = Join__EnumValueDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type Join__FieldDirectiveArgs = {
+  external?: Maybe<Scalars['Boolean']['input']>;
+  graph?: Maybe<Join__Graph>;
+  override?: Maybe<Scalars['String']['input']>;
+  provides?: Maybe<Scalars['join__FieldSet']['input']>;
+  requires?: Maybe<Scalars['join__FieldSet']['input']>;
+  type?: Maybe<Scalars['String']['input']>;
+  usedOverridden?: Maybe<Scalars['Boolean']['input']>;
+};
+
+export type Join__FieldDirectiveResolver<Result, Parent, ContextType = any, Args = Join__FieldDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type Join__GraphDirectiveArgs = {
+  name: Scalars['String']['input'];
+  url: Scalars['String']['input'];
+};
+
+export type Join__GraphDirectiveResolver<Result, Parent, ContextType = any, Args = Join__GraphDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type Join__ImplementsDirectiveArgs = {
+  graph: Join__Graph;
+  interface: Scalars['String']['input'];
+};
+
+export type Join__ImplementsDirectiveResolver<Result, Parent, ContextType = any, Args = Join__ImplementsDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type Join__TypeDirectiveArgs = {
+  extension?: Scalars['Boolean']['input'];
+  graph: Join__Graph;
+  isInterfaceObject?: Scalars['Boolean']['input'];
+  key?: Maybe<Scalars['join__FieldSet']['input']>;
+  resolvable?: Scalars['Boolean']['input'];
+};
+
+export type Join__TypeDirectiveResolver<Result, Parent, ContextType = any, Args = Join__TypeDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type Join__UnionMemberDirectiveArgs = {
+  graph: Join__Graph;
+  member: Scalars['String']['input'];
+};
+
+export type Join__UnionMemberDirectiveResolver<Result, Parent, ContextType = any, Args = Join__UnionMemberDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type LinkDirectiveArgs = {
+  as?: Maybe<Scalars['String']['input']>;
+  for?: Maybe<Link__Purpose>;
+  import?: Maybe<ReadonlyArray<Maybe<Scalars['link__Import']['input']>>>;
+  url?: Maybe<Scalars['String']['input']>;
+};
+
+export type LinkDirectiveResolver<Result, Parent, ContextType = any, Args = LinkDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
 export type AccountResolvers<ContextType = any, ParentType extends ResolversParentTypes['Account'] = ResolversParentTypes['Account']> = {
   __resolveType: TypeResolveFn<'ConsumerAccount', ParentType, ContextType>;
@@ -4399,7 +4474,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   globals?: Resolver<Maybe<ResolversTypes['Globals']>, ParentType, ContextType>;
   lnInvoicePaymentStatus?: Resolver<ResolversTypes['LnInvoicePaymentStatusPayload'], ParentType, ContextType, RequireFields<QueryLnInvoicePaymentStatusArgs, 'input'>>;
   lnInvoicePaymentStatusByHash?: Resolver<ResolversTypes['LnInvoicePaymentStatus'], ParentType, ContextType, RequireFields<QueryLnInvoicePaymentStatusByHashArgs, 'input'>>;
-  lnInvoicePaymentStatusByRequest?: Resolver<ResolversTypes['LnInvoicePaymentStatus'], ParentType, ContextType, RequireFields<QueryLnInvoicePaymentStatusByRequestArgs, 'input'>>;
+  lnInvoicePaymentStatusByPaymentRequest?: Resolver<ResolversTypes['LnInvoicePaymentStatus'], ParentType, ContextType, RequireFields<QueryLnInvoicePaymentStatusByPaymentRequestArgs, 'input'>>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   mobileVersions?: Resolver<Maybe<ReadonlyArray<Maybe<ResolversTypes['MobileVersions']>>>, ParentType, ContextType>;
   onChainTxFee?: Resolver<ResolversTypes['OnChainTxFee'], ParentType, ContextType, RequireFields<QueryOnChainTxFeeArgs, 'address' | 'amount' | 'speed' | 'walletId'>>;
@@ -4498,7 +4573,7 @@ export interface SignedDisplayMajorAmountScalarConfig extends GraphQLScalarTypeC
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
   lnInvoicePaymentStatus?: SubscriptionResolver<ResolversTypes['LnInvoicePaymentStatusPayload'], "lnInvoicePaymentStatus", ParentType, ContextType, RequireFields<SubscriptionLnInvoicePaymentStatusArgs, 'input'>>;
   lnInvoicePaymentStatusByHash?: SubscriptionResolver<ResolversTypes['LnInvoicePaymentStatusPayload'], "lnInvoicePaymentStatusByHash", ParentType, ContextType, RequireFields<SubscriptionLnInvoicePaymentStatusByHashArgs, 'input'>>;
-  lnInvoicePaymentStatusByRequest?: SubscriptionResolver<ResolversTypes['LnInvoicePaymentStatusPayload'], "lnInvoicePaymentStatusByRequest", ParentType, ContextType, RequireFields<SubscriptionLnInvoicePaymentStatusByRequestArgs, 'input'>>;
+  lnInvoicePaymentStatusByPaymentRequest?: SubscriptionResolver<ResolversTypes['LnInvoicePaymentStatusPayload'], "lnInvoicePaymentStatusByPaymentRequest", ParentType, ContextType, RequireFields<SubscriptionLnInvoicePaymentStatusByPaymentRequestArgs, 'input'>>;
   myUpdates?: SubscriptionResolver<ResolversTypes['MyUpdatesPayload'], "myUpdates", ParentType, ContextType>;
   price?: SubscriptionResolver<ResolversTypes['PricePayload'], "price", ParentType, ContextType, RequireFields<SubscriptionPriceArgs, 'input'>>;
   realtimePrice?: SubscriptionResolver<ResolversTypes['RealtimePricePayload'], "realtimePrice", ParentType, ContextType, RequireFields<SubscriptionRealtimePriceArgs, 'input'>>;
@@ -4718,6 +4793,14 @@ export interface WalletIdScalarConfig extends GraphQLScalarTypeConfig<ResolversT
   name: 'WalletId';
 }
 
+export interface Join__FieldSetScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['join__FieldSet'], any> {
+  name: 'join__FieldSet';
+}
+
+export interface Link__ImportScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['link__Import'], any> {
+  name: 'link__Import';
+}
+
 export type Resolvers<ContextType = any> = {
   Account?: AccountResolvers<ContextType>;
   AccountDeletePayload?: AccountDeletePayloadResolvers<ContextType>;
@@ -4856,8 +4939,16 @@ export type Resolvers<ContextType = any> = {
   Username?: GraphQLScalarType;
   Wallet?: WalletResolvers<ContextType>;
   WalletId?: GraphQLScalarType;
+  join__FieldSet?: GraphQLScalarType;
+  link__Import?: GraphQLScalarType;
 };
 
 export type DirectiveResolvers<ContextType = any> = {
-  defer?: DeferDirectiveResolver<any, any, ContextType>;
+  join__enumValue?: Join__EnumValueDirectiveResolver<any, any, ContextType>;
+  join__field?: Join__FieldDirectiveResolver<any, any, ContextType>;
+  join__graph?: Join__GraphDirectiveResolver<any, any, ContextType>;
+  join__implements?: Join__ImplementsDirectiveResolver<any, any, ContextType>;
+  join__type?: Join__TypeDirectiveResolver<any, any, ContextType>;
+  join__unionMember?: Join__UnionMemberDirectiveResolver<any, any, ContextType>;
+  link?: LinkDirectiveResolver<any, any, ContextType>;
 };

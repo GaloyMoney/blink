@@ -1,6 +1,6 @@
 overwrite: true
-schema: "http://localhost:4004/graphql"
-# schema: "./supergraph.graphql"
+schema:
+  - "../../dev/config/apollo-federation/supergraph.graphql"
 documents:
   - "app/**/*.ts"
   - "app/**/*.tsx"

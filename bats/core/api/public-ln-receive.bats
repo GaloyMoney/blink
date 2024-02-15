@@ -134,20 +134,20 @@ usd_amount=50
   --arg payment_request "$payment_request" \
   '{input: {paymentRequest: $payment_request}}'
   )
-  subscribe_to 'anon' 'ln-invoice-payment-status-by-request-sub' "$variables"
+  subscribe_to 'anon' 'ln-invoice-payment-status-by-payment-request-sub' "$variables"
   sleep 3
-  retry 10 1 grep "Data.*lnInvoicePaymentStatusByRequest.*PENDING" "$SUBSCRIBER_LOG_FILE"
-  retry 10 1 grep "Data.*lnInvoicePaymentStatusByRequest.*$payment_hash" "$SUBSCRIBER_LOG_FILE"
-  retry 10 1 grep "Data.*lnInvoicePaymentStatusByRequest.*$payment_request" "$SUBSCRIBER_LOG_FILE"
+  retry 10 1 grep "Data.*lnInvoicePaymentStatusByPaymentRequest.*PENDING" "$SUBSCRIBER_LOG_FILE"
+  retry 10 1 grep "Data.*lnInvoicePaymentStatusByPaymentRequest.*$payment_hash" "$SUBSCRIBER_LOG_FILE"
+  retry 10 1 grep "Data.*lnInvoicePaymentStatusByPaymentRequest.*$payment_request" "$SUBSCRIBER_LOG_FILE"
 
   # Receive payment
   lnd_outside_cli payinvoice -f \
     --pay_req "$payment_request" \
 
   # Check for settled with subscriptions
-  retry 10 1 grep "Data.*lnInvoicePaymentStatusByRequest.*PAID" "$SUBSCRIBER_LOG_FILE"
-  retry 10 1 grep "Data.*lnInvoicePaymentStatusByRequest.*$payment_hash" "$SUBSCRIBER_LOG_FILE"
-  retry 10 1 grep "Data.*lnInvoicePaymentStatusByRequest.*$payment_request" "$SUBSCRIBER_LOG_FILE"
+  retry 10 1 grep "Data.*lnInvoicePaymentStatusByPaymentRequest.*PAID" "$SUBSCRIBER_LOG_FILE"
+  retry 10 1 grep "Data.*lnInvoicePaymentStatusByPaymentRequest.*$payment_hash" "$SUBSCRIBER_LOG_FILE"
+  retry 10 1 grep "Data.*lnInvoicePaymentStatusByPaymentRequest.*$payment_request" "$SUBSCRIBER_LOG_FILE"
   stop_subscriber
 }
 

@@ -8,7 +8,7 @@ import LnInvoicePaymentStatusInput from "@/graphql/public/types/object/ln-invoic
 
 const LnInvoicePaymentStatusQuery = GT.Field({
   type: GT.NonNull(LnInvoicePaymentStatusPayload),
-  deprecationReason: "Deprecated in favor of lnInvoicePaymentStatusByRequest",
+  deprecationReason: "Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest",
   args: {
     input: { type: GT.NonNull(LnInvoicePaymentStatusInput) },
   },

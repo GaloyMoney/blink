@@ -29,7 +29,7 @@ type LnInvoicePaymentResolveSource = {
 
 const LnInvoicePaymentStatusSubscription = {
   type: GT.NonNull(LnInvoicePaymentStatusPayload),
-  deprecationReason: "Deprecated in favor of lnInvoicePaymentStatusByRequest",
+  deprecationReason: "Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest",
   args: {
     input: { type: GT.NonNull(LnInvoicePaymentStatusInput) },
   },

@@ -103,10 +103,10 @@ check_ln_payment_settled() {
   --arg payment_request "$payment_request" \
   '{"input": {"paymentRequest": $payment_request}}'
   )
-  exec_graphql 'anon' 'ln-invoice-payment-status-by-request' "$variables"
-  payment_status="$(graphql_output '.data.lnInvoicePaymentStatusByRequest.status')"
-  payment_request_resp="$(graphql_output '.data.lnInvoicePaymentStatusByRequest.paymentRequest')"
-  payment_hash_resp="$(graphql_output '.data.lnInvoicePaymentStatusByRequest.paymentHash')"
+  exec_graphql 'anon' 'ln-invoice-payment-status-by-payment-request' "$variables"
+  payment_status="$(graphql_output '.data.lnInvoicePaymentStatusByPaymentRequest.status')"
+  payment_request_resp="$(graphql_output '.data.lnInvoicePaymentStatusByPaymentRequest.paymentRequest')"
+  payment_hash_resp="$(graphql_output '.data.lnInvoicePaymentStatusByPaymentRequest.paymentHash')"
   [[ "${payment_hash}" = "${payment_hash_resp}" ]] || exit 1
   [[ "${payment_request}" = "${payment_request_resp}" ]] || exit 1
   [[ "${payment_status}" = "PAID" ]]

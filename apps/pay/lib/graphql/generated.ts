@@ -641,6 +641,21 @@ export type LnInvoicePaymentInput = {
   readonly walletId: Scalars['WalletId'];
 };
 
+export type LnInvoicePaymentStatus = {
+  readonly __typename: 'LnInvoicePaymentStatus';
+  readonly paymentHash?: Maybe<Scalars['PaymentHash']>;
+  readonly paymentRequest?: Maybe<Scalars['LnPaymentRequest']>;
+  readonly status?: Maybe<InvoicePaymentStatus>;
+};
+
+export type LnInvoicePaymentStatusByHashInput = {
+  readonly paymentHash: Scalars['PaymentHash'];
+};
+
+export type LnInvoicePaymentStatusByPaymentRequestInput = {
+  readonly paymentRequest: Scalars['LnPaymentRequest'];
+};
+
 export type LnInvoicePaymentStatusInput = {
   readonly paymentRequest: Scalars['LnPaymentRequest'];
 };
@@ -648,6 +663,8 @@ export type LnInvoicePaymentStatusInput = {
 export type LnInvoicePaymentStatusPayload = {
   readonly __typename: 'LnInvoicePaymentStatusPayload';
   readonly errors: ReadonlyArray<Error>;
+  readonly paymentHash?: Maybe<Scalars['PaymentHash']>;
+  readonly paymentRequest?: Maybe<Scalars['LnPaymentRequest']>;
   readonly status?: Maybe<InvoicePaymentStatus>;
 };
 
@@ -1435,7 +1452,10 @@ export type Query = {
   readonly businessMapMarkers: ReadonlyArray<MapMarker>;
   readonly currencyList: ReadonlyArray<Currency>;
   readonly globals?: Maybe<Globals>;
+  /** @deprecated Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest */
   readonly lnInvoicePaymentStatus: LnInvoicePaymentStatusPayload;
+  readonly lnInvoicePaymentStatusByHash: LnInvoicePaymentStatus;
+  readonly lnInvoicePaymentStatusByPaymentRequest: LnInvoicePaymentStatus;
   readonly me?: Maybe<User>;
   readonly mobileVersions?: Maybe<ReadonlyArray<Maybe<MobileVersions>>>;
   readonly onChainTxFee: OnChainTxFee;
@@ -1462,6 +1482,16 @@ export type QueryBtcPriceListArgs = {
 
 export type QueryLnInvoicePaymentStatusArgs = {
   input: LnInvoicePaymentStatusInput;
+};
+
+
+export type QueryLnInvoicePaymentStatusByHashArgs = {
+  input: LnInvoicePaymentStatusByHashInput;
+};
+
+
+export type QueryLnInvoicePaymentStatusByPaymentRequestArgs = {
+  input: LnInvoicePaymentStatusByPaymentRequestInput;
 };
 
 
@@ -1584,7 +1614,10 @@ export type SettlementViaOnChain = {
 
 export type Subscription = {
   readonly __typename: 'Subscription';
+  /** @deprecated Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest */
   readonly lnInvoicePaymentStatus: LnInvoicePaymentStatusPayload;
+  readonly lnInvoicePaymentStatusByHash: LnInvoicePaymentStatusPayload;
+  readonly lnInvoicePaymentStatusByPaymentRequest: LnInvoicePaymentStatusPayload;
   readonly myUpdates: MyUpdatesPayload;
   readonly price: PricePayload;
   /** Returns the price of 1 satoshi */
@@ -1594,6 +1627,16 @@ export type Subscription = {
 
 export type SubscriptionLnInvoicePaymentStatusArgs = {
   input: LnInvoicePaymentStatusInput;
+};
+
+
+export type SubscriptionLnInvoicePaymentStatusByHashArgs = {
+  input: LnInvoicePaymentStatusByHashInput;
+};
+
+
+export type SubscriptionLnInvoicePaymentStatusByPaymentRequestArgs = {
+  input: LnInvoicePaymentStatusByPaymentRequestInput;
 };
 
 
