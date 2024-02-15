@@ -1,7 +1,8 @@
 use thiserror::Error;
 
 use crate::{
-    job::error::JobError, push_executor::error::PushExecutorError,
+    email_executor::error::EmailExecutorError, job::error::JobError,
+    push_executor::error::PushExecutorError,
     user_notification_settings::error::UserNotificationSettingsError,
 };
 
@@ -13,6 +14,8 @@ pub enum ApplicationError {
     JobError(#[from] JobError),
     #[error("{0}")]
     PushExecutorError(#[from] PushExecutorError),
+    #[error("{0}")]
+    EmailExecutorError(#[from] EmailExecutorError),
     #[error("{0}")]
     Sqlx(#[from] sqlx::Error),
 }

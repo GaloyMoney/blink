@@ -1,17 +1,25 @@
 mod config;
 pub mod error;
-pub mod lettre;
+mod lettre;
 
 pub use config::*;
 use error::*;
+use lettre::LettreClient;
 
 #[derive(Clone)]
 pub struct EmailExecutor {
     pub config: EmailExecutorConfig,
+    lettre: LettreClient,
 }
 
 impl EmailExecutor {
-    pub async fn init(config: EmailExecutorConfig) -> Result<Self, EmailExecutorError> {
-        Ok(EmailExecutor { config })
+    pub fn init(config: EmailExecutorConfig) -> Result<Self, EmailExecutorError> {
+        let lettre = LettreClient::init(config.lettre.clone())?;
+        Ok(EmailExecutor { config, lettre })
+    }
+
+    pub async fn notify(&self, title: String, body: String) -> Result<(), EmailExecutorError> {
+        self.lettre.send_email(title, body).await?;
+        Ok(())
     }
 }
