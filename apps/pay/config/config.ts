@@ -40,6 +40,7 @@ export const getClientSidePayDomain = () => {
   if (env.NEXT_PUBLIC_PAY_DOMAIN) {
     return env.NEXT_PUBLIC_PAY_DOMAIN
   } else if (typeof window !== "undefined") {
+    // Return the last two parts of the hostname (e.g. "blink.sv")
     return new URL(window.location.href).hostname.split(".").slice(-2).join(".")
   } else {
     return ""

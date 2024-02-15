@@ -100,6 +100,7 @@ const UsernameLayoutContainer = ({ children, username }: Props) => {
           </li>
           <li>
             <div className={styles.lightning_addr}>
+              {/* for now using this to prevent (external content does not match server-rendered HTML)/minified error */}
               {isClient && (
                 <div>
                   <Image src="/at-black&white.svg" width={"15"} height={"15"} alt="@" />
