@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(core): rename lnInvoicePaymentStatusByRequest (#4000)'
-      sha: 89efa3f76252e741cf3d133841bbcc9899e1041b
+      commitTitle: 'build: rename ''prepare_build_context'' (#4003)...'
+      sha: 11b65dc78c27edc481ae8dd6d831b0c1561f6b51
       tags:
-      - 0.20.60-2-g89efa3f76
+      - 0.20.61-1-g11b65dc78
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(core): rename lnInvoicePaymentStatusByRequest (#4000)'
-      sha: 89efa3f76252e741cf3d133841bbcc9899e1041b
+      commitTitle: 'build: rename ''prepare_build_context'' (#4003)...'
+      sha: 11b65dc78c27edc481ae8dd6d831b0c1561f6b51
       tags:
-      - 0.20.60-2-g89efa3f76
+      - 0.20.61-1-g11b65dc78
     path: schemas/
   - git:
-      commitTitle: 'refactor(core): rename lnInvoicePaymentStatusByRequest (#4000)'
-      sha: 89efa3f76252e741cf3d133841bbcc9899e1041b
+      commitTitle: 'build: rename ''prepare_build_context'' (#4003)...'
+      sha: 11b65dc78c27edc481ae8dd6d831b0c1561f6b51
       tags:
-      - 0.20.60-2-g89efa3f76
+      - 0.20.61-1-g11b65dc78
     path: gql/
   path: ./graphql
 kind: LockConfig
