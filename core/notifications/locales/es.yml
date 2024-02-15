@@ -14,3 +14,14 @@ circle_threshold_reached.inner.body: "Has dado la bienvenida a %{threshold} pers
 
 circle_threshold_reached.outer.title: "Ganancias del círculo externo \U0001F4AA"
 circle_threshold_reached.outer.body: "Tu Círculo Externo alcanzó a %{threshold} personas. ¡Estás impulsando la adopción de Bitcoin!"
+
+identity_verification_approved.title: "¡Tu identidad ha sido verificada!"
+identity_verification_approved.body: "Tus documentos documentos para verificación han sido procesados."
+
+identity_verification_declined.reason.documents_not_clear: "los documentos cargados no estaban claros"
+identity_verification_declined.reason.photo_not_clear: "La imagen que enviaste no estaba clara."
+identity_verification_declined.title: "¡No se pudo verificar tu identidad!"
+identity_verification_declined.body: "No pudimos procesar sus documentos debido a %{reason}."
+
+identity_verification_review_pending.title: "¡Tu verificación está en proceso!"
+identity_verification_review_pending.body: "Hemos recibido tus documentos y los estamos procesando."
