@@ -7,8 +7,6 @@ import { ACTIONS, ACTION_TYPE } from "../../app/reducer"
 
 import styles from "./memo.module.css"
 
-import { extractSearchParams } from "@/utils/utils"
-
 interface Props {
   state: React.ComponentState
   dispatch: React.Dispatch<ACTION_TYPE>
@@ -17,30 +15,37 @@ interface Props {
 const Memo = ({ state, dispatch }: Props) => {
   const searchParams = useSearchParams()
   const { username } = useParams()
-  const { amount, sats, unit, memo, display } = extractSearchParams(searchParams)
+  const amount = searchParams.get("amount") || "0"
+  const sats = searchParams.get("sats") || "0"
+  const display = searchParams.get("display") || "USD"
+  const memo = searchParams.get("memo") || ""
 
+  const unit = searchParams.get("unit")
   const [openModal, setOpenModal] = React.useState<boolean>(false)
   const [note, setNote] = React.useState<string>(memo?.toString() || "")
 
   const handleSetMemo = () => {
     if (unit === "SAT" || unit === "CENT") {
-      window.history.pushState(
-        {},
-        "",
-        `${username}?${new URLSearchParams({
-          amount: amount,
-          sats: sats,
-          unit: unit,
-          memo: note,
-          display,
-        }).toString()}`,
-      )
+      const params = new URLSearchParams({
+        amount,
+        sats,
+        unit,
+        memo: note,
+        display,
+      })
+
+      const currentUrl = new URL(window.location.toString())
+      currentUrl.search = params.toString()
+      window.history.pushState({}, "", currentUrl.toString())
     } else {
-      window.history.pushState(
-        {},
-        "",
-        `${username}?${new URLSearchParams({ memo: note, display }).toString()}`,
-      )
+      const params = new URLSearchParams({
+        memo: note,
+        display,
+      })
+
+      const currentUrl = new URL(window.location.toString())
+      currentUrl.search = params.toString()
+      window.history.pushState({}, "", currentUrl.toString())
     }
     handleClose()
   }

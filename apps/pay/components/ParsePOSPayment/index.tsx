@@ -103,15 +103,19 @@ function ParsePayment({
       username: initialUsername,
     }
     if (initialQuery !== newQuery) {
-      const newUrl = `${username}?${new URLSearchParams({
+      const params = new URLSearchParams({
         amount: initialAmount,
         sats: initialSats,
         unit: initialUnit,
         memo: memo ?? "",
         display: initialDisplay,
         currency: defaultWalletCurrency,
-      }).toString()}`
-      router.replace(newUrl, {
+      })
+      const newUrl = new URL(window.location.toString())
+      newUrl.pathname = `/${username}`
+      newUrl.search = params.toString()
+
+      router.replace(newUrl.toString(), {
         scroll: true,
       })
     }
@@ -144,16 +148,19 @@ function ParsePayment({
   const toggleCurrency = () => {
     const newUnit = unit === AmountUnit.Sat ? AmountUnit.Cent : AmountUnit.Sat
     prevUnit.current = (unit as AmountUnit) || AmountUnit.Cent
-    router.replace(
-      `${username}?${new URLSearchParams({
-        currency: defaultWalletCurrency,
-        unit: newUnit,
-        memo,
-        display,
-        amount,
-        sats,
-      }).toString()}`,
-    )
+    const params = new URLSearchParams({
+      currency: defaultWalletCurrency,
+      unit: newUnit,
+      memo,
+      display,
+      amount,
+      sats,
+    })
+
+    const newUrl = new URL(window.location.toString())
+    newUrl.pathname = `/${username}`
+    newUrl.search = params.toString()
+    router.replace(newUrl.toString())
   }
 
   // Update Params From Current Amount
@@ -200,14 +207,17 @@ function ParsePayment({
       amount: amt,
       sats: satsAmt,
       currency: defaultWalletCurrency,
-      unit: unit,
-      memo: memo,
-      display: display,
+      unit,
+      memo,
+      display,
     }
 
     const initialQuery = extractSearchParams(searchParams)
     if (initialQuery !== newQuery && !skipRouterPush) {
-      router.replace(`${username}?${new URLSearchParams(newQuery).toString()}`)
+      const newUrl = new URL(window.location.toString())
+      newUrl.pathname = `/${username}`
+      newUrl.search = new URLSearchParams(newQuery).toString()
+      router.replace(newUrl.toString())
     }
   }
   // eslint-disable-next-line react-hooks/exhaustive-deps
