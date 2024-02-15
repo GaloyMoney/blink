@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.7.12",
+    "@apollo/experimental-nextjs-app-support": "^0.8.0",
     "@galoymoney/client": "^0.2.2",
     "@t3-oss/env-nextjs": "^0.6.1",
     "bech32": "^2.0.0",
@@ -26,7 +27,7 @@
     "ioredis": "^5.3.1",
     "lnurl-pay": "^1.0.1",
     "lodash.debounce": "^4.0.8",
-    "next": "^13.4.19",
+    "next": "^14.1.0",
     "react": "^18.2.0",
     "react-bootstrap": "^1.6.4",
     "react-currency-input-field": "^3.6.10",
@@ -34,6 +35,7 @@
     "react-lottie": "^1.2.3",
     "react-qrcode-logo": "^2.9.0",
     "react-to-print": "^2.14.12",
+    "ssr": "link:@apollo/experimental-nextjs-app-support/ssr",
     "use-debounce": "^8.0.4",
     "use-react-screenshot": "^3.0.0",
     "zod": "^3.22.4"
@@ -59,7 +61,7 @@
     "@typescript-eslint/parser": "^5.51.0",
     "cypress": "^13.6.1",
     "eslint": "^8.52.0",
-    "eslint-config-next": "14.0.4",
+    "eslint-config-next": "14.1.0",
     "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-flowtype": "^8.0.3",
     "eslint-plugin-import": "^2.26.0",
