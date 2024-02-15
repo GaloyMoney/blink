@@ -1,47 +1,43 @@
 "use client"
 import { useRouter } from "next/navigation"
-import React, { useEffect } from "react"
+import React, { Suspense, useEffect, useState } from "react"
 
 import CurrencyDropdown from "../../components/Currency/currency-dropdown"
 
 const SetupPwa = () => {
   const router = useRouter()
-  const [username, setUsername] = React.useState<string>("")
-
-  let usernameFromLocal: string | null = null
-  let displayCurrencyFromLocal: string | null = null
+  const [username, setUsername] = useState<string>("")
+  const [usernameFromLocal, setUsernameFromLocal] = useState<string | null>(null)
+  const [displayCurrencyFromLocal, setDisplayCurrencyFromLocal] = useState<string | null>(
+    null,
+  )
 
   useEffect(() => {
-    usernameFromLocal = localStorage.getItem("username")
-    displayCurrencyFromLocal = localStorage.getItem("display")
+    const localUsername = localStorage.getItem("username")
+    const localDisplayCurrency = localStorage.getItem("display")
+    setUsernameFromLocal(localUsername)
+    setDisplayCurrencyFromLocal(localDisplayCurrency)
   }, [])
 
-  const [selectedDisplayCurrency, setSelectedDisplayCurrency] = React.useState("USD")
+  const [selectedDisplayCurrency, setSelectedDisplayCurrency] = useState("USD")
 
-  React.useEffect(() => {
-    if (usernameFromLocal) {
-      window.history.pushState(
-        {},
-        "",
-        `${usernameFromLocal}??display=${displayCurrencyFromLocal}`,
-      )
+  useEffect(() => {
+    if (usernameFromLocal && displayCurrencyFromLocal) {
+      router.push(`${usernameFromLocal}?display=${displayCurrencyFromLocal}`)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [usernameFromLocal])
-
-  if (!usernameFromLocal || !displayCurrencyFromLocal) {
-    return
-  }
+  }, [displayCurrencyFromLocal, usernameFromLocal])
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     if (!usernameFromLocal) {
       localStorage.setItem("username", username)
+      setUsernameFromLocal(username)
     }
 
     if (!displayCurrencyFromLocal) {
       localStorage.setItem("display", selectedDisplayCurrency)
+      setDisplayCurrencyFromLocal(selectedDisplayCurrency)
     }
 
     router.push(`${username}?display=${selectedDisplayCurrency}`)
@@ -50,11 +46,7 @@ const SetupPwa = () => {
   if (!usernameFromLocal) {
     return (
       <div className="setup-pwa">
-        <form
-          className="username-form"
-          autoComplete="off"
-          onSubmit={(event: React.FormEvent<HTMLFormElement>) => handleSubmit(event)}
-        >
+        <form className="username-form" autoComplete="off" onSubmit={handleSubmit}>
           <h4>Welcome to Blink POS application.</h4>
           <label htmlFor="username">
             To use the app, enter the Blink username you would like to receive payments
@@ -73,15 +65,15 @@ const SetupPwa = () => {
           <label htmlFor="display" style={{ alignSelf: "flex-start" }}>
             Enter your currency
           </label>
-          <CurrencyDropdown
-            name="display"
-            style={{ height: "42px", width: "100%" }}
-            onSelectedDisplayCurrencyChange={(newDisplayCurrency) => {
-              if (newDisplayCurrency) {
+          <Suspense>
+            <CurrencyDropdown
+              name="display"
+              style={{ height: "42px", width: "100%" }}
+              onSelectedDisplayCurrencyChange={(newDisplayCurrency) => {
                 setSelectedDisplayCurrency(newDisplayCurrency)
-              }
-            }}
-          />
+              }}
+            />
+          </Suspense>
           <button>Submit</button>
         </form>
       </div>

@@ -119,6 +119,7 @@ function ParsePayment({
         scroll: true,
       })
     }
+    // this only runs once
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
