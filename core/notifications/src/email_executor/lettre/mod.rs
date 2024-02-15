@@ -7,6 +7,8 @@ use lettre::{
     AsyncSmtpTransport, AsyncTransport, Tokio1Executor,
 };
 
+use crate::messages::LocalizedMessage;
+
 pub use config::*;
 use error::*;
 
@@ -25,12 +27,12 @@ impl LettreClient {
         Ok(Self { client })
     }
 
-    pub async fn send_email(&self, title: String, body: String) -> Result<(), LettreError> {
+    pub async fn send_email(&self, msg: LocalizedMessage) -> Result<(), LettreError> {
         let email = Message::builder()
             .from(Mailbox::new(None, "some-email".parse()?))
             .to(Mailbox::new(None, "some-email".parse()?))
-            .subject(title)
-            .body(body)?;
+            .subject(msg.title)
+            .body(msg.body)?;
         self.client.send(email).await?;
         Ok(())
     }

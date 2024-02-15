@@ -109,6 +109,7 @@ impl std::fmt::Display for GaloyEmailAddress {
 #[graphql(name = "UserNotificationChannel")]
 pub enum UserNotificationChannel {
     Push,
+    Email,
 }
 
 #[derive(async_graphql::Enum, Debug, Hash, Copy, Clone, Eq, PartialEq, Deserialize, Serialize)]
