@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build: rename ''prepare_build_context'' (#4003)...'
-      sha: 11b65dc78c27edc481ae8dd6d831b0c1561f6b51
+      commitTitle: 'refactor(pay): use app router in pay (#3992)...'
+      sha: 90a19b37bb99ff9fa77b29437096435ad32e6544
       tags:
-      - 0.20.61-1-g11b65dc78
+      - 0.20.62-3-g90a19b37b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build: rename ''prepare_build_context'' (#4003)...'
-      sha: 11b65dc78c27edc481ae8dd6d831b0c1561f6b51
+      commitTitle: 'refactor(pay): use app router in pay (#3992)...'
+      sha: 90a19b37bb99ff9fa77b29437096435ad32e6544
       tags:
-      - 0.20.61-1-g11b65dc78
+      - 0.20.62-3-g90a19b37b
     path: schemas/
   - git:
-      commitTitle: 'build: rename ''prepare_build_context'' (#4003)...'
-      sha: 11b65dc78c27edc481ae8dd6d831b0c1561f6b51
+      commitTitle: 'refactor(pay): use app router in pay (#3992)...'
+      sha: 90a19b37bb99ff9fa77b29437096435ad32e6544
       tags:
-      - 0.20.61-1-g11b65dc78
+      - 0.20.62-3-g90a19b37b
     path: gql/
   path: ./graphql
 kind: LockConfig
