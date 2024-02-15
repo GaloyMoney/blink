@@ -1,17 +1,17 @@
 mod config;
 pub mod error;
-mod lettre;
+mod smtp;
 
 use crate::{notification_event::*, primitives::*, user_notification_settings::*};
 
 pub use config::*;
 use error::*;
-use lettre::LettreClient;
+use smtp::SmtpClient;
 
 #[derive(Clone)]
 pub struct EmailExecutor {
     pub config: EmailExecutorConfig,
-    lettre: LettreClient,
+    smtp: SmtpClient,
     settings: UserNotificationSettingsRepo,
 }
 
@@ -20,10 +20,10 @@ impl EmailExecutor {
         config: EmailExecutorConfig,
         settings: UserNotificationSettingsRepo,
     ) -> Result<Self, EmailExecutorError> {
-        let lettre = LettreClient::init(config.lettre.clone())?;
+        let smtp = SmtpClient::init(config.smtp.clone())?;
         Ok(EmailExecutor {
             config,
-            lettre,
+            smtp,
             settings,
         })
     }
@@ -35,7 +35,7 @@ impl EmailExecutor {
         }
         let msg = event.to_localized_msg(settings.locale().unwrap_or_default());
 
-        self.lettre.send_email(msg).await?;
+        self.smtp.send_email(msg).await?;
 
         Ok(())
     }

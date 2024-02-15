@@ -13,12 +13,12 @@ pub use config::*;
 use error::*;
 
 #[derive(Clone)]
-pub struct LettreClient {
+pub struct SmtpClient {
     client: AsyncSmtpTransport<Tokio1Executor>,
 }
 
-impl LettreClient {
-    pub fn init(config: LettreConfig) -> Result<Self, LettreError> {
+impl SmtpClient {
+    pub fn init(config: SmtpConfig) -> Result<Self, SmtpError> {
         let creds = Credentials::new(config.username, config.password);
         let client: AsyncSmtpTransport<Tokio1Executor> =
             AsyncSmtpTransport::<Tokio1Executor>::starttls_relay("smtp.gmail.com")?
@@ -27,7 +27,7 @@ impl LettreClient {
         Ok(Self { client })
     }
 
-    pub async fn send_email(&self, msg: LocalizedMessage) -> Result<(), LettreError> {
+    pub async fn send_email(&self, msg: LocalizedMessage) -> Result<(), SmtpError> {
         let email = Message::builder()
             .from(Mailbox::new(None, "some-email".parse()?))
             .to(Mailbox::new(None, "some-email".parse()?))

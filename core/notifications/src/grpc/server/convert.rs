@@ -20,6 +20,7 @@ impl From<proto::NotificationChannel> for UserNotificationChannel {
     fn from(channel: proto::NotificationChannel) -> Self {
         match channel {
             proto::NotificationChannel::Push => UserNotificationChannel::Push,
+            proto::NotificationChannel::Email => UserNotificationChannel::Email,
         }
     }
 }
