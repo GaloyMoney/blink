@@ -34,7 +34,7 @@ fn default_tracing_config() -> TracingConfig {
 pub struct EnvOverride {
     pub db_con: String,
     pub kratos_pg_con: Option<String>,
-    pub email_password: Option<String>,
+    pub email_password: String,
 }
 
 impl Config {
@@ -55,9 +55,7 @@ impl Config {
         };
         config.db.pg_con = db_con;
         config.kratos_import.pg_con = kratos_pg_con;
-        if let Some(password) = email_password {
-            config.app.email_executor.lettre.password = password;
-        }
+        config.app.email_executor.lettre.password = email_password;
 
         config.app.executor.fcm.load_creds()?;
 

@@ -17,7 +17,7 @@ struct Cli {
     #[clap(env = "KRATOS_PG_CON")]
     kratos_pg_con: Option<String>,
     #[clap(env = "EMAIL_PASSWORD")]
-    email_password: Option<String>,
+    email_password: String,
 }
 
 pub async fn run() -> anyhow::Result<()> {
