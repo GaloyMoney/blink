@@ -12,6 +12,7 @@ import OnChainUsdTxFeeAsBtcDenominatedQuery from "@/graphql/public/root/query/on
 import UsernameAvailableQuery from "@/graphql/public/root/query/username-available"
 import BusinessMapMarkersQuery from "@/graphql/public/root/query/business-map-markers"
 import AccountDefaultWalletQuery from "@/graphql/public/root/query/account-default-wallet"
+import AccountDefaultWalletByUsernameQuery from "@/graphql/public/root/query/account-default-wallet-by-username"
 import AccountDefaultWalletIdQuery from "@/graphql/public/root/query/account-default-wallet-id"
 import LnInvoicePaymentStatusQuery from "@/graphql/public/root/query/ln-invoice-payment-status"
 import LnInvoicePaymentStatusByHashQuery from "@/graphql/public/root/query/ln-invoice-payment-status-by-hash"
@@ -23,6 +24,7 @@ export const queryFields = {
     usernameAvailable: UsernameAvailableQuery,
     userDefaultWalletId: AccountDefaultWalletIdQuery, // FIXME: migrate to AccountDefaultWalletId
     accountDefaultWallet: AccountDefaultWalletQuery,
+    accountDefaultWalletByUsername: AccountDefaultWalletByUsernameQuery,
     businessMapMarkers: BusinessMapMarkersQuery,
     currencyList: CurrencyListQuery,
     mobileVersions: MobileVersionsQuery,

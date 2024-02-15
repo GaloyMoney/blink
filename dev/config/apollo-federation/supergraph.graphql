@@ -1562,7 +1562,8 @@ type Query
   @join__type(graph: NOTIFICATIONS)
   @join__type(graph: PUBLIC)
 {
-  accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet! @join__field(graph: PUBLIC)
+  accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet! @join__field(graph: PUBLIC) @deprecated(reason: "will be migrated to AccountDefaultWalletIdByUsername")
+  accountDefaultWalletByUsername(username: UsernameWithFlags!, walletCurrency: WalletCurrency): PublicWallet! @join__field(graph: PUBLIC)
   btcPriceList(range: PriceGraphRange!): [PricePoint] @join__field(graph: PUBLIC)
   businessMapMarkers: [MapMarker!]! @join__field(graph: PUBLIC)
   currencyList: [Currency!]! @join__field(graph: PUBLIC)
@@ -2077,6 +2078,10 @@ input UserLogoutInput
 
 """Unique identifier of a user"""
 scalar Username
+  @join__type(graph: PUBLIC)
+
+"""Unique identifier of a user, with optional flags"""
+scalar UsernameWithFlags
   @join__type(graph: PUBLIC)
 
 enum UserNotificationCategory

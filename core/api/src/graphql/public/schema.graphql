@@ -1204,7 +1204,8 @@ type PublicWallet {
 }
 
 type Query {
-  accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet!
+  accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet! @deprecated(reason: "will be migrated to AccountDefaultWalletIdByUsername")
+  accountDefaultWalletByUsername(username: UsernameWithFlags!, walletCurrency: WalletCurrency): PublicWallet!
   btcPriceList(range: PriceGraphRange!): [PricePoint]
   businessMapMarkers: [MapMarker!]!
   currencyList: [Currency!]!
@@ -1666,6 +1667,9 @@ type UserUpdateUsernamePayload {
 
 """Unique identifier of a user"""
 scalar Username
+
+"""Unique identifier of a user, with optional flags"""
+scalar UsernameWithFlags
 
 """
 A generic wallet which stores value in one of our supported currencies.

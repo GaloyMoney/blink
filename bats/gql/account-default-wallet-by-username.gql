@@ -1,0 +1,12 @@
+query accountDefaultWalletByUsername(
+  $username: UsernameWithFlags!
+  $walletCurrency: WalletCurrency
+) {
+  accountDefaultWalletByUsername(
+    username: $username
+    walletCurrency: $walletCurrency
+  ) {
+    id
+    currency
+  }
+}
