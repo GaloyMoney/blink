@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(core): add payment status by hash query/subscription (#3899)...'
-      sha: f316a1bedb7a2122aeddac495bc7ae6a96ee8b64
+      commitTitle: 'refactor(core): rename lnInvoicePaymentStatusByRequest (#4000)'
+      sha: 89efa3f76252e741cf3d133841bbcc9899e1041b
       tags:
-      - 0.20.59-2-gf316a1bed
+      - 0.20.60-2-g89efa3f76
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(core): add payment status by hash query/subscription (#3899)...'
-      sha: f316a1bedb7a2122aeddac495bc7ae6a96ee8b64
+      commitTitle: 'refactor(core): rename lnInvoicePaymentStatusByRequest (#4000)'
+      sha: 89efa3f76252e741cf3d133841bbcc9899e1041b
       tags:
-      - 0.20.59-2-gf316a1bed
+      - 0.20.60-2-g89efa3f76
     path: schemas/
   - git:
-      commitTitle: 'feat(core): add payment status by hash query/subscription (#3899)...'
-      sha: f316a1bedb7a2122aeddac495bc7ae6a96ee8b64
+      commitTitle: 'refactor(core): rename lnInvoicePaymentStatusByRequest (#4000)'
+      sha: 89efa3f76252e741cf3d133841bbcc9899e1041b
       tags:
-      - 0.20.60
+      - 0.20.60-2-g89efa3f76
     path: gql/
   path: ./graphql
 kind: LockConfig
