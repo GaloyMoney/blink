@@ -21,7 +21,7 @@ const Memo = ({ state, dispatch }: Props) => {
 
   const unit = searchParams.get("unit")
   const [openModal, setOpenModal] = React.useState<boolean>(false)
-  const [note, setNote] = React.useState<string>(memo?.toString() || "")
+  const [currentMemo, setCurrentMemo] = React.useState<string>(memo?.toString() || "")
 
   const handleSetMemo = () => {
     if (unit === "SAT" || unit === "CENT") {
@@ -29,7 +29,7 @@ const Memo = ({ state, dispatch }: Props) => {
         amount,
         sats,
         unit,
-        memo: note,
+        memo: currentMemo,
         display,
       })
 
@@ -38,7 +38,7 @@ const Memo = ({ state, dispatch }: Props) => {
       window.history.pushState({}, "", currentUrl.toString())
     } else {
       const params = new URLSearchParams({
-        memo: note,
+        memo: currentMemo,
         display,
       })
 
@@ -119,10 +119,10 @@ const Memo = ({ state, dispatch }: Props) => {
           <Modal.Body>
             <input
               className={styles.modal_input}
-              value={memo ? state.memo : note}
+              value={memo ? state.memo : currentMemo}
               name="note"
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setNote(e.target.value)
+                setCurrentMemo(e.target.value)
                 dispatch({ type: ACTIONS.ADD_MEMO, payload: e.target.value })
               }}
               type="text"
