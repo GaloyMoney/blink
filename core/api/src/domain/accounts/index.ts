@@ -68,10 +68,20 @@ export const checkedAccountStatus = (status: string) => {
   return status as AccountStatus
 }
 
-export const UsernameRegex = /(?!^(1|3|bc1|lnbc1))^[0-9a-z+_]{3,50}$/i
+export const UsernameRegex = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]{3,50}$/i
+export const UsernameWithFlagsRegex = /(?!^(1|3|bc1|lnbc1))^[0-9a-z+_]{3,50}$/i
 
 export const checkedToUsername = (username: string): Username | ValidationError => {
   if (!username.match(UsernameRegex)) {
+    return new InvalidUsername(username)
+  }
+  return username as Username
+}
+
+export const checkedToUsernameWithFlags = (
+  username: string,
+): Username | ValidationError => {
+  if (!username.match(UsernameWithFlagsRegex)) {
     return new InvalidUsername(username)
   }
   return username as Username
