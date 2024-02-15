@@ -6,7 +6,9 @@ export const APP_DESCRIPTION = "Blink official lightning network node"
 
 // TODO get rid of this by removing the use of build time env vars in the client
 export const getClientSideGqlConfig = () => {
-  let hostname, coreGqlUrl, coreGqlWebSocketUrl
+  let hostname: string | null = null
+  let coreGqlUrl: string | null = null
+  let coreGqlWebSocketUrl: string | null = null
 
   if (typeof window !== "undefined") {
     hostname = new URL(window.location.href).hostname
