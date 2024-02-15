@@ -4,7 +4,7 @@ use tracing::instrument;
 use std::collections::HashMap;
 
 use super::error::JobError;
-use crate::{executor::Executor, notification_event::NotificationEventPayload};
+use crate::{notification_event::NotificationEventPayload, push_executor::PushExecutor};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(super) struct SendPushNotificationData {
@@ -25,7 +25,7 @@ impl From<NotificationEventPayload> for SendPushNotificationData {
 #[instrument(name = "job.send_push_notification", skip(executor), err)]
 pub async fn execute(
     data: SendPushNotificationData,
-    executor: Executor,
+    executor: PushExecutor,
 ) -> Result<SendPushNotificationData, JobError> {
     executor.notify(&data.payload).await?;
     Ok(data)
