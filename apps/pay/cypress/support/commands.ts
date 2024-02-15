@@ -34,4 +34,95 @@
 //       visit(originalFn: CommandOriginalFn, url: string, options: Partial<VisitOptions>): Chainable<Element>
 //     }
 //   }
-// }
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+
+declare namespace Cypress {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface Chainable<Subject> {
+    flushRedis(): Chainable<void>
+    loginAndGetToken(phone: string, code: string): Chainable<string>
+    graphqlOperation(query: string, variables?: Record<string, unknown>, token: string)
+    fetchMe(token: string)
+    sendInvoicePayment(paymentRequest: string, walletId: string, token: string)
+  }
+}
+
+Cypress.Commands.add("flushRedis", () => {
+  const command = `docker exec galoy-dev-redis-1 redis-cli FLUSHALL`
+  cy.exec(command).then((result) => {
+    if (result.code === 0) {
+      cy.log("Redis FLUSHALL executed successfully")
+    } else {
+      throw new Error("Failed to execute FLUSHALL on Redis")
+    }
+  })
+})
+
+Cypress.Commands.add("loginAndGetToken", (phone, code) => {
+  cy.flushRedis()
+  cy.request({
+    method: "POST",
+    url: "http://localhost:4455/auth/phone/login",
+    body: {
+      phone,
+      code,
+    },
+  }).then((response) => {
+    expect(response.body).to.have.property("authToken")
+    return response.body.authToken
+  })
+})
+
+Cypress.Commands.add("graphqlOperation", (query, variables = {}, token) => {
+  return cy.request({
+    method: "POST",
+    url: "http://localhost:4455/graphql",
+    body: {
+      query,
+      variables,
+    },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+})
+
+Cypress.Commands.add("fetchMe", (token) => {
+  const query = `
+    query Me {
+      me {
+        id
+        defaultAccount {
+          defaultWalletId
+          displayCurrency
+          id
+          level
+        }
+      }
+    }
+  `
+  return cy.graphqlOperation(query, {}, token)
+})
+
+Cypress.Commands.add("sendInvoicePayment", (paymentRequest, walletId, token) => {
+  const mutation = `
+    mutation LnInvoicePaymentSend($input: LnInvoicePaymentInput!) {
+      lnInvoicePaymentSend(input: $input) {
+        errors {
+          code
+          message
+          path
+        }
+        status
+      }
+    }
+  `
+  const variables = {
+    input: {
+      paymentRequest,
+      walletId,
+    },
+  }
+  return cy.graphqlOperation(mutation, variables, token)
+})
