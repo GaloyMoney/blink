@@ -21,7 +21,7 @@ export * from "./limits-checker"
 export * from "./limits-volume"
 export * from "./account-validator"
 export * from "./primitives"
-export * from "./parse-username"
+export * from "./username-parser"
 
 const KratosUserIdRegex = UUIDV4
 const AccountIdRegex = UUIDV4
