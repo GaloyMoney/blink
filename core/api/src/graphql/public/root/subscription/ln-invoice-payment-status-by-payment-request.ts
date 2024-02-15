@@ -7,33 +7,34 @@ import { baseLogger } from "@/services/logger"
 
 import { GT } from "@/graphql/index"
 import LnInvoicePaymentStatusPayload from "@/graphql/public/types/payload/ln-invoice-payment-status"
-import LnInvoicePaymentStatusInput from "@/graphql/public/types/object/ln-invoice-payment-status-input"
+import LnInvoicePaymentStatusByPaymentRequestInput from "@/graphql/public/types/object/ln-invoice-payment-status-by-payment-request-input"
 import { UnknownClientError } from "@/graphql/error"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import { WalletInvoiceStatus } from "@/domain/wallet-invoices"
 
 const pubsub = PubSubService()
 
-type LnInvoicePaymentSubscribeArgs = {
+type LnInvoicePaymentStatusByPaymentRequestSubscribeArgs = {
   input: {
     paymentRequest: EncodedPaymentRequest | Error
   }
 }
 
-type LnInvoicePaymentResolveSource = {
+type LnInvoicePaymentStatusByPaymentRequestResolveSource = {
   errors?: IError[]
   status?: string
   paymentHash?: PaymentHash
   paymentRequest?: EncodedPaymentRequest
 }
 
-const LnInvoicePaymentStatusSubscription = {
+const LnInvoicePaymentStatusByPaymentRequestSubscription = {
   type: GT.NonNull(LnInvoicePaymentStatusPayload),
-  deprecationReason: "Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest",
   args: {
-    input: { type: GT.NonNull(LnInvoicePaymentStatusInput) },
+    input: { type: GT.NonNull(LnInvoicePaymentStatusByPaymentRequestInput) },
   },
-  resolve: async (source: LnInvoicePaymentResolveSource | undefined) => {
+  resolve: async (
+    source: LnInvoicePaymentStatusByPaymentRequestResolveSource | undefined,
+  ) => {
     if (source === undefined) {
       throw new UnknownClientError({
         message:
@@ -61,7 +62,10 @@ const LnInvoicePaymentStatusSubscription = {
     }
   },
 
-  subscribe: async (_source: unknown, args: LnInvoicePaymentSubscribeArgs) => {
+  subscribe: async (
+    _source: unknown,
+    args: LnInvoicePaymentStatusByPaymentRequestSubscribeArgs,
+  ) => {
     const { paymentRequest } = args.input
     if (paymentRequest instanceof Error) throw paymentRequest
 
@@ -121,4 +125,4 @@ const LnInvoicePaymentStatusSubscription = {
   },
 }
 
-export default LnInvoicePaymentStatusSubscription
+export default LnInvoicePaymentStatusByPaymentRequestSubscription

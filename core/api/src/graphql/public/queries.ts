@@ -15,7 +15,7 @@ import AccountDefaultWalletQuery from "@/graphql/public/root/query/account-defau
 import AccountDefaultWalletIdQuery from "@/graphql/public/root/query/account-default-wallet-id"
 import LnInvoicePaymentStatusQuery from "@/graphql/public/root/query/ln-invoice-payment-status"
 import LnInvoicePaymentStatusByHashQuery from "@/graphql/public/root/query/ln-invoice-payment-status-by-hash"
-import LnInvoicePaymentStatusByRequestQuery from "@/graphql/public/root/query/ln-invoice-payment-status-by-request"
+import LnInvoicePaymentStatusByPaymentRequestQuery from "@/graphql/public/root/query/ln-invoice-payment-status-by-payment-request"
 
 export const queryFields = {
   unauthed: {
@@ -30,7 +30,7 @@ export const queryFields = {
     btcPriceList: BtcPriceListQuery,
     lnInvoicePaymentStatus: LnInvoicePaymentStatusQuery,
     lnInvoicePaymentStatusByHash: LnInvoicePaymentStatusByHashQuery,
-    lnInvoicePaymentStatusByRequest: LnInvoicePaymentStatusByRequestQuery,
+    lnInvoicePaymentStatusByPaymentRequest: LnInvoicePaymentStatusByPaymentRequestQuery,
   },
   authed: {
     atAccountLevel: {
