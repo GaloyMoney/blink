@@ -32,7 +32,7 @@ const SharePopup: FC<Props> = ({
         const data = await fetch(image)
         const blob = await data.blob()
 
-        await navigator.clipboard.write([
+        await navigator?.clipboard.write([
           new ClipboardItem({
             [blob.type]: blob,
           }),

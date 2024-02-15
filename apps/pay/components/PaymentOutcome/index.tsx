@@ -1,4 +1,5 @@
-import { useRouter } from "next/router"
+"use client"
+import { useParams, useSearchParams } from "next/navigation"
 import React, { useRef } from "react"
 import Image from "react-bootstrap/Image"
 
@@ -6,12 +7,14 @@ import { useReactToPrint } from "react-to-print"
 
 import { gql } from "@apollo/client"
 
-import { ACTIONS, ACTION_TYPE } from "../../pages/_reducer"
+import { ACTIONS, ACTION_TYPE } from "../../app/reducer"
 
 import { useLnInvoicePaymentStatusSubscription } from "../../lib/graphql/generated"
 
 import styles from "./payment-outcome.module.css"
 import Receipt from "./receipt"
+
+import { extractSearchParams } from "@/utils/utils"
 
 interface Props {
   paymentRequest: string
@@ -33,8 +36,9 @@ gql`
 `
 
 function PaymentOutcome({ paymentRequest, paymentAmount, dispatch }: Props) {
-  const router = useRouter()
-  const { amount, sats, username, memo } = router.query
+  const searchParams = useSearchParams()
+  const { username } = useParams()
+  const { amount, sats, memo } = extractSearchParams(searchParams)
   const componentRef = useRef<HTMLDivElement | null>(null)
 
   const printReceipt = useReactToPrint({

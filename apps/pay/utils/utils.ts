@@ -1,5 +1,8 @@
-import { ParsedUrlQuery } from "querystring"
 import { URL } from "url"
+
+import { ParsedUrlQuery } from "querystring"
+
+import { ReadonlyURLSearchParams } from "next/navigation"
 
 export const usdFormatter = new Intl.NumberFormat("en-US", {
   // style: "currency",
@@ -53,7 +56,7 @@ export const getOriginalRequestInfo = (request: Request) => {
   }
 }
 
-export function safeAmount(amount: number | string | string[] | undefined) {
+export function safeAmount(amount: number | string | string[] | undefined | null) {
   try {
     if (isNaN(Number(amount))) return 0
     const theSafeAmount = (
@@ -119,4 +122,8 @@ export const getLocaleConfig = (intlConfig?: IntlConfig): LocaleConfig => {
 
     return prev
   }, defaultConfig)
+}
+
+export const extractSearchParams = (searchParams: ReadonlyURLSearchParams) => {
+  return searchParams ? Object.fromEntries(searchParams.entries()) : {}
 }

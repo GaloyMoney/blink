@@ -1,4 +1,5 @@
-import React from "react"
+"use client"
+import React, { Suspense, useEffect } from "react"
 import Card from "react-bootstrap/Card"
 import Col from "react-bootstrap/Col"
 import Container from "react-bootstrap/Container"
@@ -7,7 +8,7 @@ import ListGroup from "react-bootstrap/ListGroup"
 import Row from "react-bootstrap/Row"
 import { gql, useQuery } from "@apollo/client"
 
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
 import CurrencyDropdown from "../components/Currency/currency-dropdown"
 import { getClientSideGqlConfig } from "../config/config"
@@ -25,24 +26,22 @@ function Home() {
     ? `https://mempool.space/signet/lightning/node/`
     : `https://mempool.space/lightning/node/`
   const { loading, error, data } = useQuery(GET_NODE_STATS)
-  const [selectedDisplayCurrency, setSelectedDisplayCurrency] = React.useState(
-    localStorage.getItem("display") ?? "USD",
-  )
+  const [selectedDisplayCurrency, setSelectedDisplayCurrency] =
+    React.useState<string>("USD")
+
+  useEffect(() => {
+    const displayCurrency = localStorage.getItem("display")
+    if (displayCurrency) {
+      setSelectedDisplayCurrency(displayCurrency)
+    }
+  }, [])
 
   const router = useRouter()
   const [username, setUsername] = React.useState<string>("")
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-
-    router.push(
-      {
-        pathname: username,
-        query: { display: selectedDisplayCurrency },
-      },
-      undefined,
-      { shallow: true },
-    )
+    router.push(`${username}?display=${selectedDisplayCurrency}`, { scroll: true })
   }
 
   return (
@@ -109,16 +108,18 @@ function Home() {
                             <label htmlFor="display" style={{ alignSelf: "flex-start" }}>
                               Enter your currency
                             </label>
-                            <CurrencyDropdown
-                              name="display"
-                              style={{ height: "42px", width: "100%" }}
-                              onSelectedDisplayCurrencyChange={(newDisplayCurrency) => {
-                                if (newDisplayCurrency) {
-                                  localStorage.setItem("display", newDisplayCurrency)
-                                  setSelectedDisplayCurrency(newDisplayCurrency)
-                                }
-                              }}
-                            />
+                            <Suspense>
+                              <CurrencyDropdown
+                                name="display"
+                                style={{ height: "42px", width: "100%" }}
+                                onSelectedDisplayCurrencyChange={(newDisplayCurrency) => {
+                                  if (newDisplayCurrency) {
+                                    localStorage.setItem("display", newDisplayCurrency)
+                                    setSelectedDisplayCurrency(newDisplayCurrency)
+                                  }
+                                }}
+                              />
+                            </Suspense>
                             <button data-testid="submit-btn">Submit</button>
                           </form>
                         </ListGroup.Item>

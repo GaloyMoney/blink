@@ -25,12 +25,12 @@ const ShareController: FC<Props> = ({
     getImage && getImage()
 
     onInteraction && onInteraction()
-    if (!navigator.canShare) {
+    if (!navigator?.canShare) {
       return onNonNativeShare && onNonNativeShare()
     }
 
     try {
-      await navigator.share(shareData)
+      await navigator?.share(shareData)
       onSuccess && onSuccess()
     } catch (err) {
       onError && onError(err)

@@ -1,29 +1,28 @@
-// Disable no-unassigned-import rule because we are importing css files
-// eslint-disable-next-line
-import "bootstrap/dist/css/bootstrap.min.css"
-// eslint-disable-next-line
-import "./index.css"
-import Script from "next/script"
-import { NextPage } from "next"
-import dynamic from "next/dynamic"
+import type { Metadata } from "next"
+import { Inter_Tight } from "next/font/google"
+
+// eslint-disable-next-line import/no-unassigned-import
+import "./globals.css"
+
+// eslint-disable-next-line import/no-unassigned-import
+import "bootstrap/dist/css/bootstrap.css"
+
 import Head from "next/head"
-import { useRouter } from "next/router"
+import Script from "next/script"
 
-import AppLayout from "../components/Layouts/AppLayout"
-import { APP_DESCRIPTION } from "../config/config"
+import { ApolloWrapper } from "@/components/apollo-wrapper"
+import { APP_DESCRIPTION } from "@/config/config"
 
-const GraphQLProvider = dynamic(() => import("../lib/graphql"), { ssr: false })
+const inter = Inter_Tight({ subsets: ["latin"] })
 
-export default function Layout({
-  Component,
-  pageProps,
-}: {
-  Component: NextPage
-  pageProps: Record<string, unknown>
-}) {
-  const { username } = useRouter().query
+export const metadata: Metadata = {
+  title: "Blink Cash Register",
+  description: "Blink official lightning network node",
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <html lang="en">
       <Head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -44,11 +43,9 @@ export default function Layout({
       gtag('config', 'UA-181044262-1');
     `}
       </Script>
-      <GraphQLProvider>
-        <AppLayout username={username}>
-          <Component {...pageProps} />
-        </AppLayout>
-      </GraphQLProvider>
-    </>
+      <body className={inter.className}>
+        <ApolloWrapper>{children}</ApolloWrapper>
+      </body>
+    </html>
   )
 }

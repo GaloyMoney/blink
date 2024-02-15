@@ -2,7 +2,7 @@ import React from "react"
 import { Image } from "react-bootstrap"
 
 import { getOS } from "../../lib/download"
-import { ACTIONS, ACTION_TYPE } from "../../pages/_reducer"
+import { ACTIONS, ACTION_TYPE } from "../../app/reducer"
 import Modal from "../CustomModal/modal"
 
 import {
@@ -23,7 +23,7 @@ const browser = (function () {
   //@ts-ignore
   const test = function (regexp) {
     if (typeof window !== "undefined") {
-      return regexp.test(window.navigator.userAgent)
+      return regexp.test(window.navigator?.userAgent)
     }
   }
   switch (true) {
@@ -62,7 +62,7 @@ const PinToHomescreen = ({ pinnedToHomeScreenModalVisible, dispatch }: Props) =>
     })
   }
 
-  const ua = window.navigator.userAgent
+  const ua = window.navigator?.userAgent
   const iOS = !!ua.match(/iPad/i) || !!ua.match(/iPhone/i)
   const webkit = !!ua.match(/WebKit/i)
   const iOSSafari = iOS && webkit && !ua.match(/CriOS/i)
