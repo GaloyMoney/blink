@@ -188,7 +188,7 @@ build_node_modules = rule(
 )
 
 def tsc_build_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
-    build_context = prepare_build_context(ctx)
+    build_context = prepare_package_context(ctx)
 
     out = ctx.actions.declare_output("dist", dir = True)
     pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
@@ -436,7 +436,7 @@ def prod_tsc_build_bin(
     )
 
 def next_build_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
-    build_context = prepare_build_context(ctx)
+    build_context = prepare_package_context(ctx)
 
     out = ctx.actions.declare_output("dist", dir = True)
     pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
@@ -574,11 +574,11 @@ _next_build_bin = rule(
     },
 )
 
-BuildContext = record(
+PackageContext = record(
     workspace_root = field(Artifact),
 )
 
-def prepare_build_context(ctx: AnalysisContext) -> BuildContext:
+def prepare_package_context(ctx: AnalysisContext) -> PackageContext:
     workspace_root = ctx.actions.declare_output("__workspace", dir = True)
 
     pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
@@ -586,7 +586,7 @@ def prepare_build_context(ctx: AnalysisContext) -> BuildContext:
 
     cmd = cmd_args(
         ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
-        pnpm_toolchain.prepare_build_context[DefaultInfo].default_outputs,
+        pnpm_toolchain.prepare_package_context[DefaultInfo].default_outputs,
         "--package-dir",
         package_dir,
         "--node-modules-path",
@@ -605,9 +605,9 @@ def prepare_build_context(ctx: AnalysisContext) -> BuildContext:
             cmd.add(cmd_args(src, format = name + "={}"))
     cmd.add(workspace_root.as_output())
 
-    ctx.actions.run(cmd, category = "prepare_build_context", identifier = ctx.label.package)
+    ctx.actions.run(cmd, category = "prepare_package_context", identifier = ctx.label.package)
 
-    return BuildContext(
+    return PackageContext(
         workspace_root = workspace_root,
     )
 
@@ -621,7 +621,7 @@ def _npm_test_impl(
     RunInfo,
     ExternalRunnerTestInfo,
 ]]:
-    build_context = prepare_build_context(ctx)
+    build_context = prepare_package_context(ctx)
 
     pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
 

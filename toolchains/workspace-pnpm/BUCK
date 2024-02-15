@@ -9,7 +9,7 @@ export_file(
 )
 
 export_file(
-  name = "prepare_build_context.py",
+  name = "prepare_package_context.py",
   visibility = ["PUBLIC"],
 )
 
