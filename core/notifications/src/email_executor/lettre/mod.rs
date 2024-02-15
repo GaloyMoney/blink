@@ -2,8 +2,9 @@ mod config;
 pub mod error;
 
 use lettre::{
-    message::Mailbox, transport::smtp::authentication::Credentials, AsyncSmtpTransport,
-    AsyncTransport, Tokio1Executor,
+    message::{Mailbox, Message},
+    transport::smtp::authentication::Credentials,
+    AsyncSmtpTransport, AsyncTransport, Tokio1Executor,
 };
 
 pub use config::*;
@@ -25,7 +26,7 @@ impl LettreClient {
     }
 
     pub async fn send_email(&self, title: String, body: String) -> Result<(), LettreError> {
-        let email = lettre::Message::builder()
+        let email = Message::builder()
             .from(Mailbox::new(None, "some-email".parse()?))
             .to(Mailbox::new(None, "some-email".parse()?))
             .subject(title)

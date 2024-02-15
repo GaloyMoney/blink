@@ -47,8 +47,6 @@
         clang
         lld
         rust-toolchain
-        openssl
-        openssl.dev
       ];
 
       nativeBuildInputs = with pkgs;
@@ -77,7 +75,6 @@
           grpcurl
           buf
           transifex-cli
-          pkg-config 
         ]
         ++ buck2NativeBuildInputs
         ++ lib.optionals pkgs.stdenv.isLinux [
