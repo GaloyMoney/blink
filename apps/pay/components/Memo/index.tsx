@@ -1,8 +1,9 @@
-import { useRouter } from "next/router"
 import React from "react"
 import { Modal } from "react-bootstrap"
 
-import { ACTIONS, ACTION_TYPE } from "../../pages/_reducer"
+import { useSearchParams } from "next/navigation"
+
+import { ACTIONS, ACTION_TYPE } from "../../app/reducer"
 
 import styles from "./memo.module.css"
 
@@ -12,36 +13,38 @@ interface Props {
 }
 
 const Memo = ({ state, dispatch }: Props) => {
-  const router = useRouter()
-  const { username, amount, sats, unit, memo, display } = router.query
+  const searchParams = useSearchParams()
+  const amount = searchParams.get("amount") || "0"
+  const sats = searchParams.get("sats") || "0"
+  const display = searchParams.get("display") || "USD"
+  const memo = searchParams.get("memo") || ""
+
+  const unit = searchParams.get("unit")
   const [openModal, setOpenModal] = React.useState<boolean>(false)
-  const [note, setNote] = React.useState<string>(memo?.toString() || "")
+  const [currentMemo, setCurrentMemo] = React.useState<string>(memo?.toString() || "")
 
   const handleSetMemo = () => {
     if (unit === "SAT" || unit === "CENT") {
-      router.push(
-        {
-          pathname: `${username}`,
-          query: {
-            amount: amount,
-            sats: sats,
-            unit: unit,
-            memo: note,
-            display,
-          },
-        },
-        undefined,
-        { shallow: true },
-      )
+      const params = new URLSearchParams({
+        amount,
+        sats,
+        unit,
+        memo: currentMemo,
+        display,
+      })
+
+      const currentUrl = new URL(window.location.toString())
+      currentUrl.search = params.toString()
+      window.history.pushState({}, "", currentUrl.toString())
     } else {
-      router.push(
-        {
-          pathname: `${username}`,
-          query: { memo: note, display },
-        },
-        undefined,
-        { shallow: true },
-      )
+      const params = new URLSearchParams({
+        memo: currentMemo,
+        display,
+      })
+
+      const currentUrl = new URL(window.location.toString())
+      currentUrl.search = params.toString()
+      window.history.pushState({}, "", currentUrl.toString())
     }
     handleClose()
   }
@@ -116,10 +119,10 @@ const Memo = ({ state, dispatch }: Props) => {
           <Modal.Body>
             <input
               className={styles.modal_input}
-              value={memo ? state.memo : note}
+              value={memo ? state.memo : currentMemo}
               name="note"
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setNote(e.target.value)
+                setCurrentMemo(e.target.value)
                 dispatch({ type: ACTIONS.ADD_MEMO, payload: e.target.value })
               }}
               type="text"

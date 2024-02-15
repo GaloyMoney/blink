@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.error {
+  color: red;
+  margin: 20px auto;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.loading {
+  margin: 20px auto;
+  text-align: center;
+  font-size: 1.25rem;
+}
+
+.set-invoice-button {
+  margin: 1rem auto 0 auto;
+  padding: 0.2rem 2rem;
+}
+
+.tip {
+  padding: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.warning {
+  margin: 0.75rem auto;
+  font-weight: bold;
+  border: thin dashed #801313;
+  padding: 0.5rem;
+}
+
+.expired-invoice {
+  margin: 1.5rem;
+}
+
+.clickable {
+  color: #007bff;
+  cursor: pointer;
+}
+
+.amount-input {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.amount-input input {
+  min-width: 300px;
+}
+
+.currency-label {
+  width: 40px;
+  text-align: right;
+  margin-right: 0.25rem;
+}
+
+.toggle-currency {
+  width: 30px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.qr-code-container {
+  margin: 0 0.5rem;
+}
+
+.invoice-container {
+  max-width: 390px;
+}
+
+.username-form {
+  display: inline-flex;
+  flex-direction: column;
+  margin-top: 2rem;
+}
+
+.username-form > label > span {
+  font-weight: 700;
+}
+
+.username-form > input {
+  padding: 0.5rem;
+  border: 1px solid rgb(192, 191, 191);
+}
+
+.username-form > button {
+  border: none;
+  border-radius: 4px;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  font-weight: 500;
+}
+
+.username-form > button:focus,
+.username-form > button:focus-within {
+  border: 1px solid #007bff;
+  background-color: #e9ecef;
+}
+
+.username-form > button:hover {
+  background-color: #e9ecef;
+}
+
+.setup-pwa {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  min-height: calc(100vh - 36px);
+  padding: 0 2rem;
+}
+
+.setup-pwa > form {
+  text-align: center;
+  row-gap: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .username-form > label {
+    font-size: 1rem;
+    font-weight: 500;
+    opacity: 0.9;
+  }
+}
+
+.loader-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  min-height: calc(100vh - 36px);
+}
+
+.loader {
+  border: 12px solid rgb(243, 243, 243);
+  border-top: 12px solid rgba(83, 111, 242, 1);
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.user-header {
+  font-weight: 600;
+  font-size: 22px;
+  color: rgba(17, 25, 40, 1);
+}
+
+.print-paycode-button {
+  padding: 9px 32px;
+  border-radius: 8px;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),
+    linear-gradient(45deg, #ffbe0b 0%, #fb5607 100%);
+  border: none;
+  color: #fff;
+  font-weight: 600;
+}

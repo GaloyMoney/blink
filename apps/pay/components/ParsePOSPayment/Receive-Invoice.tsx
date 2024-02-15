@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 // TODO: remove eslint-disable, the logic likely needs to be reworked
 import copy from "copy-to-clipboard"
-import { useRouter } from "next/router"
+import { useParams, useSearchParams } from "next/navigation"
 import React, { useCallback } from "react"
 import Image from "react-bootstrap/Image"
 import OverlayTrigger from "react-bootstrap/OverlayTrigger"
@@ -13,11 +13,13 @@ import { USD_INVOICE_EXPIRE_INTERVAL, getClientSidePayDomain } from "../../confi
 import useCreateInvoice from "../../hooks/use-Create-Invoice"
 import { LnInvoiceObject } from "../../lib/graphql/index.types.d"
 import useSatPrice from "../../lib/use-sat-price"
-import { ACTION_TYPE } from "../../pages/_reducer"
+import { ACTION_TYPE } from "../../app/reducer"
 import PaymentOutcome from "../PaymentOutcome"
 import { Share } from "../Share"
 
-import { safeAmount } from "../../utils/utils"
+import { extractSearchParams, safeAmount } from "../../utils/utils"
+
+import LoadingComponent from "../Loading"
 
 import styles from "./parse-payment.module.css"
 
@@ -32,9 +34,11 @@ const USD_MAX_INVOICE_TIME = 5 // minutes
 const PROGRESS_BAR_MAX_WIDTH = 100 // percent
 
 function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: Props) {
-  const deviceDetails = window.navigator.userAgent
-  const router = useRouter()
-  const { username, amount, unit, sats, memo } = router.query
+  const deviceDetails = window.navigator?.userAgent
+  const searchParams = useSearchParams()
+  const { username } = useParams()
+  const query = extractSearchParams(searchParams)
+  const { amount, unit, sats, memo } = query
 
   const { usdToSats, satsToUsd } = useSatPrice()
 
@@ -109,11 +113,11 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
   )
 
   const paymentAmount = React.useMemo(() => {
-    if (!router.query.sats || typeof router.query.sats !== "string") {
+    if (!query.sats || typeof query.sats !== "string") {
       alert("No sats amount provided")
       return
     }
-    let amt = safeAmount(router.query.sats)
+    let amt = safeAmount(query.sats)
     if (recipientWalletCurrency === "USD") {
       const usdAmount = satsToUsd(Number(amt))
       if (isNaN(usdAmount)) return
@@ -137,11 +141,11 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
 
     let amt = paymentAmount
     if (recipientWalletCurrency === "USD") {
-      if (!router.query.sats || typeof router.query.sats !== "string") {
+      if (!query.sats || typeof query.sats !== "string") {
         alert("No sats amount provided")
         return
       } else {
-        const usdAmount = satsToUsd(Number(router.query.sats))
+        const usdAmount = satsToUsd(Number(query.sats))
         if (isNaN(usdAmount)) return
         const cents = parseFloat(usdAmount.toFixed(2)) * 100
         amt = cents.toFixed()
@@ -175,7 +179,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
 
   const isMobileDevice = useCallback(() => {
     const mobileDevice = /android|iPhone|iPod|kindle|HMSCore|windows phone|ipad/i
-    if (window.navigator.maxTouchPoints > 1 || mobileDevice.test(deviceDetails)) {
+    if (window.navigator?.maxTouchPoints > 1 || mobileDevice.test(deviceDetails)) {
       return true
     }
     return false
@@ -235,11 +239,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
   }
 
   if (loading || invoiceStatus === "loading" || !invoice?.paymentRequest) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.loader}></div>
-      </div>
-    )
+    return <LoadingComponent />
   }
 
   return (
