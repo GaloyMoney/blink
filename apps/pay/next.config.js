@@ -5,7 +5,6 @@ module.exports = {
   experimental: {
     outputFileTracingRoot: require("path").join(__dirname, "../../"),
     instrumentationHook: true,
-    missingSuspenseWithCSRBailout: false,
   },
   output: "standalone",
 }

@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect } from "react"
+import React, { Suspense, useEffect } from "react"
 import Card from "react-bootstrap/Card"
 import Col from "react-bootstrap/Col"
 import Container from "react-bootstrap/Container"
@@ -108,16 +108,18 @@ function Home() {
                             <label htmlFor="display" style={{ alignSelf: "flex-start" }}>
                               Enter your currency
                             </label>
-                            <CurrencyDropdown
-                              name="display"
-                              style={{ height: "42px", width: "100%" }}
-                              onSelectedDisplayCurrencyChange={(newDisplayCurrency) => {
-                                if (newDisplayCurrency) {
-                                  localStorage.setItem("display", newDisplayCurrency)
-                                  setSelectedDisplayCurrency(newDisplayCurrency)
-                                }
-                              }}
-                            />
+                            <Suspense>
+                              <CurrencyDropdown
+                                name="display"
+                                style={{ height: "42px", width: "100%" }}
+                                onSelectedDisplayCurrencyChange={(newDisplayCurrency) => {
+                                  if (newDisplayCurrency) {
+                                    localStorage.setItem("display", newDisplayCurrency)
+                                    setSelectedDisplayCurrency(newDisplayCurrency)
+                                  }
+                                }}
+                              />
+                            </Suspense>
                             <button data-testid="submit-btn">Submit</button>
                           </form>
                         </ListGroup.Item>
