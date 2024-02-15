@@ -825,7 +825,7 @@ input LnInvoicePaymentStatusByHashInput
   paymentHash: PaymentHash!
 }
 
-input LnInvoicePaymentStatusByRequestInput
+input LnInvoicePaymentStatusByPaymentRequestInput
   @join__type(graph: PUBLIC)
 {
   paymentRequest: LnPaymentRequest!
@@ -1567,9 +1567,9 @@ type Query
   businessMapMarkers: [MapMarker!]! @join__field(graph: PUBLIC)
   currencyList: [Currency!]! @join__field(graph: PUBLIC)
   globals: Globals @join__field(graph: PUBLIC)
-  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload! @join__field(graph: PUBLIC) @deprecated(reason: "Deprecated in favor of lnInvoicePaymentStatusByRequest")
+  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload! @join__field(graph: PUBLIC) @deprecated(reason: "Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest")
   lnInvoicePaymentStatusByHash(input: LnInvoicePaymentStatusByHashInput!): LnInvoicePaymentStatus! @join__field(graph: PUBLIC)
-  lnInvoicePaymentStatusByRequest(input: LnInvoicePaymentStatusByRequestInput!): LnInvoicePaymentStatus! @join__field(graph: PUBLIC)
+  lnInvoicePaymentStatusByPaymentRequest(input: LnInvoicePaymentStatusByPaymentRequestInput!): LnInvoicePaymentStatus! @join__field(graph: PUBLIC)
   me: User @join__field(graph: PUBLIC)
   mobileVersions: [MobileVersions] @join__field(graph: PUBLIC)
   onChainTxFee(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainTxFee! @join__field(graph: PUBLIC)
@@ -1712,9 +1712,9 @@ scalar SignedDisplayMajorAmount
 type Subscription
   @join__type(graph: PUBLIC)
 {
-  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload! @deprecated(reason: "Deprecated in favor of lnInvoicePaymentStatusByRequest")
+  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload! @deprecated(reason: "Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest")
   lnInvoicePaymentStatusByHash(input: LnInvoicePaymentStatusByHashInput!): LnInvoicePaymentStatusPayload!
-  lnInvoicePaymentStatusByRequest(input: LnInvoicePaymentStatusByRequestInput!): LnInvoicePaymentStatusPayload!
+  lnInvoicePaymentStatusByPaymentRequest(input: LnInvoicePaymentStatusByPaymentRequestInput!): LnInvoicePaymentStatusPayload!
   myUpdates: MyUpdatesPayload!
   price(input: PriceInput!): PricePayload!
 

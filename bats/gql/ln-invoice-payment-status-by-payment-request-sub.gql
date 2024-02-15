@@ -1,0 +1,10 @@
+subscription lnInvoicePaymentStatusByPaymentRequestSubscription($input: LnInvoicePaymentStatusByPaymentRequestInput!) {
+  lnInvoicePaymentStatusByPaymentRequest(input: $input) {
+    errors {
+      message
+    }
+    status
+    paymentHash
+    paymentRequest
+  }
+}

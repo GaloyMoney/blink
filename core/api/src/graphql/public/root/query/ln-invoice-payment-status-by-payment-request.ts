@@ -4,12 +4,12 @@ import { WalletInvoiceStatus } from "@/domain/wallet-invoices"
 import { GT } from "@/graphql/index"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import LnInvoicePaymentStatus from "@/graphql/public/types/object/ln-invoice-payment-status"
-import LnInvoicePaymentStatusByRequestInput from "@/graphql/public/types/object/ln-invoice-payment-status-by-request-input"
+import LnInvoicePaymentStatusByPaymentRequestInput from "@/graphql/public/types/object/ln-invoice-payment-status-by-payment-request-input"
 
-const LnInvoicePaymentStatusByRequestQuery = GT.Field({
+const LnInvoicePaymentStatusByPaymentRequestQuery = GT.Field({
   type: GT.NonNull(LnInvoicePaymentStatus),
   args: {
-    input: { type: GT.NonNull(LnInvoicePaymentStatusByRequestInput) },
+    input: { type: GT.NonNull(LnInvoicePaymentStatusByPaymentRequestInput) },
   },
   resolve: async (_, args) => {
     const { paymentRequest } = args.input
@@ -36,4 +36,4 @@ const LnInvoicePaymentStatusByRequestQuery = GT.Field({
   },
 })
 
-export default LnInvoicePaymentStatusByRequestQuery
+export default LnInvoicePaymentStatusByPaymentRequestQuery
