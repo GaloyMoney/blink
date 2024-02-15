@@ -11,17 +11,17 @@ pub use config::*;
 use error::*;
 
 #[derive(Clone)]
-pub struct Executor {
-    _config: ExecutorConfig,
+pub struct PushExecutor {
+    _config: PushExecutorConfig,
     fcm: FcmClient,
     settings: UserNotificationSettingsRepo,
 }
 
-impl Executor {
+impl PushExecutor {
     pub async fn init(
-        mut config: ExecutorConfig,
+        mut config: PushExecutorConfig,
         settings: UserNotificationSettingsRepo,
-    ) -> Result<Self, ExecutorError> {
+    ) -> Result<Self, PushExecutorError> {
         Ok(Self {
             fcm: FcmClient::init(config.fcm.service_account_key()).await?,
             _config: config,
@@ -35,7 +35,7 @@ impl Executor {
         fields(n_errors, n_removed_tokens),
         err
     )]
-    pub async fn notify<T: NotificationEvent>(&self, event: &T) -> Result<(), ExecutorError> {
+    pub async fn notify<T: NotificationEvent>(&self, event: &T) -> Result<(), PushExecutorError> {
         let mut settings = self.settings.find_for_user_id(event.user_id()).await?;
         if !settings.should_send_notification(UserNotificationChannel::Push, event.category()) {
             return Ok(());
