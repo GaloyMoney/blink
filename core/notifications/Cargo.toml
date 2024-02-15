@@ -44,6 +44,7 @@ tonic-health = { workspace = true }
 prost = { workspace = true }
 rust-i18n = { workspace = true }
 google-fcm1 = { workspace = true }
+lettre = { workspace = true }
 
 [build-dependencies]
 tonic-build = { workspace = true }

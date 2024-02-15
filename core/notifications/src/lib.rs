@@ -9,6 +9,7 @@ mod job;
 mod messages;
 
 pub mod cli;
+pub mod email_executor;
 pub mod graphql;
 pub mod grpc;
 pub mod notification_event;
