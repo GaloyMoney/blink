@@ -26,8 +26,6 @@ export const addEmailToIdentity = async ({
   const emailRegistrationId = await authServiceEmail.sendEmailWithCode({ email })
   if (emailRegistrationId instanceof Error) return emailRegistrationId
 
-  await NotificationsService().updateEmailAddress({ userId, email })
-
   const user = await UsersRepository().findById(userId)
   if (user instanceof Error) return user
 
@@ -49,6 +47,11 @@ export const verifyEmail = async ({
     emailFlowId: emailRegistrationId,
   })
   if (res instanceof Error) return res
+
+  await NotificationsService().updateEmailAddress({
+    userId: res.kratosUserId,
+    email: res.email,
+  })
 
   const user = await UsersRepository().findById(res.kratosUserId)
   if (user instanceof Error) return user
