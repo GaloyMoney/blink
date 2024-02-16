@@ -92,6 +92,8 @@ describe("Point of Sale", () => {
                 expect(paymentResponse.body.data.lnInvoicePaymentSend.status).to.equal(
                   "SUCCESS",
                 )
+                cy.get("[data-testid=success-icon]").should("exist")
+                cy.get("[data-testid=success-icon]").should("be.visible")
               },
             )
           })

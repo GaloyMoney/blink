@@ -95,6 +95,7 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch }: Props) {
         <div className={styles.container}>
           <div aria-labelledby="Payment successful">
             <Image
+              data-testid="success-icon"
               src="/icons/success-icon.svg"
               alt="success icon"
               width="104"
