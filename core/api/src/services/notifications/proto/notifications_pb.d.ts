@@ -486,6 +486,303 @@ export namespace RemovePushDeviceTokenResponse {
     }
 }
 
+export class UpdateEmailAddressRequest extends jspb.Message { 
+    getUserId(): string;
+    setUserId(value: string): UpdateEmailAddressRequest;
+    getEmailAddress(): string;
+    setEmailAddress(value: string): UpdateEmailAddressRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): UpdateEmailAddressRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: UpdateEmailAddressRequest): UpdateEmailAddressRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: UpdateEmailAddressRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): UpdateEmailAddressRequest;
+    static deserializeBinaryFromReader(message: UpdateEmailAddressRequest, reader: jspb.BinaryReader): UpdateEmailAddressRequest;
+}
+
+export namespace UpdateEmailAddressRequest {
+    export type AsObject = {
+        userId: string,
+        emailAddress: string,
+    }
+}
+
+export class UpdateEmailAddressResponse extends jspb.Message { 
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): UpdateEmailAddressResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: UpdateEmailAddressResponse): UpdateEmailAddressResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: UpdateEmailAddressResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): UpdateEmailAddressResponse;
+    static deserializeBinaryFromReader(message: UpdateEmailAddressResponse, reader: jspb.BinaryReader): UpdateEmailAddressResponse;
+}
+
+export namespace UpdateEmailAddressResponse {
+    export type AsObject = {
+    }
+}
+
+export class RemoveEmailAddressRequest extends jspb.Message { 
+    getUserId(): string;
+    setUserId(value: string): RemoveEmailAddressRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): RemoveEmailAddressRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: RemoveEmailAddressRequest): RemoveEmailAddressRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: RemoveEmailAddressRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): RemoveEmailAddressRequest;
+    static deserializeBinaryFromReader(message: RemoveEmailAddressRequest, reader: jspb.BinaryReader): RemoveEmailAddressRequest;
+}
+
+export namespace RemoveEmailAddressRequest {
+    export type AsObject = {
+        userId: string,
+    }
+}
+
+export class RemoveEmailAddressResponse extends jspb.Message { 
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): RemoveEmailAddressResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: RemoveEmailAddressResponse): RemoveEmailAddressResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: RemoveEmailAddressResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): RemoveEmailAddressResponse;
+    static deserializeBinaryFromReader(message: RemoveEmailAddressResponse, reader: jspb.BinaryReader): RemoveEmailAddressResponse;
+}
+
+export namespace RemoveEmailAddressResponse {
+    export type AsObject = {
+    }
+}
+
+export class HandleNotificationEventRequest extends jspb.Message { 
+
+    hasEvent(): boolean;
+    clearEvent(): void;
+    getEvent(): NotificationEvent | undefined;
+    setEvent(value?: NotificationEvent): HandleNotificationEventRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): HandleNotificationEventRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: HandleNotificationEventRequest): HandleNotificationEventRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: HandleNotificationEventRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): HandleNotificationEventRequest;
+    static deserializeBinaryFromReader(message: HandleNotificationEventRequest, reader: jspb.BinaryReader): HandleNotificationEventRequest;
+}
+
+export namespace HandleNotificationEventRequest {
+    export type AsObject = {
+        event?: NotificationEvent.AsObject,
+    }
+}
+
+export class HandleNotificationEventResponse extends jspb.Message { 
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): HandleNotificationEventResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: HandleNotificationEventResponse): HandleNotificationEventResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: HandleNotificationEventResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): HandleNotificationEventResponse;
+    static deserializeBinaryFromReader(message: HandleNotificationEventResponse, reader: jspb.BinaryReader): HandleNotificationEventResponse;
+}
+
+export namespace HandleNotificationEventResponse {
+    export type AsObject = {
+    }
+}
+
+export class NotificationEvent extends jspb.Message { 
+
+    hasCircleGrew(): boolean;
+    clearCircleGrew(): void;
+    getCircleGrew(): CircleGrew | undefined;
+    setCircleGrew(value?: CircleGrew): NotificationEvent;
+
+    hasCircleThresholdReached(): boolean;
+    clearCircleThresholdReached(): void;
+    getCircleThresholdReached(): CircleThresholdReached | undefined;
+    setCircleThresholdReached(value?: CircleThresholdReached): NotificationEvent;
+
+    hasIdentityVerificationApproved(): boolean;
+    clearIdentityVerificationApproved(): void;
+    getIdentityVerificationApproved(): IdentityVerificationApproved | undefined;
+    setIdentityVerificationApproved(value?: IdentityVerificationApproved): NotificationEvent;
+
+    hasIdentityVerificationDeclined(): boolean;
+    clearIdentityVerificationDeclined(): void;
+    getIdentityVerificationDeclined(): IdentityVerificationDeclined | undefined;
+    setIdentityVerificationDeclined(value?: IdentityVerificationDeclined): NotificationEvent;
+
+    hasIdentityVerificationReviewPending(): boolean;
+    clearIdentityVerificationReviewPending(): void;
+    getIdentityVerificationReviewPending(): IdentityVerificationReviewPending | undefined;
+    setIdentityVerificationReviewPending(value?: IdentityVerificationReviewPending): NotificationEvent;
+
+    getDataCase(): NotificationEvent.DataCase;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): NotificationEvent.AsObject;
+    static toObject(includeInstance: boolean, msg: NotificationEvent): NotificationEvent.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: NotificationEvent, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): NotificationEvent;
+    static deserializeBinaryFromReader(message: NotificationEvent, reader: jspb.BinaryReader): NotificationEvent;
+}
+
+export namespace NotificationEvent {
+    export type AsObject = {
+        circleGrew?: CircleGrew.AsObject,
+        circleThresholdReached?: CircleThresholdReached.AsObject,
+        identityVerificationApproved?: IdentityVerificationApproved.AsObject,
+        identityVerificationDeclined?: IdentityVerificationDeclined.AsObject,
+        identityVerificationReviewPending?: IdentityVerificationReviewPending.AsObject,
+    }
+
+    export enum DataCase {
+        DATA_NOT_SET = 0,
+        CIRCLE_GREW = 1,
+        CIRCLE_THRESHOLD_REACHED = 2,
+        IDENTITY_VERIFICATION_APPROVED = 3,
+        IDENTITY_VERIFICATION_DECLINED = 4,
+        IDENTITY_VERIFICATION_REVIEW_PENDING = 5,
+    }
+
+}
+
+export class CircleGrew extends jspb.Message { 
+    getUserId(): string;
+    setUserId(value: string): CircleGrew;
+    getCircleType(): CircleType;
+    setCircleType(value: CircleType): CircleGrew;
+    getThisMonthCircleSize(): number;
+    setThisMonthCircleSize(value: number): CircleGrew;
+    getAllTimeCircleSize(): number;
+    setAllTimeCircleSize(value: number): CircleGrew;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): CircleGrew.AsObject;
+    static toObject(includeInstance: boolean, msg: CircleGrew): CircleGrew.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: CircleGrew, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): CircleGrew;
+    static deserializeBinaryFromReader(message: CircleGrew, reader: jspb.BinaryReader): CircleGrew;
+}
+
+export namespace CircleGrew {
+    export type AsObject = {
+        userId: string,
+        circleType: CircleType,
+        thisMonthCircleSize: number,
+        allTimeCircleSize: number,
+    }
+}
+
+export class CircleThresholdReached extends jspb.Message { 
+    getUserId(): string;
+    setUserId(value: string): CircleThresholdReached;
+    getCircleType(): CircleType;
+    setCircleType(value: CircleType): CircleThresholdReached;
+    getTimeFrame(): CircleTimeFrame;
+    setTimeFrame(value: CircleTimeFrame): CircleThresholdReached;
+    getThreshold(): number;
+    setThreshold(value: number): CircleThresholdReached;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): CircleThresholdReached.AsObject;
+    static toObject(includeInstance: boolean, msg: CircleThresholdReached): CircleThresholdReached.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: CircleThresholdReached, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): CircleThresholdReached;
+    static deserializeBinaryFromReader(message: CircleThresholdReached, reader: jspb.BinaryReader): CircleThresholdReached;
+}
+
+export namespace CircleThresholdReached {
+    export type AsObject = {
+        userId: string,
+        circleType: CircleType,
+        timeFrame: CircleTimeFrame,
+        threshold: number,
+    }
+}
+
+export class IdentityVerificationApproved extends jspb.Message { 
+    getUserId(): string;
+    setUserId(value: string): IdentityVerificationApproved;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): IdentityVerificationApproved.AsObject;
+    static toObject(includeInstance: boolean, msg: IdentityVerificationApproved): IdentityVerificationApproved.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: IdentityVerificationApproved, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): IdentityVerificationApproved;
+    static deserializeBinaryFromReader(message: IdentityVerificationApproved, reader: jspb.BinaryReader): IdentityVerificationApproved;
+}
+
+export namespace IdentityVerificationApproved {
+    export type AsObject = {
+        userId: string,
+    }
+}
+
+export class IdentityVerificationDeclined extends jspb.Message { 
+    getUserId(): string;
+    setUserId(value: string): IdentityVerificationDeclined;
+    getDeclinedReason(): DeclinedReason;
+    setDeclinedReason(value: DeclinedReason): IdentityVerificationDeclined;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): IdentityVerificationDeclined.AsObject;
+    static toObject(includeInstance: boolean, msg: IdentityVerificationDeclined): IdentityVerificationDeclined.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: IdentityVerificationDeclined, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): IdentityVerificationDeclined;
+    static deserializeBinaryFromReader(message: IdentityVerificationDeclined, reader: jspb.BinaryReader): IdentityVerificationDeclined;
+}
+
+export namespace IdentityVerificationDeclined {
+    export type AsObject = {
+        userId: string,
+        declinedReason: DeclinedReason,
+    }
+}
+
+export class IdentityVerificationReviewPending extends jspb.Message { 
+    getUserId(): string;
+    setUserId(value: string): IdentityVerificationReviewPending;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): IdentityVerificationReviewPending.AsObject;
+    static toObject(includeInstance: boolean, msg: IdentityVerificationReviewPending): IdentityVerificationReviewPending.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: IdentityVerificationReviewPending, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): IdentityVerificationReviewPending;
+    static deserializeBinaryFromReader(message: IdentityVerificationReviewPending, reader: jspb.BinaryReader): IdentityVerificationReviewPending;
+}
+
+export namespace IdentityVerificationReviewPending {
+    export type AsObject = {
+        userId: string,
+    }
+}
+
 export enum NotificationChannel {
     PUSH = 0,
 }
@@ -495,4 +792,19 @@ export enum NotificationCategory {
     PAYMENTS = 1,
     BALANCE = 2,
     ADMIN_NOTIFICATION = 3,
+}
+
+export enum CircleType {
+    INNER = 0,
+    OUTER = 1,
+}
+
+export enum CircleTimeFrame {
+    MONTH = 0,
+    ALL_TIME = 1,
+}
+
+export enum DeclinedReason {
+    DOCUMENTS_NOT_CLEAR = 0,
+    VERIFICATION_PHOTO_NOT_CLEAR = 1,
 }

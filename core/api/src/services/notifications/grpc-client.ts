@@ -23,6 +23,10 @@ import {
   AddPushDeviceTokenResponse,
   RemovePushDeviceTokenRequest,
   RemovePushDeviceTokenResponse,
+  UpdateEmailAddressRequest,
+  UpdateEmailAddressResponse,
+  RemoveEmailAddressRequest,
+  RemoveEmailAddressResponse,
 } from "./proto/notifications_pb"
 
 import { NOTIFICATIONS_HOST, NOTIFICATIONS_PORT } from "@/config"
@@ -89,3 +93,15 @@ export const removePushDeviceToken = promisify<
   Metadata,
   RemovePushDeviceTokenResponse
 >(notificationsClient.removePushDeviceToken.bind(notificationsClient))
+
+export const updateEmailAddress = promisify<
+  UpdateEmailAddressRequest,
+  Metadata,
+  UpdateEmailAddressResponse
+>(notificationsClient.updateEmailAddress.bind(notificationsClient))
+
+export const removeEmailAddress = promisify<
+  RemoveEmailAddressRequest,
+  Metadata,
+  RemoveEmailAddressResponse
+>(notificationsClient.removeEmailAddress.bind(notificationsClient))

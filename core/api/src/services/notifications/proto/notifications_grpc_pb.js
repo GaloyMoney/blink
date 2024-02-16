@@ -137,6 +137,50 @@ function deserialize_services_notifications_v1_GetNotificationSettingsResponse(b
   return notifications_pb.GetNotificationSettingsResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_services_notifications_v1_HandleNotificationEventRequest(arg) {
+  if (!(arg instanceof notifications_pb.HandleNotificationEventRequest)) {
+    throw new Error('Expected argument of type services.notifications.v1.HandleNotificationEventRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_HandleNotificationEventRequest(buffer_arg) {
+  return notifications_pb.HandleNotificationEventRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_HandleNotificationEventResponse(arg) {
+  if (!(arg instanceof notifications_pb.HandleNotificationEventResponse)) {
+    throw new Error('Expected argument of type services.notifications.v1.HandleNotificationEventResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_HandleNotificationEventResponse(buffer_arg) {
+  return notifications_pb.HandleNotificationEventResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_RemoveEmailAddressRequest(arg) {
+  if (!(arg instanceof notifications_pb.RemoveEmailAddressRequest)) {
+    throw new Error('Expected argument of type services.notifications.v1.RemoveEmailAddressRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_RemoveEmailAddressRequest(buffer_arg) {
+  return notifications_pb.RemoveEmailAddressRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_RemoveEmailAddressResponse(arg) {
+  if (!(arg instanceof notifications_pb.RemoveEmailAddressResponse)) {
+    throw new Error('Expected argument of type services.notifications.v1.RemoveEmailAddressResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_RemoveEmailAddressResponse(buffer_arg) {
+  return notifications_pb.RemoveEmailAddressResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_services_notifications_v1_RemovePushDeviceTokenRequest(arg) {
   if (!(arg instanceof notifications_pb.RemovePushDeviceTokenRequest)) {
     throw new Error('Expected argument of type services.notifications.v1.RemovePushDeviceTokenRequest');
@@ -179,6 +223,28 @@ function serialize_services_notifications_v1_ShouldSendNotificationResponse(arg)
 
 function deserialize_services_notifications_v1_ShouldSendNotificationResponse(buffer_arg) {
   return notifications_pb.ShouldSendNotificationResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_UpdateEmailAddressRequest(arg) {
+  if (!(arg instanceof notifications_pb.UpdateEmailAddressRequest)) {
+    throw new Error('Expected argument of type services.notifications.v1.UpdateEmailAddressRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_UpdateEmailAddressRequest(buffer_arg) {
+  return notifications_pb.UpdateEmailAddressRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_notifications_v1_UpdateEmailAddressResponse(arg) {
+  if (!(arg instanceof notifications_pb.UpdateEmailAddressResponse)) {
+    throw new Error('Expected argument of type services.notifications.v1.UpdateEmailAddressResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_notifications_v1_UpdateEmailAddressResponse(buffer_arg) {
+  return notifications_pb.UpdateEmailAddressResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_services_notifications_v1_UpdateUserLocaleRequest(arg) {
@@ -303,6 +369,39 @@ var NotificationsServiceService = exports.NotificationsServiceService = {
     requestDeserialize: deserialize_services_notifications_v1_RemovePushDeviceTokenRequest,
     responseSerialize: serialize_services_notifications_v1_RemovePushDeviceTokenResponse,
     responseDeserialize: deserialize_services_notifications_v1_RemovePushDeviceTokenResponse,
+  },
+  updateEmailAddress: {
+    path: '/services.notifications.v1.NotificationsService/UpdateEmailAddress',
+    requestStream: false,
+    responseStream: false,
+    requestType: notifications_pb.UpdateEmailAddressRequest,
+    responseType: notifications_pb.UpdateEmailAddressResponse,
+    requestSerialize: serialize_services_notifications_v1_UpdateEmailAddressRequest,
+    requestDeserialize: deserialize_services_notifications_v1_UpdateEmailAddressRequest,
+    responseSerialize: serialize_services_notifications_v1_UpdateEmailAddressResponse,
+    responseDeserialize: deserialize_services_notifications_v1_UpdateEmailAddressResponse,
+  },
+  removeEmailAddress: {
+    path: '/services.notifications.v1.NotificationsService/RemoveEmailAddress',
+    requestStream: false,
+    responseStream: false,
+    requestType: notifications_pb.RemoveEmailAddressRequest,
+    responseType: notifications_pb.RemoveEmailAddressResponse,
+    requestSerialize: serialize_services_notifications_v1_RemoveEmailAddressRequest,
+    requestDeserialize: deserialize_services_notifications_v1_RemoveEmailAddressRequest,
+    responseSerialize: serialize_services_notifications_v1_RemoveEmailAddressResponse,
+    responseDeserialize: deserialize_services_notifications_v1_RemoveEmailAddressResponse,
+  },
+  handleNotificationEvent: {
+    path: '/services.notifications.v1.NotificationsService/HandleNotificationEvent',
+    requestStream: false,
+    responseStream: false,
+    requestType: notifications_pb.HandleNotificationEventRequest,
+    responseType: notifications_pb.HandleNotificationEventResponse,
+    requestSerialize: serialize_services_notifications_v1_HandleNotificationEventRequest,
+    requestDeserialize: deserialize_services_notifications_v1_HandleNotificationEventRequest,
+    responseSerialize: serialize_services_notifications_v1_HandleNotificationEventResponse,
+    responseDeserialize: deserialize_services_notifications_v1_HandleNotificationEventResponse,
   },
 };
 
