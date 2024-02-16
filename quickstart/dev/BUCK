@@ -13,6 +13,25 @@ tilt(
     subcmd = "down",
 )
 
+# This should eventually be removed by refactoring config setup in core/api
+export_file(
+    name = "dummy_env",
+    src = "core-bundle/dummy-env.json",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "serve_env",
+    src = "core-bundle/serve-env.json",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "integration_env",
+    src = "core-bundle/integration-env.json",
+    visibility = ["PUBLIC"],
+)
+
 python_bootstrap_binary(
     name = "healthcheck",
     main = "healthcheck.py",

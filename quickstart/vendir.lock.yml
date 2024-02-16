@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(pay): use app router in pay (#3992)...'
-      sha: 90a19b37bb99ff9fa77b29437096435ad32e6544
+      commitTitle: 'chore: remove env file usage from tests (#3960)...'
+      sha: 6f372b16f150d634add1076b7e5a698b29e7a202
       tags:
-      - 0.20.62-3-g90a19b37b
+      - 0.20.64
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(pay): use app router in pay (#3992)...'
-      sha: 90a19b37bb99ff9fa77b29437096435ad32e6544
+      commitTitle: 'chore: remove env file usage from tests (#3960)...'
+      sha: 6f372b16f150d634add1076b7e5a698b29e7a202
       tags:
-      - 0.20.62-3-g90a19b37b
+      - 0.20.64
     path: schemas/
   - git:
-      commitTitle: 'refactor(pay): use app router in pay (#3992)...'
-      sha: 90a19b37bb99ff9fa77b29437096435ad32e6544
+      commitTitle: 'chore: remove env file usage from tests (#3960)...'
+      sha: 6f372b16f150d634add1076b7e5a698b29e7a202
       tags:
-      - 0.20.62-3-g90a19b37b
+      - 0.20.64
     path: gql/
   path: ./graphql
 kind: LockConfig
