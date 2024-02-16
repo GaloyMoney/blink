@@ -9,9 +9,5 @@ app:
   executor:
     fcm:
       google_application_credentials_path: "./dev/config/notifications/fake_service_account.json"
-    novu:
-      workflows:
-        circle_grew: circle-grew-workflow-id
-        threshold_reached: threshold-reached-workflow-id
 # kratos_import:
 #   execute_import: true
