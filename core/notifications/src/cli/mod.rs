@@ -14,9 +14,15 @@ struct Cli {
     config: Option<PathBuf>,
     #[clap(env = "PG_CON")]
     pg_con: String,
+<<<<<<< HEAD
     #[clap(env = "KRATOS_PG_CON")]
     kratos_pg_con: Option<String>,
     #[clap(env = "EMAIL_PASSWORD")]
+=======
+    #[clap(env = "MONGODB_CON")]
+    mongodb_connection: Option<String>,
+    #[clap(env = "EMAIL_PASSWORD", default_value = "")]
+>>>>>>> df65fec2a (chore(notifications): pass email_executor config in notifications.yml)
     email_password: String,
 }
 

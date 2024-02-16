@@ -10,7 +10,7 @@ use smtp::SmtpClient;
 
 #[derive(Clone)]
 pub struct EmailExecutor {
-    pub config: EmailExecutorConfig,
+    _config: EmailExecutorConfig,
     smtp: SmtpClient,
     settings: UserNotificationSettingsRepo,
 }
@@ -22,7 +22,7 @@ impl EmailExecutor {
     ) -> Result<Self, EmailExecutorError> {
         let smtp = SmtpClient::init(config.smtp.clone())?;
         Ok(EmailExecutor {
-            config,
+            _config: config,
             smtp,
             settings,
         })
@@ -31,9 +31,7 @@ impl EmailExecutor {
     pub async fn notify<T: NotificationEvent>(&self, event: &T) -> Result<(), EmailExecutorError> {
         let settings = self.settings.find_for_user_id(event.user_id()).await?;
         let msg = event.to_localized_msg(settings.locale().unwrap_or_default());
-
         self.smtp.send_email(msg).await?;
-
         Ok(())
     }
 }
