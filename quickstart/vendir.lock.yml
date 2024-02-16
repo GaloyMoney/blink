@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: remove env file usage from tests (#3960)...'
-      sha: 6f372b16f150d634add1076b7e5a698b29e7a202
+      commitTitle: 'chore(notification): expose email mutations via grpc (#4011)...'
+      sha: e720ff1ec2032cda77ebeb83d1f714a7d1385680
       tags:
-      - 0.20.64
+      - 0.20.64-2-ge720ff1ec
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: remove env file usage from tests (#3960)...'
-      sha: 6f372b16f150d634add1076b7e5a698b29e7a202
+      commitTitle: 'chore(notification): expose email mutations via grpc (#4011)...'
+      sha: e720ff1ec2032cda77ebeb83d1f714a7d1385680
       tags:
-      - 0.20.64
+      - 0.20.64-2-ge720ff1ec
     path: schemas/
   - git:
-      commitTitle: 'chore: remove env file usage from tests (#3960)...'
-      sha: 6f372b16f150d634add1076b7e5a698b29e7a202
+      commitTitle: 'chore(notification): expose email mutations via grpc (#4011)...'
+      sha: e720ff1ec2032cda77ebeb83d1f714a7d1385680
       tags:
-      - 0.20.64
+      - 0.20.64-2-ge720ff1ec
     path: gql/
   path: ./graphql
 kind: LockConfig
