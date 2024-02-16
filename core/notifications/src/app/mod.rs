@@ -147,6 +147,26 @@ impl NotificationsApp {
         Ok(user_settings)
     }
 
+    #[instrument(name = "app.update_email_address", skip(self), err)]
+    pub async fn update_email_address(
+        &self,
+        user_id: GaloyUserId,
+        addr: GaloyEmailAddress,
+    ) -> Result<(), ApplicationError> {
+        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
+        user_settings.update_email_address(addr);
+        self.settings.persist(&mut user_settings).await?;
+        Ok(())
+    }
+
+    #[instrument(name = "app.remove_email_address", skip(self), err)]
+    pub async fn remove_email_address(&self, user_id: GaloyUserId) -> Result<(), ApplicationError> {
+        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
+        user_settings.remove_email_address();
+        self.settings.persist(&mut user_settings).await?;
+        Ok(())
+    }
+
     #[instrument(name = "app.handle_notification_event", skip(self), err)]
     pub async fn handle_notification_event<T: NotificationEvent>(
         &self,

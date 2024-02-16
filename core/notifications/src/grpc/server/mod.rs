@@ -15,7 +15,8 @@ use crate::{
     app::*,
     notification_event,
     primitives::{
-        self, GaloyUserId, PushDeviceToken, UserNotificationCategory, UserNotificationChannel,
+        self, GaloyEmailAddress, GaloyUserId, PushDeviceToken, UserNotificationCategory,
+        UserNotificationChannel,
     },
 };
 
@@ -226,6 +227,38 @@ impl NotificationsService for Notifications {
         Ok(Response::new(RemovePushDeviceTokenResponse {
             notification_settings: Some(notification_settings.into()),
         }))
+    }
+
+    #[instrument(name = "notifications.update_email_address", skip_all, err)]
+    async fn update_email_address(
+        &self,
+        request: Request<UpdateEmailAddressRequest>,
+    ) -> Result<Response<UpdateEmailAddressResponse>, Status> {
+        grpc::extract_tracing(&request);
+        let request = request.into_inner();
+        let UpdateEmailAddressRequest {
+            user_id,
+            email_address,
+        } = request;
+        let user_id = GaloyUserId::from(user_id);
+        let addr = GaloyEmailAddress::from(email_address);
+        self.app.update_email_address(user_id, addr).await?;
+
+        Ok(Response::new(UpdateEmailAddressResponse {}))
+    }
+
+    #[instrument(name = "notifications.remove_email_address", skip_all, err)]
+    async fn remove_email_address(
+        &self,
+        request: Request<RemoveEmailAddressRequest>,
+    ) -> Result<Response<RemoveEmailAddressResponse>, Status> {
+        grpc::extract_tracing(&request);
+        let request = request.into_inner();
+        let RemoveEmailAddressRequest { user_id } = request;
+        let user_id = GaloyUserId::from(user_id);
+        self.app.remove_email_address(user_id).await?;
+
+        Ok(Response::new(RemoveEmailAddressResponse {}))
     }
 
     #[instrument(name = "notifications.handle_notification_event", skip_all, err)]
