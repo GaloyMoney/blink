@@ -18,6 +18,9 @@ interface INotificationsServiceService extends grpc.ServiceDefinition<grpc.Untyp
     updateUserLocale: INotificationsServiceService_IUpdateUserLocale;
     addPushDeviceToken: INotificationsServiceService_IAddPushDeviceToken;
     removePushDeviceToken: INotificationsServiceService_IRemovePushDeviceToken;
+    updateEmailAddress: INotificationsServiceService_IUpdateEmailAddress;
+    removeEmailAddress: INotificationsServiceService_IRemoveEmailAddress;
+    handleNotificationEvent: INotificationsServiceService_IHandleNotificationEvent;
 }
 
 interface INotificationsServiceService_IShouldSendNotification extends grpc.MethodDefinition<notifications_pb.ShouldSendNotificationRequest, notifications_pb.ShouldSendNotificationResponse> {
@@ -101,6 +104,33 @@ interface INotificationsServiceService_IRemovePushDeviceToken extends grpc.Metho
     responseSerialize: grpc.serialize<notifications_pb.RemovePushDeviceTokenResponse>;
     responseDeserialize: grpc.deserialize<notifications_pb.RemovePushDeviceTokenResponse>;
 }
+interface INotificationsServiceService_IUpdateEmailAddress extends grpc.MethodDefinition<notifications_pb.UpdateEmailAddressRequest, notifications_pb.UpdateEmailAddressResponse> {
+    path: "/services.notifications.v1.NotificationsService/UpdateEmailAddress";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<notifications_pb.UpdateEmailAddressRequest>;
+    requestDeserialize: grpc.deserialize<notifications_pb.UpdateEmailAddressRequest>;
+    responseSerialize: grpc.serialize<notifications_pb.UpdateEmailAddressResponse>;
+    responseDeserialize: grpc.deserialize<notifications_pb.UpdateEmailAddressResponse>;
+}
+interface INotificationsServiceService_IRemoveEmailAddress extends grpc.MethodDefinition<notifications_pb.RemoveEmailAddressRequest, notifications_pb.RemoveEmailAddressResponse> {
+    path: "/services.notifications.v1.NotificationsService/RemoveEmailAddress";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<notifications_pb.RemoveEmailAddressRequest>;
+    requestDeserialize: grpc.deserialize<notifications_pb.RemoveEmailAddressRequest>;
+    responseSerialize: grpc.serialize<notifications_pb.RemoveEmailAddressResponse>;
+    responseDeserialize: grpc.deserialize<notifications_pb.RemoveEmailAddressResponse>;
+}
+interface INotificationsServiceService_IHandleNotificationEvent extends grpc.MethodDefinition<notifications_pb.HandleNotificationEventRequest, notifications_pb.HandleNotificationEventResponse> {
+    path: "/services.notifications.v1.NotificationsService/HandleNotificationEvent";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<notifications_pb.HandleNotificationEventRequest>;
+    requestDeserialize: grpc.deserialize<notifications_pb.HandleNotificationEventRequest>;
+    responseSerialize: grpc.serialize<notifications_pb.HandleNotificationEventResponse>;
+    responseDeserialize: grpc.deserialize<notifications_pb.HandleNotificationEventResponse>;
+}
 
 export const NotificationsServiceService: INotificationsServiceService;
 
@@ -114,6 +144,9 @@ export interface INotificationsServiceServer extends grpc.UntypedServiceImplemen
     updateUserLocale: grpc.handleUnaryCall<notifications_pb.UpdateUserLocaleRequest, notifications_pb.UpdateUserLocaleResponse>;
     addPushDeviceToken: grpc.handleUnaryCall<notifications_pb.AddPushDeviceTokenRequest, notifications_pb.AddPushDeviceTokenResponse>;
     removePushDeviceToken: grpc.handleUnaryCall<notifications_pb.RemovePushDeviceTokenRequest, notifications_pb.RemovePushDeviceTokenResponse>;
+    updateEmailAddress: grpc.handleUnaryCall<notifications_pb.UpdateEmailAddressRequest, notifications_pb.UpdateEmailAddressResponse>;
+    removeEmailAddress: grpc.handleUnaryCall<notifications_pb.RemoveEmailAddressRequest, notifications_pb.RemoveEmailAddressResponse>;
+    handleNotificationEvent: grpc.handleUnaryCall<notifications_pb.HandleNotificationEventRequest, notifications_pb.HandleNotificationEventResponse>;
 }
 
 export interface INotificationsServiceClient {
@@ -144,6 +177,15 @@ export interface INotificationsServiceClient {
     removePushDeviceToken(request: notifications_pb.RemovePushDeviceTokenRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemovePushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
     removePushDeviceToken(request: notifications_pb.RemovePushDeviceTokenRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemovePushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
     removePushDeviceToken(request: notifications_pb.RemovePushDeviceTokenRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemovePushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
+    updateEmailAddress(request: notifications_pb.UpdateEmailAddressRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateEmailAddressResponse) => void): grpc.ClientUnaryCall;
+    updateEmailAddress(request: notifications_pb.UpdateEmailAddressRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateEmailAddressResponse) => void): grpc.ClientUnaryCall;
+    updateEmailAddress(request: notifications_pb.UpdateEmailAddressRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateEmailAddressResponse) => void): grpc.ClientUnaryCall;
+    removeEmailAddress(request: notifications_pb.RemoveEmailAddressRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemoveEmailAddressResponse) => void): grpc.ClientUnaryCall;
+    removeEmailAddress(request: notifications_pb.RemoveEmailAddressRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemoveEmailAddressResponse) => void): grpc.ClientUnaryCall;
+    removeEmailAddress(request: notifications_pb.RemoveEmailAddressRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemoveEmailAddressResponse) => void): grpc.ClientUnaryCall;
+    handleNotificationEvent(request: notifications_pb.HandleNotificationEventRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.HandleNotificationEventResponse) => void): grpc.ClientUnaryCall;
+    handleNotificationEvent(request: notifications_pb.HandleNotificationEventRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.HandleNotificationEventResponse) => void): grpc.ClientUnaryCall;
+    handleNotificationEvent(request: notifications_pb.HandleNotificationEventRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.HandleNotificationEventResponse) => void): grpc.ClientUnaryCall;
 }
 
 export class NotificationsServiceClient extends grpc.Client implements INotificationsServiceClient {
@@ -175,4 +217,13 @@ export class NotificationsServiceClient extends grpc.Client implements INotifica
     public removePushDeviceToken(request: notifications_pb.RemovePushDeviceTokenRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemovePushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
     public removePushDeviceToken(request: notifications_pb.RemovePushDeviceTokenRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemovePushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
     public removePushDeviceToken(request: notifications_pb.RemovePushDeviceTokenRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemovePushDeviceTokenResponse) => void): grpc.ClientUnaryCall;
+    public updateEmailAddress(request: notifications_pb.UpdateEmailAddressRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateEmailAddressResponse) => void): grpc.ClientUnaryCall;
+    public updateEmailAddress(request: notifications_pb.UpdateEmailAddressRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateEmailAddressResponse) => void): grpc.ClientUnaryCall;
+    public updateEmailAddress(request: notifications_pb.UpdateEmailAddressRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.UpdateEmailAddressResponse) => void): grpc.ClientUnaryCall;
+    public removeEmailAddress(request: notifications_pb.RemoveEmailAddressRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemoveEmailAddressResponse) => void): grpc.ClientUnaryCall;
+    public removeEmailAddress(request: notifications_pb.RemoveEmailAddressRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemoveEmailAddressResponse) => void): grpc.ClientUnaryCall;
+    public removeEmailAddress(request: notifications_pb.RemoveEmailAddressRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.RemoveEmailAddressResponse) => void): grpc.ClientUnaryCall;
+    public handleNotificationEvent(request: notifications_pb.HandleNotificationEventRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.HandleNotificationEventResponse) => void): grpc.ClientUnaryCall;
+    public handleNotificationEvent(request: notifications_pb.HandleNotificationEventRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.HandleNotificationEventResponse) => void): grpc.ClientUnaryCall;
+    public handleNotificationEvent(request: notifications_pb.HandleNotificationEventRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.HandleNotificationEventResponse) => void): grpc.ClientUnaryCall;
 }
