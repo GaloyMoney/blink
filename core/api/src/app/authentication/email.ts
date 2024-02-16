@@ -26,6 +26,8 @@ export const addEmailToIdentity = async ({
   const emailRegistrationId = await authServiceEmail.sendEmailWithCode({ email })
   if (emailRegistrationId instanceof Error) return emailRegistrationId
 
+  await NotificationsService().updateEmailAddress({ userId, email })
+
   const user = await UsersRepository().findById(userId)
   if (user instanceof Error) return user
 
