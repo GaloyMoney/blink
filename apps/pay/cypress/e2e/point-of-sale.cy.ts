@@ -87,16 +87,17 @@ describe("Point of Sale", () => {
             const walletId = response.body.data.me.defaultAccount.defaultWalletId
             cy.log("Wallet ID:", walletId)
 
-            cy.sendInvoicePayment(paymentRequest, walletId, authToken).then(
-              (paymentResponse) => {
+            cy.sendInvoicePayment(paymentRequest, walletId, authToken)
+              .then((paymentResponse) => {
                 expect(paymentResponse.body.data.lnInvoicePaymentSend.status).to.equal(
                   "SUCCESS",
                 )
+              })
+              .then(() => {
                 cy.wait(3000)
                 cy.get("[data-testid=success-icon]").should("exist")
                 cy.get("[data-testid=success-icon]").should("be.visible")
-              },
-            )
+              })
           })
         })
       })
