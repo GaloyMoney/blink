@@ -2,6 +2,7 @@ import { AccountAlreadyHasEmailError } from "@/domain/authentication/errors"
 import { AuthWithEmailPasswordlessService } from "@/services/kratos"
 import { baseLogger } from "@/services/logger"
 import { UsersRepository } from "@/services/mongoose"
+import { NotificationsService } from "@/services/notifications"
 
 export const addEmailToIdentity = async ({
   email,
@@ -24,6 +25,8 @@ export const addEmailToIdentity = async ({
 
   const emailRegistrationId = await authServiceEmail.sendEmailWithCode({ email })
   if (emailRegistrationId instanceof Error) return emailRegistrationId
+
+  await NotificationsService().updateEmailAddress({ userId, email })
 
   const user = await UsersRepository().findById(userId)
   if (user instanceof Error) return user
@@ -73,6 +76,8 @@ export const removeEmail = async ({
     deletedEmails,
   })
   if (updatedUser instanceof Error) return updatedUser
+
+  await NotificationsService().removeEmailAddress({ userId })
 
   return user
 }
