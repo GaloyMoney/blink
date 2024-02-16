@@ -3,31 +3,10 @@
 Runs a program in a directory.
 """
 import argparse
+import json
 import os
 import subprocess
 import sys
-
-def merge_env_from_file(file_path):
-    # Shell command to source the .env file
-    if file_path and os.path.exists(file_path):
-        cmd = f'source {file_path} && env'
-    else:
-        cmd = f'env'
-
-    result = subprocess.run(cmd, capture_output=True, text=True, shell=True, executable="/bin/bash")
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr)
-
-    lines = result.stdout.strip().split('\n')
-    env_dict = {}
-    for line in lines:
-        if "=" in line:
-            key, value = line.split('=', 1)
-            env_dict[key] = value
-        elif key in env_dict:  # Handle multi-line values
-            env_dict[key] += "\n" + line
-
-    return env_dict
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
@@ -40,7 +19,7 @@ if __name__ == "__main__":
         help="Binary to execute program with",
     )
     parser.add_argument(
-        "--env-file",
+        "--env-json",
         help="Env file to load variables from",
     )
     parser.add_argument(
@@ -51,7 +30,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    env = merge_env_from_file(args.env_file)
+    env = os.environ.copy()
+    if (args.env_json):
+        with open(args.env_json, 'r') as file:
+            env_dict = json.load(file)
+        env = {**env, **env_dict}
 
     bin_args = args.args[1:] # ignore '--' separator
     if env.get("TEST"):
