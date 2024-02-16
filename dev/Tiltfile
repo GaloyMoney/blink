@@ -356,7 +356,7 @@ local_resource(
   ]
 )
 
-env_json = _buck2_dep_inputs("//dev:env.json")[0]
+env_json = _buck2_dep_inputs("//dev:serve_env")[0]
 core_serve_env = read_json(env_json)
 
 callback_target = "//bats/helpers/callback:run"

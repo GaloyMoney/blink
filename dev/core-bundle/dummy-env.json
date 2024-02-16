@@ -1,0 +1,19 @@
+{
+    "HELMREVISION": "dummy",
+    "KRATOS_PG_CON": "pg://dummy",
+    "OATHKEEPER_DECISION_ENDPOINT": "http://dummy",
+    "NETWORK": "regtest",
+    "TWILIO_ACCOUNT_SID": "dummy",
+    "TWILIO_AUTH_TOKEN": "dummy",
+    "TWILIO_VERIFY_SERVICE_ID": "dummy",
+    "KRATOS_PUBLIC_API": "http://dummy",
+    "KRATOS_ADMIN_API": "http://dummy",
+    "KRATOS_MASTER_USER_PASSWORD": "dummy",
+    "BRIA_HOST": "dummy",
+    "BRIA_API_KEY": "dummy",
+    "NOTIFICATIONS_HOST": "dummy",
+    "MONGODB_CON": "mongodb://dummy",
+    "REDIS_MASTER_NAME": "dummy",
+    "REDIS_PASSWORD": "dummy",
+    "REDIS_0_DNS": "dummy"
+}
