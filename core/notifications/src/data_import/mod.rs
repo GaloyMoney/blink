@@ -27,7 +27,7 @@ pub async fn import_email_addresses(
         query_builder.push("ORDER BY traits->>'email' LIMIT 1000;");
         let query = query_builder.build();
         let res = query.fetch_all(&pool).await?;
-        if res.len() == 0 {
+        if res.is_empty() {
             break;
         }
         for row in res {
