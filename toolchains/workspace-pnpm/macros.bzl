@@ -634,9 +634,9 @@ def _npm_test_impl(
         cmd_args(program_run_info),
     ])
 
-    if hasattr(ctx.attrs, 'env_json_target'):
-        run_cmd_args.add("--env-json-target")
-        run_cmd_args.add(ctx.attrs.env_json_target)
+    if hasattr(ctx.attrs, 'env_json'):
+        run_cmd_args.add("--env-json")
+        run_cmd_args.add(ctx.attrs.env_json)
 
     run_cmd_args.add("--")
     run_cmd_args.add(program_args)
@@ -1165,8 +1165,8 @@ _jest_test = rule(
             default = False,
             doc = "Run all tests serially in the current process"
         ),
-        "env_json_target": attrs.option(
-            attrs.string(),
+        "env_json": attrs.option(
+            attrs.source(),
             doc = """buck2 target for json file with env variables required.""",
             default = None,
         ),

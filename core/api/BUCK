@@ -182,7 +182,7 @@ jest_test(
     name = "unit-tests",
     srcs = [":src"] + [":test_src"] + glob(["galoy.yaml"]),
     config_file = "test/unit/jest.config.js",
-    env_json_target = "//dev:env.json",
+    env_json = "//dev:env.json",
     env = {
         "LOGLEVEL": "warn",
     }
@@ -194,7 +194,7 @@ jest_test(
     prod_deps_srcs = prod_deps_srcs,
     config_file = "test/integration/jest.config.js",
     run_serially = True,
-    env_json_target = "//dev:env.json",
+    env_json = "//dev:env.json",
     env = {
         "LOGLEVEL": "warn",
     }
