@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
-pub struct MongoImportConfig {
+pub struct KratosImportConfig {
     pub execute_import: bool,
-    pub connection: Option<String>,
+    pub pg_con: Option<String>,
 }
