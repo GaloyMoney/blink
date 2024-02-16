@@ -15,6 +15,7 @@ use error::*;
 #[derive(Clone)]
 pub struct SmtpClient {
     client: AsyncSmtpTransport<Tokio1Executor>,
+    from_email: String,
 }
 
 impl SmtpClient {
@@ -24,12 +25,15 @@ impl SmtpClient {
             AsyncSmtpTransport::<Tokio1Executor>::starttls_relay("smtp.gmail.com")?
                 .credentials(creds)
                 .build();
-        Ok(Self { client })
+        Ok(Self {
+            client,
+            from_email: config.from_email,
+        })
     }
 
     pub async fn send_email(&self, msg: LocalizedMessage) -> Result<(), SmtpError> {
         let email = Message::builder()
-            .from(Mailbox::new(None, "some-email".parse()?))
+            .from(Mailbox::new(None, self.from_email.parse()?))
             .to(Mailbox::new(None, "some-email".parse()?))
             .subject(msg.title)
             .body(msg.body)?;
