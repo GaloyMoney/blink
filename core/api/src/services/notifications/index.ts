@@ -13,6 +13,8 @@ import {
   EnableNotificationChannelRequest,
   GetNotificationSettingsRequest,
   RemovePushDeviceTokenRequest,
+  UpdateEmailAddressRequest,
+  RemoveEmailAddressRequest,
   UpdateUserLocaleRequest,
 } from "./proto/notifications_pb"
 
@@ -478,6 +480,49 @@ export const NotificationsService = (): INotificationsService => {
     }
   }
 
+  const updateEmailAddress = async ({
+    userId,
+    email,
+  }: {
+    userId: UserId
+    email: EmailAddress
+  }): Promise<true | NotificationsServiceError> => {
+    try {
+      const request = new UpdateEmailAddressRequest()
+      request.setUserId(userId)
+      request.setEmailAddress(email)
+
+      await notificationsGrpc.updateEmailAddress(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      return true
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
+
+  const removeEmailAddress = async ({
+    userId,
+  }: {
+    userId: UserId
+  }): Promise<true | NotificationsServiceError> => {
+    try {
+      const request = new RemoveEmailAddressRequest()
+      request.setUserId(userId)
+
+      await notificationsGrpc.removeEmailAddress(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      return true
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err)
+    }
+  }
+
   const updateUserLanguage = async ({
     userId,
     language,
@@ -653,6 +698,8 @@ export const NotificationsService = (): INotificationsService => {
         enableNotificationCategory,
         disableNotificationCategory,
         addPushDeviceToken,
+        updateEmailAddress,
+        removeEmailAddress,
         removePushDeviceToken,
       },
     }),

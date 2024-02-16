@@ -107,4 +107,11 @@ interface INotificationsService {
     userId: UserId
     deviceToken: DeviceToken
   }): Promise<NotificationSettings | NotificationsServiceError>
+
+  updateEmailAddress(args: {
+    userId: UserId
+    email: EmailAddress
+  }): Promise<true | NotificationsServiceError>
+
+  removeEmailAddress(args: { userId: UserId }): Promise<true | NotificationsServiceError>
 }
