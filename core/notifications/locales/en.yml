@@ -15,12 +15,16 @@ circle_threshold_reached.inner.body: "You have welcomed %{threshold} people to B
 circle_threshold_reached.outer.title: "Outer Circle gains 💪"
 circle_threshold_reached.outer.body: "Your Outer Circle reached %{threshold} people. You are driving Bitcoin adoption!"
 
-identity_verification_approved.title: "Your Identity has been verified!"
+identity_verification_approved.title: "Your identity has been verified!"
 identity_verification_approved.body: "The documents for your verification have been processed."
 
 identity_verification_declined.reason.documents_not_clear: "the uploaded documents were not clear"
 identity_verification_declined.reason.photo_not_clear: "the picture you submitted was not clear"
-identity_verification_declined.title: "Your Identity could not be verified!"
+identity_verification_declined.reason.documents_do_not_match: "the documents you submitted did not match your selfie and/or the information you provided"
+identity_verification_declined.reason.documents_expired: "the documents you submitted were expired"
+identity_verification_declined.reason.documents_not_supported: "the documents you submitted are not supported"
+identity_verification_declined.reason.other: "an error occurred, please contact support"
+identity_verification_declined.title: "Your identity could not be verified!"
 identity_verification_declined.body: "We were not able to process your documents because %{reason}."
 
 identity_verification_review_pending.title: "Your verification is in process!"

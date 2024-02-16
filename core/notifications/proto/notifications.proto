@@ -170,6 +170,10 @@ message IdentityVerificationApproved {
 enum DeclinedReason {
   DOCUMENTS_NOT_CLEAR = 0;
   VERIFICATION_PHOTO_NOT_CLEAR = 1;
+  DOCUMENTS_NOT_SUPPORTED = 2;
+  DOCUMENTS_EXPIRED = 3;
+  DOCUMENTS_DO_NOT_MATCH = 4;
+  OTHER = 5;
 }
 
 message IdentityVerificationDeclined {
