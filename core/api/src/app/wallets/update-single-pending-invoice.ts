@@ -1,6 +1,11 @@
 import { getTransactionForWalletByJournalId } from "./get-transaction-by-journal-id"
 
-import { declineHeldInvoice } from "./decline-single-pending-invoice"
+import { processPendingInvoiceForDecline } from "./decline-single-pending-invoice"
+
+import {
+  ProcessPendingInvoiceResult,
+  ProcessedReason,
+} from "./process-pending-invoice-result"
 
 import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@/app/prices"
@@ -31,6 +36,7 @@ import { DealerPriceService } from "@/services/dealer-price"
 import { NotificationsService } from "@/services/notifications"
 
 import { toDisplayBaseAmount } from "@/domain/payments"
+import { LockServiceError } from "@/domain/lock"
 
 export const updatePendingInvoice = wrapAsyncToRunInSpan({
   namespace: "app.invoices",
@@ -42,133 +48,149 @@ export const updatePendingInvoice = wrapAsyncToRunInSpan({
     walletInvoice: WalletInvoiceWithOptionalLnInvoice
     logger: Logger
   }): Promise<boolean | ApplicationError> => {
-    const result = await updatePendingInvoiceBeforeFinally({
+    const walletInvoices = WalletInvoicesRepository()
+    const { paymentHash, recipientWalletDescriptor: recipientInvoiceWalletDescriptor } =
+      walletInvoice
+
+    const pendingInvoiceLogger = logger.child({
+      hash: paymentHash,
+      walletId: recipientInvoiceWalletDescriptor.id,
+      topic: "payment",
+      protocol: "lightning",
+      transactionType: "receipt",
+      onUs: false,
+    })
+
+    let result = await processPendingInvoice({
       walletInvoice,
       logger,
     })
-    if (result) {
-      if (!walletInvoice.paid) {
-        const walletInvoices = WalletInvoicesRepository()
-        const invoicePaid = await walletInvoices.markAsPaid(walletInvoice.paymentHash)
-        if (
-          invoicePaid instanceof Error &&
-          !(invoicePaid instanceof CouldNotFindWalletInvoiceError)
-        ) {
-          return invoicePaid
-        }
+
+    if (result.isProcessed) {
+      const processingCompletedInvoice =
+        await walletInvoices.markAsProcessingCompleted(paymentHash)
+      if (processingCompletedInvoice instanceof Error) {
+        pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
+        recordExceptionInCurrentSpan({
+          error: processingCompletedInvoice,
+          level: processingCompletedInvoice.level,
+        })
+
+        result = ProcessPendingInvoiceResult.paidWithError(processingCompletedInvoice) // Marking this here temporarily to enforce status quo
       }
     }
-    return result
+
+    if (result.isPaid && !walletInvoice.paid) {
+      const invoicePaid = await walletInvoices.markAsPaid(walletInvoice.paymentHash)
+      if (
+        invoicePaid instanceof Error &&
+        !(invoicePaid instanceof CouldNotFindWalletInvoiceError)
+      ) {
+        return invoicePaid
+      }
+    }
+
+    const error = "error" in result && result.error
+    return !(result.isPaid || result.isProcessed)
+      ? false
+      : result.isProcessed
+        ? false
+        : error
+          ? error
+          : result.isPaid
   },
 })
 
-const updatePendingInvoiceBeforeFinally = async ({
+const processPendingInvoice = async ({
   walletInvoice,
-  logger,
+  logger: pendingInvoiceLogger,
 }: {
   walletInvoice: WalletInvoiceWithOptionalLnInvoice
   logger: Logger
-}): Promise<boolean | ApplicationError> => {
-  addAttributesToCurrentSpan({
-    paymentHash: walletInvoice.paymentHash,
-    pubkey: walletInvoice.pubkey,
-  })
-
-  const walletInvoicesRepo = WalletInvoicesRepository()
-
+}): Promise<ProcessPendingInvoiceResult> => {
   const {
     pubkey,
     paymentHash,
     recipientWalletDescriptor: recipientInvoiceWalletDescriptor,
   } = walletInvoice
-
   addAttributesToCurrentSpan({
+    paymentHash,
+    pubkey,
     "invoices.originalRecipient": JSON.stringify(recipientInvoiceWalletDescriptor),
   })
 
-  const pendingInvoiceLogger = logger.child({
-    hash: paymentHash,
-    walletId: recipientInvoiceWalletDescriptor.id,
-    topic: "payment",
-    protocol: "lightning",
-    transactionType: "receipt",
-    onUs: false,
-  })
-
+  // Fetch invoice from lnd service
   const lndService = LndService()
   if (lndService instanceof Error) {
     pendingInvoiceLogger.error("Unable to initialize LndService")
     recordExceptionInCurrentSpan({ error: lndService })
-    return false
+    return ProcessPendingInvoiceResult.err(lndService)
   }
+
   const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
   if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
-    const processingCompletedInvoice =
-      await walletInvoicesRepo.markAsProcessingCompleted(paymentHash)
-    if (processingCompletedInvoice instanceof Error) {
-      pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
-      return processingCompletedInvoice
-    }
-    return false
+    return ProcessPendingInvoiceResult.processedOnly(ProcessedReason.InvoiceNotFound)
   }
-  if (lnInvoiceLookup instanceof Error) return lnInvoiceLookup
+  if (lnInvoiceLookup instanceof Error) {
+    return ProcessPendingInvoiceResult.paidWithError(lnInvoiceLookup)
+  }
 
+  // Check paid after invoice has been successfully fetched
   if (walletInvoice.paid) {
     pendingInvoiceLogger.info("invoice has already been processed")
-    return true
+    return ProcessPendingInvoiceResult.paidOnly()
   }
 
+  // Check status of invoice fetched from lnd service
+  const { isCanceled, isHeld, isSettled } = lnInvoiceLookup
+  if (isCanceled) {
+    pendingInvoiceLogger.info("invoice has been canceled")
+    return ProcessPendingInvoiceResult.processedOnly(ProcessedReason.InvoiceCanceled)
+  }
+  if (!isHeld && !isSettled) {
+    pendingInvoiceLogger.info("invoice has not been paid yet")
+    return ProcessPendingInvoiceResult.notPaid()
+  }
+
+  // Check amount from invoice fetched from lnd service
   const {
     lnInvoice: { description },
     roundedDownReceived: uncheckedRoundedDownReceived,
   } = lnInvoiceLookup
-
-  if (lnInvoiceLookup.isCanceled) {
-    pendingInvoiceLogger.info("invoice has been canceled")
-    const processingCompletedInvoice =
-      await walletInvoicesRepo.markAsProcessingCompleted(paymentHash)
-    if (processingCompletedInvoice instanceof Error) {
-      pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
-      return processingCompletedInvoice
-    }
-    return false
-  }
-
-  if (!lnInvoiceLookup.isHeld && !lnInvoiceLookup.isSettled) {
-    pendingInvoiceLogger.info("invoice has not been paid yet")
-    return false
-  }
-
-  // TODO: validate roundedDownReceived as user input
   const roundedDownReceived = checkedToSats(uncheckedRoundedDownReceived)
   if (roundedDownReceived instanceof Error) {
     recordExceptionInCurrentSpan({
       error: roundedDownReceived,
       level: roundedDownReceived.level,
     })
-    return declineHeldInvoice({
+    return processPendingInvoiceForDecline({
       walletInvoice,
-      logger,
+      logger: pendingInvoiceLogger,
     })
   }
-
   const receivedBtc = paymentAmountFromNumber({
     amount: roundedDownReceived,
     currency: WalletCurrency.Btc,
   })
-  if (receivedBtc instanceof Error) return receivedBtc
+  if (receivedBtc instanceof Error) {
+    return ProcessPendingInvoiceResult.paidWithError(receivedBtc)
+  }
 
-  const lockService = LockService()
-  return lockService.lockPaymentHash(paymentHash, async () =>
+  // Continue in lock
+  const result = await LockService().lockPaymentHash(paymentHash, async () =>
     lockedUpdatePendingInvoiceSteps({
       recipientWalletId: recipientInvoiceWalletDescriptor.id,
       paymentHash,
       receivedBtc,
       description,
       isSettledInLnd: lnInvoiceLookup.isSettled,
-      logger,
+      logger: pendingInvoiceLogger,
     }),
   )
+  if (result instanceof LockServiceError) {
+    return ProcessPendingInvoiceResult.err(result)
+  }
+  return result
 }
 
 const lockedUpdatePendingInvoiceSteps = async ({
@@ -185,28 +207,34 @@ const lockedUpdatePendingInvoiceSteps = async ({
   description: string
   isSettledInLnd: boolean
   logger: Logger
-}) => {
+}): Promise<ProcessPendingInvoiceResult> => {
   const walletInvoices = WalletInvoicesRepository()
 
   const walletInvoiceInsideLock = await walletInvoices.findByPaymentHash(paymentHash)
   if (walletInvoiceInsideLock instanceof CouldNotFindError) {
     logger.error({ paymentHash }, "WalletInvoice doesn't exist")
-    return false
+    return ProcessPendingInvoiceResult.err(walletInvoiceInsideLock)
   }
-  if (walletInvoiceInsideLock instanceof Error) return walletInvoiceInsideLock
+  if (walletInvoiceInsideLock instanceof Error) {
+    return ProcessPendingInvoiceResult.paidWithError(walletInvoiceInsideLock)
+  }
   if (walletInvoiceInsideLock.paid) {
     logger.info("invoice has already been processed")
-    return true
+    return ProcessPendingInvoiceResult.paidOnly()
   }
 
   // Prepare metadata and record transaction
   const recipientInvoiceWallet = await WalletsRepository().findById(recipientWalletId)
-  if (recipientInvoiceWallet instanceof Error) return recipientInvoiceWallet
+  if (recipientInvoiceWallet instanceof Error) {
+    return ProcessPendingInvoiceResult.paidWithError(recipientInvoiceWallet)
+  }
   const { accountId: recipientAccountId } = recipientInvoiceWallet
 
   const accountWallets =
     await WalletsRepository().findAccountWalletsByAccountId(recipientAccountId)
-  if (accountWallets instanceof Error) return accountWallets
+  if (accountWallets instanceof Error) {
+    return ProcessPendingInvoiceResult.paidWithError(accountWallets)
+  }
 
   const receivedWalletInvoice = await WalletInvoiceReceiver({
     walletInvoice: walletInvoiceInsideLock,
@@ -216,7 +244,9 @@ const lockedUpdatePendingInvoiceSteps = async ({
     mid: { usdFromBtc: usdFromBtcMidPriceFn },
     hedgeBuyUsd: { usdFromBtc: DealerPriceService().getCentsFromSatsForImmediateBuy },
   })
-  if (receivedWalletInvoice instanceof Error) return receivedWalletInvoice
+  if (receivedWalletInvoice instanceof Error) {
+    return ProcessPendingInvoiceResult.paidWithError(receivedWalletInvoice)
+  }
 
   const {
     recipientWalletDescriptor,
@@ -231,12 +261,16 @@ const lockedUpdatePendingInvoiceSteps = async ({
   })
 
   const recipientAccount = await AccountsRepository().findById(recipientAccountId)
-  if (recipientAccount instanceof Error) return recipientAccount
+  if (recipientAccount instanceof Error) {
+    return ProcessPendingInvoiceResult.paidWithError(recipientAccount)
+  }
   const { displayCurrency: recipientDisplayCurrency } = recipientAccount
   const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
     currency: recipientDisplayCurrency,
   })
-  if (displayPriceRatio instanceof Error) return displayPriceRatio
+  if (displayPriceRatio instanceof Error) {
+    return ProcessPendingInvoiceResult.paidWithError(displayPriceRatio)
+  }
 
   const { displayAmount: displayPaymentAmount, displayFee } = DisplayAmountsConverter(
     displayPriceRatio,
@@ -276,7 +310,7 @@ const lockedUpdatePendingInvoiceSteps = async ({
     if (lndService instanceof Error) {
       logger.error("Unable to initialize LndService")
       recordExceptionInCurrentSpan({ error: lndService })
-      return false
+      return ProcessPendingInvoiceResult.err(lndService)
     }
     const invoiceSettled = await lndService.settleInvoice({
       pubkey: walletInvoiceInsideLock.pubkey,
@@ -285,12 +319,14 @@ const lockedUpdatePendingInvoiceSteps = async ({
     if (invoiceSettled instanceof Error) {
       logger.error({ paymentHash }, "Unable to settleInvoice")
       recordExceptionInCurrentSpan({ error: invoiceSettled })
-      return false
+      return ProcessPendingInvoiceResult.err(invoiceSettled)
     }
   }
 
   const invoicePaid = await walletInvoices.markAsPaid(paymentHash)
-  if (invoicePaid instanceof Error) return invoicePaid
+  if (invoicePaid instanceof Error) {
+    return ProcessPendingInvoiceResult.paidWithError(invoicePaid)
+  }
 
   //TODO: add displayCurrency: displayPaymentAmount.currency,
   const journal = await LedgerFacade.recordReceiveOffChain({
@@ -311,17 +347,23 @@ const lockedUpdatePendingInvoiceSteps = async ({
     additionalCreditMetadata: creditAccountAdditionalMetadata,
     additionalInternalMetadata: internalAccountsAdditionalMetadata,
   })
-  if (journal instanceof Error) return journal
+  if (journal instanceof Error) {
+    return ProcessPendingInvoiceResult.paidWithError(journal)
+  }
 
   // Prepare and send notification
   const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
-  if (recipientUser instanceof Error) return recipientUser
+  if (recipientUser instanceof Error) {
+    return ProcessPendingInvoiceResult.paidWithError(recipientUser)
+  }
 
   const walletTransaction = await getTransactionForWalletByJournalId({
     walletId: recipientWalletDescriptor.id,
     journalId: journal.journalId,
   })
-  if (walletTransaction instanceof Error) return walletTransaction
+  if (walletTransaction instanceof Error) {
+    return ProcessPendingInvoiceResult.paidWithError(walletTransaction)
+  }
 
   const result = await NotificationsService().sendTransaction({
     recipient: {
@@ -340,5 +382,5 @@ const lockedUpdatePendingInvoiceSteps = async ({
     })
   }
 
-  return true
+  return ProcessPendingInvoiceResult.paidOnly()
 }
