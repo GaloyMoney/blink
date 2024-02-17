@@ -112,6 +112,7 @@ local_resource(
     allow_parallel = True,
     resource_deps = [
         "api",
+        "api-ws-server"
     ],
     links = [
         link("http://localhost:3002", "pay"),
