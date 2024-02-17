@@ -63,7 +63,7 @@ const ApiKeyCreate = ({ defaultWalletId }: Prop) => {
     router.refresh()
   }
 
-  const handelBtcPayCopy = () => {
+  const handleBtcPayCopy = () => {
     setBtcPayCopied(true)
     setTimeout(() => {
       setBtcPayCopied(false)
@@ -168,7 +168,7 @@ const ApiKeyCreate = ({ defaultWalletId }: Prop) => {
                     justifyContent: "center",
                     alignItems: "center",
                   }}
-                  onClick={handelBtcPayCopy}
+                  onClick={handleBtcPayCopy}
                 >
                   Copy GraphQl settings for BTCPay server
                 </Button>
