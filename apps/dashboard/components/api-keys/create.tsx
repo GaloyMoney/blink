@@ -31,11 +31,16 @@ import FormSubmitButton from "../form-submit-button"
 import { createApiKeyServerAction } from "@/app/api-keys/server-actions"
 import { ApiKeyResponse } from "@/app/api-keys/api-key.types"
 
-const ApiKeyCreate = () => {
+type Prop = {
+  defaultWalletId: string | undefined
+}
+
+const ApiKeyCreate = ({ defaultWalletId }: Prop) => {
   const router = useRouter()
 
   const [open, setOpen] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [apiKeyCopied, setApiKeyCopied] = useState(false)
+  const [btcPayCopied, setBtcPayCopied] = useState(false)
   const [state, formAction] = useFormState<ApiKeyResponse, FormData>(
     createApiKeyServerAction,
     {
@@ -56,6 +61,16 @@ const ApiKeyCreate = () => {
     state.responsePayload = null
     console.log("Modal has been closed")
     router.refresh()
+  }
+
+  const handleBtcPayCopy = () => {
+    setBtcPayCopied(true)
+    setTimeout(() => {
+      setBtcPayCopied(false)
+    }, 2000)
+    navigator.clipboard.writeText(
+      `type=blink;server=https://api.blink.sv/graphql;api-key=blink_${state?.responsePayload?.apiKeySecret};wallet-id=${defaultWalletId}`,
+    )
   }
 
   return (
@@ -100,32 +115,32 @@ const ApiKeyCreate = () => {
                 sx={{
                   maxWidth: "20em",
                   display: "flex",
-                  flexDirection: "row",
                   alignItems: "center",
                   width: "100%",
                   columnGap: 2,
                   backgroundColor: "neutral.solidDisabledBg",
-                  padding: "0.6em",
+                  padding: "0.4em",
                   borderRadius: "0.5em",
+                  wordBreak: "break-all",
                 }}
               >
                 <Typography
                   sx={{
-                    overflow: "scroll",
+                    fontSize: "0.82em",
                   }}
                   fontFamily="monospace"
                 >
                   {state?.responsePayload?.apiKeySecret}
                 </Typography>
                 <Tooltip
-                  sx={{ cursor: "pointer" }}
-                  open={copied}
+                  sx={{ cursor: "pointer", position: "relative", fontSize: "1.1em" }}
+                  open={apiKeyCopied}
                   title="Copied to Clipboard"
                   variant="plain"
                   onClick={() => {
-                    setCopied(true)
+                    setApiKeyCopied(true)
                     setTimeout(() => {
-                      setCopied(false)
+                      setApiKeyCopied(false)
                     }, 2000)
                     navigator.clipboard.writeText(
                       state?.responsePayload?.apiKeySecret ?? "",
@@ -135,10 +150,33 @@ const ApiKeyCreate = () => {
                   <CopyIcon />
                 </Tooltip>
               </Box>
+              <Tooltip
+                sx={{
+                  cursor: "pointer",
+                  position: "absolute",
+                }}
+                open={btcPayCopied}
+                title="Copied to Clipboard"
+                variant="plain"
+              >
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  sx={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                  onClick={handleBtcPayCopy}
+                >
+                  Copy connection settings for BTCPay server
+                </Button>
+              </Tooltip>
+
               <Typography
                 sx={{
                   p: "1em",
-                  width: "100%",
                   borderRadius: "0.5em",
                 }}
                 variant="outlined"
