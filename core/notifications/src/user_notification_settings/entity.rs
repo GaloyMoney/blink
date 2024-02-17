@@ -37,6 +37,12 @@ pub enum UserNotificationSettingsEvent {
     PushDeviceTokenRemoved {
         token: PushDeviceToken,
     },
+    EmailAddressAdded {
+        addr: GaloyEmailAddress,
+    },
+    EmailAddressRemoved {
+        addr: GaloyEmailAddress,
+    },
 }
 
 impl EntityEvent for UserNotificationSettingsEvent {
@@ -209,6 +215,40 @@ impl UserNotificationSettings {
 
         self.events
             .push(UserNotificationSettingsEvent::PushDeviceTokenRemoved { token })
+    }
+
+    pub fn email_address(&self) -> Option<GaloyEmailAddress> {
+        self.events.iter().fold(None, |mut acc, event| {
+            match event {
+                UserNotificationSettingsEvent::EmailAddressAdded { addr } => {
+                    acc = Some(addr.clone());
+                }
+                UserNotificationSettingsEvent::EmailAddressRemoved { .. } => {
+                    acc = None;
+                }
+                _ => (),
+            }
+            acc
+        })
+    }
+
+    pub fn update_email_address(&mut self, addr: GaloyEmailAddress) {
+        match self.email_address() {
+            Some(existing) if existing == addr => return,
+            None => (),
+            Some(addr) => self
+                .events
+                .push(UserNotificationSettingsEvent::EmailAddressRemoved { addr }),
+        }
+        self.events
+            .push(UserNotificationSettingsEvent::EmailAddressAdded { addr });
+    }
+
+    pub fn remove_email_address(&mut self) {
+        if let Some(addr) = self.email_address() {
+            self.events
+                .push(UserNotificationSettingsEvent::EmailAddressRemoved { addr })
+        }
     }
 }
 
@@ -384,5 +424,23 @@ mod tests {
             settings.push_device_tokens(),
             HashSet::from([PushDeviceToken::from("token2".to_string())])
         );
+    }
+
+    #[test]
+    fn can_update_and_remove_emails() {
+        let events = initial_events();
+        let mut settings = UserNotificationSettings::try_from(events).expect("Could not hydrate");
+        assert_eq!(settings.email_address(), None);
+
+        let addr = GaloyEmailAddress::from("email@test.com".to_string());
+        settings.update_email_address(addr.clone());
+        assert_eq!(settings.email_address(), Some(addr));
+
+        let addr = GaloyEmailAddress::from("email-2@test.com".to_string());
+        settings.update_email_address(addr.clone());
+        assert_eq!(settings.email_address(), Some(addr));
+
+        settings.remove_email_address();
+        assert_eq!(settings.email_address(), None);
     }
 }

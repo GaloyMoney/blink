@@ -7,7 +7,7 @@ use tracing::instrument;
 
 use job_executor::JobExecutor;
 
-use crate::executor::Executor;
+use crate::push_executor::PushExecutor;
 
 use error::JobError;
 
@@ -15,7 +15,7 @@ use send_push_notification::SendPushNotificationData;
 
 pub async fn start_job_runner(
     pool: &sqlx::PgPool,
-    executor: Executor,
+    executor: PushExecutor,
 ) -> Result<JobRunnerHandle, JobError> {
     let mut registry = JobRegistry::new(&[send_push_notification]);
     registry.set_context(executor);
@@ -29,7 +29,7 @@ pub async fn start_job_runner(
 )]
 async fn send_push_notification(
     mut current_job: CurrentJob,
-    executor: Executor,
+    executor: PushExecutor,
 ) -> Result<(), JobError> {
     JobExecutor::builder(&mut current_job)
         .build()

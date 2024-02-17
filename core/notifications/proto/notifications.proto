@@ -14,6 +14,8 @@ service NotificationsService {
   rpc UpdateUserLocale (UpdateUserLocaleRequest) returns (UpdateUserLocaleResponse) {}
   rpc AddPushDeviceToken (AddPushDeviceTokenRequest) returns (AddPushDeviceTokenResponse) {}
   rpc RemovePushDeviceToken (RemovePushDeviceTokenRequest) returns (RemovePushDeviceTokenResponse) {}
+  rpc UpdateEmailAddress (UpdateEmailAddressRequest) returns (UpdateEmailAddressResponse) {}
+  rpc RemoveEmailAddress (RemoveEmailAddressRequest) returns (RemoveEmailAddressResponse) {}
   rpc HandleNotificationEvent (HandleNotificationEventRequest) returns (HandleNotificationEventResponse) {}
 }
 
@@ -122,6 +124,19 @@ message RemovePushDeviceTokenRequest {
 message RemovePushDeviceTokenResponse {
   NotificationSettings notification_settings = 1;
 }
+
+message UpdateEmailAddressRequest {
+  string user_id = 1;
+  string email_address = 2;
+}
+
+message UpdateEmailAddressResponse { }
+
+message RemoveEmailAddressRequest {
+  string user_id = 1;
+}
+
+message RemoveEmailAddressResponse { }
 
 message HandleNotificationEventRequest {
   NotificationEvent event = 1;
