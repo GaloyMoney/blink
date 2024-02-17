@@ -26,6 +26,7 @@ export default async function Home() {
   const activeKeys = keys.filter(({ expired, revoked }) => !expired && !revoked)
   const expiredKeys = keys.filter(({ expired }) => expired)
   const revokedKeys = keys.filter(({ revoked }) => revoked)
+  const defaultWalletId = session.userData.data.me?.defaultAccount.id
 
   return (
     <ContentContainer>
@@ -55,7 +56,7 @@ export default async function Home() {
             Your API Keys that can be used to access the{" "}
             <Link href="https://dev.blink.sv/">Blink API</Link>
           </Typography>
-          <ApiKeyCreate />
+          <ApiKeyCreate defaultWalletId={defaultWalletId} />
         </Box>
         <Typography fontSize={17}>
           Our team will never ask for the API keys. Anyone with access to the key with
