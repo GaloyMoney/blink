@@ -170,7 +170,7 @@ const ApiKeyCreate = ({ defaultWalletId }: Prop) => {
                   }}
                   onClick={handleBtcPayCopy}
                 >
-                  Copy GraphQl settings for BTCPay server
+                  Copy connection settings for BTCPay server
                 </Button>
               </Tooltip>
 
