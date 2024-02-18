@@ -6,4 +6,5 @@ pub struct SmtpConfig {
     #[serde(default)]
     pub password: String,
     pub from_email: String,
+    pub relay: String,
 }

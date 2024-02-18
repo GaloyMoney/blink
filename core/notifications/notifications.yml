@@ -14,5 +14,6 @@ app:
       username: ""
       password: ""
       from_email: ""
+      relay: ""
 # kratos_import:
 #   execute_import: true

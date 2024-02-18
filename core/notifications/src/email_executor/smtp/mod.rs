@@ -7,7 +7,7 @@ use lettre::{
     AsyncSmtpTransport, AsyncTransport, Tokio1Executor,
 };
 
-use crate::messages::LocalizedMessage;
+use crate::{messages::LocalizedMessage, primitives::GaloyEmailAddress};
 
 pub use config::*;
 use error::*;
@@ -22,7 +22,7 @@ impl SmtpClient {
     pub fn init(config: SmtpConfig) -> Result<Self, SmtpError> {
         let creds = Credentials::new(config.username, config.password);
         let client: AsyncSmtpTransport<Tokio1Executor> =
-            AsyncSmtpTransport::<Tokio1Executor>::starttls_relay("smtp.gmail.com")?
+            AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(&config.relay)?
                 .credentials(creds)
                 .build();
         Ok(Self {
@@ -31,10 +31,14 @@ impl SmtpClient {
         })
     }
 
-    pub async fn send_email(&self, msg: LocalizedMessage) -> Result<(), SmtpError> {
+    pub async fn send_email(
+        &self,
+        msg: LocalizedMessage,
+        recipient_addr: GaloyEmailAddress,
+    ) -> Result<(), SmtpError> {
         let email = Message::builder()
             .from(Mailbox::new(None, self.from_email.parse()?))
-            .to(Mailbox::new(None, "some-email".parse()?))
+            .to(Mailbox::new(None, recipient_addr.into_inner().parse()?))
             .subject(msg.title)
             .body(msg.body)?;
         self.client.send(email).await?;
