@@ -8,6 +8,8 @@ pub enum FcmError {
     GoogleFcm1Error(google_fcm1::Error),
     #[error("FcmError: UnrecognizedDeviceToken: {0}")]
     UnrecognizedDeviceToken(google_fcm1::Error),
+    #[error("FcmError: InvalidDeviceToken: {0}")]
+    InvalidDeviceToken(google_fcm1::Error),
 }
 
 impl From<google_fcm1::Error> for FcmError {
@@ -31,10 +33,21 @@ impl From<google_fcm1::Error> for FcmError {
                             detail.get("errorCode").and_then(|e| e.as_str()) == Some("UNREGISTERED")
                         })
                     });
+                let message = value
+                    .get("error")
+                    .and_then(|e| e.get("message"))
+                    .and_then(|m| m.as_str());
 
-                if let (Some(code), Some(status)) = (code, status) {
+                if let (Some(code), Some(status), Some(msg)) = (code, status, message) {
                     if code == 404 && status == "NOT_FOUND" && is_unregistered {
                         return FcmError::UnrecognizedDeviceToken(err);
+                    } else if code == 400
+                        && status == "INVALID_ARGUMENT"
+                        && msg.contains(
+                            "The registration token is not a valid FCM registration token",
+                        )
+                    {
+                        return FcmError::InvalidDeviceToken(err);
                     }
                 }
                 FcmError::GoogleFcm1Error(err)
@@ -72,5 +85,26 @@ mod tests {
             converted_err,
             FcmError::UnrecognizedDeviceToken(_)
         ));
+    }
+
+    #[test]
+    fn invalid_device_token_err() {
+        let err_json = json!({
+            "error": {
+                "code": 400,
+                "message": "The registration token is not a valid FCM registration token",
+                "status": "INVALID_ARGUMENT",
+                "details": [
+                    {
+                        "@type": "type.googleapis.com/google.firebase.fcm.v1.FcmError",
+                        "errorCode": "INVALID_ARGUMENT"
+                    }
+                ]
+            }
+        });
+        let err = google_fcm1::Error::BadRequest(err_json);
+        let converted_err: FcmError = err.into();
+
+        assert!(matches!(converted_err, FcmError::InvalidDeviceToken(_)));
     }
 }
