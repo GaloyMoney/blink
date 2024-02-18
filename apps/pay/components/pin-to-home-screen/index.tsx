@@ -3,7 +3,7 @@ import { Image } from "react-bootstrap"
 
 import { getOS } from "../../lib/download"
 import { ACTIONS, ACTION_TYPE } from "../../app/reducer"
-import Modal from "../CustomModal/modal"
+import Modal from "../custom-modal/modal"
 
 import {
   chromeModalContent,
@@ -11,7 +11,7 @@ import {
   iosModalContent,
   mobileChromeModalContent,
 } from "./browser-modal-content"
-import styles from "./pinToHomescreen.module.css"
+import styles from "./pin-to-home-screen.module.css"
 
 interface Props {
   pinnedToHomeScreenModalVisible: boolean

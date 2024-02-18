@@ -10,7 +10,7 @@ import { gql, useQuery } from "@apollo/client"
 
 import { useRouter } from "next/navigation"
 
-import CurrencyDropdown from "../components/Currency/currency-dropdown"
+import CurrencyDropdown from "../components/currency/currency-dropdown"
 import { getClientSideGqlConfig } from "../config/config"
 
 const GET_NODE_STATS = gql`

@@ -10,10 +10,10 @@ import { gql } from "@apollo/client"
 
 import { useSearchParams } from "next/navigation"
 
-import ParsePayment from "../../components/ParsePOSPayment"
-import PinToHomescreen from "../../components/PinToHomescreen"
+import ParsePayment from "../../components/parse-POS-payment"
+import PinToHomescreen from "../../components/pin-to-home-screen"
 
-import CurrencyDropdown from "../../components/Currency/currency-dropdown"
+import CurrencyDropdown from "../../components/currency/currency-dropdown"
 
 import { useAccountDefaultWalletsQuery } from "../../lib/graphql/generated"
 
@@ -21,7 +21,7 @@ import reducer, { ACTIONS } from "../reducer"
 
 import styles from "./username.module.css"
 
-import LoadingComponent from "@/components/Loading"
+import LoadingComponent from "@/components/loading"
 import { extractSearchParams } from "@/utils/utils"
 
 gql`

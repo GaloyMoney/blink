@@ -11,15 +11,15 @@ import { useScreenshot } from "use-react-screenshot"
 
 import { USD_INVOICE_EXPIRE_INTERVAL, getClientSidePayDomain } from "../../config/config"
 import useCreateInvoice from "../../hooks/use-Create-Invoice"
-import { LnInvoiceObject } from "../../lib/graphql/index.types.d"
+import { LnInvoiceObject } from "../../lib/graphql/index.types"
 import useSatPrice from "../../lib/use-sat-price"
 import { ACTION_TYPE } from "../../app/reducer"
-import PaymentOutcome from "../PaymentOutcome"
-import { Share } from "../Share"
+import PaymentOutcome from "../payment-outcome"
+import { Share } from "../share"
 
 import { extractSearchParams, safeAmount } from "../../utils/utils"
 
-import LoadingComponent from "../Loading"
+import LoadingComponent from "../loading"
 
 import styles from "./parse-payment.module.css"
 
