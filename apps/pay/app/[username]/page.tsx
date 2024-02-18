@@ -10,7 +10,7 @@ import { gql } from "@apollo/client"
 
 import { useSearchParams } from "next/navigation"
 
-import ParsePayment from "../../components/parse-POS-payment"
+import ParsePayment from "../../components/parse-pos-payment"
 import PinToHomescreen from "../../components/pin-to-home-screen"
 
 import CurrencyDropdown from "../../components/currency/currency-dropdown"
