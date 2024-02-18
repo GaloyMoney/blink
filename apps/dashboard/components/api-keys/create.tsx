@@ -69,7 +69,7 @@ const ApiKeyCreate = ({ defaultWalletId }: Prop) => {
       setBtcPayCopied(false)
     }, 2000)
     navigator.clipboard.writeText(
-      `type=blink;server=https://api.blink.sv/graphql;api-key=blink_${state?.responsePayload?.apiKeySecret};wallet-id=${defaultWalletId}`,
+      `type=blink;server=https://api.blink.sv/graphql;api-key=${state?.responsePayload?.apiKeySecret};wallet-id=${defaultWalletId}`,
     )
   }
 
