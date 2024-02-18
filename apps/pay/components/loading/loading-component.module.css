@@ -1,0 +1,36 @@
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: green;
+  padding: 30% 1rem;
+  margin-top: 2rem;
+  outline: 1px dashed rgba(0, 128, 0, 0.35);
+}
+
+@media (min-width: 760px) {
+  .loading {
+    padding: 1rem 0;
+    outline: none;
+  }
+}
+
+.loader {
+  border: 8px solid #f4570e;
+  border-top: 5px solid rgb(242, 170, 83);
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
