@@ -26,7 +26,7 @@ export default async function Home() {
   const activeKeys = keys.filter(({ expired, revoked }) => !expired && !revoked)
   const expiredKeys = keys.filter(({ expired }) => expired)
   const revokedKeys = keys.filter(({ revoked }) => revoked)
-  const defaultWalletId = session.userData.data.me?.defaultAccount.id
+  const defaultWalletId = session.userData.data.me?.defaultAccount.defaultWalletId
 
   return (
     <ContentContainer>
