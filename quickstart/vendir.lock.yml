@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(notification): expose email mutations via grpc (#4011)...'
-      sha: e720ff1ec2032cda77ebeb83d1f714a7d1385680
+      commitTitle: 'test(pay): add ''pay invoice test'' (#4008)...'
+      sha: 2df05509596473736149502b110e2c33c1519f12
       tags:
-      - 0.20.64-2-ge720ff1ec
+      - 0.20.65-4-g2df055095
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(notification): expose email mutations via grpc (#4011)...'
-      sha: e720ff1ec2032cda77ebeb83d1f714a7d1385680
+      commitTitle: 'test(pay): add ''pay invoice test'' (#4008)...'
+      sha: 2df05509596473736149502b110e2c33c1519f12
       tags:
-      - 0.20.64-2-ge720ff1ec
+      - 0.20.65-4-g2df055095
     path: schemas/
   - git:
-      commitTitle: 'chore(notification): expose email mutations via grpc (#4011)...'
-      sha: e720ff1ec2032cda77ebeb83d1f714a7d1385680
+      commitTitle: 'test(pay): add ''pay invoice test'' (#4008)...'
+      sha: 2df05509596473736149502b110e2c33c1519f12
       tags:
-      - 0.20.64-2-ge720ff1ec
+      - 0.20.65-4-g2df055095
     path: gql/
   path: ./graphql
 kind: LockConfig
