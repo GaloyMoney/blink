@@ -144,6 +144,7 @@ export type BtcWallet = Wallet & {
   readonly transactions?: Maybe<TransactionConnection>;
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
+  readonly transactionsByPaymentRequest: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
 };
 
@@ -197,6 +198,12 @@ export type BtcWalletTransactionsByAddressArgs = {
 /** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
 export type BtcWalletTransactionsByPaymentHashArgs = {
   paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletTransactionsByPaymentRequestArgs = {
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
 };
 
 export type Coordinates = {
@@ -425,6 +432,7 @@ export type Query = {
   readonly merchantsPendingApproval: ReadonlyArray<Merchant>;
   readonly transactionById?: Maybe<Transaction>;
   readonly transactionsByHash?: Maybe<ReadonlyArray<Maybe<Transaction>>>;
+  readonly transactionsByPaymentRequest?: Maybe<ReadonlyArray<Maybe<Transaction>>>;
   readonly wallet: Wallet;
 };
 
@@ -476,6 +484,11 @@ export type QueryTransactionByIdArgs = {
 
 export type QueryTransactionsByHashArgs = {
   hash: Scalars['PaymentHash']['input'];
+};
+
+
+export type QueryTransactionsByPaymentRequestArgs = {
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
 };
 
 
@@ -585,6 +598,7 @@ export type UsdWallet = Wallet & {
   readonly transactions?: Maybe<TransactionConnection>;
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
+  readonly transactionsByPaymentRequest: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
 };
 
@@ -640,6 +654,12 @@ export type UsdWalletTransactionsByPaymentHashArgs = {
   paymentHash: Scalars['PaymentHash']['input'];
 };
 
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletTransactionsByPaymentRequestArgs = {
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
+};
+
 export type UserUpdatePhoneInput = {
   readonly accountId: Scalars['AccountId']['input'];
   readonly phone: Scalars['Phone']['input'];
@@ -680,6 +700,8 @@ export type Wallet = {
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
   /** Returns the transactions that include this paymentHash. This should be a list of size one for a received lightning payment. This can be more that one transaction for a sent lightning payment. */
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
+  /** Returns the transactions that include this paymentRequest. */
+  readonly transactionsByPaymentRequest: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
 };
 
@@ -733,6 +755,12 @@ export type WalletTransactionsByAddressArgs = {
 /** A generic wallet which stores value in one of our supported currencies. */
 export type WalletTransactionsByPaymentHashArgs = {
   paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletTransactionsByPaymentRequestArgs = {
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
 };
 
 export const WalletCurrency = {
