@@ -1,0 +1,31 @@
+_version: 1
+
+circle_time_frame.month: "mwezi huu"
+circle_time_frame.all_time: ""
+
+circle_type.inner: "ndani ya duara"
+circle_type.outer: "nje ya duara"
+
+circle_grew.title: "Vituo vyako vya Kukurupuka vinazidi kukua!"
+circle_grew.body: "Mtu ameongezwa kwenye %{circle_type} yako."
+
+circle_threshold_reached.inner.title: "Ndani ya Duara Nzuri! \U0001F919"
+circle_threshold_reached.inner.body: "Umewakaribisha watu %{threshold} kwenye Blink%{time_frame}. Endelea hivyo!"
+
+circle_threshold_reached.outer.title: "Nje ya Duara linapata \U0001F4AA"
+circle_threshold_reached.outer.body: "Duara la Nje limefikia watu %{threshold}. Unachochea ueneaji wa Bitcoin!"
+
+identity_verification_approved.title: "Utambulisho wako umethibitishwa!"
+identity_verification_approved.body: "Nyaraka za uthibitisho wako zimefanyiwa kazi."
+
+identity_verification_declined.reason.documents_not_clear: "nyaraka zilizopakiwa hazikuwa wazi"
+identity_verification_declined.reason.photo_not_clear: "picha uliyowasilisha haikuwa wazi"
+identity_verification_declined.reason.documents_do_not_match: "nyaraka ulizowasilisha hazikuendana na selfie yako na/au habari ulizotoa"
+identity_verification_declined.reason.documents_expired: "nyaraka ulizowasilisha zilikuwa zimeisha muda"
+identity_verification_declined.reason.documents_not_supported: "nyaraka ulizowasilisha hazisaidiwi"
+identity_verification_declined.reason.other: "kumetokea kosa, tafadhali wasiliana na msaada"
+identity_verification_declined.title: "Utambulisho wako haukuthibitishwa!"
+identity_verification_declined.body: "Hatukuweza kusindika nyaraka zako kwa sababu %{reason}."
+
+identity_verification_review_pending.title: "Uthibitisho wako unaendelea!"
+identity_verification_review_pending.body: "Tumepokea nyaraka zako na tunazisindika."
