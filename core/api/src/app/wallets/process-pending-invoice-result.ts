@@ -1,17 +1,21 @@
 export const ProcessedReason = {
   InvoiceNotFound: "InvoiceNotFound",
   InvoiceCanceled: "InvoiceCanceled",
+  InvoiceNotPaidYet: "InvoiceNotPaidYet",
 } as const
 
 const wrapper = (
   state: ProcessPendingInvoiceResultState,
 ): ProcessPendingInvoiceResult => {
   return {
+    _state: () => state,
     markProcessedAsCanceledOrExpired: () =>
       "markProcessedAsCanceledOrExpired" in state &&
       state.markProcessedAsCanceledOrExpired,
-    markProcessedAsPaid: () => state.markProcessedAsPaid,
+    markProcessedAsPaid: () =>
+      "markProcessedAsPaid" in state && state.markProcessedAsPaid,
     error: () => ("error" in state && state.error ? state.error : false),
+    reason: () => ("reason" in state && state.reason ? state.reason : false),
   }
 }
 
@@ -28,18 +32,14 @@ export const ProcessPendingInvoiceResult = {
   processAsCanceledOrExpired: (reason: ProcessedReason): ProcessPendingInvoiceResult =>
     wrapper({
       markProcessedAsCanceledOrExpired: true,
-      markProcessedAsPaid: false,
       reason,
     }),
   notPaid: (): ProcessPendingInvoiceResult =>
     wrapper({
-      markProcessedAsCanceledOrExpired: false,
-      markProcessedAsPaid: false,
+      reason: ProcessedReason.InvoiceNotPaidYet,
     }),
   err: (error: ApplicationError): ProcessPendingInvoiceResult =>
     wrapper({
-      markProcessedAsCanceledOrExpired: false,
-      markProcessedAsPaid: false,
       error,
     }),
 }

@@ -7,6 +7,8 @@ import {
   ProcessedReason,
 } from "./process-pending-invoice-result"
 
+import { InvalidInvoiceProcessingStateError } from "./errors"
+
 import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@/app/prices"
 
@@ -47,8 +49,7 @@ export const updatePendingInvoice = wrapAsyncToRunInSpan({
   }: {
     walletInvoice: WalletInvoiceWithOptionalLnInvoice
     logger: Logger
-  }): Promise<boolean | ApplicationError> => {
-    const walletInvoices = WalletInvoicesRepository()
+  }): Promise<true | ApplicationError> => {
     const { paymentHash, recipientWalletDescriptor: recipientInvoiceWalletDescriptor } =
       walletInvoice
 
@@ -66,32 +67,40 @@ export const updatePendingInvoice = wrapAsyncToRunInSpan({
       logger: pendingInvoiceLogger,
     })
 
-    if (result.markProcessedAsCanceledOrExpired()) {
-      const processingCompletedInvoice =
-        await walletInvoices.markAsProcessingCompleted(paymentHash)
-      if (processingCompletedInvoice instanceof Error) {
-        pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
-        return processingCompletedInvoice
-      }
-    }
+    const walletInvoices = WalletInvoicesRepository()
+    let marked: WalletInvoiceWithOptionalLnInvoice | RepositoryError
+    switch (true) {
+      // TODO: can this check be moved to above 'processPendingInvoice' call?
+      case walletInvoice.paid:
+        return true
 
-    if (result.markProcessedAsPaid() && !walletInvoice.paid) {
-      const invoicePaid = await walletInvoices.markAsPaid(walletInvoice.paymentHash)
-      if (
-        invoicePaid instanceof Error &&
-        !(invoicePaid instanceof CouldNotFindWalletInvoiceError)
-      ) {
-        return invoicePaid
-      }
-    }
+      case result.markProcessedAsCanceledOrExpired():
+        marked = await walletInvoices.markAsProcessingCompleted(paymentHash)
+        if (marked instanceof Error) {
+          pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
+          return marked
+        }
+        return true
 
-    return !(result.markProcessedAsPaid() || result.markProcessedAsCanceledOrExpired())
-      ? false
-      : result.markProcessedAsCanceledOrExpired()
-        ? false
-        : result.error()
-          ? result.error()
-          : result.markProcessedAsPaid()
+      case result.markProcessedAsPaid():
+        marked = await walletInvoices.markAsPaid(walletInvoice.paymentHash)
+        if (
+          marked instanceof Error &&
+          !(marked instanceof CouldNotFindWalletInvoiceError)
+        ) {
+          return marked
+        }
+        return result.error() || true
+
+      case result.reason() === ProcessedReason.InvoiceNotPaidYet:
+        return true
+
+      case !!result.error():
+        return result.error() as ApplicationError
+
+      default:
+        return new InvalidInvoiceProcessingStateError(JSON.stringify(result._state()))
+    }
   },
 })
 

@@ -27,6 +27,8 @@ import * as KratosErrors from "@/services/kratos/errors"
 import * as BriaEventErrors from "@/services/bria/errors"
 import * as SvixErrors from "@/services/svix/errors"
 
+import * as WalletErrors from "@/app/wallets/errors"
+
 export const ApplicationErrors = {
   ...SharedErrors,
   ...DomainErrors,
@@ -56,4 +58,6 @@ export const ApplicationErrors = {
   ...LedgerFacadeErrors,
   ...BriaEventErrors,
   ...SvixErrors,
+
+  ...WalletErrors,
 } as const
