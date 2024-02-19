@@ -137,25 +137,25 @@ type ProcessedReason =
 
 type ProcessPendingInvoiceResultState =
   | {
-      markProcessedAndPaid: true
+      markProcessedAsPaid: true
     }
   | {
-      markProcessedAndPaid: true
+      markProcessedAsPaid: true
       error?: ApplicationError
     }
   | {
-      markProcessedOnly: true
-      markProcessedAndPaid: false
+      markProcessedAsCanceledOrExpired: true
+      markProcessedAsPaid: false
       reason: ProcessedReason
     }
   | {
-      markProcessedOnly: false
-      markProcessedAndPaid: false
+      markProcessedAsCanceledOrExpired: false
+      markProcessedAsPaid: false
       error?: ApplicationError
     }
 
 type ProcessPendingInvoiceResult = {
-  markProcessedOnly: () => boolean
-  markProcessedAndPaid: () => boolean
+  markProcessedAsCanceledOrExpired: () => boolean
+  markProcessedAsPaid: () => boolean
   error: () => boolean | ApplicationError
 }

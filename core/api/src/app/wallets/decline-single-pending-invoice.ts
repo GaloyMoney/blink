@@ -38,7 +38,7 @@ export const declineHeldInvoice = wrapAsyncToRunInSpan({
       logger: pendingInvoiceLogger,
     })
 
-    if (result.markProcessedOnly()) {
+    if (result.markProcessedAsCanceledOrExpired()) {
       const processingCompletedInvoice =
         await WalletInvoicesRepository().markAsProcessingCompleted(paymentHash)
       if (processingCompletedInvoice instanceof Error) {
@@ -46,13 +46,13 @@ export const declineHeldInvoice = wrapAsyncToRunInSpan({
       }
     }
 
-    return !(result.markProcessedAndPaid() || result.markProcessedOnly())
+    return !(result.markProcessedAsPaid() || result.markProcessedAsCanceledOrExpired())
       ? false
-      : result.markProcessedOnly()
+      : result.markProcessedAsCanceledOrExpired()
         ? false
         : result.error()
           ? result.error()
-          : result.markProcessedAndPaid()
+          : result.markProcessedAsPaid()
   },
 })
 
@@ -69,21 +69,23 @@ export const processPendingInvoiceForDecline = async ({
   // Fetch invoice from lnd service
   const lndService = LndService()
   if (lndService instanceof Error) {
-    return ProcessPendingInvoiceResult.paidWithError(lndService)
+    return ProcessPendingInvoiceResult.processAsPaidWithError(lndService)
   }
 
   const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
   if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
-    return ProcessPendingInvoiceResult.processedOnly(ProcessedReason.InvoiceNotFound)
+    return ProcessPendingInvoiceResult.processAsCanceledOrExpired(
+      ProcessedReason.InvoiceNotFound,
+    )
   }
   if (lnInvoiceLookup instanceof Error) {
-    return ProcessPendingInvoiceResult.paidWithError(lnInvoiceLookup)
+    return ProcessPendingInvoiceResult.processAsPaidWithError(lnInvoiceLookup)
   }
 
   // Check status on invoice fetched from lnd
   const { isSettled, isHeld } = lnInvoiceLookup
   if (isSettled) {
-    return ProcessPendingInvoiceResult.paidWithError(
+    return ProcessPendingInvoiceResult.processAsPaidWithError(
       new InvalidNonHodlInvoiceError(JSON.stringify({ paymentHash })),
     )
   }
@@ -101,8 +103,8 @@ export const processPendingInvoiceForDecline = async ({
   )
   const invoiceSettled = await lndService.cancelInvoice({ pubkey, paymentHash })
   if (invoiceSettled instanceof Error) {
-    return ProcessPendingInvoiceResult.paidWithError(invoiceSettled)
+    return ProcessPendingInvoiceResult.processAsPaidWithError(invoiceSettled)
   }
 
-  return ProcessPendingInvoiceResult.ok()
+  return ProcessPendingInvoiceResult.processAsPaid()
 }

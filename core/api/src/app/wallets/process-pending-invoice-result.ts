@@ -7,37 +7,39 @@ const wrapper = (
   state: ProcessPendingInvoiceResultState,
 ): ProcessPendingInvoiceResult => {
   return {
-    markProcessedOnly: () => "markProcessedOnly" in state && state.markProcessedOnly,
-    markProcessedAndPaid: () => state.markProcessedAndPaid,
+    markProcessedAsCanceledOrExpired: () =>
+      "markProcessedAsCanceledOrExpired" in state &&
+      state.markProcessedAsCanceledOrExpired,
+    markProcessedAsPaid: () => state.markProcessedAsPaid,
     error: () => ("error" in state && state.error ? state.error : false),
   }
 }
 
 export const ProcessPendingInvoiceResult = {
-  ok: (): ProcessPendingInvoiceResult =>
+  processAsPaid: (): ProcessPendingInvoiceResult =>
     wrapper({
-      markProcessedAndPaid: true,
+      markProcessedAsPaid: true,
     }),
-  paidWithError: (error: ApplicationError): ProcessPendingInvoiceResult =>
+  processAsPaidWithError: (error: ApplicationError): ProcessPendingInvoiceResult =>
     wrapper({
-      markProcessedAndPaid: true,
+      markProcessedAsPaid: true,
       error,
     }),
-  processedOnly: (reason: ProcessedReason): ProcessPendingInvoiceResult =>
+  processAsCanceledOrExpired: (reason: ProcessedReason): ProcessPendingInvoiceResult =>
     wrapper({
-      markProcessedOnly: true,
-      markProcessedAndPaid: false,
+      markProcessedAsCanceledOrExpired: true,
+      markProcessedAsPaid: false,
       reason,
     }),
   notPaid: (): ProcessPendingInvoiceResult =>
     wrapper({
-      markProcessedOnly: false,
-      markProcessedAndPaid: false,
+      markProcessedAsCanceledOrExpired: false,
+      markProcessedAsPaid: false,
     }),
   err: (error: ApplicationError): ProcessPendingInvoiceResult =>
     wrapper({
-      markProcessedOnly: false,
-      markProcessedAndPaid: false,
+      markProcessedAsCanceledOrExpired: false,
+      markProcessedAsPaid: false,
       error,
     }),
 }
