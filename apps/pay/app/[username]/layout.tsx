@@ -1,6 +1,6 @@
 import React from "react"
 
-import UsernameLayoutContainer from "@/components/Layouts/UsernameLayout"
+import UsernameLayoutContainer from "@/components/layouts/username-layout"
 
 export default function UsernameLayout({
   children,

@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation"
 import React, { Suspense, useEffect, useState } from "react"
 
-import CurrencyDropdown from "../../components/Currency/currency-dropdown"
+import CurrencyDropdown from "../../components/currency/currency-dropdown"
 
 const SetupPwa = () => {
   const router = useRouter()
