@@ -63,7 +63,7 @@ export const updatePendingInvoice = wrapAsyncToRunInSpan({
 
     let result = await processPendingInvoice({
       walletInvoice,
-      logger,
+      logger: pendingInvoiceLogger,
     })
 
     if (result.isProcessed) {
