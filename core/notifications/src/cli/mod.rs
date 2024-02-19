@@ -14,8 +14,8 @@ struct Cli {
     config: Option<PathBuf>,
     #[clap(env = "PG_CON")]
     pg_con: String,
-    #[clap(env = "MONGODB_CON")]
-    mongodb_connection: Option<String>,
+    #[clap(env = "KRATOS_PG_CON")]
+    kratos_pg_con: Option<String>,
 }
 
 pub async fn run() -> anyhow::Result<()> {
@@ -25,7 +25,7 @@ pub async fn run() -> anyhow::Result<()> {
         cli.config,
         EnvOverride {
             db_con: cli.pg_con,
-            mongodb_connection: cli.mongodb_connection,
+            kratos_pg_con: cli.kratos_pg_con,
         },
     )?;
 
@@ -41,9 +41,8 @@ async fn run_cmd(config: Config) -> anyhow::Result<()> {
     let mut handles = vec![];
     let pool = db::init_pool(&config.db).await?;
     let app = crate::app::NotificationsApp::init(pool, config.app).await?;
-    if config.mongo_import.execute_import && config.mongo_import.connection.is_some() {
-        crate::data_import::import_user_notification_settings(app.clone(), config.mongo_import)
-            .await?;
+    if config.kratos_import.execute_import && config.kratos_import.pg_con.is_some() {
+        crate::data_import::import_email_addresses(app.clone(), config.kratos_import).await?;
     }
 
     println!("Starting notifications graphql server");
