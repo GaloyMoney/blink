@@ -76,9 +76,33 @@ impl Messages {
                     locale = locale
                 )
             }
-            IdentityVerificationDeclinedReason::VerificationPhotoNotClear => {
+            IdentityVerificationDeclinedReason::SelfieNotClear => {
                 t!(
                     "identity_verification_declined.reason.photo_not_clear",
+                    locale = locale
+                )
+            }
+            IdentityVerificationDeclinedReason::DocumentsNotSupported => {
+                t!(
+                    "identity_verification_declined.reason.documents_not_supported",
+                    locale = locale
+                )
+            }
+            IdentityVerificationDeclinedReason::DocumentsExpired => {
+                t!(
+                    "identity_verification_declined.reason.documents_expired",
+                    locale = locale
+                )
+            }
+            IdentityVerificationDeclinedReason::DocumentsDoNotMatch => {
+                t!(
+                    "identity_verification_declined.reason.documents_do_not_match",
+                    locale = locale
+                )
+            }
+            IdentityVerificationDeclinedReason::Other => {
+                t!(
+                    "identity_verification_declined.reason.other",
                     locale = locale
                 )
             }
