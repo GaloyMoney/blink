@@ -7,7 +7,7 @@ use lettre::{
     AsyncSmtpTransport, AsyncTransport, Tokio1Executor,
 };
 
-use crate::{messages::LocalizedMessage, primitives::GaloyEmailAddress};
+use crate::{messages::LocalizedPushMessage, primitives::GaloyEmailAddress};
 
 pub use config::*;
 use error::*;
@@ -33,7 +33,7 @@ impl SmtpClient {
 
     pub async fn send_email(
         &self,
-        msg: LocalizedMessage,
+        msg: LocalizedPushMessage,
         recipient_addr: GaloyEmailAddress,
     ) -> Result<(), SmtpError> {
         let email = Message::builder()

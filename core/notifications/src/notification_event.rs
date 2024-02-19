@@ -11,7 +11,7 @@ pub trait NotificationEvent: std::fmt::Debug + Into<NotificationEventPayload> + 
     fn category(&self) -> UserNotificationCategory;
     fn user_id(&self) -> &GaloyUserId;
     fn deep_link(&self) -> DeepLink;
-    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage;
+    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage;
     fn should_send_email(&self) -> bool;
 }
 
@@ -56,20 +56,20 @@ impl NotificationEvent for NotificationEventPayload {
         }
     }
 
-    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
+    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
         match self {
-            NotificationEventPayload::CircleGrew(event) => event.to_localized_msg(locale),
+            NotificationEventPayload::CircleGrew(event) => event.to_localized_push_msg(locale),
             NotificationEventPayload::CircleThresholdReached(event) => {
-                event.to_localized_msg(locale)
+                event.to_localized_push_msg(locale)
             }
             NotificationEventPayload::IdentityVerificationApproved(event) => {
-                event.to_localized_msg(locale)
+                event.to_localized_push_msg(locale)
             }
             NotificationEventPayload::IdentityVerificationDeclined(event) => {
-                event.to_localized_msg(locale)
+                event.to_localized_push_msg(locale)
             }
             NotificationEventPayload::IdentityVerificationReviewPending(event) => {
-                event.to_localized_msg(locale)
+                event.to_localized_push_msg(locale)
             }
         }
     }
@@ -112,8 +112,8 @@ impl NotificationEvent for CircleGrew {
         DeepLink::Circles
     }
 
-    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
-        Messages::circle_grew(locale.as_ref(), self)
+    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
+        PushMessages::circle_grew(locale.as_ref(), self)
     }
 
     fn should_send_email(&self) -> bool {
@@ -148,8 +148,8 @@ impl NotificationEvent for CircleThresholdReached {
         DeepLink::Circles
     }
 
-    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
-        Messages::circle_threshold_reached(locale.as_ref(), self)
+    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
+        PushMessages::circle_threshold_reached(locale.as_ref(), self)
     }
 
     fn should_send_email(&self) -> bool {
@@ -181,8 +181,8 @@ impl NotificationEvent for IdentityVerificationApproved {
         DeepLink::None
     }
 
-    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
-        Messages::identity_verification_approved(locale.as_ref(), self)
+    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
+        PushMessages::identity_verification_approved(locale.as_ref(), self)
     }
 
     fn should_send_email(&self) -> bool {
@@ -225,8 +225,8 @@ impl NotificationEvent for IdentityVerificationDeclined {
         DeepLink::None
     }
 
-    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
-        Messages::identity_verification_declined(locale.as_ref(), self)
+    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
+        PushMessages::identity_verification_declined(locale.as_ref(), self)
     }
 
     fn should_send_email(&self) -> bool {
@@ -258,8 +258,8 @@ impl NotificationEvent for IdentityVerificationReviewPending {
         DeepLink::None
     }
 
-    fn to_localized_msg(&self, locale: GaloyLocale) -> LocalizedMessage {
-        Messages::identity_verification_review_pending(locale.as_ref(), self)
+    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
+        PushMessages::identity_verification_review_pending(locale.as_ref(), self)
     }
 
     fn should_send_email(&self) -> bool {
