@@ -186,7 +186,7 @@ impl NotificationEvent for IdentityVerificationApproved {
     }
 
     fn should_send_email(&self) -> bool {
-        true
+        false
     }
 }
 
@@ -230,7 +230,7 @@ impl NotificationEvent for IdentityVerificationDeclined {
     }
 
     fn should_send_email(&self) -> bool {
-        true
+        false
     }
 }
 
@@ -263,7 +263,7 @@ impl NotificationEvent for IdentityVerificationReviewPending {
     }
 
     fn should_send_email(&self) -> bool {
-        true
+        false
     }
 }
 
