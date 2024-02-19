@@ -1,25 +1,20 @@
 import IWallet from "../abstract/wallet"
-
-import WalletCurrency from "../scalar/wallet-currency"
-
-import SignedAmount from "../scalar/signed-amount"
-
-import OnChainAddress from "../scalar/on-chain-address"
-
 import PaymentHash from "../scalar/payment-hash"
-
+import SignedAmount from "../scalar/signed-amount"
+import WalletCurrency from "../scalar/wallet-currency"
+import OnChainAddress from "../scalar/on-chain-address"
+import LnPaymentRequest from "../scalar/ln-payment-request"
 import IInvoice, { IInvoiceConnection } from "../abstract/invoice"
 
 import Transaction, { TransactionConnection } from "./transaction"
 
-import { GT } from "@/graphql/index"
-import { connectionArgs } from "@/graphql/connections"
-import { normalizePaymentAmount } from "@/graphql/shared/root/mutation"
-import { mapError } from "@/graphql/error-map"
-
-import { Wallets } from "@/app"
-
 import { WalletCurrency as WalletCurrencyDomain } from "@/domain/shared"
+
+import { normalizePaymentAmount } from "@/graphql/shared/root/mutation"
+import { connectionArgs } from "@/graphql/connections"
+import { GT } from "@/graphql/index"
+import { mapError } from "@/graphql/error-map"
+import { Wallets } from "@/app"
 
 const UsdWallet = GT.Object<Wallet>({
   name: "UsdWallet",
@@ -195,6 +190,29 @@ const UsdWallet = GT.Object<Wallet>({
         const transactions = await Wallets.getTransactionsForWalletByPaymentHash({
           walletId: source.id,
           paymentHash,
+        })
+
+        if (transactions instanceof Error) {
+          throw mapError(transactions)
+        }
+
+        return transactions
+      },
+    },
+    transactionsByPaymentRequest: {
+      type: GT.NonNullList(Transaction),
+      args: {
+        paymentRequest: {
+          type: GT.NonNull(LnPaymentRequest),
+        },
+      },
+      resolve: async (source, args) => {
+        const { paymentRequest } = args
+        if (paymentRequest instanceof Error) throw paymentRequest
+
+        const transactions = await Wallets.getTransactionsForWalletByPaymentRequest({
+          walletId: source.id,
+          uncheckedPaymentRequest: paymentRequest,
         })
 
         if (transactions instanceof Error) {
