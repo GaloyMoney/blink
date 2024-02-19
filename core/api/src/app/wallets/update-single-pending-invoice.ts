@@ -61,7 +61,7 @@ export const updatePendingInvoice = wrapAsyncToRunInSpan({
       onUs: false,
     })
 
-    let result = await processPendingInvoice({
+    const result = await processPendingInvoice({
       walletInvoice,
       logger: pendingInvoiceLogger,
     })
@@ -71,14 +71,7 @@ export const updatePendingInvoice = wrapAsyncToRunInSpan({
         await walletInvoices.markAsProcessingCompleted(paymentHash)
       if (processingCompletedInvoice instanceof Error) {
         pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
-        recordExceptionInCurrentSpan({
-          error: processingCompletedInvoice,
-          level: processingCompletedInvoice.level,
-        })
-
-        result = ProcessPendingInvoiceResult.processAsPaidWithError(
-          processingCompletedInvoice,
-        ) // Marking this here temporarily to enforce status quo
+        return processingCompletedInvoice
       }
     }
 

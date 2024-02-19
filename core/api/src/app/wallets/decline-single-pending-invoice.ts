@@ -43,6 +43,7 @@ export const declineHeldInvoice = wrapAsyncToRunInSpan({
         await WalletInvoicesRepository().markAsProcessingCompleted(paymentHash)
       if (processingCompletedInvoice instanceof Error) {
         pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
+        return processingCompletedInvoice
       }
     }
 
