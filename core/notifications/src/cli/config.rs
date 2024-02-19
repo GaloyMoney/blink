@@ -22,7 +22,7 @@ pub struct Config {
     #[serde(default = "default_tracing_config")]
     pub tracing: TracingConfig,
     #[serde(default)]
-    pub mongo_import: MongoImportConfig,
+    pub kratos_import: KratosImportConfig,
 }
 
 fn default_tracing_config() -> TracingConfig {
@@ -33,7 +33,7 @@ fn default_tracing_config() -> TracingConfig {
 
 pub struct EnvOverride {
     pub db_con: String,
-    pub mongodb_connection: Option<String>,
+    pub kratos_pg_con: Option<String>,
 }
 
 impl Config {
@@ -41,7 +41,7 @@ impl Config {
         path: Option<impl AsRef<Path>>,
         EnvOverride {
             db_con,
-            mongodb_connection,
+            kratos_pg_con,
         }: EnvOverride,
     ) -> anyhow::Result<Self> {
         let mut config: Config = if let Some(path) = path {
@@ -52,7 +52,7 @@ impl Config {
             Default::default()
         };
         config.db.pg_con = db_con;
-        config.mongo_import.connection = mongodb_connection;
+        config.kratos_import.pg_con = kratos_pg_con;
 
         config.app.executor.fcm.load_creds()?;
 
