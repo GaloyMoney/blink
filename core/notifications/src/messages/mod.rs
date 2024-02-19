@@ -136,6 +136,47 @@ impl PushMessages {
     }
 }
 
+pub struct LocalizedEmail {
+    pub subject: String,
+    pub body: String,
+}
+
+pub struct EmailMessages {}
+
+impl EmailMessages {
+    pub fn circle_grew(_locale: &str, _event: &CircleGrew) -> Option<LocalizedEmail> {
+        None
+    }
+
+    pub fn circle_threshold_reached(
+        _locale: &str,
+        _event: &CircleThresholdReached,
+    ) -> Option<LocalizedEmail> {
+        None
+    }
+
+    pub fn identity_verification_approved(
+        _locale: &str,
+        _event: &IdentityVerificationApproved,
+    ) -> Option<LocalizedEmail> {
+        None
+    }
+
+    pub fn identity_verification_declined(
+        _locale: &str,
+        _event: &IdentityVerificationDeclined,
+    ) -> Option<LocalizedEmail> {
+        None
+    }
+
+    pub fn identity_verification_review_pending(
+        _locale: &str,
+        _event: &IdentityVerificationReviewPending,
+    ) -> Option<LocalizedEmail> {
+        None
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

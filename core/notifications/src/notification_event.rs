@@ -13,6 +13,7 @@ pub trait NotificationEvent: std::fmt::Debug + Into<NotificationEventPayload> + 
     fn deep_link(&self) -> DeepLink;
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage;
     fn should_send_email(&self) -> bool;
+    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail>;
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -74,6 +75,24 @@ impl NotificationEvent for NotificationEventPayload {
         }
     }
 
+    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
+        match self {
+            NotificationEventPayload::CircleGrew(event) => event.to_localized_email(locale),
+            NotificationEventPayload::CircleThresholdReached(event) => {
+                event.to_localized_email(locale)
+            }
+            NotificationEventPayload::IdentityVerificationApproved(event) => {
+                event.to_localized_email(locale)
+            }
+            NotificationEventPayload::IdentityVerificationDeclined(event) => {
+                event.to_localized_email(locale)
+            }
+            NotificationEventPayload::IdentityVerificationReviewPending(event) => {
+                event.to_localized_email(locale)
+            }
+        }
+    }
+
     fn should_send_email(&self) -> bool {
         match self {
             NotificationEventPayload::CircleGrew(event) => event.should_send_email(),
@@ -116,6 +135,10 @@ impl NotificationEvent for CircleGrew {
         PushMessages::circle_grew(locale.as_ref(), self)
     }
 
+    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
+        EmailMessages::circle_grew(locale.as_ref(), self)
+    }
+
     fn should_send_email(&self) -> bool {
         false
     }
@@ -152,6 +175,10 @@ impl NotificationEvent for CircleThresholdReached {
         PushMessages::circle_threshold_reached(locale.as_ref(), self)
     }
 
+    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
+        EmailMessages::circle_threshold_reached(locale.as_ref(), self)
+    }
+
     fn should_send_email(&self) -> bool {
         false
     }
@@ -183,6 +210,10 @@ impl NotificationEvent for IdentityVerificationApproved {
 
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
         PushMessages::identity_verification_approved(locale.as_ref(), self)
+    }
+
+    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
+        EmailMessages::identity_verification_approved(locale.as_ref(), self)
     }
 
     fn should_send_email(&self) -> bool {
@@ -229,6 +260,10 @@ impl NotificationEvent for IdentityVerificationDeclined {
         PushMessages::identity_verification_declined(locale.as_ref(), self)
     }
 
+    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
+        EmailMessages::identity_verification_declined(locale.as_ref(), self)
+    }
+
     fn should_send_email(&self) -> bool {
         false
     }
@@ -260,6 +295,10 @@ impl NotificationEvent for IdentityVerificationReviewPending {
 
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
         PushMessages::identity_verification_review_pending(locale.as_ref(), self)
+    }
+
+    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
+        EmailMessages::identity_verification_review_pending(locale.as_ref(), self)
     }
 
     fn should_send_email(&self) -> bool {
