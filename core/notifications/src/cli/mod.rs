@@ -14,10 +14,10 @@ struct Cli {
     config: Option<PathBuf>,
     #[clap(env = "PG_CON")]
     pg_con: String,
+    #[clap(env = "EMAIL_PASSWORD", default_value = "password")]
+    email_password: String,
     #[clap(env = "KRATOS_PG_CON")]
     kratos_pg_con: Option<String>,
-    #[clap(env = "EMAIL_PASSWORD")]
-    email_password: String,
 }
 
 pub async fn run() -> anyhow::Result<()> {
@@ -27,8 +27,8 @@ pub async fn run() -> anyhow::Result<()> {
         cli.config,
         EnvOverride {
             db_con: cli.pg_con,
-            kratos_pg_con: cli.kratos_pg_con,
             email_password: cli.email_password,
+            kratos_pg_con: cli.kratos_pg_con,
         },
     )?;
 

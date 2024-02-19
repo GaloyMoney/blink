@@ -42,8 +42,8 @@ impl Config {
         path: Option<impl AsRef<Path>>,
         EnvOverride {
             db_con,
-            kratos_pg_con,
             email_password,
+            kratos_pg_con,
         }: EnvOverride,
     ) -> anyhow::Result<Self> {
         let mut config: Config = if let Some(path) = path {
