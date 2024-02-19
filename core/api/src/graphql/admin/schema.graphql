@@ -643,6 +643,12 @@ interface Wallet {
     """The payment hash of the lightning invoice paid in this transaction."""
     paymentHash: PaymentHash!
   ): [Transaction!]!
+
+  """Returns the transactions that include this paymentRequest."""
+  transactionsByPaymentRequest(
+    """Lightning invoice paid in this transaction."""
+    paymentRequest: LnPaymentRequest!
+  ): [Transaction!]!
   walletCurrency: WalletCurrency!
 }
 

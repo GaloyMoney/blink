@@ -2039,6 +2039,8 @@ export type Wallet = {
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
   /** Returns the transactions that include this paymentHash. This should be a list of size one for a received lightning payment. This can be more that one transaction for a sent lightning payment. */
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
+  /** Returns the transactions that include this paymentRequest. */
+  readonly transactionsByPaymentRequest: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
 };
 
@@ -2092,6 +2094,12 @@ export type WalletTransactionsByAddressArgs = {
 /** A generic wallet which stores value in one of our supported currencies. */
 export type WalletTransactionsByPaymentHashArgs = {
   paymentHash: Scalars['PaymentHash'];
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletTransactionsByPaymentRequestArgs = {
+  paymentRequest: Scalars['LnPaymentRequest'];
 };
 
 export const WalletCurrency = {

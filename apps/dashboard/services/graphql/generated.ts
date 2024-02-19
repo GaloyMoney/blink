@@ -2164,6 +2164,8 @@ export type Wallet = {
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
   /** Returns the transactions that include this paymentHash. This should be a list of size one for a received lightning payment. This can be more that one transaction for a sent lightning payment. */
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
+  /** Returns the transactions that include this paymentRequest. */
+  readonly transactionsByPaymentRequest: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
 };
 
@@ -2217,6 +2219,12 @@ export type WalletTransactionsByAddressArgs = {
 /** A generic wallet which stores value in one of our supported currencies. */
 export type WalletTransactionsByPaymentHashArgs = {
   paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletTransactionsByPaymentRequestArgs = {
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
 };
 
 export const WalletCurrency = {
@@ -4802,6 +4810,7 @@ export type WalletResolvers<ContextType = any, ParentType extends ResolversParen
   transactions?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, Partial<WalletTransactionsArgs>>;
   transactionsByAddress?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, RequireFields<WalletTransactionsByAddressArgs, 'address'>>;
   transactionsByPaymentHash?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType, RequireFields<WalletTransactionsByPaymentHashArgs, 'paymentHash'>>;
+  transactionsByPaymentRequest?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType, RequireFields<WalletTransactionsByPaymentRequestArgs, 'paymentRequest'>>;
   walletCurrency?: Resolver<ResolversTypes['WalletCurrency'], ParentType, ContextType>;
 };
 
