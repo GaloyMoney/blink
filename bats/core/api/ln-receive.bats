@@ -100,6 +100,25 @@ usd_amount=50
 
   transaction_id="$(graphql_output '.data.me.defaultAccount.walletById.transactionsByPaymentHash[0].id')"
 
+  # Get transaction by payment request
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg payment_request "$payment_request" \
+    '{walletId: $wallet_id, paymentRequest: $payment_request}'
+  )
+
+  exec_graphql "$token_name" 'transactions-for-wallet-by-payment-request' "$variables"
+
+  query_payment_hash="$(graphql_output '.data.me.defaultAccount.walletById.transactionsByPaymentRequest[0].initiationVia.paymentHash')"
+  [[ "${query_payment_hash}" == "${payment_hash}" ]] || exit 1
+
+  query_payment_request="$(graphql_output '.data.me.defaultAccount.walletById.transactionsByPaymentRequest[0].initiationVia.paymentRequest')"
+  [[ "${query_payment_request}" == "${payment_request}" ]] || exit 1
+
+  query_transaction_id="$(graphql_output '.data.me.defaultAccount.walletById.transactionsByPaymentRequest[0].id')"
+  [[ "${query_transaction_id}" == "${transaction_id}" ]] || exit 1
+
   # Get transaction by tx id
   variables=$(
     jq -n \
