@@ -2,7 +2,7 @@
 import React from "react"
 import Image from "react-bootstrap/Image"
 
-import { formattedDate, formattedTime } from "../../utils/dateUtil"
+import { formattedDate, formattedTime } from "../../utils/date-util"
 
 import GaloyIcon from "./galoy-icon"
 import styles from "./payment-outcome.module.css"
