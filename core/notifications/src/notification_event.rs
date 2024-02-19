@@ -170,7 +170,11 @@ impl From<IdentityVerificationApproved> for NotificationEventPayload {
 #[derive(Debug, Serialize, Deserialize)]
 pub enum IdentityVerificationDeclinedReason {
     DocumentsNotClear,
-    VerificationPhotoNotClear,
+    SelfieNotClear,
+    DocumentsNotSupported,
+    DocumentsExpired,
+    DocumentsDoNotMatch,
+    Other,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

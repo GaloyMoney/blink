@@ -89,7 +89,19 @@ impl From<proto::DeclinedReason> for notification_event::IdentityVerificationDec
                 notification_event::IdentityVerificationDeclinedReason::DocumentsNotClear
             }
             proto::DeclinedReason::VerificationPhotoNotClear => {
-                notification_event::IdentityVerificationDeclinedReason::VerificationPhotoNotClear
+                notification_event::IdentityVerificationDeclinedReason::SelfieNotClear
+            }
+            proto::DeclinedReason::DocumentsNotSupported => {
+                notification_event::IdentityVerificationDeclinedReason::DocumentsNotSupported
+            }
+            proto::DeclinedReason::DocumentsExpired => {
+                notification_event::IdentityVerificationDeclinedReason::DocumentsExpired
+            }
+            proto::DeclinedReason::Other => {
+                notification_event::IdentityVerificationDeclinedReason::Other
+            }
+            proto::DeclinedReason::DocumentsDoNotMatch => {
+                notification_event::IdentityVerificationDeclinedReason::DocumentsDoNotMatch
             }
         }
     }
