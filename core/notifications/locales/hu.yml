@@ -14,14 +14,3 @@ circle_threshold_reached.inner.body: "Üdvözöltél %{threshold} embert a Blink
 
 circle_threshold_reached.outer.title: "Erősödik a Külső Kör \U0001F4AA"
 circle_threshold_reached.outer.body: "A Külső Köröd elérte a %{threshold} embert. Terjeszted a Bitcoint!"
-
-identity_verification_approved.title: "Az azonosítás sikeres!"
-identity_verification_approved.body: "Az azonosításhoz szükséges dokumentumok feldolgozásra kerültek."
-
-identity_verification_declined.reason.documents_not_clear: "a feltöltött dokumentumok nem voltak egyértelműek"
-identity_verification_declined.reason.photo_not_clear: "a beküldött kép nem volt tiszta"
-identity_verification_declined.title: "Az azonosítás nem sikerült!"
-identity_verification_declined.body: "Nem tudtuk feldolgozni az dokumentumokat, mert: %{reason}."
-
-identity_verification_review_pending.title: "Az azonosítás folyamatban van!"
-identity_verification_review_pending.body: "Megkaptuk a dokumentumokat, a feldolgozás folyamatban van."
