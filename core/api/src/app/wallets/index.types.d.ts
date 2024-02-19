@@ -135,23 +135,27 @@ type LnurlPaymentSendArgs = {
 type ProcessedReason =
   (typeof import("./process-pending-invoice-result").ProcessedReason)[keyof typeof import("./process-pending-invoice-result").ProcessedReason]
 
-type ProcessPendingInvoiceResult =
+type ProcessPendingInvoiceResultState =
   | {
-      isProcessed: true
-      isPaid: true
+      markProcessedAndPaid: true
     }
   | {
-      isProcessed: false
-      isPaid: true
+      markProcessedAndPaid: true
       error?: ApplicationError
     }
   | {
-      isProcessed: true
-      isPaid: false
+      markProcessedOnly: true
+      markProcessedAndPaid: false
       reason: ProcessedReason
     }
   | {
-      isProcessed: false
-      isPaid: false
+      markProcessedOnly: false
+      markProcessedAndPaid: false
       error?: ApplicationError
     }
+
+type ProcessPendingInvoiceResult = {
+  markProcessedOnly: () => boolean
+  markProcessedAndPaid: () => boolean
+  error: () => boolean | ApplicationError
+}

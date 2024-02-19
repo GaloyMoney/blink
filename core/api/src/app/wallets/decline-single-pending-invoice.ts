@@ -38,7 +38,7 @@ export const declineHeldInvoice = wrapAsyncToRunInSpan({
       logger: pendingInvoiceLogger,
     })
 
-    if (result.isProcessed) {
+    if (result.markProcessedOnly()) {
       const processingCompletedInvoice =
         await WalletInvoicesRepository().markAsProcessingCompleted(paymentHash)
       if (processingCompletedInvoice instanceof Error) {
@@ -46,14 +46,13 @@ export const declineHeldInvoice = wrapAsyncToRunInSpan({
       }
     }
 
-    const error = "error" in result && result.error
-    return !(result.isPaid || result.isProcessed)
+    return !(result.markProcessedAndPaid() || result.markProcessedOnly())
       ? false
-      : result.isProcessed
+      : result.markProcessedOnly()
         ? false
-        : error
-          ? error
-          : result.isPaid
+        : result.error()
+          ? result.error()
+          : result.markProcessedAndPaid()
   },
 })
 
