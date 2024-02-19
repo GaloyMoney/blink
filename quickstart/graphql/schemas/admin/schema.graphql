@@ -134,6 +134,7 @@ type BTCWallet implements Wallet {
     last: Int
   ): TransactionConnection
   transactionsByPaymentHash(paymentHash: PaymentHash!): [Transaction!]!
+  transactionsByPaymentRequest(paymentRequest: LnPaymentRequest!): [Transaction!]!
   walletCurrency: WalletCurrency!
 }
 
@@ -364,6 +365,7 @@ type Query {
   merchantsPendingApproval: [Merchant!]!
   transactionById(id: ID!): Transaction
   transactionsByHash(hash: PaymentHash!): [Transaction]
+  transactionsByPaymentRequest(paymentRequest: LnPaymentRequest!): [Transaction]
   wallet(walletId: WalletId!): Wallet!
 }
 
@@ -535,6 +537,7 @@ type UsdWallet implements Wallet {
     last: Int
   ): TransactionConnection
   transactionsByPaymentHash(paymentHash: PaymentHash!): [Transaction!]!
+  transactionsByPaymentRequest(paymentRequest: LnPaymentRequest!): [Transaction!]!
   walletCurrency: WalletCurrency!
 }
 
@@ -639,6 +642,12 @@ interface Wallet {
   transactionsByPaymentHash(
     """The payment hash of the lightning invoice paid in this transaction."""
     paymentHash: PaymentHash!
+  ): [Transaction!]!
+
+  """Returns the transactions that include this paymentRequest."""
+  transactionsByPaymentRequest(
+    """Lightning invoice paid in this transaction."""
+    paymentRequest: LnPaymentRequest!
   ): [Transaction!]!
   walletCurrency: WalletCurrency!
 }
