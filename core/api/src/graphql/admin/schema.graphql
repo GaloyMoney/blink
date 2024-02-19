@@ -365,6 +365,7 @@ type Query {
   merchantsPendingApproval: [Merchant!]!
   transactionById(id: ID!): Transaction
   transactionsByHash(hash: PaymentHash!): [Transaction]
+  transactionsByPaymentRequest(paymentRequest: LnPaymentRequest!): [Transaction]
   wallet(walletId: WalletId!): Wallet!
 }
 

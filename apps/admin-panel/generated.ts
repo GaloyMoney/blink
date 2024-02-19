@@ -432,6 +432,7 @@ export type Query = {
   readonly merchantsPendingApproval: ReadonlyArray<Merchant>;
   readonly transactionById?: Maybe<Transaction>;
   readonly transactionsByHash?: Maybe<ReadonlyArray<Maybe<Transaction>>>;
+  readonly transactionsByPaymentRequest?: Maybe<ReadonlyArray<Maybe<Transaction>>>;
   readonly wallet: Wallet;
 };
 
@@ -483,6 +484,11 @@ export type QueryTransactionByIdArgs = {
 
 export type QueryTransactionsByHashArgs = {
   hash: Scalars['PaymentHash']['input'];
+};
+
+
+export type QueryTransactionsByPaymentRequestArgs = {
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
 };
 
 

@@ -1,10 +1,11 @@
 import dedent from "dedent"
 
-import Transaction, { TransactionConnection } from "../object/transaction"
+import PaymentHash from "../scalar/payment-hash"
 import WalletCurrency from "../scalar/wallet-currency"
 import SignedAmount from "../scalar/signed-amount"
 import OnChainAddress from "../scalar/on-chain-address"
-import PaymentHash from "../scalar/payment-hash"
+import LnPaymentRequest from "../scalar/ln-payment-request"
+import Transaction, { TransactionConnection } from "../object/transaction"
 
 import IInvoice, { IInvoiceConnection } from "./invoice"
 
@@ -93,6 +94,16 @@ const IWallet = GT.Interface({
           type: GT.NonNull(PaymentHash),
           description:
             "The payment hash of the lightning invoice paid in this transaction.",
+        },
+      },
+    },
+    transactionsByPaymentRequest: {
+      type: GT.NonNullList(Transaction),
+      description: "Returns the transactions that include this paymentRequest.",
+      args: {
+        paymentRequest: {
+          type: GT.NonNull(LnPaymentRequest),
+          description: "Lightning invoice paid in this transaction.",
         },
       },
     },
