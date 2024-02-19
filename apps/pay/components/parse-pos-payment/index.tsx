@@ -14,15 +14,15 @@ import {
   getLocaleConfig,
   extractSearchParams,
 } from "../../utils/utils"
-import Memo from "../Memo"
+import Memo from "../memo"
 
 import { useDisplayCurrency } from "../../lib/use-display-currency"
 
 import { Currency } from "../../lib/graphql/generated"
 
-import DigitButton from "./Digit-Button"
+import DigitButton from "./digit-button"
 import styles from "./parse-payment.module.css"
-import ReceiveInvoice from "./Receive-Invoice"
+import ReceiveInvoice from "./receive-invoice"
 
 function isRunningStandalone() {
   if (typeof window === "undefined") {
