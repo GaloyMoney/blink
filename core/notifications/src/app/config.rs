@@ -4,6 +4,6 @@ use crate::{email_executor::EmailExecutorConfig, push_executor::PushExecutorConf
 
 #[derive(Clone, Default, Serialize, Deserialize)]
 pub struct AppConfig {
-    pub executor: PushExecutorConfig,
+    pub push_executor: PushExecutorConfig,
     pub email_executor: EmailExecutorConfig,
 }

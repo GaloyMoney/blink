@@ -57,7 +57,7 @@ impl Config {
         config.kratos_import.pg_con = kratos_pg_con;
         config.app.email_executor.smtp.password = email_password;
 
-        config.app.executor.fcm.load_creds()?;
+        config.app.push_executor.fcm.load_creds()?;
 
         Ok(config)
     }

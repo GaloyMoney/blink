@@ -26,7 +26,8 @@ pub struct NotificationsApp {
 impl NotificationsApp {
     pub async fn init(pool: Pool<Postgres>, config: AppConfig) -> Result<Self, ApplicationError> {
         let settings = UserNotificationSettingsRepo::new(&pool);
-        let push_executor = PushExecutor::init(config.executor.clone(), settings.clone()).await?;
+        let push_executor =
+            PushExecutor::init(config.push_executor.clone(), settings.clone()).await?;
         let email_executor = EmailExecutor::init(config.email_executor.clone(), settings.clone())?;
         let runner = job::start_job_runner(&pool, push_executor, email_executor).await?;
         Ok(Self {
