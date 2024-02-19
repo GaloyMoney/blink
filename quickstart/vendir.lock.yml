@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(pay): add ''pay invoice test'' (#4008)...'
-      sha: 2df05509596473736149502b110e2c33c1519f12
+      commitTitle: 'refactor(core): introduce ''ProcessPendingInvoiceResult'' type
+        (#4015)...'
+      sha: aa26eae24b1888cc5a85a1872215c608f50a0598
       tags:
-      - 0.20.65-4-g2df055095
+      - 0.20.66-6-gaa26eae24
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(pay): add ''pay invoice test'' (#4008)...'
-      sha: 2df05509596473736149502b110e2c33c1519f12
+      commitTitle: 'refactor(core): introduce ''ProcessPendingInvoiceResult'' type
+        (#4015)...'
+      sha: aa26eae24b1888cc5a85a1872215c608f50a0598
       tags:
-      - 0.20.65-4-g2df055095
+      - 0.20.66-6-gaa26eae24
     path: schemas/
   - git:
-      commitTitle: 'test(pay): add ''pay invoice test'' (#4008)...'
-      sha: 2df05509596473736149502b110e2c33c1519f12
+      commitTitle: 'refactor(core): introduce ''ProcessPendingInvoiceResult'' type
+        (#4015)...'
+      sha: aa26eae24b1888cc5a85a1872215c608f50a0598
       tags:
-      - 0.20.65-4-g2df055095
+      - 0.20.66-6-gaa26eae24
     path: gql/
   path: ./graphql
 kind: LockConfig
