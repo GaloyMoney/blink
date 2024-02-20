@@ -4,6 +4,8 @@ import { reimburseFailedUsdPayment } from "./reimburse-failed-usd"
 
 import { PaymentFlowFromLedgerTransaction } from "./translations"
 
+import { updateLnPaymentState } from "./update-ln-payment-state"
+
 import { getTransactionForWalletByJournalId } from "@/app/wallets"
 
 import { toSats } from "@/domain/bitcoin"
@@ -209,6 +211,11 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         paymentLogger.error({ error: settled }, "no transaction to update")
         return settled
       }
+      const updateStateAfterSettle = await updateLnPaymentState({
+        walletId,
+        paymentHash,
+      })
+      if (updateStateAfterSettle instanceof Error) return updateStateAfterSettle
 
       if (
         status === PaymentStatus.Failed ||
@@ -229,6 +236,13 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
             logger.fatal({ success: false, result: lnPaymentLookup }, error)
             return setErrorCritical(voided)
           }
+
+          const updateStateAfterRevert = await updateLnPaymentState({
+            walletId,
+            paymentHash,
+          })
+          if (updateStateAfterRevert instanceof Error) return updateStateAfterRevert
+
           return voided
         }
 
@@ -242,6 +256,13 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
           logger.fatal({ success: false, result: lnPaymentLookup }, error)
           return setErrorCritical(reimbursed)
         }
+
+        const updateStateAfterUsdRevert = await updateLnPaymentState({
+          walletId,
+          paymentHash,
+        })
+        if (updateStateAfterUsdRevert instanceof Error) return updateStateAfterUsdRevert
+
         return reimbursed
       }
 
@@ -289,7 +310,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       if (!displayAmount || !displayFee || !displayCurrency) {
         return new MissingExpectedDisplayAmountsForTransactionError()
       }
-      return reimburseFee({
+      const reimbursed = reimburseFee({
         paymentFlow,
         senderDisplayAmount: displayAmount,
         senderDisplayCurrency: displayCurrency,
@@ -297,6 +318,15 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         actualFee: roundedUpFee,
         revealedPreImage,
       })
+      if (reimbursed instanceof Error) return reimbursed
+
+      const updateStateAfterReimburse = await updateLnPaymentState({
+        walletId: senderWallet.id,
+        paymentHash,
+      })
+      if (updateStateAfterReimburse instanceof Error) return updateStateAfterReimburse
+
+      return reimbursed
     })
   },
 })

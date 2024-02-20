@@ -6,6 +6,8 @@ import {
 
 import { reimburseFee } from "./reimburse-fee"
 
+import { updateLnPaymentState } from "./update-ln-payment-state"
+
 import { AccountValidator } from "@/domain/accounts"
 import {
   decodeInvoice,
@@ -693,6 +695,12 @@ const executePaymentViaLn = async ({
     if (journal instanceof Error) return journal
     const { journalId } = journal
 
+    const updateStateAfterSend = await updateLnPaymentState({
+      walletId: senderWallet.id,
+      paymentHash,
+    })
+    if (updateStateAfterSend instanceof Error) return updateStateAfterSend
+
     const walletPriceRatio = WalletPriceRatio({
       usd: paymentFlow.usdPaymentAmount,
       btc: paymentFlow.btcPaymentAmount,
@@ -762,14 +770,18 @@ const executePaymentViaLn = async ({
       })
       if (voided instanceof Error) return voided
 
-      if (payResult instanceof LnAlreadyPaidError) {
-        return getAlreadyPaidResponse({
-          walletId: senderWallet.id,
-          paymentHash,
-        })
-      }
+      const updateStateAfterRevert = await updateLnPaymentState({
+        walletId: senderWallet.id,
+        paymentHash,
+      })
+      if (updateStateAfterRevert instanceof Error) return updateStateAfterRevert
 
-      return payResult
+      return payResult instanceof LnAlreadyPaidError
+        ? getAlreadyPaidResponse({
+            walletId: senderWallet.id,
+            paymentHash,
+          })
+        : payResult
     }
 
     if (!rawRoute) {
@@ -783,6 +795,12 @@ const executePaymentViaLn = async ({
       })
       if (reimbursed instanceof Error) return reimbursed
     }
+
+    const updateStateAfterSettle = await updateLnPaymentState({
+      walletId: senderWallet.id,
+      paymentHash,
+    })
+    if (updateStateAfterSettle instanceof Error) return updateStateAfterSettle
 
     const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
     if (senderUser instanceof Error) return senderUser
