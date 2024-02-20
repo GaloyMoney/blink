@@ -10,6 +10,10 @@ pub struct SmtpConfig {
     pub from_email: String,
     #[serde(default)]
     pub relay: String,
-    #[serde(default)]
+    #[serde(default = "default_smtp_port")]
     pub port: u16,
+}
+
+fn default_smtp_port() -> u16 {
+    587
 }
