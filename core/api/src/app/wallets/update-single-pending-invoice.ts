@@ -135,7 +135,7 @@ const processPendingInvoice = async ({
     )
   }
   if (lnInvoiceLookup instanceof Error) {
-    return ProcessPendingInvoiceResult.processAsPaidWithError(lnInvoiceLookup)
+    return ProcessPendingInvoiceResult.err(lnInvoiceLookup)
   }
 
   // Check paid on wallet invoice after lnd invoice has been successfully fetched
@@ -224,7 +224,7 @@ const lockedUpdatePendingInvoiceSteps = async ({
     return ProcessPendingInvoiceResult.err(walletInvoiceInsideLock)
   }
   if (walletInvoiceInsideLock instanceof Error) {
-    return ProcessPendingInvoiceResult.processAsPaidWithError(walletInvoiceInsideLock)
+    return ProcessPendingInvoiceResult.err(walletInvoiceInsideLock)
   }
   if (walletInvoiceInsideLock.paid) {
     logger.info("invoice has already been processed")
@@ -234,14 +234,14 @@ const lockedUpdatePendingInvoiceSteps = async ({
   // Prepare ledger transaction metadata
   const recipientInvoiceWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientInvoiceWallet instanceof Error) {
-    return ProcessPendingInvoiceResult.processAsPaidWithError(recipientInvoiceWallet)
+    return ProcessPendingInvoiceResult.err(recipientInvoiceWallet)
   }
   const { accountId: recipientAccountId } = recipientInvoiceWallet
 
   const accountWallets =
     await WalletsRepository().findAccountWalletsByAccountId(recipientAccountId)
   if (accountWallets instanceof Error) {
-    return ProcessPendingInvoiceResult.processAsPaidWithError(accountWallets)
+    return ProcessPendingInvoiceResult.err(accountWallets)
   }
 
   const receivedWalletInvoice = await WalletInvoiceReceiver({
@@ -253,7 +253,7 @@ const lockedUpdatePendingInvoiceSteps = async ({
     hedgeBuyUsd: { usdFromBtc: DealerPriceService().getCentsFromSatsForImmediateBuy },
   })
   if (receivedWalletInvoice instanceof Error) {
-    return ProcessPendingInvoiceResult.processAsPaidWithError(receivedWalletInvoice)
+    return ProcessPendingInvoiceResult.err(receivedWalletInvoice)
   }
 
   const {
@@ -270,14 +270,14 @@ const lockedUpdatePendingInvoiceSteps = async ({
 
   const recipientAccount = await AccountsRepository().findById(recipientAccountId)
   if (recipientAccount instanceof Error) {
-    return ProcessPendingInvoiceResult.processAsPaidWithError(recipientAccount)
+    return ProcessPendingInvoiceResult.err(recipientAccount)
   }
   const { displayCurrency: recipientDisplayCurrency } = recipientAccount
   const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
     currency: recipientDisplayCurrency,
   })
   if (displayPriceRatio instanceof Error) {
-    return ProcessPendingInvoiceResult.processAsPaidWithError(displayPriceRatio)
+    return ProcessPendingInvoiceResult.err(displayPriceRatio)
   }
   const { displayAmount: displayPaymentAmount, displayFee } = DisplayAmountsConverter(
     displayPriceRatio,
@@ -334,7 +334,7 @@ const lockedUpdatePendingInvoiceSteps = async ({
   // Mark paid and record ledger transaction
   const invoicePaid = await walletInvoices.markAsPaid(paymentHash)
   if (invoicePaid instanceof Error) {
-    return ProcessPendingInvoiceResult.processAsPaidWithError(invoicePaid)
+    return ProcessPendingInvoiceResult.err(invoicePaid)
   }
 
   const journal = await LedgerFacade.recordReceiveOffChain({
@@ -356,7 +356,7 @@ const lockedUpdatePendingInvoiceSteps = async ({
     additionalInternalMetadata: internalAccountsAdditionalMetadata,
   })
   if (journal instanceof Error) {
-    return ProcessPendingInvoiceResult.processAsPaidWithError(journal)
+    return ProcessPendingInvoiceResult.err(journal)
   }
 
   // Prepare and send notification

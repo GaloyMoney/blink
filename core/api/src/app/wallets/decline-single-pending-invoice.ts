@@ -76,7 +76,7 @@ export const processPendingInvoiceForDecline = async ({
   // Fetch invoice from lnd service
   const lndService = LndService()
   if (lndService instanceof Error) {
-    return ProcessPendingInvoiceResult.processAsPaidWithError(lndService)
+    return ProcessPendingInvoiceResult.err(lndService)
   }
 
   const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
@@ -86,7 +86,7 @@ export const processPendingInvoiceForDecline = async ({
     )
   }
   if (lnInvoiceLookup instanceof Error) {
-    return ProcessPendingInvoiceResult.processAsPaidWithError(lnInvoiceLookup)
+    return ProcessPendingInvoiceResult.err(lnInvoiceLookup)
   }
 
   // Check status on invoice fetched from lnd
@@ -110,7 +110,7 @@ export const processPendingInvoiceForDecline = async ({
   )
   const invoiceSettled = await lndService.cancelInvoice({ pubkey, paymentHash })
   if (invoiceSettled instanceof Error) {
-    return ProcessPendingInvoiceResult.processAsPaidWithError(invoiceSettled)
+    return ProcessPendingInvoiceResult.err(invoiceSettled)
   }
 
   return ProcessPendingInvoiceResult.processAsPaid()
