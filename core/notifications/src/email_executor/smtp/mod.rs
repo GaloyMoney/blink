@@ -24,6 +24,7 @@ impl SmtpClient {
         let client: AsyncSmtpTransport<Tokio1Executor> =
             AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(&config.relay)?
                 .credentials(creds)
+                .port(config.port)
                 .build();
         Ok(Self {
             client,
