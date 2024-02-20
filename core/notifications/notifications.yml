@@ -14,5 +14,6 @@ app:
       username: ""
       from_email: ""
       relay: ""
+      port: 587
 # kratos_import:
 #   execute_import: true

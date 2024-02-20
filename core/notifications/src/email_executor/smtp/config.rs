@@ -7,4 +7,5 @@ pub struct SmtpConfig {
     pub password: String,
     pub from_email: String,
     pub relay: String,
+    pub port: u16,
 }
