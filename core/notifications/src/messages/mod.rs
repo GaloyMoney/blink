@@ -1,3 +1,4 @@
+use handlebars::Handlebars;
 use rust_i18n::t;
 
 use crate::{notification_event::*, primitives::*};
@@ -151,10 +152,23 @@ impl EmailMessages {
     }
 
     pub fn identity_verification_approved(
-        _locale: &str,
+        locale: &str,
         _event: &IdentityVerificationApproved,
+        handlebars: &Handlebars,
     ) -> Option<LocalizedEmail> {
-        None
+        let title = t!("identity_verification_approved.title", locale = locale).to_string();
+        let body = t!("identity_verification_approved.body", locale = locale).to_string();
+        let data = serde_json::json!({
+            "subject": &title,
+            "body": &body
+        });
+        // use error handling here
+        let body = handlebars.render("identification", &data).ok()?;
+
+        Some(LocalizedEmail {
+            subject: title,
+            body,
+        })
     }
 
     pub fn identity_verification_declined(

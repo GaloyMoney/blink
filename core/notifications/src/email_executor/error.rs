@@ -9,4 +9,6 @@ pub enum EmailExecutorError {
     SmtpError(#[from] SmtpError),
     #[error("EmailExecutorError - UserNotificationSettingsError: {0}")]
     UserNotificationSettingsError(#[from] UserNotificationSettingsError),
+    #[error("EmailExecutorError - HandlebarsError: {0}")]
+    HandlebarsError(#[from] handlebars::TemplateError),
 }

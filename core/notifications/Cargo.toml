@@ -45,6 +45,7 @@ prost = { workspace = true }
 rust-i18n = { workspace = true }
 google-fcm1 = { workspace = true }
 lettre = { workspace = true }
+handlebars = { workspace = true }
 
 [build-dependencies]
 tonic-build = { workspace = true }
