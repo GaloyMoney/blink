@@ -1,6 +1,7 @@
 export const ProcessedReason = {
   InvoiceNotFound: "InvoiceNotFound",
   InvoiceCanceled: "InvoiceCanceled",
+  InvoiceNotFoundOrCanceled: "InvoiceNotFoundOrCanceled",
 } as const
 
 export const ProcessPendingInvoiceResultType = {

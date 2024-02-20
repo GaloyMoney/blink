@@ -71,7 +71,7 @@ export const updatePendingInvoice = wrapAsyncToRunInSpan({
 
     const walletInvoices = WalletInvoicesRepository()
     let marked: WalletInvoiceWithOptionalLnInvoice | RepositoryError
-    if (walletInvoiceBeforeProcessing.paid) return true
+    if (walletInvoiceBeforeProcessing.processingCompleted) return true
     switch (result.type) {
       case ProcessPendingInvoiceResultType.MarkProcessedAsCanceledOrExpired:
         marked = await walletInvoices.markAsProcessingCompleted(paymentHash)
@@ -139,10 +139,14 @@ const processPendingInvoice = async ({
     return ProcessPendingInvoiceResult.err(lnInvoiceLookup)
   }
 
-  // Check paid on wallet invoice after lnd invoice has been successfully fetched
-  if (walletInvoice.paid) {
+  // Check processed on wallet invoice after lnd invoice has been successfully fetched
+  if (walletInvoice.processingCompleted) {
     pendingInvoiceLogger.info("invoice has already been processed")
-    return ProcessPendingInvoiceResult.processAsPaid()
+    return walletInvoice.paid
+      ? ProcessPendingInvoiceResult.processAsPaid()
+      : ProcessPendingInvoiceResult.processAsCanceledOrExpired(
+          ProcessedReason.InvoiceNotFoundOrCanceled,
+        )
   }
 
   // Check status of invoice fetched from lnd service
@@ -227,9 +231,13 @@ const lockedUpdatePendingInvoiceSteps = async ({
   if (walletInvoiceInsideLock instanceof Error) {
     return ProcessPendingInvoiceResult.err(walletInvoiceInsideLock)
   }
-  if (walletInvoiceInsideLock.paid) {
+  if (walletInvoiceInsideLock.processingCompleted) {
     logger.info("invoice has already been processed")
-    return ProcessPendingInvoiceResult.processAsPaid()
+    return walletInvoiceInsideLock.paid
+      ? ProcessPendingInvoiceResult.processAsPaid()
+      : ProcessPendingInvoiceResult.processAsCanceledOrExpired(
+          ProcessedReason.InvoiceNotFoundOrCanceled,
+        )
   }
 
   // Prepare ledger transaction metadata
