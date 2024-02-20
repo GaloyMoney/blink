@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(core): add transactionsByPaymentRequest query (#4026)...'
-      sha: 02b66bf1b09e4b08b2f10fca2a5d6ecfae3ed63b
+      commitTitle: 'chore(notifications): add transifex config (#4007)...'
+      sha: 19ebf98049df87aacadeb0736042a4c6f30d9aed
       tags:
-      - 0.20.67-1-g02b66bf1b
+      - 0.20.68-6-g19ebf9804
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(core): add transactionsByPaymentRequest query (#4026)...'
-      sha: 02b66bf1b09e4b08b2f10fca2a5d6ecfae3ed63b
+      commitTitle: 'chore(notifications): add transifex config (#4007)...'
+      sha: 19ebf98049df87aacadeb0736042a4c6f30d9aed
       tags:
-      - 0.20.67-1-g02b66bf1b
+      - 0.20.68-6-g19ebf9804
     path: schemas/
   - git:
-      commitTitle: 'feat(core): add transactionsByPaymentRequest query (#4026)...'
-      sha: 02b66bf1b09e4b08b2f10fca2a5d6ecfae3ed63b
+      commitTitle: 'chore(notifications): add transifex config (#4007)...'
+      sha: 19ebf98049df87aacadeb0736042a4c6f30d9aed
       tags:
-      - 0.20.67-1-g02b66bf1b
+      - 0.20.68-6-g19ebf9804
     path: gql/
   path: ./graphql
 kind: LockConfig
