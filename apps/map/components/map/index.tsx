@@ -11,8 +11,8 @@ type MapComponentProps = {
   mapData: BusinessMapMarkersQuery["businessMapMarkers"]
   googleMapsApiKey: string
 }
-const DEFAULT_LAT = 13.7942
-const DEFAULT_LNG = -88.8965
+const DEFAULT_LAT = 8.046367244910527
+const DEFAULT_LNG = -45.043000891414344
 
 export default function MapComponent({ mapData, googleMapsApiKey }: MapComponentProps) {
   const mapRef = useRef<google.maps.Map>()
@@ -243,21 +243,13 @@ export default function MapComponent({ mapData, googleMapsApiKey }: MapComponent
       <GoogleMap
         onLoad={onMapLoad}
         options={mapOptions}
-        zoom={14}
+        zoom={4}
         center={currentLocation.coordinates}
         mapTypeId={google.maps.MapTypeId.ROADMAP}
         mapContainerStyle={{ height: "100%", width: "100%" }}
       >
         {mapData.map((marker, index) => (
           <MarkerF
-            icon={{
-              path: "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z",
-              fillColor: "#FEBE13",
-              fillOpacity: 0.8,
-              strokeWeight: 2,
-              strokeColor: "gold",
-              scale: 0.8,
-            }}
             key={index}
             position={{
               lat: marker.mapInfo.coordinates.latitude,
@@ -313,6 +305,14 @@ export default function MapComponent({ mapData, googleMapsApiKey }: MapComponent
             position={draggablePin.coordinates}
             draggable={true}
             onDragEnd={handleDragEnd}
+            icon={{
+              path: "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z",
+              fillColor: "#FEBE13",
+              fillOpacity: 0.8,
+              strokeWeight: 2,
+              strokeColor: "gold",
+              scale: 0.8,
+            }}
           />
         )}
       </GoogleMap>
