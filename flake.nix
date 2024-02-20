@@ -74,7 +74,6 @@
           gitMinimal
           grpcurl
           buf
-          transifex-cli
         ]
         ++ buck2NativeBuildInputs
         ++ lib.optionals pkgs.stdenv.isLinux [
