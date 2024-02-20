@@ -44,18 +44,17 @@ export const updatePendingInvoice = wrapAsyncToRunInSpan({
   namespace: "app.invoices",
   fnName: "updatePendingInvoice",
   fn: async ({
-    walletInvoice,
+    walletInvoice: walletInvoiceBeforeProcessing,
     logger,
   }: {
     walletInvoice: WalletInvoiceWithOptionalLnInvoice
     logger: Logger
   }): Promise<true | ApplicationError> => {
-    const { paymentHash, recipientWalletDescriptor: recipientInvoiceWalletDescriptor } =
-      walletInvoice
+    const { paymentHash, recipientWalletDescriptor } = walletInvoiceBeforeProcessing
 
     const pendingInvoiceLogger = logger.child({
       hash: paymentHash,
-      walletId: recipientInvoiceWalletDescriptor.id,
+      walletId: recipientWalletDescriptor.id,
       topic: "payment",
       protocol: "lightning",
       transactionType: "receipt",
@@ -63,15 +62,14 @@ export const updatePendingInvoice = wrapAsyncToRunInSpan({
     })
 
     const result = await processPendingInvoice({
-      walletInvoice,
+      walletInvoice: walletInvoiceBeforeProcessing,
       logger: pendingInvoiceLogger,
     })
 
     const walletInvoices = WalletInvoicesRepository()
     let marked: WalletInvoiceWithOptionalLnInvoice | RepositoryError
     switch (true) {
-      // TODO: can this check be moved to above 'processPendingInvoice' call?
-      case walletInvoice.paid:
+      case walletInvoiceBeforeProcessing.paid:
         return true
 
       case result.markProcessedAsCanceledOrExpired():
@@ -83,7 +81,7 @@ export const updatePendingInvoice = wrapAsyncToRunInSpan({
         return true
 
       case result.markProcessedAsPaid():
-        marked = await walletInvoices.markAsPaid(walletInvoice.paymentHash)
+        marked = await walletInvoices.markAsPaid(paymentHash)
         if (
           marked instanceof Error &&
           !(marked instanceof CouldNotFindWalletInvoiceError)
