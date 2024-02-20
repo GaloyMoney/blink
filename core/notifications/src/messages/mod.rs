@@ -2,15 +2,15 @@ use rust_i18n::t;
 
 use crate::{notification_event::*, primitives::*};
 
-pub struct LocalizedMessage {
+pub struct LocalizedPushMessage {
     pub title: String,
     pub body: String,
 }
 
-pub struct Messages {}
+pub struct PushMessages {}
 
-impl Messages {
-    pub fn circle_grew(locale: &str, event: &CircleGrew) -> LocalizedMessage {
+impl PushMessages {
+    pub fn circle_grew(locale: &str, event: &CircleGrew) -> LocalizedPushMessage {
         let circle_type = match event.circle_type {
             CircleType::Inner => t!("circle_type.inner", locale = locale),
             CircleType::Outer => t!("circle_type.outer", locale = locale),
@@ -22,13 +22,13 @@ impl Messages {
             circle_type = circle_type
         )
         .to_string();
-        LocalizedMessage { title, body }
+        LocalizedPushMessage { title, body }
     }
 
     pub fn circle_threshold_reached(
         locale: &str,
         event: &CircleThresholdReached,
-    ) -> LocalizedMessage {
+    ) -> LocalizedPushMessage {
         let title = match event.circle_type {
             CircleType::Inner => t!("circle_threshold_reached.inner.title", locale = locale),
             CircleType::Outer => t!("circle_threshold_reached.outer.title", locale = locale),
@@ -53,22 +53,22 @@ impl Messages {
             ),
         }
         .to_string();
-        LocalizedMessage { title, body }
+        LocalizedPushMessage { title, body }
     }
 
     pub fn identity_verification_approved(
         locale: &str,
         _event: &IdentityVerificationApproved,
-    ) -> LocalizedMessage {
+    ) -> LocalizedPushMessage {
         let title = t!("identity_verification_approved.title", locale = locale).to_string();
         let body = t!("identity_verification_approved.body", locale = locale).to_string();
-        LocalizedMessage { title, body }
+        LocalizedPushMessage { title, body }
     }
 
     pub fn identity_verification_declined(
         locale: &str,
         event: &IdentityVerificationDeclined,
-    ) -> LocalizedMessage {
+    ) -> LocalizedPushMessage {
         let reason = match event.declined_reason {
             IdentityVerificationDeclinedReason::DocumentsNotClear => {
                 t!(
@@ -107,32 +107,68 @@ impl Messages {
                 )
             }
         };
-        let title = t!(
-            "identity_verification_declined.title",
-            locale = locale,
-            reason = reason
-        )
-        .to_string();
+        let title = t!("identity_verification_declined.title", locale = locale).to_string();
         let body = t!(
             "identity_verification_declined.body",
             locale = locale,
             reason = reason
         )
         .to_string();
-        LocalizedMessage { title, body }
+        LocalizedPushMessage { title, body }
     }
 
     pub fn identity_verification_review_pending(
         locale: &str,
         _event: &IdentityVerificationReviewPending,
-    ) -> LocalizedMessage {
+    ) -> LocalizedPushMessage {
         let title = t!(
             "identity_verification_review_pending.title",
             locale = locale
         )
         .to_string();
         let body = t!("identity_verification_review_pending.body", locale = locale).to_string();
-        LocalizedMessage { title, body }
+        LocalizedPushMessage { title, body }
+    }
+}
+
+pub struct LocalizedEmail {
+    pub subject: String,
+    pub body: String,
+}
+
+pub struct EmailMessages {}
+
+impl EmailMessages {
+    pub fn circle_grew(_locale: &str, _event: &CircleGrew) -> Option<LocalizedEmail> {
+        None
+    }
+
+    pub fn circle_threshold_reached(
+        _locale: &str,
+        _event: &CircleThresholdReached,
+    ) -> Option<LocalizedEmail> {
+        None
+    }
+
+    pub fn identity_verification_approved(
+        _locale: &str,
+        _event: &IdentityVerificationApproved,
+    ) -> Option<LocalizedEmail> {
+        None
+    }
+
+    pub fn identity_verification_declined(
+        _locale: &str,
+        _event: &IdentityVerificationDeclined,
+    ) -> Option<LocalizedEmail> {
+        None
+    }
+
+    pub fn identity_verification_review_pending(
+        _locale: &str,
+        _event: &IdentityVerificationReviewPending,
+    ) -> Option<LocalizedEmail> {
+        None
     }
 }
 
@@ -148,7 +184,7 @@ mod tests {
             this_month_circle_size: 1,
             all_time_circle_size: 2,
         };
-        let localized_message = Messages::circle_grew("en", &event);
+        let localized_message = PushMessages::circle_grew("en", &event);
         assert_eq!(localized_message.title, "Your Blink Circles are growing!");
         assert_eq!(
             localized_message.body,
@@ -164,14 +200,14 @@ mod tests {
             time_frame: CircleTimeFrame::AllTime,
             threshold: 2,
         };
-        let localized_message = Messages::circle_threshold_reached("en", &event);
+        let localized_message = PushMessages::circle_threshold_reached("en", &event);
         assert_eq!(localized_message.title, "Nice Inner Circle! 🤙");
         assert_eq!(
             localized_message.body,
             "You have welcomed 2 people to Blink. Keep it up!"
         );
 
-        let localized_message = Messages::circle_threshold_reached("de", &event);
+        let localized_message = PushMessages::circle_threshold_reached("de", &event);
         assert_eq!(localized_message.title, "Schöner Innerer Kreis! 🤙");
         assert_eq!(
             localized_message.body,

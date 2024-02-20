@@ -120,7 +120,7 @@ pub enum UserNotificationCategory {
     AdminNotification,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum CircleType {
     Inner,
     Outer,
@@ -135,7 +135,7 @@ impl std::fmt::Display for CircleType {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum CircleTimeFrame {
     Month,
     AllTime,
