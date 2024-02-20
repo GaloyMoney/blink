@@ -11,7 +11,7 @@ use google_fcm1::{
 
 use std::collections::HashMap;
 
-use crate::{messages::LocalizedMessage, notification_event::*, primitives::PushDeviceToken};
+use crate::{messages::LocalizedPushMessage, notification_event::*, primitives::PushDeviceToken};
 
 pub use config::*;
 use error::*;
@@ -63,7 +63,7 @@ impl FcmClient {
     pub async fn send(
         &self,
         device_token: &PushDeviceToken,
-        msg: &LocalizedMessage,
+        msg: &LocalizedPushMessage,
         deep_link: DeepLink,
     ) -> Result<(), FcmError> {
         let mut data = HashMap::new();
