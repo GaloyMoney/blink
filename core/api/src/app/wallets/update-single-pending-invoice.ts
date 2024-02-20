@@ -140,7 +140,7 @@ const processPendingInvoice = async ({
     return ProcessPendingInvoiceResult.processAsPaidWithError(lnInvoiceLookup)
   }
 
-  // Check paid after invoice has been successfully fetched
+  // Check paid on wallet invoice after lnd invoice has been successfully fetched
   if (walletInvoice.paid) {
     pendingInvoiceLogger.info("invoice has already been processed")
     return ProcessPendingInvoiceResult.processAsPaid()
@@ -205,18 +205,21 @@ const lockedUpdatePendingInvoiceSteps = async ({
   recipientWalletId,
   receivedBtc,
   description,
-  isSettledInLnd,
   logger,
+
+  // Passed in to lock for idempotent "settle" conditional operation
+  isSettledInLnd,
 }: {
   paymentHash: PaymentHash
   recipientWalletId: WalletId
   receivedBtc: BtcPaymentAmount
   description: string
-  isSettledInLnd: boolean
   logger: Logger
-}): Promise<ProcessPendingInvoiceResult> => {
-  const walletInvoices = WalletInvoicesRepository()
 
+  isSettledInLnd: boolean
+}): Promise<ProcessPendingInvoiceResult> => {
+  // Refetch wallet invoice
+  const walletInvoices = WalletInvoicesRepository()
   const walletInvoiceInsideLock = await walletInvoices.findByPaymentHash(paymentHash)
   if (walletInvoiceInsideLock instanceof CouldNotFindError) {
     logger.error({ paymentHash }, "WalletInvoice doesn't exist")
@@ -230,7 +233,7 @@ const lockedUpdatePendingInvoiceSteps = async ({
     return ProcessPendingInvoiceResult.processAsPaid()
   }
 
-  // Prepare metadata and record transaction
+  // Prepare ledger transaction metadata
   const recipientInvoiceWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientInvoiceWallet instanceof Error) {
     return ProcessPendingInvoiceResult.processAsPaidWithError(recipientInvoiceWallet)
@@ -278,7 +281,6 @@ const lockedUpdatePendingInvoiceSteps = async ({
   if (displayPriceRatio instanceof Error) {
     return ProcessPendingInvoiceResult.processAsPaidWithError(displayPriceRatio)
   }
-
   const { displayAmount: displayPaymentAmount, displayFee } = DisplayAmountsConverter(
     displayPriceRatio,
   ).convert({
@@ -292,7 +294,6 @@ const lockedUpdatePendingInvoiceSteps = async ({
   // markAsPaid could be done after the transaction, but we should in that case not only look
   // for walletInvoicesRepo, but also in the ledger to make sure in case the process crash in this
   // loop that an eventual consistency doesn't lead to a double credit
-
   const {
     metadata,
     creditAccountAdditionalMetadata,
@@ -312,6 +313,7 @@ const lockedUpdatePendingInvoiceSteps = async ({
     displayCurrency: recipientDisplayCurrency,
   })
 
+  // Idempotent settle invoice in lnd
   if (!isSettledInLnd) {
     const lndService = LndService()
     if (lndService instanceof Error) {
@@ -319,6 +321,7 @@ const lockedUpdatePendingInvoiceSteps = async ({
       recordExceptionInCurrentSpan({ error: lndService })
       return ProcessPendingInvoiceResult.err(lndService)
     }
+    // Returns 'true' on re-runs if invoice is already settled in lnd
     const invoiceSettled = await lndService.settleInvoice({
       pubkey: walletInvoiceInsideLock.pubkey,
       secret: walletInvoiceInsideLock.secret,
@@ -330,12 +333,12 @@ const lockedUpdatePendingInvoiceSteps = async ({
     }
   }
 
+  // Mark paid and record ledger transaction
   const invoicePaid = await walletInvoices.markAsPaid(paymentHash)
   if (invoicePaid instanceof Error) {
     return ProcessPendingInvoiceResult.processAsPaidWithError(invoicePaid)
   }
 
-  //TODO: add displayCurrency: displayPaymentAmount.currency,
   const journal = await LedgerFacade.recordReceiveOffChain({
     description,
     recipientWalletDescriptor,
