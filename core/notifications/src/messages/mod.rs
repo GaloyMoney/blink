@@ -107,12 +107,7 @@ impl Messages {
                 )
             }
         };
-        let title = t!(
-            "identity_verification_declined.title",
-            locale = locale,
-            reason = reason
-        )
-        .to_string();
+        let title = t!("identity_verification_declined.title", locale = locale).to_string();
         let body = t!(
             "identity_verification_declined.body",
             locale = locale,
