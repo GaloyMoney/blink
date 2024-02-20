@@ -13,6 +13,9 @@ export class MultiplePendingPaymentsForHashError extends LedgerServiceError {
 export class MissingExpectedDisplayAmountsForTransactionError extends LedgerServiceError {
   level = ErrorLevel.Critical
 }
+export class InvalidLnPaymentTxnsBundleError extends LedgerServiceError {
+  level = ErrorLevel.Critical
+}
 export class UnknownLedgerError extends LedgerServiceError {
   level = ErrorLevel.Critical
 }

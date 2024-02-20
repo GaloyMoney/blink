@@ -1,6 +1,7 @@
 type LedgerError = import("./errors").LedgerError
 type FeeDifferenceError = import("./errors").FeeDifferenceError
 type LedgerServiceError = import("./errors").LedgerServiceError
+type InvalidLnPaymentTxnsBundleError = import("./errors").InvalidLnPaymentTxnsBundleError
 
 declare const liabilitiesWalletId: unique symbol
 type LiabilitiesWalletId = string & { [liabilitiesWalletId]: never }
@@ -354,4 +355,11 @@ type ImbalanceCalculator = {
   getSwapOutImbalanceAmount: <T extends WalletCurrency>(
     wallet: WalletDescriptor<T>,
   ) => Promise<PaymentAmount<T> | LedgerServiceError | ValidationError>
+}
+
+type LnPaymentState =
+  (typeof import("./ln-payment-state").LnPaymentState)[keyof typeof import("./ln-payment-state").LnPaymentState]
+
+type LnPaymentStateDeterminator = {
+  determine: () => LnPaymentState | InvalidLnPaymentTxnsBundleError
 }
