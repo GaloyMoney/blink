@@ -15,7 +15,7 @@ import { CouldNotFindError, CouldNotFindWalletInvoiceError } from "@/domain/erro
 import { checkedToSats } from "@/domain/bitcoin"
 import { DisplayAmountsConverter } from "@/domain/fiat"
 import { InvoiceNotFoundError } from "@/domain/bitcoin/lightning"
-import { paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
+import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
 import { WalletInvoiceReceiver } from "@/domain/wallet-invoices/wallet-invoice-receiver"
 import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
@@ -363,6 +363,18 @@ const lockedUpdatePendingInvoiceSteps = async ({
     additionalInternalMetadata: internalAccountsAdditionalMetadata,
   })
   if (journal instanceof Error) {
+    recordExceptionInCurrentSpan({
+      error: journal,
+      level: ErrorLevel.Critical,
+      attributes: {
+        ["error.actionRequired.message"]:
+          "Check that invoice exists and is settled in lnd, confirm that receipt ledger transaction " +
+          "did not get recorded, and finally unmark paid (and processed) from wallet invoice in " +
+          "wallet_invoices collection.",
+        ["error.actionRequired.paymentHash"]: paymentHash,
+        ["error.actionRequired.pubkey]"]: walletInvoiceInsideLock.pubkey,
+      },
+    })
     return ProcessPendingInvoiceResult.err(journal)
   }
 
