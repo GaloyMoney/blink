@@ -1,9 +1,8 @@
 import {
   ProcessPendingInvoiceResult,
+  ProcessPendingInvoiceResultType,
   ProcessedReason,
 } from "./process-pending-invoice-result"
-
-import { InvalidInvoiceProcessingStateError } from "./errors"
 
 import { InvoiceNotFoundError } from "@/domain/bitcoin/lightning"
 
@@ -14,6 +13,10 @@ import { WalletInvoicesRepository } from "@/services/mongoose"
 import { LndService } from "@/services/lnd"
 
 import { elapsedSinceTimestamp } from "@/utils"
+
+const assertUnreachable = (x: never): never => {
+  throw new Error(`This should never compile with ${x}`)
+}
 
 export const declineHeldInvoice = wrapAsyncToRunInSpan({
   namespace: "app.invoices",
@@ -42,8 +45,8 @@ export const declineHeldInvoice = wrapAsyncToRunInSpan({
 
     const walletInvoices = WalletInvoicesRepository()
     let marked: WalletInvoiceWithOptionalLnInvoice | RepositoryError
-    switch (true) {
-      case result.markProcessedAsCanceledOrExpired():
+    switch (result.type) {
+      case ProcessPendingInvoiceResultType.MarkProcessedAsCanceledOrExpired:
         marked = await walletInvoices.markAsProcessingCompleted(paymentHash)
         if (marked instanceof Error) {
           pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
@@ -51,14 +54,16 @@ export const declineHeldInvoice = wrapAsyncToRunInSpan({
         }
         return true
 
-      case result.reason() === ProcessedReason.InvoiceNotPaidYet:
+      case ProcessPendingInvoiceResultType.Error:
+        return result.error
+
+      case ProcessPendingInvoiceResultType.MarkProcessedAsPaid:
+      case ProcessPendingInvoiceResultType.MarkProcessedAsPaidWithError:
+      case ProcessPendingInvoiceResultType.ReasonInvoiceNotPaidYet:
         return true
 
-      case !!result.error():
-        return result.error() as ApplicationError
-
       default:
-        return new InvalidInvoiceProcessingStateError(JSON.stringify(result._state()))
+        return assertUnreachable(result)
     }
   },
 })

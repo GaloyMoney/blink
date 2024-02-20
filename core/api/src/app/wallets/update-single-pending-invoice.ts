@@ -4,10 +4,9 @@ import { processPendingInvoiceForDecline } from "./decline-single-pending-invoic
 
 import {
   ProcessPendingInvoiceResult,
+  ProcessPendingInvoiceResultType,
   ProcessedReason,
 } from "./process-pending-invoice-result"
-
-import { InvalidInvoiceProcessingStateError } from "./errors"
 
 import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@/app/prices"
@@ -40,6 +39,10 @@ import { NotificationsService } from "@/services/notifications"
 import { toDisplayBaseAmount } from "@/domain/payments"
 import { LockServiceError } from "@/domain/lock"
 
+const assertUnreachable = (x: never): never => {
+  throw new Error(`This should never compile with ${x}`)
+}
+
 export const updatePendingInvoice = wrapAsyncToRunInSpan({
   namespace: "app.invoices",
   fnName: "updatePendingInvoice",
@@ -68,11 +71,9 @@ export const updatePendingInvoice = wrapAsyncToRunInSpan({
 
     const walletInvoices = WalletInvoicesRepository()
     let marked: WalletInvoiceWithOptionalLnInvoice | RepositoryError
-    switch (true) {
-      case walletInvoiceBeforeProcessing.paid:
-        return true
-
-      case result.markProcessedAsCanceledOrExpired():
+    if (walletInvoiceBeforeProcessing.paid) return true
+    switch (result.type) {
+      case ProcessPendingInvoiceResultType.MarkProcessedAsCanceledOrExpired:
         marked = await walletInvoices.markAsProcessingCompleted(paymentHash)
         if (marked instanceof Error) {
           pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
@@ -80,7 +81,8 @@ export const updatePendingInvoice = wrapAsyncToRunInSpan({
         }
         return true
 
-      case result.markProcessedAsPaid():
+      case ProcessPendingInvoiceResultType.MarkProcessedAsPaid:
+      case ProcessPendingInvoiceResultType.MarkProcessedAsPaidWithError:
         marked = await walletInvoices.markAsPaid(paymentHash)
         if (
           marked instanceof Error &&
@@ -88,16 +90,16 @@ export const updatePendingInvoice = wrapAsyncToRunInSpan({
         ) {
           return marked
         }
-        return result.error() || true
+        return "error" in result ? result.error : true
 
-      case result.reason() === ProcessedReason.InvoiceNotPaidYet:
+      case ProcessPendingInvoiceResultType.Error:
+        return result.error
+
+      case ProcessPendingInvoiceResultType.ReasonInvoiceNotPaidYet:
         return true
 
-      case !!result.error():
-        return result.error() as ApplicationError
-
       default:
-        return new InvalidInvoiceProcessingStateError(JSON.stringify(result._state()))
+        return assertUnreachable(result)
     }
   },
 })
