@@ -124,7 +124,6 @@ const processPendingInvoice = async ({
   const lndService = LndService()
   if (lndService instanceof Error) {
     pendingInvoiceLogger.error("Unable to initialize LndService")
-    recordExceptionInCurrentSpan({ error: lndService })
     return ProcessPendingInvoiceResult.err(lndService)
   }
 
@@ -316,7 +315,6 @@ const lockedUpdatePendingInvoiceSteps = async ({
     const lndService = LndService()
     if (lndService instanceof Error) {
       logger.error("Unable to initialize LndService")
-      recordExceptionInCurrentSpan({ error: lndService })
       return ProcessPendingInvoiceResult.err(lndService)
     }
     // Returns 'true' on re-runs if invoice is already settled in lnd
@@ -326,7 +324,6 @@ const lockedUpdatePendingInvoiceSteps = async ({
     })
     if (invoiceSettled instanceof Error) {
       logger.error({ paymentHash }, "Unable to settleInvoice")
-      recordExceptionInCurrentSpan({ error: invoiceSettled })
       return ProcessPendingInvoiceResult.err(invoiceSettled)
     }
   }
