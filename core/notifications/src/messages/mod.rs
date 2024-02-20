@@ -154,15 +154,27 @@ impl EmailMessages {
     pub fn identity_verification_approved(
         locale: &str,
         _event: &IdentityVerificationApproved,
-        handlebars: &Handlebars,
     ) -> Option<LocalizedEmail> {
+        let mut handlebars = Handlebars::new();
+        // add error handling
+        handlebars
+            .register_template_file("identification", "./templates/identification.hbs")
+            .ok()?;
+        handlebars
+            .register_template_file("base", "./templates/layouts/base.hbs")
+            .ok()?;
+        handlebars
+            .register_template_file("styles", "./templates/partials/styles.hbs")
+            .ok()?;
+
         let title = t!("identity_verification_approved.title", locale = locale).to_string();
         let body = t!("identity_verification_approved.body", locale = locale).to_string();
         let data = serde_json::json!({
             "subject": &title,
             "body": &body
         });
-        // use error handling here
+
+        // add error handling
         let body = handlebars.render("identification", &data).ok()?;
 
         Some(LocalizedEmail {

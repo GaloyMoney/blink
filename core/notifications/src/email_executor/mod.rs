@@ -2,7 +2,6 @@ mod config;
 pub mod error;
 mod smtp;
 
-use handlebars::Handlebars;
 use tracing::instrument;
 
 use crate::{notification_event::*, user_notification_settings::*};
@@ -16,7 +15,6 @@ pub struct EmailExecutor {
     _config: EmailExecutorConfig,
     smtp: SmtpClient,
     settings: UserNotificationSettingsRepo,
-    handlebars: Handlebars<'static>,
 }
 
 impl EmailExecutor {
@@ -25,16 +23,11 @@ impl EmailExecutor {
         settings: UserNotificationSettingsRepo,
     ) -> Result<Self, EmailExecutorError> {
         let smtp = SmtpClient::init(config.smtp.clone())?;
-        let mut handlebars = Handlebars::new();
-        handlebars.register_template_file("identification", "./templates/identification.hbs")?;
-        handlebars.register_template_file("base", "./templates/layouts/base.hbs")?;
-        handlebars.register_template_file("styles", "./templates/partials/styles.hbs")?;
 
         Ok(EmailExecutor {
             _config: config,
             smtp,
             settings,
-            handlebars,
         })
     }
 
@@ -47,8 +40,7 @@ impl EmailExecutor {
             .ok()
             .and_then(|s| s.email_address().map(|addr| (s, addr)))
         {
-            let msg =
-                event.to_localized_email(settings.locale().unwrap_or_default(), &self.handlebars);
+            let msg = event.to_localized_email(settings.locale().unwrap_or_default());
             if let Some(msg) = msg {
                 self.smtp.send_email(msg, addr).await?;
             }
