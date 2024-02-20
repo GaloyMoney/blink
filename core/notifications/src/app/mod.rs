@@ -8,7 +8,8 @@ use tracing::instrument;
 use std::sync::Arc;
 
 use crate::{
-    job, notification_event::*, primitives::*, push_executor::*, user_notification_settings::*,
+    email_executor::EmailExecutor, job, notification_event::*, primitives::*, push_executor::*,
+    user_notification_settings::*,
 };
 
 pub use config::*;
@@ -25,8 +26,10 @@ pub struct NotificationsApp {
 impl NotificationsApp {
     pub async fn init(pool: Pool<Postgres>, config: AppConfig) -> Result<Self, ApplicationError> {
         let settings = UserNotificationSettingsRepo::new(&pool);
-        let executor = PushExecutor::init(config.executor.clone(), settings.clone()).await?;
-        let runner = job::start_job_runner(&pool, executor).await?;
+        let push_executor =
+            PushExecutor::init(config.push_executor.clone(), settings.clone()).await?;
+        let email_executor = EmailExecutor::init(config.email_executor.clone(), settings.clone())?;
+        let runner = job::start_job_runner(&pool, push_executor, email_executor).await?;
         Ok(Self {
             _config: config,
             pool,
@@ -173,6 +176,9 @@ impl NotificationsApp {
         event: T,
     ) -> Result<(), ApplicationError> {
         let mut tx = self.pool.begin().await?;
+        if event.should_send_email() {
+            job::spawn_send_email_notification(&mut tx, event.clone().into()).await?;
+        }
         job::spawn_send_push_notification(&mut tx, event.into()).await?;
         tx.commit().await?;
         Ok(())

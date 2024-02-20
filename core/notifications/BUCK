@@ -69,6 +69,7 @@ galoy_rust_bin(
         "//third-party/rust:prost",
         "//third-party/rust:rust-i18n",
         "//third-party/rust:google-fcm1",
+        "//third-party/rust:lettre",
     ],
     extra_tests = [
         "//lib/tracing-rs:tracing",

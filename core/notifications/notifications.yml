@@ -6,8 +6,13 @@
 # grpc_server:
 #   port: 6685
 app:
-  executor:
+  push_executor:
     fcm:
       google_application_credentials_path: "./config/notifications/fake_service_account.json"
+  email_executor:
+    smtp:
+      username: ""
+      from_email: ""
+      relay: ""
 # kratos_import:
 #   execute_import: true
