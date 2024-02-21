@@ -2,6 +2,7 @@ import { memoSharingConfig } from "@/config"
 import { WalletTransactionHistory } from "@/domain/wallets"
 
 import { getNonEndUserWalletIds, LedgerService } from "@/services/ledger"
+import * as LedgerFacade from "@/services/ledger/facade"
 
 export const getTransactionsForWalletByPaymentHash = async ({
   walletId,
@@ -10,8 +11,7 @@ export const getTransactionsForWalletByPaymentHash = async ({
   walletId: WalletId
   paymentHash: PaymentHash
 }): Promise<WalletTransaction[] | ApplicationError> => {
-  const ledger = LedgerService()
-  const ledgerTransactions = await ledger.getTransactionsForWalletByPaymentHash({
+  const ledgerTransactions = await LedgerFacade.getTransactionsForWalletByPaymentHash({
     walletId,
     paymentHash,
   })
