@@ -2,7 +2,7 @@
 
 ## What is it for?
 
-This repo is a web application that can be used to send tips or payments to users.
+This is a web-based POS app.
 
 It's packaged as a docker image, and is automatically installed as part of the Galoy helm charts.
 
@@ -65,7 +65,6 @@ yarn build
 This will build the app for production under a `build` folder. It will bundle React in production mode and optimize the build for the best performance. The build will be minified, and the bundled files will include unique hashes in their names.
 
 ## Test lnurlp
-
 
 This environment variable is needed for getting the lnurlp endpoint working.
 
