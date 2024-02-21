@@ -38,6 +38,8 @@ galoy_rust_bin(
       ".sqlx/*",
       "migrations/*",
       "locales/*",
+      "templates/*.hbs",
+      "templates/**/*.hbs",
       "notifications.yml"
     ]),
     deps = [
@@ -70,6 +72,7 @@ galoy_rust_bin(
         "//third-party/rust:rust-i18n",
         "//third-party/rust:google-fcm1",
         "//third-party/rust:lettre",
+        "//third-party/rust:handlebars",
     ],
     extra_tests = [
         "//lib/tracing-rs:tracing",

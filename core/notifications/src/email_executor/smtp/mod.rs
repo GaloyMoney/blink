@@ -2,7 +2,7 @@ mod config;
 pub mod error;
 
 use lettre::{
-    message::{Mailbox, Message},
+    message::{header::ContentType, Mailbox, Message},
     transport::smtp::authentication::Credentials,
     AsyncSmtpTransport, AsyncTransport, Tokio1Executor,
 };
@@ -41,6 +41,7 @@ impl SmtpClient {
             .from(Mailbox::new(None, self.from_email.parse()?))
             .to(Mailbox::new(None, recipient_addr.into_inner().parse()?))
             .subject(msg.subject)
+            .header(ContentType::TEXT_HTML)
             .body(msg.body)?;
         self.client.send(email).await?;
         Ok(())

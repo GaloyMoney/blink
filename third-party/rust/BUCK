@@ -2689,6 +2689,49 @@ cargo.rust_library(
     ],
 )
 
+alias(
+    name = "handlebars",
+    actual = ":handlebars-5.1.0",
+    visibility = ["PUBLIC"],
+)
+
+http_archive(
+    name = "handlebars-5.1.0.crate",
+    sha256 = "ab283476b99e66691dee3f1640fea91487a8d81f50fb5ecc75538f8f8879a1e4",
+    strip_prefix = "handlebars-5.1.0",
+    urls = ["https://crates.io/api/v1/crates/handlebars/5.1.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "handlebars-5.1.0",
+    srcs = [":handlebars-5.1.0.crate"],
+    crate = "handlebars",
+    crate_root = "handlebars-5.1.0.crate/src/lib.rs",
+    edition = "2021",
+    env = {
+        "CARGO_MANIFEST_DIR": "handlebars-5.1.0.crate",
+        "CARGO_PKG_AUTHORS": "Ning Sun <sunng@pm.me>",
+        "CARGO_PKG_DESCRIPTION": "Handlebars templating implemented in Rust.",
+        "CARGO_PKG_NAME": "handlebars",
+        "CARGO_PKG_REPOSITORY": "https://github.com/sunng87/handlebars-rust",
+        "CARGO_PKG_VERSION": "5.1.0",
+        "CARGO_PKG_VERSION_MAJOR": "5",
+        "CARGO_PKG_VERSION_MINOR": "1",
+        "CARGO_PKG_VERSION_PATCH": "0",
+    },
+    features = ["default"],
+    visibility = [],
+    deps = [
+        ":log-0.4.20",
+        ":pest-2.7.5",
+        ":pest_derive-2.7.5",
+        ":serde-1.0.197",
+        ":serde_json-1.0.114",
+        ":thiserror-1.0.57",
+    ],
+)
+
 http_archive(
     name = "hashbrown-0.12.3.crate",
     sha256 = "8a9ee70c43aaf417c914396645a0fa852624801b24ebb7ae78fe8272889ac888",
@@ -4894,6 +4937,79 @@ cargo.rust_library(
         ":memchr-2.6.4",
         ":thiserror-1.0.57",
         ":ucd-trie-0.1.6",
+    ],
+)
+
+http_archive(
+    name = "pest_derive-2.7.5.crate",
+    sha256 = "81d78524685f5ef2a3b3bd1cafbc9fcabb036253d9b1463e726a91cd16e2dfc2",
+    strip_prefix = "pest_derive-2.7.5",
+    urls = ["https://crates.io/api/v1/crates/pest_derive/2.7.5/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "pest_derive-2.7.5",
+    srcs = [":pest_derive-2.7.5.crate"],
+    crate = "pest_derive",
+    crate_root = "pest_derive-2.7.5.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "default",
+        "std",
+    ],
+    proc_macro = True,
+    visibility = [],
+    deps = [
+        ":pest-2.7.5",
+        ":pest_generator-2.7.5",
+    ],
+)
+
+http_archive(
+    name = "pest_generator-2.7.5.crate",
+    sha256 = "68bd1206e71118b5356dae5ddc61c8b11e28b09ef6a31acbd15ea48a28e0c227",
+    strip_prefix = "pest_generator-2.7.5",
+    urls = ["https://crates.io/api/v1/crates/pest_generator/2.7.5/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "pest_generator-2.7.5",
+    srcs = [":pest_generator-2.7.5.crate"],
+    crate = "pest_generator",
+    crate_root = "pest_generator-2.7.5.crate/src/lib.rs",
+    edition = "2021",
+    features = ["std"],
+    visibility = [],
+    deps = [
+        ":pest-2.7.5",
+        ":pest_meta-2.7.5",
+        ":proc-macro2-1.0.76",
+        ":quote-1.0.35",
+        ":syn-2.0.48",
+    ],
+)
+
+http_archive(
+    name = "pest_meta-2.7.5.crate",
+    sha256 = "7c747191d4ad9e4a4ab9c8798f1e82a39affe7ef9648390b7e5548d18e099de6",
+    strip_prefix = "pest_meta-2.7.5",
+    urls = ["https://crates.io/api/v1/crates/pest_meta/2.7.5/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "pest_meta-2.7.5",
+    srcs = [":pest_meta-2.7.5.crate"],
+    crate = "pest_meta",
+    crate_root = "pest_meta-2.7.5.crate/src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+    visibility = [],
+    deps = [
+        ":once_cell-1.18.0",
+        ":pest-2.7.5",
     ],
 )
 
@@ -8660,6 +8776,7 @@ cargo.rust_binary(
         ":derive_builder-0.13.1",
         ":futures-0.3.30",
         ":google-fcm1-5.0.3+20230106",
+        ":handlebars-5.1.0",
         ":http-0.2.11",
         ":jsonwebtoken-9.2.0",
         ":lettre-0.11.4",
