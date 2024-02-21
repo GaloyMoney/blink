@@ -10,17 +10,26 @@ pub struct EmailFormatter<'a> {
 impl EmailFormatter<'_> {
     pub fn init() -> Result<Self, MessagesError> {
         let mut handlebars = Handlebars::new();
-        handlebars.register_template_file(
+        handlebars.register_template_string(
             "identification",
-            concat!(env!("CARGO_MANIFEST_DIR"), "/templates/identification.hbs"),
+            include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/templates/identification.hbs"
+            )),
         )?;
-        handlebars.register_template_file(
+        handlebars.register_template_string(
             "base",
-            concat!(env!("CARGO_MANIFEST_DIR"), "/templates/layouts/base.hbs"),
+            include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/templates/layouts/base.hbs"
+            )),
         )?;
-        handlebars.register_template_file(
+        handlebars.register_template_string(
             "styles",
-            concat!(env!("CARGO_MANIFEST_DIR"), "/templates/partials/styles.hbs"),
+            include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/templates/partials/styles.hbs"
+            )),
         )?;
 
         Ok(EmailFormatter { handlebars })
