@@ -3,7 +3,11 @@ import { NoTransactionToUpdateStateError, UnknownLedgerError } from "../domain/e
 
 import { getTransactionsForWalletsByPaymentHash } from "./get-transactions"
 
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
+
 import { LnPaymentStateDeterminator } from "@/domain/ledger/ln-payment-state"
+
+import { ErrorLevel } from "@/domain/shared"
 
 const updateStateByHash = async ({
   paymentHash,
@@ -33,7 +37,7 @@ export const updateLnPaymentState = async ({
 }: {
   walletIds: WalletId[]
   paymentHash: PaymentHash
-}): Promise<true | ApplicationError> => {
+}): Promise<boolean | ApplicationError> => {
   const txns = await getTransactionsForWalletsByPaymentHash({
     walletIds,
     paymentHash,
@@ -42,7 +46,19 @@ export const updateLnPaymentState = async ({
 
   const lnPaymentState = LnPaymentStateDeterminator(txns).determine()
   if (lnPaymentState instanceof Error) {
-    return lnPaymentState
+    recordExceptionInCurrentSpan({
+      error: lnPaymentState,
+      level: ErrorLevel.Critical,
+      attributes: {
+        ["error.actionRequired.message"]:
+          "Check the transaction bundle using the paymentHash and walletIds, " +
+          "determine the transaction state type, and manually update transactions " +
+          "with this hash to the correct state.",
+        ["error.actionRequired.paymentHash"]: paymentHash,
+        ["error.actionRequired.walletIds"]: JSON.stringify(walletIds),
+      },
+    })
+    return false
   }
 
   return updateStateByHash({
