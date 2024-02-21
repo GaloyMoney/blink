@@ -1,9 +1,12 @@
+mod email_formatter;
+pub mod error;
+
 use rust_i18n::t;
 
 use crate::{notification_event::*, primitives::*};
 
-mod email_formatter;
 use email_formatter::EmailFormatter;
+use error::*;
 
 pub struct LocalizedPushMessage {
     pub title: String,
@@ -72,44 +75,7 @@ impl PushMessages {
         locale: &str,
         event: &IdentityVerificationDeclined,
     ) -> LocalizedPushMessage {
-        let reason = match event.declined_reason {
-            IdentityVerificationDeclinedReason::DocumentsNotClear => {
-                t!(
-                    "identity_verification_declined.reason.documents_not_clear",
-                    locale = locale
-                )
-            }
-            IdentityVerificationDeclinedReason::SelfieNotClear => {
-                t!(
-                    "identity_verification_declined.reason.photo_not_clear",
-                    locale = locale
-                )
-            }
-            IdentityVerificationDeclinedReason::DocumentsNotSupported => {
-                t!(
-                    "identity_verification_declined.reason.documents_not_supported",
-                    locale = locale
-                )
-            }
-            IdentityVerificationDeclinedReason::DocumentsExpired => {
-                t!(
-                    "identity_verification_declined.reason.documents_expired",
-                    locale = locale
-                )
-            }
-            IdentityVerificationDeclinedReason::DocumentsDoNotMatch => {
-                t!(
-                    "identity_verification_declined.reason.documents_do_not_match",
-                    locale = locale
-                )
-            }
-            IdentityVerificationDeclinedReason::Other => {
-                t!(
-                    "identity_verification_declined.reason.other",
-                    locale = locale
-                )
-            }
-        };
+        let reason = declined_reason(locale, event);
         let title = t!("identity_verification_declined.title", locale = locale).to_string();
         let body = t!(
             "identity_verification_declined.body",
@@ -142,47 +108,122 @@ pub struct LocalizedEmail {
 pub struct EmailMessages {}
 
 impl EmailMessages {
-    pub fn circle_grew(_locale: &str, _event: &CircleGrew) -> Option<LocalizedEmail> {
-        None
+    pub fn circle_grew(
+        _locale: &str,
+        _event: &CircleGrew,
+    ) -> Result<Option<LocalizedEmail>, MessagesError> {
+        Ok(None)
     }
 
     pub fn circle_threshold_reached(
         _locale: &str,
         _event: &CircleThresholdReached,
-    ) -> Option<LocalizedEmail> {
-        None
+    ) -> Result<Option<LocalizedEmail>, MessagesError> {
+        Ok(None)
     }
 
     pub fn identity_verification_approved(
         locale: &str,
         _event: &IdentityVerificationApproved,
-    ) -> Option<LocalizedEmail> {
-        let email_formatter = EmailFormatter::new();
+    ) -> Result<Option<LocalizedEmail>, MessagesError> {
+        let email_formatter = EmailFormatter::init()?;
 
         let title = t!("identity_verification_approved.title", locale = locale).to_string();
         let body = t!("identity_verification_approved.body", locale = locale).to_string();
 
-        let body = email_formatter.generic_email_template(&title, &body);
+        let body = email_formatter.generic_email_template(&title, &body)?;
 
-        Some(LocalizedEmail {
+        Ok(Some(LocalizedEmail {
             subject: title,
             body,
-        })
+        }))
     }
 
     pub fn identity_verification_declined(
-        _locale: &str,
-        _event: &IdentityVerificationDeclined,
-    ) -> Option<LocalizedEmail> {
-        None
+        locale: &str,
+        event: &IdentityVerificationDeclined,
+    ) -> Result<Option<LocalizedEmail>, MessagesError> {
+        let email_formatter = EmailFormatter::init()?;
+
+        let reason = declined_reason(locale, event);
+        let title = t!("identity_verification_declined.title", locale = locale).to_string();
+        let body = t!(
+            "identity_verification_declined.body",
+            locale = locale,
+            reason = reason
+        )
+        .to_string();
+
+        let body = email_formatter.generic_email_template(&title, &body)?;
+
+        Ok(Some(LocalizedEmail {
+            subject: title,
+            body,
+        }))
     }
 
     pub fn identity_verification_review_pending(
-        _locale: &str,
+        locale: &str,
         _event: &IdentityVerificationReviewPending,
-    ) -> Option<LocalizedEmail> {
-        None
+    ) -> Result<Option<LocalizedEmail>, MessagesError> {
+        let email_formatter = EmailFormatter::init()?;
+
+        let title = t!(
+            "identity_verification_review_pending.title",
+            locale = locale
+        )
+        .to_string();
+        let body = t!("identity_verification_review_pending.body", locale = locale).to_string();
+
+        let body = email_formatter.generic_email_template(&title, &body)?;
+
+        Ok(Some(LocalizedEmail {
+            subject: title,
+            body,
+        }))
     }
+}
+
+fn declined_reason(locale: &str, event: &IdentityVerificationDeclined) -> String {
+    let reason = match event.declined_reason {
+        IdentityVerificationDeclinedReason::DocumentsNotClear => {
+            t!(
+                "identity_verification_declined.reason.documents_not_clear",
+                locale = locale
+            )
+        }
+        IdentityVerificationDeclinedReason::SelfieNotClear => {
+            t!(
+                "identity_verification_declined.reason.photo_not_clear",
+                locale = locale
+            )
+        }
+        IdentityVerificationDeclinedReason::DocumentsNotSupported => {
+            t!(
+                "identity_verification_declined.reason.documents_not_supported",
+                locale = locale
+            )
+        }
+        IdentityVerificationDeclinedReason::DocumentsExpired => {
+            t!(
+                "identity_verification_declined.reason.documents_expired",
+                locale = locale
+            )
+        }
+        IdentityVerificationDeclinedReason::DocumentsDoNotMatch => {
+            t!(
+                "identity_verification_declined.reason.documents_do_not_match",
+                locale = locale
+            )
+        }
+        IdentityVerificationDeclinedReason::Other => {
+            t!(
+                "identity_verification_declined.reason.other",
+                locale = locale
+            )
+        }
+    };
+    reason.to_string()
 }
 
 #[cfg(test)]

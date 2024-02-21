@@ -1,6 +1,7 @@
-use super::{DeepLink, NotificationEvent};
-use crate::{messages::*, primitives::*};
 use serde::{Deserialize, Serialize};
+
+use super::{DeepLink, NotificationEvent, NotificationEventError};
+use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CircleThresholdReached {
@@ -27,8 +28,14 @@ impl NotificationEvent for CircleThresholdReached {
         PushMessages::circle_threshold_reached(locale.as_ref(), self)
     }
 
-    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
-        EmailMessages::circle_threshold_reached(locale.as_ref(), self)
+    fn to_localized_email(
+        &self,
+        locale: GaloyLocale,
+    ) -> Result<Option<LocalizedEmail>, NotificationEventError> {
+        Ok(EmailMessages::circle_threshold_reached(
+            locale.as_ref(),
+            self,
+        )?)
     }
 
     fn should_send_email(&self) -> bool {

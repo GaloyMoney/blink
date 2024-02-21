@@ -1,21 +1,21 @@
+mod circle_grew;
+mod circle_threshold_reached;
+pub mod error;
+mod identity_verification_approved;
+mod identity_verification_declined;
+mod identity_verification_review_pending;
+
 use serde::{Deserialize, Serialize};
 
 use crate::{messages::*, primitives::*};
 
-mod circle_grew;
-pub use circle_grew::*;
+pub(super) use circle_grew::*;
+pub(super) use circle_threshold_reached::*;
+pub(super) use identity_verification_approved::*;
+pub(super) use identity_verification_declined::*;
+pub(super) use identity_verification_review_pending::*;
 
-mod circle_threshold_reached;
-pub use circle_threshold_reached::*;
-
-mod identity_verification_approved;
-pub use identity_verification_approved::*;
-
-mod identity_verification_declined;
-pub use identity_verification_declined::*;
-
-mod identity_verification_review_pending;
-pub use identity_verification_review_pending::*;
+use error::*;
 
 pub enum DeepLink {
     None,
@@ -28,7 +28,10 @@ pub trait NotificationEvent: std::fmt::Debug + Into<NotificationEventPayload> + 
     fn deep_link(&self) -> DeepLink;
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage;
     fn should_send_email(&self) -> bool;
-    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail>;
+    fn to_localized_email(
+        &self,
+        locale: GaloyLocale,
+    ) -> Result<Option<LocalizedEmail>, NotificationEventError>;
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -89,7 +92,10 @@ impl NotificationEvent for NotificationEventPayload {
         }
     }
 
-    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
+    fn to_localized_email(
+        &self,
+        locale: GaloyLocale,
+    ) -> Result<Option<LocalizedEmail>, NotificationEventError> {
         match self {
             NotificationEventPayload::CircleGrew(event) => event.to_localized_email(locale),
             NotificationEventPayload::CircleThresholdReached(event) => {

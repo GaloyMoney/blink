@@ -1,6 +1,7 @@
-use super::{DeepLink, NotificationEvent};
-use crate::{messages::*, primitives::*};
 use serde::{Deserialize, Serialize};
+
+use super::{DeepLink, NotificationEvent, NotificationEventError};
+use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum IdentityVerificationDeclinedReason {
@@ -35,8 +36,14 @@ impl NotificationEvent for IdentityVerificationDeclined {
         PushMessages::identity_verification_declined(locale.as_ref(), self)
     }
 
-    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
-        EmailMessages::identity_verification_declined(locale.as_ref(), self)
+    fn to_localized_email(
+        &self,
+        locale: GaloyLocale,
+    ) -> Result<Option<LocalizedEmail>, NotificationEventError> {
+        Ok(EmailMessages::identity_verification_declined(
+            locale.as_ref(),
+            self,
+        )?)
     }
 
     fn should_send_email(&self) -> bool {
