@@ -183,7 +183,14 @@ const processPendingInvoice = async ({
     currency: WalletCurrency.Btc,
   })
   if (receivedBtc instanceof Error) {
-    return ProcessPendingInvoiceResult.processAsPaidWithError(receivedBtc)
+    recordExceptionInCurrentSpan({
+      error: receivedBtc,
+      level: receivedBtc.level,
+    })
+    return processPendingInvoiceForDecline({
+      walletInvoice,
+      logger: pendingInvoiceLogger,
+    })
   }
 
   // Continue in lock
