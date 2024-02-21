@@ -2709,6 +2709,17 @@ cargo.rust_library(
     crate = "handlebars",
     crate_root = "handlebars-5.1.0.crate/src/lib.rs",
     edition = "2021",
+    env = {
+        "CARGO_MANIFEST_DIR": "handlebars-5.1.0.crate",
+        "CARGO_PKG_AUTHORS": "Ning Sun <sunng@pm.me>",
+        "CARGO_PKG_DESCRIPTION": "Handlebars templating implemented in Rust.",
+        "CARGO_PKG_NAME": "handlebars",
+        "CARGO_PKG_REPOSITORY": "https://github.com/sunng87/handlebars-rust",
+        "CARGO_PKG_VERSION": "5.1.0",
+        "CARGO_PKG_VERSION_MAJOR": "5",
+        "CARGO_PKG_VERSION_MINOR": "1",
+        "CARGO_PKG_VERSION_PATCH": "0",
+    },
     features = ["default"],
     visibility = [],
     deps = [
