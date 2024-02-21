@@ -1,6 +1,7 @@
-import { LedgerService } from ".."
 import { Transaction } from "../books"
 import { NoTransactionToUpdateStateError, UnknownLedgerError } from "../domain/errors"
+
+import { getTransactionsForWalletsByPaymentHash } from "./get-transactions"
 
 import { LnPaymentStateDeterminator } from "@/domain/ledger/ln-payment-state"
 
@@ -27,15 +28,14 @@ const updateStateByHash = async ({
 }
 
 export const updateLnPaymentState = async ({
-  walletId,
+  walletIds,
   paymentHash,
 }: {
-  walletId: WalletId
+  walletIds: WalletId[]
   paymentHash: PaymentHash
 }): Promise<true | ApplicationError> => {
-  // FIXME: temporary circular dependency from index.ts
-  const txns = await LedgerService().getTransactionsForWalletByPaymentHash({
-    walletId,
+  const txns = await getTransactionsForWalletsByPaymentHash({
+    walletIds,
     paymentHash,
   })
   if (txns instanceof Error) return txns

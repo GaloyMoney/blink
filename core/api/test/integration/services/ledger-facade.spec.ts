@@ -694,7 +694,7 @@ describe("Facade", () => {
       if (res instanceof Error) throw res
 
       const updateState = await LedgerFacade.updateLnPaymentState({
-        walletId: accountWalletDescriptors.BTC.id,
+        walletIds: [accountWalletDescriptors.BTC.id],
         paymentHash: res.paymentHash,
       })
       if (updateState instanceof Error) throw updateState

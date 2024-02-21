@@ -141,8 +141,6 @@ export const LedgerService = (): ILedgerService => {
         hash,
         account: liabilitiesMainAccount,
       })
-      /* eslint @typescript-eslint/ban-ts-comment: "off" */
-      // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -163,8 +161,6 @@ export const LedgerService = (): ILedgerService => {
         hash: paymentHash,
       })
 
-      /* eslint @typescript-eslint/ban-ts-comment: "off" */
-      // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -179,7 +175,6 @@ export const LedgerService = (): ILedgerService => {
       const { results } = await MainBook.ledger({
         account: liabilitiesWalletId,
       })
-      // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -266,7 +261,6 @@ export const LedgerService = (): ILedgerService => {
         pending: true,
       })
 
-      // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)

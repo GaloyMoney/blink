@@ -624,6 +624,11 @@ const executePaymentViaLn = async ({
 
   const { rawRoute, outgoingNodePubkey } = paymentFlow.routeDetails()
 
+  const accountWalletDescriptors =
+    await WalletsRepository().findAccountWalletsByAccountId(senderAccount.id)
+  if (accountWalletDescriptors instanceof Error) return accountWalletDescriptors
+  const walletIds = [accountWalletDescriptors.BTC.id, accountWalletDescriptors.USD.id]
+
   return LockService().lockWalletId(senderWallet.id, async (signal) => {
     const ledgerService = LedgerService()
 
@@ -694,7 +699,7 @@ const executePaymentViaLn = async ({
     const { journalId } = journal
 
     const updateStateAfterSend = await LedgerFacade.updateLnPaymentState({
-      walletId: senderWallet.id,
+      walletIds,
       paymentHash,
     })
     if (updateStateAfterSend instanceof Error) return updateStateAfterSend
@@ -769,7 +774,7 @@ const executePaymentViaLn = async ({
       if (voided instanceof Error) return voided
 
       const updateStateAfterRevert = await LedgerFacade.updateLnPaymentState({
-        walletId: senderWallet.id,
+        walletIds,
         paymentHash,
       })
       if (updateStateAfterRevert instanceof Error) return updateStateAfterRevert
@@ -795,7 +800,7 @@ const executePaymentViaLn = async ({
     }
 
     const updateStateAfterSettle = await LedgerFacade.updateLnPaymentState({
-      walletId: senderWallet.id,
+      walletIds,
       paymentHash,
     })
     if (updateStateAfterSettle instanceof Error) return updateStateAfterSettle

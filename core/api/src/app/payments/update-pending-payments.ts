@@ -171,6 +171,13 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
 
     if (status === PaymentStatus.Pending) return true
 
+    const wallet = await WalletsRepository().findById(walletId)
+    if (wallet instanceof Error) return wallet
+    const accountWalletDescriptors =
+      await WalletsRepository().findAccountWalletsByAccountId(wallet.accountId)
+    if (accountWalletDescriptors instanceof Error) return accountWalletDescriptors
+    const walletIds = [accountWalletDescriptors.BTC.id, accountWalletDescriptors.USD.id]
+
     return LockService().lockWalletId(walletId, async () => {
       const ledgerService = LedgerService()
       const recorded = await ledgerService.isLnTxRecorded(paymentHash)
@@ -210,7 +217,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         return settled
       }
       const updateStateAfterSettle = await LedgerFacade.updateLnPaymentState({
-        walletId,
+        walletIds,
         paymentHash,
       })
       if (updateStateAfterSettle instanceof Error) return updateStateAfterSettle
@@ -236,7 +243,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
           }
 
           const updateStateAfterRevert = await LedgerFacade.updateLnPaymentState({
-            walletId,
+            walletIds,
             paymentHash,
           })
           if (updateStateAfterRevert instanceof Error) return updateStateAfterRevert
@@ -256,7 +263,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         }
 
         const updateStateAfterUsdRevert = await LedgerFacade.updateLnPaymentState({
-          walletId,
+          walletIds,
           paymentHash,
         })
         if (updateStateAfterUsdRevert instanceof Error) return updateStateAfterUsdRevert
@@ -319,7 +326,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       if (reimbursed instanceof Error) return reimbursed
 
       const updateStateAfterReimburse = await LedgerFacade.updateLnPaymentState({
-        walletId: senderWallet.id,
+        walletIds,
         paymentHash,
       })
       if (updateStateAfterReimburse instanceof Error) return updateStateAfterReimburse
