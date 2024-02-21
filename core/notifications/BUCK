@@ -38,7 +38,8 @@ galoy_rust_bin(
       ".sqlx/*",
       "migrations/*",
       "locales/*",
-      "templates/*",
+      "templates/*.hbs",
+      "templates/**/*.hbs",
       "notifications.yml"
     ]),
     deps = [
