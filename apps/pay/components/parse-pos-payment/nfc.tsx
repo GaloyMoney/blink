@@ -201,7 +201,7 @@ function NFCComponent({ paymentRequest }: Props) {
       {!hasNFCPermission && (
         <div className="d-flex justify-content-center" style={{ marginTop: "20px" }}>
           <button
-            data-testid="pay-btn"
+            data-testid="nfc-btn"
             className={styles.pay_new_btn}
             onClick={activateNfcScan}
           >
