@@ -18,6 +18,7 @@ interface NFCRecord {
 function NFCComponent({ paymentRequest }: Props) {
   const [hasNFCPermission, setHasNFCPermission] = useState(false)
   const [nfcMessage, setNfcMessage] = useState("")
+  const [isNfcSupported, setIsNfcSupported] = useState(false)
 
   const decodeNDEFRecord = (record: NFCRecord) => {
     if (!record.data) {
@@ -42,7 +43,7 @@ function NFCComponent({ paymentRequest }: Props) {
   const activateNfcScan = async () => {
     await handleNFCScan()
     alert(
-      "Boltcard is now active. There will be no need to active it again. Please tap your card to redeem the payment",
+      "Boltcard is now active. There will be no need to activate it again. Please tap your card to redeem the payment",
     )
   }
 
@@ -80,6 +81,7 @@ function NFCComponent({ paymentRequest }: Props) {
   }
 
   useEffect(() => {
+    setIsNfcSupported("NDEFReader" in window)
     ;(async () => {
       if (!("permissions" in navigator)) {
         console.error("Permissions API not supported")
@@ -198,7 +200,7 @@ function NFCComponent({ paymentRequest }: Props) {
 
   return (
     <div>
-      {!hasNFCPermission && (
+      {isNfcSupported && !hasNFCPermission && (
         <div className="d-flex justify-content-center" style={{ marginTop: "20px" }}>
           <button
             data-testid="nfc-btn"
