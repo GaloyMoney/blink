@@ -171,17 +171,6 @@ const UsernameLayoutContainer = ({ children, username }: Props) => {
       <div className={styles.divider}></div>
       <main className={`${openSideBar && styles.main_bg} ${styles.main}`}>
         {children}
-        <div className={styles.footer}>
-          <a href="https://galoy.io" target="_blank" rel="noreferrer">
-            <span>Powered by</span>
-            <Image
-              src="/icons/galoy-logo-text-icon.svg"
-              alt="Galoy logo"
-              width={50}
-              height={50}
-            />
-          </a>
-        </div>
       </main>
     </div>
   )
