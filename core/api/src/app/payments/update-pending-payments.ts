@@ -4,8 +4,6 @@ import { reimburseFailedUsdPayment } from "./reimburse-failed-usd"
 
 import { PaymentFlowFromLedgerTransaction } from "./translations"
 
-import { updateLnPaymentState } from "./update-ln-payment-state"
-
 import { getTransactionForWalletByJournalId } from "@/app/wallets"
 
 import { toSats } from "@/domain/bitcoin"
@@ -211,7 +209,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         paymentLogger.error({ error: settled }, "no transaction to update")
         return settled
       }
-      const updateStateAfterSettle = await updateLnPaymentState({
+      const updateStateAfterSettle = await LedgerFacade.updateLnPaymentState({
         walletId,
         paymentHash,
       })
@@ -237,7 +235,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
             return setErrorCritical(voided)
           }
 
-          const updateStateAfterRevert = await updateLnPaymentState({
+          const updateStateAfterRevert = await LedgerFacade.updateLnPaymentState({
             walletId,
             paymentHash,
           })
@@ -257,7 +255,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
           return setErrorCritical(reimbursed)
         }
 
-        const updateStateAfterUsdRevert = await updateLnPaymentState({
+        const updateStateAfterUsdRevert = await LedgerFacade.updateLnPaymentState({
           walletId,
           paymentHash,
         })
@@ -320,7 +318,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       })
       if (reimbursed instanceof Error) return reimbursed
 
-      const updateStateAfterReimburse = await updateLnPaymentState({
+      const updateStateAfterReimburse = await LedgerFacade.updateLnPaymentState({
         walletId: senderWallet.id,
         paymentHash,
       })

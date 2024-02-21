@@ -2,8 +2,6 @@ import crypto from "crypto"
 
 import { MS_PER_DAY, ONE_DAY } from "@/config"
 
-import { updateLnPaymentState } from "@/app/payments/update-ln-payment-state"
-
 import {
   AmountCalculator,
   BtcWalletDescriptor,
@@ -685,6 +683,31 @@ describe("Facade", () => {
     })
   })
 
+  describe("update state", () => {
+    it("updates ln payment state", async () => {
+      const res = await recordSendLnPayment({
+        walletDescriptor: accountWalletDescriptors.BTC,
+        paymentAmount: sendAmount,
+        bankFee,
+        displayAmounts: displaySendEurAmounts,
+      })
+      if (res instanceof Error) throw res
+
+      const updateState = await LedgerFacade.updateLnPaymentState({
+        walletId: accountWalletDescriptors.BTC.id,
+        paymentHash: res.paymentHash,
+      })
+      if (updateState instanceof Error) throw updateState
+
+      const txns = await LedgerService().getTransactionsByHash(res.paymentHash)
+      if (txns instanceof Error) throw txns
+      if (!(txns && txns.length)) throw new Error()
+      const txn = txns[0]
+
+      expect(txn.lnPaymentState).toBe(LnPaymentState.Pending)
+    })
+  })
+
   describe("LnPaymentState", () => {
     const addFailedPayment = async (): Promise<PaymentHash> => {
       const res = await recordSendLnPayment({
@@ -716,7 +739,7 @@ describe("Facade", () => {
       })
       if (res instanceof Error) throw res
 
-      const updateState = await updateLnPaymentState({
+      const updateState = await LedgerFacade.updateLnPaymentState({
         walletId: accountWalletDescriptors.BTC.id,
         paymentHash: res.paymentHash,
       })
@@ -743,7 +766,7 @@ describe("Facade", () => {
       })
       if (res instanceof Error) throw res
 
-      const updateState = await updateLnPaymentState({
+      const updateState = await LedgerFacade.updateLnPaymentState({
         walletId: accountWalletDescriptors.BTC.id,
         paymentHash: res.paymentHash,
       })
@@ -769,7 +792,7 @@ describe("Facade", () => {
       const settled = await LedgerFacade.settlePendingLnSend(res.paymentHash)
       if (settled instanceof Error) return settled
 
-      const updateState = await updateLnPaymentState({
+      const updateState = await LedgerFacade.updateLnPaymentState({
         walletId: accountWalletDescriptors.BTC.id,
         paymentHash: res.paymentHash,
       })
@@ -804,7 +827,7 @@ describe("Facade", () => {
       })
       if (reimbursed instanceof Error) throw reimbursed
 
-      const updateState = await updateLnPaymentState({
+      const updateState = await LedgerFacade.updateLnPaymentState({
         walletId: accountWalletDescriptors.BTC.id,
         paymentHash: res.paymentHash,
       })
@@ -833,7 +856,7 @@ describe("Facade", () => {
       const settled = await LedgerFacade.settlePendingLnSend(res.paymentHash)
       if (settled instanceof Error) return settled
 
-      const updateState = await updateLnPaymentState({
+      const updateState = await LedgerFacade.updateLnPaymentState({
         walletId: accountWalletDescriptors.BTC.id,
         paymentHash: res.paymentHash,
       })
@@ -872,7 +895,7 @@ describe("Facade", () => {
       })
       if (reimbursed instanceof Error) throw reimbursed
 
-      const updateState = await updateLnPaymentState({
+      const updateState = await LedgerFacade.updateLnPaymentState({
         walletId: accountWalletDescriptors.BTC.id,
         paymentHash: res.paymentHash,
       })
@@ -904,7 +927,7 @@ describe("Facade", () => {
       })
       if (voided instanceof Error) return voided
 
-      const updateState = await updateLnPaymentState({
+      const updateState = await LedgerFacade.updateLnPaymentState({
         walletId: accountWalletDescriptors.BTC.id,
         paymentHash: res.paymentHash,
       })
@@ -939,7 +962,7 @@ describe("Facade", () => {
       })
       if (voided instanceof Error) return voided
 
-      const updateState = await updateLnPaymentState({
+      const updateState = await LedgerFacade.updateLnPaymentState({
         walletId: accountWalletDescriptors.BTC.id,
         paymentHash: res.paymentHash,
       })

@@ -6,8 +6,6 @@ import {
 
 import { reimburseFee } from "./reimburse-fee"
 
-import { updateLnPaymentState } from "./update-ln-payment-state"
-
 import { AccountValidator } from "@/domain/accounts"
 import {
   decodeInvoice,
@@ -695,7 +693,7 @@ const executePaymentViaLn = async ({
     if (journal instanceof Error) return journal
     const { journalId } = journal
 
-    const updateStateAfterSend = await updateLnPaymentState({
+    const updateStateAfterSend = await LedgerFacade.updateLnPaymentState({
       walletId: senderWallet.id,
       paymentHash,
     })
@@ -770,7 +768,7 @@ const executePaymentViaLn = async ({
       })
       if (voided instanceof Error) return voided
 
-      const updateStateAfterRevert = await updateLnPaymentState({
+      const updateStateAfterRevert = await LedgerFacade.updateLnPaymentState({
         walletId: senderWallet.id,
         paymentHash,
       })
@@ -796,7 +794,7 @@ const executePaymentViaLn = async ({
       if (reimbursed instanceof Error) return reimbursed
     }
 
-    const updateStateAfterSettle = await updateLnPaymentState({
+    const updateStateAfterSettle = await LedgerFacade.updateLnPaymentState({
       walletId: senderWallet.id,
       paymentHash,
     })
