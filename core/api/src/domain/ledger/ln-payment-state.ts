@@ -23,11 +23,30 @@ const sum = <T>({ arr, propertyName }: { arr: T[]; propertyName: keyof T }): num
     return sum + Number(currentItem[propertyName])
   }, 0)
 
+const checkTxns = (
+  txns: LedgerTransaction<WalletCurrency>[],
+): true | InvalidLnPaymentTxnsBundleError => {
+  const validTypes = [
+    LedgerTransactionType.Payment,
+    LedgerTransactionType.LnFeeReimbursement,
+  ]
+  for (const txn of txns) {
+    if (!validTypes.includes(txn.type as (typeof validTypes)[number])) {
+      return new InvalidLnPaymentTxnsBundleError(`Invalid '${txn.type}' type found`)
+    }
+  }
+
+  if (txns.length === 0) return new InvalidLnPaymentTxnsBundleError("No txns in bundle")
+
+  return true
+}
+
 export const LnPaymentStateDeterminator = (
   txns: LedgerTransaction<WalletCurrency>[],
 ): LnPaymentStateDeterminator => {
   const determine = (): LnPaymentState | InvalidLnPaymentTxnsBundleError => {
-    if (txns.length === 0) return new InvalidLnPaymentTxnsBundleError()
+    const check = checkTxns(txns)
+    if (check instanceof Error) return check
 
     const txPendingStates = txns.map((txn) => txn.pendingConfirmation)
     if (txPendingStates.includes(true)) {
