@@ -47,6 +47,6 @@ impl NotificationEvent for IdentityVerificationDeclined {
     }
 
     fn should_send_email(&self) -> bool {
-        false
+        true
     }
 }

@@ -12,7 +12,7 @@ use smtp::SmtpClient;
 
 #[derive(Clone)]
 pub struct EmailExecutor {
-    _config: EmailExecutorConfig,
+    config: EmailExecutorConfig,
     smtp: SmtpClient,
     settings: UserNotificationSettingsRepo,
 }
@@ -25,7 +25,7 @@ impl EmailExecutor {
         let smtp = SmtpClient::init(config.smtp.clone())?;
 
         Ok(EmailExecutor {
-            _config: config,
+            config,
             smtp,
             settings,
         })
@@ -33,6 +33,10 @@ impl EmailExecutor {
 
     #[instrument(name = "email_executor.notify", skip(self))]
     pub async fn notify<T: NotificationEvent>(&self, event: &T) -> Result<(), EmailExecutorError> {
+        if !self.config.enabled {
+            return Ok(());
+        }
+
         if let Some((settings, addr)) = self
             .settings
             .find_for_user_id(event.user_id())
