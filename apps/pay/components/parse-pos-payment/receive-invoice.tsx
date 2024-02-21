@@ -22,6 +22,7 @@ import { extractSearchParams, safeAmount } from "../../utils/utils"
 import LoadingComponent from "../loading"
 
 import styles from "./parse-payment.module.css"
+import NFCComponent from "./nfc"
 
 interface Props {
   recipientWalletCurrency?: string
@@ -254,6 +255,8 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
         </div>
       )}
       <div>
+        <NFCComponent paymentRequest={invoice?.paymentRequest} />
+
         {data ? (
           <>
             <div

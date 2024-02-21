@@ -23,6 +23,7 @@ import { Currency } from "../../lib/graphql/generated"
 import DigitButton from "./digit-button"
 import styles from "./parse-payment.module.css"
 import ReceiveInvoice from "./receive-invoice"
+import NFCComponent from "./nfc"
 
 function isRunningStandalone() {
   if (typeof window === "undefined") {
@@ -366,43 +367,48 @@ function ParsePayment({
           walletId={walletId}
         />
       ) : (
-        <div className={styles.digits_grid}>
-          <DigitButton digit={"1"} dispatch={dispatch} />
-          <DigitButton digit={"2"} dispatch={dispatch} />
-          <DigitButton digit={"3"} dispatch={dispatch} />
-          <DigitButton digit={"4"} dispatch={dispatch} />
-          <DigitButton digit={"5"} dispatch={dispatch} />
-          <DigitButton digit={"6"} dispatch={dispatch} />
-          <DigitButton digit={"7"} dispatch={dispatch} />
-          <DigitButton digit={"8"} dispatch={dispatch} />
-          <DigitButton digit={"9"} dispatch={dispatch} />
-          {currencyMetadata.fractionDigits > 0 ? (
-            <DigitButton
-              digit={"."}
-              dispatch={dispatch}
-              disabled={unit === AmountUnit.Sat}
-              displayValue={
-                getLocaleConfig({ locale: language, currency: display }).decimalSeparator
-              }
-            />
-          ) : (
-            <DigitButton digit={""} dispatch={dispatch} disabled={true} />
-          )}
+        <>
+          <NFCComponent />
 
-          <DigitButton digit={"0"} dispatch={dispatch} />
-          <button
-            data-testid="backspace-btn"
-            className={styles.backspace_icon}
-            onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}
-          >
-            <Image
-              src="/icons/backspace-icon.svg"
-              alt="delete digit icon"
-              width="32"
-              height="32"
-            />
-          </button>
-        </div>
+          <div className={styles.digits_grid}>
+            <DigitButton digit={"1"} dispatch={dispatch} />
+            <DigitButton digit={"2"} dispatch={dispatch} />
+            <DigitButton digit={"3"} dispatch={dispatch} />
+            <DigitButton digit={"4"} dispatch={dispatch} />
+            <DigitButton digit={"5"} dispatch={dispatch} />
+            <DigitButton digit={"6"} dispatch={dispatch} />
+            <DigitButton digit={"7"} dispatch={dispatch} />
+            <DigitButton digit={"8"} dispatch={dispatch} />
+            <DigitButton digit={"9"} dispatch={dispatch} />
+            {currencyMetadata.fractionDigits > 0 ? (
+              <DigitButton
+                digit={"."}
+                dispatch={dispatch}
+                disabled={unit === AmountUnit.Sat}
+                displayValue={
+                  getLocaleConfig({ locale: language, currency: display })
+                    .decimalSeparator
+                }
+              />
+            ) : (
+              <DigitButton digit={""} dispatch={dispatch} disabled={true} />
+            )}
+
+            <DigitButton digit={"0"} dispatch={dispatch} />
+            <button
+              data-testid="backspace-btn"
+              className={styles.backspace_icon}
+              onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}
+            >
+              <Image
+                src="/icons/backspace-icon.svg"
+                alt="delete digit icon"
+                width="32"
+                height="32"
+              />
+            </button>
+          </div>
+        </>
       )}
 
       <div className={styles.pay_btn_container}>

@@ -22,10 +22,10 @@ const SetupPwa = () => {
   const [selectedDisplayCurrency, setSelectedDisplayCurrency] = useState("USD")
 
   useEffect(() => {
-    if (usernameFromLocal && displayCurrencyFromLocal) {
+    if (router && usernameFromLocal && displayCurrencyFromLocal) {
       router.push(`${usernameFromLocal}?display=${displayCurrencyFromLocal}`)
     }
-  }, [displayCurrencyFromLocal, usernameFromLocal])
+  }, [displayCurrencyFromLocal, usernameFromLocal, router])
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
