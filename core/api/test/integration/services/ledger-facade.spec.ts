@@ -2,6 +2,8 @@ import crypto from "crypto"
 
 import { MS_PER_DAY, ONE_DAY } from "@/config"
 
+import { updateLnPaymentState } from "@/app/payments/update-ln-payment-state"
+
 import {
   AmountCalculator,
   BtcWalletDescriptor,
@@ -10,6 +12,7 @@ import {
 } from "@/domain/shared"
 import { UsdDisplayCurrency } from "@/domain/fiat"
 import { LedgerTransactionType } from "@/domain/ledger"
+import { LnPaymentState } from "@/domain/ledger/ln-payment-state"
 import { CouldNotFindError } from "@/domain/errors"
 
 import { LedgerService } from "@/services/ledger"
@@ -679,6 +682,275 @@ describe("Facade", () => {
         if (volume instanceof Error) throw volume
         expect(volume).toStrictEqual(expectedVolume)
       })
+    })
+  })
+
+  describe("LnPaymentState", () => {
+    const addFailedPayment = async (): Promise<PaymentHash> => {
+      const res = await recordSendLnPayment({
+        walletDescriptor: accountWalletDescriptors.BTC,
+        paymentAmount: sendAmount,
+        bankFee,
+        displayAmounts: displaySendEurAmounts,
+      })
+      if (res instanceof Error) throw res
+
+      const settled = await LedgerFacade.settlePendingLnSend(res.paymentHash)
+      if (settled instanceof Error) throw settled
+
+      const voided = await LedgerFacade.recordLnSendRevert({
+        journalId: res.journalId,
+        paymentHash: res.paymentHash,
+      })
+      if (voided instanceof Error) throw voided
+
+      return res.paymentHash
+    }
+
+    it("return 'Pending' after initial send", async () => {
+      const res = await recordSendLnPayment({
+        walletDescriptor: accountWalletDescriptors.BTC,
+        paymentAmount: sendAmount,
+        bankFee,
+        displayAmounts: displaySendEurAmounts,
+      })
+      if (res instanceof Error) throw res
+
+      const updateState = await updateLnPaymentState({
+        walletId: accountWalletDescriptors.BTC.id,
+        paymentHash: res.paymentHash,
+      })
+      if (updateState instanceof Error) throw updateState
+
+      const txns = await LedgerService().getTransactionsByHash(res.paymentHash)
+      if (txns instanceof Error) throw txns
+      if (!(txns && txns.length)) throw new Error()
+      const txn = txns[0]
+
+      expect(txn.lnPaymentState).toBe(LnPaymentState.Pending)
+    })
+
+    it("return 'PendingAfterRetry' after initial send", async () => {
+      const paymentHash = await addFailedPayment()
+
+      // Retry
+      const res = await recordSendLnPayment({
+        walletDescriptor: accountWalletDescriptors.BTC,
+        paymentAmount: sendAmount,
+        bankFee,
+        displayAmounts: displaySendEurAmounts,
+        paymentHash,
+      })
+      if (res instanceof Error) throw res
+
+      const updateState = await updateLnPaymentState({
+        walletId: accountWalletDescriptors.BTC.id,
+        paymentHash: res.paymentHash,
+      })
+      if (updateState instanceof Error) throw updateState
+
+      const txns = await LedgerService().getTransactionsByHash(res.paymentHash)
+      if (txns instanceof Error) throw txns
+      if (!(txns && txns.length)) throw new Error()
+      const txn = txns[0]
+
+      expect(txn.lnPaymentState).toBe(LnPaymentState.PendingAfterRetry)
+    })
+
+    it("return 'Success' after successful send", async () => {
+      const res = await recordSendLnPayment({
+        walletDescriptor: accountWalletDescriptors.BTC,
+        paymentAmount: sendAmount,
+        bankFee,
+        displayAmounts: displaySendEurAmounts,
+      })
+      if (res instanceof Error) throw res
+
+      const settled = await LedgerFacade.settlePendingLnSend(res.paymentHash)
+      if (settled instanceof Error) return settled
+
+      const updateState = await updateLnPaymentState({
+        walletId: accountWalletDescriptors.BTC.id,
+        paymentHash: res.paymentHash,
+      })
+      if (updateState instanceof Error) throw updateState
+
+      const txns = await LedgerService().getTransactionsByHash(res.paymentHash)
+      if (txns instanceof Error) throw txns
+      if (!(txns && txns.length)) throw new Error()
+      const txn = txns[0]
+
+      expect(txn.lnPaymentState).toBe(LnPaymentState.Success)
+    })
+
+    it("return 'SuccessWithReimbursement' after success with reimburse", async () => {
+      const res = await recordSendLnPayment({
+        walletDescriptor: accountWalletDescriptors.BTC,
+        paymentAmount: sendAmount,
+        bankFee,
+        displayAmounts: displaySendEurAmounts,
+      })
+      if (res instanceof Error) throw res
+
+      const settled = await LedgerFacade.settlePendingLnSend(res.paymentHash)
+      if (settled instanceof Error) return settled
+
+      const reimbursed = await recordLnFeeReimbursement({
+        walletDescriptor: accountWalletDescriptors.BTC,
+        paymentAmount: receiveAmount,
+        paymentHash: res.paymentHash,
+        bankFee,
+        displayAmounts: displayReceiveEurAmounts,
+      })
+      if (reimbursed instanceof Error) throw reimbursed
+
+      const updateState = await updateLnPaymentState({
+        walletId: accountWalletDescriptors.BTC.id,
+        paymentHash: res.paymentHash,
+      })
+      if (updateState instanceof Error) throw updateState
+
+      const txns = await LedgerService().getTransactionsByHash(res.paymentHash)
+      if (txns instanceof Error) throw txns
+      if (!(txns && txns.length)) throw new Error()
+      const txn = txns[0]
+
+      expect(txn.lnPaymentState).toBe(LnPaymentState.SuccessWithReimbursement)
+    })
+
+    it("return 'SuccessAfterRetry' after successful send", async () => {
+      const paymentHash = await addFailedPayment()
+
+      const res = await recordSendLnPayment({
+        walletDescriptor: accountWalletDescriptors.BTC,
+        paymentAmount: sendAmount,
+        bankFee,
+        displayAmounts: displaySendEurAmounts,
+        paymentHash,
+      })
+      if (res instanceof Error) throw res
+
+      const settled = await LedgerFacade.settlePendingLnSend(res.paymentHash)
+      if (settled instanceof Error) return settled
+
+      const updateState = await updateLnPaymentState({
+        walletId: accountWalletDescriptors.BTC.id,
+        paymentHash: res.paymentHash,
+      })
+      if (updateState instanceof Error) throw updateState
+
+      const txns = await LedgerService().getTransactionsByHash(res.paymentHash)
+      if (txns instanceof Error) throw txns
+      if (!(txns && txns.length)) throw new Error()
+      const txn = txns[0]
+
+      expect(txn.lnPaymentState).toBe(LnPaymentState.SuccessAfterRetry)
+    })
+
+    it("return 'SuccessWithReimbursementAfterRetry' after success with reimburse", async () => {
+      const paymentHash = await addFailedPayment()
+
+      // Retry
+      const res = await recordSendLnPayment({
+        walletDescriptor: accountWalletDescriptors.BTC,
+        paymentAmount: sendAmount,
+        bankFee,
+        displayAmounts: displaySendEurAmounts,
+        paymentHash,
+      })
+      if (res instanceof Error) throw res
+
+      const settled = await LedgerFacade.settlePendingLnSend(res.paymentHash)
+      if (settled instanceof Error) return settled
+
+      const reimbursed = await recordLnFeeReimbursement({
+        walletDescriptor: accountWalletDescriptors.BTC,
+        paymentAmount: receiveAmount,
+        paymentHash: res.paymentHash,
+        bankFee,
+        displayAmounts: displayReceiveEurAmounts,
+      })
+      if (reimbursed instanceof Error) throw reimbursed
+
+      const updateState = await updateLnPaymentState({
+        walletId: accountWalletDescriptors.BTC.id,
+        paymentHash: res.paymentHash,
+      })
+      if (updateState instanceof Error) throw updateState
+
+      const txns = await LedgerService().getTransactionsByHash(res.paymentHash)
+      if (txns instanceof Error) throw txns
+      if (!(txns && txns.length)) throw new Error()
+      const txn = txns[0]
+
+      expect(txn.lnPaymentState).toBe(LnPaymentState.SuccessWithReimbursementAfterRetry)
+    })
+
+    it("return 'Failed' after revert", async () => {
+      const res = await recordSendLnPayment({
+        walletDescriptor: accountWalletDescriptors.BTC,
+        paymentAmount: sendAmount,
+        bankFee,
+        displayAmounts: displaySendEurAmounts,
+      })
+      if (res instanceof Error) throw res
+
+      const settled = await LedgerFacade.settlePendingLnSend(res.paymentHash)
+      if (settled instanceof Error) return settled
+
+      const voided = await LedgerFacade.recordLnSendRevert({
+        journalId: res.journalId,
+        paymentHash: res.paymentHash,
+      })
+      if (voided instanceof Error) return voided
+
+      const updateState = await updateLnPaymentState({
+        walletId: accountWalletDescriptors.BTC.id,
+        paymentHash: res.paymentHash,
+      })
+      if (updateState instanceof Error) throw updateState
+
+      const txns = await LedgerService().getTransactionsByHash(res.paymentHash)
+      if (txns instanceof Error) throw txns
+      if (!(txns && txns.length)) throw new Error()
+      const txn = txns[0]
+
+      expect(txn.lnPaymentState).toBe(LnPaymentState.Failed)
+    })
+
+    it("return 'FailedAfterRetry' after revert", async () => {
+      const paymentHash = await addFailedPayment()
+
+      const res = await recordSendLnPayment({
+        walletDescriptor: accountWalletDescriptors.BTC,
+        paymentAmount: sendAmount,
+        bankFee,
+        displayAmounts: displaySendEurAmounts,
+        paymentHash,
+      })
+      if (res instanceof Error) throw res
+
+      const settled = await LedgerFacade.settlePendingLnSend(res.paymentHash)
+      if (settled instanceof Error) return settled
+
+      const voided = await LedgerFacade.recordLnSendRevert({
+        journalId: res.journalId,
+        paymentHash: res.paymentHash,
+      })
+      if (voided instanceof Error) return voided
+
+      const updateState = await updateLnPaymentState({
+        walletId: accountWalletDescriptors.BTC.id,
+        paymentHash: res.paymentHash,
+      })
+      if (updateState instanceof Error) throw updateState
+
+      const txns = await LedgerService().getTransactionsByHash(res.paymentHash)
+      if (txns instanceof Error) throw txns
+      if (!(txns && txns.length)) throw new Error()
+      const txn = txns[0]
+
+      expect(txn.lnPaymentState).toBe(LnPaymentState.FailedAfterRetry)
     })
   })
 })

@@ -100,8 +100,9 @@ export const recordSendLnPayment = async <S extends WalletCurrency>({
   paymentAmount,
   bankFee,
   displayAmounts,
+  paymentHash: paymentHashInitial,
 }: RecordExternalTxTestArgs<S>) => {
-  const paymentHash = crypto.randomUUID() as PaymentHash
+  const paymentHash = paymentHashInitial || (crypto.randomUUID() as PaymentHash)
   const { metadata, debitAccountAdditionalMetadata, internalAccountsAdditionalMetadata } =
     LedgerFacade.LnSendLedgerMetadata({
       paymentHash,
@@ -169,11 +170,11 @@ export const recordSendOnChainPayment = async <S extends WalletCurrency>({
 export const recordLnFeeReimbursement = async <S extends WalletCurrency>({
   walletDescriptor,
   paymentAmount,
+  paymentHash: paymentHashInitial,
   bankFee,
   displayAmounts,
 }: RecordExternalTxTestArgs<S>) => {
-  const paymentHash = crypto.randomUUID() as PaymentHash
-
+  const paymentHash = paymentHashInitial || (crypto.randomUUID() as PaymentHash)
   const {
     metadata,
     creditAccountAdditionalMetadata,

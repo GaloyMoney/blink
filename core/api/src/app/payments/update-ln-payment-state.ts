@@ -14,10 +14,12 @@ export const updateLnPaymentState = async ({
     paymentHash,
   })
   if (txns instanceof Error) return txns
+
   const lnPaymentState = LnPaymentStateDeterminator(txns).determine()
   if (lnPaymentState instanceof Error) {
     return lnPaymentState
   }
+
   const markedState = await LedgerFacade.updateStateByHash({
     paymentHash,
     state: lnPaymentState,
