@@ -1,7 +1,9 @@
-use handlebars::Handlebars;
 use rust_i18n::t;
 
 use crate::{notification_event::*, primitives::*};
+
+mod email_formatter;
+use email_formatter::EmailFormatter;
 
 pub struct LocalizedPushMessage {
     pub title: String,
@@ -155,27 +157,12 @@ impl EmailMessages {
         locale: &str,
         _event: &IdentityVerificationApproved,
     ) -> Option<LocalizedEmail> {
-        let mut handlebars = Handlebars::new();
-        // add error handling
-        handlebars
-            .register_template_file("identification", "./templates/identification.hbs")
-            .ok()?;
-        handlebars
-            .register_template_file("base", "./templates/layouts/base.hbs")
-            .ok()?;
-        handlebars
-            .register_template_file("styles", "./templates/partials/styles.hbs")
-            .ok()?;
+        let email_formatter = EmailFormatter::new();
 
         let title = t!("identity_verification_approved.title", locale = locale).to_string();
         let body = t!("identity_verification_approved.body", locale = locale).to_string();
-        let data = serde_json::json!({
-            "subject": &title,
-            "body": &body
-        });
 
-        // add error handling
-        let body = handlebars.render("identification", &data).ok()?;
+        let body = email_formatter.generic_email_template(&title, &body);
 
         Some(LocalizedEmail {
             subject: title,
