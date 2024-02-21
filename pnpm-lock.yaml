@@ -607,6 +607,9 @@ importers:
       ioredis:
         specifier: ^5.3.1
         version: 5.3.2
+      js-lnurl:
+        specifier: ^0.6.0
+        version: 0.6.0
       lnurl-pay:
         specifier: ^1.0.1
         version: 1.0.1
@@ -13773,6 +13776,10 @@ packages:
     engines: {node: '>=10.13.0'}
     dev: false
 
+  /@types/aes-js@3.1.4:
+    resolution: {integrity: sha512-v3D66IptpUqh+pHKVNRxY8yvp2ESSZXe0rTzsGdzUhEwag7ljVfgCllkWv2YgiYXDhWFBrEywll4A5JToyTNFA==}
+    dev: false
+
   /@types/aria-query@5.0.4:
     resolution: {integrity: sha512-rfT93uj5s0PRL7EzccGMs3brplhcrghnDoV26NqKhCAS1hVo+WdNsPvE/yb6ilfr5hi2MEk6d5EWJTKdxg8jVw==}
     dev: true
@@ -13809,6 +13816,10 @@ packages:
     dependencies:
       '@babel/types': 7.23.6
     dev: true
+
+  /@types/base64-js@1.3.2:
+    resolution: {integrity: sha512-Q2Xn2/vQHRGLRXhQ5+BSLwhHkR3JVflxVKywH0Q6fVoAiUE8fFYL2pE5/l2ZiOiBDfA8qUqRnSxln4G/NFz1Sg==}
+    dev: false
 
   /@types/basic-auth@1.1.7:
     resolution: {integrity: sha512-bFR3Ld3Fty5ayg45sqr3RI4e/GTXyp2W8jzMmw3WOC8RuQ19TrpsZE4y3jcw9iGSZj5f9mH6e+2biPeFUDovww==}
@@ -17797,7 +17808,6 @@ packages:
       node-fetch: 2.7.0
     transitivePeerDependencies:
       - encoding
-    dev: true
 
   /cross-inspect@1.0.0:
     resolution: {integrity: sha512-4PFfn4b5ZN6FMNGSZlyb7wUhuN8wvj8t/VQHZdM4JsDcruGJ8L2kf9zao98QIrBPFCpdk27qst/AGTl7pL3ypQ==}
@@ -18114,7 +18124,6 @@ packages:
   /decode-uri-component@0.2.2:
     resolution: {integrity: sha512-FqUYQ+8o158GyGTrMFJms9qh3CqTKvAqgqsTnkLI8sKu0028orqBhxNMFkFen0zGyg6epACD32pjVk58ngIErQ==}
     engines: {node: '>=0.10'}
-    dev: true
 
   /decompress-response@3.3.0:
     resolution: {integrity: sha512-BzRPQuY1ip+qDonAOz42gRm/pg9F768C+npV/4JOsxRC2sq+Rlk+Q4ZCAsOhnIaMrgarILY+RMUIvMmmX1qAEA==}
@@ -20753,6 +20762,11 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       to-regex-range: 5.0.1
+
+  /filter-obj@1.1.0:
+    resolution: {integrity: sha512-8rXg1ZnX7xzy2NGDVkBVaAy+lSlPNwad13BtgSlLuxfIslyt5Vg64U7tFcCt4WS1R0hvtnQybT/IyCkGZ3DpXQ==}
+    engines: {node: '>=0.10.0'}
+    dev: false
 
   /finalhandler@1.1.2:
     resolution: {integrity: sha512-aAWcW57uxVNrQZqFXjITpW3sIUQmHGG3qSb9mUah9MgMC4NeWhNOlNjXEYq3HjRAvL6arUviZGGJsBg6z0zsWA==}
@@ -23912,6 +23926,22 @@ packages:
       glob: 8.1.0
       nopt: 6.0.0
     dev: true
+
+  /js-lnurl@0.6.0:
+    resolution: {integrity: sha512-U4hnInqlHVM9DyYMnOLk0IqlD293A7GVen8JBNWbXrq7C1IigQpTfoal+Fgz/eTZOsYtIEFEOyW9mKgFD/Oc0w==}
+    dependencies:
+      '@types/aes-js': 3.1.4
+      '@types/base64-js': 1.3.2
+      aes-js: 3.1.2
+      base64-js: 1.5.1
+      bech32: 1.1.4
+      buffer: 5.7.1
+      cross-fetch: 3.1.8
+      query-string: 6.14.1
+      safe-buffer: 5.2.1
+    transitivePeerDependencies:
+      - encoding
+    dev: false
 
   /js-md5@0.7.3:
     resolution: {integrity: sha512-ZC41vPSTLKGwIRjqDh8DfXoCrdQIyBgspJVPXHBGu4nZlAEvG3nf+jO9avM9RmLiGakg7vz974ms99nEV0tmTQ==}
@@ -27384,6 +27414,16 @@ packages:
       strict-uri-encode: 1.1.0
     dev: true
 
+  /query-string@6.14.1:
+    resolution: {integrity: sha512-XDxAeVmpfu1/6IjyT/gXHOl+S0vQ9owggJ30hhWKdHAsNPOcasn5o9BW0eejZqL2e4vMjhAxoW3jVHcD6mbcYw==}
+    engines: {node: '>=6'}
+    dependencies:
+      decode-uri-component: 0.2.2
+      filter-obj: 1.1.0
+      split-on-first: 1.1.0
+      strict-uri-encode: 2.0.0
+    dev: false
+
   /querystringify@2.2.0:
     resolution: {integrity: sha512-FIqgj2EUvTa7R50u0rGsyTftzjYmv/a3hO345bZNrqabNqjtgiDMgmo4mkUjd+nzU5oF3dClKqFIPUKybUyqoQ==}
 
@@ -28852,6 +28892,11 @@ packages:
       - utf-8-validate
     dev: true
 
+  /split-on-first@1.1.0:
+    resolution: {integrity: sha512-43ZssAJaMusuKWL8sKUBQXHWOpq8d6CfN/u1p4gUzfJkM05C8rxTmYrkIPTXapZpORA6LkkzcUulJ8FqA7Uudw==}
+    engines: {node: '>=6'}
+    dev: false
+
   /split2@4.2.0:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
@@ -29016,6 +29061,11 @@ packages:
     resolution: {integrity: sha512-R3f198pcvnB+5IpnBlRkphuE9n46WyVl8I39W/ZUTZLz4nqSP/oLYUrcnJrw462Ds8he4YKMov2efsTIw1BDGQ==}
     engines: {node: '>=0.10.0'}
     dev: true
+
+  /strict-uri-encode@2.0.0:
+    resolution: {integrity: sha512-QwiXZgpRcKkhTj2Scnn++4PKtWsH0kpzZ62L2R6c/LUVYv7hVnZqcg2+sMuT6R7Jusu1vviK/MFsu6kNJfWlEQ==}
+    engines: {node: '>=4'}
+    dev: false
 
   /string-env-interpolation@1.0.1:
     resolution: {integrity: sha512-78lwMoCcn0nNu8LszbP1UA7g55OeE4v7rCeWnM5B453rnNr4aq+5it3FEYtZrSEiMvHZOZ9Jlqb0OD0M2VInqg==}
