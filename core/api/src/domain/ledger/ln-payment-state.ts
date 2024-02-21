@@ -1,5 +1,7 @@
 import { InvalidLnPaymentTxnsBundleError, LedgerTransactionType } from "."
 
+export const FAILED_USD_MEMO = "Usd payment canceled"
+
 export const LnPaymentState = {
   Pending: "ln_payment.pending",
   PendingAfterRetry: "ln_payment.pending_after_retry",
@@ -66,11 +68,12 @@ export const LnPaymentStateDeterminator = (
     const sumTxAmounts =
       sum({ arr: txns, propertyName: "debit" }) -
       sum({ arr: txns, propertyName: "credit" })
+    const failedUsdPayment = !!txns.find((tx) => tx.lnMemo === FAILED_USD_MEMO)
     switch (true) {
       case txns.length === 1:
         return LnPaymentState.Success
 
-      case txns.length === 2 && sumTxAmounts === 0:
+      case txns.length === 2 && (sumTxAmounts === 0 || failedUsdPayment):
         return LnPaymentState.Failed
 
       case txns.length % 2 === 1:

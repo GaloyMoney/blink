@@ -1,5 +1,6 @@
 import { LedgerTransactionType } from "@/domain/ledger"
 import {
+  FAILED_USD_MEMO,
   LnPaymentState,
   LnPaymentStateDeterminator,
 } from "@/domain/ledger/ln-payment-state"
@@ -117,7 +118,7 @@ describe("LnPaymentState", () => {
 
   describe("Failed", () => {
     it("return Failed", () => {
-      const txns = [
+      const txnsBtc = [
         {
           type: LedgerTransactionType.Payment,
           pendingConfirmation: false,
@@ -131,8 +132,26 @@ describe("LnPaymentState", () => {
           debit: 0,
         } as LedgerTransaction<"BTC">,
       ]
-      const txState = LnPaymentStateDeterminator(txns).determine()
-      expect(txState).toEqual(LnPaymentState.Failed)
+      const txBtcState = LnPaymentStateDeterminator(txnsBtc).determine()
+      expect(txBtcState).toEqual(LnPaymentState.Failed)
+
+      const txnsUsd = [
+        {
+          type: LedgerTransactionType.Payment,
+          pendingConfirmation: false,
+          debit: 5,
+          credit: 0,
+        } as LedgerTransaction<"USD">,
+        {
+          type: LedgerTransactionType.Payment,
+          pendingConfirmation: false,
+          credit: 100,
+          debit: 0,
+          lnMemo: FAILED_USD_MEMO,
+        } as LedgerTransaction<"BTC">,
+      ]
+      const txUsdState = LnPaymentStateDeterminator(txnsUsd).determine()
+      expect(txUsdState).toEqual(LnPaymentState.Failed)
     })
 
     it("return FailedAfterRetry", () => {
