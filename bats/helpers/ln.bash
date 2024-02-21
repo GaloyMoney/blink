@@ -235,7 +235,7 @@ rebalance_channel() {
     fi
 }
 
-num_txns_for_hash() {
+txns_for_hash() {
   token_name="$1"
   payment_hash="$2"
 
@@ -252,10 +252,16 @@ num_txns_for_hash() {
       .data.me.defaultAccount.transactions.edges[]
       | select(.node.initiationVia.paymentHash == $payment_hash)
     ]
-      | length
   '
   echo $output \
     | jq -r \
       --arg payment_hash "$payment_hash" \
       "$jq_query"
+}
+
+num_txns_for_hash() {
+  token_name="$1"
+  payment_hash="$2"
+
+  txns_for_hash "$token_name" "$payment_hash" | jq -r 'length'
 }

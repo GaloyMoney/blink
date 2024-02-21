@@ -73,6 +73,9 @@ usd_amount=50
   final_lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
   lnd1_diff="$(( $initial_lnd1_balance - $final_lnd1_balance ))"
   [[ "$lnd1_diff" == "$btc_amount" ]] || exit 1
+
+    statusAfterSuccess="$(txns_for_hash "$token_name" "$payment_hash" | jq -r '.[0].node.status')"
+  [[ "${statusAfterSuccess}" == "SUCCESS" ]] || exit 1
 }
 
 @test "ln-send: lightning settled - lnInvoicePaymentSend from btc, no fee probe" {
@@ -601,6 +604,9 @@ usd_amount=50
   balance_after_fail="$(balance_for_wallet $token_name 'BTC')"
   [[ "$initial_balance" == "$balance_after_fail" ]] || exit 1
 
+  statusAfterFail="$(txns_for_hash "$token_name" "$payment_hash" | jq -r '.[0].node.status')"
+  [[ "${statusAfterFail}" == "FAILURE" ]] || exit 1
+
   # Rebalance last hop so same payment will succeed
   rebalance_channel lnd_outside_cli lnd_outside_2_cli "$(( $threshold_amount * 2 ))"
   lnd_cli resetmc
@@ -626,6 +632,9 @@ usd_amount=50
   retry 15 1 check_num_txns "3"
   balance_after_success="$(balance_for_wallet $token_name 'BTC')"
   [[ "$balance_after_success" -lt "$initial_balance" ]] || exit 1
+
+  statusAfterSuccess="$(txns_for_hash "$token_name" "$payment_hash" | jq -r '.[0].node.status')"
+  [[ "${statusAfterSuccess}" == "SUCCESS" ]] || exit 1
 }
 
 @test "ln-send: ln settled - settle failed and then pending-to-failed payment" {
@@ -669,6 +678,9 @@ usd_amount=50
   balance_after_fail="$(balance_for_wallet $token_name 'BTC')"
   [[ "$initial_balance" == "$balance_after_fail" ]] || exit 1
 
+  statusAfterFail="$(txns_for_hash "$token_name" "$payment_hash" | jq -r '.[0].node.status')"
+  [[ "${statusAfterFail}" == "FAILURE" ]] || exit 1
+
   # Rebalance last hop so same payment will succeed
   rebalance_channel lnd_outside_cli lnd_outside_2_cli "$(( $threshold_amount * 2 ))"
   lnd_cli resetmc
@@ -686,10 +698,13 @@ usd_amount=50
 
   # Check for txns
   retry 15 1 check_num_txns "3"
-  check_for_ln_initiated_pending "$token_name" "$payment_hash" "10" \
+  run check_for_ln_initiated_pending "$token_name" "$payment_hash" "10" \
     || exit 1
   balance_while_pending="$(balance_for_wallet $token_name 'BTC')"
   [[ "$balance_while_pending" -lt "$initial_balance" ]] || exit 1
+
+  statusAfterPending="$(txns_for_hash "$token_name" "$payment_hash" | jq -r '.[0].node.status')"
+  [[ "${statusAfterPending}" == "PENDING" ]] || exit 1
 
   # Cancel hodl invoice
   lnd_outside_2_cli cancelinvoice "$payment_hash"
@@ -700,6 +715,9 @@ usd_amount=50
 
   run check_for_ln_initiated_pending "$token_name" "$payment_hash" "10"
   [[ "$status" -ne 0 ]] || exit 1
+
+  statusAfterFail="$(txns_for_hash "$token_name" "$payment_hash" | jq -r '.[0].node.status')"
+  [[ "${statusAfterFail}" == "FAILURE" ]] || exit 1
 }
 
 @test "ln-send: ln settled - pending-to-failed usd payment" {
@@ -747,12 +765,15 @@ usd_amount=50
 
   # Check for txns
   retry 15 1 check_num_txns "1"
-  check_for_ln_initiated_pending "$token_name" "$payment_hash" "10" \
+  run check_for_ln_initiated_pending "$token_name" "$payment_hash" "10" \
     || exit 1
   btc_balance_while_pending="$(balance_for_wallet $token_name 'BTC')"
   usd_balance_while_pending="$(balance_for_wallet $token_name 'USD')"
   [[ "$btc_balance_while_pending" == "$initial_btc_balance" ]] || exit 1
   [[ "$usd_balance_while_pending" -lt "$initial_usd_balance" ]] || exit 1
+
+  statusAfterPending="$(txns_for_hash "$token_name" "$payment_hash" | jq -r '.[0].node.status')"
+  [[ "${statusAfterPending}" == "PENDING" ]] || exit 1
 
   # Cancel hodl invoice
   lnd_outside_2_cli cancelinvoice "$payment_hash"
@@ -765,4 +786,7 @@ usd_amount=50
 
   run check_for_ln_initiated_pending "$token_name" "$payment_hash" "10"
   [[ "$status" -ne 0 ]] || exit 1
+
+  statusAfterFail="$(txns_for_hash "$token_name" "$payment_hash" | jq -r '.[0].node.status')"
+  [[ "${statusAfterFail}" == "FAILURE" ]] || exit 1
 }
