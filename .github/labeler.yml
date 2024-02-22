@@ -1,49 +1,67 @@
 ci:
-  - ci/**/*
-  - .github/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - ci/**/*
+          - .github/**/*
 
 dashboard:
-  - apps/dashboard/*
-  - flake.lock
-  - pnpm-lock.yaml
+  - changed-files:
+      - any-glob-to-any-file:
+          - apps/dashboard/**/*
+          - flake.lock
+          - pnpm-lock.yaml
 
 consent:
-  - apps/consent/*
-  - flake.lock
-  - pnpm-lock.yaml
+  - changed-files:
+      - any-glob-to-any-file:
+          - apps/consent/**/*
+          - flake.lock
+          - pnpm-lock.yaml
 
 pay:
-  - apps/pay/*
-  - flake.lock
-  - pnpm-lock.yaml
+  - changed-files:
+      - any-glob-to-any-file:
+          - apps/pay/**/*
+          - flake.lock
+          - pnpm-lock.yaml
 
 admin-panel:
-  - apps/admin-panel/*
-  - flake.lock
-  - pnpm-lock.yaml
+  - changed-files:
+      - any-glob-to-any-file:
+          - apps/admin-panel/**/*
+          - flake.lock
+          - pnpm-lock.yaml
 
 map:
-  - apps/map/*
-  - flake.lock
-  - pnpm-lock.yaml
+  - changed-files:
+      - any-glob-to-any-file:
+          - apps/map/**/*
+          - flake.lock
+          - pnpm-lock.yaml
 
 core:
-  - core/api/*
-  - core/api-cron/*
-  - core/api-exporter/*
-  - core/api-trigger/*
-  - core/api-ws-server/*
-  - flake.lock
-  - pnpm-lock.yaml
+  - changed-files:
+      - any-glob-to-any-file:
+          - core/api/**/*
+          - core/api-cron/**/*
+          - core/api-exporter/**/*
+          - core/api-trigger/**/*
+          - core/api-ws-server/**/*
+          - flake.lock
+          - pnpm-lock.yaml
 
 api-keys:
-  - third-party/rust/*
-  - core/api-keys/*
-  - flake.lock
-  - Cargo.lock
+  - changed-files:
+      - any-glob-to-any-file:
+          - third-party/rust/**/*
+          - core/api-keys/**/*
+          - flake.lock
+          - Cargo.lock
 
 notifications:
-  - third-party/rust/*
-  - core/notifications/*
-  - flake.lock
-  - Cargo.lock
+  - changed-files:
+      - any-glob-to-any-file:
+          - third-party/rust/**/*
+          - core/notifications/**/*
+          - flake.lock
+          - Cargo.lock
