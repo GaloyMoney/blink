@@ -32,14 +32,10 @@ impl std::str::FromStr for Scope {
     }
 }
 
-pub fn read_only_scope() -> String {
-    READ_SCOPE.to_string()
-}
-
 pub fn is_read_only(scope: &Vec<Scope>) -> bool {
     scope.len() == 1 && scope[0] == Scope::Read
 }
 
 pub fn can_write(scope: &String) -> bool {
-    scope.as_str().split(' ').any(|s| s == WRITE_SCOPE)
+    scope.as_str().split(' ').any(|s| s == WRITE_SCOPE) || scope.is_empty()
 }
