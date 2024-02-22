@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): bump dependencies (#4041)...'
-      sha: 8e139b7986e6ad586efd9212cc648067af4b663e
+      commitTitle: 'ci: upgrade labeler to v5 (#4013)'
+      sha: 47e8c6f65f6ba2b9c12c600319070f1b065d7cd5
       tags:
-      - 0.20.70-4-g8e139b798
+      - 0.20.71-2-g47e8c6f65
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): bump dependencies (#4041)...'
-      sha: 8e139b7986e6ad586efd9212cc648067af4b663e
+      commitTitle: 'ci: upgrade labeler to v5 (#4013)'
+      sha: 47e8c6f65f6ba2b9c12c600319070f1b065d7cd5
       tags:
-      - 0.20.70-4-g8e139b798
+      - 0.20.71-2-g47e8c6f65
     path: schemas/
   - git:
-      commitTitle: 'chore(core): bump dependencies (#4041)...'
-      sha: 8e139b7986e6ad586efd9212cc648067af4b663e
+      commitTitle: 'ci: upgrade labeler to v5 (#4013)'
+      sha: 47e8c6f65f6ba2b9c12c600319070f1b065d7cd5
       tags:
-      - 0.20.70-4-g8e139b798
+      - 0.20.71-2-g47e8c6f65
     path: gql/
   path: ./graphql
 kind: LockConfig
