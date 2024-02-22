@@ -16,6 +16,7 @@ use error::*;
 pub struct SmtpClient {
     client: AsyncSmtpTransport<Tokio1Executor>,
     from_email: String,
+    from_name: String,
 }
 
 impl SmtpClient {
@@ -29,6 +30,7 @@ impl SmtpClient {
         Ok(Self {
             client,
             from_email: config.from_email,
+            from_name: config.from_name,
         })
     }
 
@@ -38,7 +40,10 @@ impl SmtpClient {
         recipient_addr: GaloyEmailAddress,
     ) -> Result<(), SmtpError> {
         let email = Message::builder()
-            .from(Mailbox::new(None, self.from_email.parse()?))
+            .from(Mailbox::new(
+                Some(self.from_name.clone()),
+                self.from_email.parse()?,
+            ))
             .to(Mailbox::new(None, recipient_addr.into_inner().parse()?))
             .subject(msg.subject)
             .header(ContentType::TEXT_HTML)

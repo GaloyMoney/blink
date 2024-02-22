@@ -10,9 +10,11 @@ app:
     fcm:
       google_application_credentials_path: "./config/notifications/fake_service_account.json"
   # email_executor:
+  #   enabled: false
   #   smtp:
   #     username: ""
   #     from_email: ""
+  #     from_name: ""
   #     relay: ""
   #     port: 587
 # kratos_import:
