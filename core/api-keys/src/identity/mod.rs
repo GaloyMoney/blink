@@ -5,8 +5,6 @@ use sqlx::{Pool, Postgres};
 
 use std::sync::Arc;
 
-use crate::scope::*;
-
 pub use error::*;
 
 es_entity::entity_id! { IdentityApiKeyId }
@@ -22,7 +20,7 @@ pub struct IdentityApiKey {
     pub last_used_at: Option<chrono::DateTime<chrono::Utc>>,
     pub revoked: bool,
     pub expired: bool,
-    pub scopes: Vec<Scope>,
+    pub read_only: bool,
 }
 
 pub struct ApiKeySecret(String);
@@ -65,19 +63,18 @@ impl Identities {
         identity_id: IdentityId,
         name: String,
         expires_at: Option<chrono::DateTime<chrono::Utc>>,
-        scopes: Vec<Scope>,
+        read_only: bool,
     ) -> Result<(IdentityApiKey, ApiKeySecret), IdentityError> {
         let code = Alphanumeric.sample_string(&mut rand::thread_rng(), 64);
-        let scopes_str = scopes.iter().map(|s| s.to_string()).collect::<Vec<_>>();
         let record = sqlx::query!(
-            r#"INSERT INTO identity_api_keys (hashed_key, encrypted_key, identity_id, name, expires_at, scopes)
+            r#"INSERT INTO identity_api_keys (hashed_key, encrypted_key, identity_id, name, expires_at, read_only)
             VALUES (digest($1, 'sha256'), crypt($1, gen_salt('bf')), $2, $3, $4, $5)
             RETURNING id, created_at"#,
             code,
             identity_id as IdentityId,
             name,
             expires_at,
-            &scopes_str,
+            read_only,
         )
         .fetch_one(&mut **tx)
         .await?;
@@ -93,7 +90,7 @@ impl Identities {
                 revoked: false,
                 expired: false,
                 last_used_at: None,
-                scopes,
+                read_only,
             },
             ApiKeySecret(key),
         ))
@@ -102,7 +99,7 @@ impl Identities {
     pub async fn find_subject_by_key(
         &self,
         key: &str,
-    ) -> Result<(IdentityApiKeyId, String, Vec<Scope>), IdentityError> {
+    ) -> Result<(IdentityApiKeyId, String, bool), IdentityError> {
         let code = match key.strip_prefix(&*self.key_prefix) {
             None => return Err(IdentityError::MismatchedPrefix),
             Some(code) => code,
@@ -117,21 +114,20 @@ impl Identities {
                  AND k.revoked = false
                  AND k.hashed_key = digest($1, 'sha256')
                  AND (k.expires_at > NOW() OR k.expires_at IS NULL)
-                 RETURNING k.id, i.subject_id, k.scopes
+                 RETURNING k.id, i.subject_id, k.read_only
                )
-               SELECT id, subject_id, scopes FROM updated_key"#,
+               SELECT id, subject_id, read_only FROM updated_key"#,
             code
         )
         .fetch_optional(&self.pool)
         .await?;
 
         if let Some(record) = record {
-            let scopes = record
-                .scopes
-                .into_iter()
-                .map(|s| s.parse::<Scope>().expect("Invalid scope"))
-                .collect::<Vec<_>>();
-            Ok((IdentityApiKeyId::from(record.id), record.subject_id, scopes))
+            Ok((
+                IdentityApiKeyId::from(record.id),
+                record.subject_id,
+                record.read_only,
+            ))
         } else {
             // look up by encrypted key and set hashed_key
             let record = sqlx::query!(
@@ -143,21 +139,20 @@ impl Identities {
                  AND k.revoked = false
                  AND k.encrypted_key = crypt($1, k.encrypted_key)
                  AND (k.expires_at > NOW() OR k.expires_at IS NULL)
-                 RETURNING k.id, i.subject_id, k.scopes
+                 RETURNING k.id, i.subject_id, k.read_only
                )
-               SELECT id, subject_id, scopes FROM updated_key"#,
+               SELECT id, subject_id, read_only FROM updated_key"#,
                 code
             )
             .fetch_optional(&self.pool)
             .await?;
 
             if let Some(record) = record {
-                let scopes = record
-                    .scopes
-                    .into_iter()
-                    .map(|s| s.parse::<Scope>().expect("Invalid scope"))
-                    .collect::<Vec<_>>();
-                Ok((IdentityApiKeyId::from(record.id), record.subject_id, scopes))
+                Ok((
+                    IdentityApiKeyId::from(record.id),
+                    record.subject_id,
+                    record.read_only,
+                ))
             } else {
                 Err(IdentityError::NoActiveKeyFound)
             }
@@ -178,7 +173,7 @@ impl Identities {
                     a.expires_at,
                     revoked,
                     (expires_at IS NOT NULL AND expires_at < NOW()) AS "expired!",
-                    scopes,
+                    read_only,
                     last_used_at
             FROM
                 identities i
@@ -195,23 +190,16 @@ impl Identities {
 
         let api_keys = api_keys_records
             .into_iter()
-            .map(|record| {
-                let scopes = record
-                    .scopes
-                    .into_iter()
-                    .map(|s| s.parse::<Scope>().expect("Invalid scope"))
-                    .collect();
-                IdentityApiKey {
-                    id: IdentityApiKeyId::from(record.api_key_id),
-                    name: record.name,
-                    identity_id: IdentityId::from(record.identity_id),
-                    created_at: record.created_at,
-                    expires_at: record.expires_at,
-                    revoked: record.revoked,
-                    expired: record.expired,
-                    last_used_at: record.last_used_at,
-                    scopes,
-                }
+            .map(|record| IdentityApiKey {
+                id: IdentityApiKeyId::from(record.api_key_id),
+                name: record.name,
+                identity_id: IdentityId::from(record.identity_id),
+                created_at: record.created_at,
+                expires_at: record.expires_at,
+                revoked: record.revoked,
+                expired: record.expired,
+                last_used_at: record.last_used_at,
+                read_only: record.read_only,
             })
             .collect();
 
@@ -238,7 +226,7 @@ impl Identities {
                k.expires_at,
                k.revoked,
                (expires_at IS NOT NULL AND expires_at < NOW()) AS "expired!",
-               k.scopes,
+               k.read_only,
                k.last_used_at
             "#,
             subject_id,
@@ -248,24 +236,17 @@ impl Identities {
         .await?;
 
         match record {
-            Some(record) => {
-                let scopes = record
-                    .scopes
-                    .into_iter()
-                    .map(|s| s.parse::<Scope>().expect("Invalid scope"))
-                    .collect::<Vec<_>>();
-                Ok(IdentityApiKey {
-                    id: key_id,
-                    name: record.name,
-                    identity_id: IdentityId::from(record.identity_id),
-                    created_at: record.created_at,
-                    expires_at: record.expires_at,
-                    revoked: record.revoked,
-                    expired: record.expired,
-                    last_used_at: record.last_used_at,
-                    scopes,
-                })
-            }
+            Some(record) => Ok(IdentityApiKey {
+                id: key_id,
+                name: record.name,
+                identity_id: IdentityId::from(record.identity_id),
+                created_at: record.created_at,
+                expires_at: record.expires_at,
+                revoked: record.revoked,
+                expired: record.expired,
+                last_used_at: record.last_used_at,
+                read_only: record.read_only,
+            }),
             None => Err(IdentityError::KeyNotFoundForRevoke),
         }
     }

@@ -34,11 +34,6 @@ describe("Callback Test", () => {
     cy.get('[data-testid="create-api-expire-30-days-select"]').should("not.be.disabled")
     cy.get('[data-testid="create-api-expire-30-days-select"]').click()
 
-    cy.get('[data-testid="read-scope-checkbox"]').should("exist")
-    cy.get('[data-testid="read-scope-checkbox"]').should("be.visible")
-    cy.get('[data-testid="read-scope-checkbox"]').should("not.be.disabled")
-    cy.get('[data-testid="read-scope-checkbox"]').click()
-
     cy.get('[data-testid="create-api-create-btn"]').should("exist")
     cy.get('[data-testid="create-api-create-btn"]').should("be.visible")
     cy.get('[data-testid="create-api-create-btn"]').should("not.be.disabled")

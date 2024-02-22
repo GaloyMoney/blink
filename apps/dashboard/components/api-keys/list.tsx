@@ -6,7 +6,17 @@ import Divider from "@mui/joy/Divider"
 import RevokeKey from "./revoke"
 import { formatDate, getScopeText } from "./utils"
 
-import { ApiKey } from "@/services/graphql/generated"
+interface ApiKey {
+  readonly __typename: "ApiKey"
+  readonly id: string
+  readonly name: string
+  readonly createdAt: number
+  readonly revoked: boolean
+  readonly expired: boolean
+  readonly lastUsedAt?: number | null
+  readonly expiresAt?: number | null
+  readonly readOnly: boolean
+}
 
 interface ApiKeysListProps {
   activeKeys: ApiKey[]
@@ -34,12 +44,12 @@ const ApiKeysList: React.FC<ApiKeysListProps> = ({
           </tr>
         </thead>
         <tbody>
-          {activeKeys.map(({ id, name, expiresAt, lastUsedAt, scopes }) => {
+          {activeKeys.map(({ id, name, expiresAt, lastUsedAt, readOnly }) => {
             return (
               <tr key={id}>
                 <td>{name}</td>
                 <td>{id}</td>
-                <td>{getScopeText(scopes)}</td>
+                <td>{getScopeText(readOnly)}</td>
                 <td>{expiresAt ? formatDate(expiresAt) : "Never"}</td>
                 <td>{lastUsedAt ? formatDate(lastUsedAt) : "Never"}</td>
                 <td style={{ textAlign: "right" }}>
@@ -66,11 +76,11 @@ const ApiKeysList: React.FC<ApiKeysListProps> = ({
           </tr>
         </thead>
         <tbody>
-          {revokedKeys.map(({ id, name, createdAt, scopes }) => (
+          {revokedKeys.map(({ id, name, createdAt, readOnly }) => (
             <tr key={id}>
               <td>{name}</td>
               <td>{id}</td>
-              <td>{getScopeText(scopes)}</td>
+              <td>{getScopeText(readOnly)}</td>
               <td>{formatDate(createdAt)}</td>
               <td style={{ textAlign: "right" }}>Revoked</td>
             </tr>
@@ -94,11 +104,11 @@ const ApiKeysList: React.FC<ApiKeysListProps> = ({
           </tr>
         </thead>
         <tbody>
-          {expiredKeys.map(({ id, name, createdAt, expiresAt, scopes }) => (
+          {expiredKeys.map(({ id, name, createdAt, expiresAt, readOnly }) => (
             <tr key={id}>
               <td>{name}</td>
               <td>{id}</td>
-              <td>{getScopeText(scopes)}</td>
+              <td>{getScopeText(readOnly)}</td>
               <td>{formatDate(createdAt)}</td>
               <td style={{ textAlign: "right" }}>
                 {expiresAt ? formatDate(expiresAt) : "Never"}

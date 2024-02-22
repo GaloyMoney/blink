@@ -32,14 +32,10 @@ describe("Batch payments test", () => {
         btcWalletExpectedTransactions.forEach((expectedBtcTransaction) => {
           const found = transactions.some(
             (transaction) =>
-              transaction.settlementCurrency ===
-                expectedBtcTransaction.settlementCurrency &&
+              transaction.settlementCurrency === expectedBtcTransaction.settlementCurrency &&
               transaction.status === expectedBtcTransaction.status &&
-              (expectedBtcTransaction.settlementDisplayAmount === undefined ||
-                transaction.settlementDisplayAmount ===
-                  expectedBtcTransaction.settlementDisplayAmount) &&
-              (expectedBtcTransaction.settlementAmount === undefined ||
-                transaction.settlementAmount === expectedBtcTransaction.settlementAmount),
+              (expectedBtcTransaction.settlementDisplayAmount === undefined || transaction.settlementDisplayAmount === expectedBtcTransaction.settlementDisplayAmount) &&
+              (expectedBtcTransaction.settlementAmount === undefined || transaction.settlementAmount === expectedBtcTransaction.settlementAmount)
           )
           expect(found).to.be.true
         })

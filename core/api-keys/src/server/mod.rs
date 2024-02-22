@@ -72,12 +72,12 @@ async fn check_handler(
 ) -> Result<Json<CheckResponse>, ApplicationError> {
     tracing::http::extract_tracing(&headers);
     let key = headers.get(header).ok_or(ApplicationError::MissingApiKey)?;
-    let (id, sub, scopes) = app.lookup_authenticated_subject(key.to_str()?).await?;
-    let scope = scopes
-        .into_iter()
-        .map(|s| s.to_string())
-        .collect::<Vec<String>>()
-        .join(" ");
+    let (id, sub, read_only) = app.lookup_authenticated_subject(key.to_str()?).await?;
+    let scope = if read_only {
+        crate::scope::read_only_scope()
+    } else {
+        crate::scope::read_write_scope()
+    };
     let span = tracing::Span::current();
     span.record("key_id", &tracing::field::display(id));
     span.record("sub", &sub);
@@ -92,11 +92,11 @@ pub async fn graphql_handler(
     req: GraphQLRequest,
 ) -> GraphQLResponse {
     let req = req.into_inner();
-    let can_write = crate::scope::can_write(&jwt_claims.scope);
+    let read_only = crate::scope::is_read_only(&jwt_claims.scope);
     schema
         .execute(req.data(graphql::AuthSubject {
             id: jwt_claims.sub,
-            can_write,
+            read_only,
         }))
         .await
         .into()
