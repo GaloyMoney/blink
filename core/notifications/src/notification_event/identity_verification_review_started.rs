@@ -4,11 +4,11 @@ use super::{DeepLink, NotificationEvent, NotificationEventError};
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct IdentityVerificationReviewPending {
+pub struct IdentityVerificationReviewStarted {
     pub user_id: GaloyUserId,
 }
 
-impl NotificationEvent for IdentityVerificationReviewPending {
+impl NotificationEvent for IdentityVerificationReviewStarted {
     fn category(&self) -> UserNotificationCategory {
         UserNotificationCategory::AdminNotification
     }
@@ -22,14 +22,14 @@ impl NotificationEvent for IdentityVerificationReviewPending {
     }
 
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
-        PushMessages::identity_verification_review_pending(locale.as_ref(), self)
+        PushMessages::identity_verification_review_started(locale.as_ref(), self)
     }
 
     fn to_localized_email(
         &self,
         locale: GaloyLocale,
     ) -> Result<Option<LocalizedEmail>, NotificationEventError> {
-        Ok(EmailMessages::identity_verification_review_pending(
+        Ok(EmailMessages::identity_verification_review_started(
             locale.as_ref(),
             self,
         )?)

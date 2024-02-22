@@ -27,5 +27,5 @@ identity_verification_declined.reason.other: "kumetokea kosa, tafadhali wasilian
 identity_verification_declined.title: "Utambulisho wako haukuthibitishwa!"
 identity_verification_declined.body: "Hatukuweza kusindika nyaraka zako kwa sababu %{reason}."
 
-identity_verification_review_pending.title: "Uthibitisho wako unaendelea!"
-identity_verification_review_pending.body: "Tumepokea nyaraka zako na tunazisindika."
+identity_verification_review_started.title: "Uthibitisho wako unaendelea!"
+identity_verification_review_started.body: "Tumepokea nyaraka zako na tunazisindika."

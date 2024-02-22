@@ -3,7 +3,7 @@ mod circle_threshold_reached;
 pub mod error;
 mod identity_verification_approved;
 mod identity_verification_declined;
-mod identity_verification_review_pending;
+mod identity_verification_review_started;
 
 use serde::{Deserialize, Serialize};
 
@@ -13,7 +13,7 @@ pub(super) use circle_grew::*;
 pub(super) use circle_threshold_reached::*;
 pub(super) use identity_verification_approved::*;
 pub(super) use identity_verification_declined::*;
-pub(super) use identity_verification_review_pending::*;
+pub(super) use identity_verification_review_started::*;
 
 use error::*;
 
@@ -40,7 +40,7 @@ pub enum NotificationEventPayload {
     CircleThresholdReached(CircleThresholdReached),
     IdentityVerificationApproved(IdentityVerificationApproved),
     IdentityVerificationDeclined(IdentityVerificationDeclined),
-    IdentityVerificationReviewPending(IdentityVerificationReviewPending),
+    IdentityVerificationReviewStarted(IdentityVerificationReviewStarted),
 }
 
 impl NotificationEvent for NotificationEventPayload {
@@ -50,7 +50,7 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::CircleThresholdReached(e) => e.category(),
             NotificationEventPayload::IdentityVerificationApproved(e) => e.category(),
             NotificationEventPayload::IdentityVerificationDeclined(e) => e.category(),
-            NotificationEventPayload::IdentityVerificationReviewPending(e) => e.category(),
+            NotificationEventPayload::IdentityVerificationReviewStarted(e) => e.category(),
         }
     }
 
@@ -60,7 +60,7 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::CircleThresholdReached(event) => event.user_id(),
             NotificationEventPayload::IdentityVerificationApproved(event) => event.user_id(),
             NotificationEventPayload::IdentityVerificationDeclined(event) => event.user_id(),
-            NotificationEventPayload::IdentityVerificationReviewPending(event) => event.user_id(),
+            NotificationEventPayload::IdentityVerificationReviewStarted(event) => event.user_id(),
         }
     }
 
@@ -70,7 +70,7 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::CircleThresholdReached(event) => event.deep_link(),
             NotificationEventPayload::IdentityVerificationApproved(event) => event.deep_link(),
             NotificationEventPayload::IdentityVerificationDeclined(event) => event.deep_link(),
-            NotificationEventPayload::IdentityVerificationReviewPending(event) => event.deep_link(),
+            NotificationEventPayload::IdentityVerificationReviewStarted(event) => event.deep_link(),
         }
     }
 
@@ -86,7 +86,7 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationDeclined(event) => {
                 event.to_localized_push_msg(locale)
             }
-            NotificationEventPayload::IdentityVerificationReviewPending(event) => {
+            NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
                 event.to_localized_push_msg(locale)
             }
         }
@@ -107,7 +107,7 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationDeclined(event) => {
                 event.to_localized_email(locale)
             }
-            NotificationEventPayload::IdentityVerificationReviewPending(event) => {
+            NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
                 event.to_localized_email(locale)
             }
         }
@@ -123,7 +123,7 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationDeclined(event) => {
                 event.should_send_email()
             }
-            NotificationEventPayload::IdentityVerificationReviewPending(event) => {
+            NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
                 event.should_send_email()
             }
         }
@@ -154,8 +154,8 @@ impl From<IdentityVerificationDeclined> for NotificationEventPayload {
     }
 }
 
-impl From<IdentityVerificationReviewPending> for NotificationEventPayload {
-    fn from(event: IdentityVerificationReviewPending) -> Self {
-        NotificationEventPayload::IdentityVerificationReviewPending(event)
+impl From<IdentityVerificationReviewStarted> for NotificationEventPayload {
+    fn from(event: IdentityVerificationReviewStarted) -> Self {
+        NotificationEventPayload::IdentityVerificationReviewStarted(event)
     }
 }
