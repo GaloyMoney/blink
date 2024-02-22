@@ -19,7 +19,7 @@ const readAuthorize = async (
     return resolve(parent, args, context, info)
   }
 
-  if (scope.find((s) => s === ScopesOauth2.Read) !== undefined) {
+  if (scope.find((s) => s === ScopesOauth2.Read)) {
     return resolve(parent, args, context, info)
   }
 
@@ -57,11 +57,11 @@ const receiveAuthorize = async (
   const scope = context.scope
 
   // not a token with scope
-  if (scope === undefined || scope.length === 0) {
+  if (!scope || scope.length === 0) {
     return resolve(parent, args, context, info)
   }
 
-  if (scope.find((s) => s === ScopesOauth2.Receive) !== undefined) {
+  if (scope.find((s) => s === ScopesOauth2.Receive)) {
     return resolve(parent, args, context, info)
   }
 
