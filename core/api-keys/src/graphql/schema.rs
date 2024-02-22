@@ -61,6 +61,7 @@ pub(super) struct ApiKey {
     pub expired: bool,
     pub last_used_at: Option<Timestamp>,
     pub expires_at: Option<Timestamp>,
+    pub read_only: bool,
     pub scopes: Vec<Scope>,
 }
 
@@ -102,14 +103,12 @@ pub struct Mutation;
 struct ApiKeyCreateInput {
     name: String,
     expire_in_days: Option<u16>,
-    #[graphql(default)]
-    read_only: bool,
     #[graphql(default_with = "default_scopes()")]
     scopes: Vec<Scope>,
 }
 
 fn default_scopes() -> Vec<Scope> {
-    vec![Scope::Read]
+    vec![Scope::Read, Scope::Write]
 }
 
 #[derive(InputObject)]

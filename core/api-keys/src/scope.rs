@@ -36,8 +36,8 @@ pub fn read_only_scope() -> String {
     READ_SCOPE.to_string()
 }
 
-pub fn read_write_scope() -> String {
-    format!("{READ_SCOPE} {WRITE_SCOPE}")
+pub fn is_read_only(scope: &Vec<Scope>) -> bool {
+    scope.len() == 1 && scope[0] == Scope::Read
 }
 
 pub fn can_write(scope: &String) -> bool {

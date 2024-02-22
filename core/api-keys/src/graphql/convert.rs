@@ -23,6 +23,7 @@ impl From<IdentityApiKey> for ApiKey {
             last_used_at: key.last_used_at.map(Timestamp::from),
             created_at: Timestamp::from(key.created_at),
             expires_at: key.expires_at.map(Timestamp::from),
+            read_only: crate::scope::is_read_only(&key.scopes),
             scopes: key.scopes,
         }
     }
