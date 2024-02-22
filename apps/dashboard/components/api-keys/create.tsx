@@ -13,7 +13,8 @@ import {
   Tooltip,
   Select,
   Option,
-  Checkbox,
+  Radio,
+  RadioGroup,
 } from "@mui/joy"
 
 import InfoOutlined from "@mui/icons-material/InfoOutlined"
@@ -300,35 +301,15 @@ const ApiKeyCreate = ({ defaultWalletId }: Prop) => {
                     </FormHelperText>
                   ) : null}
                   <Box>
-                    <Typography>Scopes</Typography>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "0.8em",
-                        marginTop: "1em",
-                      }}
-                    >
-                      <Checkbox
-                        data-testid="read-scope-checkbox"
-                        name="readScope"
-                        id="readScope"
-                        label="Read"
-                        value="READ"
-                      />
-                      <Checkbox
-                        name="receiveScope"
-                        id="receiveScope"
-                        label="Receive"
-                        value="RECEIVE"
-                      />
-                      <Checkbox
-                        name="writeScope"
-                        id="writeScope"
-                        label="Write"
-                        value="WRITE"
-                      />
-                    </Box>
+                    <Typography>Scope</Typography>
+                    <RadioGroup defaultValue="readAndWrite" name="apiScope">
+                      <Radio value="readAndWrite" label="Read and Write" />
+                      <FormHelperText>
+                        Full access: read and write account details.
+                      </FormHelperText>
+                      <Radio value="readOnly" label="Read Only" />
+                      <FormHelperText>Limited access: view data only.</FormHelperText>
+                    </RadioGroup>
                   </Box>
                   <Box
                     sx={{

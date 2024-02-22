@@ -6,7 +6,6 @@ import { ApiKeyResponse } from "./api-key.types"
 
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { createApiKey, revokeApiKey } from "@/services/graphql/mutations/api-keys"
-import { Scope } from "@/services/graphql/generated"
 
 export const revokeApiKeyServerAction = async (id: string) => {
   if (!id || typeof id !== "string") {
@@ -54,20 +53,9 @@ export const createApiKeyServerAction = async (
 ): Promise<ApiKeyResponse> => {
   let apiKeyExpiresInDays: number | null = null
   const apiKeyName = form.get("apiKeyName")
-  const scopes: Scope[] = []
-  if (form.get("readScope")) scopes.push("READ")
-  if (form.get("receiveScope")) scopes.push("RECEIVE")
-  if (form.get("writeScope")) scopes.push("WRITE")
-
-  if (scopes.length === 0) {
-    return {
-      error: true,
-      message: "At least one scope is required",
-      responsePayload: null,
-    }
-  }
-
+  const readOnly = form.get("apiScope") === "readOnly"
   const apiKeyExpiresInDaysSelect = form.get("apiKeyExpiresInDaysSelect")
+
   if (!apiKeyName || typeof apiKeyName !== "string") {
     return {
       error: true,
@@ -97,7 +85,7 @@ export const createApiKeyServerAction = async (
 
   let data
   try {
-    data = await createApiKey(token, apiKeyName, apiKeyExpiresInDays, scopes)
+    data = await createApiKey(token, apiKeyName, apiKeyExpiresInDays, readOnly)
   } catch (err) {
     console.log("error in createApiKey ", err)
     return {

@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH updated_key AS (\n                 UPDATE identity_api_keys k\n                 SET last_used_at = NOW()\n                 FROM identities i\n                 WHERE k.identity_id = i.id\n                 AND k.revoked = false\n                 AND k.hashed_key = digest($1, 'sha256')\n                 AND (k.expires_at > NOW() OR k.expires_at IS NULL)\n                 RETURNING k.id, i.subject_id, k.read_only\n               )\n               SELECT id, subject_id, read_only FROM updated_key",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "subject_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "read_only",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "4e3129274ff721a1ee88f2ed169122456b1025b26b1d3ee5fcc4b51b16f59c4f"
+}

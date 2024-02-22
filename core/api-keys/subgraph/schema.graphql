@@ -7,13 +7,12 @@ type ApiKey {
 	lastUsedAt: Timestamp
 	expiresAt: Timestamp
 	readOnly: Boolean!
-	scopes: [Scope!]!
 }
 
 input ApiKeyCreateInput {
 	name: String!
 	expireInDays: Int
-	scopes: [Scope!]! = [READ,WRITE]
+	readOnly: Boolean! = false
 }
 
 type ApiKeyCreatePayload {
@@ -38,12 +37,6 @@ type Mutation {
 	apiKeyRevoke(input: ApiKeyRevokeInput!): ApiKeyRevokePayload!
 }
 
-
-enum Scope {
-	READ
-	WRITE
-	RECEIVE
-}
 
 
 scalar Timestamp

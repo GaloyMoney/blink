@@ -74,10 +74,7 @@ for (const key of Object.keys(queryFields.authed.atWalletLevel)) {
 }
 
 const walletIdMutationFields: { [key: string]: ValidateWalletIdFn } = {}
-for (const key of Object.keys({
-  ...mutationFields.authed.atWalletLevel.send,
-  ...mutationFields.authed.atWalletLevel.receive,
-})) {
+for (const key of Object.keys(mutationFields.authed.atWalletLevel)) {
   walletIdMutationFields[key] = validateWalletIdMutation
 }
 

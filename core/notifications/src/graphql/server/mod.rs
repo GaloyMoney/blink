@@ -55,11 +55,11 @@ pub async fn graphql_handler(
     req: GraphQLRequest,
 ) -> GraphQLResponse {
     let req = req.into_inner();
-    let can_write = can_write(&jwt_claims.scope);
+    let read_only = is_read_only(&jwt_claims.scope);
     schema
         .execute(req.data(graphql::AuthSubject {
             id: jwt_claims.sub,
-            can_write,
+            read_only,
         }))
         .await
         .into()
@@ -70,9 +70,17 @@ async fn playground() -> impl axum::response::IntoResponse {
         async_graphql::http::GraphQLPlaygroundConfig::new("/graphql"),
     ))
 }
-
+pub const READ_SCOPE: &str = "read";
 pub const WRITE_SCOPE: &str = "write";
 
-pub fn can_write(scope: &String) -> bool {
-    scope.as_str().split(' ').any(|s| s == WRITE_SCOPE) || scope.is_empty()
+pub fn read_only_scope() -> String {
+    READ_SCOPE.to_string()
+}
+
+pub fn read_write_scope() -> String {
+    format!("{READ_SCOPE} {WRITE_SCOPE}")
+}
+
+pub fn is_read_only(scope: &String) -> bool {
+    !(scope.as_str().split(' ').any(|s| s == WRITE_SCOPE) || scope.is_empty())
 }
