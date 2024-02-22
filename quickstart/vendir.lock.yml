@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: upgrade labeler to v5 (#4013)'
-      sha: 47e8c6f65f6ba2b9c12c600319070f1b065d7cd5
+      commitTitle: 'feat(api-keys): introduce receive scope (#4049)...'
+      sha: a19f31fe24d74df19a15d5ff5ba2373b95b35979
       tags:
-      - 0.20.71-2-g47e8c6f65
+      - 0.20.72-1-ga19f31fe2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: upgrade labeler to v5 (#4013)'
-      sha: 47e8c6f65f6ba2b9c12c600319070f1b065d7cd5
+      commitTitle: 'feat(api-keys): introduce receive scope (#4049)...'
+      sha: a19f31fe24d74df19a15d5ff5ba2373b95b35979
       tags:
-      - 0.20.71-2-g47e8c6f65
+      - 0.20.72-1-ga19f31fe2
     path: schemas/
   - git:
-      commitTitle: 'ci: upgrade labeler to v5 (#4013)'
-      sha: 47e8c6f65f6ba2b9c12c600319070f1b065d7cd5
+      commitTitle: 'feat(api-keys): introduce receive scope (#4049)...'
+      sha: a19f31fe24d74df19a15d5ff5ba2373b95b35979
       tags:
-      - 0.20.71-2-g47e8c6f65
+      - 0.20.73
     path: gql/
   path: ./graphql
 kind: LockConfig
