@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO identity_api_keys (hashed_key, encrypted_key, identity_id, name, expires_at, scopes)\n            VALUES (digest($1, 'sha256'), crypt($1, gen_salt('bf')), $2, $3, $4, $5)\n            RETURNING id, created_at",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid",
+        "Varchar",
+        "Timestamptz",
+        "VarcharArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "750886aae5b96df76c66a4eec3f074c52bc56b12058bd3000c5b850579049b21"
+}

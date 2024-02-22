@@ -3,7 +3,7 @@ mod error;
 
 use sqlx::{Pool, Postgres};
 
-use crate::identity::*;
+use crate::{identity::*, scope::*};
 
 pub use config::*;
 pub use error::*;
@@ -31,7 +31,7 @@ impl ApiKeysApp {
     pub async fn lookup_authenticated_subject(
         &self,
         key: &str,
-    ) -> Result<(IdentityApiKeyId, String, bool), ApplicationError> {
+    ) -> Result<(IdentityApiKeyId, String, Vec<Scope>), ApplicationError> {
         Ok(self.identities.find_subject_by_key(key).await?)
     }
 
@@ -41,8 +41,12 @@ impl ApiKeysApp {
         subject_id: &str,
         name: String,
         expire_in_days: Option<u16>,
-        read_only: bool,
+        scopes: Vec<Scope>,
     ) -> Result<(IdentityApiKey, ApiKeySecret), ApplicationError> {
+        if scopes.is_empty() {
+            return Err(ApplicationError::MissingScopes);
+        }
+
         let mut tx = self.pool.begin().await?;
         let id = self
             .identities
@@ -53,7 +57,7 @@ impl ApiKeysApp {
         });
         let key = self
             .identities
-            .create_key_for_identity_in_tx(&mut tx, id, name, expiry, read_only)
+            .create_key_for_identity_in_tx(&mut tx, id, name, expiry, scopes)
             .await?;
         tx.commit().await?;
         Ok(key)
