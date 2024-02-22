@@ -5,17 +5,7 @@ import { Card, Divider, Typography, Box } from "@mui/joy"
 import RevokeKey from "./revoke"
 import { formatDate, getScopeText } from "./utils"
 
-interface ApiKey {
-  readonly __typename: "ApiKey"
-  readonly id: string
-  readonly name: string
-  readonly createdAt: number
-  readonly revoked: boolean
-  readonly expired: boolean
-  readonly lastUsedAt?: number | null
-  readonly expiresAt?: number | null
-  readonly readOnly: boolean
-}
+import { ApiKey } from "@/services/graphql/generated"
 
 interface ApiKeysCardProps {
   activeKeys: ApiKey[]
@@ -53,7 +43,7 @@ const ApiKeysCard: React.FC<ApiKeysCardProps> = ({
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <Typography fontSize={13}>Scope</Typography>
-              <Typography fontSize={13}>{getScopeText(key.readOnly)}</Typography>
+              <Typography fontSize={13}>{getScopeText(key.scopes)}</Typography>
             </Box>
             {!key.revoked && !key.expired && <RevokeKey id={key.id} />}
           </Card>

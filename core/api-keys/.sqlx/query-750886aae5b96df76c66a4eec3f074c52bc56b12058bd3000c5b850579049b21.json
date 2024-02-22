@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO identity_api_keys (hashed_key, encrypted_key, identity_id, name, expires_at, read_only)\n            VALUES (digest($1, 'sha256'), crypt($1, gen_salt('bf')), $2, $3, $4, $5)\n            RETURNING id, created_at",
+  "query": "INSERT INTO identity_api_keys (hashed_key, encrypted_key, identity_id, name, expires_at, scopes)\n            VALUES (digest($1, 'sha256'), crypt($1, gen_salt('bf')), $2, $3, $4, $5)\n            RETURNING id, created_at",
   "describe": {
     "columns": [
       {
@@ -20,7 +20,7 @@
         "Uuid",
         "Varchar",
         "Timestamptz",
-        "Bool"
+        "VarcharArray"
       ]
     },
     "nullable": [
@@ -28,5 +28,5 @@
       false
     ]
   },
-  "hash": "5057154185b03f6ae8e66a1dab81a94dc74d493856497ed2e4f6cd140d51eab8"
+  "hash": "750886aae5b96df76c66a4eec3f074c52bc56b12058bd3000c5b850579049b21"
 }

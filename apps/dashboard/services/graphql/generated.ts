@@ -224,12 +224,13 @@ export type ApiKey = {
   readonly name: Scalars['String']['output'];
   readonly readOnly: Scalars['Boolean']['output'];
   readonly revoked: Scalars['Boolean']['output'];
+  readonly scopes: ReadonlyArray<Scope>;
 };
 
 export type ApiKeyCreateInput = {
   readonly expireInDays?: InputMaybe<Scalars['Int']['input']>;
   readonly name: Scalars['String']['input'];
-  readonly readOnly?: Scalars['Boolean']['input'];
+  readonly scopes?: ReadonlyArray<Scope>;
 };
 
 export type ApiKeyCreatePayload = {
@@ -1671,6 +1672,13 @@ export type SatAmountPayload = {
   readonly errors: ReadonlyArray<Error>;
 };
 
+export const Scope = {
+  Read: 'READ',
+  Receive: 'RECEIVE',
+  Write: 'WRITE'
+} as const;
+
+export type Scope = typeof Scope[keyof typeof Scope];
 export type SettlementVia = SettlementViaIntraLedger | SettlementViaLn | SettlementViaOnChain;
 
 export type SettlementViaIntraLedger = {
@@ -2253,14 +2261,14 @@ export type ApiKeyCreateMutationVariables = Exact<{
 }>;
 
 
-export type ApiKeyCreateMutation = { readonly __typename: 'Mutation', readonly apiKeyCreate: { readonly __typename: 'ApiKeyCreatePayload', readonly apiKeySecret: string, readonly apiKey: { readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: number, readonly revoked: boolean, readonly expired: boolean, readonly lastUsedAt?: number | null, readonly expiresAt?: number | null } } };
+export type ApiKeyCreateMutation = { readonly __typename: 'Mutation', readonly apiKeyCreate: { readonly __typename: 'ApiKeyCreatePayload', readonly apiKeySecret: string, readonly apiKey: { readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: number, readonly revoked: boolean, readonly expired: boolean, readonly lastUsedAt?: number | null, readonly expiresAt?: number | null, readonly scopes: ReadonlyArray<Scope> } } };
 
 export type ApiKeyRevokeMutationVariables = Exact<{
   input: ApiKeyRevokeInput;
 }>;
 
 
-export type ApiKeyRevokeMutation = { readonly __typename: 'Mutation', readonly apiKeyRevoke: { readonly __typename: 'ApiKeyRevokePayload', readonly apiKey: { readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: number, readonly revoked: boolean, readonly expired: boolean, readonly lastUsedAt?: number | null, readonly expiresAt?: number | null } } };
+export type ApiKeyRevokeMutation = { readonly __typename: 'Mutation', readonly apiKeyRevoke: { readonly __typename: 'ApiKeyRevokePayload', readonly apiKey: { readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: number, readonly revoked: boolean, readonly expired: boolean, readonly lastUsedAt?: number | null, readonly expiresAt?: number | null, readonly scopes: ReadonlyArray<Scope> } } };
 
 export type CallbackEndpointAddMutationVariables = Exact<{
   input: CallbackEndpointAddInput;
@@ -2329,7 +2337,7 @@ export type UserTotpRegistrationValidateMutation = { readonly __typename: 'Mutat
 export type ApiKeysQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ApiKeysQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly apiKeys: ReadonlyArray<{ readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: number, readonly revoked: boolean, readonly expired: boolean, readonly lastUsedAt?: number | null, readonly expiresAt?: number | null, readonly readOnly: boolean }> } | null };
+export type ApiKeysQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly apiKeys: ReadonlyArray<{ readonly __typename: 'ApiKey', readonly id: string, readonly name: string, readonly createdAt: number, readonly revoked: boolean, readonly expired: boolean, readonly lastUsedAt?: number | null, readonly expiresAt?: number | null, readonly readOnly: boolean, readonly scopes: ReadonlyArray<Scope> }> } | null };
 
 export type CallbackEndpointsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2383,6 +2391,7 @@ export const ApiKeyCreateDocument = gql`
       expired
       lastUsedAt
       expiresAt
+      scopes
     }
     apiKeySecret
   }
@@ -2425,6 +2434,7 @@ export const ApiKeyRevokeDocument = gql`
       expired
       lastUsedAt
       expiresAt
+      scopes
     }
   }
 }
@@ -2837,6 +2847,7 @@ export const ApiKeysDocument = gql`
       lastUsedAt
       expiresAt
       readOnly
+      scopes
     }
   }
 }
@@ -3511,6 +3522,7 @@ export type ResolversTypes = {
   SafeInt: ResolverTypeWrapper<Scalars['SafeInt']['output']>;
   SatAmount: ResolverTypeWrapper<Scalars['SatAmount']['output']>;
   SatAmountPayload: ResolverTypeWrapper<SatAmountPayload>;
+  Scope: Scope;
   Seconds: ResolverTypeWrapper<Scalars['Seconds']['output']>;
   SettlementVia: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['SettlementVia']>;
   SettlementViaIntraLedger: ResolverTypeWrapper<SettlementViaIntraLedger>;
@@ -3908,6 +3920,7 @@ export type ApiKeyResolvers<ContextType = any, ParentType extends ResolversParen
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   readOnly?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  scopes?: Resolver<ReadonlyArray<ResolversTypes['Scope']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
