@@ -5,7 +5,7 @@ use crate::{app::NotificationsApp, primitives::*};
 
 pub struct AuthSubject {
     pub id: String,
-    pub read_only: bool,
+    pub can_write: bool,
 }
 
 pub struct Query;
@@ -78,7 +78,7 @@ impl Mutation {
         input: UserDisableNotificationChannelInput,
     ) -> async_graphql::Result<UserUpdateNotificationSettingsPayload> {
         let subject = ctx.data::<AuthSubject>()?;
-        if subject.read_only {
+        if !subject.can_write {
             return Err("Permission denied".into());
         }
         let app = ctx.data_unchecked::<NotificationsApp>();
@@ -96,7 +96,7 @@ impl Mutation {
         input: UserEnableNotificationChannelInput,
     ) -> async_graphql::Result<UserUpdateNotificationSettingsPayload> {
         let subject = ctx.data::<AuthSubject>()?;
-        if subject.read_only {
+        if !subject.can_write {
             return Err("Permission denied".into());
         }
         let app = ctx.data_unchecked::<NotificationsApp>();
@@ -116,7 +116,7 @@ impl Mutation {
         input: UserDisableNotificationCategoryInput,
     ) -> async_graphql::Result<UserUpdateNotificationSettingsPayload> {
         let subject = ctx.data::<AuthSubject>()?;
-        if subject.read_only {
+        if !subject.can_write {
             return Err("Permission denied".into());
         }
         let app = ctx.data_unchecked::<NotificationsApp>();
@@ -140,7 +140,7 @@ impl Mutation {
         input: UserEnableNotificationCategoryInput,
     ) -> async_graphql::Result<UserUpdateNotificationSettingsPayload> {
         let subject = ctx.data::<AuthSubject>()?;
-        if subject.read_only {
+        if !subject.can_write {
             return Err("Permission denied".into());
         }
         let app = ctx.data_unchecked::<NotificationsApp>();

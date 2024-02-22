@@ -23,5 +23,5 @@ identity_verification_declined.reason.photo_not_clear: "La imagen que enviaste n
 identity_verification_declined.title: "¡No se pudo verificar tu identidad!"
 identity_verification_declined.body: "No pudimos procesar sus documentos debido a %{reason}."
 
-identity_verification_review_pending.title: "¡Tu verificación está en proceso!"
-identity_verification_review_pending.body: "Hemos recibido tus documentos y los estamos procesando."
+identity_verification_review_started.title: "¡Tu verificación está en proceso!"
+identity_verification_review_started.body: "Hemos recibido tus documentos y los estamos procesando."

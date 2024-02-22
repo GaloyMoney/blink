@@ -150,7 +150,7 @@ message NotificationEvent {
     CircleThresholdReached circle_threshold_reached = 2;
     IdentityVerificationApproved identity_verification_approved = 3;
     IdentityVerificationDeclined identity_verification_declined = 4;
-    IdentityVerificationReviewPending identity_verification_review_pending = 5;
+    IdentityVerificationReviewStarted identity_verification_review_started = 5;
   }
 }
 
@@ -196,6 +196,6 @@ message IdentityVerificationDeclined {
   DeclinedReason declined_reason = 2;
 }
 
-message IdentityVerificationReviewPending {
+message IdentityVerificationReviewStarted {
   string user_id = 1;
 }
