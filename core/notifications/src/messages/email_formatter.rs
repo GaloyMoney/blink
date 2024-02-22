@@ -11,10 +11,10 @@ impl EmailFormatter<'_> {
     pub fn init() -> Result<Self, MessagesError> {
         let mut handlebars = Handlebars::new();
         handlebars.register_template_string(
-            "identification",
+            "general",
             include_str!(concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/templates/identification.hbs"
+                "/templates/general.hbs"
             )),
         )?;
         handlebars.register_template_string(
@@ -44,7 +44,7 @@ impl EmailFormatter<'_> {
             "subject": subject,
             "body": body,
         });
-        Ok(self.handlebars.render("identification", &data)?)
+        Ok(self.handlebars.render("general", &data)?)
     }
 }
 
