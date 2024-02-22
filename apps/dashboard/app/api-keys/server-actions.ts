@@ -6,6 +6,7 @@ import { ApiKeyResponse } from "./api-key.types"
 
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { createApiKey, revokeApiKey } from "@/services/graphql/mutations/api-keys"
+import { Scope } from "@/services/graphql/generated"
 
 export const revokeApiKeyServerAction = async (id: string) => {
   if (!id || typeof id !== "string") {
@@ -53,7 +54,7 @@ export const createApiKeyServerAction = async (
 ): Promise<ApiKeyResponse> => {
   let apiKeyExpiresInDays: number | null = null
   const apiKeyName = form.get("apiKeyName")
-  const scopes = []
+  const scopes: Scope[] = []
   if (form.get("readScope")) scopes.push("READ")
   if (form.get("receiveScope")) scopes.push("RECEIVE")
   if (form.get("writeScope")) scopes.push("WRITE")

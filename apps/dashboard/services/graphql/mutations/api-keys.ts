@@ -6,6 +6,7 @@ import {
   ApiKeyCreateMutation,
   ApiKeyRevokeDocument,
   ApiKeyRevokeMutation,
+  Scope,
 } from "../generated"
 
 gql`
@@ -45,7 +46,7 @@ export async function createApiKey(
   token: string,
   name: string,
   expireInDays: number | null,
-  scopes: string[],
+  scopes: Scope[],
 ) {
   const client = apollo(token).getClient()
   try {

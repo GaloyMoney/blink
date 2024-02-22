@@ -5,18 +5,7 @@ import { Card, Divider, Typography, Box } from "@mui/joy"
 import RevokeKey from "./revoke"
 import { formatDate, getScopeText } from "./utils"
 
-interface ApiKey {
-  readonly __typename: "ApiKey"
-  readonly id: string
-  readonly name: string
-  readonly createdAt: number
-  readonly revoked: boolean
-  readonly expired: boolean
-  readonly lastUsedAt?: number | null
-  readonly expiresAt?: number | null
-  readonly readOnly: boolean
-  readonly scopes: string[]
-}
+import { ApiKey } from "@/services/graphql/generated"
 
 interface ApiKeysCardProps {
   activeKeys: ApiKey[]
