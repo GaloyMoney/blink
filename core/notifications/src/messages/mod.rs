@@ -86,16 +86,16 @@ impl PushMessages {
         LocalizedPushMessage { title, body }
     }
 
-    pub fn identity_verification_review_pending(
+    pub fn identity_verification_review_started(
         locale: &str,
-        _event: &IdentityVerificationReviewPending,
+        _event: &IdentityVerificationReviewStarted,
     ) -> LocalizedPushMessage {
         let title = t!(
-            "identity_verification_review_pending.title",
+            "identity_verification_review_started.title",
             locale = locale
         )
         .to_string();
-        let body = t!("identity_verification_review_pending.body", locale = locale).to_string();
+        let body = t!("identity_verification_review_started.body", locale = locale).to_string();
         LocalizedPushMessage { title, body }
     }
 }
@@ -162,18 +162,18 @@ impl EmailMessages {
         }))
     }
 
-    pub fn identity_verification_review_pending(
+    pub fn identity_verification_review_started(
         locale: &str,
-        _event: &IdentityVerificationReviewPending,
+        _event: &IdentityVerificationReviewStarted,
     ) -> Result<Option<LocalizedEmail>, MessagesError> {
         let email_formatter = EmailFormatter::init()?;
 
         let title = t!(
-            "identity_verification_review_pending.title",
+            "identity_verification_review_started.title",
             locale = locale
         )
         .to_string();
-        let body = t!("identity_verification_review_pending.body", locale = locale).to_string();
+        let body = t!("identity_verification_review_started.body", locale = locale).to_string();
 
         let body = email_formatter.generic_email_template(&title, &body)?;
 

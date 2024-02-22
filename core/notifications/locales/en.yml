@@ -27,5 +27,5 @@ identity_verification_declined.reason.other: "an error occurred, please contact 
 identity_verification_declined.title: "Your identity could not be verified!"
 identity_verification_declined.body: "We were not able to process your documents because %{reason}."
 
-identity_verification_review_pending.title: "Your verification is in process!"
-identity_verification_review_pending.body: "We have received your documents and are processing them."
+identity_verification_review_started.title: "Your verification is in process!"
+identity_verification_review_started.body: "We have received your documents and are processing them."
