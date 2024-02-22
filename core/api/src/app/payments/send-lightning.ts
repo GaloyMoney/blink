@@ -630,6 +630,7 @@ const executePaymentViaLn = async ({
   const walletIds = [accountWalletDescriptors.BTC.id, accountWalletDescriptors.USD.id]
 
   return LockService().lockWalletId(senderWallet.id, async (signal) => {
+    // Execute checks before payment
     const ledgerService = LedgerService()
 
     const ledgerTransactions = await ledgerService.getTransactionsByHash(paymentHash)
@@ -643,6 +644,7 @@ const executePaymentViaLn = async ({
     const balanceCheck = paymentFlow.checkBalanceForSend(balance)
     if (balanceCheck instanceof Error) return balanceCheck
 
+    // Prepare ledger transaction
     const lndService = LndService()
     if (lndService instanceof Error) return lndService
 
@@ -674,6 +676,7 @@ const executePaymentViaLn = async ({
       memoOfPayer: memo || paymentFlow.descriptionFromInvoice,
     })
 
+    // Record pending payment entries
     const journal = await LedgerFacade.recordSendOffChain({
       description: paymentFlow.descriptionFromInvoice || memo || "",
       amountToDebitSender: {
@@ -704,6 +707,7 @@ const executePaymentViaLn = async ({
     })
     if (updateStateAfterSend instanceof Error) return updateStateAfterSend
 
+    // Execute payment
     const walletPriceRatio = WalletPriceRatio({
       usd: paymentFlow.usdPaymentAmount,
       btc: paymentFlow.btcPaymentAmount,
@@ -763,10 +767,11 @@ const executePaymentViaLn = async ({
       })
     }
 
-    const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
-    if (settled instanceof Error) return settled
-
+    // Settle and record reversion entries
     if (payResult instanceof Error) {
+      const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
+      if (settled instanceof Error) return settled
+
       const voided = await LedgerFacade.recordLnSendRevert({
         journalId,
         paymentHash,
@@ -787,6 +792,10 @@ const executePaymentViaLn = async ({
         : payResult
     }
 
+    // Settle and conditionally record reimbursement entries
+    const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
+    if (settled instanceof Error) return settled
+
     if (!rawRoute) {
       const reimbursed = await reimburseFee({
         paymentFlow,
@@ -805,6 +814,7 @@ const executePaymentViaLn = async ({
     })
     if (updateStateAfterSettle instanceof Error) return updateStateAfterSettle
 
+    // Send notification
     const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
     if (senderUser instanceof Error) return senderUser
 
