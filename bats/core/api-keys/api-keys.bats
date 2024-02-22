@@ -167,7 +167,7 @@ new_key_name() {
 
   exec_graphql 'api-key-secret' 'api-keys'
 
-  name="$(graphql_output '.errors | length')"
+  errors="$(graphql_output '.errors | length')"
   [[ "${errors}" = "1" ]] || exit 1
 }
 
@@ -190,4 +190,14 @@ new_key_name() {
   exec_graphql 'api-key-secret' 'api-keys'
   name="$(graphql_output '.data.me.apiKeys[-1].name')"
   [[ "${name}" = "${key_name}" ]] || exit 1
+}
+
+@test "api-keys: cannot create key without scopes" {
+  key_name="$(new_key_name)"
+
+  variables="{\"input\":{\"name\":\"${key_name}\",\"scopes\": []}}"
+
+  exec_graphql 'alice' 'api-key-create' "$variables"
+  errors="$(graphql_output '.errors | length')"
+  [[ "${errors}" = "1" ]] || exit 1
 }
