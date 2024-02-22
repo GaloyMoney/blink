@@ -53,9 +53,20 @@ export const createApiKeyServerAction = async (
 ): Promise<ApiKeyResponse> => {
   let apiKeyExpiresInDays: number | null = null
   const apiKeyName = form.get("apiKeyName")
-  const readOnly = form.get("apiScope") === "readOnly"
-  const apiKeyExpiresInDaysSelect = form.get("apiKeyExpiresInDaysSelect")
+  const scopes = []
+  if (form.get("readScope")) scopes.push("READ")
+  if (form.get("receiveScope")) scopes.push("RECEIVE")
+  if (form.get("writeScope")) scopes.push("WRITE")
 
+  if (scopes.length === 0) {
+    return {
+      error: true,
+      message: "At least one scope is required",
+      responsePayload: null,
+    }
+  }
+
+  const apiKeyExpiresInDaysSelect = form.get("apiKeyExpiresInDaysSelect")
   if (!apiKeyName || typeof apiKeyName !== "string") {
     return {
       error: true,
@@ -85,7 +96,7 @@ export const createApiKeyServerAction = async (
 
   let data
   try {
-    data = await createApiKey(token, apiKeyName, apiKeyExpiresInDays, readOnly)
+    data = await createApiKey(token, apiKeyName, apiKeyExpiresInDays, scopes)
   } catch (err) {
     console.log("error in createApiKey ", err)
     return {

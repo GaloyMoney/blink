@@ -15,6 +15,7 @@ interface ApiKey {
   readonly lastUsedAt?: number | null
   readonly expiresAt?: number | null
   readonly readOnly: boolean
+  readonly scopes: string[]
 }
 
 interface ApiKeysCardProps {
@@ -53,7 +54,7 @@ const ApiKeysCard: React.FC<ApiKeysCardProps> = ({
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <Typography fontSize={13}>Scope</Typography>
-              <Typography fontSize={13}>{getScopeText(key.readOnly)}</Typography>
+              <Typography fontSize={13}>{getScopeText(key.scopes)}</Typography>
             </Box>
             {!key.revoked && !key.expired && <RevokeKey id={key.id} />}
           </Card>
