@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.7.12",
-    "@apollo/experimental-nextjs-app-support": "^0.8.0",
+    "@apollo/experimental-nextjs-app-support": "^0.7.0",
     "@galoymoney/client": "^0.2.2",
     "@t3-oss/env-nextjs": "^0.6.1",
     "bech32": "^2.0.0",
