@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: adding boltcard for the POS behind a beta flag (#3984)...'
-      sha: 98bcbdf8036da4a6f96fbc7221c97e2c0c4e7c81
+      commitTitle: 'chore(core): bump dependencies (#4041)...'
+      sha: 8e139b7986e6ad586efd9212cc648067af4b663e
       tags:
-      - 0.20.69-5-g98bcbdf80
+      - 0.20.70-4-g8e139b798
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: adding boltcard for the POS behind a beta flag (#3984)...'
-      sha: 98bcbdf8036da4a6f96fbc7221c97e2c0c4e7c81
+      commitTitle: 'chore(core): bump dependencies (#4041)...'
+      sha: 8e139b7986e6ad586efd9212cc648067af4b663e
       tags:
-      - 0.20.69-5-g98bcbdf80
+      - 0.20.70-4-g8e139b798
     path: schemas/
   - git:
-      commitTitle: 'feat: adding boltcard for the POS behind a beta flag (#3984)...'
-      sha: 98bcbdf8036da4a6f96fbc7221c97e2c0c4e7c81
+      commitTitle: 'chore(core): bump dependencies (#4041)...'
+      sha: 8e139b7986e6ad586efd9212cc648067af4b663e
       tags:
-      - 0.20.69-5-g98bcbdf80
+      - 0.20.70-4-g8e139b798
     path: gql/
   path: ./graphql
 kind: LockConfig
