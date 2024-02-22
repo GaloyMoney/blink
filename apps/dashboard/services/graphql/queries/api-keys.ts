@@ -15,6 +15,7 @@ gql`
         lastUsedAt
         expiresAt
         readOnly
+        scopes
       }
     }
   }
