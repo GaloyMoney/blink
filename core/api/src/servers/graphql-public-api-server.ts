@@ -97,7 +97,8 @@ export async function startApolloServerForCoreSchema() {
   const authedMutationFields: { [key: string]: Rule } = {}
   for (const key of Object.keys({
     ...mutationFields.authed.atAccountLevel,
-    ...mutationFields.authed.atWalletLevel,
+    ...mutationFields.authed.atWalletLevel.send,
+    ...mutationFields.authed.atWalletLevel.receive,
   })) {
     authedMutationFields[key] = hasMutationPermissions
   }
