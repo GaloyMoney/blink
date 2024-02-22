@@ -32,7 +32,7 @@ impl ApiKeysApp {
         &self,
         key: &str,
     ) -> Result<(IdentityApiKeyId, String, Vec<Scope>), ApplicationError> {
-        Ok(self.identities.find_subject_by_key(&key).await?)
+        Ok(self.identities.find_subject_by_key(key).await?)
     }
 
     #[tracing::instrument(name = "app.create_api_key_for_subject", skip_all)]

@@ -41,5 +41,5 @@ pub fn is_read_only(scope: &Vec<Scope>) -> bool {
 }
 
 pub fn can_write(scope: &String) -> bool {
-    scope.as_str().split(" ").any(|s| s == WRITE_SCOPE) || scope.is_empty()
+    scope.as_str().split(' ').any(|s| s == WRITE_SCOPE)
 }
