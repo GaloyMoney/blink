@@ -1,4 +1,4 @@
-import { IdentityState } from "@ory/client"
+import { IdentityStateEnum } from "@ory/client"
 
 import { UnknownKratosError } from "./errors"
 import { kratosAdmin } from "./private"
@@ -19,7 +19,7 @@ export const activateUser = async (kratosUserId: UserId): Promise<void | KratosE
       id: kratosUserId,
       updateIdentityBody: {
         ...identity,
-        state: IdentityState.Active,
+        state: IdentityStateEnum.Active,
       },
     })
   } catch (err) {
@@ -44,7 +44,7 @@ export const deactivateUser = async (
       id: kratosUserId,
       updateIdentityBody: {
         ...identity,
-        state: IdentityState.Inactive,
+        state: IdentityStateEnum.Inactive,
       },
     })
 
