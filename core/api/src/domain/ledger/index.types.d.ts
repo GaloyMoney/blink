@@ -49,6 +49,7 @@ type LedgerTransaction<S extends WalletCurrency> = {
   readonly paymentHash?: PaymentHash
   readonly pubkey?: Pubkey
   readonly feeKnownInAdvance: boolean
+  readonly lnPaymentState?: LnPaymentState
 
   readonly satsAmount?: Satoshis
   readonly centsAmount?: UsdCents

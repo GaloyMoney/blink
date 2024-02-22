@@ -537,6 +537,7 @@ export const translateToLedgerTx = <S extends WalletCurrency, T extends DisplayC
     currency,
     timestamp: tx.timestamp,
     pendingConfirmation: tx.pending,
+    lnPaymentState: tx.bundle_completion_state,
     journalId: tx._journal.toString() as LedgerJournalId,
     lnMemo: tx.memo,
     username: (tx.username as Username) || undefined,

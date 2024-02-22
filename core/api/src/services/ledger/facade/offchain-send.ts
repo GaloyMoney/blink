@@ -1,7 +1,10 @@
 import { MainBook, Transaction } from "../books"
 
 import { EntryBuilder, toLedgerAccountDescriptor } from "../domain"
-import { NoTransactionToSettleError } from "../domain/errors"
+import {
+  NoTransactionToSettleError,
+  NoTransactionToUpdateStateError,
+} from "../domain/errors"
 import { TransactionsMetadataRepository } from "../services"
 import { persistAndReturnEntry } from "../helpers"
 
@@ -76,6 +79,28 @@ export const updateMetadataByHash = async (
     | LnLedgerTransactionMetadataUpdate,
 ): Promise<true | LedgerServiceError | RepositoryError> =>
   TransactionsMetadataRepository().updateByHash(ledgerTxMetadata)
+
+export const updateStateByHash = async ({
+  paymentHash,
+  bundle_completion_state,
+}: {
+  paymentHash: PaymentHash
+  bundle_completion_state: LnPaymentState
+}): Promise<true | LedgerServiceError | RepositoryError> => {
+  try {
+    const result = await Transaction.updateMany(
+      { hash: paymentHash },
+      { bundle_completion_state },
+    )
+    const success = result.modifiedCount > 0
+    if (!success) {
+      return new NoTransactionToUpdateStateError()
+    }
+    return true
+  } catch (err) {
+    return new UnknownLedgerError(err)
+  }
+}
 
 export const settlePendingLnSend = async (
   paymentHash: PaymentHash,

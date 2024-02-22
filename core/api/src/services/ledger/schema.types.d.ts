@@ -19,6 +19,7 @@ interface ILedgerTransaction {
   txid?: string
   type: LedgerTransactionType
   pending: boolean
+  bundle_completion_state?: LnPaymentState
   err?: string
   currency: WalletCurrency
   feeKnownInAdvance?: boolean

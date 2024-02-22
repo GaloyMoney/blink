@@ -3,6 +3,7 @@ import mongoose from "mongoose"
 import { setTransactionSchema } from "medici"
 
 import { LedgerTransactionType } from "@/domain/ledger"
+import { LnPaymentState } from "@/domain/ledger/ln-payment-state"
 
 // TODO migration:
 // rename type: on_us to intraledger
@@ -10,6 +11,7 @@ import { LedgerTransactionType } from "@/domain/ledger"
 const Schema = mongoose.Schema
 
 const ledgerTransactionTypes = Object.values(LedgerTransactionType)
+const lnPaymentStates = Object.values(LnPaymentState)
 
 const transactionSchema = new Schema<ILedgerTransaction>(
   {
@@ -38,6 +40,11 @@ const transactionSchema = new Schema<ILedgerTransaction>(
     pending: {
       type: Boolean,
       required: true,
+    },
+
+    bundle_completion_state: {
+      type: String,
+      enum: lnPaymentStates,
     },
 
     currency: {

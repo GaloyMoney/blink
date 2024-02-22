@@ -625,6 +625,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "NonIntegerError":
     case "FeeDifferenceError":
     case "NoTransactionToSettleError":
+    case "NoTransactionToUpdateStateError":
     case "CorruptLndDbError":
     case "NotImplementedError":
     case "NotReachableError":
