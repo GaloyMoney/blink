@@ -55,6 +55,11 @@ impl IntoResponse for ApplicationError {
             ApplicationError::MissingApiKey | ApplicationError::BadKeyFormat(_) => {
                 (StatusCode::BAD_REQUEST, self.to_string()).into_response()
             }
+            ApplicationError::MissingScopes => (
+                StatusCode::BAD_REQUEST,
+                "scopes cannot be empty".to_string(),
+            )
+                .into_response(),
             e => (StatusCode::INTERNAL_SERVER_ERROR, e).into_response(),
         }
     }

@@ -43,6 +43,10 @@ impl ApiKeysApp {
         expire_in_days: Option<u16>,
         scopes: Vec<Scope>,
     ) -> Result<(IdentityApiKey, ApiKeySecret), ApplicationError> {
+        if scopes.is_empty() {
+            return Err(ApplicationError::MissingScopes);
+        }
+
         let mut tx = self.pool.begin().await?;
         let id = self
             .identities
