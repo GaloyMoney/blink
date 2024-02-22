@@ -5,19 +5,19 @@ import { MAX_INPUT_VALUE_LENGTH } from "../config/config"
 import { Currency } from "@/lib/graphql/generated"
 
 export const ACTIONS = {
-  ADD_DIGIT: "add-digit",
-  DELETE_DIGIT: "delete-digit",
-  CLEAR_INPUT: "clear-input",
-  CREATE_INVOICE: "create-invoice",
-  CREATE_NEW_INVOICE: "create-new-invoice",
-  UPDATE_USERNAME: "update-username",
-  UPDATE_WALLET_CURRENCY: "update-wallet-currency",
-  SET_AMOUNT_FROM_PARAMS: "set-amount-from-search",
-  PINNED_TO_HOMESCREEN_MODAL_VISIBLE: "pin-to-home-screen-modal-visible",
-  BACK: "back-by-one-history",
-  ADD_MEMO: "add-memo",
-  UPDATE_DISPLAY_CURRENCY_METADATA: "update-display-currency-metadata",
-}
+  ADD_DIGIT: "ADD_DIGIT",
+  DELETE_DIGIT: "DELETE_DIGIT",
+  CLEAR_INPUT: "CLEAR_INPUT",
+  CREATE_INVOICE: "CREATE_INVOICE",
+  CREATE_NEW_INVOICE: "CREATE_NEW_INVOICE",
+  UPDATE_USERNAME: "UPDATE_USERNAME",
+  UPDATE_WALLET_CURRENCY: "UPDATE_WALLET_CURRENCY",
+  SET_AMOUNT_FROM_PARAMS: "SET_AMOUNT_FROM_PARAMS",
+  PINNED_TO_HOMESCREEN_MODAL_VISIBLE: "PINNED_TO_HOMESCREEN_MODAL_VISIBLE",
+  BACK: "BACK",
+  ADD_MEMO: "ADD_MEMO",
+  UPDATE_DISPLAY_CURRENCY_METADATA: "UPDATE_DISPLAY_CURRENCY_METADATA",
+} as const
 
 export type ACTION_TYPE = {
   type: string
@@ -40,22 +40,30 @@ function reducer(state: React.ComponentState, { type, payload }: ACTION_TYPE) {
       ) {
         return { ...state, currentAmount: "0." }
       }
+      if (state.currentAmount === "0" && payload !== ".") {
+        return {
+          ...state,
+          currentAmount: payload,
+        }
+      }
       return {
         ...state,
         currentAmount: `${state.currentAmount || "0"}${payload}`,
       }
 
-    case ACTIONS.DELETE_DIGIT:
+    case ACTIONS.DELETE_DIGIT: {
       if (
         state.currentAmount == null ||
         state.currentAmount === "" ||
         state.currentAmount === "0"
       )
-        return state
+        return { ...state, currentAmount: "0" }
+      const updatedAmount = state.currentAmount.slice(0, -1)
       return {
         ...state,
-        currentAmount: state.currentAmount?.slice(0, -1),
+        currentAmount: updatedAmount === "" ? "0" : updatedAmount,
       }
+    }
 
     case ACTIONS.SET_AMOUNT_FROM_PARAMS:
       if (state.currentAmount == null) return state
