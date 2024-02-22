@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(api-keys): introduce receive scope (#4049)...'
-      sha: a19f31fe24d74df19a15d5ff5ba2373b95b35979
+      commitTitle: 'Revert "feat(api-keys): introduce receive scope (#4049)" (#4053)...'
+      sha: 0f3e0439dff94c44f0022e64c5141ebfc089151a
       tags:
-      - 0.20.72-1-ga19f31fe2
+      - 0.20.73-2-g0f3e0439d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(api-keys): introduce receive scope (#4049)...'
-      sha: a19f31fe24d74df19a15d5ff5ba2373b95b35979
+      commitTitle: 'Revert "feat(api-keys): introduce receive scope (#4049)" (#4053)...'
+      sha: 0f3e0439dff94c44f0022e64c5141ebfc089151a
       tags:
-      - 0.20.72-1-ga19f31fe2
+      - 0.20.73-2-g0f3e0439d
     path: schemas/
   - git:
-      commitTitle: 'feat(api-keys): introduce receive scope (#4049)...'
-      sha: a19f31fe24d74df19a15d5ff5ba2373b95b35979
+      commitTitle: 'Revert "feat(api-keys): introduce receive scope (#4049)" (#4053)...'
+      sha: 0f3e0439dff94c44f0022e64c5141ebfc089151a
       tags:
-      - 0.20.73
+      - 0.20.73-2-g0f3e0439d
     path: gql/
   path: ./graphql
 kind: LockConfig

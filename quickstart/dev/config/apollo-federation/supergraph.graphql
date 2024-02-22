@@ -182,7 +182,6 @@ type ApiKey
   lastUsedAt: Timestamp
   expiresAt: Timestamp
   readOnly: Boolean!
-  scopes: [Scope!]!
 }
 
 input ApiKeyCreateInput
@@ -190,7 +189,7 @@ input ApiKeyCreateInput
 {
   name: String!
   expireInDays: Int
-  scopes: [Scope!]! = [READ, WRITE]
+  readOnly: Boolean! = false
 }
 
 type ApiKeyCreatePayload
@@ -1662,14 +1661,6 @@ type SatAmountPayload
 {
   amount: SatAmount
   errors: [Error!]!
-}
-
-enum Scope
-  @join__type(graph: API_KEYS)
-{
-  READ @join__enumValue(graph: API_KEYS)
-  WRITE @join__enumValue(graph: API_KEYS)
-  RECEIVE @join__enumValue(graph: API_KEYS)
 }
 
 """(Positive) amount of seconds"""
