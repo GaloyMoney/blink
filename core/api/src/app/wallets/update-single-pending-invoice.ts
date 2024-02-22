@@ -171,7 +171,6 @@ const processPendingInvoice = async ({
   if (roundedDownReceived instanceof Error) {
     recordExceptionInCurrentSpan({
       error: roundedDownReceived,
-      level: roundedDownReceived.level,
     })
     return processPendingInvoiceForDecline({
       walletInvoice,
@@ -185,7 +184,6 @@ const processPendingInvoice = async ({
   if (receivedBtc instanceof Error) {
     recordExceptionInCurrentSpan({
       error: receivedBtc,
-      level: receivedBtc.level,
     })
     return processPendingInvoiceForDecline({
       walletInvoice,
