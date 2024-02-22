@@ -2,6 +2,8 @@ import React from "react"
 
 import { MAX_INPUT_VALUE_LENGTH } from "../config/config"
 
+import { Currency } from "@/lib/graphql/generated"
+
 export const ACTIONS = {
   ADD_DIGIT: "add-digit",
   DELETE_DIGIT: "delete-digit",
@@ -14,11 +16,12 @@ export const ACTIONS = {
   PINNED_TO_HOMESCREEN_MODAL_VISIBLE: "pin-to-home-screen-modal-visible",
   BACK: "back-by-one-history",
   ADD_MEMO: "add-memo",
+  UPDATE_DISPLAY_CURRENCY_METADATA: "update-display-currency-metadata",
 }
 
 export type ACTION_TYPE = {
   type: string
-  payload?: string | string[] | (() => void) | boolean | undefined
+  payload?: string | string[] | (() => void) | boolean | undefined | Currency
 }
 
 function reducer(state: React.ComponentState, { type, payload }: ACTION_TYPE) {
@@ -39,11 +42,16 @@ function reducer(state: React.ComponentState, { type, payload }: ACTION_TYPE) {
       }
       return {
         ...state,
-        currentAmount: `${state.currentAmount || ""}${payload}`,
+        currentAmount: `${state.currentAmount || "0"}${payload}`,
       }
 
     case ACTIONS.DELETE_DIGIT:
-      if (state.currentAmount == null) return state
+      if (
+        state.currentAmount == null ||
+        state.currentAmount === "" ||
+        state.currentAmount === "0"
+      )
+        return state
       return {
         ...state,
         currentAmount: state.currentAmount?.slice(0, -1),
@@ -125,6 +133,12 @@ function reducer(state: React.ComponentState, { type, payload }: ACTION_TYPE) {
       return {
         ...state,
         memo: payload,
+      }
+
+    case ACTIONS.UPDATE_DISPLAY_CURRENCY_METADATA:
+      return {
+        ...state,
+        displayCurrency: payload,
       }
 
     default:

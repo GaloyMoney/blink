@@ -3,12 +3,13 @@ import React, { useEffect } from "react"
 
 import { useSearchParams } from "next/navigation"
 
-import { useCurrencyListQuery } from "../../lib/graphql/generated"
+import { Currency, useCurrencyListQuery } from "../../lib/graphql/generated"
+
+import { satsCurrencyMetadata } from "@/app/sats-currency"
 
 export default function CurrencyDropdown({
   onSelectedDisplayCurrencyChange,
   name,
-  style,
   showOnlyFlag = false,
 }: {
   onSelectedDisplayCurrencyChange?: (newDisplayCurrency: string) => void
@@ -17,31 +18,38 @@ export default function CurrencyDropdown({
   showOnlyFlag?: boolean
 }) {
   const searchParams = useSearchParams()
-  const display = searchParams?.get("display")
+  const display = searchParams?.get("displayCurrency")
 
   const { data: currencyData } = useCurrencyListQuery()
+
   const [selectedDisplayCurrency, setSelectedDisplayCurrency] = React.useState("USD")
   const [isDropDownOpen, setIsDropDownOpen] = React.useState(false)
+  let updatedCurrencyList: Currency[] = []
+
+  if (currencyData?.currencyList) {
+    updatedCurrencyList = [...(currencyData?.currencyList || []), satsCurrencyMetadata]
+  }
 
   useEffect(() => {
     const newDisplay =
       display && typeof display === "string"
         ? display
-        : localStorage.getItem("display") ?? "USD"
+        : localStorage.getItem("displayCurrency") ?? "USD"
     setSelectedDisplayCurrency(newDisplay)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
+    // TODO auto-complete input can be better here Instead of select dropdown
     <select
-      style={style ?? { border: "none" }}
-      name={name ?? "display"}
+      className="bg-slate-200 border-none p-2 w-20 rounded-md"
+      name={name ?? "displayCurrency"}
       required
       value={selectedDisplayCurrency}
       onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
         const currencyId = event.target.value
-        const newDisplayCurrency = currencyData?.currencyList?.find(
+        const newDisplayCurrency = updatedCurrencyList?.find(
           (item) => item.id === currencyId,
         )
         if (newDisplayCurrency) {
@@ -59,7 +67,7 @@ export default function CurrencyDropdown({
         setIsDropDownOpen(false)
       }}
     >
-      {currencyData?.currencyList?.map((option) => {
+      {updatedCurrencyList?.map((option) => {
         const fullLabel = `${option.id} - ${option.name} ${
           option.flag ? option.flag : ""
         }`
@@ -69,7 +77,7 @@ export default function CurrencyDropdown({
           <option key={option.id} value={option.id}>
             {isDropDownOpen && fullLabel}
             {!isDropDownOpen &&
-              (isSelected ? (showOnlyFlag ? flagOnlyLabel : fullLabel) : fullLabel)}
+              (isSelected ? (showOnlyFlag ? flagOnlyLabel : option.id) : fullLabel)}
           </option>
         )
       })}

@@ -1,6 +1,5 @@
 "use client"
-import Link from "next/link"
-import React from "react"
+import React, { useEffect } from "react"
 import Container from "react-bootstrap/Container"
 import Image from "react-bootstrap/Image"
 
@@ -8,21 +7,14 @@ import Head from "next/head"
 
 import { gql } from "@apollo/client"
 
-import { useSearchParams } from "next/navigation"
-
 import ParsePayment from "../../components/parse-pos-payment"
-import PinToHomescreen from "../../components/pin-to-homescreen"
 
-import CurrencyDropdown from "../../components/currency/currency-dropdown"
-
-import { useAccountDefaultWalletsQuery } from "../../lib/graphql/generated"
-
-import reducer, { ACTIONS } from "../reducer"
+import { ACTIONS } from "../reducer"
 
 import styles from "./username.module.css"
 
 import LoadingComponent from "@/components/loading"
-import { extractSearchParams } from "@/utils/utils"
+import { useInvoiceContext } from "@/context/invoice-context"
 
 gql`
   query accountDefaultWallets($username: Username!) {
@@ -35,70 +27,29 @@ gql`
 `
 
 type Props = {
-  params: {
-    username: string
+  searchParams: {
+    memo: string
+    amount: string
   }
 }
 
-function updateCurrencyAndReload(newDisplayCurrency: string): void {
-  localStorage.setItem("display", newDisplayCurrency)
-
-  const currentURL = new URL(window.location.toString())
-  const searchParams = new URLSearchParams(window.location.search)
-  searchParams.set("display", newDisplayCurrency)
-  currentURL.search = searchParams.toString()
-
-  window.history.pushState({}, "", currentURL.toString())
-  setTimeout(() => {
-    window.location.reload()
-  }, 100)
-}
-
-function ReceivePayment({ params }: Props) {
-  const searchParams = useSearchParams()
-  const { memo } = extractSearchParams(searchParams)
-
-  const { username } = params
-
-  let accountUsername: string
-  if (!username) {
-    accountUsername = ""
-  } else {
-    accountUsername = username.toString()
-  }
+function ReceivePayment({ searchParams }: Props) {
+  const { memo, amount } = searchParams
+  const { state, dispatch } = useInvoiceContext()
+  const { username } = state
 
   const manifestParams = new URLSearchParams()
+
+  useEffect(() => {
+    dispatch({
+      type: ACTIONS.SET_AMOUNT_FROM_PARAMS,
+      payload: amount ?? "0",
+    })
+  }, [])
+
   if (memo) {
     manifestParams.set("memo", memo.toString())
   }
-
-  const {
-    data,
-    error: usernameError,
-    loading: usernameLoading,
-  } = useAccountDefaultWalletsQuery({
-    variables: { username: accountUsername },
-    skip: !accountUsername,
-  })
-
-  const [state, dispatch] = React.useReducer(reducer, {
-    currentAmount: "",
-    createdInvoice: false,
-    walletCurrency: data?.accountDefaultWallet.walletCurrency,
-    username: accountUsername,
-    pinnedToHomeScreenModalVisible: false,
-  })
-
-  React.useEffect(() => {
-    if (state.walletCurrency === data?.accountDefaultWallet.walletCurrency) {
-      return
-    }
-    dispatch({
-      type: ACTIONS.UPDATE_WALLET_CURRENCY,
-      payload: data?.accountDefaultWallet.walletCurrency,
-    })
-    dispatch({ type: ACTIONS.UPDATE_USERNAME, payload: username })
-  }, [state, username, data])
 
   return username ? (
     <Container className={styles.payment_container}>
@@ -109,7 +60,7 @@ function ReceivePayment({ params }: Props) {
           id="manifest"
         />
       </Head>
-      {usernameError ? (
+      {/* {false ? (
         <div className={styles.error}>
           <p>{`${usernameError.message}.`}</p>
           <p>Please check the username in your browser URL and try again.</p>
@@ -117,54 +68,34 @@ function ReceivePayment({ params }: Props) {
             Back
           </Link>
         </div>
-      ) : (
-        <>
-          <PinToHomescreen
-            pinnedToHomeScreenModalVisible={state.pinnedToHomeScreenModalVisible}
-            dispatch={dispatch}
-          />
-          <div className={styles.username_container}>
-            {state.createdInvoice && (
-              <button onClick={() => dispatch({ type: ACTIONS.BACK })}>
-                <Image
-                  src="/icons/chevron-left-icon.svg"
-                  alt="back button"
-                  width="10px"
-                  height="12px"
-                />
-              </button>
-            )}
-            <p className={styles.username}>{`Pay ${username}`}</p>
-            <div style={{ marginLeft: "12px", marginTop: "9px" }}>
-              <CurrencyDropdown
-                style={{
-                  border: "none",
-                  outline: "none",
-                  width: "56px",
-                  height: "42px",
-                  fontSize: "18px",
-                  backgroundColor: "white",
-                  textAlign: "center",
-                  verticalAlign: "middle",
-                }}
-                showOnlyFlag={true}
-                onSelectedDisplayCurrencyChange={updateCurrencyAndReload}
+      ) : ( */}
+      <>
+        <div className={styles.username_container}>
+          {state.createdInvoice && (
+            <button onClick={() => dispatch({ type: ACTIONS.BACK })}>
+              <Image
+                src="/icons/chevron-left-icon.svg"
+                alt="back button"
+                width="10px"
+                height="12px"
               />
-            </div>
-          </div>
-          {data && !usernameLoading && accountUsername && state ? (
-            <ParsePayment
-              state={state}
-              dispatch={dispatch}
-              defaultWalletCurrency={data?.accountDefaultWallet.walletCurrency}
-              walletId={data?.accountDefaultWallet.id}
-              username={accountUsername}
-            />
-          ) : (
-            <LoadingComponent />
+            </button>
           )}
-        </>
-      )}
+          <p className={styles.username}>{`Pay ${username}`}</p>
+        </div>
+        {username && state ? (
+          <ParsePayment
+            state={state}
+            dispatch={dispatch}
+            defaultWalletCurrency={state.walletCurrency}
+            walletId={state?.walletId}
+            username={username}
+          />
+        ) : (
+          <LoadingComponent />
+        )}
+      </>
+      {/* )} */}
     </Container>
   ) : null
 }

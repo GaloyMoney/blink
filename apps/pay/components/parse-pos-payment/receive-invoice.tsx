@@ -24,6 +24,8 @@ import LoadingComponent from "../loading"
 import styles from "./parse-payment.module.css"
 import NFCComponent from "./nfc"
 
+import useRealtimePrice from "@/lib/use-realtime-price"
+
 interface Props {
   recipientWalletCurrency?: string
   walletId: string | undefined
@@ -39,8 +41,9 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
   const searchParams = useSearchParams()
   const { username } = useParams()
   const query = extractSearchParams(searchParams)
-  const { amount, unit, sats, memo } = query
+  const { amount, memo, displayCurrency } = query
 
+  const { currencyToSats } = useRealtimePrice("USD")
   const { usdToSats, satsToUsd } = useSatPrice()
 
   const [progress, setProgress] = React.useState(PROGRESS_BAR_MAX_WIDTH)
@@ -56,12 +59,12 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
   const getImage = () => takeScreenShot(qrImageRef.current)
 
   const shareUrl =
-    !amount && !unit && !memo
+    !amount && !memo
       ? `https://${getClientSidePayDomain()}/${username}?amount=${
           state.currentAmount
         }&sats=${usdToSats(
           state.currentAmount,
-        ).toFixed()}&currency=${recipientWalletCurrency}&unit=SAT&memo=""`
+        ).toFixed()}&currency=${recipientWalletCurrency}&memo=""`
       : window.location.href
 
   const shareData = {
@@ -114,11 +117,16 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
   )
 
   const paymentAmount = React.useMemo(() => {
-    if (!query.sats || typeof query.sats !== "string") {
-      alert("No sats amount provided")
-      return
+    let amountInSats = state.currentAmount
+    if (displayCurrency !== "SAT") {
+      ;({ convertedCurrencyAmount: amountInSats } = currencyToSats(
+        Number(state.currentAmount),
+        "USD",
+        2,
+      ))
     }
-    let amt = safeAmount(query.sats)
+
+    let amt = safeAmount(amountInSats)
     if (recipientWalletCurrency === "USD") {
       const usdAmount = satsToUsd(Number(amt))
       if (isNaN(usdAmount)) return
@@ -127,35 +135,31 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
     }
     if (amt === null) return
     return safeAmount(amt).toString()
-  }, [
-    amount,
-    unit,
-    sats,
-    usdToSats,
-    satsToUsd,
-    state.currentAmount,
-    recipientWalletCurrency,
-  ])
+  }, [amount, usdToSats, satsToUsd, state.currentAmount, recipientWalletCurrency])
 
   React.useEffect(() => {
+    let amountInSats = state.currentAmount
+    if (displayCurrency !== "SAT") {
+      ;({ convertedCurrencyAmount: amountInSats } = currencyToSats(
+        Number(state.currentAmount),
+        "USD",
+        2,
+      ))
+    }
+
     if (!walletId || !Number(paymentAmount)) return
 
     let amt = paymentAmount
     if (recipientWalletCurrency === "USD") {
-      if (!query.sats || typeof query.sats !== "string") {
-        alert("No sats amount provided")
+      const usdAmount = satsToUsd(Number(amountInSats))
+      if (isNaN(usdAmount)) return
+      const cents = parseFloat(usdAmount.toFixed(2)) * 100
+      amt = cents.toFixed()
+      if (cents < 0.01) {
+        setExpiredInvoiceError(
+          `Amount is too small. Must be larger than ${usdToSats(0.01).toFixed()} sats`,
+        )
         return
-      } else {
-        const usdAmount = satsToUsd(Number(query.sats))
-        if (isNaN(usdAmount)) return
-        const cents = parseFloat(usdAmount.toFixed(2)) * 100
-        amt = cents.toFixed()
-        if (cents < 0.01) {
-          setExpiredInvoiceError(
-            `Amount is too small. Must be larger than ${usdToSats(0.01).toFixed()} sats`,
-          )
-          return
-        }
       }
     }
     if (amt === null) return

@@ -15,37 +15,23 @@ interface Props {
 const Memo = ({ state, dispatch }: Props) => {
   const searchParams = useSearchParams()
   const amount = searchParams.get("amount") || "0"
-  const sats = searchParams.get("sats") || "0"
-  const display = searchParams.get("display") || "USD"
+  const displayCurrency = searchParams.get("displayCurrency") || "USD"
   const memo = searchParams.get("memo") || ""
 
-  const unit = searchParams.get("unit")
   const [openModal, setOpenModal] = React.useState<boolean>(false)
   const [currentMemo, setCurrentMemo] = React.useState<string>(memo?.toString() || "")
 
   const handleSetMemo = () => {
-    if (unit === "SAT" || unit === "CENT") {
-      const params = new URLSearchParams({
-        amount,
-        sats,
-        unit,
-        memo: currentMemo,
-        display,
-      })
+    const params = new URLSearchParams({
+      amount,
+      memo: currentMemo,
+      displayCurrency,
+    })
 
-      const currentUrl = new URL(window.location.toString())
-      currentUrl.search = params.toString()
-      window.history.pushState({}, "", currentUrl.toString())
-    } else {
-      const params = new URLSearchParams({
-        memo: currentMemo,
-        display,
-      })
+    const currentUrl = new URL(window.location.toString())
+    currentUrl.search = params.toString()
+    window.history.pushState({}, "", currentUrl.toString())
 
-      const currentUrl = new URL(window.location.toString())
-      currentUrl.search = params.toString()
-      window.history.pushState({}, "", currentUrl.toString())
-    }
     handleClose()
   }
 

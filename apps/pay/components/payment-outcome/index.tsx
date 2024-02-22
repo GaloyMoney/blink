@@ -65,25 +65,13 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch }: Props) {
       className={styles.back_btn}
       onClick={() => dispatch({ type: ACTIONS.CREATE_NEW_INVOICE })}
     >
-      <Image
-        src="/icons/cash-register-icon.svg"
-        alt="cash register icon"
-        width="18"
-        height="18"
-      />
-      Back to cash register
+      Back
     </button>
   )
 
   const downloadReceipt = (
     <button className={styles.pay_new_btn} onClick={() => printReceipt()}>
-      <Image
-        src="/icons/print-icon.svg"
-        alt="print icon"
-        width="18"
-        height="18"
-        className="mr-2"
-      />
+      <Image src="/icons/print-icon.svg" alt="print icon" width="18" height="18" />
       Print Receipt
     </button>
   )

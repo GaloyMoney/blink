@@ -14,11 +14,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: relative;
   max-width: 700px;
   margin: 0 auto;
   padding: 0.5rem 1rem;
   transition: all 0.2s ease-in-out;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
 }
 
 .nav_menu {
@@ -102,8 +106,7 @@
 }
 
 .lightning_addr > div:nth-child(2) button {
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),
-    linear-gradient(45deg, #ffbe0b 0%, #fb5607 100%);
+  background: var(--primary);
   color: #fff;
   padding: 0.45rem 0.75rem;
   border-radius: 8px;
@@ -172,9 +175,9 @@
 }
 
 .divider {
+  display: none;
   height: 2px;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),
-    linear-gradient(45deg, #ffbe0b 0%, #fb5607 100%);
+  background: var(--primary);
   opacity: 0.5;
 }
 
@@ -209,11 +212,14 @@
 
 @media (min-width: 768px) {
   .divider {
+    display: block;
     margin-top: 1rem;
   }
 
   .nav_bar {
+    margin-top: 0.5em;
     padding: 4px 0;
+    position: relative;
   }
 
   .nav_menu {

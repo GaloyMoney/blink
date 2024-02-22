@@ -2,10 +2,10 @@ import type { Metadata } from "next"
 import { Inter_Tight } from "next/font/google"
 
 // eslint-disable-next-line import/no-unassigned-import
-import "./globals.css"
+import "bootstrap/dist/css/bootstrap.css"
 
 // eslint-disable-next-line import/no-unassigned-import
-import "bootstrap/dist/css/bootstrap.css"
+import "./globals.css"
 
 import Head from "next/head"
 import Script from "next/script"

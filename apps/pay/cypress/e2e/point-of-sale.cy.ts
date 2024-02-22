@@ -1,7 +1,7 @@
 import { testData } from "../support/test-config"
 
 const username = "test_user_a"
-const cashRegisterUrl = `/${username}?amount=0&sats=0&unit=CENT&memo=&display=USD&currency=BTC`
+const cashRegisterUrl = `/${username}?amount=0&displayCurrency=USD`
 describe("Point of Sale", () => {
   it("should navigate to user cash register", () => {
     cy.visit("/")

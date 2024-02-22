@@ -3,7 +3,7 @@
   justify-content: space-between;
   width: 100%;
   margin: 0 auto;
-  padding-top: 2rem;
+  margin-top: 1rem;
 }
 
 .container > div {
@@ -38,11 +38,12 @@
   display: inline-flex;
   align-items: center;
   border: none;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 10em;
   padding: 0.5rem;
   color: #232222;
   column-gap: 0.5rem;
+  background-color: #e2e2e2;
+  padding: 0.5em 1em;
 }
 
 .add_btn::before {
@@ -52,8 +53,6 @@
   left: -2px;
   right: -2px;
   bottom: -2px;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),
-    linear-gradient(45deg, #ffbe0b 0%, #fb5607 100%);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   z-index: -1;
@@ -77,8 +76,7 @@
   width: 100%;
   padding: 0.5rem 1.5rem;
   font-weight: 500;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),
-    linear-gradient(45deg, #ffbe0b 0%, #fb5607 100%);
+  background: var(--primary);
   color: #fff;
 }
 
