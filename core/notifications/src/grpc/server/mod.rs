@@ -351,13 +351,13 @@ impl NotificationsService for Notifications {
             }
             Some(proto::NotificationEvent {
                 data:
-                    Some(proto::notification_event::Data::IdentityVerificationReviewPending(
-                        proto::IdentityVerificationReviewPending { user_id },
+                    Some(proto::notification_event::Data::IdentityVerificationReviewStarted(
+                        proto::IdentityVerificationReviewStarted { user_id },
                     )),
             }) => {
                 self.app
                     .handle_notification_event(
-                        notification_event::IdentityVerificationReviewPending {
+                        notification_event::IdentityVerificationReviewStarted {
                             user_id: GaloyUserId::from(user_id),
                         },
                     )
