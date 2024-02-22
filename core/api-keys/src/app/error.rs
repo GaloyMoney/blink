@@ -5,7 +5,7 @@ use crate::identity::IdentityError;
 
 #[derive(Error, Debug)]
 pub enum ApplicationError {
-    #[error("ApplicationError - MissingScopes")]
+    #[error("scopes can not be empty")]
     MissingScopes,
     #[error("ApplicationError - MissingApiKey")]
     MissingApiKey,
