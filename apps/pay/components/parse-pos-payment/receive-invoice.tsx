@@ -9,7 +9,7 @@ import Tooltip from "react-bootstrap/Tooltip"
 import { QRCode } from "react-qrcode-logo"
 import { useScreenshot } from "use-react-screenshot"
 
-import { USD_INVOICE_EXPIRE_INTERVAL, getClientSidePayDomain } from "../../config/config"
+import { USD_INVOICE_EXPIRE_INTERVAL } from "../../config/config"
 import useCreateInvoice from "../../hooks/use-create-Invoice"
 import { LnInvoiceObject } from "../../lib/graphql/index.types"
 import useSatPrice from "../../lib/use-sat-price"
@@ -43,7 +43,8 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
   const query = extractSearchParams(searchParams)
   const { amount, memo, displayCurrency } = query
 
-  const { currencyToSats } = useRealtimePrice("USD")
+  const { currencyToSats, hasLoaded } = useRealtimePrice(state.displayCurrencyMetaData.id)
+
   const { usdToSats, satsToUsd } = useSatPrice()
 
   const [progress, setProgress] = React.useState(PROGRESS_BAR_MAX_WIDTH)
@@ -111,7 +112,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
 
   const paymentAmount = React.useMemo(() => {
     let amountInSats = state.currentAmount
-    if (displayCurrency !== "SAT") {
+    if (displayCurrency !== "SATS") {
       ;({ convertedCurrencyAmount: amountInSats } = currencyToSats(
         Number(state.currentAmount),
         state.displayCurrencyMetaData.id,
@@ -128,11 +129,18 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
     }
     if (amt === null) return
     return safeAmount(amt).toString()
-  }, [amount, usdToSats, satsToUsd, state.currentAmount, recipientWalletCurrency])
+  }, [
+    amount,
+    usdToSats,
+    satsToUsd,
+    state.currentAmount,
+    recipientWalletCurrency,
+    hasLoaded,
+  ])
 
   React.useEffect(() => {
     let amountInSats = state.currentAmount
-    if (displayCurrency !== "SAT") {
+    if (displayCurrency !== "SATS") {
       ;({ convertedCurrencyAmount: amountInSats } = currencyToSats(
         Number(state.currentAmount),
         state.displayCurrencyMetaData.id,
@@ -196,19 +204,21 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
 
   const errorString: string | null = errorsMessage || null
   let invoice: LnInvoiceObject | undefined
-
+  let satoshis: number | undefined
   if (data) {
     if ("lnInvoiceCreateOnBehalfOfRecipient" in data) {
       const { lnInvoiceCreateOnBehalfOfRecipient: invoiceData } = data
       if (invoiceData.invoice) {
         invoice = invoiceData.invoice
       }
+      satoshis = invoiceData?.invoice?.satoshis
     }
     if ("lnUsdInvoiceCreateOnBehalfOfRecipient" in data) {
       const { lnUsdInvoiceCreateOnBehalfOfRecipient: invoiceData } = data
       if (invoiceData.invoice) {
         invoice = invoiceData.invoice
       }
+      satoshis = invoiceData?.invoice?.satoshis
     }
   }
 
@@ -316,7 +326,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
         paymentRequest={invoice?.paymentRequest}
         paymentAmount={paymentAmount}
         dispatch={dispatch}
-        satoshis={data?.lnInvoiceCreateOnBehalfOfRecipient?.invoice?.satoshis}
+        satoshis={satoshis}
       />
     </div>
   )
