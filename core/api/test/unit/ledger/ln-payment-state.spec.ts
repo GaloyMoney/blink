@@ -154,6 +154,44 @@ describe("LnPaymentState", () => {
       expect(txUsdState).toEqual(LnPaymentState.Failed)
     })
 
+    it("return Failed with USD", () => {
+      const txnsBtc = [
+        {
+          type: LedgerTransactionType.Payment,
+          pendingConfirmation: false,
+          debit: 2,
+          credit: 0,
+        } as LedgerTransaction<"USD">,
+        {
+          type: LedgerTransactionType.Payment,
+          pendingConfirmation: false,
+          credit: 100,
+          debit: 0,
+          lnMemo: FAILED_USD_MEMO,
+        } as LedgerTransaction<"BTC">,
+      ]
+      const txBtcState = LnPaymentStateDeterminator(txnsBtc).determine()
+      expect(txBtcState).toEqual(LnPaymentState.Failed)
+
+      const txnsUsd = [
+        {
+          type: LedgerTransactionType.Payment,
+          pendingConfirmation: false,
+          debit: 5,
+          credit: 0,
+        } as LedgerTransaction<"USD">,
+        {
+          type: LedgerTransactionType.Payment,
+          pendingConfirmation: false,
+          credit: 100,
+          debit: 0,
+          lnMemo: FAILED_USD_MEMO,
+        } as LedgerTransaction<"BTC">,
+      ]
+      const txUsdState = LnPaymentStateDeterminator(txnsUsd).determine()
+      expect(txUsdState).toEqual(LnPaymentState.Failed)
+    })
+
     it("return FailedAfterRetry", () => {
       const txns = [
         {
@@ -179,6 +217,38 @@ describe("LnPaymentState", () => {
           pendingConfirmation: false,
           credit: 100,
           debit: 0,
+        } as LedgerTransaction<"BTC">,
+      ]
+      const txState = LnPaymentStateDeterminator(txns).determine()
+      expect(txState).toEqual(LnPaymentState.FailedAfterRetry)
+    })
+
+    it("return FailedAfterRetry with USD", () => {
+      const txns = [
+        {
+          type: LedgerTransactionType.Payment,
+          pendingConfirmation: false,
+          debit: 100,
+          credit: 0,
+        } as LedgerTransaction<"BTC">,
+        {
+          type: LedgerTransactionType.Payment,
+          pendingConfirmation: false,
+          credit: 100,
+          debit: 0,
+        } as LedgerTransaction<"BTC">,
+        {
+          type: LedgerTransactionType.Payment,
+          pendingConfirmation: false,
+          debit: 2,
+          credit: 0,
+        } as LedgerTransaction<"USD">,
+        {
+          type: LedgerTransactionType.Payment,
+          pendingConfirmation: false,
+          credit: 100,
+          debit: 0,
+          lnMemo: FAILED_USD_MEMO,
         } as LedgerTransaction<"BTC">,
       ]
       const txState = LnPaymentStateDeterminator(txns).determine()

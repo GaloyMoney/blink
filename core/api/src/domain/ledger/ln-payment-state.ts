@@ -88,6 +88,8 @@ export const LnPaymentStateDeterminator = (
       sum({ arr: txns, propertyName: "debit" }) -
       sum({ arr: txns, propertyName: "credit" })
     const failedUsdPayment = !!txns.find((tx) => tx.lnMemo === FAILED_USD_MEMO)
+    // FIXME: 'failedUsdPayment' is a brittle check, but voided can't be used because
+    //        we don't currently mark failed usd entries as void.
     switch (true) {
       case txns.length === 1:
         return LnPaymentState.Success
@@ -98,7 +100,7 @@ export const LnPaymentStateDeterminator = (
       case txns.length % 2 === 1:
         return LnPaymentState.SuccessAfterRetry
 
-      case txns.length % 2 === 0 && sumTxAmounts === 0:
+      case txns.length % 2 === 0 && (sumTxAmounts === 0 || failedUsdPayment):
         return LnPaymentState.FailedAfterRetry
 
       default:
