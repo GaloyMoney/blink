@@ -167,6 +167,13 @@ services:
       - "27017:27017"
     environment:
       - MONGO_INITDB_DATABASE=galoy
+  mongodb-migrate:
+    depends_on: [mongodb]
+    build:
+      context: ..
+      dockerfile: core/api/Dockerfile-migrate
+    environment:
+      - MONGODB_ADDRESS=mongodb
   lnd1:
     image: lightninglabs/lnd:v0.17.3-beta
     ports:

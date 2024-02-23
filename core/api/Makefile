@@ -23,9 +23,9 @@ watch:
 	pnpm nodemon -V -e ts,graphql -w ./src -x make start
 
 test-migrate:
-	docker compose down -v -t 3
-	docker compose build
-	docker compose -f docker-compose.yml up mongodb-migrate --exit-code-from mongodb-migrate
+	docker compose -f ../../dev/docker-compose.deps.yml down -v -t 3
+	docker compose -f ../../dev/docker-compose.deps.yml build
+	docker compose -f ../../dev/docker-compose.deps.yml up mongodb-migrate --exit-code-from mongodb-migrate
 
 watch-unit:
 	$(BIN_DIR)/jest --config ./test/unit/jest.config.js --clearCache
