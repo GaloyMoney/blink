@@ -1,7 +1,8 @@
 .payment_container {
-  height: 100%;
-  padding-left: 0;
-  padding-right: 0;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px,
+    rgb(209, 213, 219) 0px 0px 0px 1px inset;
+  border-radius: 1em;
+  padding: 2em;
 }
 
 .pin_btn {
@@ -64,4 +65,12 @@
 
 .error > p:last-child {
   color: rgb(45, 43, 43);
+}
+
+@media (max-width: 768px) {
+  .payment_container {
+    padding: 0em;
+    box-shadow: none;
+    border-radius: 0;
+  }
 }
