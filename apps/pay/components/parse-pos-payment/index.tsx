@@ -7,7 +7,12 @@ import Image from "next/Image"
 import CurrencyInput, { formatValue } from "react-currency-input-field"
 
 import { ACTION_TYPE, ACTIONS } from "../../app/reducer"
-import { safeAmount, getLocaleConfig, extractSearchParams } from "../../utils/utils"
+import {
+  safeAmount,
+  getLocaleConfig,
+  extractSearchParams,
+  parseDisplayCurrency,
+} from "../../utils/utils"
 
 import { useDisplayCurrency } from "../../lib/use-display-currency"
 
@@ -39,11 +44,7 @@ function ParsePayment({
   const searchParams = useSearchParams()
   const { currencyList } = useDisplayCurrency()
   const memo = searchParams?.get("memo")
-  const displayCurrency =
-    searchParams?.get("display") ??
-    searchParams?.get("displayCurrency") ??
-    localStorage.getItem("displayCurrency") ??
-    "USD"
+  const displayCurrency = parseDisplayCurrency(searchParams)
 
   const currencyMetadata = state.displayCurrencyMetaData
   const language = typeof navigator !== "undefined" ? navigator?.language : "en"
@@ -112,7 +113,7 @@ function ParsePayment({
 
   // Update CurrencyMetadata
   React.useEffect(() => {
-    if (displayCurrency === "SAT") {
+    if (displayCurrency === "SATS") {
       dispatch({
         type: ACTIONS.UPDATE_DISPLAY_CURRENCY_METADATA,
         payload: satsCurrencyMetadata,
@@ -172,7 +173,7 @@ function ParsePayment({
               <DigitButton
                 digit={"."}
                 dispatch={dispatch}
-                disabled={displayCurrency === "SAT"}
+                disabled={displayCurrency === "SATS"}
                 displayValue={
                   getLocaleConfig({ locale: language, currency: displayCurrency })
                     .decimalSeparator
