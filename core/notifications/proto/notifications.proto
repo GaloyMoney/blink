@@ -151,6 +151,8 @@ message NotificationEvent {
     IdentityVerificationApproved identity_verification_approved = 3;
     IdentityVerificationDeclined identity_verification_declined = 4;
     IdentityVerificationReviewStarted identity_verification_review_started = 5;
+    IntraLedgerPayment intra_ledger_payment = 6;
+    OnchainPayment onchain_payment = 7;
   }
 }
 
@@ -198,4 +200,16 @@ message IdentityVerificationDeclined {
 
 message IdentityVerificationReviewStarted {
   string user_id = 1;
+}
+
+message IntraLedgerPayment {
+  string user_id = 1;
+  int64 amount = 2;
+  string currency = 3;
+}
+
+message OnchainPayment {
+  string user_id = 1;
+  int64 amount = 2;
+  string currency = 3;
 }

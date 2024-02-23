@@ -4,6 +4,8 @@ pub mod error;
 mod identity_verification_approved;
 mod identity_verification_declined;
 mod identity_verification_review_started;
+mod intra_ledger_payment;
+mod onchain_payment;
 
 use serde::{Deserialize, Serialize};
 
@@ -14,6 +16,8 @@ pub(super) use circle_threshold_reached::*;
 pub(super) use identity_verification_approved::*;
 pub(super) use identity_verification_declined::*;
 pub(super) use identity_verification_review_started::*;
+pub(super) use intra_ledger_payment::*;
+pub(super) use onchain_payment::*;
 
 use error::*;
 
@@ -41,6 +45,8 @@ pub enum NotificationEventPayload {
     IdentityVerificationApproved(IdentityVerificationApproved),
     IdentityVerificationDeclined(IdentityVerificationDeclined),
     IdentityVerificationReviewStarted(IdentityVerificationReviewStarted),
+    IntraLedgerPayment(IntraLedgerPayment),
+    OnchainPayment(OnchainPayment),
 }
 
 impl NotificationEvent for NotificationEventPayload {
@@ -51,6 +57,8 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationApproved(e) => e.category(),
             NotificationEventPayload::IdentityVerificationDeclined(e) => e.category(),
             NotificationEventPayload::IdentityVerificationReviewStarted(e) => e.category(),
+            NotificationEventPayload::IntraLedgerPayment(e) => e.category(),
+            NotificationEventPayload::OnchainPayment(e) => e.category(),
         }
     }
 
@@ -61,6 +69,8 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationApproved(event) => event.user_id(),
             NotificationEventPayload::IdentityVerificationDeclined(event) => event.user_id(),
             NotificationEventPayload::IdentityVerificationReviewStarted(event) => event.user_id(),
+            NotificationEventPayload::IntraLedgerPayment(event) => event.user_id(),
+            NotificationEventPayload::OnchainPayment(event) => event.user_id(),
         }
     }
 
@@ -71,6 +81,8 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationApproved(event) => event.deep_link(),
             NotificationEventPayload::IdentityVerificationDeclined(event) => event.deep_link(),
             NotificationEventPayload::IdentityVerificationReviewStarted(event) => event.deep_link(),
+            NotificationEventPayload::IntraLedgerPayment(event) => event.deep_link(),
+            NotificationEventPayload::OnchainPayment(event) => event.deep_link(),
         }
     }
 
@@ -89,6 +101,10 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
                 event.to_localized_push_msg(locale)
             }
+            NotificationEventPayload::IntraLedgerPayment(event) => {
+                event.to_localized_push_msg(locale)
+            }
+            NotificationEventPayload::OnchainPayment(event) => event.to_localized_push_msg(locale),
         }
     }
 
@@ -110,6 +126,8 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
                 event.to_localized_email(locale)
             }
+            NotificationEventPayload::IntraLedgerPayment(event) => event.to_localized_email(locale),
+            NotificationEventPayload::OnchainPayment(event) => event.to_localized_email(locale),
         }
     }
 
@@ -126,6 +144,8 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
                 event.should_send_email()
             }
+            NotificationEventPayload::IntraLedgerPayment(event) => event.should_send_email(),
+            NotificationEventPayload::OnchainPayment(event) => event.should_send_email(),
         }
     }
 }
@@ -157,5 +177,17 @@ impl From<IdentityVerificationDeclined> for NotificationEventPayload {
 impl From<IdentityVerificationReviewStarted> for NotificationEventPayload {
     fn from(event: IdentityVerificationReviewStarted) -> Self {
         NotificationEventPayload::IdentityVerificationReviewStarted(event)
+    }
+}
+
+impl From<IntraLedgerPayment> for NotificationEventPayload {
+    fn from(event: IntraLedgerPayment) -> Self {
+        NotificationEventPayload::IntraLedgerPayment(event)
+    }
+}
+
+impl From<OnchainPayment> for NotificationEventPayload {
+    fn from(event: OnchainPayment) -> Self {
+        NotificationEventPayload::OnchainPayment(event)
     }
 }

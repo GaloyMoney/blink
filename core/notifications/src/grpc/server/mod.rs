@@ -364,6 +364,36 @@ impl NotificationsService for Notifications {
                     )
                     .await?;
             }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::IntraLedgerPayment(
+                        proto::IntraLedgerPayment {
+                            user_id,
+                            currency,
+                            amount,
+                        },
+                    )),
+            }) => {
+                self.app
+                    .handle_notification_event(notification_event::IntraLedgerPayment {
+                        user_id: GaloyUserId::from(user_id),
+                    })
+                    .await?
+            }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::OnchainPayment(proto::OnchainPayment {
+                        user_id,
+                        currency,
+                        amount,
+                    })),
+            }) => {
+                self.app
+                    .handle_notification_event(notification_event::OnchainPayment {
+                        user_id: GaloyUserId::from(user_id),
+                    })
+                    .await?
+            }
             _ => return Err(Status::invalid_argument("event is required")),
         }
 
