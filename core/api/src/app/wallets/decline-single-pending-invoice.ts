@@ -1,5 +1,6 @@
 import {
   ProcessPendingInvoiceResult,
+  ProcessPendingInvoiceResultType,
   ProcessedReason,
 } from "./process-pending-invoice-result"
 
@@ -12,6 +13,10 @@ import { WalletInvoicesRepository } from "@/services/mongoose"
 import { LndService } from "@/services/lnd"
 
 import { elapsedSinceTimestamp } from "@/utils"
+
+const assertUnreachable = (x: never): never => {
+  throw new Error(`This should never compile with ${x}`)
+}
 
 export const declineHeldInvoice = wrapAsyncToRunInSpan({
   namespace: "app.invoices",
@@ -38,22 +43,28 @@ export const declineHeldInvoice = wrapAsyncToRunInSpan({
       logger: pendingInvoiceLogger,
     })
 
-    if (result.isProcessed) {
-      const processingCompletedInvoice =
-        await WalletInvoicesRepository().markAsProcessingCompleted(paymentHash)
-      if (processingCompletedInvoice instanceof Error) {
-        pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
-      }
-    }
+    const walletInvoices = WalletInvoicesRepository()
+    let marked: WalletInvoiceWithOptionalLnInvoice | RepositoryError
+    switch (result.type) {
+      case ProcessPendingInvoiceResultType.MarkProcessedAsCanceledOrExpired:
+        marked = await walletInvoices.markAsProcessingCompleted(paymentHash)
+        if (marked instanceof Error) {
+          pendingInvoiceLogger.error("Unable to mark invoice as processingCompleted")
+          return marked
+        }
+        return true
 
-    const error = "error" in result && result.error
-    return !(result.isPaid || result.isProcessed)
-      ? false
-      : result.isProcessed
-        ? false
-        : error
-          ? error
-          : result.isPaid
+      case ProcessPendingInvoiceResultType.Error:
+        return result.error
+
+      case ProcessPendingInvoiceResultType.MarkProcessedAsPaid:
+      case ProcessPendingInvoiceResultType.MarkProcessedAsPaidWithError:
+      case ProcessPendingInvoiceResultType.ReasonInvoiceNotPaidYet:
+        return true
+
+      default:
+        return assertUnreachable(result)
+    }
   },
 })
 
@@ -70,21 +81,23 @@ export const processPendingInvoiceForDecline = async ({
   // Fetch invoice from lnd service
   const lndService = LndService()
   if (lndService instanceof Error) {
-    return ProcessPendingInvoiceResult.paidWithError(lndService)
+    return ProcessPendingInvoiceResult.err(lndService)
   }
 
   const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
   if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
-    return ProcessPendingInvoiceResult.processedOnly(ProcessedReason.InvoiceNotFound)
+    return ProcessPendingInvoiceResult.processAsCanceledOrExpired(
+      ProcessedReason.InvoiceNotFound,
+    )
   }
   if (lnInvoiceLookup instanceof Error) {
-    return ProcessPendingInvoiceResult.paidWithError(lnInvoiceLookup)
+    return ProcessPendingInvoiceResult.err(lnInvoiceLookup)
   }
 
   // Check status on invoice fetched from lnd
   const { isSettled, isHeld } = lnInvoiceLookup
   if (isSettled) {
-    return ProcessPendingInvoiceResult.paidWithError(
+    return ProcessPendingInvoiceResult.processAsPaidWithError(
       new InvalidNonHodlInvoiceError(JSON.stringify({ paymentHash })),
     )
   }
@@ -102,8 +115,8 @@ export const processPendingInvoiceForDecline = async ({
   )
   const invoiceSettled = await lndService.cancelInvoice({ pubkey, paymentHash })
   if (invoiceSettled instanceof Error) {
-    return ProcessPendingInvoiceResult.paidWithError(invoiceSettled)
+    return ProcessPendingInvoiceResult.err(invoiceSettled)
   }
 
-  return ProcessPendingInvoiceResult.ok()
+  return ProcessPendingInvoiceResult.processAsPaid()
 }

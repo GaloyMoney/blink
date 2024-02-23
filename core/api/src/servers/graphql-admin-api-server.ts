@@ -41,7 +41,6 @@ const setGqlAdminContext = async (
       if (txnMetadata instanceof Error) {
         recordExceptionInCurrentSpan({
           error: txnMetadata,
-          level: txnMetadata.level,
         })
 
         return keys.map(() => undefined)
