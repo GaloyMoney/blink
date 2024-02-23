@@ -123,7 +123,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
     pendingPayment: LedgerTransaction<WalletCurrency>
     logger: Logger
   }): Promise<true | ApplicationError> => {
-    const { paymentHash, pubkey, type: txType } = pendingPayment
+    const { paymentHash, pubkey, type: txType, journalId } = pendingPayment
     addAttributesToCurrentSpan({ walletId, paymentHash, txType })
 
     const paymentLogger = logger.child({
@@ -219,6 +219,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       const updateStateAfterSettle = await LedgerFacade.updateLnPaymentState({
         walletIds,
         paymentHash,
+        journalId,
       })
       if (updateStateAfterSettle instanceof Error) return updateStateAfterSettle
 
@@ -233,7 +234,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         )
         if (paymentFlow.senderWalletCurrency === WalletCurrency.Btc) {
           const voided = await ledgerService.revertLightningPayment({
-            journalId: pendingPayment.journalId,
+            journalId,
             paymentHash,
           })
           if (voided instanceof Error) {
@@ -245,6 +246,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
           const updateStateAfterRevert = await LedgerFacade.updateLnPaymentState({
             walletIds,
             paymentHash,
+            journalId,
           })
           if (updateStateAfterRevert instanceof Error) return updateStateAfterRevert
 
@@ -265,6 +267,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         const updateStateAfterUsdRevert = await LedgerFacade.updateLnPaymentState({
           walletIds,
           paymentHash,
+          journalId,
         })
         if (updateStateAfterUsdRevert instanceof Error) return updateStateAfterUsdRevert
 
@@ -319,7 +322,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         paymentFlow,
         senderDisplayAmount: displayAmount,
         senderDisplayCurrency: displayCurrency,
-        journalId: pendingPayment.journalId,
+        journalId,
         actualFee: roundedUpFee,
         revealedPreImage,
       })
@@ -328,6 +331,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       const updateStateAfterReimburse = await LedgerFacade.updateLnPaymentState({
         walletIds,
         paymentHash,
+        journalId,
       })
       if (updateStateAfterReimburse instanceof Error) return updateStateAfterReimburse
 

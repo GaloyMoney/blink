@@ -685,26 +685,204 @@ describe("Facade", () => {
 
   describe("update state", () => {
     it("updates ln payment state", async () => {
-      const res = await recordSendLnPayment({
+      const walletIds = [accountWalletDescriptors.BTC.id, accountWalletDescriptors.USD.id]
+
+      // 1st BTC SEND + REVERT
+      // -----
+      const failedBtc = await recordSendLnPayment({
         walletDescriptor: accountWalletDescriptors.BTC,
         paymentAmount: sendAmount,
         bankFee,
         displayAmounts: displaySendEurAmounts,
       })
+      if (failedBtc instanceof Error) throw failedBtc
+      const { journalId: failedBtcJournalId, paymentHash } = failedBtc
+
+      let settled = await LedgerFacade.settlePendingLnSend(paymentHash)
+      if (settled instanceof Error) throw settled
+
+      const voided = await LedgerFacade.recordLnSendRevert({
+        journalId: failedBtcJournalId,
+        paymentHash,
+      })
+      if (voided instanceof Error) return voided
+
+      const updateStateBtcFailed = await LedgerFacade.updateLnPaymentState({
+        walletIds,
+        paymentHash,
+        journalId: failedBtcJournalId,
+      })
+      if (updateStateBtcFailed instanceof Error) throw updateStateBtcFailed
+
+      let rawTxns = await LedgerService().getTransactionsByHash(paymentHash)
+      if (rawTxns instanceof Error) throw rawTxns
+      if (!(rawTxns && rawTxns.length)) throw new Error()
+      let txns = rawTxns.filter((tx) => walletIds.includes(tx.walletId as WalletId))
+
+      const failedBtcTxns_1 = txns
+      const failedBtcLnPaymentStates_1 = new Set(
+        failedBtcTxns_1.map((tx) => tx.lnPaymentState),
+      )
+      expect(failedBtcTxns_1.length).toEqual(2)
+      expect(failedBtcLnPaymentStates_1.size).toEqual(1)
+      expect(failedBtcLnPaymentStates_1).toContain(LnPaymentState.Failed)
+
+      const failedBtcTxIds = failedBtcTxns_1.map((tx) => tx.id)
+
+      // 2nd USD SEND WITH BTC REVERT
+      // -----
+      const failedUsd = await recordSendLnPayment({
+        walletDescriptor: accountWalletDescriptors.USD,
+        paymentAmount: sendAmount,
+        paymentHash,
+        bankFee,
+        displayAmounts: displaySendEurAmounts,
+      })
+      if (failedUsd instanceof Error) throw failedUsd
+      const { journalId: failedUsdJournalId } = failedUsd
+
+      const updateStateUsdPending = await LedgerFacade.updateLnPaymentState({
+        walletIds,
+        paymentHash,
+        journalId: failedUsdJournalId,
+      })
+      if (updateStateUsdPending instanceof Error) throw updateStateUsdPending
+
+      rawTxns = await LedgerService().getTransactionsByHash(paymentHash)
+      if (rawTxns instanceof Error) throw rawTxns
+      if (!(rawTxns && rawTxns.length)) throw new Error()
+      txns = rawTxns.filter((tx) => walletIds.includes(tx.walletId as WalletId))
+
+      // Check failed BTC txns
+      const failedBtcTxns_2a = txns.filter((tx) => failedBtcTxIds.includes(tx.id))
+      const failedBtcLnPaymentStates_2a = new Set(
+        failedBtcTxns_2a.map((tx) => tx.lnPaymentState),
+      )
+      expect(failedBtcTxns_2a.length).toEqual(2)
+      expect(failedBtcLnPaymentStates_2a.size).toEqual(1)
+      expect(failedBtcLnPaymentStates_2a).toContain(LnPaymentState.Failed)
+
+      // Check pending USD txns
+      const pendingUsdTxns_2 = txns.filter((tx) => !failedBtcTxIds.includes(tx.id))
+      const pendingUsdLnPaymentStates_2 = new Set(
+        pendingUsdTxns_2.map((tx) => tx.lnPaymentState),
+      )
+      expect(pendingUsdTxns_2.length).toEqual(1)
+      expect(pendingUsdLnPaymentStates_2.size).toEqual(1)
+      expect(pendingUsdLnPaymentStates_2).toContain(LnPaymentState.PendingAfterRetry)
+
+      settled = await LedgerFacade.settlePendingLnSend(paymentHash)
+      if (settled instanceof Error) throw settled
+
+      const failed = await recordLnFailedPayment({
+        walletDescriptor: accountWalletDescriptors.BTC,
+        paymentAmount: receiveAmount,
+        paymentHash,
+        bankFee,
+        displayAmounts: displayReceiveEurAmounts,
+        journalId: failedUsdJournalId,
+      })
+      if (failed instanceof Error) throw failed
+
+      const updateStateUsdFailed = await LedgerFacade.updateLnPaymentState({
+        walletIds,
+        paymentHash,
+        journalId: failedUsdJournalId,
+      })
+      if (updateStateUsdFailed instanceof Error) throw updateStateUsdFailed
+
+      rawTxns = await LedgerService().getTransactionsByHash(paymentHash)
+      if (rawTxns instanceof Error) throw rawTxns
+      if (!(rawTxns && rawTxns.length)) throw new Error()
+      txns = rawTxns.filter((tx) => walletIds.includes(tx.walletId as WalletId))
+
+      // Check failed BTC txns
+      const failedBtcTxns_2b = txns.filter((tx) => failedBtcTxIds.includes(tx.id))
+      const failedBtcLnPaymentStates_2b = new Set(
+        failedBtcTxns_2b.map((tx) => tx.lnPaymentState),
+      )
+      expect(failedBtcTxns_2b.length).toEqual(2)
+      expect(failedBtcLnPaymentStates_2b.size).toEqual(1)
+      expect(failedBtcLnPaymentStates_2b).toContain(LnPaymentState.Failed)
+
+      // Check failed USD txns
+      const failedUsdTxns_2 = txns.filter((tx) => !failedBtcTxIds.includes(tx.id))
+      const failedUsdLnPaymentStates_2 = new Set(
+        failedUsdTxns_2.map((tx) => tx.lnPaymentState),
+      )
+      expect(failedUsdTxns_2.length).toEqual(2)
+      expect(failedUsdLnPaymentStates_2.size).toEqual(1)
+      expect(failedUsdLnPaymentStates_2).toContain(LnPaymentState.FailedAfterRetry)
+
+      const failedUsdTxIds = failedUsdTxns_2.map((tx) => tx.id)
+
+      // 3rd BTC SUCCESS SEND WITH FEE REIMBURSE
+      // -----
+      const res = await recordSendLnPayment({
+        walletDescriptor: accountWalletDescriptors.USD,
+        paymentAmount: sendAmount,
+        paymentHash,
+        bankFee,
+        displayAmounts: displaySendEurAmounts,
+      })
       if (res instanceof Error) throw res
+      const { journalId } = res
+
+      settled = await LedgerFacade.settlePendingLnSend(paymentHash)
+      if (settled instanceof Error) throw settled
+
+      const reimbursed = await recordLnFeeReimbursement({
+        walletDescriptor: accountWalletDescriptors.BTC,
+        paymentAmount: bankFee,
+        paymentHash,
+        bankFee,
+        displayAmounts: displayReceiveEurAmounts,
+        journalId,
+      })
+      if (reimbursed instanceof Error) throw reimbursed
 
       const updateState = await LedgerFacade.updateLnPaymentState({
-        walletIds: [accountWalletDescriptors.BTC.id],
+        walletIds,
         paymentHash: res.paymentHash,
+        journalId: res.journalId,
       })
       if (updateState instanceof Error) throw updateState
 
-      const txns = await LedgerService().getTransactionsByHash(res.paymentHash)
-      if (txns instanceof Error) throw txns
-      if (!(txns && txns.length)) throw new Error()
-      const txn = txns[0]
+      rawTxns = await LedgerService().getTransactionsByHash(paymentHash)
+      if (rawTxns instanceof Error) throw rawTxns
+      if (!(rawTxns && rawTxns.length)) throw new Error()
+      txns = rawTxns.filter((tx) => walletIds.includes(tx.walletId as WalletId))
 
-      expect(txn.lnPaymentState).toBe(LnPaymentState.Pending)
+      // Check failed BTC txns
+      const failedBtcTxns_3 = txns.filter((tx) => failedBtcTxIds.includes(tx.id))
+      const failedBtcLnPaymentStates_3 = new Set(
+        failedBtcTxns_3.map((tx) => tx.lnPaymentState),
+      )
+      expect(failedBtcTxns_3.length).toEqual(2)
+      expect(failedBtcLnPaymentStates_3.size).toEqual(1)
+      expect(failedBtcLnPaymentStates_3).toContain(LnPaymentState.Failed)
+
+      // Check failed USD txns
+      const failedUsdTxns3 = txns.filter((tx) => failedUsdTxIds.includes(tx.id))
+      const failedUsdLnPaymentStates3 = new Set(
+        failedUsdTxns3.map((tx) => tx.lnPaymentState),
+      )
+      expect(failedUsdTxns3.length).toEqual(2)
+      expect(failedUsdLnPaymentStates3.size).toEqual(1)
+      expect(failedUsdLnPaymentStates3).toContain(LnPaymentState.FailedAfterRetry)
+
+      // Check success BTC txns
+      const successBtcTxns_3 = txns.filter(
+        (tx) => ![...failedBtcTxIds, ...failedUsdTxIds].includes(tx.id),
+      )
+      const successBtcLnPaymentStates_3 = new Set(
+        successBtcTxns_3.map((tx) => tx.lnPaymentState),
+      )
+      expect(successBtcTxns_3.length).toEqual(2)
+      expect(successBtcLnPaymentStates_3.size).toEqual(1)
+      expect(successBtcLnPaymentStates_3).toContain(
+        LnPaymentState.SuccessWithReimbursementAfterRetry,
+      )
     })
   })
 })

@@ -3,22 +3,29 @@ import { NoTransactionToUpdateStateError, UnknownLedgerError } from "../domain/e
 
 import { getTransactionsForWalletsByPaymentHash } from "./get-transactions"
 
+import { toObjectId } from "@/services/mongoose/utils"
 import { recordExceptionInCurrentSpan } from "@/services/tracing"
 
 import { LnPaymentStateDeterminator } from "@/domain/ledger/ln-payment-state"
 
 import { ErrorLevel } from "@/domain/shared"
 
-const updateStateByHash = async ({
-  paymentHash,
+const updateStateByRelatedJournal = async ({
+  journalId,
   bundle_completion_state,
 }: {
-  paymentHash: PaymentHash
+  journalId: LedgerJournalId
   bundle_completion_state: LnPaymentState
 }): Promise<true | LedgerServiceError | RepositoryError> => {
   try {
     const result = await Transaction.updateMany(
-      { hash: paymentHash },
+      {
+        $or: [
+          { _journal: toObjectId(journalId) },
+          { _original_journal: toObjectId(journalId) },
+          { related_journal: journalId },
+        ],
+      },
       { bundle_completion_state },
     )
     const success = result.modifiedCount > 0
@@ -34,9 +41,11 @@ const updateStateByHash = async ({
 export const updateLnPaymentState = async ({
   walletIds,
   paymentHash,
+  journalId,
 }: {
   walletIds: WalletId[]
   paymentHash: PaymentHash
+  journalId: LedgerJournalId
 }): Promise<boolean | ApplicationError> => {
   const txns = await getTransactionsForWalletsByPaymentHash({
     walletIds,
@@ -51,9 +60,9 @@ export const updateLnPaymentState = async ({
       level: ErrorLevel.Critical,
       attributes: {
         ["error.actionRequired.message"]:
-          "Check the transaction bundle using the paymentHash and walletIds, " +
-          "determine the transaction state type, and manually update transactions " +
-          "with this hash to the correct state.",
+          "Check the transaction bundle using the '_journal', 'related_journal' and " +
+          "walletIds, determine the transaction state type, and manually update " +
+          "transactions with this '_journal' and 'related_journal' to the correct state.",
         ["error.actionRequired.paymentHash"]: paymentHash,
         ["error.actionRequired.walletIds"]: JSON.stringify(walletIds),
       },
@@ -61,8 +70,8 @@ export const updateLnPaymentState = async ({
     return false
   }
 
-  return updateStateByHash({
-    paymentHash,
+  return updateStateByRelatedJournal({
+    journalId,
     bundle_completion_state: lnPaymentState,
   })
 }

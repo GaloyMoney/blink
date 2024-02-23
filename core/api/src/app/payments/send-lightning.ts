@@ -704,6 +704,7 @@ const executePaymentViaLn = async ({
     const updateStateAfterSend = await LedgerFacade.updateLnPaymentState({
       walletIds,
       paymentHash,
+      journalId,
     })
     if (updateStateAfterSend instanceof Error) return updateStateAfterSend
 
@@ -781,6 +782,7 @@ const executePaymentViaLn = async ({
       const updateStateAfterRevert = await LedgerFacade.updateLnPaymentState({
         walletIds,
         paymentHash,
+        journalId,
       })
       if (updateStateAfterRevert instanceof Error) return updateStateAfterRevert
 
@@ -811,6 +813,7 @@ const executePaymentViaLn = async ({
     const updateStateAfterSettle = await LedgerFacade.updateLnPaymentState({
       walletIds,
       paymentHash,
+      journalId,
     })
     if (updateStateAfterSettle instanceof Error) return updateStateAfterSettle
 
