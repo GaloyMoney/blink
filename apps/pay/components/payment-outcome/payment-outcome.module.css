@@ -71,8 +71,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap:0.5em
-
+  gap: 0.5em;
 }
 
 .reference {
@@ -84,6 +83,13 @@
 .backdrop {
   opacity: 1 !important;
   background-color: rgba(255, 255, 255, 1);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
 }
 
 .link:hover {

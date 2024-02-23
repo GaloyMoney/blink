@@ -58,14 +58,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
   const qrImageRef = React.useRef(null)
   const getImage = () => takeScreenShot(qrImageRef.current)
 
-  const shareUrl =
-    !amount && !memo
-      ? `https://${getClientSidePayDomain()}/${username}?amount=${
-          state.currentAmount
-        }&sats=${usdToSats(
-          state.currentAmount,
-        ).toFixed()}&currency=${recipientWalletCurrency}&memo=""`
-      : window.location.href
+  const shareUrl = window.location.href
 
   const shareData = {
     title: `Pay ${username}`,
@@ -121,8 +114,8 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
     if (displayCurrency !== "SAT") {
       ;({ convertedCurrencyAmount: amountInSats } = currencyToSats(
         Number(state.currentAmount),
-        "USD",
-        2,
+        state.displayCurrencyMetaData.id,
+        state.displayCurrencyMetaData.fractionDigits,
       ))
     }
 
@@ -142,8 +135,8 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
     if (displayCurrency !== "SAT") {
       ;({ convertedCurrencyAmount: amountInSats } = currencyToSats(
         Number(state.currentAmount),
-        "USD",
-        2,
+        state.displayCurrencyMetaData.id,
+        state.displayCurrencyMetaData.fractionDigits,
       ))
     }
 
@@ -323,6 +316,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
         paymentRequest={invoice?.paymentRequest}
         paymentAmount={paymentAmount}
         dispatch={dispatch}
+        satoshis={data?.lnInvoiceCreateOnBehalfOfRecipient?.invoice?.satoshis}
       />
     </div>
   )

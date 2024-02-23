@@ -95,7 +95,7 @@ function ParsePayment({
     // 3) update the query params
     const newQuery = {
       amount: state.currentAmount,
-      memo: "",
+      memo: memo ?? "",
       displayCurrency,
     }
 

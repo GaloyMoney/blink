@@ -25,7 +25,13 @@ function receipt(props: Props) {
 
       <div className="text-center">
         <span>Transaction Amount</span>
-        <h1>{localStorage.getItem("formattedSatsValue")}</h1>
+        <h1
+          style={{
+            fontSize: "2.5rem",
+          }}
+        >
+          {props.sats} sats
+        </h1>
         <span> ~ {localStorage.getItem("formattedFiatValue")}</span>
 
         <div className="d-flex justify-content-center">
@@ -61,15 +67,16 @@ function receipt(props: Props) {
             </tr>
           </table>
         </div>
-        <a
-          className={styles.link}
-          href="https://galoy.io"
-          target="_blank"
-          rel="noreferrer"
-        >
-          {" "}
-          Powered by <GaloyIcon />
-        </a>
+        <div className="link-wrapper">
+          <a
+            className={styles.link}
+            href="https://galoy.io"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Powered by <GaloyIcon />
+          </a>
+        </div>
       </div>
     </div>
   )
