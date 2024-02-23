@@ -302,13 +302,13 @@ export const configSchema = {
           blockDuration: 86400,
         },
         invoiceCreateAttempt: {
-          points: 20,
-          duration: 120,
+          points: 30,
+          duration: 60,
           blockDuration: 300,
         },
         invoiceCreateForRecipientAttempt: {
-          points: 20,
-          duration: 120,
+          points: 30,
+          duration: 60,
           blockDuration: 300,
         },
         onChainAddressCreateAttempt: {
