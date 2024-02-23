@@ -1,0 +1,31 @@
+_version: 1
+
+circle_time_frame.month: "αυτό τον μήνα"
+circle_time_frame.all_time: ""
+
+circle_type.inner: "εσωτερικός κύκλος επαφών"
+circle_type.outer: "εξωτερικός κύκλος επαφών"
+
+circle_grew.title: "Οι κύκλοι επαφών σας στο Blink μεγαλώνουν!"
+circle_grew.body: "Μόλις προστέθηκε κάποιος στο %{circle_type}."
+
+circle_threshold_reached.inner.title: "Ωραίος εσωτερικός κύκλος επαφών! \U0001F919"
+circle_threshold_reached.inner.body: "Έχετε υποδεχτεί %{threshold} άτομα στο Blink%{time_frame}. Συνεχίστε έτσι!"
+
+circle_threshold_reached.outer.title: "Οφέλη εξωτερικού κύκλου επαφών \U0001F4AA"
+circle_threshold_reached.outer.body: "Ο Εξωτερικός κύκλος επαφών σας έφτασε τα %{threshold}  άτομα. Εσείς οδηγείτε την υιοθέτηση του Bitcoin!"
+
+identity_verification_approved.title: "Η ταυτότητά σας επαληθεύτηκε!"
+identity_verification_approved.body: "Τα έγγραφα για την επαλήθευσή σας έχουν υποβληθεί σε επεξεργασία."
+
+identity_verification_declined.reason.documents_not_clear: "τα αναρτημένα έγγραφα δεν ήταν σαφή"
+identity_verification_declined.reason.photo_not_clear: "η εικόνα που υποβάλατε δεν ήταν σαφής"
+identity_verification_declined.reason.documents_do_not_match: "τα έγγραφα που προσκομίσατε δεν αντιστοιχούσαν στην αυτοφωτογραφία σας ή/και στις πληροφορίες που δώσατε"
+identity_verification_declined.reason.documents_expired: "τα έγγραφα που υποβάλατε έχουν λήξει"
+identity_verification_declined.reason.documents_not_supported: "τα έγγραφα που υποβάλατε δεν υποστηρίζονται"
+identity_verification_declined.reason.other: "προέκυψε σφάλμα, παρακαλούμε επικοινωνήστε με την υποστήριξη"
+identity_verification_declined.title: "Η ταυτότητά σας δεν επαληθεύτηκε!"
+identity_verification_declined.body: "Δεν μπορέσαμε να επεξεργαστούμε τα έγγραφά σας επειδή %{reason}."
+
+identity_verification_review_started.title: "Η επαλήθευση βρίσκεται σε εξέλιξη!"
+identity_verification_review_started.body: "Λάβαμε τα έγγραφά σας και τα επεξεργαζόμαστε."

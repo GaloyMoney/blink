@@ -1,6 +1,9 @@
 use super::proto;
 use crate::{
-    app::error::ApplicationError, notification_event, primitives::*, user_notification_settings,
+    app::error::ApplicationError,
+    notification_event,
+    primitives::*,
+    user_notification_settings::{self, error::UserNotificationSettingsError},
 };
 
 impl From<proto::NotificationCategory> for UserNotificationCategory {
@@ -26,7 +29,14 @@ impl From<proto::NotificationChannel> for UserNotificationChannel {
 
 impl From<ApplicationError> for tonic::Status {
     fn from(err: ApplicationError) -> Self {
-        tonic::Status::internal(err.to_string())
+        if let ApplicationError::UserNotificationSettingsError(
+            UserNotificationSettingsError::ConcurrentModification,
+        ) = err
+        {
+            tonic::Status::aborted(err.to_string())
+        } else {
+            tonic::Status::internal(err.to_string())
+        }
     }
 }
 
