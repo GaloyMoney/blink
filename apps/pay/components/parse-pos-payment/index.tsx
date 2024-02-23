@@ -2,7 +2,7 @@
 import { useRouter, useSearchParams } from "next/navigation"
 import React, { useEffect } from "react"
 import Container from "react-bootstrap/Container"
-import Image from "next/Image"
+import Image from "next/image"
 
 import CurrencyInput, { formatValue } from "react-currency-input-field"
 
