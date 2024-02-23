@@ -32,6 +32,7 @@ artifacts
 generated.gql
 .swc
 
+.env
 .envrc.secrets
 .envrc.local
 
