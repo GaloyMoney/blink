@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: update lnd to v0.17.4-beta (#4060)'
-      sha: cfdd83640bf8c9efa95bbe835f73a8be0dcf7ebc
+      commitTitle: 'chore: fix notifications quickstart (#4069)'
+      sha: 7466c0b8cc70215ea9f730e5e3cfef99f265d387
       tags:
-      - 0.20.78-2-gcfdd83640
+      - 0.20.79-1-g7466c0b8c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: update lnd to v0.17.4-beta (#4060)'
-      sha: cfdd83640bf8c9efa95bbe835f73a8be0dcf7ebc
+      commitTitle: 'chore: fix notifications quickstart (#4069)'
+      sha: 7466c0b8cc70215ea9f730e5e3cfef99f265d387
       tags:
-      - 0.20.78-2-gcfdd83640
+      - 0.20.79-1-g7466c0b8c
     path: schemas/
   - git:
-      commitTitle: 'chore: update lnd to v0.17.4-beta (#4060)'
-      sha: cfdd83640bf8c9efa95bbe835f73a8be0dcf7ebc
+      commitTitle: 'chore: fix notifications quickstart (#4069)'
+      sha: 7466c0b8cc70215ea9f730e5e3cfef99f265d387
       tags:
-      - 0.20.78-2-gcfdd83640
+      - 0.20.79-1-g7466c0b8c
     path: gql/
   path: ./graphql
 kind: LockConfig

@@ -98,7 +98,7 @@ services:
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=hydra
   galoy:
-    image: us.gcr.io/galoy-org/galoy-api@sha256:f40b09e9c691b8f4f1f886ceebb97a15e1428917edcc7de82ab538c2070f7f7f
+    image: us.gcr.io/galoy-org/galoy-api@sha256:564ea4b78c63c18f884aa03f473117b17c6db413334f8d76f0c7fbf9abf3f7c4
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -161,7 +161,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:922c1e6f2539d9cc883d05efe6b915882c2e334b4f91ed13a3cd79dc2658d80e
+    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:0408e5baf606fb6293fd377f1454c5ba1d2b25b4bc934fa9c51688fc8c448cb3
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -217,8 +217,12 @@ services:
     environment:
     - PG_CON=postgres://user:password@notifications-pg:5432/pg
     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-agent:4318
+    - NOTIFICATIONS_CONFIG=/config/notifications/notifications.yml
     ports:
     - 6685:6685
+    volumes:
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/notifications/notifications.yml:/config/notifications/notifications.yml
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/notifications/fake_service_account.json:/app/notifications/config/notifications/fake_service_account.json
   notifications-pg:
     image: postgres:14.1
     environment:
@@ -248,7 +252,7 @@ services:
     environment:
     - MONGO_INITDB_DATABASE=galoy
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:c0253899e08c5c1c60b5621ac225e0d1730bedb2e18655f9467bd45069165c10
+    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:a5008d3eb71bf3bd0a2b56eff392d4d7beb2cd2192d6eacca29908b7701ae56b
     depends_on:
     - mongodb
     environment:
