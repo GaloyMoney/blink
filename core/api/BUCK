@@ -253,7 +253,7 @@ dev_pnpm_task_binary(
   command = "dev:cron",
   srcs = [":src"],
   visibility = ["PUBLIC"],
-  env_file = ".env",
+  env_json = "//dev:serve_env",
 )
 
 dev_pnpm_task_binary(

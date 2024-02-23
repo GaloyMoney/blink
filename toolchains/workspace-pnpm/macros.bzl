@@ -1053,7 +1053,7 @@ set -euo pipefail
 rootpath="$(git rev-parse --show-toplevel)"
 install_node_modules="$1"
 npm_package_path="$2"
-env_file="$3"
+env_json="$3"
 npm_run_command="$4"
 
 cd "$rootpath/$npm_package_path"
@@ -1061,8 +1061,11 @@ if [ "$install_node_modules" = "True" ]; then
     pnpm install --frozen-lockfile
 fi
 
-if [[ -f "$env_file" ]]; then
-    source "$env_file"
+if [[ -f "$env_json" ]]; then
+    while IFS="=" read -r key value
+    do
+        export "$key"="$value"
+    done < <(jq -r "to_entries|map(\\"\(.key)=\(.value|tostring)\\")|.[]" "$env_json")
 fi
 
 if [ "${*:5}" ]; then
@@ -1072,12 +1075,12 @@ else
 fi
 """, is_executable = True)
 
-    env_file = ctx.attrs.env_file if ctx.attrs.env_file else ""
+    env_json = ctx.attrs.env_json if ctx.attrs.env_json else ""
     args = cmd_args([
         script,
         str(ctx.attrs.local_node_modules),
         ctx.label.package,
-        env_file,
+        env_json,
         ctx.attrs.command
     ])
     args.hidden([ctx.attrs.deps])
@@ -1090,9 +1093,9 @@ dev_pnpm_task_binary = rule(impl = pnpm_task_binary_impl, attrs = {
     "local_node_modules": attrs.bool(default = True, doc = """Need to run pnpm install first?"""),
     "srcs": attrs.list(attrs.source(), default = [], doc = """List of sources we require"""),
     "deps": attrs.list(attrs.source(), default = [], doc = """List of dependencies we require"""),
-    "env_file": attrs.option(
-        attrs.string(),
-        doc = """File name and relative path for env variables required.""",
+    "env_json": attrs.option(
+        attrs.source(),
+        doc = """buck2 target for json file with env variables required.""",
         default = None,
     ),
 })
