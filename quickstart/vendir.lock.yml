@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: increasing limits for invoices creation (#4065)...'
-      sha: 48bea74dd38a3bf29b457ef2de303388472d8e91
+      commitTitle: 'chore: update lnd to v0.17.4-beta (#4060)'
+      sha: cfdd83640bf8c9efa95bbe835f73a8be0dcf7ebc
       tags:
-      - 0.20.77-4-g48bea74dd
+      - 0.20.78-2-gcfdd83640
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: increasing limits for invoices creation (#4065)...'
-      sha: 48bea74dd38a3bf29b457ef2de303388472d8e91
+      commitTitle: 'chore: update lnd to v0.17.4-beta (#4060)'
+      sha: cfdd83640bf8c9efa95bbe835f73a8be0dcf7ebc
       tags:
-      - 0.20.77-4-g48bea74dd
+      - 0.20.78-2-gcfdd83640
     path: schemas/
   - git:
-      commitTitle: 'chore: increasing limits for invoices creation (#4065)...'
-      sha: 48bea74dd38a3bf29b457ef2de303388472d8e91
+      commitTitle: 'chore: update lnd to v0.17.4-beta (#4060)'
+      sha: cfdd83640bf8c9efa95bbe835f73a8be0dcf7ebc
       tags:
-      - 0.20.77-4-g48bea74dd
+      - 0.20.78-2-gcfdd83640
     path: gql/
   path: ./graphql
 kind: LockConfig
