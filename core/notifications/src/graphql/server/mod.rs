@@ -73,6 +73,6 @@ async fn playground() -> impl axum::response::IntoResponse {
 
 pub const WRITE_SCOPE: &str = "write";
 
-pub fn can_write(scope: &String) -> bool {
-    scope.as_str().split(' ').any(|s| s == WRITE_SCOPE) || scope.is_empty()
+pub fn can_write(scope: &str) -> bool {
+    scope.split(' ').any(|s| s == WRITE_SCOPE) || scope.is_empty()
 }
