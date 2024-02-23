@@ -3,9 +3,7 @@ import React, { useEffect } from "react"
 
 import { useSearchParams } from "next/navigation"
 
-import { Currency, useCurrencyListQuery } from "../../lib/graphql/generated"
-
-import { satsCurrencyMetadata } from "@/app/sats-currency"
+import { useCurrencyListQuery } from "../../lib/graphql/generated"
 
 export default function CurrencyDropdown({
   onSelectedDisplayCurrencyChange,
@@ -24,11 +22,6 @@ export default function CurrencyDropdown({
 
   const [selectedDisplayCurrency, setSelectedDisplayCurrency] = React.useState("USD")
   const [isDropDownOpen, setIsDropDownOpen] = React.useState(false)
-  let updatedCurrencyList: Currency[] = []
-
-  if (currencyData?.currencyList) {
-    updatedCurrencyList = [...(currencyData?.currencyList || []), satsCurrencyMetadata]
-  }
 
   useEffect(() => {
     const newDisplay =
@@ -49,7 +42,7 @@ export default function CurrencyDropdown({
       value={selectedDisplayCurrency}
       onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
         const currencyId = event.target.value
-        const newDisplayCurrency = updatedCurrencyList?.find(
+        const newDisplayCurrency = currencyData?.currencyList?.find(
           (item) => item.id === currencyId,
         )
         if (newDisplayCurrency) {
@@ -67,7 +60,7 @@ export default function CurrencyDropdown({
         setIsDropDownOpen(false)
       }}
     >
-      {updatedCurrencyList?.map((option) => {
+      {currencyData?.currencyList?.map((option) => {
         const fullLabel = `${option.id} - ${option.name} ${
           option.flag ? option.flag : ""
         }`

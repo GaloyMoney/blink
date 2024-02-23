@@ -41,7 +41,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
   const searchParams = useSearchParams()
   const { username } = useParams()
   const query = extractSearchParams(searchParams)
-  const { amount, memo, displayCurrency } = query
+  const { amount, memo } = query
 
   const { currencyToSats, hasLoaded } = useRealtimePrice(state.displayCurrencyMetaData.id)
 
@@ -112,13 +112,11 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
 
   const paymentAmount = React.useMemo(() => {
     let amountInSats = state.currentAmount
-    if (displayCurrency !== "SATS") {
-      ;({ convertedCurrencyAmount: amountInSats } = currencyToSats(
-        Number(state.currentAmount),
-        state.displayCurrencyMetaData.id,
-        state.displayCurrencyMetaData.fractionDigits,
-      ))
-    }
+    ;({ convertedCurrencyAmount: amountInSats } = currencyToSats(
+      Number(state.currentAmount),
+      state.displayCurrencyMetaData.id,
+      state.displayCurrencyMetaData.fractionDigits,
+    ))
 
     let amt = safeAmount(amountInSats)
     if (recipientWalletCurrency === "USD") {
@@ -140,13 +138,11 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
 
   React.useEffect(() => {
     let amountInSats = state.currentAmount
-    if (displayCurrency !== "SATS") {
-      ;({ convertedCurrencyAmount: amountInSats } = currencyToSats(
-        Number(state.currentAmount),
-        state.displayCurrencyMetaData.id,
-        state.displayCurrencyMetaData.fractionDigits,
-      ))
-    }
+    ;({ convertedCurrencyAmount: amountInSats } = currencyToSats(
+      Number(state.currentAmount),
+      state.displayCurrencyMetaData.id,
+      state.displayCurrencyMetaData.fractionDigits,
+    ))
 
     if (!walletId || !Number(paymentAmount)) return
 

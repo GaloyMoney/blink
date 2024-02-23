@@ -39,8 +39,7 @@ gql`
 function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: Props) {
   const searchParams = useSearchParams()
   const { username } = useParams()
-  const { amount, memo, displayCurrency } = extractSearchParams(searchParams)
-  const isSatsCurrency = displayCurrency === "SATS"
+  const { amount, memo } = extractSearchParams(searchParams)
 
   const componentRef = useRef<HTMLDivElement | null>(null)
 
@@ -94,7 +93,7 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: P
             />
             <p className={styles.text}>
               {`The invoice of ${localStorage.getItem("formattedFiatValue")}
-              ${isSatsCurrency ? "" : ` (~${satoshis} sats)`}
+               (~${satoshis} sats)
                 has been paid`}
             </p>
 
@@ -108,7 +107,6 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: P
                   paymentRequest={paymentRequest}
                   paymentAmount={paymentAmount}
                   memo={memo}
-                  isSatsCurrency={isSatsCurrency}
                 />
               </div>
             </div>

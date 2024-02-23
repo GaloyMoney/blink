@@ -23,8 +23,6 @@ import styles from "./parse-payment.module.css"
 import ReceiveInvoice from "./receive-invoice"
 import NFCComponent from "./nfc"
 
-import { satsCurrencyMetadata } from "@/app/sats-currency"
-
 interface Props {
   defaultWalletCurrency: string
   walletId: string
@@ -113,19 +111,12 @@ function ParsePayment({
 
   // Update CurrencyMetadata
   React.useEffect(() => {
-    if (displayCurrency === "SATS") {
+    const latestCurrencyMetadata = currencyList?.find((c) => c.id === displayCurrency)
+    if (latestCurrencyMetadata) {
       dispatch({
         type: ACTIONS.UPDATE_DISPLAY_CURRENCY_METADATA,
-        payload: satsCurrencyMetadata,
+        payload: latestCurrencyMetadata,
       })
-    } else {
-      const latestCurrencyMetadata = currencyList?.find((c) => c.id === displayCurrency)
-      if (latestCurrencyMetadata) {
-        dispatch({
-          type: ACTIONS.UPDATE_DISPLAY_CURRENCY_METADATA,
-          payload: latestCurrencyMetadata,
-        })
-      }
     }
   }, [displayCurrency, currencyList])
 
@@ -173,7 +164,6 @@ function ParsePayment({
               <DigitButton
                 digit={"."}
                 dispatch={dispatch}
-                disabled={displayCurrency === "SATS"}
                 displayValue={
                   getLocaleConfig({ locale: language, currency: displayCurrency })
                     .decimalSeparator
