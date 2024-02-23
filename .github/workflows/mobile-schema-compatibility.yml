@@ -26,10 +26,10 @@ jobs:
     needs: [check-secret]
     if: needs.check-secret.outputs.secret_exists == 'true'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: repo
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: GaloyMoney/galoy-mobile-deployments
           ref: main

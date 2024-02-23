@@ -15,10 +15,10 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@v4
       - name: Run the Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v2
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: main
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: docs
           path: docs
