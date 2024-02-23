@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(api-keys): add receive scope (fixed) (#4054)...'
-      sha: e43f181dcf640f7c06a7de1ca2ecfcae1578a121
+      commitTitle: 'chore(notifications): fix dev config setup (#4052)'
+      sha: 020a509ee1389e16f34a8d5d1394645750327a6d
       tags:
-      - 0.20.74
+      - 0.20.74-3-g020a509ee
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(api-keys): add receive scope (fixed) (#4054)...'
-      sha: e43f181dcf640f7c06a7de1ca2ecfcae1578a121
+      commitTitle: 'chore(notifications): fix dev config setup (#4052)'
+      sha: 020a509ee1389e16f34a8d5d1394645750327a6d
       tags:
-      - 0.20.74
+      - 0.20.74-3-g020a509ee
     path: schemas/
   - git:
-      commitTitle: 'feat(api-keys): add receive scope (fixed) (#4054)...'
-      sha: e43f181dcf640f7c06a7de1ca2ecfcae1578a121
+      commitTitle: 'chore(notifications): fix dev config setup (#4052)'
+      sha: 020a509ee1389e16f34a8d5d1394645750327a6d
       tags:
-      - 0.20.74
+      - 0.20.74-3-g020a509ee
     path: gql/
   path: ./graphql
 kind: LockConfig
