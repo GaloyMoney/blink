@@ -47,6 +47,7 @@ filegroup(
     name = "src",
     srcs = glob([
     "app/**",
+    "context/**",
     "theme/**",
     "services/**",
     "components/**",
