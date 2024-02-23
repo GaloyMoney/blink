@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "UPDATE identity_api_keys k\n               SET revoked = true,\n                   revoked_at = NOW()\n               FROM identities i\n               WHERE k.identity_id = i.id\n               AND i.subject_id = $1\n               AND k.id = $2\n               RETURNING\n               k.name,\n               k.identity_id,\n               k.created_at,\n               k.expires_at,\n               k.revoked,\n               (expires_at IS NOT NULL AND expires_at < NOW()) AS \"expired!\",\n               k.read_only,\n               k.last_used_at\n            ",
+  "query": "UPDATE identity_api_keys k\n               SET revoked = true,\n                   revoked_at = NOW()\n               FROM identities i\n               WHERE k.identity_id = i.id\n               AND i.subject_id = $1\n               AND k.id = $2\n               RETURNING\n               k.name,\n               k.identity_id,\n               k.created_at,\n               k.expires_at,\n               k.revoked,\n               (expires_at IS NOT NULL AND expires_at < NOW()) AS \"expired!\",\n               k.scopes,\n               k.last_used_at\n            ",
   "describe": {
     "columns": [
       {
@@ -35,8 +35,8 @@
       },
       {
         "ordinal": 6,
-        "name": "read_only",
-        "type_info": "Bool"
+        "name": "scopes",
+        "type_info": "VarcharArray"
       },
       {
         "ordinal": 7,
@@ -61,5 +61,5 @@
       true
     ]
   },
-  "hash": "716551508de50efd1c73614d005e3d0bf2d2de36aabf7aa568ab2d845b8b1b0e"
+  "hash": "741722928f478e3815cf8316f8a21e5e615ad469ceb49443ca6184b28fa8d6be"
 }

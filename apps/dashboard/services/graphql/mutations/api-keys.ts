@@ -6,6 +6,7 @@ import {
   ApiKeyCreateMutation,
   ApiKeyRevokeDocument,
   ApiKeyRevokeMutation,
+  Scope,
 } from "../generated"
 
 gql`
@@ -19,6 +20,7 @@ gql`
         expired
         lastUsedAt
         expiresAt
+        scopes
       }
       apiKeySecret
     }
@@ -34,6 +36,7 @@ gql`
         expired
         lastUsedAt
         expiresAt
+        scopes
       }
     }
   }
@@ -43,13 +46,13 @@ export async function createApiKey(
   token: string,
   name: string,
   expireInDays: number | null,
-  readOnly: boolean,
+  scopes: Scope[],
 ) {
   const client = apollo(token).getClient()
   try {
     const { data } = await client.mutate<ApiKeyCreateMutation>({
       mutation: ApiKeyCreateDocument,
-      variables: { input: { name, expireInDays, readOnly } },
+      variables: { input: { name, expireInDays, scopes } },
     })
     return data
   } catch (error) {

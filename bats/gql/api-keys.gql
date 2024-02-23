@@ -10,6 +10,7 @@ query apiKeys {
       createdAt
       expiresAt
       readOnly
+      scopes
     }
   }
 }
