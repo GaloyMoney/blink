@@ -60,11 +60,13 @@ plan:
 #@ component_lookup = {
 #@   "api-keys": {
 #@     "YAML_PATH": ".galoy.images.apiKeys.digest",
-#@     "CHART": "galoy"
+#@     "CHART": "galoy",
+#@     "SUBGRAPH_SRC": "core/api-keys/subgraph/schema.graphql"
 #@   },
 #@   "notifications": {
 #@     "YAML_PATH": ".galoy.images.notifications.digest",
-#@     "CHART": "galoy"
+#@     "CHART": "galoy",
+#@     "SUBGRAPH_SRC": "core/notifications/subgraph/schema.graphql"
 #@   }
 #@ }
 name: #@ bump_image_in_chart_name(component)
@@ -103,6 +105,7 @@ plan:
         COMPONENT: #@ component
         YAML_PATH: #@ component_lookup[component]["YAML_PATH"]
         CHART: #@ component_lookup[component]["CHART"]
+        SUBGRAPH_SRC: #@ component_lookup[component]["SUBGRAPH_SRC"]
       run:
         path: pipeline-tasks/ci/core/tasks/bump-image-digest.sh
   - put: charts-repo-out
