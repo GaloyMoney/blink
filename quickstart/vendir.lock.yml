@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(notifications): fix dev config setup (#4052)'
-      sha: 020a509ee1389e16f34a8d5d1394645750327a6d
+      commitTitle: 'ci: update checkout github action to v4 (#4061)'
+      sha: 72153973023c1cdb623decde95bcd15da70d2c80
       tags:
-      - 0.20.74-3-g020a509ee
+      - 0.20.75-1-g721539730
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(notifications): fix dev config setup (#4052)'
-      sha: 020a509ee1389e16f34a8d5d1394645750327a6d
+      commitTitle: 'ci: update checkout github action to v4 (#4061)'
+      sha: 72153973023c1cdb623decde95bcd15da70d2c80
       tags:
-      - 0.20.74-3-g020a509ee
+      - 0.20.75-1-g721539730
     path: schemas/
   - git:
-      commitTitle: 'chore(notifications): fix dev config setup (#4052)'
-      sha: 020a509ee1389e16f34a8d5d1394645750327a6d
+      commitTitle: 'ci: update checkout github action to v4 (#4061)'
+      sha: 72153973023c1cdb623decde95bcd15da70d2c80
       tags:
-      - 0.20.74-3-g020a509ee
+      - 0.20.75-1-g721539730
     path: gql/
   path: ./graphql
 kind: LockConfig
