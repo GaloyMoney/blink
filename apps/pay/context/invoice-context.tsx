@@ -1,21 +1,8 @@
 "use client"
 import React, { createContext, useContext, useReducer, ReactNode } from "react"
 
-import reducer, { ACTION_TYPE } from "@/app/reducer"
+import reducer, { ACTION_TYPE, InvoiceState } from "@/app/reducer"
 import { defaultCurrencyMetadata } from "@/app/currency-metadata"
-import { Currency } from "@/lib/graphql/generated"
-
-type InvoiceState = {
-  currentAmount: string
-  username: string
-  walletCurrency: string
-  walletId: string
-  createdInvoice: boolean
-  pinnedToHomeScreenModalVisible: boolean
-  memo: string
-  //TOD0 can create a separate context for display currency
-  displayCurrencyMetaData: Currency
-}
 
 const InvoiceContext = createContext<{
   state: InvoiceState

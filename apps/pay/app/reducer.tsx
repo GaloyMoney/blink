@@ -19,12 +19,28 @@ export const ACTIONS = {
   UPDATE_DISPLAY_CURRENCY_METADATA: "UPDATE_DISPLAY_CURRENCY_METADATA",
 } as const
 
+type ActionType = keyof typeof ACTIONS
+
+export type InvoiceState = {
+  currentAmount: string
+  username: string
+  walletCurrency: string
+  walletId: string
+  createdInvoice: boolean
+  pinnedToHomeScreenModalVisible: boolean
+  memo: string
+  displayCurrencyMetaData: Currency
+}
+
 export type ACTION_TYPE = {
-  type: string
+  type: ActionType
   payload?: string | string[] | (() => void) | boolean | undefined | Currency
 }
 
-function reducer(state: React.ComponentState, { type, payload }: ACTION_TYPE) {
+function reducer(
+  state: React.ComponentState,
+  { type, payload }: ACTION_TYPE,
+): InvoiceState {
   switch (type) {
     case ACTIONS.ADD_DIGIT:
       if (state.currentAmount.includes("NaN")) {
@@ -146,7 +162,7 @@ function reducer(state: React.ComponentState, { type, payload }: ACTION_TYPE) {
     case ACTIONS.UPDATE_DISPLAY_CURRENCY_METADATA:
       return {
         ...state,
-        displayCurrency: payload,
+        displayCurrencyMetaData: payload,
       }
 
     default:
