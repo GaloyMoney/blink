@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: update checkout github action to v4 (#4061)'
-      sha: 72153973023c1cdb623decde95bcd15da70d2c80
+      commitTitle: 'chore: increasing limits for invoices creation (#4065)...'
+      sha: 48bea74dd38a3bf29b457ef2de303388472d8e91
       tags:
-      - 0.20.75-1-g721539730
+      - 0.20.77-4-g48bea74dd
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: update checkout github action to v4 (#4061)'
-      sha: 72153973023c1cdb623decde95bcd15da70d2c80
+      commitTitle: 'chore: increasing limits for invoices creation (#4065)...'
+      sha: 48bea74dd38a3bf29b457ef2de303388472d8e91
       tags:
-      - 0.20.75-1-g721539730
+      - 0.20.77-4-g48bea74dd
     path: schemas/
   - git:
-      commitTitle: 'ci: update checkout github action to v4 (#4061)'
-      sha: 72153973023c1cdb623decde95bcd15da70d2c80
+      commitTitle: 'chore: increasing limits for invoices creation (#4065)...'
+      sha: 48bea74dd38a3bf29b457ef2de303388472d8e91
       tags:
-      - 0.20.75-1-g721539730
+      - 0.20.77-4-g48bea74dd
     path: gql/
   path: ./graphql
 kind: LockConfig
