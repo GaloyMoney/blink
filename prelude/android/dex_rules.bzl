@@ -11,7 +11,8 @@ load("@prelude//android:voltron.bzl", "ROOT_MODULE", "get_apk_module_graph_info"
 load("@prelude//java:dex.bzl", "DexLibraryInfo", "get_dex_produced_from_java_library")
 load("@prelude//java:dex_toolchain.bzl", "DexToolchainInfo")
 load("@prelude//java:java_library.bzl", "compile_to_jar")
-load("@prelude//utils:utils.bzl", "expect", "flatten")
+load("@prelude//utils:expect.bzl", "expect")
+load("@prelude//utils:utils.bzl", "flatten")
 load("@prelude//paths.bzl", "paths")
 
 # Android builds use a tool called `d8` to compile Java bytecode is DEX (Dalvik EXecutable)
@@ -695,9 +696,9 @@ def _get_raw_secondary_dex_name(index: int, module: str) -> str:
     if is_root_module(module):
         return "classes{}.dex".format(index + 2)
     elif index == 0:
-        return "classes.dex".format(module)
+        return "classes.dex"
     else:
-        return "classes{}.dex".format(module, index + 1)
+        return "classes{}.dex".format(index + 1)
 
 def _get_raw_secondary_dex_path(index: int, module: str):
     if is_root_module(module):

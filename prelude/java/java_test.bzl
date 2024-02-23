@@ -13,9 +13,13 @@ load(
 load("@prelude//java:java_library.bzl", "build_java_library")
 load("@prelude//java:java_providers.bzl", "JavaLibraryInfo", "JavaPackagingInfo", "get_all_java_packaging_deps_tset")
 load("@prelude//java:java_toolchain.bzl", "JavaTestToolchainInfo", "JavaToolchainInfo")
-load("@prelude//java/utils:java_utils.bzl", "get_path_separator_for_exec_os")
+load("@prelude//java/utils:java_more_utils.bzl", "get_path_separator_for_exec_os")
 load("@prelude//linking:shared_libraries.bzl", "SharedLibraryInfo", "merge_shared_libraries", "traverse_shared_library_info")
-load("@prelude//utils:utils.bzl", "expect")
+load(
+    "@prelude//tests:re_utils.bzl",
+    "get_re_executors_from_props",
+)
+load("@prelude//utils:expect.bzl", "expect")
 load("@prelude//test/inject_test_run_info.bzl", "inject_test_run_info")
 
 def java_test_impl(ctx: AnalysisContext) -> list[Provider]:
@@ -66,7 +70,14 @@ def build_junit_test(
         classpath.append(ctx.attrs.unbundled_resources_root)
 
     labels = ctx.attrs.labels or []
+
+    # Setup RE executors based on the `remote_execution` param.
+    re_executor, executor_overrides = get_re_executors_from_props(ctx)
+
+    # We implicitly make the target run from the project root if remote
+    # excution options were specified.
     run_from_cell_root = "buck2_run_from_cell_root" in labels
+
     uses_java8 = "run_with_java8" in labels
 
     classpath_args = cmd_args()
@@ -99,7 +110,7 @@ def build_junit_test(
         cmd.extend(java_test_toolchain.junit_test_runner_main_class_args)
 
     if ctx.attrs.test_case_timeout_ms:
-        cmd.extend(["--default_test_timeout", ctx.attrs.test_case_timeout_ms])
+        cmd.extend(["--default_test_timeout", str(ctx.attrs.test_case_timeout_ms)])
 
     expect(tests_java_library_info.library_output != None, "Built test library has no output, likely due to missing srcs")
 
@@ -145,6 +156,8 @@ def build_junit_test(
         contacts = ctx.attrs.contacts,
         run_from_project_root = not run_from_cell_root,
         use_project_relative_paths = not run_from_cell_root,
+        default_executor = re_executor,
+        executor_overrides = executor_overrides,
     )
     return test_info
 

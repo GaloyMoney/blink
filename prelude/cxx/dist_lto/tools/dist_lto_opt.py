@@ -46,8 +46,6 @@ def _filter_flags(clang_flags: List[str]) -> List[str]:  # noqa: C901
         # this setting matches current llvm implementation:
         # https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/LTO/Config.h#L57
         "-O2",
-        # TODO(T139459170): Remove after clang-15. NPM is the default.
-        "-fexperimental-new-pass-manager",
         "-ffunction-sections",
         "-fdata-sections",
     ]
@@ -229,7 +227,9 @@ def main(argv: List[str]) -> int:
             f"-fthinlto-index={args.index}",
         ]
     )
-    if args.split_dwarf:
+    if args.split_dwarf == "none":
+        clang_opt_flags.append("-gno-split-dwarf")
+    else:
         clang_opt_flags.append(f"-gsplit-dwarf={args.split_dwarf}")
 
     # The following args slices manipulating may be confusing. The first 3 element of opt_args are:

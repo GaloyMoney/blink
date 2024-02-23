@@ -1,0 +1,11 @@
+oncall("build_infra")
+
+prelude = native
+
+prelude.python_library(
+    name = "re_compatibility_utils",
+    srcs = [
+        "writable.py",
+    ],
+    visibility = ["PUBLIC"],
+)

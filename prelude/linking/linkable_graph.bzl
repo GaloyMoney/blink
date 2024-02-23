@@ -8,11 +8,11 @@
 load("@prelude//cxx:cxx_toolchain_types.bzl", "PicBehavior")
 load("@prelude//cxx:headers.bzl", "CPrecompiledHeaderInfo")
 load("@prelude//python:python.bzl", "PythonLibraryInfo")
+load("@prelude//utils:expect.bzl", "expect")
 load(
     "@prelude//utils:graph_utils.bzl",
     "breadth_first_traversal_by",
 )
-load("@prelude//utils:utils.bzl", "expect")
 load(
     ":link_info.bzl",
     "LibOutputStyle",
@@ -53,6 +53,7 @@ LinkableNode = record(
     labels = field(list[str], []),
     # Preferred linkage for this target.
     preferred_linkage = field(Linkage, Linkage("any")),
+    default_link_strategy = field(LinkStrategy),
     # Linkable deps of this target.
     deps = field(list[Label], []),
     # Exported linkable deps of this target.
@@ -136,8 +137,9 @@ def create_linkable_node(
         ctx: AnalysisContext,
         default_soname: str | None,
         preferred_linkage: Linkage = Linkage("any"),
-        deps: list[Dependency] = [],
-        exported_deps: list[Dependency] = [],
+        default_link_strategy: LinkStrategy = LinkStrategy("shared"),
+        deps: list[Dependency | LinkableGraph] = [],
+        exported_deps: list[Dependency | LinkableGraph] = [],
         link_infos: dict[LibOutputStyle, LinkInfos] = {},
         shared_libs: dict[str, LinkedObject] = {},
         can_be_asset: bool = True,
@@ -153,6 +155,7 @@ def create_linkable_node(
     return LinkableNode(
         labels = ctx.attrs.labels,
         preferred_linkage = preferred_linkage,
+        default_link_strategy = default_link_strategy,
         deps = linkable_deps(deps),
         exported_deps = linkable_deps(exported_deps),
         link_infos = link_infos,
@@ -168,9 +171,12 @@ def create_linkable_graph_node(
         ctx: AnalysisContext,
         linkable_node: [LinkableNode, None] = None,
         roots: dict[Label, LinkableRootInfo] = {},
-        excluded: dict[Label, None] = {}) -> LinkableGraphNode:
+        excluded: dict[Label, None] = {},
+        label: Label | None = None) -> LinkableGraphNode:
+    if not label:
+        label = ctx.label
     return LinkableGraphNode(
-        label = ctx.label,
+        label = label,
         linkable = linkable_node,
         roots = roots,
         excluded = excluded,
@@ -193,7 +199,7 @@ def create_linkable_graph(
 
     deps_labels = {x.label: True for x in graph_deps}
     if node and node.linkable:
-        for l in [node.linkable.deps, node.linkable.exported_deps]:
+        for l in [node.linkable.deps, node.linkable.exported_deps]:  # buildifier: disable=confusing-name
             for d in l:
                 if not d in deps_labels:
                     fail("LinkableNode had {} in its deps, but that label is missing from the node's linkable graph children (`{}`)".format(d, ", ".join(deps_labels)))
@@ -205,8 +211,11 @@ def create_linkable_graph(
     }
     if node:
         kwargs["value"] = node
+        label = node.label
+    else:
+        label = ctx.label
     return LinkableGraph(
-        label = ctx.label,
+        label = label,
         nodes = ctx.actions.tset(LinkableGraphTSet, **kwargs),
     )
 
@@ -221,13 +230,16 @@ def get_linkable_graph_node_map_func(graph: LinkableGraph):
 
     return get_linkable_graph_node_map
 
-def linkable_deps(deps: list[Dependency]) -> list[Label]:
+def linkable_deps(deps: list[Dependency | LinkableGraph]) -> list[Label]:
     labels = []
 
     for dep in deps:
-        dep_info = linkable_graph(dep)
-        if dep_info != None:
-            labels.append(dep_info.label)
+        if eval_type(LinkableGraph.type).matches(dep):
+            labels.append(dep.label)
+        else:
+            dep_info = linkable_graph(dep)
+            if dep_info != None:
+                labels.append(dep_info.label)
 
     return labels
 

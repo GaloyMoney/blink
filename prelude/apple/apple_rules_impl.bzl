@@ -5,6 +5,7 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
+load("@prelude//apple:apple_buck2_compatibility.bzl", "BUCK2_COMPATIBILITY_ATTRIB_NAME", "BUCK2_COMPATIBILITY_ATTRIB_TYPE")
 load(
     "@prelude//apple:apple_genrule_deps.bzl",
     "APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_NAME",
@@ -12,10 +13,11 @@ load(
     "APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_NAME",
     "APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_TYPE",
 )
+load("@prelude//apple/swift:swift_incremental_support.bzl", "SwiftCompilationMode")
 load("@prelude//apple/swift:swift_toolchain.bzl", "swift_toolchain_impl")
 load("@prelude//apple/swift:swift_toolchain_types.bzl", "SwiftObjectFormat")
 load("@prelude//apple/user:cpu_split_transition.bzl", "cpu_split_transition")
-load("@prelude//cxx:headers.bzl", "CPrecompiledHeaderInfo")
+load("@prelude//cxx:headers.bzl", "CPrecompiledHeaderInfo", "HeaderMode")
 load("@prelude//cxx/user:link_group_map.bzl", "link_group_map_attr")
 load("@prelude//linking:execution_preference.bzl", "link_execution_preference_attr")
 load("@prelude//linking:link_info.bzl", "LinkOrdering")
@@ -32,8 +34,12 @@ load(":apple_resource.bzl", "apple_resource_impl")
 load(
     ":apple_rules_impl_utility.bzl",
     "APPLE_ARCHIVE_OBJECTS_LOCALLY_OVERRIDE_ATTR_NAME",
+    "APPLE_VALIDATION_DEPS_ATTR_NAME",
+    "APPLE_VALIDATION_DEPS_ATTR_TYPE",
     "apple_bundle_extra_attrs",
+    "apple_dsymutil_attrs",
     "apple_test_extra_attrs",
+    "apple_xcuitest_extra_attrs",
     "get_apple_bundle_toolchain_attr",
     "get_apple_toolchain_attr",
     "get_apple_xctoolchain_attr",
@@ -43,6 +49,7 @@ load(":apple_test.bzl", "apple_test_impl")
 load(":apple_toolchain.bzl", "apple_toolchain_impl")
 load(":apple_toolchain_types.bzl", "AppleToolsInfo")
 load(":apple_universal_executable.bzl", "apple_universal_executable_impl")
+load(":apple_xcuitest.bzl", "apple_xcuitest_impl")
 load(":prebuilt_apple_framework.bzl", "prebuilt_apple_framework_impl")
 load(":scene_kit_assets.bzl", "scene_kit_assets_impl")
 load(":xcode_postbuild_script.bzl", "xcode_postbuild_script_impl")
@@ -58,6 +65,7 @@ implemented_rules = {
     "apple_test": apple_test_impl,
     "apple_toolchain": apple_toolchain_impl,
     "apple_universal_executable": apple_universal_executable_impl,
+    "apple_xcuitest": apple_xcuitest_impl,
     "core_data_model": apple_core_data_impl,
     "prebuilt_apple_framework": prebuilt_apple_framework_impl,
     "scene_kit_assets": scene_kit_assets_impl,
@@ -75,11 +83,8 @@ ApplePackageExtension = enum(
     "zip",
 )
 
-extra_attributes = {
-    "apple_asset_catalog": {
-        "dirs": attrs.list(attrs.source(allow_directory = True), default = []),
-    },
-    "apple_binary": {
+def _apple_binary_extra_attrs():
+    attribs = {
         "binary_linker_flags": attrs.list(attrs.arg(), default = []),
         "enable_distributed_thinlto": attrs.bool(default = False),
         "extra_xcode_sources": attrs.list(attrs.source(allow_directory = True), default = []),
@@ -90,18 +95,24 @@ extra_attributes = {
         "prefer_stripped_objects": attrs.bool(default = False),
         "preferred_linkage": attrs.enum(Linkage, default = "any"),
         "stripped": attrs.option(attrs.bool(), default = None),
+        "swift_compilation_mode": attrs.enum(SwiftCompilationMode.values(), default = "wmo"),
         "_apple_toolchain": _APPLE_TOOLCHAIN_ATTR,
-        # FIXME: prelude// should be standalone (not refer to fbsource//)
-        "_apple_tools": attrs.exec_dep(default = "fbsource//xplat/buck2/platform/apple:apple-tools", providers = [AppleToolsInfo]),
+        "_apple_tools": attrs.exec_dep(default = "prelude//apple/tools:apple-tools", providers = [AppleToolsInfo]),
         "_apple_xctoolchain": get_apple_xctoolchain_attr(),
         "_apple_xctoolchain_bundle_id": get_apple_xctoolchain_bundle_id_attr(),
         "_stripped_default": attrs.bool(default = False),
         APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_NAME: APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_TYPE,
         APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_NAME: APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_TYPE,
-    },
-    "apple_bundle": apple_bundle_extra_attrs(),
-    "apple_library": {
+        BUCK2_COMPATIBILITY_ATTRIB_NAME: BUCK2_COMPATIBILITY_ATTRIB_TYPE,
+        APPLE_VALIDATION_DEPS_ATTR_NAME: APPLE_VALIDATION_DEPS_ATTR_TYPE,
+    }
+    attribs.update(apple_dsymutil_attrs())
+    return attribs
+
+def _apple_library_extra_attrs():
+    attribs = {
         "extra_xcode_sources": attrs.list(attrs.source(allow_directory = True), default = []),
+        "header_mode": attrs.option(attrs.enum(HeaderMode.values()), default = None),
         "link_execution_preference": link_execution_preference_attr(),
         "link_group_map": link_group_map_attr(),
         "link_ordering": attrs.option(attrs.enum(LinkOrdering.values()), default = None),
@@ -111,24 +122,51 @@ extra_attributes = {
         "stripped": attrs.option(attrs.bool(), default = None),
         "supports_header_symlink_subtarget": attrs.bool(default = False),
         "supports_shlib_interfaces": attrs.bool(default = True),
+        "swift_compilation_mode": attrs.enum(SwiftCompilationMode.values(), default = "wmo"),
         "use_archive": attrs.option(attrs.bool(), default = None),
         "_apple_toolchain": _APPLE_TOOLCHAIN_ATTR,
-        # FIXME: prelude// should be standalone (not refer to fbsource//)
-        "_apple_tools": attrs.exec_dep(default = "fbsource//xplat/buck2/platform/apple:apple-tools", providers = [AppleToolsInfo]),
+        "_apple_tools": attrs.exec_dep(default = "prelude//apple/tools:apple-tools", providers = [AppleToolsInfo]),
         "_apple_xctoolchain": get_apple_xctoolchain_attr(),
         "_apple_xctoolchain_bundle_id": get_apple_xctoolchain_bundle_id_attr(),
         "_stripped_default": attrs.bool(default = False),
         APPLE_ARCHIVE_OBJECTS_LOCALLY_OVERRIDE_ATTR_NAME: attrs.option(attrs.bool(), default = None),
+        APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_NAME: APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_TYPE,
+        APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_NAME: APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_TYPE,
+        BUCK2_COMPATIBILITY_ATTRIB_NAME: BUCK2_COMPATIBILITY_ATTRIB_TYPE,
+        APPLE_VALIDATION_DEPS_ATTR_NAME: APPLE_VALIDATION_DEPS_ATTR_TYPE,
+    }
+    attribs.update(apple_dsymutil_attrs())
+    return attribs
+
+def _apple_universal_executable_extra_attrs():
+    attribs = {
+        "executable": attrs.split_transition_dep(cfg = cpu_split_transition),
+        "executable_name": attrs.option(attrs.string(), default = None),
+        "labels": attrs.list(attrs.string()),
+        "split_arch_dsym": attrs.bool(default = False),
+        "universal": attrs.option(attrs.bool(), default = None),
+        "_apple_toolchain": _APPLE_TOOLCHAIN_ATTR,
+        "_apple_tools": attrs.exec_dep(default = "prelude//apple/tools:apple-tools", providers = [AppleToolsInfo]),
+    }
+    attribs.update(apple_dsymutil_attrs())
+    return attribs
+
+extra_attributes = {
+    "apple_asset_catalog": {
+        "dirs": attrs.list(attrs.source(allow_directory = True), default = []),
     },
+    "apple_binary": _apple_binary_extra_attrs(),
+    "apple_bundle": apple_bundle_extra_attrs(),
+    "apple_library": _apple_library_extra_attrs(),
     "apple_package": {
         "bundle": attrs.dep(providers = [AppleBundleInfo]),
         "ext": attrs.enum(ApplePackageExtension.values(), default = "ipa"),
         "packager": attrs.option(attrs.exec_dep(providers = [RunInfo]), default = None),
         "packager_args": attrs.list(attrs.arg(), default = []),
         "validator": attrs.option(attrs.exec_dep(providers = [RunInfo]), default = None),
+        "validator_args": attrs.list(attrs.arg(), default = []),
         "_apple_toolchain": get_apple_bundle_toolchain_attr(),
-        # FIXME: prelude// should be standalone (not refer to fbsource//)
-        "_apple_tools": attrs.exec_dep(default = "fbsource//xplat/buck2/platform/apple:apple-tools", providers = [AppleToolsInfo]),
+        "_apple_tools": attrs.exec_dep(default = "prelude//apple/tools:apple-tools", providers = [AppleToolsInfo]),
         "_ipa_compression_level": attrs.enum(IpaCompressionLevel.values()),
     },
     "apple_resource": {
@@ -136,6 +174,7 @@ extra_attributes = {
         "content_dirs": attrs.list(attrs.source(allow_directory = True), default = []),
         "dirs": attrs.list(attrs.source(allow_directory = True), default = []),
         "files": attrs.list(attrs.one_of(attrs.dep(), attrs.source()), default = []),
+        "skip_universal_resource_dedupe": attrs.bool(default = False),
     },
     "apple_test": apple_test_extra_attrs(),
     "apple_toolchain": {
@@ -182,14 +221,8 @@ extra_attributes = {
         #                   pass abs paths during development and using the currently selected Xcode.
         "_internal_sdk_path": attrs.option(attrs.string(), default = None),
     },
-    "apple_universal_executable": {
-        "executable": attrs.split_transition_dep(cfg = cpu_split_transition),
-        "labels": attrs.list(attrs.string()),
-        "split_arch_dsym": attrs.bool(default = False),
-        "universal": attrs.option(attrs.bool(), default = None),
-        "_apple_toolchain": _APPLE_TOOLCHAIN_ATTR,
-        "_apple_tools": attrs.exec_dep(default = "fbsource//xplat/buck2/platform/apple:apple-tools", providers = [AppleToolsInfo]),
-    },
+    "apple_universal_executable": _apple_universal_executable_extra_attrs(),
+    "apple_xcuitest": apple_xcuitest_extra_attrs(),
     "core_data_model": {
         "path": attrs.source(allow_directory = True),
     },

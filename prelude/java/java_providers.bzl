@@ -5,8 +5,6 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
-# @starlark-rust: allow_string_literals_in_type_expr
-
 load(
     "@prelude//:resources.bzl",
     "ResourceInfo",
@@ -15,14 +13,14 @@ load(
 load("@prelude//java:class_to_srcs.bzl", "JavaClassToSourceMapInfo")
 load("@prelude//java:dex.bzl", "DexLibraryInfo", "get_dex_produced_from_java_library")
 load("@prelude//java:dex_toolchain.bzl", "DexToolchainInfo")
-load("@prelude//java/utils:java_utils.bzl", "get_path_separator_for_exec_os")
+load("@prelude//java/utils:java_more_utils.bzl", "get_path_separator_for_exec_os")
 load("@prelude//linking:linkable_graph.bzl", "LinkableGraph", "create_linkable_graph")
 load(
     "@prelude//linking:shared_libraries.bzl",
     "SharedLibraryInfo",
     "merge_shared_libraries",
 )
-load("@prelude//utils:utils.bzl", "expect")
+load("@prelude//utils:expect.bzl", "expect")
 
 # JAVA PROVIDER DOCS
 #
@@ -129,6 +127,7 @@ JavaPackagingDep = record(
     label = Label,
     jar = [Artifact, None],
     dex = [DexLibraryInfo, None],
+    gwt_module = [Artifact, None],
     is_prebuilt_jar = bool,
     proguard_config = [Artifact, None],
 
@@ -286,7 +285,7 @@ def create_abi(actions: AnalysisActions, class_abi_generator: Dependency, librar
 def derive_compiling_deps(
         actions: AnalysisActions,
         library_output: [JavaClasspathEntry, None],
-        children: list[Dependency]) -> ["JavaCompilingDepsTSet", None]:
+        children: list[Dependency]) -> [JavaCompilingDepsTSet, None]:
     if children:
         filtered_children = filter(
             None,
@@ -311,7 +310,8 @@ def create_java_packaging_dep(
         is_prebuilt_jar: bool = False,
         has_srcs: bool = True,
         dex_weight_factor: int = 1,
-        proguard_config: [Artifact, None] = None) -> "JavaPackagingDep":
+        proguard_config: [Artifact, None] = None,
+        gwt_module: [Artifact, None] = None) -> JavaPackagingDep:
     dex_toolchain = getattr(ctx.attrs, "_dex_toolchain", None)
     if library_jar != None and has_srcs and dex_toolchain != None and ctx.attrs._dex_toolchain[DexToolchainInfo].d8_command != None:
         dex = get_dex_produced_from_java_library(
@@ -331,15 +331,16 @@ def create_java_packaging_dep(
         label = ctx.label,
         jar = library_jar,
         dex = dex,
+        gwt_module = gwt_module,
         is_prebuilt_jar = is_prebuilt_jar,
         proguard_config = proguard_config or getattr(ctx.attrs, "proguard_config", None),
         output_for_classpath_macro = output_for_classpath_macro or library_jar,
     )
 
-def get_all_java_packaging_deps(ctx: AnalysisContext, deps: list[Dependency]) -> list["JavaPackagingDep"]:
+def get_all_java_packaging_deps(ctx: AnalysisContext, deps: list[Dependency]) -> list[JavaPackagingDep]:
     return get_all_java_packaging_deps_from_packaging_infos(ctx, filter(None, [x.get(JavaPackagingInfo) for x in deps]))
 
-def get_all_java_packaging_deps_from_packaging_infos(ctx: AnalysisContext, infos: list[JavaPackagingInfo]) -> list["JavaPackagingDep"]:
+def get_all_java_packaging_deps_from_packaging_infos(ctx: AnalysisContext, infos: list[JavaPackagingInfo]) -> list[JavaPackagingDep]:
     children = filter(None, [info.packaging_deps for info in infos])
     if not children:
         return []
@@ -395,7 +396,8 @@ def _create_non_template_providers(
         desugar_classpath: list[Artifact] = [],
         is_prebuilt_jar: bool = False,
         has_srcs: bool = True,
-        proguard_config: [Artifact, None] = None) -> (JavaLibraryInfo, JavaPackagingInfo, SharedLibraryInfo, ResourceInfo, LinkableGraph):
+        proguard_config: [Artifact, None] = None,
+        gwt_module: [Artifact, None] = None) -> (JavaLibraryInfo, JavaPackagingInfo, SharedLibraryInfo, ResourceInfo, LinkableGraph):
     """Creates java library providers of type `JavaLibraryInfo` and `JavaPackagingInfo`.
 
     Args:
@@ -418,6 +420,7 @@ def _create_non_template_providers(
         is_prebuilt_jar,
         has_srcs,
         proguard_config = proguard_config,
+        gwt_module = gwt_module,
     )
 
     java_packaging_info = get_java_packaging_info(
@@ -458,7 +461,8 @@ def create_java_library_providers(
         has_srcs: bool = True,
         generated_sources: list[Artifact] = [],
         annotation_jars_dir: [Artifact, None] = None,
-        proguard_config: [Artifact, None] = None) -> (JavaLibraryInfo, JavaPackagingInfo, SharedLibraryInfo, ResourceInfo, LinkableGraph, TemplatePlaceholderInfo, JavaLibraryIntellijInfo):
+        proguard_config: [Artifact, None] = None,
+        gwt_module: [Artifact, None] = None) -> (JavaLibraryInfo, JavaPackagingInfo, SharedLibraryInfo, ResourceInfo, LinkableGraph, TemplatePlaceholderInfo, JavaLibraryIntellijInfo):
     first_order_classpath_deps = filter(None, [x.get(JavaLibraryInfo) for x in declared_deps + exported_deps + runtime_deps])
     first_order_classpath_libs = [dep.output_for_classpath_macro for dep in first_order_classpath_deps]
 
@@ -478,6 +482,7 @@ def create_java_library_providers(
         is_prebuilt_jar = is_prebuilt_jar,
         has_srcs = has_srcs,
         proguard_config = proguard_config,
+        gwt_module = gwt_module,
     )
 
     first_order_libs = first_order_classpath_libs + [library_info.library_output.full_library] if library_info.library_output else first_order_classpath_libs

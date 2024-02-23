@@ -6,6 +6,7 @@
 # of this source tree.
 
 load("@prelude//:paths.bzl", "paths")
+load("@prelude//apple:apple_buck2_compatibility.bzl", "apple_check_buck2_compatibility")
 load("@prelude//apple:apple_stripping.bzl", "apple_strip_args")
 # @oss-disable: load("@prelude//apple/meta_only:linker_outputs.bzl", "add_extra_linker_outputs") 
 load(
@@ -55,22 +56,24 @@ load(
     "UnstrippedLinkOutputInfo",
 )
 load("@prelude//utils:arglike.bzl", "ArgLike")
-load("@prelude//utils:utils.bzl", "expect")
+load("@prelude//utils:expect.bzl", "expect")
 load(":apple_bundle_types.bzl", "AppleBundleLinkerMapInfo", "AppleMinDeploymentVersionInfo")
 load(":apple_bundle_utility.bzl", "get_bundle_infos_from_graph", "merge_bundle_linker_maps_info")
 load(":apple_code_signing_types.bzl", "AppleEntitlementsInfo")
 load(":apple_dsym.bzl", "DSYM_SUBTARGET", "get_apple_dsym")
+load(":apple_entitlements.bzl", "entitlements_link_flags")
 load(":apple_frameworks.bzl", "get_framework_search_path_flags")
 load(":apple_genrule_deps.bzl", "get_apple_build_genrule_deps_attr_value", "get_apple_genrule_deps_outputs")
-load(":apple_sdk_metadata.bzl", "IPhoneSimulatorSdkMetadata", "MacOSXCatalystSdkMetadata")
 load(":apple_target_sdk_version.bzl", "get_min_deployment_version_for_node", "get_min_deployment_version_target_linker_flags", "get_min_deployment_version_target_preprocessor_flags")
-load(":apple_toolchain_types.bzl", "AppleToolchainInfo")
 load(":apple_utility.bzl", "get_apple_cxx_headers_layout", "get_apple_stripped_attr_value_with_default_fallback")
+load(":apple_validation_deps.bzl", "get_apple_validation_deps_outputs")
 load(":debug.bzl", "AppleDebuggableInfo")
 load(":resource_groups.bzl", "create_resource_graph")
 load(":xcode.bzl", "apple_populate_xcode_attributes")
 
 def apple_binary_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
+    apple_check_buck2_compatibility(ctx)
+
     def get_apple_binary_providers(deps_providers) -> list[Provider]:
         # FIXME: Ideally we'd like to remove the support of "bridging header",
         # cause it affects build time and in general considered a bad practise.
@@ -90,13 +93,13 @@ def apple_binary_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
             framework_search_path_flags,
             objc_bridging_header_flags,
         )
-        swift_object_files = [swift_compile.object_file] if swift_compile else []
+        swift_object_files = swift_compile.object_files if swift_compile else []
 
         swift_preprocessor = [swift_compile.pre] if swift_compile else []
 
         extra_linker_output_flags, extra_linker_output_providers = [], {} # @oss-enable
         # @oss-disable: extra_linker_output_flags, extra_linker_output_providers = add_extra_linker_outputs(ctx) 
-        extra_link_flags = get_min_deployment_version_target_linker_flags(ctx) + _entitlements_link_flags(ctx) + extra_linker_output_flags
+        extra_link_flags = get_min_deployment_version_target_linker_flags(ctx) + entitlements_link_flags(ctx) + extra_linker_output_flags
 
         framework_search_path_pre = CPreprocessor(
             relative_args = CPreprocessorArgs(args = [framework_search_path_flags]),
@@ -109,16 +112,16 @@ def apple_binary_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
             swift_compile,
         )
 
-        genrule_deps_outputs = []
+        validation_deps_outputs = get_apple_validation_deps_outputs(ctx)
         if get_apple_build_genrule_deps_attr_value(ctx):
-            genrule_deps_outputs = get_apple_genrule_deps_outputs(cxx_attr_deps(ctx))
+            validation_deps_outputs += get_apple_genrule_deps_outputs(cxx_attr_deps(ctx))
 
         stripped = get_apple_stripped_attr_value_with_default_fallback(ctx)
         constructor_params = CxxRuleConstructorParams(
             rule_type = "apple_binary",
             headers_layout = get_apple_cxx_headers_layout(ctx),
             extra_link_flags = extra_link_flags,
-            extra_hidden = genrule_deps_outputs,
+            extra_hidden = validation_deps_outputs,
             srcs = cxx_srcs,
             additional = CxxRuleAdditionalParams(
                 srcs = swift_srcs,
@@ -203,27 +206,6 @@ def apple_binary_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
         return get_swift_anonymous_targets(ctx, get_apple_binary_providers)
     else:
         return get_apple_binary_providers([])
-
-_SDK_NAMES_NEED_ENTITLEMENTS_IN_BINARY = [
-    IPhoneSimulatorSdkMetadata.name,
-    MacOSXCatalystSdkMetadata.name,
-]
-
-def _needs_entitlements_in_binary(ctx: AnalysisContext) -> bool:
-    apple_toolchain_info = ctx.attrs._apple_toolchain[AppleToolchainInfo]
-    return apple_toolchain_info.sdk_name in _SDK_NAMES_NEED_ENTITLEMENTS_IN_BINARY
-
-def _entitlements_link_flags(ctx: AnalysisContext) -> list[typing.Any]:
-    return [
-        "-Xlinker",
-        "-sectcreate",
-        "-Xlinker",
-        "__TEXT",
-        "-Xlinker",
-        "__entitlements",
-        "-Xlinker",
-        ctx.attrs.entitlements_file,
-    ] if (ctx.attrs.entitlements_file and _needs_entitlements_in_binary(ctx)) else []
 
 def _filter_swift_srcs(ctx: AnalysisContext) -> (list[CxxSrcWithFlags], list[CxxSrcWithFlags]):
     cxx_srcs = []

@@ -8,7 +8,7 @@
 load("@prelude//android:android_binary.bzl", "get_binary_info")
 load("@prelude//android:android_providers.bzl", "AndroidAabInfo", "AndroidBinaryNativeLibsInfo", "AndroidBinaryResourcesInfo", "DexFilesInfo")
 load("@prelude//android:android_toolchain.bzl", "AndroidToolchainInfo")
-load("@prelude//java/utils:java_utils.bzl", "get_path_separator_for_exec_os")
+load("@prelude//java/utils:java_more_utils.bzl", "get_path_separator_for_exec_os")
 
 def android_bundle_impl(ctx: AnalysisContext) -> list[Provider]:
     android_binary_info = get_binary_info(ctx, use_proto_format = True)
@@ -24,8 +24,8 @@ def android_bundle_impl(ctx: AnalysisContext) -> list[Provider]:
 
     java_packaging_deps = android_binary_info.java_packaging_deps
     return [
-        DefaultInfo(default_output = output_bundle, sub_targets = android_binary_info.sub_targets),
-        AndroidAabInfo(aab = output_bundle, manifest = android_binary_info.resources_info.manifest),
+        DefaultInfo(default_output = output_bundle, other_outputs = android_binary_info.materialized_artifacts, sub_targets = android_binary_info.sub_targets),
+        AndroidAabInfo(aab = output_bundle, manifest = android_binary_info.resources_info.manifest, materialized_artifacts = android_binary_info.materialized_artifacts),
         TemplatePlaceholderInfo(
             keyed_variables = {
                 "classpath": cmd_args([dep.jar for dep in java_packaging_deps if dep.jar], delimiter = get_path_separator_for_exec_os(ctx)),

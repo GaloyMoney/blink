@@ -6,7 +6,8 @@
 # of this source tree.
 
 load("@prelude//os_lookup:defs.bzl", "OsLookup")
-load("@prelude//utils:utils.bzl", "expect", "value_or")
+load("@prelude//utils:expect.bzl", "expect")
+load("@prelude//utils:utils.bzl", "value_or")
 load(":exec_deps.bzl", "HttpArchiveExecDeps")
 
 # Flags to apply to decompress the various types of archives.
@@ -75,8 +76,9 @@ def _unarchive_cmd(
             # unzip and zip are not cli commands available on windows. however, the
             # bsdtar that ships with windows has builtin support for zip
             return cmd_args(
-                "tar",
+                "%WINDIR%\\System32\\tar.exe",
                 "-x",
+                "-P",
                 "-f",
                 archive,
                 _tar_strip_prefix_flags(strip_prefix),
@@ -85,9 +87,15 @@ def _unarchive_cmd(
         # Else hope for the best
 
     if ext_type in _TAR_FLAGS:
+        os_flags = [
+            # buck-out is a symlink with EdenFS, and tar on Windows doesn't like it,
+            # and needs -P flag to allow operations with symlinks
+            "-P",
+        ] if exec_is_windows else []
         return cmd_args(
             "tar",
             _TAR_FLAGS[ext_type],
+            os_flags,
             "-x",
             "-f",
             archive,

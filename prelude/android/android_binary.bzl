@@ -25,7 +25,7 @@ load("@prelude//android:proguard.bzl", "get_proguard_output")
 load("@prelude//android:util.bzl", "create_enhancement_context")
 load("@prelude//android:voltron.bzl", "get_target_to_module_mapping")
 load("@prelude//java:java_providers.bzl", "JavaPackagingInfo", "create_java_packaging_dep", "get_all_java_packaging_deps", "get_all_java_packaging_deps_from_packaging_infos")
-load("@prelude//utils:utils.bzl", "expect")
+load("@prelude//utils:expect.bzl", "expect")
 
 AndroidBinaryInfo = record(
     sub_targets = dict,
@@ -35,10 +35,12 @@ AndroidBinaryInfo = record(
     dex_files_info = DexFilesInfo,
     native_library_info = "AndroidBinaryNativeLibsInfo",
     resources_info = "AndroidBinaryResourcesInfo",
+    materialized_artifacts = list[Artifact],
 )
 
 def get_binary_info(ctx: AnalysisContext, use_proto_format: bool) -> AndroidBinaryInfo:
     sub_targets = {}
+    materialized_artifacts = []
 
     _verify_params(ctx)
 
@@ -83,14 +85,29 @@ def get_binary_info(ctx: AnalysisContext, use_proto_format: bool) -> AndroidBina
         aapt2_preferred_density = ctx.attrs.aapt2_preferred_density,
     )
     android_toolchain = ctx.attrs._android_toolchain[AndroidToolchainInfo]
-    java_packaging_deps += [
+    compiled_r_dot_java_deps = [
         create_java_packaging_dep(
             ctx,
-            r_dot_java.library_output.full_library,
+            r_dot_java.library_info.library_output.full_library,
             dex_weight_factor = android_toolchain.r_dot_java_weight_factor,
         )
-        for r_dot_java in resources_info.r_dot_javas
+        for r_dot_java in resources_info.r_dot_java_infos
     ]
+    java_packaging_deps += compiled_r_dot_java_deps
+    sub_targets["compiled_r_dot_java"] = [
+        DefaultInfo(
+            default_outputs = [
+                compiled_r_dot_java_dep.jar
+                for compiled_r_dot_java_dep in compiled_r_dot_java_deps
+            ],
+        ),
+    ]
+    for r_dot_java_info in resources_info.r_dot_java_infos:
+        sub_targets[r_dot_java_info.identifier + "_src"] = [
+            DefaultInfo(
+                default_output = r_dot_java_info.source_zipped,
+            ),
+        ]
 
     dex_java_packaging_deps = [packaging_dep for packaging_dep in java_packaging_deps if packaging_dep.dex and packaging_dep.dex.dex.owner.raw_target() not in no_dx_target_labels]
     if should_pre_dex:
@@ -108,7 +125,9 @@ def get_binary_info(ctx: AnalysisContext, use_proto_format: bool) -> AndroidBina
     else:
         jars_to_owners = {packaging_dep.jar: packaging_dep.jar.owner.raw_target() for packaging_dep in dex_java_packaging_deps}
         if ctx.attrs.preprocess_java_classes_bash:
-            jars_to_owners = get_preprocessed_java_classes(ctx, jars_to_owners)
+            jars_to_owners, materialized_artifacts_dir = get_preprocessed_java_classes(ctx, jars_to_owners)
+            if materialized_artifacts_dir:
+                materialized_artifacts.append(materialized_artifacts_dir)
         if has_proguard_config:
             proguard_output = get_proguard_output(
                 ctx,
@@ -169,6 +188,7 @@ def get_binary_info(ctx: AnalysisContext, use_proto_format: bool) -> AndroidBina
         dex_files_info = dex_files_info,
         native_library_info = native_library_info,
         resources_info = resources_info,
+        materialized_artifacts = materialized_artifacts,
     )
 
 def get_build_config_java_libraries(

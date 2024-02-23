@@ -40,6 +40,12 @@ ExopackageResourcesInfo = record(
     res_hash = Artifact,
 )
 
+RDotJavaInfo = record(
+    identifier = str,
+    library_info = JavaLibraryInfo,
+    source_zipped = Artifact,
+)
+
 AndroidBinaryNativeLibsInfo = record(
     apk_under_test_prebuilt_native_library_dirs = list[PrebuiltNativeLibraryDir],
     # Indicates which shared lib producing targets are included in the binary. Used by instrumentation tests
@@ -66,7 +72,7 @@ AndroidBinaryResourcesInfo = record(
     # proguard config needed to retain used resources
     proguard_config_file = Artifact,
     # R.java jars containing all the linked resources
-    r_dot_javas = list[JavaLibraryInfo],
+    r_dot_java_infos = list[RDotJavaInfo],
     # directory containing filtered string resources files
     string_source_map = [Artifact, None],
     # directory containing filtered string resources files for Voltron language packs
@@ -104,6 +110,7 @@ AndroidApkInfo = provider(
     fields = {
         "apk": provider_field(typing.Any, default = None),
         "manifest": provider_field(typing.Any, default = None),
+        "materialized_artifacts": provider_field(typing.Any, default = None),
     },
 )
 
@@ -111,6 +118,7 @@ AndroidAabInfo = provider(
     fields = {
         "aab": provider_field(typing.Any, default = None),
         "manifest": provider_field(typing.Any, default = None),
+        "materialized_artifacts": provider_field(typing.Any, default = None),
     },
 )
 
@@ -152,6 +160,7 @@ ResourceInfoTSet = transitive_set()
 DepsInfo = record(
     name = TargetLabel,
     deps = list[TargetLabel],
+    for_primary_apk = bool,
 )
 
 AndroidPackageableInfo = provider(
@@ -177,6 +186,8 @@ AndroidResourceInfo = provider(
         "raw_target": provider_field(typing.Any, default = None),  # TargetLabel
         # output of running `aapt2_compile` on the resources, if resources are present
         "aapt2_compile_output": provider_field(typing.Any, default = None),  # Artifact | None
+        # locales that should always be included in the APK for this resource
+        "allowlisted_locales": provider_field(typing.Any, default = []),  # List
         #  if False, then the "res" are not affected by the strings-as-assets resource filter
         "allow_strings_as_assets_resource_filtering": provider_field(typing.Any, default = None),  # bool
         # assets defined by this rule. May be empty
@@ -234,7 +245,8 @@ def merge_android_packageable_info(
         build_config_info: [AndroidBuildConfigInfo, None] = None,
         manifest: [Artifact, None] = None,
         prebuilt_native_library_dir: [PrebuiltNativeLibraryDir, None] = None,
-        resource_info: [AndroidResourceInfo, None] = None) -> AndroidPackageableInfo:
+        resource_info: [AndroidResourceInfo, None] = None,
+        for_primary_apk: bool = False) -> AndroidPackageableInfo:
     android_packageable_deps = filter(None, [x.get(AndroidPackageableInfo) for x in deps])
 
     build_config_infos = _get_transitive_set(
@@ -250,6 +262,7 @@ def merge_android_packageable_info(
         DepsInfo(
             name = label.raw_target(),
             deps = [dep.target_label for dep in android_packageable_deps],
+            for_primary_apk = for_primary_apk,
         ),
         AndroidDepsTSet,
     )

@@ -7,47 +7,7 @@
 
 # General utilities shared between multiple rules.
 
-def is_any(predicate: typing.Callable, iterable: list[typing.Any]) -> bool:
-    """
-    This expression lazily iterates the container with 0 new allocations.
-    In the event that the iterable is empty, it will return False.
-
-    For scenarios like this:
-
-    _ = any([i % 2 == 0 for i in range(100000)])
-
-    The list comprehension would lead to a new list of 100000 booleans,
-    and would only end-up checking 1. Replacing it with:
-
-    _ = is_any(lambda i: i % 2 == 0, range(100000))
-
-    would lead to 0 new allocations.
-    """
-    for i in iterable:
-        if predicate(i):
-            return True
-    return False
-
-def is_all(predicate: typing.Callable, iterable: list[typing.Any]) -> bool:
-    """
-    This expression lazily iterates the container with 0 new allocations.
-    In the event that the iterable is empty, it will return False.
-
-    For scenarios like this:
-
-    _ = all([i % 2 == 0 for i in range(100000)])
-
-    The list comprehension would lead to a list of 100000 booleans.
-    Replacing it with:
-
-    _ = is_all(lambda i: i % 2 == 0, range(100000))
-
-    would lead to 0 new allocations.
-    """
-    for i in iterable:
-        if not predicate(i):
-            return False
-    return True
+load("@prelude//utils:expect.bzl", "expect")
 
 def value_or(x: [None, typing.Any], default: typing.Any) -> typing.Any:
     return default if x == None else x
@@ -60,21 +20,7 @@ def flatten(xss: list[list[typing.Any]]) -> list[typing.Any]:
 def flatten_dict(xss: list[dict[typing.Any, typing.Any]]) -> dict[typing.Any, typing.Any]:
     return {k: v for xs in xss for k, v in xs.items()}
 
-# Fail if given condition is not met.
-def expect(x: bool, msg: str = "condition not expected", *fmt):
-    if not x:
-        fmt_msg = msg.format(*fmt)
-        fail(fmt_msg)
-
-def expect_non_none(val, msg: str = "unexpected none", *fmt_args, **fmt_kwargs):
-    """
-    Require the given value not be `None`.
-    """
-    if val == None:
-        fail(msg.format(*fmt_args, **fmt_kwargs))
-    return val
-
-def from_named_set(srcs: [dict[str, [Artifact, Dependency]], list[[Artifact, Dependency]]]) -> dict[str, [Artifact, Dependency]]:
+def from_named_set(srcs: [dict[str, Artifact | Dependency], list[Artifact | Dependency]]) -> dict[str, Artifact | Dependency]:
     """
     Normalize parameters of optionally named sources to a dictionary mapping
     names to sources, deriving the name from the short path when it's not

@@ -9,7 +9,7 @@ load("@prelude//android:android_toolchain.bzl", "AndroidPlatformInfo", "AndroidT
 load("@prelude//csharp:toolchain.bzl", "CSharpToolchainInfo")
 load("@prelude//cxx:cxx_toolchain_types.bzl", "CxxPlatformInfo", "CxxToolchainInfo")
 load("@prelude//go:toolchain.bzl", "GoToolchainInfo")
-load("@prelude//haskell:haskell.bzl", "HaskellPlatformInfo", "HaskellToolchainInfo")
+load("@prelude//haskell:toolchain.bzl", "HaskellPlatformInfo", "HaskellToolchainInfo")
 load("@prelude//java:dex_toolchain.bzl", "DexToolchainInfo")
 load(
     "@prelude//java:java_toolchain.bzl",
@@ -25,10 +25,15 @@ load(
 load("@prelude//python:toolchain.bzl", "PythonPlatformInfo", "PythonToolchainInfo")
 load("@prelude//python_bootstrap:python_bootstrap.bzl", "PythonBootstrapToolchainInfo")
 load("@prelude//rust:rust_toolchain.bzl", "RustToolchainInfo")
+load("@prelude//tests:remote_test_execution_toolchain.bzl", "RemoteTestExecutionToolchainInfo")
 load("@prelude//zip_file:zip_file_toolchain.bzl", "ZipFileToolchainInfo")
 
-def _toolchain(lang: str, providers: list[typing.Any]) -> Attr:
-    return attrs.default_only(attrs.toolchain_dep(default = "toolchains//:" + lang, providers = providers))
+def _toolchain(lang: str, providers: list[typing.Any], default_only = True) -> Attr:
+    toolchain = attrs.toolchain_dep(default = "toolchains//:" + lang, providers = providers)
+    if default_only:
+        return attrs.default_only(toolchain)
+    else:
+        return toolchain
 
 def _toolchain_with_override(lang: str, providers: list[typing.Any]) -> Attr:
     return attrs.toolchain_dep(default = "toolchains//:" + lang, providers = providers)
@@ -77,10 +82,13 @@ def _python_bootstrap_toolchain():
     return _toolchain("python_bootstrap", [PythonBootstrapToolchainInfo])
 
 def _rust_toolchain():
-    return _toolchain("rust", [RustToolchainInfo])
+    return _toolchain("rust", [RustToolchainInfo], default_only = False)
 
 def _zip_file_toolchain():
     return _toolchain("zip_file", [ZipFileToolchainInfo])
+
+def _remote_test_execution_toolchain():
+    return _toolchain("remote_test_execution", [RemoteTestExecutionToolchainInfo])
 
 toolchains_common = struct(
     android = _android_toolchain,
@@ -99,4 +107,5 @@ toolchains_common = struct(
     python_bootstrap = _python_bootstrap_toolchain,
     rust = _rust_toolchain,
     zip_file = _zip_file_toolchain,
+    remote_test_execution = _remote_test_execution_toolchain,
 )

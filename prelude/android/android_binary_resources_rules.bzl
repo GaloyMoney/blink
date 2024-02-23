@@ -17,9 +17,17 @@ load(
     "@prelude//java:java_providers.bzl",
     "JavaPackagingDep",  # @unused Used as type
 )
+load("@prelude//utils:expect.bzl", "expect")
 load("@prelude//utils:set.bzl", "set_type")  # @unused Used as a type
-load("@prelude//utils:utils.bzl", "expect")
 load("@prelude//decls/android_rules.bzl", "RType")
+
+_FilteredResourcesOutput = record(
+    resource_infos = list[AndroidResourceInfo],
+    voltron_res = list[Artifact],
+    override_symbols = [Artifact, None],
+    string_files_list = [Artifact, None],
+    string_files_res_dirs = list[Artifact],
+)
 
 def get_android_binary_resources_info(
         ctx: AnalysisContext,
@@ -41,11 +49,12 @@ def get_android_binary_resources_info(
         for resource_info in list(android_packageable_info.resource_infos.traverse() if android_packageable_info.resource_infos else [])
         if not (resource_infos_to_exclude and resource_infos_to_exclude.contains(resource_info.raw_target))
     ]
-    resource_infos, override_symbols, string_files_list, string_files_res_dirs = _maybe_filter_resources(
+    filtered_resources_output = _maybe_filter_resources(
         ctx,
         unfiltered_resource_infos,
         android_toolchain,
     )
+    resource_infos = filtered_resources_output.resource_infos
 
     android_manifest = get_manifest(ctx, android_packageable_info, manifest_entries)
 
@@ -73,7 +82,6 @@ def get_android_binary_resources_info(
 
     module_manifests = _get_module_manifests(
         ctx,
-        android_packageable_info,
         manifest_entries,
         apk_module_graph_file,
         use_proto_format,
@@ -127,9 +135,9 @@ def get_android_binary_resources_info(
         exopackage_info = None
         r_dot_txt = aapt2_link_info.r_dot_txt
 
-    override_symbols_paths = [override_symbols] if override_symbols else []
+    override_symbols_paths = [filtered_resources_output.override_symbols] if filtered_resources_output.override_symbols else []
     resources = [resource for resource in resource_infos if resource.res != None]
-    r_dot_javas = [] if len(resources) == 0 else generate_r_dot_javas(
+    r_dot_java_infos = generate_r_dot_javas(
         ctx,
         ctx.attrs._android_toolchain[AndroidToolchainInfo].merge_android_resources[RunInfo],
         resources,
@@ -149,21 +157,21 @@ def get_android_binary_resources_info(
     string_source_map = _maybe_generate_string_source_map(
         ctx.actions,
         getattr(ctx.attrs, "build_string_source_map", False),
-        resources,
+        [resource.res for resource in resources if resource.res != None],
         android_toolchain,
     )
     voltron_string_source_map = _maybe_generate_string_source_map(
         ctx.actions,
         getattr(ctx.attrs, "is_voltron_language_pack_enabled", False),
-        resources,
+        filtered_resources_output.voltron_res,
         android_toolchain,
         is_voltron_string_source_map = True,
     )
 
     packaged_string_assets = _maybe_package_strings_as_assets(
         ctx,
-        string_files_list,
-        string_files_res_dirs,
+        filtered_resources_output.string_files_list,
+        filtered_resources_output.string_files_res_dirs,
         r_dot_txt,
         android_toolchain,
     )
@@ -175,7 +183,7 @@ def get_android_binary_resources_info(
         packaged_string_assets = packaged_string_assets,
         primary_resources_apk = primary_resources_apk,
         proguard_config_file = aapt2_link_info.proguard_config_file,
-        r_dot_javas = r_dot_javas,
+        r_dot_java_infos = r_dot_java_infos,
         string_source_map = string_source_map,
         voltron_string_source_map = voltron_string_source_map,
         jar_files_that_may_contain_resources = prebuilt_jars,
@@ -185,7 +193,7 @@ def get_android_binary_resources_info(
 def _maybe_filter_resources(
         ctx: AnalysisContext,
         resources: list[AndroidResourceInfo],
-        android_toolchain: AndroidToolchainInfo) -> (list[AndroidResourceInfo], [Artifact, None], [Artifact, None], list[Artifact]):
+        android_toolchain: AndroidToolchainInfo) -> _FilteredResourcesOutput:
     resources_filter_strings = getattr(ctx.attrs, "resource_filter", [])
     resources_filter = _get_resources_filter(resources_filter_strings)
     resource_compression_mode = getattr(ctx.attrs, "resource_compression", "disabled")
@@ -203,10 +211,16 @@ def _maybe_filter_resources(
     )
 
     if not needs_resource_filtering:
-        return resources, None, None, []
+        return _FilteredResourcesOutput(
+            resource_infos = resources,
+            voltron_res = [resource.res for resource in resources if resource.res != None],
+            override_symbols = None,
+            string_files_list = None,
+            string_files_res_dirs = [],
+        )
 
-    res_info_to_out_res_dir = {}
-    voltron_res_info_to_out_res_dir = {}
+    res_to_out_res_dir = {}
+    voltron_res_to_out_res_dir = {}
     res_infos_with_no_res = []
     skip_crunch_pngs = getattr(ctx.attrs, "skip_crunch_pngs", None) or False
     is_voltron_language_pack_enabled = getattr(ctx.attrs, "is_voltron_language_pack_enabled", False)
@@ -215,36 +229,26 @@ def _maybe_filter_resources(
             res_infos_with_no_res.append(resource)
         else:
             filtered_res = ctx.actions.declare_output("filtered_res_{}".format(i), dir = True)
-            res_info_to_out_res_dir[resource] = filtered_res
+            res_to_out_res_dir[resource.res] = filtered_res
 
             if is_voltron_language_pack_enabled:
                 filtered_res_for_voltron = ctx.actions.declare_output("filtered_res_for_voltron_{}".format(i), dir = True)
-                voltron_res_info_to_out_res_dir[resource] = filtered_res_for_voltron
+                voltron_res_to_out_res_dir[resource.res] = filtered_res_for_voltron
 
     filter_resources_cmd = cmd_args(android_toolchain.filter_resources[RunInfo])
-    in_res_dir_to_out_res_dir_dict = {
-        in_res.res: out_res
-        for in_res, out_res in res_info_to_out_res_dir.items()
-    }
-    in_res_dir_to_out_res_dir_map = ctx.actions.write_json("in_res_dir_to_out_res_dir_map", {"res_dir_map": in_res_dir_to_out_res_dir_dict})
-    in_res_dirs = [in_res.res for in_res in res_info_to_out_res_dir.keys()]
+    in_res_dirs = res_to_out_res_dir.keys()
     filter_resources_cmd.hidden(in_res_dirs)
-    filter_resources_cmd.hidden([out_res.as_output() for out_res in res_info_to_out_res_dir.values()])
+    filter_resources_cmd.hidden([out_res.as_output() for out_res in res_to_out_res_dir.values()])
     filter_resources_cmd.add([
         "--in-res-dir-to-out-res-dir-map",
-        in_res_dir_to_out_res_dir_map,
+        ctx.actions.write_json("in_res_dir_to_out_res_dir_map", {"res_dir_map": res_to_out_res_dir}),
     ])
 
     if is_voltron_language_pack_enabled:
-        voltron_in_res_dir_to_out_res_dir_dict = {
-            in_res.res: out_res
-            for in_res, out_res in voltron_res_info_to_out_res_dir.items()
-        }
-        voltron_in_res_dir_to_out_res_dir_map = ctx.actions.write_json("voltron_in_res_dir_to_out_res_dir_map", {"res_dir_map": voltron_in_res_dir_to_out_res_dir_dict})
-        filter_resources_cmd.hidden([out_res.as_output() for out_res in voltron_res_info_to_out_res_dir.values()])
+        filter_resources_cmd.hidden([out_res.as_output() for out_res in voltron_res_to_out_res_dir.values()])
         filter_resources_cmd.add([
             "--voltron-in-res-dir-to-out-res-dir-map",
-            voltron_in_res_dir_to_out_res_dir_map,
+            ctx.actions.write_json("voltron_in_res_dir_to_out_res_dir_map", {"res_dir_map": voltron_res_to_out_res_dir}),
         ])
 
     if resources_filter:
@@ -278,6 +282,12 @@ def _maybe_filter_resources(
                 ctx.actions.write("not_filtered_string_dirs", not_filtered_string_dirs),
             ])
 
+        allowlisted_locales = {resource.res: resource.allowlisted_locales for resource in resources if resource.allowlisted_locales}
+        filter_resources_cmd.add([
+            "--allowlisted-locales",
+            ctx.actions.write_json("allowlisted_locales", allowlisted_locales),
+        ])
+
     if needs_resource_filtering_for_locales:
         filter_resources_cmd.add([
             "--locales",
@@ -305,7 +315,7 @@ def _maybe_filter_resources(
         if resource.res == None:
             continue
 
-        filtered_res = res_info_to_out_res_dir[resource]
+        filtered_res = res_to_out_res_dir[resource.res]
         filtered_aapt2_compile_output = aapt2_compile(
             ctx,
             filtered_res,
@@ -324,11 +334,12 @@ def _maybe_filter_resources(
         )
         filtered_resource_infos.append(filtered_resource)
 
-    return (
-        res_infos_with_no_res + filtered_resource_infos,
-        override_symbols_artifact,
-        all_strings_files_list,
-        all_strings_files_res_dirs,
+    return _FilteredResourcesOutput(
+        resource_infos = res_infos_with_no_res + filtered_resource_infos,
+        voltron_res = voltron_res_to_out_res_dir.values(),
+        override_symbols = override_symbols_artifact,
+        string_files_list = all_strings_files_list,
+        string_files_res_dirs = all_strings_files_res_dirs,
     )
 
 ResourcesFilter = record(
@@ -350,14 +361,13 @@ def _get_resources_filter(resources_filter_strings: list[str]) -> [ResourcesFilt
 def _maybe_generate_string_source_map(
         actions: AnalysisActions,
         should_build_source_string_map: bool,
-        resource_infos: list[AndroidResourceInfo],
+        res_dirs: list[Artifact],
         android_toolchain: AndroidToolchainInfo,
         is_voltron_string_source_map: bool = False) -> [Artifact, None]:
-    if not should_build_source_string_map or len(resource_infos) == 0:
+    if not should_build_source_string_map or len(res_dirs) == 0:
         return None
 
     prefix = "voltron_" if is_voltron_string_source_map else ""
-    res_dirs = [resource_info.res for resource_info in resource_infos]
     output = actions.declare_output("{}string_source_map".format(prefix), dir = True)
     res_dirs_file = actions.write("resource_dirs_for_{}string_source_map".format(prefix), res_dirs)
     generate_string_source_map_cmd = cmd_args([
@@ -465,7 +475,6 @@ def get_manifest(
 
 def _get_module_manifests(
         ctx: AnalysisContext,
-        android_packageable_info: AndroidPackageableInfo,
         manifest_entries: dict,
         apk_module_graph_file: [Artifact, None],
         use_proto_format: bool,
@@ -484,16 +493,9 @@ def _get_module_manifests(
     android_toolchain = ctx.attrs._android_toolchain[AndroidToolchainInfo]
 
     module_manifests_dir = ctx.actions.declare_output("module_manifests_dir", dir = True)
-    android_manifests = list(android_packageable_info.manifests.traverse()) if android_packageable_info.manifests else []
 
     def get_manifests_modular(ctx: AnalysisContext, artifacts, outputs):
         apk_module_graph_info = get_apk_module_graph_info(ctx, apk_module_graph_file, artifacts)
-        get_module_from_target = apk_module_graph_info.target_to_module_mapping_function
-        module_to_manifests = {}
-        for android_manifest in android_manifests:
-            module_name = get_module_from_target(str(android_manifest.target_label))
-            if not is_root_module(module_name):
-                module_to_manifests.setdefault(module_name, []).append(android_manifest.manifest)
 
         merged_module_manifests = {}
         for module_name in apk_module_graph_info.module_list:
@@ -505,7 +507,8 @@ def _get_module_manifests(
                 android_toolchain.generate_manifest[RunInfo],
                 module_manifest_skeleton,
                 module_name,
-                module_to_manifests.get(module_name, []),
+                # Note - the expectation of voltron modules is that the AndroidManifest entries are merged into the base APK's manifest.
+                None,
                 manifest_entries.get("placeholders", {}),
             )
 
@@ -561,6 +564,10 @@ def _merge_assets(
     merge_assets_cmd.add(["--assets-dirs", assets_dirs_file])
     merge_assets_cmd.hidden(assets_dirs)
 
+    if getattr(ctx.attrs, "extra_no_compress_asset_extensions", None):
+        merge_assets_cmd.add("--extra-no-compress-asset-extensions")
+        merge_assets_cmd.add(ctx.attrs.extra_no_compress_asset_extensions)
+
     ctx.actions.run(merge_assets_cmd, category = "merge_assets")
 
     if is_exopackaged_enabled_for_resources:
@@ -597,8 +604,8 @@ def get_cxx_resources(ctx: AnalysisContext, deps: list[Dependency], dir_name: st
     symlink_tree_dict = {}
     resource_maps = cxx_resources.values()
     for resource_map in resource_maps:
-        for name, (resource, _other) in resource_map.items():
-            symlink_tree_dict["cxx-resources/{}".format(name)] = resource
+        for name, resource in resource_map.items():
+            symlink_tree_dict["cxx-resources/{}".format(name)] = resource.default_output
 
     return ctx.actions.symlinked_dir(dir_name, symlink_tree_dict) if symlink_tree_dict else None
 

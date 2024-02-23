@@ -41,10 +41,7 @@ def erlang_tests_macro(
         deps: list[str] = [],
         resources: list[str] = [],
         property_tests: list[str] = [],
-        config_files: list[str] = [],
         srcs: list[str] = [],
-        use_default_configs: bool = True,
-        use_default_deps: bool = True,
         **common_attributes: dict) -> None:
     """
     Generate multiple erlang_test targets based on the `suites` field.
@@ -53,7 +50,6 @@ def erlang_tests_macro(
     resource targets for files in the suite associated <suitename>_data folder.
     """
     deps = [normalize_application(dep) for dep in deps]
-    config_files = list(config_files)
 
     if not suites:
         return
@@ -72,21 +68,6 @@ def erlang_tests_macro(
         )
         deps.append(":" + srcs_app)
 
-    # add default apps
-
-    default_deps = read_root_config("erlang", "erlang_tests_default_apps", None) if use_default_deps else None
-    default_config_files = read_root_config("erlang", "erlang_tests_default_config", None) if use_default_configs else None
-    trampoline = read_root_config("erlang", "erlang_tests_trampoline", None) if use_default_configs else None
-    providers = read_root_config("erlang", "erlang_test_providers", "") if use_default_configs else ""
-    defaultAnnotationMFA = "artifact_annotations:default_annotation/1"
-    annotationsMFA = read_root_config("erlang", "test_artifacts_annotation_mfa", defaultAnnotationMFA) if use_default_configs else defaultAnnotationMFA
-
-    if default_config_files:
-        config_files += default_config_files.split()
-
-    if default_deps != None:
-        deps += default_deps.split()
-
     target_resources = list(resources)
 
     if not property_tests:
@@ -96,10 +77,6 @@ def erlang_tests_macro(
             property_tests = [prop_target]
 
     common_attributes["labels"] = common_attributes.get("labels", []) + ["tpx-enable-artifact-reporting", "test-framework=39:erlang_common_test"]
-
-    additional_labels = read_config("erlang", "test_labels", None)
-    if additional_labels != None:
-        common_attributes["labels"] += additional_labels.split()
 
     common_attributes["labels"] = list_dedupe(common_attributes["labels"])
 
@@ -123,11 +100,7 @@ def erlang_tests_macro(
             suite = suite,
             deps = deps,
             resources = suite_resource,
-            config_files = config_files,
             property_tests = property_tests,
-            _trampoline = trampoline,
-            _providers = providers,
-            _artifact_annotation_mfa = annotationsMFA,
             **common_attributes
         )
 
@@ -180,13 +153,14 @@ def erlang_test_impl(ctx: AnalysisContext) -> list[Provider]:
     # Config files for ct
     config_files = [config_file[DefaultInfo].default_outputs[0] for config_file in ctx.attrs.config_files]
 
-    test_binary = ctx.attrs._test_binary[RunInfo]
+    test_binary = ctx.attrs._test_binary[DefaultInfo].default_outputs
 
     trampoline = ctx.attrs._trampoline
     cmd = cmd_args([])
     if trampoline:
         cmd.add(trampoline[RunInfo])
 
+    cmd.add(primary_toolchain.otp_binaries.escript)
     cmd.add(test_binary)
 
     suite = ctx.attrs.suite
@@ -292,11 +266,13 @@ def _write_test_info_file(
         erl_cmd: [cmd_args, Artifact]) -> Artifact:
     tests_info = {
         "artifact_annotation_mfa": ctx.attrs._artifact_annotation_mfa,
+        "common_app_env": ctx.attrs.common_app_env,
         "config_files": config_files,
         "ct_opts": ctx.attrs._ct_opts,
         "dependencies": _list_code_paths(dependencies),
         "erl_cmd": cmd_args(['"', cmd_args(erl_cmd, delimiter = " "), '"'], delimiter = ""),
         "extra_ct_hooks": ctx.attrs.extra_ct_hooks,
+        "extra_flags": ctx.attrs.extra_erl_flags,
         "providers": ctx.attrs._providers,
         "test_dir": test_dir,
         "test_suite": test_suite,

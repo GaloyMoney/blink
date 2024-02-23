@@ -74,6 +74,8 @@ CxxRuleProviderParams = record(
     merged_native_link_info = field(bool, True),
     omnibus_root = field(bool, True),
     preprocessors = field(bool, True),
+    # Whether or not to generate a resource groups provider for raw cxx resources.
+    cxx_resources_as_apple_resources = field(bool, True),
     resources = field(bool, True),
     shared_libraries = field(bool, True),
     template_placeholders = field(bool, True),
@@ -147,6 +149,8 @@ CxxRuleConstructorParams = record(
     shared_library_flags = field([SharedLibraryFlagOverrides, None], None),
     # Optional argument to override the default name of the shared object being produced.
     soname = field([str, None], None),
+    # Optional argument to override the default name of the executable being produced.
+    executable_name = field([str, None], None),
     # If passed to cxx_executable, this field will be used to determine
     # a shared subtarget's default output should be stripped.
     strip_executable = field(bool, False),

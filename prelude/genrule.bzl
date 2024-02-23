@@ -14,7 +14,8 @@ load("@prelude//:genrule_types.bzl", "GENRULE_MARKER_SUBTARGET_NAME", "GenruleMa
 load("@prelude//:is_full_meta_repo.bzl", "is_full_meta_repo")
 load("@prelude//android:build_only_native_code.bzl", "is_build_only_native_code")
 load("@prelude//os_lookup:defs.bzl", "OsLookup")
-load("@prelude//utils:utils.bzl", "expect", "flatten", "value_or")
+load("@prelude//utils:expect.bzl", "expect")
+load("@prelude//utils:utils.bzl", "flatten", "value_or")
 
 GENRULE_OUT_DIR = "out"
 
@@ -127,7 +128,8 @@ def process_genrule(
         out_attr: [str, None],
         outs_attr: [dict, None],
         extra_env_vars: dict = {},
-        identifier: [str, None] = None) -> list[Provider]:
+        identifier: [str, None] = None,
+        other_outputs: list[Artifact] = []) -> list[Provider]:
     if (out_attr != None) and (outs_attr != None):
         fail("Only one of `out` and `outs` should be set. Got out=`%s`, outs=`%s`" % (repr(out_attr), repr(outs_attr)))
 
@@ -202,8 +204,13 @@ def process_genrule(
         symlinks = ctx.attrs.srcs
     srcs_artifact = ctx.actions.symlinked_dir("srcs" if not identifier else "{}-srcs".format(identifier), symlinks)
 
+    if ctx.attrs.environment_expansion_separator:
+        delimiter = ctx.attrs.environment_expansion_separator
+    else:
+        delimiter = " "
+
     # Setup environment variables.
-    srcs = cmd_args()
+    srcs = cmd_args(delimiter = delimiter)
     for symlink in symlinks:
         srcs.add(cmd_args(srcs_artifact, format = path_sep.join([".", "{}", symlink.replace("/", path_sep)])))
     env_vars = {
@@ -351,6 +358,7 @@ def process_genrule(
     providers = [DefaultInfo(
         default_outputs = default_outputs,
         sub_targets = sub_targets,
+        other_outputs = other_outputs,
     )]
 
     # The cxx_genrule also forwards here, and that doesn't have .executable, so use getattr

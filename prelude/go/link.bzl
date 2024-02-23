@@ -8,6 +8,7 @@
 load("@prelude//cxx:cxx_library_utility.bzl", "cxx_inherited_link_info")
 load(
     "@prelude//cxx:cxx_link_utility.bzl",
+    "ExecutableSharedLibArguments",
     "executable_shared_lib_arguments",
     "make_link_args",
 )
@@ -28,6 +29,11 @@ load(
     "@prelude//utils:utils.bzl",
     "map_idx",
 )
+
+# @unused this comment is to make the linter happy.  The linter thinks
+# GoCoverageMode is unused despite it being used in the function signature of
+# link.
+load(":coverage.bzl", "GoCoverageMode")
 load(
     ":packages.bzl",
     "GoPkg",  # @Unused used as type
@@ -57,16 +63,30 @@ def _build_mode_param(mode: GoBuildMode) -> str:
 def get_inherited_link_pkgs(deps: list[Dependency]) -> dict[str, GoPkg]:
     return merge_pkgs([d[GoPkgLinkInfo].pkgs for d in deps if GoPkgLinkInfo in d])
 
-# TODO(cjhopman): Is link_style a LibOutputStyle or a LinkStrategy here? Based on returning an empty thing for link_style != shared,
-# it seems likely its intended to be LibOutputStyle, but it's called in places that are passing what appears to be a LinkStrategy.
-def _process_shared_dependencies(ctx: AnalysisContext, artifact: Artifact, deps: list[Dependency], link_style: LinkStyle):
+def is_any_dep_cgo(deps: list[Dependency]) -> bool:
+    for d in deps:
+        if GoPkgLinkInfo in d:
+            for pkg in d[GoPkgLinkInfo].pkgs.values():
+                if pkg.cgo:
+                    return True
+    return False
+
+# TODO(cjhopman): Is link_style a LibOutputStyle or a LinkStrategy here? Based
+# on returning an empty thing for link_style != shared, it seems likely its
+# intended to be LibOutputStyle, but it's called in places that are passing what
+# appears to be a LinkStrategy.
+def _process_shared_dependencies(
+        ctx: AnalysisContext,
+        artifact: Artifact,
+        deps: list[Dependency],
+        link_style: LinkStyle) -> ExecutableSharedLibArguments:
     """
     Provides files and linker args needed to for binaries with shared library linkage.
     - the runtime files needed to run binary linked with shared libraries
     - linker arguments for shared libraries
     """
     if link_style != LinkStyle("shared"):
-        return ([], [])
+        return ExecutableSharedLibArguments()
 
     shlib_info = merge_shared_libraries(
         ctx.actions,
@@ -76,14 +96,12 @@ def _process_shared_dependencies(ctx: AnalysisContext, artifact: Artifact, deps:
     for name, shared_lib in traverse_shared_library_info(shlib_info).items():
         shared_libs[name] = shared_lib.lib
 
-    extra_link_args, runtime_files, _ = executable_shared_lib_arguments(
+    return executable_shared_lib_arguments(
         ctx.actions,
         ctx.attrs._go_toolchain[GoToolchainInfo].cxx_toolchain_for_linking,
         artifact,
         shared_libs,
     )
-
-    return (runtime_files, extra_link_args)
 
 def link(
         ctx: AnalysisContext,
@@ -95,7 +113,8 @@ def link(
         link_style: LinkStyle = LinkStyle("static"),
         linker_flags: list[typing.Any] = [],
         external_linker_flags: list[typing.Any] = [],
-        shared: bool = False):
+        shared: bool = False,
+        coverage_mode: [GoCoverageMode, None] = None):
     go_toolchain = ctx.attrs._go_toolchain[GoToolchainInfo]
     if go_toolchain.env_go_os == "windows":
         executable_extension = ".exe"
@@ -121,7 +140,7 @@ def link(
     # Add inherited Go pkgs to library search path.
     all_pkgs = merge_pkgs([
         pkgs,
-        pkg_artifacts(get_inherited_link_pkgs(deps), shared = shared),
+        pkg_artifacts(get_inherited_link_pkgs(deps), shared = shared, coverage_mode = coverage_mode),
         stdlib_pkg_artifacts(go_toolchain, shared = shared),
     ])
 
@@ -136,10 +155,14 @@ def link(
     cmd.add("-importcfg", importcfg)
     cmd.hidden(all_pkgs.values())
 
-    runtime_files, extra_link_args = _process_shared_dependencies(ctx, output, deps, link_style)
+    executable_args = _process_shared_dependencies(ctx, output, deps, link_style)
 
     if link_mode == None:
-        if go_toolchain.cxx_toolchain_for_linking != None:
+        if build_mode == GoBuildMode("c_shared"):
+            link_mode = "external"
+        elif shared:
+            link_mode = "external"
+        elif is_any_dep_cgo(deps):
             link_mode = "external"
         else:
             link_mode = "internal"
@@ -157,7 +180,7 @@ def link(
             [ext_links],
         )
         ext_link_args = cmd_args()
-        ext_link_args.add(cmd_args(extra_link_args, quote = "shell"))
+        ext_link_args.add(cmd_args(executable_args.extra_link_args, quote = "shell"))
         ext_link_args.add(external_linker_flags)
         ext_link_args.add(ext_link_args_output.link_args)
         ext_link_args.hidden(ext_link_args_output.hidden)
@@ -190,4 +213,4 @@ def link(
 
     ctx.actions.run(cmd, category = "go_link")
 
-    return (output, runtime_files)
+    return (output, executable_args.runtime_files, executable_args.external_debug_info)

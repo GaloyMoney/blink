@@ -5,10 +5,10 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
+load("@prelude//:artifacts.bzl", "single_artifact")
 load("@prelude//:paths.bzl", "paths")
-load("@prelude//:resources.bzl", "gather_resources")
 load("@prelude//apple:apple_toolchain_types.bzl", "AppleToolchainInfo")
-load("@prelude//utils:utils.bzl", "expect", "flatten_dict")
+load("@prelude//utils:utils.bzl", "flatten_dict")
 load(
     ":apple_asset_catalog.bzl",
     "compile_apple_asset_catalog",
@@ -19,7 +19,7 @@ load(
 )
 load(":apple_bundle_destination.bzl", "AppleBundleDestination")
 load(":apple_bundle_part.bzl", "AppleBundlePart")
-load(":apple_bundle_types.bzl", "AppleBundleInfo")
+load(":apple_bundle_types.bzl", "AppleBundleInfo", "AppleBundleTypeAppClip", "AppleBundleTypeDefault", "AppleBundleTypeWatchApp")
 load(":apple_bundle_utility.bzl", "get_bundle_resource_processing_options", "get_extension_attr", "get_product_name")
 load(":apple_core_data.bzl", "compile_apple_core_data")
 load(
@@ -31,6 +31,7 @@ load(
     ":apple_resource_types.bzl",
     "AppleResourceDestination",
     "AppleResourceSpec",  # @unused Used as a type
+    "CxxResourceSpec",  # @unused Used as a type
 )
 load(":apple_resource_utility.bzl", "apple_bundle_destination_from_resource_destination")
 load(
@@ -58,20 +59,17 @@ def get_apple_bundle_resource_part_list(ctx: AnalysisContext) -> AppleBundleReso
 
     parts.extend(_create_pkg_info_if_needed(ctx))
 
-    (resource_specs, asset_catalog_specs, core_data_specs, scene_kit_assets_spec) = _select_resources(ctx)
+    (resource_specs, asset_catalog_specs, core_data_specs, scene_kit_assets_spec, cxx_resource_specs) = _select_resources(ctx)
 
     # If we've pulled in native/C++ resources from deps, inline them into the
     # bundle under the `CxxResources` namespace.
-    cxx_resources = flatten_dict(gather_resources(
-        label = ctx.label,
-        deps = ctx.attrs.deps,
-    ).values())
+    cxx_resources = flatten_dict([s.resources for s in cxx_resource_specs])
     if cxx_resources:
         cxx_res_dir = ctx.actions.copied_dir(
             "CxxResources",
             {
-                name: resource
-                for name, (resource, _) in cxx_resources.items()
+                name: resource.default_output
+                for name, resource in cxx_resources.items()
             },
         )
         resource_specs.append(
@@ -130,7 +128,7 @@ def _create_pkg_info_if_needed(ctx: AnalysisContext) -> list[AppleBundlePart]:
     artifact = ctx.actions.write("PkgInfo", "APPLWRUN\n")
     return [AppleBundlePart(source = artifact, destination = AppleBundleDestination("metadata"))]
 
-def _select_resources(ctx: AnalysisContext) -> ((list[AppleResourceSpec], list[AppleAssetCatalogSpec], list[AppleCoreDataSpec], list[SceneKitAssetsSpec])):
+def _select_resources(ctx: AnalysisContext) -> ((list[AppleResourceSpec], list[AppleAssetCatalogSpec], list[AppleCoreDataSpec], list[SceneKitAssetsSpec], list[CxxResourceSpec])):
     resource_group_info = get_resource_group_info(ctx)
     if resource_group_info:
         resource_groups_deps = resource_group_info.implicit_deps
@@ -156,7 +154,7 @@ def _copy_resources(ctx: AnalysisContext, specs: list[AppleResourceSpec]) -> lis
         bundle_destination = apple_bundle_destination_from_resource_destination(spec.destination)
         result += [_process_apple_resource_file_if_needed(
             ctx = ctx,
-            file = _extract_single_artifact(x),
+            file = single_artifact(x).default_output,
             destination = bundle_destination,
             destination_relative_path = None,
             codesign_on_copy = spec.codesign_files_on_copy,
@@ -166,20 +164,6 @@ def _copy_resources(ctx: AnalysisContext, specs: list[AppleResourceSpec]) -> lis
         result += _bundle_parts_for_variant_files(ctx, spec)
 
     return result
-
-def _extract_single_artifact(x: [Dependency, Artifact]) -> Artifact:
-    if type(x) == "artifact":
-        return x
-    else:
-        # Otherwise, this is a dependency, so extract the resource and other
-        # resources from the `DefaultInfo` provider.
-        info = x[DefaultInfo]
-        expect(
-            len(info.default_outputs) == 1,
-            "expected exactly one default output from {} ({})"
-                .format(x, info.default_outputs),
-        )
-        return info.default_outputs[0]
 
 def _copy_first_level_bundles(ctx: AnalysisContext) -> list[AppleBundlePart]:
     first_level_bundle_infos = filter(None, [dep.get(AppleBundleInfo) for dep in ctx.attrs.deps])
@@ -192,18 +176,24 @@ def _copied_bundle_spec(bundle_info: AppleBundleInfo) -> [None, AppleBundlePart]
         destination = AppleBundleDestination("frameworks")
         codesign_on_copy = True
     elif bundle_extension == ".app":
-        expect(bundle_info.is_watchos != None, "Field should be set for bundles with extension {}".format(bundle_extension))
-        destination = AppleBundleDestination("watchapp" if bundle_info.is_watchos else "plugins")
+        app_destination_type = "plugins"
+        if bundle_info.bundle_type == AppleBundleTypeWatchApp:
+            app_destination_type = "watchapp"
+        elif bundle_info.bundle_type == AppleBundleTypeAppClip:
+            app_destination_type = "appclips"
+        elif bundle_info.bundle_type != AppleBundleTypeDefault:
+            fail("Unhandled bundle type `{}`".format(bundle_info.bundle_type))
+        destination = AppleBundleDestination(app_destination_type)
         codesign_on_copy = False
     elif bundle_extension == ".appex":
         destination = AppleBundleDestination("plugins")
         codesign_on_copy = False
     elif bundle_extension == ".qlgenerator":
         destination = AppleBundleDestination("quicklook")
-        codesign_on_copy = False
+        codesign_on_copy = True
     elif bundle_extension == ".xpc":
         destination = AppleBundleDestination("xpcservices")
-        codesign_on_copy = False
+        codesign_on_copy = True
     else:
         fail("Extension `{}` is not yet supported.".format(bundle_extension))
     return AppleBundlePart(

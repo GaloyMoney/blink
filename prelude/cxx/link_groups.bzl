@@ -39,6 +39,7 @@ load(
     "get_transitive_deps",
 )
 load("@prelude//utils:arglike.bzl", "ArgLike")
+load("@prelude//utils:expect.bzl", "expect")
 load(
     "@prelude//utils:graph_utils.bzl",
     "breadth_first_traversal_by",
@@ -50,7 +51,6 @@ load(
 )
 load(
     "@prelude//utils:utils.bzl",
-    "expect",
     "value_or",
 )
 load(":cxx_context.bzl", "get_cxx_toolchain_info")
@@ -172,7 +172,7 @@ def build_link_group_info(
         filtered_groups[group.name] = group
 
     mappings = compute_mappings(
-        groups = filtered_groups.values(),
+        groups_map = filtered_groups,
         graph_map = linkable_graph_node_map,
     )
 
@@ -612,7 +612,9 @@ def _create_link_group(
             # graph to find candidate nodes.
             if mapping.root == None:
                 has_empty_root = True
-            else:
+            elif spec.group.attrs.requires_root_node_exists or mapping.root in linkable_graph_node_map:
+                # If spec requires root to always exist (default True), always include to traversal to fail hard if it is not in deps.
+                # Otherwise add to traversal only if we sure it is in deps graph.
                 roots.append(mapping.root)
 
         # If this link group has an empty mapping, we need to search everything

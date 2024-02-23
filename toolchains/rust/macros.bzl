@@ -10,10 +10,6 @@ load(
     "@prelude//test/inject_test_run_info.bzl",
     "inject_test_run_info",
 )
-load(
-    "@prelude//tests:re_utils.bzl",
-    "get_re_executor_from_props",
-)
 
 def galoy_rust_bin(
         name,

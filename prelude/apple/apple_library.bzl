@@ -9,8 +9,10 @@ load(
     "@prelude//:artifact_tset.bzl",
     "project_artifacts",
 )
+load("@prelude//apple:apple_buck2_compatibility.bzl", "apple_check_buck2_compatibility")
 load("@prelude//apple:apple_dsym.bzl", "DSYM_SUBTARGET", "get_apple_dsym")
 load("@prelude//apple:apple_stripping.bzl", "apple_strip_args")
+load("@prelude//apple:apple_toolchain_types.bzl", "AppleToolchainInfo")
 # @oss-disable: load("@prelude//apple/meta_only:linker_outputs.bzl", "add_extra_linker_outputs") 
 load(
     "@prelude//apple/swift:swift_compilation.bzl",
@@ -66,12 +68,14 @@ load(
     "LibOutputStyle",
 )
 load("@prelude//utils:arglike.bzl", "ArgLike")
-load("@prelude//utils:utils.bzl", "expect")
+load("@prelude//utils:expect.bzl", "expect")
 load(":apple_bundle_types.bzl", "AppleBundleLinkerMapInfo", "AppleMinDeploymentVersionInfo")
 load(":apple_frameworks.bzl", "get_framework_search_path_flags")
+load(":apple_genrule_deps.bzl", "get_apple_build_genrule_deps_attr_value", "get_apple_genrule_deps_outputs")
 load(":apple_modular_utility.bzl", "MODULE_CACHE_PATH")
 load(":apple_target_sdk_version.bzl", "get_min_deployment_version_for_node", "get_min_deployment_version_target_linker_flags", "get_min_deployment_version_target_preprocessor_flags")
 load(":apple_utility.bzl", "get_apple_cxx_headers_layout", "get_apple_stripped_attr_value_with_default_fallback", "get_module_name")
+load(":apple_validation_deps.bzl", "get_apple_validation_deps_outputs")
 load(
     ":debug.bzl",
     "AppleDebuggableInfo",
@@ -105,6 +109,8 @@ AppleLibraryAdditionalParams = record(
 )
 
 def apple_library_impl(ctx: AnalysisContext) -> [Promise, list[Provider]]:
+    apple_check_buck2_compatibility(ctx)
+
     def get_apple_library_providers(deps_providers) -> list[Provider]:
         constructor_params = apple_library_rule_constructor_params_and_swift_providers(
             ctx,
@@ -114,6 +120,8 @@ def apple_library_impl(ctx: AnalysisContext) -> [Promise, list[Provider]]:
                     java_packaging_info = False,
                     android_packageable_info = False,
                     omnibus_root = False,
+                    # We generate a provider on our own, disable to avoid several providers of same type.
+                    cxx_resources_as_apple_resources = False,
                 ),
             ),
             deps_providers,
@@ -148,7 +156,7 @@ def apple_library_rule_constructor_params_and_swift_providers(ctx: AnalysisConte
         framework_search_paths_flags,
         params.extra_swift_compiler_flags,
     )
-    swift_object_files = [swift_compile.object_file] if swift_compile else []
+    swift_object_files = swift_compile.object_files if swift_compile else []
 
     swift_pre = CPreprocessor()
     if swift_compile:
@@ -173,6 +181,16 @@ def apple_library_rule_constructor_params_and_swift_providers(ctx: AnalysisConte
         swift_compile,
     )
 
+    swift_toolchain = ctx.attrs._apple_toolchain[AppleToolchainInfo].swift_toolchain_info
+    if swift_toolchain and swift_toolchain.supports_relative_resource_dir:
+        resource_dir_args = []
+    else:
+        # We have to use this hack to make compilation work when Clang modules
+        # are enabled and using toolchains that don't support relative resource
+        # directories correctly. The builtin headers will be embedded relative
+        # to the CWD, so need to add . to be located correctly.
+        resource_dir_args = ["-I."]
+
     modular_pre = CPreprocessor(
         uses_modules = ctx.attrs.uses_modules,
         modular_args = [
@@ -180,13 +198,7 @@ def apple_library_rule_constructor_params_and_swift_providers(ctx: AnalysisConte
             "-fmodules",
             "-fmodule-name=" + get_module_name(ctx),
             "-fmodules-cache-path=" + MODULE_CACHE_PATH,
-            # TODO(T123756899): We have to use this hack to make compilation work
-            # when Clang modules are enabled and using toolchains. That's because
-            # resource-dir is passed as a relative path (so that no abs paths appear
-            # in any .pcm). The compiler will then expand and generate #include paths
-            # that won't work unless we have the directive below.
-            "-I.",
-        ],
+        ] + resource_dir_args,
     )
 
     contains_swift_sources = bool(swift_srcs)
@@ -210,11 +222,16 @@ def apple_library_rule_constructor_params_and_swift_providers(ctx: AnalysisConte
         relative_args = CPreprocessorArgs(args = [framework_search_paths_flags]),
     )
 
+    validation_deps_outputs = get_apple_validation_deps_outputs(ctx)
+    if get_apple_build_genrule_deps_attr_value(ctx):
+        validation_deps_outputs += get_apple_genrule_deps_outputs(cxx_attr_deps(ctx) + cxx_attr_exported_deps(ctx))
+
     return CxxRuleConstructorParams(
         rule_type = params.rule_type,
         is_test = (params.rule_type == "apple_test"),
         headers_layout = get_apple_cxx_headers_layout(ctx),
         extra_exported_link_flags = params.extra_exported_link_flags,
+        extra_hidden = validation_deps_outputs,
         extra_link_flags = [_get_linker_flags(ctx)],
         extra_link_input = swift_object_files,
         extra_link_input_has_external_debug_info = True,
@@ -236,7 +253,21 @@ def apple_library_rule_constructor_params_and_swift_providers(ctx: AnalysisConte
                         other_outputs = [swift_compile.compilation_database.other_outputs] if swift_compile else [],
                     ),
                 ],
-                "swift-compile": [DefaultInfo(default_output = swift_compile.object_file if swift_compile else None)],
+                "swift-compile": [
+                    DefaultInfo(
+                        default_outputs = swift_compile.object_files if swift_compile else None,
+                    ),
+                ],
+                "swift-output-file-map": [
+                    DefaultInfo(
+                        default_output = swift_compile.output_map_artifact if swift_compile else None,
+                    ),
+                ],
+                "swiftmodule": [
+                    DefaultInfo(
+                        default_output = swift_compile.swiftmodule if swift_compile else None,
+                    ),
+                ],
             },
             additional_providers_factory = additional_providers_factory,
         ),
