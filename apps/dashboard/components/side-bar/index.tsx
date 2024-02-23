@@ -121,7 +121,7 @@ const Sidebar: React.FC = () => {
             label="Batch Payments"
             isCurrentPath={isCurrentPath}
             dataTestid="sidebar-batch-payments-link"
-            badge="Alpha"
+            badge="Beta"
           />
         </List>
       </Box>
