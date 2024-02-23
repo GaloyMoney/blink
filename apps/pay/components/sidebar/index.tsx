@@ -24,11 +24,7 @@ function updateCurrencyAndReload(newDisplayCurrency: string): void {
   const searchParams = new URLSearchParams(window.location.search)
   searchParams.set("displayCurrency", newDisplayCurrency)
   currentURL.search = searchParams.toString()
-
-  window.history.pushState({}, "", currentURL.toString())
-  setTimeout(() => {
-    window.location.reload()
-  }, 100)
+  window.location.href = currentURL.toString()
 }
 
 export function SideBar({ username }: { username: string }) {
@@ -46,20 +42,30 @@ export function SideBar({ username }: { username: string }) {
       href: `/${username}`,
       icon: "/icons/cash-register-icon.svg",
       dataTestId: "cash-register-link",
+      hardRefresh: true,
     },
     {
       name: "Printable Paycode",
       href: `/${username}/print`,
       icon: "/paycode-black&white.svg",
       dataTestId: "printable-paycode-link",
+      hardRefresh: false,
     },
   ]
 
   async function shareCurrentUrl() {
-    try {
-      await navigator.share({ url: window.location.href })
-    } catch (error) {
-      console.error("Error sharing the URL", error)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: document.title,
+          url: window.location.href,
+        })
+        console.log("URL shared successfully")
+      } catch (error) {
+        console.error("Error sharing the URL:", error)
+      }
+    } else {
+      console.log("Web Share API not supported. Fallback to copy URL manually.")
     }
   }
 
@@ -91,6 +97,16 @@ export function SideBar({ username }: { username: string }) {
                   <Image src={link.icon} alt={link.name} width={24} height={24} />
                   {link.name}
                 </span>
+              ) : link.hardRefresh ? (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  data-testid={link.dataTestId}
+                  className="bg-white text-black p-2 rounded-md no-underline hover:no-underline visited:text-black flex items-center gap-2"
+                >
+                  <Image src={link.icon} alt={link.name} width={24} height={24} />
+                  {link.name}
+                </a>
               ) : (
                 <SheetClose key={link.name} asChild>
                   <Link
