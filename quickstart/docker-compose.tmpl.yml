@@ -144,8 +144,12 @@ services:
     environment:
     - PG_CON=postgres://user:password@notifications-pg:5432/pg
     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-agent:4318
+    - NOTIFICATIONS_CONFIG=/config/notifications/notifications.yml
     ports:
     - 6685:6685
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/notifications/notifications.yml:/config/notifications/notifications.yml
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/notifications/fake_service_account.json:/app/notifications/config/notifications/fake_service_account.json
   notifications-pg: #@ data.values.services["notifications-pg"]
 
   #! Database
