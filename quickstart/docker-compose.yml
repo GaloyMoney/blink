@@ -3,390 +3,394 @@ services:
   quickstart-test:
     image: busybox
     depends_on:
-    - apollo-router
-    - oathkeeper
-    - kratos
-    - galoy
-    - trigger
-    - redis
-    - mongodb
-    - mongodb-migrate
-    - price
-    - bitcoind
-    - bitcoind-signer
-    - lnd1
-    - lnd-outside-1
-    - bria
-    - fulcrum
-    - stablesats
-    - svix
-    - hydra
+      - apollo-router
+      - oathkeeper
+      - kratos
+      - galoy
+      - trigger
+      - redis
+      - mongodb
+      - mongodb-migrate
+      - price
+      - bitcoind
+      - bitcoind-signer
+      - lnd1
+      - lnd-outside-1
+      - bria
+      - fulcrum
+      - stablesats
+      - svix
+      - hydra
     restart: on-failure:10
   apollo-router:
     image: ghcr.io/apollographql/router:v1.25.0
     ports:
-    - 4004:4004
+      - 4004:4004
     environment:
-    - APOLLO_ROUTER_SUPERGRAPH_PATH=/repo/dev/supergraph.graphql
-    - APOLLO_ROUTER_CONFIG_PATH=/repo/dev/router.yaml
+      - APOLLO_ROUTER_SUPERGRAPH_PATH=/repo/dev/supergraph.graphql
+      - APOLLO_ROUTER_CONFIG_PATH=/repo/dev/router.yaml
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/apollo-federation:/repo/dev
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/apollo-federation:/repo/dev
     depends_on:
-    - otel-agent
+      - otel-agent
   oathkeeper:
     image: oryd/oathkeeper:v0.40.6-distroless
     ports:
-    - 4455:4455
-    - 4456:4456
+      - 4455:4455
+      - 4456:4456
     command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/ory:/home/ory
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/ory:/home/ory
     depends_on:
-    - kratos
-    - hydra
-    - apollo-router
-    - otel-agent
+      - kratos
+      - hydra
+      - apollo-router
+      - otel-agent
   kratos:
     image: oryd/kratos:v1.0.0
     ports:
-    - 4433:4433
-    - 4434:4434
+      - 4433:4433
+      - 4434:4434
     entrypoint: sh -c
     command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --watch-courier --sqa-opt-out"'
     environment:
       DSN: postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
     links:
-    - kratos-pg:kratos-pg
+      - kratos-pg:kratos-pg
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/ory:/home/ory
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/ory:/home/ory
   kratos-pg:
     image: postgres:14.1
     ports:
-    - 5432:5432
+      - 5432:5432
     environment:
-    - POSTGRES_USER=dbuser
-    - POSTGRES_PASSWORD=secret
-    - POSTGRES_DB=default
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=default
   hydra:
     image: oryd/hydra:v2.1.2
     ports:
-    - 4444:4444
-    - 4445:4445
+      - 4444:4444
+      - 4445:4445
     command: serve -c /home/ory/hydra.yml all --dev
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/ory:/home/ory
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/ory:/home/ory
     environment:
-    - DSN=postgres://hydra:secret@hydra-pg:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+      - DSN=postgres://hydra:secret@hydra-pg:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
     restart: unless-stopped
     depends_on:
-    - hydra-migrate
-    - hydra-pg
+      - hydra-migrate
+      - hydra-pg
   hydra-migrate:
     image: oryd/hydra:v2.1.2
     environment:
-    - DSN=postgres://hydra:secret@hydra-pg:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+      - DSN=postgres://hydra:secret@hydra-pg:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
     command: migrate -c /home/ory/hydra.yml sql -e --yes
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/ory:/home/ory
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/ory:/home/ory
     restart: on-failure
     depends_on:
-    - hydra-pg
+      - hydra-pg
   hydra-pg:
     image: postgres:14.1
     environment:
-    - POSTGRES_USER=hydra
-    - POSTGRES_PASSWORD=secret
-    - POSTGRES_DB=hydra
+      - POSTGRES_USER=hydra
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=hydra
   galoy:
-    image: us.gcr.io/galoy-org/galoy-api@sha256:f76e7f20bf34bd1c112711e9ff2794c769591046bddabad41fd14c7fcdbd4529
+    image: us.gcr.io/galoy-org/galoy-api@sha256:4a0b4ad6dbdff2314794a00dfb38350b718396df0d1c69eb989a5449e82d72c1
     environment:
-    - HELMREVISION=dev
-    - NETWORK=regtest
-    - OATHKEEPER_DECISION_ENDPOINT=http://oathkeeper:4456
-    - TWILIO_ACCOUNT_SID=AC_twilio_id
-    - TWILIO_AUTH_TOKEN=AC_twilio_auth_token
-    - TWILIO_VERIFY_SERVICE_ID=VA_twilio_service
-    - KRATOS_PG_CON=postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
-    - KRATOS_PUBLIC_API=http://kratos:4433
-    - KRATOS_ADMIN_API=http://kratos:4434
-    - KRATOS_MASTER_USER_PASSWORD=passwordHardtoFindWithNumber123
-    - KRATOS_CALLBACK_API_KEY=The-Value-of-My-Key
-    - PRICE_HOST=price
-    - PRICE_HISTORY_HOST=price-history
-    - PRICE_SERVER_HOST=stablesats
-    - BRIA_HOST=bria
-    - BRIA_API_KEY=bria_dev_000000000000000000000
-    - NOTIFICATIONS_HOST=notifications
-    - MONGODB_CON=mongodb://mongodb:27017/galoy
-    - REDIS_MASTER_NAME=mymaster
-    - REDIS_PASSWORD=
-    - REDIS_0_DNS=redis
-    - REDIS_0_PORT=6379
-    - REDIS_TYPE=standalone
-    - UNSECURE_IP_FROM_REQUEST_OBJECT=true
-    - UNSECURE_DEFAULT_LOGIN_CODE=000000
-    - GEETEST_ID=geetest_id
-    - GEETEST_KEY=geetest_key
-    - LND1_TLS=LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNZVENDQWdlZ0F3SUJBZ0lSQU9zZzdYWFR4cnVZYlhkeTY2d3RuN1F3Q2dZSUtvWkl6ajBFQXdJd09ERWYKTUIwR0ExVUVDaE1XYkc1a0lHRjFkRzluWlc1bGNtRjBaV1FnWTJWeWRERVZNQk1HQTFVRUF4TU1PRFl4T1RneApNak5tT0Roak1CNFhEVEl6TURFeE9USXdOREUxTTFvWERUTTBNRGN5TVRJd05ERTFNMW93T0RFZk1CMEdBMVVFCkNoTVdiRzVrSUdGMWRHOW5aVzVsY21GMFpXUWdZMlZ5ZERFVk1CTUdBMVVFQXhNTU9EWXhPVGd4TWpObU9EaGoKTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFM1lieUlKWU1Vcm8zZkl0UFFucysxZ2lpTXI5NQpJUXRmclFDQ2JhOWVtcjI4TENmbk1vYy9VQVFwUlg3QVlvVFRneUdiMFBuZGNUODF5ZVgvYTlPa0RLT0I4VENCCjdqQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVL1AxRHpJUkRzTEhHMU10d3NrZE5nZ0lub1Mwd2daWUdBMVVkRVFTQgpqakNCaTRJTU9EWXhPVGd4TWpObU9EaGpnZ2xzYjJOaGJHaHZjM1NDRFd4dVpDMXZkWFJ6YVdSbExUR0NEV3h1ClpDMXZkWFJ6YVdSbExUS0NEV3h1WkMxdmRYUnphV1JsTFRPQ0JHeHVaREdDQkd4dVpES0NCSFZ1YVhpQ0NuVnUKYVhod1lXTnJaWFNDQjJKMVptTnZibTZIQkg4QUFBR0hFQUFBQUFBQUFBQUFBQUFBQUFBQUFBR0hCS3dUQUJBdwpDZ1lJS29aSXpqMEVBd0lEU0FBd1JRSWhBSU5DNlJWQ3d6SzFYRnFxeVNLY0Y4QzQ5ZFlSOThjemdLNVdkcmNOCkxYYWlBaUJHYmtWeGhaeHdDaDVLQ1o1Z2M1Q2FsQ0RvaGNxVkdiaHNya0hHTFhpdHN3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
-    - LND1_MACAROON=AgEDbG5kAvgBAwoQB1FdhGa9xoewc1LEXmnURRIBMBoWCgdhZGRyZXNzEgRyZWFkEgV3cml0ZRoTCgRpbmZvEgRyZWFkEgV3cml0ZRoXCghpbnZvaWNlcxIEcmVhZBIFd3JpdGUaIQoIbWFjYXJvb24SCGdlbmVyYXRlEgRyZWFkEgV3cml0ZRoWCgdtZXNzYWdlEgRyZWFkEgV3cml0ZRoXCghvZmZjaGFpbhIEcmVhZBIFd3JpdGUaFgoHb25jaGFpbhIEcmVhZBIFd3JpdGUaFAoFcGVlcnMSBHJlYWQSBXdyaXRlGhgKBnNpZ25lchIIZ2VuZXJhdGUSBHJlYWQAAAYgqHDdwGCqx0aQL1/Z3uUfzCpeBhfapGf9s/AZPOVwf6s=
-    - LND1_PUBKEY=03ca1907342d5d37744cb7038375e1867c24a87564c293157c95b2a9d38dcfb4c2
-    - LND1_DNS=lnd1
-    - LND1_RPCPORT=10009
-    - LND1_NAME=lnd1
-    - LND1_TYPE=offchain,onchain
-    - LND2_TLS=LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNZVENDQWdlZ0F3SUJBZ0lSQU9zZzdYWFR4cnVZYlhkeTY2d3RuN1F3Q2dZSUtvWkl6ajBFQXdJd09ERWYKTUIwR0ExVUVDaE1XYkc1a0lHRjFkRzluWlc1bGNtRjBaV1FnWTJWeWRERVZNQk1HQTFVRUF4TU1PRFl4T1RneApNak5tT0Roak1CNFhEVEl6TURFeE9USXdOREUxTTFvWERUTTBNRGN5TVRJd05ERTFNMW93T0RFZk1CMEdBMVVFCkNoTVdiRzVrSUdGMWRHOW5aVzVsY21GMFpXUWdZMlZ5ZERFVk1CTUdBMVVFQXhNTU9EWXhPVGd4TWpObU9EaGoKTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFM1lieUlKWU1Vcm8zZkl0UFFucysxZ2lpTXI5NQpJUXRmclFDQ2JhOWVtcjI4TENmbk1vYy9VQVFwUlg3QVlvVFRneUdiMFBuZGNUODF5ZVgvYTlPa0RLT0I4VENCCjdqQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVL1AxRHpJUkRzTEhHMU10d3NrZE5nZ0lub1Mwd2daWUdBMVVkRVFTQgpqakNCaTRJTU9EWXhPVGd4TWpObU9EaGpnZ2xzYjJOaGJHaHZjM1NDRFd4dVpDMXZkWFJ6YVdSbExUR0NEV3h1ClpDMXZkWFJ6YVdSbExUS0NEV3h1WkMxdmRYUnphV1JsTFRPQ0JHeHVaREdDQkd4dVpES0NCSFZ1YVhpQ0NuVnUKYVhod1lXTnJaWFNDQjJKMVptTnZibTZIQkg4QUFBR0hFQUFBQUFBQUFBQUFBQUFBQUFBQUFBR0hCS3dUQUJBdwpDZ1lJS29aSXpqMEVBd0lEU0FBd1JRSWhBSU5DNlJWQ3d6SzFYRnFxeVNLY0Y4QzQ5ZFlSOThjemdLNVdkcmNOCkxYYWlBaUJHYmtWeGhaeHdDaDVLQ1o1Z2M1Q2FsQ0RvaGNxVkdiaHNya0hHTFhpdHN3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
-    - LND2_MACAROON=AgEDbG5kAvgBAwoQX0BxfhQTxLTiqaceBnGnfBIBMBoWCgdhZGRyZXNzEgRyZWFkEgV3cml0ZRoTCgRpbmZvEgRyZWFkEgV3cml0ZRoXCghpbnZvaWNlcxIEcmVhZBIFd3JpdGUaIQoIbWFjYXJvb24SCGdlbmVyYXRlEgRyZWFkEgV3cml0ZRoWCgdtZXNzYWdlEgRyZWFkEgV3cml0ZRoXCghvZmZjaGFpbhIEcmVhZBIFd3JpdGUaFgoHb25jaGFpbhIEcmVhZBIFd3JpdGUaFAoFcGVlcnMSBHJlYWQSBXdyaXRlGhgKBnNpZ25lchIIZ2VuZXJhdGUSBHJlYWQAAAYgMAKlr1HehfBpn2R5RPE2IuY9r/18QBeLZxYgRidpos4=
-    - LND2_PUBKEY=039341ef13e776dc1611502cf510110d9ac5cdc252141f5997adcfd72cef34c3a7
-    - LND2_DNS=lnd2
-    - LND2_RPCPORT=10010
-    - LND2_NAME=lnd2
-    - LND2_TYPE=offchain
-    - SVIX_SECRET=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2OTE2NzIwMTQsImV4cCI6MjAwNzAzMjAxNCwibmJmIjoxNjkxNjcyMDE0LCJpc3MiOiJzdml4LXNlcnZlciIsInN1YiI6Im9yZ18yM3JiOFlkR3FNVDBxSXpwZ0d3ZFhmSGlyTXUifQ.b9s0aWSisNdUNki4edabBEToLNSwjC9-AiJQr4J3y4E
-    - SVIX_ENDPOINT=http://svix:8071
-    - EXPORTER_PORT=3003
-    - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-agent:4318
+      - HELMREVISION=dev
+      - NETWORK=regtest
+      - OATHKEEPER_DECISION_ENDPOINT=http://oathkeeper:4456
+      - TWILIO_ACCOUNT_SID=AC_twilio_id
+      - TWILIO_AUTH_TOKEN=AC_twilio_auth_token
+      - TWILIO_VERIFY_SERVICE_ID=VA_twilio_service
+      - KRATOS_PG_CON=postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
+      - KRATOS_PUBLIC_API=http://kratos:4433
+      - KRATOS_ADMIN_API=http://kratos:4434
+      - KRATOS_MASTER_USER_PASSWORD=passwordHardtoFindWithNumber123
+      - KRATOS_CALLBACK_API_KEY=The-Value-of-My-Key
+      - PRICE_HOST=price
+      - PRICE_HISTORY_HOST=price-history
+      - PRICE_SERVER_HOST=stablesats
+      - BRIA_HOST=bria
+      - BRIA_API_KEY=bria_dev_000000000000000000000
+      - NOTIFICATIONS_HOST=notifications
+      - MONGODB_CON=mongodb://mongodb:27017/galoy
+      - REDIS_MASTER_NAME=mymaster
+      - REDIS_PASSWORD=
+      - REDIS_0_DNS=redis
+      - REDIS_0_PORT=6379
+      - REDIS_TYPE=standalone
+      - UNSECURE_IP_FROM_REQUEST_OBJECT=true
+      - UNSECURE_DEFAULT_LOGIN_CODE=000000
+      - GEETEST_ID=geetest_id
+      - GEETEST_KEY=geetest_key
+      - LND1_TLS=LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNZVENDQWdlZ0F3SUJBZ0lSQU9zZzdYWFR4cnVZYlhkeTY2d3RuN1F3Q2dZSUtvWkl6ajBFQXdJd09ERWYKTUIwR0ExVUVDaE1XYkc1a0lHRjFkRzluWlc1bGNtRjBaV1FnWTJWeWRERVZNQk1HQTFVRUF4TU1PRFl4T1RneApNak5tT0Roak1CNFhEVEl6TURFeE9USXdOREUxTTFvWERUTTBNRGN5TVRJd05ERTFNMW93T0RFZk1CMEdBMVVFCkNoTVdiRzVrSUdGMWRHOW5aVzVsY21GMFpXUWdZMlZ5ZERFVk1CTUdBMVVFQXhNTU9EWXhPVGd4TWpObU9EaGoKTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFM1lieUlKWU1Vcm8zZkl0UFFucysxZ2lpTXI5NQpJUXRmclFDQ2JhOWVtcjI4TENmbk1vYy9VQVFwUlg3QVlvVFRneUdiMFBuZGNUODF5ZVgvYTlPa0RLT0I4VENCCjdqQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVL1AxRHpJUkRzTEhHMU10d3NrZE5nZ0lub1Mwd2daWUdBMVVkRVFTQgpqakNCaTRJTU9EWXhPVGd4TWpObU9EaGpnZ2xzYjJOaGJHaHZjM1NDRFd4dVpDMXZkWFJ6YVdSbExUR0NEV3h1ClpDMXZkWFJ6YVdSbExUS0NEV3h1WkMxdmRYUnphV1JsTFRPQ0JHeHVaREdDQkd4dVpES0NCSFZ1YVhpQ0NuVnUKYVhod1lXTnJaWFNDQjJKMVptTnZibTZIQkg4QUFBR0hFQUFBQUFBQUFBQUFBQUFBQUFBQUFBR0hCS3dUQUJBdwpDZ1lJS29aSXpqMEVBd0lEU0FBd1JRSWhBSU5DNlJWQ3d6SzFYRnFxeVNLY0Y4QzQ5ZFlSOThjemdLNVdkcmNOCkxYYWlBaUJHYmtWeGhaeHdDaDVLQ1o1Z2M1Q2FsQ0RvaGNxVkdiaHNya0hHTFhpdHN3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+      - LND1_MACAROON=AgEDbG5kAvgBAwoQB1FdhGa9xoewc1LEXmnURRIBMBoWCgdhZGRyZXNzEgRyZWFkEgV3cml0ZRoTCgRpbmZvEgRyZWFkEgV3cml0ZRoXCghpbnZvaWNlcxIEcmVhZBIFd3JpdGUaIQoIbWFjYXJvb24SCGdlbmVyYXRlEgRyZWFkEgV3cml0ZRoWCgdtZXNzYWdlEgRyZWFkEgV3cml0ZRoXCghvZmZjaGFpbhIEcmVhZBIFd3JpdGUaFgoHb25jaGFpbhIEcmVhZBIFd3JpdGUaFAoFcGVlcnMSBHJlYWQSBXdyaXRlGhgKBnNpZ25lchIIZ2VuZXJhdGUSBHJlYWQAAAYgqHDdwGCqx0aQL1/Z3uUfzCpeBhfapGf9s/AZPOVwf6s=
+      - LND1_PUBKEY=03ca1907342d5d37744cb7038375e1867c24a87564c293157c95b2a9d38dcfb4c2
+      - LND1_DNS=lnd1
+      - LND1_RPCPORT=10009
+      - LND1_NAME=lnd1
+      - LND1_TYPE=offchain,onchain
+      - LND2_TLS=LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNZVENDQWdlZ0F3SUJBZ0lSQU9zZzdYWFR4cnVZYlhkeTY2d3RuN1F3Q2dZSUtvWkl6ajBFQXdJd09ERWYKTUIwR0ExVUVDaE1XYkc1a0lHRjFkRzluWlc1bGNtRjBaV1FnWTJWeWRERVZNQk1HQTFVRUF4TU1PRFl4T1RneApNak5tT0Roak1CNFhEVEl6TURFeE9USXdOREUxTTFvWERUTTBNRGN5TVRJd05ERTFNMW93T0RFZk1CMEdBMVVFCkNoTVdiRzVrSUdGMWRHOW5aVzVsY21GMFpXUWdZMlZ5ZERFVk1CTUdBMVVFQXhNTU9EWXhPVGd4TWpObU9EaGoKTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFM1lieUlKWU1Vcm8zZkl0UFFucysxZ2lpTXI5NQpJUXRmclFDQ2JhOWVtcjI4TENmbk1vYy9VQVFwUlg3QVlvVFRneUdiMFBuZGNUODF5ZVgvYTlPa0RLT0I4VENCCjdqQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVL1AxRHpJUkRzTEhHMU10d3NrZE5nZ0lub1Mwd2daWUdBMVVkRVFTQgpqakNCaTRJTU9EWXhPVGd4TWpObU9EaGpnZ2xzYjJOaGJHaHZjM1NDRFd4dVpDMXZkWFJ6YVdSbExUR0NEV3h1ClpDMXZkWFJ6YVdSbExUS0NEV3h1WkMxdmRYUnphV1JsTFRPQ0JHeHVaREdDQkd4dVpES0NCSFZ1YVhpQ0NuVnUKYVhod1lXTnJaWFNDQjJKMVptTnZibTZIQkg4QUFBR0hFQUFBQUFBQUFBQUFBQUFBQUFBQUFBR0hCS3dUQUJBdwpDZ1lJS29aSXpqMEVBd0lEU0FBd1JRSWhBSU5DNlJWQ3d6SzFYRnFxeVNLY0Y4QzQ5ZFlSOThjemdLNVdkcmNOCkxYYWlBaUJHYmtWeGhaeHdDaDVLQ1o1Z2M1Q2FsQ0RvaGNxVkdiaHNya0hHTFhpdHN3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+      - LND2_MACAROON=AgEDbG5kAvgBAwoQX0BxfhQTxLTiqaceBnGnfBIBMBoWCgdhZGRyZXNzEgRyZWFkEgV3cml0ZRoTCgRpbmZvEgRyZWFkEgV3cml0ZRoXCghpbnZvaWNlcxIEcmVhZBIFd3JpdGUaIQoIbWFjYXJvb24SCGdlbmVyYXRlEgRyZWFkEgV3cml0ZRoWCgdtZXNzYWdlEgRyZWFkEgV3cml0ZRoXCghvZmZjaGFpbhIEcmVhZBIFd3JpdGUaFgoHb25jaGFpbhIEcmVhZBIFd3JpdGUaFAoFcGVlcnMSBHJlYWQSBXdyaXRlGhgKBnNpZ25lchIIZ2VuZXJhdGUSBHJlYWQAAAYgMAKlr1HehfBpn2R5RPE2IuY9r/18QBeLZxYgRidpos4=
+      - LND2_PUBKEY=039341ef13e776dc1611502cf510110d9ac5cdc252141f5997adcfd72cef34c3a7
+      - LND2_DNS=lnd2
+      - LND2_RPCPORT=10010
+      - LND2_NAME=lnd2
+      - LND2_TYPE=offchain
+      - SVIX_SECRET=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2OTE2NzIwMTQsImV4cCI6MjAwNzAzMjAxNCwibmJmIjoxNjkxNjcyMDE0LCJpc3MiOiJzdml4LXNlcnZlciIsInN1YiI6Im9yZ18yM3JiOFlkR3FNVDBxSXpwZ0d3ZFhmSGlyTXUifQ.b9s0aWSisNdUNki4edabBEToLNSwjC9-AiJQr4J3y4E
+      - SVIX_ENDPOINT=http://svix:8071
+      - EXPORTER_PORT=3003
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-agent:4318
     depends_on:
-    - trigger
-    - apollo-router
-    - oathkeeper
-    - kratos
-    - lnd1
-    - lnd-outside-1
-    - bria
-    - mongodb
-    - redis
-    - stablesats
+      - trigger
+      - apollo-router
+      - oathkeeper
+      - kratos
+      - lnd1
+      - lnd-outside-1
+      - bria
+      - mongodb
+      - redis
+      - stablesats
     networks:
       default:
         aliases:
-        - bats-tests
+          - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:3a972ee2c3af50c6ffd83a9c9b101157fd3b0ca2d01678f1bfae0ecc146737bb
+    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:7736713fd3a49946aa20babb02d6bd01fb67a52711db5069651ef220607ac6ef
     environment:
-    - HELMREVISION=dev
-    - NETWORK=regtest
-    - OATHKEEPER_DECISION_ENDPOINT=http://oathkeeper:4456
-    - TWILIO_ACCOUNT_SID=AC_twilio_id
-    - TWILIO_AUTH_TOKEN=AC_twilio_auth_token
-    - TWILIO_VERIFY_SERVICE_ID=VA_twilio_service
-    - KRATOS_PG_CON=postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
-    - KRATOS_PUBLIC_API=http://kratos:4433
-    - KRATOS_ADMIN_API=http://kratos:4434
-    - KRATOS_MASTER_USER_PASSWORD=passwordHardtoFindWithNumber123
-    - KRATOS_CALLBACK_API_KEY=The-Value-of-My-Key
-    - PRICE_HOST=price
-    - PRICE_HISTORY_HOST=price-history
-    - PRICE_SERVER_HOST=stablesats
-    - BRIA_HOST=bria
-    - BRIA_API_KEY=bria_dev_000000000000000000000
-    - NOTIFICATIONS_HOST=notifications
-    - MONGODB_CON=mongodb://mongodb:27017/galoy
-    - REDIS_MASTER_NAME=mymaster
-    - REDIS_PASSWORD=
-    - REDIS_0_DNS=redis
-    - REDIS_0_PORT=6379
-    - REDIS_TYPE=standalone
-    - UNSECURE_IP_FROM_REQUEST_OBJECT=true
-    - UNSECURE_DEFAULT_LOGIN_CODE=000000
-    - GEETEST_ID=geetest_id
-    - GEETEST_KEY=geetest_key
-    - LND1_TLS=LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNZVENDQWdlZ0F3SUJBZ0lSQU9zZzdYWFR4cnVZYlhkeTY2d3RuN1F3Q2dZSUtvWkl6ajBFQXdJd09ERWYKTUIwR0ExVUVDaE1XYkc1a0lHRjFkRzluWlc1bGNtRjBaV1FnWTJWeWRERVZNQk1HQTFVRUF4TU1PRFl4T1RneApNak5tT0Roak1CNFhEVEl6TURFeE9USXdOREUxTTFvWERUTTBNRGN5TVRJd05ERTFNMW93T0RFZk1CMEdBMVVFCkNoTVdiRzVrSUdGMWRHOW5aVzVsY21GMFpXUWdZMlZ5ZERFVk1CTUdBMVVFQXhNTU9EWXhPVGd4TWpObU9EaGoKTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFM1lieUlKWU1Vcm8zZkl0UFFucysxZ2lpTXI5NQpJUXRmclFDQ2JhOWVtcjI4TENmbk1vYy9VQVFwUlg3QVlvVFRneUdiMFBuZGNUODF5ZVgvYTlPa0RLT0I4VENCCjdqQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVL1AxRHpJUkRzTEhHMU10d3NrZE5nZ0lub1Mwd2daWUdBMVVkRVFTQgpqakNCaTRJTU9EWXhPVGd4TWpObU9EaGpnZ2xzYjJOaGJHaHZjM1NDRFd4dVpDMXZkWFJ6YVdSbExUR0NEV3h1ClpDMXZkWFJ6YVdSbExUS0NEV3h1WkMxdmRYUnphV1JsTFRPQ0JHeHVaREdDQkd4dVpES0NCSFZ1YVhpQ0NuVnUKYVhod1lXTnJaWFNDQjJKMVptTnZibTZIQkg4QUFBR0hFQUFBQUFBQUFBQUFBQUFBQUFBQUFBR0hCS3dUQUJBdwpDZ1lJS29aSXpqMEVBd0lEU0FBd1JRSWhBSU5DNlJWQ3d6SzFYRnFxeVNLY0Y4QzQ5ZFlSOThjemdLNVdkcmNOCkxYYWlBaUJHYmtWeGhaeHdDaDVLQ1o1Z2M1Q2FsQ0RvaGNxVkdiaHNya0hHTFhpdHN3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
-    - LND1_MACAROON=AgEDbG5kAvgBAwoQB1FdhGa9xoewc1LEXmnURRIBMBoWCgdhZGRyZXNzEgRyZWFkEgV3cml0ZRoTCgRpbmZvEgRyZWFkEgV3cml0ZRoXCghpbnZvaWNlcxIEcmVhZBIFd3JpdGUaIQoIbWFjYXJvb24SCGdlbmVyYXRlEgRyZWFkEgV3cml0ZRoWCgdtZXNzYWdlEgRyZWFkEgV3cml0ZRoXCghvZmZjaGFpbhIEcmVhZBIFd3JpdGUaFgoHb25jaGFpbhIEcmVhZBIFd3JpdGUaFAoFcGVlcnMSBHJlYWQSBXdyaXRlGhgKBnNpZ25lchIIZ2VuZXJhdGUSBHJlYWQAAAYgqHDdwGCqx0aQL1/Z3uUfzCpeBhfapGf9s/AZPOVwf6s=
-    - LND1_PUBKEY=03ca1907342d5d37744cb7038375e1867c24a87564c293157c95b2a9d38dcfb4c2
-    - LND1_DNS=lnd1
-    - LND1_RPCPORT=10009
-    - LND1_NAME=lnd1
-    - LND1_TYPE=offchain,onchain
-    - LND2_TLS=LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNZVENDQWdlZ0F3SUJBZ0lSQU9zZzdYWFR4cnVZYlhkeTY2d3RuN1F3Q2dZSUtvWkl6ajBFQXdJd09ERWYKTUIwR0ExVUVDaE1XYkc1a0lHRjFkRzluWlc1bGNtRjBaV1FnWTJWeWRERVZNQk1HQTFVRUF4TU1PRFl4T1RneApNak5tT0Roak1CNFhEVEl6TURFeE9USXdOREUxTTFvWERUTTBNRGN5TVRJd05ERTFNMW93T0RFZk1CMEdBMVVFCkNoTVdiRzVrSUdGMWRHOW5aVzVsY21GMFpXUWdZMlZ5ZERFVk1CTUdBMVVFQXhNTU9EWXhPVGd4TWpObU9EaGoKTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFM1lieUlKWU1Vcm8zZkl0UFFucysxZ2lpTXI5NQpJUXRmclFDQ2JhOWVtcjI4TENmbk1vYy9VQVFwUlg3QVlvVFRneUdiMFBuZGNUODF5ZVgvYTlPa0RLT0I4VENCCjdqQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVL1AxRHpJUkRzTEhHMU10d3NrZE5nZ0lub1Mwd2daWUdBMVVkRVFTQgpqakNCaTRJTU9EWXhPVGd4TWpObU9EaGpnZ2xzYjJOaGJHaHZjM1NDRFd4dVpDMXZkWFJ6YVdSbExUR0NEV3h1ClpDMXZkWFJ6YVdSbExUS0NEV3h1WkMxdmRYUnphV1JsTFRPQ0JHeHVaREdDQkd4dVpES0NCSFZ1YVhpQ0NuVnUKYVhod1lXTnJaWFNDQjJKMVptTnZibTZIQkg4QUFBR0hFQUFBQUFBQUFBQUFBQUFBQUFBQUFBR0hCS3dUQUJBdwpDZ1lJS29aSXpqMEVBd0lEU0FBd1JRSWhBSU5DNlJWQ3d6SzFYRnFxeVNLY0Y4QzQ5ZFlSOThjemdLNVdkcmNOCkxYYWlBaUJHYmtWeGhaeHdDaDVLQ1o1Z2M1Q2FsQ0RvaGNxVkdiaHNya0hHTFhpdHN3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
-    - LND2_MACAROON=AgEDbG5kAvgBAwoQX0BxfhQTxLTiqaceBnGnfBIBMBoWCgdhZGRyZXNzEgRyZWFkEgV3cml0ZRoTCgRpbmZvEgRyZWFkEgV3cml0ZRoXCghpbnZvaWNlcxIEcmVhZBIFd3JpdGUaIQoIbWFjYXJvb24SCGdlbmVyYXRlEgRyZWFkEgV3cml0ZRoWCgdtZXNzYWdlEgRyZWFkEgV3cml0ZRoXCghvZmZjaGFpbhIEcmVhZBIFd3JpdGUaFgoHb25jaGFpbhIEcmVhZBIFd3JpdGUaFAoFcGVlcnMSBHJlYWQSBXdyaXRlGhgKBnNpZ25lchIIZ2VuZXJhdGUSBHJlYWQAAAYgMAKlr1HehfBpn2R5RPE2IuY9r/18QBeLZxYgRidpos4=
-    - LND2_PUBKEY=039341ef13e776dc1611502cf510110d9ac5cdc252141f5997adcfd72cef34c3a7
-    - LND2_DNS=lnd2
-    - LND2_RPCPORT=10010
-    - LND2_NAME=lnd2
-    - LND2_TYPE=offchain
-    - SVIX_SECRET=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2OTE2NzIwMTQsImV4cCI6MjAwNzAzMjAxNCwibmJmIjoxNjkxNjcyMDE0LCJpc3MiOiJzdml4LXNlcnZlciIsInN1YiI6Im9yZ18yM3JiOFlkR3FNVDBxSXpwZ0d3ZFhmSGlyTXUifQ.b9s0aWSisNdUNki4edabBEToLNSwjC9-AiJQr4J3y4E
-    - SVIX_ENDPOINT=http://svix:8071
-    - EXPORTER_PORT=3003
-    - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-agent:4318
+      - HELMREVISION=dev
+      - NETWORK=regtest
+      - OATHKEEPER_DECISION_ENDPOINT=http://oathkeeper:4456
+      - TWILIO_ACCOUNT_SID=AC_twilio_id
+      - TWILIO_AUTH_TOKEN=AC_twilio_auth_token
+      - TWILIO_VERIFY_SERVICE_ID=VA_twilio_service
+      - KRATOS_PG_CON=postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
+      - KRATOS_PUBLIC_API=http://kratos:4433
+      - KRATOS_ADMIN_API=http://kratos:4434
+      - KRATOS_MASTER_USER_PASSWORD=passwordHardtoFindWithNumber123
+      - KRATOS_CALLBACK_API_KEY=The-Value-of-My-Key
+      - PRICE_HOST=price
+      - PRICE_HISTORY_HOST=price-history
+      - PRICE_SERVER_HOST=stablesats
+      - BRIA_HOST=bria
+      - BRIA_API_KEY=bria_dev_000000000000000000000
+      - NOTIFICATIONS_HOST=notifications
+      - MONGODB_CON=mongodb://mongodb:27017/galoy
+      - REDIS_MASTER_NAME=mymaster
+      - REDIS_PASSWORD=
+      - REDIS_0_DNS=redis
+      - REDIS_0_PORT=6379
+      - REDIS_TYPE=standalone
+      - UNSECURE_IP_FROM_REQUEST_OBJECT=true
+      - UNSECURE_DEFAULT_LOGIN_CODE=000000
+      - GEETEST_ID=geetest_id
+      - GEETEST_KEY=geetest_key
+      - LND1_TLS=LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNZVENDQWdlZ0F3SUJBZ0lSQU9zZzdYWFR4cnVZYlhkeTY2d3RuN1F3Q2dZSUtvWkl6ajBFQXdJd09ERWYKTUIwR0ExVUVDaE1XYkc1a0lHRjFkRzluWlc1bGNtRjBaV1FnWTJWeWRERVZNQk1HQTFVRUF4TU1PRFl4T1RneApNak5tT0Roak1CNFhEVEl6TURFeE9USXdOREUxTTFvWERUTTBNRGN5TVRJd05ERTFNMW93T0RFZk1CMEdBMVVFCkNoTVdiRzVrSUdGMWRHOW5aVzVsY21GMFpXUWdZMlZ5ZERFVk1CTUdBMVVFQXhNTU9EWXhPVGd4TWpObU9EaGoKTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFM1lieUlKWU1Vcm8zZkl0UFFucysxZ2lpTXI5NQpJUXRmclFDQ2JhOWVtcjI4TENmbk1vYy9VQVFwUlg3QVlvVFRneUdiMFBuZGNUODF5ZVgvYTlPa0RLT0I4VENCCjdqQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVL1AxRHpJUkRzTEhHMU10d3NrZE5nZ0lub1Mwd2daWUdBMVVkRVFTQgpqakNCaTRJTU9EWXhPVGd4TWpObU9EaGpnZ2xzYjJOaGJHaHZjM1NDRFd4dVpDMXZkWFJ6YVdSbExUR0NEV3h1ClpDMXZkWFJ6YVdSbExUS0NEV3h1WkMxdmRYUnphV1JsTFRPQ0JHeHVaREdDQkd4dVpES0NCSFZ1YVhpQ0NuVnUKYVhod1lXTnJaWFNDQjJKMVptTnZibTZIQkg4QUFBR0hFQUFBQUFBQUFBQUFBQUFBQUFBQUFBR0hCS3dUQUJBdwpDZ1lJS29aSXpqMEVBd0lEU0FBd1JRSWhBSU5DNlJWQ3d6SzFYRnFxeVNLY0Y4QzQ5ZFlSOThjemdLNVdkcmNOCkxYYWlBaUJHYmtWeGhaeHdDaDVLQ1o1Z2M1Q2FsQ0RvaGNxVkdiaHNya0hHTFhpdHN3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+      - LND1_MACAROON=AgEDbG5kAvgBAwoQB1FdhGa9xoewc1LEXmnURRIBMBoWCgdhZGRyZXNzEgRyZWFkEgV3cml0ZRoTCgRpbmZvEgRyZWFkEgV3cml0ZRoXCghpbnZvaWNlcxIEcmVhZBIFd3JpdGUaIQoIbWFjYXJvb24SCGdlbmVyYXRlEgRyZWFkEgV3cml0ZRoWCgdtZXNzYWdlEgRyZWFkEgV3cml0ZRoXCghvZmZjaGFpbhIEcmVhZBIFd3JpdGUaFgoHb25jaGFpbhIEcmVhZBIFd3JpdGUaFAoFcGVlcnMSBHJlYWQSBXdyaXRlGhgKBnNpZ25lchIIZ2VuZXJhdGUSBHJlYWQAAAYgqHDdwGCqx0aQL1/Z3uUfzCpeBhfapGf9s/AZPOVwf6s=
+      - LND1_PUBKEY=03ca1907342d5d37744cb7038375e1867c24a87564c293157c95b2a9d38dcfb4c2
+      - LND1_DNS=lnd1
+      - LND1_RPCPORT=10009
+      - LND1_NAME=lnd1
+      - LND1_TYPE=offchain,onchain
+      - LND2_TLS=LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNZVENDQWdlZ0F3SUJBZ0lSQU9zZzdYWFR4cnVZYlhkeTY2d3RuN1F3Q2dZSUtvWkl6ajBFQXdJd09ERWYKTUIwR0ExVUVDaE1XYkc1a0lHRjFkRzluWlc1bGNtRjBaV1FnWTJWeWRERVZNQk1HQTFVRUF4TU1PRFl4T1RneApNak5tT0Roak1CNFhEVEl6TURFeE9USXdOREUxTTFvWERUTTBNRGN5TVRJd05ERTFNMW93T0RFZk1CMEdBMVVFCkNoTVdiRzVrSUdGMWRHOW5aVzVsY21GMFpXUWdZMlZ5ZERFVk1CTUdBMVVFQXhNTU9EWXhPVGd4TWpObU9EaGoKTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFM1lieUlKWU1Vcm8zZkl0UFFucysxZ2lpTXI5NQpJUXRmclFDQ2JhOWVtcjI4TENmbk1vYy9VQVFwUlg3QVlvVFRneUdiMFBuZGNUODF5ZVgvYTlPa0RLT0I4VENCCjdqQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVL1AxRHpJUkRzTEhHMU10d3NrZE5nZ0lub1Mwd2daWUdBMVVkRVFTQgpqakNCaTRJTU9EWXhPVGd4TWpObU9EaGpnZ2xzYjJOaGJHaHZjM1NDRFd4dVpDMXZkWFJ6YVdSbExUR0NEV3h1ClpDMXZkWFJ6YVdSbExUS0NEV3h1WkMxdmRYUnphV1JsTFRPQ0JHeHVaREdDQkd4dVpES0NCSFZ1YVhpQ0NuVnUKYVhod1lXTnJaWFNDQjJKMVptTnZibTZIQkg4QUFBR0hFQUFBQUFBQUFBQUFBQUFBQUFBQUFBR0hCS3dUQUJBdwpDZ1lJS29aSXpqMEVBd0lEU0FBd1JRSWhBSU5DNlJWQ3d6SzFYRnFxeVNLY0Y4QzQ5ZFlSOThjemdLNVdkcmNOCkxYYWlBaUJHYmtWeGhaeHdDaDVLQ1o1Z2M1Q2FsQ0RvaGNxVkdiaHNya0hHTFhpdHN3PT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+      - LND2_MACAROON=AgEDbG5kAvgBAwoQX0BxfhQTxLTiqaceBnGnfBIBMBoWCgdhZGRyZXNzEgRyZWFkEgV3cml0ZRoTCgRpbmZvEgRyZWFkEgV3cml0ZRoXCghpbnZvaWNlcxIEcmVhZBIFd3JpdGUaIQoIbWFjYXJvb24SCGdlbmVyYXRlEgRyZWFkEgV3cml0ZRoWCgdtZXNzYWdlEgRyZWFkEgV3cml0ZRoXCghvZmZjaGFpbhIEcmVhZBIFd3JpdGUaFgoHb25jaGFpbhIEcmVhZBIFd3JpdGUaFAoFcGVlcnMSBHJlYWQSBXdyaXRlGhgKBnNpZ25lchIIZ2VuZXJhdGUSBHJlYWQAAAYgMAKlr1HehfBpn2R5RPE2IuY9r/18QBeLZxYgRidpos4=
+      - LND2_PUBKEY=039341ef13e776dc1611502cf510110d9ac5cdc252141f5997adcfd72cef34c3a7
+      - LND2_DNS=lnd2
+      - LND2_RPCPORT=10010
+      - LND2_NAME=lnd2
+      - LND2_TYPE=offchain
+      - SVIX_SECRET=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2OTE2NzIwMTQsImV4cCI6MjAwNzAzMjAxNCwibmJmIjoxNjkxNjcyMDE0LCJpc3MiOiJzdml4LXNlcnZlciIsInN1YiI6Im9yZ18yM3JiOFlkR3FNVDBxSXpwZ0d3ZFhmSGlyTXUifQ.b9s0aWSisNdUNki4edabBEToLNSwjC9-AiJQr4J3y4E
+      - SVIX_ENDPOINT=http://svix:8071
+      - EXPORTER_PORT=3003
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-agent:4318
     depends_on:
-    - lnd1
-    - bria
-    - mongodb
+      - lnd1
+      - bria
+      - mongodb
   notifications:
-    image: us.gcr.io/galoy-org/galoy-notifications@sha256:10f1dcfa7fddaec498f085974e7febc5a5f10373a009aa1b65e6654151eb3f65
+    image: us.gcr.io/galoy-org/galoy-notifications@sha256:269d9953698ea12faee3158c0d9017c97490aca4b153ea2cfe6f31f55b1830a6
     environment:
-    - PG_CON=postgres://user:password@notifications-pg:5432/pg
-    - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-agent:4318
+      - PG_CON=postgres://user:password@notifications-pg:5432/pg
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-agent:4318
+      - NOTIFICATIONS_CONFIG=./config/notifications/notifications.yml
     ports:
-    - 6685:6685
+      - 6685:6685
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/notifications:/config/notifications
+
   notifications-pg:
     image: postgres:14.1
     environment:
-    - POSTGRES_USER=user
-    - POSTGRES_PASSWORD=password
-    - POSTGRES_DB=pg
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=pg
     ports:
-    - 5433:5432
+      - 5433:5432
     healthcheck:
       test:
-      - CMD-SHELL
-      - pg_isready
+        - CMD-SHELL
+        - pg_isready
       interval: 5s
       timeout: 30s
       retries: 5
   redis:
     image: redis:7.0.8
     ports:
-    - 6379:6379
+      - 6379:6379
     environment:
-    - ALLOW_EMPTY_PASSWORD=yes
-    - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
   mongodb:
     image: mongo:7.0.2
     ports:
-    - 27017:27017
+      - 27017:27017
     environment:
-    - MONGO_INITDB_DATABASE=galoy
+      - MONGO_INITDB_DATABASE=galoy
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:5c24aee423b64ccc993c2b17bdc635adaec8771612fb78632a967a90b49bc471
+    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:bf04c5bde3ae8cd6641255083b125809accc79c42d32196ccee1edfd230fbb01
     depends_on:
-    - mongodb
+      - mongodb
     environment:
-    - MONGODB_ADDRESS=mongodb
+      - MONGODB_ADDRESS=mongodb
   price:
     image: us.gcr.io/galoy-org/price:edge
     ports:
-    - 50051:50051
-    - 9464:9464
+      - 50051:50051
+      - 9464:9464
   price-history:
     image: us.gcr.io/galoy-org/price-history:edge
     ports:
-    - 50052:50052
+      - 50052:50052
     command: ./scripts/run-servers-dev.sh
     environment:
-    - DB_HOST=price-history-pg
-    - DB_PORT=5432
-    - DB_USER=galoy-price-usr
-    - DB_PWD=galoy-price-pwd
-    - DB_DB=galoy-price-history
-    - DB_POOL_MIN=1
-    - DB_POOL_MAX=5
-    - DB_DEBUG=false
+      - DB_HOST=price-history-pg
+      - DB_PORT=5432
+      - DB_USER=galoy-price-usr
+      - DB_PWD=galoy-price-pwd
+      - DB_DB=galoy-price-history
+      - DB_POOL_MIN=1
+      - DB_POOL_MAX=5
+      - DB_DEBUG=false
     depends_on:
-    - price-history-pg
-    - price-history-migrate
+      - price-history-pg
+      - price-history-migrate
   price-history-migrate:
     image: us.gcr.io/galoy-org/price-history-migrate:edge
     ports: []
     environment:
-    - DB_HOST=price-history-pg
-    - DB_PORT=5432
-    - DB_USER=galoy-price-usr
-    - DB_PWD=galoy-price-pwd
-    - DB_DB=galoy-price-history
-    - DB_POOL_MIN=1
-    - DB_POOL_MAX=5
-    - DB_DEBUG=false
+      - DB_HOST=price-history-pg
+      - DB_PORT=5432
+      - DB_USER=galoy-price-usr
+      - DB_PWD=galoy-price-pwd
+      - DB_DB=galoy-price-history
+      - DB_POOL_MIN=1
+      - DB_POOL_MAX=5
+      - DB_DEBUG=false
     depends_on:
-    - price-history-pg
+      - price-history-pg
   price-history-pg:
     image: postgres:14.1
     environment:
-    - POSTGRES_USER=galoy-price-usr
-    - POSTGRES_PASSWORD=galoy-price-pwd
-    - POSTGRES_DB=galoy-price-history
+      - POSTGRES_USER=galoy-price-usr
+      - POSTGRES_PASSWORD=galoy-price-pwd
+      - POSTGRES_DB=galoy-price-history
     healthcheck:
       test:
-      - CMD-SHELL
-      - pg_isready
+        - CMD-SHELL
+        - pg_isready
       interval: 5s
       timeout: 30s
       retries: 5
   bitcoind:
     image: lncm/bitcoind:v25.1
     ports:
-    - 18443:18443
+      - 18443:18443
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
   bitcoind-signer:
     image: lncm/bitcoind:v25.1
     ports: []
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
     depends_on:
-    - bitcoind
+      - bitcoind
     entrypoint:
-    - /bin/sh
-    - -c
+      - /bin/sh
+      - -c
     command:
-    - |
-      bitcoind -connect=bitcoind:18444
+      - |
+        bitcoind -connect=bitcoind:18444
   lnd1:
     image: lightninglabs/lnd:v0.17.3-beta
     ports:
-    - 10009:10009
+      - 10009:10009
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/lnd.conf:/root/.lnd/lnd.conf
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/tls.key:/root/.lnd/tls.key
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/tls.cert:/root/.lnd/tls.cert
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/regtest/lnd1.wallet.db:/root/.lnd/wallet.db
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/regtest/lnd1.macaroons.db:/root/.lnd/macaroons.db
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/regtest/lnd1.admin.macaroon:/root/.lnd/admin.macaroon
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/tls.key:/root/.lnd/tls.key
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/regtest/lnd1.wallet.db:/root/.lnd/wallet.db
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/regtest/lnd1.macaroons.db:/root/.lnd/macaroons.db
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/regtest/lnd1.admin.macaroon:/root/.lnd/admin.macaroon
     depends_on:
-    - bitcoind
+      - bitcoind
     entrypoint:
-    - /bin/sh
-    - -c
+      - /bin/sh
+      - -c
     command:
-    - |
-      mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
-      cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
-      cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
-      cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
-      /bin/lnd
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
   lnd-outside-1:
     image: lightninglabs/lnd:v0.17.3-beta
     ports:
-    - 10012:10009
+      - 10012:10009
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/lnd.conf:/root/.lnd/lnd.conf
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/tls.key:/root/.lnd/tls.key
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/tls.cert:/root/.lnd/tls.cert
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/regtest/lnd-outside-1.wallet.db:/root/.lnd/wallet.db
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/regtest/lnd-outside-1.macaroons.db:/root/.lnd/macaroons.db
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/admin.macaroon
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/tls.key:/root/.lnd/tls.key
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/regtest/lnd-outside-1.wallet.db:/root/.lnd/wallet.db
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/regtest/lnd-outside-1.macaroons.db:/root/.lnd/macaroons.db
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/admin.macaroon
     entrypoint:
-    - /bin/sh
-    - -c
+      - /bin/sh
+      - -c
     command:
-    - |
-      mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
-      cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
-      cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
-      cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
-      /bin/lnd
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
     depends_on:
-    - bitcoind
+      - bitcoind
   bria:
     image: us.gcr.io/galoy-org/bria:latest
     ports:
-    - 2743:2743
-    - 2742:2742
+      - 2743:2743
+      - 2742:2742
     environment:
-    - PG_CON=postgres://user:password@bria-pg:5432/pg
-    - BITCOIND_SIGNER_ENDPOINT=https://bitcoind-signer:18443
+      - PG_CON=postgres://user:password@bria-pg:5432/pg
+      - BITCOIND_SIGNER_ENDPOINT=https://bitcoind-signer:18443
     command:
-    - bria
-    - daemon
-    - --config
-    - /bria.yml
-    - dev
-    - -x
-    - tpubDDDDGYiFda8HfJRc2AHFJDxVzzEtBPrKsbh35EaW2UGd5qfzrF2G87ewAgeeRyHEz4iB3kvhAYW1sH6dpLepTkFUzAktumBN8AXeXWE9nd1
-    - -d
-    - m/84h/0h/0h
+      - bria
+      - daemon
+      - --config
+      - /bria.yml
+      - dev
+      - -x
+      - tpubDDDDGYiFda8HfJRc2AHFJDxVzzEtBPrKsbh35EaW2UGd5qfzrF2G87ewAgeeRyHEz4iB3kvhAYW1sH6dpLepTkFUzAktumBN8AXeXWE9nd1
+      - -d
+      - m/84h/0h/0h
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/bria.yml:/bria.yml
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/bria.yml:/bria.yml
     depends_on:
       bitcoind-signer:
         condition: service_started
@@ -399,58 +403,58 @@ services:
   bria-pg:
     image: postgres:14.1
     environment:
-    - POSTGRES_USER=user
-    - POSTGRES_PASSWORD=password
-    - POSTGRES_DB=pg
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=pg
     healthcheck:
       test:
-      - CMD-SHELL
-      - pg_isready
+        - CMD-SHELL
+        - pg_isready
       interval: 5s
       timeout: 30s
       retries: 5
   fulcrum:
     image: cculianu/fulcrum:latest
     ports:
-    - 50001:50001
+      - 50001:50001
     depends_on:
-    - bitcoind
+      - bitcoind
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/fulcrum/fulcrum.conf:/fulcrum.conf
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/fulcrum/tls.key:/tls.key
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/fulcrum/tls.cert:/tls.cert
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/fulcrum/fulcrum.conf:/fulcrum.conf
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/fulcrum/tls.key:/tls.key
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/fulcrum/tls.cert:/tls.cert
     environment:
-    - DATA_DIR=/db
-    - SSL_CERTFILE=/tls.cert
-    - SSL_KEYFILE=/tls.key
+      - DATA_DIR=/db
+      - SSL_CERTFILE=/tls.cert
+      - SSL_KEYFILE=/tls.key
     command:
-    - Fulcrum
-    - /fulcrum.conf
+      - Fulcrum
+      - /fulcrum.conf
   stablesats:
     image: us.gcr.io/galoy-org/stablesats-rs:latest
     ports:
-    - 3325:3325
+      - 3325:3325
     command:
-    - stablesats
-    - run
+      - stablesats
+      - run
     working_dir: /repo/config
     depends_on:
-    - otel-agent
+      - otel-agent
     restart: on-failure:10
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/:/repo
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/:/repo
   otel-agent:
     ports:
-    - 4318:4318
-    - 4317:4317
+      - 4318:4318
+      - 4317:4317
     image: otel/opentelemetry-collector-contrib:0.84.0
     command:
-    - --config=/etc/otel-agent-config.yaml
+      - --config=/etc/otel-agent-config.yaml
     environment:
-    - HONEYCOMB_DATASET=${HONEYCOMB_DATASET}
-    - HONEYCOMB_API_KEY=${HONEYCOMB_API_KEY}
+      - HONEYCOMB_DATASET=${HONEYCOMB_DATASET}
+      - HONEYCOMB_API_KEY=${HONEYCOMB_API_KEY}
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/otel-agent-config.yaml:/etc/otel-agent-config.yaml
+      - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/otel-agent-config.yaml:/etc/otel-agent-config.yaml
   svix:
     image: svix/svix-server:v1.11
     platform: linux/amd64
@@ -458,14 +462,14 @@ services:
       WAIT_FOR: "true"
       SVIX_DB_DSN: postgresql://postgres:postgres@svix-pg/postgres
       SVIX_JWT_SECRET: 8KjzRXrKkd9YFcNyqLSIY8JwiaCeRc6WK4UkMnSW
-      SVIX_WHITELIST_SUBNETS: '[0.0.0.0/0]'
+      SVIX_WHITELIST_SUBNETS: "[0.0.0.0/0]"
       SVIX_QUEUE_TYPE: memory
     depends_on:
-    - svix-pg
+      - svix-pg
     ports:
-    - 8071:8071
+      - 8071:8071
     extra_hosts:
-    - dockerhost-alias:host-gateway
+      - dockerhost-alias:host-gateway
   svix-pg:
     image: postgres:14.1
     environment:
