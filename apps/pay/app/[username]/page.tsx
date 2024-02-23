@@ -60,42 +60,31 @@ function ReceivePayment({ searchParams }: Props) {
           id="manifest"
         />
       </Head>
-      {/* {false ? (
-        <div className={styles.error}>
-          <p>{`${usernameError.message}.`}</p>
-          <p>Please check the username in your browser URL and try again.</p>
-          <Link href={"/setuppwa"} onClick={() => localStorage.removeItem("username")}>
-            Back
-          </Link>
-        </div>
-      ) : ( */}
-      <>
-        <div className={styles.username_container}>
-          {state.createdInvoice && (
-            <button onClick={() => dispatch({ type: ACTIONS.BACK })}>
-              <Image
-                src="/icons/chevron-left-icon.svg"
-                alt="back button"
-                width="10px"
-                height="12px"
-              />
-            </button>
-          )}
-          <p className={styles.username}>{`Pay ${username}`}</p>
-        </div>
-        {username && state ? (
-          <ParsePayment
-            state={state}
-            dispatch={dispatch}
-            defaultWalletCurrency={state.walletCurrency}
-            walletId={state?.walletId}
-            username={username}
-          />
-        ) : (
-          <LoadingComponent />
+
+      <div className={styles.username_container}>
+        {state.createdInvoice && (
+          <button onClick={() => dispatch({ type: ACTIONS.BACK })}>
+            <Image
+              src="/icons/chevron-left-icon.svg"
+              alt="back button"
+              width="10px"
+              height="12px"
+            />
+          </button>
         )}
-      </>
-      {/* )} */}
+        <p className={styles.username}>{`Pay ${username}`}</p>
+      </div>
+      {username && state ? (
+        <ParsePayment
+          state={state}
+          dispatch={dispatch}
+          defaultWalletCurrency={state.walletCurrency}
+          walletId={state?.walletId}
+          username={username}
+        />
+      ) : (
+        <LoadingComponent />
+      )}
     </Container>
   ) : null
 }

@@ -1,8 +1,14 @@
 import React from "react"
 
+import Link from "next/link"
+
+import { ApolloError, ApolloQueryResult } from "@apollo/client"
+
 import { getClient } from "../ssr-client"
 
 import { defaultCurrencyMetadata } from "../currency-metadata"
+
+import styles from "./username.module.css"
 
 import UsernameLayoutContainer from "@/components/layouts/username-layout"
 import { InvoiceProvider } from "@/context/invoice-context"
@@ -19,16 +25,37 @@ type Props = {
 }
 
 export default async function UsernameLayout({ children, params }: Props) {
-  const response = await getClient().query<AccountDefaultWalletsQuery>({
-    query: AccountDefaultWalletsDocument,
-    variables: { username: params.username },
-  })
+  let response: ApolloQueryResult<AccountDefaultWalletsQuery> | { errorMessage: string }
+  try {
+    response = await getClient().query<AccountDefaultWalletsQuery>({
+      query: AccountDefaultWalletsDocument,
+      variables: { username: params.username },
+    })
+  } catch (e) {
+    console.error("error in username-layout.tsx", e)
+    const error = e as ApolloError
+    if ("graphQLErrors" in error && error.graphQLErrors.length > 0) {
+      response = { errorMessage: error.graphQLErrors[0].message }
+    } else {
+      response = { errorMessage: "An unknown error occurred" }
+    }
+  }
+
+  if ("errorMessage" in response) {
+    return (
+      <div className={styles.error}>
+        <p>{`${response.errorMessage}.`}</p>
+        <p>Please check the username in your browser URL and try again.</p>
+        <Link href={"/"}>Go back</Link>
+      </div>
+    )
+  }
 
   const initialState = {
     currentAmount: "0",
     createdInvoice: false,
-    walletCurrency: response.data.accountDefaultWallet.walletCurrency,
-    walletId: response.data.accountDefaultWallet.id,
+    walletCurrency: response?.data?.accountDefaultWallet.walletCurrency,
+    walletId: response?.data?.accountDefaultWallet.id,
     username: params.username,
     pinnedToHomeScreenModalVisible: false,
     memo: "",
