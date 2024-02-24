@@ -43,8 +43,20 @@ def main() -> None:
         for lib in all_libs:
             relative_path = lib.relative_to(library_dir)
             output_path = args.output_dir / relative_path
+            assert (
+                not output_path.exists()
+            ), "Duplicate library name: {}! Source1: {}, source2: {}".format(
+                output_path.name,
+                os.path.realpath(output_path),
+                lib,
+            )
+
             output_path.parent.mkdir(exist_ok=True)
-            output_path.symlink_to(os.readlink(lib))
+            relative_path_to_lib = os.path.relpath(
+                os.path.realpath(lib),
+                start=os.path.realpath(os.path.dirname(output_path)),
+            )
+            output_path.symlink_to(relative_path_to_lib)
 
             if args.metadata_file:
                 with open(lib, "rb") as f:

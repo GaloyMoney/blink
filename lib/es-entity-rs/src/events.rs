@@ -158,9 +158,10 @@ mod tests {
         fn try_from(events: EntityEvents<DummyEvent>) -> Result<Self, Self::Error> {
             let name = events
                 .into_iter()
-                .find_map(|e| match e {
-                    DummyEvent::Created(name) => Some(name),
+                .map(|e| match e {
+                    DummyEvent::Created(name) => name,
                 })
+                .next()
                 .expect("Could not find name");
             Ok(Self { name })
         }

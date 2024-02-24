@@ -6,11 +6,12 @@
 # of this source tree.
 
 load("@prelude//erlang/erlang_application.bzl", "StartTypeValues")
-load(":common.bzl", "buck", "prelude_rule")
+load(":common.bzl", "prelude_rule")
+load(":re_test_common.bzl", "re_test_common")
 
 def re_test_args():
     # remove reference to fbcode targets
-    args = buck.re_test_args()
+    args = re_test_common.test_args()
     return {"remote_execution": args["remote_execution"]}
 
 common_attributes = {
@@ -48,7 +49,7 @@ common_application_attributes = {
         dependency is desired. These fields will be used to construct equally named fields in the generated `*.app` file
         for the application.
 
-        OTP applications are specified with the target path `otp//:<application>`.
+        OTP applications are specified with the target path `prelude//erlang/applications:<application>`.
 
         **NOTE**: _If you use the `app_src` field and the references application resource file template specifies
         `applications` or `included_applications` buck2 checks that the target definitions and information in the template are
@@ -218,6 +219,9 @@ rules_attributes = {
         "_toolchain": attrs.toolchain_dep(default = "toolchains//:erlang-default"),
     },
     "erlang_test": {
+        "common_app_env": attrs.dict(key = attrs.string(), value = attrs.string(), default = {}, doc = """
+                Application environment variables for the `common` application.
+            """),
         "config_files": attrs.list(attrs.dep(), default = [], doc = """
                 Will specify what config files the erlang beam machine running test with should load, for reference look at
                 [OTP documentation](https://www.erlang.org/doc/man/config.html). These ones should consist of default_output of
@@ -238,6 +242,10 @@ rules_attributes = {
         "extra_ct_hooks": attrs.list(attrs.string(), default = [], doc = """
                 List of additional Common Test hooks. The strings are interpreted as Erlang terms.
             """),
+        "extra_erl_flags": attrs.list(attrs.string(), default = [], doc = """
+                List of additional command line arguments given to the erl command invocation. These 
+                arguments are added to the front of the argument list.
+            """),
         "preamble": attrs.string(default = read_root_config("erlang", "erlang_test_preamble", "test:info(),test:ensure_initialized(),test:start_shell()."), doc = """
             """),
         "property_tests": attrs.list(attrs.dep(), default = [], doc = """
@@ -256,10 +264,10 @@ rules_attributes = {
                 The suites attribtue specify which erlang_test targets should be generated. For each suite "path_to_suite/suite_SUITE.erl" an
                 implicit 'erlang_test' target suite_SUITE will be generated.
             """),
-        "_artifact_annotation_mfa": attrs.string(),
+        "_artifact_annotation_mfa": attrs.string(default = "artifact_annotations:default_annotation/1"),
         "_cli_lib": attrs.dep(default = "prelude//erlang/common_test/test_cli_lib:test_cli_lib"),
         "_ct_opts": attrs.string(default = read_root_config("erlang", "erlang_test_ct_opts", "")),
-        "_providers": attrs.string(),
+        "_providers": attrs.string(default = ""),
         "_test_binary": attrs.dep(default = "prelude//erlang/common_test/test_binary:escript"),
         "_test_binary_lib": attrs.dep(default = "prelude//erlang/common_test/test_binary:test_binary"),
         "_toolchain": attrs.toolchain_dep(default = "toolchains//:erlang-default"),
@@ -520,15 +528,11 @@ erlang_test = prelude_rule(
 
         The `erlang_tests` macro forwards all attributes to the `erlang_test`. It defines some attributes
         that control how the targets get generated:
-        - `use_default_configs` (bool): Parameter that controls if the config files specified by the global config variable
-          `erlang.erlang_tests_default_config` should be used, default to True.
-        - `use_default_deps` (bool): Parameter that controls if the dependencies specified by the global config variable
-          `erlang.erlang_tests_default_apps` should be pulled, default to True.
         - `srcs` ([source]): Set of files that the suites might depend on and that are not part of any specific application.
           A "meta" application having those files as sources will automatically be created, and included in the dependencies
           of the tests.
 
-        Ene can call
+        One can call
         - `buck2 build //my_app:test_SUITE` to compile the test files together with its depedencies.
         - `buck2 test //my_app:other_test_SUITE` to run the test.
         - `buck2 run //my_app:other_test_SUITE` to open an interactive test shell, where tests can be run iteratively.

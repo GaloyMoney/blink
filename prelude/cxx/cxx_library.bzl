@@ -26,6 +26,7 @@ load(
     "apple_create_frameworks_linkable",
     "apple_get_link_info_by_deduping_link_infos",
 )
+load("@prelude//apple:resource_groups.bzl", "create_resource_graph")
 load(
     "@prelude//apple:xcode.bzl",
     "get_project_root_file",
@@ -71,7 +72,6 @@ load(
     "SwiftmoduleLinkable",  # @unused Used as a type
     "UnstrippedLinkOutputInfo",
     "create_merged_link_info",
-    "create_merged_link_info_for_propagation",
     "get_lib_output_style",
     "get_link_args_for_strategy",
     "get_output_styles_for_linkage",
@@ -96,13 +96,17 @@ load(
 load("@prelude//linking:shared_libraries.bzl", "SharedLibraryInfo", "create_shared_libraries", "merge_shared_libraries")
 load("@prelude//linking:strip.bzl", "strip_debug_info")
 load("@prelude//utils:arglike.bzl", "ArgLike")
+load("@prelude//utils:expect.bzl", "expect")
+load("@prelude//utils:lazy.bzl", "lazy")
 load(
     "@prelude//utils:utils.bzl",
-    "expect",
     "flatten",
-    "is_any",
     "map_val",
     "value_or",
+)
+load(
+    "@prelude//apple/apple_resource_types.bzl",
+    "CxxResourceSpec",
 )
 load(":archive.bzl", "make_archive")
 load(
@@ -131,6 +135,7 @@ load(
     "OBJECTS_SUBTARGET",
     "cxx_attr_deps",
     "cxx_attr_exported_deps",
+    "cxx_attr_link_strategy",
     "cxx_attr_link_style",
     "cxx_attr_linker_flags_all",
     "cxx_attr_preferred_linkage",
@@ -575,15 +580,6 @@ def cxx_library_parameterized(ctx: AnalysisContext, impl_params: CxxRuleConstruc
         inherited_non_exported_link = cxx_inherited_link_info(non_exported_deps)
         inherited_exported_link = cxx_inherited_link_info(exported_deps)
 
-        # TODO(cjhopman): This is strange that we construct this intermediate MergedLinkInfo rather than just
-        # passing the full list of deps below, but I'm keeping it to preserve existing behavior with a refactor.
-        # I intend to change completely how MergedLinkInfo works, so this should go away then. We cannot just
-        # pass these to create_merged_link_info because the for_propagation one is used to filter out deps for
-        # individual link strategies where that dep doesn't provide a linkinfo (which may itself be a bug, but not
-        # sure).
-        inherited_non_exported_link = create_merged_link_info_for_propagation(ctx, inherited_non_exported_link)
-        inherited_exported_link = create_merged_link_info_for_propagation(ctx, inherited_exported_link)
-
         merged_native_link_info = create_merged_link_info(
             ctx,
             pic_behavior,
@@ -591,9 +587,9 @@ def cxx_library_parameterized(ctx: AnalysisContext, impl_params: CxxRuleConstruc
             library_outputs.link_infos,
             preferred_linkage = preferred_linkage,
             # Export link info from non-exported deps (when necessary).
-            deps = [inherited_non_exported_link],
+            deps = inherited_non_exported_link,
             # Export link info from out (exported) deps.
-            exported_deps = [inherited_exported_link],
+            exported_deps = inherited_exported_link,
             frameworks_linkable = frameworks_linkable,
             swiftmodule_linkable = swiftmodule_linkable,
             swift_runtime_linkable = swift_runtime_linkable,
@@ -711,6 +707,7 @@ def cxx_library_parameterized(ctx: AnalysisContext, impl_params: CxxRuleConstruc
                     ctx = ctx,
                     default_soname = _soname(ctx, impl_params),
                     preferred_linkage = preferred_linkage,
+                    default_link_strategy = cxx_attr_link_strategy(ctx.attrs),
                     deps = non_exported_deps,
                     exported_deps = exported_deps,
                     # If we don't have link input for this link style, we pass in `None` so
@@ -729,11 +726,22 @@ def cxx_library_parameterized(ctx: AnalysisContext, impl_params: CxxRuleConstruc
 
     # C++ resource.
     if impl_params.generate_providers.resources:
-        providers.append(ResourceInfo(resources = gather_resources(
+        resources = cxx_attr_resources(ctx)
+        cxx_resource_info = ResourceInfo(resources = gather_resources(
             label = ctx.label,
-            resources = cxx_attr_resources(ctx),
+            resources = resources,
             deps = non_exported_deps + exported_deps,
-        )))
+        ))
+        providers += [cxx_resource_info]
+        if impl_params.generate_providers.cxx_resources_as_apple_resources:
+            apple_resource_graph = create_resource_graph(
+                ctx = ctx,
+                labels = ctx.attrs.labels,
+                deps = non_exported_deps,
+                exported_deps = exported_deps,
+                cxx_resource_spec = CxxResourceSpec(resources = resources) if resources else None,
+            )
+            providers += [apple_resource_graph]
 
     if impl_params.generate_providers.template_placeholders:
         templ_vars = {}
@@ -874,7 +882,7 @@ def _get_library_compile_output(ctx, outs: list[CxxCompileOutput], extra_link_in
         clang_traces = [out.clang_trace for out in outs if out.clang_trace != None],
         clang_remarks = [out.clang_remarks for out in outs if out.clang_remarks != None],
         external_debug_info = [out.external_debug_info for out in outs if out.external_debug_info != None],
-        objects_have_external_debug_info = is_any(lambda out: out.object_has_external_debug_info, outs),
+        objects_have_external_debug_info = lazy.is_any(lambda out: out.object_has_external_debug_info, outs),
         objects_sub_targets = objects_sub_targets,
     )
 
@@ -1119,19 +1127,7 @@ def _get_shared_library_links(
     if not link_group_mappings and not force_link_group_linking:
         deps_merged_link_infos = cxx_inherited_link_info(dedupe(flatten([non_exported_deps, exported_deps])))
 
-        # Even though we're returning the shared library links, we must still
-        # respect the `link_style` attribute of the target which controls how
-        # all deps get linked. For example, you could be building the shared
-        # output of a library which has `link_style = "static"`.
-        #
-        # The fallback equivalent code in Buck v1 is in CxxLibraryFactor::createBuildRule()
-        # where link style is determined using the `linkableDepType` variable.
-        link_strategy_value = ctx.attrs.link_style if ctx.attrs.link_style != None else "shared"
-
-        # Note if `static` link style is requested, we assume `static_pic`
-        # instead, so that code in the shared library can be correctly
-        # loaded in the address space of any process at any address.
-        link_strategy_value = "static_pic" if link_strategy_value == "static" else link_strategy_value
+        link_strategy = cxx_attr_link_strategy(ctx.attrs)
 
         # We cannot support deriving link execution preference off the included links, as we've already
         # lost the information on what is in the link.
@@ -1147,7 +1143,7 @@ def _get_shared_library_links(
             # To get the link_strategy, we have to check the link_strategy against the toolchain's pic_behavior.
             #
             # For more info, check the PicBehavior docs.
-            process_link_strategy_for_pic_behavior(LinkStrategy(link_strategy_value), pic_behavior),
+            process_link_strategy_for_pic_behavior(link_strategy, pic_behavior),
             swiftmodule_linkable,
             swift_runtime_linkable = swift_runtime_linkable,
         ), None, link_execution_preference
@@ -1222,7 +1218,14 @@ def _static_library(
 
     base_name = _base_static_library_name(ctx, stripped)
     name = _archive_name(base_name, pic = pic, extension = linker_info.static_library_extension)
-    archive = make_archive(ctx, name, objects)
+
+    # If we have extra hidden deps of this target add them to the archive action
+    # so they are forced to build for static library output.
+    archive_args = cmd_args(objects)
+    if impl_params.extra_hidden:
+        archive_args.hidden(impl_params.extra_hidden)
+
+    archive = make_archive(ctx, name, objects, archive_args)
 
     bitcode_bundle = _bitcode_bundle(ctx, bitcode_objects, pic, stripped)
     if False:
@@ -1371,11 +1374,20 @@ def _shared_library(
         ),
         external_debug_info = external_debug_info,
     )
+
+    # If we have extra hidden deps here, add them as hidden inputs
+    # to the link action so that they are forced to build before linking.
+    links = [LinkArgs(infos = [link_info]), dep_infos]
+    if impl_params.extra_hidden:
+        links.append(
+            LinkArgs(flags = cmd_args().hidden(impl_params.extra_hidden)),
+        )
+
     link_result = cxx_link_shared_library(
         ctx = ctx,
         output = soname,
         opts = link_options(
-            links = [LinkArgs(infos = [link_info]), dep_infos],
+            links = links,
             identifier = soname,
             link_ordering = link_ordering,
             strip = impl_params.strip_executable,

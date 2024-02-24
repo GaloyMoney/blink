@@ -12,6 +12,7 @@ load(
     "project_artifacts",
 )
 load("@prelude//:paths.bzl", "paths")
+load("@prelude//apple:apple_buck2_compatibility.bzl", "apple_check_buck2_compatibility")
 load("@prelude//apple:apple_toolchain_types.bzl", "AppleToolchainInfo", "AppleToolsInfo")
 # @oss-disable: load("@prelude//apple/meta_only:linker_outputs.bzl", "subtargets_for_apple_bundle_extra_outputs") 
 load("@prelude//apple/user:apple_selected_debug_path_file.bzl", "SELECTED_DEBUG_PATH_FILE_NAME")
@@ -33,25 +34,37 @@ load(
     "make_link_command_debug_output_json_info",
 )
 load("@prelude//utils:arglike.bzl", "ArgLike")
+load("@prelude//utils:expect.bzl", "expect")
+load("@prelude//utils:lazy.bzl", "lazy")
 load(
     "@prelude//utils:set.bzl",
     "set",
 )
 load(
     "@prelude//utils:utils.bzl",
-    "expect",
     "flatten",
-    "is_any",
 )
 load(":apple_bundle_destination.bzl", "AppleBundleDestination")
 load(":apple_bundle_part.bzl", "AppleBundlePart", "SwiftStdlibArguments", "assemble_bundle", "bundle_output", "get_apple_bundle_part_relative_destination_path", "get_bundle_dir_name")
 load(":apple_bundle_resources.bzl", "get_apple_bundle_resource_part_list", "get_is_watch_bundle")
-load(":apple_bundle_types.bzl", "AppleBinaryExtraOutputsInfo", "AppleBundleBinaryOutput", "AppleBundleExtraOutputsInfo", "AppleBundleInfo", "AppleBundleLinkerMapInfo", "AppleBundleResourceInfo")
+load(
+    ":apple_bundle_types.bzl",
+    "AppleBinaryExtraOutputsInfo",
+    "AppleBundleBinaryOutput",
+    "AppleBundleExtraOutputsInfo",
+    "AppleBundleInfo",
+    "AppleBundleLinkerMapInfo",
+    "AppleBundleResourceInfo",
+    "AppleBundleType",
+    "AppleBundleTypeDefault",
+    "AppleBundleTypeWatchApp",
+)
 load(":apple_bundle_utility.bzl", "get_bundle_min_target_version", "get_default_binary_dep", "get_flattened_binary_deps", "get_product_name")
 load(":apple_dsym.bzl", "DSYM_INFO_SUBTARGET", "DSYM_SUBTARGET", "get_apple_dsym", "get_apple_dsym_ext", "get_apple_dsym_info")
 load(":apple_genrule_deps.bzl", "get_apple_build_genrule_deps_attr_value", "get_apple_genrule_deps_outputs")
 load(":apple_sdk.bzl", "get_apple_sdk_name")
 load(":apple_universal_binaries.bzl", "create_universal_binary")
+load(":apple_validation_deps.bzl", "get_apple_validation_deps_outputs")
 load(
     ":debug.bzl",
     "AggregatedAppleDebugInfo",
@@ -280,8 +293,21 @@ def get_apple_bundle_part_list(ctx: AnalysisContext, params: AppleBundlePartList
         info_plist_part = resource_part_list.info_plist_part,
     )
 
+def _infer_apple_bundle_type(ctx: AnalysisContext) -> AppleBundleType:
+    is_watchos = get_is_watch_bundle(ctx)
+    if is_watchos and ctx.attrs.bundle_type:
+        fail("Cannot have a watchOS app with an explicit `bundle_type`, target: {}".format(ctx.label))
+
+    if is_watchos:
+        return AppleBundleTypeWatchApp
+    if ctx.attrs.bundle_type != None:
+        return AppleBundleType(ctx.attrs.bundle_type)
+
+    return AppleBundleTypeDefault
+
 def apple_bundle_impl(ctx: AnalysisContext) -> list[Provider]:
     _apple_bundle_run_validity_checks(ctx)
+    apple_check_buck2_compatibility(ctx)
 
     binary_outputs = _get_binary(ctx)
 
@@ -295,9 +321,9 @@ def apple_bundle_impl(ctx: AnalysisContext) -> list[Provider]:
 
     primary_binary_rel_path = get_apple_bundle_part_relative_destination_path(ctx, primary_binary_part)
 
-    genrule_deps_outputs = []
+    validation_deps_outputs = get_apple_validation_deps_outputs(ctx)
     if get_apple_build_genrule_deps_attr_value(ctx):
-        genrule_deps_outputs = get_apple_genrule_deps_outputs(ctx.attrs.deps)
+        validation_deps_outputs += get_apple_genrule_deps_outputs(ctx.attrs.deps)
 
     sub_targets = assemble_bundle(
         ctx,
@@ -305,7 +331,7 @@ def apple_bundle_impl(ctx: AnalysisContext) -> list[Provider]:
         apple_bundle_part_list_output.parts,
         apple_bundle_part_list_output.info_plist_part,
         SwiftStdlibArguments(primary_binary_rel_path = primary_binary_rel_path),
-        genrule_deps_outputs,
+        validation_deps_outputs,
     )
     sub_targets.update(aggregated_debug_info.sub_targets)
 
@@ -352,9 +378,9 @@ def apple_bundle_impl(ctx: AnalysisContext) -> list[Provider]:
         DefaultInfo(default_output = bundle, sub_targets = sub_targets),
         AppleBundleInfo(
             bundle = bundle,
+            bundle_type = _infer_apple_bundle_type(ctx),
             binary_name = get_product_name(ctx),
-            is_watchos = get_is_watch_bundle(ctx),
-            contains_watchapp = is_any(lambda part: part.destination == AppleBundleDestination("watchapp"), apple_bundle_part_list_output.parts),
+            contains_watchapp = lazy.is_any(lambda part: part.destination == AppleBundleDestination("watchapp"), apple_bundle_part_list_output.parts),
             skip_copying_swift_stdlib = ctx.attrs.skip_copying_swift_stdlib,
         ),
         AppleDebuggableInfo(

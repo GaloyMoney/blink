@@ -55,7 +55,7 @@ def create_class_to_source_map_info(
             actions = ctx.actions,
             java_toolchain = ctx.attrs._java_toolchain[JavaToolchainInfo],
             tset_debuginfo = tset_debuginfo,
-            name = ctx.attrs.name + ".debuginfo_merged.json",
+            name = ctx.label.name + ".debuginfo_merged.json",
         )
 
     return JavaClassToSourceMapInfo(

@@ -8,7 +8,16 @@
 from __future__ import annotations
 
 import os
+import types
 from typing import Callable, Sequence
+
+
+def iscoroutinefunction(func: Callable[[], None]) -> bool:
+    # This is the guts of inspect.iscoroutinefunction without the cost of inspect import
+    CO_COROUTINE = 128  # This hasn't changed in 8 years most likely never will
+    return isinstance(func, types.FunctionType) and bool(
+        func.__code__.co_flags & CO_COROUTINE
+    )
 
 
 def run_as_main(
@@ -38,11 +47,18 @@ def run_as_main(
     # `sys.path` has been setup by setting the PAR_MAIN_OVERRIDE environment
     # variable.
     decorate_main_module = os.environ.pop("PAR_MAIN_OVERRIDE", None)
+    is_decorated_module = "PAR_MAIN_ORIGINAL" in os.environ
     if decorate_main_module:
         # Pass the original main module as environment variable for the process.
         # Allowing the decorating module to pick it up.
         os.environ["PAR_MAIN_ORIGINAL"] = main_module
         main_module = decorate_main_module
+
+    # Also pass the main function if set:
+    decorate_main_function = os.environ.pop("PAR_MAIN_FUNCTION_OVERRIDE", None)
+    if main_function and (decorate_main_module or is_decorated_module):
+        os.environ["PAR_MAIN_FUNCTION_ORIGINAL"] = main_function
+        main_function = decorate_main_function
 
     if not main_function:
         import runpy
@@ -61,6 +77,16 @@ def run_as_main(
     import sys
 
     sys.modules["__main__"] = mod
+
+    # Pretend we're executing `main()` directly
+    if hasattr(main, "__globals__") and isinstance(main.__globals__, dict):
+        main.__globals__["__name__"] = "__main__"
     for hook in main_function_hooks:
         hook()
-    main()
+
+    if iscoroutinefunction(main):
+        import asyncio
+
+        asyncio.run(main())
+    else:
+        main()

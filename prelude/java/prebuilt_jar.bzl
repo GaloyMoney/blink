@@ -38,6 +38,9 @@ def prebuilt_jar_impl(ctx: AnalysisContext) -> list[Provider]:
     output = ctx.actions.declare_output("symlink/{}".format(binary_jar.short_path))
     ctx.actions.symlink_file(output, binary_jar)
 
+    gwt_output = ctx.actions.declare_output("{}-gwt.jar".format(ctx.label.name))
+    ctx.actions.copy_file(gwt_output, ctx.attrs.source_jar if ctx.attrs.source_jar else ctx.attrs.binary_jar)
+
     abi = None
     if ctx.attrs.generate_abi:
         prebuilt_jar_toolchain = ctx.attrs._prebuilt_jar_toolchain[PrebuiltJarToolchainInfo]
@@ -56,8 +59,10 @@ def prebuilt_jar_impl(ctx: AnalysisContext) -> list[Provider]:
         library_output = library_output_classpath_entry,
         declared_deps = ctx.attrs.deps,
         exported_deps = ctx.attrs.deps,
+        provided_deps = ctx.attrs.desugar_deps,
         needs_desugar = True,
         is_prebuilt_jar = True,
+        gwt_module = gwt_output,
     )
 
     # TODO(T107163344) this shouldn't be in prebuilt_jar itself, use overlays to remove it.

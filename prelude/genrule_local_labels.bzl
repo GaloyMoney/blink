@@ -195,6 +195,12 @@ _GENRULE_LOCAL_LABELS = {label: True for label in [
 
     # Uses xcrun which is not in RE (e.g. compile metalshaders)
     "uses_xcrun",
+
+    # speech translation uses genrule to get models from manifold, high priority project
+    "speech_translation_high_priority",
+
+    # Uses Apple's codesign command which might not be in RE
+    "uses_codesign",
 ]}
 
 def genrule_labels_require_local(labels):

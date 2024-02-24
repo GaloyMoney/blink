@@ -5,6 +5,7 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
+load("@prelude//:paths.bzl", "paths")
 load(
     "@prelude//android:android_providers.bzl",
     "merge_android_packageable_info",
@@ -58,11 +59,11 @@ load("@prelude//linking:strip.bzl", "strip_debug_info")
 load("@prelude//os_lookup:defs.bzl", "OsLookup")
 load(
     "@prelude//tests:re_utils.bzl",
-    "get_re_executor_from_props",
+    "get_re_executors_from_props",
 )
+load("@prelude//utils:expect.bzl", "expect")
 load(
     "@prelude//utils:utils.bzl",
-    "expect",
     "filter_and_map_idx",
     "value_or",
 )
@@ -228,6 +229,7 @@ def cxx_binary_impl(ctx: AnalysisContext) -> list[Provider]:
     link_group_info = get_link_group_info(ctx, filter_and_map_idx(LinkableGraph, cxx_attr_deps(ctx)))
     params = CxxRuleConstructorParams(
         rule_type = "cxx_binary",
+        executable_name = ctx.attrs.executable_name,
         headers_layout = cxx_get_regular_cxx_headers_layout(ctx),
         srcs = get_srcs_with_flags(ctx),
         link_group_info = link_group_info,
@@ -242,15 +244,34 @@ def cxx_binary_impl(ctx: AnalysisContext) -> list[Provider]:
     if output.link_command_debug_output:
         extra_providers.append(LinkCommandDebugOutputInfo(debug_outputs = [output.link_command_debug_output]))
 
+    # When an executable is the output of a build, also materialize all the
+    # unpacked external debuginfo that goes with it. This makes `buck2 build
+    # :main` equivalent to `buck2 build :main :main[debuginfo]`.
+    #
+    # This is wasted work if we are building an executable together with its dwp
+    # subtarget (`buck2 build :main :main[dwp]`) in which case a large number of
+    # unpacked debuginfo files can end up being materialized redundantly. LLDB
+    # will ignore them and obtain debuginfo via the single packed debuginfo file
+    # instead.
+    #
+    # But materializing unpacked debuginfo is the right tradeoff because it
+    # means the output of `buck2 build :main` is always immediately usable in a
+    # debugger.
+    #
+    # External debuginfo is *not* materialized when an executable is depended on
+    # by another rule, such as by $(exe ...) or exec_dep.
+    other_outputs = output.runtime_files + output.external_debug_info_artifacts
+
     return [
         DefaultInfo(
             default_output = output.binary,
-            other_outputs = output.runtime_files,
+            other_outputs = other_outputs,
             sub_targets = output.sub_targets,
         ),
         RunInfo(args = cmd_args(output.binary).hidden(output.runtime_files)),
         output.compilation_db,
         output.xcode_data,
+        output.dist_info,
     ] + extra_providers
 
 def _prebuilt_item(
@@ -470,7 +491,7 @@ def prebuilt_cxx_library_impl(ctx: AnalysisContext) -> list[Provider]:
 
                     # Provide a sub-target that always provides the shared lib
                     # using the soname.
-                    if soname and shared_lib.output.basename != soname:
+                    if soname and shared_lib.output.basename != paths.basename(soname):
                         soname_lib = ctx.actions.copy_file(soname, shared_lib.output)
                     else:
                         soname_lib = shared_lib.output
@@ -514,11 +535,6 @@ def prebuilt_cxx_library_impl(ctx: AnalysisContext) -> list[Provider]:
         sub_targets = sub_targets,
     ))
 
-    # TODO(cjhopman): This is preserving existing behavior, but it doesn't make sense. These lists can be passed
-    # unmerged to create_merged_link_info below. Potentially that could change link order, so needs to be done more carefully.
-    merged_inherited_link = create_merged_link_info_for_propagation(ctx, inherited_link)
-    merged_inherited_exported_link = create_merged_link_info_for_propagation(ctx, inherited_exported_link)
-
     # Propagate link info provider.
     providers.append(create_merged_link_info(
         ctx,
@@ -527,9 +543,9 @@ def prebuilt_cxx_library_impl(ctx: AnalysisContext) -> list[Provider]:
         libraries,
         preferred_linkage = preferred_linkage,
         # Export link info from non-exported deps (when necessary).
-        deps = [merged_inherited_link],
+        deps = inherited_link,
         # Export link info from out (exported) deps.
-        exported_deps = [merged_inherited_exported_link],
+        exported_deps = inherited_exported_link,
     ))
 
     # Propagate shared libraries up the tree.
@@ -575,6 +591,7 @@ def prebuilt_cxx_library_impl(ctx: AnalysisContext) -> list[Provider]:
                 ctx = ctx,
                 default_soname = soname,
                 preferred_linkage = preferred_linkage,
+                default_link_strategy = to_link_strategy(cxx_toolchain.linker_info.link_style),
                 exported_deps = exported_first_order_deps,
                 # If we don't have link input for this link style, we pass in `None` so
                 # that omnibus knows to avoid it.
@@ -636,8 +653,8 @@ def cxx_test_impl(ctx: AnalysisContext) -> list[Provider]:
 
     command = [cmd_args(output.binary).hidden(output.runtime_files)] + ctx.attrs.args
 
-    # Setup a RE executor based on the `remote_execution` param.
-    re_executor = get_re_executor_from_props(ctx)
+    # Setup RE executors based on the `remote_execution` param.
+    re_executor, executor_overrides = get_re_executors_from_props(ctx)
 
     return inject_test_run_info(
         ctx,
@@ -648,6 +665,7 @@ def cxx_test_impl(ctx: AnalysisContext) -> list[Provider]:
             labels = ctx.attrs.labels,
             contacts = ctx.attrs.contacts,
             default_executor = re_executor,
+            executor_overrides = executor_overrides,
             # We implicitly make this test via the project root, instead of
             # the cell root (e.g. fbcode root).
             run_from_project_root = (
@@ -677,6 +695,7 @@ def _get_params_for_android_binary_cxx_library() -> (CxxRuleSubTargetParams, Cxx
         compilation_database = False,
         omnibus_root = False,
         preprocessor_for_tests = False,
+        cxx_resources_as_apple_resources = False,
     )
 
     return sub_target_params, provider_params

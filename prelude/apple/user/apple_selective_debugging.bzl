@@ -5,8 +5,6 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
-# @starlark-rust: allow_string_literals_in_type_expr
-
 load("@prelude//apple:apple_toolchain_types.bzl", "AppleToolsInfo")
 load(
     "@prelude//linking:execution_preference.bzl",
@@ -21,16 +19,13 @@ load(
     "BuildTargetPattern",  # @unused Used as a type
     "parse_build_target_pattern",
 )
-load(
-    "@prelude//utils:utils.bzl",
-    "is_any",
-)
+load("@prelude//utils:lazy.bzl", "lazy")
 
 _SelectionCriteria = record(
     include_build_target_patterns = field(list[BuildTargetPattern], []),
-    include_regular_expressions = field(list["regex"], []),
+    include_regular_expressions = field(list[regex], []),
     exclude_build_target_patterns = field(list[BuildTargetPattern], []),
-    exclude_regular_expressions = field(list["regex"], []),
+    exclude_regular_expressions = field(list[regex], []),
 )
 
 AppleSelectiveDebuggingInfo = provider(
@@ -63,9 +58,17 @@ def _impl(ctx: AnalysisContext) -> list[Provider]:
 
     # process inputs and provide them up the graph with typing
     include_build_target_patterns = [parse_build_target_pattern(pattern) for pattern in ctx.attrs.include_build_target_patterns]
-    include_regular_expressions = [experimental_regex(expression) for expression in ctx.attrs.include_regular_expressions]
+    include_regular_expressions = [
+        # TODO(nga): fancy is probably not needed here.
+        regex(expression, fancy = True)
+        for expression in ctx.attrs.include_regular_expressions
+    ]
     exclude_build_target_patterns = [parse_build_target_pattern(pattern) for pattern in ctx.attrs.exclude_build_target_patterns]
-    exclude_regular_expressions = [experimental_regex(expression) for expression in ctx.attrs.exclude_regular_expressions]
+    exclude_regular_expressions = [
+        # TODO(nga): fancy is probably not needed here.
+        regex(expression, fancy = True)
+        for expression in ctx.attrs.exclude_regular_expressions
+    ]
 
     scrubber = ctx.attrs._apple_tools[AppleToolsInfo].selective_debugging_scrubber
 
@@ -130,7 +133,7 @@ def _impl(ctx: AnalysisContext) -> list[Provider]:
     def preference_for_links(links: list[Label], deps_preferences: list[LinkExecutionPreferenceInfo]) -> LinkExecutionPreference:
         # If any dependent links were run locally, prefer that the current link is also performed locally,
         # to avoid needing to upload the previous link.
-        dep_prefered_local = is_any(lambda info: info.preference == LinkExecutionPreference("local"), deps_preferences)
+        dep_prefered_local = lazy.is_any(lambda info: info.preference == LinkExecutionPreference("local"), deps_preferences)
         if dep_prefered_local:
             return LinkExecutionPreference("local")
 
@@ -166,7 +169,7 @@ registration_spec = RuleRegistrationSpec(
         "include_regular_expressions": attrs.list(attrs.string(), default = []),
         "json_type": attrs.enum(_SelectiveDebuggingJsonTypes),
         "targets_json_file": attrs.option(attrs.source(), default = None),
-        "_apple_tools": attrs.exec_dep(default = "fbsource//xplat/buck2/platform/apple:apple-tools", providers = [AppleToolsInfo]),
+        "_apple_tools": attrs.exec_dep(default = "prelude//apple/tools:apple-tools", providers = [AppleToolsInfo]),
     },
 )
 
@@ -179,7 +182,7 @@ def _is_label_included(label: Label, selection_criteria: _SelectionCriteria) -> 
     # If included (above snippet), ensure that this target is not excluded.
     return not _check_if_label_matches_patterns_or_expressions(label, selection_criteria.exclude_build_target_patterns, selection_criteria.exclude_regular_expressions)
 
-def _check_if_label_matches_patterns_or_expressions(label: Label, patterns: list[BuildTargetPattern], expressions: list["regex"]) -> bool:
+def _check_if_label_matches_patterns_or_expressions(label: Label, patterns: list[BuildTargetPattern], expressions: list[regex]) -> bool:
     for pattern in patterns:
         if pattern.matches(label):
             return True

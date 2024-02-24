@@ -21,6 +21,8 @@ Platform = ["linux", "macos", "windows", "freebsd", "unknown"]
 
 RemoteFileType = ["data", "executable", "exploded_zip"]
 
+TargetCpuType = ["arm", "armv7", "arm64", "x86", "x86_64", "mips"]
+
 alias = prelude_rule(
     name = "alias",
     docs = "",
@@ -215,6 +217,23 @@ config_setting = prelude_rule(
         {
             "constraint_values": attrs.list(attrs.configuration_label(), default = []),
             "values": attrs.dict(key = attrs.string(), value = attrs.string(), sorted = False, default = {}),
+        }
+    ),
+)
+
+configuration_alias = prelude_rule(
+    name = "configuration_alias",
+    docs = "",
+    examples = None,
+    further = None,
+    attrs = (
+        # @unsorted-dict-items
+        {
+            # configuration_alias acts like alias but for configuration rules.
+
+            # The configuration_alias itself is a configuration rule and the `actual` argument is
+            # expected to be a configuration rule as well.
+            "actual": attrs.dep(pulls_and_pushes_plugins = plugins.All),
         }
     ),
 )
@@ -1096,6 +1115,19 @@ test_suite = prelude_rule(
     ),
 )
 
+toolchain_alias = prelude_rule(
+    name = "toolchain_alias",
+    docs = """
+toolchain_alias acts like alias but for toolchain rules.
+
+The toolchain_alias itself is a toolchain rule and the `actual` argument is
+expected to be a toolchain_rule as well.
+    """,
+    examples = None,
+    further = None,
+    attrs = {"actual": attrs.toolchain_dep(doc = "The actual toolchain that is being aliased. This should be a toolchain rule.")},
+)
+
 versioned_alias = prelude_rule(
     name = "versioned_alias",
     docs = "",
@@ -1471,6 +1503,7 @@ core_rules = struct(
     alias = alias,
     command_alias = command_alias,
     config_setting = config_setting,
+    configuration_alias = configuration_alias,
     configured_alias = configured_alias,
     constraint_setting = constraint_setting,
     constraint_value = constraint_value,
@@ -1483,6 +1516,7 @@ core_rules = struct(
     platform = platform,
     remote_file = remote_file,
     test_suite = test_suite,
+    toolchain_alias = toolchain_alias,
     versioned_alias = versioned_alias,
     worker_tool = worker_tool,
     zip_file = zip_file,

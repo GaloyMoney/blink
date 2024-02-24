@@ -6,11 +6,11 @@
 # of this source tree.
 
 load("@prelude//:paths.bzl", "paths")
-load("@prelude//utils:arglike.bzl", "ArgLike")
-load("@prelude//utils:utils.bzl", "expect")
+load("@prelude//utils:expect.bzl", "expect")
 load(":apple_bundle_destination.bzl", "AppleBundleDestination", "bundle_relative_path_for_destination")
-load(":apple_bundle_utility.bzl", "get_default_binary_dep", "get_extension_attr", "get_product_name")
-load(":apple_code_signing_types.bzl", "AppleEntitlementsInfo", "CodeSignType")
+load(":apple_bundle_utility.bzl", "get_extension_attr", "get_product_name")
+load(":apple_code_signing_types.bzl", "CodeSignType")
+load(":apple_entitlements.bzl", "get_entitlements_codesign_args")
 load(":apple_sdk.bzl", "get_apple_sdk_name")
 load(":apple_sdk_metadata.bzl", "get_apple_sdk_metadata_for_sdk_name")
 load(":apple_swift_stdlib.bzl", "should_copy_swift_stdlib")
@@ -47,7 +47,8 @@ def assemble_bundle(
         parts: list[AppleBundlePart],
         info_plist_part: [AppleBundlePart, None],
         swift_stdlib_args: [SwiftStdlibArguments, None],
-        extra_hidden: list[Artifact] = []) -> dict[str, list[Provider]]:
+        extra_hidden: list[Artifact] = [],
+        skip_adhoc_signing: bool = False) -> dict[str, list[Provider]]:
     """
     Returns extra subtargets related to bundling.
     """
@@ -58,7 +59,7 @@ def assemble_bundle(
     tool = tools.assemble_bundle
 
     codesign_args = []
-    codesign_type = _detect_codesign_type(ctx)
+    codesign_type = _detect_codesign_type(ctx, skip_adhoc_signing)
 
     codesign_tool = ctx.attrs._apple_toolchain[AppleToolchainInfo].codesign
     if ctx.attrs._dry_run_code_signing:
@@ -86,6 +87,8 @@ def assemble_bundle(
             bundle_relative_path_for_destination(AppleBundleDestination("frameworks"), sdk_name, ctx.attrs.extension),
             "--plugins-destination",
             bundle_relative_path_for_destination(AppleBundleDestination("plugins"), sdk_name, ctx.attrs.extension),
+            "--appclips-destination",
+            bundle_relative_path_for_destination(AppleBundleDestination("appclips"), sdk_name, ctx.attrs.extension),
             "--swift-stdlib-command",
             cmd_args(ctx.attrs._apple_toolchain[AppleToolchainInfo].swift_toolchain_info.swift_stdlib_tool, delimiter = " ", quote = "shell"),
             "--sdk-root",
@@ -118,7 +121,8 @@ def assemble_bundle(
             if ctx.attrs.codesign_identity:
                 codesign_args.extend(["--ad-hoc-codesign-identity", ctx.attrs.codesign_identity])
 
-        codesign_args += _get_entitlements_codesign_args(ctx, codesign_type)
+        codesign_args += get_entitlements_codesign_args(ctx, codesign_type)
+        codesign_args += _get_extra_codesign_args(ctx)
 
         info_plist_args = [
             "--info-plist-source",
@@ -181,6 +185,10 @@ def assemble_bundle(
     # Ensures any genrule deps get built, such targets are used for validation
     command.hidden(extra_hidden)
 
+    command_json = ctx.actions.declare_output("bundling_command.json")
+    ctx.actions.write_json(command_json, command, with_inputs = True, pretty = True)
+    subtargets["command"] = [DefaultInfo(default_output = command_json)]
+
     env = {}
     cache_buster = ctx.attrs._bundling_cache_buster
     if cache_buster:
@@ -220,46 +228,36 @@ def _bundle_spec_json(ctx: AnalysisContext, parts: list[AppleBundlePart]) -> Art
 
     return ctx.actions.write_json("bundle_spec.json", specs)
 
-def _detect_codesign_type(ctx: AnalysisContext) -> CodeSignType:
-    if ctx.attrs.extension not in ["app", "appex", "xctest"]:
-        # Only code sign application bundles, extensions and test bundles
-        return CodeSignType("skip")
+def _get_codesign_type_from_attribs(ctx: AnalysisContext) -> [CodeSignType, None]:
+    # Target-level attribute takes highest priority
+    if ctx.attrs.codesign_type:
+        return CodeSignType(ctx.attrs.codesign_type)
 
+    # Config-based global default
     if ctx.attrs._codesign_type:
         return CodeSignType(ctx.attrs._codesign_type)
-    sdk_name = get_apple_sdk_name(ctx)
-    is_ad_hoc_sufficient = get_apple_sdk_metadata_for_sdk_name(sdk_name).is_ad_hoc_code_sign_sufficient
-    return CodeSignType("adhoc" if is_ad_hoc_sufficient else "distribution")
+    return None
 
-def _entitlements_file(ctx: AnalysisContext) -> [Artifact, None]:
-    if hasattr(ctx.attrs, "entitlements_file"):
-        # Bundling `apple_test` which doesn't have a binary to provide the entitlements, so they are provided via `entitlements_file` attribute directly.
-        return ctx.attrs.entitlements_file
+def _detect_codesign_type(ctx: AnalysisContext, skip_adhoc_signing: bool) -> CodeSignType:
+    def compute_codesign_type():
+        if ctx.attrs.extension not in ["app", "appex", "xctest"]:
+            # Only code sign application bundles, extensions and test bundles
+            return CodeSignType("skip")
 
-    if not ctx.attrs.binary:
-        return None
+        codesign_type_attrib = _get_codesign_type_from_attribs(ctx)
+        if codesign_type_attrib != None:
+            return codesign_type_attrib
 
-    # The `binary` attribute can be either an apple_binary or a dynamic library from apple_library
-    binary_entitlement_info = get_default_binary_dep(ctx.attrs.binary)[AppleEntitlementsInfo]
-    if binary_entitlement_info and binary_entitlement_info.entitlements_file:
-        return binary_entitlement_info.entitlements_file
+        sdk_name = get_apple_sdk_name(ctx)
+        is_ad_hoc_sufficient = get_apple_sdk_metadata_for_sdk_name(sdk_name).is_ad_hoc_code_sign_sufficient
+        return CodeSignType("adhoc" if is_ad_hoc_sufficient else "distribution")
 
-    return ctx.attrs._codesign_entitlements
+    codesign_type = compute_codesign_type()
+    if skip_adhoc_signing and codesign_type.value == "adhoc":
+        codesign_type = CodeSignType("skip")
 
-def _should_include_entitlements(ctx: AnalysisContext, codesign_type: CodeSignType) -> bool:
-    if codesign_type.value == "distribution":
-        return True
+    return codesign_type
 
-    if codesign_type.value == "adhoc":
-        # The config-based override value takes priority over target value
-        if ctx.attrs._use_entitlements_when_adhoc_code_signing != None:
-            return ctx.attrs._use_entitlements_when_adhoc_code_signing
-        return ctx.attrs.use_entitlements_when_adhoc_code_signing
-
-    return False
-
-def _get_entitlements_codesign_args(ctx: AnalysisContext, codesign_type: CodeSignType) -> list[ArgLike]:
-    include_entitlements = _should_include_entitlements(ctx, codesign_type)
-    maybe_entitlements = _entitlements_file(ctx) if include_entitlements else None
-    entitlements_args = ["--entitlements", maybe_entitlements] if maybe_entitlements else []
-    return entitlements_args
+def _get_extra_codesign_args(ctx: AnalysisContext) -> list[str]:
+    codesign_args = ctx.attrs.codesign_flags if hasattr(ctx.attrs, "codesign_flags") else []
+    return ["--codesign-args={}".format(flag) for flag in codesign_args]

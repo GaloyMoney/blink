@@ -5,18 +5,22 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
+load(
+    "@prelude//:artifacts.bzl",
+    "ArtifactOutputs",  # @unused Used as a type
+    "single_artifact",
+)
 load("@prelude//:paths.bzl", "paths")
 load(
     "@prelude//linking:link_info.bzl",
+    "LinkStrategy",
     "LinkStyle",
     "Linkage",
     "LinkerFlags",
     "MergedLinkInfo",
 )
-load("@prelude//utils:arglike.bzl", "ArgLike")  # @unused Used as a type
 load(
     "@prelude//utils:utils.bzl",
-    "expect",
     "flatten",
     "from_named_set",
 )
@@ -89,6 +93,23 @@ def cxx_attr_linker_flags(ctx: AnalysisContext) -> list[typing.Any]:
         (flatten(cxx_by_platform(ctx, ctx.attrs.platform_linker_flags)) if hasattr(ctx.attrs, "platform_linker_flags") else [])
     )
 
+# Even though we're returning the shared library links, we must still
+# respect the `link_style` attribute of the target which controls how
+# all deps get linked. For example, you could be building the shared
+# output of a library which has `link_style = "static"`.
+#
+# The fallback equivalent code in Buck v1 is in CxxLibraryFactor::createBuildRule()
+# where link style is determined using the `linkableDepType` variable.
+
+# Note if `static` link style is requested, we assume `static_pic`
+# instead, so that code in the shared library can be correctly
+# loaded in the address space of any process at any address.
+def cxx_attr_link_strategy(attrs: typing.Any) -> LinkStrategy:
+    value = attrs.link_style if attrs.link_style != None else "shared"
+    if value == "static":
+        value = "static_pic"
+    return LinkStrategy(value)
+
 def cxx_attr_link_style(ctx: AnalysisContext) -> LinkStyle:
     if ctx.attrs.link_style != None:
         return LinkStyle(ctx.attrs.link_style)
@@ -110,7 +131,7 @@ def cxx_attr_preferred_linkage(ctx: AnalysisContext) -> Linkage:
 
     return Linkage(preferred_linkage)
 
-def cxx_attr_resources(ctx: AnalysisContext) -> dict[str, (Artifact, list[ArgLike])]:
+def cxx_attr_resources(ctx: AnalysisContext) -> dict[str, ArtifactOutputs]:
     """
     Return the resources provided by this rule, as a map of resource name to
     a tuple of the resource artifact and any "other" outputs exposed by it.
@@ -121,18 +142,7 @@ def cxx_attr_resources(ctx: AnalysisContext) -> dict[str, (Artifact, list[ArgLik
 
     # Use getattr, as apple rules don't have a `resources` parameter.
     for name, resource in from_named_set(getattr(ctx.attrs, "resources", {})).items():
-        if type(resource) == "artifact":
-            other = []
-        else:
-            info = resource[DefaultInfo]
-            expect(
-                len(info.default_outputs) == 1,
-                "expected exactly one default output from {} ({})"
-                    .format(resource, info.default_outputs),
-            )
-            [resource] = info.default_outputs
-            other = info.other_outputs
-        resources[paths.join(namespace, name)] = (resource, other)
+        resources[paths.join(namespace, name)] = single_artifact(resource)
 
     return resources
 

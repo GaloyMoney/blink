@@ -11,7 +11,7 @@ load("@prelude//android:android_providers.bzl", "merge_android_packageable_info"
 load("@prelude//android:android_toolchain.bzl", "AndroidToolchainInfo")
 load("@prelude//java:java_test.bzl", "build_junit_test")
 load("@prelude//java:java_toolchain.bzl", "JavaToolchainInfo")
-load("@prelude//utils:utils.bzl", "expect")
+load("@prelude//utils:expect.bzl", "expect")
 load("@prelude//test/inject_test_run_info.bzl", "inject_test_run_info")
 
 def robolectric_test_impl(ctx: AnalysisContext) -> list[Provider]:
@@ -35,7 +35,7 @@ def robolectric_test_impl(ctx: AnalysisContext) -> list[Provider]:
     if runtime_dependencies_dir:
         extra_cmds.append(cmd_args(runtime_dependencies_dir, format = "-Drobolectric.dependency.dir={}"))
 
-    all_packaging_deps = ctx.attrs.deps + (ctx.attrs.deps_query or []) + ctx.attrs.exported_deps + ctx.attrs.runtime_deps
+    all_packaging_deps = ctx.attrs.deps + ctx.attrs.exported_deps + ctx.attrs.runtime_deps
     android_packageable_info = merge_android_packageable_info(ctx.label, ctx.actions, all_packaging_deps)
     resources_info = get_android_binary_resources_info(
         ctx,
@@ -71,10 +71,16 @@ def robolectric_test_impl(ctx: AnalysisContext) -> list[Provider]:
     ctx.actions.run(jar_cmd, category = "test_config_properties_jar_cmd")
     extra_cmds.append(cmd_args().hidden(resources_info.primary_resources_apk, resources_info.manifest))
 
-    r_dot_javas = [r_dot_java.library_output.full_library for r_dot_java in resources_info.r_dot_javas if r_dot_java.library_output]
+    r_dot_javas = [r_dot_java.library_info.library_output.full_library for r_dot_java in resources_info.r_dot_java_infos if r_dot_java.library_info.library_output]
     expect(len(r_dot_javas) <= 1, "android_library only works with single R.java")
 
-    java_providers, _ = build_android_library(ctx, r_dot_java = r_dot_javas[0] if r_dot_javas else None)
+    extra_sub_targets = {}
+    if r_dot_javas:
+        r_dot_java = r_dot_javas[0]
+        extra_sub_targets["r_dot_java"] = [DefaultInfo(default_output = r_dot_java)]
+    else:
+        r_dot_java = None
+    java_providers, _ = build_android_library(ctx, r_dot_java = r_dot_java, extra_sub_targets = extra_sub_targets)
 
     extra_classpath_entries = [test_config_properties_jar] + ctx.attrs._android_toolchain[AndroidToolchainInfo].android_bootclasspath
     extra_classpath_entries.extend(r_dot_javas)
@@ -87,11 +93,15 @@ def robolectric_test_impl(ctx: AnalysisContext) -> list[Provider]:
         extra_classpath_entries = extra_classpath_entries,
     )
 
-    return inject_test_run_info(ctx, external_runner_test_info) + [
-        java_providers.java_library_info,
+    providers = inject_test_run_info(ctx, external_runner_test_info) + [
         java_providers.java_library_intellij_info,
         java_providers.java_packaging_info,
         java_providers.template_placeholder_info,
         java_providers.default_info,
         java_providers.class_to_src_map,
     ]
+
+    if ctx.attrs.used_as_dependency_deprecated_do_not_use:
+        providers.append(java_providers.java_library_info)
+
+    return providers

@@ -5,7 +5,11 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
-load("@prelude//:artifact_tset.bzl", "project_artifacts")
+load(
+    "@prelude//:artifact_tset.bzl",
+    "ArtifactTSet",  # @unused Used as a type
+    "project_artifacts",
+)
 load("@prelude//:local_only.bzl", "link_cxx_binary_locally")
 load("@prelude//:paths.bzl", "paths")
 load("@prelude//:resources.bzl", "create_resource_db", "gather_resources")
@@ -27,15 +31,15 @@ load(
 load(
     "@prelude//linking:link_info.bzl",
     "LinkArgs",
-    "LinkStyle",
+    "LinkStrategy",  # @unused Used as a type
     "get_link_args_for_strategy",
-    "to_link_strategy",
 )
 load(
     "@prelude//linking:shared_libraries.bzl",
     "merge_shared_libraries",
     "traverse_shared_library_info",
 )
+load("@prelude//linking:strip.bzl", "strip_debug_info")
 load("@prelude//os_lookup:defs.bzl", "OsLookup")
 load("@prelude//utils:cmd_script.bzl", "ScriptOs", "cmd_script")
 load("@prelude//utils:set.bzl", "set")
@@ -50,7 +54,13 @@ load(
     "emit_needs_codegen",
     "output_filename",
 )
-load(":context.bzl", "CommonArgsInfo", "CompileContext")
+load(
+    ":context.bzl",
+    "CommonArgsInfo",
+    "CompileContext",
+    "CrateName",  # @unused Used as a type
+    "DepCollectionContext",
+)
 load(":extern.bzl", "crate_map_arg", "extern_arg")
 load(
     ":failure_filter.bzl",
@@ -59,35 +69,37 @@ load(
 )
 load(
     ":link_info.bzl",
-    "CrateName",  #@unused Used as a type
     "RustCxxLinkGroupInfo",  #@unused Used as a type
+    "RustDependency",
     "RustLinkInfo",
-    "RustLinkStyleInfo",
     "attr_crate",
     "attr_simple_crate_for_filenames",
     "get_available_proc_macros",
     "inherited_external_debug_info",
-    "inherited_non_rust_link_info",
-    "inherited_non_rust_shared_libs",
+    "inherited_merged_link_infos",
+    "inherited_rust_external_debug_info",
+    "inherited_shared_libs",
     "normalize_crate",
     "resolve_rust_deps",
-    "style_info",
+    "strategy_info",
 )
 load(":resources.bzl", "rust_attr_resources")
-load(":rust_toolchain.bzl", "RustToolchainInfo", "ctx_toolchain_info")
+load(":rust_toolchain.bzl", "PanicRuntime", "RustToolchainInfo")
 
 RustcOutput = record(
     output = field(Artifact),
+    stripped_output = field(Artifact),
     diag = field(dict[str, Artifact]),
     pdb = field([Artifact, None]),
     dwp_output = field([Artifact, None]),
     # Zero or more Split DWARF debug info files are emitted into this directory
     # with unpredictable filenames.
     dwo_output_directory = field([Artifact, None]),
+    extra_external_debug_info = field(list[ArtifactTSet]),
 )
 
 def compile_context(ctx: AnalysisContext) -> CompileContext:
-    toolchain_info = ctx_toolchain_info(ctx)
+    toolchain_info = ctx.attrs._rust_toolchain[RustToolchainInfo]
     cxx_toolchain_info = get_cxx_toolchain_info(ctx)
 
     # Setup source symlink tree.
@@ -115,9 +127,18 @@ def compile_context(ctx: AnalysisContext) -> CompileContext:
     linker = _linker_args(ctx, cxx_toolchain_info.linker_info)
     clippy_wrapper = _clippy_wrapper(ctx, toolchain_info)
 
+    dep_ctx = DepCollectionContext(
+        advanced_unstable_linking = toolchain_info.advanced_unstable_linking,
+        include_doc_deps = False,
+        is_proc_macro = getattr(ctx.attrs, "proc_macro", False),
+        explicit_sysroot_deps = toolchain_info.explicit_sysroot_deps,
+        panic_runtime = toolchain_info.panic_runtime,
+    )
+
     return CompileContext(
         toolchain_info = toolchain_info,
         cxx_toolchain_info = cxx_toolchain_info,
+        dep_ctx = dep_ctx,
         symlinked_srcs = symlinked_srcs,
         linker_args = linker,
         clippy_wrapper = clippy_wrapper,
@@ -142,11 +163,11 @@ def generate_rustdoc(
     common_args = _compute_common_args(
         ctx = ctx,
         compile_ctx = compile_ctx,
+        dep_ctx = compile_ctx.dep_ctx,
         # to make sure we get the rmeta's generated for the crate dependencies,
         # rather than full .rlibs
         emit = Emit("metadata"),
         params = params,
-        dep_link_style = params.dep_link_style,
         default_roots = default_roots,
         is_rustdoc_test = False,
     )
@@ -175,7 +196,7 @@ def generate_rustdoc(
         # Flag --extern-html-root-url used below is only supported on nightly.
         rustdoc_cmd.add("-Zunstable-options")
 
-        for dep in resolve_rust_deps(ctx):
+        for dep in resolve_rust_deps(ctx, compile_ctx.dep_ctx):
             if dep.label.cell != ctx.label.cell:
                 # TODO: support a different extern_html_root_url_prefix per cell
                 continue
@@ -183,7 +204,8 @@ def generate_rustdoc(
             if dep.name:
                 name = normalize_crate(dep.name)
             else:
-                name = dep.info.crate
+                # TODO: resolve this using dynamic (if set), see comment on D52476603
+                name = dep.info.crate.simple
 
             rustdoc_cmd.add(
                 "--extern-html-root-url={}={}/{}:{}"
@@ -206,18 +228,25 @@ def generate_rustdoc(
 def generate_rustdoc_test(
         ctx: AnalysisContext,
         compile_ctx: CompileContext,
-        link_style: LinkStyle,
-        library: RustLinkStyleInfo,
+        link_strategy: LinkStrategy,
+        rlib: Artifact,
         params: BuildParams,
         default_roots: list[str]) -> (cmd_args, dict[str, cmd_args]):
     exec_is_windows = ctx.attrs._exec_os_type[OsLookup].platform == "windows"
 
     toolchain_info = compile_ctx.toolchain_info
+    doc_dep_ctx = DepCollectionContext(
+        advanced_unstable_linking = compile_ctx.dep_ctx.advanced_unstable_linking,
+        include_doc_deps = True,
+        is_proc_macro = False,
+        explicit_sysroot_deps = compile_ctx.dep_ctx.explicit_sysroot_deps,
+        panic_runtime = compile_ctx.dep_ctx.panic_runtime,
+    )
 
     resources = create_resource_db(
         ctx = ctx,
         name = "doctest/resources.json",
-        binary = library.rlib,
+        binary = rlib,
         resources = flatten_dict(gather_resources(
             label = ctx.label,
             resources = rust_attr_resources(ctx),
@@ -227,14 +256,14 @@ def generate_rustdoc_test(
 
     # Gather and setup symlink tree of transitive shared library deps.
     shared_libs = {}
-    if link_style == LinkStyle("shared"):
+    if link_strategy == LinkStrategy("shared"):
         shlib_info = merge_shared_libraries(
             ctx.actions,
-            deps = inherited_non_rust_shared_libs(ctx, include_doc_deps = True),
+            deps = inherited_shared_libs(ctx, doc_dep_ctx),
         )
         for soname, shared_lib in traverse_shared_library_info(shlib_info).items():
             shared_libs[soname] = shared_lib.lib
-    extra_link_args, runtime_files, _ = executable_shared_lib_arguments(
+    executable_args = executable_shared_lib_arguments(
         ctx.actions,
         compile_ctx.cxx_toolchain_info,
         resources,
@@ -244,9 +273,9 @@ def generate_rustdoc_test(
     common_args = _compute_common_args(
         ctx = ctx,
         compile_ctx = compile_ctx,
+        dep_ctx = doc_dep_ctx,
         emit = Emit("link"),
         params = params,
-        dep_link_style = params.dep_link_style,
         default_roots = default_roots,
         is_rustdoc_test = True,
     )
@@ -255,12 +284,11 @@ def generate_rustdoc_test(
         ctx.actions,
         compile_ctx.cxx_toolchain_info,
         [
-            LinkArgs(flags = extra_link_args),
+            LinkArgs(flags = executable_args.extra_link_args),
             get_link_args_for_strategy(
                 ctx,
-                inherited_non_rust_link_info(ctx, include_doc_deps = True),
-                # TODO(cjhopman): It's unclear how rust is using link_style. I'm not sure if it's intended to be a LibOutputStyle or a LinkStrategy.
-                to_link_strategy(link_style),
+                inherited_merged_link_infos(ctx, doc_dep_ctx),
+                link_strategy,
             ),
         ],
         "{}-{}".format(common_args.subdir, common_args.tempfile),
@@ -286,7 +314,7 @@ def generate_rustdoc_test(
         toolchain_info.rustdoc_flags,
         ctx.attrs.rustdoc_flags,
         common_args.args,
-        extern_arg(ctx, compile_ctx, [], attr_crate(ctx), library.rlib),
+        extern_arg(ctx, compile_ctx, [], attr_crate(ctx), rlib),
         "--extern=proc_macro" if ctx.attrs.proc_macro else [],
         compile_ctx.linker_args,
         cmd_args(linker_argsfile, format = "-Clink-arg=@{}"),
@@ -297,7 +325,11 @@ def generate_rustdoc_test(
         "--test-args=--color=always",
     )
 
-    rustdoc_cmd.hidden(compile_ctx.symlinked_srcs, link_args_output.hidden, runtime_files)
+    rustdoc_cmd.hidden(
+        compile_ctx.symlinked_srcs,
+        link_args_output.hidden,
+        executable_args.runtime_files,
+    )
 
     rustdoc_cmd = _long_command(
         ctx = ctx,
@@ -308,13 +340,8 @@ def generate_rustdoc_test(
 
     plain_env, path_env = _process_env(compile_ctx, ctx.attrs.env, exec_is_windows)
     rustdoc_env = plain_env | path_env
-
-    # Pass everything in env + doc_env, except ones with value None in doc_env.
     for k, v in ctx.attrs.doc_env.items():
-        if v == None:
-            rustdoc_env.pop(k, None)
-        else:
-            rustdoc_env[k] = cmd_args(v)
+        rustdoc_env[k] = cmd_args(v)
     rustdoc_env["RUSTC_BOOTSTRAP"] = cmd_args("1")  # for `-Zunstable-options`
 
     return (rustdoc_cmd, rustdoc_env)
@@ -326,7 +353,6 @@ def rust_compile_multi(
         compile_ctx: CompileContext,
         emits: list[Emit],
         params: BuildParams,
-        dep_link_style: LinkStyle,
         default_roots: list[str],
         extra_link_args: list[typing.Any] = [],
         predeclared_outputs: dict[Emit, Artifact] = {},
@@ -342,7 +368,6 @@ def rust_compile_multi(
             compile_ctx = compile_ctx,
             emit = emit,
             params = params,
-            dep_link_style = dep_link_style,
             default_roots = default_roots,
             extra_link_args = extra_link_args,
             predeclared_outputs = predeclared_outputs,
@@ -363,7 +388,6 @@ def rust_compile(
         compile_ctx: CompileContext,
         emit: Emit,
         params: BuildParams,
-        dep_link_style: LinkStyle,
         default_roots: list[str],
         extra_link_args: list[typing.Any] = [],
         predeclared_outputs: dict[Emit, Artifact] = {},
@@ -380,9 +404,9 @@ def rust_compile(
     common_args = _compute_common_args(
         ctx = ctx,
         compile_ctx = compile_ctx,
+        dep_ctx = compile_ctx.dep_ctx,
         emit = emit,
         params = params,
-        dep_link_style = dep_link_style,
         default_roots = default_roots,
         is_rustdoc_test = False,
     )
@@ -435,19 +459,18 @@ def rust_compile(
         # of that style.
 
         if rust_cxx_link_group_info:
-            inherited_non_rust_link_args = LinkArgs(
+            inherited_link_args = LinkArgs(
                 infos = rust_cxx_link_group_info.filtered_links + [rust_cxx_link_group_info.symbol_files_info],
             )
 
         else:
-            inherited_non_rust_link_args = get_link_args_for_strategy(
+            inherited_link_args = get_link_args_for_strategy(
                 ctx,
-                inherited_non_rust_link_info(
+                inherited_merged_link_infos(
                     ctx,
-                    include_doc_deps = False,
+                    compile_ctx.dep_ctx,
                 ),
-                # TODO(cjhopman): It's unclear how rust is using link_style. I'm not sure if it's intended to be a LibOutputStyle or a LinkStrategy.
-                to_link_strategy(dep_link_style),
+                params.dep_link_strategy,
             )
 
         link_args_output = make_link_args(
@@ -455,7 +478,7 @@ def rust_compile(
             compile_ctx.cxx_toolchain_info,
             [
                 LinkArgs(flags = extra_link_args),
-                inherited_non_rust_link_args,
+                inherited_link_args,
             ],
             "{}-{}".format(subdir, tempfile),
             output_short_path = emit_output.short_path,
@@ -549,14 +572,31 @@ def rust_compile(
     split_debug_mode = compile_ctx.cxx_toolchain_info.split_debug_mode or SplitDebugMode("none")
     if emit == Emit("link") and split_debug_mode != SplitDebugMode("none"):
         dwo_output_directory = extra_out
-        external_debug_info = inherited_external_debug_info(
+
+        # staticlibs and cdylibs are "bundled" in the sense that they are used
+        # without their dependencies by the rest of the rules. This is normally
+        # correct, except that the split debuginfo rustc emits for these crate
+        # types is not bundled. This is arguably inconsistent behavior from
+        # rustc, but in any case, it means we need to do this bundling manually
+        # by collecting all the external debuginfo from dependencies
+        if params.crate_type == CrateType("cdylib") or params.crate_type == CrateType("staticlib"):
+            extra_external_debug_info = inherited_rust_external_debug_info(
+                ctx = ctx,
+                dep_ctx = compile_ctx.dep_ctx,
+                link_strategy = params.dep_link_strategy,
+            )
+        else:
+            extra_external_debug_info = []
+        all_external_debug_info = inherited_external_debug_info(
             ctx = ctx,
+            dep_ctx = compile_ctx.dep_ctx,
             dwo_output_directory = dwo_output_directory,
-            dep_link_style = params.dep_link_style,
+            dep_link_strategy = params.dep_link_strategy,
         )
-        dwp_inputs.extend(project_artifacts(ctx.actions, [external_debug_info]))
+        dwp_inputs.extend(project_artifacts(ctx.actions, [all_external_debug_info]))
     else:
         dwo_output_directory = None
+        extra_external_debug_info = []
 
     if is_binary and dwp_available(compile_ctx.cxx_toolchain_info):
         dwp_output = dwp(
@@ -574,12 +614,24 @@ def rust_compile(
     else:
         dwp_output = None
 
+    stripped_output = strip_debug_info(
+        ctx,
+        paths.join(common_args.subdir, "stripped", output_filename(
+            attr_simple_crate_for_filenames(ctx),
+            Emit("link"),
+            params,
+        )),
+        filtered_output,
+    )
+
     return RustcOutput(
         output = filtered_output,
+        stripped_output = stripped_output,
         diag = diag,
         pdb = pdb_artifact,
         dwp_output = dwp_output,
         dwo_output_directory = dwo_output_directory,
+        extra_external_debug_info = extra_external_debug_info,
     )
 
 # --extern <crate>=<path> for direct dependencies
@@ -587,19 +639,22 @@ def rust_compile(
 # For native dependencies, we use -Clink-arg=@argsfile
 # Second element of result tuple is a list of files/directories that should be present for executable to be run successfully
 # Third return is the mapping from crate names back to targets (needed so that a deps linter knows what deps need fixing)
-def _dependency_args(
+#
+# The `compile_ctx` may be omitted if `is_check` is `True` and there are no dependencies with dynamic crate names
+def dependency_args(
         ctx: AnalysisContext,
-        compile_ctx: CompileContext,
+        compile_ctx: CompileContext | None,
+        deps: list[RustDependency],
         subdir: str,
         crate_type: CrateType,
-        dep_link_style: LinkStyle,
+        dep_link_strategy: LinkStrategy,
         is_check: bool,
         is_rustdoc_test: bool) -> (cmd_args, list[(CrateName, Label)]):
     args = cmd_args()
     transitive_deps = {}
     crate_targets = []
     available_proc_macros = get_available_proc_macros(ctx)
-    for dep in resolve_rust_deps(ctx, include_doc_deps = is_rustdoc_test):
+    for dep in deps:
         if dep.name:
             crate = CrateName(
                 simple = normalize_crate(dep.name),
@@ -608,23 +663,23 @@ def _dependency_args(
         else:
             crate = dep.info.crate
 
-        style = style_info(dep.info, dep_link_style)
+        strategy = strategy_info(dep.info, dep_link_strategy)
 
         use_rmeta = is_check or (compile_ctx.toolchain_info.pipelined and not crate_type_codegen(crate_type) and not is_rustdoc_test)
 
         # Use rmeta dependencies whenever possible because they
         # should be cheaper to produce.
         if use_rmeta:
-            artifact = style.rmeta
-            transitive_artifacts = style.transitive_rmeta_deps
+            artifact = strategy.rmeta
+            transitive_artifacts = strategy.transitive_rmeta_deps
         else:
-            artifact = style.rlib
-            transitive_artifacts = style.transitive_deps
+            artifact = strategy.rlib
+            transitive_artifacts = strategy.transitive_deps
 
-        for marker in style.transitive_proc_macro_deps.keys():
+        for marker in strategy.transitive_proc_macro_deps.keys():
             info = available_proc_macros[marker.label][RustLinkInfo]
-            style = style_info(info, dep_link_style)
-            transitive_deps[style.rmeta if use_rmeta else style.rlib] = info.crate
+            strategy = strategy_info(info, dep_link_strategy)
+            transitive_deps[strategy.rmeta if use_rmeta else strategy.rlib] = info.crate
 
         args.add(extern_arg(ctx, compile_ctx, dep.flags, crate, artifact))
         crate_targets.append((crate, dep.label))
@@ -679,18 +734,33 @@ def dynamic_symlinked_dirs(
         artifacts: dict[Artifact, CrateName]) -> cmd_args:
     name = "{}-dyn".format(prefix)
     transitive_dependency_dir = ctx.actions.declare_output(name, dir = True)
-    do_symlinks = cmd_args(
-        compile_ctx.toolchain_info.transitive_dependency_symlinks_tool,
-        cmd_args(transitive_dependency_dir.as_output(), format = "--out-dir={}"),
+
+    # Pass the list of rlibs to transitive_dependency_symlinks.py through a file
+    # because there can be a lot of them. This avoids running out of command
+    # line length, particularly on Windows.
+    relative_path = lambda artifact: (cmd_args(artifact, delimiter = "")
+        .relative_to(transitive_dependency_dir.project("i"))
+        .ignore_artifacts())
+    artifacts_json = ctx.actions.write_json(
+        ctx.actions.declare_output("{}-dyn.json".format(prefix)),
+        [
+            (relative_path(artifact), crate.dynamic)
+            for artifact, crate in artifacts.items()
+        ],
+        with_inputs = True,
+        pretty = True,
     )
-    for artifact, crate in artifacts.items():
-        relative_path = cmd_args(artifact).relative_to(transitive_dependency_dir.project("i"))
-        do_symlinks.add("--artifact", crate.dynamic, relative_path.ignore_artifacts())
+
     ctx.actions.run(
-        do_symlinks,
+        [
+            compile_ctx.toolchain_info.transitive_dependency_symlinks_tool,
+            cmd_args(transitive_dependency_dir.as_output(), format = "--out-dir={}"),
+            cmd_args(artifacts_json, format = "--artifacts={}"),
+        ],
         category = "tdep_symlinks",
         identifier = str(len(compile_ctx.transitive_dependency_dirs)),
     )
+
     compile_ctx.transitive_dependency_dirs[transitive_dependency_dir] = None
     return cmd_args(transitive_dependency_dir, format = "@{}/dirs").hidden(artifacts.keys())
 
@@ -731,9 +801,9 @@ def _rustc_flags(flags: list[[str, ResolvedStringWithMacros]]) -> list[[str, Res
 def _compute_common_args(
         ctx: AnalysisContext,
         compile_ctx: CompileContext,
+        dep_ctx: DepCollectionContext,
         emit: Emit,
         params: BuildParams,
-        dep_link_style: LinkStyle,
         default_roots: list[str],
         is_rustdoc_test: bool) -> CommonArgsInfo:
     exec_is_windows = ctx.attrs._exec_os_type[OsLookup].platform == "windows"
@@ -741,18 +811,12 @@ def _compute_common_args(
 
     crate_type = params.crate_type
 
-    args_key = (crate_type, emit, dep_link_style, is_rustdoc_test)
-    if False:
-        # TODO(nga): following `if args_key in ...` is no-op, and typechecker does not like it.
-        def unknown():
-            pass
-
-        args_key = unknown()
+    args_key = (crate_type, emit, params.dep_link_strategy, is_rustdoc_test)
     if args_key in compile_ctx.common_args:
         return compile_ctx.common_args[args_key]
 
     # Keep filenames distinct in per-flavour subdirs
-    subdir = "{}-{}-{}-{}".format(crate_type.value, params.reloc_model.value, dep_link_style.value, emit.value)
+    subdir = "{}-{}-{}-{}".format(crate_type.value, params.reloc_model.value, params.dep_link_strategy.value, emit.value)
     if is_rustdoc_test:
         subdir = "{}-rustdoc-test".format(subdir)
 
@@ -768,23 +832,24 @@ def _compute_common_args(
 
     is_check = not emit_needs_codegen(emit)
 
-    dependency_args, crate_map = _dependency_args(
+    dep_args, crate_map = dependency_args(
         ctx = ctx,
         compile_ctx = compile_ctx,
+        deps = resolve_rust_deps(ctx, dep_ctx),
         subdir = subdir,
         crate_type = crate_type,
-        dep_link_style = dep_link_style,
+        dep_link_strategy = params.dep_link_strategy,
         is_check = is_check,
         is_rustdoc_test = is_rustdoc_test,
     )
 
     if crate_type == CrateType("proc-macro"):
-        dependency_args.add("--extern=proc_macro")
+        dep_args.add("--extern=proc_macro")
 
-    if crate_type == CrateType("cdylib") and not is_check:
+    if crate_type in [CrateType("cdylib"), CrateType("dylib")] and not is_check:
         linker_info = compile_ctx.cxx_toolchain_info.linker_info
         shlib_name = get_default_shared_library_name(linker_info, ctx.label)
-        dependency_args.add(cmd_args(
+        dep_args.add(cmd_args(
             get_shared_library_name_linker_flags(linker_info.type, shlib_name),
             format = "-Clink-arg={}",
         ))
@@ -841,24 +906,27 @@ def _compute_common_args(
         # TODO: SplitDebugMode("split"): ["-Csplit-debuginfo=unpacked"],
     }[compile_ctx.cxx_toolchain_info.split_debug_mode or SplitDebugMode("none")]
 
+    null_path = "nul" if ctx.attrs._exec_os_type[OsLookup].platform == "windows" else "/dev/null"
     args = cmd_args(
         cmd_args(compile_ctx.symlinked_srcs, path_sep, crate_root, delimiter = ""),
         crate_name_arg,
         "--crate-type={}".format(crate_type.value),
         "-Crelocation-model={}".format(params.reloc_model.value),
         "--edition={}".format(edition),
-        "-Cmetadata={}".format(_metadata(ctx.label)[0]),
+        "-Cmetadata={}".format(_metadata(ctx.label, is_rustdoc_test)[0]),
         # Make diagnostics json with the option to extract rendered text
         ["--error-format=json", "--json=diagnostic-rendered-ansi"] if not is_rustdoc_test else [],
         ["-Cprefer-dynamic=yes"] if crate_type == CrateType("dylib") else [],
         ["--target={}".format(toolchain_info.rustc_target_triple)] if toolchain_info.rustc_target_triple else [],
         split_debuginfo_flags,
+        ["--sysroot=" + null_path] if toolchain_info.explicit_sysroot_deps != None else [],
+        ["-Cpanic=abort", "-Zpanic-abort-tests=yes"] if toolchain_info.panic_runtime == PanicRuntime("abort") else [],
         _rustc_flags(toolchain_info.rustc_flags),
         _rustc_flags(toolchain_info.rustc_check_flags) if is_check else [],
         _rustc_flags(toolchain_info.rustc_coverage_flags) if ctx.attrs.coverage else [],
         _rustc_flags(ctx.attrs.rustc_flags),
         cmd_args(ctx.attrs.features, format = '--cfg=feature="{}"'),
-        dependency_args,
+        dep_args,
     )
 
     common_args = CommonArgsInfo(
@@ -886,6 +954,8 @@ def _clippy_wrapper(
     if toolchain_info.rustc_target_triple:
         rustc_print_sysroot.add("--target={}".format(toolchain_info.rustc_target_triple))
 
+    skip_setting_sysroot = toolchain_info.explicit_sysroot_deps != None
+
     if ctx.attrs._exec_os_type[OsLookup].platform == "windows":
         wrapper_file, _ = ctx.actions.write(
             ctx.actions.declare_output("__clippy_driver_wrapper.bat"),
@@ -893,7 +963,9 @@ def _clippy_wrapper(
                 "@echo off",
                 "set __CLIPPY_INTERNAL_TESTS=true",
                 cmd_args(rustc_print_sysroot, format = 'FOR /F "tokens=* USEBACKQ" %%F IN (`{}`) DO ('),
-                "set SYSROOT=%%F",
+            ] + (
+                [] if skip_setting_sysroot else ["set SYSROOT=%%F"]
+            ) + [
                 ")",
                 cmd_args(clippy_driver, format = "{} %*"),
             ],
@@ -906,7 +978,9 @@ def _clippy_wrapper(
                 "#!/usr/bin/env bash",
                 # Force clippy to be clippy: https://github.com/rust-lang/rust-clippy/blob/e405c68b3c1265daa9a091ed9b4b5c5a38c0c0ba/src/driver.rs#L334
                 "export __CLIPPY_INTERNAL_TESTS=true",
-                cmd_args(rustc_print_sysroot, format = "export SYSROOT=$({})"),
+            ] + (
+                [] if skip_setting_sysroot else [cmd_args(rustc_print_sysroot, format = "export SYSROOT=$({})")]
+            ) + [
                 cmd_args(clippy_driver, format = "{} \"$@\"\n"),
             ],
             is_executable = True,
@@ -941,8 +1015,10 @@ def _linker_args(
 # which provided the primary disambiguator for two otherwise identically named
 # crates. The hash is added to the filename to give them a lower likelihood of
 # duplicate names, but it doesn't matter if they collide.
-def _metadata(label: Label) -> (str, str):
+def _metadata(label: Label, is_rustdoc_test: bool) -> (str, str):
     label = str(label.raw_target())
+    if is_rustdoc_test:
+        label = "doctest/" + label
     h = hash(label)
     if h < 0:
         h = -h
@@ -995,7 +1071,7 @@ def _rustc_emit(
     if emit in predeclared_outputs:
         emit_output = predeclared_outputs[emit]
     else:
-        extra_hash = "-" + _metadata(ctx.label)[1]
+        extra_hash = "-" + _metadata(ctx.label, False)[1]
         emit_args.add("-Cextra-filename={}".format(extra_hash))
         filename = subdir + "/" + output_filename(simple_crate, emit, params, extra_hash)
 

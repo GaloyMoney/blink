@@ -11,13 +11,19 @@
 """
 Applies the merge sequence to the linkable_graph and module graph to produce merged libraries.
 
-The merge sequence is a list of "merge entries". Each entry is a "merge spec", which is a name and a list of roots.
+The merge sequence is a list of "merge entries". Each entry is comprised of "merge specs", each of which have a name and
+a list of roots. A merge entry may be a merge spec or a list of merge specs.
+
 For example:
 
 ```
 [
-    {"group1.so": [//group1:root1, //group1:root2]},
-    {"group2.so": [//group2:root]},
+    ("libgroup1.so", [//group1:root1, //group1:root2]),
+    ("libgroup2.so", [//group2:root]),
+    (
+        ("libgroup3lib1.so": [//group3:root1]),
+        ("libgroup3lib2.so": [//group3:root2]),
+    ),
     ...
 ]
 ```
@@ -26,15 +32,18 @@ We use this sequence to assign each target in the linkable graph to a "merge gro
 each entry defines a new merge group. That group consists of all the roots in the entry and all of the transitive
 dependencies of those roots, except for nodes that have already been assigned a merge group.
 
-We then need to split that merge group into "split groups" for three reasons: defining valid libraries, avoiding adding
-implicit module dependencies to targets, and excluding targets that shouldn't be merged. That imposes these constraints:
-1. Targets in a split group will all be in the same module. A library cannot span multiple modules.
-2. For split groups in the root module, all targets will have the same set of transitive module dependencies (including
+We then need to split that merge group into "split groups" for four reasons: avoiding unwanted dependencies between
+libraries, defining valid libraries, avoiding adding implicit module dependencies to targets, and excluding targets that
+shouldn't be merged. That imposes these constraints:
+1. Libraries defined by specs in the same entry should not depend on one another, so any shared dependencies must be
+   split into separate libraries.
+2. Targets in a split group will all be in the same module. A library cannot span multiple modules.
+3. For split groups in the root module, all targets will have the same set of transitive module dependencies (including
    through targets in other merge groups). A non-root module cannot be loaded without loading all of its module
    dependencies, but if a JNI entry-point target is in the root module and has module dependencies, those dependencies
    would have to be loaded explicitly in advance, or the library load for the target will fail. Making any such target
    depend on *more* modules in merged-library builds would therefore risk merged-build-only runtime crashes.
-3. Some targets are excluded from merging (explicitly via a blocklist, or implicitly because they cannot be packaged as
+4. Some targets are excluded from merging (explicitly via a blocklist, or implicitly because they cannot be packaged as
    assets). Non-asset targets are rare, often cause issues when merged, and complicate split-group "layering" as
    described below, so it significantly simplifies merge sequence configuration and mechanics to exclude them.
 
@@ -83,21 +92,14 @@ single library and the naming is simple. If it ends up having multiple libraries
 suffixes.
 
 We aim to minimize the suffixing of the largest, most central layers, so we apply the following rules:
-1. Library names start with the merge spec name.
+1. Library names start with the names of the merge specs from the current entry whose roots include or depend on the
+   library's targets. This is just the spec name if there is only one, or `lib_shared_` plus the underscore-separated
+   list of spec names if there are multiple.
 2. If a merge spec includes targets from multiple modules, each library in a non-root module will be suffixed with that
    module name.
 3. We perform a topological traversal of the final library graph, maintaining counters of times we've encountered each
    (possibly module-suffixed) library name. Each final library after the first encountered for its library name will be
    further suffixed with that library name's counter value.
-
-# TODO(cjhopman): This file has PARTIAL, BROKEN logic handling merge entries that are a list of merge specs. This is
-# NOT currently supported or tested, and its interface should be considered non-final. Do not interact with this!
-
-# TODO(cjhopman): In multi-spec merge entries, split groups must be split by sets of specs in the current merge entry
-# whose roots are transitive dependents.
-
-# TODO(cjhopman): We should consider requiring a "supergroup name" in multi-spec merge entries. Right now, we produce
-# unreasonable library names by applying the first spec's name to libraries from all specs in the entry.
 """
 from __future__ import annotations
 
@@ -194,10 +196,28 @@ class SplitGroupKey(typing.NamedTuple):
     excluded: typing.Optional[Label]
     module: str
     current_merge_group: int
-    # If this is a subgroup, holds the primary spec name and a unique identifier.
-    merge_subgroup: Optional[set[str]]
+    # Holds the set of names of specs in the entry that depend on the targets.
+    # This will contain only one string for most targets/entries.
+    merge_subgroup: set[str]
     # For the root module, holds the structified set of transitively reachable modules
     transitive_module_key: typing.Optional[frozenset[str]]
+
+    def get_base_name(self) -> str:
+        if self.excluded:
+            return self.excluded
+
+        assert len(self.merge_subgroup) > 0
+
+        dependent_spec_names = sorted(self.merge_subgroup)
+
+        if len(dependent_spec_names) == 1:
+            return dependent_spec_names[0]
+        else:
+            base_name = "lib_shared"
+            for dependent_spec_name in dependent_spec_names:
+                base_name += f"_{dependent_spec_name[3:-3]}"
+            base_name += ".so"
+            return base_name
 
 
 class NodeData(typing.NamedTuple):
@@ -206,8 +226,7 @@ class NodeData(typing.NamedTuple):
     merge_group: int
     is_excluded: bool
     final_lib_key: FinalLibKey
-    transitive_module_deps: frozenset[str]
-    split_group_exit_counts: dict[int, int]
+    dependent_included_split_group_entry_counts: dict[int, int]
 
     def debug(self) -> object:
         return self._asdict()
@@ -290,7 +309,7 @@ class FinalLibGraph:
                 count = name_counters.setdefault(lib_name, 0) + 1
                 name_counters[lib_name] = count
                 if count > 1:
-                    lib_name += "_{}".format(count)
+                    lib_name += "_{}".format(count - 1)
                 final_lib_names[key] = lib_name + ext
         return final_lib_names
 
@@ -305,61 +324,61 @@ else:
 
 
 class MergeSequenceGroupSpec:
-    has_multiple_specs: bool
-    group_roots_patterns: list[re.Pattern[str]]
-    merge_group_name: str
+    # These lists run parallel to one another; the group_roots_patterns
+    # entry for a given index contains all the root patterns for the
+    # group_specs entry at the same index.
+    group_specs: list[MergeGroupSpecDef]
+    group_roots_patterns: list[list[re.Pattern[str]]]
 
     def __init__(
         self, group_specs: typing.Union[MergeGroupSpecDef, list[MergeGroupSpecDef]]
     ) -> None:
-        self.group_specs = group_specs
+        self.group_specs = (
+            [group_specs] if isinstance(group_specs[0], str) else group_specs
+        )
 
-        def _parse() -> typing.Tuple[bool, str, list[str]]:
-            if isinstance(group_specs[0], str):
-                typed = typing.cast(MergeGroupSpecDef, group_specs)
-                return (False, typed[0], typed[1])
-            else:
-                group_roots_patterns = [x for spec in group_specs for x in spec[1]]
-                # TODO(cjhopman): Fix this, we don't yet actually fully support multiple specs in a group.
-                return (True, group_specs[0][0], group_roots_patterns)
+        for group_spec in self.group_specs:
+            library_name = group_spec[0]
+            assert library_name.startswith(
+                "lib"
+            ), f"native merge library name {library_name} does not begin with 'lib'"
+            assert library_name.endswith(
+                ".so"
+            ), f"native merge library name {library_name} does not end with '.so'"
 
-        has_multiple_specs, merge_group_name, group_roots_patterns = _parse()
+        self.group_roots_patterns = [
+            [re.compile(x) for x in spec[1]] for spec in self.group_specs
+        ]
 
-        self.has_multiple_specs = has_multiple_specs
-        self.group_roots_patterns = [re.compile(p) for p in group_roots_patterns]
-        self.merge_group_name = merge_group_name
+    def get_rooted_specs(self, raw_target: str) -> set[str]:
+        result = set()
+        for patterns, group_spec in zip(self.group_roots_patterns, self.group_specs):
+            for p in patterns:
+                if p.search(raw_target):
+                    result.add(group_spec[0])
+                    break
 
-    def is_root(self, raw_target: str) -> bool:
-        for p in self.group_roots_patterns:
-            if p.search(raw_target):
-                return True
-        return False
-
-    def group_name(self) -> str:
-        return self.merge_group_name
+        return result
 
     def compute_merge_subgroup_mapping(
         self,
+        group_roots: dict[Label, set[str]],
         post_ordered_targets: list[Label],
         graph_map: dict[Label, LinkableGraphNode],
     ) -> MergeSubgroupMapping:
-        if self.has_multiple_specs:
-            reachable_merge_spec_roots = defaultdict(set)
+        merge_specs_with_reachable_roots = defaultdict(set)
 
-            for s in self.group_specs:
-                for root in s[1]:
-                    reachable_merge_spec_roots[root].add(root)
+        for target, rooted_specs in group_roots.items():
+            merge_specs_with_reachable_roots[target].update(rooted_specs)
 
-            for target in post_ordered_targets[::-1]:
-                node = graph_map.get(target)
-                assert node is not None
-                roots_to_add = reachable_merge_spec_roots[target]
-                for child in node.deps:
-                    reachable_merge_spec_roots[child].update(roots_to_add)
+        for target in post_ordered_targets[::-1]:
+            node = graph_map.get(target)
+            assert node is not None
+            roots_to_add = merge_specs_with_reachable_roots[target]
+            for child in node.deps:
+                merge_specs_with_reachable_roots[child].update(roots_to_add)
 
-            return lambda x: reachable_merge_spec_roots[x]
-        else:
-            return lambda x: None
+        return lambda x: frozenset(merge_specs_with_reachable_roots[x])
 
 
 def get_native_linkables_by_merge_sequence(  # noqa: C901
@@ -370,6 +389,9 @@ def get_native_linkables_by_merge_sequence(  # noqa: C901
 ) -> typing.Tuple[dict[Label, NodeData], dict[FinalLibKey, str], FinalLibGraph]:
     final_lib_graph = FinalLibGraph()
     node_data: dict[Label, NodeData] = {}
+    transitive_module_deps_map: dict[Label, frozenset[str]] = {}
+
+    dependents_in_current_merge_group_map: dict[Label, list[Label]] = {}
 
     def check_is_excluded(target: Label) -> bool:
         node = graph_node_map[target]
@@ -388,7 +410,15 @@ def get_native_linkables_by_merge_sequence(  # noqa: C901
 
     def get_children_without_merge_group(label: Label) -> list[Label]:
         node = graph_node_map[label]
-        return [child for child in node.deps if child not in node_data]
+        group_deps = [child for child in node.deps if child not in node_data]
+
+        # In addition to applying an ordering to targets, this traversal identifies within-merge-group dependents.
+        for group_dep in group_deps:
+            dependents_in_current_merge_group_map.setdefault(group_dep, []).append(
+                label
+            )
+
+        return group_deps
 
     current_merge_group = 0
 
@@ -397,25 +427,25 @@ def get_native_linkables_by_merge_sequence(  # noqa: C901
     merge_group_module_constituents: list[set[str]] = []
 
     for current_merge_group in range(len(native_library_merge_sequence)):
+        dependents_in_current_merge_group_map = {}
+
         merge_group_module_constituents.append(set())
         group_specs: MergeSequenceGroupSpec = native_library_merge_sequence[
             current_merge_group
         ]
-        group_roots = []
+        group_roots = {}
         for label, node in graph_node_map.items():
-            if group_specs.is_root(node.raw_target) and label not in node_data:
-                group_roots.append(label)
+            if label not in node_data:
+                rooted_specs = group_specs.get_rooted_specs(node.raw_target)
+                if rooted_specs:
+                    group_roots[label] = rooted_specs
 
-        merge_group_name = group_specs.merge_group_name
         post_ordered_targets = post_order_traversal_by(
-            group_roots, get_children_without_merge_group
+            group_roots.keys(), get_children_without_merge_group
         )
 
-        # TODO(cjhopman): The restrictions on single-spec merge entries can be computed in two traversals, but
-        # multi-spec entries will require an additional top-down traversal to determine the set of transitive dependent
-        # spec roots, which will be an additional factor separating split groups in such merge groups.
         merge_subgroup_mapping = group_specs.compute_merge_subgroup_mapping(
-            post_ordered_targets, graph_node_map
+            group_roots, post_ordered_targets, graph_node_map
         )
 
         def get_split_group(
@@ -424,7 +454,7 @@ def get_native_linkables_by_merge_sequence(  # noqa: C901
             module: str,
             current_merge_group: int = current_merge_group,
             merge_subgroup_mapping: MergeSubgroupMapping = merge_subgroup_mapping,
-        ) -> typing.Tuple[bool, int]:
+        ) -> typing.Tuple[bool, int, str]:
             excluded = None
             if check_is_excluded(label):
                 excluded = label
@@ -443,10 +473,13 @@ def get_native_linkables_by_merge_sequence(  # noqa: C901
                 merge_subgroup=merge_subgroup,
                 transitive_module_key=transitive_module_key,
             )
-            return excluded is not None, split_groups.setdefault(
-                split_group_key, len(split_groups)
+            return (
+                excluded is not None,
+                split_groups.setdefault(split_group_key, len(split_groups)),
+                split_group_key.get_base_name(),
             )
 
+        # Bottom-up traversal (compute transitive module dependencies)
         for target in post_ordered_targets:
             assert target not in node_data, "{}: {}".format(
                 target, post_ordered_targets
@@ -454,60 +487,86 @@ def get_native_linkables_by_merge_sequence(  # noqa: C901
 
             node = graph_node_map[target]
             module = apk_module_graph.module_for_target(node.raw_target)
+
             merge_group_module_constituents[current_merge_group].add(module)
 
             transitive_module_deps = {module}
+            for dep in node.deps:
+                transitive_module_deps.update(transitive_module_deps_map[dep])
+            transitive_module_deps_map[target] = frozenset(transitive_module_deps)
 
-            deps_data = [node_data[dep] for dep in node.deps]
-
-            for dep_data in deps_data:
-                transitive_module_deps.update(dep_data.transitive_module_deps)
-
-            transitive_module_deps = frozenset(transitive_module_deps)
-
-            is_excluded, split_group = get_split_group(
-                target, transitive_module_deps, module
+        # Top-down traversal (determine split groups, compute dependent split group reentry counts, finalize layers)
+        for target in reversed(post_ordered_targets):
+            assert target not in node_data, "{}: {}".format(
+                target, post_ordered_targets
             )
 
-            split_group_exit_counts: dict[int, int] = {}
+            node = graph_node_map[target]
+            module = apk_module_graph.module_for_target(node.raw_target)
 
-            for dep_data in deps_data:
-                if current_merge_group == dep_data.merge_group:
-                    dep_split_group = dep_data.final_lib_key.split_group
-                    is_cross_group_edge = split_group != dep_split_group
+            is_excluded, split_group, base_library_name = get_split_group(
+                target, transitive_module_deps_map[target], module
+            )
 
-                    # if this is the first exit edge from the group, it won't apper in dep_data's map so we add it
-                    # explicitly if we don't yet have a non-zero count (except if it's exited an excluded node
-                    # where there's no need to track exit counts)
-                    if (
-                        not dep_data.is_excluded
-                        and is_cross_group_edge
-                        and dep_split_group not in split_group_exit_counts
-                    ):
-                        split_group_exit_counts[dep_split_group] = 1
-                    for (group, count) in dep_data.split_group_exit_counts.items():
-                        if group == dep_split_group and is_cross_group_edge:
-                            count += 1
-                        curr_count = split_group_exit_counts.get(group, 0)
-                        if count > curr_count:
-                            split_group_exit_counts[group] = count
+            dependent_included_split_group_entry_counts: dict[int, int] = {}
+
+            for dependent_in_group in dependents_in_current_merge_group_map.get(
+                target, []
+            ):
+                dependent_in_group_data = node_data[dependent_in_group]
+                dependent_split_group = (
+                    dependent_in_group_data.final_lib_key.split_group
+                )
+                is_included_split_group_entry = (
+                    split_group != dependent_split_group
+                    and not dependent_in_group_data.is_excluded
+                )
+
+                # dependent_included_split_group_entry_counts do not count entry into a target's own split group layer,
+                # so we have to ensure that its dependencies record an entry count of at least 1 for that split group.
+                if (
+                    is_included_split_group_entry
+                    and dependent_split_group
+                    not in dependent_included_split_group_entry_counts
+                ):
+                    dependent_included_split_group_entry_counts[
+                        dependent_split_group
+                    ] = 1
+
+                for (
+                    group,
+                    entry_count,
+                ) in (
+                    dependent_in_group_data.dependent_included_split_group_entry_counts.items()
+                ):
+                    if group == dependent_split_group and is_included_split_group_entry:
+                        entry_count += 1
+
+                    curr_entry_count = dependent_included_split_group_entry_counts.get(
+                        group, 0
+                    )
+                    if entry_count > curr_entry_count:
+                        dependent_included_split_group_entry_counts[group] = entry_count
 
             this_node_data = NodeData(
-                base_library_name=node.raw_target if is_excluded else merge_group_name,
+                base_library_name=base_library_name,
                 module=module,
                 merge_group=current_merge_group,
                 final_lib_key=FinalLibKey(
                     split_group=split_group,
-                    cycle_breaker=frozenset(split_group_exit_counts.items())
-                    if is_root_module(module)
-                    else split_group_exit_counts.get(split_group, 0),
+                    cycle_breaker=dependent_included_split_group_entry_counts.get(
+                        split_group, 0
+                    ),
                 ),
                 is_excluded=is_excluded,
-                transitive_module_deps=transitive_module_deps,
-                split_group_exit_counts=split_group_exit_counts,
+                dependent_included_split_group_entry_counts=dependent_included_split_group_entry_counts,
             )
             node_data[target] = this_node_data
-            final_lib_graph.add_node(this_node_data, deps_data)
+
+        for target in post_ordered_targets:
+            node = graph_node_map[target]
+            deps_data = [node_data[dep] for dep in node.deps]
+            final_lib_graph.add_node(node_data[target], deps_data)
 
     final_lib_names = final_lib_graph.assign_names(merge_group_module_constituents)
     return node_data, final_lib_names, final_lib_graph

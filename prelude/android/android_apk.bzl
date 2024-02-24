@@ -9,7 +9,8 @@ load("@prelude//android:android_binary.bzl", "get_binary_info")
 load("@prelude//android:android_providers.bzl", "AndroidApkInfo", "AndroidApkUnderTestInfo", "AndroidBinaryNativeLibsInfo", "AndroidBinaryResourcesInfo", "DexFilesInfo", "ExopackageInfo")
 load("@prelude//android:android_toolchain.bzl", "AndroidToolchainInfo")
 load("@prelude//java:java_providers.bzl", "KeystoreInfo")
-load("@prelude//java/utils:java_utils.bzl", "get_class_to_source_map_info", "get_path_separator_for_exec_os")
+load("@prelude//java/utils:java_more_utils.bzl", "get_path_separator_for_exec_os")
+load("@prelude//java/utils:java_utils.bzl", "get_class_to_source_map_info")
 load("@prelude//utils:set.bzl", "set")
 
 def android_apk_impl(ctx: AnalysisContext) -> list[Provider]:
@@ -32,6 +33,13 @@ def android_apk_impl(ctx: AnalysisContext) -> list[Provider]:
         compress_resources_dot_arsc = ctx.attrs.resource_compression == "enabled" or ctx.attrs.resource_compression == "enabled_with_strings_as_assets",
     )
 
+    has_native_libs = bool(
+        native_library_info.exopackage_info or
+        native_library_info.native_libs_for_primary_apk or
+        native_library_info.root_module_native_lib_assets or
+        native_library_info.non_root_module_native_lib_assets,
+    )
+
     exopackage_info = ExopackageInfo(
         secondary_dex_info = dex_files_info.secondary_dex_exopackage_info,
         native_library_info = native_library_info.exopackage_info,
@@ -45,7 +53,7 @@ def android_apk_impl(ctx: AnalysisContext) -> list[Provider]:
     )
 
     return [
-        AndroidApkInfo(apk = output_apk, manifest = resources_info.manifest),
+        AndroidApkInfo(apk = output_apk, manifest = resources_info.manifest, materialized_artifacts = android_binary_info.materialized_artifacts),
         AndroidApkUnderTestInfo(
             java_packaging_deps = set([dep.label.raw_target() for dep in java_packaging_deps]),
             keystore = keystore,
@@ -57,8 +65,8 @@ def android_apk_impl(ctx: AnalysisContext) -> list[Provider]:
             r_dot_java_packages = set([info.specified_r_dot_java_package for info in resources_info.unfiltered_resource_infos if info.specified_r_dot_java_package]),
             shared_libraries = set(native_library_info.apk_under_test_shared_libraries),
         ),
-        DefaultInfo(default_output = output_apk, other_outputs = _get_exopackage_outputs(exopackage_info), sub_targets = sub_targets | class_to_srcs_subtargets),
-        get_install_info(ctx, output_apk = output_apk, manifest = resources_info.manifest, exopackage_info = exopackage_info),
+        DefaultInfo(default_output = output_apk, other_outputs = _get_exopackage_outputs(exopackage_info) + android_binary_info.materialized_artifacts, sub_targets = sub_targets | class_to_srcs_subtargets),
+        get_install_info(ctx, output_apk = output_apk, manifest = resources_info.manifest, exopackage_info = exopackage_info, has_native_libs = has_native_libs),
         TemplatePlaceholderInfo(
             keyed_variables = {
                 "classpath": cmd_args([dep.jar for dep in java_packaging_deps if dep.jar], delimiter = get_path_separator_for_exec_os(ctx)),
@@ -132,7 +140,12 @@ def build_apk(
 
     return output_apk
 
-def get_install_info(ctx: AnalysisContext, output_apk: Artifact, manifest: Artifact, exopackage_info: [ExopackageInfo, None]) -> InstallInfo:
+def get_install_info(
+        ctx: AnalysisContext,
+        output_apk: Artifact,
+        manifest: Artifact,
+        exopackage_info: [ExopackageInfo, None],
+        has_native_libs: bool = True) -> InstallInfo:
     files = {
         ctx.attrs.name: output_apk,
         "manifest": manifest,
@@ -167,7 +180,7 @@ def get_install_info(ctx: AnalysisContext, output_apk: Artifact, manifest: Artif
     if secondary_dex_exopackage_info or native_library_exopackage_info or resources_info:
         files["exopackage_agent_apk"] = ctx.attrs._android_toolchain[AndroidToolchainInfo].exopackage_agent_apk
 
-    if hasattr(ctx.attrs, "cpu_filters"):
+    if has_native_libs and hasattr(ctx.attrs, "cpu_filters"):
         files["cpu_filters"] = ctx.actions.write("cpu_filters.txt", ctx.attrs.cpu_filters)
 
     return InstallInfo(

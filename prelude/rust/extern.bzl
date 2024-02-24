@@ -5,8 +5,7 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
-load(":context.bzl", "CompileContext", "CrateMapArg", "ExternArg")
-load(":link_info.bzl", "CrateName")
+load(":context.bzl", "CompileContext", "CrateMapArg", "CrateName", "ExternArg")
 
 # Create `--extern` flag. For crates with a name computed during analysis:
 #
@@ -20,9 +19,10 @@ load(":link_info.bzl", "CrateName")
 #
 #     REALNAME=path/to/libPROVISIONAL.rlib
 #
+# The `compile_ctx` may be omitted for non-dynamic crate names
 def extern_arg(
         ctx: AnalysisContext,
-        compile_ctx: CompileContext,
+        compile_ctx: CompileContext | None,
         flags: list[str],
         crate: CrateName,
         lib: Artifact) -> cmd_args:

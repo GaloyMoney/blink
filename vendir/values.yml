@@ -1,4 +1,4 @@
 #@data/values
 ---
-buck2_git_ref: "2023-10-15" #! echo "${BUCK2_VERSION#*-}"
+buck2_git_ref: "2024-01-15" #! echo "${BUCK2_VERSION#*-}"
 ring_fixup_git_ref: f3c685667ef22d0130687003012b6960abec6b3b #! commit for using ring 0.17.5

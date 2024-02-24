@@ -6,9 +6,10 @@
 # of this source tree.
 
 load("@prelude//:paths.bzl", "paths")
+load("@prelude//apple:apple_buck2_compatibility.bzl", "apple_check_buck2_compatibility")
 load("@prelude//apple:apple_library.bzl", "AppleLibraryAdditionalParams", "apple_library_rule_constructor_params_and_swift_providers")
 load("@prelude//apple:apple_toolchain_types.bzl", "AppleToolchainInfo")
-# @oss-disable: load("@prelude//apple/meta_only:apple_test_re_capabilities.bzl", "apple_test_re_capabilities") 
+# @oss-disable: load("@prelude//apple/meta_only:apple_test_re_capabilities.bzl", "ios_test_re_capabilities", "macos_test_re_capabilities") 
 # @oss-disable: load("@prelude//apple/meta_only:apple_test_re_use_case.bzl", "apple_test_re_use_case") 
 load("@prelude//apple/swift:swift_compilation.bzl", "get_swift_anonymous_targets", "uses_explicit_modules")
 load(
@@ -29,16 +30,14 @@ load(
     "@prelude//utils:dicts.bzl",
     "flatten_x",
 )
-load(
-    "@prelude//utils:utils.bzl",
-    "expect",
-)
+load("@prelude//utils:expect.bzl", "expect")
 load(":apple_bundle.bzl", "AppleBundlePartListConstructorParams", "get_apple_bundle_part_list")
 load(":apple_bundle_destination.bzl", "AppleBundleDestination", "bundle_relative_path_for_destination")
 load(":apple_bundle_part.bzl", "AppleBundlePart", "SwiftStdlibArguments", "assemble_bundle", "bundle_output", "get_apple_bundle_part_relative_destination_path", "get_bundle_dir_name")
 load(":apple_bundle_types.bzl", "AppleBundleInfo")
 load(":apple_bundle_utility.bzl", "get_product_name")
 load(":apple_dsym.bzl", "DSYM_SUBTARGET", "DWARF_AND_DSYM_SUBTARGET", "get_apple_dsym")
+load(":apple_entitlements.bzl", "entitlements_link_flags")
 load(":apple_sdk.bzl", "get_apple_sdk_name")
 load(
     ":apple_sdk_metadata.bzl",
@@ -49,6 +48,8 @@ load(":xcode.bzl", "apple_populate_xcode_attributes")
 load(":xctest_swift_support.bzl", "XCTestSwiftSupportInfo")
 
 def apple_test_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
+    apple_check_buck2_compatibility(ctx)
+
     def get_apple_test_providers(deps_providers) -> list[Provider]:
         xctest_bundle = bundle_output(ctx)
 
@@ -62,6 +63,16 @@ def apple_test_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
             cmd_args(ctx.attrs.bridging_header),
         ] if ctx.attrs.bridging_header else []
 
+        shared_library_flags = ["-bundle"]
+
+        # Embedding entitlements (if present) means that we can skip adhoc codesigning
+        # any xctests altogether, provided the test dylib is adhoc signed
+        shared_library_flags += entitlements_link_flags(ctx)
+
+        # The linker will incluide adhoc signature for ARM64 by default, lets
+        # ensure we always have an adhoc signature regardless of arch/linker logic.
+        shared_library_flags += ["-Wl,-adhoc_codesign"]
+
         constructor_params = apple_library_rule_constructor_params_and_swift_providers(
             ctx,
             AppleLibraryAdditionalParams(
@@ -73,7 +84,7 @@ def apple_test_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
                     shared_library_name_linker_flags_format = [],
                     # When building Apple tests, we want to link with `-bundle` instead of `-shared` to allow
                     # linking against the bundle loader.
-                    shared_library_flags = ["-bundle"],
+                    shared_library_flags = shared_library_flags,
                 ),
                 generate_sub_targets = CxxRuleSubTargetParams(
                     compilation_database = True,
@@ -123,14 +134,23 @@ def apple_test_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
         primary_binary_rel_path = get_apple_bundle_part_relative_destination_path(ctx, binary_part)
         swift_stdlib_args = SwiftStdlibArguments(primary_binary_rel_path = primary_binary_rel_path)
 
-        sub_targets = assemble_bundle(ctx, xctest_bundle, bundle_parts, part_list_output.info_plist_part, swift_stdlib_args)
+        sub_targets = assemble_bundle(
+            ctx,
+            xctest_bundle,
+            bundle_parts,
+            part_list_output.info_plist_part,
+            swift_stdlib_args,
+            # Adhoc signing can be skipped because the test executable is adhoc signed
+            # + includes any entitlements if present.
+            skip_adhoc_signing = True,
+        )
 
         sub_targets.update(cxx_library_output.sub_targets)
         (debuginfo,) = sub_targets[DEBUGINFO_SUBTARGET]
         dsym_artifact = get_apple_dsym(
             ctx = ctx,
             executable = test_binary,
-            debug_info = debuginfo.other_outputs,
+            debug_info = debuginfo.default_outputs,
             action_identifier = "generate_apple_test_dsym",
             output_path_override = get_bundle_dir_name(ctx) + ".dSYM",
         )
@@ -174,19 +194,19 @@ def _get_test_info(ctx: AnalysisContext, xctest_bundle: Artifact, test_host_app_
 
     sdk_name = get_apple_sdk_name(ctx)
     if sdk_name == MacOSXSdkMetadata.name:
-        # It's not possible to execute macOS tests on RE yet
-        local_enabled = True
-        remote_enabled = False
-        remote_execution_properties = None
-        remote_execution_use_case = None
-    else:
-        local_enabled = False
-        remote_enabled = True
-        # @oss-disable: requires_ios_booted_simulator = ctx.attrs.test_host_app != None or ctx.attrs.ui_test_target_app != None 
-        # @oss-disable: remote_execution_properties = apple_test_re_capabilities(use_unbooted_simulator = not requires_ios_booted_simulator) 
-        # @oss-disable: remote_execution_use_case = apple_test_re_use_case() 
+        # @oss-disable: remote_execution_properties = macos_test_re_capabilities() 
         remote_execution_properties = None # @oss-enable
-        remote_execution_use_case = None # @oss-enable
+
+    else:
+        # @oss-disable: requires_ios_booted_simulator = ctx.attrs.test_host_app != None or ctx.attrs.ui_test_target_app != None 
+        # @oss-disable: remote_execution_properties = ios_test_re_capabilities(use_unbooted_simulator = not requires_ios_booted_simulator, use_m1_simulator = ctx.attrs.use_m1_simulator) 
+        remote_execution_properties = None # @oss-enable
+
+    # @oss-disable: remote_execution_use_case = apple_test_re_use_case(macos_test = sdk_name == MacOSXSdkMetadata.name, use_m1_simulator = ctx.attrs.use_m1_simulator) 
+
+    remote_execution_use_case = None # @oss-enable
+    local_enabled = remote_execution_use_case == None
+    remote_enabled = remote_execution_use_case != None
 
     return ExternalRunnerTestInfo(
         type = "custom",  # We inherit a label via the macro layer that overrides this.

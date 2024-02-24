@@ -6,7 +6,7 @@ directories:
   - path: .
     git:
       url: https://github.com/facebook/buck2.git
-      ref: "2023-10-15"
+      ref: "2024-01-15"
     includePaths:
     - prelude/**/*
     newRootPath: prelude
@@ -15,7 +15,7 @@ directories:
   - path: .
     git:
       url: https://github.com/facebook/buck2.git
-      ref: "2023-10-15"
+      ref: "2024-01-15"
     includePaths:
     - shim/third-party/macros/*
     newRootPath: shim/third-party/macros

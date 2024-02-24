@@ -38,12 +38,13 @@ load(
     "linkable_deps",
     "linkable_graph",
 )
+load("@prelude//utils:expect.bzl", "expect")
 load(
     "@prelude//utils:graph_utils.bzl",
     "breadth_first_traversal_by",
     "post_order_traversal",
 )
-load("@prelude//utils:utils.bzl", "expect", "flatten", "value_or")
+load("@prelude//utils:utils.bzl", "flatten", "value_or")
 load(":cxx_context.bzl", "get_cxx_toolchain_info")
 load(
     ":link_types.bzl",
@@ -152,7 +153,7 @@ def get_excluded(deps: list[Dependency] = []) -> dict[Label, None]:
 def create_linkable_root(
         link_infos: LinkInfos,
         name: [str, None] = None,
-        deps: list[Dependency] = []) -> LinkableRootInfo:
+        deps: list[LinkableGraph | Dependency] = []) -> LinkableRootInfo:
     # Only include dependencies that are linkable.
     return LinkableRootInfo(
         name = name,
@@ -671,18 +672,9 @@ def create_omnibus_libraries(
         ctx: AnalysisContext,
         graph: OmnibusGraph,
         extra_ldflags: list[typing.Any] = [],
-        prefer_stripped_objects: bool = False,
-        allow_cache_upload: bool = False) -> OmnibusSharedLibraries:
+        prefer_stripped_objects: bool = False) -> OmnibusSharedLibraries:
     spec = _build_omnibus_spec(ctx, graph)
     pic_behavior = get_cxx_toolchain_info(ctx).pic_behavior
-
-    if not allow_cache_upload:
-        # Gradually enable allow_cache_upload everywhere
-        h = hash(str(ctx.label))
-        if h < 0:
-            h = -h
-        if h % 100 < 20:
-            allow_cache_upload = True
 
     # Create dummy omnibus
     dummy_omnibus = create_dummy_omnibus(ctx, extra_ldflags)
@@ -703,7 +695,7 @@ def create_omnibus_libraries(
             pic_behavior,
             extra_ldflags,
             prefer_stripped_objects,
-            allow_cache_upload = allow_cache_upload,
+            allow_cache_upload = True,
         )
         if root.name != None:
             libraries[root.name] = product.shared_library
@@ -719,7 +711,7 @@ def create_omnibus_libraries(
             pic_behavior,
             extra_ldflags,
             prefer_stripped_objects,
-            allow_cache_upload = allow_cache_upload,
+            allow_cache_upload = True,
         )
         libraries[_omnibus_soname(ctx)] = omnibus.linked_object
 

@@ -12,7 +12,7 @@
 # **all** interpreted files.
 
 load("@prelude//android:cpu_filters.bzl", "ALL_CPU_FILTERS", "CPU_FILTER_FOR_DEFAULT_PLATFORM")
-load("@prelude//apple:apple_macro_layer.bzl", "apple_binary_macro_impl", "apple_bundle_macro_impl", "apple_library_macro_impl", "apple_package_macro_impl", "apple_test_macro_impl")
+load("@prelude//apple:apple_macro_layer.bzl", "apple_binary_macro_impl", "apple_bundle_macro_impl", "apple_library_macro_impl", "apple_package_macro_impl", "apple_test_macro_impl", "apple_universal_executable_macro_impl")
 load("@prelude//apple/swift:swift_toolchain_macro_layer.bzl", "swift_toolchain_macro_impl")
 load("@prelude//cxx:cxx_toolchain.bzl", "cxx_toolchain_inheriting_target_platform")
 load("@prelude//cxx:cxx_toolchain_macro_layer.bzl", "cxx_toolchain_macro_impl")
@@ -23,8 +23,8 @@ load("@prelude//rust:rust_common.bzl", "rust_common_macro_wrapper")
 load("@prelude//rust:rust_library.bzl", "rust_library_macro_wrapper")
 load("@prelude//rust:with_workspace.bzl", "with_rust_workspace")
 load("@prelude//user:all.bzl", _user_rules = "rules")
+load("@prelude//utils:expect.bzl", "expect")
 load("@prelude//utils:selects.bzl", "selects")
-load("@prelude//utils:utils.bzl", "expect")
 load(":is_full_meta_repo.bzl", "is_full_meta_repo")
 load(":paths.bzl", "paths")
 load(":rules.bzl", __rules__ = "rules")
@@ -188,7 +188,12 @@ def _android_binary_macro_stub(
         primary_dex_patterns = [],
         **kwargs):
     if not allow_r_dot_java_in_secondary_dex:
-        primary_dex_patterns = primary_dex_patterns + ["/R^", "/R$"]
+        primary_dex_patterns = primary_dex_patterns + [
+            "/R^",
+            "/R$",
+            # Pin this to the primary for apps with no primary dex classes.
+            "^com/facebook/buck_generated/AppWithoutResourcesStub^",
+        ]
     __rules__["android_binary"](
         allow_r_dot_java_in_secondary_dex = allow_r_dot_java_in_secondary_dex,
         cpu_filters = _get_valid_cpu_filters(cpu_filters),
@@ -340,6 +345,12 @@ def _apple_package_macro_stub(**kwargs):
         **kwargs
     )
 
+def _apple_universal_executable_macro_stub(**kwargs):
+    apple_universal_executable_macro_impl(
+        apple_universal_executable_rule = __rules__["apple_universal_executable"],
+        **kwargs
+    )
+
 def _swift_toolchain_macro_stub(**kwargs):
     rule = __rules__["swift_toolchain"]
 
@@ -414,6 +425,7 @@ __extra_rules__ = {
     "apple_library": _apple_library_macro_stub,
     "apple_package": _apple_package_macro_stub,
     "apple_test": _apple_test_macro_stub,
+    "apple_universal_executable": _apple_universal_executable_macro_stub,
     "apple_watchos_bundle": _apple_watchos_bundle_macro_stub,
     "configured_alias": _configured_alias_macro_stub,
     "cxx_toolchain": _cxx_toolchain_macro_stub,

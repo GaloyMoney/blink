@@ -5,7 +5,11 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
-load("@prelude//:artifacts.bzl", "ArtifactGroupInfo")
+load(
+    "@prelude//:artifacts.bzl",
+    "ArtifactGroupInfo",
+    "ArtifactOutputs",  # @unused Used as a type
+)
 load("@prelude//cxx:compile.bzl", "CxxSrcWithFlags")
 load("@prelude//cxx:cxx.bzl", "create_shared_lib_link_group_specs")
 load("@prelude//cxx:cxx_context.bzl", "get_cxx_toolchain_info")
@@ -51,7 +55,7 @@ load(
 load(
     "@prelude//linking:link_info.bzl",
     "Linkage",
-    "LinkedObject",  # @unused Used as a type
+    "LinkedObject",
 )
 load(
     "@prelude//linking:linkable_graph.bzl",
@@ -66,7 +70,6 @@ load(
 )
 load("@prelude//linking:shared_libraries.bzl", "merge_shared_libraries", "traverse_shared_library_info")
 load("@prelude//linking:strip.bzl", "strip_debug_with_gnu_debuglink")
-load("@prelude//utils:arglike.bzl", "ArgLike")  # @unused Used as a type
 load("@prelude//utils:utils.bzl", "flatten", "value_or")
 load("@prelude//paths.bzl", "paths")
 load("@prelude//resources.bzl", "gather_resources")
@@ -94,7 +97,7 @@ load(
     "qualify_srcs",
 )
 load(":source_db.bzl", "create_dbg_source_db", "create_python_source_db_info", "create_source_db", "create_source_db_no_deps")
-load(":toolchain.bzl", "NativeLinkStrategy", "PackageStyle", "PythonPlatformInfo", "PythonToolchainInfo", "get_platform_attr")
+load(":toolchain.bzl", "NativeLinkStrategy", "PackageStyle", "PythonPlatformInfo", "PythonToolchainInfo", "get_package_style", "get_platform_attr")
 
 OmnibusMetadataInfo = provider(
     # @unsorted-dict-items
@@ -105,11 +108,6 @@ def _link_strategy(ctx: AnalysisContext) -> NativeLinkStrategy:
     if ctx.attrs.native_link_strategy != None:
         return NativeLinkStrategy(ctx.attrs.native_link_strategy)
     return NativeLinkStrategy(ctx.attrs._python_toolchain[PythonToolchainInfo].native_link_strategy)
-
-def _package_style(ctx: AnalysisContext) -> PackageStyle:
-    if ctx.attrs.package_style != None:
-        return PackageStyle(ctx.attrs.package_style.lower())
-    return PackageStyle(ctx.attrs._python_toolchain[PythonToolchainInfo].package_style)
 
 # We do a lot of merging extensions, so don't use O(n) type annotations
 def _merge_extensions(
@@ -316,7 +314,7 @@ def python_executable(
         ctx: AnalysisContext,
         main: EntryPoint,
         srcs: dict[str, Artifact],
-        resources: dict[str, (Artifact, list[ArgLike])],
+        resources: dict[str, ArtifactOutputs],
         compile: bool,
         allow_cache_upload: bool) -> PexProviders:
     # Returns a three tuple: the Python binary, all its potential runtime files,
@@ -365,6 +363,7 @@ def python_executable(
         ctx.actions,
         ctx.label,
         srcs = src_manifest,
+        src_types = src_manifest,
         dep_manifest = dep_manifest,
         resources = py_resources(ctx, all_resources) if all_resources else None,
         bytecode = bytecode_manifest,
@@ -428,7 +427,7 @@ def _convert_python_library_to_executable(
     extra = {}
 
     python_toolchain = ctx.attrs._python_toolchain[PythonToolchainInfo]
-    package_style = _package_style(ctx)
+    package_style = get_package_style(ctx)
 
     # Convert preloaded deps to a set of their names to be loaded by.
     preload_labels = {d.label: None for d in ctx.attrs.preload_deps}
@@ -468,7 +467,6 @@ def _convert_python_library_to_executable(
             omnibus_graph,
             python_toolchain.linker_flags + ctx.attrs.linker_flags,
             prefer_stripped_objects = ctx.attrs.prefer_stripped_native_objects,
-            allow_cache_upload = allow_cache_upload,
         )
 
         # Extract re-linked extensions.
@@ -711,12 +709,23 @@ def python_binary_impl(ctx: AnalysisContext) -> list[Provider]:
         fail("Only one of main_module or main may be set. Prefer main_function as main and main_module are considered deprecated")
     elif main_module != None and main_function != None:
         fail("Only one of main_module or main_function may be set. Prefer main_function.")
-    elif main_function != None and ctx.attrs.main != None:
-        fail("Only one of main_function or main may be set. Prefer main_function.")
-    elif ctx.attrs.main != None:
+    elif ctx.attrs.main != None and main_function == None:
         main_module = "." + ctx.attrs.main.short_path.replace("/", ".")
         if main_module.endswith(".py"):
             main_module = main_module[:-3]
+
+    if "python-version=3.8" in ctx.attrs.labels:
+        # buildifier: disable=print
+        print((
+            "\033[1;33m \u26A0  " +
+            "{0} 3.8 is EOL, and is going away by the end of H1 2024. " +
+            "Upgrade //{1}:{2} to {0} 3.10 now to avoid breakages. " +
+            "https://fburl.com/py38-sunsetting \033[0m"
+        ).format(
+            "Cinder" if "python-flavor=cinder" in ctx.attrs.labels else "Python",
+            ctx.label.package,
+            ctx.attrs.name,
+        ))
 
     if main_module != None:
         main = (EntryPointKind("module"), main_module)

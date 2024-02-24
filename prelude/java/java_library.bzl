@@ -5,12 +5,11 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
-# @starlark-rust: allow_string_literals_in_type_expr
-
 load("@prelude//:paths.bzl", "paths")
 load("@prelude//android:android_providers.bzl", "merge_android_packageable_info")
 load(
     "@prelude//java:java_providers.bzl",
+    "JavaCompileOutputs",  # @unused Used as type
     "JavaLibraryInfo",
     "JavaPackagingDepTSet",
     "JavaProviders",
@@ -25,11 +24,16 @@ load("@prelude//java:java_resources.bzl", "get_resources_map")
 load("@prelude//java:java_toolchain.bzl", "AbiGenerationMode", "JavaToolchainInfo")
 load("@prelude//java:javacd_jar_creator.bzl", "create_jar_artifact_javacd")
 load("@prelude//java/plugins:java_annotation_processor.bzl", "AnnotationProcessorProperties", "create_annotation_processor_properties")
-load("@prelude//java/plugins:java_plugin.bzl", "create_plugin_params")
-load("@prelude//java/utils:java_utils.bzl", "declare_prefixed_name", "derive_javac", "get_abi_generation_mode", "get_class_to_source_map_info", "get_default_info", "get_java_version_attributes", "get_path_separator_for_exec_os", "to_java_version")
+load(
+    "@prelude//java/plugins:java_plugin.bzl",
+    "PluginParams",  # @unused Used as type
+    "create_plugin_params",
+)
+load("@prelude//java/utils:java_more_utils.bzl", "get_path_separator_for_exec_os")
+load("@prelude//java/utils:java_utils.bzl", "declare_prefixed_name", "derive_javac", "get_abi_generation_mode", "get_class_to_source_map_info", "get_default_info", "get_java_version_attributes", "to_java_version")
 load("@prelude//jvm:nullsafe.bzl", "get_nullsafe_info")
 load("@prelude//linking:shared_libraries.bzl", "SharedLibraryInfo")
-load("@prelude//utils:utils.bzl", "expect")
+load("@prelude//utils:expect.bzl", "expect")
 
 _JAVA_FILE_EXTENSION = [".java"]
 _SUPPORTED_ARCHIVE_SUFFIXES = [".src.zip", "-sources.jar"]
@@ -60,7 +64,7 @@ def _process_plugins(
         ctx: AnalysisContext,
         actions_identifier: [str, None],
         annotation_processor_properties: AnnotationProcessorProperties,
-        plugin_params: ["PluginParams", None],
+        plugin_params: [PluginParams, None],
         javac_args: cmd_args,
         cmd: cmd_args):
     processors_classpath_tsets = []
@@ -144,7 +148,7 @@ def _append_javac_params(
         srcs: list[Artifact],
         remove_classes: list[str],
         annotation_processor_properties: AnnotationProcessorProperties,
-        javac_plugin_params: ["PluginParams", None],
+        javac_plugin_params: [PluginParams, None],
         source_level: int,
         target_level: int,
         deps: list[Dependency],
@@ -279,7 +283,7 @@ def compile_to_jar(
         remove_classes: [list[str], None] = None,
         manifest_file: [Artifact, None] = None,
         annotation_processor_properties: [AnnotationProcessorProperties, None] = None,
-        plugin_params: ["PluginParams", None] = None,
+        plugin_params: [PluginParams, None] = None,
         source_level: [int, None] = None,
         target_level: [int, None] = None,
         deps: [list[Dependency], None] = None,
@@ -289,7 +293,7 @@ def compile_to_jar(
         additional_classpath_entries: [list[Artifact], None] = None,
         additional_compiled_srcs: [Artifact, None] = None,
         bootclasspath_entries: [list[Artifact], None] = None,
-        is_creating_subtarget: bool = False) -> "JavaCompileOutputs":
+        is_creating_subtarget: bool = False) -> JavaCompileOutputs:
     if not additional_classpath_entries:
         additional_classpath_entries = []
     if not bootclasspath_entries:
@@ -359,7 +363,7 @@ def _create_jar_artifact(
         resources_root: [str, None],
         manifest_file: [Artifact, None],
         annotation_processor_properties: AnnotationProcessorProperties,
-        plugin_params: ["PluginParams", None],
+        plugin_params: [PluginParams, None],
         source_level: int,
         target_level: int,
         deps: list[Dependency],
@@ -370,7 +374,7 @@ def _create_jar_artifact(
         additional_compiled_srcs: [Artifact, None],
         bootclasspath_entries: list[Artifact],
         _is_building_android_binary: bool,
-        _is_creating_subtarget: bool = False) -> "JavaCompileOutputs":
+        _is_creating_subtarget: bool = False) -> JavaCompileOutputs:
     """
     Creates jar artifact.
 
@@ -599,6 +603,30 @@ def build_java_library(
                 DefaultInfo(default_output = nullsafe_info.output),
             ]}
 
+    gwt_output = None
+    if (
+        (srcs or resources) and
+        not java_toolchain.is_bootstrap_toolchain and
+        not ctx.attrs._is_building_android_binary
+    ):
+        gwt_output = ctx.actions.declare_output("gwt_module/{}.jar".format(ctx.label.name))
+        entries = []
+
+        if srcs or resources:
+            entries.append(_copy_resources(ctx.actions, "gwt_module", java_toolchain, ctx.label.package, srcs + resources, resources_root))
+        if outputs and outputs.annotation_processor_output:
+            entries.append(outputs.annotation_processor_output)
+
+        gwt_cmd_args = cmd_args(
+            java_toolchain.jar_builder,
+            "--entries-to-jar",
+            ctx.actions.write("gwt_entries.txt", entries),
+            "--output",
+            gwt_output.as_output(),
+        ).hidden(entries)
+
+        ctx.actions.run(gwt_cmd_args, category = "gwt_module")
+
     all_generated_sources = list(generated_sources)
     if outputs and outputs.annotation_processor_output:
         all_generated_sources.append(outputs.annotation_processor_output)
@@ -619,6 +647,7 @@ def build_java_library(
         needs_desugar = source_level > 7 or target_level > 7,
         generated_sources = all_generated_sources,
         has_srcs = has_srcs,
+        gwt_module = gwt_output,
     )
 
     class_to_src_map, class_to_src_map_sub_targets = get_class_to_source_map_info(

@@ -2,18 +2,20 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'prelude/rust: Process CARGO_MANIFEST_DIR during rustdoc test...'
-      sha: 98a6e7b70dc82a62784f80897d72fefdfb54d70f
+      commitTitle: 'rules: Reimplement native unbundled deps to better support `FORCE_RLIB`:
+        Take 3...'
+      sha: 7fe874bfabed4147e5fa6fa614fd2e0f8ef98b37
       tags:
-      - "2023-10-15"
+      - "2024-01-15"
     path: .
   path: prelude
 - contents:
   - git:
-      commitTitle: 'prelude/rust: Process CARGO_MANIFEST_DIR during rustdoc test...'
-      sha: 98a6e7b70dc82a62784f80897d72fefdfb54d70f
+      commitTitle: 'rules: Reimplement native unbundled deps to better support `FORCE_RLIB`:
+        Take 3...'
+      sha: 7fe874bfabed4147e5fa6fa614fd2e0f8ef98b37
       tags:
-      - "2023-10-15"
+      - "2024-01-15"
     path: .
   path: third-party/macros
 - contents:

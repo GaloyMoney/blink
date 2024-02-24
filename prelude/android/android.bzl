@@ -7,8 +7,9 @@
 
 load("@prelude//android:cpu_filters.bzl", "ALL_CPU_FILTERS")
 load("@prelude//java:java.bzl", "AbiGenerationMode", "dex_min_sdk_version")
-load("@prelude//decls/android_rules.bzl", "AaptMode", "DuplicateResourceBehaviour", "TargetCpuType")
+load("@prelude//decls/android_rules.bzl", "AaptMode", "DuplicateResourceBehaviour")
 load("@prelude//decls/common.bzl", "buck")
+load("@prelude//decls/core_rules.bzl", "TargetCpuType")
 load("@prelude//decls/toolchains_common.bzl", "toolchains_common")
 load("@prelude//genrule.bzl", "genrule_attributes")
 load(":android_aar.bzl", "android_aar_impl")
@@ -112,7 +113,10 @@ extra_attributes = {
         "manifest_skeleton": attrs.option(attrs.one_of(attrs.transition_dep(cfg = cpu_transition), attrs.source()), default = None),
         "min_sdk_version": attrs.option(attrs.int(), default = None),
         "module_manifest_skeleton": attrs.option(attrs.one_of(attrs.transition_dep(cfg = cpu_transition), attrs.source()), default = None),
+        "native_library_merge_code_generator": attrs.option(attrs.exec_dep(), default = None),
+        "native_library_merge_glue": attrs.option(attrs.split_transition_dep(cfg = cpu_split_transition), default = None),
         "_android_toolchain": toolchains_common.android(),
+        "_cxx_toolchain": attrs.split_transition_dep(cfg = cpu_split_transition, default = "toolchains//:android-hack"),
         "_dex_toolchain": toolchains_common.dex(),
         "_exec_os_type": buck.exec_os_type_arg(),
         "_is_building_android_binary": attrs.default_only(attrs.bool(default = True)),
@@ -129,6 +133,8 @@ extra_attributes = {
         "manifest": attrs.option(attrs.one_of(attrs.transition_dep(cfg = cpu_transition), attrs.source()), default = None),
         "manifest_skeleton": attrs.option(attrs.one_of(attrs.transition_dep(cfg = cpu_transition), attrs.source()), default = None),
         "min_sdk_version": attrs.option(attrs.int(), default = None),
+        "native_library_merge_map": attrs.option(attrs.dict(key = attrs.string(), value = attrs.list(attrs.regex()), sorted = False), default = None),
+        "native_library_merge_sequence": attrs.option(attrs.list(attrs.any()), default = None),
         "_android_toolchain": toolchains_common.android(),
         "_dex_toolchain": toolchains_common.dex(),
         "_is_building_android_binary": attrs.default_only(attrs.bool(default = True)),
@@ -137,6 +143,8 @@ extra_attributes = {
         "_java_toolchain": toolchains_common.java_for_android(),
     },
     "android_instrumentation_test": {
+        "instrumentation_test_listener": attrs.option(attrs.source(), default = None),
+        "instrumentation_test_listener_class": attrs.option(attrs.string(), default = None),
         "_android_toolchain": toolchains_common.android(),
         "_exec_os_type": buck.exec_os_type_arg(),
         "_java_toolchain": toolchains_common.java_for_android(),
@@ -179,10 +187,12 @@ extra_attributes = {
     "apk_genrule": genrule_attributes() | {
         "type": attrs.string(default = "apk"),
         "_android_toolchain": toolchains_common.android(),
+        "_exec_os_type": buck.exec_os_type_arg(),
     },
     "gen_aidl": {
         "import_paths": attrs.list(attrs.arg(), default = []),
         "_android_toolchain": toolchains_common.android(),
+        "_exec_os_type": buck.exec_os_type_arg(),
         "_java_toolchain": toolchains_common.java_for_android(),
     },
     "prebuilt_native_library": {

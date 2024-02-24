@@ -83,7 +83,7 @@ def cxx_toolchain_impl(ctx):
         is_pdb_generated = is_pdb_generated(ctx.attrs.linker_type, ctx.attrs.linker_flags),
         link_binaries_locally = not value_or(ctx.attrs.cache_links, True),
         link_libraries_locally = False,
-        link_style = LinkStyle("static"),
+        link_style = LinkStyle(ctx.attrs.link_style),
         link_weight = 1,
         link_ordering = ctx.attrs.link_ordering,
         linker = ctx.attrs.linker[RunInfo],
@@ -190,7 +190,7 @@ def cxx_toolchain_extra_attributes(is_toolchain_rule):
         # Used for resolving any 'platform_*' attributes.
         "platform_name": attrs.option(attrs.string(), default = None),
         "private_headers_symlinks_enabled": attrs.bool(default = True),
-        "produce_interface_from_stub_shared_library": attrs.bool(default = True),
+        "produce_interface_from_stub_shared_library": attrs.bool(default = False),
         "public_headers_symlinks_enabled": attrs.bool(default = True),
         "ranlib": attrs.option(dep_type(providers = [RunInfo]), default = None),
         "requires_objects": attrs.bool(default = False),
@@ -218,7 +218,7 @@ def cxx_toolchain_extra_attributes(is_toolchain_rule):
         }) if is_full_meta_repo() else None)),
         "_mk_comp_db": attrs.default_only(dep_type(providers = [RunInfo], default = "prelude//cxx/tools:make_comp_db")),
         # FIXME: prelude// should be standalone (not refer to fbsource//)
-        "_mk_hmap": attrs.default_only(dep_type(providers = [RunInfo], default = "fbsource//xplat/buck2/tools/cxx:hmap_wrapper")),
+        "_mk_hmap": attrs.default_only(dep_type(providers = [RunInfo], default = "prelude//cxx/tools:hmap_wrapper")),
         "_msvc_hermetic_exec": attrs.default_only(dep_type(providers = [RunInfo], default = "prelude//windows/tools:msvc_hermetic_exec")),
     }
 
