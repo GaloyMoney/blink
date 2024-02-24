@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: fix notifications quickstart (#4069)'
-      sha: 7466c0b8cc70215ea9f730e5e3cfef99f265d387
+      commitTitle: 'build: update flake / buck2 (#4067)...'
+      sha: b02cce1aec6afc318c5f8de8df5060de79349ecc
       tags:
-      - 0.20.79-1-g7466c0b8c
+      - 0.20.79-4-gb02cce1ae
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: fix notifications quickstart (#4069)'
-      sha: 7466c0b8cc70215ea9f730e5e3cfef99f265d387
+      commitTitle: 'build: update flake / buck2 (#4067)...'
+      sha: b02cce1aec6afc318c5f8de8df5060de79349ecc
       tags:
-      - 0.20.79-1-g7466c0b8c
+      - 0.20.79-4-gb02cce1ae
     path: schemas/
   - git:
-      commitTitle: 'chore: fix notifications quickstart (#4069)'
-      sha: 7466c0b8cc70215ea9f730e5e3cfef99f265d387
+      commitTitle: 'build: update flake / buck2 (#4067)...'
+      sha: b02cce1aec6afc318c5f8de8df5060de79349ecc
       tags:
-      - 0.20.79-1-g7466c0b8c
+      - 0.20.79-4-gb02cce1ae
     path: gql/
   path: ./graphql
 kind: LockConfig
