@@ -14,6 +14,7 @@ export const { getClient } = registerApolloClient(() => {
       uri: getClientSideGqlConfig().coreGqlUrl,
       fetchOptions: { cache: "no-store" },
 
+      // TODO uncomment this we start using otel
       //   fetch: (uri, options) => {
       //     const headersWithTrace = options?.headers || {}
       //     propagation.inject(context.active(), headersWithTrace)

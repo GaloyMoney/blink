@@ -35,10 +35,10 @@ export function parseQueryAmount(query: ParsedUrlQuery) {
 export function parseDisplayCurrency(searchParams: ReadonlyURLSearchParams) {
   // to support display search Param using `display`
   const display =
-    searchParams?.get("display") ??
     searchParams?.get("displayCurrency") ??
-    localStorage.getItem("display") ??
+    searchParams?.get("display") ??
     localStorage.getItem("displayCurrency") ??
+    localStorage.getItem("display") ??
     "USD"
 
   return display

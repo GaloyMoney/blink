@@ -162,7 +162,7 @@ export function SideBar({ username }: { username: string }) {
             <div className="flex flex-col items-center justify-center gap-3 mt-2">
               <button
                 onClick={shareCurrentUrl}
-                className="bg-[var(--primary)] rounded-full p-2 text-white w-40 flex justify-center align-content-center gap-2"
+                className="bg-[var(--primaryColor)] rounded-full p-2 text-white w-40 flex justify-center align-content-center gap-2"
               >
                 <Image
                   src="/icons/share-icon-white.svg"

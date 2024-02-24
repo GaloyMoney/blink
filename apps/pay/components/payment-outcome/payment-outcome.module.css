@@ -32,7 +32,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: var(--primary);
+  background: var(--primaryColor);
   border-radius: 10em;
   border: none;
   outline: none;

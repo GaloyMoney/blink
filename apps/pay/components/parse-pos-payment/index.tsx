@@ -75,14 +75,7 @@ function ParsePayment({
 
   // Update Params From Current Amount
   const handleAmountChange = (skipRouterPush?: boolean) => {
-    let amount = state.currentAmount
-    if (currencyMetadata.fractionDigits === 0) {
-      const safeAmt = safeAmount(amount)
-      amount =
-        currencyMetadata.fractionDigits === 0
-          ? safeAmt.toFixed()
-          : safeAmt.toFixed(currencyMetadata.fractionDigits)
-    }
+    const amount = state.currentAmount
     if (isNaN(Number(amount))) return
 
     const formattedValue = formatValue({

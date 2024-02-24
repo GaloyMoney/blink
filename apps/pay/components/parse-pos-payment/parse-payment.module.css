@@ -103,7 +103,7 @@
 
 .pay_btn,
 .pay_new_btn {
-  background: var(--primary);
+  background: var(--primaryColor);
   color: #fff;
   font-weight: 600;
   width: 220px;

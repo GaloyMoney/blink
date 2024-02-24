@@ -16,7 +16,6 @@
     "@apollo/experimental-nextjs-app-support": "^0.8.0",
     "@galoymoney/client": "^0.2.2",
     "@radix-ui/react-dialog": "^1.0.5",
-    "@radix-ui/react-slot": "^1.0.2",
     "@t3-oss/env-nextjs": "^0.6.1",
     "bech32": "^2.0.0",
     "bitcoinjs-lib": "5.0.5",
