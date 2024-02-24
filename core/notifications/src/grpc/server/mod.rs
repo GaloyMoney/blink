@@ -1,3 +1,4 @@
+#![allow(clippy::blocks_in_conditions)]
 mod convert;
 
 #[allow(clippy::all)]
@@ -290,7 +291,7 @@ impl NotificationsService for Notifications {
                         this_month_circle_size,
                         all_time_circle_size,
                     })
-                    .await?
+                    .await?;
             }
             Some(proto::NotificationEvent {
                 data:
@@ -316,7 +317,7 @@ impl NotificationsService for Notifications {
                         time_frame,
                         threshold,
                     })
-                    .await?
+                    .await?;
             }
             Some(proto::NotificationEvent {
                 data:
@@ -328,7 +329,7 @@ impl NotificationsService for Notifications {
                     .handle_notification_event(notification_event::IdentityVerificationApproved {
                         user_id: GaloyUserId::from(user_id),
                     })
-                    .await?
+                    .await?;
             }
             Some(proto::NotificationEvent {
                 data:
@@ -347,7 +348,7 @@ impl NotificationsService for Notifications {
                         user_id: GaloyUserId::from(user_id),
                         declined_reason,
                     })
-                    .await?
+                    .await?;
             }
             Some(proto::NotificationEvent {
                 data:
@@ -361,7 +362,7 @@ impl NotificationsService for Notifications {
                             user_id: GaloyUserId::from(user_id),
                         },
                     )
-                    .await?
+                    .await?;
             }
             _ => return Err(Status::invalid_argument("event is required")),
         }
