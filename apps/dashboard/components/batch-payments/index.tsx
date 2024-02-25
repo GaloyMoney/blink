@@ -11,11 +11,10 @@ import BatchPaymentsList from "./list"
 
 import SampleCSVTable from "./sample-table"
 
-import { chunkArray, validateCSV } from "@/app/batch-payments/utils"
+import { chunkArray, processRecords, validateCSV } from "@/app/batch-payments/utils"
 
 import {
   processPaymentsServerAction,
-  processRecords,
   validatePaymentDetail,
 } from "@/app/batch-payments/server-actions"
 import { WalletCurrency } from "@/services/graphql/generated"
@@ -45,6 +44,8 @@ const CHUNK_SIZE = 10
 export default function BatchPayments() {
   const session = useSession()
   const userData = session?.data?.userData?.data
+  const accessToken = session?.data?.accessToken
+  const [prossesedRecords, setProcessedRecords] = useState<number>(0)
   const [file, setFile] = useState<File | null>(null)
   const [csvData, setCsvData] = useState<ProcessedRecords[]>([])
   const [processCsvLoading, setProcessCsvLoading] = useState<boolean>(false)
@@ -81,7 +82,7 @@ export default function BatchPayments() {
       const defaultWalletCurrency = defaultWallet.currency
       const content = event.target.result as string
 
-      if (!defaultWalletCurrency || !defaultWallet.currency) {
+      if (!defaultWalletCurrency || !defaultWallet.currency || !accessToken) {
         return returnProcessFile()
       }
 
@@ -114,8 +115,12 @@ export default function BatchPayments() {
       }
 
       //Process Records, add Wallet Id's for username
-      const processedRecords = await processRecords(validateCsvResult.records)
-      if (processedRecords.error || !processedRecords.responsePayload) {
+      const processedRecords = await processRecords({
+        records: validateCsvResult.records,
+        token: accessToken,
+      })
+
+      if (processedRecords instanceof Error) {
         setModalDetails({
           open: true,
           heading: "Error",
@@ -124,7 +129,16 @@ export default function BatchPayments() {
         return returnProcessFile()
       }
 
-      setCsvData(processedRecords.responsePayload)
+      if (!processedRecords.length) {
+        setModalDetails({
+          open: true,
+          heading: "Error",
+          message: "No records found to process",
+        })
+        return returnProcessFile()
+      }
+
+      setCsvData(processedRecords)
       setPaymentDetails({
         totalAmount: validateCsvResult.totalAmount,
         userWalletBalance: {
@@ -154,6 +168,7 @@ export default function BatchPayments() {
       ) {
         allFailedPayments = allFailedPayments.concat(response.responsePayload)
       }
+      setProcessedRecords((prev) => prev + chunk.length)
     }
 
     if (allFailedPayments.length > 0) {
@@ -173,6 +188,7 @@ export default function BatchPayments() {
       resetState()
     }
 
+    setProcessedRecords(0)
     setProcessPaymentLoading(false)
   }
 
@@ -254,8 +270,12 @@ export default function BatchPayments() {
                 data-testid="confirm-batch-payments-btn"
                 onClick={processPayments}
                 loading={processPaymentLoading}
+                disabled={processPaymentLoading}
+                loadingPosition="end"
               >
-                Confirm Payment
+                {processPaymentLoading
+                  ? `Attempted ${prossesedRecords} payments`
+                  : "Confirm Payment"}
               </Button>
             </DetailsCard>
             <FileUpload
