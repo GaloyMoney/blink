@@ -2,7 +2,7 @@ import React from "react"
 
 import Link from "next/link"
 
-import { ApolloError, ApolloQueryResult } from "@apollo/client"
+import { ApolloQueryResult } from "@apollo/client"
 
 import { getClient } from "../ssr-client"
 
@@ -31,12 +31,12 @@ export default async function UsernameLayout({ children, params }: Props) {
       query: AccountDefaultWalletsDocument,
       variables: { username: params.username },
     })
-  } catch (e) {
-    console.error("error in username-layout.tsx", e)
-    const error = e as ApolloError
-    if ("graphQLErrors" in error && error.graphQLErrors.length > 0) {
-      response = { errorMessage: error.graphQLErrors[0].message }
+  } catch (err) {
+    console.error("error in username-layout.tsx", err)
+    if (err instanceof Error) {
+      response = { errorMessage: err.message }
     } else {
+      console.error("Unknown error")
       response = { errorMessage: "An unknown error occurred" }
     }
   }

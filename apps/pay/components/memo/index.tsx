@@ -17,7 +17,7 @@ interface Props {
 const Memo = ({ state, dispatch }: Props) => {
   const searchParams = useSearchParams()
   const amount = searchParams.get("amount") || "0"
-  const displayCurrency = searchParams.get("displayCurrency") || "USD"
+  const display = searchParams.get("display") || "USD"
   const memo = searchParams.get("memo") || ""
 
   const [openModal, setOpenModal] = React.useState<boolean>(false)
@@ -27,7 +27,7 @@ const Memo = ({ state, dispatch }: Props) => {
     const params = new URLSearchParams({
       amount,
       memo: currentMemo,
-      displayCurrency,
+      display,
     })
 
     const currentUrl = new URL(window.location.toString())

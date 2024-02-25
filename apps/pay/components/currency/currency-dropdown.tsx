@@ -16,7 +16,7 @@ export default function CurrencyDropdown({
   showOnlyFlag?: boolean
 }) {
   const searchParams = useSearchParams()
-  const display = searchParams?.get("displayCurrency")
+  const display = searchParams?.get("display")
 
   const { data: currencyData } = useCurrencyListQuery()
 
@@ -27,7 +27,7 @@ export default function CurrencyDropdown({
     const newDisplay =
       display && typeof display === "string"
         ? display
-        : localStorage.getItem("displayCurrency") ?? "USD"
+        : localStorage.getItem("display") ?? "USD"
     setSelectedDisplayCurrency(newDisplay)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -37,7 +37,7 @@ export default function CurrencyDropdown({
     // TODO auto-complete input can be better here Instead of select dropdown
     <select
       className="bg-slate-200 border-none p-2 w-20 rounded-md"
-      name={name ?? "displayCurrency"}
+      name={name ?? "display"}
       required
       value={selectedDisplayCurrency}
       onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {

@@ -42,7 +42,7 @@ function ParsePayment({
   const searchParams = useSearchParams()
   const { currencyList } = useDisplayCurrency()
   const memo = searchParams?.get("memo")
-  const displayCurrency = parseDisplayCurrency(searchParams)
+  const display = parseDisplayCurrency(searchParams)
 
   const currencyMetadata = state.displayCurrencyMetaData
   const language = typeof navigator !== "undefined" ? navigator?.language : "en"
@@ -50,18 +50,18 @@ function ParsePayment({
   // set all query params on first load, even if they are not passed
   useEffect(() => {
     const initialAmount = safeAmount(state.currentAmount).toString()
-    const initialDisplay = displayCurrency
+    const initialDisplay = display
     const initialQuery = extractSearchParams(searchParams)
     const newQuery = {
       amount: initialAmount,
       memo: memo ?? "",
-      displayCurrency: initialDisplay,
+      display: initialDisplay,
     }
     if (initialQuery !== newQuery) {
       const params = new URLSearchParams({
         amount: initialAmount,
         memo: memo ?? "",
-        displayCurrency: initialDisplay,
+        display: initialDisplay,
       })
       const newUrl = new URL(window.location.toString())
       newUrl.pathname = `/${username}`
@@ -80,7 +80,7 @@ function ParsePayment({
 
     const formattedValue = formatValue({
       value: amount,
-      intlConfig: { locale: language, currency: displayCurrency },
+      intlConfig: { locale: language, currency: display },
     })
     localStorage.setItem("formattedFiatValue", formattedValue)
 
@@ -88,7 +88,7 @@ function ParsePayment({
     const newQuery = {
       amount: state.currentAmount,
       memo: memo ?? "",
-      displayCurrency,
+      display,
     }
 
     const initialQuery = extractSearchParams(searchParams)
@@ -104,14 +104,14 @@ function ParsePayment({
 
   // Update CurrencyMetadata
   React.useEffect(() => {
-    const latestCurrencyMetadata = currencyList?.find((c) => c.id === displayCurrency)
+    const latestCurrencyMetadata = currencyList?.find((c) => c.id === display)
     if (latestCurrencyMetadata) {
       dispatch({
         type: ACTIONS.UPDATE_DISPLAY_CURRENCY_METADATA,
         payload: latestCurrencyMetadata,
       })
     }
-  }, [displayCurrency, currencyList])
+  }, [display, currencyList])
 
   return (
     <Container className={styles.digits_container}>
@@ -127,7 +127,7 @@ function ParsePayment({
             fontSize: "1.9rem",
           }}
           value={state.currentAmount}
-          intlConfig={{ locale: language, currency: displayCurrency }}
+          intlConfig={{ locale: language, currency: display }}
           readOnly={true}
         />
       </div>
@@ -158,7 +158,7 @@ function ParsePayment({
                 digit={"."}
                 dispatch={dispatch}
                 displayValue={
-                  getLocaleConfig({ locale: language, currency: displayCurrency })
+                  getLocaleConfig({ locale: language, currency: display })
                     .decimalSeparator
                 }
               />

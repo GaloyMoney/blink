@@ -19,10 +19,10 @@ import { ACTIONS } from "@/app/reducer"
 import { getClientSidePayDomain } from "@/config/config"
 
 function updateCurrencyAndReload(newDisplayCurrency: string): void {
-  localStorage.setItem("displayCurrency", newDisplayCurrency)
+  localStorage.setItem("display", newDisplayCurrency)
   const currentURL = new URL(window.location.toString())
   const searchParams = new URLSearchParams(window.location.search)
-  searchParams.set("displayCurrency", newDisplayCurrency)
+  searchParams.set("display", newDisplayCurrency)
   currentURL.search = searchParams.toString()
   window.location.href = currentURL.toString()
 }
