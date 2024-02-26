@@ -373,17 +373,16 @@ impl NotificationsService for Notifications {
                         r#type,
                     })),
             }) => {
-                // let payment_type = proto::TransactionType::try_from(r#type)
-                //     .map(notification_event::TransactionType::from)
-                //     .map_err(|e| Status::invalid_argument(e.to_string()))?;
+                let transaction_type = proto::TransactionType::try_from(r#type)
+                    .map(notification_event::TransactionType::from)
+                    .map_err(|e| Status::invalid_argument(e.to_string()))?;
 
-                // self.app
-                //     .handle_notification_event(
-                //         notification_event::IdentityVerificationReviewStarted {
-                //             user_id: GaloyUserId::from(user_id),
-                //         },
-                //     )
-                //     .await?;
+                self.app
+                    .handle_notification_event(notification_event::TransactionInfo {
+                        user_id: GaloyUserId::from(user_id),
+                        transaction_type,
+                    })
+                    .await?;
             }
             _ => return Err(Status::invalid_argument("event is required")),
         }

@@ -15,6 +15,11 @@ pub enum TransactionType {
     LightningPayment,
 }
 
+pub struct TransactionAmount {
+    pub amount_minor: u64,
+    pub currency: Currency,
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TransactionInfo {
     pub user_id: GaloyUserId,
@@ -35,45 +40,17 @@ impl NotificationEvent for TransactionInfo {
     }
 
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
-        let title = t!(
-            "identity_verification_review_started.title",
-            locale = locale.as_ref()
-        )
-        .to_string();
-        let body = t!(
-            "identity_verification_review_started.body",
-            locale = locale.as_ref()
-        )
-        .to_string();
-        LocalizedPushMessage { title, body }
+        unimplemented!()
     }
 
     fn to_localized_email(
         &self,
         locale: GaloyLocale,
     ) -> Result<Option<LocalizedEmail>, NotificationEventError> {
-        let email_formatter = EmailFormatter::init()?;
-
-        let title = t!(
-            "identity_verification_review_started.title",
-            locale = locale.as_ref()
-        )
-        .to_string();
-        let body = t!(
-            "identity_verification_review_started.body",
-            locale = locale.as_ref()
-        )
-        .to_string();
-
-        let body = email_formatter.generic_email_template(&title, &body)?;
-
-        Ok(Some(LocalizedEmail {
-            subject: title,
-            body,
-        }))
+        Ok(None)
     }
 
     fn should_send_email(&self) -> bool {
-        true
+        false
     }
 }

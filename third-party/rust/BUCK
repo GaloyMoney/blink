@@ -7182,6 +7182,7 @@ cargo.rust_library(
     crate_root = "rusty-money-0.4.1.crate/src/lib.rs",
     edition = "2018",
     features = [
+        "crypto",
         "default",
         "iso",
     ],
