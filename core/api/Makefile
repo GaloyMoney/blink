@@ -27,10 +27,6 @@ test-migrate:
 	docker compose build
 	docker compose -f docker-compose.yml up mongodb-migrate --exit-code-from mongodb-migrate
 
-watch-unit:
-	$(BIN_DIR)/jest --config ./test/unit/jest.config.js --clearCache
-	NODE_ENV=test LOGLEVEL=warn $(BIN_DIR)/jest --watch --config ./test/unit/jest.config.js
-
 del-containers:
 	docker compose rm -sfv
 

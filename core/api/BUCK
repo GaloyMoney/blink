@@ -261,3 +261,9 @@ dev_pnpm_task_binary(
   command = "watch:compile",
   srcs = [":src"] + [":test_src"],
 )
+
+dev_pnpm_task_binary(
+  name = "watch-unit",
+  command = "test:watch-unit",
+  env_json = "//dev:dummy_env",
+)
