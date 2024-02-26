@@ -364,6 +364,23 @@ impl NotificationsService for Notifications {
                     )
                     .await?;
             }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::Transaction(proto::TransactionInfo {
+                        user_id,
+                        settlement_amount,
+                        display_amount,
+                        r#type,
+                    })),
+            }) => {
+                // self.app
+                //     .handle_notification_event(
+                //         notification_event::IdentityVerificationReviewStarted {
+                //             user_id: GaloyUserId::from(user_id),
+                //         },
+                //     )
+                //     .await?;
+            }
             _ => return Err(Status::invalid_argument("event is required")),
         }
 

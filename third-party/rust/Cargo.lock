@@ -137,6 +137,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bddcadddf5e9015d310179a59bb28c4d4b9920ad0f11e8e14dbadf654890c9a6"
 
 [[package]]
+name = "arrayvec"
+version = "0.7.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "96d30a06541fbafbc7f82ed10c06164cfbd2c401138f6addd8404629c4b16711"
+
+[[package]]
 name = "async-graphql"
 version = "6.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2412,6 +2418,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "rust_decimal"
+version = "1.34.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b39449a79f45e8da28c57c341891b69a183044b29518bb8f86dbac9df60bb7df"
+dependencies = [
+ "arrayvec",
+ "num-traits",
+]
+
+[[package]]
+name = "rust_decimal_macros"
+version = "1.34.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e418701588729bef95e7a655f2b483ad64bb97c46e8e79fde83efd92aaab6d82"
+dependencies = [
+ "quote",
+ "rust_decimal",
+]
+
+[[package]]
 name = "rustc-demangle"
 version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2519,6 +2545,16 @@ name = "rustversion"
 version = "1.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ffc183a10b4478d04cbbbfc96d0873219d962dd5accaff2ffbd4ceb7df837f4"
+
+[[package]]
+name = "rusty-money"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b28f881005eac7ad8d46b6f075da5f322bd7f4f83a38720fc069694ddadd683"
+dependencies = [
+ "rust_decimal",
+ "rust_decimal_macros",
+]
 
 [[package]]
 name = "ryu"
@@ -3265,6 +3301,7 @@ dependencies = [
  "rand",
  "reqwest",
  "rust-i18n",
+ "rusty-money",
  "serde",
  "serde_json",
  "serde_with 3.6.1",

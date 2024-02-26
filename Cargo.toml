@@ -48,4 +48,4 @@ google-fcm1 = "5.0.3"
 sqlxmq = { version = "0.5", default-features = false, features = ["runtime-tokio-rustls"] }
 lettre = { version = "0.11.4", default-features = false, features = ["builder", "tokio1", "tokio1-rustls-tls", "smtp-transport"] }
 handlebars = "5.1.0"
-
+rusty-money = "0.4.1"

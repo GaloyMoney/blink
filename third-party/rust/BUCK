@@ -312,6 +312,23 @@ cargo.rust_library(
     visibility = [],
 )
 
+http_archive(
+    name = "arrayvec-0.7.4.crate",
+    sha256 = "96d30a06541fbafbc7f82ed10c06164cfbd2c401138f6addd8404629c4b16711",
+    strip_prefix = "arrayvec-0.7.4",
+    urls = ["https://crates.io/api/v1/crates/arrayvec/0.7.4/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "arrayvec-0.7.4",
+    srcs = [":arrayvec-0.7.4.crate"],
+    crate = "arrayvec",
+    crate_root = "arrayvec-0.7.4.crate/src/lib.rs",
+    edition = "2018",
+    visibility = [],
+)
+
 alias(
     name = "async-graphql",
     actual = ":async-graphql-6.0.11",
@@ -6722,6 +6739,70 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "rust_decimal-1.34.3.crate",
+    sha256 = "b39449a79f45e8da28c57c341891b69a183044b29518bb8f86dbac9df60bb7df",
+    strip_prefix = "rust_decimal-1.34.3",
+    urls = ["https://crates.io/api/v1/crates/rust_decimal/1.34.3/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "rust_decimal-1.34.3",
+    srcs = [":rust_decimal-1.34.3.crate"],
+    crate = "rust_decimal",
+    crate_root = "rust_decimal-1.34.3.crate/src/lib.rs",
+    edition = "2021",
+    env = {
+        "OUT_DIR": "$(location :rust_decimal-1.34.3-build-script-run[out_dir])",
+    },
+    rustc_flags = ["@$(location :rust_decimal-1.34.3-build-script-run[rustc_flags])"],
+    visibility = [],
+    deps = [
+        ":arrayvec-0.7.4",
+        ":num-traits-0.2.17",
+    ],
+)
+
+cargo.rust_binary(
+    name = "rust_decimal-1.34.3-build-script-build",
+    srcs = [":rust_decimal-1.34.3.crate"],
+    crate = "build_script_build",
+    crate_root = "rust_decimal-1.34.3.crate/build.rs",
+    edition = "2021",
+    visibility = [],
+)
+
+buildscript_run(
+    name = "rust_decimal-1.34.3-build-script-run",
+    package_name = "rust_decimal",
+    buildscript_rule = ":rust_decimal-1.34.3-build-script-build",
+    version = "1.34.3",
+)
+
+http_archive(
+    name = "rust_decimal_macros-1.34.2.crate",
+    sha256 = "e418701588729bef95e7a655f2b483ad64bb97c46e8e79fde83efd92aaab6d82",
+    strip_prefix = "rust_decimal_macros-1.34.2",
+    urls = ["https://crates.io/api/v1/crates/rust_decimal_macros/1.34.2/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "rust_decimal_macros-1.34.2",
+    srcs = [":rust_decimal_macros-1.34.2.crate"],
+    crate = "rust_decimal_macros",
+    crate_root = "rust_decimal_macros-1.34.2.crate/src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+    proc_macro = True,
+    visibility = [],
+    deps = [
+        ":quote-1.0.35",
+        ":rust_decimal-1.34.3",
+    ],
+)
+
+http_archive(
     name = "rustix-0.38.21.crate",
     sha256 = "2b426b0506e5d50a7d8dafcf2e81471400deb602392c7dd110815afb4eaf02a3",
     strip_prefix = "rustix-0.38.21",
@@ -7078,6 +7159,37 @@ buildscript_run(
     package_name = "rustversion",
     buildscript_rule = ":rustversion-1.0.14-build-script-build",
     version = "1.0.14",
+)
+
+alias(
+    name = "rusty-money",
+    actual = ":rusty-money-0.4.1",
+    visibility = ["PUBLIC"],
+)
+
+http_archive(
+    name = "rusty-money-0.4.1.crate",
+    sha256 = "5b28f881005eac7ad8d46b6f075da5f322bd7f4f83a38720fc069694ddadd683",
+    strip_prefix = "rusty-money-0.4.1",
+    urls = ["https://crates.io/api/v1/crates/rusty-money/0.4.1/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "rusty-money-0.4.1",
+    srcs = [":rusty-money-0.4.1.crate"],
+    crate = "rusty_money",
+    crate_root = "rusty-money-0.4.1.crate/src/lib.rs",
+    edition = "2018",
+    features = [
+        "default",
+        "iso",
+    ],
+    visibility = [],
+    deps = [
+        ":rust_decimal-1.34.3",
+        ":rust_decimal_macros-1.34.2",
+    ],
 )
 
 http_archive(
@@ -8788,6 +8900,7 @@ cargo.rust_binary(
         ":rand-0.8.5",
         ":reqwest-0.11.24",
         ":rust-i18n-3.0.1",
+        ":rusty-money-0.4.1",
         ":serde-1.0.197",
         ":serde_json-1.0.114",
         ":serde_with-3.6.1",
