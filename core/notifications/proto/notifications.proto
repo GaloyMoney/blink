@@ -201,21 +201,21 @@ message IdentityVerificationReviewStarted {
   string user_id = 1;
 }
 
+message TransactionInfo {
+  string user_id = 1;
+  TransactionType type = 2;
+  Money settlement_amount = 3;
+  optional Money display_amount = 4;
+}
+
 enum TransactionType {
   INTRA_LEDGER_RECEIPT = 0;
   INTRA_LEDGER_PAYMENT= 1;
   ONCHAIN_RECEIPT = 2;
   ONCHAIN_RECEIPT_PENDING = 3;
   ONCHAIN_PAYMENT = 4;
-  LIGTNING_RECEIPT = 5;
-  LIGTNING_PAYMENT = 6;
-}
-
-message TransactionInfo {
-  string user_id = 1;
-  TransactionType type = 2;
-  Money settlement_amount = 3;
-  optional Money display_amount = 4;
+  LIGHTNING_RECEIPT = 5;
+  LIGHTNING_PAYMENT = 6;
 }
 
 message Money {

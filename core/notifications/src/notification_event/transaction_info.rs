@@ -5,13 +5,25 @@ use super::{DeepLink, NotificationEvent, NotificationEventError};
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum TransactionType {
+    IntraLedgerReceipt,
+    IntraLedgerPayment,
+    OnchainReceipt,
+    OnchainReceiptPending,
+    OnchainPayment,
+    LightningReceipt,
+    LightningPayment,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TransactionInfo {
     pub user_id: GaloyUserId,
+    pub transaction_type: TransactionType,
 }
 
 impl NotificationEvent for TransactionInfo {
     fn category(&self) -> UserNotificationCategory {
-        UserNotificationCategory::AdminNotification
+        UserNotificationCategory::Payments
     }
 
     fn user_id(&self) -> &GaloyUserId {

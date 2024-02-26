@@ -373,6 +373,10 @@ impl NotificationsService for Notifications {
                         r#type,
                     })),
             }) => {
+                // let payment_type = proto::TransactionType::try_from(r#type)
+                //     .map(notification_event::TransactionType::from)
+                //     .map_err(|e| Status::invalid_argument(e.to_string()))?;
+
                 // self.app
                 //     .handle_notification_event(
                 //         notification_event::IdentityVerificationReviewStarted {
