@@ -1,5 +1,4 @@
 mod email_formatter;
-pub mod error;
 
 pub use email_formatter::EmailFormatter;
 

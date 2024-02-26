@@ -1,7 +1,7 @@
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-use super::{DeepLink, NotificationEvent, NotificationEventError};
+use super::{DeepLink, NotificationEvent};
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -59,11 +59,8 @@ impl NotificationEvent for CircleThresholdReached {
         LocalizedPushMessage { title, body }
     }
 
-    fn to_localized_email(
-        &self,
-        _locale: GaloyLocale,
-    ) -> Result<Option<LocalizedEmail>, NotificationEventError> {
-        Ok(None)
+    fn to_localized_email(&self, _locale: GaloyLocale) -> Option<LocalizedEmail> {
+        None
     }
 
     fn should_send_email(&self) -> bool {

@@ -1,6 +1,5 @@
 mod circle_grew;
 mod circle_threshold_reached;
-pub mod error;
 mod identity_verification_approved;
 mod identity_verification_declined;
 mod identity_verification_review_started;
@@ -17,8 +16,6 @@ pub(super) use identity_verification_declined::*;
 pub(super) use identity_verification_review_started::*;
 pub(super) use transaction_info::*;
 
-use error::*;
-
 pub enum DeepLink {
     None,
     Circles,
@@ -30,10 +27,7 @@ pub trait NotificationEvent: std::fmt::Debug + Into<NotificationEventPayload> + 
     fn deep_link(&self) -> DeepLink;
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage;
     fn should_send_email(&self) -> bool;
-    fn to_localized_email(
-        &self,
-        locale: GaloyLocale,
-    ) -> Result<Option<LocalizedEmail>, NotificationEventError>;
+    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail>;
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -99,10 +93,7 @@ impl NotificationEvent for NotificationEventPayload {
         }
     }
 
-    fn to_localized_email(
-        &self,
-        locale: GaloyLocale,
-    ) -> Result<Option<LocalizedEmail>, NotificationEventError> {
+    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
         match self {
             NotificationEventPayload::CircleGrew(event) => event.to_localized_email(locale),
             NotificationEventPayload::CircleThresholdReached(event) => {
