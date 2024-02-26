@@ -9,8 +9,9 @@ import {
   TotalPayingAmountForWallets,
 } from "./index.types"
 
+import { getUserDetailsAction } from "./get-user-details-action"
+
 import { WalletCurrency } from "@/services/graphql/generated"
-import { getWalletDetailsByUsername } from "@/services/graphql/queries/get-user-wallet-id"
 
 const HEADERS = {
   USERNAME: "username",
@@ -140,10 +141,8 @@ export function validateCSV({
 
 export const processRecords = async ({
   records,
-  token,
 }: {
   records: CSVRecord[]
-  token: string
 }): Promise<ProcessedRecords[] | Error> => {
   const processedRecords: ProcessedRecords[] = []
 
@@ -152,14 +151,18 @@ export const processRecords = async ({
       continue
     }
 
-    const getDefaultWalletID = await getWalletDetailsByUsername(token, record.username)
-    if (getDefaultWalletID instanceof Error) {
+    const getDefaultWalletID = await getUserDetailsAction({ username: record.username })
+    if (getDefaultWalletID.error) {
       return new Error(getDefaultWalletID.message)
+    }
+
+    if (!getDefaultWalletID.responsePayload) {
+      return new Error(`No wallet found for the user ${record.username}`)
     }
 
     processedRecords.push({
       username: record.username,
-      recipientWalletId: getDefaultWalletID?.data.accountDefaultWallet.id,
+      recipientWalletId: getDefaultWalletID?.responsePayload.data.accountDefaultWallet.id,
       amount: Number(record.amount),
       currency: record.currency,
       sendingWallet: record.wallet,
