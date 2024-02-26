@@ -148,8 +148,8 @@ services:
     ports:
     - 6685:6685
     volumes:
-    - config/notifications/notifications.yml:/config/notifications/notifications.yml
-    - config/notifications/fake_service_account.json:/app/notifications/config/notifications/fake_service_account.json
+    - ${HOST_PROJECT_PATH:-.}/config/notifications/notifications.yml:/config/notifications/notifications.yml
+    - ${HOST_PROJECT_PATH:-.}/config/notifications/fake_service_account.json:/app/notifications/config/notifications/fake_service_account.json
   notifications-pg: #@ data.values.services["notifications-pg"]
 
   #! Database
