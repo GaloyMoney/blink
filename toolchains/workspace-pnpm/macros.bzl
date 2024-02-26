@@ -1116,10 +1116,13 @@ if [ "$install_node_modules" = "True" ]; then
 fi
 exec pnpm run --report-summary "$npm_run_command"
 """, is_executable = True)
-    args = cmd_args([script, str(ctx.attrs.local_node_modules), ctx.label.package, ctx.attrs.command])
-    args.hidden([ctx.attrs.deps])
-    args.hidden([ctx.attrs.srcs])
-    return [DefaultInfo(), ExternalRunnerTestInfo(type = "integration", command = [script, str(ctx.attrs.local_node_modules), ctx.label.package, ctx.attrs.command])]
+    command = [
+        script,
+        str(ctx.attrs.local_node_modules),
+        ctx.label.package,
+        ctx.attrs.command,
+    ]
+    return [DefaultInfo(), ExternalRunnerTestInfo(type = "integration", command = command)]
 
 dev_pnpm_task_test = rule(impl = pnpm_task_test_impl, attrs = {
     "command": attrs.string(default = "start", doc = """pnpm command to run"""),
