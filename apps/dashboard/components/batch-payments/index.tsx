@@ -117,7 +117,6 @@ export default function BatchPayments() {
       //Process Records, add Wallet Id's for username
       const processedRecords = await processRecords({
         records: validateCsvResult.records,
-        token: accessToken,
       })
 
       if (processedRecords instanceof Error) {

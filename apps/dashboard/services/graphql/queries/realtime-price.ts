@@ -32,10 +32,10 @@ export async function getRealtimePriceQuery(token: string) {
   } catch (err) {
     if (err instanceof Error) {
       console.error("error", err)
-      throw new Error(err.message)
+      return new Error(err.message)
     } else {
       console.error("Unknown error in GetRealtimePriceQuery")
-      throw new Error("Unknown error")
+      return new Error("Unknown error")
     }
   }
 }
