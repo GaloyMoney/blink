@@ -3,6 +3,7 @@ pub mod error;
 
 pub use email_formatter::EmailFormatter;
 
+#[derive(Debug)]
 pub struct LocalizedPushMessage {
     pub title: String,
     pub body: String,

@@ -29,3 +29,27 @@ identity_verification_declined.body: "We were not able to process your documents
 
 identity_verification_review_started.title: "Your verification is in process!"
 identity_verification_review_started.body: "We have received your documents and are processing them."
+
+transaction.intra_ledger_payment.title: "%{walletCurrency} Transaction"
+transaction.intra_ledger_payment.body: "Sent payment of %{formattedCurrencyAmount}"
+transaction.intra_ledger_payment.body_display_currency: "Sent payment of %{displayCurrencyAmount}  | %{formattedCurrencyAmount}"
+
+transaction.intra_ledger_receipt.title: "%{walletCurrency} Transaction"
+transaction.intra_ledger_receipt.body: "+%{formattedCurrencyAmount}"
+transaction.intra_ledger_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+transaction.onchain_payment.title: "%{walletCurrency} Transaction"
+transaction.onchain_payment.body_display_currency: "Sent onchain payment of %{displayCurrencyAmount} | %{formattedCurrencyAmount} confirmed"
+transaction.onchain_payment.body: "Sent onchain payment of %{formattedCurrencyAmount} confirmed"
+
+transaction.onchain_receipt.title: "%{walletCurrency} Transaction"
+transaction.onchain_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt.body: "+%{formattedCurrencyAmount}"
+
+transaction.onchain_receipt_pending.title: "%{walletCurrency} Transaction | Pending"
+transaction.onchain_receipt_pending.body_display_currency: "pending +%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt_pending.body: "pending +%{formattedCurrencyAmount}"
+
+transaction.paid_invoice.title: "%{walletCurrency} Transaction"
+transaction.paid_invoice.body: "+%{formattedCurrencyAmount}"
+transaction.paid_invoice.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
