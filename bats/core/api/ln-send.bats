@@ -1,6 +1,7 @@
 #!/usr/bin/env bats
 
 load "../../helpers/_common.bash"
+load "../../helpers/callback.bash"
 load "../../helpers/cli.bash"
 load "../../helpers/ledger.bash"
 load "../../helpers/ln.bash"
@@ -21,6 +22,7 @@ setup_file() {
   fi
 
   create_user "$ALICE"
+  add_callback "$ALICE"
   user_update_username "$ALICE"
   fund_user_onchain "$ALICE" 'btc_wallet'
   fund_user_onchain "$ALICE" 'usd_wallet'
@@ -66,6 +68,10 @@ usd_amount=50
 
   transaction_payment_request="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
   [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
+
+  # Check for callback
+  num_callback_events=$(cat_callback | grep "$payment_hash" | grep "success" | wc -l)
+  [[ "${num_callback_events}" == "1" ]] || exit 1
 
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
@@ -599,6 +605,10 @@ usd_amount=50
   [[ "${send_status}" = "FAILURE" ]] || exit 1
   [[ "${error_msg}" == "Unable to find a route for payment." ]] || exit 1
 
+  # Check for callback
+  num_callback_events_fail=$(cat_callback | grep "$payment_hash" | grep "failure" | wc -l)
+  [[ "${num_callback_events_fail}" == "1" ]] || exit 1
+
   # Check for txns
   retry 15 1 check_num_txns "2"
   balance_after_fail="$(balance_for_wallet $token_name 'BTC')"
@@ -627,6 +637,10 @@ usd_amount=50
 
   transaction_payment_request="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
   [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
+
+  # Check for callback
+  num_callback_events=$(cat_callback | grep "$payment_hash" | grep "success" | wc -l)
+  [[ "${num_callback_events}" == "1" ]] || exit 1
 
   # Check for txns
   retry 15 1 check_num_txns "3"
@@ -673,6 +687,10 @@ usd_amount=50
   [[ "${send_status}" = "FAILURE" ]] || exit 1
   [[ "${error_msg}" == "Unable to find a route for payment." ]] || exit 1
 
+  # Check for callback
+  num_callback_events_fail=$(cat_callback | grep "$payment_hash" | grep "failure" | wc -l)
+  [[ "${num_callback_events_fail}" == "1" ]] || exit 1
+
   # Check for txns
   retry 15 1 check_num_txns "2"
   balance_after_fail="$(balance_for_wallet $token_name 'BTC')"
@@ -696,6 +714,10 @@ usd_amount=50
   transaction_payment_request="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
   [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
 
+  # Check for callback
+  num_callback_events_pending=$(cat_callback | grep "$payment_hash" | grep "pending" | wc -l)
+  [[ "${num_callback_events_pending}" == "1" ]] || exit 1
+
   # Check for txns
   retry 15 1 check_num_txns "3"
   run check_for_ln_initiated_pending "$token_name" "$payment_hash" "10" \
@@ -709,6 +731,7 @@ usd_amount=50
   # Cancel hodl invoice
   lnd_outside_2_cli cancelinvoice "$payment_hash"
 
+  # Check for txns
   retry 15 1 check_num_txns "4"
   balance_after_pending_failed="$(balance_for_wallet $token_name 'BTC')"
   [[ "$balance_after_pending_failed" == "$initial_balance" ]] || exit 1
@@ -718,6 +741,10 @@ usd_amount=50
 
   statusAfterFail="$(txns_for_hash "$token_name" "$payment_hash" | jq -r '.[0].node.status')"
   [[ "${statusAfterFail}" == "FAILURE" ]] || exit 1
+
+  # Check for callback
+  num_callback_events_fail=$(cat_callback | grep "$payment_hash" | grep "failure" | wc -l)
+  [[ "${num_callback_events_fail}" == "2" ]] || exit 1
 }
 
 @test "ln-send: ln settled - pending-to-failed usd payment" {
