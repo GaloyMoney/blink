@@ -649,6 +649,11 @@ usd_amount=50
 
   statusAfterSuccess="$(txns_for_hash "$token_name" "$payment_hash" | jq -r '.[0].node.status')"
   [[ "${statusAfterSuccess}" == "SUCCESS" ]] || exit 1
+
+  # Correct millisat imbalance from "1.15 sat" fee
+  imbalance_msat="850"
+  payment_request="$(lnd_outside_cli addinvoice --amt_msat $imbalance_msat | jq -r '.payment_request')"
+  lnd_cli payinvoice -f "$payment_request"
 }
 
 @test "ln-send: ln settled - settle failed and then pending-to-failed payment" {
@@ -893,4 +898,9 @@ usd_amount=50
   # Check for callback
   num_callback_events=$(cat_callback | grep "$payment_hash" | grep "success" | wc -l)
   [[ "${num_callback_events}" == "1" ]] || exit 1
+
+  # Correct millisat imbalance from "1.15 sat" fee
+  imbalance_msat="850"
+  payment_request="$(lnd_outside_cli addinvoice --amt_msat $imbalance_msat | jq -r '.payment_request')"
+  lnd_cli payinvoice -f "$payment_request"
 }
