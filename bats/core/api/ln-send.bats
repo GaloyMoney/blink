@@ -642,7 +642,7 @@ usd_amount=50
   btc_wallet_name="$token_name.btc_wallet_id"
 
   threshold_amount=150000
-  secret=$(xxd -l 32 -p /dev/urandom)
+  secret=$(xxd -l 32 -c 256 -p /dev/urandom)
   payment_hash=$(echo -n $secret | xxd -r -p | sha256sum | cut -d ' ' -f1)
   invoice_response="$(lnd_outside_2_cli addholdinvoice $payment_hash --amt $threshold_amount)"
   payment_request="$(echo $invoice_response | jq -r '.payment_request')"
@@ -726,7 +726,7 @@ usd_amount=50
   usd_wallet_name="$token_name.usd_wallet_id"
 
   threshold_amount=150000
-  secret=$(xxd -l 32 -p /dev/urandom)
+  secret=$(xxd -l 32 -c 256 -p /dev/urandom)
   payment_hash=$(echo -n $secret | xxd -r -p | sha256sum | cut -d ' ' -f1)
   invoice_response="$(lnd_outside_2_cli addholdinvoice $payment_hash --amt $threshold_amount)"
   payment_request="$(echo $invoice_response | jq -r '.payment_request')"
