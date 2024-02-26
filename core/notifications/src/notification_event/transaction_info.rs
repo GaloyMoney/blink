@@ -15,8 +15,9 @@ pub enum TransactionType {
     LightningPayment,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TransactionAmount {
-    pub amount_minor: u64,
+    pub minor_units: u64,
     pub currency: Currency,
 }
 
@@ -24,6 +25,8 @@ pub struct TransactionAmount {
 pub struct TransactionInfo {
     pub user_id: GaloyUserId,
     pub transaction_type: TransactionType,
+    pub settlement_amount: TransactionAmount,
+    pub display_amount: Option<TransactionAmount>,
 }
 
 impl NotificationEvent for TransactionInfo {

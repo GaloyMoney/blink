@@ -368,7 +368,7 @@ impl NotificationsService for Notifications {
                 data:
                     Some(proto::notification_event::Data::Transaction(proto::TransactionInfo {
                         user_id,
-                        settlement_amount,
+                        settlement_amount: Some(settlement_amount),
                         display_amount,
                         r#type,
                     })),
@@ -376,11 +376,15 @@ impl NotificationsService for Notifications {
                 let transaction_type = proto::TransactionType::try_from(r#type)
                     .map(notification_event::TransactionType::from)
                     .map_err(|e| Status::invalid_argument(e.to_string()))?;
-
                 self.app
                     .handle_notification_event(notification_event::TransactionInfo {
                         user_id: GaloyUserId::from(user_id),
                         transaction_type,
+                        settlement_amount: notification_event::TransactionAmount::try_from(
+                            settlement_amount,
+                        )?,
+                        display_amount: display_amount
+                            .map(|a| notification_event::TransactionAmount::try_from(a)).transpose()?,
                     })
                     .await?;
             }
