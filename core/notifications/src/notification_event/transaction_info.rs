@@ -53,27 +53,40 @@ impl NotificationEvent for TransactionInfo {
             TransactionType::LightningReceipt => "transaction.lightning_receipt",
         };
 
-        let title_name = format!("{}.title", txn_type);
-        let body_name = format!("{}.body", txn_type);
+        let title_key = format!("{}.title", txn_type);
+        let body_key = format!("{}.body", txn_type);
+        let body_display_currency_key = format!("{}.body_display_currency", txn_type);
 
         let formatted_currency_amount = format!(
             "{} {}",
-            self.settlement_amount.minor_units,
-            self.settlement_amount.currency.to_string()
+            self.settlement_amount.minor_units, self.settlement_amount.currency
         );
 
         let title = t!(
-            title_name.as_str(),
-            walletCurrency = self.settlement_amount.currency.to_string(),
+            title_key.as_str(),
+            walletCurrency = self.settlement_amount.currency,
             locale = locale.as_ref(),
         )
         .to_string();
-        let body = t!(
-            body_name.as_str(),
-            formattedCurrencyAmount = formatted_currency_amount.as_str(),
-            locale = locale.as_ref(),
-        )
-        .to_string();
+
+        let body = if let Some(disp_amount) = &self.display_amount {
+            let formatted_display_currency_amount =
+                format!("{} {}", disp_amount.minor_units, disp_amount.currency);
+            t!(
+                body_display_currency_key.as_str(),
+                formattedCurrencyAmount = formatted_currency_amount,
+                displayCurrencyAmount = formatted_display_currency_amount,
+                locale = locale.as_ref(),
+            )
+            .to_string()
+        } else {
+            t!(
+                body_key.as_str(),
+                formattedCurrencyAmount = formatted_currency_amount,
+                locale = locale.as_ref(),
+            )
+            .to_string()
+        };
         LocalizedPushMessage { title, body }
     }
 
@@ -91,11 +104,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn payments_push_message() {
+    fn intra_ledger_payment_push_message() {
         let event = TransactionInfo {
             user_id: GaloyUserId::from("user_id".to_string()),
             transaction_type: TransactionType::IntraLedgerPayment,
-
             settlement_amount: TransactionAmount {
                 minor_units: 100,
                 currency: Currency::Iso(rusty_money::iso::USD),

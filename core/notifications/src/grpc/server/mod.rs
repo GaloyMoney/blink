@@ -384,7 +384,8 @@ impl NotificationsService for Notifications {
                             settlement_amount,
                         )?,
                         display_amount: display_amount
-                            .map(|a| notification_event::TransactionAmount::try_from(a)).transpose()?,
+                            .map(notification_event::TransactionAmount::try_from)
+                            .transpose()?,
                     })
                     .await?;
             }

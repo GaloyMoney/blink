@@ -151,7 +151,8 @@ impl TryFrom<proto::Money> for notification_event::TransactionAmount {
     fn try_from(money: proto::Money) -> Result<Self, Self::Error> {
         Ok(Self {
             minor_units: money.minor_units,
-            currency: Currency::try_from(money.currency_code).map_err(|e| ApplicationError::UnknownCurrencyCode(e))?
+            currency: Currency::try_from(money.currency_code)
+                .map_err(ApplicationError::UnknownCurrencyCode)?,
         })
     }
 }
