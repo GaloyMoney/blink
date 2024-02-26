@@ -1,3 +1,4 @@
+"use server"
 import { gql } from "@apollo/client"
 
 import {

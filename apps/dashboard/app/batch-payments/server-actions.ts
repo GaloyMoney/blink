@@ -7,74 +7,14 @@ import { convertUsdToBtcSats, dollarsToCents, getBTCWallet, getUSDWallet } from 
 
 import {
   AmountCurrency,
-  CSVRecord,
   ProcessedRecords,
   TotalPayingAmountForWallets,
 } from "./index.types"
 
-import { getWalletDetailsByUsername } from "@/services/graphql/queries/get-user-wallet-id"
 import { intraLedgerUsdPaymentSend } from "@/services/graphql/mutations/intra-ledger-payment-send/usd"
 import { intraLedgerBtcPaymentSend } from "@/services/graphql/mutations/intra-ledger-payment-send/btc"
 import { WalletCurrency } from "@/services/graphql/generated"
 import { getRealtimePriceQuery } from "@/services/graphql/queries/realtime-price"
-
-export const processRecords = async (
-  records: CSVRecord[],
-): Promise<{
-  error: boolean
-  message: string
-  responsePayload: ProcessedRecords[] | null
-}> => {
-  const session = await getServerSession(authOptions)
-  const token = session?.accessToken
-  const me = session?.userData.data
-  if (!me) {
-    return {
-      error: true,
-      message: "User Not Found",
-      responsePayload: null,
-    }
-  }
-
-  if (!token) {
-    return {
-      error: true,
-      message: "token Not Found",
-      responsePayload: null,
-    }
-  }
-
-  const processedRecords: ProcessedRecords[] = []
-  for (const record of records) {
-    const getDefaultWalletID = await getWalletDetailsByUsername(token, record.username)
-    if (getDefaultWalletID instanceof Error) {
-      return {
-        error: true,
-        message: getDefaultWalletID.message,
-        responsePayload: processedRecords,
-      }
-    }
-
-    processedRecords.push({
-      username: record.username,
-      recipientWalletId: getDefaultWalletID?.data.accountDefaultWallet.id,
-      amount: Number(record.amount),
-      currency: record.currency,
-      sendingWallet: record.wallet,
-      memo: record.memo,
-      status: {
-        failed: false,
-        message: null,
-      },
-    })
-  }
-
-  return {
-    error: false,
-    message: "success",
-    responsePayload: processedRecords,
-  }
-}
 
 export const processPaymentsServerAction = async (records: ProcessedRecords[]) => {
   const failedPayments: ProcessedRecords[] = []
