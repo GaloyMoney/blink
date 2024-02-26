@@ -10,6 +10,7 @@ import {
 } from "./index.types"
 
 import { WalletCurrency } from "@/services/graphql/generated"
+import { getWalletDetailsByUsername } from "@/services/graphql/queries/get-user-wallet-id"
 
 const HEADERS = {
   USERNAME: "username",
@@ -93,8 +94,9 @@ export function validateCSV({
     }
 
     let amount = Number(record.amount)
+    // if no amount or invalid amount, set it to 0 and skip that record in execution step
     if (isNaN(amount) || amount <= 0) {
-      return new Error("Record with invalid amount")
+      amount = 0
     }
 
     if (record.currency === AmountCurrency.SATS) {
@@ -134,6 +136,41 @@ export function validateCSV({
     records: records as CSVRecord[],
     totalAmount,
   }
+}
+
+export const processRecords = async ({
+  records,
+  token,
+}: {
+  records: CSVRecord[]
+  token: string
+}): Promise<ProcessedRecords[] | Error> => {
+  const processedRecords: ProcessedRecords[] = []
+
+  for (const record of records) {
+    if (Number(record.amount) <= 0) {
+      continue
+    }
+
+    const getDefaultWalletID = await getWalletDetailsByUsername(token, record.username)
+    if (getDefaultWalletID instanceof Error) {
+      return new Error(getDefaultWalletID.message)
+    }
+
+    processedRecords.push({
+      username: record.username,
+      recipientWalletId: getDefaultWalletID?.data.accountDefaultWallet.id,
+      amount: Number(record.amount),
+      currency: record.currency,
+      sendingWallet: record.wallet,
+      memo: record.memo,
+      status: {
+        failed: false,
+        message: null,
+      },
+    })
+  }
+  return processedRecords
 }
 
 export const displayWalletBalanceBatchPayments = ({
