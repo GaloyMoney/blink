@@ -98,7 +98,7 @@ services:
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=hydra
   galoy:
-    image: us.gcr.io/galoy-org/galoy-api@sha256:0a9d921405787054621f4805e59f3ad4c0abf8777a2548cdce24dd73171cb1a2
+    image: us.gcr.io/galoy-org/galoy-api@sha256:57ca569cfd9c0b14f05e0a502fd0b4b4f6855a117b6910939f23e17296389e1f
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -161,7 +161,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:c49a8f43feacf5dabd6583b1aae886b83c863112d84440c097072511593cb0fd
+    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:3ca74e36867761ad7bffe6b92229de0cfdd75aaacf5103ab143a096185a08566
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -221,8 +221,8 @@ services:
     ports:
     - 6685:6685
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/notifications/notifications.yml:/config/notifications/notifications.yml
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/notifications/fake_service_account.json:/app/notifications/config/notifications/fake_service_account.json
+    - config/notifications/notifications.yml:/config/notifications/notifications.yml
+    - config/notifications/fake_service_account.json:/app/notifications/config/notifications/fake_service_account.json
   notifications-pg:
     image: postgres:14.1
     environment:
@@ -252,7 +252,7 @@ services:
     environment:
     - MONGO_INITDB_DATABASE=galoy
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:c8678c3bdae4cc84d75470f254ffe7f8961eea1be668a2a82d761e63d1f0e52b
+    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:a6a6ec6f563f3f440c43c75cbefc5120f0a6554582492b44809044253b3a670d
     depends_on:
     - mongodb
     environment:
