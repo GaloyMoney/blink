@@ -817,3 +817,80 @@ usd_amount=50
   statusAfterFail="$(txns_for_hash "$token_name" "$payment_hash" | jq -r '.[0].node.status')"
   [[ "${statusAfterFail}" == "FAILURE" ]] || exit 1
 }
+
+@test "ln-send: ln settled - pending-to-success usd payment" {
+  token_name="$ALICE"
+  btc_wallet_name="$token_name.btc_wallet_id"
+  usd_wallet_name="$token_name.usd_wallet_id"
+
+  threshold_amount=150000
+  secret=$(xxd -l 32 -c 256 -p /dev/urandom)
+  payment_hash=$(echo -n $secret | xxd -r -p | sha256sum | cut -d ' ' -f1)
+  invoice_response="$(lnd_outside_2_cli addholdinvoice $payment_hash --amt $threshold_amount)"
+  payment_request="$(echo $invoice_response | jq -r '.payment_request')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+
+  check_num_txns() {
+    expected_num="$1"
+
+    num_txns="$(num_txns_for_hash "$token_name" "$payment_hash")"
+    [[ "$num_txns" == "$expected_num" ]] || exit 1
+  }
+
+  initial_btc_balance="$(balance_for_wallet $token_name 'BTC')"
+  initial_usd_balance="$(balance_for_wallet $token_name 'USD')"
+
+  # Rebalance last hop so payment will succeed
+  rebalance_channel lnd_outside_cli lnd_outside_2_cli "$(( $threshold_amount * 2 ))"
+  lnd_cli resetmc
+
+  # Try payment and check for pending
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    --arg payment_request "$payment_request" \
+    '{input: {walletId: $wallet_id, paymentRequest: $payment_request}}'
+  )
+  exec_graphql "$token_name" 'ln-invoice-payment-send' "$variables"
+  send_status="$(graphql_output '.data.lnInvoicePaymentSend.status')"
+  [[ "${send_status}" = "PENDING" ]] || exit 1
+
+  transaction_payment_hash="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentHash')"
+  [[ "${transaction_payment_hash}" == "${payment_hash}" ]] || exit 1
+
+  transaction_payment_request="$(graphql_output '.data.lnInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
+  [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
+
+  # Check for callback
+  num_callback_events_pending=$(cat_callback | grep "$payment_hash" | grep "pending" | wc -l)
+  [[ "${num_callback_events_pending}" == "1" ]] || exit 1
+
+  # Check for txns
+  retry 15 1 check_num_txns "1"
+  run check_for_ln_initiated_pending "$token_name" "$payment_hash" "10" \
+    || exit 1
+  btc_balance_while_pending="$(balance_for_wallet $token_name 'BTC')"
+  usd_balance_while_pending="$(balance_for_wallet $token_name 'USD')"
+  [[ "$btc_balance_while_pending" == "$initial_btc_balance" ]] || exit 1
+  [[ "$usd_balance_while_pending" -lt "$initial_usd_balance" ]] || exit 1
+
+  statusAfterPending="$(txns_for_hash "$token_name" "$payment_hash" | jq -r '.[0].node.status')"
+  [[ "${statusAfterPending}" == "PENDING" ]] || exit 1
+
+  # Settle hodl invoice
+  res=$(lnd_outside_2_cli settleinvoice "$secret")
+
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+
+  btc_balance_after_pending_success="$(balance_for_wallet $token_name 'BTC')"
+  usd_balance_after_pending_success="$(balance_for_wallet $token_name 'USD')"
+  [[ "$btc_balance_after_pending_success" == "$initial_btc_balance" ]] || exit 1
+  [[ "$usd_balance_after_pending_success" -lt "$initial_usd_balance" ]] || exit 1
+
+  statusAfterSuccess="$(txns_for_hash "$token_name" "$payment_hash" | jq -r '.[0].node.status')"
+  [[ "${statusAfterSuccess}" == "SUCCESS" ]] || exit 1
+
+  # Check for callback
+  num_callback_events=$(cat_callback | grep "$payment_hash" | grep "success" | wc -l)
+  [[ "${num_callback_events}" == "1" ]] || exit 1
+}
