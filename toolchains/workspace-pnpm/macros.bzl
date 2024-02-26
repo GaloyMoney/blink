@@ -1108,7 +1108,15 @@ set -euo pipefail
 rootpath="$(git rev-parse --show-toplevel)"
 install_node_modules="$1"
 npm_package_path="$2"
-npm_run_command="$3"
+env_json="$3"
+npm_run_command="$4"
+
+if [[ -f "$env_json" ]]; then
+    while IFS="=" read -r key value
+    do
+        export "$key"="$value"
+    done < <(jq -r "to_entries|map(\\"\(.key)=\(.value|tostring)\\")|.[]" "$env_json")
+fi
 
 cd "$rootpath/$npm_package_path"
 if [ "$install_node_modules" = "True" ]; then
@@ -1116,10 +1124,12 @@ if [ "$install_node_modules" = "True" ]; then
 fi
 exec pnpm run --report-summary "$npm_run_command"
 """, is_executable = True)
+    env_json = ctx.attrs.env_json if ctx.attrs.env_json else ""
     command = [
         script,
         str(ctx.attrs.local_node_modules),
         ctx.label.package,
+        env_json,
         ctx.attrs.command,
     ]
     return [DefaultInfo(), ExternalRunnerTestInfo(type = "integration", command = command)]
@@ -1129,6 +1139,11 @@ dev_pnpm_task_test = rule(impl = pnpm_task_test_impl, attrs = {
     "local_node_modules": attrs.bool(default = True, doc = """Need to run pnpm install first?"""),
     "srcs": attrs.list(attrs.source(), default = [], doc = """List of sources we require"""),
     "deps": attrs.list(attrs.source(), default = [], doc = """List of dependencies we require"""),
+    "env_json": attrs.option(
+        attrs.source(),
+        doc = """buck2 target for json file with env variables required.""",
+        default = None,
+    ),
 })
 
 def jest_test_impl(ctx: AnalysisContext) -> list[[
