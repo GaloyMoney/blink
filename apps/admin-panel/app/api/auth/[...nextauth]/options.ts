@@ -1,5 +1,4 @@
 import GoogleProvider from "next-auth/providers/google"
-import GitHubProvider from "next-auth/providers/github"
 import CredentialsProvider from "next-auth/providers/credentials"
 import type { Provider } from "next-auth/providers"
 
@@ -18,10 +17,6 @@ const providers: Provider[] = [
         response_type: "code",
       },
     },
-  }),
-  GitHubProvider({
-    clientId: env.GITHUB_CLIENT_ID,
-    clientSecret: env.GITHUB_CLIENT_SECRET,
   }),
 ]
 
@@ -58,16 +53,9 @@ const callbacks: Partial<CallbacksOptions> = {
       return false
     }
 
-    if (account.provider === "google") {
-      // eslint-disable-next-line no-new-wrappers
-      const verified = new Boolean("email_verified" in profile && profile.email_verified)
-      return verified && env.AUTHORIZED_EMAILS.includes(email)
-    }
-
-    if (account.provider === "github") {
-      return env.AUTHORIZED_EMAILS.includes(email)
-    }
-    return false
+    // eslint-disable-next-line no-new-wrappers
+    const verified = new Boolean("email_verified" in profile && profile.email_verified)
+    return verified && env.AUTHORIZED_EMAILS.includes(email)
   },
 }
 
