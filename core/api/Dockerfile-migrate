@@ -43,4 +43,4 @@ USER 1000
 ARG COMMITHASH
 ENV COMMITHASH ${COMMITHASH}
 
-ENTRYPOINT ["scripts/mongodb-migrate.sh"]
+CMD ["pnpm", "run", "mongodb-migrate"]

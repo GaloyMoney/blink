@@ -15,6 +15,5 @@ jobs:
       - name: Run the Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v2
       - uses: actions/checkout@v4
-      - run: cd core/api && nix develop -c pnpm install --frozen-lockfile
       - name: Run clean mongodb migration
-        run: cd core/api/ && nix develop -c make test-migrate
+        run: nix develop -c ./dev/bin/tilt-ci.sh mongodb-migrate
