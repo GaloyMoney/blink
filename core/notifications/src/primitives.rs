@@ -165,6 +165,23 @@ impl Currency {
             Currency::Crypto(c) => c.code,
         }
     }
+
+    pub fn format_minor_units(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        minor_units: u64,
+    ) -> std::fmt::Result {
+        match self {
+            Currency::Iso(c) => {
+                let money = rusty_money::Money::from_minor(minor_units as i64, *c);
+                write!(f, "{money}")
+            }
+            Currency::Crypto(c) if c == &rusty_money::crypto::BTC => {
+                write!(f, "{} sats", minor_units as f64)
+            }
+            _ => unimplemented!("format_minor_units for currency: {}", self.code()),
+        }
+    }
 }
 
 impl std::fmt::Display for Currency {

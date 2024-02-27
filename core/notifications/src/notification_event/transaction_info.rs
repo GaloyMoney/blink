@@ -21,6 +21,12 @@ pub struct TransactionAmount {
     pub currency: Currency,
 }
 
+impl std::fmt::Display for TransactionAmount {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.currency.format_minor_units(f, self.minor_units)
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TransactionInfo {
     pub user_id: GaloyUserId,
@@ -57,11 +63,6 @@ impl NotificationEvent for TransactionInfo {
         let body_key = format!("{}.body", txn_type);
         let body_display_currency_key = format!("{}.body_display_currency", txn_type);
 
-        let formatted_currency_amount = format!(
-            "{} {}",
-            self.settlement_amount.minor_units, self.settlement_amount.currency
-        );
-
         let title = t!(
             title_key.as_str(),
             walletCurrency = self.settlement_amount.currency,
@@ -70,21 +71,17 @@ impl NotificationEvent for TransactionInfo {
         .to_string();
 
         let body = if let Some(disp_amount) = &self.display_amount {
-            let formatted_display_currency_amount = rusty_money::Money::from_minor(
-                disp_amount.minor_units as i64,
-                rusty_money::iso::find(disp_amount.currency.code()).expect("invalid currency code"),
-            );
             t!(
                 body_display_currency_key.as_str(),
-                formattedCurrencyAmount = formatted_currency_amount,
-                displayCurrencyAmount = formatted_display_currency_amount,
+                formattedCurrencyAmount = self.settlement_amount.to_string(),
+                displayCurrencyAmount = disp_amount.to_string(),
                 locale = locale.as_ref(),
             )
             .to_string()
         } else {
             t!(
                 body_key.as_str(),
-                formattedCurrencyAmount = formatted_currency_amount,
+                formattedCurrencyAmount = self.settlement_amount.to_string(),
                 locale = locale.as_ref(),
             )
             .to_string()
@@ -118,7 +115,7 @@ mod tests {
         };
         let localized_message = event.to_localized_push_msg(GaloyLocale::from("en".to_string()));
         assert_eq!(localized_message.title, "USD Transaction");
-        assert_eq!(localized_message.body, "Sent payment of 1 USD");
+        assert_eq!(localized_message.body, "Sent payment of $1.00");
     }
 
     #[test]
@@ -137,6 +134,6 @@ mod tests {
         };
         let localized_message = event.to_localized_push_msg(GaloyLocale::from("en".to_string()));
         assert_eq!(localized_message.title, "BTC Transaction");
-        assert_eq!(localized_message.body, "+$0.04 | 1 BTC"); // fix this assertion
+        assert_eq!(localized_message.body, "+$0.04 | 1 sats");
     }
 }
