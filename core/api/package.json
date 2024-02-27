@@ -27,7 +27,10 @@
     "dev:api-trigger": "tsx src/servers/trigger.ts",
     "dev:api-exporter": "tsx src/servers/exporter.ts",
     "dev:api-ws-server": "tsx src/servers/ws-server.ts",
-    "dev:cron": "tsx src/servers/cron.ts"
+    "dev:cron": "tsx src/servers/cron.ts",
+    "migrate:status": "migrate-mongo status -f src/migrations/migrate-mongo-config.js",
+    "migrate:up": "migrate-mongo up -f src/migrations/migrate-mongo-config.js",
+    "mongodb-migrate": "pnpm run migrate:status && pnpm run migrate:up && pnpm run migrate:status"
   },
   "engines": {
     "node": "20"

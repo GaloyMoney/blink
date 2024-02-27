@@ -8,6 +8,7 @@ DASHBOARD_TEST_LABEL = "dashboard"
 PAY_TEST_LABEL = "pay"
 ADMIN_PANEL_TEST_LABEL = "admin-panel"
 MAP_TEST_LABEL = "map"
+MIGRATE_MONGO_TEST_LABEL = "mongodb-migrate"
 
 TEST_RESOURCES = {
    CORE_TEST_LABEL: "test-api",
@@ -15,7 +16,8 @@ TEST_RESOURCES = {
    DASHBOARD_TEST_LABEL: "test-dashboard",
    PAY_TEST_LABEL: "test-pay",
    ADMIN_PANEL_TEST_LABEL: "test-admin-panel",
-   MAP_TEST_LABEL: "test-map"
+   MAP_TEST_LABEL: "test-map",
+   MIGRATE_MONGO_TEST_LABEL: "test-mongodb-migrate",
 }
 
 is_ci=("ci" in sys.argv) or cfg.get("bats", False)
@@ -630,4 +632,15 @@ local_resource(
   auto_init = is_ci and CORE_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(api_test_target),
   resource_deps = [res for sublist in docker_groups.values() for res in sublist] + ["notifications"]
+)
+
+local_resource(
+  "test-mongodb-migrate",
+  labels = ["test"],
+  auto_init = is_ci and MIGRATE_MONGO_TEST_LABEL in cfg.get("test", []),
+  cmd='buck2 run //core/api:mongodb-migrate',
+  allow_parallel = True,
+  resource_deps = [
+    "mongodb",
+  ]
 )

@@ -267,3 +267,9 @@ dev_pnpm_task_binary(
   command = "test:watch-unit",
   env_json = "//dev:dummy_env",
 )
+
+dev_pnpm_task_binary(
+  name = "mongodb-migrate",
+  command = "mongodb-migrate",
+  srcs = [":src"],
+)
