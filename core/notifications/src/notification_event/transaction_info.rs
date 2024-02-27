@@ -70,8 +70,10 @@ impl NotificationEvent for TransactionInfo {
         .to_string();
 
         let body = if let Some(disp_amount) = &self.display_amount {
-            let formatted_display_currency_amount =
-                format!("{} {}", disp_amount.minor_units, disp_amount.currency);
+            let formatted_display_currency_amount = rusty_money::Money::from_minor(
+                disp_amount.minor_units as i64,
+                rusty_money::iso::find(disp_amount.currency.code()).expect("invalid currency code"),
+            );
             t!(
                 body_display_currency_key.as_str(),
                 formattedCurrencyAmount = formatted_currency_amount,
@@ -116,6 +118,25 @@ mod tests {
         };
         let localized_message = event.to_localized_push_msg(GaloyLocale::from("en".to_string()));
         assert_eq!(localized_message.title, "USD Transaction");
-        assert_eq!(localized_message.body, "Sent payment of 100 USD");
+        assert_eq!(localized_message.body, "Sent payment of 1 USD");
+    }
+
+    #[test]
+    fn intra_ledger_payment_receipt_message() {
+        let event = TransactionInfo {
+            user_id: GaloyUserId::from("user_id".to_string()),
+            transaction_type: TransactionType::IntraLedgerReceipt,
+            settlement_amount: TransactionAmount {
+                minor_units: 1,
+                currency: Currency::Crypto(rusty_money::crypto::BTC),
+            },
+            display_amount: Some(TransactionAmount {
+                minor_units: 4,
+                currency: Currency::Iso(rusty_money::iso::USD),
+            }),
+        };
+        let localized_message = event.to_localized_push_msg(GaloyLocale::from("en".to_string()));
+        assert_eq!(localized_message.title, "BTC Transaction");
+        assert_eq!(localized_message.body, "+$0.04 | 1 BTC"); // fix this assertion
     }
 }
