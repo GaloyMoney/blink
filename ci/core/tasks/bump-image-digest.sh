@@ -5,6 +5,11 @@ set -eu
 export digest="$(cat ./edge-image/digest)"
 export ref=$(cat ./repo/.git/short_ref)
 
+# if SUBGRAPH_SRC is not an empty string, copy the subgraph from the source to the destination
+if [[ -n "${SUBGRAPH_SRC}" ]]; then
+  cp "./repo/${SUBGRAPH_SRC}" "./charts-repo/galoy/apollo-router/${COMPONENT}-schema.graphql"
+fi
+
 pushd charts-repo
 
 yq -i e "${YAML_PATH} = strenv(digest)" "./charts/${CHART}/values.yaml"
