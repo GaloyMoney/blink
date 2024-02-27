@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): throw unknown errors without mapping at server entrypoint
-        (#4082)...'
-      sha: 8910142687fe40471312567e30d95a4b747eb776
+      commitTitle: 'ci: remove unused scripts copy step (#4084)'
+      sha: 94b280e98757bc773f1289ba9f2c6c21c0a272aa
       tags:
-      - 0.20.82-3-g891014268
+      - 0.20.83-4-g94b280e98
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): throw unknown errors without mapping at server entrypoint
-        (#4082)...'
-      sha: 8910142687fe40471312567e30d95a4b747eb776
+      commitTitle: 'ci: remove unused scripts copy step (#4084)'
+      sha: 94b280e98757bc773f1289ba9f2c6c21c0a272aa
       tags:
-      - 0.20.82-3-g891014268
+      - 0.20.83-4-g94b280e98
     path: schemas/
   - git:
-      commitTitle: 'fix(core): throw unknown errors without mapping at server entrypoint
-        (#4082)...'
-      sha: 8910142687fe40471312567e30d95a4b747eb776
+      commitTitle: 'ci: remove unused scripts copy step (#4084)'
+      sha: 94b280e98757bc773f1289ba9f2c6c21c0a272aa
       tags:
-      - 0.20.82-3-g891014268
+      - 0.20.83-4-g94b280e98
     path: gql/
   path: ./graphql
 kind: LockConfig
