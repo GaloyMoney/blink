@@ -19,14 +19,11 @@ COPY ./core/api/test ./test
 
 RUN pnpm run build
 
-COPY ./core/api/scripts ./scripts
-
 FROM node:20-alpine
 COPY --from=BUILD_IMAGE /app/core/api/dist /app/core/api/dist
 COPY --from=BUILD_IMAGE /app/core/api/src/config/locales /app/core/api/dist/config/locales
 COPY --from=BUILD_IMAGE /app/node_modules /app/node_modules
 COPY --from=BUILD_IMAGE /app/core/api/node_modules /app/core/api/node_modules
-COPY --from=BUILD_IMAGE /app/core/api/scripts /app/core/api/scripts
 
 WORKDIR /app/core/api
 COPY ./core/api/*.js ./core/api/package.json ./core/api/tsconfig.json ./
