@@ -6,6 +6,8 @@ import {
 import { createPushNotificationContent } from "./create-push-notification-content"
 
 import {
+  TransactionType as ProtoTransactionType,
+  Money as ProtoMoney,
   AddPushDeviceTokenRequest,
   DisableNotificationCategoryRequest,
   DisableNotificationChannelRequest,
@@ -16,6 +18,9 @@ import {
   UpdateEmailAddressRequest,
   RemoveEmailAddressRequest,
   UpdateUserLocaleRequest,
+  HandleNotificationEventRequest,
+  NotificationEvent,
+  TransactionInfo,
 } from "./proto/notifications_pb"
 
 import * as notificationsGrpc from "./grpc-client"
@@ -40,7 +45,7 @@ import { TxStatus } from "@/domain/wallets/tx-status"
 import { CallbackEventType } from "@/domain/callback"
 import { CallbackError } from "@/domain/callback/errors"
 import { WalletInvoiceStatus } from "@/domain/wallet-invoices"
-import { roundToBigInt, WalletCurrency } from "@/domain/shared"
+import { WalletCurrency } from "@/domain/shared"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@/domain/pubsub"
 import { majorToMinorUnit, toCents, UsdDisplayCurrency } from "@/domain/fiat"
 
@@ -194,46 +199,33 @@ export const NotificationsService = (): INotificationsService => {
     transaction,
   }: NotificatioSendTransactionArgs): Promise<true | NotificationsServiceError> => {
     try {
-      const settings = await getUserNotificationSettings(recipient.userId)
-      if (settings instanceof Error) {
-        return settings
-      }
+      const request = new HandleNotificationEventRequest()
+      const event = new NotificationEvent();
+      const tx = new TransactionInfo();
 
-      const hasDeviceTokens = settings.pushDeviceTokens.length > 0
-      if (!hasDeviceTokens) return true
-
+      tx.setUserId(recipient.userId);
       const type = getPushNotificationEventType(transaction)
       if (!type) return true
-
+      tx.setType(notificationTypeToProto(type));
+      const settlementAmount = new ProtoMoney();
+      settlementAmount.setMinorUnits(transaction.settlementAmount)
+      settlementAmount.setCurrencyCode(transaction.settlementCurrency);
+      tx.setSettlementAmount(settlementAmount);
       const displayAmountMajor = transaction.settlementDisplayAmount
       const displayCurrency = transaction.settlementDisplayPrice.displayCurrency
-      const displayAmountMinor = roundToBigInt(
-        majorToMinorUnit({ amount: Number(displayAmountMajor), displayCurrency }),
+      const displayAmountMinor = 
+        Math.round(majorToMinorUnit({ amount: Number(displayAmountMajor), displayCurrency }))
+      const displayAmount = new ProtoMoney();
+      displayAmount.setMinorUnits(displayAmountMinor);
+      displayAmount.setCurrencyCode(displayCurrency);
+      tx.setDisplayAmount(displayAmount);
+      event.setTransaction(tx);
+      request.setEvent(event)
+
+      const response = await notificationsGrpc.handleNotificationEvent(
+        request,
+        notificationsGrpc.notificationsMetadata,
       )
-
-      const { title, body } = createPushNotificationContent({
-        type,
-        userLanguage: settings.language,
-        amount: {
-          amount: roundToBigInt(transaction.settlementAmount),
-          currency: transaction.settlementCurrency,
-        },
-        displayAmount: {
-          amountInMinor: displayAmountMinor,
-          displayInMajor: displayAmountMajor,
-          currency: displayCurrency,
-        },
-      })
-
-      const result = await pushNotification.sendFilteredNotification({
-        deviceTokens: settings.pushDeviceTokens,
-        title,
-        body,
-        notificationCategory: GaloyNotificationCategories.Payments,
-        userId: recipient.userId,
-      })
-
-      if (result instanceof Error) return result
 
       return true
     } catch (err) {
@@ -804,4 +796,30 @@ const translateToNotificationType = (
     }
     return NotificationType.OnchainPayment
   }
+}
+
+const notificationTypeToProto = (type: NotificationType): number => {
+  switch(type) {
+    case NotificationType.IntraLedgerReceipt:
+      return ProtoTransactionType.INTRA_LEDGER_RECEIPT;
+    case NotificationType.IntraLedgerPayment:
+      return ProtoTransactionType.INTRA_LEDGER_PAYMENT;
+    case NotificationType.OnchainReceipt:
+      return ProtoTransactionType.ONCHAIN_RECEIPT;
+    case NotificationType.OnchainReceiptPending:
+      return ProtoTransactionType.ONCHAIN_RECEIPT_PENDING;
+    case NotificationType.OnchainPayment:
+      return ProtoTransactionType.ONCHAIN_PAYMENT;
+    case NotificationType.LigtningReceipt:
+      return ProtoTransactionType.LIGHTNING_RECEIPT;
+    case NotificationType.LigtningPayment:
+      return ProtoTransactionType.LIGHTNING_PAYMENT;
+    default:
+      return assertUnreachable(type);
+  }
+}
+
+const assertUnreachable = (x: never): never => {
+  const stacktrace = `\nUnreachableError stacktrace:\n${(x as Error).stack}`
+  throw new Error(`This should never compile with ${x}` + stacktrace)
 }
