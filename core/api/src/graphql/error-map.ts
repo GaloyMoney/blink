@@ -40,8 +40,7 @@ import {
 import { baseLogger } from "@/services/logger"
 
 const assertUnreachable = (x: never): never => {
-  const stacktrace = `\nUnreachableError stacktrace:\n${(x as Error).stack}`
-  throw new Error(`This should never compile with ${x}` + stacktrace)
+  throw new Error(`This should never compile with ${x}`)
 }
 
 export const mapError = (error: ApplicationError): CustomGraphQLError => {

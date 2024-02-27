@@ -77,7 +77,7 @@ export const startApolloServer = async ({
           code: formattedError.extensions?.code,
         }
       } catch (err) {
-        throw mapError(parseUnknownDomainErrorFromUnknown(err))
+        throw parseUnknownDomainErrorFromUnknown(err)
       }
     },
   })
