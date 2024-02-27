@@ -138,4 +138,23 @@ mod tests {
         assert_eq!(localized_message.title, "BTC Transaction");
         assert_eq!(localized_message.body, "+$0.04 | 1 sats");
     }
+
+    #[test]
+    fn intra_ledger_payment_receipt_message_es() {
+        let event = TransactionInfo {
+            user_id: GaloyUserId::from("user_id".to_string()),
+            transaction_type: TransactionType::IntraLedgerReceipt,
+            settlement_amount: TransactionAmount {
+                minor_units: 1,
+                currency: Currency::Crypto(rusty_money::crypto::BTC),
+            },
+            display_amount: Some(TransactionAmount {
+                minor_units: 4,
+                currency: Currency::Iso(rusty_money::iso::USD),
+            }),
+        };
+        let localized_message = event.to_localized_push_msg(GaloyLocale::from("es".to_string()));
+        assert_eq!(localized_message.title, "Transacción BTC");
+        assert_eq!(localized_message.body, "+$0.04 | 1 sats");
+    }
 }
