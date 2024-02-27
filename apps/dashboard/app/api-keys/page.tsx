@@ -6,6 +6,8 @@ import { getServerSession } from "next-auth"
 
 import { authOptions } from "../api/auth/[...nextauth]/route"
 
+import { getBTCWallet, getUSDWallet } from "../utils"
+
 import ContentContainer from "@/components/content-container"
 import ApiKeysList from "@/components/api-keys/list"
 import ApiKeyCreate from "@/components/api-keys/create"
@@ -26,7 +28,8 @@ export default async function Home() {
   const activeKeys = keys.filter(({ expired, revoked }) => !expired && !revoked)
   const expiredKeys = keys.filter(({ expired }) => expired)
   const revokedKeys = keys.filter(({ revoked }) => revoked)
-  const defaultWalletId = session.userData.data.me?.defaultAccount.defaultWalletId
+  const usdWalletId = getUSDWallet(session.userData.data)?.id
+  const btcWalletId = getBTCWallet(session.userData.data)?.id
 
   return (
     <ContentContainer>
@@ -56,7 +59,7 @@ export default async function Home() {
             Your API Keys that can be used to access the{" "}
             <Link href="https://dev.blink.sv/">Blink API</Link>
           </Typography>
-          <ApiKeyCreate defaultWalletId={defaultWalletId} />
+          <ApiKeyCreate btcWalletId={btcWalletId} usdWalletId={usdWalletId} />
         </Box>
         <Typography fontSize={17}>
           Our team will never ask for the API keys. Anyone with access to the key with

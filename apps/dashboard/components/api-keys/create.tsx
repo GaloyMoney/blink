@@ -27,19 +27,21 @@ import { useFormState } from "react-dom"
 
 import FormSubmitButton from "../form-submit-button"
 
+import BtcPayConnectionGroup from "./btc-pay-tabs"
+
 import { createApiKeyServerAction } from "@/app/api-keys/server-actions"
 import { ApiKeyResponse } from "@/app/api-keys/api-key.types"
 
 type Prop = {
-  defaultWalletId: string | undefined
+  usdWalletId: string | undefined
+  btcWalletId: string | undefined
 }
 
-const ApiKeyCreate = ({ defaultWalletId }: Prop) => {
+const ApiKeyCreate = ({ usdWalletId, btcWalletId }: Prop) => {
   const router = useRouter()
 
   const [open, setOpen] = useState(false)
   const [apiKeyCopied, setApiKeyCopied] = useState(false)
-  const [btcPayCopied, setBtcPayCopied] = useState(false)
   const [state, formAction] = useFormState<ApiKeyResponse, FormData>(
     createApiKeyServerAction,
     {
@@ -60,16 +62,6 @@ const ApiKeyCreate = ({ defaultWalletId }: Prop) => {
     state.responsePayload = null
     console.log("Modal has been closed")
     router.refresh()
-  }
-
-  const handleBtcPayCopy = () => {
-    setBtcPayCopied(true)
-    setTimeout(() => {
-      setBtcPayCopied(false)
-    }, 2000)
-    navigator.clipboard.writeText(
-      `type=blink;server=https://api.blink.sv/graphql;api-key=${state?.responsePayload?.apiKeySecret};wallet-id=${defaultWalletId}`,
-    )
   }
 
   return (
@@ -149,29 +141,13 @@ const ApiKeyCreate = ({ defaultWalletId }: Prop) => {
                   <CopyIcon />
                 </Tooltip>
               </Box>
-              <Tooltip
-                sx={{
-                  cursor: "pointer",
-                  position: "absolute",
-                }}
-                open={btcPayCopied}
-                title="Copied to Clipboard"
-                variant="plain"
-              >
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  sx={{
-                    width: "100%",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                  onClick={handleBtcPayCopy}
-                >
-                  Copy connection settings for BTCPay server
-                </Button>
-              </Tooltip>
+              {btcWalletId && usdWalletId && state?.responsePayload?.apiKeySecret && (
+                <BtcPayConnectionGroup
+                  apiKeySecret={state?.responsePayload?.apiKeySecret}
+                  btcWalletId={btcWalletId}
+                  usdWalletId={usdWalletId}
+                />
+              )}
 
               <Typography
                 sx={{
