@@ -300,7 +300,7 @@ jobs:
           inputs:
           - name: pipeline-tasks
           - name: nix-host
-          - name: #@ component_src_resource_name(component)
+          - name: repo
             path: #@ data.values.gh_repository + "-" + name
           params: #@ params
           run:
