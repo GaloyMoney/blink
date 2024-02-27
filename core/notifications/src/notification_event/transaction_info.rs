@@ -70,22 +70,24 @@ impl NotificationEvent for TransactionInfo {
         )
         .to_string();
 
-        let body = if let Some(disp_amount) = &self.display_amount {
-            t!(
-                body_display_currency_key.as_str(),
-                formattedCurrencyAmount = self.settlement_amount.to_string(),
-                displayCurrencyAmount = disp_amount.to_string(),
-                locale = locale.as_ref(),
-            )
-            .to_string()
-        } else {
-            t!(
+        let body = match &self.display_amount {
+            Some(display_amount) if display_amount.currency != self.settlement_amount.currency => {
+                t!(
+                    body_display_currency_key.as_str(),
+                    formattedCurrencyAmount = self.settlement_amount.to_string(),
+                    displayCurrencyAmount = display_amount.to_string(),
+                    locale = locale.as_ref(),
+                )
+                .to_string()
+            }
+            _ => t!(
                 body_key.as_str(),
                 formattedCurrencyAmount = self.settlement_amount.to_string(),
                 locale = locale.as_ref(),
             )
-            .to_string()
+            .to_string(),
         };
+
         LocalizedPushMessage { title, body }
     }
 
