@@ -199,30 +199,35 @@ export const NotificationsService = (): INotificationsService => {
     transaction,
   }: NotificatioSendTransactionArgs): Promise<true | NotificationsServiceError> => {
     try {
-      const request = new HandleNotificationEventRequest()
-      const event = new NotificationEvent();
-      const tx = new TransactionInfo();
-
-      tx.setUserId(recipient.userId);
       const type = getPushNotificationEventType(transaction)
       if (!type) return true
-      tx.setType(notificationTypeToProto(type));
-      const settlementAmount = new ProtoMoney();
+
+      const settlementAmount = new ProtoMoney()
       settlementAmount.setMinorUnits(transaction.settlementAmount)
-      settlementAmount.setCurrencyCode(transaction.settlementCurrency);
-      tx.setSettlementAmount(settlementAmount);
+      settlementAmount.setCurrencyCode(transaction.settlementCurrency)
+
       const displayAmountMajor = transaction.settlementDisplayAmount
       const displayCurrency = transaction.settlementDisplayPrice.displayCurrency
-      const displayAmountMinor = 
-        Math.round(majorToMinorUnit({ amount: Number(displayAmountMajor), displayCurrency }))
-      const displayAmount = new ProtoMoney();
-      displayAmount.setMinorUnits(displayAmountMinor);
-      displayAmount.setCurrencyCode(displayCurrency);
-      tx.setDisplayAmount(displayAmount);
-      event.setTransaction(tx);
+      const displayAmountMinor = Math.round(
+        majorToMinorUnit({ amount: Number(displayAmountMajor), displayCurrency }),
+      )
+      const displayAmount = new ProtoMoney()
+      displayAmount.setMinorUnits(displayAmountMinor)
+      displayAmount.setCurrencyCode(displayCurrency)
+
+      const tx = new TransactionInfo()
+      tx.setUserId(recipient.userId)
+      tx.setType(type)
+      tx.setSettlementAmount(settlementAmount)
+      tx.setDisplayAmount(displayAmount)
+
+      const event = new NotificationEvent()
+      event.setTransaction(tx)
+
+      const request = new HandleNotificationEventRequest()
       request.setEvent(event)
 
-      const response = await notificationsGrpc.handleNotificationEvent(
+      await notificationsGrpc.handleNotificationEvent(
         request,
         notificationsGrpc.notificationsMetadata,
       )
@@ -723,21 +728,24 @@ const getPubSubNotificationEventType = (
 
 const getPushNotificationEventType = (
   transaction: WalletTransaction,
-): NotificationType | undefined => {
+): number | undefined => {
   const type = translateToNotificationType(transaction)
   switch (type) {
     case NotificationType.LigtningReceipt:
+      return ProtoTransactionType.LIGHTNING_RECEIPT
     case NotificationType.IntraLedgerReceipt:
+      return ProtoTransactionType.INTRA_LEDGER_RECEIPT
     case NotificationType.OnchainReceiptPending:
+      return ProtoTransactionType.ONCHAIN_RECEIPT_PENDING
     case NotificationType.OnchainPayment:
-      return type
+      return ProtoTransactionType.ONCHAIN_PAYMENT
 
     // special case because we don't have a hash
     case NotificationType.OnchainReceipt: {
       const settlementViaType = transaction.settlementVia.type
       return settlementViaType === "intraledger"
-        ? NotificationType.IntraLedgerReceipt
-        : type
+        ? ProtoTransactionType.INTRA_LEDGER_RECEIPT
+        : ProtoTransactionType.ONCHAIN_RECEIPT
     }
     default:
       return undefined
@@ -796,30 +804,4 @@ const translateToNotificationType = (
     }
     return NotificationType.OnchainPayment
   }
-}
-
-const notificationTypeToProto = (type: NotificationType): number => {
-  switch(type) {
-    case NotificationType.IntraLedgerReceipt:
-      return ProtoTransactionType.INTRA_LEDGER_RECEIPT;
-    case NotificationType.IntraLedgerPayment:
-      return ProtoTransactionType.INTRA_LEDGER_PAYMENT;
-    case NotificationType.OnchainReceipt:
-      return ProtoTransactionType.ONCHAIN_RECEIPT;
-    case NotificationType.OnchainReceiptPending:
-      return ProtoTransactionType.ONCHAIN_RECEIPT_PENDING;
-    case NotificationType.OnchainPayment:
-      return ProtoTransactionType.ONCHAIN_PAYMENT;
-    case NotificationType.LigtningReceipt:
-      return ProtoTransactionType.LIGHTNING_RECEIPT;
-    case NotificationType.LigtningPayment:
-      return ProtoTransactionType.LIGHTNING_PAYMENT;
-    default:
-      return assertUnreachable(type);
-  }
-}
-
-const assertUnreachable = (x: never): never => {
-  const stacktrace = `\nUnreachableError stacktrace:\n${(x as Error).stack}`
-  throw new Error(`This should never compile with ${x}` + stacktrace)
 }
