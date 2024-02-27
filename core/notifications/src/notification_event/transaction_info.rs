@@ -65,8 +65,8 @@ impl NotificationEvent for TransactionInfo {
 
         let title = t!(
             title_key.as_str(),
-            walletCurrency = self.settlement_amount.currency,
             locale = locale.as_ref(),
+            walletCurrency = self.settlement_amount.currency,
         )
         .to_string();
 
@@ -74,16 +74,16 @@ impl NotificationEvent for TransactionInfo {
             Some(display_amount) if display_amount.currency != self.settlement_amount.currency => {
                 t!(
                     body_display_currency_key.as_str(),
+                    locale = locale.as_ref(),
                     formattedCurrencyAmount = self.settlement_amount.to_string(),
                     displayCurrencyAmount = display_amount.to_string(),
-                    locale = locale.as_ref(),
                 )
                 .to_string()
             }
             _ => t!(
                 body_key.as_str(),
-                formattedCurrencyAmount = self.settlement_amount.to_string(),
                 locale = locale.as_ref(),
+                formattedCurrencyAmount = self.settlement_amount.to_string(),
             )
             .to_string(),
         };
