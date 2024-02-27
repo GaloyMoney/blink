@@ -9,8 +9,6 @@ export const env = createEnv({
   server: {
     GOOGLE_CLIENT_ID: z.string().min(1).default("googleId"),
     GOOGLE_CLIENT_SECRET: z.string().min(1).default("googleSecret"),
-    GITHUB_CLIENT_ID: z.string().min(1).default("githubClientId"),
-    GITHUB_CLIENT_SECRET: z.string().min(1).default("githubSecret"),
     ADMIN_CORE_API: z.string().url().default("http://localhost:4455/admin/graphql"),
     NEXTAUTH_URL: z.string().url().default("http://localhost:3004"),
     NEXTAUTH_SECRET: z.string().min(8).default("nextAuthSecret"),
@@ -38,8 +36,6 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-    GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
-    GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
     ADMIN_CORE_API: process.env.ADMIN_CORE_API,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
