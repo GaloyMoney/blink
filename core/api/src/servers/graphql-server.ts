@@ -66,8 +66,9 @@ export const startApolloServer = async ({
     plugins: apolloPlugins,
     formatError: (formattedError, error) => {
       try {
-        if (unwrapResolverError(error) instanceof DomainError) {
-          return mapError(parseUnknownDomainErrorFromUnknown(error))
+        const unwrappedErr = unwrapResolverError(error)
+        if (unwrappedErr instanceof DomainError) {
+          return mapError(parseUnknownDomainErrorFromUnknown(unwrappedErr))
         }
 
         return {
@@ -77,7 +78,7 @@ export const startApolloServer = async ({
           code: formattedError.extensions?.code,
         }
       } catch (err) {
-        throw mapError(parseUnknownDomainErrorFromUnknown(err))
+        throw parseUnknownDomainErrorFromUnknown(err)
       }
     },
   })
