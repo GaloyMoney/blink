@@ -98,7 +98,7 @@ services:
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=hydra
   galoy:
-    image: us.gcr.io/galoy-org/galoy-api@sha256:57ca569cfd9c0b14f05e0a502fd0b4b4f6855a117b6910939f23e17296389e1f
+    image: us.gcr.io/galoy-org/galoy-api@sha256:f7a835177c64b8f621ae6c39a57ab1edaa3b796afa6e26a269a3de9f2c7bc6c6
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -161,7 +161,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:3ca74e36867761ad7bffe6b92229de0cfdd75aaacf5103ab143a096185a08566
+    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:08bd950f56612fcd19b431784b7803c6039c321199c4a57035807ec776e38a84
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -213,7 +213,7 @@ services:
     - bria
     - mongodb
   notifications:
-    image: us.gcr.io/galoy-org/galoy-notifications@sha256:1cdad139162ac13f8dfd2d6f074af2ccc86b2272c2bf25ed317df746d915cebd
+    image: us.gcr.io/galoy-org/galoy-notifications@sha256:b25b60ae57ea440bd8203f6b881f12c20e6cb083c9c8361ada088f8b781ace4c
     environment:
     - PG_CON=postgres://user:password@notifications-pg:5432/pg
     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-agent:4318
@@ -221,8 +221,8 @@ services:
     ports:
     - 6685:6685
     volumes:
-    - config/notifications/notifications.yml:/config/notifications/notifications.yml
-    - config/notifications/fake_service_account.json:/app/notifications/config/notifications/fake_service_account.json
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/notifications/notifications.yml:/config/notifications/notifications.yml
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/notifications/fake_service_account.json:/app/notifications/config/notifications/fake_service_account.json
   notifications-pg:
     image: postgres:14.1
     environment:
@@ -252,7 +252,7 @@ services:
     environment:
     - MONGO_INITDB_DATABASE=galoy
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:a6a6ec6f563f3f440c43c75cbefc5120f0a6554582492b44809044253b3a670d
+    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:be4d35824ed0c31e3ad3e17cc77c938ba7f668b4ec38851feee016f8ca259db1
     depends_on:
     - mongodb
     environment:

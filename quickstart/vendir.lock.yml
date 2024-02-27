@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: fix notification quickstart (#4070)'
-      sha: 1ea4ecb31676849d85822d2607d9d02aaca8ef46
+      commitTitle: 'fix(core): throw unknown errors without mapping at server entrypoint
+        (#4082)...'
+      sha: 8910142687fe40471312567e30d95a4b747eb776
       tags:
-      - 0.20.80-1-g1ea4ecb31
+      - 0.20.82-3-g891014268
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: fix notification quickstart (#4070)'
-      sha: 1ea4ecb31676849d85822d2607d9d02aaca8ef46
+      commitTitle: 'fix(core): throw unknown errors without mapping at server entrypoint
+        (#4082)...'
+      sha: 8910142687fe40471312567e30d95a4b747eb776
       tags:
-      - 0.20.80-1-g1ea4ecb31
+      - 0.20.82-3-g891014268
     path: schemas/
   - git:
-      commitTitle: 'chore: fix notification quickstart (#4070)'
-      sha: 1ea4ecb31676849d85822d2607d9d02aaca8ef46
+      commitTitle: 'fix(core): throw unknown errors without mapping at server entrypoint
+        (#4082)...'
+      sha: 8910142687fe40471312567e30d95a4b747eb776
       tags:
-      - 0.20.80-1-g1ea4ecb31
+      - 0.20.82-3-g891014268
     path: gql/
   path: ./graphql
 kind: LockConfig
