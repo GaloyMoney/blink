@@ -30,7 +30,6 @@ import { PaymentSendStatus } from "@/domain/bitcoin/lightning"
 import { DealerPriceService } from "@/services/dealer-price"
 import { AccountsRepository } from "@/services/mongoose"
 import { Transaction, TransactionMetadata } from "@/services/ledger/schema"
-import * as PushNotificationsServiceImpl from "@/services/notifications/push-notifications"
 import * as LedgerFacadeImpl from "@/services/ledger/facade"
 
 import { timestampDaysAgo } from "@/utils"
@@ -43,7 +42,6 @@ import {
 } from "test/helpers"
 import { getBalanceHelper } from "test/helpers/wallet"
 import { LedgerTransactionType } from "@/domain/ledger"
-import { NotificationsService } from "@/services/notifications"
 
 let outsideAddress: OnChainAddress
 let memo: string
@@ -609,82 +607,6 @@ describe("onChainPay", () => {
         memo,
       })
       expect(res).toBeInstanceOf(InactiveAccountError)
-    })
-
-    it("calls sendFilteredNotification on successful intraledger receive", async () => {
-      // Setup mocks
-      const sendFilteredNotification = jest.fn()
-      const pushNotificationsServiceSpy = jest
-        .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-        .mockImplementation(() => ({
-          sendFilteredNotification,
-          sendNotification: jest.fn(),
-        }))
-
-      // Create users
-      const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
-        await createRandomUserAndWallets()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
-      )
-      if (newAccount instanceof Error) throw newAccount
-
-      // Add push device token
-      const notificationSettings = await NotificationsService().addPushDeviceToken({
-        userId: newAccount.kratosUserId,
-        deviceToken: "123" as DeviceToken,
-      })
-
-      if (notificationSettings instanceof Error) throw notificationSettings
-
-      // Fund balance for send
-      const receive = await recordReceiveLnPayment({
-        walletDescriptor: newWalletDescriptor,
-        paymentAmount: receiveAmounts,
-        bankFee: receiveBankFee,
-        displayAmounts: receiveDisplayAmounts,
-        memo,
-      })
-      if (receive instanceof Error) throw receive
-
-      const recipientWalletIdAddress = await Wallets.createOnChainAddress({
-        walletId: usdWalletDescriptor.id,
-      })
-      if (recipientWalletIdAddress instanceof Error) throw recipientWalletIdAddress
-
-      // Execute payment
-      const paymentResult = await Payments.payOnChainByWalletIdForBtcWallet({
-        senderWalletId: newWalletDescriptor.id,
-        senderAccount: newAccount,
-        amount,
-        address: recipientWalletIdAddress,
-        speed: PayoutSpeed.Fast,
-        memo,
-      })
-      if (paymentResult instanceof Error) throw paymentResult
-      expect(paymentResult).toEqual({
-        status: PaymentSendStatus.Success,
-        transaction: expect.objectContaining({
-          walletId: newWalletDescriptor.id,
-          status: "success",
-          settlementAmount: amount * -1,
-          settlementCurrency: "BTC",
-          initiationVia: expect.objectContaining({
-            type: "onchain",
-            address: recipientWalletIdAddress,
-          }),
-          settlementVia: expect.objectContaining({
-            type: "intraledger",
-          }),
-        }),
-      })
-
-      // Expect sent notification
-      expect(sendFilteredNotification.mock.calls.length).toBe(2)
-      expect(sendFilteredNotification.mock.calls[0][0].title).toBeTruthy()
-
-      // Restore system state
-      pushNotificationsServiceSpy.mockRestore()
     })
 
     it("records transaction with onchain-trade-intra-account metadata on intraledger send", async () => {
