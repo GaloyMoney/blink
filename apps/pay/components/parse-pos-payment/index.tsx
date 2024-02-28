@@ -23,6 +23,8 @@ import styles from "./parse-payment.module.css"
 import ReceiveInvoice from "./receive-invoice"
 import NFCComponent from "./nfc"
 
+import { satCurrencyMetadata } from "@/app/sats-currency-metadata"
+
 interface Props {
   defaultWalletCurrency: string
   walletId: string
@@ -107,12 +109,33 @@ function ParsePayment({
 
   // Update CurrencyMetadata
   React.useEffect(() => {
-    const latestCurrencyMetadata = currencyList?.find((c) => c.id === display)
-    if (latestCurrencyMetadata) {
+    if (display === "SAT" && state.walletCurrency === "USD") {
+      // update param if display is "SAT" and wallet currency is "USD"
+      const params = new URLSearchParams({
+        amount: "0",
+        memo: memo ?? "",
+        display: "USD",
+      })
+      const newUrl = new URL(window.location.toString())
+      newUrl.pathname = `/${username}`
+      newUrl.search = params.toString()
+      router.replace(newUrl.toString(), {
+        scroll: true,
+      })
+      // "currencyList?.length > 0" is to prevent unnecessary renders
+    } else if (display === "SAT" && currencyList?.length > 0) {
       dispatch({
         type: ACTIONS.UPDATE_DISPLAY_CURRENCY_METADATA,
-        payload: latestCurrencyMetadata,
+        payload: satCurrencyMetadata,
       })
+    } else {
+      const latestCurrencyMetadata = currencyList?.find((c) => c.id === display)
+      if (latestCurrencyMetadata) {
+        dispatch({
+          type: ACTIONS.UPDATE_DISPLAY_CURRENCY_METADATA,
+          payload: latestCurrencyMetadata,
+        })
+      }
     }
   }, [display, currencyList])
 
