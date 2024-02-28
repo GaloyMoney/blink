@@ -951,7 +951,6 @@ type Mutation {
   onChainUsdPaymentSend(input: OnChainUsdPaymentSendInput!): PaymentSendPayload!
   onChainUsdPaymentSendAsBtcDenominated(input: OnChainUsdPaymentSendAsBtcDenominatedInput!): PaymentSendPayload!
   quizClaim(input: QuizClaimInput!): QuizClaimPayload!
-  quizCompleted(input: QuizCompletedInput!): QuizCompletedPayload! @deprecated(reason: "Use quizClaim instead")
   userContactUpdateAlias(input: UserContactUpdateAliasInput!): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
   userEmailDelete: UserEmailDeletePayload!
   userEmailRegistrationInitiate(input: UserEmailRegistrationInitiateInput!): UserEmailRegistrationInitiatePayload!
@@ -1240,15 +1239,6 @@ input QuizClaimInput {
 type QuizClaimPayload {
   errors: [Error!]!
   quizzes: [Quiz!]!
-}
-
-input QuizCompletedInput {
-  id: ID!
-}
-
-type QuizCompletedPayload {
-  errors: [Error!]!
-  quiz: Quiz
 }
 
 type RealtimePrice {

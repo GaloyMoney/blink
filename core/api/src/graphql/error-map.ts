@@ -287,7 +287,11 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
         "Too many login attempts on same network, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
-    case "UserAddQuizAttemptIpRateLimiterExceededError":
+    case "AddQuizAttemptIpRateLimiterExceededError":
+      message = "Too many attempts, please wait for a while and try again."
+      return new TooManyRequestError({ message, logger: baseLogger })
+
+    case "AddQuizAttemptPhoneRateLimiterExceededError":
       message = "Too many attempts, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
