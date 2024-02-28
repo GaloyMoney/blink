@@ -55,6 +55,7 @@ load "../../helpers/subscriber.bash"
 }
 
 @test "public: can subscribe to realtime price" {
+  skip "until price server can take a mocked realtime price config"
   subscribe_to 'anon' real-time-price-sub '{"currency": "EUR"}'
   retry 10 1 grep 'Data.*\brealtimePrice\b.*EUR' "${SUBSCRIBER_LOG_FILE}"
 
