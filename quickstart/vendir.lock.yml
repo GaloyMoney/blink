@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(test): skip failing test until price server is fixed (#4098)'
-      sha: 674c90e7cbbe6e5a940310c650bc7fca7e786435
+      commitTitle: 'test(core): fix admin tests flakiness (#4092)...'
+      sha: 60f09239bf6a95c18cc688ca53e9f51e7ac07a1d
       tags:
-      - 0.20.87-10-g674c90e7c
+      - 0.20.88-1-g60f09239b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(test): skip failing test until price server is fixed (#4098)'
-      sha: 674c90e7cbbe6e5a940310c650bc7fca7e786435
+      commitTitle: 'test(core): fix admin tests flakiness (#4092)...'
+      sha: 60f09239bf6a95c18cc688ca53e9f51e7ac07a1d
       tags:
-      - 0.20.87-10-g674c90e7c
+      - 0.20.88-1-g60f09239b
     path: schemas/
   - git:
-      commitTitle: 'chore(test): skip failing test until price server is fixed (#4098)'
-      sha: 674c90e7cbbe6e5a940310c650bc7fca7e786435
+      commitTitle: 'test(core): fix admin tests flakiness (#4092)...'
+      sha: 60f09239bf6a95c18cc688ca53e9f51e7ac07a1d
       tags:
-      - 0.20.87-10-g674c90e7c
+      - 0.20.88-1-g60f09239b
     path: gql/
   path: ./graphql
 kind: LockConfig
