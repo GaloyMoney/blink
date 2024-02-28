@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: remove unused scripts copy step (#4084)'
-      sha: 94b280e98757bc773f1289ba9f2c6c21c0a272aa
+      commitTitle: 'fix(core): install pnpm in mongodb-migrate image (#4087)'
+      sha: 3b9ec949c7f50e1c5ba07179bc58a7e8b89bb062
       tags:
-      - 0.20.83-4-g94b280e98
+      - 0.20.85-2-g3b9ec949c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: remove unused scripts copy step (#4084)'
-      sha: 94b280e98757bc773f1289ba9f2c6c21c0a272aa
+      commitTitle: 'fix(core): install pnpm in mongodb-migrate image (#4087)'
+      sha: 3b9ec949c7f50e1c5ba07179bc58a7e8b89bb062
       tags:
-      - 0.20.83-4-g94b280e98
+      - 0.20.85-2-g3b9ec949c
     path: schemas/
   - git:
-      commitTitle: 'ci: remove unused scripts copy step (#4084)'
-      sha: 94b280e98757bc773f1289ba9f2c6c21c0a272aa
+      commitTitle: 'fix(core): install pnpm in mongodb-migrate image (#4087)'
+      sha: 3b9ec949c7f50e1c5ba07179bc58a7e8b89bb062
       tags:
-      - 0.20.83-4-g94b280e98
+      - 0.20.85-2-g3b9ec949c
     path: gql/
   path: ./graphql
 kind: LockConfig
