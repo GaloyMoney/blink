@@ -202,6 +202,7 @@ export const handleCommonNotificationErrors = (err: Error | string | unknown) =>
   switch (true) {
     case match(KnownNotificationErrorMessages.GoogleBadGatewayError):
     case match(KnownNotificationErrorMessages.GoogleInternalServerError):
+    case match(KnownNotificationErrorMessages.NoConnectionError):
       return new NotificationsServiceUnreachableServerError(errMsg)
 
     default:
@@ -212,6 +213,7 @@ export const handleCommonNotificationErrors = (err: Error | string | unknown) =>
 export const KnownNotificationErrorMessages = {
   GoogleBadGatewayError: /Raw server response .* Error 502/,
   GoogleInternalServerError: /Raw server response .* Error 500/,
+  NoConnectionError: /UNAVAILABLE: No connection established/,
 } as const
 
 export const SendFilteredPushNotificationStatus = {

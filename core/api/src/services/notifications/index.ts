@@ -75,7 +75,7 @@ export const NotificationsService = (): INotificationsService => {
 
       return notificationSettings
     } catch (err) {
-      return new UnknownNotificationsServiceError(err)
+      return handleCommonNotificationErrors(err)
     }
   }
 
@@ -203,13 +203,15 @@ export const NotificationsService = (): INotificationsService => {
       if (!type) return true
 
       const settlementAmount = new ProtoMoney()
-      settlementAmount.setMinorUnits(transaction.settlementAmount)
+      settlementAmount.setMinorUnits(Math.abs(transaction.settlementAmount))
       settlementAmount.setCurrencyCode(transaction.settlementCurrency)
 
       const displayAmountMajor = transaction.settlementDisplayAmount
       const displayCurrency = transaction.settlementDisplayPrice.displayCurrency
-      const displayAmountMinor = Math.round(
-        majorToMinorUnit({ amount: Number(displayAmountMajor), displayCurrency }),
+      const displayAmountMinor = Math.abs(
+        Math.round(
+          majorToMinorUnit({ amount: Number(displayAmountMajor), displayCurrency }),
+        ),
       )
       const displayAmount = new ProtoMoney()
       displayAmount.setMinorUnits(displayAmountMinor)
