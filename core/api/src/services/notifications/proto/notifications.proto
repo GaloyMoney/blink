@@ -150,7 +150,8 @@ message NotificationEvent {
     CircleThresholdReached circle_threshold_reached = 2;
     IdentityVerificationApproved identity_verification_approved = 3;
     IdentityVerificationDeclined identity_verification_declined = 4;
-    IdentityVerificationReviewPending identity_verification_review_pending = 5;
+    IdentityVerificationReviewStarted identity_verification_review_started = 5;
+    TransactionInfo transaction = 6;
   }
 }
 
@@ -185,6 +186,10 @@ message IdentityVerificationApproved {
 enum DeclinedReason {
   DOCUMENTS_NOT_CLEAR = 0;
   VERIFICATION_PHOTO_NOT_CLEAR = 1;
+  DOCUMENTS_NOT_SUPPORTED = 2;
+  DOCUMENTS_EXPIRED = 3;
+  DOCUMENTS_DO_NOT_MATCH = 4;
+  OTHER = 5;
 }
 
 message IdentityVerificationDeclined {
@@ -192,6 +197,28 @@ message IdentityVerificationDeclined {
   DeclinedReason declined_reason = 2;
 }
 
-message IdentityVerificationReviewPending {
+message IdentityVerificationReviewStarted {
   string user_id = 1;
+}
+
+message TransactionInfo {
+  string user_id = 1;
+  TransactionType type = 2;
+  Money settlement_amount = 3;
+  optional Money display_amount = 4;
+}
+
+enum TransactionType {
+  INTRA_LEDGER_RECEIPT = 0;
+  INTRA_LEDGER_PAYMENT= 1;
+  ONCHAIN_RECEIPT = 2;
+  ONCHAIN_RECEIPT_PENDING = 3;
+  ONCHAIN_PAYMENT = 4;
+  LIGHTNING_RECEIPT = 5;
+  LIGHTNING_PAYMENT = 6;
+}
+
+message Money {
+  string currency_code = 1;
+  uint64 minor_units = 2;
 }

@@ -73,6 +73,7 @@ galoy_rust_bin(
         "//third-party/rust:google-fcm1",
         "//third-party/rust:lettre",
         "//third-party/rust:handlebars",
+        "//third-party/rust:rusty-money",
     ],
     extra_tests = [
         "//lib/tracing-rs:tracing",

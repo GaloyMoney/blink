@@ -27,6 +27,8 @@ import {
   UpdateEmailAddressResponse,
   RemoveEmailAddressRequest,
   RemoveEmailAddressResponse,
+  HandleNotificationEventRequest,
+  HandleNotificationEventResponse,
 } from "./proto/notifications_pb"
 
 import { NOTIFICATIONS_HOST, NOTIFICATIONS_PORT } from "@/config"
@@ -105,3 +107,9 @@ export const removeEmailAddress = promisify<
   Metadata,
   RemoveEmailAddressResponse
 >(notificationsClient.removeEmailAddress.bind(notificationsClient))
+
+export const handleNotificationEvent = promisify<
+  HandleNotificationEventRequest,
+  Metadata,
+  HandleNotificationEventResponse
+>(notificationsClient.handleNotificationEvent.bind(notificationsClient))

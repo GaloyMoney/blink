@@ -33,7 +33,6 @@ import { Transaction, TransactionMetadata } from "@/services/ledger/schema"
 import { WalletInvoice } from "@/services/mongoose/schema"
 import { LnPayment } from "@/services/lnd/schema"
 import * as LndImpl from "@/services/lnd"
-import * as PushNotificationsServiceImpl from "@/services/notifications/push-notifications"
 import * as LedgerFacadeImpl from "@/services/ledger/facade"
 
 import {
@@ -44,7 +43,6 @@ import {
   recordReceiveLnPayment,
 } from "test/helpers"
 import { LedgerTransactionType } from "@/domain/ledger"
-import { NotificationsService } from "@/services/notifications"
 
 let lnInvoice: LnInvoice
 let noAmountLnInvoice: LnInvoice
@@ -894,97 +892,6 @@ describe("initiated via lightning", () => {
 
       // Restore system state
       lndServiceSpy.mockReset()
-    })
-
-    it("calls sendFilteredNotification on successful intraledger send", async () => {
-      // Setup mocks
-      const sendFilteredNotification = jest.fn()
-      const pushNotificationsServiceSpy = jest
-        .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-        .mockImplementation(() => ({
-          sendFilteredNotification,
-          sendNotification: jest.fn(),
-        }))
-
-      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
-      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
-        ...LnServiceOrig(),
-        listAllPubkeys: () => [noAmountLnInvoice.destination],
-        cancelInvoice: () => true,
-      })
-
-      // Create users
-      const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
-        await createRandomUserAndWallets()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
-      )
-      if (newAccount instanceof Error) throw newAccount
-
-      // Add push device token
-      const notificationSettings = await NotificationsService().addPushDeviceToken({
-        userId: newAccount.kratosUserId,
-        deviceToken: "123" as DeviceToken,
-      })
-
-      if (notificationSettings instanceof Error) throw notificationSettings
-
-      // Persist invoice as self-invoice
-      const persisted = await WalletInvoicesRepository().persistNew({
-        paymentHash: noAmountLnInvoice.paymentHash,
-        secret: "secret" as SecretPreImage,
-        selfGenerated: true,
-        pubkey: noAmountLnInvoice.destination,
-        recipientWalletDescriptor: usdWalletDescriptor,
-        paid: false,
-        lnInvoice,
-        processingCompleted: false,
-      })
-      if (persisted instanceof Error) throw persisted
-
-      // Fund balance for send
-      const receive = await recordReceiveLnPayment({
-        walletDescriptor: newWalletDescriptor,
-        paymentAmount: receiveAmounts,
-        bankFee: receiveBankFee,
-        displayAmounts: receiveDisplayAmounts,
-        memo,
-      })
-      if (receive instanceof Error) throw receive
-
-      // Execute pay
-      const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
-        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
-        memo,
-        senderWalletId: newWalletDescriptor.id,
-        senderAccount: newAccount,
-        amount,
-      })
-      expect(paymentResult).toEqual({
-        status: PaymentSendStatus.Success,
-        transaction: expect.objectContaining({
-          walletId: newWalletDescriptor.id,
-          status: "success",
-          settlementAmount: amount * -1,
-          settlementCurrency: "BTC",
-          initiationVia: expect.objectContaining({
-            type: "lightning",
-            paymentHash: noAmountLnInvoice.paymentHash,
-            pubkey: noAmountLnInvoice.destination,
-          }),
-          settlementVia: expect.objectContaining({
-            type: "intraledger",
-          }),
-        }),
-      })
-
-      // Expect sent notification
-      expect(sendFilteredNotification.mock.calls.length).toBe(1)
-      expect(sendFilteredNotification.mock.calls[0][0].title).toBeTruthy()
-
-      // Restore system state
-      pushNotificationsServiceSpy.mockRestore()
-      lndServiceSpy.mockRestore()
     })
 
     it("records transaction with ln-trade-intra-account metadata on intraledger send", async () => {
