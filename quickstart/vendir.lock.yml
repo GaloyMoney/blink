@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): fix linting'
-      sha: ddfbb5853f51343efa89ee5e45546dbe44f9a44b
+      commitTitle: 'chore: increase limits for invoice creation (#4096)...'
+      sha: bab7a13ca494d5b481af71231d84ff33a80fffd6
       tags:
-      - 0.20.87-4-gddfbb5853
+      - 0.20.87-6-gbab7a13ca
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): fix linting'
-      sha: ddfbb5853f51343efa89ee5e45546dbe44f9a44b
+      commitTitle: 'chore: increase limits for invoice creation (#4096)...'
+      sha: bab7a13ca494d5b481af71231d84ff33a80fffd6
       tags:
-      - 0.20.87-4-gddfbb5853
+      - 0.20.87-6-gbab7a13ca
     path: schemas/
   - git:
-      commitTitle: 'test(core): fix linting'
-      sha: ddfbb5853f51343efa89ee5e45546dbe44f9a44b
+      commitTitle: 'chore: increase limits for invoice creation (#4096)...'
+      sha: bab7a13ca494d5b481af71231d84ff33a80fffd6
       tags:
-      - 0.20.87-4-gddfbb5853
+      - 0.20.87-6-gbab7a13ca
     path: gql/
   path: ./graphql
 kind: LockConfig
