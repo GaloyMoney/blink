@@ -625,10 +625,15 @@ export class NotificationEvent extends jspb.Message {
     getIdentityVerificationDeclined(): IdentityVerificationDeclined | undefined;
     setIdentityVerificationDeclined(value?: IdentityVerificationDeclined): NotificationEvent;
 
-    hasIdentityVerificationReviewPending(): boolean;
-    clearIdentityVerificationReviewPending(): void;
-    getIdentityVerificationReviewPending(): IdentityVerificationReviewPending | undefined;
-    setIdentityVerificationReviewPending(value?: IdentityVerificationReviewPending): NotificationEvent;
+    hasIdentityVerificationReviewStarted(): boolean;
+    clearIdentityVerificationReviewStarted(): void;
+    getIdentityVerificationReviewStarted(): IdentityVerificationReviewStarted | undefined;
+    setIdentityVerificationReviewStarted(value?: IdentityVerificationReviewStarted): NotificationEvent;
+
+    hasTransaction(): boolean;
+    clearTransaction(): void;
+    getTransaction(): TransactionInfo | undefined;
+    setTransaction(value?: TransactionInfo): NotificationEvent;
 
     getDataCase(): NotificationEvent.DataCase;
 
@@ -648,7 +653,8 @@ export namespace NotificationEvent {
         circleThresholdReached?: CircleThresholdReached.AsObject,
         identityVerificationApproved?: IdentityVerificationApproved.AsObject,
         identityVerificationDeclined?: IdentityVerificationDeclined.AsObject,
-        identityVerificationReviewPending?: IdentityVerificationReviewPending.AsObject,
+        identityVerificationReviewStarted?: IdentityVerificationReviewStarted.AsObject,
+        transaction?: TransactionInfo.AsObject,
     }
 
     export enum DataCase {
@@ -657,7 +663,8 @@ export namespace NotificationEvent {
         CIRCLE_THRESHOLD_REACHED = 2,
         IDENTITY_VERIFICATION_APPROVED = 3,
         IDENTITY_VERIFICATION_DECLINED = 4,
-        IDENTITY_VERIFICATION_REVIEW_PENDING = 5,
+        IDENTITY_VERIFICATION_REVIEW_STARTED = 5,
+        TRANSACTION = 6,
     }
 
 }
@@ -763,23 +770,81 @@ export namespace IdentityVerificationDeclined {
     }
 }
 
-export class IdentityVerificationReviewPending extends jspb.Message { 
+export class IdentityVerificationReviewStarted extends jspb.Message { 
     getUserId(): string;
-    setUserId(value: string): IdentityVerificationReviewPending;
+    setUserId(value: string): IdentityVerificationReviewStarted;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): IdentityVerificationReviewPending.AsObject;
-    static toObject(includeInstance: boolean, msg: IdentityVerificationReviewPending): IdentityVerificationReviewPending.AsObject;
+    toObject(includeInstance?: boolean): IdentityVerificationReviewStarted.AsObject;
+    static toObject(includeInstance: boolean, msg: IdentityVerificationReviewStarted): IdentityVerificationReviewStarted.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: IdentityVerificationReviewPending, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): IdentityVerificationReviewPending;
-    static deserializeBinaryFromReader(message: IdentityVerificationReviewPending, reader: jspb.BinaryReader): IdentityVerificationReviewPending;
+    static serializeBinaryToWriter(message: IdentityVerificationReviewStarted, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): IdentityVerificationReviewStarted;
+    static deserializeBinaryFromReader(message: IdentityVerificationReviewStarted, reader: jspb.BinaryReader): IdentityVerificationReviewStarted;
 }
 
-export namespace IdentityVerificationReviewPending {
+export namespace IdentityVerificationReviewStarted {
     export type AsObject = {
         userId: string,
+    }
+}
+
+export class TransactionInfo extends jspb.Message { 
+    getUserId(): string;
+    setUserId(value: string): TransactionInfo;
+    getType(): TransactionType;
+    setType(value: TransactionType): TransactionInfo;
+
+    hasSettlementAmount(): boolean;
+    clearSettlementAmount(): void;
+    getSettlementAmount(): Money | undefined;
+    setSettlementAmount(value?: Money): TransactionInfo;
+
+    hasDisplayAmount(): boolean;
+    clearDisplayAmount(): void;
+    getDisplayAmount(): Money | undefined;
+    setDisplayAmount(value?: Money): TransactionInfo;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): TransactionInfo.AsObject;
+    static toObject(includeInstance: boolean, msg: TransactionInfo): TransactionInfo.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: TransactionInfo, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TransactionInfo;
+    static deserializeBinaryFromReader(message: TransactionInfo, reader: jspb.BinaryReader): TransactionInfo;
+}
+
+export namespace TransactionInfo {
+    export type AsObject = {
+        userId: string,
+        type: TransactionType,
+        settlementAmount?: Money.AsObject,
+        displayAmount?: Money.AsObject,
+    }
+}
+
+export class Money extends jspb.Message { 
+    getCurrencyCode(): string;
+    setCurrencyCode(value: string): Money;
+    getMinorUnits(): number;
+    setMinorUnits(value: number): Money;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Money.AsObject;
+    static toObject(includeInstance: boolean, msg: Money): Money.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: Money, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Money;
+    static deserializeBinaryFromReader(message: Money, reader: jspb.BinaryReader): Money;
+}
+
+export namespace Money {
+    export type AsObject = {
+        currencyCode: string,
+        minorUnits: number,
     }
 }
 
@@ -807,4 +872,18 @@ export enum CircleTimeFrame {
 export enum DeclinedReason {
     DOCUMENTS_NOT_CLEAR = 0,
     VERIFICATION_PHOTO_NOT_CLEAR = 1,
+    DOCUMENTS_NOT_SUPPORTED = 2,
+    DOCUMENTS_EXPIRED = 3,
+    DOCUMENTS_DO_NOT_MATCH = 4,
+    OTHER = 5,
+}
+
+export enum TransactionType {
+    INTRA_LEDGER_RECEIPT = 0,
+    INTRA_LEDGER_PAYMENT = 1,
+    ONCHAIN_RECEIPT = 2,
+    ONCHAIN_RECEIPT_PENDING = 3,
+    ONCHAIN_PAYMENT = 4,
+    LIGHTNING_RECEIPT = 5,
+    LIGHTNING_PAYMENT = 6,
 }

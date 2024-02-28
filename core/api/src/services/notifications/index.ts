@@ -6,6 +6,8 @@ import {
 import { createPushNotificationContent } from "./create-push-notification-content"
 
 import {
+  TransactionType as ProtoTransactionType,
+  Money as ProtoMoney,
   AddPushDeviceTokenRequest,
   DisableNotificationCategoryRequest,
   DisableNotificationChannelRequest,
@@ -16,6 +18,9 @@ import {
   UpdateEmailAddressRequest,
   RemoveEmailAddressRequest,
   UpdateUserLocaleRequest,
+  HandleNotificationEventRequest,
+  NotificationEvent,
+  TransactionInfo,
 } from "./proto/notifications_pb"
 
 import * as notificationsGrpc from "./grpc-client"
@@ -40,7 +45,7 @@ import { TxStatus } from "@/domain/wallets/tx-status"
 import { CallbackEventType } from "@/domain/callback"
 import { CallbackError } from "@/domain/callback/errors"
 import { WalletInvoiceStatus } from "@/domain/wallet-invoices"
-import { roundToBigInt, WalletCurrency } from "@/domain/shared"
+import { WalletCurrency } from "@/domain/shared"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@/domain/pubsub"
 import { majorToMinorUnit, toCents, UsdDisplayCurrency } from "@/domain/fiat"
 
@@ -194,46 +199,38 @@ export const NotificationsService = (): INotificationsService => {
     transaction,
   }: NotificatioSendTransactionArgs): Promise<true | NotificationsServiceError> => {
     try {
-      const settings = await getUserNotificationSettings(recipient.userId)
-      if (settings instanceof Error) {
-        return settings
-      }
-
-      const hasDeviceTokens = settings.pushDeviceTokens.length > 0
-      if (!hasDeviceTokens) return true
-
       const type = getPushNotificationEventType(transaction)
       if (!type) return true
 
+      const settlementAmount = new ProtoMoney()
+      settlementAmount.setMinorUnits(transaction.settlementAmount)
+      settlementAmount.setCurrencyCode(transaction.settlementCurrency)
+
       const displayAmountMajor = transaction.settlementDisplayAmount
       const displayCurrency = transaction.settlementDisplayPrice.displayCurrency
-      const displayAmountMinor = roundToBigInt(
+      const displayAmountMinor = Math.round(
         majorToMinorUnit({ amount: Number(displayAmountMajor), displayCurrency }),
       )
+      const displayAmount = new ProtoMoney()
+      displayAmount.setMinorUnits(displayAmountMinor)
+      displayAmount.setCurrencyCode(displayCurrency)
 
-      const { title, body } = createPushNotificationContent({
-        type,
-        userLanguage: settings.language,
-        amount: {
-          amount: roundToBigInt(transaction.settlementAmount),
-          currency: transaction.settlementCurrency,
-        },
-        displayAmount: {
-          amountInMinor: displayAmountMinor,
-          displayInMajor: displayAmountMajor,
-          currency: displayCurrency,
-        },
-      })
+      const tx = new TransactionInfo()
+      tx.setUserId(recipient.userId)
+      tx.setType(type)
+      tx.setSettlementAmount(settlementAmount)
+      tx.setDisplayAmount(displayAmount)
 
-      const result = await pushNotification.sendFilteredNotification({
-        deviceTokens: settings.pushDeviceTokens,
-        title,
-        body,
-        notificationCategory: GaloyNotificationCategories.Payments,
-        userId: recipient.userId,
-      })
+      const event = new NotificationEvent()
+      event.setTransaction(tx)
 
-      if (result instanceof Error) return result
+      const request = new HandleNotificationEventRequest()
+      request.setEvent(event)
+
+      await notificationsGrpc.handleNotificationEvent(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
 
       return true
     } catch (err) {
@@ -731,21 +728,24 @@ const getPubSubNotificationEventType = (
 
 const getPushNotificationEventType = (
   transaction: WalletTransaction,
-): NotificationType | undefined => {
+): number | undefined => {
   const type = translateToNotificationType(transaction)
   switch (type) {
     case NotificationType.LigtningReceipt:
+      return ProtoTransactionType.LIGHTNING_RECEIPT
     case NotificationType.IntraLedgerReceipt:
+      return ProtoTransactionType.INTRA_LEDGER_RECEIPT
     case NotificationType.OnchainReceiptPending:
+      return ProtoTransactionType.ONCHAIN_RECEIPT_PENDING
     case NotificationType.OnchainPayment:
-      return type
+      return ProtoTransactionType.ONCHAIN_PAYMENT
 
     // special case because we don't have a hash
     case NotificationType.OnchainReceipt: {
       const settlementViaType = transaction.settlementVia.type
       return settlementViaType === "intraledger"
-        ? NotificationType.IntraLedgerReceipt
-        : type
+        ? ProtoTransactionType.INTRA_LEDGER_RECEIPT
+        : ProtoTransactionType.ONCHAIN_RECEIPT
     }
     default:
       return undefined
