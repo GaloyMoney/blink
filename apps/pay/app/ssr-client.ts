@@ -5,13 +5,13 @@ import {
   NextSSRInMemoryCache,
 } from "@apollo/experimental-nextjs-app-support/ssr"
 
-import { getClientSideGqlConfig } from "@/config/config"
+import { env } from "@/env"
 
 export const { getClient } = registerApolloClient(() => {
   return new NextSSRApolloClient({
     cache: new NextSSRInMemoryCache(),
     link: new HttpLink({
-      uri: getClientSideGqlConfig().coreGqlUrl,
+      uri: env.CORE_GQL_URL_INTRANET,
       fetchOptions: { cache: "no-store" },
     }),
   })
