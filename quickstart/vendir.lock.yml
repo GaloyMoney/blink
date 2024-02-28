@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: increase limits for invoice creation (#4096)...'
-      sha: bab7a13ca494d5b481af71231d84ff33a80fffd6
+      commitTitle: 'fix: notifications quickstart (#4097)...'
+      sha: 20be680e500bb8b5fb246e102aa8e06bd842e266
       tags:
-      - 0.20.87-6-gbab7a13ca
+      - 0.20.87-8-g20be680e5
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: increase limits for invoice creation (#4096)...'
-      sha: bab7a13ca494d5b481af71231d84ff33a80fffd6
+      commitTitle: 'fix: notifications quickstart (#4097)...'
+      sha: 20be680e500bb8b5fb246e102aa8e06bd842e266
       tags:
-      - 0.20.87-6-gbab7a13ca
+      - 0.20.87-8-g20be680e5
     path: schemas/
   - git:
-      commitTitle: 'chore: increase limits for invoice creation (#4096)...'
-      sha: bab7a13ca494d5b481af71231d84ff33a80fffd6
+      commitTitle: 'fix: notifications quickstart (#4097)...'
+      sha: 20be680e500bb8b5fb246e102aa8e06bd842e266
       tags:
-      - 0.20.87-6-gbab7a13ca
+      - 0.20.87-8-g20be680e5
     path: gql/
   path: ./graphql
 kind: LockConfig
