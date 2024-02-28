@@ -8,7 +8,6 @@ import { useCurrencyListQuery } from "../../lib/graphql/generated"
 export default function CurrencyDropdown({
   onSelectedDisplayCurrencyChange,
   name,
-  style,
   showOnlyFlag = false,
 }: {
   onSelectedDisplayCurrencyChange?: (newDisplayCurrency: string) => void
@@ -20,6 +19,7 @@ export default function CurrencyDropdown({
   const display = searchParams?.get("display")
 
   const { data: currencyData } = useCurrencyListQuery()
+
   const [selectedDisplayCurrency, setSelectedDisplayCurrency] = React.useState("USD")
   const [isDropDownOpen, setIsDropDownOpen] = React.useState(false)
 
@@ -34,8 +34,9 @@ export default function CurrencyDropdown({
   }, [])
 
   return (
+    // TODO auto-complete input can be better here Instead of select dropdown
     <select
-      style={style ?? { border: "none" }}
+      className="bg-slate-200 border-none p-2 w-20 rounded-md"
       name={name ?? "display"}
       required
       value={selectedDisplayCurrency}
@@ -69,7 +70,7 @@ export default function CurrencyDropdown({
           <option key={option.id} value={option.id}>
             {isDropDownOpen && fullLabel}
             {!isDropDownOpen &&
-              (isSelected ? (showOnlyFlag ? flagOnlyLabel : fullLabel) : fullLabel)}
+              (isSelected ? (showOnlyFlag ? flagOnlyLabel : option.id) : fullLabel)}
           </option>
         )
       })}

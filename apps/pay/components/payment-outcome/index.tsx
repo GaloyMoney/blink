@@ -20,6 +20,7 @@ interface Props {
   paymentRequest: string
   paymentAmount: string | string[] | undefined
   dispatch: React.Dispatch<ACTION_TYPE>
+  satoshis: number | undefined
 }
 
 gql`
@@ -35,10 +36,11 @@ gql`
   }
 `
 
-function PaymentOutcome({ paymentRequest, paymentAmount, dispatch }: Props) {
+function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: Props) {
   const searchParams = useSearchParams()
   const { username } = useParams()
-  const { amount, sats, memo } = extractSearchParams(searchParams)
+  const { amount, memo } = extractSearchParams(searchParams)
+
   const componentRef = useRef<HTMLDivElement | null>(null)
 
   const printReceipt = useReactToPrint({
@@ -65,25 +67,13 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch }: Props) {
       className={styles.back_btn}
       onClick={() => dispatch({ type: ACTIONS.CREATE_NEW_INVOICE })}
     >
-      <Image
-        src="/icons/cash-register-icon.svg"
-        alt="cash register icon"
-        width="18"
-        height="18"
-      />
-      Back to cash register
+      Back
     </button>
   )
 
   const downloadReceipt = (
     <button className={styles.pay_new_btn} onClick={() => printReceipt()}>
-      <Image
-        src="/icons/print-icon.svg"
-        alt="print icon"
-        width="18"
-        height="18"
-        className="mr-2"
-      />
+      <Image src="/icons/print-icon.svg" alt="print icon" width="18" height="18" />
       Print Receipt
     </button>
   )
@@ -102,8 +92,8 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch }: Props) {
               height="104"
             />
             <p className={styles.text}>
-              {`The invoice of ${localStorage.getItem("formattedSatsValue")}
-                (~${localStorage.getItem("formattedFiatValue")})
+              {`The invoice of ${localStorage.getItem("formattedFiatValue")}
+               (~${satoshis} sats)
                 has been paid`}
             </p>
 
@@ -112,7 +102,7 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch }: Props) {
               <div ref={componentRef}>
                 <Receipt
                   amount={amount}
-                  sats={sats}
+                  sats={String(satoshis)}
                   username={username}
                   paymentRequest={paymentRequest}
                   paymentAmount={paymentAmount}

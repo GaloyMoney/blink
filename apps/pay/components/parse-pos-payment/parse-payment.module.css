@@ -1,5 +1,5 @@
 .digits_container {
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 .output {
@@ -73,7 +73,6 @@
   border-radius: 6px;
   border: none;
   outline: none;
-  padding: 1.5rem;
   font-size: 2rem;
   font-weight: 500;
   line-height: 48px;
@@ -100,13 +99,11 @@
   align-items: center;
   justify-content: center;
   column-gap: 0.5rem;
-  margin-top: 2rem;
 }
 
 .pay_btn,
 .pay_new_btn {
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),
-    linear-gradient(45deg, #ffbe0b 0%, #fb5607 100%);
+  background: var(--primaryColor);
   color: #fff;
   font-weight: 600;
   width: 220px;
@@ -117,13 +114,12 @@
   border: none;
   outline: none;
   padding: 10px 32px;
-  border-radius: 6px;
+  border-radius: 10em;
   order: 2;
 }
 
 .pay_new_btn {
-  background-color: transparent;
-  border-radius: 10px;
+  border-radius: 10em;
   width: 327px;
   height: 50px;
   margin-bottom: 1rem;
@@ -131,41 +127,18 @@
 
 .clear_btn {
   position: relative;
-  background-color: #fff;
   color: #232222;
   display: flex;
   justify-content: center;
   align-items: center;
   column-gap: 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10em;
   outline: none;
   font-weight: 600;
   padding: 10px 12px;
   order: 1;
   transition: all 0.5s ease;
-}
-
-.clear_btn::before {
-  content: "";
-  position: absolute;
-  top: -1.5px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),
-    linear-gradient(45deg, #ffbe0b 0%, #fb5607 100%);
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  z-index: -1;
-  transition: background-size 0.25s ease;
-  border-radius: 10px;
-}
-
-.clear_btn:hover,
-.clear_btn:focus,
-.clear_btn:focus-visible {
-  border: 1px solid rgb(233, 233, 236);
 }
 
 @media (min-width: 760px) {
@@ -262,6 +235,7 @@
   grid-template-rows: 1fr 1fr;
   align-items: center;
   justify-content: space-between;
+  padding: 0.3em 1em;
 }
 
 .qr_clipboard > button {

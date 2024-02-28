@@ -9,7 +9,7 @@ import Tooltip from "react-bootstrap/Tooltip"
 import { QRCode } from "react-qrcode-logo"
 import { useScreenshot } from "use-react-screenshot"
 
-import { USD_INVOICE_EXPIRE_INTERVAL, getClientSidePayDomain } from "../../config/config"
+import { USD_INVOICE_EXPIRE_INTERVAL } from "../../config/config"
 import useCreateInvoice from "../../hooks/use-create-Invoice"
 import { LnInvoiceObject } from "../../lib/graphql/index.types"
 import useSatPrice from "../../lib/use-sat-price"
@@ -23,6 +23,8 @@ import LoadingComponent from "../loading"
 
 import styles from "./parse-payment.module.css"
 import NFCComponent from "./nfc"
+
+import useRealtimePrice from "@/lib/use-realtime-price"
 
 interface Props {
   recipientWalletCurrency?: string
@@ -39,7 +41,9 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
   const searchParams = useSearchParams()
   const { username } = useParams()
   const query = extractSearchParams(searchParams)
-  const { amount, unit, sats, memo } = query
+  const { amount, memo } = query
+
+  const { currencyToSats, hasLoaded } = useRealtimePrice(state.displayCurrencyMetaData.id)
 
   const { usdToSats, satsToUsd } = useSatPrice()
 
@@ -55,14 +59,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
   const qrImageRef = React.useRef(null)
   const getImage = () => takeScreenShot(qrImageRef.current)
 
-  const shareUrl =
-    !amount && !unit && !memo
-      ? `https://${getClientSidePayDomain()}/${username}?amount=${
-          state.currentAmount
-        }&sats=${usdToSats(
-          state.currentAmount,
-        ).toFixed()}&currency=${recipientWalletCurrency}&unit=SAT&memo=""`
-      : window.location.href
+  const shareUrl = window.location.href
 
   const shareData = {
     title: `Pay ${username}`,
@@ -114,11 +111,14 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
   )
 
   const paymentAmount = React.useMemo(() => {
-    if (!query.sats || typeof query.sats !== "string") {
-      alert("No sats amount provided")
-      return
-    }
-    let amt = safeAmount(query.sats)
+    let amountInSats = state.currentAmount
+    ;({ convertedCurrencyAmount: amountInSats } = currencyToSats(
+      Number(state.currentAmount),
+      state.displayCurrencyMetaData.id,
+      state.displayCurrencyMetaData.fractionDigits,
+    ))
+
+    let amt = safeAmount(amountInSats)
     if (recipientWalletCurrency === "USD") {
       const usdAmount = satsToUsd(Number(amt))
       if (isNaN(usdAmount)) return
@@ -129,33 +129,34 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
     return safeAmount(amt).toString()
   }, [
     amount,
-    unit,
-    sats,
     usdToSats,
     satsToUsd,
     state.currentAmount,
     recipientWalletCurrency,
+    hasLoaded,
   ])
 
   React.useEffect(() => {
+    let amountInSats = state.currentAmount
+    ;({ convertedCurrencyAmount: amountInSats } = currencyToSats(
+      Number(state.currentAmount),
+      state.displayCurrencyMetaData.id,
+      state.displayCurrencyMetaData.fractionDigits,
+    ))
+
     if (!walletId || !Number(paymentAmount)) return
 
     let amt = paymentAmount
     if (recipientWalletCurrency === "USD") {
-      if (!query.sats || typeof query.sats !== "string") {
-        alert("No sats amount provided")
+      const usdAmount = satsToUsd(Number(amountInSats))
+      if (isNaN(usdAmount)) return
+      const cents = parseFloat(usdAmount.toFixed(2)) * 100
+      amt = cents.toFixed()
+      if (cents < 0.01) {
+        setExpiredInvoiceError(
+          `Amount is too small. Must be larger than ${usdToSats(0.01).toFixed()} sats`,
+        )
         return
-      } else {
-        const usdAmount = satsToUsd(Number(query.sats))
-        if (isNaN(usdAmount)) return
-        const cents = parseFloat(usdAmount.toFixed(2)) * 100
-        amt = cents.toFixed()
-        if (cents < 0.01) {
-          setExpiredInvoiceError(
-            `Amount is too small. Must be larger than ${usdToSats(0.01).toFixed()} sats`,
-          )
-          return
-        }
       }
     }
     if (amt === null) return
@@ -199,19 +200,21 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
 
   const errorString: string | null = errorsMessage || null
   let invoice: LnInvoiceObject | undefined
-
+  let satoshis: number | undefined
   if (data) {
     if ("lnInvoiceCreateOnBehalfOfRecipient" in data) {
       const { lnInvoiceCreateOnBehalfOfRecipient: invoiceData } = data
       if (invoiceData.invoice) {
         invoice = invoiceData.invoice
       }
+      satoshis = invoiceData?.invoice?.satoshis
     }
     if ("lnUsdInvoiceCreateOnBehalfOfRecipient" in data) {
       const { lnUsdInvoiceCreateOnBehalfOfRecipient: invoiceData } = data
       if (invoiceData.invoice) {
         invoice = invoiceData.invoice
       }
+      satoshis = invoiceData?.invoice?.satoshis
     }
   }
 
@@ -319,6 +322,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
         paymentRequest={invoice?.paymentRequest}
         paymentAmount={paymentAmount}
         dispatch={dispatch}
+        satoshis={satoshis}
       />
     </div>
   )
