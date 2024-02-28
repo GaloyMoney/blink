@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(notifications): move Transaction push notifications to
-        notifications (#4077)...'
-      sha: 369c6b6f54d5931f647a11107bb518d44ccdc5af
+      commitTitle: 'test(core): fix linting'
+      sha: ddfbb5853f51343efa89ee5e45546dbe44f9a44b
       tags:
-      - 0.20.86-2-g369c6b6f5
+      - 0.20.87-4-gddfbb5853
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(notifications): move Transaction push notifications to
-        notifications (#4077)...'
-      sha: 369c6b6f54d5931f647a11107bb518d44ccdc5af
+      commitTitle: 'test(core): fix linting'
+      sha: ddfbb5853f51343efa89ee5e45546dbe44f9a44b
       tags:
-      - 0.20.86-2-g369c6b6f5
+      - 0.20.87-4-gddfbb5853
     path: schemas/
   - git:
-      commitTitle: 'refactor(notifications): move Transaction push notifications to
-        notifications (#4077)...'
-      sha: 369c6b6f54d5931f647a11107bb518d44ccdc5af
+      commitTitle: 'test(core): fix linting'
+      sha: ddfbb5853f51343efa89ee5e45546dbe44f9a44b
       tags:
-      - 0.20.86-2-g369c6b6f5
+      - 0.20.87-4-gddfbb5853
     path: gql/
   path: ./graphql
 kind: LockConfig
