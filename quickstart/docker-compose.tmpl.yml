@@ -150,6 +150,8 @@ services:
     volumes:
     - ${HOST_PROJECT_PATH:-.}/config/notifications/notifications.yml:/config/notifications/notifications.yml
     - ${HOST_PROJECT_PATH:-.}/config/notifications/fake_service_account.json:/app/notifications/config/notifications/fake_service_account.json
+    depends_on:
+    - notifications-pg
   notifications-pg: #@ data.values.services["notifications-pg"]
 
   #! Database
