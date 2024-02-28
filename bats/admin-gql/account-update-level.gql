@@ -10,7 +10,6 @@ mutation accountUpdateLevel($input: AccountUpdateLevelInput!) {
       status
       owner {
         id
-        language
         phone
         createdAt
       }

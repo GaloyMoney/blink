@@ -75,7 +75,7 @@ export const NotificationsService = (): INotificationsService => {
 
       return notificationSettings
     } catch (err) {
-      return new UnknownNotificationsServiceError(err)
+      return handleCommonNotificationErrors(err)
     }
   }
 

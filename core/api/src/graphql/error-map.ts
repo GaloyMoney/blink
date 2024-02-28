@@ -666,7 +666,6 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "LikelyNoUserWithThisPhoneExistError":
     case "LikelyUserAlreadyExistError":
     case "CouldNotUnsetPhoneFromUserError":
-    case "NotificationsServiceUnreachableServerError":
     case "InvalidDeviceTokenError":
     case "EventAugmentationMissingError":
     case "NoPayloadFoundError":
@@ -710,6 +709,10 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`
+      return new UnexpectedClientError({ message, logger: baseLogger })
+
+    case "NotificationsServiceUnreachableServerError":
+      message = `Unexpected error occurred, please try again or contact support if it persists (code: ${error.name})`
       return new UnexpectedClientError({ message, logger: baseLogger })
 
     case "MissingSessionIdError":
