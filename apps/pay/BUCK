@@ -61,7 +61,9 @@ filegroup(
     "next.config.js",
     "tsconfig.json",
     "*.ts", # env.ts / middleware.ts / instrumentation.ts
-    "instrumentation.node.ts"
+    "instrumentation.node.ts",
+    "tailwind.config.ts",
+    "postcss.config.js",
     ]),
 )
 
