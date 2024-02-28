@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): install pnpm in mongodb-migrate image (#4087)'
-      sha: 3b9ec949c7f50e1c5ba07179bc58a7e8b89bb062
+      commitTitle: 'refactor(notifications): move Transaction push notifications to
+        notifications (#4077)...'
+      sha: 369c6b6f54d5931f647a11107bb518d44ccdc5af
       tags:
-      - 0.20.85-2-g3b9ec949c
+      - 0.20.86-2-g369c6b6f5
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): install pnpm in mongodb-migrate image (#4087)'
-      sha: 3b9ec949c7f50e1c5ba07179bc58a7e8b89bb062
+      commitTitle: 'refactor(notifications): move Transaction push notifications to
+        notifications (#4077)...'
+      sha: 369c6b6f54d5931f647a11107bb518d44ccdc5af
       tags:
-      - 0.20.85-2-g3b9ec949c
+      - 0.20.86-2-g369c6b6f5
     path: schemas/
   - git:
-      commitTitle: 'fix(core): install pnpm in mongodb-migrate image (#4087)'
-      sha: 3b9ec949c7f50e1c5ba07179bc58a7e8b89bb062
+      commitTitle: 'refactor(notifications): move Transaction push notifications to
+        notifications (#4077)...'
+      sha: 369c6b6f54d5931f647a11107bb518d44ccdc5af
       tags:
-      - 0.20.85-2-g3b9ec949c
+      - 0.20.86-2-g369c6b6f5
     path: gql/
   path: ./graphql
 kind: LockConfig
