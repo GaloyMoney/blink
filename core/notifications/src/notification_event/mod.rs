@@ -1,9 +1,9 @@
 mod circle_grew;
 mod circle_threshold_reached;
-pub mod error;
 mod identity_verification_approved;
 mod identity_verification_declined;
 mod identity_verification_review_started;
+mod transaction_info;
 
 use serde::{Deserialize, Serialize};
 
@@ -14,8 +14,7 @@ pub(super) use circle_threshold_reached::*;
 pub(super) use identity_verification_approved::*;
 pub(super) use identity_verification_declined::*;
 pub(super) use identity_verification_review_started::*;
-
-use error::*;
+pub(super) use transaction_info::*;
 
 pub enum DeepLink {
     None,
@@ -28,10 +27,7 @@ pub trait NotificationEvent: std::fmt::Debug + Into<NotificationEventPayload> + 
     fn deep_link(&self) -> DeepLink;
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage;
     fn should_send_email(&self) -> bool;
-    fn to_localized_email(
-        &self,
-        locale: GaloyLocale,
-    ) -> Result<Option<LocalizedEmail>, NotificationEventError>;
+    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail>;
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -41,6 +37,7 @@ pub enum NotificationEventPayload {
     IdentityVerificationApproved(IdentityVerificationApproved),
     IdentityVerificationDeclined(IdentityVerificationDeclined),
     IdentityVerificationReviewStarted(IdentityVerificationReviewStarted),
+    TransactionInfo(TransactionInfo),
 }
 
 impl NotificationEvent for NotificationEventPayload {
@@ -51,6 +48,7 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationApproved(e) => e.category(),
             NotificationEventPayload::IdentityVerificationDeclined(e) => e.category(),
             NotificationEventPayload::IdentityVerificationReviewStarted(e) => e.category(),
+            NotificationEventPayload::TransactionInfo(e) => e.category(),
         }
     }
 
@@ -61,6 +59,7 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationApproved(event) => event.user_id(),
             NotificationEventPayload::IdentityVerificationDeclined(event) => event.user_id(),
             NotificationEventPayload::IdentityVerificationReviewStarted(event) => event.user_id(),
+            NotificationEventPayload::TransactionInfo(event) => event.user_id(),
         }
     }
 
@@ -71,6 +70,7 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationApproved(event) => event.deep_link(),
             NotificationEventPayload::IdentityVerificationDeclined(event) => event.deep_link(),
             NotificationEventPayload::IdentityVerificationReviewStarted(event) => event.deep_link(),
+            NotificationEventPayload::TransactionInfo(event) => event.deep_link(),
         }
     }
 
@@ -89,13 +89,11 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
                 event.to_localized_push_msg(locale)
             }
+            NotificationEventPayload::TransactionInfo(event) => event.to_localized_push_msg(locale),
         }
     }
 
-    fn to_localized_email(
-        &self,
-        locale: GaloyLocale,
-    ) -> Result<Option<LocalizedEmail>, NotificationEventError> {
+    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
         match self {
             NotificationEventPayload::CircleGrew(event) => event.to_localized_email(locale),
             NotificationEventPayload::CircleThresholdReached(event) => {
@@ -110,6 +108,7 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
                 event.to_localized_email(locale)
             }
+            NotificationEventPayload::TransactionInfo(event) => event.to_localized_email(locale),
         }
     }
 
@@ -126,6 +125,7 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
                 event.should_send_email()
             }
+            NotificationEventPayload::TransactionInfo(event) => event.should_send_email(),
         }
     }
 }
@@ -157,5 +157,11 @@ impl From<IdentityVerificationDeclined> for NotificationEventPayload {
 impl From<IdentityVerificationReviewStarted> for NotificationEventPayload {
     fn from(event: IdentityVerificationReviewStarted) -> Self {
         NotificationEventPayload::IdentityVerificationReviewStarted(event)
+    }
+}
+
+impl From<TransactionInfo> for NotificationEventPayload {
+    fn from(event: TransactionInfo) -> Self {
+        NotificationEventPayload::TransactionInfo(event)
     }
 }

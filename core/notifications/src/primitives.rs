@@ -149,3 +149,83 @@ impl std::fmt::Display for CircleTimeFrame {
         }
     }
 }
+
+#[derive(Debug, Clone, Copy, Eq, Serialize, Deserialize)]
+#[serde(try_from = "String")]
+#[serde(into = "&str")]
+pub enum Currency {
+    Iso(&'static rusty_money::iso::Currency),
+    Crypto(&'static rusty_money::crypto::Currency),
+}
+
+impl Currency {
+    pub fn code(&self) -> &'static str {
+        match self {
+            Currency::Iso(c) => c.iso_alpha_code,
+            Currency::Crypto(c) => c.code,
+        }
+    }
+
+    pub fn format_minor_units(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        minor_units: u64,
+    ) -> std::fmt::Result {
+        match self {
+            Currency::Iso(c) => {
+                let money = rusty_money::Money::from_minor(minor_units as i64, *c);
+                write!(f, "{money}")
+            }
+            Currency::Crypto(c) if c == &rusty_money::crypto::BTC => {
+                write!(f, "{} sats", minor_units as f64)
+            }
+            _ => unimplemented!("format_minor_units for currency: {}", self.code()),
+        }
+    }
+}
+
+impl std::fmt::Display for Currency {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.code())
+    }
+}
+
+impl std::hash::Hash for Currency {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.code().hash(state);
+    }
+}
+
+impl PartialEq for Currency {
+    fn eq(&self, other: &Self) -> bool {
+        self.code() == other.code()
+    }
+}
+
+impl std::str::FromStr for Currency {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match rusty_money::iso::find(s) {
+            Some(c) => Ok(Currency::Iso(c)),
+            _ => match rusty_money::crypto::find(s) {
+                Some(c) => Ok(Currency::Crypto(c)),
+                _ => Err(format!("Unknown currency: '{}'", s)),
+            },
+        }
+    }
+}
+
+impl TryFrom<String> for Currency {
+    type Error = String;
+
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+        s.parse()
+    }
+}
+
+impl From<Currency> for &'static str {
+    fn from(c: Currency) -> Self {
+        c.code()
+    }
+}

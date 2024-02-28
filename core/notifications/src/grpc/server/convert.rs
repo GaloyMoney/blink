@@ -116,3 +116,43 @@ impl From<proto::DeclinedReason> for notification_event::IdentityVerificationDec
         }
     }
 }
+
+impl From<proto::TransactionType> for notification_event::TransactionType {
+    fn from(reason: proto::TransactionType) -> Self {
+        match reason {
+            proto::TransactionType::IntraLedgerPayment => {
+                notification_event::TransactionType::IntraLedgerPayment
+            }
+            proto::TransactionType::IntraLedgerReceipt => {
+                notification_event::TransactionType::IntraLedgerReceipt
+            }
+            proto::TransactionType::OnchainReceipt => {
+                notification_event::TransactionType::OnchainReceipt
+            }
+            proto::TransactionType::OnchainPayment => {
+                notification_event::TransactionType::OnchainPayment
+            }
+            proto::TransactionType::OnchainReceiptPending => {
+                notification_event::TransactionType::OnchainReceiptPending
+            }
+            proto::TransactionType::LightningReceipt => {
+                notification_event::TransactionType::LightningReceipt
+            }
+            proto::TransactionType::LightningPayment => {
+                notification_event::TransactionType::LightningPayment
+            }
+        }
+    }
+}
+
+impl TryFrom<proto::Money> for notification_event::TransactionAmount {
+    type Error = ApplicationError;
+
+    fn try_from(money: proto::Money) -> Result<Self, Self::Error> {
+        Ok(Self {
+            minor_units: money.minor_units,
+            currency: Currency::try_from(money.currency_code)
+                .map_err(ApplicationError::UnknownCurrencyCode)?,
+        })
+    }
+}

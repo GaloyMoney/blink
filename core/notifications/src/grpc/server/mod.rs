@@ -364,6 +364,31 @@ impl NotificationsService for Notifications {
                     )
                     .await?;
             }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::Transaction(proto::TransactionInfo {
+                        user_id,
+                        settlement_amount: Some(settlement_amount),
+                        display_amount,
+                        r#type,
+                    })),
+            }) => {
+                let transaction_type = proto::TransactionType::try_from(r#type)
+                    .map(notification_event::TransactionType::from)
+                    .map_err(|e| Status::invalid_argument(e.to_string()))?;
+                self.app
+                    .handle_notification_event(notification_event::TransactionInfo {
+                        user_id: GaloyUserId::from(user_id),
+                        transaction_type,
+                        settlement_amount: notification_event::TransactionAmount::try_from(
+                            settlement_amount,
+                        )?,
+                        display_amount: display_amount
+                            .map(notification_event::TransactionAmount::try_from)
+                            .transpose()?,
+                    })
+                    .await?;
+            }
             _ => return Err(Status::invalid_argument("event is required")),
         }
 

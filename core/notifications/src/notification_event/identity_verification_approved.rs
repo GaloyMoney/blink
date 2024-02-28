@@ -1,7 +1,7 @@
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-use super::{DeepLink, NotificationEvent, NotificationEventError};
+use super::{DeepLink, NotificationEvent};
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -36,11 +36,8 @@ impl NotificationEvent for IdentityVerificationApproved {
         LocalizedPushMessage { title, body }
     }
 
-    fn to_localized_email(
-        &self,
-        locale: GaloyLocale,
-    ) -> Result<Option<LocalizedEmail>, NotificationEventError> {
-        let email_formatter = EmailFormatter::init()?;
+    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
+        let email_formatter = EmailFormatter::new();
 
         let title = t!(
             "identity_verification_approved.title",
@@ -53,12 +50,12 @@ impl NotificationEvent for IdentityVerificationApproved {
         )
         .to_string();
 
-        let body = email_formatter.generic_email_template(&title, &body)?;
+        let body = email_formatter.generic_email_template(&title, &body);
 
-        Ok(Some(LocalizedEmail {
+        Some(LocalizedEmail {
             subject: title,
             body,
-        }))
+        })
     }
 
     fn should_send_email(&self) -> bool {
