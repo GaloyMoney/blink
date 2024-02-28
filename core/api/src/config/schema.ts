@@ -302,12 +302,12 @@ export const configSchema = {
           blockDuration: 86400,
         },
         invoiceCreateAttempt: {
-          points: 30,
+          points: 60,
           duration: 60,
           blockDuration: 300,
         },
         invoiceCreateForRecipientAttempt: {
-          points: 30,
+          points: 60,
           duration: 60,
           blockDuration: 300,
         },
