@@ -1,5 +1,6 @@
 import copy from "copy-to-clipboard"
 import React, { type FC, useState } from "react"
+import Image from "next/image"
 
 import styles from "./share.module.css"
 
@@ -88,22 +89,7 @@ const SharePopup: FC<Props> = ({
             ) : (
               <div className={styles.select_share_type}>
                 <button onClick={onClose} className={styles.close_btn}>
-                  <div aria-hidden="true">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <g id="close">
-                        <path
-                          id="x"
-                          d="M18.717 6.697l-1.414-1.414-5.303 5.303-5.303-5.303-1.414 1.414 5.303 5.303-5.303 5.303 1.414 1.414 5.303-5.303 5.303 5.303 1.414-1.414-5.303-5.303z"
-                        />
-                      </g>
-                    </svg>
-                  </div>
+                  <Image src="/icons/close.svg" alt="close icon" width="24" height="24" />
                 </button>
                 <button onClick={copyUrlToClipboard}>Link</button>
                 <button onClick={copyImageToClipboard}>QR code</button>

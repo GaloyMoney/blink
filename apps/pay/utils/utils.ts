@@ -32,12 +32,9 @@ export function parseQueryAmount(query: ParsedUrlQuery) {
   }
 }
 
-export function parseDisplayCurrency(query: ParsedUrlQuery) {
-  const display = query.display as string | null
-
-  return {
-    display: display ?? localStorage.getItem("display") ?? "USD",
-  }
+export function parseDisplayCurrency(searchParams: ReadonlyURLSearchParams) {
+  const display = searchParams?.get("display") ?? localStorage.getItem("display") ?? "USD"
+  return display
 }
 
 export const getOriginalRequestInfo = (request: Request) => {

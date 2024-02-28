@@ -71,9 +71,16 @@ export default function Print({
         <br />
         <Row className="justify-content-md-center">
           <Col md="auto">
-            <Card className="text-center">
+            <div className="text-center mt-4">
               <Card.Body>
-                <Card.Text>
+                <Card.Text
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   <span className="user-header">{userHeader}</span>
                   <p>
                     {`Display this static QR code online or in person to allow anybody to
@@ -96,12 +103,12 @@ export default function Print({
                   create a fresh invoice for paying from any Lightning wallet.
                 </Card.Text>
               </Card.Body>
-            </Card>
+            </div>
           </Col>
         </Row>
         <br />
       </Container>
-      <Row className="justify-content-center">
+      <Row className="justify-content-center ">
         <ReactToPrint
           trigger={() => (
             <button data-testid="print-btn" className="print-paycode-button">
