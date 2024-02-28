@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: notifications quickstart (#4097)...'
-      sha: 20be680e500bb8b5fb246e102aa8e06bd842e266
+      commitTitle: 'chore(test): skip failing test until price server is fixed (#4098)'
+      sha: 674c90e7cbbe6e5a940310c650bc7fca7e786435
       tags:
-      - 0.20.87-8-g20be680e5
+      - 0.20.87-10-g674c90e7c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: notifications quickstart (#4097)...'
-      sha: 20be680e500bb8b5fb246e102aa8e06bd842e266
+      commitTitle: 'chore(test): skip failing test until price server is fixed (#4098)'
+      sha: 674c90e7cbbe6e5a940310c650bc7fca7e786435
       tags:
-      - 0.20.87-8-g20be680e5
+      - 0.20.87-10-g674c90e7c
     path: schemas/
   - git:
-      commitTitle: 'fix: notifications quickstart (#4097)...'
-      sha: 20be680e500bb8b5fb246e102aa8e06bd842e266
+      commitTitle: 'chore(test): skip failing test until price server is fixed (#4098)'
+      sha: 674c90e7cbbe6e5a940310c650bc7fca7e786435
       tags:
-      - 0.20.87-8-g20be680e5
+      - 0.20.87-10-g674c90e7c
     path: gql/
   path: ./graphql
 kind: LockConfig
