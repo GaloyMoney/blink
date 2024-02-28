@@ -7,7 +7,7 @@ export ref=$(cat ./repo/.git/short_ref)
 
 # if SUBGRAPH_SRC is not an empty string, copy the subgraph from the source to the destination
 if [[ -n "${SUBGRAPH_SRC}" ]]; then
-  cp "./repo/${SUBGRAPH_SRC}" "./charts-repo/galoy/apollo-router/${COMPONENT}-schema.graphql"
+  cp "./repo/${SUBGRAPH_SRC}" "./charts-repo/charts/galoy/apollo-router/${COMPONENT}-schema.graphql"
 fi
 
 pushd charts-repo
