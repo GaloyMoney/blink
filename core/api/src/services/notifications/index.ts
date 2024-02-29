@@ -200,7 +200,7 @@ export const NotificationsService = (): INotificationsService => {
   }: NotificatioSendTransactionArgs): Promise<true | NotificationsServiceError> => {
     try {
       const type = getPushNotificationEventType(transaction)
-      if (!type) return true
+      if (type === undefined) return true
 
       const settlementAmount = new ProtoMoney()
       settlementAmount.setMinorUnits(Math.abs(transaction.settlementAmount))
