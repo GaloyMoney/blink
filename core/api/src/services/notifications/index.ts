@@ -1,9 +1,8 @@
 import {
-  handleCommonNotificationErrors,
-  PushNotificationsService,
-} from "./push-notifications"
-
-import { createPushNotificationContent } from "./create-push-notification-content"
+  grpcNotificationSettingsToNotificationSettings,
+  notificationCategoryToGrpcNotificationCategory,
+  notificationChannelToGrpcNotificationChannel,
+} from "./convert"
 
 import {
   TransactionType as ProtoTransactionType,
@@ -25,11 +24,11 @@ import {
 
 import * as notificationsGrpc from "./grpc-client"
 
-import {
-  grpcNotificationSettingsToNotificationSettings,
-  notificationCategoryToGrpcNotificationCategory,
-  notificationChannelToGrpcNotificationChannel,
-} from "./convert"
+import { handleCommonNotificationErrors } from "./errors"
+
+import { PushNotificationsService } from "./push-notifications"
+
+import { createPushNotificationContent } from "./create-push-notification-content"
 
 import { getCallbackServiceConfig } from "@/config"
 
@@ -41,11 +40,11 @@ import {
 } from "@/domain/notifications"
 import { toSats } from "@/domain/bitcoin"
 import { AccountLevel } from "@/domain/accounts"
+import { WalletCurrency } from "@/domain/shared"
 import { TxStatus } from "@/domain/wallets/tx-status"
 import { CallbackEventType } from "@/domain/callback"
 import { CallbackError } from "@/domain/callback/errors"
 import { WalletInvoiceStatus } from "@/domain/wallet-invoices"
-import { WalletCurrency } from "@/domain/shared"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@/domain/pubsub"
 import { majorToMinorUnit, toCents, UsdDisplayCurrency } from "@/domain/fiat"
 
@@ -448,7 +447,7 @@ export const NotificationsService = (): INotificationsService => {
 
       return notificationSettings
     } catch (err) {
-      return new UnknownNotificationsServiceError(err)
+      return handleCommonNotificationErrors(err)
     }
   }
 
@@ -475,7 +474,7 @@ export const NotificationsService = (): INotificationsService => {
 
       return notificationSettings
     } catch (err) {
-      return new UnknownNotificationsServiceError(err)
+      return handleCommonNotificationErrors(err)
     }
   }
 
@@ -498,7 +497,7 @@ export const NotificationsService = (): INotificationsService => {
 
       return true
     } catch (err) {
-      return new UnknownNotificationsServiceError(err)
+      return handleCommonNotificationErrors(err)
     }
   }
 
@@ -518,7 +517,7 @@ export const NotificationsService = (): INotificationsService => {
 
       return true
     } catch (err) {
-      return new UnknownNotificationsServiceError(err)
+      return handleCommonNotificationErrors(err)
     }
   }
 
@@ -544,7 +543,7 @@ export const NotificationsService = (): INotificationsService => {
 
       return notificationSettings
     } catch (err) {
-      return new UnknownNotificationsServiceError(err)
+      return handleCommonNotificationErrors(err)
     }
   }
 
@@ -574,7 +573,7 @@ export const NotificationsService = (): INotificationsService => {
 
       return notificationSettings
     } catch (err) {
-      return new UnknownNotificationsServiceError(err)
+      return handleCommonNotificationErrors(err)
     }
   }
 
@@ -604,7 +603,7 @@ export const NotificationsService = (): INotificationsService => {
 
       return notificationSettings
     } catch (err) {
-      return new UnknownNotificationsServiceError(err)
+      return handleCommonNotificationErrors(err)
     }
   }
 
@@ -640,7 +639,7 @@ export const NotificationsService = (): INotificationsService => {
 
       return notificationSettings
     } catch (err) {
-      return new UnknownNotificationsServiceError(err)
+      return handleCommonNotificationErrors(err)
     }
   }
 
@@ -676,7 +675,7 @@ export const NotificationsService = (): INotificationsService => {
 
       return notificationSettings
     } catch (err) {
-      return new UnknownNotificationsServiceError(err)
+      return handleCommonNotificationErrors(err)
     }
   }
 
