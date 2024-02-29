@@ -6,7 +6,6 @@ use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CircleGrew {
-    pub user_id: GaloyUserId,
     pub circle_type: CircleType,
     pub this_month_circle_size: u32,
     pub all_time_circle_size: u32,
@@ -15,10 +14,6 @@ pub struct CircleGrew {
 impl NotificationEvent for CircleGrew {
     fn category(&self) -> UserNotificationCategory {
         UserNotificationCategory::Circles
-    }
-
-    fn user_id(&self) -> &GaloyUserId {
-        &self.user_id
     }
 
     fn deep_link(&self) -> DeepLink {
@@ -56,7 +51,6 @@ mod tests {
     #[test]
     fn push_msg_correctly_formatted() {
         let event = CircleGrew {
-            user_id: GaloyUserId::from("user_id".to_string()),
             circle_type: CircleType::Inner,
             this_month_circle_size: 1,
             all_time_circle_size: 2,

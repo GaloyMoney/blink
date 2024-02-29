@@ -170,16 +170,31 @@ impl NotificationsApp {
         Ok(())
     }
 
-    #[instrument(name = "app.handle_notification_event", skip(self), err)]
-    pub async fn handle_notification_event<T: NotificationEvent>(
+    #[instrument(name = "app.handle_single_user_event", skip(self), err)]
+    pub async fn handle_single_user_event<T: NotificationEvent>(
         &self,
+        user_id: GaloyUserId,
         event: T,
-    ) -> Result<(), ApplicationError> {
+    ) -> Result<(), ApplicationError>
+    where
+        NotificationEventPayload: From<T>,
+    {
         let mut tx = self.pool.begin().await?;
         if event.should_send_email() {
-            job::spawn_send_email_notification(&mut tx, event.clone().into()).await?;
+            job::spawn_send_email_notification(
+                &mut tx,
+                (
+                    user_id.clone(),
+                    NotificationEventPayload::from(event.clone()),
+                ),
+            )
+            .await?;
         }
-        job::spawn_send_push_notification(&mut tx, event.into()).await?;
+        job::spawn_send_push_notification(
+            &mut tx,
+            (user_id, NotificationEventPayload::from(event)),
+        )
+        .await?;
         tx.commit().await?;
         Ok(())
     }
