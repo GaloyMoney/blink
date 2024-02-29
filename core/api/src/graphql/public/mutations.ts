@@ -45,7 +45,6 @@ import OnChainPaymentSendMutation from "@/graphql/public/root/mutation/onchain-p
 import OnChainPaymentSendAllMutation from "@/graphql/public/root/mutation/onchain-payment-send-all"
 import OnChainUsdPaymentSendMutation from "@/graphql/public/root/mutation/onchain-usd-payment-send"
 import OnChainUsdPaymentSendAsBtcDenominatedMutation from "@/graphql/public/root/mutation/onchain-usd-payment-send-as-sats"
-import QuizCompletedMutation from "@/graphql/public/root/mutation/quiz-completed"
 import UserContactUpdateAliasMutation from "@/graphql/public/root/mutation/user-contact-update-alias"
 import UserEmailDeleteMutation from "@/graphql/public/root/mutation/user-email-delete"
 import UserEmailRegistrationInitiateMutation from "@/graphql/public/root/mutation/user-email-registration-initiate"
@@ -96,7 +95,6 @@ export const mutationFields = {
       userTotpDelete: UserTotpDeleteMutation,
       userLogout: UserLogoutMutation,
 
-      quizCompleted: QuizCompletedMutation,
       quizClaim: QuizClaimMutation,
       deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,
 

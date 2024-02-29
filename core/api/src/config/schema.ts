@@ -266,6 +266,7 @@ export const configSchema = {
         deviceAccountCreateAttempt: rateLimitConfigSchema,
         requestCodePerAppcheckJti: rateLimitConfigSchema,
         addQuizPerIp: rateLimitConfigSchema,
+        addQuizPerPhone: rateLimitConfigSchema,
       },
       required: [
         "requestCodePerLoginIdentifier",
@@ -278,6 +279,7 @@ export const configSchema = {
         "deviceAccountCreateAttempt",
         "requestCodePerAppcheckJti",
         "addQuizPerIp",
+        "addQuizPerPhone",
       ],
       additionalProperties: false,
       default: {
@@ -327,7 +329,12 @@ export const configSchema = {
           blockDuration: 86400,
         },
         addQuizPerIp: {
-          points: 125,
+          points: 50,
+          duration: 86400,
+          blockDuration: 604800,
+        },
+        addQuizPerPhone: {
+          points: 20,
           duration: 86400,
           blockDuration: 604800,
         },

@@ -5,7 +5,7 @@ import { Quiz } from "@/app"
 import { InvalidIpMetadataError } from "@/domain/errors"
 import {
   RateLimiterExceededError,
-  UserAddQuizAttemptIpRateLimiterExceededError,
+  AddQuizAttemptIpRateLimiterExceededError,
 } from "@/domain/rate-limit/errors"
 
 import * as RateLimitImpl from "@/services/rate-limit"
@@ -45,7 +45,7 @@ describe("addQuiz", () => {
       ip: "192.168.13.13" as IpAddress,
     })
 
-    expect(result).toBeInstanceOf(UserAddQuizAttemptIpRateLimiterExceededError)
+    expect(result).toBeInstanceOf(AddQuizAttemptIpRateLimiterExceededError)
 
     // Restore system state
     rateLimitServiceSpy.mockReset()
