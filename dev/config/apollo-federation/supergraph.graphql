@@ -751,6 +751,15 @@ type LnInvoice implements Invoice
   satoshis: SatAmount!
 }
 
+input LnInvoiceCancelInput
+  @join__type(graph: PUBLIC)
+{
+  paymentHash: PaymentHash!
+
+  """Wallet ID for a BTC wallet belonging to the current account."""
+  walletId: WalletId!
+}
+
 input LnInvoiceCreateInput
   @join__type(graph: PUBLIC)
 {
@@ -1146,6 +1155,9 @@ type Mutation
 
   """Sends a payment to a lightning address."""
   lnAddressPaymentSend(input: LnAddressPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
+
+  """Cancel a lightning invoice for an associated wallet."""
+  lnInvoiceCancel(input: LnInvoiceCancelInput!): SuccessPayload! @join__field(graph: PUBLIC)
 
   """
   Returns a lightning invoice for an associated wallet.

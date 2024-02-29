@@ -544,6 +544,13 @@ type LnInvoice implements Invoice {
   satoshis: SatAmount!
 }
 
+input LnInvoiceCancelInput {
+  paymentHash: PaymentHash!
+
+  """Wallet ID for a BTC wallet belonging to the current account."""
+  walletId: WalletId!
+}
+
 input LnInvoiceCreateInput {
   """Amount in satoshis."""
   amount: SatAmount!
@@ -863,6 +870,9 @@ type Mutation {
 
   """Sends a payment to a lightning address."""
   lnAddressPaymentSend(input: LnAddressPaymentSendInput!): PaymentSendPayload!
+
+  """Cancel a lightning invoice for an associated wallet."""
+  lnInvoiceCancel(input: LnInvoiceCancelInput!): SuccessPayload!
 
   """
   Returns a lightning invoice for an associated wallet.

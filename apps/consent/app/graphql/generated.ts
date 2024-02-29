@@ -606,6 +606,12 @@ export type LnInvoice = Invoice & {
   readonly satoshis: Scalars['SatAmount']['output'];
 };
 
+export type LnInvoiceCancelInput = {
+  readonly paymentHash: Scalars['PaymentHash']['input'];
+  /** Wallet ID for a BTC wallet belonging to the current account. */
+  readonly walletId: Scalars['WalletId']['input'];
+};
+
 export type LnInvoiceCreateInput = {
   /** Amount in satoshis. */
   readonly amount: Scalars['SatAmount']['input'];
@@ -876,6 +882,8 @@ export type Mutation = {
   readonly intraLedgerUsdPaymentSend: PaymentSendPayload;
   /** Sends a payment to a lightning address. */
   readonly lnAddressPaymentSend: PaymentSendPayload;
+  /** Cancel a lightning invoice for an associated wallet. */
+  readonly lnInvoiceCancel: SuccessPayload;
   /**
    * Returns a lightning invoice for an associated wallet.
    * When invoice is paid the value will be credited to a BTC wallet.
@@ -1040,6 +1048,11 @@ export type MutationIntraLedgerUsdPaymentSendArgs = {
 
 export type MutationLnAddressPaymentSendArgs = {
   input: LnAddressPaymentSendInput;
+};
+
+
+export type MutationLnInvoiceCancelArgs = {
+  input: LnInvoiceCancelInput;
 };
 
 
