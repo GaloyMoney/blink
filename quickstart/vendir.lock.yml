@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: remove update-core-supergraph buck rule (#4101)'
-      sha: 1d64f4a6228da41aa129a9d41750c50a9b0514b5
+      commitTitle: 'chore(pay): make memo optional (#4103)'
+      sha: 198249de752865670b2efbe16636f52e2e5452e6
       tags:
-      - 0.20.90-1-g1d64f4a62
+      - 0.20.91-3-g198249de7
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: remove update-core-supergraph buck rule (#4101)'
-      sha: 1d64f4a6228da41aa129a9d41750c50a9b0514b5
+      commitTitle: 'chore(pay): make memo optional (#4103)'
+      sha: 198249de752865670b2efbe16636f52e2e5452e6
       tags:
-      - 0.20.90-1-g1d64f4a62
+      - 0.20.91-3-g198249de7
     path: schemas/
   - git:
-      commitTitle: 'fix: remove update-core-supergraph buck rule (#4101)'
-      sha: 1d64f4a6228da41aa129a9d41750c50a9b0514b5
+      commitTitle: 'chore(pay): make memo optional (#4103)'
+      sha: 198249de752865670b2efbe16636f52e2e5452e6
       tags:
-      - 0.20.90-1-g1d64f4a62
+      - 0.20.91-3-g198249de7
     path: gql/
   path: ./graphql
 kind: LockConfig
