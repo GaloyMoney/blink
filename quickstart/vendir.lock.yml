@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): intraledger notification not sent (#4099)'
-      sha: a48692dd019dd0c089b9ad00acb2723737030bbd
+      commitTitle: 'fix: remove update-core-supergraph buck rule (#4101)'
+      sha: 1d64f4a6228da41aa129a9d41750c50a9b0514b5
       tags:
-      - 0.20.89-1-ga48692dd0
+      - 0.20.90-1-g1d64f4a62
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): intraledger notification not sent (#4099)'
-      sha: a48692dd019dd0c089b9ad00acb2723737030bbd
+      commitTitle: 'fix: remove update-core-supergraph buck rule (#4101)'
+      sha: 1d64f4a6228da41aa129a9d41750c50a9b0514b5
       tags:
-      - 0.20.89-1-ga48692dd0
+      - 0.20.90-1-g1d64f4a62
     path: schemas/
   - git:
-      commitTitle: 'fix(core): intraledger notification not sent (#4099)'
-      sha: a48692dd019dd0c089b9ad00acb2723737030bbd
+      commitTitle: 'fix: remove update-core-supergraph buck rule (#4101)'
+      sha: 1d64f4a6228da41aa129a9d41750c50a9b0514b5
       tags:
-      - 0.20.89-1-ga48692dd0
+      - 0.20.90-1-g1d64f4a62
     path: gql/
   path: ./graphql
 kind: LockConfig

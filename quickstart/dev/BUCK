@@ -71,12 +71,6 @@ dev_update_file(
   out = "config/apollo-federation/supergraph.graphql"
 )
 
-dev_update_file(
-  name = "update-core-supergraph",
-  generated = ":supergraph",
-  out = "../core/api/dev/apollo-federation/supergraph.graphql"
-)
-
 sh_binary(
   name = "update-schemas",
   main = "bin/update-schemas.sh",
