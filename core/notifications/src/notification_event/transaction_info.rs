@@ -29,7 +29,6 @@ impl std::fmt::Display for TransactionAmount {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TransactionInfo {
-    pub user_id: GaloyUserId,
     pub transaction_type: TransactionType,
     pub settlement_amount: TransactionAmount,
     pub display_amount: Option<TransactionAmount>,
@@ -38,10 +37,6 @@ pub struct TransactionInfo {
 impl NotificationEvent for TransactionInfo {
     fn category(&self) -> UserNotificationCategory {
         UserNotificationCategory::Payments
-    }
-
-    fn user_id(&self) -> &GaloyUserId {
-        &self.user_id
     }
 
     fn deep_link(&self) -> DeepLink {
@@ -107,7 +102,6 @@ mod tests {
     #[test]
     fn intra_ledger_payment_push_message() {
         let event = TransactionInfo {
-            user_id: GaloyUserId::from("user_id".to_string()),
             transaction_type: TransactionType::IntraLedgerPayment,
             settlement_amount: TransactionAmount {
                 minor_units: 100,
@@ -123,7 +117,6 @@ mod tests {
     #[test]
     fn intra_ledger_payment_receipt_message() {
         let event = TransactionInfo {
-            user_id: GaloyUserId::from("user_id".to_string()),
             transaction_type: TransactionType::IntraLedgerReceipt,
             settlement_amount: TransactionAmount {
                 minor_units: 1,

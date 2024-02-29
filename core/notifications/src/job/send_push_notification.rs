@@ -4,18 +4,23 @@ use tracing::instrument;
 use std::collections::HashMap;
 
 use super::error::JobError;
-use crate::{notification_event::NotificationEventPayload, push_executor::PushExecutor};
+use crate::{
+    notification_event::NotificationEventPayload, primitives::GaloyUserId,
+    push_executor::PushExecutor,
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(super) struct SendPushNotificationData {
+    user_id: GaloyUserId,
     payload: NotificationEventPayload,
     #[serde(flatten)]
     pub(super) tracing_data: HashMap<String, serde_json::Value>,
 }
 
-impl From<NotificationEventPayload> for SendPushNotificationData {
-    fn from(payload: NotificationEventPayload) -> Self {
+impl From<(GaloyUserId, NotificationEventPayload)> for SendPushNotificationData {
+    fn from((user_id, payload): (GaloyUserId, NotificationEventPayload)) -> Self {
         Self {
+            user_id,
             payload,
             tracing_data: tracing::extract_tracing_data(),
         }
@@ -27,7 +32,7 @@ pub async fn execute(
     data: SendPushNotificationData,
     executor: PushExecutor,
 ) -> Result<SendPushNotificationData, JobError> {
-    executor.notify(&data.payload).await?;
+    executor.notify(&data.user_id, &data.payload).await?;
     Ok(data)
 }
 
@@ -71,18 +76,18 @@ mod tests {
         .collect();
 
         let payload = NotificationEventPayload::CircleGrew(CircleGrew {
-            user_id: GaloyUserId::from("172437af-e8c3-4df7-9859-148dea00bf33".to_string()),
             circle_type: CircleType::Outer,
             this_month_circle_size: 1,
             all_time_circle_size: 1,
         });
         let raw = SendPushNotificationData {
+            user_id: GaloyUserId::from("172437af-e8c3-4df7-9859-148dea00bf33".to_string()),
             payload,
             tracing_data,
         };
         let data = serde_json::to_string(&raw).unwrap();
         let job_data: JobData<SendPushNotificationData> = serde_json::from_str(&data).unwrap();
         assert!(job_data.data.is_some());
-        assert_eq!(job_data.tracing_data.len(), 3);
+        assert_eq!(job_data.tracing_data.len(), 4);
     }
 }
