@@ -3,6 +3,11 @@ query apiKeys {
     defaultAccount {
       id
     }
+    permissions {
+      read
+      write
+      receive
+    }
     apiKeys {
       id
       name

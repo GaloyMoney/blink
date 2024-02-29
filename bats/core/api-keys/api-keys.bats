@@ -46,6 +46,13 @@ new_key_name() {
 
   # Check that the length has incremented by 1
   [[ "$((post_creation_length))" -eq "$((initial_length + 1))" ]] || exit 1
+
+  read="$(graphql_output '.data.me.permissions.read')"
+  write="$(graphql_output '.data.me.permissions.write')"
+  receive="$(graphql_output '.data.me.permissions.receive')"
+  [[ "${read}" = "true" ]] || exit 1
+  [[ "${write}" = "true" ]] || exit 1
+  [[ "${receive}" = "true" ]] || exit 1
 }
 
 @test "api-keys: can authenticate with api key and list keys" {
@@ -103,6 +110,13 @@ new_key_name() {
 
   name="$(graphql_output '.data.me.apiKeys[-1].name')"
   [[ "${name}" = "${key_name}" ]] || exit 1
+
+  read="$(graphql_output '.data.me.permissions.read')"
+  write="$(graphql_output '.data.me.permissions.write')"
+  receive="$(graphql_output '.data.me.permissions.receive')"
+  [[ "${read}" = "true" ]] || exit 1
+  [[ "${write}" = "false" ]] || exit 1
+  [[ "${receive}" = "false" ]] || exit 1
 }
 
 @test "api-keys: read-only key cannot mutate" {
@@ -190,6 +204,42 @@ new_key_name() {
   exec_graphql 'api-key-secret' 'api-keys'
   name="$(graphql_output '.data.me.apiKeys[-1].name')"
   [[ "${name}" = "${key_name}" ]] || exit 1
+
+  read="$(graphql_output '.data.me.permissions.read')"
+  write="$(graphql_output '.data.me.permissions.write')"
+  receive="$(graphql_output '.data.me.permissions.receive')"
+  [[ "${read}" = "true" ]] || exit 1
+  [[ "${write}" = "false" ]] || exit 1
+  [[ "${receive}" = "true" ]] || exit 1
+}
+
+@test "api-keys: write + read can read" {
+  key_name="$(new_key_name)"
+
+  variables="{\"input\":{\"name\":\"${key_name}\",\"scopes\": [\"READ\",\"WRITE\"]}}"
+
+  exec_graphql 'alice' 'api-key-create' "$variables"
+  key="$(graphql_output '.data.apiKeyCreate.apiKey')"
+  secret="$(graphql_output '.data.apiKeyCreate.apiKeySecret')"
+  cache_value "api-key-secret" "$secret"
+
+  readOnly=$(echo "$key" | jq -r '.readOnly')
+  [[ "${readOnly}" = "false" ]] || exit 1
+
+  key_id=$(echo "$key" | jq -r '.id')
+  cache_value "api-key-id" "$key_id"
+
+  exec_graphql 'api-key-secret' 'api-keys'
+
+  name="$(graphql_output '.data.me.apiKeys[-1].name')"
+  [[ "${name}" = "${key_name}" ]] || exit 1
+
+  read="$(graphql_output '.data.me.permissions.read')"
+  write="$(graphql_output '.data.me.permissions.write')"
+  receive="$(graphql_output '.data.me.permissions.receive')"
+  [[ "${read}" = "true" ]] || exit 1
+  [[ "${write}" = "true" ]] || exit 1
+  [[ "${receive}" = "false" ]] || exit 1
 }
 
 @test "api-keys: cannot create key without scopes" {

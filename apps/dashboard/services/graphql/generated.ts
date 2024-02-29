@@ -1912,6 +1912,8 @@ export type User = {
    */
   readonly language: Scalars['Language']['output'];
   readonly notificationSettings: UserNotificationSettings;
+  /** User permissions */
+  readonly permissions: UserPermissions;
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']['output']>;
   /** Whether TOTP is enabled for this user. */
@@ -2044,6 +2046,13 @@ export type UserNotificationChannelSettings = {
 export type UserNotificationSettings = {
   readonly __typename: 'UserNotificationSettings';
   readonly push: UserNotificationChannelSettings;
+};
+
+export type UserPermissions = {
+  readonly __typename: 'UserPermissions';
+  readonly read: Scalars['Boolean']['output'];
+  readonly receive: Scalars['Boolean']['output'];
+  readonly write: Scalars['Boolean']['output'];
 };
 
 export type UserPhoneDeletePayload = {
@@ -3545,6 +3554,7 @@ export type ResolversTypes = {
   UserNotificationChannel: UserNotificationChannel;
   UserNotificationChannelSettings: ResolverTypeWrapper<UserNotificationChannelSettings>;
   UserNotificationSettings: ResolverTypeWrapper<UserNotificationSettings>;
+  UserPermissions: ResolverTypeWrapper<UserPermissions>;
   UserPhoneDeletePayload: ResolverTypeWrapper<UserPhoneDeletePayload>;
   UserPhoneRegistrationInitiateInput: UserPhoneRegistrationInitiateInput;
   UserPhoneRegistrationValidateInput: UserPhoneRegistrationValidateInput;
@@ -3754,6 +3764,7 @@ export type ResolversParentTypes = {
   UserLogoutInput: UserLogoutInput;
   UserNotificationChannelSettings: UserNotificationChannelSettings;
   UserNotificationSettings: UserNotificationSettings;
+  UserPermissions: UserPermissions;
   UserPhoneDeletePayload: UserPhoneDeletePayload;
   UserPhoneRegistrationInitiateInput: UserPhoneRegistrationInitiateInput;
   UserPhoneRegistrationValidateInput: UserPhoneRegistrationValidateInput;
@@ -4674,6 +4685,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   language?: Resolver<ResolversTypes['Language'], ParentType, ContextType>;
   notificationSettings?: Resolver<ResolversTypes['UserNotificationSettings'], ParentType, ContextType>;
+  permissions?: Resolver<ResolversTypes['UserPermissions'], ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['Phone']>, ParentType, ContextType>;
   totpEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   username?: Resolver<Maybe<ResolversTypes['Username']>, ParentType, ContextType>;
@@ -4722,6 +4734,13 @@ export type UserNotificationChannelSettingsResolvers<ContextType = any, ParentTy
 
 export type UserNotificationSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserNotificationSettings'] = ResolversParentTypes['UserNotificationSettings']> = {
   push?: Resolver<ResolversTypes['UserNotificationChannelSettings'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UserPermissionsResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserPermissions'] = ResolversParentTypes['UserPermissions']> = {
+  read?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  receive?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  write?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4936,6 +4955,7 @@ export type Resolvers<ContextType = any> = {
   UserEmailRegistrationValidatePayload?: UserEmailRegistrationValidatePayloadResolvers<ContextType>;
   UserNotificationChannelSettings?: UserNotificationChannelSettingsResolvers<ContextType>;
   UserNotificationSettings?: UserNotificationSettingsResolvers<ContextType>;
+  UserPermissions?: UserPermissionsResolvers<ContextType>;
   UserPhoneDeletePayload?: UserPhoneDeletePayloadResolvers<ContextType>;
   UserPhoneRegistrationValidatePayload?: UserPhoneRegistrationValidatePayloadResolvers<ContextType>;
   UserTotpDeletePayload?: UserTotpDeletePayloadResolvers<ContextType>;

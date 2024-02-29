@@ -1826,6 +1826,8 @@ export type User = {
    * When value is 'default' the intent is to use preferred language from OS settings.
    */
   readonly language: Scalars['Language'];
+  /** User permissions */
+  readonly permissions: UserPermissions;
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']>;
   /** Whether TOTP is enabled for this user. */
@@ -1916,6 +1918,13 @@ export type UserLoginUpgradeInput = {
 
 export type UserLogoutInput = {
   readonly deviceToken: Scalars['String'];
+};
+
+export type UserPermissions = {
+  readonly __typename: 'UserPermissions';
+  readonly read: Scalars['Boolean'];
+  readonly receive: Scalars['Boolean'];
+  readonly write: Scalars['Boolean'];
 };
 
 export type UserPhoneDeletePayload = {

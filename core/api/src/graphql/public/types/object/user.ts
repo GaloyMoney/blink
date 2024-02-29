@@ -13,6 +13,7 @@ import Username from "../../../shared/types/scalar/username"
 import GraphQLEmail from "../../../shared/types/object/email"
 
 import AccountContact from "./account-contact"
+import UserPermissions from "./user-permissions"
 
 import { IdentityRepository } from "@/services/kratos"
 import { UnknownClientError } from "@/graphql/error"
@@ -20,6 +21,8 @@ import { baseLogger } from "@/services/logger"
 import { Accounts, Users } from "@/app"
 import { mapError } from "@/graphql/error-map"
 import { GT } from "@/graphql/index"
+import { AccountStatus } from "@/domain/accounts"
+import { ScopesOauth2 } from "@/domain/authorization"
 
 const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
   name: "User",
@@ -123,6 +126,32 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
       type: GT.NonNull(Account),
       resolve: async (source, args, { domainAccount }) => {
         return domainAccount
+      },
+    },
+
+    permissions: {
+      type: GT.NonNull(UserPermissions),
+      description: "User permissions",
+      resolve: async (_source, _args, { domainAccount, scope }) => {
+        const isActive = domainAccount.status === AccountStatus.Active
+
+        // not a token with scope
+        if (!scope || scope.length === 0) {
+          return {
+            read: true,
+            write: isActive,
+            receive: isActive,
+          }
+        }
+
+        const read = !!scope.find((s) => s === ScopesOauth2.Read)
+        const receive = !!scope.find((s) => s === ScopesOauth2.Receive)
+        const write = !!scope.find((s) => s === ScopesOauth2.Write)
+        return {
+          read,
+          write: isActive && write,
+          receive: isActive && receive,
+        }
       },
     },
 

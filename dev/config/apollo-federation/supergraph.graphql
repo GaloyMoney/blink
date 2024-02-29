@@ -1937,6 +1937,9 @@ type User
   """
   language: Language! @join__field(graph: PUBLIC)
 
+  """User permissions"""
+  permissions: UserPermissions! @join__field(graph: PUBLIC)
+
   """Phone number with international calling code."""
   phone: Phone @join__field(graph: PUBLIC)
 
@@ -2102,6 +2105,14 @@ type UserNotificationSettings
   @join__type(graph: NOTIFICATIONS)
 {
   push: UserNotificationChannelSettings!
+}
+
+type UserPermissions
+  @join__type(graph: PUBLIC)
+{
+  read: Boolean!
+  receive: Boolean!
+  write: Boolean!
 }
 
 type UserPhoneDeletePayload

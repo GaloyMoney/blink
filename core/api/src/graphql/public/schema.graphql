@@ -1507,6 +1507,9 @@ type User {
   """
   language: Language!
 
+  """User permissions"""
+  permissions: UserPermissions!
+
   """Phone number with international calling code."""
   phone: Phone
 
@@ -1592,6 +1595,12 @@ input UserLoginUpgradeInput {
 
 input UserLogoutInput {
   deviceToken: String!
+}
+
+type UserPermissions {
+  read: Boolean!
+  receive: Boolean!
+  write: Boolean!
 }
 
 type UserPhoneDeletePayload {
