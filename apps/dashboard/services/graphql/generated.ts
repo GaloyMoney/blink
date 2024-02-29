@@ -924,7 +924,7 @@ export type Mutation = {
   readonly intraLedgerUsdPaymentSend: PaymentSendPayload;
   /** Sends a payment to a lightning address. */
   readonly lnAddressPaymentSend: PaymentSendPayload;
-  /** Cancel a lightning invoice for an associated wallet. */
+  /** Cancel an unpaid lightning invoice for an associated wallet. */
   readonly lnInvoiceCancel: SuccessPayload;
   /**
    * Returns a lightning invoice for an associated wallet.

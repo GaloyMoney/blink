@@ -1156,7 +1156,7 @@ type Mutation
   """Sends a payment to a lightning address."""
   lnAddressPaymentSend(input: LnAddressPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
 
-  """Cancel a lightning invoice for an associated wallet."""
+  """Cancel an unpaid lightning invoice for an associated wallet."""
   lnInvoiceCancel(input: LnInvoiceCancelInput!): SuccessPayload! @join__field(graph: PUBLIC)
 
   """
