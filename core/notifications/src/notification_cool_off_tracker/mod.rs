@@ -4,13 +4,7 @@ use thiserror::Error; // Add missing import
 #[derive(Debug, Error)]
 pub enum NotificationCoolOffTrackerError {
     #[error("NotificationCoolOffTrackerError - Sqlx: {0}")]
-    Sqlx(sqlx::Error),
-}
-
-impl From<sqlx::Error> for NotificationCoolOffTrackerError {
-    fn from(error: sqlx::Error) -> Self {
-        Self::Sqlx(error)
-    }
+    Sqlx(#[from] sqlx::Error),
 }
 
 pub struct NotificationCoolOffTracker {}
@@ -36,9 +30,6 @@ impl NotificationCoolOffTracker {
         .fetch_optional(&mut **tx)
         .await?;
 
-        match row {
-            Some(_) => Ok(true),
-            None => Ok(false),
-        }
+        Ok(row.is_some())
     }
 }
