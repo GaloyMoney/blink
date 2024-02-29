@@ -41,7 +41,7 @@
   box-sizing: border-box;
 }
 
-@media (max-width: 768px), (max-height: 720px) {
+@media (max-width: 768px), (max-height: 785px) {
   .nav_bar {
     border-bottom: none;
   }

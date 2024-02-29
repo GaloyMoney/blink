@@ -39,7 +39,6 @@ describe("Point of Sale", () => {
     cy.get("button[data-testid=digit-9-btn]").should("exist")
     cy.get("button[data-testid='digit-.-btn']").should("exist")
     cy.get("button[data-testid=backspace-btn]").should("exist")
-    cy.get("button[data-testid=clear-btn]").should("exist")
     cy.get("button[data-testid=pay-btn]").should("exist")
   })
 

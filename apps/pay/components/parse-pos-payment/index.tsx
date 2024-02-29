@@ -205,21 +205,6 @@ function ParsePayment({
           />
           {state.createdInvoice ? "Create new invoice" : "Create invoice"}
         </button>
-        {!state.createdInvoice && (
-          <button
-            data-testid="clear-btn"
-            className={styles.clear_btn}
-            onClick={() => dispatch({ type: ACTIONS.CLEAR_INPUT })}
-          >
-            <Image
-              src="/icons/clear-input-icon.svg"
-              alt="clear input icon"
-              width="20"
-              height="20"
-            />
-            Clear
-          </button>
-        )}
       </div>
     </Container>
   )

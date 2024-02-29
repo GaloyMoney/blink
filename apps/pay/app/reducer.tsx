@@ -7,7 +7,6 @@ import { Currency } from "@/lib/graphql/generated"
 export const ACTIONS = {
   ADD_DIGIT: "ADD_DIGIT",
   DELETE_DIGIT: "DELETE_DIGIT",
-  CLEAR_INPUT: "CLEAR_INPUT",
   CREATE_INVOICE: "CREATE_INVOICE",
   CREATE_NEW_INVOICE: "CREATE_NEW_INVOICE",
   UPDATE_USERNAME: "UPDATE_USERNAME",
@@ -109,15 +108,6 @@ function reducer(
       return {
         ...state,
         walletCurrency: payload,
-      }
-
-    case ACTIONS.CLEAR_INPUT:
-      if (state.currentAmount == null) return state
-      if (state.username == null) return state
-
-      return {
-        ...state,
-        currentAmount: "0",
       }
 
     case ACTIONS.CREATE_INVOICE:
