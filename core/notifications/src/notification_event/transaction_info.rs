@@ -23,7 +23,7 @@ pub struct TransactionAmount {
 
 impl std::fmt::Display for TransactionAmount {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.currency.format_minor_units(f, self.minor_units)
+        self.currency.format_minor_units(f, self.minor_units, false)
     }
 }
 

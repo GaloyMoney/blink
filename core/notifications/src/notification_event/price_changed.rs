@@ -27,7 +27,7 @@ impl From<f64> for ChangePercentage {
 
 impl std::fmt::Display for PriceOfOneBitcoin {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.currency.format_minor_units(f, self.minor_units)
+        self.currency.format_minor_units(f, self.minor_units, true)
     }
 }
 
@@ -59,7 +59,8 @@ impl NotificationEvent for PriceChanged {
         let title = t!("price_changed.title").to_string();
         let body = t!(
             "price_changed.body",
-            percent_increase = format!("{:.1}", self.change_percent.0)
+            percent_increase = format!("{:.1}", self.change_percent.0),
+            price = self.price.to_string()
         )
         .to_string();
         LocalizedPushMessage { title, body }
@@ -119,7 +120,7 @@ mod tests {
         assert_eq!(localized_message.title, "Bitcoin is on the move!");
         assert_eq!(
             localized_message.body,
-            "Bitcoin is up 5.1% in the last day!"
+            "Bitcoin is up 5.1% in the last day to $1,000!"
         );
     }
 }

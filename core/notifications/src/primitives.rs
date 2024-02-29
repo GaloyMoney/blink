@@ -170,10 +170,16 @@ impl Currency {
         &self,
         f: &mut std::fmt::Formatter<'_>,
         minor_units: u64,
+        round_to_major: bool,
     ) -> std::fmt::Result {
         match self {
             Currency::Iso(c) => {
-                let money = rusty_money::Money::from_minor(minor_units as i64, *c);
+                let mut money = rusty_money::Money::from_minor(minor_units as i64, *c);
+
+                if round_to_major {
+                    money = money.round(0, rusty_money::Round::HalfUp);
+                }
+
                 write!(f, "{money}")
             }
             Currency::Crypto(c) if c == &rusty_money::crypto::BTC => {
