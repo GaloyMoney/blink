@@ -66,7 +66,7 @@ async fn multi_user_event_dispatch(
             }
             for user_id in ids {
                 let payload = data.payload.clone();
-                if payload.as_notification_event().should_send_email() {
+                if payload.should_send_email() {
                     spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone()))
                         .await?;
                 }

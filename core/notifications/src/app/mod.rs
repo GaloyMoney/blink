@@ -182,7 +182,7 @@ impl NotificationsApp {
     {
         let payload = NotificationEventPayload::from(event);
         let mut tx = self.pool.begin().await?;
-        if payload.as_notification_event().should_send_email() {
+        if payload.should_send_email() {
             job::spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
         }
         job::spawn_send_push_notification(&mut tx, (user_id, payload)).await?;

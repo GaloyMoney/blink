@@ -33,8 +33,6 @@ pub async fn execute(
     executor: EmailExecutor,
 ) -> Result<SendEmailNotificationData, JobError> {
     let payload = data.payload.clone();
-    executor
-        .notify(&data.user_id, payload.as_notification_event())
-        .await?;
+    executor.notify(&data.user_id, payload.as_ref()).await?;
     Ok(data)
 }

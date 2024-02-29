@@ -43,8 +43,8 @@ pub enum NotificationEventPayload {
     PriceChanged(PriceChanged),
 }
 
-impl NotificationEventPayload {
-    pub fn as_notification_event(&self) -> &dyn NotificationEvent {
+impl AsRef<dyn NotificationEvent> for NotificationEventPayload {
+    fn as_ref(&self) -> &(dyn NotificationEvent + 'static) {
         match self {
             NotificationEventPayload::CircleGrew(event) => event,
             NotificationEventPayload::CircleThresholdReached(event) => event,
@@ -54,6 +54,14 @@ impl NotificationEventPayload {
             NotificationEventPayload::TransactionInfo(event) => event,
             NotificationEventPayload::PriceChanged(event) => event,
         }
+    }
+}
+
+impl std::ops::Deref for NotificationEventPayload {
+    type Target = dyn NotificationEvent;
+
+    fn deref(&self) -> &Self::Target {
+        self.as_ref()
     }
 }
 
