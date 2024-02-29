@@ -43,7 +43,10 @@ function ParsePayment({
   const { currencyList } = useDisplayCurrency()
   const memo = searchParams?.get("memo")
   const display = parseDisplayCurrency(searchParams)
-
+  const showMemo =
+    typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("memoChecked") ?? "false")
+      : false
   const currencyMetadata = state.displayCurrencyMetaData
   const language = typeof navigator !== "undefined" ? navigator?.language : "en"
 
@@ -131,7 +134,7 @@ function ParsePayment({
           readOnly={true}
         />
       </div>
-      <Memo state={state} dispatch={dispatch} />
+      {showMemo && <Memo state={state} dispatch={dispatch} />}
       {state.createdInvoice ? (
         <ReceiveInvoice
           dispatch={dispatch}
