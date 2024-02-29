@@ -29,7 +29,8 @@ impl NotificationsApp {
         let push_executor =
             PushExecutor::init(config.push_executor.clone(), settings.clone()).await?;
         let email_executor = EmailExecutor::init(config.email_executor.clone(), settings.clone())?;
-        let runner = job::start_job_runner(&pool, push_executor, email_executor).await?;
+        let runner =
+            job::start_job_runner(&pool, push_executor, email_executor, settings.clone()).await?;
         Ok(Self {
             _config: config,
             pool,
@@ -195,6 +196,21 @@ impl NotificationsApp {
             (user_id, NotificationEventPayload::from(event)),
         )
         .await?;
+        tx.commit().await?;
+        Ok(())
+    }
+
+    #[instrument(name = "app.handle_notification_event", skip(self), err)]
+    pub async fn handle_notification_event<T: NotificationEvent>(
+        &self,
+        event: T,
+    ) -> Result<(), ApplicationError>
+    where
+        NotificationEventPayload: From<T>,
+    {
+        let mut tx = self.pool.begin().await?;
+        job::spawn_multi_user_event_dispatch(&mut tx, NotificationEventPayload::from(event))
+            .await?;
         tx.commit().await?;
         Ok(())
     }
