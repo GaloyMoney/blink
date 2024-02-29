@@ -284,13 +284,17 @@ impl NotificationsService for Notifications {
                 let circle_type = proto::CircleType::try_from(circle_type)
                     .map(primitives::CircleType::from)
                     .map_err(|e| Status::invalid_argument(e.to_string()))?;
+                let user_id = GaloyUserId::from(user_id);
+
                 self.app
-                    .handle_notification_event(notification_event::CircleGrew {
-                        user_id: GaloyUserId::from(user_id),
-                        circle_type,
-                        this_month_circle_size,
-                        all_time_circle_size,
-                    })
+                    .handle_single_user_event(
+                        user_id,
+                        notification_event::CircleGrew {
+                            circle_type,
+                            this_month_circle_size,
+                            all_time_circle_size,
+                        },
+                    )
                     .await?;
             }
             Some(proto::NotificationEvent {
@@ -310,13 +314,16 @@ impl NotificationsService for Notifications {
                 let time_frame = proto::CircleTimeFrame::try_from(time_frame)
                     .map(primitives::CircleTimeFrame::from)
                     .map_err(|e| Status::invalid_argument(e.to_string()))?;
+                let user_id = GaloyUserId::from(user_id);
                 self.app
-                    .handle_notification_event(notification_event::CircleThresholdReached {
-                        user_id: GaloyUserId::from(user_id),
-                        circle_type,
-                        time_frame,
-                        threshold,
-                    })
+                    .handle_single_user_event(
+                        user_id,
+                        notification_event::CircleThresholdReached {
+                            circle_type,
+                            time_frame,
+                            threshold,
+                        },
+                    )
                     .await?;
             }
             Some(proto::NotificationEvent {
@@ -325,10 +332,12 @@ impl NotificationsService for Notifications {
                         proto::IdentityVerificationApproved { user_id },
                     )),
             }) => {
+                let user_id = GaloyUserId::from(user_id);
                 self.app
-                    .handle_notification_event(notification_event::IdentityVerificationApproved {
-                        user_id: GaloyUserId::from(user_id),
-                    })
+                    .handle_single_user_event(
+                        user_id,
+                        notification_event::IdentityVerificationApproved {},
+                    )
                     .await?;
             }
             Some(proto::NotificationEvent {
@@ -343,11 +352,12 @@ impl NotificationsService for Notifications {
                 let declined_reason = proto::DeclinedReason::try_from(declined_reason)
                     .map(notification_event::IdentityVerificationDeclinedReason::from)
                     .map_err(|e| Status::invalid_argument(e.to_string()))?;
+                let user_id = GaloyUserId::from(user_id);
                 self.app
-                    .handle_notification_event(notification_event::IdentityVerificationDeclined {
-                        user_id: GaloyUserId::from(user_id),
-                        declined_reason,
-                    })
+                    .handle_single_user_event(
+                        user_id,
+                        notification_event::IdentityVerificationDeclined { declined_reason },
+                    )
                     .await?;
             }
             Some(proto::NotificationEvent {
@@ -356,11 +366,11 @@ impl NotificationsService for Notifications {
                         proto::IdentityVerificationReviewStarted { user_id },
                     )),
             }) => {
+                let user_id = GaloyUserId::from(user_id);
                 self.app
-                    .handle_notification_event(
-                        notification_event::IdentityVerificationReviewStarted {
-                            user_id: GaloyUserId::from(user_id),
-                        },
+                    .handle_single_user_event(
+                        user_id,
+                        notification_event::IdentityVerificationReviewStarted {},
                     )
                     .await?;
             }
@@ -376,17 +386,20 @@ impl NotificationsService for Notifications {
                 let transaction_type = proto::TransactionType::try_from(r#type)
                     .map(notification_event::TransactionType::from)
                     .map_err(|e| Status::invalid_argument(e.to_string()))?;
+                let user_id = GaloyUserId::from(user_id);
                 self.app
-                    .handle_notification_event(notification_event::TransactionInfo {
-                        user_id: GaloyUserId::from(user_id),
-                        transaction_type,
-                        settlement_amount: notification_event::TransactionAmount::try_from(
-                            settlement_amount,
-                        )?,
-                        display_amount: display_amount
-                            .map(notification_event::TransactionAmount::try_from)
-                            .transpose()?,
-                    })
+                    .handle_single_user_event(
+                        user_id,
+                        notification_event::TransactionInfo {
+                            transaction_type,
+                            settlement_amount: notification_event::TransactionAmount::try_from(
+                                settlement_amount,
+                            )?,
+                            display_amount: display_amount
+                                .map(notification_event::TransactionAmount::try_from)
+                                .transpose()?,
+                        },
+                    )
                     .await?;
             }
             _ => return Err(Status::invalid_argument("event is required")),

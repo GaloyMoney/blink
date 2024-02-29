@@ -6,7 +6,6 @@ use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CircleThresholdReached {
-    pub user_id: GaloyUserId,
     pub circle_type: CircleType,
     pub time_frame: CircleTimeFrame,
     pub threshold: u32,
@@ -15,10 +14,6 @@ pub struct CircleThresholdReached {
 impl NotificationEvent for CircleThresholdReached {
     fn category(&self) -> UserNotificationCategory {
         UserNotificationCategory::Circles
-    }
-
-    fn user_id(&self) -> &GaloyUserId {
-        &self.user_id
     }
 
     fn deep_link(&self) -> DeepLink {
@@ -75,7 +70,6 @@ mod tests {
     #[test]
     fn test_circle_threshold_reached() {
         let event = CircleThresholdReached {
-            user_id: GaloyUserId::from("user_id".to_string()),
             circle_type: CircleType::Inner,
             time_frame: CircleTimeFrame::AllTime,
             threshold: 2,

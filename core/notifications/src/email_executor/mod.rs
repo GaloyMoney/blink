@@ -4,7 +4,7 @@ mod smtp;
 
 use tracing::instrument;
 
-use crate::{notification_event::*, user_notification_settings::*};
+use crate::{notification_event::*, primitives::GaloyUserId, user_notification_settings::*};
 
 pub use config::*;
 use error::*;
@@ -32,14 +32,18 @@ impl EmailExecutor {
     }
 
     #[instrument(name = "email_executor.notify", skip(self))]
-    pub async fn notify<T: NotificationEvent>(&self, event: &T) -> Result<(), EmailExecutorError> {
+    pub async fn notify<T: NotificationEvent>(
+        &self,
+        user_id: &GaloyUserId,
+        event: &T,
+    ) -> Result<(), EmailExecutorError> {
         if !self.config.enabled {
             return Ok(());
         }
 
         if let Some((settings, addr)) = self
             .settings
-            .find_for_user_id(event.user_id())
+            .find_for_user_id(user_id)
             .await
             .ok()
             .and_then(|s| s.email_address().map(|addr| (s, addr)))

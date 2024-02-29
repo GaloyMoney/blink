@@ -21,14 +21,14 @@ pub enum DeepLink {
     Circles,
 }
 
-pub trait NotificationEvent: std::fmt::Debug + Into<NotificationEventPayload> + Clone {
+pub trait NotificationEvent: std::fmt::Debug + Clone {
     fn category(&self) -> UserNotificationCategory;
-    fn user_id(&self) -> &GaloyUserId;
     fn deep_link(&self) -> DeepLink;
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage;
     fn should_send_email(&self) -> bool;
     fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail>;
 }
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum NotificationEventPayload {
@@ -49,17 +49,6 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationDeclined(e) => e.category(),
             NotificationEventPayload::IdentityVerificationReviewStarted(e) => e.category(),
             NotificationEventPayload::TransactionInfo(e) => e.category(),
-        }
-    }
-
-    fn user_id(&self) -> &GaloyUserId {
-        match self {
-            NotificationEventPayload::CircleGrew(event) => event.user_id(),
-            NotificationEventPayload::CircleThresholdReached(event) => event.user_id(),
-            NotificationEventPayload::IdentityVerificationApproved(event) => event.user_id(),
-            NotificationEventPayload::IdentityVerificationDeclined(event) => event.user_id(),
-            NotificationEventPayload::IdentityVerificationReviewStarted(event) => event.user_id(),
-            NotificationEventPayload::TransactionInfo(event) => event.user_id(),
         }
     }
 

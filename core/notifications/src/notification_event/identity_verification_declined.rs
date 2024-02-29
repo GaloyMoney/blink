@@ -16,17 +16,12 @@ pub enum IdentityVerificationDeclinedReason {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct IdentityVerificationDeclined {
-    pub user_id: GaloyUserId,
     pub declined_reason: IdentityVerificationDeclinedReason,
 }
 
 impl NotificationEvent for IdentityVerificationDeclined {
     fn category(&self) -> UserNotificationCategory {
         UserNotificationCategory::AdminNotification
-    }
-
-    fn user_id(&self) -> &GaloyUserId {
-        &self.user_id
     }
 
     fn deep_link(&self) -> DeepLink {
