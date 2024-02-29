@@ -1,3 +1,4 @@
+use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
 use super::{DeepLink, NotificationEvent};
@@ -55,7 +56,13 @@ impl NotificationEvent for PriceChanged {
     }
 
     fn to_localized_push_msg(&self, _locale: GaloyLocale) -> LocalizedPushMessage {
-        unimplemented!()
+        let title = t!("price_changed.title").to_string();
+        let body = t!(
+            "price_changed.body",
+            percent_increase = format!("{:.1}", self.change_percent.0)
+        )
+        .to_string();
+        LocalizedPushMessage { title, body }
     }
 
     fn to_localized_email(&self, _locale: GaloyLocale) -> Option<LocalizedEmail> {
@@ -64,5 +71,55 @@ impl NotificationEvent for PriceChanged {
 
     fn should_send_email(&self) -> bool {
         false
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn price_changed_should_notify() {
+        let price_changed = PriceChanged {
+            price: PriceOfOneBitcoin {
+                minor_units: 100_000,
+                currency: Currency::Iso(rusty_money::iso::USD),
+            },
+            direction: PriceChangeDirection::Up,
+            change_percent: ChangePercentage(5.1),
+        };
+        assert!(price_changed.should_notify());
+    }
+
+    #[test]
+    fn price_changed_should_not_notify() {
+        let price_changed = PriceChanged {
+            price: PriceOfOneBitcoin {
+                minor_units: 100_000,
+                currency: Currency::Iso(rusty_money::iso::USD),
+            },
+            direction: PriceChangeDirection::Up,
+            change_percent: ChangePercentage(4.9),
+        };
+        assert!(!price_changed.should_notify());
+    }
+
+    #[test]
+    fn price_changed_push_notification() {
+        let price_changed = PriceChanged {
+            price: PriceOfOneBitcoin {
+                minor_units: 100_000,
+                currency: Currency::Iso(rusty_money::iso::USD),
+            },
+            direction: PriceChangeDirection::Up,
+            change_percent: ChangePercentage(5.13),
+        };
+        let localized_message =
+            price_changed.to_localized_push_msg(GaloyLocale::from("en".to_string()));
+        assert_eq!(localized_message.title, "Bitcoin is on the move!");
+        assert_eq!(
+            localized_message.body,
+            "Bitcoin is up 5.1% in the last day!"
+        );
     }
 }

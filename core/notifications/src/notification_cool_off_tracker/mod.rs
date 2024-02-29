@@ -25,11 +25,11 @@ impl NotificationCoolOffTracker {
 
         let row = sqlx::query!(
             r#"
-                UPDATE notification_cool_off_tracker n
+                UPDATE notification_cool_off_tracker
                 SET last_triggered_at = now()
-                WHERE n.event_type = 'price_changed'
-                AND (n.last_triggered_at < $1 OR n.last_triggered_at IS NULL)
-                RETURNING n.event_type, n.last_triggered_at
+                WHERE event_type = 'price_changed'
+                AND (last_triggered_at < $1 OR last_triggered_at IS NULL)
+                RETURNING event_type, last_triggered_at
             "#,
             cool_off_threshold
         )

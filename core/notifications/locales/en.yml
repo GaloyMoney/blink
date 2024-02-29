@@ -57,3 +57,6 @@ transaction.onchain_receipt_pending.body: "pending +%{formattedCurrencyAmount}"
 transaction.paid_invoice.title: "%{walletCurrency} Transaction"
 transaction.paid_invoice.body: "+%{formattedCurrencyAmount}"
 transaction.paid_invoice.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+price_changed.title: "Bitcoin is on the move!"
+price_changed.body: "Bitcoin is up %{percent_increase}% in the last day!"
