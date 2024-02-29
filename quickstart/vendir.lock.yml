@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): fix admin tests flakiness (#4092)...'
-      sha: 60f09239bf6a95c18cc688ca53e9f51e7ac07a1d
+      commitTitle: 'fix(core): intraledger notification not sent (#4099)'
+      sha: a48692dd019dd0c089b9ad00acb2723737030bbd
       tags:
-      - 0.20.88-1-g60f09239b
+      - 0.20.89-1-ga48692dd0
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): fix admin tests flakiness (#4092)...'
-      sha: 60f09239bf6a95c18cc688ca53e9f51e7ac07a1d
+      commitTitle: 'fix(core): intraledger notification not sent (#4099)'
+      sha: a48692dd019dd0c089b9ad00acb2723737030bbd
       tags:
-      - 0.20.88-1-g60f09239b
+      - 0.20.89-1-ga48692dd0
     path: schemas/
   - git:
-      commitTitle: 'test(core): fix admin tests flakiness (#4092)...'
-      sha: 60f09239bf6a95c18cc688ca53e9f51e7ac07a1d
+      commitTitle: 'fix(core): intraledger notification not sent (#4099)'
+      sha: a48692dd019dd0c089b9ad00acb2723737030bbd
       tags:
-      - 0.20.88-1-g60f09239b
+      - 0.20.89-1-ga48692dd0
     path: gql/
   path: ./graphql
 kind: LockConfig
