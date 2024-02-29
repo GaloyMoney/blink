@@ -9,7 +9,7 @@ pub struct PriceOfOneBitcoin {
     pub currency: Currency,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub enum PriceChangeDirection {
     Up,
     Down,
@@ -41,6 +41,7 @@ impl PriceChanged {
     const NOTIFICATION_THRESHOLD: ChangePercentage = ChangePercentage(5.0);
     pub fn should_notify(&self) -> bool {
         self.change_percent >= Self::NOTIFICATION_THRESHOLD
+            && self.direction == PriceChangeDirection::Up
     }
 }
 

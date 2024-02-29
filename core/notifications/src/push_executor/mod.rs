@@ -35,7 +35,7 @@ impl PushExecutor {
         fields(n_errors, n_removed_tokens),
         err
     )]
-    pub async fn notify<T: NotificationEvent + ?Sized>(
+    pub async fn notify(
         &self,
         user_id: &GaloyUserId,
         event: &dyn NotificationEvent,
