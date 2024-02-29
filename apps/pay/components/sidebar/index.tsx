@@ -1,6 +1,6 @@
 "use client"
 
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
 import Image from "next/image"
 
@@ -13,6 +13,8 @@ import { useState } from "react"
 import CurrencyDropdown from "../currency/currency-dropdown"
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTrigger } from "../sheet"
 import PinToHomescreen from "../pin-to-homescreen"
+
+import { Switch } from "../switch"
 
 import { useInvoiceContext } from "@/context/invoice-context"
 import { ACTIONS } from "@/app/reducer"
@@ -28,9 +30,14 @@ function updateCurrencyAndReload(newDisplayCurrency: string): void {
 }
 
 export function SideBar({ username }: { username: string }) {
+  const router = useRouter()
   const pathName = usePathname()
   const [copied, setCopied] = useState(false)
-
+  const [memoChecked, setMemoChecked] = useState(
+    typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("memoChecked") ?? "false")
+      : false,
+  )
   const { state, dispatch } = useInvoiceContext()
   const lightningAddr = username
     ? `${username?.toString().toLowerCase()}@${getClientSidePayDomain()}`
@@ -52,6 +59,12 @@ export function SideBar({ username }: { username: string }) {
       hardRefresh: false,
     },
   ]
+
+  const handleMemoShow = () => {
+    localStorage.setItem("memoChecked", JSON.stringify(!memoChecked))
+    setMemoChecked(!memoChecked)
+    router.refresh()
+  }
 
   async function shareCurrentUrl() {
     if (navigator.share) {
@@ -158,7 +171,10 @@ export function SideBar({ username }: { username: string }) {
                 </button>
               </OverlayTrigger>
             </div>
-
+            <div className="flex flex-row justify-between align-middle align-content-center bg-slate-100 p-2 m-0 rounded-md">
+              <p className="m-0 ">Show Memo</p>
+              <Switch checked={memoChecked} onCheckedChange={handleMemoShow} />
+            </div>
             <div className="flex flex-col items-center justify-center gap-3 mt-2">
               <button
                 onClick={shareCurrentUrl}
