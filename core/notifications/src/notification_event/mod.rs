@@ -21,9 +21,14 @@ pub enum DeepLink {
     Circles,
 }
 
-pub trait SingleUserEvent: std::fmt::Debug + Into<SingleUserEventPayload> + Clone {
-    fn category(&self) -> UserNotificationCategory;
+pub trait SingleUserEvent:
+    NotificationEvent + std::fmt::Debug + Into<SingleUserEventPayload> + Clone
+{
     fn user_id(&self) -> &GaloyUserId;
+}
+
+pub trait NotificationEvent {
+    fn category(&self) -> UserNotificationCategory;
     fn deep_link(&self) -> DeepLink;
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage;
     fn should_send_email(&self) -> bool;
@@ -42,17 +47,6 @@ pub enum SingleUserEventPayload {
 }
 
 impl SingleUserEvent for SingleUserEventPayload {
-    fn category(&self) -> UserNotificationCategory {
-        match self {
-            SingleUserEventPayload::CircleGrew(e) => e.category(),
-            SingleUserEventPayload::CircleThresholdReached(e) => e.category(),
-            SingleUserEventPayload::IdentityVerificationApproved(e) => e.category(),
-            SingleUserEventPayload::IdentityVerificationDeclined(e) => e.category(),
-            SingleUserEventPayload::IdentityVerificationReviewStarted(e) => e.category(),
-            SingleUserEventPayload::TransactionInfo(e) => e.category(),
-        }
-    }
-
     fn user_id(&self) -> &GaloyUserId {
         match self {
             SingleUserEventPayload::CircleGrew(event) => event.user_id(),
@@ -61,6 +55,19 @@ impl SingleUserEvent for SingleUserEventPayload {
             SingleUserEventPayload::IdentityVerificationDeclined(event) => event.user_id(),
             SingleUserEventPayload::IdentityVerificationReviewStarted(event) => event.user_id(),
             SingleUserEventPayload::TransactionInfo(event) => event.user_id(),
+        }
+    }
+}
+
+impl NotificationEvent for SingleUserEventPayload {
+    fn category(&self) -> UserNotificationCategory {
+        match self {
+            SingleUserEventPayload::CircleGrew(e) => e.category(),
+            SingleUserEventPayload::CircleThresholdReached(e) => e.category(),
+            SingleUserEventPayload::IdentityVerificationApproved(e) => e.category(),
+            SingleUserEventPayload::IdentityVerificationDeclined(e) => e.category(),
+            SingleUserEventPayload::IdentityVerificationReviewStarted(e) => e.category(),
+            SingleUserEventPayload::TransactionInfo(e) => e.category(),
         }
     }
 

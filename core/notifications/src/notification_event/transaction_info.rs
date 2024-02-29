@@ -1,7 +1,7 @@
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-use super::{DeepLink, SingleUserEvent};
+use super::{DeepLink, NotificationEvent, SingleUserEvent};
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -36,12 +36,14 @@ pub struct TransactionInfo {
 }
 
 impl SingleUserEvent for TransactionInfo {
-    fn category(&self) -> UserNotificationCategory {
-        UserNotificationCategory::Payments
-    }
-
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
+    }
+}
+
+impl NotificationEvent for TransactionInfo {
+    fn category(&self) -> UserNotificationCategory {
+        UserNotificationCategory::Payments
     }
 
     fn deep_link(&self) -> DeepLink {

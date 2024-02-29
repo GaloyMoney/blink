@@ -1,7 +1,7 @@
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-use super::{DeepLink, SingleUserEvent};
+use super::{DeepLink, NotificationEvent, SingleUserEvent};
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -13,12 +13,14 @@ pub struct CircleGrew {
 }
 
 impl SingleUserEvent for CircleGrew {
-    fn category(&self) -> UserNotificationCategory {
-        UserNotificationCategory::Circles
-    }
-
     fn user_id(&self) -> &GaloyUserId {
         &self.user_id
+    }
+}
+
+impl NotificationEvent for CircleGrew {
+    fn category(&self) -> UserNotificationCategory {
+        UserNotificationCategory::Circles
     }
 
     fn deep_link(&self) -> DeepLink {
