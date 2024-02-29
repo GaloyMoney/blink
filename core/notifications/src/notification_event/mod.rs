@@ -21,7 +21,7 @@ pub enum DeepLink {
     Circles,
 }
 
-pub trait SingleUserEvent: std::fmt::Debug + Into<NotificationEventPayload> + Clone {
+pub trait SingleUserEvent: std::fmt::Debug + Into<SingleUserEventPayload> + Clone {
     fn category(&self) -> UserNotificationCategory;
     fn user_id(&self) -> &GaloyUserId;
     fn deep_link(&self) -> DeepLink;
@@ -29,9 +29,10 @@ pub trait SingleUserEvent: std::fmt::Debug + Into<NotificationEventPayload> + Cl
     fn should_send_email(&self) -> bool;
     fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail>;
 }
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "type", rename_all = "snake_case")]
-pub enum NotificationEventPayload {
+pub enum SingleUserEventPayload {
     CircleGrew(CircleGrew),
     CircleThresholdReached(CircleThresholdReached),
     IdentityVerificationApproved(IdentityVerificationApproved),
@@ -40,128 +41,128 @@ pub enum NotificationEventPayload {
     TransactionInfo(TransactionInfo),
 }
 
-impl SingleUserEvent for NotificationEventPayload {
+impl SingleUserEvent for SingleUserEventPayload {
     fn category(&self) -> UserNotificationCategory {
         match self {
-            NotificationEventPayload::CircleGrew(e) => e.category(),
-            NotificationEventPayload::CircleThresholdReached(e) => e.category(),
-            NotificationEventPayload::IdentityVerificationApproved(e) => e.category(),
-            NotificationEventPayload::IdentityVerificationDeclined(e) => e.category(),
-            NotificationEventPayload::IdentityVerificationReviewStarted(e) => e.category(),
-            NotificationEventPayload::TransactionInfo(e) => e.category(),
+            SingleUserEventPayload::CircleGrew(e) => e.category(),
+            SingleUserEventPayload::CircleThresholdReached(e) => e.category(),
+            SingleUserEventPayload::IdentityVerificationApproved(e) => e.category(),
+            SingleUserEventPayload::IdentityVerificationDeclined(e) => e.category(),
+            SingleUserEventPayload::IdentityVerificationReviewStarted(e) => e.category(),
+            SingleUserEventPayload::TransactionInfo(e) => e.category(),
         }
     }
 
     fn user_id(&self) -> &GaloyUserId {
         match self {
-            NotificationEventPayload::CircleGrew(event) => event.user_id(),
-            NotificationEventPayload::CircleThresholdReached(event) => event.user_id(),
-            NotificationEventPayload::IdentityVerificationApproved(event) => event.user_id(),
-            NotificationEventPayload::IdentityVerificationDeclined(event) => event.user_id(),
-            NotificationEventPayload::IdentityVerificationReviewStarted(event) => event.user_id(),
-            NotificationEventPayload::TransactionInfo(event) => event.user_id(),
+            SingleUserEventPayload::CircleGrew(event) => event.user_id(),
+            SingleUserEventPayload::CircleThresholdReached(event) => event.user_id(),
+            SingleUserEventPayload::IdentityVerificationApproved(event) => event.user_id(),
+            SingleUserEventPayload::IdentityVerificationDeclined(event) => event.user_id(),
+            SingleUserEventPayload::IdentityVerificationReviewStarted(event) => event.user_id(),
+            SingleUserEventPayload::TransactionInfo(event) => event.user_id(),
         }
     }
 
     fn deep_link(&self) -> DeepLink {
         match self {
-            NotificationEventPayload::CircleGrew(event) => event.deep_link(),
-            NotificationEventPayload::CircleThresholdReached(event) => event.deep_link(),
-            NotificationEventPayload::IdentityVerificationApproved(event) => event.deep_link(),
-            NotificationEventPayload::IdentityVerificationDeclined(event) => event.deep_link(),
-            NotificationEventPayload::IdentityVerificationReviewStarted(event) => event.deep_link(),
-            NotificationEventPayload::TransactionInfo(event) => event.deep_link(),
+            SingleUserEventPayload::CircleGrew(event) => event.deep_link(),
+            SingleUserEventPayload::CircleThresholdReached(event) => event.deep_link(),
+            SingleUserEventPayload::IdentityVerificationApproved(event) => event.deep_link(),
+            SingleUserEventPayload::IdentityVerificationDeclined(event) => event.deep_link(),
+            SingleUserEventPayload::IdentityVerificationReviewStarted(event) => event.deep_link(),
+            SingleUserEventPayload::TransactionInfo(event) => event.deep_link(),
         }
     }
 
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
         match self {
-            NotificationEventPayload::CircleGrew(event) => event.to_localized_push_msg(locale),
-            NotificationEventPayload::CircleThresholdReached(event) => {
+            SingleUserEventPayload::CircleGrew(event) => event.to_localized_push_msg(locale),
+            SingleUserEventPayload::CircleThresholdReached(event) => {
                 event.to_localized_push_msg(locale)
             }
-            NotificationEventPayload::IdentityVerificationApproved(event) => {
+            SingleUserEventPayload::IdentityVerificationApproved(event) => {
                 event.to_localized_push_msg(locale)
             }
-            NotificationEventPayload::IdentityVerificationDeclined(event) => {
+            SingleUserEventPayload::IdentityVerificationDeclined(event) => {
                 event.to_localized_push_msg(locale)
             }
-            NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
+            SingleUserEventPayload::IdentityVerificationReviewStarted(event) => {
                 event.to_localized_push_msg(locale)
             }
-            NotificationEventPayload::TransactionInfo(event) => event.to_localized_push_msg(locale),
+            SingleUserEventPayload::TransactionInfo(event) => event.to_localized_push_msg(locale),
         }
     }
 
     fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
         match self {
-            NotificationEventPayload::CircleGrew(event) => event.to_localized_email(locale),
-            NotificationEventPayload::CircleThresholdReached(event) => {
+            SingleUserEventPayload::CircleGrew(event) => event.to_localized_email(locale),
+            SingleUserEventPayload::CircleThresholdReached(event) => {
                 event.to_localized_email(locale)
             }
-            NotificationEventPayload::IdentityVerificationApproved(event) => {
+            SingleUserEventPayload::IdentityVerificationApproved(event) => {
                 event.to_localized_email(locale)
             }
-            NotificationEventPayload::IdentityVerificationDeclined(event) => {
+            SingleUserEventPayload::IdentityVerificationDeclined(event) => {
                 event.to_localized_email(locale)
             }
-            NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
+            SingleUserEventPayload::IdentityVerificationReviewStarted(event) => {
                 event.to_localized_email(locale)
             }
-            NotificationEventPayload::TransactionInfo(event) => event.to_localized_email(locale),
+            SingleUserEventPayload::TransactionInfo(event) => event.to_localized_email(locale),
         }
     }
 
     fn should_send_email(&self) -> bool {
         match self {
-            NotificationEventPayload::CircleGrew(event) => event.should_send_email(),
-            NotificationEventPayload::CircleThresholdReached(event) => event.should_send_email(),
-            NotificationEventPayload::IdentityVerificationApproved(event) => {
+            SingleUserEventPayload::CircleGrew(event) => event.should_send_email(),
+            SingleUserEventPayload::CircleThresholdReached(event) => event.should_send_email(),
+            SingleUserEventPayload::IdentityVerificationApproved(event) => {
                 event.should_send_email()
             }
-            NotificationEventPayload::IdentityVerificationDeclined(event) => {
+            SingleUserEventPayload::IdentityVerificationDeclined(event) => {
                 event.should_send_email()
             }
-            NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
+            SingleUserEventPayload::IdentityVerificationReviewStarted(event) => {
                 event.should_send_email()
             }
-            NotificationEventPayload::TransactionInfo(event) => event.should_send_email(),
+            SingleUserEventPayload::TransactionInfo(event) => event.should_send_email(),
         }
     }
 }
 
-impl From<CircleGrew> for NotificationEventPayload {
+impl From<CircleGrew> for SingleUserEventPayload {
     fn from(event: CircleGrew) -> Self {
-        NotificationEventPayload::CircleGrew(event)
+        SingleUserEventPayload::CircleGrew(event)
     }
 }
 
-impl From<CircleThresholdReached> for NotificationEventPayload {
+impl From<CircleThresholdReached> for SingleUserEventPayload {
     fn from(event: CircleThresholdReached) -> Self {
-        NotificationEventPayload::CircleThresholdReached(event)
+        SingleUserEventPayload::CircleThresholdReached(event)
     }
 }
 
-impl From<IdentityVerificationApproved> for NotificationEventPayload {
+impl From<IdentityVerificationApproved> for SingleUserEventPayload {
     fn from(event: IdentityVerificationApproved) -> Self {
-        NotificationEventPayload::IdentityVerificationApproved(event)
+        SingleUserEventPayload::IdentityVerificationApproved(event)
     }
 }
 
-impl From<IdentityVerificationDeclined> for NotificationEventPayload {
+impl From<IdentityVerificationDeclined> for SingleUserEventPayload {
     fn from(event: IdentityVerificationDeclined) -> Self {
-        NotificationEventPayload::IdentityVerificationDeclined(event)
+        SingleUserEventPayload::IdentityVerificationDeclined(event)
     }
 }
 
-impl From<IdentityVerificationReviewStarted> for NotificationEventPayload {
+impl From<IdentityVerificationReviewStarted> for SingleUserEventPayload {
     fn from(event: IdentityVerificationReviewStarted) -> Self {
-        NotificationEventPayload::IdentityVerificationReviewStarted(event)
+        SingleUserEventPayload::IdentityVerificationReviewStarted(event)
     }
 }
 
-impl From<TransactionInfo> for NotificationEventPayload {
+impl From<TransactionInfo> for SingleUserEventPayload {
     fn from(event: TransactionInfo) -> Self {
-        NotificationEventPayload::TransactionInfo(event)
+        SingleUserEventPayload::TransactionInfo(event)
     }
 }

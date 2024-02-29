@@ -4,17 +4,17 @@ use tracing::instrument;
 use std::collections::HashMap;
 
 use super::error::JobError;
-use crate::{email_executor::EmailExecutor, notification_event::NotificationEventPayload};
+use crate::{email_executor::EmailExecutor, notification_event::SingleUserEventPayload};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(super) struct SendEmailNotificationData {
-    payload: NotificationEventPayload,
+    payload: SingleUserEventPayload,
     #[serde(flatten)]
     pub(super) tracing_data: HashMap<String, serde_json::Value>,
 }
 
-impl From<NotificationEventPayload> for SendEmailNotificationData {
-    fn from(payload: NotificationEventPayload) -> Self {
+impl From<SingleUserEventPayload> for SendEmailNotificationData {
+    fn from(payload: SingleUserEventPayload) -> Self {
         Self {
             payload,
             tracing_data: tracing::extract_tracing_data(),

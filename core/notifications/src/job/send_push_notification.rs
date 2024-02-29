@@ -4,17 +4,17 @@ use tracing::instrument;
 use std::collections::HashMap;
 
 use super::error::JobError;
-use crate::{notification_event::NotificationEventPayload, push_executor::PushExecutor};
+use crate::{notification_event::SingleUserEventPayload, push_executor::PushExecutor};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(super) struct SendPushNotificationData {
-    payload: NotificationEventPayload,
+    payload: SingleUserEventPayload,
     #[serde(flatten)]
     pub(super) tracing_data: HashMap<String, serde_json::Value>,
 }
 
-impl From<NotificationEventPayload> for SendPushNotificationData {
-    fn from(payload: NotificationEventPayload) -> Self {
+impl From<SingleUserEventPayload> for SendPushNotificationData {
+    fn from(payload: SingleUserEventPayload) -> Self {
         Self {
             payload,
             tracing_data: tracing::extract_tracing_data(),
@@ -70,7 +70,7 @@ mod tests {
         .into_iter()
         .collect();
 
-        let payload = NotificationEventPayload::CircleGrew(CircleGrew {
+        let payload = SingleUserEventPayload::CircleGrew(CircleGrew {
             user_id: GaloyUserId::from("172437af-e8c3-4df7-9859-148dea00bf33".to_string()),
             circle_type: CircleType::Outer,
             this_month_circle_size: 1,
