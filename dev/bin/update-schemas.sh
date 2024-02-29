@@ -4,7 +4,6 @@ set -e
 
 TARGETS=(
     "//dev:update-supergraph"
-    "//dev:update-core-supergraph"
     "//core/api:update-public-schema"
     "//core/api:update-admin-schema"
     "//core/api-keys:update-schema"
