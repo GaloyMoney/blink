@@ -21,7 +21,7 @@ pub enum DeepLink {
     Circles,
 }
 
-pub trait NotificationEvent: std::fmt::Debug + Into<NotificationEventPayload> + Clone {
+pub trait SingleUserEvent: std::fmt::Debug + Into<NotificationEventPayload> + Clone {
     fn category(&self) -> UserNotificationCategory;
     fn user_id(&self) -> &GaloyUserId;
     fn deep_link(&self) -> DeepLink;
@@ -40,7 +40,7 @@ pub enum NotificationEventPayload {
     TransactionInfo(TransactionInfo),
 }
 
-impl NotificationEvent for NotificationEventPayload {
+impl SingleUserEvent for NotificationEventPayload {
     fn category(&self) -> UserNotificationCategory {
         match self {
             NotificationEventPayload::CircleGrew(e) => e.category(),

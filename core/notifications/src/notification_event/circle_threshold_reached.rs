@@ -1,7 +1,7 @@
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-use super::{DeepLink, NotificationEvent};
+use super::{DeepLink, SingleUserEvent};
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -12,7 +12,7 @@ pub struct CircleThresholdReached {
     pub threshold: u32,
 }
 
-impl NotificationEvent for CircleThresholdReached {
+impl SingleUserEvent for CircleThresholdReached {
     fn category(&self) -> UserNotificationCategory {
         UserNotificationCategory::Circles
     }

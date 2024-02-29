@@ -1,7 +1,7 @@
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-use super::{DeepLink, NotificationEvent};
+use super::{DeepLink, SingleUserEvent};
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -35,7 +35,7 @@ pub struct TransactionInfo {
     pub display_amount: Option<TransactionAmount>,
 }
 
-impl NotificationEvent for TransactionInfo {
+impl SingleUserEvent for TransactionInfo {
     fn category(&self) -> UserNotificationCategory {
         UserNotificationCategory::Payments
     }

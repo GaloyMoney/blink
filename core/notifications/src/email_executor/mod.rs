@@ -32,7 +32,7 @@ impl EmailExecutor {
     }
 
     #[instrument(name = "email_executor.notify", skip(self))]
-    pub async fn notify<T: NotificationEvent>(&self, event: &T) -> Result<(), EmailExecutorError> {
+    pub async fn notify<T: SingleUserEvent>(&self, event: &T) -> Result<(), EmailExecutorError> {
         if !self.config.enabled {
             return Ok(());
         }

@@ -171,7 +171,7 @@ impl NotificationsApp {
     }
 
     #[instrument(name = "app.handle_notification_event", skip(self), err)]
-    pub async fn handle_notification_event<T: NotificationEvent>(
+    pub async fn handle_notification_event<T: SingleUserEvent>(
         &self,
         event: T,
     ) -> Result<(), ApplicationError> {

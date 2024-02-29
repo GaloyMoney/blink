@@ -1,7 +1,7 @@
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-use super::{DeepLink, NotificationEvent};
+use super::{DeepLink, SingleUserEvent};
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -20,7 +20,7 @@ pub struct IdentityVerificationDeclined {
     pub declined_reason: IdentityVerificationDeclinedReason,
 }
 
-impl NotificationEvent for IdentityVerificationDeclined {
+impl SingleUserEvent for IdentityVerificationDeclined {
     fn category(&self) -> UserNotificationCategory {
         UserNotificationCategory::AdminNotification
     }
