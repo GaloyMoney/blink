@@ -8,7 +8,7 @@ jobs:
   tests:
     name: execute via bats
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
