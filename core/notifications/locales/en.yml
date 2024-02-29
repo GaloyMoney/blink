@@ -46,6 +46,10 @@ transaction.onchain_receipt.title: "%{walletCurrency} Transaction"
 transaction.onchain_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
 transaction.onchain_receipt.body: "+%{formattedCurrencyAmount}"
 
+transaction.lightning_receipt.title: "%{walletCurrency} Transaction"
+transaction.lightning_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.lightning_receipt.body: "+%{formattedCurrencyAmount}"
+
 transaction.onchain_receipt_pending.title: "%{walletCurrency} Transaction | Pending"
 transaction.onchain_receipt_pending.body_display_currency: "pending +%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
 transaction.onchain_receipt_pending.body: "pending +%{formattedCurrencyAmount}"

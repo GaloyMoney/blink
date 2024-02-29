@@ -34,6 +34,10 @@ transaction.intra_ledger_receipt.title: "Transacción %{walletCurrency}"
 transaction.intra_ledger_receipt.body: "+%{formattedCurrencyAmount}"
 transaction.intra_ledger_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
 
+transaction.lightning_receipt.title: "Transacción %{walletCurrency}"
+transaction.lightning_receipt.body: "+%{formattedCurrencyAmount}"
+transaction.lightning_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
 transaction.onchain_payment.title: "Transacción %{walletCurrency}"
 transaction.onchain_payment.body: "Pago onchain por %{formattedCurrencyAmount} confirmado"
 transaction.onchain_payment.body_display_currency: "Pago onchain por %{displayCurrencyAmount} | %{formattedCurrencyAmount} confirmado"
