@@ -106,7 +106,7 @@
   background: var(--primaryColor);
   color: #fff;
   font-weight: 600;
-  width: 220px;
+  width: 300px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -125,25 +125,10 @@
   margin-bottom: 1rem;
 }
 
-.clear_btn {
-  position: relative;
-  color: #232222;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  column-gap: 10px;
-  border: none;
-  border-radius: 10em;
-  outline: none;
-  font-weight: 600;
-  padding: 10px 12px;
-  order: 1;
-  transition: all 0.5s ease;
-}
 
 @media (min-width: 760px) {
   .pay_btn {
-    width: 327px;
+    width: 400px;
   }
 }
 
