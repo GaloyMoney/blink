@@ -8,8 +8,8 @@ use tracing::instrument;
 use std::sync::Arc;
 
 use crate::{
-    email_executor::EmailExecutor, job, notification_event::*, primitives::*, push_executor::*,
-    user_notification_settings::*,
+    email_executor::EmailExecutor, job, notification_cool_off_tracker::*, notification_event::*,
+    primitives::*, push_executor::*, user_notification_settings::*,
 };
 
 pub use config::*;
@@ -197,11 +197,15 @@ impl NotificationsApp {
     ) -> Result<(), ApplicationError> {
         if price_changed.should_notify() {
             let mut tx = self.pool.begin().await?;
-            job::spawn_multi_user_event_dispatch(
-                &mut tx,
-                NotificationEventPayload::from(price_changed),
-            )
-            .await?;
+
+            if NotificationCoolOffTracker::can_trigger_price_changed(&mut tx).await? {
+                job::spawn_multi_user_event_dispatch(
+                    &mut tx,
+                    NotificationEventPayload::from(price_changed),
+                )
+                .await?;
+            }
+
             tx.commit().await?;
         }
         Ok(())

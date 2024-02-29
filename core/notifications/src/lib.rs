@@ -12,6 +12,7 @@ pub mod cli;
 pub mod email_executor;
 pub mod graphql;
 pub mod grpc;
+pub mod notification_cool_off_tracker;
 pub mod notification_event;
 pub mod primitives;
 pub mod push_executor;
