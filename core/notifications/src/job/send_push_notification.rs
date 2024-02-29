@@ -32,7 +32,10 @@ pub async fn execute(
     data: SendPushNotificationData,
     executor: PushExecutor,
 ) -> Result<SendPushNotificationData, JobError> {
-    executor.notify(&data.user_id, &data.payload).await?;
+    let payload = data.payload.clone();
+    executor
+        .notify(&data.user_id, payload.as_notification_event())
+        .await?;
     Ok(data)
 }
 

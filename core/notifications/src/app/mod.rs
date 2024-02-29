@@ -172,7 +172,7 @@ impl NotificationsApp {
     }
 
     #[instrument(name = "app.handle_single_user_event", skip(self), err)]
-    pub async fn handle_single_user_event<T: NotificationEvent>(
+    pub async fn handle_single_user_event<T: std::fmt::Debug>(
         &self,
         user_id: GaloyUserId,
         event: T,
@@ -180,22 +180,12 @@ impl NotificationsApp {
     where
         NotificationEventPayload: From<T>,
     {
+        let payload = NotificationEventPayload::from(event);
         let mut tx = self.pool.begin().await?;
-        if event.should_send_email() {
-            job::spawn_send_email_notification(
-                &mut tx,
-                (
-                    user_id.clone(),
-                    NotificationEventPayload::from(event.clone()),
-                ),
-            )
-            .await?;
+        if payload.as_notification_event().should_send_email() {
+            job::spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
         }
-        job::spawn_send_push_notification(
-            &mut tx,
-            (user_id, NotificationEventPayload::from(event)),
-        )
-        .await?;
+        job::spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
         tx.commit().await?;
         Ok(())
     }

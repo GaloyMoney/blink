@@ -23,7 +23,7 @@ pub enum DeepLink {
     Circles,
 }
 
-pub trait NotificationEvent: std::fmt::Debug + Clone {
+pub trait NotificationEvent: std::fmt::Debug + Send + Sync {
     fn category(&self) -> UserNotificationCategory;
     fn deep_link(&self) -> DeepLink;
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage;
@@ -43,86 +43,16 @@ pub enum NotificationEventPayload {
     PriceChanged(PriceChanged),
 }
 
-impl NotificationEvent for NotificationEventPayload {
-    fn category(&self) -> UserNotificationCategory {
+impl NotificationEventPayload {
+    pub fn as_notification_event(&self) -> &dyn NotificationEvent {
         match self {
-            NotificationEventPayload::CircleGrew(e) => e.category(),
-            NotificationEventPayload::CircleThresholdReached(e) => e.category(),
-            NotificationEventPayload::IdentityVerificationApproved(e) => e.category(),
-            NotificationEventPayload::IdentityVerificationDeclined(e) => e.category(),
-            NotificationEventPayload::IdentityVerificationReviewStarted(e) => e.category(),
-            NotificationEventPayload::TransactionInfo(e) => e.category(),
-            NotificationEventPayload::PriceChanged(e) => e.category(),
-        }
-    }
-
-    fn deep_link(&self) -> DeepLink {
-        match self {
-            NotificationEventPayload::CircleGrew(event) => event.deep_link(),
-            NotificationEventPayload::CircleThresholdReached(event) => event.deep_link(),
-            NotificationEventPayload::IdentityVerificationApproved(event) => event.deep_link(),
-            NotificationEventPayload::IdentityVerificationDeclined(event) => event.deep_link(),
-            NotificationEventPayload::IdentityVerificationReviewStarted(event) => event.deep_link(),
-            NotificationEventPayload::TransactionInfo(event) => event.deep_link(),
-            NotificationEventPayload::PriceChanged(event) => event.deep_link(),
-        }
-    }
-
-    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
-        match self {
-            NotificationEventPayload::CircleGrew(event) => event.to_localized_push_msg(locale),
-            NotificationEventPayload::CircleThresholdReached(event) => {
-                event.to_localized_push_msg(locale)
-            }
-            NotificationEventPayload::IdentityVerificationApproved(event) => {
-                event.to_localized_push_msg(locale)
-            }
-            NotificationEventPayload::IdentityVerificationDeclined(event) => {
-                event.to_localized_push_msg(locale)
-            }
-            NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
-                event.to_localized_push_msg(locale)
-            }
-            NotificationEventPayload::TransactionInfo(event) => event.to_localized_push_msg(locale),
-            NotificationEventPayload::PriceChanged(event) => event.to_localized_push_msg(locale),
-        }
-    }
-
-    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
-        match self {
-            NotificationEventPayload::CircleGrew(event) => event.to_localized_email(locale),
-            NotificationEventPayload::CircleThresholdReached(event) => {
-                event.to_localized_email(locale)
-            }
-            NotificationEventPayload::IdentityVerificationApproved(event) => {
-                event.to_localized_email(locale)
-            }
-            NotificationEventPayload::IdentityVerificationDeclined(event) => {
-                event.to_localized_email(locale)
-            }
-            NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
-                event.to_localized_email(locale)
-            }
-            NotificationEventPayload::TransactionInfo(event) => event.to_localized_email(locale),
-            NotificationEventPayload::PriceChanged(event) => event.to_localized_email(locale),
-        }
-    }
-
-    fn should_send_email(&self) -> bool {
-        match self {
-            NotificationEventPayload::CircleGrew(event) => event.should_send_email(),
-            NotificationEventPayload::CircleThresholdReached(event) => event.should_send_email(),
-            NotificationEventPayload::IdentityVerificationApproved(event) => {
-                event.should_send_email()
-            }
-            NotificationEventPayload::IdentityVerificationDeclined(event) => {
-                event.should_send_email()
-            }
-            NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
-                event.should_send_email()
-            }
-            NotificationEventPayload::TransactionInfo(event) => event.should_send_email(),
-            NotificationEventPayload::PriceChanged(event) => event.should_send_email(),
+            NotificationEventPayload::CircleGrew(event) => event,
+            NotificationEventPayload::CircleThresholdReached(event) => event,
+            NotificationEventPayload::IdentityVerificationApproved(event) => event,
+            NotificationEventPayload::IdentityVerificationDeclined(event) => event,
+            NotificationEventPayload::IdentityVerificationReviewStarted(event) => event,
+            NotificationEventPayload::TransactionInfo(event) => event,
+            NotificationEventPayload::PriceChanged(event) => event,
         }
     }
 }
