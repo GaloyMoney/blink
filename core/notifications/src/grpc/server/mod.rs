@@ -402,6 +402,27 @@ impl NotificationsService for Notifications {
                     )
                     .await?;
             }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::Price(proto::PriceChanged {
+                        price_of_one_bitcoin: Some(price),
+                        direction,
+                        price_change_percentage,
+                    })),
+            }) => {
+                let direction = proto::PriceChangeDirection::try_from(direction)
+                    .map(notification_event::PriceChangeDirection::from)
+                    .map_err(|e| Status::invalid_argument(e.to_string()))?;
+                self.app
+                    .handle_price_changed_event(notification_event::PriceChanged {
+                        price: notification_event::PriceOfOneBitcoin::try_from(price)?,
+                        change_percent: notification_event::ChangePercentage::from(
+                            price_change_percentage,
+                        ),
+                        direction,
+                    })
+                    .await?;
+            }
             _ => return Err(Status::invalid_argument("event is required")),
         }
 

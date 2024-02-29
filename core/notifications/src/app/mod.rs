@@ -200,18 +200,20 @@ impl NotificationsApp {
         Ok(())
     }
 
-    #[instrument(name = "app.handle_notification_event", skip(self), err)]
-    pub async fn handle_notification_event<T: NotificationEvent>(
+    #[instrument(name = "app.handle_price_changed_event", skip(self), err)]
+    pub async fn handle_price_changed_event(
         &self,
-        event: T,
-    ) -> Result<(), ApplicationError>
-    where
-        NotificationEventPayload: From<T>,
-    {
-        let mut tx = self.pool.begin().await?;
-        job::spawn_multi_user_event_dispatch(&mut tx, NotificationEventPayload::from(event))
+        price_changed: PriceChanged,
+    ) -> Result<(), ApplicationError> {
+        if price_changed.should_notify() {
+            let mut tx = self.pool.begin().await?;
+            job::spawn_multi_user_event_dispatch(
+                &mut tx,
+                NotificationEventPayload::from(price_changed),
+            )
             .await?;
-        tx.commit().await?;
+            tx.commit().await?;
+        }
         Ok(())
     }
 }

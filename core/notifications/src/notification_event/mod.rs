@@ -3,6 +3,7 @@ mod circle_threshold_reached;
 mod identity_verification_approved;
 mod identity_verification_declined;
 mod identity_verification_review_started;
+mod price_changed;
 mod transaction_info;
 
 use serde::{Deserialize, Serialize};
@@ -14,6 +15,7 @@ pub(super) use circle_threshold_reached::*;
 pub(super) use identity_verification_approved::*;
 pub(super) use identity_verification_declined::*;
 pub(super) use identity_verification_review_started::*;
+pub(super) use price_changed::*;
 pub(super) use transaction_info::*;
 
 pub enum DeepLink {
@@ -38,6 +40,7 @@ pub enum NotificationEventPayload {
     IdentityVerificationDeclined(IdentityVerificationDeclined),
     IdentityVerificationReviewStarted(IdentityVerificationReviewStarted),
     TransactionInfo(TransactionInfo),
+    PriceChanged(PriceChanged),
 }
 
 impl NotificationEvent for NotificationEventPayload {
@@ -49,6 +52,7 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationDeclined(e) => e.category(),
             NotificationEventPayload::IdentityVerificationReviewStarted(e) => e.category(),
             NotificationEventPayload::TransactionInfo(e) => e.category(),
+            NotificationEventPayload::PriceChanged(e) => e.category(),
         }
     }
 
@@ -60,6 +64,7 @@ impl NotificationEvent for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationDeclined(event) => event.deep_link(),
             NotificationEventPayload::IdentityVerificationReviewStarted(event) => event.deep_link(),
             NotificationEventPayload::TransactionInfo(event) => event.deep_link(),
+            NotificationEventPayload::PriceChanged(event) => event.deep_link(),
         }
     }
 
@@ -79,6 +84,7 @@ impl NotificationEvent for NotificationEventPayload {
                 event.to_localized_push_msg(locale)
             }
             NotificationEventPayload::TransactionInfo(event) => event.to_localized_push_msg(locale),
+            NotificationEventPayload::PriceChanged(event) => event.to_localized_push_msg(locale),
         }
     }
 
@@ -98,6 +104,7 @@ impl NotificationEvent for NotificationEventPayload {
                 event.to_localized_email(locale)
             }
             NotificationEventPayload::TransactionInfo(event) => event.to_localized_email(locale),
+            NotificationEventPayload::PriceChanged(event) => event.to_localized_email(locale),
         }
     }
 
@@ -115,6 +122,7 @@ impl NotificationEvent for NotificationEventPayload {
                 event.should_send_email()
             }
             NotificationEventPayload::TransactionInfo(event) => event.should_send_email(),
+            NotificationEventPayload::PriceChanged(event) => event.should_send_email(),
         }
     }
 }
@@ -152,5 +160,11 @@ impl From<IdentityVerificationReviewStarted> for NotificationEventPayload {
 impl From<TransactionInfo> for NotificationEventPayload {
     fn from(event: TransactionInfo) -> Self {
         NotificationEventPayload::TransactionInfo(event)
+    }
+}
+
+impl From<PriceChanged> for NotificationEventPayload {
+    fn from(event: PriceChanged) -> Self {
+        NotificationEventPayload::PriceChanged(event)
     }
 }

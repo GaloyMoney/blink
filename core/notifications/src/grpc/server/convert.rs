@@ -156,3 +156,24 @@ impl TryFrom<proto::Money> for notification_event::TransactionAmount {
         })
     }
 }
+
+impl TryFrom<proto::Money> for notification_event::PriceOfOneBitcoin {
+    type Error = ApplicationError;
+
+    fn try_from(money: proto::Money) -> Result<Self, Self::Error> {
+        Ok(Self {
+            minor_units: money.minor_units,
+            currency: Currency::try_from(money.currency_code)
+                .map_err(ApplicationError::UnknownCurrencyCode)?,
+        })
+    }
+}
+
+impl From<proto::PriceChangeDirection> for notification_event::PriceChangeDirection {
+    fn from(d: proto::PriceChangeDirection) -> Self {
+        match d {
+            proto::PriceChangeDirection::Up => notification_event::PriceChangeDirection::Up,
+            proto::PriceChangeDirection::Down => notification_event::PriceChangeDirection::Down,
+        }
+    }
+}
