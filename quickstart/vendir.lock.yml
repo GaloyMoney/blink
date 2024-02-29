@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(pay): make memo optional (#4103)'
-      sha: 198249de752865670b2efbe16636f52e2e5452e6
+      commitTitle: 'chore: fine tuning earn rate limits (#4095)...'
+      sha: 235850a22f2fd6307ce22b3932c741e083728091
       tags:
-      - 0.20.91-3-g198249de7
+      - 0.20.92-1-g235850a22
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(pay): make memo optional (#4103)'
-      sha: 198249de752865670b2efbe16636f52e2e5452e6
+      commitTitle: 'chore: fine tuning earn rate limits (#4095)...'
+      sha: 235850a22f2fd6307ce22b3932c741e083728091
       tags:
-      - 0.20.91-3-g198249de7
+      - 0.20.92-1-g235850a22
     path: schemas/
   - git:
-      commitTitle: 'chore(pay): make memo optional (#4103)'
-      sha: 198249de752865670b2efbe16636f52e2e5452e6
+      commitTitle: 'chore: fine tuning earn rate limits (#4095)...'
+      sha: 235850a22f2fd6307ce22b3932c741e083728091
       tags:
-      - 0.20.91-3-g198249de7
+      - 0.20.92-1-g235850a22
     path: gql/
   path: ./graphql
 kind: LockConfig

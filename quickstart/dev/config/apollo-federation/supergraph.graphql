@@ -1234,7 +1234,6 @@ type Mutation
   onChainUsdPaymentSend(input: OnChainUsdPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
   onChainUsdPaymentSendAsBtcDenominated(input: OnChainUsdPaymentSendAsBtcDenominatedInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
   quizClaim(input: QuizClaimInput!): QuizClaimPayload! @join__field(graph: PUBLIC)
-  quizCompleted(input: QuizCompletedInput!): QuizCompletedPayload! @join__field(graph: PUBLIC) @deprecated(reason: "Use quizClaim instead")
   userContactUpdateAlias(input: UserContactUpdateAliasInput!): UserContactUpdateAliasPayload! @join__field(graph: PUBLIC) @deprecated(reason: "will be moved to AccountContact")
   userEmailDelete: UserEmailDeletePayload! @join__field(graph: PUBLIC)
   userEmailRegistrationInitiate(input: UserEmailRegistrationInitiateInput!): UserEmailRegistrationInitiatePayload! @join__field(graph: PUBLIC)
@@ -1605,19 +1604,6 @@ type QuizClaimPayload
 {
   errors: [Error!]!
   quizzes: [Quiz!]!
-}
-
-input QuizCompletedInput
-  @join__type(graph: PUBLIC)
-{
-  id: ID!
-}
-
-type QuizCompletedPayload
-  @join__type(graph: PUBLIC)
-{
-  errors: [Error!]!
-  quiz: Quiz
 }
 
 type RealtimePrice
