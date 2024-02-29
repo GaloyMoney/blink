@@ -215,6 +215,9 @@ export const getAppcheckJtiAttemptLimits = () =>
 export const getAddQuizPerIpLimits = () =>
   getRateLimits(yamlConfig.rateLimits.addQuizPerIp)
 
+export const getAddQuizPerPhoneLimits = () =>
+  getRateLimits(yamlConfig.rateLimits.addQuizPerPhone)
+
 export const getOnChainWalletConfig = () => ({
   dustThreshold: yamlConfig.onChainWallet.dustThreshold,
 })

@@ -18,4 +18,5 @@ export class InvoiceCreateForRecipientRateLimiterExceededError extends RateLimit
 export class OnChainAddressCreateRateLimiterExceededError extends RateLimiterExceededError {}
 export class DeviceAccountCreateRateLimiterExceededError extends RateLimiterExceededError {}
 export class UserCodeAttemptAppcheckJtiLimiterExceededError extends RateLimiterExceededError {}
-export class UserAddQuizAttemptIpRateLimiterExceededError extends RateLimiterExceededError {}
+export class AddQuizAttemptIpRateLimiterExceededError extends RateLimiterExceededError {}
+export class AddQuizAttemptPhoneRateLimiterExceededError extends RateLimiterExceededError {}

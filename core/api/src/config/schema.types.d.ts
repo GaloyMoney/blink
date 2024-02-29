@@ -80,6 +80,7 @@ type YamlSchema = {
     deviceAccountCreateAttempt: RateLimitInput
     requestCodePerAppcheckJti: RateLimitInput
     addQuizPerIp: RateLimitInput
+    addQuizPerPhone: RateLimitInput
   }
   accounts: {
     initialStatus: string

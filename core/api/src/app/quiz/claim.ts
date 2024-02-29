@@ -52,6 +52,17 @@ const checkAddQuizAttemptPerIpLimits = async (
   })
 }
 
+const checkAddQuizAttemptPerPhoneLimits = async (
+  phone: PhoneNumber | undefined,
+): Promise<true | RateLimiterExceededError> => {
+  if (!phone) return new InvalidPhoneForQuizError()
+
+  return consumeLimiter({
+    rateLimitConfig: RateLimitConfig.addQuizAttemptPerIp,
+    keyToConsume: phone,
+  })
+}
+
 export const claimQuiz = async ({
   quizQuestionId: quizQuestionIdString,
   accountId: accountIdRaw,
@@ -61,8 +72,8 @@ export const claimQuiz = async ({
   accountId: string
   ip: IpAddress | undefined
 }): Promise<ClaimQuizResult | ApplicationError> => {
-  const check = await checkAddQuizAttemptPerIpLimits(ip)
-  if (check instanceof Error) return check
+  const checkIp = await checkAddQuizAttemptPerIpLimits(ip)
+  if (checkIp instanceof Error) return checkIp
 
   const accountId = checkedToAccountId(accountIdRaw)
   if (accountId instanceof Error) return accountId
@@ -75,17 +86,20 @@ export const claimQuiz = async ({
   const amount = QuizzesValue[quizId]
   if (!amount) return new InvalidQuizQuestionIdError()
 
-  const funderWalletId = await getFunderWalletId()
-  const funderWallet = await WalletsRepository().findById(funderWalletId)
-  if (funderWallet instanceof Error) return funderWallet
-  const funderAccount = await AccountsRepository().findById(funderWallet.accountId)
-  if (funderAccount instanceof Error) return funderAccount
-
   const recipientAccount = await AccountsRepository().findById(accountId)
   if (recipientAccount instanceof Error) return recipientAccount
 
   const user = await UsersRepository().findById(recipientAccount.kratosUserId)
   if (user instanceof Error) return user
+
+  const phone =
+    user.phone ||
+    (user.deletedPhones && user.deletedPhones.length > 0
+      ? user.deletedPhones[0]
+      : undefined)
+
+  const phoneCheck = await checkAddQuizAttemptPerPhoneLimits(phone)
+  if (phoneCheck instanceof Error) return phoneCheck
 
   const validatedPhoneMetadata = PhoneMetadataAuthorizer(
     quizzesConfig.phoneMetadataValidationSettings,
@@ -124,6 +138,12 @@ export const claimQuiz = async ({
   )
   if (recipientBtcWallet === undefined) return new NoBtcWalletExistsForAccountError()
   const recipientWalletId = recipientBtcWallet.id
+
+  const funderWalletId = await getFunderWalletId()
+  const funderWallet = await WalletsRepository().findById(funderWalletId)
+  if (funderWallet instanceof Error) return funderWallet
+  const funderAccount = await AccountsRepository().findById(funderWallet.accountId)
+  if (funderAccount instanceof Error) return funderAccount
 
   const funderBalance = await getBalanceForWallet({ walletId: funderWalletId })
   if (funderBalance instanceof Error) return funderBalance

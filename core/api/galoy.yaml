@@ -84,7 +84,11 @@ rateLimits:
     duration: 86400
     blockDuration: 86400
   addQuizPerIp:
-    points: 125
+    points: 50
+    duration: 86400
+    blockDuration: 604800
+  addQuizPerPhone:
+    points: 20
     duration: 86400
     blockDuration: 604800
 accounts:
