@@ -4,6 +4,7 @@ export class NotificationsError extends DomainError {}
 
 export class NotificationsServiceError extends NotificationsError {}
 export class InvalidDeviceNotificationsServiceError extends NotificationsServiceError {}
+export class ConcurrentModificationNotificationsServiceError extends NotificationsServiceError {}
 export class DeviceTokensNotRegisteredNotificationsServiceError extends NotificationsServiceError {
   tokens: DeviceToken[]
   constructor(tokens: DeviceToken[], message?: string | unknown | Error) {

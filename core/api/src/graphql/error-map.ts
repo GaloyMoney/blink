@@ -587,6 +587,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "NotificationsError":
     case "NotificationsServiceError":
     case "InvalidDeviceNotificationsServiceError":
+    case "ConcurrentModificationNotificationsServiceError":
     case "DeviceTokensNotRegisteredNotificationsServiceError":
     case "AccountError":
     case "IpFetcherError":
