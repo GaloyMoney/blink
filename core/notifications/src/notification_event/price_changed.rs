@@ -43,13 +43,21 @@ impl PriceChanged {
     const COOL_OFF_PERIOD: chrono::Duration = chrono::Duration::days(2);
 
     pub fn should_notify(&self, last_trigger: Option<chrono::DateTime<chrono::Utc>>) -> bool {
-        if last_trigger.is_none() {
-            return true;
-        }
+        let now = chrono::Utc::now();
 
-        (chrono::Utc::now() - last_trigger.expect("already asserted")) > Self::COOL_OFF_PERIOD
-            && self.change_percent >= Self::NOTIFICATION_THRESHOLD
+        if self.change_percent >= Self::NOTIFICATION_THRESHOLD
             && self.direction == PriceChangeDirection::Up
+        {
+            match last_trigger {
+                Some(last_trigger_time) => {
+                    let time_since_last_trigger = now - last_trigger_time;
+                    time_since_last_trigger > Self::COOL_OFF_PERIOD
+                }
+                None => true,
+            }
+        } else {
+            false
+        }
     }
 }
 
@@ -91,25 +99,52 @@ mod tests {
         let price_changed = PriceChanged {
             price: PriceOfOneBitcoin {
                 minor_units: 100_000,
-                currency: Currency::Iso(rusty_money::iso::USD),
+                currency: "USD".parse().unwrap(),
             },
             direction: PriceChangeDirection::Up,
             change_percent: ChangePercentage(5.1),
         };
-        assert!(price_changed.should_notify());
+        assert!(price_changed.should_notify(None));
+        assert!(price_changed.should_notify(Some(chrono::Utc::now() - chrono::Duration::days(3))));
     }
 
     #[test]
-    fn price_changed_should_not_notify() {
+    fn price_changed_should_not_notify_on_price_drops() {
         let price_changed = PriceChanged {
             price: PriceOfOneBitcoin {
                 minor_units: 100_000,
-                currency: Currency::Iso(rusty_money::iso::USD),
+                currency: "USD".parse().unwrap(),
+            },
+            direction: PriceChangeDirection::Down,
+            change_percent: ChangePercentage(5.1),
+        };
+        assert!(!price_changed.should_notify(None));
+    }
+
+    #[test]
+    fn price_changed_should_not_notify_when_percentage_under_threshold() {
+        let price_changed = PriceChanged {
+            price: PriceOfOneBitcoin {
+                minor_units: 100_000,
+                currency: "USD".parse().unwrap(),
             },
             direction: PriceChangeDirection::Up,
             change_percent: ChangePercentage(4.9),
         };
-        assert!(!price_changed.should_notify());
+        assert!(!price_changed.should_notify(None));
+    }
+
+    #[test]
+    fn price_changed_should_not_notify_when_last_triggered_too_recent() {
+        let price_changed = PriceChanged {
+            price: PriceOfOneBitcoin {
+                minor_units: 100_000,
+                currency: "USD".parse().unwrap(),
+            },
+            direction: PriceChangeDirection::Up,
+            change_percent: ChangePercentage(5.1),
+        };
+        assert!(!price_changed.should_notify(Some(chrono::Utc::now())));
     }
 
     #[test]
@@ -117,7 +152,7 @@ mod tests {
         let price_changed = PriceChanged {
             price: PriceOfOneBitcoin {
                 minor_units: 100_000,
-                currency: Currency::Iso(rusty_money::iso::USD),
+                currency: "USD".parse().unwrap(),
             },
             direction: PriceChangeDirection::Up,
             change_percent: ChangePercentage(5.13),
