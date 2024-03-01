@@ -70,10 +70,11 @@ impl NotificationEvent for PriceChanged {
         DeepLink::None
     }
 
-    fn to_localized_push_msg(&self, _locale: GaloyLocale) -> LocalizedPushMessage {
-        let title = t!("price_changed.title").to_string();
+    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
+        let title = t!("price_changed.title", locale = locale.as_ref()).to_string();
         let body = t!(
             "price_changed.body",
+            locale = locale.as_ref(),
             percent_increase = format!("{:.1}", self.change_percent.0),
             price = self.price.to_string()
         )
