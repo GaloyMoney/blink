@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: fine tuning earn rate limits (#4095)...'
-      sha: 235850a22f2fd6307ce22b3932c741e083728091
+      commitTitle: 'chore(pay): updated setup page and currency dropdown (#4089)'
+      sha: 33d36e0c223aa108c633e5abbfa0f673c15d7bdf
       tags:
-      - 0.20.92-1-g235850a22
+      - 0.20.93-1-g33d36e0c2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: fine tuning earn rate limits (#4095)...'
-      sha: 235850a22f2fd6307ce22b3932c741e083728091
+      commitTitle: 'chore(pay): updated setup page and currency dropdown (#4089)'
+      sha: 33d36e0c223aa108c633e5abbfa0f673c15d7bdf
       tags:
-      - 0.20.92-1-g235850a22
+      - 0.20.93-1-g33d36e0c2
     path: schemas/
   - git:
-      commitTitle: 'chore: fine tuning earn rate limits (#4095)...'
-      sha: 235850a22f2fd6307ce22b3932c741e083728091
+      commitTitle: 'chore(pay): updated setup page and currency dropdown (#4089)'
+      sha: 33d36e0c223aa108c633e5abbfa0f673c15d7bdf
       tags:
-      - 0.20.92-1-g235850a22
+      - 0.20.94
     path: gql/
   path: ./graphql
 kind: LockConfig
