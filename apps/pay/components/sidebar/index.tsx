@@ -134,10 +134,8 @@ export function SideBar({ username }: { username: string }) {
               ),
             )}
 
-            <div className="flex justify-between align-content-center">
-              <div className="text-md font-semibold flex justify-center items-center">
-                Currency
-              </div>
+            <div className="flex flex-col justify-start align-content-center gap-1">
+              <div className="text-md font-semibold flex ">Currency</div>
               <CurrencyDropdown
                 onSelectedDisplayCurrencyChange={updateCurrencyAndReload}
               />
