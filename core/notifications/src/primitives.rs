@@ -174,11 +174,12 @@ impl Currency {
     ) -> std::fmt::Result {
         match self {
             Currency::Iso(c) => {
-                let mut money = rusty_money::Money::from_minor(minor_units as i64, *c);
-
-                if round_to_major {
-                    money = money.round(0, rusty_money::Round::HalfUp);
-                }
+                let money = if round_to_major {
+                    rusty_money::Money::from_minor(minor_units as i64, *c)
+                        .round(0, rusty_money::Round::HalfUp)
+                } else {
+                    rusty_money::Money::from_minor(minor_units as i64, *c)
+                };
 
                 write!(f, "{money}")
             }
