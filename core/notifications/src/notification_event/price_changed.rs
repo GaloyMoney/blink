@@ -40,8 +40,15 @@ pub struct PriceChanged {
 
 impl PriceChanged {
     const NOTIFICATION_THRESHOLD: ChangePercentage = ChangePercentage(5.0);
-    pub fn should_notify(&self) -> bool {
-        self.change_percent >= Self::NOTIFICATION_THRESHOLD
+    const COOL_OFF_PERIOD: chrono::Duration = chrono::Duration::days(2);
+
+    pub fn should_notify(&self, last_trigger: Option<chrono::DateTime<chrono::Utc>>) -> bool {
+        if last_trigger.is_none() {
+            return true;
+        }
+
+        (chrono::Utc::now() - last_trigger.expect("already asserted")) > Self::COOL_OFF_PERIOD
+            && self.change_percent >= Self::NOTIFICATION_THRESHOLD
             && self.direction == PriceChangeDirection::Up
     }
 }

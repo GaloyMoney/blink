@@ -195,19 +195,20 @@ impl NotificationsApp {
         &self,
         price_changed: PriceChanged,
     ) -> Result<(), ApplicationError> {
-        if price_changed.should_notify() {
-            let mut tx = self.pool.begin().await?;
+        let mut tx = self.pool.begin().await?;
+        let last_trigger =
+            NotificationCoolOffTracker::update_price_changed_trigger(&mut tx).await?;
 
-            if NotificationCoolOffTracker::can_trigger_price_changed(&mut tx).await? {
-                job::spawn_multi_user_event_dispatch(
-                    &mut tx,
-                    NotificationEventPayload::from(price_changed),
-                )
-                .await?;
-            }
+        if price_changed.should_notify(last_trigger) {
+            job::spawn_multi_user_event_dispatch(
+                &mut tx,
+                NotificationEventPayload::from(price_changed),
+            )
+            .await?;
 
             tx.commit().await?;
         }
+
         Ok(())
     }
 }

@@ -10,26 +10,23 @@ pub enum NotificationCoolOffTrackerError {
 pub struct NotificationCoolOffTracker {}
 
 impl NotificationCoolOffTracker {
-    const COOL_OFF_PERIOD: std::time::Duration = std::time::Duration::from_secs(60 * 60 * 24 * 3);
-
-    pub async fn can_trigger_price_changed(
+    pub async fn update_price_changed_trigger(
         tx: &mut Transaction<'_, Postgres>,
-    ) -> Result<bool, NotificationCoolOffTrackerError> {
-        let cool_off_threshold = chrono::Utc::now() - Self::COOL_OFF_PERIOD;
-
-        let row = sqlx::query!(
-            r#"
-                UPDATE notification_cool_off_tracker
-                SET last_triggered_at = now()
-                WHERE event_type = 'price_changed'
-                AND (last_triggered_at < $1 OR last_triggered_at IS NULL)
-                RETURNING event_type, last_triggered_at
-            "#,
-            cool_off_threshold
+    ) -> Result<Option<chrono::DateTime<chrono::Utc>>, NotificationCoolOffTrackerError> {
+        let res = sqlx::query!(
+            r#"WITH last_trigger AS (
+               SELECT last_triggered_at
+               FROM notification_cool_off_tracker
+               WHERE event_type = 'price_changed'
+               FOR UPDATE
+               )
+               UPDATE notification_cool_off_tracker
+               SET last_triggered_at = now()
+               WHERE event_type = 'price_changed'
+               RETURNING (SELECT last_triggered_at FROM last_trigger)"#
         )
-        .fetch_optional(&mut **tx)
+        .fetch_one(&mut **tx)
         .await?;
-
-        Ok(row.is_some())
+        Ok(res.last_triggered_at)
     }
 }
