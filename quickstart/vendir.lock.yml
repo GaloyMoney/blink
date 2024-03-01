@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(pay): updated setup page and currency dropdown (#4089)'
-      sha: 33d36e0c223aa108c633e5abbfa0f673c15d7bdf
+      commitTitle: 'fix(core): handle concurrent modification notification service
+        error (#4108)'
+      sha: a302b63a23bc3266694e16437ab4a6021a6fa51b
       tags:
-      - 0.20.93-1-g33d36e0c2
+      - 0.20.94-2-ga302b63a2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(pay): updated setup page and currency dropdown (#4089)'
-      sha: 33d36e0c223aa108c633e5abbfa0f673c15d7bdf
+      commitTitle: 'fix(core): handle concurrent modification notification service
+        error (#4108)'
+      sha: a302b63a23bc3266694e16437ab4a6021a6fa51b
       tags:
-      - 0.20.93-1-g33d36e0c2
+      - 0.20.94-2-ga302b63a2
     path: schemas/
   - git:
-      commitTitle: 'chore(pay): updated setup page and currency dropdown (#4089)'
-      sha: 33d36e0c223aa108c633e5abbfa0f673c15d7bdf
+      commitTitle: 'fix(core): handle concurrent modification notification service
+        error (#4108)'
+      sha: a302b63a23bc3266694e16437ab4a6021a6fa51b
       tags:
-      - 0.20.94
+      - 0.20.94-2-ga302b63a2
     path: gql/
   path: ./graphql
 kind: LockConfig
