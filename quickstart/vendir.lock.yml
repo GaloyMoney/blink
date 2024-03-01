@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): handle concurrent modification notification service
-        error (#4108)'
-      sha: a302b63a23bc3266694e16437ab4a6021a6fa51b
+      commitTitle: 'chore(core): increase retry count for Redlock'
+      sha: 09b7fecd20170c2f85787c989f8d2c99fa4fd525
       tags:
-      - 0.20.94-2-ga302b63a2
+      - 0.20.95-3-g09b7fecd2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): handle concurrent modification notification service
-        error (#4108)'
-      sha: a302b63a23bc3266694e16437ab4a6021a6fa51b
+      commitTitle: 'chore(core): increase retry count for Redlock'
+      sha: 09b7fecd20170c2f85787c989f8d2c99fa4fd525
       tags:
-      - 0.20.94-2-ga302b63a2
+      - 0.20.95-3-g09b7fecd2
     path: schemas/
   - git:
-      commitTitle: 'fix(core): handle concurrent modification notification service
-        error (#4108)'
-      sha: a302b63a23bc3266694e16437ab4a6021a6fa51b
+      commitTitle: 'chore(core): increase retry count for Redlock'
+      sha: 09b7fecd20170c2f85787c989f8d2c99fa4fd525
       tags:
-      - 0.20.94-2-ga302b63a2
+      - 0.20.95-3-g09b7fecd2
     path: gql/
   path: ./graphql
 kind: LockConfig
