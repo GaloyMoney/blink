@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): temp skip hedge tests (#4111)'
-      sha: f9f4244b6ed78d68d5b342d96506c3a768e19c36
+      commitTitle: 'fix(core): update notifications to fire and forget (#4113)...'
+      sha: 9fcb99ea9c3bdb16233b66b6b09cdd4ef9c0a84e
       tags:
-      - 0.20.96-1-gf9f4244b6
+      - 0.20.97-1-g9fcb99ea9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): temp skip hedge tests (#4111)'
-      sha: f9f4244b6ed78d68d5b342d96506c3a768e19c36
+      commitTitle: 'fix(core): update notifications to fire and forget (#4113)...'
+      sha: 9fcb99ea9c3bdb16233b66b6b09cdd4ef9c0a84e
       tags:
-      - 0.20.96-1-gf9f4244b6
+      - 0.20.97-1-g9fcb99ea9
     path: schemas/
   - git:
-      commitTitle: 'test(core): temp skip hedge tests (#4111)'
-      sha: f9f4244b6ed78d68d5b342d96506c3a768e19c36
+      commitTitle: 'fix(core): update notifications to fire and forget (#4113)...'
+      sha: 9fcb99ea9c3bdb16233b66b6b09cdd4ef9c0a84e
       tags:
-      - 0.20.96-1-gf9f4244b6
+      - 0.20.97-1-g9fcb99ea9
     path: gql/
   path: ./graphql
 kind: LockConfig
