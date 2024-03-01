@@ -35,10 +35,10 @@ impl PushExecutor {
         fields(n_errors, n_removed_tokens),
         err
     )]
-    pub async fn notify(
+    pub async fn notify<T: NotificationEvent + ?Sized>(
         &self,
         user_id: &GaloyUserId,
-        event: &dyn NotificationEvent,
+        event: &T,
     ) -> Result<(), PushExecutorError> {
         let mut settings = self.settings.find_for_user_id(user_id).await?;
         if !settings.should_send_notification(UserNotificationChannel::Push, event.category()) {
