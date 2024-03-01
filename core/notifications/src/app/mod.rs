@@ -8,8 +8,8 @@ use tracing::instrument;
 use std::sync::Arc;
 
 use crate::{
-    email_executor::EmailExecutor, job, notification_event::*, primitives::*, push_executor::*,
-    user_notification_settings::*,
+    email_executor::EmailExecutor, job, notification_cool_off_tracker::*, notification_event::*,
+    primitives::*, push_executor::*, user_notification_settings::*,
 };
 
 pub use config::*;
@@ -29,7 +29,8 @@ impl NotificationsApp {
         let push_executor =
             PushExecutor::init(config.push_executor.clone(), settings.clone()).await?;
         let email_executor = EmailExecutor::init(config.email_executor.clone(), settings.clone())?;
-        let runner = job::start_job_runner(&pool, push_executor, email_executor).await?;
+        let runner =
+            job::start_job_runner(&pool, push_executor, email_executor, settings.clone()).await?;
         Ok(Self {
             _config: config,
             pool,
@@ -171,7 +172,7 @@ impl NotificationsApp {
     }
 
     #[instrument(name = "app.handle_single_user_event", skip(self), err)]
-    pub async fn handle_single_user_event<T: NotificationEvent>(
+    pub async fn handle_single_user_event<T: std::fmt::Debug>(
         &self,
         user_id: GaloyUserId,
         event: T,
@@ -179,23 +180,35 @@ impl NotificationsApp {
     where
         NotificationEventPayload: From<T>,
     {
+        let payload = NotificationEventPayload::from(event);
         let mut tx = self.pool.begin().await?;
-        if event.should_send_email() {
-            job::spawn_send_email_notification(
+        if payload.should_send_email() {
+            job::spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
+        }
+        job::spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
+        tx.commit().await?;
+        Ok(())
+    }
+
+    #[instrument(name = "app.handle_price_changed_event", skip(self), err)]
+    pub async fn handle_price_changed_event(
+        &self,
+        price_changed: PriceChanged,
+    ) -> Result<(), ApplicationError> {
+        let mut tx = self.pool.begin().await?;
+        let last_trigger =
+            NotificationCoolOffTracker::update_price_changed_trigger(&mut tx).await?;
+
+        if price_changed.should_notify(last_trigger) {
+            job::spawn_multi_user_event_dispatch(
                 &mut tx,
-                (
-                    user_id.clone(),
-                    NotificationEventPayload::from(event.clone()),
-                ),
+                NotificationEventPayload::from(price_changed),
             )
             .await?;
+
+            tx.commit().await?;
         }
-        job::spawn_send_push_notification(
-            &mut tx,
-            (user_id, NotificationEventPayload::from(event)),
-        )
-        .await?;
-        tx.commit().await?;
+
         Ok(())
     }
 }

@@ -55,4 +55,30 @@ impl UserNotificationSettingsRepo {
         tx.commit().await?;
         Ok(())
     }
+
+    pub async fn list_ids_after(
+        &self,
+        id: &GaloyUserId,
+    ) -> Result<(Vec<GaloyUserId>, bool), UserNotificationSettingsError> {
+        let batch_limit = 1000;
+        let rows = sqlx::query!(
+            r#"SELECT galoy_user_id
+               FROM user_notification_settings
+               WHERE galoy_user_id > $1
+               ORDER BY galoy_user_id
+               LIMIT $2"#,
+            id.as_ref(),
+            batch_limit as i64 + 1,
+        )
+        .fetch_all(&self.pool)
+        .await?;
+        let more = rows.len() > batch_limit;
+        Ok((
+            rows.into_iter()
+                .take(batch_limit)
+                .map(|r| GaloyUserId::from(r.galoy_user_id))
+                .collect(),
+            more,
+        ))
+    }
 }

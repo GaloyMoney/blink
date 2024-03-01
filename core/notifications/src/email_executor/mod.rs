@@ -32,7 +32,7 @@ impl EmailExecutor {
     }
 
     #[instrument(name = "email_executor.notify", skip(self))]
-    pub async fn notify<T: NotificationEvent>(
+    pub async fn notify<T: NotificationEvent + ?Sized>(
         &self,
         user_id: &GaloyUserId,
         event: &T,
