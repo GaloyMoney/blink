@@ -1,27 +1,30 @@
 import * as admin from "firebase-admin"
-
 import { Messaging } from "firebase-admin/lib/messaging/messaging"
-
-import {
-  ShouldSendNotificationRequest,
-  NotificationChannel as GrpcNotificationChannel,
-} from "./proto/notifications_pb"
 
 import {
   shouldSendNotification as grpcShouldSendNotification,
   notificationsMetadata,
 } from "./grpc-client"
 
+import {
+  ShouldSendNotificationRequest,
+  NotificationChannel as GrpcNotificationChannel,
+} from "./proto/notifications_pb"
+
+import { handleCommonNotificationErrors } from "./errors"
+
 import { notificationCategoryToGrpcNotificationCategory } from "./convert"
+
+import { GOOGLE_APPLICATION_CREDENTIALS } from "@/config"
 
 import {
   DeviceTokensNotRegisteredNotificationsServiceError,
   InvalidDeviceNotificationsServiceError,
   NotificationsServiceError,
-  NotificationsServiceUnreachableServerError,
   UnknownNotificationsServiceError,
 } from "@/domain/notifications"
-import { ErrorLevel, parseErrorMessageFromUnknown } from "@/domain/shared"
+import { ErrorLevel } from "@/domain/shared"
+
 import { baseLogger } from "@/services/logger"
 import {
   addAttributesToCurrentSpan,
@@ -29,8 +32,6 @@ import {
   wrapAsyncFunctionsToRunInSpan,
   wrapAsyncToRunInSpan,
 } from "@/services/tracing"
-
-import { GOOGLE_APPLICATION_CREDENTIALS } from "@/config"
 
 const logger = baseLogger.child({ module: "notifications" })
 
@@ -133,7 +134,7 @@ export const PushNotificationsService = (): IPushNotificationSenderService => {
   }: {
     userId: UserId
     notificationCategory: NotificationCategory
-  }): Promise<boolean | UnknownNotificationsServiceError> => {
+  }): Promise<boolean | NotificationsServiceError> => {
     try {
       const request = new ShouldSendNotificationRequest()
       request.setUserId(userId)
@@ -146,7 +147,7 @@ export const PushNotificationsService = (): IPushNotificationSenderService => {
 
       return response.getShouldSend()
     } catch (err) {
-      return new UnknownNotificationsServiceError(err)
+      return handleCommonNotificationErrors(err)
     }
   }
 
@@ -193,28 +194,6 @@ export const PushNotificationsService = (): IPushNotificationSenderService => {
     },
   })
 }
-
-export const handleCommonNotificationErrors = (err: Error | string | unknown) => {
-  const errMsg = parseErrorMessageFromUnknown(err)
-
-  const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
-
-  switch (true) {
-    case match(KnownNotificationErrorMessages.GoogleBadGatewayError):
-    case match(KnownNotificationErrorMessages.GoogleInternalServerError):
-    case match(KnownNotificationErrorMessages.NoConnectionError):
-      return new NotificationsServiceUnreachableServerError(errMsg)
-
-    default:
-      return new UnknownNotificationsServiceError(errMsg)
-  }
-}
-
-export const KnownNotificationErrorMessages = {
-  GoogleBadGatewayError: /Raw server response .* Error 502/,
-  GoogleInternalServerError: /Raw server response .* Error 500/,
-  NoConnectionError: /UNAVAILABLE: No connection established/,
-} as const
 
 export const SendFilteredPushNotificationStatus = {
   Sent: "Sent",
