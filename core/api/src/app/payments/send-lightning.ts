@@ -64,7 +64,6 @@ import {
   checkWithdrawalLimits,
 } from "@/app/accounts"
 import { getCurrentPriceAsDisplayPriceRatio } from "@/app/prices"
-import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
 import {
   getTransactionForWalletByJournalId,
   getTransactionsForWalletByPaymentHash,
@@ -73,7 +72,6 @@ import {
 } from "@/app/wallets"
 
 import { ResourceExpiredLockServiceError } from "@/domain/lock"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
 const dealer = DealerPriceService()
 const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
@@ -544,7 +542,7 @@ const executePaymentViaIntraledger = async <
     })
     if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
 
-    const recipientResult = await NotificationsService().sendTransaction({
+    NotificationsService().sendTransaction({
       recipient: {
         accountId: recipientAccount.id,
         walletId: recipientWalletDescriptor.id,
@@ -553,13 +551,6 @@ const executePaymentViaIntraledger = async <
       },
       transaction: recipientWalletTransaction,
     })
-
-    if (recipientResult instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
-      await removeDeviceTokens({
-        userId: recipientUser.id,
-        deviceTokens: recipientResult.tokens,
-      })
-    }
 
     const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
     if (senderUser instanceof Error) return senderUser
@@ -570,7 +561,7 @@ const executePaymentViaIntraledger = async <
     })
     if (senderWalletTransaction instanceof Error) return senderWalletTransaction
 
-    const senderResult = await NotificationsService().sendTransaction({
+    NotificationsService().sendTransaction({
       recipient: {
         accountId: senderAccount.id,
         walletId: senderWalletDescriptor.id,
@@ -579,13 +570,6 @@ const executePaymentViaIntraledger = async <
       },
       transaction: senderWalletTransaction,
     })
-
-    if (senderResult instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
-      await removeDeviceTokens({
-        userId: senderUser.id,
-        deviceTokens: senderResult.tokens,
-      })
-    }
 
     if (senderAccount.id !== recipientAccount.id) {
       const addContactResult = await addContactsAfterSend({
@@ -809,7 +793,7 @@ const executePaymentViaLn = async ({
     })
     if (walletTransaction instanceof Error) return walletTransaction
 
-    const result = await NotificationsService().sendTransaction({
+    NotificationsService().sendTransaction({
       recipient: {
         accountId: senderWallet.accountId,
         walletId: senderWallet.id,
@@ -818,10 +802,6 @@ const executePaymentViaLn = async ({
       },
       transaction: walletTransaction,
     })
-
-    if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
-      await removeDeviceTokens({ userId: senderUser.id, deviceTokens: result.tokens })
-    }
 
     return {
       status: PaymentSendStatus.Success,

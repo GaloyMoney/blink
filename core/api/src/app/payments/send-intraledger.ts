@@ -8,7 +8,6 @@ import {
   getCurrentPriceAsDisplayPriceRatio,
   usdFromBtcMidPriceFn,
 } from "@/app/prices"
-import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
 import {
   getTransactionForWalletByJournalId,
   validateIsBtcWallet,
@@ -26,7 +25,6 @@ import { ErrorLevel } from "@/domain/shared"
 import { PaymentSendStatus } from "@/domain/bitcoin/lightning"
 import { ResourceExpiredLockServiceError } from "@/domain/lock"
 import { checkedToWalletId, SettlementMethod } from "@/domain/wallets"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
 import { LockService } from "@/services/lock"
 import { LedgerService } from "@/services/ledger"
@@ -351,7 +349,7 @@ const executePaymentViaIntraledger = async <
     })
     if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
 
-    const recipientResult = await NotificationsService().sendTransaction({
+    NotificationsService().sendTransaction({
       recipient: {
         accountId: recipientAccount.id,
         walletId: recipientWalletDescriptor.id,
@@ -360,13 +358,6 @@ const executePaymentViaIntraledger = async <
       },
       transaction: recipientWalletTransaction,
     })
-
-    if (recipientResult instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
-      await removeDeviceTokens({
-        userId: recipientUser.id,
-        deviceTokens: recipientResult.tokens,
-      })
-    }
 
     const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
     if (senderUser instanceof Error) return senderUser
@@ -377,7 +368,7 @@ const executePaymentViaIntraledger = async <
     })
     if (senderWalletTransaction instanceof Error) return senderWalletTransaction
 
-    const senderResult = await NotificationsService().sendTransaction({
+    NotificationsService().sendTransaction({
       recipient: {
         accountId: senderAccount.id,
         walletId: senderWalletDescriptor.id,
@@ -386,13 +377,6 @@ const executePaymentViaIntraledger = async <
       },
       transaction: senderWalletTransaction,
     })
-
-    if (senderResult instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
-      await removeDeviceTokens({
-        userId: senderUser.id,
-        deviceTokens: senderResult.tokens,
-      })
-    }
 
     return {
       status: PaymentSendStatus.Success,
