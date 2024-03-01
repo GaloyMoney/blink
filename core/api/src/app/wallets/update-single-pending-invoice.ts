@@ -8,7 +8,6 @@ import {
   ProcessedReason,
 } from "./process-pending-invoice-result"
 
-import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@/app/prices"
 
 import { CouldNotFindError, CouldNotFindWalletInvoiceError } from "@/domain/errors"
@@ -397,7 +396,7 @@ const lockedUpdatePendingInvoiceSteps = async ({
     return ProcessPendingInvoiceResult.processAsPaidWithError(walletTransaction)
   }
 
-  const result = await NotificationsService().sendTransaction({
+  NotificationsService().sendTransaction({
     recipient: {
       accountId: recipientAccountId,
       walletId: recipientWalletDescriptor.id,
@@ -406,13 +405,6 @@ const lockedUpdatePendingInvoiceSteps = async ({
     },
     transaction: walletTransaction,
   })
-
-  if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
-    await removeDeviceTokens({
-      userId: recipientUser.id,
-      deviceTokens: result.tokens,
-    })
-  }
 
   return ProcessPendingInvoiceResult.processAsPaid()
 }

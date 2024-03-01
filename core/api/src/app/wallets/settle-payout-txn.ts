@@ -1,7 +1,5 @@
 import { getTransactionForWalletByJournalId } from "./get-transaction-by-journal-id"
 
-import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
-
 import { displayAmountFromNumber } from "@/domain/fiat"
 import { InvalidLedgerTransactionStateError } from "@/domain/errors"
 import { WalletCurrency, paymentAmountFromNumber } from "@/domain/shared"
@@ -60,7 +58,7 @@ export const settlePayout = async (
   })
   if (walletTransaction instanceof Error) return walletTransaction
 
-  const result = await NotificationsService().sendTransaction({
+  NotificationsService().sendTransaction({
     recipient: {
       accountId: wallet.accountId,
       walletId: wallet.id,
@@ -69,10 +67,6 @@ export const settlePayout = async (
     },
     transaction: walletTransaction,
   })
-
-  if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
-    await removeDeviceTokens({ userId: user.id, deviceTokens: result.tokens })
-  }
 
   return true
 }

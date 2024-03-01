@@ -4,7 +4,6 @@ import {
   getCurrentPriceAsDisplayPriceRatio,
   getCurrentPriceAsWalletPriceRatio,
 } from "@/app/prices"
-import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
 
 import { UsdDisplayCurrency } from "@/domain/fiat"
 import { WalletCurrency } from "@/domain/shared"
@@ -58,15 +57,11 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
         }
       }
 
-      const result = await NotificationsService().sendBalance({
+      NotificationsService().sendBalance({
         balanceAmount,
         displayBalanceAmount: displayAmount,
         recipientUserId: user.id,
       })
-
-      if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
-        await removeDeviceTokens({ userId: user.id, deviceTokens: result.tokens })
-      }
 
       return true
     },

@@ -8,7 +8,6 @@ import { getTransactionForWalletByJournalId } from "./get-transaction-by-journal
 
 import { getFeesConfig, getOnChainWalletConfig } from "@/config"
 
-import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@/app/prices"
 
 import { DepositFeeCalculator } from "@/domain/wallets"
@@ -181,7 +180,7 @@ const addSettledTransactionBeforeFinally = async ({
     })
     if (walletTransaction instanceof Error) return walletTransaction
 
-    const result = await NotificationsService().sendTransaction({
+    NotificationsService().sendTransaction({
       recipient: {
         accountId: wallet.accountId,
         walletId: wallet.id,
@@ -190,13 +189,6 @@ const addSettledTransactionBeforeFinally = async ({
       },
       transaction: walletTransaction,
     })
-
-    if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
-      await removeDeviceTokens({
-        userId: user.id,
-        deviceTokens: result.tokens,
-      })
-    }
 
     return {
       walletDescriptor: wallet,
