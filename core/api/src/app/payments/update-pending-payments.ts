@@ -5,7 +5,6 @@ import { reimburseFailedUsdPayment } from "./reimburse-failed-usd"
 import { PaymentFlowFromLedgerTransaction } from "./translations"
 
 import { getTransactionForWalletByJournalId } from "@/app/wallets"
-import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
 
 import { toSats } from "@/domain/bitcoin"
 import { defaultTimeToExpiryInSeconds, PaymentStatus } from "@/domain/bitcoin/lightning"
@@ -19,7 +18,6 @@ import {
 } from "@/domain/ledger"
 import { MissingPropsInTransactionForPaymentFlowError } from "@/domain/payments"
 import { setErrorCritical, WalletCurrency } from "@/domain/shared"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
 import { LedgerService, getNonEndUserWalletIds } from "@/services/ledger"
 import * as LedgerFacade from "@/services/ledger/facade"
@@ -275,7 +273,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       })
       if (walletTransaction instanceof Error) return walletTransaction
 
-      const result = await NotificationsService().sendTransaction({
+      NotificationsService().sendTransaction({
         recipient: {
           accountId: senderWallet.accountId,
           walletId,
@@ -284,13 +282,6 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         },
         transaction: walletTransaction,
       })
-
-      if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
-        await removeDeviceTokens({
-          userId: senderUser.id,
-          deviceTokens: result.tokens,
-        })
-      }
 
       if (pendingPayment.feeKnownInAdvance) return true
 

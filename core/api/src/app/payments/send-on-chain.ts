@@ -12,7 +12,6 @@ import {
   getCurrentPriceAsDisplayPriceRatio,
   usdFromBtcMidPriceFn,
 } from "@/app/prices"
-import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
 import {
   getMinerFeeAndPaymentFlow,
   getTransactionForWalletByJournalId,
@@ -26,7 +25,6 @@ import { checkedToOnChainAddress } from "@/domain/bitcoin/onchain"
 import { CouldNotFindError, InsufficientBalanceError } from "@/domain/errors"
 import { DisplayAmountsConverter } from "@/domain/fiat"
 import { ResourceExpiredLockServiceError } from "@/domain/lock"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   WalletPriceRatio,
@@ -434,7 +432,7 @@ const executePaymentViaIntraledger = async <
     if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
 
     // Send 'received'-side intraledger notification
-    const recipientResult = await NotificationsService().sendTransaction({
+    NotificationsService().sendTransaction({
       recipient: {
         accountId: recipientWallet.accountId,
         walletId: recipientWallet.id,
@@ -443,13 +441,6 @@ const executePaymentViaIntraledger = async <
       },
       transaction: recipientWalletTransaction,
     })
-
-    if (recipientResult instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
-      await removeDeviceTokens({
-        userId: recipientUser.id,
-        deviceTokens: recipientResult.tokens,
-      })
-    }
 
     const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
     if (senderUser instanceof Error) return senderUser
@@ -460,7 +451,7 @@ const executePaymentViaIntraledger = async <
     })
     if (senderWalletTransaction instanceof Error) return senderWalletTransaction
 
-    const senderResult = await NotificationsService().sendTransaction({
+    NotificationsService().sendTransaction({
       recipient: {
         accountId: senderAccount.id,
         walletId: senderWalletDescriptor.id,
@@ -469,13 +460,6 @@ const executePaymentViaIntraledger = async <
       },
       transaction: senderWalletTransaction,
     })
-
-    if (senderResult instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
-      await removeDeviceTokens({
-        userId: senderUser.id,
-        deviceTokens: senderResult.tokens,
-      })
-    }
 
     return { status: PaymentSendStatus.Success, transaction: senderWalletTransaction }
   })
