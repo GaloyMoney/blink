@@ -3,12 +3,18 @@ mod send_push_notification;
 
 pub mod error;
 
+use serde::{Deserialize, Serialize};
 use sqlxmq::{job, CurrentJob, JobRegistry, JobRunnerHandle};
 use tracing::instrument;
 
+use std::collections::HashMap;
+
 use job_executor::JobExecutor;
 
-use crate::{email_executor::EmailExecutor, push_executor::PushExecutor};
+use crate::{
+    email_executor::EmailExecutor, notification_event::*, primitives::GaloyUserId,
+    push_executor::PushExecutor, user_notification_settings::*,
+};
 
 use error::JobError;
 
@@ -19,12 +25,58 @@ pub async fn start_job_runner(
     pool: &sqlx::PgPool,
     push_executor: PushExecutor,
     email_executor: EmailExecutor,
+    settings: UserNotificationSettingsRepo,
 ) -> Result<JobRunnerHandle, JobError> {
-    let mut registry = JobRegistry::new(&[send_push_notification, send_email_notification]);
+    let mut registry = JobRegistry::new(&[
+        multi_user_event_dispatch,
+        send_push_notification,
+        send_email_notification,
+    ]);
     registry.set_context(push_executor);
     registry.set_context(email_executor);
+    registry.set_context(settings);
 
     Ok(registry.runner(pool).set_keep_alive(false).run().await?)
+}
+
+#[job(
+    name = "multi_user_event_dispatch",
+    channel_name = "multi_user_event_dispatch"
+)]
+async fn multi_user_event_dispatch(
+    mut current_job: CurrentJob,
+    settings: UserNotificationSettingsRepo,
+) -> Result<(), JobError> {
+    let pool = current_job.pool().clone();
+    JobExecutor::builder(&mut current_job)
+        .build()
+        .expect("couldn't build JobExecutor")
+        .execute(|data| async move {
+            let data: MultiUserEventDispatchData =
+                data.expect("no MultiUserEventDispatchData available");
+            let (ids, more) = settings.list_ids_after(&data.search_id).await?;
+            let mut tx = pool.begin().await?;
+            if more {
+                let data = MultiUserEventDispatchData {
+                    search_id: ids.last().expect("there should always be an id").clone(),
+                    payload: data.payload.clone(),
+                    tracing_data: tracing::extract_tracing_data(),
+                };
+                spawn_multi_user_event_dispatch(&mut tx, data).await?;
+            }
+            for user_id in ids {
+                let payload = data.payload.clone();
+                if payload.should_send_email() {
+                    spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone()))
+                        .await?;
+                }
+                spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
+            }
+            tx.commit().await?;
+            Ok::<_, JobError>(data)
+        })
+        .await?;
+    Ok(())
 }
 
 #[job(
@@ -54,6 +106,25 @@ pub async fn spawn_send_push_notification(
 ) -> Result<(), JobError> {
     let data = data.into();
     if let Err(e) = send_push_notification
+        .builder()
+        .set_json(&data)
+        .expect("Couldn't set json")
+        .spawn(&mut **tx)
+        .await
+    {
+        tracing::insert_error_fields(tracing::Level::WARN, &e);
+        return Err(e.into());
+    }
+    Ok(())
+}
+
+#[instrument(name = "job.spawn_multi_user_event_dispatch", skip_all, fields(error, error.level, error.message), err)]
+pub async fn spawn_multi_user_event_dispatch(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    data: impl Into<MultiUserEventDispatchData>,
+) -> Result<(), JobError> {
+    let data = data.into();
+    if let Err(e) = multi_user_event_dispatch
         .builder()
         .set_json(&data)
         .expect("Couldn't set json")
@@ -103,4 +174,22 @@ pub async fn spawn_send_email_notification(
         return Err(e.into());
     }
     Ok(())
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub(super) struct MultiUserEventDispatchData {
+    search_id: GaloyUserId,
+    payload: NotificationEventPayload,
+    #[serde(flatten)]
+    pub(super) tracing_data: HashMap<String, serde_json::Value>,
+}
+
+impl From<NotificationEventPayload> for MultiUserEventDispatchData {
+    fn from(payload: NotificationEventPayload) -> Self {
+        Self {
+            search_id: GaloyUserId::from(String::new()),
+            payload,
+            tracing_data: tracing::extract_tracing_data(),
+        }
+    }
 }

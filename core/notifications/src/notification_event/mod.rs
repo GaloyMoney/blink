@@ -3,6 +3,7 @@ mod circle_threshold_reached;
 mod identity_verification_approved;
 mod identity_verification_declined;
 mod identity_verification_review_started;
+mod price_changed;
 mod transaction_info;
 
 use serde::{Deserialize, Serialize};
@@ -14,6 +15,7 @@ pub(super) use circle_threshold_reached::*;
 pub(super) use identity_verification_approved::*;
 pub(super) use identity_verification_declined::*;
 pub(super) use identity_verification_review_started::*;
+pub(super) use price_changed::*;
 pub(super) use transaction_info::*;
 
 pub enum DeepLink {
@@ -21,7 +23,7 @@ pub enum DeepLink {
     Circles,
 }
 
-pub trait NotificationEvent: std::fmt::Debug + Clone {
+pub trait NotificationEvent: std::fmt::Debug + Send + Sync {
     fn category(&self) -> UserNotificationCategory;
     fn deep_link(&self) -> DeepLink;
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage;
@@ -38,84 +40,28 @@ pub enum NotificationEventPayload {
     IdentityVerificationDeclined(IdentityVerificationDeclined),
     IdentityVerificationReviewStarted(IdentityVerificationReviewStarted),
     TransactionInfo(TransactionInfo),
+    PriceChanged(PriceChanged),
 }
 
-impl NotificationEvent for NotificationEventPayload {
-    fn category(&self) -> UserNotificationCategory {
+impl AsRef<dyn NotificationEvent> for NotificationEventPayload {
+    fn as_ref(&self) -> &(dyn NotificationEvent + 'static) {
         match self {
-            NotificationEventPayload::CircleGrew(e) => e.category(),
-            NotificationEventPayload::CircleThresholdReached(e) => e.category(),
-            NotificationEventPayload::IdentityVerificationApproved(e) => e.category(),
-            NotificationEventPayload::IdentityVerificationDeclined(e) => e.category(),
-            NotificationEventPayload::IdentityVerificationReviewStarted(e) => e.category(),
-            NotificationEventPayload::TransactionInfo(e) => e.category(),
+            NotificationEventPayload::CircleGrew(event) => event,
+            NotificationEventPayload::CircleThresholdReached(event) => event,
+            NotificationEventPayload::IdentityVerificationApproved(event) => event,
+            NotificationEventPayload::IdentityVerificationDeclined(event) => event,
+            NotificationEventPayload::IdentityVerificationReviewStarted(event) => event,
+            NotificationEventPayload::TransactionInfo(event) => event,
+            NotificationEventPayload::PriceChanged(event) => event,
         }
     }
+}
 
-    fn deep_link(&self) -> DeepLink {
-        match self {
-            NotificationEventPayload::CircleGrew(event) => event.deep_link(),
-            NotificationEventPayload::CircleThresholdReached(event) => event.deep_link(),
-            NotificationEventPayload::IdentityVerificationApproved(event) => event.deep_link(),
-            NotificationEventPayload::IdentityVerificationDeclined(event) => event.deep_link(),
-            NotificationEventPayload::IdentityVerificationReviewStarted(event) => event.deep_link(),
-            NotificationEventPayload::TransactionInfo(event) => event.deep_link(),
-        }
-    }
+impl std::ops::Deref for NotificationEventPayload {
+    type Target = dyn NotificationEvent;
 
-    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
-        match self {
-            NotificationEventPayload::CircleGrew(event) => event.to_localized_push_msg(locale),
-            NotificationEventPayload::CircleThresholdReached(event) => {
-                event.to_localized_push_msg(locale)
-            }
-            NotificationEventPayload::IdentityVerificationApproved(event) => {
-                event.to_localized_push_msg(locale)
-            }
-            NotificationEventPayload::IdentityVerificationDeclined(event) => {
-                event.to_localized_push_msg(locale)
-            }
-            NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
-                event.to_localized_push_msg(locale)
-            }
-            NotificationEventPayload::TransactionInfo(event) => event.to_localized_push_msg(locale),
-        }
-    }
-
-    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
-        match self {
-            NotificationEventPayload::CircleGrew(event) => event.to_localized_email(locale),
-            NotificationEventPayload::CircleThresholdReached(event) => {
-                event.to_localized_email(locale)
-            }
-            NotificationEventPayload::IdentityVerificationApproved(event) => {
-                event.to_localized_email(locale)
-            }
-            NotificationEventPayload::IdentityVerificationDeclined(event) => {
-                event.to_localized_email(locale)
-            }
-            NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
-                event.to_localized_email(locale)
-            }
-            NotificationEventPayload::TransactionInfo(event) => event.to_localized_email(locale),
-        }
-    }
-
-    fn should_send_email(&self) -> bool {
-        match self {
-            NotificationEventPayload::CircleGrew(event) => event.should_send_email(),
-            NotificationEventPayload::CircleThresholdReached(event) => event.should_send_email(),
-            NotificationEventPayload::IdentityVerificationApproved(event) => {
-                event.should_send_email()
-            }
-            NotificationEventPayload::IdentityVerificationDeclined(event) => {
-                event.should_send_email()
-            }
-            NotificationEventPayload::IdentityVerificationReviewStarted(event) => {
-                event.should_send_email()
-            }
-            NotificationEventPayload::TransactionInfo(event) => event.should_send_email(),
-        }
+    fn deref(&self) -> &Self::Target {
+        self.as_ref()
     }
 }
 
@@ -152,5 +98,11 @@ impl From<IdentityVerificationReviewStarted> for NotificationEventPayload {
 impl From<TransactionInfo> for NotificationEventPayload {
     fn from(event: TransactionInfo) -> Self {
         NotificationEventPayload::TransactionInfo(event)
+    }
+}
+
+impl From<PriceChanged> for NotificationEventPayload {
+    fn from(event: PriceChanged) -> Self {
+        NotificationEventPayload::PriceChanged(event)
     }
 }
