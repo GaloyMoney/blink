@@ -16,7 +16,6 @@ import { DisplayAmountsConverter } from "@/domain/fiat"
 import { InvoiceNotFoundError } from "@/domain/bitcoin/lightning"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
 import { WalletInvoiceReceiver } from "@/domain/wallet-invoices/wallet-invoice-receiver"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
 import {
   addAttributesToCurrentSpan,

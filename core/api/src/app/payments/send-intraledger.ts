@@ -25,7 +25,6 @@ import { ErrorLevel } from "@/domain/shared"
 import { PaymentSendStatus } from "@/domain/bitcoin/lightning"
 import { ResourceExpiredLockServiceError } from "@/domain/lock"
 import { checkedToWalletId, SettlementMethod } from "@/domain/wallets"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
 import { LockService } from "@/services/lock"
 import { LedgerService } from "@/services/ledger"

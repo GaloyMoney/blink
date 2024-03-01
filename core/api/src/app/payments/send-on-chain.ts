@@ -25,7 +25,6 @@ import { checkedToOnChainAddress } from "@/domain/bitcoin/onchain"
 import { CouldNotFindError, InsufficientBalanceError } from "@/domain/errors"
 import { DisplayAmountsConverter } from "@/domain/fiat"
 import { ResourceExpiredLockServiceError } from "@/domain/lock"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   WalletPriceRatio,

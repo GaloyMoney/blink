@@ -7,7 +7,6 @@ import {
 
 import { UsdDisplayCurrency } from "@/domain/fiat"
 import { WalletCurrency } from "@/domain/shared"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
 import { LedgerService } from "@/services/ledger"
 import { wrapAsyncToRunInSpan } from "@/services/tracing"

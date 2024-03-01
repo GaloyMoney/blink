@@ -14,7 +14,6 @@ import { DepositFeeCalculator } from "@/domain/wallets"
 import { DisplayAmountsConverter } from "@/domain/fiat"
 import { CouldNotFindError, LessThanDustThresholdError } from "@/domain/errors"
 import { WalletAddressReceiver } from "@/domain/wallet-on-chain/wallet-address-receiver"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 import { toDisplayBaseAmount } from "@/domain/payments"
 
 import {

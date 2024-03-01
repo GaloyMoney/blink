@@ -3,7 +3,6 @@ import { getTransactionForWalletByJournalId } from "./get-transaction-by-journal
 import { displayAmountFromNumber } from "@/domain/fiat"
 import { InvalidLedgerTransactionStateError } from "@/domain/errors"
 import { WalletCurrency, paymentAmountFromNumber } from "@/domain/shared"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
 import * as LedgerFacade from "@/services/ledger/facade"
 import {

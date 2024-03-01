@@ -18,7 +18,6 @@ import {
 } from "@/domain/ledger"
 import { MissingPropsInTransactionForPaymentFlowError } from "@/domain/payments"
 import { setErrorCritical, WalletCurrency } from "@/domain/shared"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
 import { LedgerService, getNonEndUserWalletIds } from "@/services/ledger"
 import * as LedgerFacade from "@/services/ledger/facade"

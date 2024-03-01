@@ -72,7 +72,6 @@ import {
 } from "@/app/wallets"
 
 import { ResourceExpiredLockServiceError } from "@/domain/lock"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
 const dealer = DealerPriceService()
 const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)

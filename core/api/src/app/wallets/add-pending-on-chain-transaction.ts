@@ -9,7 +9,6 @@ import {
 } from "@/domain/wallets"
 import { WalletAddressReceiver } from "@/domain/wallet-on-chain/wallet-address-receiver"
 import { DuplicateKeyForPersistError, LessThanDustThresholdError } from "@/domain/errors"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
 import {
   AccountsRepository,
