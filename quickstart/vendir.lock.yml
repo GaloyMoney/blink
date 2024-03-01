@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): temp skip lock-fail test (#4110)'
-      sha: e4cc16f5a205980f37fd2df1f471a7916e9d8397
+      commitTitle: 'test(core): temp skip hedge tests (#4111)'
+      sha: f9f4244b6ed78d68d5b342d96506c3a768e19c36
       tags:
-      - 0.20.95-5-ge4cc16f5a
+      - 0.20.96-1-gf9f4244b6
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): temp skip lock-fail test (#4110)'
-      sha: e4cc16f5a205980f37fd2df1f471a7916e9d8397
+      commitTitle: 'test(core): temp skip hedge tests (#4111)'
+      sha: f9f4244b6ed78d68d5b342d96506c3a768e19c36
       tags:
-      - 0.20.95-5-ge4cc16f5a
+      - 0.20.96-1-gf9f4244b6
     path: schemas/
   - git:
-      commitTitle: 'test(core): temp skip lock-fail test (#4110)'
-      sha: e4cc16f5a205980f37fd2df1f471a7916e9d8397
+      commitTitle: 'test(core): temp skip hedge tests (#4111)'
+      sha: f9f4244b6ed78d68d5b342d96506c3a768e19c36
       tags:
-      - 0.20.95-5-ge4cc16f5a
+      - 0.20.96-1-gf9f4244b6
     path: gql/
   path: ./graphql
 kind: LockConfig
