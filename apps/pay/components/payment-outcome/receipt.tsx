@@ -14,6 +14,7 @@ interface Props {
   paymentRequest: string
   memo: string | string[] | undefined
   paymentAmount: string | string[] | undefined
+  isCurrencySats: boolean
 }
 
 function receipt(props: Props) {
@@ -25,14 +26,15 @@ function receipt(props: Props) {
 
       <div className="text-center">
         <span>Transaction Amount</span>
-
-        <h1
-          style={{
-            fontSize: "2.5rem",
-          }}
-        >
-          {props.sats} sats
-        </h1>
+        {!props.isCurrencySats && (
+          <h1
+            style={{
+              fontSize: "2.5rem",
+            }}
+          >
+            {props.sats} sats
+          </h1>
+        )}
         <span> ~ {localStorage.getItem("formattedFiatValue")}</span>
 
         <div className="d-flex justify-content-center">

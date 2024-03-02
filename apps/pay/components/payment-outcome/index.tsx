@@ -15,6 +15,7 @@ import styles from "./payment-outcome.module.css"
 import Receipt from "./receipt"
 
 import { extractSearchParams } from "@/utils/utils"
+import { useInvoiceContext } from "@/context/invoice-context"
 
 interface Props {
   paymentRequest: string
@@ -40,7 +41,8 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: P
   const searchParams = useSearchParams()
   const { username } = useParams()
   const { amount, memo } = extractSearchParams(searchParams)
-
+  const { state } = useInvoiceContext()
+  const isCurrencySats = state.displayCurrencyMetaData.id === "SAT"
   const componentRef = useRef<HTMLDivElement | null>(null)
 
   const printReceipt = useReactToPrint({
@@ -93,7 +95,7 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: P
             />
             <p className={styles.text}>
               {`The invoice of ${localStorage.getItem("formattedFiatValue")}
-               (~${satoshis} sats)
+             ${!isCurrencySats ? `(~${satoshis} sats)` : ""}
                 has been paid`}
             </p>
 
@@ -107,6 +109,7 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: P
                   paymentRequest={paymentRequest}
                   paymentAmount={paymentAmount}
                   memo={memo}
+                  isCurrencySats={isCurrencySats}
                 />
               </div>
             </div>
