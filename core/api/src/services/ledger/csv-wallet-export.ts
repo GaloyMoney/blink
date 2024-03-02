@@ -3,47 +3,57 @@ import { createObjectCsvStringifier, createObjectCsvWriter } from "csv-writer"
 import { LedgerService } from "@/services/ledger"
 import { baseLogger } from "@/services/logger"
 
-const headers_field = [
+const header = [
   "id",
   "walletId",
   "type",
   "credit",
   "debit",
-  "fee",
   "currency",
   "timestamp",
   "pendingConfirmation",
   "journalId",
   "lnMemo",
-  "usd",
-  "feeUsd",
   "recipientWalletId",
   "username",
   "memoFromPayer",
   "paymentHash",
   "pubkey",
   "feeKnownInAdvance",
-  "address",
-  "txHash",
+  "satsAmount",
+  "centsAmount",
+  "satsFee",
+  "centsFee",
   "displayAmount",
   "displayFee",
   "displayCurrency",
-]
+  "address",
+  "txHash",
+  "vout",
+].map((item) => ({ id: item, title: item }))
 
-const header = headers_field.map((item) => ({ id: item, title: item }))
+export const CsvWalletsExporter = (walletIds: WalletId[]) => {
+  const entries: LedgerTransaction<WalletCurrency>[] = []
 
-export class CsvWalletsExport {
-  entries: LedgerTransaction<WalletCurrency>[] = []
+  const getBase64 = async (): Promise<string | Error> => {
+    // TODO: use getTransactionsByWalletIds
+    // but first need to understand how not to do pagination
 
-  getBase64(): string {
+    for (const walletId of walletIds) {
+      const txs = await LedgerService().getTransactionsByWalletId(walletId)
+      if (txs instanceof Error) return txs
+
+      entries.push(...txs)
+    }
+
     const csvWriter = createObjectCsvStringifier({
       header,
     })
 
-    const header_stringify = csvWriter.getHeaderString()
-    const records = csvWriter.stringifyRecords(this.entries)
+    const headerStringify = csvWriter.getHeaderString()
+    const records = csvWriter.stringifyRecords(entries)
 
-    const str = header_stringify + records
+    const str = headerStringify + records
 
     // create buffer from string
     const binaryData = Buffer.from(str, "utf8")
@@ -54,22 +64,24 @@ export class CsvWalletsExport {
     return base64Data
   }
 
-  async saveToDisk(): Promise<void> {
+  const email = async () => {
+    // TODO
+
     const csvWriter = createObjectCsvWriter({
       path: "export_accounts.csv",
       header,
     })
 
-    await csvWriter.writeRecords(this.entries)
+    // save to disk
+    await csvWriter.writeRecords(entries)
     baseLogger.info("saving complete")
+
+    // need to upload to a s3-like with a ~1 week peremption
+    // and send email to client with the link
   }
 
-  async addWallet(walletId: WalletId): Promise<void | ApplicationError> {
-    // TODO: interface could be improved by returning self, so that it's
-    // possible to run csv.addWallet(wallet).getBase64()
-    const txs = await LedgerService().getTransactionsByWalletId(walletId)
-    if (txs instanceof Error) return txs
-
-    this.entries.push(...txs)
+  return {
+    getBase64,
+    email,
   }
 }

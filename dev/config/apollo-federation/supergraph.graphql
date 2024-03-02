@@ -25,7 +25,7 @@ interface Account
   @join__type(graph: PUBLIC)
 {
   callbackEndpoints: [CallbackEndpoint!]!
-  csvTransactions(walletIds: [WalletId!]!): String!
+  csvTransactions(walletIds: [WalletId!]!): String! @deprecated(reason: "use mutation csvReportGenerate instead")
   defaultWallet: PublicWallet!
   defaultWalletId: WalletId! @deprecated(reason: "Shifting property to 'defaultWallet.id'")
   displayCurrency: DisplayCurrency!
@@ -383,7 +383,7 @@ type ConsumerAccount implements Account
   """
   return CSV stream, base64 encoded, of the list of transactions in the wallet
   """
-  csvTransactions(walletIds: [WalletId!]!): String!
+  csvTransactions(walletIds: [WalletId!]!): String! @deprecated(reason: "use mutation csvReportGenerate instead")
   defaultWallet: PublicWallet!
   defaultWalletId: WalletId!
   displayCurrency: DisplayCurrency!
@@ -457,6 +457,25 @@ type Country
 """A CCA2 country code (ex US, FR, etc)"""
 scalar CountryCode
   @join__type(graph: PUBLIC)
+
+enum CSVReportGenerateChannel
+  @join__type(graph: PUBLIC)
+{
+  InlineBase64CSV @join__enumValue(graph: PUBLIC)
+}
+
+input CSVReportGenerateInput
+  @join__type(graph: PUBLIC)
+{
+  channel: CSVReportGenerateChannel
+}
+
+type CsvReportGeneratePayload
+  @join__type(graph: PUBLIC)
+{
+  content: String
+  errors: [Error!]!
+}
 
 type Currency
   @join__type(graph: PUBLIC)
@@ -1142,6 +1161,7 @@ type Mutation
   callbackEndpointDelete(input: CallbackEndpointDeleteInput!): SuccessPayload! @join__field(graph: PUBLIC)
   captchaCreateChallenge: CaptchaCreateChallengePayload! @join__field(graph: PUBLIC)
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload! @join__field(graph: PUBLIC)
+  csvReportGenerate(input: CSVReportGenerateInput): CsvReportGeneratePayload! @join__field(graph: PUBLIC)
   deviceNotificationTokenCreate(input: DeviceNotificationTokenCreateInput!): SuccessPayload! @join__field(graph: PUBLIC)
   feedbackSubmit(input: FeedbackSubmitInput!): SuccessPayload! @join__field(graph: PUBLIC)
 

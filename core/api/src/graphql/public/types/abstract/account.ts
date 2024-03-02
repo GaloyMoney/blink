@@ -48,6 +48,7 @@ const IAccount = GT.Interface({
       type: GT.NonNull(RealtimePrice),
     },
     csvTransactions: {
+      deprecationReason: "use mutation csvReportGenerate instead",
       type: GT.NonNull(GT.String),
       args: {
         walletIds: {

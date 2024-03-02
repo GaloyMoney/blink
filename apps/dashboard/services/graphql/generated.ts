@@ -88,6 +88,7 @@ export type Scalars = {
 
 export type Account = {
   readonly callbackEndpoints: ReadonlyArray<CallbackEndpoint>;
+  /** @deprecated use mutation csvReportGenerate instead */
   readonly csvTransactions: Scalars['String']['output'];
   readonly defaultWallet: PublicWallet;
   /** @deprecated Shifting property to 'defaultWallet.id' */
@@ -347,6 +348,15 @@ export type BuildInformation = {
   readonly helmRevision?: Maybe<Scalars['Int']['output']>;
 };
 
+export const CsvReportGenerateChannel = {
+  InlineBase64Csv: 'InlineBase64CSV'
+} as const;
+
+export type CsvReportGenerateChannel = typeof CsvReportGenerateChannel[keyof typeof CsvReportGenerateChannel];
+export type CsvReportGenerateInput = {
+  readonly channel?: InputMaybe<CsvReportGenerateChannel>;
+};
+
 export type CallbackEndpoint = {
   readonly __typename: 'CallbackEndpoint';
   readonly id: Scalars['EndpointId']['output'];
@@ -399,7 +409,10 @@ export type CentAmountPayload = {
 export type ConsumerAccount = Account & {
   readonly __typename: 'ConsumerAccount';
   readonly callbackEndpoints: ReadonlyArray<CallbackEndpoint>;
-  /** return CSV stream, base64 encoded, of the list of transactions in the wallet */
+  /**
+   * return CSV stream, base64 encoded, of the list of transactions in the wallet
+   * @deprecated use mutation csvReportGenerate instead
+   */
   readonly csvTransactions: Scalars['String']['output'];
   readonly defaultWallet: PublicWallet;
   readonly defaultWalletId: Scalars['WalletId']['output'];
@@ -463,6 +476,12 @@ export type Country = {
   readonly __typename: 'Country';
   readonly id: Scalars['CountryCode']['output'];
   readonly supportedAuthChannels: ReadonlyArray<PhoneCodeChannelType>;
+};
+
+export type CsvReportGeneratePayload = {
+  readonly __typename: 'CsvReportGeneratePayload';
+  readonly content?: Maybe<Scalars['String']['output']>;
+  readonly errors: ReadonlyArray<Error>;
 };
 
 export type Currency = {
@@ -913,6 +932,7 @@ export type Mutation = {
   readonly callbackEndpointDelete: SuccessPayload;
   readonly captchaCreateChallenge: CaptchaCreateChallengePayload;
   readonly captchaRequestAuthCode: SuccessPayload;
+  readonly csvReportGenerate: CsvReportGeneratePayload;
   readonly deviceNotificationTokenCreate: SuccessPayload;
   readonly feedbackSubmit: SuccessPayload;
   /**
@@ -1084,6 +1104,11 @@ export type MutationCallbackEndpointDeleteArgs = {
 
 export type MutationCaptchaRequestAuthCodeArgs = {
   input: CaptchaRequestAuthCodeInput;
+};
+
+
+export type MutationCsvReportGenerateArgs = {
+  input?: InputMaybe<CsvReportGenerateInput>;
 };
 
 
@@ -3396,6 +3421,8 @@ export type ResolversTypes = {
   Authorization: ResolverTypeWrapper<Authorization>;
   BTCWallet: ResolverTypeWrapper<BtcWallet>;
   BuildInformation: ResolverTypeWrapper<BuildInformation>;
+  CSVReportGenerateChannel: CsvReportGenerateChannel;
+  CSVReportGenerateInput: CsvReportGenerateInput;
   CallbackEndpoint: ResolverTypeWrapper<CallbackEndpoint>;
   CallbackEndpointAddInput: CallbackEndpointAddInput;
   CallbackEndpointAddPayload: ResolverTypeWrapper<CallbackEndpointAddPayload>;
@@ -3411,6 +3438,7 @@ export type ResolversTypes = {
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   Country: ResolverTypeWrapper<Country>;
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
+  CsvReportGeneratePayload: ResolverTypeWrapper<CsvReportGeneratePayload>;
   Currency: ResolverTypeWrapper<Currency>;
   DepositFeesInformation: ResolverTypeWrapper<DepositFeesInformation>;
   DeviceNotificationTokenCreateInput: DeviceNotificationTokenCreateInput;
@@ -3621,6 +3649,7 @@ export type ResolversParentTypes = {
   Authorization: Authorization;
   BTCWallet: BtcWallet;
   BuildInformation: BuildInformation;
+  CSVReportGenerateInput: CsvReportGenerateInput;
   CallbackEndpoint: CallbackEndpoint;
   CallbackEndpointAddInput: CallbackEndpointAddInput;
   CallbackEndpointAddPayload: CallbackEndpointAddPayload;
@@ -3636,6 +3665,7 @@ export type ResolversParentTypes = {
   Float: Scalars['Float']['output'];
   Country: Country;
   CountryCode: Scalars['CountryCode']['output'];
+  CsvReportGeneratePayload: CsvReportGeneratePayload;
   Currency: Currency;
   DepositFeesInformation: DepositFeesInformation;
   DeviceNotificationTokenCreateInput: DeviceNotificationTokenCreateInput;
@@ -4055,6 +4085,12 @@ export interface CountryCodeScalarConfig extends GraphQLScalarTypeConfig<Resolve
   name: 'CountryCode';
 }
 
+export type CsvReportGeneratePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvReportGeneratePayload'] = ResolversParentTypes['CsvReportGeneratePayload']> = {
+  content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  errors?: Resolver<ReadonlyArray<ResolversTypes['Error']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type CurrencyResolvers<ContextType = any, ParentType extends ResolversParentTypes['Currency'] = ResolversParentTypes['Currency']> = {
   flag?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   fractionDigits?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -4314,6 +4350,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   callbackEndpointDelete?: Resolver<ResolversTypes['SuccessPayload'], ParentType, ContextType, RequireFields<MutationCallbackEndpointDeleteArgs, 'input'>>;
   captchaCreateChallenge?: Resolver<ResolversTypes['CaptchaCreateChallengePayload'], ParentType, ContextType>;
   captchaRequestAuthCode?: Resolver<ResolversTypes['SuccessPayload'], ParentType, ContextType, RequireFields<MutationCaptchaRequestAuthCodeArgs, 'input'>>;
+  csvReportGenerate?: Resolver<ResolversTypes['CsvReportGeneratePayload'], ParentType, ContextType, Partial<MutationCsvReportGenerateArgs>>;
   deviceNotificationTokenCreate?: Resolver<ResolversTypes['SuccessPayload'], ParentType, ContextType, RequireFields<MutationDeviceNotificationTokenCreateArgs, 'input'>>;
   feedbackSubmit?: Resolver<ResolversTypes['SuccessPayload'], ParentType, ContextType, RequireFields<MutationFeedbackSubmitArgs, 'input'>>;
   intraLedgerPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationIntraLedgerPaymentSendArgs, 'input'>>;
@@ -4870,6 +4907,7 @@ export type Resolvers<ContextType = any> = {
   Coordinates?: CoordinatesResolvers<ContextType>;
   Country?: CountryResolvers<ContextType>;
   CountryCode?: GraphQLScalarType;
+  CsvReportGeneratePayload?: CsvReportGeneratePayloadResolvers<ContextType>;
   Currency?: CurrencyResolvers<ContextType>;
   DepositFeesInformation?: DepositFeesInformationResolvers<ContextType>;
   DisplayCurrency?: GraphQLScalarType;
