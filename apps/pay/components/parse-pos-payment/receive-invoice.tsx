@@ -112,11 +112,13 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
 
   const paymentAmount = React.useMemo(() => {
     let amountInSats = state.currentAmount
-    ;({ convertedCurrencyAmount: amountInSats } = currencyToSats(
-      Number(state.currentAmount),
-      state.displayCurrencyMetaData.id,
-      state.displayCurrencyMetaData.fractionDigits,
-    ))
+    if (state.displayCurrencyMetaData.id !== "SAT") {
+      ;({ convertedCurrencyAmount: amountInSats } = currencyToSats(
+        Number(state.currentAmount),
+        state.displayCurrencyMetaData.id,
+        state.displayCurrencyMetaData.fractionDigits,
+      ))
+    }
 
     let amt = safeAmount(amountInSats)
     if (recipientWalletCurrency === "USD") {
@@ -138,11 +140,14 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
 
   React.useEffect(() => {
     let amountInSats = state.currentAmount
-    ;({ convertedCurrencyAmount: amountInSats } = currencyToSats(
-      Number(state.currentAmount),
-      state.displayCurrencyMetaData.id,
-      state.displayCurrencyMetaData.fractionDigits,
-    ))
+
+    if (state.displayCurrencyMetaData.id !== "SAT") {
+      ;({ convertedCurrencyAmount: amountInSats } = currencyToSats(
+        Number(state.currentAmount),
+        state.displayCurrencyMetaData.id,
+        state.displayCurrencyMetaData.fractionDigits,
+      ))
+    }
 
     if (!walletId || !Number(paymentAmount)) return
 

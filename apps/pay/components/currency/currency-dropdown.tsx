@@ -10,6 +10,9 @@ import { useSearchParams } from "next/navigation"
 
 import { useCurrencyListQuery } from "../../lib/graphql/generated"
 
+import { useInvoiceContext } from "@/context/invoice-context"
+import { satCurrencyMetadata } from "@/app/sats-currency-metadata"
+
 type OptionType = {
   value: string
   label: string
@@ -29,16 +32,21 @@ const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({
 }) => {
   const searchParams = useSearchParams()
   const display = searchParams?.get("display")
-
+  const { state } = useInvoiceContext()
   const { data: currencyData } = useCurrencyListQuery()
 
   const [selectedOption, setSelectedOption] = useState<OptionType | null>(null)
 
   useEffect(() => {
     const defaultDisplay = display || localStorage.getItem("display") || "USD"
-    const initialCurrency = currencyData?.currencyList?.find(
-      ({ id }) => id === defaultDisplay,
-    )
+    let currencies = currencyData?.currencyList || []
+
+    // add sats currency metadata if the wallet currency is not USD
+    if (state.walletCurrency !== "USD") {
+      currencies = [...currencies, satCurrencyMetadata]
+    }
+
+    const initialCurrency = currencies.find(({ id }) => id === defaultDisplay)
     setSelectedOption(
       initialCurrency
         ? {
@@ -47,7 +55,7 @@ const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({
           }
         : null,
     )
-  }, [display, currencyData?.currencyList])
+  }, [display, currencyData?.currencyList, state.walletCurrency]) // Ensure walletCurrency is a dependency
 
   const handleOnChange = (option: SingleValue<OptionType>) => {
     const newDisplayCurrency = option ? option.value : "USD"
@@ -58,13 +66,15 @@ const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({
   }
 
   const options: OptionType[] =
-    currencyData?.currencyList?.map((currency) => ({
-      value: currency.id,
-      label:
-        showOnlyFlag && currency.flag
-          ? `${currency.flag}`
-          : `${currency.id} - ${currency.name} ${currency.flag}`,
-    })) || []
+    (currencyData?.currencyList || [])
+      .concat(state.walletCurrency !== "USD" ? [satCurrencyMetadata] : [])
+      .map((currency) => ({
+        value: currency.id,
+        label:
+          showOnlyFlag && currency.flag
+            ? `${currency.flag}`
+            : `${currency.id} - ${currency.name} ${currency.flag}`,
+      })) || []
 
   const customStyles: StylesConfig<OptionType, false> = {
     container: (base: CSSObjectWithLabel) => {
