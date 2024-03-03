@@ -2,7 +2,7 @@ terraform {
   required_providers {
     hydra = {
       source  = "svrakitin/hydra"
-      version = "0.1.4"
+      version = "0.5.2"
     }
   }
 }
@@ -16,6 +16,7 @@ resource "hydra_oauth2_client" "example" {
   redirect_uris              = ["http://localhost:8080/callback"]
   response_types             = ["code"]
   token_endpoint_auth_method = "none"
+  skip_consent               = true
 }
 
 output "blink_app_client_id" {
@@ -33,4 +34,5 @@ resource "hydra_oauth2_client" "blink_app" {
   response_types             = ["token"]
   token_endpoint_auth_method = "client_secret_basic"
   scopes                     = ["editor"]
+  skip_consent               = true
 }
