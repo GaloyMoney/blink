@@ -272,7 +272,7 @@ local_resource(
 local_resource(
   name='init-test-user',
   labels = ['test'],
-  cmd='buck2 run //dev:init-user',
+  cmd='buck2 run //dev:init-test-user',
   allow_parallel = True,
   resource_deps = [
     "oathkeeper",

@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): update notifications to fire and forget (#4113)...'
-      sha: 9fcb99ea9c3bdb16233b66b6b09cdd4ef9c0a84e
+      commitTitle: 'chore: misc update (#4117)...'
+      sha: 10b2eabd67ec227afa73a532856c469ee43c0529
       tags:
-      - 0.20.97-1-g9fcb99ea9
+      - 0.20.98-3-g10b2eabd6
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): update notifications to fire and forget (#4113)...'
-      sha: 9fcb99ea9c3bdb16233b66b6b09cdd4ef9c0a84e
+      commitTitle: 'chore: misc update (#4117)...'
+      sha: 10b2eabd67ec227afa73a532856c469ee43c0529
       tags:
-      - 0.20.97-1-g9fcb99ea9
+      - 0.20.98-3-g10b2eabd6
     path: schemas/
   - git:
-      commitTitle: 'fix(core): update notifications to fire and forget (#4113)...'
-      sha: 9fcb99ea9c3bdb16233b66b6b09cdd4ef9c0a84e
+      commitTitle: 'chore: misc update (#4117)...'
+      sha: 10b2eabd67ec227afa73a532856c469ee43c0529
       tags:
-      - 0.20.97-1-g9fcb99ea9
+      - 0.20.98-3-g10b2eabd6
     path: gql/
   path: ./graphql
 kind: LockConfig

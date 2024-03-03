@@ -92,8 +92,8 @@ sh_binary(
 )
 
 sh_binary(
-  name = "init-user",
-  main = "bin/init-user.sh",
+  name = "init-test-user",
+  main = "bin/init-test-user.sh",
 )
 
 sh_binary(
