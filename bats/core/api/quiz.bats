@@ -38,6 +38,7 @@ setup_file() {
     --arg question_id "$question_id" \
     '{input: {id: $question_id}}'
   )
+
   exec_graphql "$token_name" 'quiz-claim' "$variables"
   quizzes=$(graphql_output '.data.quizClaim.quizzes')
   [[ "${quizzes}" != "null" ]] || exit 1
