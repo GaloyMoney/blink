@@ -952,8 +952,6 @@ export type Mutation = {
   readonly onChainUsdPaymentSend: PaymentSendPayload;
   readonly onChainUsdPaymentSendAsBtcDenominated: PaymentSendPayload;
   readonly quizClaim: QuizClaimPayload;
-  /** @deprecated Use quizClaim instead */
-  readonly quizCompleted: QuizCompletedPayload;
   /** @deprecated will be moved to AccountContact */
   readonly userContactUpdateAlias: UserContactUpdateAliasPayload;
   readonly userEmailDelete: UserEmailDeletePayload;
@@ -1156,11 +1154,6 @@ export type MutationOnChainUsdPaymentSendAsBtcDenominatedArgs = {
 
 export type MutationQuizClaimArgs = {
   input: QuizClaimInput;
-};
-
-
-export type MutationQuizCompletedArgs = {
-  input: QuizCompletedInput;
 };
 
 
@@ -1557,16 +1550,6 @@ export type QuizClaimPayload = {
   readonly __typename: 'QuizClaimPayload';
   readonly errors: ReadonlyArray<Error>;
   readonly quizzes: ReadonlyArray<Quiz>;
-};
-
-export type QuizCompletedInput = {
-  readonly id: Scalars['ID'];
-};
-
-export type QuizCompletedPayload = {
-  readonly __typename: 'QuizCompletedPayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly quiz?: Maybe<Quiz>;
 };
 
 export type RealtimePrice = {
