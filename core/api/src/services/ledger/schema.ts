@@ -57,7 +57,15 @@ const transactionSchema = new Schema<ILedgerTransaction>(
     feeKnownInAdvance: {
       type: Boolean,
     },
-    related_journal: Schema.Types.ObjectId,
+    related_journal: {
+      type: Schema.Types.Mixed,
+      validate: {
+        validator: (value: string | mongoose.Types.ObjectId) =>
+          typeof value === "string" || value instanceof mongoose.Types.ObjectId,
+      },
+      message: (props: { value?: string }) =>
+        `${props?.value} is not a valid string or ObjectId!`,
+    },
 
     // for onchain transactions.
     payee_addresses: [String],

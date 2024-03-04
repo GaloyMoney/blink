@@ -23,7 +23,8 @@ const updateStateByRelatedJournal = async ({
         $or: [
           { _journal: toObjectId(journalId) },
           { _original_journal: toObjectId(journalId) },
-          { related_journal: journalId },
+          { related_journal: toObjectId(journalId) },
+          { related_journal: journalId }, // needed because we've stored as 'string' and 'objectId' type in prod
         ],
       },
       { bundle_completion_state },
