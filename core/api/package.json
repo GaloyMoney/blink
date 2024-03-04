@@ -102,7 +102,7 @@
     "lodash.sortby": "^4.7.0",
     "lodash.sumby": "^4.6.0",
     "medici": "^6.3.2",
-    "mongoose": "~8.0.3",
+    "mongoose": "8.0.3",
     "node-cache": "^5.1.2",
     "pg": "^8.11.3",
     "pino": "8.19.0",
