@@ -10,6 +10,8 @@ pub enum FcmError {
     UnrecognizedDeviceToken(google_fcm1::Error),
     #[error("FcmError: InvalidDeviceToken: {0}")]
     InvalidDeviceToken(google_fcm1::Error),
+    #[error("FcmError: SenderIdMismatch: {0}")]
+    SenderIdMismatch(google_fcm1::Error),
 }
 
 impl From<google_fcm1::Error> for FcmError {
@@ -20,10 +22,12 @@ impl From<google_fcm1::Error> for FcmError {
                     .get("error")
                     .and_then(|e| e.get("code"))
                     .and_then(|c| c.as_u64());
+
                 let status = value
                     .get("error")
                     .and_then(|e| e.get("status"))
                     .and_then(|s| s.as_str());
+
                 let is_unregistered = value
                     .get("error")
                     .and_then(|e| e.get("details"))
@@ -33,24 +37,30 @@ impl From<google_fcm1::Error> for FcmError {
                             detail.get("errorCode").and_then(|e| e.as_str()) == Some("UNREGISTERED")
                         })
                     });
+
                 let message = value
                     .get("error")
                     .and_then(|e| e.get("message"))
                     .and_then(|m| m.as_str());
 
-                if let (Some(code), Some(status), Some(msg)) = (code, status, message) {
-                    if code == 404 && status == "NOT_FOUND" && is_unregistered {
-                        return FcmError::UnrecognizedDeviceToken(err);
-                    } else if code == 400
-                        && status == "INVALID_ARGUMENT"
-                        && msg.contains(
-                            "The registration token is not a valid FCM registration token",
-                        )
-                    {
-                        return FcmError::InvalidDeviceToken(err);
+                match (code, status, message) {
+                    (Some(404), Some("NOT_FOUND"), _) if is_unregistered => {
+                        FcmError::UnrecognizedDeviceToken(err)
                     }
+                    (Some(400), Some("INVALID_ARGUMENT"), Some(msg))
+                        if msg.contains(
+                            "The registration token is not a valid FCM registration token",
+                        ) =>
+                    {
+                        FcmError::InvalidDeviceToken(err)
+                    }
+                    (Some(403), Some("PERMISSION_DENIED"), Some(msg))
+                        if msg.contains("SenderId mismatch") =>
+                    {
+                        FcmError::SenderIdMismatch(err)
+                    }
+                    _ => FcmError::GoogleFcm1Error(err),
                 }
-                FcmError::GoogleFcm1Error(err)
             }
             _ => FcmError::GoogleFcm1Error(err),
         }
@@ -106,5 +116,26 @@ mod tests {
         let converted_err: FcmError = err.into();
 
         assert!(matches!(converted_err, FcmError::InvalidDeviceToken(_)));
+    }
+
+    #[test]
+    fn sender_id_mismatch_err() {
+        let err_json = json!({
+            "error": {
+                "code": 403,
+                "message": "SenderId mismatch",
+                "status": "PERMISSION_DENIED",
+                "details": [
+                    {
+                        "@type": "type.googleapis.com/google.firebase.fcm.v1.FcmError",
+                        "errorCode": "SENDER_ID_MISMATCH"
+                    }
+                ]
+            }
+        });
+        let err = google_fcm1::Error::BadRequest(err_json);
+        let converted_err: FcmError = err.into();
+
+        assert!(matches!(converted_err, FcmError::SenderIdMismatch(_)));
     }
 }
