@@ -4,7 +4,7 @@ import { reimburseFailedUsdPayment } from "./reimburse-failed-usd"
 
 import { PaymentFlowFromLedgerTransaction } from "./translations"
 
-import { getTransactionForWalletByJournalId } from "@/app/wallets"
+import { sendPaymentNotification } from "./send-payment-notification"
 
 import { toSats } from "@/domain/bitcoin"
 import { defaultTimeToExpiryInSeconds, PaymentStatus } from "@/domain/bitcoin/lightning"
@@ -29,7 +29,6 @@ import {
   UsersRepository,
   WalletsRepository,
 } from "@/services/mongoose"
-import { NotificationsService } from "@/services/notifications"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@/services/tracing"
 import { runInParallel } from "@/utils"
 
@@ -178,6 +177,23 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
     if (accountWalletDescriptors instanceof Error) return accountWalletDescriptors
     const walletIds = [accountWalletDescriptors.BTC.id, accountWalletDescriptors.USD.id]
 
+    const senderWallet = await WalletsRepository().findById(walletId)
+    if (senderWallet instanceof Error) return senderWallet
+
+    const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
+    if (senderAccount instanceof Error) return senderAccount
+
+    const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
+    if (senderUser instanceof Error) return senderUser
+
+    const sendNotificationArgs = {
+      accountId: senderWallet.accountId,
+      walletId,
+      userId: senderUser.id,
+      level: senderAccount.level,
+      journalId: pendingPayment.journalId,
+    }
+
     return LockService().lockWalletId(walletId, async () => {
       const ledgerService = LedgerService()
       const recorded = await ledgerService.isLnTxRecorded(paymentHash)
@@ -250,6 +266,8 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
           })
           if (updateStateAfterRevert instanceof Error) return updateStateAfterRevert
 
+          await sendPaymentNotification(sendNotificationArgs)
+
           return voided
         }
 
@@ -271,6 +289,8 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         })
         if (updateStateAfterUsdRevert instanceof Error) return updateStateAfterUsdRevert
 
+        await sendPaymentNotification(sendNotificationArgs)
+
         return reimbursed
       }
 
@@ -287,32 +307,11 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         })
       }
 
-      const senderWallet = await WalletsRepository().findById(walletId)
-      if (senderWallet instanceof Error) return senderWallet
+      if (pendingPayment.feeKnownInAdvance) {
+        await sendPaymentNotification(sendNotificationArgs)
 
-      const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
-      if (senderAccount instanceof Error) return senderAccount
-
-      const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
-      if (senderUser instanceof Error) return senderUser
-
-      const walletTransaction = await getTransactionForWalletByJournalId({
-        walletId,
-        journalId: pendingPayment.journalId,
-      })
-      if (walletTransaction instanceof Error) return walletTransaction
-
-      NotificationsService().sendTransaction({
-        recipient: {
-          accountId: senderWallet.accountId,
-          walletId,
-          userId: senderUser.id,
-          level: senderAccount.level,
-        },
-        transaction: walletTransaction,
-      })
-
-      if (pendingPayment.feeKnownInAdvance) return true
+        return true
+      }
 
       const { displayAmount, displayFee, displayCurrency } = pendingPayment
       if (!displayAmount || !displayFee || !displayCurrency) {
@@ -334,6 +333,8 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         journalId,
       })
       if (updateStateAfterReimburse instanceof Error) return updateStateAfterReimburse
+
+      await sendPaymentNotification(sendNotificationArgs)
 
       return reimbursed
     })
