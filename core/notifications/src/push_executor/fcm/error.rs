@@ -6,12 +6,8 @@ pub enum FcmError {
     IOError(#[from] std::io::Error),
     #[error("FcmError - GoogleFcm1Error: {0}")]
     GoogleFcm1Error(google_fcm1::Error),
-    #[error("FcmError: UnrecognizedDeviceToken: {0}")]
-    UnrecognizedDeviceToken(google_fcm1::Error),
-    #[error("FcmError: InvalidDeviceToken: {0}")]
-    InvalidDeviceToken(google_fcm1::Error),
-    #[error("FcmError: SenderIdMismatch: {0}")]
-    SenderIdMismatch(google_fcm1::Error),
+    #[error("FcmError: StaleDeviceToken: {0}")]
+    StaleDeviceToken(google_fcm1::Error),
 }
 
 impl From<google_fcm1::Error> for FcmError {
@@ -45,19 +41,19 @@ impl From<google_fcm1::Error> for FcmError {
 
                 match (code, status, message) {
                     (Some(404), Some("NOT_FOUND"), _) if is_unregistered => {
-                        FcmError::UnrecognizedDeviceToken(err)
+                        FcmError::StaleDeviceToken(err)
                     }
                     (Some(400), Some("INVALID_ARGUMENT"), Some(msg))
                         if msg.contains(
                             "The registration token is not a valid FCM registration token",
                         ) =>
                     {
-                        FcmError::InvalidDeviceToken(err)
+                        FcmError::StaleDeviceToken(err)
                     }
                     (Some(403), Some("PERMISSION_DENIED"), Some(msg))
                         if msg.contains("SenderId mismatch") =>
                     {
-                        FcmError::SenderIdMismatch(err)
+                        FcmError::StaleDeviceToken(err)
                     }
                     _ => FcmError::GoogleFcm1Error(err),
                 }
@@ -91,10 +87,7 @@ mod tests {
         let err = google_fcm1::Error::BadRequest(err_json);
         let converted_err: FcmError = err.into();
 
-        assert!(matches!(
-            converted_err,
-            FcmError::UnrecognizedDeviceToken(_)
-        ));
+        assert!(matches!(converted_err, FcmError::StaleDeviceToken(_)));
     }
 
     #[test]
@@ -115,7 +108,7 @@ mod tests {
         let err = google_fcm1::Error::BadRequest(err_json);
         let converted_err: FcmError = err.into();
 
-        assert!(matches!(converted_err, FcmError::InvalidDeviceToken(_)));
+        assert!(matches!(converted_err, FcmError::StaleDeviceToken(_)));
     }
 
     #[test]
@@ -136,6 +129,6 @@ mod tests {
         let err = google_fcm1::Error::BadRequest(err_json);
         let converted_err: FcmError = err.into();
 
-        assert!(matches!(converted_err, FcmError::SenderIdMismatch(_)));
+        assert!(matches!(converted_err, FcmError::StaleDeviceToken(_)));
     }
 }
