@@ -14,7 +14,7 @@
   overflow-y: scroll;
 }
 
-.modal_wrapper {
+.modalWrapper {
   background-color: #fff;
   border-radius: 12px;
   padding: 0.875rem;
@@ -22,7 +22,7 @@
   position: relative;
 }
 
-.modal_title {
+.modalTitle {
   text-align: left;
   padding: 0.5rem 0;
   font-size: 1.25rem;
@@ -30,7 +30,7 @@
   color: rgba(54, 47, 120, 1);
 }
 
-.close_btn {
+.closeBtn {
   border: none;
   outline: none;
   background-color: transparent;
@@ -38,21 +38,21 @@
   margin-bottom: 1rem;
 }
 
-.close_btn:hover,
-.close_btn:focus,
-.close_btn:focus-visible {
+.closeBtn:hover,
+.closeBtn:focus,
+.closeBtn:focus-visible {
   background-color: rgba(239, 241, 245, 0.3);
   border-radius: 50%;
   border: 1px solid rgba(61, 62, 63, 0.3);
 }
 
 @media (min-width: 768px) {
-  .modal_title {
+  .modalTitle {
     font-size: 2rem;
     text-align: center;
   }
 
-  .close_btn {
+  .closeBtn {
     position: absolute;
     right: 2%;
   }

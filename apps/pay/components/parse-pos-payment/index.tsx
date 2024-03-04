@@ -140,7 +140,7 @@ function ParsePayment({
   }, [display, currencyList])
 
   return (
-    <Container className={styles.digits_container}>
+    <Container className={styles.digitsContainer}>
       <div className={styles.output}>
         <CurrencyInput
           style={{
@@ -169,7 +169,7 @@ function ParsePayment({
         <>
           <NFCComponent />
 
-          <div className={styles.digits_grid}>
+          <div className={styles.digitsGrid}>
             <DigitButton digit={"1"} dispatch={dispatch} />
             <DigitButton digit={"2"} dispatch={dispatch} />
             <DigitButton digit={"3"} dispatch={dispatch} />
@@ -208,10 +208,10 @@ function ParsePayment({
         </>
       )}
 
-      <div className={styles.pay_btn_container}>
+      <div className={styles.payBtnContainer}>
         <button
           data-testid="pay-btn"
-          className={state.createdInvoice ? styles.pay_new_btn : styles.pay_btn}
+          className={state.createdInvoice ? styles.payNewBtn : styles.payBtn}
           onClick={() => {
             if (state.createdInvoice) {
               dispatch({ type: ACTIONS.CREATE_NEW_INVOICE })

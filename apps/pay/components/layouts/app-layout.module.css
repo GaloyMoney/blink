@@ -1,4 +1,4 @@
-.main_container {
+.mainContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -7,7 +7,7 @@
   width: 100vw;
 }
 
-.nav_bar {
+.navBar {
   position: fixed;
   top: 0;
   left: 0;
@@ -19,7 +19,7 @@
   z-index: 1;
 }
 
-.nav_home_content {
+.navHomeContent {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -42,7 +42,7 @@
 }
 
 @media (max-width: 768px), (max-height: 785px) {
-  .nav_bar {
+  .navBar {
     border-bottom: none;
   }
 }

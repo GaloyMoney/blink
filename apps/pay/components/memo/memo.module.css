@@ -13,26 +13,26 @@
   margin: 0 auto;
 }
 
-.note_wrapper {
+.noteWrapper {
   display: inline-flex;
   align-items: center;
   column-gap: 0.15rem;
 }
 
-.note_wrapper > input {
+.noteWrapper > input {
   border: none;
   text-transform: capitalize;
   position: relative;
   z-index: -1;
 }
 
-.note_wrapper > p {
+.noteWrapper > p {
   margin-top: 0;
   margin-bottom: 0;
   font-weight: 600;
 }
 
-.add_btn {
+.addBtn {
   position: relative;
   background-color: #fff;
   display: inline-flex;
@@ -46,7 +46,7 @@
   padding: 0.5em 1em;
 }
 
-.add_btn::before {
+.addBtn::before {
   content: "";
   position: absolute;
   top: -2px;
@@ -60,17 +60,17 @@
   border-radius: 10px;
 }
 
-.disable_btn {
+.disableBtn {
   display: none;
 }
 
-.modal_footer {
+.modalFooter {
   display: flex;
   flex-direction: column;
   border: none;
 }
 
-.modal_footer button {
+.modalFooter button {
   border: none;
   border-radius: 8px;
   width: 100%;
@@ -80,18 +80,18 @@
   color: #fff;
 }
 
-.modal_footer button:last-child {
+.modalFooter button:last-child {
   background: transparent;
   color: rgb(242, 102, 83);
 }
 
-.modal_header {
+.modalHeader {
   color: rgba(52, 64, 117, 1);
   font-weight: 500;
   border: none;
 }
 
-.modal_input {
+.modalInput {
   border: none;
   border-radius: 8px;
   width: 100%;

@@ -52,7 +52,7 @@ function ReceivePayment({ searchParams }: Props) {
   }
 
   return username ? (
-    <Container className={styles.payment_container}>
+    <Container className={styles.paymentContainer}>
       <Head>
         <link
           rel="manifest"
@@ -61,7 +61,7 @@ function ReceivePayment({ searchParams }: Props) {
         />
       </Head>
 
-      <div className={styles.username_container}>
+      <div className={styles.usernameContainer}>
         {state.createdInvoice && (
           <button onClick={() => dispatch({ type: ACTIONS.BACK })}>
             <Image

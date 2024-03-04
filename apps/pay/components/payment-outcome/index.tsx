@@ -66,7 +66,7 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: P
 
   const backToCashRegisterButton = (
     <button
-      className={styles.back_btn}
+      className={styles.backBtn}
       onClick={() => dispatch({ type: ACTIONS.CREATE_NEW_INVOICE })}
     >
       Back
@@ -74,7 +74,7 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: P
   )
 
   const downloadReceipt = (
-    <button className={styles.pay_new_btn} onClick={() => printReceipt()}>
+    <button className={styles.payNewBtn} onClick={() => printReceipt()}>
       <Image src="/icons/print-icon.svg" alt="print icon" width="18" height="18" />
       Print Receipt
     </button>
