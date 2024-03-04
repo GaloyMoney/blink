@@ -54,7 +54,7 @@ impl PushExecutor {
         let mut n_deliveries = 0;
         for device_token in settings.push_device_tokens() {
             match self.fcm.send(&device_token, &msg, event.deep_link()).await {
-                Err(FcmError::UnrecognizedDeviceToken(e) | FcmError::InvalidDeviceToken(e)) => {
+                Err(FcmError::StaleDeviceToken(e)) => {
                     n_errs += 1;
                     n_removed_tokens += 1;
                     error!("BadRequest sending to device: {}", e);
