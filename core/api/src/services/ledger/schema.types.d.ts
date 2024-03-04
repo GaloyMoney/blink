@@ -23,7 +23,7 @@ interface ILedgerTransaction {
   err?: string
   currency: WalletCurrency
   feeKnownInAdvance?: boolean
-  related_journal?: string
+  related_journal?: ObjectId
   payee_addresses?: string[]
   request_id?: string
   payout_id?: string

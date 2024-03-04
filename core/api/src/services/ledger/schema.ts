@@ -57,7 +57,7 @@ const transactionSchema = new Schema<ILedgerTransaction>(
     feeKnownInAdvance: {
       type: Boolean,
     },
-    related_journal: String,
+    related_journal: Schema.Types.ObjectId,
 
     // for onchain transactions.
     payee_addresses: [String],
