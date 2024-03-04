@@ -915,7 +915,7 @@ export const AccountDetailsByUserPhoneDocument = gql`
  *   },
  * });
  */
-export function useAccountDetailsByUserPhoneQuery(baseOptions: Apollo.QueryHookOptions<AccountDetailsByUserPhoneQuery, AccountDetailsByUserPhoneQueryVariables>) {
+export function useAccountDetailsByUserPhoneQuery(baseOptions: Apollo.QueryHookOptions<AccountDetailsByUserPhoneQuery, AccountDetailsByUserPhoneQueryVariables> & ({ variables: AccountDetailsByUserPhoneQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<AccountDetailsByUserPhoneQuery, AccountDetailsByUserPhoneQueryVariables>(AccountDetailsByUserPhoneDocument, options);
       }
@@ -987,7 +987,7 @@ export const AccountDetailsByAccountIdDocument = gql`
  *   },
  * });
  */
-export function useAccountDetailsByAccountIdQuery(baseOptions: Apollo.QueryHookOptions<AccountDetailsByAccountIdQuery, AccountDetailsByAccountIdQueryVariables>) {
+export function useAccountDetailsByAccountIdQuery(baseOptions: Apollo.QueryHookOptions<AccountDetailsByAccountIdQuery, AccountDetailsByAccountIdQueryVariables> & ({ variables: AccountDetailsByAccountIdQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<AccountDetailsByAccountIdQuery, AccountDetailsByAccountIdQueryVariables>(AccountDetailsByAccountIdDocument, options);
       }
@@ -1059,7 +1059,7 @@ export const AccountDetailsByEmailDocument = gql`
  *   },
  * });
  */
-export function useAccountDetailsByEmailQuery(baseOptions: Apollo.QueryHookOptions<AccountDetailsByEmailQuery, AccountDetailsByEmailQueryVariables>) {
+export function useAccountDetailsByEmailQuery(baseOptions: Apollo.QueryHookOptions<AccountDetailsByEmailQuery, AccountDetailsByEmailQueryVariables> & ({ variables: AccountDetailsByEmailQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<AccountDetailsByEmailQuery, AccountDetailsByEmailQueryVariables>(AccountDetailsByEmailDocument, options);
       }
@@ -1341,7 +1341,7 @@ export const AccountDetailsByUsernameDocument = gql`
  *   },
  * });
  */
-export function useAccountDetailsByUsernameQuery(baseOptions: Apollo.QueryHookOptions<AccountDetailsByUsernameQuery, AccountDetailsByUsernameQueryVariables>) {
+export function useAccountDetailsByUsernameQuery(baseOptions: Apollo.QueryHookOptions<AccountDetailsByUsernameQuery, AccountDetailsByUsernameQueryVariables> & ({ variables: AccountDetailsByUsernameQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<AccountDetailsByUsernameQuery, AccountDetailsByUsernameQueryVariables>(AccountDetailsByUsernameDocument, options);
       }
@@ -1388,7 +1388,7 @@ export const LightningInvoiceDocument = gql`
  *   },
  * });
  */
-export function useLightningInvoiceQuery(baseOptions: Apollo.QueryHookOptions<LightningInvoiceQuery, LightningInvoiceQueryVariables>) {
+export function useLightningInvoiceQuery(baseOptions: Apollo.QueryHookOptions<LightningInvoiceQuery, LightningInvoiceQueryVariables> & ({ variables: LightningInvoiceQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<LightningInvoiceQuery, LightningInvoiceQueryVariables>(LightningInvoiceDocument, options);
       }
@@ -1435,7 +1435,7 @@ export const LightningPaymentDocument = gql`
  *   },
  * });
  */
-export function useLightningPaymentQuery(baseOptions: Apollo.QueryHookOptions<LightningPaymentQuery, LightningPaymentQueryVariables>) {
+export function useLightningPaymentQuery(baseOptions: Apollo.QueryHookOptions<LightningPaymentQuery, LightningPaymentQueryVariables> & ({ variables: LightningPaymentQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<LightningPaymentQuery, LightningPaymentQueryVariables>(LightningPaymentDocument, options);
       }
@@ -1513,7 +1513,7 @@ export const TransactionsByHashDocument = gql`
  *   },
  * });
  */
-export function useTransactionsByHashQuery(baseOptions: Apollo.QueryHookOptions<TransactionsByHashQuery, TransactionsByHashQueryVariables>) {
+export function useTransactionsByHashQuery(baseOptions: Apollo.QueryHookOptions<TransactionsByHashQuery, TransactionsByHashQueryVariables> & ({ variables: TransactionsByHashQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<TransactionsByHashQuery, TransactionsByHashQueryVariables>(TransactionsByHashDocument, options);
       }
@@ -1591,7 +1591,7 @@ export const TransactionByIdDocument = gql`
  *   },
  * });
  */
-export function useTransactionByIdQuery(baseOptions: Apollo.QueryHookOptions<TransactionByIdQuery, TransactionByIdQueryVariables>) {
+export function useTransactionByIdQuery(baseOptions: Apollo.QueryHookOptions<TransactionByIdQuery, TransactionByIdQueryVariables> & ({ variables: TransactionByIdQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<TransactionByIdQuery, TransactionByIdQueryVariables>(TransactionByIdDocument, options);
       }
