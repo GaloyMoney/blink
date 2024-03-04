@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH last_trigger AS (\n               SELECT last_triggered_at\n               FROM notification_cool_off_tracker\n               WHERE event_type = 'price_changed'\n               FOR UPDATE\n               ), updated AS (\n               UPDATE notification_cool_off_tracker\n               SET last_triggered_at = now()\n               WHERE event_type = 'price_changed'\n               )\n               SELECT last_triggered_at FROM last_trigger",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "last_triggered_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "feded3e0ea6259aa64903d058fcfbf55eb4845ee6752c89d9220e3844e4d16ff"
+}
