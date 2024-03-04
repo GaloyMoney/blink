@@ -135,27 +135,17 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
       resolve: async (_source, _args, { domainAccount, scope }) => {
         const isActive = domainAccount.status === AccountStatus.Active
 
-        // not a token with scope
-        if (!scope || scope.length === 0) {
+        // not a token with scope or inactive user
+        if (!isActive || !scope || scope.length === 0) {
           return [ScopesOauth2.Read]
         }
 
-        const read = !!scope.find((s) => s === ScopesOauth2.Read)
-        const receive = isActive && !!scope.find((s) => s === ScopesOauth2.Receive)
-        const write = isActive && !!scope.find((s) => s === ScopesOauth2.Write)
-
-        const scopes: ScopesOauth2[] = []
-        if (read) {
-          scopes.push(ScopesOauth2.Read)
-        }
-
-        if (receive) {
-          scopes.push(ScopesOauth2.Receive)
-        }
-
-        if (write) {
-          scopes.push(ScopesOauth2.Write)
-        }
+        const mutationsScopes: ScopesOauth2[] = [
+          ScopesOauth2.Receive,
+          ScopesOauth2.Write,
+        ]
+        const scopes = scope.filter((s) => mutationsScopes.includes(s))
+        scopes.unshift(ScopesOauth2.Read)
 
         return scopes
       },
