@@ -1652,10 +1652,11 @@ type SatAmountPayload
 
 enum Scope
   @join__type(graph: API_KEYS)
+  @join__type(graph: PUBLIC)
 {
-  READ @join__enumValue(graph: API_KEYS)
-  WRITE @join__enumValue(graph: API_KEYS)
-  RECEIVE @join__enumValue(graph: API_KEYS)
+  READ @join__enumValue(graph: API_KEYS) @join__enumValue(graph: PUBLIC)
+  WRITE @join__enumValue(graph: API_KEYS) @join__enumValue(graph: PUBLIC)
+  RECEIVE @join__enumValue(graph: API_KEYS) @join__enumValue(graph: PUBLIC)
 }
 
 """(Positive) amount of seconds"""
@@ -1937,11 +1938,11 @@ type User
   """
   language: Language! @join__field(graph: PUBLIC)
 
-  """User permissions"""
-  permissions: UserPermissions! @join__field(graph: PUBLIC)
-
   """Phone number with international calling code."""
   phone: Phone @join__field(graph: PUBLIC)
+
+  """Retrieve the list of scopes permitted for the user's token or API key"""
+  scopes: [Scope!]! @join__field(graph: PUBLIC)
 
   """Whether TOTP is enabled for this user."""
   totpEnabled: Boolean! @join__field(graph: PUBLIC)
@@ -2105,14 +2106,6 @@ type UserNotificationSettings
   @join__type(graph: NOTIFICATIONS)
 {
   push: UserNotificationChannelSettings!
-}
-
-type UserPermissions
-  @join__type(graph: PUBLIC)
-{
-  read: Boolean!
-  receive: Boolean!
-  write: Boolean!
 }
 
 type UserPhoneDeletePayload

@@ -1275,6 +1275,12 @@ type SatAmountPayload {
   errors: [Error!]!
 }
 
+enum Scope {
+  READ
+  RECEIVE
+  WRITE
+}
+
 """(Positive) amount of seconds"""
 scalar Seconds
 
@@ -1507,11 +1513,11 @@ type User {
   """
   language: Language!
 
-  """User permissions"""
-  permissions: UserPermissions!
-
   """Phone number with international calling code."""
   phone: Phone
+
+  """Retrieve the list of scopes permitted for the user's token or API key"""
+  scopes: [Scope!]!
 
   """Whether TOTP is enabled for this user."""
   totpEnabled: Boolean!
@@ -1595,12 +1601,6 @@ input UserLoginUpgradeInput {
 
 input UserLogoutInput {
   deviceToken: String!
-}
-
-type UserPermissions {
-  read: Boolean!
-  receive: Boolean!
-  write: Boolean!
 }
 
 type UserPhoneDeletePayload {

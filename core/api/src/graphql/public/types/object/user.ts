@@ -1,28 +1,27 @@
 import dedent from "dedent"
 
-// FIXME should not use service
-
 import Account from "../abstract/account"
 
-import Language from "../../../shared/types/scalar/language"
-import Phone from "../../../shared/types/scalar/phone"
-import Timestamp from "../../../shared/types/scalar/timestamp"
-
-import Username from "../../../shared/types/scalar/username"
-
-import GraphQLEmail from "../../../shared/types/object/email"
-
 import AccountContact from "./account-contact"
-import UserPermissions from "./user-permissions"
 
-import { IdentityRepository } from "@/services/kratos"
-import { UnknownClientError } from "@/graphql/error"
-import { baseLogger } from "@/services/logger"
 import { Accounts, Users } from "@/app"
-import { mapError } from "@/graphql/error-map"
-import { GT } from "@/graphql/index"
+
 import { AccountStatus } from "@/domain/accounts"
 import { ScopesOauth2 } from "@/domain/authorization"
+
+import { baseLogger } from "@/services/logger"
+// FIXME should not use service
+import { IdentityRepository } from "@/services/kratos"
+
+import { GT } from "@/graphql/index"
+import { mapError } from "@/graphql/error-map"
+import { UnknownClientError } from "@/graphql/error"
+import Phone from "@/graphql/shared/types/scalar/phone"
+import Scope from "@/graphql/shared/types/scalar/scope"
+import Language from "@/graphql/shared/types/scalar/language"
+import Username from "@/graphql/shared/types/scalar/username"
+import Timestamp from "@/graphql/shared/types/scalar/timestamp"
+import GraphQLEmail from "@/graphql/shared/types/object/email"
 
 const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
   name: "User",
@@ -129,29 +128,36 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
       },
     },
 
-    permissions: {
-      type: GT.NonNull(UserPermissions),
-      description: "User permissions",
+    scopes: {
+      type: GT.NonNullList(Scope),
+      description:
+        "Retrieve the list of scopes permitted for the user's token or API key",
       resolve: async (_source, _args, { domainAccount, scope }) => {
         const isActive = domainAccount.status === AccountStatus.Active
 
         // not a token with scope
         if (!scope || scope.length === 0) {
-          return {
-            read: true,
-            write: isActive,
-            receive: isActive,
-          }
+          return [ScopesOauth2.Read]
         }
 
         const read = !!scope.find((s) => s === ScopesOauth2.Read)
-        const receive = !!scope.find((s) => s === ScopesOauth2.Receive)
-        const write = !!scope.find((s) => s === ScopesOauth2.Write)
-        return {
-          read,
-          write: isActive && write,
-          receive: isActive && receive,
+        const receive = isActive && !!scope.find((s) => s === ScopesOauth2.Receive)
+        const write = isActive && !!scope.find((s) => s === ScopesOauth2.Write)
+
+        const scopes: ScopesOauth2[] = []
+        if (read) {
+          scopes.push(ScopesOauth2.Read)
         }
+
+        if (receive) {
+          scopes.push(ScopesOauth2.Receive)
+        }
+
+        if (write) {
+          scopes.push(ScopesOauth2.Write)
+        }
+
+        return scopes
       },
     },
 
