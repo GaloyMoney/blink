@@ -7347,7 +7347,8 @@ proto.services.notifications.v1.NotificationCategory = {
   PAYMENTS: 1,
   BALANCE: 2,
   ADMIN_NOTIFICATION: 3,
-  MARKETING: 4
+  MARKETING: 4,
+  PRICE: 5
 };
 
 /**

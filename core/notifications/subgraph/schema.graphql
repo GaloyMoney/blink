@@ -36,6 +36,7 @@ enum UserNotificationCategory {
 	BALANCE
 	ADMIN_NOTIFICATION
 	MARKETING
+	PRICE
 }
 
 enum UserNotificationChannel {
