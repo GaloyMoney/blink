@@ -78,6 +78,23 @@ function ParsePayment({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      const { key } = event
+      if (key === "Backspace") {
+        dispatch({ type: ACTIONS.DELETE_DIGIT })
+      } else if (!isNaN(Number(key))) {
+        dispatch({ type: ACTIONS.ADD_DIGIT, payload: key })
+      } else if (key === "." && currencyMetadata.fractionDigits > 0) {
+        dispatch({ type: ACTIONS.ADD_DIGIT, payload: key })
+      }
+    }
+    window.addEventListener("keydown", handleKeyPress)
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress)
+    }
+  }, [dispatch, currencyMetadata.fractionDigits])
+
   // Update Params From Current Amount
   const handleAmountChange = (skipRouterPush?: boolean) => {
     const amount = state.currentAmount
