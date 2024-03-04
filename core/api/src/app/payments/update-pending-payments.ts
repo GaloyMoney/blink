@@ -4,7 +4,7 @@ import { reimburseFailedUsdPayment } from "./reimburse-failed-usd"
 
 import { PaymentFlowFromLedgerTransaction } from "./translations"
 
-import { sendPaymentNotification } from "./send-payment-notification"
+import { getTransactionForWalletByJournalId } from "@/app/wallets"
 
 import { toSats } from "@/domain/bitcoin"
 import { defaultTimeToExpiryInSeconds, PaymentStatus } from "@/domain/bitcoin/lightning"
@@ -29,6 +29,7 @@ import {
   UsersRepository,
   WalletsRepository,
 } from "@/services/mongoose"
+import { NotificationsService } from "@/services/notifications"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@/services/tracing"
 import { runInParallel } from "@/utils"
 
@@ -266,7 +267,15 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
           })
           if (updateStateAfterRevert instanceof Error) return updateStateAfterRevert
 
-          await sendPaymentNotification(sendNotificationArgs)
+          const walletTransaction = await getTransactionForWalletByJournalId({
+            walletId: sendNotificationArgs.walletId,
+            journalId: sendNotificationArgs.journalId,
+          })
+          if (walletTransaction instanceof Error) return walletTransaction
+          NotificationsService().sendTransaction({
+            recipient: sendNotificationArgs,
+            transaction: walletTransaction,
+          })
 
           return voided
         }
@@ -289,7 +298,15 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         })
         if (updateStateAfterUsdRevert instanceof Error) return updateStateAfterUsdRevert
 
-        await sendPaymentNotification(sendNotificationArgs)
+        const walletTransaction = await getTransactionForWalletByJournalId({
+          walletId: sendNotificationArgs.walletId,
+          journalId: sendNotificationArgs.journalId,
+        })
+        if (walletTransaction instanceof Error) return walletTransaction
+        NotificationsService().sendTransaction({
+          recipient: sendNotificationArgs,
+          transaction: walletTransaction,
+        })
 
         return reimbursed
       }
@@ -308,7 +325,15 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       }
 
       if (pendingPayment.feeKnownInAdvance) {
-        await sendPaymentNotification(sendNotificationArgs)
+        const walletTransaction = await getTransactionForWalletByJournalId({
+          walletId: sendNotificationArgs.walletId,
+          journalId: sendNotificationArgs.journalId,
+        })
+        if (walletTransaction instanceof Error) return walletTransaction
+        NotificationsService().sendTransaction({
+          recipient: sendNotificationArgs,
+          transaction: walletTransaction,
+        })
 
         return true
       }
@@ -334,7 +359,15 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       })
       if (updateStateAfterReimburse instanceof Error) return updateStateAfterReimburse
 
-      await sendPaymentNotification(sendNotificationArgs)
+      const walletTransaction = await getTransactionForWalletByJournalId({
+        walletId: sendNotificationArgs.walletId,
+        journalId: sendNotificationArgs.journalId,
+      })
+      if (walletTransaction instanceof Error) return walletTransaction
+      NotificationsService().sendTransaction({
+        recipient: sendNotificationArgs,
+        transaction: walletTransaction,
+      })
 
       return reimbursed
     })

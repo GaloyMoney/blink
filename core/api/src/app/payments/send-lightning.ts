@@ -6,8 +6,6 @@ import {
 
 import { reimburseFee } from "./reimburse-fee"
 
-import { sendPaymentNotification } from "./send-payment-notification"
-
 import { AccountValidator } from "@/domain/accounts"
 import {
   decodeInvoice,
@@ -52,6 +50,7 @@ import {
 import { DealerPriceService } from "@/services/dealer-price"
 import { LedgerService } from "@/services/ledger"
 import { LockService } from "@/services/lock"
+import { NotificationsService } from "@/services/notifications"
 
 import * as LedgerFacade from "@/services/ledger/facade"
 import {
@@ -66,6 +65,7 @@ import {
 } from "@/app/accounts"
 import { getCurrentPriceAsDisplayPriceRatio } from "@/app/prices"
 import {
+  getTransactionForWalletByJournalId,
   getTransactionsForWalletByPaymentHash,
   validateIsBtcWallet,
   validateIsUsdWallet,
@@ -553,16 +553,25 @@ const executePaymentViaIntraledger = async <
     const newWalletInvoice = await WalletInvoicesRepository().markAsPaid(paymentHash)
     if (newWalletInvoice instanceof Error) return newWalletInvoice
 
-    await sendPaymentNotification({
-      ...sendNotificationRecipientPartialArgs,
+    const recipientWalletTransaction = await getTransactionForWalletByJournalId({
+      walletId: sendNotificationRecipientPartialArgs.walletId,
       journalId: journal.journalId,
     })
+    if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
+    NotificationsService().sendTransaction({
+      recipient: sendNotificationRecipientPartialArgs,
+      transaction: recipientWalletTransaction,
+    })
 
-    const senderWalletTransaction = await sendPaymentNotification({
-      ...sendNotificationSenderPartialArgs,
+    const senderWalletTransaction = await getTransactionForWalletByJournalId({
+      walletId: sendNotificationSenderPartialArgs.walletId,
       journalId: journal.journalId,
     })
     if (senderWalletTransaction instanceof Error) return senderWalletTransaction
+    NotificationsService().sendTransaction({
+      recipient: sendNotificationSenderPartialArgs,
+      transaction: senderWalletTransaction,
+    })
 
     if (senderAccount.id !== recipientAccount.id) {
       const addContactResult = await addContactsAfterSend({
@@ -766,9 +775,14 @@ const executePaymentViaLn = async ({
         recordExceptionInCurrentSpan({ error: updateResult })
       }
 
-      await sendPaymentNotification({
-        ...sendNotificationPartialArgs,
-        journalId,
+      const walletTransaction = await getTransactionForWalletByJournalId({
+        walletId: sendNotificationPartialArgs.walletId,
+        journalId: journal.journalId,
+      })
+      if (walletTransaction instanceof Error) return walletTransaction
+      NotificationsService().sendTransaction({
+        recipient: sendNotificationPartialArgs,
+        transaction: walletTransaction,
       })
 
       return getPendingPaymentResponse({
@@ -795,9 +809,14 @@ const executePaymentViaLn = async ({
       })
       if (updateStateAfterRevert instanceof Error) return updateStateAfterRevert
 
-      await sendPaymentNotification({
-        ...sendNotificationPartialArgs,
-        journalId,
+      const walletTransaction = await getTransactionForWalletByJournalId({
+        walletId: sendNotificationPartialArgs.walletId,
+        journalId: journal.journalId,
+      })
+      if (walletTransaction instanceof Error) return walletTransaction
+      NotificationsService().sendTransaction({
+        recipient: sendNotificationPartialArgs,
+        transaction: walletTransaction,
       })
 
       return payResult instanceof LnAlreadyPaidError
@@ -831,11 +850,15 @@ const executePaymentViaLn = async ({
     })
     if (updateStateAfterSettle instanceof Error) return updateStateAfterSettle
 
-    const walletTransaction = await sendPaymentNotification({
-      ...sendNotificationPartialArgs,
-      journalId,
+    const walletTransaction = await getTransactionForWalletByJournalId({
+      walletId: sendNotificationPartialArgs.walletId,
+      journalId: journal.journalId,
     })
     if (walletTransaction instanceof Error) return walletTransaction
+    NotificationsService().sendTransaction({
+      recipient: sendNotificationPartialArgs,
+      transaction: walletTransaction,
+    })
 
     return {
       status: PaymentSendStatus.Success,
