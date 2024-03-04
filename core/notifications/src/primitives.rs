@@ -119,6 +119,7 @@ pub enum UserNotificationCategory {
     Balance,
     AdminNotification,
     Marketing,
+    Price,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

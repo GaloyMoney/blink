@@ -16,6 +16,7 @@ impl From<proto::NotificationCategory> for UserNotificationCategory {
                 UserNotificationCategory::AdminNotification
             }
             proto::NotificationCategory::Marketing => UserNotificationCategory::Marketing,
+            proto::NotificationCategory::Price => UserNotificationCategory::Price,
         }
     }
 }
@@ -72,6 +73,7 @@ impl From<UserNotificationCategory> for proto::NotificationCategory {
                 proto::NotificationCategory::AdminNotification
             }
             UserNotificationCategory::Marketing => proto::NotificationCategory::Marketing,
+            UserNotificationCategory::Price => proto::NotificationCategory::Price,
         }
     }
 }
