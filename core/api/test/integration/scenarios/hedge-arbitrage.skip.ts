@@ -137,6 +137,8 @@ const newAccountAndWallets = async () => {
       initialWallets,
       initialLevel: AccountLevel.One,
     },
+    referralCode: undefined,
+    referralAppId: undefined,
   })
   if (account instanceof Error) throw account
 

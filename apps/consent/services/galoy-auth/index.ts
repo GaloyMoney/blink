@@ -28,18 +28,25 @@ const authApi = {
     return response
   },
 
-  loginWithPhone: async (
-    value: string,
-    code: string,
-    customHeaders?: object,
-  ): Promise<LoginResult> => {
+  loginWithPhone: async ({
+    code,
+    phone,
+    headers,
+    referralAppId,
+  }: {
+    code: string
+    phone: string
+    headers?: object
+    referralAppId: string
+  }): Promise<LoginResult> => {
     const response = await axiosInstance.post(
       "/phone/login",
       {
-        phone: value,
+        phone,
         code,
+        referralAppId,
       },
-      customHeaders ? { headers: customHeaders } : undefined,
+      headers ? { headers } : undefined,
     )
     return response.data
   },

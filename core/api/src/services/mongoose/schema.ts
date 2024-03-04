@@ -259,6 +259,9 @@ const AccountSchema = new Schema<AccountRecord>(
       index: true,
     },
 
+    referralCode: String,
+    referralAppId: String,
+
     displayCurrency: String, // FIXME: should be an enum
   },
   { id: false },

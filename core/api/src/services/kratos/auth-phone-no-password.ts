@@ -76,10 +76,8 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
 
   const createIdentityWithSession = async ({
     phone,
-    phoneMetadata,
   }: {
     phone: PhoneNumber
-    phoneMetadata?: PhoneMetadata
   }): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | KratosError> => {
     const traits = { phone }
     const method = "password"
@@ -91,7 +89,6 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
           traits,
           method,
           password,
-          transient_payload: { phoneMetadata },
         },
       })
       const authToken = result.data.session_token as AuthToken

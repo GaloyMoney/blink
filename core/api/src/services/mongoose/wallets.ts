@@ -13,7 +13,7 @@ import {
   CouldNotFindWalletFromOnChainAddressesError,
   CouldNotListWalletsFromAccountIdError,
   CouldNotListWalletsFromWalletCurrencyError,
-  MultipleWalletsFoundForAccountIdAndCurrency,
+  MultipleWalletsFoundForAccountIdAndCurrencyError,
 } from "@/domain/errors"
 
 export const WalletsRepository = (): IWalletsRepository => {
@@ -99,7 +99,7 @@ export const WalletsRepository = (): IWalletsRepository => {
       return new CouldNotFindWalletFromAccountIdAndCurrencyError(WalletCurrency.Btc)
     }
     if (btcWallets.length > 1) {
-      return new MultipleWalletsFoundForAccountIdAndCurrency(WalletCurrency.Btc)
+      return new MultipleWalletsFoundForAccountIdAndCurrencyError(WalletCurrency.Btc)
     }
     const btcWallet = btcWallets[0]
 
@@ -108,7 +108,7 @@ export const WalletsRepository = (): IWalletsRepository => {
       return new CouldNotFindWalletFromAccountIdAndCurrencyError(WalletCurrency.Usd)
     }
     if (usdWallets.length > 1) {
-      return new MultipleWalletsFoundForAccountIdAndCurrency(WalletCurrency.Usd)
+      return new MultipleWalletsFoundForAccountIdAndCurrencyError(WalletCurrency.Usd)
     }
     const usdWallet = usdWallets[0]
 

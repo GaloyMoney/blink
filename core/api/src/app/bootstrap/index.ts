@@ -69,6 +69,8 @@ export const bootstrap = async () => {
       account = await createAccountWithPhoneIdentifier({
         newAccountInfo: { phone, kratosUserId },
         config: getDefaultAccountsConfig(),
+        referralCode: undefined,
+        referralAppId: undefined,
       })
     }
     if (account instanceof Error) return account

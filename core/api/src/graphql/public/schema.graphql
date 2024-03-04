@@ -1262,6 +1262,9 @@ type RealtimePricePayload {
   realtimePrice: RealtimePrice
 }
 
+"""ReferralCode provided by a community"""
+scalar ReferralCode
+
 """
 Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1
 """
@@ -1583,6 +1586,7 @@ type UserEmailRegistrationValidatePayload {
 input UserLoginInput {
   code: OneTimeAuthCode!
   phone: Phone!
+  referralCode: ReferralCode
 }
 
 input UserLoginUpgradeInput {

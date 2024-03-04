@@ -26,7 +26,7 @@ export class CannotConnectToDbError extends RepositoryError {
 export class DbConnectionClosedError extends RepositoryError {
   level = ErrorLevel.Critical
 }
-export class MultipleWalletsFoundForAccountIdAndCurrency extends RepositoryError {}
+export class MultipleWalletsFoundForAccountIdAndCurrencyError extends RepositoryError {}
 export class WalletInvoiceMissingLnInvoiceError extends RepositoryError {}
 
 export class CouldNotUnsetPhoneFromUserError extends CouldNotUpdateError {}
@@ -88,6 +88,8 @@ export class InvalidScanDepthAmount extends ValidationError {}
 export class SatoshiAmountRequiredError extends ValidationError {}
 export class InvalidUsername extends ValidationError {}
 export class InvalidDeviceId extends ValidationError {}
+export class InvalidReferralCodeError extends ValidationError {}
+export class InvalidReferralAppIdError extends ValidationError {}
 export class InvalidIdentityPassword extends ValidationError {}
 export class InvalidIdentityUsername extends ValidationError {}
 export class InvalidContactAlias extends ValidationError {}

@@ -19,6 +19,8 @@ describe("createAccountWithPhoneIdentifier", () => {
           initialStatus: AccountStatus.Active,
           initialWallets,
         },
+        referralCode: undefined,
+        referralAppId: undefined,
       })
       if (account instanceof Error) throw account
 
@@ -54,6 +56,8 @@ describe("createAccountWithPhoneIdentifier", () => {
             initialStatus: AccountStatus.Active,
             initialWallets,
           },
+          referralCode: undefined,
+          referralAppId: undefined,
         })
       if (account instanceof Error) throw account
 
@@ -89,6 +93,8 @@ describe("createAccountWithPhoneIdentifier", () => {
             initialStatus: AccountStatus.Active,
             initialWallets,
           },
+          referralCode: undefined,
+          referralAppId: undefined,
         })
       if (account instanceof Error) throw account
 

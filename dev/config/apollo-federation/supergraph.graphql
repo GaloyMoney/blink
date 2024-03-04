@@ -1633,6 +1633,10 @@ type RealtimePricePayload
   realtimePrice: RealtimePrice
 }
 
+"""ReferralCode provided by a community"""
+scalar ReferralCode
+  @join__type(graph: PUBLIC)
+
 """
 Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1
 """
@@ -2057,6 +2061,7 @@ input UserLoginInput
 {
   code: OneTimeAuthCode!
   phone: Phone!
+  referralCode: ReferralCode
 }
 
 input UserLoginUpgradeInput

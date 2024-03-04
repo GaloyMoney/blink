@@ -104,8 +104,22 @@ export const submitForm = async (
   }
 
   if (loginType === LoginType.phone) {
+    const { data: body } = await hydraClient.getOAuth2LoginRequest({
+      loginChallenge: login_challenge,
+    })
+
+    const appId = body.client.client_id
+    if (!appId) {
+      throw new Error("Invalid appId")
+    }
+
     try {
-      const loginResponse = await authApi.loginWithPhone(value, code, customHeaders)
+      const loginResponse = await authApi.loginWithPhone({
+        phone: value,
+        code,
+        headers: customHeaders,
+        referralAppId: appId,
+      })
       authToken = loginResponse.authToken
       totpRequired = loginResponse.totpRequired
       userId = loginResponse.id

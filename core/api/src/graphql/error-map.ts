@@ -710,7 +710,13 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "InvalidCarrierTypeForPhoneMetadataError":
     case "InvalidErrorCodeForPhoneMetadataError":
     case "InvalidCountryCodeForPhoneMetadataError":
-    case "MultipleWalletsFoundForAccountIdAndCurrency":
+    case "MultipleWalletsFoundForAccountIdAndCurrencyError":
+    case "InvalidReferralCodeError":
+      message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
+        error.name
+      }${error.message ? ": " + error.message : ""})`
+      return new UnexpectedClientError({ message, logger: baseLogger })
+    case "InvalidReferralAppIdError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`

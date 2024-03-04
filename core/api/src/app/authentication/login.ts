@@ -64,10 +64,14 @@ export const loginWithPhoneToken = async ({
   phone,
   code,
   ip,
+  referralCode,
+  referralAppId,
 }: {
   phone: PhoneNumber
   code: PhoneCode
   ip: IpAddress
+  referralCode?: ReferralCode
+  referralAppId?: ReferralAppId
 }): Promise<LoginWithPhoneTokenResult | ApplicationError> => {
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
@@ -103,7 +107,6 @@ export const loginWithPhoneToken = async ({
 
     const kratosResult = await authService.createIdentityWithSession({
       phone,
-      phoneMetadata,
     })
     if (kratosResult instanceof Error) return kratosResult
     const { kratosUserId } = kratosResult
@@ -112,6 +115,8 @@ export const loginWithPhoneToken = async ({
       newAccountInfo: { phone, kratosUserId },
       config: getDefaultAccountsConfig(),
       phoneMetadata,
+      referralCode,
+      referralAppId,
     })
     if (account instanceof Error) {
       recordExceptionInCurrentSpan({

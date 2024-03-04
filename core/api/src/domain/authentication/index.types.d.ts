@@ -6,6 +6,9 @@ type AuthenticationError = import("./errors").AuthenticationError
 type IdentityUsername = string & { readonly brand: unique symbol }
 type IdentityPassword = string & { readonly brand: unique symbol }
 
+type ReferralCode = string & { readonly brand: unique symbol }
+type ReferralAppId = string & { readonly brand: unique symbol }
+
 type UserId = string & { readonly brand: unique symbol }
 type PrivilegedClientId = string & { readonly brand: unique symbol }
 type AuthToken = string & { readonly brand: unique symbol }
@@ -85,7 +88,6 @@ interface IAuthWithPhonePasswordlessService {
   logoutToken(args: { sessionId: SessionId }): Promise<void | AuthenticationError>
   createIdentityWithSession(args: {
     phone: PhoneNumber
-    phoneMetadata?: PhoneMetadata
   }): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | AuthenticationError>
   updateIdentityFromDeviceAccount(args: {
     phone: PhoneNumber

@@ -5,6 +5,7 @@ import Phone from "@/graphql/shared/types/scalar/phone"
 import AuthTokenPayload from "@/graphql/shared/types/payload/auth-token"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import { Authentication } from "@/app"
+import ReferralCode from "@/graphql/shared/types/scalar/referral-code"
 
 const UserLoginInput = GT.Input({
   name: "UserLoginInput",
@@ -14,6 +15,9 @@ const UserLoginInput = GT.Input({
     },
     code: {
       type: GT.NonNull(OneTimeAuthCode),
+    },
+    referralCode: {
+      type: ReferralCode,
     },
   }),
 })
@@ -25,6 +29,7 @@ const UserLoginMutation = GT.Field<
     input: {
       phone: PhoneNumber | InputValidationError
       code: PhoneCode | InputValidationError
+      referralCode?: ReferralCode | InputValidationError
     }
   }
 >({
@@ -36,7 +41,7 @@ const UserLoginMutation = GT.Field<
     input: { type: GT.NonNull(UserLoginInput) },
   },
   resolve: async (_, args, { ip }) => {
-    const { phone, code } = args.input
+    const { phone, code, referralCode } = args.input
 
     if (phone instanceof Error) {
       return { errors: [{ message: phone.message }] }
@@ -44,6 +49,10 @@ const UserLoginMutation = GT.Field<
 
     if (code instanceof Error) {
       return { errors: [{ message: code.message }] }
+    }
+
+    if (referralCode instanceof Error) {
+      return { errors: [{ message: referralCode.message }] }
     }
 
     if (ip === undefined) {
@@ -54,6 +63,7 @@ const UserLoginMutation = GT.Field<
       phone,
       code,
       ip,
+      referralCode,
     })
 
     if (res instanceof Error) {
