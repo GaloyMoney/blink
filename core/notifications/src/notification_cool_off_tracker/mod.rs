@@ -19,11 +19,12 @@ impl NotificationCoolOffTracker {
                FROM notification_cool_off_tracker
                WHERE event_type = 'price_changed'
                FOR UPDATE
-               )
+               ), updated AS (
                UPDATE notification_cool_off_tracker
                SET last_triggered_at = now()
                WHERE event_type = 'price_changed'
-               RETURNING (SELECT last_triggered_at FROM last_trigger)"#
+               )
+               SELECT last_triggered_at FROM last_trigger"#
         )
         .fetch_one(&mut **tx)
         .await?;

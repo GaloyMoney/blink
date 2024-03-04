@@ -32,7 +32,7 @@ impl PushExecutor {
     #[instrument(
         name = "executor.notify",
         skip(self),
-        fields(n_errors, n_removed_tokens),
+        fields(n_errors, n_removed_tokens, n_deliveries),
         err
     )]
     pub async fn notify<T: NotificationEvent + ?Sized>(
@@ -51,6 +51,7 @@ impl PushExecutor {
         let mut last_err = None;
         let mut n_errs = 0;
         let mut n_removed_tokens = 0;
+        let mut n_deliveries = 0;
         for device_token in settings.push_device_tokens() {
             match self.fcm.send(&device_token, &msg, event.deep_link()).await {
                 Err(FcmError::UnrecognizedDeviceToken(e) | FcmError::InvalidDeviceToken(e)) => {
@@ -65,7 +66,9 @@ impl PushExecutor {
                     error!("Unexpected error sending to device: {}", e);
                     last_err = Some(e.into())
                 }
-                _ => continue,
+                _ => {
+                    n_deliveries += 1;
+                }
             }
         }
 
@@ -75,6 +78,7 @@ impl PushExecutor {
 
         tracing::Span::current().record("n_errors", n_errs);
         tracing::Span::current().record("n_removed_tokens", n_removed_tokens);
+        tracing::Span::current().record("n_deliveries", n_deliveries);
 
         if let Some(e) = last_err {
             Err(e)
