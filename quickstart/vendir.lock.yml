@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump opentelemetry deps (#4125)...'
-      sha: df368f7d394e75636002ef9325a5ada5d29418c3
+      commitTitle: 'chore(core): unskip hedger tests (#4126)'
+      sha: 761b7e533635ea88cf9dd33059c3eb1be11e4afe
       tags:
-      - 0.20.99-5-gdf368f7d3
+      - 0.20.100-1-g761b7e533
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump opentelemetry deps (#4125)...'
-      sha: df368f7d394e75636002ef9325a5ada5d29418c3
+      commitTitle: 'chore(core): unskip hedger tests (#4126)'
+      sha: 761b7e533635ea88cf9dd33059c3eb1be11e4afe
       tags:
-      - 0.20.99-5-gdf368f7d3
+      - 0.20.100-1-g761b7e533
     path: schemas/
   - git:
-      commitTitle: 'chore(deps): bump opentelemetry deps (#4125)...'
-      sha: df368f7d394e75636002ef9325a5ada5d29418c3
+      commitTitle: 'chore(core): unskip hedger tests (#4126)'
+      sha: 761b7e533635ea88cf9dd33059c3eb1be11e4afe
       tags:
-      - 0.20.99-5-gdf368f7d3
+      - 0.20.100-1-g761b7e533
     path: gql/
   path: ./graphql
 kind: LockConfig
