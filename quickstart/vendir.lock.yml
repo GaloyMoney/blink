@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: misc update (#4117)...'
-      sha: 10b2eabd67ec227afa73a532856c469ee43c0529
+      commitTitle: 'chore(deps): bump opentelemetry deps (#4125)...'
+      sha: df368f7d394e75636002ef9325a5ada5d29418c3
       tags:
-      - 0.20.98-3-g10b2eabd6
+      - 0.20.99-5-gdf368f7d3
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: misc update (#4117)...'
-      sha: 10b2eabd67ec227afa73a532856c469ee43c0529
+      commitTitle: 'chore(deps): bump opentelemetry deps (#4125)...'
+      sha: df368f7d394e75636002ef9325a5ada5d29418c3
       tags:
-      - 0.20.98-3-g10b2eabd6
+      - 0.20.99-5-gdf368f7d3
     path: schemas/
   - git:
-      commitTitle: 'chore: misc update (#4117)...'
-      sha: 10b2eabd67ec227afa73a532856c469ee43c0529
+      commitTitle: 'chore(deps): bump opentelemetry deps (#4125)...'
+      sha: df368f7d394e75636002ef9325a5ada5d29418c3
       tags:
-      - 0.20.98-3-g10b2eabd6
+      - 0.20.99-5-gdf368f7d3
     path: gql/
   path: ./graphql
 kind: LockConfig
