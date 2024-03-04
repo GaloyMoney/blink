@@ -81,9 +81,11 @@ impl PushExecutor {
         tracing::Span::current().record("n_deliveries", n_deliveries);
 
         if let Some(e) = last_err {
-            Err(e)
-        } else {
-            Ok(())
+            if n_deliveries != 0 {
+                return Err(e);
+            }
         }
+
+        Ok(())
     }
 }
