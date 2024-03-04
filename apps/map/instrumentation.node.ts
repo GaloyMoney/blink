@@ -11,8 +11,7 @@ import { W3CTraceContextPropagator } from "@opentelemetry/core"
 const sdk = new NodeSDK({
   textMapPropagator: new W3CTraceContextPropagator(),
   resource: new Resource({
-    [SEMRESATTRS_SERVICE_NAME]:
-      process.env.TRACING_SERVICE_NAME || "map",
+    [SEMRESATTRS_SERVICE_NAME]: process.env.TRACING_SERVICE_NAME || "map",
   }),
   spanProcessor: new SimpleSpanProcessor(new OTLPTraceExporter()),
   instrumentations: [
