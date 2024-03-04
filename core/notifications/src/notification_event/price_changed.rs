@@ -43,14 +43,12 @@ impl PriceChanged {
     const COOL_OFF_PERIOD: chrono::Duration = chrono::Duration::days(2);
 
     pub fn should_notify(&self, last_trigger: Option<chrono::DateTime<chrono::Utc>>) -> bool {
-        let now = chrono::Utc::now();
-
         if self.change_percent >= Self::NOTIFICATION_THRESHOLD
             && self.direction == PriceChangeDirection::Up
         {
             match last_trigger {
                 Some(last_trigger_time) => {
-                    let time_since_last_trigger = now - last_trigger_time;
+                    let time_since_last_trigger = chrono::Utc::now() - last_trigger_time;
                     time_since_last_trigger > Self::COOL_OFF_PERIOD
                 }
                 None => true,
