@@ -23,8 +23,10 @@ const updateStateByRelatedJournal = async ({
         $or: [
           { _journal: toObjectId(journalId) },
           { _original_journal: toObjectId(journalId) },
-          { related_journal: toObjectId(journalId) },
-          { related_journal: journalId }, // needed because we've stored as 'string' and 'objectId' type in prod
+          // Note: we have ObjectId types related_journal entries in db, but this no longer
+          //       exists in code, so we ignore querying these here since this query is also
+          //       only relevant for recent transactions. #whenCala
+          { related_journal: journalId },
         ],
       },
       { bundle_completion_state: bundleCompletionState },

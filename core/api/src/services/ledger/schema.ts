@@ -155,6 +155,8 @@ transactionSchema.index({ type: 1, pending: 1, account_path: 1 })
 transactionSchema.index({ account_path: 1 })
 transactionSchema.index({ hash: 1 })
 transactionSchema.index({ payout_id: 1 })
+transactionSchema.index({ _original_journal: 1 })
+transactionSchema.index({ related_journal: 1 })
 
 setTransactionSchema(transactionSchema, undefined, { defaultIndexes: true })
 
