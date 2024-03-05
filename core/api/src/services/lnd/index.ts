@@ -503,7 +503,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }: RegisterInvoiceArgs & {
     lndAndPubkey: LndAndPubkey
   }): Promise<RegisteredInvoice | LightningServiceError> => {
-    const { lnd } = lndAndPubkey
+    const { lnd, pubkey } = lndAndPubkey
     const input = {
       lnd,
       id: paymentHash,
@@ -522,7 +522,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       }
       const registerInvoice: RegisteredInvoice = {
         invoice: returnedInvoice,
-        pubkey: defaultPubkey,
+        pubkey,
       }
       return registerInvoice
     } catch (err) {
