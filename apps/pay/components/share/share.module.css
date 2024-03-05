@@ -5,7 +5,7 @@
   transform: translateX(-50%);
 }
 
-.select_share_type,
+.selectShareType,
 .error {
   background-color: rgba(243, 243, 243, 0.908);
   display: flex;
@@ -19,7 +19,7 @@
   font-weight: 500;
 }
 
-.select_share_type > button {
+.selectShareType > button {
   color: rgba(83, 111, 242, 1);
   font-weight: 500;
   background-color: #fff;
@@ -27,7 +27,7 @@
   border-radius: 4px;
 }
 
-.select_share_type > .close_btn {
+.selectShareType > .closeBtn {
   position: absolute;
   top: 0;
   right: 0;

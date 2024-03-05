@@ -79,7 +79,7 @@ const SharePopup: FC<Props> = ({
         {shareState === "not-set" ? (
           <div className={styles.container}>
             {state === "success" ? (
-              <div className={styles.select_share_type}>
+              <div className={styles.selectShareType}>
                 Invoice link copied to clipboard
               </div>
             ) : state === "error" ? (
@@ -87,8 +87,8 @@ const SharePopup: FC<Props> = ({
                 <p>Unable to copy to clipboard, please copy the link instead to share.</p>
               </div>
             ) : (
-              <div className={styles.select_share_type}>
-                <button onClick={onClose} className={styles.close_btn}>
+              <div className={styles.selectShareType}>
+                <button onClick={onClose} className={styles.closeBtn}>
                   <Image src="/icons/close.svg" alt="close icon" width="24" height="24" />
                 </button>
                 <button onClick={copyUrlToClipboard}>Link</button>
