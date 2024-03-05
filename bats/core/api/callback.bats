@@ -11,8 +11,9 @@ setup_file() {
 }
 
 teardown() {
-  if [[ "$(balance_for_check)" != 0 ]]; then
-    fail "Error: balance_for_check failed"
+  balance="$(balance_for_check)"
+  if [[ "$balance" != 0 ]]; then
+    fail "Error: balance_for_check failed ($balance)"
   fi
 }
 

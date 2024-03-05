@@ -1,3 +1,4 @@
+import { FAILED_USD_MEMO } from "@/domain/ledger/ln-payment-state"
 import { CouldNotFindBtcWalletForAccountError } from "@/domain/errors"
 import { ErrorLevel, WalletCurrency } from "@/domain/shared"
 
@@ -93,7 +94,7 @@ export const reimburseFailedUsdPayment = async <
   }
 
   const result = await LedgerFacade.recordReceiveOffChain({
-    description: "Usd payment canceled",
+    description: FAILED_USD_MEMO,
     recipientWalletDescriptor: btcWalletDescriptor,
     amountToCreditReceiver: paymentFlow.totalAmountsForPayment(),
     metadata,
