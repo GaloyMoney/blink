@@ -2,27 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): return transaction bundle status on txns [h/t @callebtc]
-        (#4039)...'
-      sha: 7f6fc89a20da4a19bc10e1d1b6fdd09a3ebaf994
+      commitTitle: 'chore(core): add tracing attributes to handle htlc bug edge case
+        (#4136)'
+      sha: 95b6c865533380f712eb5d1286245b5d31e84eea
       tags:
-      - 0.20.101-1-g7f6fc89a2
+      - 0.20.102-1-g95b6c8655
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): return transaction bundle status on txns [h/t @callebtc]
-        (#4039)...'
-      sha: 7f6fc89a20da4a19bc10e1d1b6fdd09a3ebaf994
+      commitTitle: 'chore(core): add tracing attributes to handle htlc bug edge case
+        (#4136)'
+      sha: 95b6c865533380f712eb5d1286245b5d31e84eea
       tags:
-      - 0.20.101-1-g7f6fc89a2
+      - 0.20.102-1-g95b6c8655
     path: schemas/
   - git:
-      commitTitle: 'fix(core): return transaction bundle status on txns [h/t @callebtc]
-        (#4039)...'
-      sha: 7f6fc89a20da4a19bc10e1d1b6fdd09a3ebaf994
+      commitTitle: 'chore(core): add tracing attributes to handle htlc bug edge case
+        (#4136)'
+      sha: 95b6c865533380f712eb5d1286245b5d31e84eea
       tags:
-      - 0.20.101-1-g7f6fc89a2
+      - 0.20.102-1-g95b6c8655
     path: gql/
   path: ./graphql
 kind: LockConfig
