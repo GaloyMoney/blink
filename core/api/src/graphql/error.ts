@@ -200,6 +200,17 @@ export class DealerOfflineError extends CustomGraphQLError {
   }
 }
 
+export class PriceServiceOfflineError extends CustomGraphQLError {
+  constructor(errData: PartialBy<CustomGraphQLErrorData, "logger" | "forwardToClient">) {
+    super({
+      code: "PRICE_SERVICE_OFFLINE",
+      forwardToClient: true,
+      ...errData,
+      logger: baseLogger,
+    })
+  }
+}
+
 export class CaptchaFailedError extends CustomGraphQLError {
   constructor(errData: CustomGraphQLErrorData) {
     super({

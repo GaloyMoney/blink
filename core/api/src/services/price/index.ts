@@ -11,11 +11,12 @@ import {
   UnknownPriceServiceError,
   PriceNotAvailableError,
   PriceCurrenciesNotAvailableError,
+  NoConnectionToPriceServiceError,
 } from "@/domain/price"
 
 import { SATS_PER_BTC } from "@/domain/bitcoin"
 
-import { WalletCurrency } from "@/domain/shared"
+import { WalletCurrency, parseErrorMessageFromUnknown } from "@/domain/shared"
 
 import { CENTS_PER_USD, UsdDisplayCurrency } from "@/domain/fiat"
 
@@ -99,7 +100,7 @@ export const PriceService = (): IPriceService => {
       }
     } catch (err) {
       baseLogger.error({ err }, "impossible to fetch most recent price")
-      return new UnknownPriceServiceError(err)
+      return handlePriceErrors(err)
     }
   }
 
@@ -113,7 +114,7 @@ export const PriceService = (): IPriceService => {
         price: t.price / SATS_PER_BTC,
       }))
     } catch (err) {
-      return new UnknownPriceServiceError(err)
+      return handlePriceErrors(err)
     }
   }
 
@@ -140,7 +141,7 @@ export const PriceService = (): IPriceService => {
           }) as PriceCurrency,
       )
     } catch (err) {
-      return new UnknownPriceServiceError(err)
+      return handlePriceErrors(err)
     }
   }
 
@@ -151,3 +152,21 @@ export const PriceService = (): IPriceService => {
     listCurrencies,
   }
 }
+
+const handlePriceErrors = (err: Error | string | unknown) => {
+  const errMsg = parseErrorMessageFromUnknown(err)
+
+  const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
+
+  switch (true) {
+    case match(KnownPriceErrorDetails.NoConnection):
+      return new NoConnectionToPriceServiceError(errMsg)
+
+    default:
+      return new UnknownPriceServiceError(errMsg)
+  }
+}
+
+export const KnownPriceErrorDetails = {
+  NoConnection: /No connection established/,
+} as const
