@@ -414,7 +414,7 @@ const executePaymentViaIntraledger = async <
   const recipientUser = await UsersRepository().findById(recipientUserId)
   if (recipientUser instanceof Error) return recipientUser
 
-  const sendNotificationRecipientPartialArgs = {
+  const txRecipientNotificationArgs = {
     accountId: recipientAccount.id,
     walletId: recipientWalletDescriptor.id,
     userId: recipientUser.id,
@@ -424,7 +424,7 @@ const executePaymentViaIntraledger = async <
   const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
   if (senderUser instanceof Error) return senderUser
 
-  const sendNotificationSenderPartialArgs = {
+  const txSenderNotificationArgs = {
     accountId: senderAccount.id,
     walletId: senderWallet.id,
     userId: senderUser.id,
@@ -554,22 +554,22 @@ const executePaymentViaIntraledger = async <
     if (newWalletInvoice instanceof Error) return newWalletInvoice
 
     const recipientWalletTransaction = await getTransactionForWalletByJournalId({
-      walletId: sendNotificationRecipientPartialArgs.walletId,
+      walletId: txRecipientNotificationArgs.walletId,
       journalId: journal.journalId,
     })
     if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
     NotificationsService().sendTransaction({
-      recipient: sendNotificationRecipientPartialArgs,
+      recipient: txRecipientNotificationArgs,
       transaction: recipientWalletTransaction,
     })
 
     const senderWalletTransaction = await getTransactionForWalletByJournalId({
-      walletId: sendNotificationSenderPartialArgs.walletId,
+      walletId: txSenderNotificationArgs.walletId,
       journalId: journal.journalId,
     })
     if (senderWalletTransaction instanceof Error) return senderWalletTransaction
     NotificationsService().sendTransaction({
-      recipient: sendNotificationSenderPartialArgs,
+      recipient: txSenderNotificationArgs,
       transaction: senderWalletTransaction,
     })
 
@@ -634,7 +634,7 @@ const executePaymentViaLn = async ({
   const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
   if (senderUser instanceof Error) return senderUser
 
-  const sendNotificationPartialArgs = {
+  const txSenderNotificationArgs = {
     accountId: senderWallet.accountId,
     walletId: senderWallet.id,
     userId: senderUser.id,
@@ -776,12 +776,12 @@ const executePaymentViaLn = async ({
       }
 
       const walletTransaction = await getTransactionForWalletByJournalId({
-        walletId: sendNotificationPartialArgs.walletId,
+        walletId: txSenderNotificationArgs.walletId,
         journalId: journal.journalId,
       })
       if (walletTransaction instanceof Error) return walletTransaction
       NotificationsService().sendTransaction({
-        recipient: sendNotificationPartialArgs,
+        recipient: txSenderNotificationArgs,
         transaction: walletTransaction,
       })
 
@@ -810,12 +810,12 @@ const executePaymentViaLn = async ({
       if (updateStateAfterRevert instanceof Error) return updateStateAfterRevert
 
       const walletTransaction = await getTransactionForWalletByJournalId({
-        walletId: sendNotificationPartialArgs.walletId,
+        walletId: txSenderNotificationArgs.walletId,
         journalId: journal.journalId,
       })
       if (walletTransaction instanceof Error) return walletTransaction
       NotificationsService().sendTransaction({
-        recipient: sendNotificationPartialArgs,
+        recipient: txSenderNotificationArgs,
         transaction: walletTransaction,
       })
 
@@ -851,12 +851,12 @@ const executePaymentViaLn = async ({
     if (updateStateAfterSettle instanceof Error) return updateStateAfterSettle
 
     const walletTransaction = await getTransactionForWalletByJournalId({
-      walletId: sendNotificationPartialArgs.walletId,
+      walletId: txSenderNotificationArgs.walletId,
       journalId: journal.journalId,
     })
     if (walletTransaction instanceof Error) return walletTransaction
     NotificationsService().sendTransaction({
-      recipient: sendNotificationPartialArgs,
+      recipient: txSenderNotificationArgs,
       transaction: walletTransaction,
     })
 

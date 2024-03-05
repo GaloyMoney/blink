@@ -187,12 +187,11 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
     const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
     if (senderUser instanceof Error) return senderUser
 
-    const sendNotificationArgs = {
+    const txSenderNotificationArgs = {
       accountId: senderWallet.accountId,
       walletId,
       userId: senderUser.id,
       level: senderAccount.level,
-      journalId: pendingPayment.journalId,
     }
 
     return LockService().lockWalletId(walletId, async () => {
@@ -268,12 +267,12 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
           if (updateStateAfterRevert instanceof Error) return updateStateAfterRevert
 
           const walletTransaction = await getTransactionForWalletByJournalId({
-            walletId: sendNotificationArgs.walletId,
-            journalId: sendNotificationArgs.journalId,
+            walletId: txSenderNotificationArgs.walletId,
+            journalId,
           })
           if (walletTransaction instanceof Error) return walletTransaction
           NotificationsService().sendTransaction({
-            recipient: sendNotificationArgs,
+            recipient: txSenderNotificationArgs,
             transaction: walletTransaction,
           })
 
@@ -299,12 +298,12 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         if (updateStateAfterUsdRevert instanceof Error) return updateStateAfterUsdRevert
 
         const walletTransaction = await getTransactionForWalletByJournalId({
-          walletId: sendNotificationArgs.walletId,
-          journalId: sendNotificationArgs.journalId,
+          walletId: txSenderNotificationArgs.walletId,
+          journalId,
         })
         if (walletTransaction instanceof Error) return walletTransaction
         NotificationsService().sendTransaction({
-          recipient: sendNotificationArgs,
+          recipient: txSenderNotificationArgs,
           transaction: walletTransaction,
         })
 
@@ -326,12 +325,12 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
 
       if (pendingPayment.feeKnownInAdvance) {
         const walletTransaction = await getTransactionForWalletByJournalId({
-          walletId: sendNotificationArgs.walletId,
-          journalId: sendNotificationArgs.journalId,
+          walletId: txSenderNotificationArgs.walletId,
+          journalId,
         })
         if (walletTransaction instanceof Error) return walletTransaction
         NotificationsService().sendTransaction({
-          recipient: sendNotificationArgs,
+          recipient: txSenderNotificationArgs,
           transaction: walletTransaction,
         })
 
@@ -360,12 +359,12 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       if (updateStateAfterReimburse instanceof Error) return updateStateAfterReimburse
 
       const walletTransaction = await getTransactionForWalletByJournalId({
-        walletId: sendNotificationArgs.walletId,
-        journalId: sendNotificationArgs.journalId,
+        walletId: txSenderNotificationArgs.walletId,
+        journalId,
       })
       if (walletTransaction instanceof Error) return walletTransaction
       NotificationsService().sendTransaction({
-        recipient: sendNotificationArgs,
+        recipient: txSenderNotificationArgs,
         transaction: walletTransaction,
       })
 
