@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): register invoice with actual lnd pubkey it was created
-        with (#4135)...'
-      sha: 2b8b1aa39ca552547b3fa3a0c126d2ce8e0f9c08
+      commitTitle: 'chore(core): map known price service errors (#4138)'
+      sha: 71b4ed735a21aa5a8c99392d51db6e20335c5a5b
       tags:
-      - 0.20.103-2-g2b8b1aa39
+      - 0.20.103-5-g71b4ed735
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): register invoice with actual lnd pubkey it was created
-        with (#4135)...'
-      sha: 2b8b1aa39ca552547b3fa3a0c126d2ce8e0f9c08
+      commitTitle: 'chore(core): map known price service errors (#4138)'
+      sha: 71b4ed735a21aa5a8c99392d51db6e20335c5a5b
       tags:
-      - 0.20.103-2-g2b8b1aa39
+      - 0.20.103-5-g71b4ed735
     path: schemas/
   - git:
-      commitTitle: 'fix(core): register invoice with actual lnd pubkey it was created
-        with (#4135)...'
-      sha: 2b8b1aa39ca552547b3fa3a0c126d2ce8e0f9c08
+      commitTitle: 'chore(core): map known price service errors (#4138)'
+      sha: 71b4ed735a21aa5a8c99392d51db6e20335c5a5b
       tags:
-      - 0.20.103-2-g2b8b1aa39
+      - 0.20.103-5-g71b4ed735
     path: gql/
   path: ./graphql
 kind: LockConfig
