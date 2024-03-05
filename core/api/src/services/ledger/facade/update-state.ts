@@ -12,10 +12,10 @@ import { ErrorLevel } from "@/domain/shared"
 
 const updateStateByRelatedJournal = async ({
   journalId,
-  bundle_completion_state,
+  bundleCompletionState,
 }: {
   journalId: LedgerJournalId
-  bundle_completion_state: LnPaymentState
+  bundleCompletionState: LnPaymentState
 }): Promise<true | LedgerServiceError | RepositoryError> => {
   try {
     const result = await Transaction.updateMany(
@@ -27,7 +27,7 @@ const updateStateByRelatedJournal = async ({
           { related_journal: journalId }, // needed because we've stored as 'string' and 'objectId' type in prod
         ],
       },
-      { bundle_completion_state },
+      { bundle_completion_state: bundleCompletionState },
     )
     const success = result.modifiedCount > 0
     if (!success) {
@@ -73,6 +73,6 @@ export const updateLnPaymentState = async ({
 
   return updateStateByRelatedJournal({
     journalId,
-    bundle_completion_state: lnPaymentState,
+    bundleCompletionState: lnPaymentState,
   })
 }
