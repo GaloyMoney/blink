@@ -7,7 +7,12 @@ import { PaymentFlowFromLedgerTransaction } from "./translations"
 import { getTransactionForWalletByJournalId } from "@/app/wallets"
 
 import { toSats } from "@/domain/bitcoin"
-import { defaultTimeToExpiryInSeconds, PaymentStatus } from "@/domain/bitcoin/lightning"
+import {
+  decodeInvoice,
+  defaultTimeToExpiryInSeconds,
+  LookupPaymentTimedOutError,
+  PaymentStatus,
+} from "@/domain/bitcoin/lightning"
 import { InconsistentDataError } from "@/domain/errors"
 import {
   CouldNotFindTransactionError,
@@ -25,6 +30,7 @@ import { LndService } from "@/services/lnd"
 import { LockService } from "@/services/lock"
 import {
   AccountsRepository,
+  LnPaymentsRepository,
   PaymentFlowStateRepository,
   UsersRepository,
   WalletsRepository,
@@ -158,6 +164,31 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         },
         "issue fetching payment",
       )
+
+      // NOTE: Handle edge htlc bug case that causes stuck payments. This can be removed
+      // when we can upgrade to lnd 0.18.0.
+      // See issue for details: https://github.com/lightningnetwork/lnd/issues/7697
+      if (lnPaymentLookup instanceof LookupPaymentTimedOutError) {
+        const persistedLookup =
+          await LnPaymentsRepository().findByPaymentHash(paymentHash)
+        if (persistedLookup instanceof Error) return lnPaymentLookup
+
+        const { paymentRequest } = persistedLookup
+        if (paymentRequest === undefined) return lnPaymentLookup
+
+        const lnInvoice = decodeInvoice(paymentRequest)
+        if (lnInvoice instanceof Error) return lnInvoice
+        addAttributesToCurrentSpan({
+          ["error.actionRequired.message"]:
+            `Check lnd using '$ lncli trackpayment --json ${paymentHash}' to see if there are any ` +
+            "htlcs in the array for that field. If it is empty, the status is IN_FLIGHT and the invoice " +
+            "is expired then the ledger transaction can be voided and the payment removed from lnd.",
+          "error.potentialHtlcBug.isExpired": lnInvoice.isExpired,
+          "error.potentialHtlcBug.paymentRequest": paymentRequest,
+          "error.potentialHtlcBug.sentFromPubkey": persistedLookup.sentFromPubkey,
+        })
+      }
+
       return lnPaymentLookup
     }
 
