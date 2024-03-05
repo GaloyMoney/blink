@@ -252,9 +252,9 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
   }
 
   return (
-    <div className={styles.invoice_container}>
+    <div className={styles.invoiceContainer}>
       {recipientWalletCurrency === "USD" && (
-        <div className={styles.timer_container}>
+        <div className={styles.timerContainer}>
           <p>{`${minutes}:${seconds}`}</p>
           <div className={styles.timer}>
             <span style={progressBarStyle}></span>
@@ -281,7 +281,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
               />
             </div>
 
-            <div className={styles.qr_clipboard}>
+            <div className={styles.qrClipboard}>
               <OverlayTrigger
                 show={copied}
                 placement="right"
@@ -307,7 +307,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
                 <span
                   data-testid="share-lbl"
                   title="Share lightning invoice"
-                  className={styles.share_btn}
+                  className={styles.shareBtn}
                   onClick={() => setShareState("not-set")}
                 >
                   <Image
