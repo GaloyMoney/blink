@@ -2,27 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps-dev): bump @storybook/addon-essentials from 7.6.3 to
-        7.6.17 (#4130)...'
-      sha: d11281f546626640464af9e74bb54a81aa7874b0
+      commitTitle: 'fix(core): return transaction bundle status on txns [h/t @callebtc]
+        (#4039)...'
+      sha: 7f6fc89a20da4a19bc10e1d1b6fdd09a3ebaf994
       tags:
-      - 0.20.100-9-gd11281f54
+      - 0.20.101-1-g7f6fc89a2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps-dev): bump @storybook/addon-essentials from 7.6.3 to
-        7.6.17 (#4130)...'
-      sha: d11281f546626640464af9e74bb54a81aa7874b0
+      commitTitle: 'fix(core): return transaction bundle status on txns [h/t @callebtc]
+        (#4039)...'
+      sha: 7f6fc89a20da4a19bc10e1d1b6fdd09a3ebaf994
       tags:
-      - 0.20.100-9-gd11281f54
+      - 0.20.101-1-g7f6fc89a2
     path: schemas/
   - git:
-      commitTitle: 'chore(deps-dev): bump @storybook/addon-essentials from 7.6.3 to
-        7.6.17 (#4130)...'
-      sha: d11281f546626640464af9e74bb54a81aa7874b0
+      commitTitle: 'fix(core): return transaction bundle status on txns [h/t @callebtc]
+        (#4039)...'
+      sha: 7f6fc89a20da4a19bc10e1d1b6fdd09a3ebaf994
       tags:
-      - 0.20.100-9-gd11281f54
+      - 0.20.101-1-g7f6fc89a2
     path: gql/
   path: ./graphql
 kind: LockConfig
