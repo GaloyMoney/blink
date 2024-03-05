@@ -19,10 +19,11 @@ interface ILedgerTransaction {
   txid?: string
   type: LedgerTransactionType
   pending: boolean
+  bundle_completion_state?: LnPaymentState
   err?: string
   currency: WalletCurrency
   feeKnownInAdvance?: boolean
-  related_journal?: ObjectId
+  related_journal?: ObjectId | string
   payee_addresses?: string[]
   request_id?: string
   payout_id?: string

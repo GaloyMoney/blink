@@ -3,6 +3,7 @@ import mongoose from "mongoose"
 import { setTransactionSchema } from "medici"
 
 import { LedgerTransactionType } from "@/domain/ledger"
+import { LnPaymentState } from "@/domain/ledger/ln-payment-state"
 
 // TODO migration:
 // rename type: on_us to intraledger
@@ -10,6 +11,7 @@ import { LedgerTransactionType } from "@/domain/ledger"
 const Schema = mongoose.Schema
 
 const ledgerTransactionTypes = Object.values(LedgerTransactionType)
+const lnPaymentStates = Object.values(LnPaymentState)
 
 const transactionSchema = new Schema<ILedgerTransaction>(
   {
@@ -40,6 +42,11 @@ const transactionSchema = new Schema<ILedgerTransaction>(
       required: true,
     },
 
+    bundle_completion_state: {
+      type: String,
+      enum: lnPaymentStates,
+    },
+
     currency: {
       type: String,
       enum: ["USD", "BTC"],
@@ -50,7 +57,15 @@ const transactionSchema = new Schema<ILedgerTransaction>(
     feeKnownInAdvance: {
       type: Boolean,
     },
-    related_journal: Schema.Types.ObjectId,
+    related_journal: {
+      type: Schema.Types.Mixed,
+      validate: {
+        validator: (value: string | mongoose.Types.ObjectId) =>
+          typeof value === "string" || value instanceof mongoose.Types.ObjectId,
+      },
+      message: (props: { value?: string }) =>
+        `${props?.value} is not a valid string or ObjectId!`,
+    },
 
     // for onchain transactions.
     payee_addresses: [String],
@@ -140,6 +155,8 @@ transactionSchema.index({ type: 1, pending: 1, account_path: 1 })
 transactionSchema.index({ account_path: 1 })
 transactionSchema.index({ hash: 1 })
 transactionSchema.index({ payout_id: 1 })
+transactionSchema.index({ _original_journal: 1 })
+transactionSchema.index({ related_journal: 1 })
 
 setTransactionSchema(transactionSchema, undefined, { defaultIndexes: true })
 

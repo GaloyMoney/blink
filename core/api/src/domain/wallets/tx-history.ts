@@ -1,3 +1,5 @@
+import { LnPaymentState } from "../ledger/ln-payment-state"
+
 import { TxStatus } from "./tx-status"
 
 import { PaymentInitiationMethod, SettlementMethod } from "./tx-methods"
@@ -71,8 +73,6 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
     memoSharingConfig,
   })
 
-  const status = txn.pendingConfirmation ? TxStatus.Pending : TxStatus.Success
-
   const baseTransaction: BaseWalletTransaction = {
     id: txn.id,
     walletId: txn.walletId,
@@ -87,7 +87,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
       walletAmount: txn.currency === WalletCurrency.Btc ? satsAmount : centsAmount,
       walletCurrency: txn.currency,
     }),
-    status,
+    status: statusFromTxn(txn),
     memo,
     createdAt: txn.timestamp,
   }
@@ -222,6 +222,27 @@ const shouldDisplayMemo = ({
     return credit >= memoSharingConfig.memoSharingSatsThreshold
 
   return credit >= memoSharingConfig.memoSharingCentsThreshold
+}
+
+const statusFromTxn = (txn: LedgerTransaction<WalletCurrency>): TxStatus => {
+  switch (txn.lnPaymentState) {
+    case undefined:
+      return txn.pendingConfirmation ? TxStatus.Pending : TxStatus.Success
+
+    case LnPaymentState.Pending:
+    case LnPaymentState.PendingAfterRetry:
+      return TxStatus.Pending
+
+    case LnPaymentState.Success:
+    case LnPaymentState.SuccessAfterRetry:
+    case LnPaymentState.SuccessWithReimbursement:
+    case LnPaymentState.SuccessWithReimbursementAfterRetry:
+      return TxStatus.Success
+
+    case LnPaymentState.Failed:
+    case LnPaymentState.FailedAfterRetry:
+      return TxStatus.Failure
+  }
 }
 
 export const translateMemo = ({
