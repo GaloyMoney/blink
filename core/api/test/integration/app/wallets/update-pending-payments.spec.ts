@@ -1,6 +1,7 @@
 import { updatePendingPaymentByHash } from "@/app/payments"
 
 import { LedgerTransactionType } from "@/domain/ledger"
+import { FAILED_USD_MEMO } from "@/domain/ledger/ln-payment-state"
 import { PaymentStatus } from "@/domain/bitcoin/lightning"
 import { AmountCalculator, WalletCurrency } from "@/domain/shared"
 import * as DisplayAmountsConverterImpl from "@/domain/fiat"
@@ -106,6 +107,6 @@ describe("update pending payments", () => {
     expect(lnFailedPaymentReceiveLedgerMetadataSpy).toHaveBeenCalledTimes(1)
     const args = recordOffChainReceiveSpy.mock.calls[0][0]
     expect(args.metadata.type).toBe(LedgerTransactionType.Payment)
-    expect(args.description).toBe("Usd payment canceled")
+    expect(args.description).toBe(FAILED_USD_MEMO)
   })
 })

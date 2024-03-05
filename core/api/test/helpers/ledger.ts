@@ -15,6 +15,7 @@ import {
   lndLedgerAccountId,
 } from "@/services/ledger/domain"
 import * as LedgerFacade from "@/services/ledger/facade"
+import { FAILED_USD_MEMO } from "@/domain/ledger/ln-payment-state"
 
 export const recordReceiveLnPayment = async <S extends WalletCurrency>({
   walletDescriptor,
@@ -100,8 +101,9 @@ export const recordSendLnPayment = async <S extends WalletCurrency>({
   paymentAmount,
   bankFee,
   displayAmounts,
+  paymentHash: paymentHashInitial,
 }: RecordExternalTxTestArgs<S>) => {
-  const paymentHash = crypto.randomUUID() as PaymentHash
+  const paymentHash = paymentHashInitial || (crypto.randomUUID() as PaymentHash)
   const { metadata, debitAccountAdditionalMetadata, internalAccountsAdditionalMetadata } =
     LedgerFacade.LnSendLedgerMetadata({
       paymentHash,
@@ -169,11 +171,12 @@ export const recordSendOnChainPayment = async <S extends WalletCurrency>({
 export const recordLnFeeReimbursement = async <S extends WalletCurrency>({
   walletDescriptor,
   paymentAmount,
+  paymentHash: paymentHashInitial,
   bankFee,
   displayAmounts,
-}: RecordExternalTxTestArgs<S>) => {
-  const paymentHash = crypto.randomUUID() as PaymentHash
-
+  journalId,
+}: RecordExternalTxTestArgs<S> & { journalId?: LedgerJournalId }) => {
+  const paymentHash = paymentHashInitial || (crypto.randomUUID() as PaymentHash)
   const {
     metadata,
     creditAccountAdditionalMetadata,
@@ -186,7 +189,7 @@ export const recordLnFeeReimbursement = async <S extends WalletCurrency>({
       btcProtocolAndBankFee: bankFee.btc,
       usdProtocolAndBankFee: bankFee.usd,
     },
-    journalId: "031a419636dbf6d25981d6d2" as LedgerJournalId,
+    journalId: journalId || ("031a419636dbf6d25981d6d2" as LedgerJournalId),
 
     ...displayAmounts,
   })
@@ -206,10 +209,12 @@ export const recordLnFeeReimbursement = async <S extends WalletCurrency>({
 export const recordLnFailedPayment = async <S extends WalletCurrency>({
   walletDescriptor,
   paymentAmount,
+  paymentHash: paymentHashInitial,
   bankFee,
   displayAmounts,
-}: RecordExternalTxTestArgs<S>) => {
-  const paymentHash = crypto.randomUUID() as PaymentHash
+  journalId,
+}: RecordExternalTxTestArgs<S> & { journalId?: LedgerJournalId }) => {
+  const paymentHash = paymentHashInitial || (crypto.randomUUID() as PaymentHash)
 
   const {
     metadata,
@@ -223,13 +228,13 @@ export const recordLnFailedPayment = async <S extends WalletCurrency>({
       btcProtocolAndBankFee: bankFee.btc,
       usdProtocolAndBankFee: bankFee.usd,
     },
-    journalId: "031a419636dbf6d25981d6d2" as LedgerJournalId,
+    journalId: journalId || ("031a419636dbf6d25981d6d2" as LedgerJournalId),
 
     ...displayAmounts,
   })
 
   return LedgerFacade.recordReceiveOffChain({
-    description: "receives ln fee reimburse",
+    description: FAILED_USD_MEMO,
     amountToCreditReceiver: paymentAmount,
     recipientWalletDescriptor: walletDescriptor,
     bankFee,

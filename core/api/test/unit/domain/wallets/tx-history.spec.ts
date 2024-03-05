@@ -15,6 +15,7 @@ import {
 } from "@/config"
 import { WalletCurrency } from "@/domain/shared"
 import { UsdDisplayCurrency, priceAmountFromNumber, toCents } from "@/domain/fiat"
+import { LnPaymentState } from "@/domain/ledger/ln-payment-state"
 
 describe("translates ledger txs to wallet txs", () => {
   const timestamp = new Date()
@@ -474,5 +475,26 @@ describe("translateDescription", () => {
       ...journalIdMemoArgs,
     })
     expect(result).toEqual("some memo")
+  })
+})
+
+describe("WalletTransactionHistory.fromLedger", () => {
+  describe("status", () => {
+    it("sets status to failed for failed transaction", () => {
+      const txn = {
+        type: LedgerTransactionType.Payment,
+        pendingConfirmation: false,
+        debit: 100,
+        credit: 0,
+        lnPaymentState: LnPaymentState.Failed,
+      } as LedgerTransaction<"BTC">
+
+      const result = WalletTransactionHistory.fromLedger({
+        txn,
+        nonEndUserWalletIds: [],
+        memoSharingConfig,
+      })
+      expect(result.status).toEqual(TxStatus.Failure)
+    })
   })
 })
