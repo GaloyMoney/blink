@@ -531,15 +531,13 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }
 
   const registerInvoice = async ({
-    lndsAndPubkeys,
     paymentHash,
     btcPaymentAmount,
     description,
     descriptionHash,
     expiresAt,
-  }: RegisterInvoiceArgs & {
-    lndsAndPubkeys: LndAndPubkey[]
-  }): Promise<RegisteredInvoice | LightningServiceError> => {
+  }: RegisterInvoiceArgs): Promise<RegisteredInvoice | LightningServiceError> => {
+    const lndsAndPubkeys = listActiveLndsWithPubkeys()
     for (const lndAndPubkey of lndsAndPubkeys) {
       const result = await registerInvoiceOnSingleLnd({
         lndAndPubkey,
@@ -927,7 +925,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
       defaultPubkey: (): Pubkey => defaultPubkey,
       listActivePubkeys,
       listAllPubkeys,
-      listActiveLndsWithPubkeys,
       getBalance,
       getOnChainBalance,
       getPendingOnChainBalance,

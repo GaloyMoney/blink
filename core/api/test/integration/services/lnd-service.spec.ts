@@ -11,7 +11,7 @@ import {
 
 import { LND1_PUBKEY, MS_PER_SEC } from "@/config"
 
-import { ONE_SAT, WalletCurrency } from "@/domain/shared"
+import { WalletCurrency } from "@/domain/shared"
 import { toSats } from "@/domain/bitcoin"
 import {
   InvoiceNotFoundError,
@@ -21,8 +21,6 @@ import {
   PaymentStatus,
   RouteNotFoundError,
   decodeInvoice,
-  getSecretAndPaymentHash,
-  invoiceExpirationForCurrency,
 } from "@/domain/bitcoin/lightning"
 import { LnFees } from "@/domain/payments"
 
@@ -45,7 +43,6 @@ import {
   waitFor,
 } from "test/helpers"
 import { BitcoindWalletClient } from "test/helpers/bitcoind"
-import { toSeconds } from "@/domain/primitives"
 
 const amountInvoice = toSats(1000)
 const btcPaymentAmount = { amount: BigInt(amountInvoice), currency: WalletCurrency.Btc }
@@ -439,34 +436,6 @@ describe("Lnd", () => {
       // Retry fetching invoice
       const invoiceReLookup = await lndService.lookupInvoice({ paymentHash })
       expect(invoiceReLookup).toBeInstanceOf(InvoiceNotFoundError)
-    })
-
-    it("register invoice to correct pubkey", async () => {
-      const lndsAndPubkeys = lndService.listActiveLndsWithPubkeys()
-      const filteredLndsAndPubkeys = lndsAndPubkeys.filter(
-        (elem) => elem.pubkey !== lndService.defaultPubkey(),
-      )
-
-      const minutes = 15
-      const expiresAt = invoiceExpirationForCurrency(
-        WalletCurrency.Btc,
-        new Date(),
-        toSeconds(minutes * 60),
-      )
-      const { paymentHash } = getSecretAndPaymentHash()
-
-      const invoice = await lndService.registerInvoice({
-        lndsAndPubkeys: filteredLndsAndPubkeys,
-        btcPaymentAmount: ONE_SAT,
-        paymentHash,
-        description: "",
-        expiresAt,
-      })
-      if (invoice instanceof Error) throw invoice
-
-      expect(filteredLndsAndPubkeys).toHaveLength(1)
-      expect(invoice.pubkey).toEqual(filteredLndsAndPubkeys[0].pubkey)
-      expect(invoice.pubkey).not.toEqual(lndService.defaultPubkey())
     })
   })
 

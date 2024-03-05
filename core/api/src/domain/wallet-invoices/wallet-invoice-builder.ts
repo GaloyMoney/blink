@@ -132,7 +132,6 @@ export const WIBWithAmount = (state: WIBWithAmountState): WIBWithAmount => {
     const { secret, paymentHash } = getSecretAndPaymentHash()
 
     const registeredInvoice = await state.lnRegisterInvoice({
-      lndsAndPubkeys: state.lndsAndPubkeys(),
       paymentHash,
       description: state.description,
       descriptionHash: state.descriptionHash,

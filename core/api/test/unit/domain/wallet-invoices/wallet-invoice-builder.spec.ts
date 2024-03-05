@@ -73,7 +73,6 @@ describe("WalletInvoiceBuilder", () => {
   const WIB = WalletInvoiceBuilder({
     dealerBtcFromUsd: btcFromUsd,
     dealerUsdFromBtc: usdFromBtc,
-    lndsAndPubkeys: () => undefined as unknown as LndAndPubkey[],
     lnRegisterInvoice: registerInvoice,
   })
 

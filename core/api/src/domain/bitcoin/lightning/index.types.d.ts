@@ -167,8 +167,6 @@ interface ILightningService {
 
   listAllPubkeys(): Pubkey[]
 
-  listActiveLndsWithPubkeys(): LndAndPubkey[]
-
   getBalance(pubkey?: Pubkey): Promise<Satoshis | LightningServiceError>
 
   getOnChainBalance(pubkey?: Pubkey): Promise<Satoshis | LightningServiceError>
@@ -215,7 +213,7 @@ interface ILightningService {
   }): Promise<RawRoute | LightningServiceError>
 
   registerInvoice(
-    args: RegisterInvoiceArgs & { lndsAndPubkeys: LndAndPubkey[] },
+    args: RegisterInvoiceArgs,
   ): Promise<RegisteredInvoice | LightningServiceError>
 
   lookupInvoice({

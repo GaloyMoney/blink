@@ -261,7 +261,6 @@ const addInvoice = async ({
   const walletInvoiceBuilder = WalletInvoiceBuilder({
     dealerBtcFromUsd: dealer.getSatsFromCentsForFutureBuy,
     dealerUsdFromBtc: dealer.getCentsFromSatsForFutureBuy,
-    lndsAndPubkeys: lndService.listActiveLndsWithPubkeys,
     lnRegisterInvoice: lndService.registerInvoice,
   })
   if (walletInvoiceBuilder instanceof Error) return walletInvoiceBuilder
