@@ -57,7 +57,7 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
         <Logo />
         <Heading>Sign In with Blink</Heading>
         <SubHeading>
-          Enter your Blink Account ID to sign in to this application.
+          Enter your registered email to sign in to this application.
         </SubHeading>
         <EmailLoginForm login_challenge={login_challenge}></EmailLoginForm>
       </Card>

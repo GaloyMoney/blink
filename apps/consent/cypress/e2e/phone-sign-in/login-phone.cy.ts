@@ -18,9 +18,9 @@ describe("Account ID Test", () => {
   it("Verification Test", () => {
     cy.log("login challenge : ", login_challenge)
 
-    cy.get("[data-testid=sign_in_with_phone_text]").should("exist")
-    cy.get("[data-testid=sign_in_with_phone_text]").should("be.visible")
-    cy.get("[data-testid=sign_in_with_phone_text]").click()
+    cy.get("[data-testid=sign_in_with_phone_btn]").should("exist")
+    cy.get("[data-testid=sign_in_with_phone_btn]").should("be.visible")
+    cy.get("[data-testid=sign_in_with_phone_btn]").click()
 
     cy.get("[data-testid=phone_number_input]").should("exist")
     cy.get("[data-testid=phone_number_input]").should("be.visible")

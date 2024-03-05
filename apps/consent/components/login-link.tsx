@@ -7,7 +7,7 @@ type LoginLinkProp = {
 
 const LoginLink: React.FC<LoginLinkProp> = ({ href }) => {
   return (
-    <div className="flex justify-center mt-6">
+    <div className="flex justify-center">
       <div className="text-center text-sm ">
         <Link href={href} replace>
           <p className="font-medium text-sm">

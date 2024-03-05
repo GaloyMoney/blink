@@ -1,6 +1,5 @@
 "use client"
 import React, { useState } from "react"
-import Link from "next/link"
 
 import { toast } from "react-toastify"
 
@@ -11,6 +10,8 @@ import { CountryCode, E164Number } from "libphonenumber-js/types"
 import { useFormState } from "react-dom"
 
 import LoginLink from "../login-link"
+
+import SignInTab from "../tab/sign-in-tabs"
 
 import { getCaptchaChallenge } from "@/app/login/phone/server-actions"
 
@@ -112,13 +113,7 @@ const PhoneAuthForm: React.FC<AuthFormProps> = ({
       {renderCaptchaChallenge()}
       <FormComponent action={formAction}>
         <input type="hidden" name="login_challenge" value={login_challenge} />
-        <label
-          htmlFor="phone"
-          className="block mb-2 text-sm font-medium text-[var(--inputColor)]"
-        >
-          Phone
-        </label>
-
+        {authAction !== "Register" && <SignInTab login_challenge={login_challenge} />}
         <PhoneInput
           international
           countries={countryCodes}
@@ -132,11 +127,11 @@ const PhoneAuthForm: React.FC<AuthFormProps> = ({
         />
         <SelectComponent
           id="channel"
-          label="Channel"
           name="channel"
+          placeHolder="Channel"
           options={["SMS", "WhatsApp"]}
+          required
         ></SelectComponent>
-
         <div className="flex items-center mb-4">
           <label className="text-[var(--inputColor)] text-sm flex items-center">
             <input
@@ -150,21 +145,7 @@ const PhoneAuthForm: React.FC<AuthFormProps> = ({
             Remember me
           </label>
         </div>
-
-        {authAction === "Register" ? null : (
-          <>
-            <Separator>or</Separator>
-            <div className="flex justify-center mb-4">
-              <div className="text-center text-sm w-60">
-                <Link href={`/login?login_challenge=${login_challenge}`} replace>
-                  <p className="font-semibold text-sm">Sign in with Email</p>
-                </Link>
-              </div>
-            </div>
-          </>
-        )}
-
-        <div className="flex flex-col md:flex-row-reverse w-full gap-2">
+        <div className="flex flex-col md:flex-row-reverse w-full gap-2 mb-6">
           <PrimaryButton
             type="submit"
             id="accept"
@@ -186,9 +167,19 @@ const PhoneAuthForm: React.FC<AuthFormProps> = ({
         </div>
       </FormComponent>
       {authAction === "Register" ? (
-        <LoginLink href={`/login/phone?login_challenge=${login_challenge}`} />
+        <>
+          <Separator>or</Separator>
+          <div className="m-5">
+            <LoginLink href={`/login/phone?login_challenge=${login_challenge}`} />
+          </div>
+        </>
       ) : (
-        <RegisterLink href={`/register?login_challenge=${login_challenge}`} />
+        <>
+          <Separator>or</Separator>
+          <div className="m-5">
+            <RegisterLink href={`/register?login_challenge=${login_challenge}`} />
+          </div>
+        </>
       )}
     </>
   )
