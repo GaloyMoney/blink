@@ -113,6 +113,8 @@ type LnInvoice = {
   readonly isExpired: boolean
 }
 
+type LndAndPubkey = { lnd: AuthenticatedLnd; pubkey: Pubkey }
+
 type RegisterInvoiceArgs = {
   paymentHash: PaymentHash
   description: string
@@ -165,6 +167,8 @@ interface ILightningService {
 
   listAllPubkeys(): Pubkey[]
 
+  listActiveLndsWithPubkeys(): LndAndPubkey[]
+
   getBalance(pubkey?: Pubkey): Promise<Satoshis | LightningServiceError>
 
   getOnChainBalance(pubkey?: Pubkey): Promise<Satoshis | LightningServiceError>
@@ -211,7 +215,7 @@ interface ILightningService {
   }): Promise<RawRoute | LightningServiceError>
 
   registerInvoice(
-    args: RegisterInvoiceArgs,
+    args: RegisterInvoiceArgs & { lndsAndPubkeys: LndAndPubkey[] },
   ): Promise<RegisteredInvoice | LightningServiceError>
 
   lookupInvoice({

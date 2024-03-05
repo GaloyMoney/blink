@@ -112,6 +112,12 @@ export const LndService = (): ILightningService | LightningServiceError => {
   const listActiveLnd = (): AuthenticatedLnd[] =>
     getLnds({ active: true, type: "offchain" }).map((lndAuth) => lndAuth.lnd)
 
+  const listActiveLndsWithPubkeys = (): { lnd: AuthenticatedLnd; pubkey: Pubkey }[] =>
+    getLnds({ active: true, type: "offchain" }).map((lndAuth) => ({
+      lnd: lndAuth.lnd,
+      pubkey: lndAuth.pubkey,
+    }))
+
   const listAllPubkeys = (): Pubkey[] =>
     getLnds({ type: "offchain" }).map((lndAuth) => lndAuth.pubkey as Pubkey)
 
@@ -487,16 +493,17 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const registerLndInvoice = async ({
-    lnd,
+  const registerInvoiceOnSingleLnd = async ({
+    lndAndPubkey,
     paymentHash,
     btcPaymentAmount,
     description,
     descriptionHash,
     expiresAt,
-  }: RegisterInvoiceArgs & { lnd: AuthenticatedLnd }): Promise<
-    RegisteredInvoice | LightningServiceError
-  > => {
+  }: RegisterInvoiceArgs & {
+    lndAndPubkey: LndAndPubkey
+  }): Promise<RegisteredInvoice | LightningServiceError> => {
+    const { lnd } = lndAndPubkey
     const input = {
       lnd,
       id: paymentHash,
@@ -524,16 +531,18 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }
 
   const registerInvoice = async ({
+    lndsAndPubkeys,
     paymentHash,
     btcPaymentAmount,
     description,
     descriptionHash,
     expiresAt,
-  }: RegisterInvoiceArgs): Promise<RegisteredInvoice | LightningServiceError> => {
-    const lnds = listActiveLnd()
-    for (const lnd of lnds) {
-      const result = await registerLndInvoice({
-        lnd,
+  }: RegisterInvoiceArgs & {
+    lndsAndPubkeys: LndAndPubkey[]
+  }): Promise<RegisteredInvoice | LightningServiceError> => {
+    for (const lndAndPubkey of lndsAndPubkeys) {
+      const result = await registerInvoiceOnSingleLnd({
+        lndAndPubkey,
         paymentHash,
         btcPaymentAmount,
         description,
@@ -918,6 +927,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       defaultPubkey: (): Pubkey => defaultPubkey,
       listActivePubkeys,
       listAllPubkeys,
+      listActiveLndsWithPubkeys,
       getBalance,
       getOnChainBalance,
       getPendingOnChainBalance,

@@ -20,8 +20,9 @@ type WalletInvoiceStatusChecker = {
 type WalletInvoiceBuilderConfig = {
   dealerBtcFromUsd: BtcFromUsdFn
   dealerUsdFromBtc: UsdFromBtcFn
+  lndsAndPubkeys: () => LndAndPubkey[]
   lnRegisterInvoice: (
-    args: RegisterInvoiceArgs,
+    args: RegisterInvoiceArgs & { lndsAndPubkeys: LndAndPubkey[] },
   ) => Promise<RegisteredInvoice | LightningServiceError>
 }
 
