@@ -156,7 +156,11 @@ function NFCComponent({ paymentRequest }: Props) {
       const lnurlParams = await getParams(nfcMessage)
 
       if (!("tag" in lnurlParams && lnurlParams.tag === "withdrawRequest")) {
-        console.error("not a lnurl withdraw tag")
+        alert(
+          `not a properly configured lnurl withdraw tag\n\n${nfcMessage}\n\n${
+            "reason" in lnurlParams && lnurlParams.reason
+          }`,
+        )
         return
       }
 
