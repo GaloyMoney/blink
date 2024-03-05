@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): unskip hedger tests (#4126)'
-      sha: 761b7e533635ea88cf9dd33059c3eb1be11e4afe
+      commitTitle: 'chore(deps-dev): bump @storybook/addon-essentials from 7.6.3 to
+        7.6.17 (#4130)...'
+      sha: d11281f546626640464af9e74bb54a81aa7874b0
       tags:
-      - 0.20.100-1-g761b7e533
+      - 0.20.100-9-gd11281f54
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): unskip hedger tests (#4126)'
-      sha: 761b7e533635ea88cf9dd33059c3eb1be11e4afe
+      commitTitle: 'chore(deps-dev): bump @storybook/addon-essentials from 7.6.3 to
+        7.6.17 (#4130)...'
+      sha: d11281f546626640464af9e74bb54a81aa7874b0
       tags:
-      - 0.20.100-1-g761b7e533
+      - 0.20.100-9-gd11281f54
     path: schemas/
   - git:
-      commitTitle: 'chore(core): unskip hedger tests (#4126)'
-      sha: 761b7e533635ea88cf9dd33059c3eb1be11e4afe
+      commitTitle: 'chore(deps-dev): bump @storybook/addon-essentials from 7.6.3 to
+        7.6.17 (#4130)...'
+      sha: d11281f546626640464af9e74bb54a81aa7874b0
       tags:
-      - 0.20.100-1-g761b7e533
+      - 0.20.100-9-gd11281f54
     path: gql/
   path: ./graphql
 kind: LockConfig
