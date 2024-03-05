@@ -21,12 +21,12 @@ const Modal = (
 
   return (
     <dialog open={isOpened} className={styles.modal}>
-      <div className={styles.modal_wrapper} style={{ width: defaultModalWidth }}>
-        <button onClick={handleClose} className={styles.close_btn}>
+      <div className={styles.modalWrapper} style={{ width: defaultModalWidth }}>
+        <button onClick={handleClose} className={styles.closeBtn}>
           <Image src="/icons/cross-icon.svg" alt="Close icon" />
         </button>
         <div ref={modalFocus}>
-          <div className={styles.modal_title}>{modalTitle || ""}</div>
+          <div className={styles.modalTitle}>{modalTitle || ""}</div>
           <div>{children}</div>
         </div>
       </div>

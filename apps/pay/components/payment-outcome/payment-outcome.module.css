@@ -28,7 +28,7 @@
   text-align: center;
 }
 
-.back_btn {
+.backBtn {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -63,7 +63,7 @@
   padding: 0.5rem;
 }
 
-.pay_new_btn {
+.payNewBtn {
   background-color: var(--lighterGrey);
   border-radius: 10em;
   margin-bottom: 1rem;

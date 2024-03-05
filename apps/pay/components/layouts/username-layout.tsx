@@ -24,10 +24,10 @@ const UsernameLayoutContainer = ({ children, username }: Props) => {
   }
 
   return (
-    <div className={styles.main_container}>
-      <nav className={styles.nav_bar}>
-        <div className={styles.nav_home_content}>
-          <button className={styles.nav_home} onClick={navigateHome}>
+    <div className={styles.mainContainer}>
+      <nav className={styles.navBar}>
+        <div className={styles.navHomeContent}>
+          <button className={styles.navHome} onClick={navigateHome}>
             <Image src="/icons/blink-logo-icon.svg" alt="logo" width="50" height="50" />
           </button>
           <SideBar username={username}></SideBar>

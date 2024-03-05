@@ -1,11 +1,11 @@
-.payment_container {
+.paymentContainer {
   box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px,
     rgb(209, 213, 219) 0px 0px 0px 1px inset;
   border-radius: 1em;
   padding: 2em;
 }
 
-.pin_btn {
+.pinBtn {
   --black-900: rgba(17, 25, 40, 1);
   font-family: "Source Sans Pro", sans-serif;
   font-weight: 600;
@@ -17,14 +17,14 @@
   border: none;
 }
 
-.username_container {
+.usernameContainer {
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
 }
 
-.username_container > button {
+.usernameContainer > button {
   background-color: transparent;
   display: flex;
   align-items: center;
@@ -36,8 +36,8 @@
   transition: all 0.5s ease;
 }
 
-.username_container > button:hover,
-.username_container > button:focus {
+.usernameContainer > button:hover,
+.usernameContainer > button:focus {
   outline: 1px solid rgba(239, 241, 245, 1);
   border-radius: 50%;
   padding: 0.75rem 0.85rem;
@@ -68,7 +68,7 @@
 }
 
 @media (max-width: 768px) {
-  .payment_container {
+  .paymentContainer {
     padding: 0em;
     box-shadow: none;
     border-radius: 0;
