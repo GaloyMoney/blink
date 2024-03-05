@@ -241,7 +241,7 @@
             fromImage = dockerTools.pullImage {
               imageName = "ubuntu";
               imageDigest = "sha256:496a9a44971eb4ac7aa9a218867b7eec98bdef452246c037aa206c841b653e08";
-              sha256 = "sha256-+AewgMn2iviqYRqdNi3BjYrqvxGVm5SShBf7ngEAAxo=";
+              sha256 = "sha256-LYdoE40tYih0XXJoJ8/b1e/IAkO94Jrs2C8oXWTeUTg=";
               finalImageTag = "mantic-20240122";
               finalImageName = "ubuntu";
             };
