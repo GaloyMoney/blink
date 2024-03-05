@@ -85,20 +85,20 @@ git push -fu origin core-${ref}
 cat <<EOF >> ../body.md
 # Bump galoy core bundle images
 
-Code diff contained in this image:
-
-${github_url}/compare/core-${old_ref}...core-${ref}
-
-Relevant commits:
 EOF
 
 if [[ "${#relevant_commits[@]}" -eq 0 ]]; then
-  echo "- No relevant commits found" >> ../body.md
+  echo "No relevant changes" >> ../body.md
 else
+  cat > ../body.md <<- EOF
+	Code diff contained in this image:
+
+	${github_url}/compare/core-${old_ref}...core-${ref}
+
+	Relevant commits:
+	EOF
   for commit in "${!relevant_commits[@]}"; do
-    cat <<-EOF >> ../body.md
-		- ${github_url}/commit/${commit} - ${relevant_commits[$commit]}
-		EOF
+    echo "- ${github_url}/commit/${commit} - ${relevant_commits[$commit]}" >> ../body.md
   done
 fi
 
