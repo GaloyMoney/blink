@@ -85,20 +85,20 @@ git push -fu origin ${COMPONENT}-${ref}
 cat <<EOF >> ../body.md
 # Bump ${COMPONENT} image
 
-Code diff contained in this image:
-
-${github_url}/compare/${COMPONENT}-${old_ref}...${COMPONENT}-${ref}
-
-Relevant commits:
 EOF
 
 if [[ "${#relevant_commits[@]}" -eq 0 ]]; then
-  echo "- No relevant commits found" >> ../body.md
+  echo "No relevant changes" >> ../body.md
 else
+  cat > ../body.md <<- EOF
+	Code diff contained in this image:
+
+	${github_url}/compare/${COMPONENT}-${old_ref}...${COMPONENT}-${ref}
+
+	Relevant commits:
+	EOF
   for commit in "${!relevant_commits[@]}"; do
-    cat <<-EOF >> ../body.md
-		- ${github_url}/commit/${commit} - ${relevant_commits[$commit]}
-		EOF
+    echo "- ${github_url}/commit/${commit} - ${relevant_commits[$commit]}" >> ../body.md
   done
 fi
 
