@@ -44,14 +44,14 @@ const Memo = ({ state, dispatch }: Props) => {
     <div className={styles.container}>
       <div>
         {state.memo ? (
-          <div className={styles.note_wrapper}>
+          <div className={styles.noteWrapper}>
             <p>Note:</p>
             <input readOnly value={state.memo} />
           </div>
         ) : null}
         <button
           onClick={handleShow}
-          className={`${state.createdInvoice ? styles.disable_btn : styles.add_btn}`}
+          className={`${state.createdInvoice ? styles.disableBtn : styles.addBtn}`}
           disabled={state.createdInvoice}
         >
           {!state.createdInvoice && !state.memo ? "Add note" : null}
@@ -66,12 +66,12 @@ const Memo = ({ state, dispatch }: Props) => {
           aria-labelledby="contained-modal-title-vcenter"
           centered
         >
-          <Modal.Header placeholder="" className={styles.modal_header} closeButton>
+          <Modal.Header placeholder="" className={styles.modalHeader} closeButton>
             Add note
           </Modal.Header>
           <Modal.Body>
             <input
-              className={styles.modal_input}
+              className={styles.modalInput}
               value={memo ? state.memo : currentMemo}
               name="note"
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,7 +81,7 @@ const Memo = ({ state, dispatch }: Props) => {
               type="text"
             />
           </Modal.Body>
-          <Modal.Footer className={styles.modal_footer}>
+          <Modal.Footer className={styles.modalFooter}>
             <button onClick={handleSetMemo}>Set note</button>
             <button onClick={handleClose}>Cancel</button>
           </Modal.Footer>
