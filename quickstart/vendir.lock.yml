@@ -2,27 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): add tracing attributes to handle htlc bug edge case
-        (#4136)'
-      sha: 95b6c865533380f712eb5d1286245b5d31e84eea
+      commitTitle: 'fix(core): register invoice with actual lnd pubkey it was created
+        with (#4135)...'
+      sha: 2b8b1aa39ca552547b3fa3a0c126d2ce8e0f9c08
       tags:
-      - 0.20.102-1-g95b6c8655
+      - 0.20.103-2-g2b8b1aa39
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): add tracing attributes to handle htlc bug edge case
-        (#4136)'
-      sha: 95b6c865533380f712eb5d1286245b5d31e84eea
+      commitTitle: 'fix(core): register invoice with actual lnd pubkey it was created
+        with (#4135)...'
+      sha: 2b8b1aa39ca552547b3fa3a0c126d2ce8e0f9c08
       tags:
-      - 0.20.102-1-g95b6c8655
+      - 0.20.103-2-g2b8b1aa39
     path: schemas/
   - git:
-      commitTitle: 'chore(core): add tracing attributes to handle htlc bug edge case
-        (#4136)'
-      sha: 95b6c865533380f712eb5d1286245b5d31e84eea
+      commitTitle: 'fix(core): register invoice with actual lnd pubkey it was created
+        with (#4135)...'
+      sha: 2b8b1aa39ca552547b3fa3a0c126d2ce8e0f9c08
       tags:
-      - 0.20.102-1-g95b6c8655
+      - 0.20.103-2-g2b8b1aa39
     path: gql/
   path: ./graphql
 kind: LockConfig
