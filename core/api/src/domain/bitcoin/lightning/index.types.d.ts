@@ -117,14 +117,6 @@ type RegisterInvoiceArgs = {
   paymentHash: PaymentHash
   description: string
   descriptionHash?: string
-  sats: Satoshis
-  expiresAt: InvoiceExpiration
-}
-
-type NewRegisterInvoiceArgs = {
-  paymentHash: PaymentHash
-  description: string
-  descriptionHash?: string
   btcPaymentAmount: BtcPaymentAmount
   expiresAt: InvoiceExpiration
 }

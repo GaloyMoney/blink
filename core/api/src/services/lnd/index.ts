@@ -490,7 +490,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
   const registerLndInvoice = async ({
     lnd,
     paymentHash,
-    sats,
+    btcPaymentAmount,
     description,
     descriptionHash,
     expiresAt,
@@ -502,7 +502,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       id: paymentHash,
       description,
       description_hash: descriptionHash,
-      tokens: sats as number,
+      tokens: Number(btcPaymentAmount.amount),
       expires_at: expiresAt.toISOString(),
     }
 
@@ -525,7 +525,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
 
   const registerInvoice = async ({
     paymentHash,
-    sats,
+    btcPaymentAmount,
     description,
     descriptionHash,
     expiresAt,
@@ -535,7 +535,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       const result = await registerLndInvoice({
         lnd,
         paymentHash,
-        sats,
+        btcPaymentAmount,
         description,
         descriptionHash,
         expiresAt,
