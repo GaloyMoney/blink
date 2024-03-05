@@ -113,15 +113,9 @@ type LnInvoice = {
   readonly isExpired: boolean
 }
 
-type RegisterInvoiceArgs = {
-  paymentHash: PaymentHash
-  description: string
-  descriptionHash?: string
-  sats: Satoshis
-  expiresAt: InvoiceExpiration
-}
+type LndAndPubkey = { lnd: AuthenticatedLnd; pubkey: Pubkey }
 
-type NewRegisterInvoiceArgs = {
+type RegisterInvoiceArgs = {
   paymentHash: PaymentHash
   description: string
   descriptionHash?: string

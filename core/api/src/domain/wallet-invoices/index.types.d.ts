@@ -21,7 +21,7 @@ type WalletInvoiceBuilderConfig = {
   dealerBtcFromUsd: BtcFromUsdFn
   dealerUsdFromBtc: UsdFromBtcFn
   lnRegisterInvoice: (
-    args: NewRegisterInvoiceArgs,
+    args: RegisterInvoiceArgs,
   ) => Promise<RegisteredInvoice | LightningServiceError>
 }
 

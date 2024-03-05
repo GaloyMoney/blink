@@ -1,7 +1,6 @@
 import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
 
 import { AccountValidator } from "@/domain/accounts"
-import { toSats } from "@/domain/bitcoin"
 import { checkedToWalletId } from "@/domain/wallets"
 import { RateLimitConfig } from "@/domain/rate-limit"
 import { checkedToMinutes } from "@/domain/primitives"
@@ -262,8 +261,7 @@ const addInvoice = async ({
   const walletInvoiceBuilder = WalletInvoiceBuilder({
     dealerBtcFromUsd: dealer.getSatsFromCentsForFutureBuy,
     dealerUsdFromBtc: dealer.getCentsFromSatsForFutureBuy,
-    lnRegisterInvoice: (args) =>
-      lndService.registerInvoice({ ...args, sats: toSats(args.btcPaymentAmount.amount) }),
+    lnRegisterInvoice: lndService.registerInvoice,
   })
   if (walletInvoiceBuilder instanceof Error) return walletInvoiceBuilder
 
