@@ -36,6 +36,7 @@ import {
   LikelyBadCoreError,
   LnurlRequestInvoiceError,
   QuizClaimedTooEarlyError,
+  PriceServiceOfflineError,
 } from "@/graphql/error"
 import { baseLogger } from "@/services/logger"
 
@@ -324,6 +325,10 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "InvalidIpMetadataError":
       message = "Unsupported IP."
       return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "NoConnectionToPriceServiceError":
+      message = "Price unavailable, please wait for a while and try again."
+      return new PriceServiceOfflineError({ message, logger: baseLogger })
 
     case "NoDealerPriceDataAvailableError":
       message = "No price data from dealer to perform USD operation."
