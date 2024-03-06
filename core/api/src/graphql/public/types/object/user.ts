@@ -4,11 +4,7 @@ import Account from "../abstract/account"
 
 import AccountContact from "./account-contact"
 
-import UserAuthorization from "./user-authorization"
-
 import { Accounts, Users } from "@/app"
-
-import { resolveScopes } from "@/domain/authorization"
 
 import { baseLogger } from "@/services/logger"
 // FIXME should not use service
@@ -125,17 +121,6 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
       type: GT.NonNull(Account),
       resolve: async (source, args, { domainAccount }) => {
         return domainAccount
-      },
-    },
-
-    authorization: {
-      type: GT.NonNullList(UserAuthorization),
-      description:
-        "Retrieve the list of scopes permitted for the user's token or API key",
-      resolve: async (_source, _args, { domainAccount, scope }) => {
-        return {
-          scopes: resolveScopes({ account: domainAccount, scopes: scope }),
-        }
       },
     },
 

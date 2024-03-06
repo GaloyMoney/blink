@@ -212,6 +212,12 @@ type ApiKeyRevokePayload
   apiKey: ApiKey!
 }
 
+type Authorization
+  @join__type(graph: PUBLIC)
+{
+  scopes: [Scope!]!
+}
+
 """An Opaque Bearer token"""
 scalar AuthToken
   @join__type(graph: PUBLIC)
@@ -1564,6 +1570,9 @@ type Query
   @join__type(graph: PUBLIC)
 {
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet! @join__field(graph: PUBLIC)
+
+  """Retrieve the list of scopes permitted for the user's token or API key"""
+  authorization: [Authorization!]! @join__field(graph: PUBLIC)
   btcPriceList(range: PriceGraphRange!): [PricePoint] @join__field(graph: PUBLIC)
   businessMapMarkers: [MapMarker!]! @join__field(graph: PUBLIC)
   currencyList: [Currency!]! @join__field(graph: PUBLIC)
@@ -1940,9 +1949,6 @@ type User
 
   """Phone number with international calling code."""
   phone: Phone @join__field(graph: PUBLIC)
-
-  """Retrieve the list of scopes permitted for the user's token or API key"""
-  scopes: [Scope!]! @join__field(graph: PUBLIC)
 
   """Whether TOTP is enabled for this user."""
   totpEnabled: Boolean! @join__field(graph: PUBLIC)

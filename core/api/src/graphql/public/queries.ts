@@ -3,6 +3,7 @@ import { GT } from "@/graphql/index"
 import MeQuery from "@/graphql/public/root/query/me"
 import GlobalsQuery from "@/graphql/public/root/query/globals"
 import CurrencyListQuery from "@/graphql/public/root/query/currency-list"
+import AuthorizationQuery from "@/graphql/public/root/query/authorization"
 import BtcPriceListQuery from "@/graphql/public/root/query/btc-price-list"
 import RealtimePriceQuery from "@/graphql/public/root/query/realtime-price"
 import MobileVersionsQuery from "@/graphql/public/root/query/mobile-versions"
@@ -34,6 +35,7 @@ export const queryFields = {
   },
   authed: {
     atAccountLevel: {
+      authorization: AuthorizationQuery,
       me: MeQuery,
     },
     atWalletLevel: {

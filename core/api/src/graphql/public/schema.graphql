@@ -129,6 +129,10 @@ type AuthTokenPayload {
   totpRequired: Boolean
 }
 
+type Authorization {
+  scopes: [Scope!]!
+}
+
 """
 A wallet belonging to an account which contains a BTC balance and a list of transactions.
 """
@@ -1205,6 +1209,9 @@ type PublicWallet {
 
 type Query {
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet!
+
+  """Retrieve the list of scopes permitted for the user's token or API key"""
+  authorization: [Authorization!]!
   btcPriceList(range: PriceGraphRange!): [PricePoint]
   businessMapMarkers: [MapMarker!]!
   currencyList: [Currency!]!
@@ -1515,9 +1522,6 @@ type User {
 
   """Phone number with international calling code."""
   phone: Phone
-
-  """Retrieve the list of scopes permitted for the user's token or API key"""
-  scopes: [Scope!]!
 
   """Whether TOTP is enabled for this user."""
   totpEnabled: Boolean!
