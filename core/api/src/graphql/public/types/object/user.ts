@@ -4,6 +4,8 @@ import Account from "../abstract/account"
 
 import AccountContact from "./account-contact"
 
+import UserAuthorization from "./user-authorization"
+
 import { Accounts, Users } from "@/app"
 
 import { AccountStatus } from "@/domain/accounts"
@@ -17,7 +19,6 @@ import { GT } from "@/graphql/index"
 import { mapError } from "@/graphql/error-map"
 import { UnknownClientError } from "@/graphql/error"
 import Phone from "@/graphql/shared/types/scalar/phone"
-import Scope from "@/graphql/shared/types/scalar/scope"
 import Language from "@/graphql/shared/types/scalar/language"
 import Username from "@/graphql/shared/types/scalar/username"
 import Timestamp from "@/graphql/shared/types/scalar/timestamp"
@@ -128,23 +129,25 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
       },
     },
 
-    scopes: {
-      type: GT.NonNullList(Scope),
+    authorization: {
+      type: GT.NonNullList(UserAuthorization),
       description:
         "Retrieve the list of scopes permitted for the user's token or API key",
       resolve: async (_source, _args, { domainAccount, scope }) => {
         const isActive = domainAccount.status === AccountStatus.Active
 
         if (!isActive) {
-          return [ScopesOauth2.Read]
+          return { scopes: [ScopesOauth2.Read] }
         }
 
         // not a token with scope
         if (scope && scope.length > 0) {
-          return scope
+          return { scopes: scope }
         }
 
-        return [ScopesOauth2.Read, ScopesOauth2.Write, ScopesOauth2.Receive]
+        return {
+          scopes: [ScopesOauth2.Read, ScopesOauth2.Write, ScopesOauth2.Receive],
+        }
       },
     },
 

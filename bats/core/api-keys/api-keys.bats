@@ -47,7 +47,7 @@ new_key_name() {
   # Check that the length has incremented by 1
   [[ "$((post_creation_length))" -eq "$((initial_length + 1))" ]] || exit 1
 
-  scopes="$(graphql_output '.data.me.scopes')"
+  scopes="$(graphql_output '.data.me.authorization.scopes')"
   [[ "$scopes" =~ "READ" ]] || exit 1
   [[ "$scopes" =~ "WRITE" ]] || exit 1
   [[ "$scopes" =~ "RECEIVE" ]] || exit 1
@@ -59,7 +59,7 @@ new_key_name() {
   keyName="$(graphql_output '.data.me.apiKeys[-1].name')"
   [[ "${keyName}" = "$(read_value 'key_name')" ]] || exit 1
 
-  scopes="$(graphql_output '.data.me.scopes')"
+  scopes="$(graphql_output '.data.me.authorization.scopes')"
   [[ "$scopes" =~ "READ" ]] || exit 1
   [[ "$scopes" =~ "WRITE" ]] || exit 1
   [[ ! "$scopes" =~ "RECEIVE" ]] || exit 1
@@ -114,7 +114,7 @@ new_key_name() {
   name="$(graphql_output '.data.me.apiKeys[-1].name')"
   [[ "${name}" = "${key_name}" ]] || exit 1
 
-  scopes="$(graphql_output '.data.me.scopes')"
+  scopes="$(graphql_output '.data.me.authorization.scopes')"
   [[ "$scopes" =~ "READ" ]] || exit 1
   [[ ! "$scopes" =~ "WRITE" ]] || exit 1
   [[ ! "$scopes" =~ "RECEIVE" ]] || exit 1
@@ -206,7 +206,7 @@ new_key_name() {
   name="$(graphql_output '.data.me.apiKeys[-1].name')"
   [[ "${name}" = "${key_name}" ]] || exit 1
 
-  scopes="$(graphql_output '.data.me.scopes')"
+  scopes="$(graphql_output '.data.me.authorization.scopes')"
   [[ "$scopes" =~ "READ" ]] || exit 1
   [[ ! "$scopes" =~ "WRITE" ]] || exit 1
   [[ "$scopes" =~ "RECEIVE" ]] || exit 1
@@ -233,7 +233,7 @@ new_key_name() {
   name="$(graphql_output '.data.me.apiKeys[-1].name')"
   [[ "${name}" = "${key_name}" ]] || exit 1
 
-  scopes="$(graphql_output '.data.me.scopes')"
+  scopes="$(graphql_output '.data.me.authorization.scopes')"
   [[ "$scopes" =~ "READ" ]] || exit 1
   [[ "$scopes" =~ "WRITE" ]] || exit 1
   [[ ! "$scopes" =~ "RECEIVE" ]] || exit 1

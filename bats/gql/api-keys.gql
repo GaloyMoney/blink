@@ -3,7 +3,9 @@ query apiKeys {
     defaultAccount {
       id
     }
-    scopes
+    authorization {
+      scopes
+    }
     apiKeys {
       id
       name
