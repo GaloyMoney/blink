@@ -414,7 +414,7 @@ const executePaymentViaIntraledger = async <
   const recipientUser = await UsersRepository().findById(recipientUserId)
   if (recipientUser instanceof Error) return recipientUser
 
-  const txRecipientNotificationArgs = {
+  const recipientAsNotificationRecipient = {
     accountId: recipientAccount.id,
     walletId: recipientWalletDescriptor.id,
     userId: recipientUser.id,
@@ -424,7 +424,7 @@ const executePaymentViaIntraledger = async <
   const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
   if (senderUser instanceof Error) return senderUser
 
-  const txSenderNotificationArgs = {
+  const senderAsNotificationRecipient = {
     accountId: senderAccount.id,
     walletId: senderWallet.id,
     userId: senderUser.id,
@@ -554,22 +554,22 @@ const executePaymentViaIntraledger = async <
     if (newWalletInvoice instanceof Error) return newWalletInvoice
 
     const recipientWalletTransaction = await getTransactionForWalletByJournalId({
-      walletId: txRecipientNotificationArgs.walletId,
+      walletId: recipientAsNotificationRecipient.walletId,
       journalId: journal.journalId,
     })
     if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
     NotificationsService().sendTransaction({
-      recipient: txRecipientNotificationArgs,
+      recipient: recipientAsNotificationRecipient,
       transaction: recipientWalletTransaction,
     })
 
     const senderWalletTransaction = await getTransactionForWalletByJournalId({
-      walletId: txSenderNotificationArgs.walletId,
+      walletId: senderAsNotificationRecipient.walletId,
       journalId: journal.journalId,
     })
     if (senderWalletTransaction instanceof Error) return senderWalletTransaction
     NotificationsService().sendTransaction({
-      recipient: txSenderNotificationArgs,
+      recipient: senderAsNotificationRecipient,
       transaction: senderWalletTransaction,
     })
 
@@ -634,7 +634,7 @@ const executePaymentViaLn = async ({
   const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
   if (senderUser instanceof Error) return senderUser
 
-  const txSenderNotificationArgs = {
+  const notificationRecipient = {
     accountId: senderWallet.accountId,
     walletId: senderWallet.id,
     userId: senderUser.id,
@@ -761,6 +761,7 @@ const executePaymentViaLn = async ({
           revealedPreImage: payResult.revealedPreImage,
         })
     }
+
     if (payResult instanceof LnPaymentPendingError) {
       paymentFlow.paymentSentAndPending = true
       const updateResult = await paymentFlowRepo.updateLightningPaymentFlow(paymentFlow)
@@ -768,26 +769,12 @@ const executePaymentViaLn = async ({
         recordExceptionInCurrentSpan({ error: updateResult })
       }
 
-      const updateStateAfterPending = await LedgerFacade.updateLnPaymentState({
+      return finalizePaymentViaLn({
+        payResult,
         walletIds,
         paymentHash,
         journalId,
-      })
-      if (updateStateAfterPending instanceof Error) return updateStateAfterPending
-
-      const walletTransaction = await getTransactionForWalletByJournalId({
-        walletId: txSenderNotificationArgs.walletId,
-        journalId: journal.journalId,
-      })
-      if (walletTransaction instanceof Error) return walletTransaction
-      NotificationsService().sendTransaction({
-        recipient: txSenderNotificationArgs,
-        transaction: walletTransaction,
-      })
-
-      return getPendingPaymentResponse({
-        walletId: senderWallet.id,
-        paymentHash,
+        notificationRecipient,
       })
     }
 
@@ -802,29 +789,13 @@ const executePaymentViaLn = async ({
       })
       if (voided instanceof Error) return voided
 
-      const updateStateAfterRevert = await LedgerFacade.updateLnPaymentState({
+      return finalizePaymentViaLn({
+        payResult,
         walletIds,
         paymentHash,
         journalId,
+        notificationRecipient,
       })
-      if (updateStateAfterRevert instanceof Error) return updateStateAfterRevert
-
-      const walletTransaction = await getTransactionForWalletByJournalId({
-        walletId: txSenderNotificationArgs.walletId,
-        journalId: journal.journalId,
-      })
-      if (walletTransaction instanceof Error) return walletTransaction
-      NotificationsService().sendTransaction({
-        recipient: txSenderNotificationArgs,
-        transaction: walletTransaction,
-      })
-
-      return payResult instanceof LnAlreadyPaidError
-        ? getAlreadyPaidResponse({
-            walletId: senderWallet.id,
-            paymentHash,
-          })
-        : payResult
     }
 
     // Settle and conditionally record reimbursement entries
@@ -843,28 +814,69 @@ const executePaymentViaLn = async ({
       if (reimbursed instanceof Error) return reimbursed
     }
 
-    const updateStateAfterSettle = await LedgerFacade.updateLnPaymentState({
+    return finalizePaymentViaLn({
+      payResult,
       walletIds,
       paymentHash,
       journalId,
+      notificationRecipient,
     })
-    if (updateStateAfterSettle instanceof Error) return updateStateAfterSettle
-
-    const walletTransaction = await getTransactionForWalletByJournalId({
-      walletId: txSenderNotificationArgs.walletId,
-      journalId: journal.journalId,
-    })
-    if (walletTransaction instanceof Error) return walletTransaction
-    NotificationsService().sendTransaction({
-      recipient: txSenderNotificationArgs,
-      transaction: walletTransaction,
-    })
-
-    return {
-      status: PaymentSendStatus.Success,
-      transaction: walletTransaction,
-    }
   })
+}
+
+const finalizePaymentViaLn = async ({
+  payResult,
+  walletIds,
+  paymentHash,
+  journalId,
+  notificationRecipient,
+}: {
+  payResult: PayInvoiceResult | LightningServiceError
+  walletIds: WalletId[]
+  paymentHash: PaymentHash
+  journalId: LedgerJournalId
+  notificationRecipient: NotificationRecipient
+}) => {
+  const { walletId } = notificationRecipient
+  const updateJournalTxnsState = await LedgerFacade.updateLnPaymentState({
+    walletIds,
+    paymentHash,
+    journalId,
+  })
+  if (updateJournalTxnsState instanceof Error) return updateJournalTxnsState
+
+  const walletTransaction = await getTransactionForWalletByJournalId({
+    walletId,
+    journalId,
+  })
+  if (walletTransaction instanceof Error) return walletTransaction
+  NotificationsService().sendTransaction({
+    recipient: notificationRecipient,
+    transaction: walletTransaction,
+  })
+
+  switch (true) {
+    case payResult instanceof LnPaymentPendingError:
+      return getPendingPaymentResponse({
+        walletId,
+        paymentHash,
+      })
+
+    case payResult instanceof LnAlreadyPaidError:
+      return getAlreadyPaidResponse({
+        walletId,
+        paymentHash,
+      })
+
+    case payResult instanceof Error:
+      return payResult
+
+    default:
+      return {
+        status: PaymentSendStatus.Success,
+        transaction: walletTransaction,
+      }
+  }
 }
 
 const getAlreadyPaidResponse = async ({
