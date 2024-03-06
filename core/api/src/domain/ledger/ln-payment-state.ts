@@ -46,6 +46,20 @@ const checkTxns = (
   return true
 }
 
+const bundleErrMsg = (txns: LedgerTransaction<WalletCurrency>[]) =>
+  JSON.stringify(
+    txns.map((tx) => ({
+      id: tx.id,
+      journalId: tx.journalId,
+      type: tx.type,
+      pendingConfirmaton: tx.pendingConfirmation,
+      currency: tx.currency,
+      debit: tx.debit,
+      credit: tx.credit,
+      lnMemo: tx.lnMemo,
+    })),
+  )
+
 export const LnPaymentStateDeterminator = (
   unsortedTxns: LedgerTransaction<WalletCurrency>[],
 ): LnPaymentStateDeterminator => {
@@ -69,7 +83,7 @@ export const LnPaymentStateDeterminator = (
           return LnPaymentState.PendingAfterRetry
 
         default:
-          return new InvalidLnPaymentTxnsBundleError()
+          return new InvalidLnPaymentTxnsBundleError(bundleErrMsg(txns))
       }
     }
 
@@ -122,7 +136,7 @@ export const LnPaymentStateDeterminator = (
         return LnPaymentState.FailedAfterRetry
 
       default:
-        return new InvalidLnPaymentTxnsBundleError()
+        return new InvalidLnPaymentTxnsBundleError(bundleErrMsg(txns))
     }
   }
 
