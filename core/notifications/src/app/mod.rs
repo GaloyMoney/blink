@@ -8,8 +8,13 @@ use tracing::instrument;
 use std::sync::Arc;
 
 use crate::{
-    email_executor::EmailExecutor, job, notification_cool_off_tracker::*, notification_event::*,
-    primitives::*, push_executor::*, user_notification_settings::*,
+    email_executor::EmailExecutor,
+    job::{self},
+    notification_cool_off_tracker::*,
+    notification_event::*,
+    primitives::*,
+    push_executor::*,
+    user_notification_settings::*,
 };
 
 pub use config::*;
@@ -200,7 +205,7 @@ impl NotificationsApp {
             NotificationCoolOffTracker::update_price_changed_trigger(&mut tx).await?;
 
         if price_changed.should_notify(last_trigger) {
-            job::spawn_multi_user_event_dispatch(
+            job::spawn_all_user_event_dispatch(
                 &mut tx,
                 NotificationEventPayload::from(price_changed),
             )
@@ -222,14 +227,16 @@ impl NotificationsApp {
         user_ids: Vec<GaloyUserId>,
         marketing_notification: MarketingNotificationTriggered,
     ) -> Result<(), ApplicationError> {
-        // let mut tx = self.pool.begin().await?;
-        // // job::spawn_multi_user_event_dispatch(
-        // //     &mut tx,
-        // //     NotificationEventPayload::MarketingNotificationTriggered(marketing_notification),
-        // // )
-        // // .await?;
-        // tx.commit().await?;
-        // Ok(())
-        unimplemented!()
+        let mut tx = self.pool.begin().await?;
+        job::spawn_multi_user_event_dispatch(
+            &mut tx,
+            (
+                user_ids,
+                NotificationEventPayload::from(marketing_notification),
+            ),
+        )
+        .await?;
+        tx.commit().await?;
+        Ok(())
     }
 }

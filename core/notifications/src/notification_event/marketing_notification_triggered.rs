@@ -13,7 +13,7 @@ pub struct MarketingNotificationTriggered {
 
 impl NotificationEvent for MarketingNotificationTriggered {
     fn category(&self) -> UserNotificationCategory {
-        UserNotificationCategory::Circles
+        UserNotificationCategory::Marketing
     }
 
     fn deep_link(&self) -> DeepLink {

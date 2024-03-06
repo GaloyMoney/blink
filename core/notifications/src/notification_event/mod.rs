@@ -110,3 +110,9 @@ impl From<PriceChanged> for NotificationEventPayload {
         NotificationEventPayload::PriceChanged(event)
     }
 }
+
+impl From<MarketingNotificationTriggered> for NotificationEventPayload {
+    fn from(event: MarketingNotificationTriggered) -> Self {
+        NotificationEventPayload::MarketingNotificationTriggered(event)
+    }
+}
