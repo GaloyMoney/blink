@@ -2,7 +2,6 @@
 import React from "react"
 
 import { useFormState } from "react-dom"
-import Link from "next/link"
 import { toast } from "react-toastify"
 
 import InputComponent from "../../components/input-component"
@@ -16,6 +15,8 @@ import { SubmitValue } from "../types/index.types"
 
 import { submitForm } from "./email-login-server-action"
 import { LoginEmailResponse } from "./email-login.types"
+
+import SignInTab from "@/components/tab/sign-in-tabs"
 
 interface LoginProps {
   login_challenge: string
@@ -39,14 +40,14 @@ const EmailLoginForm = ({ login_challenge }: LoginProps) => {
     <>
       <FormComponent action={formAction}>
         <input type="hidden" name="login_challenge" value={login_challenge} />
+        <SignInTab login_challenge={login_challenge} />
         <InputComponent
           data-testid="email_id_input"
-          label="Email"
           type="email"
           id="email"
           name="email"
           required
-          placeholder="Email Id"
+          placeholder="Email"
         />
         <div className="flex items-center mb-4">
           <label className="text-[var(--inputColor)] text-sm flex items-center">
@@ -61,20 +62,7 @@ const EmailLoginForm = ({ login_challenge }: LoginProps) => {
             Remember me
           </label>
         </div>
-        <Separator>or</Separator>
-        <div className="flex justify-center mb-4">
-          <div className="text-center text-sm w-60">
-            <Link
-              data-testid="sign_in_with_phone_text"
-              href={`/login/phone?login_challenge=${login_challenge}`}
-              replace
-            >
-              <p className="font-semibold text-sm">Sign in with phone</p>
-            </Link>
-          </div>
-        </div>
-
-        <div className="flex flex-col md:flex-row-reverse w-full gap-2">
+        <div className="flex flex-col md:flex-row-reverse w-full gap-2 mb-6">
           <PrimaryButton
             type="submit"
             id="accept"
@@ -94,8 +82,11 @@ const EmailLoginForm = ({ login_challenge }: LoginProps) => {
             Cancel
           </SecondaryButton>
         </div>
+        <Separator>or</Separator>
+        <div className="m-2">
+          <RegisterLink href={`/register?login_challenge=${login_challenge}`} />
+        </div>
       </FormComponent>
-      <RegisterLink href={`/register?login_challenge=${login_challenge}`} />
     </>
   )
 }
