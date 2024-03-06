@@ -58,6 +58,11 @@ new_key_name() {
 
   keyName="$(graphql_output '.data.me.apiKeys[-1].name')"
   [[ "${keyName}" = "$(read_value 'key_name')" ]] || exit 1
+
+  scopes="$(graphql_output '.data.me.scopes')"
+  [[ "$scopes" =~ "READ" ]] || exit 1
+  [[ "$scopes" =~ "WRITE" ]] || exit 1
+  [[ ! "$scopes" =~ "RECEIVE" ]] || exit 1
 }
 
 @test "api-keys: can subscribe" {
