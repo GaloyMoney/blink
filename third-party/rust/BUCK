@@ -3947,18 +3947,18 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "mio-0.8.9.crate",
-    sha256 = "3dce281c5e46beae905d4de1870d8b1509a9142b62eedf18b443b011ca8343d0",
-    strip_prefix = "mio-0.8.9",
-    urls = ["https://crates.io/api/v1/crates/mio/0.8.9/download"],
+    name = "mio-0.8.11.crate",
+    sha256 = "a4a650543ca06a924e8b371db273b2756685faae30f8487da1b56505a8f78b0c",
+    strip_prefix = "mio-0.8.11",
+    urls = ["https://crates.io/api/v1/crates/mio/0.8.11/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "mio-0.8.9",
-    srcs = [":mio-0.8.9.crate"],
+    name = "mio-0.8.11",
+    srcs = [":mio-0.8.11.crate"],
     crate = "mio",
-    crate_root = "mio-0.8.9.crate/src/lib.rs",
+    crate_root = "mio-0.8.11.crate/src/lib.rs",
     edition = "2018",
     features = [
         "net",
@@ -9221,7 +9221,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":bytes-1.5.0",
-        ":mio-0.8.9",
+        ":mio-0.8.11",
         ":num_cpus-1.16.0",
         ":parking_lot-0.12.1",
         ":pin-project-lite-0.2.13",
