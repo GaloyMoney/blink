@@ -688,6 +688,12 @@ const executePaymentViaLn = async ({
       memoOfPayer: memo || paymentFlow.descriptionFromInvoice,
     })
 
+    const walletPriceRatio = WalletPriceRatio({
+      usd: paymentFlow.usdPaymentAmount,
+      btc: paymentFlow.btcPaymentAmount,
+    })
+    if (walletPriceRatio instanceof Error) return walletPriceRatio
+
     // Record pending payment entries
     const journal = await LedgerFacade.recordSendOffChain({
       description: paymentFlow.descriptionFromInvoice || memo || "",
@@ -721,12 +727,6 @@ const executePaymentViaLn = async ({
     if (updateStateAfterSend instanceof Error) return updateStateAfterSend
 
     // Execute payment
-    const walletPriceRatio = WalletPriceRatio({
-      usd: paymentFlow.usdPaymentAmount,
-      btc: paymentFlow.btcPaymentAmount,
-    })
-    if (walletPriceRatio instanceof Error) return walletPriceRatio
-
     let payResult: PayInvoiceResult | LightningServiceError
     if (rawRoute) {
       payResult = await lndService.payInvoiceViaRoutes({
