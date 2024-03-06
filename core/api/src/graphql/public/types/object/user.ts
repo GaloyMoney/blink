@@ -144,7 +144,7 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
           return scope
         }
 
-        return [ScopesOauth2.Read, ScopesOauth2.Write]
+        return [ScopesOauth2.Read, ScopesOauth2.Write, ScopesOauth2.Receive]
       },
     },
 
