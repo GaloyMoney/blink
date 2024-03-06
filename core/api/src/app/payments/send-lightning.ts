@@ -719,13 +719,6 @@ const executePaymentViaLn = async ({
     if (journal instanceof Error) return journal
     const { journalId } = journal
 
-    const updateStateAfterSend = await LedgerFacade.updateLnPaymentState({
-      walletIds,
-      paymentHash,
-      journalId,
-    })
-    if (updateStateAfterSend instanceof Error) return updateStateAfterSend
-
     // Execute payment
     let payResult: PayInvoiceResult | LightningServiceError
     if (rawRoute) {
@@ -774,6 +767,13 @@ const executePaymentViaLn = async ({
       if (updateResult instanceof Error) {
         recordExceptionInCurrentSpan({ error: updateResult })
       }
+
+      const updateStateAfterPending = await LedgerFacade.updateLnPaymentState({
+        walletIds,
+        paymentHash,
+        journalId,
+      })
+      if (updateStateAfterPending instanceof Error) return updateStateAfterPending
 
       const walletTransaction = await getTransactionForWalletByJournalId({
         walletId: txSenderNotificationArgs.walletId,
