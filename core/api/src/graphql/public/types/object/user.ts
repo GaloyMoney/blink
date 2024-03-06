@@ -8,8 +8,7 @@ import UserAuthorization from "./user-authorization"
 
 import { Accounts, Users } from "@/app"
 
-import { AccountStatus } from "@/domain/accounts"
-import { ScopesOauth2 } from "@/domain/authorization"
+import { resolveScopes } from "@/domain/authorization"
 
 import { baseLogger } from "@/services/logger"
 // FIXME should not use service
@@ -134,19 +133,8 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
       description:
         "Retrieve the list of scopes permitted for the user's token or API key",
       resolve: async (_source, _args, { domainAccount, scope }) => {
-        const isActive = domainAccount.status === AccountStatus.Active
-
-        if (!isActive) {
-          return { scopes: [ScopesOauth2.Read] }
-        }
-
-        // not a token with scope
-        if (scope && scope.length > 0) {
-          return { scopes: scope }
-        }
-
         return {
-          scopes: [ScopesOauth2.Read, ScopesOauth2.Write, ScopesOauth2.Receive],
+          scopes: resolveScopes({ account: domainAccount, scopes: scope }),
         }
       },
     },
