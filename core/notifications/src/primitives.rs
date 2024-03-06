@@ -28,7 +28,7 @@ impl std::fmt::Display for GaloyUserId {
 
 es_entity::entity_id! { UserNotificationSettingsId }
 
-#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize, Hash)]
 pub struct GaloyLocale(String);
 
 impl Default for GaloyLocale {
@@ -118,6 +118,7 @@ pub enum UserNotificationCategory {
     Payments,
     Balance,
     AdminNotification,
+    Marketing,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

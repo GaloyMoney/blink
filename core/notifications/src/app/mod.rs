@@ -211,4 +211,25 @@ impl NotificationsApp {
 
         Ok(())
     }
+
+    #[instrument(
+        name = "app.handle_marketing_notification_triggered_event",
+        skip(self),
+        err
+    )]
+    pub async fn handle_marketing_notification_triggered_event(
+        &self,
+        user_ids: Vec<GaloyUserId>,
+        marketing_notification: MarketingNotificationTriggered,
+    ) -> Result<(), ApplicationError> {
+        // let mut tx = self.pool.begin().await?;
+        // // job::spawn_multi_user_event_dispatch(
+        // //     &mut tx,
+        // //     NotificationEventPayload::MarketingNotificationTriggered(marketing_notification),
+        // // )
+        // // .await?;
+        // tx.commit().await?;
+        // Ok(())
+        unimplemented!()
+    }
 }
