@@ -8,6 +8,9 @@ export class PriceServiceError extends PriceError {}
 export class PriceNotAvailableError extends PriceServiceError {}
 export class PriceCurrenciesNotAvailableError extends PriceServiceError {}
 export class PriceHistoryNotAvailableError extends PriceServiceError {}
+export class NoConnectionToPriceServiceError extends PriceServiceError {
+  level = ErrorLevel.Critical
+}
 export class UnknownPriceServiceError extends PriceServiceError {
   level = ErrorLevel.Critical
 }

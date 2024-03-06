@@ -112,6 +112,12 @@ export const LndService = (): ILightningService | LightningServiceError => {
   const listActiveLnd = (): AuthenticatedLnd[] =>
     getLnds({ active: true, type: "offchain" }).map((lndAuth) => lndAuth.lnd)
 
+  const listActiveLndsWithPubkeys = (): { lnd: AuthenticatedLnd; pubkey: Pubkey }[] =>
+    getLnds({ active: true, type: "offchain" }).map((lndAuth) => ({
+      lnd: lndAuth.lnd,
+      pubkey: lndAuth.pubkey,
+    }))
+
   const listAllPubkeys = (): Pubkey[] =>
     getLnds({ type: "offchain" }).map((lndAuth) => lndAuth.pubkey as Pubkey)
 
@@ -487,22 +493,23 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const registerLndInvoice = async ({
-    lnd,
+  const registerInvoiceOnSingleLnd = async ({
+    lndAndPubkey,
     paymentHash,
-    sats,
+    btcPaymentAmount,
     description,
     descriptionHash,
     expiresAt,
-  }: RegisterInvoiceArgs & { lnd: AuthenticatedLnd }): Promise<
-    RegisteredInvoice | LightningServiceError
-  > => {
+  }: RegisterInvoiceArgs & {
+    lndAndPubkey: LndAndPubkey
+  }): Promise<RegisteredInvoice | LightningServiceError> => {
+    const { lnd, pubkey } = lndAndPubkey
     const input = {
       lnd,
       id: paymentHash,
       description,
       description_hash: descriptionHash,
-      tokens: sats as number,
+      tokens: Number(btcPaymentAmount.amount),
       expires_at: expiresAt.toISOString(),
     }
 
@@ -515,7 +522,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       }
       const registerInvoice: RegisteredInvoice = {
         invoice: returnedInvoice,
-        pubkey: defaultPubkey,
+        pubkey,
       }
       return registerInvoice
     } catch (err) {
@@ -525,17 +532,17 @@ export const LndService = (): ILightningService | LightningServiceError => {
 
   const registerInvoice = async ({
     paymentHash,
-    sats,
+    btcPaymentAmount,
     description,
     descriptionHash,
     expiresAt,
   }: RegisterInvoiceArgs): Promise<RegisteredInvoice | LightningServiceError> => {
-    const lnds = listActiveLnd()
-    for (const lnd of lnds) {
-      const result = await registerLndInvoice({
-        lnd,
+    const lndsAndPubkeys = listActiveLndsWithPubkeys()
+    for (const lndAndPubkey of lndsAndPubkeys) {
+      const result = await registerInvoiceOnSingleLnd({
+        lndAndPubkey,
         paymentHash,
-        sats,
+        btcPaymentAmount,
         description,
         descriptionHash,
         expiresAt,

@@ -42,7 +42,7 @@ describe("WalletInvoiceBuilder", () => {
     })
   }
 
-  const registerInvoice = async (args: NewRegisterInvoiceArgs) => {
+  const registerInvoice = async (args: RegisterInvoiceArgs) => {
     const amount = toSats(args.btcPaymentAmount.amount)
 
     const lnInvoice = {
