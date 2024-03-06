@@ -2637,23 +2637,23 @@ cargo.rust_library(
 
 alias(
     name = "google-fcm1",
-    actual = ":google-fcm1-5.0.3+20230106",
+    actual = ":google-fcm1-5.0.4+20240227",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "google-fcm1-5.0.3+20230106.crate",
-    sha256 = "442658d7f240c1b849c33489bacb4d115782571d5a4a658d21d7713e20a0bc46",
-    strip_prefix = "google-fcm1-5.0.3+20230106",
-    urls = ["https://crates.io/api/v1/crates/google-fcm1/5.0.3+20230106/download"],
+    name = "google-fcm1-5.0.4+20240227.crate",
+    sha256 = "6450dc787c4383cb1437c6ce89b192b6d559ab420a3ffcba5b2d6bdb9047958e",
+    strip_prefix = "google-fcm1-5.0.4+20240227",
+    urls = ["https://crates.io/api/v1/crates/google-fcm1/5.0.4+20240227/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "google-fcm1-5.0.3+20230106",
-    srcs = [":google-fcm1-5.0.3+20230106.crate"],
+    name = "google-fcm1-5.0.4+20240227",
+    srcs = [":google-fcm1-5.0.4+20240227.crate"],
     crate = "google_fcm1",
-    crate_root = "google-fcm1-5.0.3+20230106.crate/src/lib.rs",
+    crate_root = "google-fcm1-5.0.4+20240227.crate/src/lib.rs",
     edition = "2018",
     features = [
         "default",
@@ -8888,7 +8888,7 @@ cargo.rust_binary(
         ":clap-4.5.1",
         ":derive_builder-0.13.1",
         ":futures-0.3.30",
-        ":google-fcm1-5.0.3+20230106",
+        ":google-fcm1-5.0.4+20240227",
         ":handlebars-5.1.0",
         ":http-0.2.12",
         ":jsonwebtoken-9.2.0",

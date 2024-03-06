@@ -1105,9 +1105,9 @@ dependencies = [
 
 [[package]]
 name = "google-fcm1"
-version = "5.0.3+20230106"
+version = "5.0.4+20240227"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "442658d7f240c1b849c33489bacb4d115782571d5a4a658d21d7713e20a0bc46"
+checksum = "6450dc787c4383cb1437c6ce89b192b6d559ab420a3ffcba5b2d6bdb9047958e"
 dependencies = [
  "anyhow",
  "google-apis-common",
