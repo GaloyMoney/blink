@@ -177,3 +177,21 @@ impl From<proto::PriceChangeDirection> for notification_event::PriceChangeDirect
         }
     }
 }
+
+impl From<proto::InclusionType> for InclusionType {
+    fn from(inclusion_type: proto::InclusionType) -> Self {
+        match inclusion_type {
+            proto::InclusionType::Include => Self::Include,
+            proto::InclusionType::Exclude => Self::Exclude,
+        }
+    }
+}
+
+impl From<proto::CombinationType> for CombinationType {
+    fn from(combination_type: proto::CombinationType) -> Self {
+        match combination_type {
+            proto::CombinationType::And => Self::And,
+            proto::CombinationType::Or => Self::Or,
+        }
+    }
+}

@@ -16,8 +16,8 @@ use crate::{
     app::*,
     notification_event,
     primitives::{
-        self, GaloyEmailAddress, GaloyUserId, PushDeviceToken, UserNotificationCategory,
-        UserNotificationChannel,
+        self, GaloyEmailAddress, GaloyLocale, GaloyUserId, PushDeviceToken,
+        UserNotificationCategory, UserNotificationChannel,
     },
 };
 
@@ -421,6 +421,93 @@ impl NotificationsService for Notifications {
                         ),
                         direction,
                     })
+                    .await?;
+            }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::MarketingNotificationRequested(
+                        proto::MarketingNotificationRequested {
+                            users: Some(users),
+                            filter,
+                            push_source_content: Some(push_source_content),
+                            push_translated_content,
+                        },
+                    )),
+            }) => {
+                let user_ids: Vec<GaloyUserId> =
+                    users.user_ids.into_iter().map(GaloyUserId::from).collect();
+                let user_inclusion_type = proto::InclusionType::try_from(users.inclusion_type)
+                    .map(primitives::InclusionType::from)
+                    .map_err(|e| Status::invalid_argument(e.to_string()))?;
+                let users = primitives::UserSet {
+                    user_ids,
+                    inclusion_type: user_inclusion_type,
+                };
+                let push_source_content = primitives::LocalizedPushNotificationContent {
+                    locale: GaloyLocale::from(push_source_content.locale),
+                    title: push_source_content.title,
+                    body: push_source_content.body,
+                };
+                let push_translated_content = push_translated_content
+                    .into_iter()
+                    .map(|content| primitives::LocalizedPushNotificationContent {
+                        locale: GaloyLocale::from(content.locale),
+                        title: content.title,
+                        body: content.body,
+                    })
+                    .collect();
+
+                let filter = if let Some(filter) = filter {
+                    let conditions: Vec<primitives::Condition> = filter
+                        .conditions
+                        .into_iter()
+                        .map(|condition| match condition.condition {
+                            Some(proto::conditions::Condition::Country(
+                                proto::CountryCondition {
+                                    country_codes,
+                                    inclusion_type,
+                                },
+                            )) => {
+                                let country_codes: Vec<primitives::CountryCode> = country_codes
+                                    .into_iter()
+                                    .map(primitives::CountryCode::from)
+                                    .collect();
+                                let inclusion_type = proto::InclusionType::try_from(inclusion_type)
+                                    .map(primitives::InclusionType::from)
+                                    .map_err(|e| Status::invalid_argument(e.to_string()))?;
+                                Ok(primitives::Condition::Country {
+                                    country_codes,
+                                    inclusion_type,
+                                })
+                            }
+                            None => {
+                                return Err(Status::invalid_argument(
+                                    "condition is required for filter",
+                                ))
+                            }
+                        })
+                        .collect::<Result<Vec<primitives::Condition>, Status>>()?;
+                    let combination_type =
+                        proto::CombinationType::try_from(filter.conditions_combiner)
+                            .map(primitives::CombinationType::from)
+                            .map_err(|e| Status::invalid_argument(e.to_string()))?;
+                    Some(primitives::Filter {
+                        conditions,
+                        combination_type,
+                    })
+                } else {
+                    None
+                };
+
+                self.app
+                    .handle_marketing_notification_requested_event(
+                        notification_event::MarketingNotificationRequested {
+                            users,
+                            filter,
+                            push_source_content,
+                            push_translated_content,
+                        },
+                    )
                     .await?;
             }
             _ => return Err(Status::invalid_argument("event is required")),

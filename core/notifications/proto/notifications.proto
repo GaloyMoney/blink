@@ -153,6 +153,7 @@ message NotificationEvent {
     IdentityVerificationReviewStarted identity_verification_review_started = 5;
     TransactionInfo transaction = 6;
     PriceChanged price = 7;
+    MarketingNotificationRequested marketing_notification_requested = 8;
   }
 }
 
@@ -233,4 +234,49 @@ message PriceChanged {
   Money price_of_one_bitcoin = 1;
   PriceChangeDirection direction = 2;
   double price_change_percentage = 3;
+}
+
+message MarketingNotificationRequested {
+  UserSet users = 1; // Ideally this should be treated as a generic condition, but we want to be able to filter on users before kicking off a job for each user
+  UserFilter filter = 2;
+  LocalizedPushNotificationContent push_source_content = 3;
+  repeated LocalizedPushNotificationContent push_translated_content = 4;
+  // TODO add deep link field and message
+}
+
+message CountryCondition {
+  repeated string country_codes = 1;
+  InclusionType inclusion_type = 2;
+}
+
+enum InclusionType {
+  INCLUDE = 0;
+  EXCLUDE = 1;
+}
+
+message UserSet {
+  repeated string user_ids = 1;
+  InclusionType inclusion_type = 2;
+}
+
+message Conditions {
+  oneof condition {
+    CountryCondition country = 1;
+  }
+}
+
+message UserFilter {
+  repeated Conditions conditions = 2;
+  CombinationType conditions_combiner = 3;
+}
+
+enum CombinationType {
+  AND = 0;
+  OR = 1;
+}
+
+message LocalizedPushNotificationContent {
+  string locale = 1;
+  string title = 2;
+  string body = 3;
 }

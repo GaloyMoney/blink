@@ -236,3 +236,56 @@ impl From<Currency> for &'static str {
         c.code()
     }
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+
+pub enum InclusionType {
+    Include,
+    Exclude,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+
+pub struct UserSet {
+    pub user_ids: Vec<GaloyUserId>,
+    pub inclusion_type: InclusionType,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+
+pub struct CountryCode(String);
+
+impl From<String> for CountryCode {
+    fn from(s: String) -> Self {
+        Self(s)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+
+pub enum Condition {
+    Country {
+        country_codes: Vec<CountryCode>,
+        inclusion_type: InclusionType,
+    },
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+
+pub enum CombinationType {
+    And,
+    Or,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Filter {
+    pub conditions: Vec<Condition>,
+    pub combination_type: CombinationType,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct LocalizedPushNotificationContent {
+    pub locale: GaloyLocale,
+    pub title: String,
+    pub body: String,
+}

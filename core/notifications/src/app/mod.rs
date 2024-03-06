@@ -211,4 +211,16 @@ impl NotificationsApp {
 
         Ok(())
     }
+
+    #[instrument(
+        name = "app.handle_marketing_notification_requested_event",
+        skip(self),
+        err
+    )]
+    pub async fn handle_marketing_notification_requested_event(
+        &self,
+        event: MarketingNotificationRequested,
+    ) -> Result<(), ApplicationError> {
+        unimplemented!()
+    }
 }
