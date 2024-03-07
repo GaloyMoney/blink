@@ -376,12 +376,14 @@ impl NotificationsService for Notifications {
             }
             Some(proto::NotificationEvent {
                 data:
-                    Some(proto::notification_event::Data::Transaction(proto::TransactionInfo {
-                        user_id,
-                        settlement_amount: Some(settlement_amount),
-                        display_amount,
-                        r#type,
-                    })),
+                    Some(proto::notification_event::Data::TransactionOccurred(
+                        proto::TransactionOccurred {
+                            user_id,
+                            settlement_amount: Some(settlement_amount),
+                            display_amount,
+                            r#type,
+                        },
+                    )),
             }) => {
                 let transaction_type = proto::TransactionType::try_from(r#type)
                     .map(notification_event::TransactionType::from)
@@ -390,7 +392,7 @@ impl NotificationsService for Notifications {
                 self.app
                     .handle_single_user_event(
                         user_id,
-                        notification_event::TransactionInfo {
+                        notification_event::TransactionOccurred {
                             transaction_type,
                             settlement_amount: notification_event::TransactionAmount::try_from(
                                 settlement_amount,
