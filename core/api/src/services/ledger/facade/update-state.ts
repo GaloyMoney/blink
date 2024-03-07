@@ -4,7 +4,10 @@ import { NoTransactionToUpdateStateError, UnknownLedgerError } from "../domain/e
 import { getTransactionsForWalletsByPaymentHash } from "./get-transactions"
 
 import { toObjectId } from "@/services/mongoose/utils"
-import { recordExceptionInCurrentSpan } from "@/services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+} from "@/services/tracing"
 
 import { LnPaymentStateDeterminator } from "@/domain/ledger/ln-payment-state"
 
@@ -73,6 +76,9 @@ export const updateLnPaymentState = async ({
     })
     return false
   }
+  addAttributesToCurrentSpan({
+    "payment.bundleCompletionState": lnPaymentState,
+  })
 
   return updateStateByRelatedJournal({
     journalId,
