@@ -1,4 +1,4 @@
-query authorization {
+query Authorization {
   authorization {
     scopes
   }

@@ -1572,7 +1572,7 @@ type Query
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet! @join__field(graph: PUBLIC)
 
   """Retrieve the list of scopes permitted for the user's token or API key"""
-  authorization: [Authorization!]! @join__field(graph: PUBLIC)
+  authorization: Authorization! @join__field(graph: PUBLIC)
   btcPriceList(range: PriceGraphRange!): [PricePoint] @join__field(graph: PUBLIC)
   businessMapMarkers: [MapMarker!]! @join__field(graph: PUBLIC)
   currencyList: [Currency!]! @join__field(graph: PUBLIC)

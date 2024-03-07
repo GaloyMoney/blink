@@ -1455,7 +1455,7 @@ export type Query = {
   readonly __typename: 'Query';
   readonly accountDefaultWallet: PublicWallet;
   /** Retrieve the list of scopes permitted for the user's token or API key */
-  readonly authorization: ReadonlyArray<Authorization>;
+  readonly authorization: Authorization;
   readonly btcPriceList?: Maybe<ReadonlyArray<Maybe<PricePoint>>>;
   readonly businessMapMarkers: ReadonlyArray<MapMarker>;
   readonly currencyList: ReadonlyArray<Currency>;

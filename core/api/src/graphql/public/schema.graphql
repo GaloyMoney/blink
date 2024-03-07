@@ -1211,7 +1211,7 @@ type Query {
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet!
 
   """Retrieve the list of scopes permitted for the user's token or API key"""
-  authorization: [Authorization!]!
+  authorization: Authorization!
   btcPriceList(range: PriceGraphRange!): [PricePoint]
   businessMapMarkers: [MapMarker!]!
   currencyList: [Currency!]!
