@@ -16,17 +16,28 @@ export const LnPaymentState = {
     "ln_payment.failed_after_success_with_reimbursement",
 } as const
 
-const count = <T>({ arr, valueToCount }: { arr: T[]; valueToCount: T }): number =>
-  arr.reduce((count, currentValue) => {
-    return currentValue === valueToCount ? count + 1 : count
-  }, 0)
-
-const sum = <T>({ arr, propertyName }: { arr: T[]; propertyName: keyof T }): number =>
-  arr.reduce((sum, currentItem) => {
-    return sum + Number(currentItem[propertyName] || 0)
-  }, 0)
-
 const isDebit = (txn: LedgerTransaction<WalletCurrency>) => (txn.debit || 0) > 0
+
+const bundleErrMsg = ({
+  msg,
+  txns,
+}: {
+  msg: string
+  txns: LedgerTransaction<WalletCurrency>[]
+}) =>
+  JSON.stringify({
+    msg,
+    txns: txns.map((tx) => ({
+      id: tx.id,
+      journalId: tx.journalId,
+      type: tx.type,
+      pendingConfirmaton: tx.pendingConfirmation,
+      currency: tx.currency,
+      debit: tx.debit,
+      credit: tx.credit,
+      lnMemo: tx.lnMemo,
+    })),
+  })
 
 const checkTxns = (
   txns: LedgerTransaction<WalletCurrency>[],
@@ -37,7 +48,9 @@ const checkTxns = (
   ]
   for (const txn of txns) {
     if (!validTypes.includes(txn.type as (typeof validTypes)[number])) {
-      return new InvalidLnPaymentTxnsBundleError(`Invalid '${txn.type}' type found`)
+      return new InvalidLnPaymentTxnsBundleError(
+        bundleErrMsg({ msg: `Invalid '${txn.type}' type found`, txns }),
+      )
     }
   }
 
@@ -46,6 +59,9 @@ const checkTxns = (
   return true
 }
 
+const sortTxnsByTimestampDesc = (txns: LedgerTransaction<WalletCurrency>[]) =>
+  txns.sort((txA, txB) => txB.timestamp.getTime() - txA.timestamp.getTime())
+
 export const LnPaymentStateDeterminator = (
   unsortedTxns: LedgerTransaction<WalletCurrency>[],
 ): LnPaymentStateDeterminator => {
@@ -53,76 +69,79 @@ export const LnPaymentStateDeterminator = (
     const check = checkTxns(unsortedTxns)
     if (check instanceof Error) return check
 
-    const txns = unsortedTxns.sort(
-      (txA, txB) => txB.timestamp.getTime() - txA.timestamp.getTime(),
-    )
+    const txns = sortTxnsByTimestampDesc(unsortedTxns)
 
-    const txPendingStates = txns.map((txn) => txn.pendingConfirmation)
-    if (txPendingStates.includes(true)) {
-      const pendingCount = count({ arr: txPendingStates, valueToCount: true })
-
+    // Pending txns
+    const pendingTxns = txns.filter((tx) => tx.pendingConfirmation)
+    if (pendingTxns.length) {
       switch (true) {
         case txns.length === 1:
           return LnPaymentState.Pending
 
-        case txns.length % 2 === 1 && pendingCount === 1:
+        case txns.length % 2 === 1 && pendingTxns.length === 1:
           return LnPaymentState.PendingAfterRetry
 
         default:
-          return new InvalidLnPaymentTxnsBundleError()
+          return new InvalidLnPaymentTxnsBundleError(
+            bundleErrMsg({ msg: "There should be only 1 pending txn", txns }),
+          )
       }
     }
 
-    const txTypes = txns.map((txn) => txn.type)
-    const txPaymentCount = count({
-      arr: txTypes,
-      valueToCount: LedgerTransactionType.Payment,
-    })
-    if (txTypes.includes(LedgerTransactionType.LnFeeReimbursement)) {
-      const reimburseTxn = txns.find(
-        (tx) => tx.type === LedgerTransactionType.LnFeeReimbursement,
+    // LnFeeReimbursement txns
+    const reimburseTxns = txns.filter(
+      (tx) => tx.type === LedgerTransactionType.LnFeeReimbursement,
+    )
+    if (reimburseTxns.length) {
+      const paymentTypeTxns = txns.filter(
+        (tx) => tx.type === LedgerTransactionType.Payment,
       )
-      if (reimburseTxn === undefined) {
-        return new InvalidLnPaymentTxnsBundleError("Impossible state")
-      }
 
       const txnsAfterReimburse = txns.filter(
-        (tx) => tx.timestamp > reimburseTxn.timestamp,
+        (tx) => tx.timestamp > reimburseTxns[0].timestamp,
       )
+
       switch (true) {
-        case txPaymentCount === 1:
+        case paymentTypeTxns.length === 1:
           return LnPaymentState.SuccessWithReimbursement
+
         case !!txnsAfterReimburse.length:
           return LnPaymentState.FailedAfterSuccessWithReimbursement
-        default:
+
+        case paymentTypeTxns.length > 1 && reimburseTxns.length === 1:
           return LnPaymentState.SuccessWithReimbursementAfterRetry
+
+        default:
+          return new InvalidLnPaymentTxnsBundleError(
+            bundleErrMsg({
+              msg: "There should be payment txns and only 1 reimbursement txn",
+              txns,
+            }),
+          )
       }
     }
 
-    const sumTxAmounts =
-      sum({ arr: txns, propertyName: "debit" }) -
-      sum({ arr: txns, propertyName: "credit" })
-    const failedUsdPayment = !!txns.find((tx) => tx.lnMemo === FAILED_USD_MEMO)
-    // FIXME: 'failedUsdPayment' is a brittle check, but voided can't be used because
-    //        we don't currently mark failed usd entries as void.
+    // Pure success and fail txns
     switch (true) {
       case txns.length === 1:
         return LnPaymentState.Success
 
-      case txns.length === 2 && (sumTxAmounts === 0 || failedUsdPayment):
+      case txns.length === 2:
         return LnPaymentState.Failed
 
+      case txns.length % 2 === 1 && isDebit(txns[0]):
+        return LnPaymentState.SuccessAfterRetry
+
       case txns.length % 2 === 1:
-        if (isDebit(txns[0])) {
-          return LnPaymentState.SuccessAfterRetry
-        }
         return LnPaymentState.FailedAfterSuccess
 
-      case txns.length % 2 === 0 && (sumTxAmounts === 0 || failedUsdPayment):
+      case txns.length % 2 === 0:
         return LnPaymentState.FailedAfterRetry
 
       default:
-        return new InvalidLnPaymentTxnsBundleError()
+        return new InvalidLnPaymentTxnsBundleError(
+          bundleErrMsg({ msg: "Impossible state", txns }),
+        )
     }
   }
 
