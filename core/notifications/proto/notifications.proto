@@ -151,7 +151,7 @@ message NotificationEvent {
     IdentityVerificationApproved identity_verification_approved = 3;
     IdentityVerificationDeclined identity_verification_declined = 4;
     IdentityVerificationReviewStarted identity_verification_review_started = 5;
-    TransactionInfo transaction = 6;
+    TransactionOccurred transaction_occurred = 6;
     PriceChanged price = 7;
   }
 }
@@ -202,7 +202,7 @@ message IdentityVerificationReviewStarted {
   string user_id = 1;
 }
 
-message TransactionInfo {
+message TransactionOccurred {
   string user_id = 1;
   TransactionType type = 2;
   Money settlement_amount = 3;
