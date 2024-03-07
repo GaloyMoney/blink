@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): move pending ln-state-update to final return (#4143)...'
-      sha: a4ed50101ac5b5e7f8120ed615b15176168937b7
+      commitTitle: 'chore(core): add bundleCompletionState tracing attribute (#4154)'
+      sha: 1666be34076ecc6ad208f4d5561f27bdf1f52e6f
       tags:
-      - 0.20.106-3-ga4ed50101
+      - 0.20.107-1-g1666be340
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): move pending ln-state-update to final return (#4143)...'
-      sha: a4ed50101ac5b5e7f8120ed615b15176168937b7
+      commitTitle: 'chore(core): add bundleCompletionState tracing attribute (#4154)'
+      sha: 1666be34076ecc6ad208f4d5561f27bdf1f52e6f
       tags:
-      - 0.20.106-3-ga4ed50101
+      - 0.20.107-1-g1666be340
     path: schemas/
   - git:
-      commitTitle: 'fix(core): move pending ln-state-update to final return (#4143)...'
-      sha: a4ed50101ac5b5e7f8120ed615b15176168937b7
+      commitTitle: 'chore(core): add bundleCompletionState tracing attribute (#4154)'
+      sha: 1666be34076ecc6ad208f4d5561f27bdf1f52e6f
       tags:
-      - 0.20.106-3-ga4ed50101
+      - 0.20.107-1-g1666be340
     path: gql/
   path: ./graphql
 kind: LockConfig
