@@ -19,6 +19,9 @@ const durationLockIdempotencyKey = (1000 * 60 * 60) as MilliSeconds // 1 hour
 // note: with redlock 5, the lock is automatically extended
 const ttl = () => (NETWORK !== "regtest" ? 180000 : 10000)
 
+const retryCount = NETWORK !== "regtest" ? 10 : 3
+const retryDelay = NETWORK !== "regtest" ? 600 : 400 // time in ms
+
 const redlockClient = new Redlock(
   // you should have one client for each independent redis node
   // or cluster
@@ -30,10 +33,10 @@ const redlockClient = new Redlock(
 
     // the max number of times Redlock will attempt
     // to lock a resource before erroring
-    retryCount: 10,
+    retryCount,
 
     // the time in ms between attempts
-    retryDelay: 600, // time in ms
+    retryDelay,
 
     // the max time in ms randomly added to retries
     // to improve performance under high contention
