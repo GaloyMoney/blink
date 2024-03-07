@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): map known price service errors (#4138)'
-      sha: 71b4ed735a21aa5a8c99392d51db6e20335c5a5b
+      commitTitle: 'refactor(notifications): rename TransactionInfo -> TransactionOccurred
+        (#4151)'
+      sha: 678d8a67503f81f59ff370f705ce98f2c66eeb19
       tags:
-      - 0.20.103-5-g71b4ed735
+      - 0.20.104-3-g678d8a675
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): map known price service errors (#4138)'
-      sha: 71b4ed735a21aa5a8c99392d51db6e20335c5a5b
+      commitTitle: 'refactor(notifications): rename TransactionInfo -> TransactionOccurred
+        (#4151)'
+      sha: 678d8a67503f81f59ff370f705ce98f2c66eeb19
       tags:
-      - 0.20.103-5-g71b4ed735
+      - 0.20.104-3-g678d8a675
     path: schemas/
   - git:
-      commitTitle: 'chore(core): map known price service errors (#4138)'
-      sha: 71b4ed735a21aa5a8c99392d51db6e20335c5a5b
+      commitTitle: 'refactor(notifications): rename TransactionInfo -> TransactionOccurred
+        (#4151)'
+      sha: 678d8a67503f81f59ff370f705ce98f2c66eeb19
       tags:
-      - 0.20.103-5-g71b4ed735
+      - 0.20.104-3-g678d8a675
     path: gql/
   path: ./graphql
 kind: LockConfig
