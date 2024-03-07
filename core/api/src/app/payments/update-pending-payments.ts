@@ -355,6 +355,13 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       }
 
       if (pendingPayment.feeKnownInAdvance) {
+        const updateStateAfterSuccess = await LedgerFacade.updateLnPaymentState({
+          walletIds,
+          paymentHash,
+          journalId,
+        })
+        if (updateStateAfterSuccess instanceof Error) return updateStateAfterSuccess
+
         const walletTransaction = await getTransactionForWalletByJournalId({
           walletId: txSenderNotificationArgs.walletId,
           journalId,
