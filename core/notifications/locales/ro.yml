@@ -1,0 +1,62 @@
+_version: 1
+
+circle_time_frame.month: "acestă lună"
+circle_time_frame.all_time: ""
+
+circle_type.inner: "cerc interior"
+circle_type.outer: "cerc exterior"
+
+circle_grew.title: "Cercul tău Blink se extinde!"
+circle_grew.body: "Cineva tocmai a fost adăugat la %{circle_type} tău."
+
+circle_threshold_reached.inner.title: "Frumos cerc de prieteni! \U0001F919"
+circle_threshold_reached.inner.body: "Ai întâmpinat %{threshold} persoane pe Blink%{time_frame}. Continuă în același ritm!"
+
+circle_threshold_reached.outer.title: "Cercul exterior creste \U0001F4AA"
+circle_threshold_reached.outer.body: "Cercul tău exterior a ajuns la %{threshold} de persoane. Tu promovezi adoptarea Bitcoinului!"
+
+identity_verification_approved.title: "Identitatea ta a fost verificată!"
+identity_verification_approved.body: "Documentele pentru verificarea dumneavoastră au fost procesate."
+
+identity_verification_declined.reason.documents_not_clear: "documentele încărcate nu sunt clare"
+identity_verification_declined.reason.photo_not_clear: "Imaginea pe care ai trimis-o nu era clară."
+identity_verification_declined.reason.documents_do_not_match: "documentele pe care le-ai trimis nu se potrivesc cu selfie-ul tău și/sau cu informațiile pe care le-ai furnizat"
+identity_verification_declined.reason.documents_expired: "documentele pe care le-ai incarcat sunt expirate"
+identity_verification_declined.reason.documents_not_supported: "documentele pe care le-ai trimis nu sunt acceptate"
+identity_verification_declined.reason.other: "A apărut o eroare, vă rugăm să ne contactați."
+identity_verification_declined.title: "Identitatea ta nu a putut fi verificată!"
+identity_verification_declined.body: "Nu am putut procesa documentele dvs. din cauza %{reason}."
+
+identity_verification_review_started.title: "Verificarea ta este în proces!"
+identity_verification_review_started.body: "Am primit documentele dumneavoastră și le procesăm."
+
+transaction.intra_ledger_payment.title: "Tranzacție %{walletCurrency}"
+transaction.intra_ledger_payment.body: "Am trimis plata de %{formattedCurrencyAmount}"
+transaction.intra_ledger_payment.body_display_currency: "Am trimis plata de %{displayCurrencyAmount}  | %{formattedCurrencyAmount}"
+
+transaction.intra_ledger_receipt.title: "Tranzacție %{walletCurrency}"
+transaction.intra_ledger_receipt.body: "+%{formattedCurrencyAmount}"
+transaction.intra_ledger_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+transaction.onchain_payment.title: "Tranzacție %{walletCurrency}"
+transaction.onchain_payment.body_display_currency: "Trimis plată onchain de %{displayCurrencyAmount} | %{formattedCurrencyAmount} confirmată."
+transaction.onchain_payment.body: "Trimis plată onchain de %{formattedCurrencyAmount} confirmată."
+
+transaction.onchain_receipt.title: "Tranzacție %{walletCurrency}"
+transaction.onchain_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt.body: "+%{formattedCurrencyAmount}"
+
+transaction.lightning_receipt.title: "Tranzacție %{walletCurrency}"
+transaction.lightning_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.lightning_receipt.body: "+%{formattedCurrencyAmount}"
+
+transaction.onchain_receipt_pending.title: "Tranzacție %{walletCurrency} | În așteptare"
+transaction.onchain_receipt_pending.body_display_currency: "în așteptare +%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt_pending.body: "în așteptare +%{formattedCurrencyAmount}"
+
+transaction.paid_invoice.title: "Tranzacție %{walletCurrency}"
+transaction.paid_invoice.body: "+%{formattedCurrencyAmount}"
+transaction.paid_invoice.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+price_changed.title: "Bitcoin este în mișcare!"
+price_changed.body: "Bitcoin este în creștere cu %{percent_increase}% în ultima zi până la %{price}!"
