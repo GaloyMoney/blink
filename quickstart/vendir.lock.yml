@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(notifications): rename TransactionInfo -> TransactionOccurred
-        (#4151)'
-      sha: 678d8a67503f81f59ff370f705ce98f2c66eeb19
+      commitTitle: 'fix(core): add correct states for already-paid failed txns (#4146)'
+      sha: 50b5514b976b2943ce9174b1fa1c8df76cdad2c7
       tags:
-      - 0.20.104-3-g678d8a675
+      - 0.20.105-1-g50b5514b9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(notifications): rename TransactionInfo -> TransactionOccurred
-        (#4151)'
-      sha: 678d8a67503f81f59ff370f705ce98f2c66eeb19
+      commitTitle: 'fix(core): add correct states for already-paid failed txns (#4146)'
+      sha: 50b5514b976b2943ce9174b1fa1c8df76cdad2c7
       tags:
-      - 0.20.104-3-g678d8a675
+      - 0.20.105-1-g50b5514b9
     path: schemas/
   - git:
-      commitTitle: 'refactor(notifications): rename TransactionInfo -> TransactionOccurred
-        (#4151)'
-      sha: 678d8a67503f81f59ff370f705ce98f2c66eeb19
+      commitTitle: 'fix(core): add correct states for already-paid failed txns (#4146)'
+      sha: 50b5514b976b2943ce9174b1fa1c8df76cdad2c7
       tags:
-      - 0.20.104-3-g678d8a675
+      - 0.20.105-1-g50b5514b9
     path: gql/
   path: ./graphql
 kind: LockConfig
