@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): add bundleCompletionState tracing attribute (#4154)'
-      sha: 1666be34076ecc6ad208f4d5561f27bdf1f52e6f
+      commitTitle: 'test(core): unskip redis lock test (#4155)'
+      sha: e48bd064cc33404d7cebd19c8ff184a2904a87ac
       tags:
-      - 0.20.107-1-g1666be340
+      - 0.20.108-1-ge48bd064c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): add bundleCompletionState tracing attribute (#4154)'
-      sha: 1666be34076ecc6ad208f4d5561f27bdf1f52e6f
+      commitTitle: 'test(core): unskip redis lock test (#4155)'
+      sha: e48bd064cc33404d7cebd19c8ff184a2904a87ac
       tags:
-      - 0.20.107-1-g1666be340
+      - 0.20.108-1-ge48bd064c
     path: schemas/
   - git:
-      commitTitle: 'chore(core): add bundleCompletionState tracing attribute (#4154)'
-      sha: 1666be34076ecc6ad208f4d5561f27bdf1f52e6f
+      commitTitle: 'test(core): unskip redis lock test (#4155)'
+      sha: e48bd064cc33404d7cebd19c8ff184a2904a87ac
       tags:
-      - 0.20.107-1-g1666be340
+      - 0.20.108-1-ge48bd064c
     path: gql/
   path: ./graphql
 kind: LockConfig
