@@ -4,7 +4,7 @@ mod identity_verification_approved;
 mod identity_verification_declined;
 mod identity_verification_review_started;
 mod price_changed;
-mod transaction_info;
+mod transaction_occurred;
 
 use serde::{Deserialize, Serialize};
 
@@ -16,7 +16,7 @@ pub(super) use identity_verification_approved::*;
 pub(super) use identity_verification_declined::*;
 pub(super) use identity_verification_review_started::*;
 pub(super) use price_changed::*;
-pub(super) use transaction_info::*;
+pub(super) use transaction_occurred::*;
 
 pub enum DeepLink {
     None,
@@ -39,7 +39,7 @@ pub enum NotificationEventPayload {
     IdentityVerificationApproved(IdentityVerificationApproved),
     IdentityVerificationDeclined(IdentityVerificationDeclined),
     IdentityVerificationReviewStarted(IdentityVerificationReviewStarted),
-    TransactionInfo(TransactionInfo),
+    TransactionOccurred(TransactionOccurred),
     PriceChanged(PriceChanged),
 }
 
@@ -51,7 +51,7 @@ impl AsRef<dyn NotificationEvent> for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationApproved(event) => event,
             NotificationEventPayload::IdentityVerificationDeclined(event) => event,
             NotificationEventPayload::IdentityVerificationReviewStarted(event) => event,
-            NotificationEventPayload::TransactionInfo(event) => event,
+            NotificationEventPayload::TransactionOccurred(event) => event,
             NotificationEventPayload::PriceChanged(event) => event,
         }
     }
@@ -95,9 +95,9 @@ impl From<IdentityVerificationReviewStarted> for NotificationEventPayload {
     }
 }
 
-impl From<TransactionInfo> for NotificationEventPayload {
-    fn from(event: TransactionInfo) -> Self {
-        NotificationEventPayload::TransactionInfo(event)
+impl From<TransactionOccurred> for NotificationEventPayload {
+    fn from(event: TransactionOccurred) -> Self {
+        NotificationEventPayload::TransactionOccurred(event)
     }
 }
 

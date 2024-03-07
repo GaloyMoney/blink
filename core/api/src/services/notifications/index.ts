@@ -19,7 +19,7 @@ import {
   UpdateUserLocaleRequest,
   HandleNotificationEventRequest,
   NotificationEvent,
-  TransactionInfo,
+  TransactionOccurred,
 } from "./proto/notifications_pb"
 
 import * as notificationsGrpc from "./grpc-client"
@@ -216,14 +216,14 @@ export const NotificationsService = (): INotificationsService => {
       displayAmount.setMinorUnits(displayAmountMinor)
       displayAmount.setCurrencyCode(displayCurrency)
 
-      const tx = new TransactionInfo()
+      const tx = new TransactionOccurred()
       tx.setUserId(recipient.userId)
       tx.setType(type)
       tx.setSettlementAmount(settlementAmount)
       tx.setDisplayAmount(displayAmount)
 
       const event = new NotificationEvent()
-      event.setTransaction(tx)
+      event.setTransactionOccurred(tx)
 
       const request = new HandleNotificationEventRequest()
       request.setEvent(event)

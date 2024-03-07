@@ -630,10 +630,15 @@ export class NotificationEvent extends jspb.Message {
     getIdentityVerificationReviewStarted(): IdentityVerificationReviewStarted | undefined;
     setIdentityVerificationReviewStarted(value?: IdentityVerificationReviewStarted): NotificationEvent;
 
-    hasTransaction(): boolean;
-    clearTransaction(): void;
-    getTransaction(): TransactionInfo | undefined;
-    setTransaction(value?: TransactionInfo): NotificationEvent;
+    hasTransactionOccurred(): boolean;
+    clearTransactionOccurred(): void;
+    getTransactionOccurred(): TransactionOccurred | undefined;
+    setTransactionOccurred(value?: TransactionOccurred): NotificationEvent;
+
+    hasPrice(): boolean;
+    clearPrice(): void;
+    getPrice(): PriceChanged | undefined;
+    setPrice(value?: PriceChanged): NotificationEvent;
 
     getDataCase(): NotificationEvent.DataCase;
 
@@ -654,7 +659,8 @@ export namespace NotificationEvent {
         identityVerificationApproved?: IdentityVerificationApproved.AsObject,
         identityVerificationDeclined?: IdentityVerificationDeclined.AsObject,
         identityVerificationReviewStarted?: IdentityVerificationReviewStarted.AsObject,
-        transaction?: TransactionInfo.AsObject,
+        transactionOccurred?: TransactionOccurred.AsObject,
+        price?: PriceChanged.AsObject,
     }
 
     export enum DataCase {
@@ -664,7 +670,8 @@ export namespace NotificationEvent {
         IDENTITY_VERIFICATION_APPROVED = 3,
         IDENTITY_VERIFICATION_DECLINED = 4,
         IDENTITY_VERIFICATION_REVIEW_STARTED = 5,
-        TRANSACTION = 6,
+        TRANSACTION_OCCURRED = 6,
+        PRICE = 7,
     }
 
 }
@@ -790,33 +797,33 @@ export namespace IdentityVerificationReviewStarted {
     }
 }
 
-export class TransactionInfo extends jspb.Message { 
+export class TransactionOccurred extends jspb.Message { 
     getUserId(): string;
-    setUserId(value: string): TransactionInfo;
+    setUserId(value: string): TransactionOccurred;
     getType(): TransactionType;
-    setType(value: TransactionType): TransactionInfo;
+    setType(value: TransactionType): TransactionOccurred;
 
     hasSettlementAmount(): boolean;
     clearSettlementAmount(): void;
     getSettlementAmount(): Money | undefined;
-    setSettlementAmount(value?: Money): TransactionInfo;
+    setSettlementAmount(value?: Money): TransactionOccurred;
 
     hasDisplayAmount(): boolean;
     clearDisplayAmount(): void;
     getDisplayAmount(): Money | undefined;
-    setDisplayAmount(value?: Money): TransactionInfo;
+    setDisplayAmount(value?: Money): TransactionOccurred;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): TransactionInfo.AsObject;
-    static toObject(includeInstance: boolean, msg: TransactionInfo): TransactionInfo.AsObject;
+    toObject(includeInstance?: boolean): TransactionOccurred.AsObject;
+    static toObject(includeInstance: boolean, msg: TransactionOccurred): TransactionOccurred.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: TransactionInfo, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): TransactionInfo;
-    static deserializeBinaryFromReader(message: TransactionInfo, reader: jspb.BinaryReader): TransactionInfo;
+    static serializeBinaryToWriter(message: TransactionOccurred, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TransactionOccurred;
+    static deserializeBinaryFromReader(message: TransactionOccurred, reader: jspb.BinaryReader): TransactionOccurred;
 }
 
-export namespace TransactionInfo {
+export namespace TransactionOccurred {
     export type AsObject = {
         userId: string,
         type: TransactionType,
@@ -845,6 +852,35 @@ export namespace Money {
     export type AsObject = {
         currencyCode: string,
         minorUnits: number,
+    }
+}
+
+export class PriceChanged extends jspb.Message { 
+
+    hasPriceOfOneBitcoin(): boolean;
+    clearPriceOfOneBitcoin(): void;
+    getPriceOfOneBitcoin(): Money | undefined;
+    setPriceOfOneBitcoin(value?: Money): PriceChanged;
+    getDirection(): PriceChangeDirection;
+    setDirection(value: PriceChangeDirection): PriceChanged;
+    getPriceChangePercentage(): number;
+    setPriceChangePercentage(value: number): PriceChanged;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): PriceChanged.AsObject;
+    static toObject(includeInstance: boolean, msg: PriceChanged): PriceChanged.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: PriceChanged, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): PriceChanged;
+    static deserializeBinaryFromReader(message: PriceChanged, reader: jspb.BinaryReader): PriceChanged;
+}
+
+export namespace PriceChanged {
+    export type AsObject = {
+        priceOfOneBitcoin?: Money.AsObject,
+        direction: PriceChangeDirection,
+        priceChangePercentage: number,
     }
 }
 
@@ -886,4 +922,9 @@ export enum TransactionType {
     ONCHAIN_PAYMENT = 4,
     LIGHTNING_RECEIPT = 5,
     LIGHTNING_PAYMENT = 6,
+}
+
+export enum PriceChangeDirection {
+    UP = 0,
+    DOWN = 1,
 }
