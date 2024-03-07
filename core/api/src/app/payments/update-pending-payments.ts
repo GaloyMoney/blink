@@ -379,7 +379,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       if (!displayAmount || !displayFee || !displayCurrency) {
         return new MissingExpectedDisplayAmountsForTransactionError()
       }
-      const reimbursed = reimburseFee({
+      const reimbursed = await reimburseFee({
         paymentFlow,
         senderDisplayAmount: displayAmount,
         senderDisplayCurrency: displayCurrency,
