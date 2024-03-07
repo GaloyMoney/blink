@@ -32,7 +32,7 @@ const OnChainPaymentSendMutation = GT.Field<
     input: {
       walletId: WalletId | InputValidationError
       address: OnChainAddress | InputValidationError
-      amount: number
+      amount: number | InputValidationError
       memo: Memo | InputValidationError | null
       speed: PayoutSpeed | InputValidationError
     }
@@ -62,6 +62,10 @@ const OnChainPaymentSendMutation = GT.Field<
 
     if (speed instanceof Error) {
       return { errors: [{ message: speed.message }] }
+    }
+
+    if (amount instanceof Error) {
+      return { errors: [{ message: amount.message }] }
     }
 
     const result = await Payments.payOnChainByWalletIdForBtcWallet({

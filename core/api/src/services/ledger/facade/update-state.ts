@@ -67,6 +67,7 @@ export const updateLnPaymentState = async ({
           "walletIds, determine the transaction state type, and manually update " +
           "transactions with this '_journal' and 'related_journal' to the correct state.",
         ["error.actionRequired.paymentHash"]: paymentHash,
+        ["error.actionRequired.journalId"]: journalId,
         ["error.actionRequired.walletIds"]: JSON.stringify(walletIds),
       },
     })

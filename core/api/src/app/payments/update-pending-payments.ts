@@ -218,7 +218,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
     const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
     if (senderUser instanceof Error) return senderUser
 
-    const txSenderNotificationArgs = {
+    const notificationRecipient = {
       accountId: senderWallet.accountId,
       walletId,
       userId: senderUser.id,
@@ -263,12 +263,6 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         paymentLogger.error({ error: settled }, "no transaction to update")
         return settled
       }
-      const updateStateAfterSettle = await LedgerFacade.updateLnPaymentState({
-        walletIds,
-        paymentHash,
-        journalId,
-      })
-      if (updateStateAfterSettle instanceof Error) return updateStateAfterSettle
 
       if (
         status === PaymentStatus.Failed ||
@@ -290,24 +284,13 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
             return setErrorCritical(voided)
           }
 
-          const updateStateAfterRevert = await LedgerFacade.updateLnPaymentState({
+          return finalizePaymentUpdate({
+            result: voided,
             walletIds,
             paymentHash,
             journalId,
+            notificationRecipient,
           })
-          if (updateStateAfterRevert instanceof Error) return updateStateAfterRevert
-
-          const walletTransaction = await getTransactionForWalletByJournalId({
-            walletId: txSenderNotificationArgs.walletId,
-            journalId,
-          })
-          if (walletTransaction instanceof Error) return walletTransaction
-          NotificationsService().sendTransaction({
-            recipient: txSenderNotificationArgs,
-            transaction: walletTransaction,
-          })
-
-          return voided
         }
 
         const reimbursed = await reimburseFailedUsdPayment({
@@ -321,24 +304,13 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
           return setErrorCritical(reimbursed)
         }
 
-        const updateStateAfterUsdRevert = await LedgerFacade.updateLnPaymentState({
+        return finalizePaymentUpdate({
+          result: reimbursed,
           walletIds,
           paymentHash,
           journalId,
+          notificationRecipient,
         })
-        if (updateStateAfterUsdRevert instanceof Error) return updateStateAfterUsdRevert
-
-        const walletTransaction = await getTransactionForWalletByJournalId({
-          walletId: txSenderNotificationArgs.walletId,
-          journalId,
-        })
-        if (walletTransaction instanceof Error) return walletTransaction
-        NotificationsService().sendTransaction({
-          recipient: txSenderNotificationArgs,
-          transaction: walletTransaction,
-        })
-
-        return reimbursed
       }
 
       paymentLogger.info(
@@ -355,24 +327,20 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       }
 
       if (pendingPayment.feeKnownInAdvance) {
-        const walletTransaction = await getTransactionForWalletByJournalId({
-          walletId: txSenderNotificationArgs.walletId,
+        return finalizePaymentUpdate({
+          result: true,
+          walletIds,
+          paymentHash,
           journalId,
+          notificationRecipient,
         })
-        if (walletTransaction instanceof Error) return walletTransaction
-        NotificationsService().sendTransaction({
-          recipient: txSenderNotificationArgs,
-          transaction: walletTransaction,
-        })
-
-        return true
       }
 
       const { displayAmount, displayFee, displayCurrency } = pendingPayment
       if (!displayAmount || !displayFee || !displayCurrency) {
         return new MissingExpectedDisplayAmountsForTransactionError()
       }
-      const reimbursed = reimburseFee({
+      const reimbursed = await reimburseFee({
         paymentFlow,
         senderDisplayAmount: displayAmount,
         senderDisplayCurrency: displayCurrency,
@@ -382,24 +350,13 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       })
       if (reimbursed instanceof Error) return reimbursed
 
-      const updateStateAfterReimburse = await LedgerFacade.updateLnPaymentState({
+      return finalizePaymentUpdate({
+        result: reimbursed,
         walletIds,
         paymentHash,
         journalId,
+        notificationRecipient,
       })
-      if (updateStateAfterReimburse instanceof Error) return updateStateAfterReimburse
-
-      const walletTransaction = await getTransactionForWalletByJournalId({
-        walletId: txSenderNotificationArgs.walletId,
-        journalId,
-      })
-      if (walletTransaction instanceof Error) return walletTransaction
-      NotificationsService().sendTransaction({
-        recipient: txSenderNotificationArgs,
-        transaction: walletTransaction,
-      })
-
-      return reimbursed
     })
   },
 })
@@ -457,4 +414,38 @@ const reconstructPendingPaymentFlow = async <
     ledgerTxn: payment,
     senderAccountId: senderAccount.id,
   })
+}
+
+const finalizePaymentUpdate = async ({
+  result,
+  walletIds,
+  paymentHash,
+  journalId,
+  notificationRecipient,
+}: {
+  result: true | ApplicationError
+  walletIds: WalletId[]
+  paymentHash: PaymentHash
+  journalId: LedgerJournalId
+  notificationRecipient: NotificationRecipient
+}) => {
+  const { walletId } = notificationRecipient
+  const updateJournalTxnsState = await LedgerFacade.updateLnPaymentState({
+    walletIds,
+    paymentHash,
+    journalId,
+  })
+  if (updateJournalTxnsState instanceof Error) return updateJournalTxnsState
+
+  const walletTransaction = await getTransactionForWalletByJournalId({
+    walletId,
+    journalId,
+  })
+  if (walletTransaction instanceof Error) return walletTransaction
+  NotificationsService().sendTransaction({
+    recipient: notificationRecipient,
+    transaction: walletTransaction,
+  })
+
+  return result
 }
