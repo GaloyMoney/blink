@@ -1054,23 +1054,23 @@ cargo.rust_library(
 
 alias(
     name = "clap",
-    actual = ":clap-4.5.1",
+    actual = ":clap-4.5.2",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "clap-4.5.1.crate",
-    sha256 = "c918d541ef2913577a0f9566e9ce27cb35b6df072075769e0b26cb5a554520da",
-    strip_prefix = "clap-4.5.1",
-    urls = ["https://crates.io/api/v1/crates/clap/4.5.1/download"],
+    name = "clap-4.5.2.crate",
+    sha256 = "b230ab84b0ffdf890d5a10abdbc8b83ae1c4918275daea1ab8801f71536b2651",
+    strip_prefix = "clap-4.5.2",
+    urls = ["https://crates.io/api/v1/crates/clap/4.5.2/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "clap-4.5.1",
-    srcs = [":clap-4.5.1.crate"],
+    name = "clap-4.5.2",
+    srcs = [":clap-4.5.2.crate"],
     crate = "clap",
-    crate_root = "clap-4.5.1.crate/src/lib.rs",
+    crate_root = "clap-4.5.2.crate/src/lib.rs",
     edition = "2021",
     features = [
         "color",
@@ -1085,24 +1085,24 @@ cargo.rust_library(
     ],
     visibility = [],
     deps = [
-        ":clap_builder-4.5.1",
+        ":clap_builder-4.5.2",
         ":clap_derive-4.5.0",
     ],
 )
 
 http_archive(
-    name = "clap_builder-4.5.1.crate",
-    sha256 = "9f3e7391dad68afb0c2ede1bf619f579a3dc9c2ec67f089baa397123a2f3d1eb",
-    strip_prefix = "clap_builder-4.5.1",
-    urls = ["https://crates.io/api/v1/crates/clap_builder/4.5.1/download"],
+    name = "clap_builder-4.5.2.crate",
+    sha256 = "ae129e2e766ae0ec03484e609954119f123cc1fe650337e155d03b022f24f7b4",
+    strip_prefix = "clap_builder-4.5.2",
+    urls = ["https://crates.io/api/v1/crates/clap_builder/4.5.2/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "clap_builder-4.5.1",
-    srcs = [":clap_builder-4.5.1.crate"],
+    name = "clap_builder-4.5.2",
+    srcs = [":clap_builder-4.5.2.crate"],
     crate = "clap_builder",
-    crate_root = "clap_builder-4.5.1.crate/src/lib.rs",
+    crate_root = "clap_builder-4.5.2.crate/src/lib.rs",
     edition = "2021",
     features = [
         "color",
@@ -8885,7 +8885,7 @@ cargo.rust_binary(
         ":async-graphql-axum-6.0.11",
         ":axum-0.6.20",
         ":chrono-0.4.34",
-        ":clap-4.5.1",
+        ":clap-4.5.2",
         ":derive_builder-0.13.1",
         ":futures-0.3.30",
         ":google-fcm1-5.0.4+20240227",
