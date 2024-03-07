@@ -11,6 +11,9 @@ export const LnPaymentState = {
   SuccessWithReimbursementAfterRetry: "ln_payment.success_with_reimbursement_after_retry",
   Failed: "ln_payment.failed",
   FailedAfterRetry: "ln_payment.failed_after_retry",
+  FailedAfterSuccess: "ln_payment.failed_after_success",
+  FailedAfterSuccessWithReimbursement:
+    "ln_payment.failed_after_success_with_reimbursement",
 } as const
 
 const count = <T>({ arr, valueToCount }: { arr: T[]; valueToCount: T }): number =>
@@ -20,8 +23,10 @@ const count = <T>({ arr, valueToCount }: { arr: T[]; valueToCount: T }): number 
 
 const sum = <T>({ arr, propertyName }: { arr: T[]; propertyName: keyof T }): number =>
   arr.reduce((sum, currentItem) => {
-    return sum + Number(currentItem[propertyName])
+    return sum + Number(currentItem[propertyName] || 0)
   }, 0)
+
+const isDebit = (txn: LedgerTransaction<WalletCurrency>) => (txn.debit || 0) > 0
 
 const checkTxns = (
   txns: LedgerTransaction<WalletCurrency>[],
@@ -42,11 +47,15 @@ const checkTxns = (
 }
 
 export const LnPaymentStateDeterminator = (
-  txns: LedgerTransaction<WalletCurrency>[],
+  unsortedTxns: LedgerTransaction<WalletCurrency>[],
 ): LnPaymentStateDeterminator => {
   const determine = (): LnPaymentState | InvalidLnPaymentTxnsBundleError => {
-    const check = checkTxns(txns)
+    const check = checkTxns(unsortedTxns)
     if (check instanceof Error) return check
+
+    const txns = unsortedTxns.sort(
+      (txA, txB) => txB.timestamp.getTime() - txA.timestamp.getTime(),
+    )
 
     const txPendingStates = txns.map((txn) => txn.pendingConfirmation)
     if (txPendingStates.includes(true)) {
@@ -70,17 +79,23 @@ export const LnPaymentStateDeterminator = (
       valueToCount: LedgerTransactionType.Payment,
     })
     if (txTypes.includes(LedgerTransactionType.LnFeeReimbursement)) {
-      const txReimburseCount = count({
-        arr: txTypes,
-        valueToCount: LedgerTransactionType.LnFeeReimbursement,
-      })
+      const reimburseTxn = txns.find(
+        (tx) => tx.type === LedgerTransactionType.LnFeeReimbursement,
+      )
+      if (reimburseTxn === undefined) {
+        return new InvalidLnPaymentTxnsBundleError("Impossible state")
+      }
+
+      const txnsAfterReimburse = txns.filter(
+        (tx) => tx.timestamp > reimburseTxn.timestamp,
+      )
       switch (true) {
-        case txPaymentCount === 1 && txReimburseCount === 1:
+        case txPaymentCount === 1:
           return LnPaymentState.SuccessWithReimbursement
-        case txPaymentCount > 1 && txReimburseCount === 1:
-          return LnPaymentState.SuccessWithReimbursementAfterRetry
+        case !!txnsAfterReimburse.length:
+          return LnPaymentState.FailedAfterSuccessWithReimbursement
         default:
-          return new InvalidLnPaymentTxnsBundleError()
+          return LnPaymentState.SuccessWithReimbursementAfterRetry
       }
     }
 
@@ -98,7 +113,10 @@ export const LnPaymentStateDeterminator = (
         return LnPaymentState.Failed
 
       case txns.length % 2 === 1:
-        return LnPaymentState.SuccessAfterRetry
+        if (isDebit(txns[0])) {
+          return LnPaymentState.SuccessAfterRetry
+        }
+        return LnPaymentState.FailedAfterSuccess
 
       case txns.length % 2 === 0 && (sumTxAmounts === 0 || failedUsdPayment):
         return LnPaymentState.FailedAfterRetry

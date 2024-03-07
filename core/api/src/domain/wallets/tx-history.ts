@@ -241,6 +241,8 @@ const statusFromTxn = (txn: LedgerTransaction<WalletCurrency>): TxStatus => {
 
     case LnPaymentState.Failed:
     case LnPaymentState.FailedAfterRetry:
+    case LnPaymentState.FailedAfterSuccess:
+    case LnPaymentState.FailedAfterSuccessWithReimbursement:
       return TxStatus.Failure
   }
 }
