@@ -104,7 +104,7 @@ async fn multi_user_event_dispatch(mut current_job: CurrentJob) -> Result<(), Jo
             let mut tx = pool.begin().await?;
             if let Some(next_user_ids) = next_user_ids {
                 let data = MultiUserEventDispatchData {
-                    user_ids: next_user_ids.iter().cloned().collect(),
+                    user_ids: next_user_ids.to_vec(),
                     payload: data.payload.clone(),
                     tracing_data: tracing::extract_tracing_data(),
                 };
