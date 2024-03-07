@@ -7,12 +7,25 @@ import {
 
 import { env } from "@/env"
 
-export const { getClient } = registerApolloClient(() => {
+type ClientOptions = {
+  token?: string
+}
+
+const createApolloClient = (options?: ClientOptions) => {
   return new NextSSRApolloClient({
     cache: new NextSSRInMemoryCache(),
     link: new HttpLink({
       uri: env.CORE_GQL_URL_INTRANET,
       fetchOptions: { cache: "no-store" },
+      headers: {
+        ...(options?.token ? { ["Oauth2-Token"]: options.token } : {}),
+      },
     }),
   })
-})
+}
+
+export const apollo = {
+  authenticate: (token: string) =>
+    registerApolloClient(() => createApolloClient({ token })),
+  unAuthenticate: () => registerApolloClient(() => createApolloClient()),
+}

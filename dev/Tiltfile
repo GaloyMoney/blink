@@ -95,12 +95,13 @@ pay_env = {
   "NEXT_PUBLIC_CORE_GQL_URL": "http://localhost:4455/graphql",
   "NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL": "ws://localhost:4455/graphqlws",
   "NEXT_PUBLIC_PAY_DOMAIN": "localhost:3002",
+  "NEXTAUTH_URL":"http://localhost:3002"
 }
 local_resource(
     "pay",
     labels = ["apps"],
     cmd = "buck2 build {}".format(pay_target),
-    serve_cmd = "buck2 run {}".format(pay_target),
+    serve_cmd = ". .envs/pay.env && buck2 run {}".format(pay_target),
     env = pay_env,
     serve_env = pay_env,
     readiness_probe = probe(
@@ -114,7 +115,8 @@ local_resource(
     allow_parallel = True,
     resource_deps = [
         "api",
-        "api-ws-server"
+        "api-ws-server",
+        "hydra-pay"
     ],
     links = [
         link("http://localhost:3002", "pay"),
@@ -201,6 +203,25 @@ local_resource(
   ],
   allow_parallel = True,
   auto_init = run_apps,
+  resource_deps = [
+    "hydra",
+    "api",
+  ]
+)
+
+local_resource(
+  name='hydra-pay',
+  labels = ['apps'],
+  cmd=[
+    'buck2',
+    'run',
+    '//dev:setup-hydra-client',
+    '--',
+    'pay',
+    'authorization_code,refresh_token',
+    'http://localhost:3002/api/auth/callback/blink',
+  ],
+  allow_parallel = True,
   resource_deps = [
     "hydra",
     "api",

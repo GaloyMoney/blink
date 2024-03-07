@@ -2,7 +2,7 @@ import React from "react"
 
 import { ApolloQueryResult } from "@apollo/client"
 
-import { getClient } from "../ssr-client"
+import { apollo } from "../ssr-client"
 
 import { defaultCurrencyMetadata } from "../currency-metadata"
 
@@ -24,10 +24,13 @@ type Props = {
 export default async function UsernameLayout({ children, params }: Props) {
   let response: ApolloQueryResult<AccountDefaultWalletsQuery> | { errorMessage: string }
   try {
-    response = await getClient().query<AccountDefaultWalletsQuery>({
-      query: AccountDefaultWalletsDocument,
-      variables: { username: params.username },
-    })
+    response = await apollo
+      .unAuthenticate()
+      .getClient()
+      .query<AccountDefaultWalletsQuery>({
+        query: AccountDefaultWalletsDocument,
+        variables: { username: params.username },
+      })
   } catch (err) {
     console.error("error in username-layout.tsx", err)
     if (err instanceof Error) {

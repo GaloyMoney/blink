@@ -10,6 +10,8 @@ import { OverlayTrigger, Tooltip } from "react-bootstrap"
 
 import { useState } from "react"
 
+import { signIn, useSession } from "next-auth/react"
+
 import CurrencyDropdown from "../currency/currency-dropdown"
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTrigger } from "../sheet"
 import PinToHomescreen from "../pin-to-homescreen"
@@ -32,6 +34,9 @@ function updateCurrencyAndReload(newDisplayCurrency: string): void {
 export function SideBar({ username }: { username: string }) {
   const router = useRouter()
   const pathName = usePathname()
+  const session = useSession()
+  const signedInUser = session?.data?.userData?.me
+
   const [copied, setCopied] = useState(false)
   const [memoChecked, setMemoChecked] = useState(
     typeof window !== "undefined"
@@ -96,11 +101,30 @@ export function SideBar({ username }: { username: string }) {
             <span className="block w-8 h-0.5 bg-black"></span>
           </button>
         </SheetTrigger>
-        <SheetContent onOpenAutoFocus={(e) => e.preventDefault()}>
+        <SheetContent
+          className="overflow-y-auto"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <SheetHeader>
-            <p className="text-xl font-semibold text-left">Pay {username}</p>
+            <p className="text-xl font-semibold text-left m-0">Pay {username}</p>
           </SheetHeader>
           <div className="grid gap-3 py-3  ">
+            <div
+              className="flex flex-col gap-0 bg-slate-200 p-2 m-0 rounded-md"
+              onClick={() => {
+                if (!signedInUser) signIn("blink")
+              }}
+            >
+              {signedInUser ? (
+                <>
+                  <p className="text-md font-semibold mb-1">Signed in as</p>
+                  <p className="text-sm mb-0">{signedInUser.username}</p>
+                </>
+              ) : (
+                <p className="text-md font-semibold mb-1">Sign in</p>
+              )}
+            </div>
+
             {Links.map((link) =>
               pathName === link.href ? (
                 <span
@@ -169,8 +193,8 @@ export function SideBar({ username }: { username: string }) {
                 </button>
               </OverlayTrigger>
             </div>
-            <div className="flex flex-row justify-between align-middle align-content-center bg-slate-100 p-2 m-0 rounded-md">
-              <p className="m-0 ">Show Memo</p>
+            <div className="flex flex-row justify-between align-middle align-content-center m-0 rounded-md">
+              <p className="mb-4 font-semibold">Memo</p>
               <Switch checked={memoChecked} onCheckedChange={handleMemoShow} />
             </div>
             <div className="flex flex-col items-center justify-center gap-3 mt-2">
