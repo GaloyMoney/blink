@@ -27,7 +27,7 @@ describe("LockService", () => {
       expect(result).toEqual(resultFromLock)
     })
 
-    it.skip("fails for multiple calls on locked resource", async () => {
+    it("fails for multiple calls on locked resource", async () => {
       const walletId = randomWalletId()
 
       const slowLock = lockService.lockWalletId(walletId, async () => {
