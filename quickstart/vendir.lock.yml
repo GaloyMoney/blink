@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): add correct states for already-paid failed txns (#4146)'
-      sha: 50b5514b976b2943ce9174b1fa1c8df76cdad2c7
+      commitTitle: 'fix(core): move pending ln-state-update to final return (#4143)...'
+      sha: a4ed50101ac5b5e7f8120ed615b15176168937b7
       tags:
-      - 0.20.105-1-g50b5514b9
+      - 0.20.106-3-ga4ed50101
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): add correct states for already-paid failed txns (#4146)'
-      sha: 50b5514b976b2943ce9174b1fa1c8df76cdad2c7
+      commitTitle: 'fix(core): move pending ln-state-update to final return (#4143)...'
+      sha: a4ed50101ac5b5e7f8120ed615b15176168937b7
       tags:
-      - 0.20.105-1-g50b5514b9
+      - 0.20.106-3-ga4ed50101
     path: schemas/
   - git:
-      commitTitle: 'fix(core): add correct states for already-paid failed txns (#4146)'
-      sha: 50b5514b976b2943ce9174b1fa1c8df76cdad2c7
+      commitTitle: 'fix(core): move pending ln-state-update to final return (#4143)...'
+      sha: a4ed50101ac5b5e7f8120ed615b15176168937b7
       tags:
-      - 0.20.105-1-g50b5514b9
+      - 0.20.106-3-ga4ed50101
     path: gql/
   path: ./graphql
 kind: LockConfig
