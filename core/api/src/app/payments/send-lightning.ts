@@ -682,6 +682,8 @@ const lockedPaymentViaLnSteps = async ({
 
   addAttributesToCurrentSpan({
     "payment.context": "executePaymentViaLn",
+    "payment.request": decodedInvoice.paymentRequest,
+    "payment.request.description": decodedInvoice.description,
     "payment.request.destination": decodedInvoice.destination,
     "payment.request.paymentHash": paymentHash,
     "payment.btcAmount": paymentFlow.btcPaymentAmount.amount.toString(),
