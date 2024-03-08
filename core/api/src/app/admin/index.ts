@@ -1,6 +1,5 @@
 export * from "./update-user-phone"
-export * from "./send-admin-push-notification"
-
+export * from "./trigger-marketing-notification"
 import { checkedToAccountId, checkedToUserId, checkedToUsername } from "@/domain/accounts"
 import { IdentityRepository } from "@/services/kratos"
 import { AccountsRepository, UsersRepository } from "@/services/mongoose"

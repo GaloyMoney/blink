@@ -31,19 +31,6 @@ input AccountUpdateStatusInput {
   status: AccountStatus!
 }
 
-input AdminPushNotificationSendInput {
-  accountId: String!
-  body: String!
-  data: Object
-  notificationCategory: NotificationCategory
-  title: String!
-}
-
-type AdminPushNotificationSendPayload {
-  errors: [Error!]!
-  success: Boolean
-}
-
 """
 Accounts are core to the Galoy architecture. they have users, and own wallets
 """
@@ -142,6 +129,9 @@ type Coordinates {
   latitude: Float!
   longitude: Float!
 }
+
+"""A CCA2 country code (ex US, FR, etc)"""
+scalar CountryCode
 
 """Display currency of an account"""
 scalar DisplayCurrency
@@ -266,6 +256,12 @@ enum LnPaymentStatus {
 
 scalar LnPubkey
 
+input LocalizedPushContentInput {
+  body: String!
+  language: Language!
+  title: String!
+}
+
 """Text field in a lightning payment transaction"""
 scalar Memo
 
@@ -301,15 +297,11 @@ type MerchantPayload {
 type Mutation {
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
-  adminPushNotificationSend(input: AdminPushNotificationSendInput!): AdminPushNotificationSendPayload!
   merchantMapDelete(input: MerchantMapDeleteInput!): MerchantPayload!
   merchantMapValidate(input: MerchantMapValidateInput!): MerchantPayload!
+  triggerMarketingNotification(input: TriggerMarketingNotificationInput!): TriggerMarketingNotificationPayload!
   userUpdatePhone(input: UserUpdatePhoneInput!): AccountDetailPayload!
 }
-
-scalar NotificationCategory
-
-scalar Object
 
 """An address for an on-chain bitcoin destination"""
 scalar OnChainAddress
@@ -462,6 +454,18 @@ type TransactionEdge {
 
   """The item at the end of the edge"""
   node: Transaction!
+}
+
+input TriggerMarketingNotificationInput {
+  deepLink: String
+  localizedPushContent: [LocalizedPushContentInput!]!
+  phoneCountryCodesFilter: [CountryCode]
+  userIdsFilter: [ID!]
+}
+
+type TriggerMarketingNotificationPayload {
+  errors: [Error!]!
+  success: Boolean!
 }
 
 enum TxDirection {
