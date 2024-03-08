@@ -165,6 +165,11 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
     const decodedInvoice =
       lookedUpDecodedInvoice instanceof Error ? undefined : lookedUpDecodedInvoice
 
+    addAttributesToCurrentSpan({
+      "payment.request": paymentRequest,
+      "payment.request.description": decodedInvoice?.description,
+    })
+
     const lndService = LndService()
     if (lndService instanceof Error) return lndService
     const lnPaymentLookup = await lndService.lookupPayment({
