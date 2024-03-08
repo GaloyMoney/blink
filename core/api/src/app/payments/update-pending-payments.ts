@@ -22,7 +22,7 @@ import {
   MultiplePendingPaymentsForHashError,
 } from "@/domain/ledger"
 import { MissingPropsInTransactionForPaymentFlowError } from "@/domain/payments"
-import { ErrorLevel, setErrorCritical, WalletCurrency } from "@/domain/shared"
+import { setErrorCritical, WalletCurrency } from "@/domain/shared"
 
 import { LedgerService, getNonEndUserWalletIds } from "@/services/ledger"
 import * as LedgerFacade from "@/services/ledger/facade"
@@ -154,7 +154,6 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
     if (persistedLookup instanceof Error) {
       recordExceptionInCurrentSpan({
         error: persistedLookup,
-        level: ErrorLevel.Critical,
       })
     } else {
       ;({ paymentRequest, sentFromPubkey } = persistedLookup)
