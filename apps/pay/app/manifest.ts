@@ -4,6 +4,8 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "POS Cash Register",
     short_name: "Cash Register",
+    theme_color: "#fc5805",
+    background_color: "#fff",
     description:
       "A Bitcoin POS cash register application that connects with the merchant's wallet",
     start_url: "/setuppwa/",
@@ -14,7 +16,7 @@ export default function manifest(): MetadataRoute.Manifest {
       {
         src: "/icon-POS.png",
         sizes: "any",
-        type: "image/x-icon",
+        type: "image/png",
       },
     ],
   }
