@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(notifications): marketing notification triggered (#4145)...'
-      sha: 9d5d7ef7190b7ae9c51f888d18f0caee7a1b5b45
+      commitTitle: 'refactor(core): separate payments lock steps into function (#4156)...'
+      sha: cef16ff1bc74fbcb32a0d0bf99e94bd2b75271e0
       tags:
-      - 0.20.109-2-g9d5d7ef71
+      - 0.20.110-2-gcef16ff1b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(notifications): marketing notification triggered (#4145)...'
-      sha: 9d5d7ef7190b7ae9c51f888d18f0caee7a1b5b45
+      commitTitle: 'refactor(core): separate payments lock steps into function (#4156)...'
+      sha: cef16ff1bc74fbcb32a0d0bf99e94bd2b75271e0
       tags:
-      - 0.20.109-2-g9d5d7ef71
+      - 0.20.110-2-gcef16ff1b
     path: schemas/
   - git:
-      commitTitle: 'feat(notifications): marketing notification triggered (#4145)...'
-      sha: 9d5d7ef7190b7ae9c51f888d18f0caee7a1b5b45
+      commitTitle: 'refactor(core): separate payments lock steps into function (#4156)...'
+      sha: cef16ff1bc74fbcb32a0d0bf99e94bd2b75271e0
       tags:
-      - 0.20.109-2-g9d5d7ef71
+      - 0.20.110-2-gcef16ff1b
     path: gql/
   path: ./graphql
 kind: LockConfig
