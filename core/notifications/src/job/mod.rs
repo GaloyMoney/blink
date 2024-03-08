@@ -9,7 +9,7 @@ use tracing::instrument;
 
 use std::collections::HashMap;
 
-use job_executor::JobExecutor;
+use job_executor::{JobExecutor, JobResult};
 
 use crate::{
     email_executor::EmailExecutor, notification_event::*, primitives::GaloyUserId,
@@ -72,8 +72,7 @@ async fn multi_user_event_dispatch(
                 }
                 spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
             }
-            tx.commit().await?;
-            Ok::<_, JobError>(data)
+            Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
         })
         .await?;
     Ok(())
