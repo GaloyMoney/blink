@@ -1,6 +1,5 @@
 "use client"
 import React, { useEffect } from "react"
-import Container from "react-bootstrap/Container"
 import Image from "react-bootstrap/Image"
 
 import Head from "next/head"
@@ -52,7 +51,7 @@ function ReceivePayment({ searchParams }: Props) {
   }
 
   return username ? (
-    <Container className={styles.paymentContainer}>
+    <div className={styles.paymentContainer}>
       <Head>
         <link
           rel="manifest"
@@ -60,7 +59,6 @@ function ReceivePayment({ searchParams }: Props) {
           id="manifest"
         />
       </Head>
-
       <div className={styles.usernameContainer}>
         {state.createdInvoice && (
           <button onClick={() => dispatch({ type: ACTIONS.BACK })}>
@@ -85,7 +83,7 @@ function ReceivePayment({ searchParams }: Props) {
       ) : (
         <LoadingComponent />
       )}
-    </Container>
+    </div>
   ) : null
 }
 

@@ -1,5 +1,5 @@
 "use client"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import Image from "next/image"
 
 import { SideBar } from "../sidebar"
@@ -13,7 +13,7 @@ type Props = {
 
 const UsernameLayoutContainer = ({ children, username }: Props) => {
   const router = useRouter()
-
+  const pathName = usePathname()
   const navigateHome = () => {
     let pathname = "/"
     if (username) pathname = `/${username}`
@@ -30,10 +30,13 @@ const UsernameLayoutContainer = ({ children, username }: Props) => {
           <button className={styles.navHome} onClick={navigateHome}>
             <Image src="/icons/blink-logo-icon.svg" alt="logo" width="50" height="50" />
           </button>
+          {pathName === `/${username}` && (
+            <h6 className={styles.username}>Pay {username}</h6>
+          )}
           <SideBar username={username}></SideBar>
         </div>
       </nav>
-      <div className={styles.layoutContainer}>{children}</div>
+      {children}
     </div>
   )
 }

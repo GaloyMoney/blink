@@ -8,6 +8,8 @@ import { bech32 } from "bech32"
 import { QRCode } from "react-qrcode-logo"
 import { useRef } from "react"
 
+import { getClientSidePayDomain } from "@/config/config"
+
 export default function Print({
   params,
 }: {
@@ -26,7 +28,9 @@ export default function Print({
   )
   const webURL = `${url.protocol}//${url.host}/${username}`
   const qrCodeURL = (webURL + "?lightning=" + lnurl).toUpperCase()
-  const userHeader = `Pay ${username}@${url.hostname}`
+  const userHeader = `Pay ${username
+    ?.toString()
+    .toLowerCase()}@${getClientSidePayDomain()}`
 
   return (
     <>
@@ -68,11 +72,10 @@ export default function Print({
         </Container>
       </div>
       <Container fluid>
-        <br />
         <Row className="justify-content-md-center">
           <Col md="auto">
-            <div className="text-center mt-4">
-              <Card.Body>
+            <div className="text-center">
+              <div>
                 <Card.Text
                   style={{
                     display: "flex",
@@ -102,7 +105,7 @@ export default function Print({
                   the camera app on your phone to be taken to a webpage where you can
                   create a fresh invoice for paying from any Lightning wallet.
                 </Card.Text>
-              </Card.Body>
+              </div>
             </div>
           </Col>
         </Row>
