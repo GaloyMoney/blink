@@ -72,8 +72,7 @@ async fn all_user_event_dispatch(
                 }
                 spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
             }
-            tx.commit().await?;
-            Ok::<_, JobError>(data)
+            Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
         })
         .await?;
     Ok(())
