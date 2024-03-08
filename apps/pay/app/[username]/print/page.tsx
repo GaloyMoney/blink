@@ -8,6 +8,8 @@ import { bech32 } from "bech32"
 import { QRCode } from "react-qrcode-logo"
 import { useRef } from "react"
 
+import { getClientSidePayDomain } from "@/config/config"
+
 export default function Print({
   params,
 }: {
@@ -26,7 +28,9 @@ export default function Print({
   )
   const webURL = `${url.protocol}//${url.host}/${username}`
   const qrCodeURL = (webURL + "?lightning=" + lnurl).toUpperCase()
-  const userHeader = `Pay ${username}@${url.hostname}`
+  const userHeader = `Pay ${username
+    ?.toString()
+    .toLowerCase()}@${getClientSidePayDomain()}`
 
   return (
     <>
