@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): unskip redis lock test (#4155)'
-      sha: e48bd064cc33404d7cebd19c8ff184a2904a87ac
+      commitTitle: 'feat(notifications): marketing notification triggered (#4145)...'
+      sha: 9d5d7ef7190b7ae9c51f888d18f0caee7a1b5b45
       tags:
-      - 0.20.108-1-ge48bd064c
+      - 0.20.109-2-g9d5d7ef71
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): unskip redis lock test (#4155)'
-      sha: e48bd064cc33404d7cebd19c8ff184a2904a87ac
+      commitTitle: 'feat(notifications): marketing notification triggered (#4145)...'
+      sha: 9d5d7ef7190b7ae9c51f888d18f0caee7a1b5b45
       tags:
-      - 0.20.108-1-ge48bd064c
+      - 0.20.109-2-g9d5d7ef71
     path: schemas/
   - git:
-      commitTitle: 'test(core): unskip redis lock test (#4155)'
-      sha: e48bd064cc33404d7cebd19c8ff184a2904a87ac
+      commitTitle: 'feat(notifications): marketing notification triggered (#4145)...'
+      sha: 9d5d7ef7190b7ae9c51f888d18f0caee7a1b5b45
       tags:
-      - 0.20.108-1-ge48bd064c
+      - 0.20.109-2-g9d5d7ef71
     path: gql/
   path: ./graphql
 kind: LockConfig
