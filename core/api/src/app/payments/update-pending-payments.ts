@@ -22,7 +22,7 @@ import {
   MultiplePendingPaymentsForHashError,
 } from "@/domain/ledger"
 import { MissingPropsInTransactionForPaymentFlowError } from "@/domain/payments"
-import { setErrorCritical, WalletCurrency } from "@/domain/shared"
+import { ErrorLevel, setErrorCritical, WalletCurrency } from "@/domain/shared"
 
 import { LedgerService, getNonEndUserWalletIds } from "@/services/ledger"
 import * as LedgerFacade from "@/services/ledger/facade"
@@ -36,7 +36,11 @@ import {
   WalletsRepository,
 } from "@/services/mongoose"
 import { NotificationsService } from "@/services/notifications"
-import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@/services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+  wrapAsyncToRunInSpan,
+} from "@/services/tracing"
 import { runInParallel } from "@/utils"
 
 export const updatePendingPayments = async (logger: Logger): Promise<void> => {
@@ -144,9 +148,18 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       "payment.txType": txType,
     })
 
+    let paymentRequest: EncodedPaymentRequest | undefined = undefined
+    let sentFromPubkey: Pubkey | undefined = undefined
     const persistedLookup = await LnPaymentsRepository().findByPaymentHash(paymentHash)
-    if (persistedLookup instanceof Error) return persistedLookup
-    const { paymentRequest } = persistedLookup
+    if (persistedLookup instanceof Error) {
+      recordExceptionInCurrentSpan({
+        error: persistedLookup,
+        level: ErrorLevel.Critical,
+      })
+    } else {
+      ;({ paymentRequest, sentFromPubkey } = persistedLookup)
+    }
+
     const lookedUpDecodedInvoice = paymentRequest
       ? decodeInvoice(paymentRequest)
       : undefined
@@ -182,7 +195,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
             "is expired then the ledger transaction can be voided and the payment removed from lnd.",
           "error.potentialHtlcBug.isExpired": decodedInvoice?.isExpired,
           "error.potentialHtlcBug.paymentRequest": paymentRequest,
-          "error.potentialHtlcBug.sentFromPubkey": persistedLookup.sentFromPubkey,
+          "error.potentialHtlcBug.sentFromPubkey": sentFromPubkey,
         })
       }
 
