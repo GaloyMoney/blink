@@ -27,6 +27,9 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
+const samplePaymentRequest =
+  "lnbc1pjjahwgpp5zzh9s6tkhpk7heu8jt4l7keuzg7v046p0lzx2hvy3jf6a56w50nqdp82pshjgr5dusyymrfde4jq4mpd3kx2apq24ek2uscqzpuxqyz5vqsp5vl4zmuvhl8rzy4rmq0g3j28060pv3gqp22rh8l7u45xwyu27928q9qyyssqn9drylhlth9ee320e4ahz52y9rklujqgw0kj9ce2gcmltqk6uuay5yv8vgks0y5tggndv0kek2m2n02lf43znx50237mglxsfw4au2cqqr6qax" as EncodedPaymentRequest
+
 describe("update pending payments", () => {
   const sendAmount = {
     usd: { amount: 20n, currency: WalletCurrency.Usd },
@@ -52,6 +55,13 @@ describe("update pending payments", () => {
       lookupPayment: () => ({
         status: PaymentStatus.Failed,
       }),
+    })
+
+    const { LnPaymentsRepository: LnPaymentsRepositoryOrig } =
+      jest.requireActual("@/services/mongoose")
+    jest.spyOn(MongooseImpl, "LnPaymentsRepository").mockReturnValue({
+      ...LnPaymentsRepositoryOrig(),
+      findByPaymentHash: () => ({ paymentRequest: samplePaymentRequest }),
     })
 
     const displayAmountsConverterSpy = jest.spyOn(

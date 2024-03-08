@@ -138,7 +138,20 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       return new InconsistentDataError("pubkey missing from payment transaction")
     }
 
-    addAttributesToCurrentSpan({ walletId, paymentHash, txType })
+    addAttributesToCurrentSpan({
+      "payment.walletId": walletId,
+      "payment.request.paymentHash": paymentHash,
+      "payment.txType": txType,
+    })
+
+    const persistedLookup = await LnPaymentsRepository().findByPaymentHash(paymentHash)
+    if (persistedLookup instanceof Error) return persistedLookup
+    const { paymentRequest } = persistedLookup
+    const lookedUpDecodedInvoice = paymentRequest
+      ? decodeInvoice(paymentRequest)
+      : undefined
+    const decodedInvoice =
+      lookedUpDecodedInvoice instanceof Error ? undefined : lookedUpDecodedInvoice
 
     const lndService = LndService()
     if (lndService instanceof Error) return lndService
@@ -162,21 +175,12 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       // when we can upgrade to lnd 0.18.0.
       // See issue for details: https://github.com/lightningnetwork/lnd/issues/7697
       if (lnPaymentLookup instanceof LookupPaymentTimedOutError) {
-        const persistedLookup =
-          await LnPaymentsRepository().findByPaymentHash(paymentHash)
-        if (persistedLookup instanceof Error) return lnPaymentLookup
-
-        const { paymentRequest } = persistedLookup
-        if (paymentRequest === undefined) return lnPaymentLookup
-
-        const lnInvoice = decodeInvoice(paymentRequest)
-        if (lnInvoice instanceof Error) return lnInvoice
         addAttributesToCurrentSpan({
           ["error.actionRequired.message"]:
             `Check lnd using '$ lncli trackpayment --json ${paymentHash}' to see if there are any ` +
             "htlcs in the array for that field. If it is empty, the status is IN_FLIGHT and the invoice " +
             "is expired then the ledger transaction can be voided and the payment removed from lnd.",
-          "error.potentialHtlcBug.isExpired": lnInvoice.isExpired,
+          "error.potentialHtlcBug.isExpired": decodedInvoice?.isExpired,
           "error.potentialHtlcBug.paymentRequest": paymentRequest,
           "error.potentialHtlcBug.sentFromPubkey": persistedLookup.sentFromPubkey,
         })
@@ -215,6 +219,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
     return LockService().lockWalletId(walletId, () =>
       lockedPendingPaymentSteps({
         paymentHash,
+        destination: decodedInvoice?.destination,
         pendingPayment,
         lnPaymentLookup,
 
@@ -229,6 +234,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
 
 const lockedPendingPaymentSteps = async ({
   paymentHash,
+  destination,
   pendingPayment,
   lnPaymentLookup,
 
@@ -238,6 +244,7 @@ const lockedPendingPaymentSteps = async ({
   logger,
 }: {
   paymentHash: PaymentHash
+  destination: Pubkey | undefined
   pendingPayment: LedgerTransaction<WalletCurrency>
   lnPaymentLookup: LnPaymentLookup | LnFailedPartialPaymentLookup
 
@@ -290,7 +297,8 @@ const lockedPendingPaymentSteps = async ({
   }
 
   addAttributesToCurrentSpan({
-    "payment.paymentHash": paymentHash,
+    "payment.request.paymentHash": paymentHash,
+    "payment.request.destination": destination,
     "payment.btcAmount": paymentFlow.btcPaymentAmount.amount.toString(),
     "payment.btcFee": paymentFlow.btcProtocolAndBankFee.amount.toString(),
     "payment.usdAmount": paymentFlow.usdPaymentAmount.amount.toString(),
