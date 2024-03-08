@@ -92,17 +92,12 @@ async fn multi_user_event_dispatch(mut current_job: CurrentJob) -> Result<(), Jo
             let data: MultiUserEventDispatchData =
                 data.expect("no MultiUserEventDispatchData available");
             let batch_limit = 1000;
-            let (ids, next_user_ids) = if data.user_ids.len() > batch_limit {
-                (
-                    &data.user_ids[..batch_limit],
-                    Some(&data.user_ids[batch_limit..]),
-                )
-            } else {
-                (&data.user_ids[..], None)
-            };
+            let (ids, next_user_ids) = data
+                .user_ids
+                .split_at(std::cmp::min(data.user_ids.len(), batch_limit));
 
             let mut tx = pool.begin().await?;
-            if let Some(next_user_ids) = next_user_ids {
+            if !next_user_ids.is_empty() {
                 let data = MultiUserEventDispatchData {
                     user_ids: next_user_ids.to_vec(),
                     payload: data.payload.clone(),
