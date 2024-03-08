@@ -681,6 +681,7 @@ const lockedPaymentViaLnSteps = async ({
   const senderWalletDescriptor = paymentFlow.senderWalletDescriptor()
 
   addAttributesToCurrentSpan({
+    "payment.context": "executePaymentViaLn",
     "payment.request.destination": decodedInvoice.destination,
     "payment.request.paymentHash": paymentHash,
     "payment.btcAmount": paymentFlow.btcPaymentAmount.amount.toString(),

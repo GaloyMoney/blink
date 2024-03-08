@@ -22,7 +22,7 @@ import {
   MultiplePendingPaymentsForHashError,
 } from "@/domain/ledger"
 import { MissingPropsInTransactionForPaymentFlowError } from "@/domain/payments"
-import { ErrorLevel, setErrorCritical, WalletCurrency } from "@/domain/shared"
+import { setErrorCritical, WalletCurrency } from "@/domain/shared"
 
 import { LedgerService, getNonEndUserWalletIds } from "@/services/ledger"
 import * as LedgerFacade from "@/services/ledger/facade"
@@ -154,7 +154,6 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
     if (persistedLookup instanceof Error) {
       recordExceptionInCurrentSpan({
         error: persistedLookup,
-        level: ErrorLevel.Critical,
       })
     } else {
       ;({ paymentRequest, sentFromPubkey } = persistedLookup)
@@ -269,6 +268,13 @@ const lockedPendingPaymentSteps = async ({
   const { journalId } = pendingPayment
   const { walletId } = notificationRecipient
 
+  addAttributesToCurrentSpan({
+    "payment.context": "updatePendingPayment",
+    "payment.request.paymentHash": paymentHash,
+    "payment.request.destination": destination,
+    "payment.senderWalletCurrency": pendingPayment.currency,
+  })
+
   const paymentLogger = logger.child({
     topic: "payment",
     protocol: "lightning",
@@ -310,13 +316,10 @@ const lockedPendingPaymentSteps = async ({
   }
 
   addAttributesToCurrentSpan({
-    "payment.request.paymentHash": paymentHash,
-    "payment.request.destination": destination,
     "payment.btcAmount": paymentFlow.btcPaymentAmount.amount.toString(),
     "payment.btcFee": paymentFlow.btcProtocolAndBankFee.amount.toString(),
     "payment.usdAmount": paymentFlow.usdPaymentAmount.amount.toString(),
     "payment.usdFee": paymentFlow.usdProtocolAndBankFee.amount.toString(),
-    "payment.senderWalletCurrency": pendingPayment.currency,
   })
 
   const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
