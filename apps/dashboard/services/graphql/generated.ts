@@ -2039,6 +2039,7 @@ export const UserNotificationCategory = {
   AdminNotification: 'ADMIN_NOTIFICATION',
   Balance: 'BALANCE',
   Circles: 'CIRCLES',
+  Marketing: 'MARKETING',
   Payments: 'PAYMENTS'
 } as const;
 
