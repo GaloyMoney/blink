@@ -15,6 +15,7 @@ impl From<proto::NotificationCategory> for UserNotificationCategory {
             proto::NotificationCategory::AdminNotification => {
                 UserNotificationCategory::AdminNotification
             }
+            proto::NotificationCategory::Marketing => UserNotificationCategory::Marketing,
         }
     }
 }
@@ -70,6 +71,7 @@ impl From<UserNotificationCategory> for proto::NotificationCategory {
             UserNotificationCategory::AdminNotification => {
                 proto::NotificationCategory::AdminNotification
             }
+            UserNotificationCategory::Marketing => proto::NotificationCategory::Marketing,
         }
     }
 }

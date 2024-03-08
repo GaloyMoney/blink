@@ -28,7 +28,7 @@ pub async fn start_job_runner(
     settings: UserNotificationSettingsRepo,
 ) -> Result<JobRunnerHandle, JobError> {
     let mut registry = JobRegistry::new(&[
-        multi_user_event_dispatch,
+        all_user_event_dispatch,
         send_push_notification,
         send_email_notification,
     ]);
@@ -40,10 +40,10 @@ pub async fn start_job_runner(
 }
 
 #[job(
-    name = "multi_user_event_dispatch",
-    channel_name = "multi_user_event_dispatch"
+    name = "all_user_event_dispatch",
+    channel_name = "all_user_event_dispatch"
 )]
-async fn multi_user_event_dispatch(
+async fn all_user_event_dispatch(
     mut current_job: CurrentJob,
     settings: UserNotificationSettingsRepo,
 ) -> Result<(), JobError> {
@@ -52,13 +52,53 @@ async fn multi_user_event_dispatch(
         .build()
         .expect("couldn't build JobExecutor")
         .execute(|data| async move {
-            let data: MultiUserEventDispatchData =
-                data.expect("no MultiUserEventDispatchData available");
+            let data: AllUserEventDispatchData =
+                data.expect("no AllUserEventDispatchData available");
             let (ids, more) = settings.list_ids_after(&data.search_id).await?;
             let mut tx = pool.begin().await?;
             if more {
-                let data = MultiUserEventDispatchData {
+                let data = AllUserEventDispatchData {
                     search_id: ids.last().expect("there should always be an id").clone(),
+                    payload: data.payload.clone(),
+                    tracing_data: tracing::extract_tracing_data(),
+                };
+                spawn_all_user_event_dispatch(&mut tx, data).await?;
+            }
+            for user_id in ids {
+                let payload = data.payload.clone();
+                if payload.should_send_email() {
+                    spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone()))
+                        .await?;
+                }
+                spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
+            }
+            Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
+        })
+        .await?;
+    Ok(())
+}
+
+#[job(
+    name = "multi_user_event_dispatch",
+    channel_name = "multi_user_event_dispatch"
+)]
+async fn multi_user_event_dispatch(mut current_job: CurrentJob) -> Result<(), JobError> {
+    let pool = current_job.pool().clone();
+    JobExecutor::builder(&mut current_job)
+        .build()
+        .expect("couldn't build JobExecutor")
+        .execute(|data| async move {
+            let data: MultiUserEventDispatchData =
+                data.expect("no MultiUserEventDispatchData available");
+            let batch_limit = 1000;
+            let (ids, next_user_ids) = data
+                .user_ids
+                .split_at(std::cmp::min(data.user_ids.len(), batch_limit));
+
+            let mut tx = pool.begin().await?;
+            if !next_user_ids.is_empty() {
+                let data = MultiUserEventDispatchData {
+                    user_ids: next_user_ids.to_vec(),
                     payload: data.payload.clone(),
                     tracing_data: tracing::extract_tracing_data(),
                 };
@@ -70,7 +110,7 @@ async fn multi_user_event_dispatch(
                     spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone()))
                         .await?;
                 }
-                spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
+                spawn_send_push_notification(&mut tx, (user_id.clone(), payload)).await?;
             }
             Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
         })
@@ -105,6 +145,25 @@ pub async fn spawn_send_push_notification(
 ) -> Result<(), JobError> {
     let data = data.into();
     if let Err(e) = send_push_notification
+        .builder()
+        .set_json(&data)
+        .expect("Couldn't set json")
+        .spawn(&mut **tx)
+        .await
+    {
+        tracing::insert_error_fields(tracing::Level::WARN, &e);
+        return Err(e.into());
+    }
+    Ok(())
+}
+
+#[instrument(name = "job.spawn_all_user_event_dispatch", skip_all, fields(error, error.level, error.message), err)]
+pub async fn spawn_all_user_event_dispatch(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    data: impl Into<AllUserEventDispatchData>,
+) -> Result<(), JobError> {
+    let data = data.into();
+    if let Err(e) = all_user_event_dispatch
         .builder()
         .set_json(&data)
         .expect("Couldn't set json")
@@ -176,17 +235,35 @@ pub async fn spawn_send_email_notification(
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub(super) struct MultiUserEventDispatchData {
+pub(super) struct AllUserEventDispatchData {
     search_id: GaloyUserId,
     payload: NotificationEventPayload,
     #[serde(flatten)]
     pub(super) tracing_data: HashMap<String, serde_json::Value>,
 }
 
-impl From<NotificationEventPayload> for MultiUserEventDispatchData {
+impl From<NotificationEventPayload> for AllUserEventDispatchData {
     fn from(payload: NotificationEventPayload) -> Self {
         Self {
             search_id: GaloyUserId::from(String::new()),
+            payload,
+            tracing_data: tracing::extract_tracing_data(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub(super) struct MultiUserEventDispatchData {
+    user_ids: Vec<GaloyUserId>,
+    payload: NotificationEventPayload,
+    #[serde(flatten)]
+    pub(super) tracing_data: HashMap<String, serde_json::Value>,
+}
+
+impl From<(Vec<GaloyUserId>, NotificationEventPayload)> for MultiUserEventDispatchData {
+    fn from((user_ids, payload): (Vec<GaloyUserId>, NotificationEventPayload)) -> Self {
+        Self {
+            user_ids,
             payload,
             tracing_data: tracing::extract_tracing_data(),
         }
