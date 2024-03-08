@@ -129,26 +129,19 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
     pendingPayment: LedgerTransaction<WalletCurrency>
     logger: Logger
   }): Promise<true | ApplicationError> => {
-    const { paymentHash, pubkey, type: txType, journalId } = pendingPayment
-    addAttributesToCurrentSpan({ walletId, paymentHash, txType })
+    const { paymentHash, pubkey, type: txType } = pendingPayment
+    // If we had PaymentLedgerType => no need for checking the fields
+    if (!paymentHash) {
+      return new InconsistentDataError("paymentHash missing from payment transaction")
+    }
+    if (!pubkey) {
+      return new InconsistentDataError("pubkey missing from payment transaction")
+    }
 
-    const paymentLogger = logger.child({
-      topic: "payment",
-      protocol: "lightning",
-      transactionType: "payment",
-      onUs: false,
-      payment: pendingPayment,
-    })
+    addAttributesToCurrentSpan({ walletId, paymentHash, txType })
 
     const lndService = LndService()
     if (lndService instanceof Error) return lndService
-
-    // If we had PaymentLedgerType => no need for checking the fields
-    if (!paymentHash)
-      return new InconsistentDataError("paymentHash missing from payment transaction")
-    if (!pubkey)
-      return new InconsistentDataError("pubkey missing from payment transaction")
-
     const lnPaymentLookup = await lndService.lookupPayment({
       pubkey,
       paymentHash,
@@ -192,23 +185,11 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       return lnPaymentLookup
     }
 
-    let roundedUpFee: Satoshis
-    let satsAmount: Satoshis
-    const { status } = lnPaymentLookup
-    if (status != PaymentStatus.Failed) {
-      roundedUpFee = lnPaymentLookup.confirmedDetails?.roundedUpFee || toSats(0)
-      satsAmount = toSats(lnPaymentLookup.roundedUpAmount - roundedUpFee)
+    if (lnPaymentLookup.status === PaymentStatus.Pending) {
+      return true
     }
 
-    if (status === PaymentStatus.Pending) return true
-
-    const wallet = await WalletsRepository().findById(walletId)
-    if (wallet instanceof Error) return wallet
-    const accountWalletDescriptors =
-      await WalletsRepository().findAccountWalletsByAccountId(wallet.accountId)
-    if (accountWalletDescriptors instanceof Error) return accountWalletDescriptors
-    const walletIds = [accountWalletDescriptors.BTC.id, accountWalletDescriptors.USD.id]
-
+    // Prepare notifications args
     const senderWallet = await WalletsRepository().findById(walletId)
     if (senderWallet instanceof Error) return senderWallet
 
@@ -225,141 +206,206 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       level: senderAccount.level,
     }
 
-    return LockService().lockWalletId(walletId, async () => {
-      const ledgerService = LedgerService()
-      const recorded = await ledgerService.isLnTxRecorded(paymentHash)
-      if (recorded instanceof Error) {
-        paymentLogger.error({ error: recorded }, "we couldn't query pending transaction")
-        return recorded
-      }
+    // Prepare updateLnPaymentState args
+    const accountWalletDescriptors =
+      await WalletsRepository().findAccountWalletsByAccountId(senderAccount.id)
+    if (accountWalletDescriptors instanceof Error) return accountWalletDescriptors
 
-      if (recorded) {
-        paymentLogger.info("payment has already been processed")
-        return true
-      }
-
-      const inputAmount = inputAmountFromLedgerTransaction(pendingPayment)
-      if (inputAmount instanceof Error) return inputAmount
-
-      const paymentFlowIndex: PaymentFlowStateIndex = {
+    // Pass on to lock
+    return LockService().lockWalletId(walletId, () =>
+      lockedPendingPaymentSteps({
         paymentHash,
-        walletId,
-        inputAmount,
-      }
+        pendingPayment,
+        lnPaymentLookup,
 
-      let paymentFlow = await PaymentFlowStateRepository(
-        defaultTimeToExpiryInSeconds,
-      ).markLightningPaymentFlowNotPending(paymentFlowIndex)
-      if (paymentFlow instanceof Error) {
-        paymentFlow = await reconstructPendingPaymentFlow({
-          paymentHash,
-          inputAmount: Number(inputAmount),
-        })
-        if (paymentFlow instanceof Error) return paymentFlow
-      }
+        walletIds: [accountWalletDescriptors.BTC.id, accountWalletDescriptors.USD.id],
+        notificationRecipient,
 
-      const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
-      if (settled instanceof Error) {
-        paymentLogger.error({ error: settled }, "no transaction to update")
-        return settled
-      }
+        logger,
+      }),
+    )
+  },
+})
 
-      if (
-        status === PaymentStatus.Failed ||
-        // pendingPayment is a different version to latest payment from lnd
-        satsAmount !== toSats(paymentFlow.btcPaymentAmount.amount)
-      ) {
-        paymentLogger.warn(
-          { success: false, id: paymentHash, payment: pendingPayment },
-          "payment has failed. reverting transaction",
-        )
-        if (paymentFlow.senderWalletCurrency === WalletCurrency.Btc) {
-          const voided = await ledgerService.revertLightningPayment({
-            journalId,
-            paymentHash,
-          })
-          if (voided instanceof Error) {
-            const error = `error voiding payment entry`
-            logger.fatal({ success: false, result: lnPaymentLookup }, error)
-            return setErrorCritical(voided)
-          }
+const lockedPendingPaymentSteps = async ({
+  paymentHash,
+  pendingPayment,
+  lnPaymentLookup,
 
-          return finalizePaymentUpdate({
-            result: voided,
-            walletIds,
-            paymentHash,
-            journalId,
-            notificationRecipient,
-          })
-        }
+  walletIds,
+  notificationRecipient,
 
-        const reimbursed = await reimburseFailedUsdPayment({
-          walletId,
-          pendingPayment,
-          paymentFlow,
-        })
-        if (reimbursed instanceof Error) {
-          const error = `error reimbursing usd payment entry`
-          logger.fatal({ success: false, result: lnPaymentLookup }, error)
-          return setErrorCritical(reimbursed)
-        }
+  logger,
+}: {
+  paymentHash: PaymentHash
+  pendingPayment: LedgerTransaction<WalletCurrency>
+  lnPaymentLookup: LnPaymentLookup | LnFailedPartialPaymentLookup
 
-        return finalizePaymentUpdate({
-          result: reimbursed,
-          walletIds,
-          paymentHash,
-          journalId,
-          notificationRecipient,
-        })
-      }
+  walletIds: WalletId[]
+  notificationRecipient: NotificationRecipient
 
-      paymentLogger.info(
-        { success: true, id: paymentHash, payment: pendingPayment },
-        "payment has been confirmed",
-      )
+  logger: Logger
+}): Promise<true | ApplicationError> => {
+  const { journalId } = pendingPayment
+  const { walletId } = notificationRecipient
 
-      const revealedPreImage = lnPaymentLookup.confirmedDetails?.revealedPreImage
-      if (revealedPreImage) {
-        await LedgerService().updateMetadataByHash({
-          hash: paymentHash,
-          revealedPreImage,
-        })
-      }
+  const paymentLogger = logger.child({
+    topic: "payment",
+    protocol: "lightning",
+    transactionType: "payment",
+    onUs: false,
+    payment: pendingPayment,
+  })
 
-      if (pendingPayment.feeKnownInAdvance) {
-        return finalizePaymentUpdate({
-          result: true,
-          walletIds,
-          paymentHash,
-          journalId,
-          notificationRecipient,
-        })
-      }
+  const ledgerService = LedgerService()
+  const recorded = await ledgerService.isLnTxRecorded(paymentHash)
+  if (recorded instanceof Error) {
+    paymentLogger.error({ error: recorded }, "we couldn't query pending transaction")
+    return recorded
+  }
 
-      const { displayAmount, displayFee, displayCurrency } = pendingPayment
-      if (!displayAmount || !displayFee || !displayCurrency) {
-        return new MissingExpectedDisplayAmountsForTransactionError()
-      }
-      const reimbursed = await reimburseFee({
-        paymentFlow,
-        senderDisplayAmount: displayAmount,
-        senderDisplayCurrency: displayCurrency,
+  if (recorded) {
+    paymentLogger.info("payment has already been processed")
+    return true
+  }
+
+  const inputAmount = inputAmountFromLedgerTransaction(pendingPayment)
+  if (inputAmount instanceof Error) return inputAmount
+
+  const paymentFlowIndex: PaymentFlowStateIndex = {
+    paymentHash,
+    walletId,
+    inputAmount,
+  }
+
+  let paymentFlow = await PaymentFlowStateRepository(
+    defaultTimeToExpiryInSeconds,
+  ).markLightningPaymentFlowNotPending(paymentFlowIndex)
+  if (paymentFlow instanceof Error) {
+    paymentFlow = await reconstructPendingPaymentFlow({
+      paymentHash,
+      inputAmount: Number(inputAmount),
+    })
+    if (paymentFlow instanceof Error) return paymentFlow
+  }
+
+  addAttributesToCurrentSpan({
+    "payment.paymentHash": paymentHash,
+    "payment.btcAmount": paymentFlow.btcPaymentAmount.amount.toString(),
+    "payment.btcFee": paymentFlow.btcProtocolAndBankFee.amount.toString(),
+    "payment.usdAmount": paymentFlow.usdPaymentAmount.amount.toString(),
+    "payment.usdFee": paymentFlow.usdProtocolAndBankFee.amount.toString(),
+    "payment.senderWalletCurrency": pendingPayment.currency,
+  })
+
+  const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
+  if (settled instanceof Error) {
+    paymentLogger.error({ error: settled }, "no transaction to update")
+    return settled
+  }
+
+  let roundedUpFee: Satoshis = toSats(0)
+  let satsAmount: Satoshis | undefined = undefined
+  if (lnPaymentLookup.status != PaymentStatus.Failed) {
+    roundedUpFee = lnPaymentLookup.confirmedDetails?.roundedUpFee || toSats(0)
+    satsAmount = toSats(lnPaymentLookup.roundedUpAmount - roundedUpFee)
+  }
+
+  if (
+    lnPaymentLookup.status === PaymentStatus.Failed ||
+    // pendingPayment is a different version to latest payment from lnd
+    satsAmount !== toSats(paymentFlow.btcPaymentAmount.amount)
+  ) {
+    paymentLogger.warn(
+      { success: false, id: paymentHash, payment: pendingPayment },
+      "payment has failed. reverting transaction",
+    )
+    if (paymentFlow.senderWalletCurrency === WalletCurrency.Btc) {
+      const voided = await ledgerService.revertLightningPayment({
         journalId,
-        actualFee: roundedUpFee,
-        revealedPreImage,
+        paymentHash,
       })
-      if (reimbursed instanceof Error) return reimbursed
+      if (voided instanceof Error) {
+        const error = `error voiding payment entry`
+        paymentLogger.fatal({ success: false, result: lnPaymentLookup }, error)
+        return setErrorCritical(voided)
+      }
 
       return finalizePaymentUpdate({
-        result: reimbursed,
+        result: voided,
         walletIds,
         paymentHash,
         journalId,
         notificationRecipient,
       })
+    }
+
+    const reimbursed = await reimburseFailedUsdPayment({
+      walletId,
+      pendingPayment,
+      paymentFlow,
     })
-  },
-})
+    if (reimbursed instanceof Error) {
+      const error = `error reimbursing usd payment entry`
+      paymentLogger.fatal({ success: false, result: lnPaymentLookup }, error)
+      return setErrorCritical(reimbursed)
+    }
+
+    return finalizePaymentUpdate({
+      result: reimbursed,
+      walletIds,
+      paymentHash,
+      journalId,
+      notificationRecipient,
+    })
+  }
+
+  paymentLogger.info(
+    { success: true, id: paymentHash, payment: pendingPayment },
+    "payment has been confirmed",
+  )
+
+  const revealedPreImage = lnPaymentLookup.confirmedDetails?.revealedPreImage
+  if (revealedPreImage) {
+    await LedgerService().updateMetadataByHash({
+      hash: paymentHash,
+      revealedPreImage,
+    })
+  }
+
+  if (pendingPayment.feeKnownInAdvance) {
+    return finalizePaymentUpdate({
+      result: true,
+      walletIds,
+      paymentHash,
+      journalId,
+      notificationRecipient,
+    })
+  }
+
+  const { displayAmount, displayFee, displayCurrency } = pendingPayment
+  if (!displayAmount || !displayFee || !displayCurrency) {
+    return new MissingExpectedDisplayAmountsForTransactionError()
+  }
+
+  const reimbursed = await reimburseFee({
+    paymentFlow,
+    senderDisplayAmount: displayAmount,
+    senderDisplayCurrency: displayCurrency,
+    journalId,
+    actualFee: roundedUpFee,
+    revealedPreImage,
+  })
+  if (reimbursed instanceof Error) return reimbursed
+
+  return finalizePaymentUpdate({
+    result: reimbursed,
+    walletIds,
+    paymentHash,
+    journalId,
+    notificationRecipient,
+  })
+}
 
 const reconstructPendingPaymentFlow = async <
   S extends WalletCurrency,
