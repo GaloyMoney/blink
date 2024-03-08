@@ -9,6 +9,8 @@ import {
 } from "@/services/mongoose"
 import { LndService } from "@/services/lnd"
 import { LockService } from "@/services/lock"
+import { WalletInvoiceStatusChecker } from "@/domain/wallet-invoices/wallet-invoice-status-checker"
+import { WalletInvoiceStatus } from "@/domain/wallet-invoices"
 
 export const cancelInvoiceForWallet = async ({
   walletId,
@@ -34,7 +36,9 @@ export const cancelInvoiceForWallet = async ({
       paymentHash,
     })
     if (walletInvoice instanceof Error) return walletInvoice
-    if (walletInvoice.processingCompleted) {
+    const statusChecker = WalletInvoiceStatusChecker(walletInvoice)
+    const status = statusChecker.status(new Date())
+    if (walletInvoice.processingCompleted || status !== WalletInvoiceStatus.Pending) {
       return new InvoiceAlreadyProcessedError()
     }
 
