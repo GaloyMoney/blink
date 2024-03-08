@@ -3,6 +3,8 @@ use tracing::instrument;
 
 use std::collections::HashMap;
 
+use job_executor::JobResult;
+
 use super::error::JobError;
 use crate::{
     email_executor::EmailExecutor, notification_event::NotificationEventPayload,
@@ -31,8 +33,9 @@ impl From<(GaloyUserId, NotificationEventPayload)> for SendEmailNotificationData
 pub async fn execute(
     data: SendEmailNotificationData,
     executor: EmailExecutor,
-) -> Result<SendEmailNotificationData, JobError> {
-    let payload = data.payload.clone();
-    executor.notify(&data.user_id, payload.as_ref()).await?;
-    Ok(data)
+) -> Result<JobResult, JobError> {
+    executor
+        .notify(&data.user_id, data.payload.as_ref())
+        .await?;
+    Ok(JobResult::Complete)
 }

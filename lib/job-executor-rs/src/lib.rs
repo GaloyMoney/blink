@@ -5,6 +5,11 @@ use std::{collections::HashMap, time::Duration};
 use tokio::task::JoinHandle;
 use tracing::{extract_tracing_data, inject_tracing_data, instrument, Span};
 
+pub enum JobResult {
+    Complete,
+    CompleteWithTx(sqlx::Transaction<'static, sqlx::Postgres>),
+}
+
 pub trait JobExecutionError: std::fmt::Display + From<sqlx::Error> {}
 
 pub struct KeepAliveHandle(Option<JoinHandle<()>>);
@@ -52,11 +57,11 @@ impl<'a> JobExecutor<'a> {
             job_id, job_name, checkpoint_json, attempt, last_attempt,
             error, error.level, error.message
     ), err)]
-    pub async fn execute<T, E, R, F>(mut self, func: F) -> Result<T, E>
+    pub async fn execute<T, E, R, F>(mut self, func: F) -> Result<JobResult, E>
     where
         T: DeserializeOwned + Serialize,
         E: JobExecutionError,
-        R: std::future::Future<Output = Result<T, E>>,
+        R: std::future::Future<Output = Result<JobResult, E>>,
         F: FnOnce(Option<T>) -> R,
     {
         let mut data = JobData::<T>::from_raw_payload(self.job.raw_json()).unwrap();
@@ -67,12 +72,25 @@ impl<'a> JobExecutor<'a> {
 
         keep_alive_handle.stop().await;
 
-        if let Err(ref e) = result {
-            self.handle_error(data.job_meta, e).await;
-        } else if !completed {
-            self.job.complete().await?;
+        match result {
+            Err(e) => {
+                self.handle_error(data.job_meta, &e).await;
+                Err(e)
+            }
+            Ok(JobResult::Complete) if !completed => {
+                self.job.complete().await?;
+                Ok(JobResult::Complete)
+            }
+            Ok(JobResult::CompleteWithTx(tx)) if !completed => {
+                self.job.complete_with_transaction(tx).await?;
+                Ok(JobResult::Complete)
+            }
+            Ok(JobResult::Complete) => Ok(JobResult::Complete),
+            Ok(JobResult::CompleteWithTx(tx)) => {
+                tx.commit().await?;
+                Ok(JobResult::Complete)
+            }
         }
-        result
     }
 
     fn spawn_keep_alive(&self, mut interval: Duration) -> KeepAliveHandle {
