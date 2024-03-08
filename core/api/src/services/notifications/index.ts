@@ -358,72 +358,6 @@ export const NotificationsService = (): INotificationsService => {
     }
   }
 
-  const adminPushNotificationSend = async ({
-    title,
-    body,
-    data,
-    userId,
-  }: SendPushNotificationArgs): Promise<true | NotificationsServiceError> => {
-    const settings = await getUserNotificationSettings(userId)
-
-    if (settings instanceof Error) {
-      return settings
-    }
-
-    const { pushDeviceTokens: deviceTokens } = settings
-
-    const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
-    if (!hasDeviceTokens) return true
-
-    try {
-      return pushNotification.sendNotification({
-        deviceTokens,
-        title,
-        body,
-        data,
-      })
-    } catch (err) {
-      return handleCommonNotificationErrors(err)
-    }
-  }
-
-  const adminPushNotificationFilteredSend = async ({
-    title,
-    body,
-    data,
-    userId,
-    notificationCategory,
-  }: SendFilteredPushNotificationArgs): Promise<true | NotificationsServiceError> => {
-    const settings = await getUserNotificationSettings(userId)
-    if (settings instanceof Error) {
-      return settings
-    }
-
-    const { pushDeviceTokens: deviceTokens } = settings
-
-    const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
-    if (!hasDeviceTokens) return true
-
-    try {
-      const result = await pushNotification.sendFilteredNotification({
-        deviceTokens,
-        title,
-        body,
-        data,
-        notificationCategory,
-        userId,
-      })
-
-      if (result instanceof NotificationsServiceError) {
-        return result
-      }
-
-      return true
-    } catch (err) {
-      return handleCommonNotificationErrors(err)
-    }
-  }
-
   const addPushDeviceToken = async ({
     userId,
     deviceToken,
@@ -687,8 +621,6 @@ export const NotificationsService = (): INotificationsService => {
       fns: {
         sendTransaction,
         sendBalance,
-        adminPushNotificationSend,
-        adminPushNotificationFilteredSend,
         getUserNotificationSettings,
         updateUserLanguage,
         enableNotificationChannel,

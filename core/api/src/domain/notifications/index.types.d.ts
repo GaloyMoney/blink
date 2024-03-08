@@ -60,12 +60,6 @@ interface INotificationsService {
   ) => Promise<true | NotificationsServiceError>
   sendBalance(args: SendBalanceArgs): Promise<true | NotificationsServiceError>
   priceUpdate: <C extends DisplayCurrency>(args: PriceUpdateArgs<C>) => void
-  adminPushNotificationSend(
-    args: SendPushNotificationArgs,
-  ): Promise<true | NotificationsServiceError>
-  adminPushNotificationFilteredSend(
-    args: SendFilteredPushNotificationArgs,
-  ): Promise<true | NotificationsServiceError>
 
   getUserNotificationSettings(
     userId: UserId,
