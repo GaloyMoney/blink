@@ -1,22 +1,16 @@
 .mainContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+  height: 100vh;
   width: 100vw;
 }
 
 .navBar {
-  position: fixed;
-  top: 0;
-  left: 0;
   width: 100%;
   border-bottom: 1.5px solid var(--lightGrey);
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 1;
+  position: relative;
 }
 
 .navHomeContent {
@@ -29,20 +23,19 @@
   padding: 0.8em;
 }
 
-.layoutContainer {
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex-grow: 1;
-  box-sizing: border-box;
+.username {
+  display: none;
 }
 
 @media (max-width: 768px), (max-height: 785px) {
   .navBar {
     border-bottom: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .username {
+    display: block;
+    font-size: 4vw;
   }
 }

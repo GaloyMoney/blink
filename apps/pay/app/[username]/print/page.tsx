@@ -72,11 +72,10 @@ export default function Print({
         </Container>
       </div>
       <Container fluid>
-        <br />
         <Row className="justify-content-md-center">
           <Col md="auto">
-            <div className="text-center mt-4">
-              <Card.Body>
+            <div className="text-center">
+              <div>
                 <Card.Text
                   style={{
                     display: "flex",
@@ -106,7 +105,7 @@ export default function Print({
                   the camera app on your phone to be taken to a webpage where you can
                   create a fresh invoice for paying from any Lightning wallet.
                 </Card.Text>
-              </Card.Body>
+              </div>
             </div>
           </Col>
         </Row>

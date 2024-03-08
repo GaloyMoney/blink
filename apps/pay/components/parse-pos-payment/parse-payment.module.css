@@ -1,68 +1,16 @@
 .digitsContainer {
-  margin-top: 1rem;
-}
-
-.output {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  position: relative;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-.output > button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: transparent;
-  border-radius: 6px;
-  border: none;
-  outline: none;
-  position: absolute;
-  right: 0;
-}
-
-.output .pinIcon {
-  width: 18px;
-  height: 18px;
-}
-
-.pinBtn {
-  font-weight: 600;
-  font-size: 0.75rem;
-  background-color: transparent;
-  color: black;
-  outline: none;
-  border: none;
-  position: absolute;
-  left: 0%;
-  width: fit-content;
-}
-
-.zeroOrder {
-  order: 0;
-  font-size: 2rem;
-  font-weight: 600;
-}
-
-.firstOrder {
-  order: 1;
-  color: #000;
-  font-size: 1rem;
-  font-weight: 400;
+  margin-top: 1em;
+  height: 100%;
+  width: 100%;
+  padding: 1em;
 }
 
 .digitsGrid {
+  margin-top: 2em;
   display: grid;
   place-content: center;
-  grid-template-columns: repeat(3, 3rem);
-  grid-template-rows: repeat(4, 2rem);
-  row-gap: 3.5rem;
-  column-gap: 5rem;
-  margin: 2rem;
+  grid-template-columns: repeat(3, 30%);
+  grid-template-rows: repeat(4, 8vh);
 }
 
 .digitsGrid > button {
@@ -70,28 +18,38 @@
   align-items: center;
   justify-content: center;
   background-color: transparent;
-  border-radius: 6px;
+  border-radius: 0.5em;
   border: none;
   outline: none;
-  font-size: 2rem;
-  font-weight: 500;
-  line-height: 48px;
+  font-size: 225%;
+  font-weight: 400;
   color: rgba(17, 25, 40, 1);
+  border: 1px solid rgb(255, 255, 255);
+}
+
+@media (max-width: 760px) {
+  .digitsGrid {
+    margin-top: 1em;
+    display: grid;
+    place-content: center;
+    grid-template-columns: repeat(3, 33.33%);
+    grid-template-rows: repeat(4, 15vh);
+  }
+  .digitsContainer {
+    margin-top: 1em;
+    height: 100%;
+    width: 100%;
+    padding: 0;
+  }
+  .digitsGrid > button {
+    font-size: 250%;
+  }
 }
 
 .digitsGrid > button:hover,
 .digitsGrid > button:focus,
 .digitsGrid > button:focus-visible {
   border: 1px solid rgb(233, 233, 236);
-}
-
-@media (min-width: 760px) {
-  .digitsGrid {
-    grid-template-columns: repeat(3, 4rem);
-    grid-template-rows: repeat(4, 4rem);
-    row-gap: 0.65rem;
-    column-gap: 7rem;
-  }
 }
 
 .payBtnContainer {
@@ -106,30 +64,16 @@
   background: var(--primaryColor);
   color: #fff;
   font-weight: 600;
-  width: 300px;
+  width: 75%;
   display: flex;
   justify-content: center;
   align-items: center;
-  column-gap: 10px;
   border: none;
   outline: none;
-  padding: 10px 32px;
+  padding: 1em 2em;
   border-radius: 10em;
   order: 2;
-}
-
-.payNewBtn {
-  border-radius: 10em;
-  width: 327px;
-  height: 50px;
-  margin-bottom: 1rem;
-}
-
-
-@media (min-width: 760px) {
-  .payBtn {
-    width: 400px;
-  }
+  margin-top: 1em;
 }
 
 .invoiceContainer {
@@ -209,7 +153,6 @@
   width: 100%;
   border: none;
   outline: none;
-  padding: 10px 32px;
   border-radius: 6px;
   margin-bottom: 16px;
 }

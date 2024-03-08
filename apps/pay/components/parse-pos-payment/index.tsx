@@ -1,7 +1,6 @@
 "use client"
 import { useRouter, useSearchParams } from "next/navigation"
 import React, { useEffect } from "react"
-import Container from "react-bootstrap/Container"
 import Image from "next/image"
 
 import CurrencyInput, { formatValue } from "react-currency-input-field"
@@ -157,23 +156,21 @@ function ParsePayment({
   }, [display, currencyList])
 
   return (
-    <Container className={styles.digitsContainer}>
-      <div className={styles.output}>
-        <CurrencyInput
-          style={{
-            width: "100%",
-            border: 0,
-            color: "black",
-            backgroundColor: "transparent",
-            textAlign: "center",
-            fontWeight: 600,
-            fontSize: "1.9rem",
-          }}
-          value={state.currentAmount}
-          intlConfig={{ locale: language, currency: display }}
-          readOnly={true}
-        />
-      </div>
+    <div className={styles.digitsContainer}>
+      <CurrencyInput
+        style={{
+          width: "100%",
+          border: 0,
+          color: "black",
+          backgroundColor: "transparent",
+          textAlign: "center",
+          fontWeight: 600,
+          fontSize: "2rem",
+        }}
+        value={state.currentAmount}
+        intlConfig={{ locale: language, currency: display }}
+        readOnly={true}
+      />
       {showMemo && <Memo state={state} dispatch={dispatch} />}
       {state.createdInvoice ? (
         <ReceiveInvoice
@@ -249,7 +246,7 @@ function ParsePayment({
           {state.createdInvoice ? "Create new invoice" : "Create invoice"}
         </button>
       </div>
-    </Container>
+    </div>
   )
 }
 
