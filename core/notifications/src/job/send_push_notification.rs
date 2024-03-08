@@ -3,6 +3,8 @@ use tracing::instrument;
 
 use std::collections::HashMap;
 
+use job_executor::JobResult;
+
 use super::error::JobError;
 use crate::{
     notification_event::NotificationEventPayload, primitives::GaloyUserId,
@@ -31,10 +33,11 @@ impl From<(GaloyUserId, NotificationEventPayload)> for SendPushNotificationData 
 pub async fn execute(
     data: SendPushNotificationData,
     executor: PushExecutor,
-) -> Result<SendPushNotificationData, JobError> {
-    let payload = data.payload.clone();
-    executor.notify(&data.user_id, payload.as_ref()).await?;
-    Ok(data)
+) -> Result<JobResult, JobError> {
+    executor
+        .notify(&data.user_id, data.payload.as_ref())
+        .await?;
+    Ok(JobResult::Complete)
 }
 
 #[cfg(test)]
