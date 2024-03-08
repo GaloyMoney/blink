@@ -3,6 +3,7 @@ mod circle_threshold_reached;
 mod identity_verification_approved;
 mod identity_verification_declined;
 mod identity_verification_review_started;
+mod marketing_notification_triggered;
 mod price_changed;
 mod transaction_occurred;
 
@@ -15,6 +16,7 @@ pub(super) use circle_threshold_reached::*;
 pub(super) use identity_verification_approved::*;
 pub(super) use identity_verification_declined::*;
 pub(super) use identity_verification_review_started::*;
+pub(super) use marketing_notification_triggered::*;
 pub(super) use price_changed::*;
 pub(super) use transaction_occurred::*;
 
@@ -41,6 +43,7 @@ pub enum NotificationEventPayload {
     IdentityVerificationReviewStarted(IdentityVerificationReviewStarted),
     TransactionOccurred(TransactionOccurred),
     PriceChanged(PriceChanged),
+    MarketingNotificationTriggered(MarketingNotificationTriggered),
 }
 
 impl AsRef<dyn NotificationEvent> for NotificationEventPayload {
@@ -53,6 +56,7 @@ impl AsRef<dyn NotificationEvent> for NotificationEventPayload {
             NotificationEventPayload::IdentityVerificationReviewStarted(event) => event,
             NotificationEventPayload::TransactionOccurred(event) => event,
             NotificationEventPayload::PriceChanged(event) => event,
+            NotificationEventPayload::MarketingNotificationTriggered(event) => event,
         }
     }
 }
@@ -104,5 +108,11 @@ impl From<TransactionOccurred> for NotificationEventPayload {
 impl From<PriceChanged> for NotificationEventPayload {
     fn from(event: PriceChanged) -> Self {
         NotificationEventPayload::PriceChanged(event)
+    }
+}
+
+impl From<MarketingNotificationTriggered> for NotificationEventPayload {
+    fn from(event: MarketingNotificationTriggered) -> Self {
+        NotificationEventPayload::MarketingNotificationTriggered(event)
     }
 }

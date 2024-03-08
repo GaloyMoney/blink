@@ -1,8 +1,9 @@
 mod email_formatter;
 
 pub use email_formatter::EmailFormatter;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct LocalizedPushMessage {
     pub title: String,
     pub body: String,

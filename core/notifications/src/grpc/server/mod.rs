@@ -6,6 +6,8 @@ pub mod proto {
     tonic::include_proto!("services.notifications.v1");
 }
 
+use std::collections::HashMap;
+
 use tonic::{transport::Server, Request, Response, Status};
 use tracing::{grpc, instrument};
 
@@ -14,10 +16,11 @@ use self::proto::{notifications_service_server::NotificationsService, *};
 use super::config::*;
 use crate::{
     app::*,
+    messages::LocalizedPushMessage,
     notification_event,
     primitives::{
-        self, GaloyEmailAddress, GaloyUserId, PushDeviceToken, UserNotificationCategory,
-        UserNotificationChannel,
+        self, GaloyEmailAddress, GaloyLocale, GaloyUserId, PushDeviceToken,
+        UserNotificationCategory, UserNotificationChannel,
     },
 };
 
@@ -423,6 +426,49 @@ impl NotificationsService for Notifications {
                         ),
                         direction,
                     })
+                    .await?;
+            }
+            Some(proto::NotificationEvent {
+                data:
+                    Some(proto::notification_event::Data::MarketingNotificationTriggered(
+                        proto::MarketingNotificationTriggered {
+                            localized_push_content,
+                            user_ids,
+                        },
+                    )),
+            }) => {
+                let push_content: HashMap<GaloyLocale, LocalizedPushMessage> =
+                    localized_push_content
+                        .into_iter()
+                        .map(|(locale, localized_push_message)| {
+                            let locale = primitives::GaloyLocale::from(locale);
+
+                            (
+                                locale,
+                                LocalizedPushMessage {
+                                    title: localized_push_message.title,
+                                    body: localized_push_message.body,
+                                },
+                            )
+                        })
+                        .collect();
+
+                let user_ids: Vec<GaloyUserId> =
+                    user_ids.into_iter().map(GaloyUserId::from).collect();
+
+                let default_push_content = push_content
+                    .get(&GaloyLocale::default())
+                    .cloned()
+                    .ok_or_else(|| Status::invalid_argument("default push content is required"))?;
+
+                self.app
+                    .handle_marketing_notification_triggered_event(
+                        user_ids,
+                        notification_event::MarketingNotificationTriggered {
+                            push_content,
+                            default_push_content,
+                        },
+                    )
                     .await?;
             }
             _ => return Err(Status::invalid_argument("event is required")),
