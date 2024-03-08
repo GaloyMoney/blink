@@ -268,6 +268,13 @@ const lockedPendingPaymentSteps = async ({
   const { journalId } = pendingPayment
   const { walletId } = notificationRecipient
 
+  addAttributesToCurrentSpan({
+    "payment.context": "updatePendingPayment",
+    "payment.request.paymentHash": paymentHash,
+    "payment.request.destination": destination,
+    "payment.senderWalletCurrency": pendingPayment.currency,
+  })
+
   const paymentLogger = logger.child({
     topic: "payment",
     protocol: "lightning",
@@ -309,13 +316,10 @@ const lockedPendingPaymentSteps = async ({
   }
 
   addAttributesToCurrentSpan({
-    "payment.request.paymentHash": paymentHash,
-    "payment.request.destination": destination,
     "payment.btcAmount": paymentFlow.btcPaymentAmount.amount.toString(),
     "payment.btcFee": paymentFlow.btcProtocolAndBankFee.amount.toString(),
     "payment.usdAmount": paymentFlow.usdPaymentAmount.amount.toString(),
     "payment.usdFee": paymentFlow.usdProtocolAndBankFee.amount.toString(),
-    "payment.senderWalletCurrency": pendingPayment.currency,
   })
 
   const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
