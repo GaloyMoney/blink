@@ -6,9 +6,9 @@ describe("Point of Sale", () => {
   it("should navigate to user cash register", () => {
     cy.visit("/")
 
-    cy.get("input[data-testid=username-txt]").should("exist")
-    cy.get("input[data-testid=username-txt]").type(username)
-    cy.get("button[data-testid=submit-btn]").click()
+    cy.get("[data-testid=username-input]").should("exist")
+    cy.get("[data-testid=username-input]").type("test_user_a")
+    cy.get("[data-testid=submit-btn]").click()
 
     cy.url().should("include", `/${username}`)
   })
