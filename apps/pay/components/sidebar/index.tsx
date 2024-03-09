@@ -133,7 +133,22 @@ export function SideBar({ username }: { username: string }) {
                 </SheetClose>
               ),
             )}
-
+            <Link style={{ textDecoration: "none" }} href="/setuppwa">
+              <div
+                className="rounded-lg p-2 flex items-center gap-2 text-black "
+                onClick={() => {
+                  localStorage.removeItem("username")
+                }}
+              >
+                <Image
+                  width={20}
+                  height={20}
+                  src="/icons/user.svg"
+                  alt="change username"
+                />
+                Change username
+              </div>
+            </Link>
             <div className="flex flex-col justify-start align-content-center gap-1">
               <div className="text-md font-semibold flex ">Currency</div>
               <CurrencyDropdown
@@ -188,7 +203,7 @@ export function SideBar({ username }: { username: string }) {
               </button>
               <SheetClose asChild>
                 <button
-                  className="bg-slate-200 rounded-full p-2  w-52 flex justify-center align-content-center gap-2"
+                  className="bg-slate-100 rounded-full p-2  w-52 flex justify-center align-content-center gap-2"
                   onClick={() => {
                     dispatch({
                       type: ACTIONS.PINNED_TO_HOMESCREEN_MODAL_VISIBLE,
