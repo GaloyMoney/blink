@@ -613,6 +613,22 @@ export const NotificationsService = (): INotificationsService => {
     }
   }
 
+  const triggerMarketingNotification = async ({
+    userIds,
+    deepLink,
+    localizedPushContent,
+  }: {
+    userIds: UserId[]
+    deepLink: string | undefined
+    localizedPushContent: {
+      title: string
+      body: string
+      language: UserLanguage
+    }[]
+  }): Promise<true | NotificationsServiceError> => {
+    throw new Error("Not implemented")
+  }
+
   // trace everything except price update because it runs every 30 seconds
   return {
     priceUpdate,
@@ -631,6 +647,7 @@ export const NotificationsService = (): INotificationsService => {
         updateEmailAddress,
         removeEmailAddress,
         removePushDeviceToken,
+        triggerMarketingNotification,
       },
     }),
   }

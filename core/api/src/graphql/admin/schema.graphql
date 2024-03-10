@@ -351,6 +351,7 @@ type Query {
   accountDetailsByUserPhone(phone: Phone!): AuditedAccount!
   accountDetailsByUsername(username: Username!): AuditedAccount!
   allLevels: [AccountLevel!]!
+  filteredUserCount(phoneCountryCodesFilter: [CountryCode!], userIdsFilter: [ID!]): Int!
   lightningInvoice(hash: PaymentHash!): LightningInvoice!
   lightningPayment(hash: PaymentHash!): LightningPayment!
   listWalletIds(walletCurrency: WalletCurrency!): [WalletId!]!
@@ -459,7 +460,7 @@ type TransactionEdge {
 input TriggerMarketingNotificationInput {
   deepLink: String
   localizedPushContent: [LocalizedPushContentInput!]!
-  phoneCountryCodesFilter: [CountryCode]
+  phoneCountryCodesFilter: [CountryCode!]
   userIdsFilter: [ID!]
 }
 

@@ -108,4 +108,14 @@ interface INotificationsService {
   }): Promise<true | NotificationsServiceError>
 
   removeEmailAddress(args: { userId: UserId }): Promise<true | NotificationsServiceError>
+
+  triggerMarketingNotification(args: {
+    userIds: UserId[]
+    deepLink: string | undefined
+    localizedPushContent: {
+      title: string
+      body: string
+      language: UserLanguage
+    }[]
+  }): Promise<true | NotificationsServiceError>
 }

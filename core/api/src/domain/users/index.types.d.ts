@@ -73,5 +73,12 @@ type UserUpdateInput = Omit<Partial<User>, "createdAt"> & {
 interface IUsersRepository {
   findById(id: UserId): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
+  findByFilter({
+    userIds,
+    phoneCountryCodes,
+  }: {
+    userIds: UserId[]
+    phoneCountryCodes: string[]
+  }): AsyncGenerator<UserId> | RepositoryError
   update(user: UserUpdateInput): Promise<User | RepositoryError>
 }
