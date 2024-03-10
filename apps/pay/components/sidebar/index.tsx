@@ -10,7 +10,7 @@ import { OverlayTrigger, Tooltip } from "react-bootstrap"
 
 import { useState } from "react"
 
-import { signIn, useSession } from "next-auth/react"
+import { signIn, signOut, useSession } from "next-auth/react"
 
 import CurrencyDropdown from "../currency/currency-dropdown"
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTrigger } from "../sheet"
@@ -117,8 +117,20 @@ export function SideBar({ username }: { username: string }) {
             >
               {signedInUser ? (
                 <>
-                  <p className="text-md font-semibold mb-1">Signed in as</p>
-                  <p className="text-sm mb-0">{signedInUser.username}</p>
+                  <div className="flex justify-between">
+                    <p className="text-md font-semibold mb-1">Signed in as</p>
+                    <Image
+                      className="cursor-pointer"
+                      onClick={() => signOut()}
+                      alt="logout"
+                      src={"/icons/logout.svg"}
+                      width={20}
+                      height={20}
+                    ></Image>
+                  </div>
+                  <p className="text-sm mb-0">
+                    {signedInUser.username || signedInUser.id}
+                  </p>
                 </>
               ) : (
                 <p className="text-md font-semibold mb-1">Sign in</p>
