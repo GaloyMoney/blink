@@ -6,13 +6,14 @@ import { MeDocument, MeQuery } from "@/lib/graphql/generated"
 gql`
   query me {
     me {
+      id
       username
     }
   }
 `
 
 export async function fetchUserData({ token }: { token: string }) {
-  const client = apollo.authenticate(token).getClient()
+  const client = apollo.authorized(token).getClient()
 
   try {
     const data = await client.query<MeQuery>({
