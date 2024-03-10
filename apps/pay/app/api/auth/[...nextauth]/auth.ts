@@ -24,7 +24,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: env.CLIENT_SECRET,
       wellKnown: `${env.HYDRA_PUBLIC}/.well-known/openid-configuration`,
       authorization: {
-        params: { scope: "read write" },
+        params: { scope: "read" },
       },
       idToken: false,
       name: "Blink",
