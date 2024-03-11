@@ -1,0 +1,10 @@
+mutation triggerMarketingNotification(
+  $input: TriggerMarketingNotificationInput!
+) {
+  triggerMarketingNotification(input: $input) {
+    errors {
+      message
+    }
+    success
+  }
+}
