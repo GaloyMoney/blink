@@ -96,7 +96,7 @@ export function SideBar({ username }: { username: string }) {
             <span className="block w-8 h-0.5 bg-black"></span>
           </button>
         </SheetTrigger>
-        <SheetContent>
+        <SheetContent onOpenAutoFocus={(e) => e.preventDefault()}>
           <SheetHeader>
             <p className="text-xl font-semibold text-left">Pay {username}</p>
           </SheetHeader>

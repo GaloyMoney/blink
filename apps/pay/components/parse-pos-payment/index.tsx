@@ -80,20 +80,30 @@ function ParsePayment({
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       const { key } = event
-      if (key === "Backspace") {
-        dispatch({ type: ACTIONS.DELETE_DIGIT })
-      } else if (!isNaN(Number(key))) {
-        dispatch({ type: ACTIONS.ADD_DIGIT, payload: key })
-      } else if (key === "." && currencyMetadata.fractionDigits > 0) {
-        dispatch({ type: ACTIONS.ADD_DIGIT, payload: key })
+      if (!state.createdInvoice) {
+        if (key === "Backspace") {
+          dispatch({ type: ACTIONS.DELETE_DIGIT })
+        } else if (!isNaN(Number(key))) {
+          dispatch({ type: ACTIONS.ADD_DIGIT, payload: key })
+        } else if (key === "." && currencyMetadata.fractionDigits > 0) {
+          dispatch({ type: ACTIONS.ADD_DIGIT, payload: key })
+        } else if (key === "Enter") {
+          dispatch({
+            type: ACTIONS.CREATE_INVOICE,
+            payload: state.currentAmount,
+          })
+        }
+      } else {
+        if (key === "Backspace") {
+          dispatch({ type: ACTIONS.CREATE_NEW_INVOICE })
+        }
       }
     }
     window.addEventListener("keydown", handleKeyPress)
     return () => {
       window.removeEventListener("keydown", handleKeyPress)
     }
-  }, [dispatch, currencyMetadata.fractionDigits])
-
+  }, [dispatch, currencyMetadata.fractionDigits, state.createdInvoice])
   // Update Params From Current Amount
   const handleAmountChange = (skipRouterPush?: boolean) => {
     const amount = state.currentAmount
