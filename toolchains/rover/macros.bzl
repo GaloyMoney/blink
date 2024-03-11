@@ -136,6 +136,9 @@ def sdl_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
         out.as_output()
     )
 
+    if ctx.attrs.src:
+        cmd.hidden(ctx.attrs.src)
+
     ctx.actions.run(cmd, category = "sdl")
     return [DefaultInfo(default_output = out)]
 
@@ -149,6 +152,11 @@ sdl = rule(
         "args": attrs.list(
             attrs.string(),
             default = [],
+        ),
+        "src": attrs.option(
+            attrs.source(),
+            default = None,
+            doc = """Source files that the generator will depends on""",
         ),
         "_python_toolchain": attrs.toolchain_dep(
             default = "toolchains//:python",
