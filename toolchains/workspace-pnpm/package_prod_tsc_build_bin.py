@@ -6,6 +6,7 @@ production node_modules.
 import argparse
 import os
 import stat
+from uuid import uuid4
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
@@ -49,6 +50,7 @@ if __name__ == "__main__":
         js_path = os.path.join(dist_path, args.run_file)
         binary_content = [
             "#!/usr/bin/env sh",
+            f"# Random uuid to represent unique build: {uuid4()}",
             f"exec node \"{js_path}\" \"$@\""
         ]
 
