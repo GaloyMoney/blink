@@ -25,7 +25,7 @@ export default async function UsernameLayout({ children, params }: Props) {
   let response: ApolloQueryResult<AccountDefaultWalletsQuery> | { errorMessage: string }
   try {
     response = await apollo
-      .unauthorized()
+      .unauthenticated()
       .getClient()
       .query<AccountDefaultWalletsQuery>({
         query: AccountDefaultWalletsDocument,

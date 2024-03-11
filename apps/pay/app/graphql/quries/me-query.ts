@@ -13,7 +13,7 @@ gql`
 `
 
 export async function fetchUserData({ token }: { token: string }) {
-  const client = apollo.authorized(token).getClient()
+  const client = apollo.authenticated(token).getClient()
 
   try {
     const data = await client.query<MeQuery>({

@@ -25,7 +25,7 @@ const createApolloClient = (options?: ClientOptions) => {
 }
 
 export const apollo = {
-  authorized: (token: string) =>
+  authenticated: (token: string) =>
     registerApolloClient(() => createApolloClient({ token })),
-  unauthorized: () => registerApolloClient(() => createApolloClient()),
+  unauthenticated: () => registerApolloClient(() => createApolloClient()),
 }
