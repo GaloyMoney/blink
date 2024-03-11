@@ -368,7 +368,7 @@ cargo.rust_library(
         ":async-trait-0.1.74",
         ":base64-0.13.1",
         ":bytes-1.5.0",
-        ":chrono-0.4.34",
+        ":chrono-0.4.35",
         ":fnv-1.0.7",
         ":futures-util-0.3.30",
         ":http-0.2.12",
@@ -963,23 +963,23 @@ cargo.rust_library(
 
 alias(
     name = "chrono",
-    actual = ":chrono-0.4.34",
+    actual = ":chrono-0.4.35",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "chrono-0.4.34.crate",
-    sha256 = "5bc015644b92d5890fab7489e49d21f879d5c990186827d42ec511919404f38b",
-    strip_prefix = "chrono-0.4.34",
-    urls = ["https://crates.io/api/v1/crates/chrono/0.4.34/download"],
+    name = "chrono-0.4.35.crate",
+    sha256 = "8eaf5903dcbc0a39312feb77df2ff4c76387d591b9fc7b04a238dcf8bb62639a",
+    strip_prefix = "chrono-0.4.35",
+    urls = ["https://crates.io/api/v1/crates/chrono/0.4.35/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "chrono-0.4.34",
-    srcs = [":chrono-0.4.34.crate"],
+    name = "chrono-0.4.35",
+    srcs = [":chrono-0.4.35.crate"],
     crate = "chrono",
-    crate_root = "chrono-0.4.34.crate/src/lib.rs",
+    crate_root = "chrono-0.4.35.crate/src/lib.rs",
     edition = "2021",
     features = [
         "alloc",
@@ -2620,7 +2620,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":base64-0.13.1",
-        ":chrono-0.4.34",
+        ":chrono-0.4.35",
         ":http-0.2.12",
         ":hyper-0.14.27",
         ":itertools-0.10.5",
@@ -7533,7 +7533,7 @@ cargo.rust_library(
         "std",
     ],
     named_deps = {
-        "chrono_0_4": ":chrono-0.4.34",
+        "chrono_0_4": ":chrono-0.4.35",
         "indexmap_1": ":indexmap-1.9.3",
         "time_0_3": ":time-0.3.30",
     },
@@ -7574,7 +7574,7 @@ cargo.rust_library(
         "std",
     ],
     named_deps = {
-        "chrono_0_4": ":chrono-0.4.34",
+        "chrono_0_4": ":chrono-0.4.35",
         "indexmap_1": ":indexmap-1.9.3",
         "indexmap_2": ":indexmap-2.2.1",
         "time_0_3": ":time-0.3.30",
@@ -8163,7 +8163,7 @@ cargo.rust_library(
         ":atoi-2.0.0",
         ":byteorder-1.5.0",
         ":bytes-1.5.0",
-        ":chrono-0.4.34",
+        ":chrono-0.4.35",
         ":crc-3.0.1",
         ":crossbeam-queue-0.3.8",
         ":dotenvy-0.15.7",
@@ -8313,7 +8313,7 @@ cargo.rust_library(
         ":bitflags-2.4.1",
         ":byteorder-1.5.0",
         ":bytes-1.5.0",
-        ":chrono-0.4.34",
+        ":chrono-0.4.35",
         ":crc-3.0.1",
         ":digest-0.10.7",
         ":dotenvy-0.15.7",
@@ -8383,7 +8383,7 @@ cargo.rust_library(
         ":base64-0.21.5",
         ":bitflags-2.4.1",
         ":byteorder-1.5.0",
-        ":chrono-0.4.34",
+        ":chrono-0.4.35",
         ":crc-3.0.1",
         ":dotenvy-0.15.7",
         ":futures-channel-0.3.30",
@@ -8440,7 +8440,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":atoi-2.0.0",
-        ":chrono-0.4.34",
+        ":chrono-0.4.35",
         ":flume-0.11.0",
         ":futures-channel-0.3.30",
         ":futures-core-0.3.30",
@@ -8482,7 +8482,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":anymap2-0.13.0",
-        ":chrono-0.4.34",
+        ":chrono-0.4.35",
         ":dotenv-0.15.0",
         ":log-0.4.20",
         ":serde-1.0.197",
@@ -8884,7 +8884,7 @@ cargo.rust_binary(
         ":async-graphql-6.0.11",
         ":async-graphql-axum-6.0.11",
         ":axum-0.6.20",
-        ":chrono-0.4.34",
+        ":chrono-0.4.35",
         ":clap-4.5.2",
         ":derive_builder-0.13.1",
         ":futures-0.3.30",

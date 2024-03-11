@@ -40,6 +40,7 @@ pub struct PriceChanged {
 
 impl PriceChanged {
     const NOTIFICATION_THRESHOLD: ChangePercentage = ChangePercentage(5.0);
+    #[allow(deprecated)] // recommndation is try_days but Option.unwrap() is not yet const fn
     const COOL_OFF_PERIOD: chrono::Duration = chrono::Duration::days(2);
 
     pub fn should_notify(&self, last_trigger: Option<chrono::DateTime<chrono::Utc>>) -> bool {
@@ -104,7 +105,9 @@ mod tests {
             change_percent: ChangePercentage(5.1),
         };
         assert!(price_changed.should_notify(None));
-        assert!(price_changed.should_notify(Some(chrono::Utc::now() - chrono::Duration::days(3))));
+        assert!(price_changed.should_notify(Some(
+            chrono::Utc::now() - chrono::Duration::try_days(3).unwrap()
+        )));
     }
 
     #[test]
