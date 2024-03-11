@@ -142,7 +142,7 @@ def sdl_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
 sdl = rule(
     impl = sdl_impl,
     attrs = {
-        "generator": attrs.dep(
+        "generator": attrs.exec_dep(
             providers = [RunInfo],
             doc = """Generator that will output the sdl""",
         ),
