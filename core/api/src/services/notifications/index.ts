@@ -7,6 +7,7 @@ import {
 import {
   TransactionType as ProtoTransactionType,
   Money as ProtoMoney,
+  LocalizedPushContent,
   AddPushDeviceTokenRequest,
   DisableNotificationCategoryRequest,
   DisableNotificationChannelRequest,
@@ -20,6 +21,7 @@ import {
   HandleNotificationEventRequest,
   NotificationEvent,
   TransactionOccurred,
+  MarketingNotificationTriggered,
 } from "./proto/notifications_pb"
 
 import * as notificationsGrpc from "./grpc-client"
@@ -615,18 +617,44 @@ export const NotificationsService = (): INotificationsService => {
 
   const triggerMarketingNotification = async ({
     userIds,
-    deepLink,
     localizedPushContent,
   }: {
     userIds: UserId[]
-    deepLink: string | undefined
     localizedPushContent: {
       title: string
       body: string
       language: UserLanguage
     }[]
   }): Promise<true | NotificationsServiceError> => {
-    throw new Error("Not implemented")
+    try {
+      const marketing_notification = new MarketingNotificationTriggered()
+      marketing_notification.setUserIdsList(userIds)
+
+      localizedPushContent.forEach((content) => {
+        const { title, body, language } = content
+        const localizedContent = new LocalizedPushContent()
+        localizedContent.setTitle(title)
+        localizedContent.setBody(body)
+        marketing_notification
+          .getLocalizedPushContentMap()
+          .set(language, localizedContent)
+      })
+
+      const event = new NotificationEvent()
+      event.setMarketingNotificationTriggered(marketing_notification)
+
+      const request = new HandleNotificationEventRequest()
+      request.setEvent(event)
+
+      await notificationsGrpc.handleNotificationEvent(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      return true
+    } catch (err) {
+      return handleCommonNotificationErrors(err)
+    }
   }
 
   // trace everything except price update because it runs every 30 seconds

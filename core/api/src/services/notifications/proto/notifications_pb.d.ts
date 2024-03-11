@@ -640,6 +640,11 @@ export class NotificationEvent extends jspb.Message {
     getPrice(): PriceChanged | undefined;
     setPrice(value?: PriceChanged): NotificationEvent;
 
+    hasMarketingNotificationTriggered(): boolean;
+    clearMarketingNotificationTriggered(): void;
+    getMarketingNotificationTriggered(): MarketingNotificationTriggered | undefined;
+    setMarketingNotificationTriggered(value?: MarketingNotificationTriggered): NotificationEvent;
+
     getDataCase(): NotificationEvent.DataCase;
 
     serializeBinary(): Uint8Array;
@@ -661,6 +666,7 @@ export namespace NotificationEvent {
         identityVerificationReviewStarted?: IdentityVerificationReviewStarted.AsObject,
         transactionOccurred?: TransactionOccurred.AsObject,
         price?: PriceChanged.AsObject,
+        marketingNotificationTriggered?: MarketingNotificationTriggered.AsObject,
     }
 
     export enum DataCase {
@@ -672,6 +678,7 @@ export namespace NotificationEvent {
         IDENTITY_VERIFICATION_REVIEW_STARTED = 5,
         TRANSACTION_OCCURRED = 6,
         PRICE = 7,
+        MARKETING_NOTIFICATION_TRIGGERED = 8,
     }
 
 }
@@ -884,6 +891,56 @@ export namespace PriceChanged {
     }
 }
 
+export class MarketingNotificationTriggered extends jspb.Message { 
+    clearUserIdsList(): void;
+    getUserIdsList(): Array<string>;
+    setUserIdsList(value: Array<string>): MarketingNotificationTriggered;
+    addUserIds(value: string, index?: number): string;
+
+    getLocalizedPushContentMap(): jspb.Map<string, LocalizedPushContent>;
+    clearLocalizedPushContentMap(): void;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): MarketingNotificationTriggered.AsObject;
+    static toObject(includeInstance: boolean, msg: MarketingNotificationTriggered): MarketingNotificationTriggered.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: MarketingNotificationTriggered, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): MarketingNotificationTriggered;
+    static deserializeBinaryFromReader(message: MarketingNotificationTriggered, reader: jspb.BinaryReader): MarketingNotificationTriggered;
+}
+
+export namespace MarketingNotificationTriggered {
+    export type AsObject = {
+        userIdsList: Array<string>,
+
+        localizedPushContentMap: Array<[string, LocalizedPushContent.AsObject]>,
+    }
+}
+
+export class LocalizedPushContent extends jspb.Message { 
+    getTitle(): string;
+    setTitle(value: string): LocalizedPushContent;
+    getBody(): string;
+    setBody(value: string): LocalizedPushContent;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): LocalizedPushContent.AsObject;
+    static toObject(includeInstance: boolean, msg: LocalizedPushContent): LocalizedPushContent.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: LocalizedPushContent, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): LocalizedPushContent;
+    static deserializeBinaryFromReader(message: LocalizedPushContent, reader: jspb.BinaryReader): LocalizedPushContent;
+}
+
+export namespace LocalizedPushContent {
+    export type AsObject = {
+        title: string,
+        body: string,
+    }
+}
+
 export enum NotificationChannel {
     PUSH = 0,
 }
@@ -893,6 +950,7 @@ export enum NotificationCategory {
     PAYMENTS = 1,
     BALANCE = 2,
     ADMIN_NOTIFICATION = 3,
+    MARKETING = 4,
 }
 
 export enum CircleType {
