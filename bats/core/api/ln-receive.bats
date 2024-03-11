@@ -529,7 +529,8 @@ usd_amount=50
 
   # Receive payment
   lnd_outside_cli payinvoice -f \
-    --pay_req "$payment_request"
+    --pay_req "$payment_request" \
+    &
 
   # Ensure invoice status is pending
   variables=$(
@@ -558,6 +559,7 @@ usd_amount=50
 
   # Start trigger
   rm $TRIGGER_STOP_FILE
+  retry 10 1 trigger_is_started
 
   # check if ln invoice was settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
