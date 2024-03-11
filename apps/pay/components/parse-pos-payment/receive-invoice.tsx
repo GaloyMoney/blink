@@ -34,7 +34,6 @@ interface Props {
 }
 
 const USD_MAX_INVOICE_TIME = 5 // minutes
-const PROGRESS_BAR_MAX_WIDTH = 100 // percent
 
 function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: Props) {
   const deviceDetails = window.navigator?.userAgent
@@ -47,7 +46,6 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
 
   const { usdToSats, satsToUsd } = useSatPrice()
 
-  const [progress, setProgress] = React.useState(PROGRESS_BAR_MAX_WIDTH)
   const [seconds, setSeconds] = React.useState(0)
   const [minutes, setMinutes] = React.useState(USD_MAX_INVOICE_TIME)
 
@@ -87,10 +85,6 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
       } else {
         setMinutes(Math.floor(remainingSeconds / 60))
         setSeconds(remainingSeconds % 60)
-        setProgress(
-          PROGRESS_BAR_MAX_WIDTH -
-            (elapsedTime / (USD_INVOICE_EXPIRE_INTERVAL * 1000)) * 100,
-        )
       }
     }, 1000)
 
@@ -98,11 +92,6 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
     // we don't want to re-run it when any particular prop or state value changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  const progressBarStyle = {
-    width: `${progress}%`,
-    backgroundColor: minutes < 1 ? "rgb(255, 0, 0)" : "rgba(83, 111, 242, 1)",
-  }
 
   const { createInvoice, data, errorsMessage, loading, invoiceStatus } = useCreateInvoice(
     {
@@ -255,11 +244,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
     <div className={styles.invoiceContainer}>
       {recipientWalletCurrency === "USD" && (
         <div className={styles.timerContainer}>
-          <p>{`${minutes}:${seconds}`}</p>
-          <div className={styles.timer}>
-            <span style={progressBarStyle}></span>
-          </div>
-          <p>{`${USD_MAX_INVOICE_TIME}:00`}</p>
+          <p>Invoice Expires in {`${minutes} Minutes ${seconds} Seconds`}</p>
         </div>
       )}
       <div>
