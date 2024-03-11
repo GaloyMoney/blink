@@ -1,7 +1,8 @@
+import { TriggerMarketingNotificationPayload } from "../../types/payload/trigger-marketing-notification"
+
 import { GT } from "@/graphql/index"
 import CountryCode from "@/graphql/public/types/scalar/country-code"
 import Language from "@/graphql/shared/types/scalar/language"
-import { TriggerMarketingNotificationPayload } from "../../types/payload/trigger-marketing-notification"
 import { Admin } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 

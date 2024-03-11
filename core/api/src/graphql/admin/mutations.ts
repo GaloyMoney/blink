@@ -6,8 +6,9 @@ import MerchantMapValidateMutation from "./root/mutation/merchant-map-validate"
 import AccountUpdateLevelMutation from "./root/mutation/account-update-level"
 import AccountUpdateStatusMutation from "./root/mutation/account-update-status"
 
-import { GT } from "@/graphql/index"
 import TriggerMarketingNotificationMutation from "./root/mutation/trigger-marketing-notification"
+
+import { GT } from "@/graphql/index"
 
 export const mutationFields = {
   unauthed: {},

@@ -49,7 +49,7 @@ export const triggerMarketingNotification = async ({
     })
   }
 
-  let userIdsToNotify: UserId[] = []
+  const userIdsToNotify: UserId[] = []
   const userIdsGenerator = UsersRepository().findByFilter({
     userIds: checkedUserIds,
     phoneCountryCodes: phoneCountryCodesFilter || [],

@@ -47,7 +47,7 @@ export const UsersRepository = (): IUsersRepository => {
     userIds: UserId[]
     phoneCountryCodes: string[]
   }): AsyncGenerator<UserId> | RepositoryError {
-    let conditions: (
+    const conditions: (
       | { userId?: { $in: UserId[] } }
       | { "phoneMetadata.countryCode": { $in: string[] } }
     )[] = []
@@ -60,7 +60,7 @@ export const UsersRepository = (): IUsersRepository => {
       conditions.push({ "phoneMetadata.countryCode": { $in: phoneCountryCodes } })
     }
 
-    let query = conditions.length > 0 ? { $and: conditions } : {}
+    const query = conditions.length > 0 ? { $and: conditions } : {}
 
     try {
       const cursor = User.find(query).cursor()
