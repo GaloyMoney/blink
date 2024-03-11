@@ -617,7 +617,6 @@ export const NotificationsService = (): INotificationsService => {
 
   const triggerMarketingNotification = async ({
     userIds,
-    deepLink,
     localizedPushContent,
   }: {
     userIds: UserId[]

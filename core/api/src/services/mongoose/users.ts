@@ -40,13 +40,7 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  const findByFilter = async function* ({
-    userIds,
-    phoneCountryCodes,
-  }: {
-    userIds: UserId[]
-    phoneCountryCodes: string[]
-  }): AsyncGenerator<UserId> | RepositoryError {
+  const _constructFilter = (userIds: UserId[], phoneCountryCodes: string[]) => {
     const conditions: (
       | { userId?: { $in: UserId[] } }
       | { "phoneMetadata.countryCode": { $in: string[] } }
@@ -60,7 +54,17 @@ export const UsersRepository = (): IUsersRepository => {
       conditions.push({ "phoneMetadata.countryCode": { $in: phoneCountryCodes } })
     }
 
-    const query = conditions.length > 0 ? { $and: conditions } : {}
+    return conditions.length > 0 ? { $and: conditions } : {}
+  }
+
+  const findByFilter = async function* ({
+    userIds,
+    phoneCountryCodes,
+  }: {
+    userIds: UserId[]
+    phoneCountryCodes: string[]
+  }): AsyncGenerator<UserId> | RepositoryError {
+    const query = _constructFilter(userIds, phoneCountryCodes)
 
     try {
       const cursor = User.find(query).cursor()
@@ -71,6 +75,24 @@ export const UsersRepository = (): IUsersRepository => {
       return parseRepositoryError(err)
     }
   }
+
+  const filteredCount = async ({
+    userIds,
+    phoneCountryCodes,
+  }: {
+    userIds: UserId[]
+    phoneCountryCodes: string[]
+  }): Promise<number | RepositoryError> => {
+    const query = _constructFilter(userIds, phoneCountryCodes)
+
+    try {
+      const count = await User.countDocuments(query)
+      return count
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
   // TODO: should be replaced with listIdentities({ credentialsIdentifiers: phone })
   const findByPhone = async (phone: PhoneNumber): Promise<User | RepositoryError> => {
     try {
@@ -125,6 +147,7 @@ export const UsersRepository = (): IUsersRepository => {
     findById,
     findByPhone,
     findByFilter,
+    filteredCount,
     update,
   }
 }

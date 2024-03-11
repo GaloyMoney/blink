@@ -92,18 +92,13 @@ export const filteredUserCount = async ({
     checkedUserIds.push(checkedUserId)
   }
 
-  const userIdsGenerator = UsersRepository().findByFilter({
+  const count = UsersRepository().filteredCount({
     userIds: checkedUserIds,
     phoneCountryCodes: phoneCountryCodesFilter || [],
   })
 
-  if (userIdsGenerator instanceof Error) {
-    return userIdsGenerator
-  }
-
-  let count = 0
-  for await (const _ of userIdsGenerator) {
-    count++
+  if (count instanceof Error) {
+    return count
   }
 
   return count

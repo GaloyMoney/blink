@@ -80,5 +80,12 @@ interface IUsersRepository {
     userIds: UserId[]
     phoneCountryCodes: string[]
   }): AsyncGenerator<UserId> | RepositoryError
+  filteredCount({
+    userIds,
+    phoneCountryCodes,
+  }: {
+    userIds: UserId[]
+    phoneCountryCodes: string[]
+  }): Promise<number | RepositoryError>
   update(user: UserUpdateInput): Promise<User | RepositoryError>
 }
