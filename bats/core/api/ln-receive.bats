@@ -532,6 +532,10 @@ usd_amount=50
     --pay_req "$payment_request" \
     &
 
+  # Check that invoice is retrievable from lnd1
+  invoice_from_lnd=$(lnd_cli lookupinvoice "$payment_hash")
+  [[ -n $invoice_from_lnd ]] || exit 1
+
   # Ensure invoice status is pending
   variables=$(
     jq -n \
