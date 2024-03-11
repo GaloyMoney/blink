@@ -558,7 +558,6 @@ usd_amount=50
 
   # Start trigger
   rm $TRIGGER_STOP_FILE
-  retry 10 1 trigger_is_started
 
   # check if ln invoice was settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
