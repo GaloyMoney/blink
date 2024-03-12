@@ -10,8 +10,14 @@ import "bootstrap/dist/css/bootstrap.css"
 import Head from "next/head"
 import Script from "next/script"
 
+import { getServerSession } from "next-auth"
+
+import { authOptions } from "./api/auth/[...nextauth]/auth"
+
 import { ApolloWrapper } from "@/components/apollo-wrapper"
 import { APP_DESCRIPTION } from "@/config/config"
+
+import SessionProvider from "@/components/session-provider"
 
 const inter = Inter_Tight({ subsets: ["latin"] })
 
@@ -20,7 +26,10 @@ export const metadata: Metadata = {
   description: "Blink official lightning network node",
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const session = await getServerSession(authOptions)
+  const token = session?.accessToken
+
   return (
     <html lang="en">
       <Head>
@@ -44,7 +53,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     `}
       </Script>
       <body className={inter.className}>
-        <ApolloWrapper>{children}</ApolloWrapper>
+        <SessionProvider>
+          <ApolloWrapper authToken={token}>{children}</ApolloWrapper>
+        </SessionProvider>
       </body>
     </html>
   )

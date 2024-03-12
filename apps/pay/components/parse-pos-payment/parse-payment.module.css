@@ -76,6 +76,21 @@
   margin-top: 1em;
 }
 
+.secondaryBtn {
+  background: var(--lighterGrey);
+  color: #000000;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  outline: none;
+  padding: 0.9em 3em;
+  border-radius: 10em;
+  gap: 0.5em;
+  cursor: pointer;
+}
+
 .invoiceContainer {
   display: grid;
   place-items: center;
@@ -96,7 +111,7 @@
   align-items: center;
   width: 300px;
   column-gap: 15px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 300;
   margin-top: 30px;
   margin-bottom: 5px;

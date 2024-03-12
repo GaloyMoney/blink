@@ -605,6 +605,12 @@ export type LnInvoice = Invoice & {
   readonly satoshis: Scalars['SatAmount'];
 };
 
+export type LnInvoiceCancelInput = {
+  readonly paymentHash: Scalars['PaymentHash'];
+  /** Wallet ID for a wallet associated with the current account. */
+  readonly walletId: Scalars['WalletId'];
+};
+
 export type LnInvoiceCreateInput = {
   /** Amount in satoshis. */
   readonly amount: Scalars['SatAmount'];
@@ -875,6 +881,8 @@ export type Mutation = {
   readonly intraLedgerUsdPaymentSend: PaymentSendPayload;
   /** Sends a payment to a lightning address. */
   readonly lnAddressPaymentSend: PaymentSendPayload;
+  /** Cancel an unpaid lightning invoice for an associated wallet. */
+  readonly lnInvoiceCancel: SuccessPayload;
   /**
    * Returns a lightning invoice for an associated wallet.
    * When invoice is paid the value will be credited to a BTC wallet.
@@ -1039,6 +1047,11 @@ export type MutationIntraLedgerUsdPaymentSendArgs = {
 
 export type MutationLnAddressPaymentSendArgs = {
   input: LnAddressPaymentSendInput;
+};
+
+
+export type MutationLnInvoiceCancelArgs = {
+  input: LnInvoiceCancelInput;
 };
 
 
@@ -2098,6 +2111,11 @@ export type AccountDefaultWalletsQueryVariables = Exact<{
 
 export type AccountDefaultWalletsQuery = { readonly __typename: 'Query', readonly accountDefaultWallet: { readonly __typename: 'PublicWallet', readonly id: string, readonly walletCurrency: WalletCurrency } };
 
+export type MeQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MeQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly id: string, readonly username?: string | null } | null };
+
 export type LnInvoiceCreateOnBehalfOfRecipientMutationVariables = Exact<{
   walletId: Scalars['WalletId'];
   amount: Scalars['SatAmount'];
@@ -2114,11 +2132,6 @@ export type AccountDefaultWalletQueryVariables = Exact<{
 
 
 export type AccountDefaultWalletQuery = { readonly __typename: 'Query', readonly accountDefaultWallet: { readonly __typename: 'PublicWallet', readonly id: string, readonly walletCurrency: WalletCurrency } };
-
-export type NodeIdsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type NodeIdsQuery = { readonly __typename: 'Query', readonly globals?: { readonly __typename: 'Globals', readonly nodesIds: ReadonlyArray<string> } | null };
 
 export type LnInvoicePaymentStatusSubscriptionVariables = Exact<{
   input: LnInvoicePaymentStatusInput;
@@ -2207,6 +2220,41 @@ export function useAccountDefaultWalletsLazyQuery(baseOptions?: Apollo.LazyQuery
 export type AccountDefaultWalletsQueryHookResult = ReturnType<typeof useAccountDefaultWalletsQuery>;
 export type AccountDefaultWalletsLazyQueryHookResult = ReturnType<typeof useAccountDefaultWalletsLazyQuery>;
 export type AccountDefaultWalletsQueryResult = Apollo.QueryResult<AccountDefaultWalletsQuery, AccountDefaultWalletsQueryVariables>;
+export const MeDocument = gql`
+    query me {
+  me {
+    id
+    username
+  }
+}
+    `;
+
+/**
+ * __useMeQuery__
+ *
+ * To run a query within a React component, call `useMeQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMeQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMeQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMeQuery(baseOptions?: Apollo.QueryHookOptions<MeQuery, MeQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MeQuery, MeQueryVariables>(MeDocument, options);
+      }
+export function useMeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeQuery, MeQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MeQuery, MeQueryVariables>(MeDocument, options);
+        }
+export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
+export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
+export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
 export const LnInvoiceCreateOnBehalfOfRecipientDocument = gql`
     mutation lnInvoiceCreateOnBehalfOfRecipient($walletId: WalletId!, $amount: SatAmount!, $descriptionHash: Hex32Bytes!) {
   mutationData: lnInvoiceCreateOnBehalfOfRecipient(
@@ -2288,40 +2336,6 @@ export function useAccountDefaultWalletLazyQuery(baseOptions?: Apollo.LazyQueryH
 export type AccountDefaultWalletQueryHookResult = ReturnType<typeof useAccountDefaultWalletQuery>;
 export type AccountDefaultWalletLazyQueryHookResult = ReturnType<typeof useAccountDefaultWalletLazyQuery>;
 export type AccountDefaultWalletQueryResult = Apollo.QueryResult<AccountDefaultWalletQuery, AccountDefaultWalletQueryVariables>;
-export const NodeIdsDocument = gql`
-    query nodeIds {
-  globals {
-    nodesIds
-  }
-}
-    `;
-
-/**
- * __useNodeIdsQuery__
- *
- * To run a query within a React component, call `useNodeIdsQuery` and pass it any options that fit your needs.
- * When your component renders, `useNodeIdsQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useNodeIdsQuery({
- *   variables: {
- *   },
- * });
- */
-export function useNodeIdsQuery(baseOptions?: Apollo.QueryHookOptions<NodeIdsQuery, NodeIdsQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<NodeIdsQuery, NodeIdsQueryVariables>(NodeIdsDocument, options);
-      }
-export function useNodeIdsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<NodeIdsQuery, NodeIdsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<NodeIdsQuery, NodeIdsQueryVariables>(NodeIdsDocument, options);
-        }
-export type NodeIdsQueryHookResult = ReturnType<typeof useNodeIdsQuery>;
-export type NodeIdsLazyQueryHookResult = ReturnType<typeof useNodeIdsLazyQuery>;
-export type NodeIdsQueryResult = Apollo.QueryResult<NodeIdsQuery, NodeIdsQueryVariables>;
 export const LnInvoicePaymentStatusDocument = gql`
     subscription lnInvoicePaymentStatus($input: LnInvoicePaymentStatusInput!) {
   lnInvoicePaymentStatus(input: $input) {

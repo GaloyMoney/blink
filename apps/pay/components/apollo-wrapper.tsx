@@ -13,12 +13,23 @@ import { getMainDefinition } from "@apollo/client/utilities"
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions"
 import { createClient } from "graphql-ws"
 
+import { setContext } from "@apollo/client/link/context"
+
 import { getClientSideGqlConfig } from "@/config/config"
 
-function makeClient() {
+function makeClient({ authToken }: { authToken: string | undefined }) {
   const httpLink = new HttpLink({
     uri: getClientSideGqlConfig().coreGqlUrl,
     fetchOptions: { cache: "no-store" },
+  })
+
+  const authLink = setContext((_, { headers }) => {
+    return {
+      headers: {
+        ...headers,
+        ...(authToken ? { ["Oauth2-Token"]: authToken } : {}),
+      },
+    }
   })
 
   const wsLink = new GraphQLWsLink(
@@ -69,6 +80,11 @@ function makeClient() {
     },
   })
 
+  let arrayLink = [errorLink, retryLink, httpLink]
+  if (authToken) {
+    arrayLink = [authLink, ...arrayLink]
+  }
+
   const link = split(
     ({ query }) => {
       const definition = getMainDefinition(query)
@@ -78,7 +94,7 @@ function makeClient() {
       )
     },
     wsLink,
-    ApolloLink.from([errorLink, retryLink, httpLink]),
+    ApolloLink.from(arrayLink),
   )
 
   return new NextSSRApolloClient({
@@ -95,6 +111,15 @@ function makeClient() {
   })
 }
 
-export function ApolloWrapper({ children }: React.PropsWithChildren) {
-  return <ApolloNextAppProvider makeClient={makeClient}>{children}</ApolloNextAppProvider>
+type ApolloWrapperProps = {
+  children: React.ReactNode
+  authToken?: string
+}
+
+export function ApolloWrapper({ children, authToken }: ApolloWrapperProps) {
+  const client = makeClient({ authToken })
+
+  return (
+    <ApolloNextAppProvider makeClient={() => client}>{children}</ApolloNextAppProvider>
+  )
 }
