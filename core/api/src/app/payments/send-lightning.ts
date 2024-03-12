@@ -420,29 +420,43 @@ const executePaymentViaIntraledger = async <
     level: senderAccount.level,
   }
 
-  return LockService().lockWalletId(senderWalletId, async (signal) =>
-    lockedPaymentViaIntraledgerSteps({
-      signal,
+  const paymentSendResult = await LockService().lockWalletId(
+    senderWalletId,
+    async (signal) =>
+      lockedPaymentViaIntraledgerSteps({
+        signal,
 
-      paymentHash,
-      paymentFlow,
+        paymentHash,
+        paymentFlow,
+        senderDisplayCurrency: senderAccount.displayCurrency,
+        senderUsername: senderAccount.username,
+        recipientDisplayCurrency: recipientAccount.displayCurrency,
+        recipientUsername: recipientAccount.username,
 
-      senderAccountId: senderAccount.id,
-      senderDisplayCurrency: senderAccount.displayCurrency,
-      senderUsername: senderAccount.username,
-      senderContactEnabled: senderAccount.contactEnabled,
+        memo,
 
-      recipientAccountId: recipientAccount.id,
-      recipientDisplayCurrency: recipientAccount.displayCurrency,
-      recipientUsername: recipientAccount.username,
-      recipientContactEnabled: recipientAccount.contactEnabled,
-
-      memo,
-
-      senderAsNotificationRecipient,
-      recipientAsNotificationRecipient,
-    }),
+        senderAsNotificationRecipient,
+        recipientAsNotificationRecipient,
+      }),
   )
+  if (paymentSendResult instanceof Error) return paymentSendResult
+
+  if (senderAccount.id !== recipientAccount.id) {
+    const addContactResult = await addContactsAfterSend({
+      senderContactEnabled: senderAccount.contactEnabled,
+      senderAccountId: senderAccount.id,
+      senderUsername: senderAccount.username,
+
+      recipientContactEnabled: recipientAccount.contactEnabled,
+      recipientAccountId: recipientAccount.id,
+      recipientUsername: recipientAccount.username,
+    })
+    if (addContactResult instanceof Error) {
+      recordExceptionInCurrentSpan({ error: addContactResult, level: ErrorLevel.Warn })
+    }
+  }
+
+  return paymentSendResult
 }
 
 const lockedPaymentViaIntraledgerSteps = async ({
@@ -450,16 +464,10 @@ const lockedPaymentViaIntraledgerSteps = async ({
 
   paymentHash,
   paymentFlow,
-
-  senderAccountId,
   senderDisplayCurrency,
   senderUsername,
-  senderContactEnabled,
-
-  recipientAccountId,
   recipientDisplayCurrency,
   recipientUsername,
-  recipientContactEnabled,
 
   memo,
 
@@ -470,16 +478,10 @@ const lockedPaymentViaIntraledgerSteps = async ({
 
   paymentHash: PaymentHash
   paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
-
-  senderAccountId: AccountId
   senderDisplayCurrency: DisplayCurrency
   senderUsername: Username | undefined
-  senderContactEnabled: boolean
-
-  recipientAccountId: AccountId
   recipientDisplayCurrency: DisplayCurrency
   recipientUsername: Username | undefined
-  recipientContactEnabled: boolean
 
   memo: string | null
 
@@ -633,24 +635,6 @@ const lockedPaymentViaIntraledgerSteps = async ({
     recipient: senderAsNotificationRecipient,
     transaction: senderWalletTransaction,
   })
-
-  if (senderAccountId !== recipientAccountId) {
-    const addContactResult = await addContactsAfterSend({
-      senderContactEnabled,
-      senderAccountId,
-      senderUsername,
-
-      recipientContactEnabled,
-      recipientAccountId,
-      recipientUsername,
-    })
-    if (addContactResult instanceof Error) {
-      recordExceptionInCurrentSpan({
-        error: addContactResult,
-        level: ErrorLevel.Warn,
-      })
-    }
-  }
 
   return {
     status: PaymentSendStatus.Success,
