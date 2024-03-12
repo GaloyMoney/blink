@@ -240,9 +240,18 @@ message PriceChanged {
 message MarketingNotificationTriggered {
   repeated string user_ids = 1;
   map<string, LocalizedPushContent> localized_push_content = 2;
+  optional DeepLink deep_link = 3;
 }
 
 message LocalizedPushContent {
   string title = 2;
   string body = 3;
+}
+
+enum DeepLink {
+  Circles = 0;
+  Price = 1;
+  Earn = 2;
+  Map = 3;
+  People = 4;
 }

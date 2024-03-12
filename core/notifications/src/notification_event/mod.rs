@@ -20,9 +20,14 @@ pub(super) use marketing_notification_triggered::*;
 pub(super) use price_changed::*;
 pub(super) use transaction_occurred::*;
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum DeepLink {
     None,
     Circles,
+    Price,
+    Earn,
+    Map,
+    People,
 }
 
 pub trait NotificationEvent: std::fmt::Debug + Send + Sync {

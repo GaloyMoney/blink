@@ -179,3 +179,15 @@ impl From<proto::PriceChangeDirection> for notification_event::PriceChangeDirect
         }
     }
 }
+
+impl From<proto::DeepLink> for notification_event::DeepLink {
+    fn from(link: proto::DeepLink) -> Self {
+        match link {
+            proto::DeepLink::Circles => notification_event::DeepLink::Circles,
+            proto::DeepLink::Price => notification_event::DeepLink::Price,
+            proto::DeepLink::Earn => notification_event::DeepLink::Earn,
+            proto::DeepLink::Map => notification_event::DeepLink::Map,
+            proto::DeepLink::People => notification_event::DeepLink::People,
+        }
+    }
+}

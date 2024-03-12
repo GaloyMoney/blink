@@ -23,6 +23,18 @@ impl DeepLink {
             DeepLink::Circles => {
                 data.insert("linkTo".to_string(), "/people/circles".to_string());
             }
+            DeepLink::Price => {
+                data.insert("linkTo".to_string(), "/price".to_string());
+            }
+            DeepLink::Earn => {
+                data.insert("linkTo".to_string(), "/earn".to_string());
+            }
+            DeepLink::Map => {
+                data.insert("linkTo".to_string(), "/map".to_string());
+            }
+            DeepLink::People => {
+                data.insert("linkTo".to_string(), "/people".to_string());
+            }
         }
     }
 }

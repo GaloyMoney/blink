@@ -434,6 +434,7 @@ impl NotificationsService for Notifications {
                         proto::MarketingNotificationTriggered {
                             localized_push_content,
                             user_ids,
+                            deep_link,
                         },
                     )),
             }) => {
@@ -461,12 +462,23 @@ impl NotificationsService for Notifications {
                     .cloned()
                     .ok_or_else(|| Status::invalid_argument("default push content is required"))?;
 
+                let deep_link = if let Some(deep_link) = deep_link {
+                    Some(
+                        proto::DeepLink::try_from(deep_link)
+                            .map(notification_event::DeepLink::from)
+                            .map_err(|e| Status::invalid_argument(e.to_string()))?,
+                    )
+                } else {
+                    None
+                };
+
                 self.app
                     .handle_marketing_notification_triggered_event(
                         user_ids,
                         notification_event::MarketingNotificationTriggered {
                             push_content,
                             default_push_content,
+                            deep_link,
                         },
                     )
                     .await?;
