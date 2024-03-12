@@ -1,14 +1,10 @@
 import React from "react"
 
-import Link from "next/link"
-
 import { ApolloQueryResult } from "@apollo/client"
 
 import { getClient } from "../ssr-client"
 
 import { defaultCurrencyMetadata } from "../currency-metadata"
-
-import styles from "./username.module.css"
 
 import UsernameLayoutContainer from "@/components/layouts/username-layout"
 import { InvoiceProvider } from "@/context/invoice-context"
@@ -16,6 +12,7 @@ import {
   AccountDefaultWalletsDocument,
   AccountDefaultWalletsQuery,
 } from "@/lib/graphql/generated"
+import ErrorMessage from "@/components/error"
 
 type Props = {
   children: React.ReactNode
@@ -42,13 +39,7 @@ export default async function UsernameLayout({ children, params }: Props) {
   }
 
   if ("errorMessage" in response) {
-    return (
-      <div className={styles.error}>
-        <p>{`${response.errorMessage}.`}</p>
-        <p>Please check the username in your browser URL and try again.</p>
-        <Link href={"/"}>Go back</Link>
-      </div>
-    )
+    return <ErrorMessage errorMessage={response.errorMessage}></ErrorMessage>
   }
 
   const initialState = {

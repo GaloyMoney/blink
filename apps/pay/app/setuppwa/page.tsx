@@ -66,6 +66,7 @@ const SetupPwa = () => {
                 Blink username
               </label>
               <input
+                data-testid="username-input"
                 className="w-full p-1.5 border-2 rounded-md bg-[var(--lighterGrey)]"
                 type="text"
                 name="username"
@@ -91,7 +92,9 @@ const SetupPwa = () => {
               </Suspense>
             </div>
           </div>
-          <button className="print-paycode-button w-1/2 m-2">Submit</button>
+          <button data-testid="submit-btn" className="print-paycode-button w-1/2 m-2">
+            Submit
+          </button>
         </form>
       </div>
     )
