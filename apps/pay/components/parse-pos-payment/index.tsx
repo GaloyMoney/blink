@@ -80,20 +80,30 @@ function ParsePayment({
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       const { key } = event
-      if (key === "Backspace") {
-        dispatch({ type: ACTIONS.DELETE_DIGIT })
-      } else if (!isNaN(Number(key))) {
-        dispatch({ type: ACTIONS.ADD_DIGIT, payload: key })
-      } else if (key === "." && currencyMetadata.fractionDigits > 0) {
-        dispatch({ type: ACTIONS.ADD_DIGIT, payload: key })
+      if (!state.createdInvoice) {
+        if (key === "Backspace") {
+          dispatch({ type: ACTIONS.DELETE_DIGIT })
+        } else if (!isNaN(Number(key))) {
+          dispatch({ type: ACTIONS.ADD_DIGIT, payload: key })
+        } else if (key === "." && currencyMetadata.fractionDigits > 0) {
+          dispatch({ type: ACTIONS.ADD_DIGIT, payload: key })
+        } else if (key === "Enter") {
+          dispatch({
+            type: ACTIONS.CREATE_INVOICE,
+            payload: state.currentAmount,
+          })
+        }
+      } else {
+        if (key === "Backspace") {
+          dispatch({ type: ACTIONS.CREATE_NEW_INVOICE })
+        }
       }
     }
     window.addEventListener("keydown", handleKeyPress)
     return () => {
       window.removeEventListener("keydown", handleKeyPress)
     }
-  }, [dispatch, currencyMetadata.fractionDigits])
-
+  }, [dispatch, currencyMetadata.fractionDigits, state.createdInvoice])
   // Update Params From Current Amount
   const handleAmountChange = (skipRouterPush?: boolean) => {
     const amount = state.currentAmount
@@ -225,7 +235,7 @@ function ParsePayment({
       <div className={styles.payBtnContainer}>
         <button
           data-testid="pay-btn"
-          className={state.createdInvoice ? styles.payNewBtn : styles.payBtn}
+          className={state.createdInvoice ? styles.secondaryBtn : styles.payBtn}
           onClick={() => {
             if (state.createdInvoice) {
               dispatch({ type: ACTIONS.CREATE_NEW_INVOICE })
@@ -237,13 +247,27 @@ function ParsePayment({
             }
           }}
         >
-          <Image
-            src={"/icons/lightning-icon.svg"}
-            alt="lightning icon"
-            width="20"
-            height="20"
-          />
-          {state.createdInvoice ? "Create new invoice" : "Create invoice"}
+          {state.createdInvoice ? (
+            <>
+              <Image
+                src="/icons/caret-left.svg"
+                alt="Back"
+                width="20"
+                height="20"
+              ></Image>
+              Back
+            </>
+          ) : (
+            <>
+              <Image
+                src={"/icons/lightning-icon.svg"}
+                alt="lightning icon"
+                width="20"
+                height="20"
+              />
+              Create invoice
+            </>
+          )}
         </button>
       </div>
     </div>

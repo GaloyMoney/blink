@@ -10,6 +10,12 @@ export const env = createEnv({
     REDIS_0_DNS: z.string().optional(),
     REDIS_1_DNS: z.string().optional(),
     REDIS_2_DNS: z.string().optional(),
+    // hydra
+    CLIENT_ID: z.string().default("CLIENT_ID"),
+    CLIENT_SECRET: z.string().default("CLIENT_SECRET"),
+    HYDRA_PUBLIC: z.string().default("http://localhost:4444"),
+    NEXTAUTH_URL: z.string().default(""),
+    NEXTAUTH_SECRET: z.string().default("secret"),
   },
   // DO NOT USE THESE, EXCEPT FOR LOCAL DEVELOPMENT
   client: {
@@ -28,5 +34,10 @@ export const env = createEnv({
     REDIS_0_DNS: process.env.REDIS_0_DNS, // Optional but required for Nostr Zaps
     REDIS_1_DNS: process.env.REDIS_1_DNS, // Optional but required for Nostr Zaps
     REDIS_2_DNS: process.env.REDIS_2_DNS, // Optional but required for Nostr Zaps
+    CLIENT_ID: process.env.CLIENT_ID,
+    CLIENT_SECRET: process.env.CLIENT_SECRET,
+    HYDRA_PUBLIC: process.env.HYDRA_PUBLIC,
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
   },
 })
