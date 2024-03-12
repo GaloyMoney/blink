@@ -78,7 +78,7 @@ export const getCaptchaChallenge = async (
     challengeCode: string
   } | null
   try {
-    res = await authApi.requestPhoneCaptcha(customHeaders)
+    res = await authApi.requestPhoneCaptcha({ customHeaders })
   } catch (err) {
     console.error("error in requestPhoneCaptcha", err)
     return handleAxiosError(err)
@@ -156,14 +156,14 @@ export const sendPhoneCode = async (
     status?: number
   } | null
   try {
-    res = await authApi.requestPhoneCode(
+    res = await authApi.requestPhoneCode({
       phone,
-      result.geetest_challenge,
-      result.geetest_validate,
-      result.geetest_seccode,
+      challengeCode: result.geetest_challenge,
+      validationCode: result.geetest_validate,
+      secCode: result.geetest_seccode,
       channel,
       customHeaders,
-    )
+    })
   } catch (err) {
     console.error("error in requestPhoneCode", err)
     return handleAxiosError(err)

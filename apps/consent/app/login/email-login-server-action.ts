@@ -60,7 +60,7 @@ export async function submitForm(
 
   let emailCodeRequest: string | null
   try {
-    emailCodeRequest = await authApi.requestEmailCode(email, customHeaders)
+    emailCodeRequest = await authApi.requestEmailCode({ email, customHeaders })
   } catch (err) {
     console.error("Error in requestEmailCode", err)
     return handleAxiosError(err)
