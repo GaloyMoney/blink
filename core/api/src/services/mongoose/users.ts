@@ -40,7 +40,7 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  const _constructFilter = (userIds: UserId[], phoneCountryCodes: string[]) => {
+  const constructFilter = (userIds: UserId[], phoneCountryCodes: string[]) => {
     const conditions: (
       | { userId?: { $in: UserId[] } }
       | { "phoneMetadata.countryCode": { $in: string[] } }
@@ -64,7 +64,7 @@ export const UsersRepository = (): IUsersRepository => {
     userIds: UserId[]
     phoneCountryCodes: string[]
   }): AsyncGenerator<UserId> | RepositoryError {
-    const query = _constructFilter(userIds, phoneCountryCodes)
+    const query = constructFilter(userIds, phoneCountryCodes)
 
     try {
       const cursor = User.find(query).cursor()
@@ -83,7 +83,7 @@ export const UsersRepository = (): IUsersRepository => {
     userIds: UserId[]
     phoneCountryCodes: string[]
   }): Promise<number | RepositoryError> => {
-    const query = _constructFilter(userIds, phoneCountryCodes)
+    const query = constructFilter(userIds, phoneCountryCodes)
 
     try {
       const count = await User.countDocuments(query)

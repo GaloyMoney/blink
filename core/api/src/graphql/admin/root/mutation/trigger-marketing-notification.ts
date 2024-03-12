@@ -5,7 +5,7 @@ import CountryCode from "@/graphql/public/types/scalar/country-code"
 import Language from "@/graphql/shared/types/scalar/language"
 import { Admin } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
-import DeepLink from "../../types/scalar/deep-link"
+import DeepLink from "@/graphql/admin/types/scalar/deep-link"
 
 const LocalizedPushContentInput = GT.Input({
   name: "LocalizedPushContentInput",
