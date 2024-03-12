@@ -98,7 +98,7 @@ services:
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=hydra
   galoy:
-    image: us.gcr.io/galoy-org/galoy-api@sha256:303f68b568eb774dac6efd6024bfd2e796d26cf7d9af1f2d74abd9b2c592c9f4
+    image: us.gcr.io/galoy-org/galoy-api@sha256:fb0b1e3f07e601b327ae857a52081335ae8bd49b3265928b1b211b301c8a4ee8
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -161,7 +161,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:00c704fc16ca7bb6dadb9ea24ce5e0aa08489a6c603000853292d04333e0a9bb
+    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:1169aa1d3ae88116f13b8e48a485abb5453e43ddec581ac097914b353146b03b
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -213,7 +213,7 @@ services:
     - bria
     - mongodb
   notifications:
-    image: us.gcr.io/galoy-org/galoy-notifications@sha256:69e7bb9814c4a35adcbe2623a112aa40124cbd20de73d2f5bd1979548a90c5f0
+    image: us.gcr.io/galoy-org/galoy-notifications@sha256:b1a0a0ecc96f4ac337090aa4b0dbceb9784ecb4dd884624931c0e8ec14503277
     environment:
     - PG_CON=postgres://user:password@notifications-pg:5432/pg
     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-agent:4318
@@ -254,7 +254,7 @@ services:
     environment:
     - MONGO_INITDB_DATABASE=galoy
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:68ffb077f702619389e6f12cd48690f912180fd31025bc5f20acf57b6821ac90
+    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:f20c612bf4286f7b81ea7dbdd163e9af2cf217ab70c648903cccac70962e611b
     depends_on:
     - mongodb
     environment:
