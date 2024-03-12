@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: add unique id to write-sdl bin script (#4169)...'
-      sha: 4b15b3cd209c1f6c574ad8020eec971ee34c80ab
+      commitTitle: 'feat(core): add lnInvoiceCancel mutation (#4107)...'
+      sha: e21bab097648c47377daedacd8f2430f79ad2e34
       tags:
-      - 0.20.113-8-g4b15b3cd2
+      - 0.20.115
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: add unique id to write-sdl bin script (#4169)...'
-      sha: 4b15b3cd209c1f6c574ad8020eec971ee34c80ab
+      commitTitle: 'feat(core): add lnInvoiceCancel mutation (#4107)...'
+      sha: e21bab097648c47377daedacd8f2430f79ad2e34
       tags:
-      - 0.20.113-8-g4b15b3cd2
+      - 0.20.115
     path: schemas/
   - git:
-      commitTitle: 'chore: add unique id to write-sdl bin script (#4169)...'
-      sha: 4b15b3cd209c1f6c574ad8020eec971ee34c80ab
+      commitTitle: 'feat(core): add lnInvoiceCancel mutation (#4107)...'
+      sha: e21bab097648c47377daedacd8f2430f79ad2e34
       tags:
-      - 0.20.113-8-g4b15b3cd2
+      - 0.20.115
     path: gql/
   path: ./graphql
 kind: LockConfig
