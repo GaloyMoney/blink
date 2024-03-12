@@ -1,15 +1,13 @@
 import React, { ReactNode } from "react"
 
+import styles from "./main-content.module.css"
+
 interface MainContentProps {
   children: ReactNode
 }
 
 const MainContent: React.FC<MainContentProps> = ({ children }) => {
-  return (
-    <main className="min-h-screen flex items-start md:items-center justify-center p-1 md:p-4 bg-[var(--backgroundColor)]">
-      {children}
-    </main>
-  )
+  return <main className={styles.mainContent}>{children}</main>
 }
 
 export default MainContent
