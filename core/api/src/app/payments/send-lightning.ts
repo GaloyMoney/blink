@@ -106,20 +106,17 @@ export const payInvoiceByWalletId = async ({
 
   // Get display currency price... add to payment flow builder?
 
-  const { senderWallet, decodedInvoice } = validatedPaymentInputs
+  const { decodedInvoice } = validatedPaymentInputs
   return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
     ? executePaymentViaIntraledger({
         paymentFlow,
-        senderWallet,
         senderAccount,
         memo,
       })
     : executePaymentViaLn({
         decodedInvoice,
         paymentFlow,
-        senderWallet,
         senderAccount,
-        senderDisplayCurrency: senderAccount.displayCurrency,
         memo,
       })
 }
@@ -157,20 +154,17 @@ const payNoAmountInvoiceByWalletId = async ({
 
   // Get display currency price... add to payment flow builder?
 
-  const { senderWallet, decodedInvoice } = validatedNoAmountPaymentInputs
+  const { decodedInvoice } = validatedNoAmountPaymentInputs
   return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
     ? executePaymentViaIntraledger({
         paymentFlow,
-        senderWallet,
         senderAccount,
         memo,
       })
     : executePaymentViaLn({
         decodedInvoice,
         paymentFlow,
-        senderWallet,
         senderAccount,
-        senderDisplayCurrency: senderAccount.displayCurrency,
         memo,
       })
 }
@@ -359,18 +353,18 @@ const executePaymentViaIntraledger = async <
   R extends WalletCurrency,
 >({
   paymentFlow,
-  senderWallet,
   senderAccount,
   memo,
 }: {
   paymentFlow: PaymentFlow<S, R>
-  senderWallet: WalletDescriptor<S>
   senderAccount: Account
   memo: string | null
 }): Promise<PaymentSendResult | ApplicationError> => {
   addAttributesToCurrentSpan({
     "payment.settlement_method": SettlementMethod.IntraLedger,
   })
+
+  const { id: senderWalletId } = paymentFlow.senderWalletDescriptor()
 
   const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
@@ -396,12 +390,12 @@ const executePaymentViaIntraledger = async <
   if (accountValidator instanceof Error) return accountValidator
 
   const checkLimits =
-    senderWallet.accountId === recipientWallet.accountId
+    senderAccount.id === recipientAccount.id
       ? checkTradeIntraAccountLimits
       : checkIntraledgerLimits
   const limitCheck = await checkLimits({
     amount: paymentFlow.usdPaymentAmount,
-    accountId: senderWallet.accountId,
+    accountId: senderAccount.id,
     priceRatio: priceRatioForLimits,
   })
   if (limitCheck instanceof Error) return limitCheck
@@ -421,12 +415,12 @@ const executePaymentViaIntraledger = async <
 
   const senderAsNotificationRecipient = {
     accountId: senderAccount.id,
-    walletId: senderWallet.id,
+    walletId: senderWalletId,
     userId: senderUser.id,
     level: senderAccount.level,
   }
 
-  return LockService().lockWalletId(senderWallet.id, async (signal) =>
+  return LockService().lockWalletId(senderWalletId, async (signal) =>
     lockedPaymentViaIntraledgerSteps({
       signal,
 
@@ -635,28 +629,26 @@ const lockedPaymentViaIntraledgerSteps = async ({
 const executePaymentViaLn = async ({
   decodedInvoice,
   paymentFlow,
-  senderWallet,
   senderAccount,
-  senderDisplayCurrency,
   memo,
 }: {
   decodedInvoice: LnInvoice
   paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
-  senderWallet: Wallet
   senderAccount: Account
-  senderDisplayCurrency: DisplayCurrency
   memo: string | null
 }): Promise<PaymentSendResult | ApplicationError> => {
   addAttributesToCurrentSpan({
     "payment.settlement_method": SettlementMethod.Lightning,
   })
 
+  const { id: senderWalletId } = paymentFlow.senderWalletDescriptor()
+
   const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
   const limitCheck = await checkWithdrawalLimits({
     amount: paymentFlow.usdPaymentAmount,
-    accountId: senderWallet.accountId,
+    accountId: senderAccount.id,
     priceRatio: priceRatioForLimits,
   })
   if (limitCheck instanceof Error) return limitCheck
@@ -670,20 +662,19 @@ const executePaymentViaLn = async ({
   if (senderUser instanceof Error) return senderUser
 
   const notificationRecipient = {
-    accountId: senderWallet.accountId,
-    walletId: senderWallet.id,
+    accountId: senderAccount.id,
+    walletId: senderWalletId,
     userId: senderUser.id,
     level: senderAccount.level,
   }
 
-  return LockService().lockWalletId(senderWallet.id, (signal) =>
+  return LockService().lockWalletId(senderWalletId, (signal) =>
     lockedPaymentViaLnSteps({
       signal,
 
       decodedInvoice,
       paymentFlow,
-      senderWallet,
-      senderDisplayCurrency,
+      senderDisplayCurrency: senderAccount.displayCurrency,
       memo,
 
       walletIds,
@@ -697,7 +688,6 @@ const lockedPaymentViaLnSteps = async ({
 
   decodedInvoice,
   paymentFlow,
-  senderWallet,
   senderDisplayCurrency,
   memo,
 
@@ -708,7 +698,6 @@ const lockedPaymentViaLnSteps = async ({
 
   decodedInvoice: LnInvoice
   paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
-  senderWallet: Wallet
   senderDisplayCurrency: DisplayCurrency
   memo: string | null
 
@@ -741,7 +730,7 @@ const lockedPaymentViaLnSteps = async ({
   const pendingPayment = ledgerTransactions.find((tx) => tx.pendingConfirmation)
   if (pendingPayment) return new LnPaymentRequestInTransitError()
 
-  const balance = await ledgerService.getWalletBalanceAmount(senderWallet)
+  const balance = await ledgerService.getWalletBalanceAmount(senderWalletDescriptor)
   if (balance instanceof Error) return balance
   const balanceCheck = paymentFlow.checkBalanceForSend(balance)
   if (balanceCheck instanceof Error) return balanceCheck
