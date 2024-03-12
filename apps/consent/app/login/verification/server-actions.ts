@@ -39,7 +39,7 @@ export const submitFormTotp = async (
   }
 
   try {
-    await authApi.validateTotp(totpCode, authToken, customHeaders)
+    await authApi.validateTotp({ totpCode, authToken, customHeaders })
   } catch (err) {
     console.error("error in 'totp/validate' ", err)
     return handleAxiosError(err)
@@ -105,7 +105,7 @@ export const submitForm = async (
 
   if (loginType === LoginType.phone) {
     try {
-      const loginResponse = await authApi.loginWithPhone(value, code, customHeaders)
+      const loginResponse = await authApi.loginWithPhone({ value, code, customHeaders })
       authToken = loginResponse.authToken
       totpRequired = loginResponse.totpRequired
       userId = loginResponse.id
@@ -115,7 +115,11 @@ export const submitForm = async (
     }
   } else if (loginType === LoginType.email) {
     try {
-      const loginResponse = await authApi.loginWithEmail(code, loginId, customHeaders)
+      const loginResponse = await authApi.loginWithEmail({
+        code,
+        emailLoginId: loginId,
+        customHeaders,
+      })
       authToken = loginResponse.authToken
       totpRequired = loginResponse.totpRequired
       userId = loginResponse.id
