@@ -133,6 +133,14 @@ type Coordinates {
 """A CCA2 country code (ex US, FR, etc)"""
 scalar CountryCode
 
+enum DeepLink {
+  CIRCLES
+  EARN
+  MAP
+  PEOPLE
+  PRICE
+}
+
 """Display currency of an account"""
 scalar DisplayCurrency
 
@@ -458,7 +466,7 @@ type TransactionEdge {
 }
 
 input TriggerMarketingNotificationInput {
-  deepLink: String
+  deepLink: DeepLink
   localizedPushContent: [LocalizedPushContentInput!]!
   phoneCountryCodesFilter: [CountryCode!]
   userIdsFilter: [ID!]

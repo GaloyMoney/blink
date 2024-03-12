@@ -11,7 +11,7 @@ export const triggerMarketingNotification = async ({
 }: {
   userIdsFilter: string[] | undefined
   phoneCountryCodesFilter: string[] | undefined
-  deepLink: string | undefined
+  deepLink: DeepLink | undefined
   localizedPushContent: {
     title: string
     body: string

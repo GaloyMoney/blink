@@ -31,3 +31,11 @@ export const GaloyNotificationCategories = {
   Balance: "Balance" as NotificationCategory,
   AdminNotification: "AdminNotification" as NotificationCategory,
 } as const
+
+export const DeepLink = {
+  Circles: "Circles",
+  Price: "Price",
+  Earn: "Earn",
+  Map: "Map",
+  People: "People",
+} as const

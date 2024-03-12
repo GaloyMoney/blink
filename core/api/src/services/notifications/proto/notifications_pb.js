@@ -31,6 +31,7 @@ goog.exportSymbol('proto.services.notifications.v1.CircleThresholdReached', null
 goog.exportSymbol('proto.services.notifications.v1.CircleTimeFrame', null, global);
 goog.exportSymbol('proto.services.notifications.v1.CircleType', null, global);
 goog.exportSymbol('proto.services.notifications.v1.DeclinedReason', null, global);
+goog.exportSymbol('proto.services.notifications.v1.DeepLink', null, global);
 goog.exportSymbol('proto.services.notifications.v1.DisableNotificationCategoryRequest', null, global);
 goog.exportSymbol('proto.services.notifications.v1.DisableNotificationCategoryResponse', null, global);
 goog.exportSymbol('proto.services.notifications.v1.DisableNotificationChannelRequest', null, global);
@@ -6973,7 +6974,8 @@ proto.services.notifications.v1.MarketingNotificationTriggered.prototype.toObjec
 proto.services.notifications.v1.MarketingNotificationTriggered.toObject = function(includeInstance, msg) {
   var f, obj = {
     userIdsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
-    localizedPushContentMap: (f = msg.getLocalizedPushContentMap()) ? f.toObject(includeInstance, proto.services.notifications.v1.LocalizedPushContent.toObject) : []
+    localizedPushContentMap: (f = msg.getLocalizedPushContentMap()) ? f.toObject(includeInstance, proto.services.notifications.v1.LocalizedPushContent.toObject) : [],
+    deepLink: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -7020,6 +7022,10 @@ proto.services.notifications.v1.MarketingNotificationTriggered.deserializeBinary
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.services.notifications.v1.LocalizedPushContent.deserializeBinaryFromReader, "", new proto.services.notifications.v1.LocalizedPushContent());
          });
       break;
+    case 3:
+      var value = /** @type {!proto.services.notifications.v1.DeepLink} */ (reader.readEnum());
+      msg.setDeepLink(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -7059,6 +7065,13 @@ proto.services.notifications.v1.MarketingNotificationTriggered.serializeBinaryTo
   f = message.getLocalizedPushContentMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(2, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.services.notifications.v1.LocalizedPushContent.serializeBinaryToWriter);
+  }
+  f = /** @type {!proto.services.notifications.v1.DeepLink} */ (jspb.Message.getField(message, 3));
+  if (f != null) {
+    writer.writeEnum(
+      3,
+      f
+    );
   }
 };
 
@@ -7120,6 +7133,42 @@ proto.services.notifications.v1.MarketingNotificationTriggered.prototype.getLoca
 proto.services.notifications.v1.MarketingNotificationTriggered.prototype.clearLocalizedPushContentMap = function() {
   this.getLocalizedPushContentMap().clear();
   return this;
+};
+
+
+/**
+ * optional DeepLink deep_link = 3;
+ * @return {!proto.services.notifications.v1.DeepLink}
+ */
+proto.services.notifications.v1.MarketingNotificationTriggered.prototype.getDeepLink = function() {
+  return /** @type {!proto.services.notifications.v1.DeepLink} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {!proto.services.notifications.v1.DeepLink} value
+ * @return {!proto.services.notifications.v1.MarketingNotificationTriggered} returns this
+ */
+proto.services.notifications.v1.MarketingNotificationTriggered.prototype.setDeepLink = function(value) {
+  return jspb.Message.setField(this, 3, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.services.notifications.v1.MarketingNotificationTriggered} returns this
+ */
+proto.services.notifications.v1.MarketingNotificationTriggered.prototype.clearDeepLink = function() {
+  return jspb.Message.setField(this, 3, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.services.notifications.v1.MarketingNotificationTriggered.prototype.hasDeepLink = function() {
+  return jspb.Message.getField(this, 3) != null;
 };
 
 
@@ -7348,6 +7397,17 @@ proto.services.notifications.v1.TransactionType = {
 proto.services.notifications.v1.PriceChangeDirection = {
   UP: 0,
   DOWN: 1
+};
+
+/**
+ * @enum {number}
+ */
+proto.services.notifications.v1.DeepLink = {
+  CIRCLES: 0,
+  PRICE: 1,
+  EARN: 2,
+  MAP: 3,
+  PEOPLE: 4
 };
 
 goog.object.extend(exports, proto.services.notifications.v1);

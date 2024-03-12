@@ -54,6 +54,9 @@ type SendFilteredPushNotificationArgs = {
   notificationCategory: NotificationCategory
 }
 
+type DeepLink =
+  (typeof import("./index").DeepLink)[keyof typeof import("./index").DeepLink]
+
 interface INotificationsService {
   sendTransaction: (
     args: NotificatioSendTransactionArgs,
@@ -111,7 +114,7 @@ interface INotificationsService {
 
   triggerMarketingNotification(args: {
     userIds: UserId[]
-    deepLink: string | undefined
+    deepLink: DeepLink | undefined
     localizedPushContent: {
       title: string
       body: string

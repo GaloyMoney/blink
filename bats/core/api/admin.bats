@@ -195,7 +195,8 @@ setup_file() {
             title: "Test title",
             body: "test body"
           }
-        ]
+        ],
+        deepLink: "EARN"
       }
     }'
   )

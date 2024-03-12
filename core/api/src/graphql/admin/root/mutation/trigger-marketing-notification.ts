@@ -5,6 +5,7 @@ import CountryCode from "@/graphql/public/types/scalar/country-code"
 import Language from "@/graphql/shared/types/scalar/language"
 import { Admin } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import DeepLink from "../../types/scalar/deep-link"
 
 const LocalizedPushContentInput = GT.Input({
   name: "LocalizedPushContentInput",
@@ -31,7 +32,7 @@ const TriggerMarketingNotificationInput = GT.Input({
       type: GT.List(GT.NonNull(CountryCode)),
     },
     deepLink: {
-      type: GT.String,
+      type: DeepLink,
     },
     localizedPushContent: {
       type: GT.NonNullList(LocalizedPushContentInput),
@@ -46,7 +47,7 @@ const TriggerMarketingNotificationMutation = GT.Field<
     input: {
       userIdsFilter: string[] | undefined
       phoneCountryCodesFilter: (string | Error)[] | undefined
-      deepLink: string | undefined
+      deepLink: DeepLink | Error | undefined
       localizedPushContent: {
         title: string
         body: string
@@ -65,6 +66,10 @@ const TriggerMarketingNotificationMutation = GT.Field<
   resolve: async (_, args) => {
     const { userIdsFilter, phoneCountryCodesFilter, deepLink, localizedPushContent } =
       args.input
+
+    if (deepLink instanceof Error) {
+      return { errors: [{ message: deepLink.message }], success: false }
+    }
 
     const nonErrorPhoneCountryCodesFilter: string[] = []
     for (const code of phoneCountryCodesFilter || []) {

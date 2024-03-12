@@ -22,6 +22,7 @@ import {
   NotificationEvent,
   TransactionOccurred,
   MarketingNotificationTriggered,
+  DeepLink as ProtoDeepLink,
 } from "./proto/notifications_pb"
 
 import * as notificationsGrpc from "./grpc-client"
@@ -35,6 +36,7 @@ import { createPushNotificationContent } from "./create-push-notification-conten
 import { getCallbackServiceConfig } from "@/config"
 
 import {
+  DeepLink,
   GaloyNotificationCategories,
   NotificationsServiceError,
   NotificationType,
@@ -618,9 +620,10 @@ export const NotificationsService = (): INotificationsService => {
   const triggerMarketingNotification = async ({
     userIds,
     localizedPushContent,
+    deepLink,
   }: {
     userIds: UserId[]
-    deepLink: string | undefined
+    deepLink: DeepLink | undefined
     localizedPushContent: {
       title: string
       body: string
@@ -638,6 +641,29 @@ export const NotificationsService = (): INotificationsService => {
         localizedContent.setBody(body)
         marketingNotification.getLocalizedPushContentMap().set(language, localizedContent)
       })
+
+      let protoDeepLink: ProtoDeepLink | undefined = undefined
+      switch (deepLink) {
+        case DeepLink.Circles:
+          protoDeepLink = ProtoDeepLink.CIRCLES
+          break
+        case DeepLink.Price:
+          protoDeepLink = ProtoDeepLink.PRICE
+          break
+        case DeepLink.Earn:
+          protoDeepLink = ProtoDeepLink.EARN
+          break
+        case DeepLink.Map:
+          protoDeepLink = ProtoDeepLink.MAP
+          break
+        case DeepLink.People:
+          protoDeepLink = ProtoDeepLink.PEOPLE
+          break
+      }
+
+      if (protoDeepLink) {
+        marketingNotification.setDeepLink(protoDeepLink)
+      }
 
       const event = new NotificationEvent()
       event.setMarketingNotificationTriggered(marketingNotification)

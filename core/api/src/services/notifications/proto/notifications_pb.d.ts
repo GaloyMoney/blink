@@ -900,6 +900,11 @@ export class MarketingNotificationTriggered extends jspb.Message {
     getLocalizedPushContentMap(): jspb.Map<string, LocalizedPushContent>;
     clearLocalizedPushContentMap(): void;
 
+    hasDeepLink(): boolean;
+    clearDeepLink(): void;
+    getDeepLink(): DeepLink | undefined;
+    setDeepLink(value: DeepLink): MarketingNotificationTriggered;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): MarketingNotificationTriggered.AsObject;
     static toObject(includeInstance: boolean, msg: MarketingNotificationTriggered): MarketingNotificationTriggered.AsObject;
@@ -915,6 +920,7 @@ export namespace MarketingNotificationTriggered {
         userIdsList: Array<string>,
 
         localizedPushContentMap: Array<[string, LocalizedPushContent.AsObject]>,
+        deepLink?: DeepLink,
     }
 }
 
@@ -985,4 +991,12 @@ export enum TransactionType {
 export enum PriceChangeDirection {
     UP = 0,
     DOWN = 1,
+}
+
+export enum DeepLink {
+    CIRCLES = 0,
+    PRICE = 1,
+    EARN = 2,
+    MAP = 3,
+    PEOPLE = 4,
 }
