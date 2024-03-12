@@ -378,13 +378,8 @@ const executePaymentViaIntraledger = async <
   const paymentHash = paymentFlow.paymentHashForFlow()
   if (paymentHash instanceof Error) return paymentHash
 
-  const {
-    walletDescriptor: recipientWalletDescriptor,
-    recipientPubkey,
-    recipientUsername,
-    recipientUserId,
-  } = paymentFlow.recipientDetails()
-  if (!(recipientWalletDescriptor && recipientUserId && recipientPubkey)) {
+  const { walletDescriptor: recipientWalletDescriptor } = paymentFlow.recipientDetails()
+  if (!recipientWalletDescriptor) {
     return new InvalidLightningPaymentFlowBuilderStateError(
       "Expected recipient details missing",
     )
@@ -411,12 +406,12 @@ const executePaymentViaIntraledger = async <
   })
   if (limitCheck instanceof Error) return limitCheck
 
-  const recipientUser = await UsersRepository().findById(recipientUserId)
+  const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
   if (recipientUser instanceof Error) return recipientUser
 
   const recipientAsNotificationRecipient = {
     accountId: recipientAccount.id,
-    walletId: recipientWalletDescriptor.id,
+    walletId: recipientWalletId,
     userId: recipientUser.id,
     level: recipientAccount.level,
   }
@@ -431,166 +426,210 @@ const executePaymentViaIntraledger = async <
     level: senderAccount.level,
   }
 
-  return LockService().lockWalletId(senderWallet.id, async (signal) => {
-    const ledgerService = LedgerService()
+  return LockService().lockWalletId(senderWallet.id, async (signal) =>
+    lockedPaymentViaIntraledgerSteps({
+      signal,
 
-    const recorded = await ledgerService.isLnTxRecorded(paymentHash)
-    if (recorded instanceof Error) return recorded
-    if (recorded)
-      return getAlreadyPaidResponse({
-        walletId: senderWallet.id,
-        paymentHash,
-      })
+      paymentHash,
+      paymentFlow,
+      senderAccount,
+      recipientAccount,
+      memo,
 
-    const balance = await ledgerService.getWalletBalanceAmount(senderWallet)
-    if (balance instanceof Error) return balance
+      senderAsNotificationRecipient,
+      recipientAsNotificationRecipient,
+    }),
+  )
+}
 
-    const balanceCheck = paymentFlow.checkBalanceForSend(balance)
-    if (balanceCheck instanceof Error) return balanceCheck
+const lockedPaymentViaIntraledgerSteps = async ({
+  signal,
 
-    const senderDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-      currency: senderAccount.displayCurrency,
-    })
-    if (senderDisplayPriceRatio instanceof Error) return senderDisplayPriceRatio
-    const { displayAmount: senderDisplayAmount, displayFee: senderDisplayFee } =
-      DisplayAmountsConverter(senderDisplayPriceRatio).convert(paymentFlow)
+  paymentHash,
+  paymentFlow,
+  senderAccount,
+  recipientAccount,
+  memo,
 
-    const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-      currency: recipientAccount.displayCurrency,
-    })
-    if (recipientDisplayPriceRatio instanceof Error) return recipientDisplayPriceRatio
-    const { displayAmount: recipientDisplayAmount, displayFee: recipientDisplayFee } =
-      DisplayAmountsConverter(recipientDisplayPriceRatio).convert(paymentFlow)
+  senderAsNotificationRecipient,
+  recipientAsNotificationRecipient,
+}: {
+  signal: WalletIdAbortSignal
 
-    if (signal.aborted) {
-      return new ResourceExpiredLockServiceError(signal.error?.message)
-    }
+  paymentHash: PaymentHash
+  paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
+  senderAccount: Account
+  recipientAccount: Account
+  memo: string | null
 
-    let metadata:
-      | AddLnIntraledgerSendLedgerMetadata
-      | AddLnTradeIntraAccountLedgerMetadata
-    let additionalDebitMetadata: {
-      [key: string]:
-        | Username
-        | DisplayCurrencyBaseAmount
-        | DisplayCurrency
-        | string
-        | undefined
-    } = {}
-    let additionalCreditMetadata: {
-      [key: string]: Username | DisplayCurrencyBaseAmount | DisplayCurrency | undefined
-    } = {}
-    let additionalInternalMetadata: {
-      [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
-    } = {}
-    if (senderWallet.accountId === recipientWallet.accountId) {
-      ;({
-        metadata,
-        debitAccountAdditionalMetadata: additionalDebitMetadata,
-        creditAccountAdditionalMetadata: additionalCreditMetadata,
-        internalAccountsAdditionalMetadata: additionalInternalMetadata,
-      } = LedgerFacade.LnTradeIntraAccountLedgerMetadata({
-        paymentHash,
-        pubkey: recipientPubkey,
-        paymentAmounts: paymentFlow,
+  senderAsNotificationRecipient: NotificationRecipient
+  recipientAsNotificationRecipient: NotificationRecipient
+}): Promise<PaymentSendResult | ApplicationError> => {
+  const senderWalletDescriptor = paymentFlow.senderWalletDescriptor()
 
-        senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
-        senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
-        senderDisplayCurrency: senderAccount.displayCurrency,
+  const { walletDescriptor: recipientWalletDescriptor, recipientPubkey } =
+    paymentFlow.recipientDetails()
+  if (!(recipientWalletDescriptor && recipientPubkey)) {
+    return new InvalidLightningPaymentFlowBuilderStateError(
+      "Expected recipient details missing",
+    )
+  }
 
-        memoOfPayer: memo || undefined,
-      }))
-    } else {
-      ;({
-        metadata,
-        debitAccountAdditionalMetadata: additionalDebitMetadata,
-        creditAccountAdditionalMetadata: additionalCreditMetadata,
-        internalAccountsAdditionalMetadata: additionalInternalMetadata,
-      } = LedgerFacade.LnIntraledgerLedgerMetadata({
-        paymentHash,
-        pubkey: recipientPubkey,
-        paymentAmounts: paymentFlow,
+  const ledgerService = LedgerService()
 
-        senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
-        senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
-        senderDisplayCurrency: senderAccount.displayCurrency,
-
-        recipientAmountDisplayCurrency: toDisplayBaseAmount(recipientDisplayAmount),
-        recipientFeeDisplayCurrency: toDisplayBaseAmount(recipientDisplayFee),
-        recipientDisplayCurrency: recipientAccount.displayCurrency,
-
-        memoOfPayer: memo || undefined,
-        senderUsername: senderAccount.username,
-        recipientUsername,
-      }))
-    }
-
-    const senderWalletDescriptor = paymentFlow.senderWalletDescriptor()
-    const journal = await LedgerFacade.recordIntraledger({
-      description: paymentFlow.descriptionFromInvoice,
-      amount: {
-        btc: paymentFlow.btcPaymentAmount,
-        usd: paymentFlow.usdPaymentAmount,
-      },
-      senderWalletDescriptor,
-      recipientWalletDescriptor,
-      metadata,
-      additionalDebitMetadata,
-      additionalCreditMetadata,
-      additionalInternalMetadata,
-    })
-    if (journal instanceof Error) return journal
-
-    const lndService = LndService()
-    if (lndService instanceof Error) return lndService
-
-    const deletedLnInvoice = await lndService.cancelInvoice({
-      pubkey: recipientPubkey,
+  const recorded = await ledgerService.isLnTxRecorded(paymentHash)
+  if (recorded instanceof Error) return recorded
+  if (recorded)
+    return getAlreadyPaidResponse({
+      walletId: senderWalletDescriptor.id,
       paymentHash,
     })
-    if (deletedLnInvoice instanceof Error) return deletedLnInvoice
 
-    const newWalletInvoice = await WalletInvoicesRepository().markAsPaid(paymentHash)
-    if (newWalletInvoice instanceof Error) return newWalletInvoice
+  const balance = await ledgerService.getWalletBalanceAmount(senderWalletDescriptor)
+  if (balance instanceof Error) return balance
 
-    const recipientWalletTransaction = await getTransactionForWalletByJournalId({
-      walletId: recipientAsNotificationRecipient.walletId,
-      journalId: journal.journalId,
-    })
-    if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
-    NotificationsService().sendTransaction({
-      recipient: recipientAsNotificationRecipient,
-      transaction: recipientWalletTransaction,
-    })
+  const balanceCheck = paymentFlow.checkBalanceForSend(balance)
+  if (balanceCheck instanceof Error) return balanceCheck
 
-    const senderWalletTransaction = await getTransactionForWalletByJournalId({
-      walletId: senderAsNotificationRecipient.walletId,
-      journalId: journal.journalId,
-    })
-    if (senderWalletTransaction instanceof Error) return senderWalletTransaction
-    NotificationsService().sendTransaction({
-      recipient: senderAsNotificationRecipient,
-      transaction: senderWalletTransaction,
-    })
-
-    if (senderAccount.id !== recipientAccount.id) {
-      const addContactResult = await addContactsAfterSend({
-        senderAccount,
-        recipientAccount,
-      })
-      if (addContactResult instanceof Error) {
-        recordExceptionInCurrentSpan({
-          error: addContactResult,
-          level: ErrorLevel.Warn,
-        })
-      }
-    }
-
-    return {
-      status: PaymentSendStatus.Success,
-      transaction: senderWalletTransaction,
-    }
+  const senderDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+    currency: senderAccount.displayCurrency,
   })
+  if (senderDisplayPriceRatio instanceof Error) return senderDisplayPriceRatio
+  const { displayAmount: senderDisplayAmount, displayFee: senderDisplayFee } =
+    DisplayAmountsConverter(senderDisplayPriceRatio).convert(paymentFlow)
+
+  const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+    currency: recipientAccount.displayCurrency,
+  })
+  if (recipientDisplayPriceRatio instanceof Error) return recipientDisplayPriceRatio
+  const { displayAmount: recipientDisplayAmount, displayFee: recipientDisplayFee } =
+    DisplayAmountsConverter(recipientDisplayPriceRatio).convert(paymentFlow)
+
+  if (signal.aborted) {
+    return new ResourceExpiredLockServiceError(signal.error?.message)
+  }
+
+  let metadata: AddLnIntraledgerSendLedgerMetadata | AddLnTradeIntraAccountLedgerMetadata
+  let additionalDebitMetadata: {
+    [key: string]:
+      | Username
+      | DisplayCurrencyBaseAmount
+      | DisplayCurrency
+      | string
+      | undefined
+  } = {}
+  let additionalCreditMetadata: {
+    [key: string]: Username | DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+  } = {}
+  let additionalInternalMetadata: {
+    [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+  } = {}
+  if (senderWalletDescriptor.accountId === recipientWalletDescriptor.accountId) {
+    ;({
+      metadata,
+      debitAccountAdditionalMetadata: additionalDebitMetadata,
+      creditAccountAdditionalMetadata: additionalCreditMetadata,
+      internalAccountsAdditionalMetadata: additionalInternalMetadata,
+    } = LedgerFacade.LnTradeIntraAccountLedgerMetadata({
+      paymentHash,
+      pubkey: recipientPubkey,
+      paymentAmounts: paymentFlow,
+
+      senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
+      senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
+      senderDisplayCurrency: senderAccount.displayCurrency,
+
+      memoOfPayer: memo || undefined,
+    }))
+  } else {
+    ;({
+      metadata,
+      debitAccountAdditionalMetadata: additionalDebitMetadata,
+      creditAccountAdditionalMetadata: additionalCreditMetadata,
+      internalAccountsAdditionalMetadata: additionalInternalMetadata,
+    } = LedgerFacade.LnIntraledgerLedgerMetadata({
+      paymentHash,
+      pubkey: recipientPubkey,
+      paymentAmounts: paymentFlow,
+
+      senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
+      senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
+      senderDisplayCurrency: senderAccount.displayCurrency,
+
+      recipientAmountDisplayCurrency: toDisplayBaseAmount(recipientDisplayAmount),
+      recipientFeeDisplayCurrency: toDisplayBaseAmount(recipientDisplayFee),
+      recipientDisplayCurrency: recipientAccount.displayCurrency,
+
+      memoOfPayer: memo || undefined,
+      senderUsername: senderAccount.username,
+      recipientUsername: recipientAccount.username,
+    }))
+  }
+
+  const journal = await LedgerFacade.recordIntraledger({
+    description: paymentFlow.descriptionFromInvoice,
+    amount: {
+      btc: paymentFlow.btcPaymentAmount,
+      usd: paymentFlow.usdPaymentAmount,
+    },
+    senderWalletDescriptor,
+    recipientWalletDescriptor,
+    metadata,
+    additionalDebitMetadata,
+    additionalCreditMetadata,
+    additionalInternalMetadata,
+  })
+  if (journal instanceof Error) return journal
+
+  const lndService = LndService()
+  if (lndService instanceof Error) return lndService
+
+  const deletedLnInvoice = await lndService.cancelInvoice({
+    pubkey: recipientPubkey,
+    paymentHash,
+  })
+  if (deletedLnInvoice instanceof Error) return deletedLnInvoice
+
+  const newWalletInvoice = await WalletInvoicesRepository().markAsPaid(paymentHash)
+  if (newWalletInvoice instanceof Error) return newWalletInvoice
+
+  const recipientWalletTransaction = await getTransactionForWalletByJournalId({
+    walletId: recipientAsNotificationRecipient.walletId,
+    journalId: journal.journalId,
+  })
+  if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
+  NotificationsService().sendTransaction({
+    recipient: recipientAsNotificationRecipient,
+    transaction: recipientWalletTransaction,
+  })
+
+  const senderWalletTransaction = await getTransactionForWalletByJournalId({
+    walletId: senderAsNotificationRecipient.walletId,
+    journalId: journal.journalId,
+  })
+  if (senderWalletTransaction instanceof Error) return senderWalletTransaction
+  NotificationsService().sendTransaction({
+    recipient: senderAsNotificationRecipient,
+    transaction: senderWalletTransaction,
+  })
+
+  if (senderAccount.id !== recipientAccount.id) {
+    const addContactResult = await addContactsAfterSend({
+      senderAccount,
+      recipientAccount,
+    })
+    if (addContactResult instanceof Error) {
+      recordExceptionInCurrentSpan({
+        error: addContactResult,
+        level: ErrorLevel.Warn,
+      })
+    }
+  }
+
+  return {
+    status: PaymentSendStatus.Success,
+    transaction: senderWalletTransaction,
+  }
 }
 
 const executePaymentViaLn = async ({
@@ -675,7 +714,7 @@ const lockedPaymentViaLnSteps = async ({
 
   walletIds: WalletId[]
   notificationRecipient: NotificationRecipient
-}) => {
+}): Promise<PaymentSendResult | ApplicationError> => {
   const { paymentHash } = decodedInvoice
   const { rawRoute, outgoingNodePubkey } = paymentFlow.routeDetails()
   const senderWalletDescriptor = paymentFlow.senderWalletDescriptor()
