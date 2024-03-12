@@ -253,23 +253,23 @@ cargo.rust_library(
 
 alias(
     name = "anyhow",
-    actual = ":anyhow-1.0.80",
+    actual = ":anyhow-1.0.81",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "anyhow-1.0.80.crate",
-    sha256 = "5ad32ce52e4161730f7098c077cd2ed6229b5804ccf99e5366be1ab72a98b4e1",
-    strip_prefix = "anyhow-1.0.80",
-    urls = ["https://crates.io/api/v1/crates/anyhow/1.0.80/download"],
+    name = "anyhow-1.0.81.crate",
+    sha256 = "0952808a6c2afd1aa8947271f3a60f1a6763c7b912d210184c5149b5cf147247",
+    strip_prefix = "anyhow-1.0.81",
+    urls = ["https://crates.io/api/v1/crates/anyhow/1.0.81/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "anyhow-1.0.80",
-    srcs = [":anyhow-1.0.80.crate"],
+    name = "anyhow-1.0.81",
+    srcs = [":anyhow-1.0.81.crate"],
     crate = "anyhow",
-    crate_root = "anyhow-1.0.80.crate/src/lib.rs",
+    crate_root = "anyhow-1.0.81.crate/src/lib.rs",
     edition = "2018",
     features = [
         "default",
@@ -2661,7 +2661,7 @@ cargo.rust_library(
     ],
     visibility = [],
     deps = [
-        ":anyhow-1.0.80",
+        ":anyhow-1.0.81",
         ":google-apis-common-6.0.1",
         ":http-0.2.12",
         ":hyper-0.14.27",
@@ -5439,7 +5439,7 @@ cargo.rust_library(
     proc_macro = True,
     visibility = [],
     deps = [
-        ":anyhow-1.0.80",
+        ":anyhow-1.0.81",
         ":itertools-0.10.5",
         ":proc-macro2-1.0.76",
         ":quote-1.0.35",
@@ -5464,7 +5464,7 @@ cargo.rust_library(
     proc_macro = True,
     visibility = [],
     deps = [
-        ":anyhow-1.0.80",
+        ":anyhow-1.0.81",
         ":itertools-0.11.0",
         ":proc-macro2-1.0.76",
         ":quote-1.0.35",
@@ -8879,7 +8879,7 @@ cargo.rust_binary(
     edition = "2021",
     visibility = [],
     deps = [
-        ":anyhow-1.0.80",
+        ":anyhow-1.0.81",
         ":async-graphql-6.0.11",
         ":async-graphql-axum-6.0.11",
         ":axum-0.6.20",
@@ -11119,7 +11119,7 @@ cargo.rust_library(
     ],
     visibility = [],
     deps = [
-        ":anyhow-1.0.80",
+        ":anyhow-1.0.81",
         ":async-trait-0.1.74",
         ":base64-0.21.5",
         ":futures-0.3.30",
