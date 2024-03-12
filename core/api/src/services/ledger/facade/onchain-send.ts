@@ -23,6 +23,7 @@ import {
 } from "@/domain/errors"
 import { isValidObjectId, toObjectId } from "@/services/mongoose/utils"
 import {
+  BtcPaymentAmount,
   WalletCurrency,
   ZERO_CENTS,
   ZERO_SATS,
@@ -172,7 +173,8 @@ export const setOnChainTxIdByPayoutId = async ({
     (txn) => txn.walletId === bankOwnerWalletId && !isOnChainFeeReconciliationTxn(txn),
   )
   if (bankOwnerTxns.length !== 1) {
-    return new InvalidLedgerTransactionStateError(`payoutId: ${payoutId}`)
+    // cover the case when bankOwner is doing the transaction
+    return { estimatedProtocolFee: BtcPaymentAmount(0n) }
   }
   const bankOwnerTxn = bankOwnerTxns[0]
   const bankFee = bankOwnerTxn.credit
