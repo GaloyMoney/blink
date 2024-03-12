@@ -2111,6 +2111,15 @@ export type AccountDefaultWalletsQueryVariables = Exact<{
 
 export type AccountDefaultWalletsQuery = { readonly __typename: 'Query', readonly accountDefaultWallet: { readonly __typename: 'PublicWallet', readonly id: string, readonly walletCurrency: WalletCurrency } };
 
+export type GetPaginatedTransactionsQueryVariables = Exact<{
+  first?: InputMaybe<Scalars['Int']>;
+  after?: InputMaybe<Scalars['String']>;
+  before?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type GetPaginatedTransactionsQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly id: string, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly transactions?: { readonly __typename: 'TransactionConnection', readonly edges?: ReadonlyArray<{ readonly __typename: 'TransactionEdge', readonly cursor: string, readonly node: { readonly __typename: 'Transaction', readonly createdAt: number, readonly direction: TxDirection, readonly id: string, readonly memo?: string | null, readonly settlementAmount: number, readonly settlementCurrency: WalletCurrency, readonly settlementDisplayAmount: string, readonly settlementDisplayCurrency: string, readonly settlementDisplayFee: string, readonly settlementFee: number, readonly status: TxStatus, readonly settlementVia: { readonly __typename: 'SettlementViaIntraLedger', readonly counterPartyUsername?: string | null, readonly counterPartyWalletId?: string | null } | { readonly __typename: 'SettlementViaLn', readonly paymentSecret?: string | null, readonly preImage?: string | null } | { readonly __typename: 'SettlementViaOnChain', readonly transactionHash?: string | null, readonly vout?: number | null }, readonly settlementPrice: { readonly __typename: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit', readonly base: number, readonly currencyUnit: string, readonly formattedAmount: string, readonly offset: number }, readonly initiationVia: { readonly __typename: 'InitiationViaIntraLedger', readonly counterPartyUsername?: string | null, readonly counterPartyWalletId?: string | null } | { readonly __typename: 'InitiationViaLn', readonly paymentHash: string } | { readonly __typename: 'InitiationViaOnChain', readonly address: string } } }> | null, readonly pageInfo: { readonly __typename: 'PageInfo', readonly endCursor?: string | null, readonly hasNextPage: boolean, readonly hasPreviousPage: boolean, readonly startCursor?: string | null } } | null } } | null };
+
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2220,6 +2229,101 @@ export function useAccountDefaultWalletsLazyQuery(baseOptions?: Apollo.LazyQuery
 export type AccountDefaultWalletsQueryHookResult = ReturnType<typeof useAccountDefaultWalletsQuery>;
 export type AccountDefaultWalletsLazyQueryHookResult = ReturnType<typeof useAccountDefaultWalletsLazyQuery>;
 export type AccountDefaultWalletsQueryResult = Apollo.QueryResult<AccountDefaultWalletsQuery, AccountDefaultWalletsQueryVariables>;
+export const GetPaginatedTransactionsDocument = gql`
+    query GetPaginatedTransactions($first: Int, $after: String, $before: String) {
+  me {
+    id
+    defaultAccount {
+      transactions(first: $first, after: $after, before: $before) {
+        edges {
+          cursor
+          node {
+            createdAt
+            direction
+            id
+            memo
+            settlementAmount
+            settlementCurrency
+            settlementDisplayAmount
+            settlementDisplayCurrency
+            settlementDisplayFee
+            settlementFee
+            settlementVia {
+              ... on SettlementViaIntraLedger {
+                counterPartyUsername
+                counterPartyWalletId
+              }
+              ... on SettlementViaLn {
+                paymentSecret
+                preImage
+              }
+              ... on SettlementViaOnChain {
+                transactionHash
+                vout
+              }
+            }
+            status
+            settlementPrice {
+              base
+              currencyUnit
+              formattedAmount
+              offset
+            }
+            initiationVia {
+              ... on InitiationViaIntraLedger {
+                counterPartyUsername
+                counterPartyWalletId
+              }
+              ... on InitiationViaOnChain {
+                address
+              }
+              ... on InitiationViaLn {
+                paymentHash
+              }
+            }
+          }
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+          hasPreviousPage
+          startCursor
+        }
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetPaginatedTransactionsQuery__
+ *
+ * To run a query within a React component, call `useGetPaginatedTransactionsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPaginatedTransactionsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPaginatedTransactionsQuery({
+ *   variables: {
+ *      first: // value for 'first'
+ *      after: // value for 'after'
+ *      before: // value for 'before'
+ *   },
+ * });
+ */
+export function useGetPaginatedTransactionsQuery(baseOptions?: Apollo.QueryHookOptions<GetPaginatedTransactionsQuery, GetPaginatedTransactionsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetPaginatedTransactionsQuery, GetPaginatedTransactionsQueryVariables>(GetPaginatedTransactionsDocument, options);
+      }
+export function useGetPaginatedTransactionsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetPaginatedTransactionsQuery, GetPaginatedTransactionsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetPaginatedTransactionsQuery, GetPaginatedTransactionsQueryVariables>(GetPaginatedTransactionsDocument, options);
+        }
+export type GetPaginatedTransactionsQueryHookResult = ReturnType<typeof useGetPaginatedTransactionsQuery>;
+export type GetPaginatedTransactionsLazyQueryHookResult = ReturnType<typeof useGetPaginatedTransactionsLazyQuery>;
+export type GetPaginatedTransactionsQueryResult = Apollo.QueryResult<GetPaginatedTransactionsQuery, GetPaginatedTransactionsQueryVariables>;
 export const MeDocument = gql`
     query me {
   me {
