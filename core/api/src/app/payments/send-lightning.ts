@@ -426,8 +426,17 @@ const executePaymentViaIntraledger = async <
 
       paymentHash,
       paymentFlow,
-      senderAccount,
-      recipientAccount,
+
+      senderAccountId: senderAccount.id,
+      senderDisplayCurrency: senderAccount.displayCurrency,
+      senderUsername: senderAccount.username,
+      senderContactEnabled: senderAccount.contactEnabled,
+
+      recipientAccountId: recipientAccount.id,
+      recipientDisplayCurrency: recipientAccount.displayCurrency,
+      recipientUsername: recipientAccount.username,
+      recipientContactEnabled: recipientAccount.contactEnabled,
+
       memo,
 
       senderAsNotificationRecipient,
@@ -441,8 +450,17 @@ const lockedPaymentViaIntraledgerSteps = async ({
 
   paymentHash,
   paymentFlow,
-  senderAccount,
-  recipientAccount,
+
+  senderAccountId,
+  senderDisplayCurrency,
+  senderUsername,
+  senderContactEnabled,
+
+  recipientAccountId,
+  recipientDisplayCurrency,
+  recipientUsername,
+  recipientContactEnabled,
+
   memo,
 
   senderAsNotificationRecipient,
@@ -452,8 +470,17 @@ const lockedPaymentViaIntraledgerSteps = async ({
 
   paymentHash: PaymentHash
   paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
-  senderAccount: Account
-  recipientAccount: Account
+
+  senderAccountId: AccountId
+  senderDisplayCurrency: DisplayCurrency
+  senderUsername: Username | undefined
+  senderContactEnabled: boolean
+
+  recipientAccountId: AccountId
+  recipientDisplayCurrency: DisplayCurrency
+  recipientUsername: Username | undefined
+  recipientContactEnabled: boolean
+
   memo: string | null
 
   senderAsNotificationRecipient: NotificationRecipient
@@ -486,14 +513,14 @@ const lockedPaymentViaIntraledgerSteps = async ({
   if (balanceCheck instanceof Error) return balanceCheck
 
   const senderDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-    currency: senderAccount.displayCurrency,
+    currency: senderDisplayCurrency,
   })
   if (senderDisplayPriceRatio instanceof Error) return senderDisplayPriceRatio
   const { displayAmount: senderDisplayAmount, displayFee: senderDisplayFee } =
     DisplayAmountsConverter(senderDisplayPriceRatio).convert(paymentFlow)
 
   const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-    currency: recipientAccount.displayCurrency,
+    currency: recipientDisplayCurrency,
   })
   if (recipientDisplayPriceRatio instanceof Error) return recipientDisplayPriceRatio
   const { displayAmount: recipientDisplayAmount, displayFee: recipientDisplayFee } =
@@ -531,7 +558,7 @@ const lockedPaymentViaIntraledgerSteps = async ({
 
       senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
       senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
-      senderDisplayCurrency: senderAccount.displayCurrency,
+      senderDisplayCurrency,
 
       memoOfPayer: memo || undefined,
     }))
@@ -548,15 +575,15 @@ const lockedPaymentViaIntraledgerSteps = async ({
 
       senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
       senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
-      senderDisplayCurrency: senderAccount.displayCurrency,
+      senderDisplayCurrency,
 
       recipientAmountDisplayCurrency: toDisplayBaseAmount(recipientDisplayAmount),
       recipientFeeDisplayCurrency: toDisplayBaseAmount(recipientDisplayFee),
-      recipientDisplayCurrency: recipientAccount.displayCurrency,
+      recipientDisplayCurrency,
 
       memoOfPayer: memo || undefined,
-      senderUsername: senderAccount.username,
-      recipientUsername: recipientAccount.username,
+      senderUsername,
+      recipientUsername,
     }))
   }
 
@@ -607,15 +634,15 @@ const lockedPaymentViaIntraledgerSteps = async ({
     transaction: senderWalletTransaction,
   })
 
-  if (senderAccount.id !== recipientAccount.id) {
+  if (senderAccountId !== recipientAccountId) {
     const addContactResult = await addContactsAfterSend({
-      senderContactEnabled: senderAccount.contactEnabled,
-      senderAccountId: senderAccount.id,
-      senderUsername: senderAccount.username,
+      senderContactEnabled,
+      senderAccountId,
+      senderUsername,
 
-      recipientContactEnabled: recipientAccount.contactEnabled,
-      recipientAccountId: recipientAccount.id,
-      recipientUsername: recipientAccount.username,
+      recipientContactEnabled,
+      recipientAccountId,
+      recipientUsername,
     })
     if (addContactResult instanceof Error) {
       recordExceptionInCurrentSpan({

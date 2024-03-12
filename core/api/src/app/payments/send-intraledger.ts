@@ -266,8 +266,15 @@ const executePaymentViaIntraledger = async <
       signal,
 
       paymentFlow,
-      senderAccount,
-      recipientAccount,
+
+      senderAccountId: senderAccount.id,
+      senderDisplayCurrency: senderAccount.displayCurrency,
+      senderUsername: senderAccount.username,
+
+      recipientAccountId: recipientAccount.id,
+      recipientDisplayCurrency: recipientAccount.displayCurrency,
+      recipientUsername: recipientAccount.username,
+
       memo,
 
       senderAsNotificationRecipient,
@@ -280,8 +287,15 @@ const lockedPaymentViaIntraledgerSteps = async ({
   signal,
 
   paymentFlow,
-  senderAccount,
-  recipientAccount,
+
+  senderAccountId,
+  senderDisplayCurrency,
+  senderUsername,
+
+  recipientAccountId,
+  recipientDisplayCurrency,
+  recipientUsername,
+
   memo,
 
   senderAsNotificationRecipient,
@@ -290,8 +304,15 @@ const lockedPaymentViaIntraledgerSteps = async ({
   signal: WalletIdAbortSignal
 
   paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
-  senderAccount: Account
-  recipientAccount: Account
+
+  senderAccountId: AccountId
+  senderDisplayCurrency: DisplayCurrency
+  senderUsername: Username | undefined
+
+  recipientAccountId: AccountId
+  recipientDisplayCurrency: DisplayCurrency
+  recipientUsername: Username | undefined
+
   memo: string | null
 
   senderAsNotificationRecipient: NotificationRecipient
@@ -309,7 +330,6 @@ const lockedPaymentViaIntraledgerSteps = async ({
   const balanceCheck = paymentFlow.checkBalanceForSend(balance)
   if (balanceCheck instanceof Error) return balanceCheck
 
-  const { displayCurrency: senderDisplayCurrency } = senderAccount
   const senderDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
     currency: senderDisplayCurrency,
   })
@@ -318,7 +338,7 @@ const lockedPaymentViaIntraledgerSteps = async ({
     DisplayAmountsConverter(senderDisplayPriceRatio).convert(paymentFlow)
 
   const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-    currency: recipientAccount.displayCurrency,
+    currency: recipientDisplayCurrency,
   })
   if (recipientDisplayPriceRatio instanceof Error) return recipientDisplayPriceRatio
   const { displayAmount: recipientDisplayAmount, displayFee: recipientDisplayFee } =
@@ -340,7 +360,7 @@ const lockedPaymentViaIntraledgerSteps = async ({
   let additionalInternalMetadata: {
     [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
   } = {}
-  if (senderAccount.id === recipientAccount.id) {
+  if (senderAccountId === recipientAccountId) {
     ;({
       metadata,
       debitAccountAdditionalMetadata: additionalDebitMetadata,
@@ -370,11 +390,11 @@ const lockedPaymentViaIntraledgerSteps = async ({
 
       recipientAmountDisplayCurrency: toDisplayBaseAmount(recipientDisplayAmount),
       recipientFeeDisplayCurrency: toDisplayBaseAmount(recipientDisplayFee),
-      recipientDisplayCurrency: recipientAccount.displayCurrency,
+      recipientDisplayCurrency,
 
       memoOfPayer: memo || undefined,
-      senderUsername: senderAccount.username,
-      recipientUsername: recipientAccount.username,
+      senderUsername,
+      recipientUsername,
     }))
   }
 
