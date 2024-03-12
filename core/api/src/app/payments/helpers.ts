@@ -146,28 +146,38 @@ export const getPriceRatioForLimits = wrapAsyncToRunInSpan({
 })
 
 export const addContactsAfterSend = async ({
-  senderAccount,
-  recipientAccount,
+  senderContactEnabled,
+  senderAccountId,
+  senderUsername,
+
+  recipientContactEnabled,
+  recipientAccountId,
+  recipientUsername,
 }: {
-  senderAccount: Account
-  recipientAccount: Account
+  senderContactEnabled: boolean
+  senderAccountId: AccountId
+  senderUsername: Username | undefined
+
+  recipientContactEnabled: boolean
+  recipientAccountId: AccountId
+  recipientUsername: Username | undefined
 }): Promise<true | ApplicationError> => {
-  if (!(senderAccount.contactEnabled && recipientAccount.contactEnabled)) {
+  if (!(senderContactEnabled && recipientContactEnabled)) {
     return true
   }
 
-  if (recipientAccount.username) {
+  if (recipientUsername) {
     const addContactToPayerResult = await addNewContact({
-      accountId: senderAccount.id,
-      contactUsername: recipientAccount.username,
+      accountId: senderAccountId,
+      contactUsername: recipientUsername,
     })
     if (addContactToPayerResult instanceof Error) return addContactToPayerResult
   }
 
-  if (senderAccount.username) {
+  if (senderUsername) {
     const addContactToPayeeResult = await addNewContact({
-      accountId: recipientAccount.id,
-      contactUsername: senderAccount.username,
+      accountId: recipientAccountId,
+      contactUsername: senderUsername,
     })
     if (addContactToPayeeResult instanceof Error) return addContactToPayeeResult
   }
