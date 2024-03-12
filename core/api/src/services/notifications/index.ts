@@ -628,21 +628,19 @@ export const NotificationsService = (): INotificationsService => {
     }[]
   }): Promise<true | NotificationsServiceError> => {
     try {
-      const marketing_notification = new MarketingNotificationTriggered()
-      marketing_notification.setUserIdsList(userIds)
+      const marketingNotification = new MarketingNotificationTriggered()
+      marketingNotification.setUserIdsList(userIds)
 
       localizedPushContent.forEach((content) => {
         const { title, body, language } = content
         const localizedContent = new LocalizedPushContent()
         localizedContent.setTitle(title)
         localizedContent.setBody(body)
-        marketing_notification
-          .getLocalizedPushContentMap()
-          .set(language, localizedContent)
+        marketingNotification.getLocalizedPushContentMap().set(language, localizedContent)
       })
 
       const event = new NotificationEvent()
-      event.setMarketingNotificationTriggered(marketing_notification)
+      event.setMarketingNotificationTriggered(marketingNotification)
 
       const request = new HandleNotificationEventRequest()
       request.setEvent(event)
