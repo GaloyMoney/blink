@@ -607,7 +607,7 @@ export type LnInvoice = Invoice & {
 
 export type LnInvoiceCancelInput = {
   readonly paymentHash: Scalars['PaymentHash'];
-  /** Wallet ID for a BTC wallet belonging to the current account. */
+  /** Wallet ID for a wallet associated with the current account. */
   readonly walletId: Scalars['WalletId'];
 };
 
@@ -2128,11 +2128,6 @@ export type AccountDefaultWalletQueryVariables = Exact<{
 
 export type AccountDefaultWalletQuery = { readonly __typename: 'Query', readonly accountDefaultWallet: { readonly __typename: 'PublicWallet', readonly id: string, readonly walletCurrency: WalletCurrency } };
 
-export type NodeIdsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type NodeIdsQuery = { readonly __typename: 'Query', readonly globals?: { readonly __typename: 'Globals', readonly nodesIds: ReadonlyArray<string> } | null };
-
 export type LnInvoicePaymentStatusSubscriptionVariables = Exact<{
   input: LnInvoicePaymentStatusInput;
 }>;
@@ -2301,40 +2296,6 @@ export function useAccountDefaultWalletLazyQuery(baseOptions?: Apollo.LazyQueryH
 export type AccountDefaultWalletQueryHookResult = ReturnType<typeof useAccountDefaultWalletQuery>;
 export type AccountDefaultWalletLazyQueryHookResult = ReturnType<typeof useAccountDefaultWalletLazyQuery>;
 export type AccountDefaultWalletQueryResult = Apollo.QueryResult<AccountDefaultWalletQuery, AccountDefaultWalletQueryVariables>;
-export const NodeIdsDocument = gql`
-    query nodeIds {
-  globals {
-    nodesIds
-  }
-}
-    `;
-
-/**
- * __useNodeIdsQuery__
- *
- * To run a query within a React component, call `useNodeIdsQuery` and pass it any options that fit your needs.
- * When your component renders, `useNodeIdsQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useNodeIdsQuery({
- *   variables: {
- *   },
- * });
- */
-export function useNodeIdsQuery(baseOptions?: Apollo.QueryHookOptions<NodeIdsQuery, NodeIdsQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<NodeIdsQuery, NodeIdsQueryVariables>(NodeIdsDocument, options);
-      }
-export function useNodeIdsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<NodeIdsQuery, NodeIdsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<NodeIdsQuery, NodeIdsQueryVariables>(NodeIdsDocument, options);
-        }
-export type NodeIdsQueryHookResult = ReturnType<typeof useNodeIdsQuery>;
-export type NodeIdsLazyQueryHookResult = ReturnType<typeof useNodeIdsLazyQuery>;
-export type NodeIdsQueryResult = Apollo.QueryResult<NodeIdsQuery, NodeIdsQueryVariables>;
 export const LnInvoicePaymentStatusDocument = gql`
     subscription lnInvoicePaymentStatus($input: LnInvoicePaymentStatusInput!) {
   lnInvoicePaymentStatus(input: $input) {

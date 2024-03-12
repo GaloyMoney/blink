@@ -756,7 +756,7 @@ input LnInvoiceCancelInput
 {
   paymentHash: PaymentHash!
 
-  """Wallet ID for a BTC wallet belonging to the current account."""
+  """Wallet ID for a wallet associated with the current account."""
   walletId: WalletId!
 }
 

@@ -648,7 +648,7 @@ export type LnInvoice = Invoice & {
 
 export type LnInvoiceCancelInput = {
   readonly paymentHash: Scalars['PaymentHash']['input'];
-  /** Wallet ID for a BTC wallet belonging to the current account. */
+  /** Wallet ID for a wallet associated with the current account. */
   readonly walletId: Scalars['WalletId']['input'];
 };
 

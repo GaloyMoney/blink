@@ -14,7 +14,7 @@ const LnInvoiceCancelInput = GT.Input({
   fields: () => ({
     walletId: {
       type: GT.NonNull(WalletId),
-      description: "Wallet ID for a BTC wallet belonging to the current account.",
+      description: "Wallet ID for a wallet associated with the current account.",
     },
     paymentHash: { type: GT.NonNull(PaymentHash) },
   }),
