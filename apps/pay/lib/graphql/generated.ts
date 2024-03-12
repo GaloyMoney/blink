@@ -605,6 +605,12 @@ export type LnInvoice = Invoice & {
   readonly satoshis: Scalars['SatAmount'];
 };
 
+export type LnInvoiceCancelInput = {
+  readonly paymentHash: Scalars['PaymentHash'];
+  /** Wallet ID for a wallet associated with the current account. */
+  readonly walletId: Scalars['WalletId'];
+};
+
 export type LnInvoiceCreateInput = {
   /** Amount in satoshis. */
   readonly amount: Scalars['SatAmount'];
@@ -875,6 +881,8 @@ export type Mutation = {
   readonly intraLedgerUsdPaymentSend: PaymentSendPayload;
   /** Sends a payment to a lightning address. */
   readonly lnAddressPaymentSend: PaymentSendPayload;
+  /** Cancel an unpaid lightning invoice for an associated wallet. */
+  readonly lnInvoiceCancel: SuccessPayload;
   /**
    * Returns a lightning invoice for an associated wallet.
    * When invoice is paid the value will be credited to a BTC wallet.
@@ -1039,6 +1047,11 @@ export type MutationIntraLedgerUsdPaymentSendArgs = {
 
 export type MutationLnAddressPaymentSendArgs = {
   input: LnAddressPaymentSendInput;
+};
+
+
+export type MutationLnInvoiceCancelArgs = {
+  input: LnInvoiceCancelInput;
 };
 
 
@@ -2120,11 +2133,6 @@ export type AccountDefaultWalletQueryVariables = Exact<{
 
 export type AccountDefaultWalletQuery = { readonly __typename: 'Query', readonly accountDefaultWallet: { readonly __typename: 'PublicWallet', readonly id: string, readonly walletCurrency: WalletCurrency } };
 
-export type NodeIdsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type NodeIdsQuery = { readonly __typename: 'Query', readonly globals?: { readonly __typename: 'Globals', readonly nodesIds: ReadonlyArray<string> } | null };
-
 export type LnInvoicePaymentStatusSubscriptionVariables = Exact<{
   input: LnInvoicePaymentStatusInput;
 }>;
@@ -2328,40 +2336,6 @@ export function useAccountDefaultWalletLazyQuery(baseOptions?: Apollo.LazyQueryH
 export type AccountDefaultWalletQueryHookResult = ReturnType<typeof useAccountDefaultWalletQuery>;
 export type AccountDefaultWalletLazyQueryHookResult = ReturnType<typeof useAccountDefaultWalletLazyQuery>;
 export type AccountDefaultWalletQueryResult = Apollo.QueryResult<AccountDefaultWalletQuery, AccountDefaultWalletQueryVariables>;
-export const NodeIdsDocument = gql`
-    query nodeIds {
-  globals {
-    nodesIds
-  }
-}
-    `;
-
-/**
- * __useNodeIdsQuery__
- *
- * To run a query within a React component, call `useNodeIdsQuery` and pass it any options that fit your needs.
- * When your component renders, `useNodeIdsQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useNodeIdsQuery({
- *   variables: {
- *   },
- * });
- */
-export function useNodeIdsQuery(baseOptions?: Apollo.QueryHookOptions<NodeIdsQuery, NodeIdsQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<NodeIdsQuery, NodeIdsQueryVariables>(NodeIdsDocument, options);
-      }
-export function useNodeIdsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<NodeIdsQuery, NodeIdsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<NodeIdsQuery, NodeIdsQueryVariables>(NodeIdsDocument, options);
-        }
-export type NodeIdsQueryHookResult = ReturnType<typeof useNodeIdsQuery>;
-export type NodeIdsLazyQueryHookResult = ReturnType<typeof useNodeIdsLazyQuery>;
-export type NodeIdsQueryResult = Apollo.QueryResult<NodeIdsQuery, NodeIdsQueryVariables>;
 export const LnInvoicePaymentStatusDocument = gql`
     subscription lnInvoicePaymentStatus($input: LnInvoicePaymentStatusInput!) {
   lnInvoicePaymentStatus(input: $input) {

@@ -21,6 +21,7 @@ import IntraLedgerPaymentSendMutation from "@/graphql/public/root/mutation/intra
 import IntraLedgerUsdPaymentSendMutation from "@/graphql/public/root/mutation/intraledger-usd-payment-send"
 import LnInvoiceCreateMutation from "@/graphql/public/root/mutation/ln-invoice-create"
 import LnInvoiceCreateOnBehalfOfRecipientMutation from "@/graphql/public/root/mutation/ln-invoice-create-on-behalf-of-recipient"
+import LnInvoiceCancelMutation from "@/graphql/public/root/mutation/ln-invoice-cancel"
 import LnInvoiceFeeProbeMutation from "@/graphql/public/root/mutation/ln-invoice-fee-probe"
 import LnInvoicePaymentSendMutation from "@/graphql/public/root/mutation/ln-invoice-payment-send"
 import LnNoAmountInvoiceCreateMutation from "@/graphql/public/root/mutation/ln-noamount-invoice-create"
@@ -141,6 +142,7 @@ export const mutationFields = {
         lnInvoiceCreate: LnInvoiceCreateMutation,
         lnUsdInvoiceCreate: LnUsdInvoiceCreateMutation,
         lnNoAmountInvoiceCreate: LnNoAmountInvoiceCreateMutation,
+        lnInvoiceCancel: LnInvoiceCancelMutation,
         onChainAddressCreate: OnChainAddressCreateMutation,
         onChainAddressCurrent: OnChainAddressCurrentMutation,
       },

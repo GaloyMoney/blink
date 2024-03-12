@@ -44,6 +44,11 @@ type AddInvoiceNoAmountForRecipientArgs = {
   expiresIn?: number
 }
 
+type CancelInvoiceForWalletArgs = {
+  walletId: WalletId
+  paymentHash: PaymentHash
+}
+
 type BuildWIBWithAmountFnArgs = {
   walletInvoiceBuilder: WalletInvoiceBuilder
   recipientWalletDescriptor: WalletDescriptor<WalletCurrency>

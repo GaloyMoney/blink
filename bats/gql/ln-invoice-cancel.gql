@@ -1,0 +1,9 @@
+mutation LnInvoiceCancel($input: LnInvoiceCancelInput!) {
+  lnInvoiceCancel(input: $input) {
+    errors {
+      code
+      message
+    }
+    success
+  }
+}

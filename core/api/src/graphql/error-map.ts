@@ -515,6 +515,9 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = error.message
       return new QuizClaimedTooEarlyError({ message, logger: baseLogger })
 
+    case "InvoiceAlreadyProcessedError":
+      message = "The invoice has already been processed"
+      return new ValidationInternalError({ message, logger: baseLogger })
     // ----------
     // Unhandled below here
     // ----------
