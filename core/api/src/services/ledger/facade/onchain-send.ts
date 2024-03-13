@@ -24,11 +24,13 @@ import {
 import { isValidObjectId, toObjectId } from "@/services/mongoose/utils"
 import {
   BtcPaymentAmount,
+  ErrorLevel,
   WalletCurrency,
   ZERO_CENTS,
   ZERO_SATS,
   paymentAmountFromNumber,
 } from "@/domain/shared"
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
 
 export const getTransactionsByPayoutId = async (
   payoutId: PayoutId,
@@ -173,6 +175,13 @@ export const setOnChainTxIdByPayoutId = async ({
     (txn) => txn.walletId === bankOwnerWalletId && !isOnChainFeeReconciliationTxn(txn),
   )
   if (bankOwnerTxns.length !== 1) {
+    recordExceptionInCurrentSpan({
+      error: new InvalidLedgerTransactionStateError(),
+      level: ErrorLevel.Critical,
+      attributes: { txns: JSON.stringify(txns), payoutId },
+      fallbackMsg: "InvalidLedgerTransactionStateError",
+    })
+
     // cover the case when bankOwner is doing the transaction
     return { estimatedProtocolFee: BtcPaymentAmount(0n) }
   }
