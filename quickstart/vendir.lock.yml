@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(core): add lnInvoiceCancel mutation (#4107)...'
-      sha: e21bab097648c47377daedacd8f2430f79ad2e34
+      commitTitle: 'chore: fine tune error for state issue (#4183)...'
+      sha: f675265cf545d8e31926f99486ef68019c8ed3d7
       tags:
-      - 0.20.115
+      - 0.20.117-1-gf675265cf
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(core): add lnInvoiceCancel mutation (#4107)...'
-      sha: e21bab097648c47377daedacd8f2430f79ad2e34
+      commitTitle: 'chore: fine tune error for state issue (#4183)...'
+      sha: f675265cf545d8e31926f99486ef68019c8ed3d7
       tags:
-      - 0.20.115
+      - 0.20.117-1-gf675265cf
     path: schemas/
   - git:
-      commitTitle: 'feat(core): add lnInvoiceCancel mutation (#4107)...'
-      sha: e21bab097648c47377daedacd8f2430f79ad2e34
+      commitTitle: 'chore: fine tune error for state issue (#4183)...'
+      sha: f675265cf545d8e31926f99486ef68019c8ed3d7
       tags:
-      - 0.20.115
+      - 0.20.117-1-gf675265cf
     path: gql/
   path: ./graphql
 kind: LockConfig
