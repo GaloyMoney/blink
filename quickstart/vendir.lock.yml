@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: fine tune error for state issue (#4183)...'
-      sha: f675265cf545d8e31926f99486ef68019c8ed3d7
+      commitTitle: 'chore(core): add tracing span logging (#4186)'
+      sha: 127bba7baa8c8f35a97097d4a65b863ba5141a27
       tags:
-      - 0.20.117-1-gf675265cf
+      - 0.20.118-3-g127bba7ba
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: fine tune error for state issue (#4183)...'
-      sha: f675265cf545d8e31926f99486ef68019c8ed3d7
+      commitTitle: 'chore(core): add tracing span logging (#4186)'
+      sha: 127bba7baa8c8f35a97097d4a65b863ba5141a27
       tags:
-      - 0.20.117-1-gf675265cf
+      - 0.20.118-3-g127bba7ba
     path: schemas/
   - git:
-      commitTitle: 'chore: fine tune error for state issue (#4183)...'
-      sha: f675265cf545d8e31926f99486ef68019c8ed3d7
+      commitTitle: 'chore(core): add tracing span logging (#4186)'
+      sha: 127bba7baa8c8f35a97097d4a65b863ba5141a27
       tags:
-      - 0.20.117-1-gf675265cf
+      - 0.20.118-3-g127bba7ba
     path: gql/
   path: ./graphql
 kind: LockConfig
