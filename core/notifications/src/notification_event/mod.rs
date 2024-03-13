@@ -22,7 +22,6 @@ pub(super) use transaction_occurred::*;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum DeepLink {
-    None,
     Circles,
     Price,
     Earn,
@@ -32,7 +31,7 @@ pub enum DeepLink {
 
 pub trait NotificationEvent: std::fmt::Debug + Send + Sync {
     fn category(&self) -> UserNotificationCategory;
-    fn deep_link(&self) -> DeepLink;
+    fn deep_link(&self) -> Option<DeepLink>;
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage;
     fn should_send_email(&self) -> bool;
     fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail>;

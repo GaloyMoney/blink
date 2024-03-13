@@ -16,8 +16,8 @@ impl NotificationEvent for CircleGrew {
         UserNotificationCategory::Circles
     }
 
-    fn deep_link(&self) -> DeepLink {
-        DeepLink::Circles
+    fn deep_link(&self) -> Option<DeepLink> {
+        Some(DeepLink::Circles)
     }
 
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {

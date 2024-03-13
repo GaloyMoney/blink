@@ -17,8 +17,8 @@ impl NotificationEvent for MarketingNotificationTriggered {
         UserNotificationCategory::Marketing
     }
 
-    fn deep_link(&self) -> DeepLink {
-        self.deep_link.clone().unwrap_or(DeepLink::None)
+    fn deep_link(&self) -> Option<DeepLink> {
+        self.deep_link.clone()
     }
 
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
