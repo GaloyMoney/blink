@@ -10,7 +10,7 @@ import { OverlayTrigger, Tooltip } from "react-bootstrap"
 
 import { useState } from "react"
 
-import { signIn, signOut, useSession } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 
 import CurrencyDropdown from "../currency/currency-dropdown"
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTrigger } from "../sheet"
@@ -110,9 +110,9 @@ export function SideBar({ username }: { username: string }) {
           </SheetHeader>
           <div className="grid gap-3 py-3  ">
             <div
-              className="flex flex-col gap-0 bg-slate-200 p-2 m-0 rounded-md"
+              className="flex flex-col gap-0 bg-slate-200 p-2 m-0 rounded-md cursor-pointer"
               onClick={() => {
-                if (!signedInUser) signIn("blink")
+                router.push("/api/auth/signin")
               }}
             >
               {signedInUser ? (
