@@ -36,6 +36,8 @@ import { NetInstrumentation } from "@opentelemetry/instrumentation-net"
 import type * as graphqlTypes from "graphql"
 import { Resource } from "@opentelemetry/resources"
 
+import { baseLogger } from "./logger"
+
 import { ErrorLevel, RankedErrorLevel, parseErrorFromUnknown } from "@/domain/shared"
 type ExtendedException = Exclude<Exception, string> & {
   level?: ErrorLevel
@@ -488,6 +490,14 @@ export const wrapAsyncToRunInSpan = <
       root,
     })
     const ret = tracer.startActiveSpan(spanName, spanOptions, async (span) => {
+      baseLogger.info(
+        {
+          function: spanOptions.attributes?.["code.function"],
+          isRecording: span.isRecording(),
+          spanId: span.spanContext().spanId,
+        },
+        `spanName: ${spanName}`,
+      )
       try {
         const ret = await fn(...args)
         if (ret instanceof Error) recordException(span, ret)
