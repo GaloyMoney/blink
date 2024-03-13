@@ -7,7 +7,13 @@ interface LoginResult {
 }
 
 const authApi = {
-  requestEmailCode: async (email: string, customHeaders?: object): Promise<string> => {
+  requestEmailCode: async ({
+    email,
+    customHeaders,
+  }: {
+    email: string
+    customHeaders?: object
+  }): Promise<string> => {
     const result = await axiosInstance.post(
       "/email/code",
       { email },
@@ -16,7 +22,15 @@ const authApi = {
     return result.data.result
   },
 
-  validateTotp: async (totpCode: string, authToken: string, customHeaders?: object) => {
+  validateTotp: async ({
+    totpCode,
+    authToken,
+    customHeaders,
+  }: {
+    totpCode: string
+    authToken: string
+    customHeaders?: object
+  }) => {
     const response = await axiosInstance.post(
       "/totp/validate",
       {
@@ -28,11 +42,15 @@ const authApi = {
     return response
   },
 
-  loginWithPhone: async (
-    value: string,
-    code: string,
-    customHeaders?: object,
-  ): Promise<LoginResult> => {
+  loginWithPhone: async ({
+    value,
+    code,
+    customHeaders,
+  }: {
+    value: string
+    code: string
+    customHeaders?: object
+  }): Promise<LoginResult> => {
     const response = await axiosInstance.post(
       "/phone/login",
       {
@@ -44,11 +62,15 @@ const authApi = {
     return response.data
   },
 
-  loginWithEmail: async (
-    code: string,
-    emailLoginId: string,
-    customHeaders?: object,
-  ): Promise<LoginResult> => {
+  loginWithEmail: async ({
+    code,
+    emailLoginId,
+    customHeaders,
+  }: {
+    code: string
+    emailLoginId: string
+    customHeaders?: object
+  }): Promise<LoginResult> => {
     const response = await axiosInstance.post(
       "/email/login",
       {
@@ -60,14 +82,21 @@ const authApi = {
     return response.data.result
   },
 
-  requestPhoneCode: async (
-    phone: string,
-    challengeCode: string,
-    validationCode: string,
-    secCode: string,
-    channel: string,
-    customHeaders?: object,
-  ) => {
+  requestPhoneCode: async ({
+    phone,
+    challengeCode,
+    validationCode,
+    secCode,
+    channel,
+    customHeaders,
+  }: {
+    phone: string
+    challengeCode: string
+    validationCode: string
+    secCode: string
+    channel: string
+    customHeaders?: object
+  }) => {
     const response = await axiosInstance.post(
       "/phone/code",
       {
@@ -83,12 +112,11 @@ const authApi = {
     return response
   },
 
-  requestPhoneCaptcha: async (
-    customHeaders?: object,
-  ): Promise<{
-    id: string
-    challengeCode: string
-  }> => {
+  requestPhoneCaptcha: async ({
+    customHeaders,
+  }: {
+    customHeaders?: object
+  }): Promise<{ id: string; challengeCode: string }> => {
     const response = await axiosInstance.post(
       "/phone/captcha",
       {},
