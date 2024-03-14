@@ -8,9 +8,11 @@ interface IPhoneProviderService {
   initiateVerify({
     to,
     channel,
+    phoneExists,
   }: {
     to: PhoneNumber
     channel: ChannelType
+    phoneExists: boolean
   }): Promise<true | PhoneProviderServiceError>
   validateVerify({
     to,
