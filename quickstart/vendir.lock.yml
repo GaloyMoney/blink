@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps-dev): bump @graphql-codegen/client-preset from 4.1.0
-        to 4.2.4 (#4140)...'
-      sha: 1b65a85990d76a7073f15660d4ac00efe8dfad45
+      commitTitle: 'feat(core): add permissions query (#4100)...'
+      sha: 8fa4c9bf95d7c8fcf824392e3b2c3bd52b078493
       tags:
-      - 0.20.119-3-g1b65a8599
+      - 0.20.120-2-g8fa4c9bf9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps-dev): bump @graphql-codegen/client-preset from 4.1.0
-        to 4.2.4 (#4140)...'
-      sha: 1b65a85990d76a7073f15660d4ac00efe8dfad45
+      commitTitle: 'feat(core): add permissions query (#4100)...'
+      sha: 8fa4c9bf95d7c8fcf824392e3b2c3bd52b078493
       tags:
-      - 0.20.120
+      - 0.20.120-2-g8fa4c9bf9
     path: schemas/
   - git:
-      commitTitle: 'chore(deps-dev): bump @graphql-codegen/client-preset from 4.1.0
-        to 4.2.4 (#4140)...'
-      sha: 1b65a85990d76a7073f15660d4ac00efe8dfad45
+      commitTitle: 'feat(core): add permissions query (#4100)...'
+      sha: 8fa4c9bf95d7c8fcf824392e3b2c3bd52b078493
       tags:
-      - 0.20.120
+      - 0.20.120-2-g8fa4c9bf9
     path: gql/
   path: ./graphql
 kind: LockConfig

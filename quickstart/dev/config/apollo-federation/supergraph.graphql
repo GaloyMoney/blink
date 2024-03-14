@@ -212,6 +212,12 @@ type ApiKeyRevokePayload
   apiKey: ApiKey!
 }
 
+type Authorization
+  @join__type(graph: PUBLIC)
+{
+  scopes: [Scope!]!
+}
+
 """An Opaque Bearer token"""
 scalar AuthToken
   @join__type(graph: PUBLIC)
@@ -1576,6 +1582,9 @@ type Query
   @join__type(graph: PUBLIC)
 {
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet! @join__field(graph: PUBLIC)
+
+  """Retrieve the list of scopes permitted for the user's token or API key"""
+  authorization: Authorization! @join__field(graph: PUBLIC)
   btcPriceList(range: PriceGraphRange!): [PricePoint] @join__field(graph: PUBLIC)
   businessMapMarkers: [MapMarker!]! @join__field(graph: PUBLIC)
   currencyList: [Currency!]! @join__field(graph: PUBLIC)
@@ -1664,10 +1673,11 @@ type SatAmountPayload
 
 enum Scope
   @join__type(graph: API_KEYS)
+  @join__type(graph: PUBLIC)
 {
-  READ @join__enumValue(graph: API_KEYS)
-  WRITE @join__enumValue(graph: API_KEYS)
-  RECEIVE @join__enumValue(graph: API_KEYS)
+  READ @join__enumValue(graph: API_KEYS) @join__enumValue(graph: PUBLIC)
+  WRITE @join__enumValue(graph: API_KEYS) @join__enumValue(graph: PUBLIC)
+  RECEIVE @join__enumValue(graph: API_KEYS) @join__enumValue(graph: PUBLIC)
 }
 
 """(Positive) amount of seconds"""
