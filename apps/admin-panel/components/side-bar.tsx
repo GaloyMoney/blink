@@ -27,6 +27,11 @@ const dashboardRoutes = [
     icon: GlobeIcon,
     path: "/merchants",
   },
+  {
+    name: "Notifications",
+    icon: GlobeIcon,
+    path: "/notifications",
+  },
 ]
 
 function SideBar() {

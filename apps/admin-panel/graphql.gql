@@ -379,3 +379,19 @@ query merchantsPendingApproval {
     username
   }
 }
+
+query filteredUserCount($phoneCountryCodesFilter: [CountryCode!], $userIdsFilter: [ID!]) {
+  filteredUserCount(
+    phoneCountryCodesFilter: $phoneCountryCodesFilter
+    userIdsFilter: $userIdsFilter
+  )
+}
+
+mutation marketingNotificationTrigger($input: MarketingNotificationTriggerInput!) {
+  marketingNotificationTrigger(input: $input) {
+    errors {
+      message
+    }
+    success
+  }
+}
