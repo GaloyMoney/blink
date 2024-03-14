@@ -1,0 +1,11 @@
+.mainContent {
+  padding-top: 20vh;
+  min-height: 100vh;
+  background-color: var(--backgroundColor);
+}
+
+@media (max-width: 768px), (max-height: 751px) {
+  .mainContent {
+    padding-top: 5vh;
+  }
+}
