@@ -215,6 +215,11 @@ export type AuthTokenPayload = {
   readonly totpRequired?: Maybe<Scalars['Boolean']['output']>;
 };
 
+export type Authorization = {
+  readonly __typename: 'Authorization';
+  readonly scopes: ReadonlyArray<Scope>;
+};
+
 /** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
 export type BtcWallet = Wallet & {
   readonly __typename: 'BTCWallet';
@@ -606,6 +611,12 @@ export type LnInvoice = Invoice & {
   readonly satoshis: Scalars['SatAmount']['output'];
 };
 
+export type LnInvoiceCancelInput = {
+  readonly paymentHash: Scalars['PaymentHash']['input'];
+  /** Wallet ID for a wallet associated with the current account. */
+  readonly walletId: Scalars['WalletId']['input'];
+};
+
 export type LnInvoiceCreateInput = {
   /** Amount in satoshis. */
   readonly amount: Scalars['SatAmount']['input'];
@@ -876,6 +887,8 @@ export type Mutation = {
   readonly intraLedgerUsdPaymentSend: PaymentSendPayload;
   /** Sends a payment to a lightning address. */
   readonly lnAddressPaymentSend: PaymentSendPayload;
+  /** Cancel an unpaid lightning invoice for an associated wallet. */
+  readonly lnInvoiceCancel: SuccessPayload;
   /**
    * Returns a lightning invoice for an associated wallet.
    * When invoice is paid the value will be credited to a BTC wallet.
@@ -1040,6 +1053,11 @@ export type MutationIntraLedgerUsdPaymentSendArgs = {
 
 export type MutationLnAddressPaymentSendArgs = {
   input: LnAddressPaymentSendInput;
+};
+
+
+export type MutationLnInvoiceCancelArgs = {
+  input: LnInvoiceCancelInput;
 };
 
 
@@ -1449,6 +1467,8 @@ export type PublicWallet = {
 export type Query = {
   readonly __typename: 'Query';
   readonly accountDefaultWallet: PublicWallet;
+  /** Retrieve the list of scopes permitted for the user's token or API key */
+  readonly authorization: Authorization;
   readonly btcPriceList?: Maybe<ReadonlyArray<Maybe<PricePoint>>>;
   readonly businessMapMarkers: ReadonlyArray<MapMarker>;
   readonly currencyList: ReadonlyArray<Currency>;
@@ -1579,6 +1599,13 @@ export type SatAmountPayload = {
   readonly errors: ReadonlyArray<Error>;
 };
 
+export const Scope = {
+  Read: 'READ',
+  Receive: 'RECEIVE',
+  Write: 'WRITE'
+} as const;
+
+export type Scope = typeof Scope[keyof typeof Scope];
 export type SettlementVia = SettlementViaIntraLedger | SettlementViaLn | SettlementViaOnChain;
 
 export type SettlementViaIntraLedger = {
