@@ -1,11 +1,10 @@
-import { TriggerMarketingNotificationPayload } from "../../types/payload/trigger-marketing-notification"
-
 import { GT } from "@/graphql/index"
 import CountryCode from "@/graphql/public/types/scalar/country-code"
 import Language from "@/graphql/shared/types/scalar/language"
 import { Admin } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import DeepLink from "@/graphql/admin/types/scalar/deep-link"
+import SuccessPayload from "@/graphql/shared/types/payload/success-payload"
 
 const LocalizedPushContentInput = GT.Input({
   name: "LocalizedPushContentInput",
@@ -59,7 +58,7 @@ const TriggerMarketingNotificationMutation = GT.Field<
   extensions: {
     complexity: 120,
   },
-  type: GT.NonNull(TriggerMarketingNotificationPayload),
+  type: GT.NonNull(SuccessPayload),
   args: {
     input: { type: GT.NonNull(TriggerMarketingNotificationInput) },
   },
@@ -109,7 +108,7 @@ const TriggerMarketingNotificationMutation = GT.Field<
 
     return {
       errors: [],
-      success: res.success,
+      success: res,
     }
   },
 })

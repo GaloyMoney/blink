@@ -64,9 +64,8 @@ export const UsersRepository = (): IUsersRepository => {
     userIds: UserId[]
     phoneCountryCodes: string[]
   }): AsyncGenerator<UserId> | RepositoryError {
-    const query = constructFilter(userIds, phoneCountryCodes)
-
     try {
+      const query = constructFilter(userIds, phoneCountryCodes)
       const cursor = User.find(query).cursor()
       for await (const doc of cursor) {
         yield doc.userId as UserId
@@ -83,9 +82,8 @@ export const UsersRepository = (): IUsersRepository => {
     userIds: UserId[]
     phoneCountryCodes: string[]
   }): Promise<number | RepositoryError> => {
-    const query = constructFilter(userIds, phoneCountryCodes)
-
     try {
+      const query = constructFilter(userIds, phoneCountryCodes)
       const count = await User.countDocuments(query)
       return count
     } catch (err) {

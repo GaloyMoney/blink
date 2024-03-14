@@ -376,19 +376,21 @@ const resolveFunctionSpanOptions = ({
   functionArgs,
   spanAttributes,
   root,
+  ignoreFnArgs,
 }: {
   namespace: string
   functionName: string
   functionArgs: Array<unknown>
   spanAttributes?: Attributes
   root?: boolean
+  ignoreFnArgs?: boolean
 }): SpanOptions => {
   const attributes: Attributes = {
     [SEMATTRS_CODE_FUNCTION]: functionName,
     [SEMATTRS_CODE_NAMESPACE]: namespace,
     ...spanAttributes,
   }
-  if (functionArgs && functionArgs.length > 0) {
+  if (!ignoreFnArgs && functionArgs && functionArgs.length > 0) {
     const params =
       typeof functionArgs[0] === "object" ? functionArgs[0] : { "0": functionArgs[0] }
     for (const key in params) {
@@ -412,12 +414,14 @@ export const wrapToRunInSpan = <
   namespace,
   spanAttributes,
   root,
+  ignoreFnArgs,
 }: {
   fn: (...args: A) => PromiseReturnType<R>
   fnName?: string
   namespace: string
   spanAttributes?: Attributes
   root?: boolean
+  ignoreFnArgs?: boolean
 }) => {
   const functionName = fnName || fn.name || "unknown"
 
@@ -429,6 +433,7 @@ export const wrapToRunInSpan = <
       functionArgs: args,
       spanAttributes,
       root,
+      ignoreFnArgs,
     })
     const ret = tracer.startActiveSpan(spanName, spanOptions, (span) => {
       try {
@@ -469,12 +474,14 @@ export const wrapAsyncToRunInSpan = <
   namespace,
   spanAttributes,
   root,
+  ignoreFnArgs,
 }: {
   fn: (...args: A) => Promise<PromiseReturnType<R>>
   fnName?: string
   namespace: string
   spanAttributes?: Attributes
   root?: boolean
+  ignoreFnArgs?: boolean
 }) => {
   const functionName = fnName || fn.name || "unknown"
 
@@ -486,6 +493,7 @@ export const wrapAsyncToRunInSpan = <
       functionArgs: args,
       spanAttributes,
       root,
+      ignoreFnArgs,
     })
     const ret = tracer.startActiveSpan(spanName, spanOptions, async (span) => {
       try {

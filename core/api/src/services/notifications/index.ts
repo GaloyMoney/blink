@@ -54,7 +54,7 @@ import { majorToMinorUnit, toCents, UsdDisplayCurrency } from "@/domain/fiat"
 
 import { PubSubService } from "@/services/pubsub"
 import { CallbackService } from "@/services/svix"
-import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
+import { wrapAsyncFunctionsToRunInSpan, wrapAsyncToRunInSpan } from "@/services/tracing"
 
 export const NotificationsService = (): INotificationsService => {
   const pubsub = PubSubService()
@@ -621,15 +621,7 @@ export const NotificationsService = (): INotificationsService => {
     userIds,
     localizedPushContent,
     deepLink,
-  }: {
-    userIds: UserId[]
-    deepLink: DeepLink | undefined
-    localizedPushContent: {
-      title: string
-      body: string
-      language: UserLanguage
-    }[]
-  }): Promise<true | NotificationsServiceError> => {
+  }: TriggerMarketingNotificationArgs): Promise<true | NotificationsServiceError> => {
     try {
       const marketingNotification = new MarketingNotificationTriggered()
       marketingNotification.setUserIdsList(userIds)
@@ -685,6 +677,11 @@ export const NotificationsService = (): INotificationsService => {
   // trace everything except price update because it runs every 30 seconds
   return {
     priceUpdate,
+    triggerMarketingNotification: wrapAsyncToRunInSpan({
+      namespace: "services.notifications",
+      fn: triggerMarketingNotification,
+      ignoreFnArgs: true,
+    }),
     ...wrapAsyncFunctionsToRunInSpan({
       namespace: "services.notifications",
       fns: {
@@ -700,7 +697,6 @@ export const NotificationsService = (): INotificationsService => {
         updateEmailAddress,
         removeEmailAddress,
         removePushDeviceToken,
-        triggerMarketingNotification,
       },
     }),
   }

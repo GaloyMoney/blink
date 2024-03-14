@@ -8,21 +8,7 @@ export const triggerMarketingNotification = async ({
   phoneCountryCodesFilter,
   deepLink,
   localizedPushContent,
-}: {
-  userIdsFilter: string[] | undefined
-  phoneCountryCodesFilter: string[] | undefined
-  deepLink: DeepLink | undefined
-  localizedPushContent: {
-    title: string
-    body: string
-    language: string
-  }[]
-}): Promise<
-  | ApplicationError
-  | {
-      success: boolean
-    }
-> => {
+}: AdminTriggerMarketingNotificationArgs): Promise<ApplicationError | true> => {
   const checkedUserIds: UserId[] = []
   for (const userId of userIdsFilter || []) {
     const checkedUserId = checkedToUserId(userId)
@@ -32,11 +18,7 @@ export const triggerMarketingNotification = async ({
     checkedUserIds.push(checkedUserId)
   }
 
-  const checkedLocalizedPushContent: {
-    title: string
-    body: string
-    language: UserLanguage
-  }[] = []
+  const checkedLocalizedPushContent: LocalizedPushContent[] = []
   for (const content of localizedPushContent) {
     const checkedLanguage = checkedToNonEmptyLanguage(content.language)
     if (checkedLanguage instanceof Error) {
@@ -73,16 +55,13 @@ export const triggerMarketingNotification = async ({
     return res
   }
 
-  return { success: true }
+  return true
 }
 
 export const filteredUserCount = async ({
   userIdsFilter,
   phoneCountryCodesFilter,
-}: {
-  userIdsFilter: string[] | undefined
-  phoneCountryCodesFilter: string[] | undefined
-}): Promise<ApplicationError | number> => {
+}: AdminFilteredUserCountArgs): Promise<ApplicationError | number> => {
   const checkedUserIds: UserId[] = []
   for (const userId of userIdsFilter || []) {
     const checkedUserId = checkedToUserId(userId)

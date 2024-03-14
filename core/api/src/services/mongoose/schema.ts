@@ -409,7 +409,10 @@ const UserSchema = new Schema(
             enum: Object.values(CarrierType),
           },
         },
-        countryCode: String,
+        countryCode: {
+          type: String,
+          index: true,
+        },
       },
       default: undefined,
     },
@@ -431,6 +434,11 @@ const UserSchema = new Schema(
   },
   { id: false },
 )
+
+UserSchema.index({
+  "userId": 1,
+  "phoneMetadata.countryCode": 1,
+})
 
 export const User = mongoose.model<UserRecord>("User", UserSchema)
 

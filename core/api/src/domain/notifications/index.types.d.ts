@@ -57,6 +57,11 @@ type SendFilteredPushNotificationArgs = {
 type DeepLink =
   (typeof import("./index").DeepLink)[keyof typeof import("./index").DeepLink]
 
+type LocalizedPushContent = {
+  title: string
+  body: string
+  language: UserLanguage
+}
 interface INotificationsService {
   sendTransaction: (
     args: NotificatioSendTransactionArgs,
@@ -112,13 +117,13 @@ interface INotificationsService {
 
   removeEmailAddress(args: { userId: UserId }): Promise<true | NotificationsServiceError>
 
-  triggerMarketingNotification(args: {
-    userIds: UserId[]
-    deepLink: DeepLink | undefined
-    localizedPushContent: {
-      title: string
-      body: string
-      language: UserLanguage
-    }[]
-  }): Promise<true | NotificationsServiceError>
+  triggerMarketingNotification(
+    args: TriggerMarketingNotificationArgs,
+  ): Promise<true | NotificationsServiceError>
+}
+
+type TriggerMarketingNotificationArgs = {
+  userIds: UserId[]
+  deepLink: DeepLink | undefined
+  localizedPushContent: LocalizedPushContent[]
 }

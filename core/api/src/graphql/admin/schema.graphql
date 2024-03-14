@@ -307,7 +307,7 @@ type Mutation {
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
   merchantMapDelete(input: MerchantMapDeleteInput!): MerchantPayload!
   merchantMapValidate(input: MerchantMapValidateInput!): MerchantPayload!
-  triggerMarketingNotification(input: TriggerMarketingNotificationInput!): TriggerMarketingNotificationPayload!
+  triggerMarketingNotification(input: TriggerMarketingNotificationInput!): SuccessPayload!
   userUpdatePhone(input: UserUpdatePhoneInput!): AccountDetailPayload!
 }
 
@@ -408,6 +408,11 @@ A string amount (of a currency) that can be negative (e.g. in a transaction)
 """
 scalar SignedDisplayMajorAmount
 
+type SuccessPayload {
+  errors: [Error!]!
+  success: Boolean
+}
+
 """
 Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)
 """
@@ -470,11 +475,6 @@ input TriggerMarketingNotificationInput {
   localizedPushContent: [LocalizedPushContentInput!]!
   phoneCountryCodesFilter: [CountryCode!]
   userIdsFilter: [ID!]
-}
-
-type TriggerMarketingNotificationPayload {
-  errors: [Error!]!
-  success: Boolean!
 }
 
 enum TxDirection {
