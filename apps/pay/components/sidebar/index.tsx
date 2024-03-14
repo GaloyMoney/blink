@@ -63,6 +63,13 @@ export function SideBar({ username }: { username: string }) {
       dataTestId: "printable-paycode-link",
       hardRefresh: false,
     },
+    {
+      name: "Transactions",
+      href: `/${username}/transaction`,
+      icon: "/paycode-black&white.svg",
+      dataTestId: "transaction-link",
+      hardRefresh: false,
+    },
   ]
 
   const handleMemoShow = () => {
