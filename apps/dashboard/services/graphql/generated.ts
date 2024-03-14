@@ -646,6 +646,12 @@ export type LnInvoice = Invoice & {
   readonly satoshis: Scalars['SatAmount']['output'];
 };
 
+export type LnInvoiceCancelInput = {
+  readonly paymentHash: Scalars['PaymentHash']['input'];
+  /** Wallet ID for a wallet associated with the current account. */
+  readonly walletId: Scalars['WalletId']['input'];
+};
+
 export type LnInvoiceCreateInput = {
   /** Amount in satoshis. */
   readonly amount: Scalars['SatAmount']['input'];
@@ -918,6 +924,8 @@ export type Mutation = {
   readonly intraLedgerUsdPaymentSend: PaymentSendPayload;
   /** Sends a payment to a lightning address. */
   readonly lnAddressPaymentSend: PaymentSendPayload;
+  /** Cancel an unpaid lightning invoice for an associated wallet. */
+  readonly lnInvoiceCancel: SuccessPayload;
   /**
    * Returns a lightning invoice for an associated wallet.
    * When invoice is paid the value will be credited to a BTC wallet.
@@ -1096,6 +1104,11 @@ export type MutationIntraLedgerUsdPaymentSendArgs = {
 
 export type MutationLnAddressPaymentSendArgs = {
   input: LnAddressPaymentSendInput;
+};
+
+
+export type MutationLnInvoiceCancelArgs = {
+  input: LnInvoiceCancelInput;
 };
 
 
@@ -2026,6 +2039,7 @@ export const UserNotificationCategory = {
   AdminNotification: 'ADMIN_NOTIFICATION',
   Balance: 'BALANCE',
   Circles: 'CIRCLES',
+  Marketing: 'MARKETING',
   Payments: 'PAYMENTS'
 } as const;
 
@@ -3420,6 +3434,7 @@ export type ResolversTypes = {
   Language: ResolverTypeWrapper<Scalars['Language']['output']>;
   LnAddressPaymentSendInput: LnAddressPaymentSendInput;
   LnInvoice: ResolverTypeWrapper<LnInvoice>;
+  LnInvoiceCancelInput: LnInvoiceCancelInput;
   LnInvoiceCreateInput: LnInvoiceCreateInput;
   LnInvoiceCreateOnBehalfOfRecipientInput: LnInvoiceCreateOnBehalfOfRecipientInput;
   LnInvoiceFeeProbeInput: LnInvoiceFeeProbeInput;
@@ -3641,6 +3656,7 @@ export type ResolversParentTypes = {
   Language: Scalars['Language']['output'];
   LnAddressPaymentSendInput: LnAddressPaymentSendInput;
   LnInvoice: LnInvoice;
+  LnInvoiceCancelInput: LnInvoiceCancelInput;
   LnInvoiceCreateInput: LnInvoiceCreateInput;
   LnInvoiceCreateOnBehalfOfRecipientInput: LnInvoiceCreateOnBehalfOfRecipientInput;
   LnInvoiceFeeProbeInput: LnInvoiceFeeProbeInput;
@@ -4289,6 +4305,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   intraLedgerPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationIntraLedgerPaymentSendArgs, 'input'>>;
   intraLedgerUsdPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationIntraLedgerUsdPaymentSendArgs, 'input'>>;
   lnAddressPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationLnAddressPaymentSendArgs, 'input'>>;
+  lnInvoiceCancel?: Resolver<ResolversTypes['SuccessPayload'], ParentType, ContextType, RequireFields<MutationLnInvoiceCancelArgs, 'input'>>;
   lnInvoiceCreate?: Resolver<ResolversTypes['LnInvoicePayload'], ParentType, ContextType, RequireFields<MutationLnInvoiceCreateArgs, 'input'>>;
   lnInvoiceCreateOnBehalfOfRecipient?: Resolver<ResolversTypes['LnInvoicePayload'], ParentType, ContextType, RequireFields<MutationLnInvoiceCreateOnBehalfOfRecipientArgs, 'input'>>;
   lnInvoiceFeeProbe?: Resolver<ResolversTypes['SatAmountPayload'], ParentType, ContextType, RequireFields<MutationLnInvoiceFeeProbeArgs, 'input'>>;
