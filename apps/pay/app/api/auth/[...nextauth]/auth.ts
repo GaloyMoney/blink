@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth"
 
 import { env } from "@/env"
-import { fetchUserData } from "@/app/graphql/quries/me-query"
+import { fetchUserData } from "@/app/graphql/queries/me-query"
 import { MeQuery } from "@/lib/graphql/generated"
 
 declare module "next-auth" {
