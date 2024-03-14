@@ -59,14 +59,14 @@ export function SideBar({ username }: { username: string }) {
     {
       name: "Printable Paycode",
       href: `/${username}/print`,
-      icon: "/paycode-black&white.svg",
+      icon: "/icons/print-sharp.svg",
       dataTestId: "printable-paycode-link",
       hardRefresh: false,
     },
     {
       name: "Transactions",
       href: `/${username}/transaction`,
-      icon: "/paycode-black&white.svg",
+      icon: "/icons/receipt-sharp.svg",
       dataTestId: "transaction-link",
       hardRefresh: false,
     },
