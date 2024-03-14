@@ -1,9 +1,10 @@
 import { GraphQLResolveInfo, GraphQLFieldResolver } from "graphql"
 
-import ScopesOauth2 from "@/domain/authorization"
-import { AuthorizationError } from "@/domain/errors"
 import { mapError } from "@/graphql/error-map"
 import { mutationFields, queryFields } from "@/graphql/public"
+
+import { AuthorizationError } from "@/domain/errors"
+import { ScopesOauth2 } from "@/domain/authorization"
 
 const readAuthorize = async (
   resolve: GraphQLFieldResolver<unknown, GraphQLPublicContextAuth>,

@@ -1,25 +1,23 @@
 import dedent from "dedent"
 
-// FIXME should not use service
-
 import Account from "../abstract/account"
-
-import Language from "../../../shared/types/scalar/language"
-import Phone from "../../../shared/types/scalar/phone"
-import Timestamp from "../../../shared/types/scalar/timestamp"
-
-import Username from "../../../shared/types/scalar/username"
-
-import GraphQLEmail from "../../../shared/types/object/email"
 
 import AccountContact from "./account-contact"
 
-import { IdentityRepository } from "@/services/kratos"
-import { UnknownClientError } from "@/graphql/error"
-import { baseLogger } from "@/services/logger"
 import { Accounts, Users } from "@/app"
-import { mapError } from "@/graphql/error-map"
+
+import { baseLogger } from "@/services/logger"
+// FIXME should not use service
+import { IdentityRepository } from "@/services/kratos"
+
 import { GT } from "@/graphql/index"
+import { mapError } from "@/graphql/error-map"
+import { UnknownClientError } from "@/graphql/error"
+import Phone from "@/graphql/shared/types/scalar/phone"
+import Language from "@/graphql/shared/types/scalar/language"
+import Username from "@/graphql/shared/types/scalar/username"
+import Timestamp from "@/graphql/shared/types/scalar/timestamp"
+import GraphQLEmail from "@/graphql/shared/types/object/email"
 
 const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
   name: "User",
