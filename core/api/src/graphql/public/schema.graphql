@@ -129,6 +129,10 @@ type AuthTokenPayload {
   totpRequired: Boolean
 }
 
+type Authorization {
+  scopes: [Scope!]!
+}
+
 """
 A wallet belonging to an account which contains a BTC balance and a list of transactions.
 """
@@ -1215,6 +1219,9 @@ type PublicWallet {
 
 type Query {
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet!
+
+  """Retrieve the list of scopes permitted for the user's token or API key"""
+  authorization: Authorization!
   btcPriceList(range: PriceGraphRange!): [PricePoint]
   businessMapMarkers: [MapMarker!]!
   currencyList: [Currency!]!
@@ -1283,6 +1290,12 @@ scalar SatAmount
 type SatAmountPayload {
   amount: SatAmount
   errors: [Error!]!
+}
+
+enum Scope {
+  READ
+  RECEIVE
+  WRITE
 }
 
 """(Positive) amount of seconds"""
