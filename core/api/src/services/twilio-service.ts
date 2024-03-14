@@ -45,24 +45,28 @@ export const TwilioClient = (): IPhoneProviderService => {
   const initiateVerify = async ({
     to,
     channel,
+    phoneExists,
   }: {
     to: PhoneNumber
     channel: ChannelType
+    phoneExists: boolean
   }): Promise<true | PhoneProviderServiceError> => {
     try {
-      if (isDisposablePhoneNumber(to)) {
-        return new InvalidTypePhoneProviderError("disposable")
-      }
+      if (!phoneExists) {
+        if (isDisposablePhoneNumber(to)) {
+          return new InvalidTypePhoneProviderError("disposable")
+        }
 
-      const lookup = await client.lookups.v2.phoneNumbers(to).fetch({
-        fields: "line_type_intelligence",
-      })
-      // https://www.twilio.com/docs/lookup/v2-api/line-type-intelligence#type-property-values
-      if (!lookup.lineTypeIntelligence) {
-        return new MissingTypePhoneProviderError()
-      }
-      if (lookup.lineTypeIntelligence.type === "nonFixedVoip") {
-        return new InvalidTypePhoneProviderError("nonFixedVoip")
+        const lookup = await client.lookups.v2.phoneNumbers(to).fetch({
+          fields: "line_type_intelligence",
+        })
+        // https://www.twilio.com/docs/lookup/v2-api/line-type-intelligence#type-property-values
+        if (!lookup.lineTypeIntelligence) {
+          return new MissingTypePhoneProviderError()
+        }
+        if (lookup.lineTypeIntelligence.type === "nonFixedVoip") {
+          return new InvalidTypePhoneProviderError("nonFixedVoip")
+        }
       }
 
       await verify.verifications.create({ to, channel })

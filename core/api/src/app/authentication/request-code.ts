@@ -12,6 +12,7 @@ import { RateLimiterExceededError } from "@/domain/rate-limit/errors"
 import Geetest from "@/services/geetest"
 import { AuthWithEmailPasswordlessService } from "@/services/kratos"
 import { baseLogger } from "@/services/logger"
+import { UsersRepository } from "@/services/mongoose"
 import { consumeLimiter } from "@/services/rate-limit"
 import { TWILIO_ACCOUNT_TEST, TwilioClient } from "@/services/twilio-service"
 
@@ -63,7 +64,10 @@ export const requestPhoneCodeWithCaptcha = async ({
     return true
   }
 
-  return TwilioClient().initiateVerify({ to: phone, channel })
+  const user = await UsersRepository().findByPhone(phone)
+  const phoneExists = !(user instanceof Error)
+
+  return TwilioClient().initiateVerify({ to: phone, channel, phoneExists })
 }
 
 export const requestPhoneCodeForAuthedUser = async ({
@@ -104,7 +108,7 @@ export const requestPhoneCodeForAuthedUser = async ({
     return true
   }
 
-  return TwilioClient().initiateVerify({ to: phone, channel })
+  return TwilioClient().initiateVerify({ to: phone, channel, phoneExists: false })
 }
 
 export const requestPhoneCodeWithAppcheckJti = async ({
@@ -148,7 +152,10 @@ export const requestPhoneCodeWithAppcheckJti = async ({
     return true
   }
 
-  return TwilioClient().initiateVerify({ to: phone, channel })
+  const user = await UsersRepository().findByPhone(phone)
+  const phoneExists = !(user instanceof Error)
+
+  return TwilioClient().initiateVerify({ to: phone, channel, phoneExists })
 }
 
 export const requestEmailCode = async ({
