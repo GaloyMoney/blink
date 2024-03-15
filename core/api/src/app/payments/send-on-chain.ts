@@ -176,9 +176,6 @@ const payOnChainByWalletId = async ({
     return executePaymentViaIntraledger({
       builder,
       senderAccount,
-      senderWallet,
-      senderUsername: senderAccount.username,
-      senderDisplayCurrency: senderAccount.displayCurrency,
       memo,
       sendAll,
     })
@@ -249,17 +246,11 @@ const executePaymentViaIntraledger = async <
 >({
   builder,
   senderAccount,
-  senderWallet,
-  senderUsername,
-  senderDisplayCurrency,
   memo,
   sendAll,
 }: {
   builder: OPFBWithConversion<S, R> | OPFBWithError
   senderAccount: Account
-  senderWallet: WalletDescriptor<S>
-  senderUsername: Username | undefined
-  senderDisplayCurrency: DisplayCurrency
   memo: string | null
   sendAll: boolean
 }): Promise<PaymentSendResult | ApplicationError> => {
@@ -270,6 +261,8 @@ const executePaymentViaIntraledger = async <
     "payment.settlement_method": SettlementMethod.IntraLedger,
     "payment.finalRecipient": JSON.stringify(paymentFlow.recipientWalletDescriptor()),
   })
+
+  const { id: senderWalletId } = paymentFlow.senderWalletDescriptor()
 
   const {
     walletDescriptor: recipientWalletDescriptor,
@@ -297,172 +290,233 @@ const executePaymentViaIntraledger = async <
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
   const checkLimits =
-    senderWallet.accountId === recipientWallet.accountId
+    senderAccount.id === recipientAccount.id
       ? checkTradeIntraAccountLimits
       : checkIntraledgerLimits
   const limitCheck = await checkLimits({
     amount: paymentFlow.usdPaymentAmount,
-    accountId: senderWallet.accountId,
+    accountId: senderAccount.id,
     priceRatio: priceRatioForLimits,
   })
   if (limitCheck instanceof Error) return limitCheck
 
-  return LockService().lockWalletId(senderWallet.id, async (signal) => {
-    // Check user balance
-    const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
-    if (balance instanceof Error) return balance
+  const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
+  if (recipientUser instanceof Error) return recipientUser
 
-    const balanceCheck = paymentFlow.checkBalanceForSend(balance)
-    if (balanceCheck instanceof Error) return balanceCheck
+  const recipientAsNotificationRecipient = {
+    accountId: recipientAccount.id,
+    walletId: recipientWalletId,
+    userId: recipientUser.id,
+    level: recipientAccount.level,
+  }
 
-    // Check lock still intact
-    if (signal.aborted) {
-      return new ResourceExpiredLockServiceError(signal.error?.message)
-    }
+  const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
+  if (senderUser instanceof Error) return senderUser
 
-    // Construct metadata
-    const address = await builder.addressForFlow()
-    if (address instanceof Error) return address
-    const payeeAddresses = [address]
+  const senderAsNotificationRecipient = {
+    accountId: senderAccount.id,
+    walletId: senderWalletId,
+    userId: senderUser.id,
+    level: senderAccount.level,
+  }
 
-    const priceRatio = WalletPriceRatio({
-      usd: paymentFlow.usdPaymentAmount,
-      btc: paymentFlow.btcPaymentAmount,
-    })
-    if (priceRatio instanceof Error) return priceRatio
+  return LockService().lockWalletId(senderWalletId, async (signal) =>
+    lockedPaymentViaIntraledgerSteps({
+      signal,
 
-    const senderDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-      currency: senderDisplayCurrency,
-    })
-    if (senderDisplayPriceRatio instanceof Error) return senderDisplayPriceRatio
-    const { displayAmount: senderDisplayAmount, displayFee: senderDisplayFee } =
-      DisplayAmountsConverter(senderDisplayPriceRatio).convert(paymentFlow)
+      paymentFlow,
+      senderDisplayCurrency: senderAccount.displayCurrency,
+      senderUsername: senderAccount.username,
+      recipientDisplayCurrency: recipientAccount.displayCurrency,
+      recipientUsername,
 
-    const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-      currency: recipientAccount.displayCurrency,
-    })
-    if (recipientDisplayPriceRatio instanceof Error) return recipientDisplayPriceRatio
-    const { displayAmount: recipientDisplayAmount, displayFee: recipientDisplayFee } =
-      DisplayAmountsConverter(recipientDisplayPriceRatio).convert(paymentFlow)
+      memo,
+      sendAll,
 
-    let metadata:
-      | AddOnChainIntraledgerSendLedgerMetadata
-      | AddOnChainTradeIntraAccountLedgerMetadata
-    let additionalDebitMetadata: {
-      [key: string]:
-        | Username
-        | DisplayCurrencyBaseAmount
-        | DisplayCurrency
-        | string
-        | undefined
-    } = {}
-    let additionalCreditMetadata: {
-      [key: string]: Username | DisplayCurrencyBaseAmount | DisplayCurrency | undefined
-    } = {}
-    let additionalInternalMetadata: {
-      [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
-    } = {}
+      senderAsNotificationRecipient,
+      recipientAsNotificationRecipient,
+    }),
+  )
+}
 
-    if (senderWallet.accountId === recipientWallet.accountId) {
-      ;({
-        metadata,
-        debitAccountAdditionalMetadata: additionalDebitMetadata,
-        creditAccountAdditionalMetadata: additionalCreditMetadata,
-        internalAccountsAdditionalMetadata: additionalInternalMetadata,
-      } = LedgerFacade.OnChainTradeIntraAccountLedgerMetadata({
-        payeeAddresses,
-        sendAll,
-        paymentAmounts: paymentFlow,
+const lockedPaymentViaIntraledgerSteps = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
+  signal,
 
-        senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
-        senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
-        senderDisplayCurrency: senderDisplayCurrency,
+  paymentFlow,
+  senderDisplayCurrency,
+  senderUsername,
+  recipientDisplayCurrency,
+  recipientUsername,
 
-        memoOfPayer: memo || undefined,
-      }))
-    } else {
-      ;({
-        metadata,
-        debitAccountAdditionalMetadata: additionalDebitMetadata,
-        creditAccountAdditionalMetadata: additionalCreditMetadata,
-        internalAccountsAdditionalMetadata: additionalInternalMetadata,
-      } = LedgerFacade.OnChainIntraledgerLedgerMetadata({
-        payeeAddresses,
-        sendAll,
-        paymentAmounts: paymentFlow,
+  memo,
+  sendAll,
 
-        senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
-        senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
-        senderDisplayCurrency: senderDisplayCurrency,
+  senderAsNotificationRecipient,
+  recipientAsNotificationRecipient,
+}: {
+  signal: WalletIdAbortSignal
 
-        recipientAmountDisplayCurrency: toDisplayBaseAmount(recipientDisplayAmount),
-        recipientFeeDisplayCurrency: toDisplayBaseAmount(recipientDisplayFee),
-        recipientDisplayCurrency: recipientAccount.displayCurrency,
+  paymentFlow: OnChainPaymentFlow<S, R>
+  senderDisplayCurrency: DisplayCurrency
+  senderUsername: Username | undefined
+  recipientDisplayCurrency: DisplayCurrency
+  recipientUsername: Username | undefined
 
-        memoOfPayer: memo || undefined,
-        senderUsername,
-        recipientUsername,
-      }))
-    }
+  memo: string | null
+  sendAll: boolean
 
-    const senderWalletDescriptor = paymentFlow.senderWalletDescriptor()
-    // Record transaction
-    const journal = await LedgerFacade.recordIntraledger({
-      description: "",
-      amount: {
-        btc: paymentFlow.btcPaymentAmount,
-        usd: paymentFlow.usdPaymentAmount,
-      },
-      senderWalletDescriptor,
-      recipientWalletDescriptor,
-      metadata,
-      additionalDebitMetadata,
-      additionalCreditMetadata,
-      additionalInternalMetadata,
-    })
-    if (journal instanceof Error) return journal
+  senderAsNotificationRecipient: NotificationRecipient
+  recipientAsNotificationRecipient: NotificationRecipient
+}): Promise<PaymentSendResult | ApplicationError> => {
+  const senderWalletDescriptor = paymentFlow.senderWalletDescriptor()
 
-    const recipientUser = await UsersRepository().findById(recipientUserId)
-    if (recipientUser instanceof Error) return recipientUser
+  const { walletDescriptor: recipientWalletDescriptor } = paymentFlow.recipientDetails()
+  if (!recipientWalletDescriptor) {
+    return new InvalidLightningPaymentFlowBuilderStateError(
+      "Expected recipient details missing",
+    )
+  }
 
-    const recipientWalletTransaction = await getTransactionForWalletByJournalId({
-      walletId: recipientWallet.id,
-      journalId: journal.journalId,
-    })
-    if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
+  // Check user balance
+  const balance = await LedgerService().getWalletBalanceAmount(senderWalletDescriptor)
+  if (balance instanceof Error) return balance
 
-    // Send 'received'-side intraledger notification
-    NotificationsService().sendTransaction({
-      recipient: {
-        accountId: recipientWallet.accountId,
-        walletId: recipientWallet.id,
-        userId: recipientUser.id,
-        level: recipientAccount.level,
-      },
-      transaction: recipientWalletTransaction,
-    })
+  const balanceCheck = paymentFlow.checkBalanceForSend(balance)
+  if (balanceCheck instanceof Error) return balanceCheck
 
-    const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
-    if (senderUser instanceof Error) return senderUser
+  // Check lock still intact
+  if (signal.aborted) {
+    return new ResourceExpiredLockServiceError(signal.error?.message)
+  }
 
-    const senderWalletTransaction = await getTransactionForWalletByJournalId({
-      walletId: senderWalletDescriptor.id,
-      journalId: journal.journalId,
-    })
-    if (senderWalletTransaction instanceof Error) return senderWalletTransaction
+  // Construct metadata
+  const address = await paymentFlow.addressForFlow()
+  if (address instanceof Error) return address
+  const payeeAddresses = [address]
 
-    NotificationsService().sendTransaction({
-      recipient: {
-        accountId: senderAccount.id,
-        walletId: senderWalletDescriptor.id,
-        userId: senderUser.id,
-        level: senderAccount.level,
-      },
-      transaction: senderWalletTransaction,
-    })
-
-    return { status: PaymentSendStatus.Success, transaction: senderWalletTransaction }
+  const priceRatio = WalletPriceRatio({
+    usd: paymentFlow.usdPaymentAmount,
+    btc: paymentFlow.btcPaymentAmount,
   })
+  if (priceRatio instanceof Error) return priceRatio
+
+  const senderDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+    currency: senderDisplayCurrency,
+  })
+  if (senderDisplayPriceRatio instanceof Error) return senderDisplayPriceRatio
+  const { displayAmount: senderDisplayAmount, displayFee: senderDisplayFee } =
+    DisplayAmountsConverter(senderDisplayPriceRatio).convert(paymentFlow)
+
+  const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+    currency: recipientDisplayCurrency,
+  })
+  if (recipientDisplayPriceRatio instanceof Error) return recipientDisplayPriceRatio
+  const { displayAmount: recipientDisplayAmount, displayFee: recipientDisplayFee } =
+    DisplayAmountsConverter(recipientDisplayPriceRatio).convert(paymentFlow)
+
+  let metadata:
+    | AddOnChainIntraledgerSendLedgerMetadata
+    | AddOnChainTradeIntraAccountLedgerMetadata
+  let additionalDebitMetadata: {
+    [key: string]:
+      | Username
+      | DisplayCurrencyBaseAmount
+      | DisplayCurrency
+      | string
+      | undefined
+  } = {}
+  let additionalCreditMetadata: {
+    [key: string]: Username | DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+  } = {}
+  let additionalInternalMetadata: {
+    [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+  } = {}
+
+  if (senderWalletDescriptor.accountId === recipientWalletDescriptor.accountId) {
+    ;({
+      metadata,
+      debitAccountAdditionalMetadata: additionalDebitMetadata,
+      creditAccountAdditionalMetadata: additionalCreditMetadata,
+      internalAccountsAdditionalMetadata: additionalInternalMetadata,
+    } = LedgerFacade.OnChainTradeIntraAccountLedgerMetadata({
+      payeeAddresses,
+      sendAll,
+      paymentAmounts: paymentFlow,
+
+      senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
+      senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
+      senderDisplayCurrency,
+
+      memoOfPayer: memo || undefined,
+    }))
+  } else {
+    ;({
+      metadata,
+      debitAccountAdditionalMetadata: additionalDebitMetadata,
+      creditAccountAdditionalMetadata: additionalCreditMetadata,
+      internalAccountsAdditionalMetadata: additionalInternalMetadata,
+    } = LedgerFacade.OnChainIntraledgerLedgerMetadata({
+      payeeAddresses,
+      sendAll,
+      paymentAmounts: paymentFlow,
+
+      senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
+      senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
+      senderDisplayCurrency,
+
+      recipientAmountDisplayCurrency: toDisplayBaseAmount(recipientDisplayAmount),
+      recipientFeeDisplayCurrency: toDisplayBaseAmount(recipientDisplayFee),
+      recipientDisplayCurrency,
+
+      memoOfPayer: memo || undefined,
+      senderUsername,
+      recipientUsername,
+    }))
+  }
+
+  // Record transaction
+  const journal = await LedgerFacade.recordIntraledger({
+    description: "",
+    amount: {
+      btc: paymentFlow.btcPaymentAmount,
+      usd: paymentFlow.usdPaymentAmount,
+    },
+    senderWalletDescriptor,
+    recipientWalletDescriptor,
+    metadata,
+    additionalDebitMetadata,
+    additionalCreditMetadata,
+    additionalInternalMetadata,
+  })
+  if (journal instanceof Error) return journal
+
+  const recipientWalletTransaction = await getTransactionForWalletByJournalId({
+    walletId: recipientWalletDescriptor.id,
+    journalId: journal.journalId,
+  })
+  if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
+
+  // Send 'received'-side intraledger notification
+  NotificationsService().sendTransaction({
+    recipient: recipientAsNotificationRecipient,
+    transaction: recipientWalletTransaction,
+  })
+
+  const senderWalletTransaction = await getTransactionForWalletByJournalId({
+    walletId: senderWalletDescriptor.id,
+    journalId: journal.journalId,
+  })
+  if (senderWalletTransaction instanceof Error) return senderWalletTransaction
+
+  NotificationsService().sendTransaction({
+    recipient: senderAsNotificationRecipient,
+    transaction: senderWalletTransaction,
+  })
+
+  return { status: PaymentSendStatus.Success, transaction: senderWalletTransaction }
 }
 
 const executePaymentViaOnChain = async <
@@ -486,8 +540,6 @@ const executePaymentViaOnChain = async <
   const senderWalletDescriptor = await builder.senderWalletDescriptor()
   if (senderWalletDescriptor instanceof Error) return senderWalletDescriptor
 
-  const onChainService = OnChainService()
-
   // Limit check
   const proposedAmounts = await builder.proposedAmounts()
   if (proposedAmounts instanceof Error) return proposedAmounts
@@ -502,56 +554,96 @@ const executePaymentViaOnChain = async <
   })
   if (limitCheck instanceof Error) return limitCheck
 
-  const address = await builder.addressForFlow()
+  return LockService().lockWalletId(senderWalletDescriptor.id, async (signal) =>
+    lockedPaymentViaOnChainSteps({
+      signal,
 
-  return LockService().lockWalletId(senderWalletDescriptor.id, async (signal) => {
-    // Get estimated miner fee and create 'paymentFlow'
-    const paymentFlow = await getMinerFeeAndPaymentFlow({
       builder,
       speed,
-    })
-    if (paymentFlow instanceof Error) return paymentFlow
 
-    // Check user balance
-    const balance = await LedgerService().getWalletBalanceAmount(senderWalletDescriptor)
-    if (balance instanceof Error) return balance
+      senderDisplayCurrency,
+      memo,
+      sendAll,
 
-    const balanceCheck = paymentFlow.checkBalanceForSend(balance)
-    if (balanceCheck instanceof Error) return balanceCheck
+      logger,
+    }),
+  )
+}
 
-    // Check lock still intact
-    if (signal.aborted) {
-      return new ResourceExpiredLockServiceError(signal.error?.message)
-    }
+const lockedPaymentViaOnChainSteps = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
+  signal,
 
-    const bankFee = paymentFlow.bankFees()
-    if (bankFee instanceof Error) return bankFee
-    const btcBankFee = bankFee.btc
+  builder,
+  speed,
 
-    const btcTotalFee = paymentFlow.btcProtocolAndBankFee
-    if (btcTotalFee instanceof Error) return btcTotalFee
+  senderDisplayCurrency,
+  memo,
+  sendAll,
 
-    addAttributesToCurrentSpan({
-      "payOnChainByWalletId.btcAmount": `${paymentFlow.btcPaymentAmount.amount}`,
-      "payOnChainByWalletId.estimatedFee": `${paymentFlow.btcProtocolAndBankFee.amount}`,
-      "payOnChainByWalletId.estimatedMinerFee": `${paymentFlow.btcMinerFee?.amount}`,
-      "payOnChainByWalletId.totalFee": `${btcTotalFee.amount}`,
-      "payOnChainByWalletId.bankFee": `${btcBankFee.amount}`,
-    })
+  logger,
+}: {
+  signal: WalletIdAbortSignal
 
-    // Construct metadata
-    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-      currency: senderDisplayCurrency,
-    })
-    if (displayPriceRatio instanceof Error) return displayPriceRatio
-    const { displayAmount, displayFee } =
-      DisplayAmountsConverter(displayPriceRatio).convert(paymentFlow)
+  builder: OPFBWithConversion<S, R> | OPFBWithError
+  speed: PayoutSpeed
 
-    const {
-      metadata,
-      debitAccountAdditionalMetadata,
-      internalAccountsAdditionalMetadata,
-    } = LedgerFacade.OnChainSendLedgerMetadata({
+  senderDisplayCurrency: DisplayCurrency
+  memo: string | null
+  sendAll: boolean
+
+  logger: Logger
+}): Promise<PaymentSendResult | ApplicationError> => {
+  const address = await builder.addressForFlow()
+
+  // Get estimated miner fee and create 'paymentFlow'
+  const paymentFlow = await getMinerFeeAndPaymentFlow({
+    builder,
+    speed,
+  })
+  if (paymentFlow instanceof Error) return paymentFlow
+
+  const senderWalletDescriptor = paymentFlow.senderWalletDescriptor()
+
+  // Check user balance
+  const balance = await LedgerService().getWalletBalanceAmount(senderWalletDescriptor)
+  if (balance instanceof Error) return balance
+
+  const balanceCheck = paymentFlow.checkBalanceForSend(balance)
+  if (balanceCheck instanceof Error) return balanceCheck
+
+  // Check lock still intact
+  if (signal.aborted) {
+    return new ResourceExpiredLockServiceError(signal.error?.message)
+  }
+
+  const bankFee = paymentFlow.bankFees()
+  if (bankFee instanceof Error) return bankFee
+  const btcBankFee = bankFee.btc
+
+  const btcTotalFee = paymentFlow.btcProtocolAndBankFee
+  if (btcTotalFee instanceof Error) return btcTotalFee
+
+  addAttributesToCurrentSpan({
+    "payOnChainByWalletId.btcAmount": `${paymentFlow.btcPaymentAmount.amount}`,
+    "payOnChainByWalletId.estimatedFee": `${paymentFlow.btcProtocolAndBankFee.amount}`,
+    "payOnChainByWalletId.estimatedMinerFee": `${paymentFlow.btcMinerFee?.amount}`,
+    "payOnChainByWalletId.totalFee": `${btcTotalFee.amount}`,
+    "payOnChainByWalletId.bankFee": `${btcBankFee.amount}`,
+  })
+
+  // Construct metadata
+  const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+    currency: senderDisplayCurrency,
+  })
+  if (displayPriceRatio instanceof Error) return displayPriceRatio
+  const { displayAmount, displayFee } =
+    DisplayAmountsConverter(displayPriceRatio).convert(paymentFlow)
+
+  const { metadata, debitAccountAdditionalMetadata, internalAccountsAdditionalMetadata } =
+    LedgerFacade.OnChainSendLedgerMetadata({
       paymentAmounts: paymentFlow,
 
       amountDisplayCurrency: toDisplayBaseAmount(displayAmount),
@@ -563,63 +655,60 @@ const executePaymentViaOnChain = async <
       memoOfPayer: memo || undefined,
     })
 
-    // Record transaction
-    const journal = await LedgerFacade.recordSendOnChain({
-      description: memo || "",
-      amountToDebitSender: {
-        btc: {
-          currency: paymentFlow.btcPaymentAmount.currency,
-          amount:
-            paymentFlow.btcPaymentAmount.amount +
-            paymentFlow.btcProtocolAndBankFee.amount,
-        },
-        usd: {
-          currency: paymentFlow.usdPaymentAmount.currency,
-          amount:
-            paymentFlow.usdPaymentAmount.amount +
-            paymentFlow.usdProtocolAndBankFee.amount,
-        },
+  // Record transaction
+  const journal = await LedgerFacade.recordSendOnChain({
+    description: memo || "",
+    amountToDebitSender: {
+      btc: {
+        currency: paymentFlow.btcPaymentAmount.currency,
+        amount:
+          paymentFlow.btcPaymentAmount.amount + paymentFlow.btcProtocolAndBankFee.amount,
       },
-      bankFee,
-      senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
-      metadata,
-      additionalDebitMetadata: debitAccountAdditionalMetadata,
-      additionalInternalMetadata: internalAccountsAdditionalMetadata,
-    })
-    if (journal instanceof Error) return journal
-
-    // Execute payment onchain
-    const payout = await onChainService.queuePayoutToAddress({
-      walletDescriptor: senderWalletDescriptor,
-      address: paymentFlow.address,
-      amount: paymentFlow.btcPaymentAmount,
-      speed,
-      journalId: journal.journalId,
-    })
-    if (payout instanceof Error) {
-      logger.error(
-        {
-          err: payout,
-          externalId: journal.journalId,
-          address,
-          tokens: Number(paymentFlow.btcPaymentAmount.amount),
-          success: false,
-        },
-        `Could not queue payout with id ${payout}`,
-      )
-      const reverted = await LedgerService().revertOnChainPayment({
-        journalId: journal.journalId,
-      })
-      if (reverted instanceof Error) return reverted
-      return payout
-    }
-
-    const walletTransaction = await getTransactionForWalletByJournalId({
-      walletId: senderWalletDescriptor.id,
-      journalId: journal.journalId,
-    })
-    if (walletTransaction instanceof Error) return walletTransaction
-
-    return { status: PaymentSendStatus.Success, transaction: walletTransaction }
+      usd: {
+        currency: paymentFlow.usdPaymentAmount.currency,
+        amount:
+          paymentFlow.usdPaymentAmount.amount + paymentFlow.usdProtocolAndBankFee.amount,
+      },
+    },
+    bankFee,
+    senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
+    metadata,
+    additionalDebitMetadata: debitAccountAdditionalMetadata,
+    additionalInternalMetadata: internalAccountsAdditionalMetadata,
   })
+  if (journal instanceof Error) return journal
+
+  // Execute payment onchain
+  const payout = await OnChainService().queuePayoutToAddress({
+    walletDescriptor: senderWalletDescriptor,
+    address: paymentFlow.address,
+    amount: paymentFlow.btcPaymentAmount,
+    speed,
+    journalId: journal.journalId,
+  })
+  if (payout instanceof Error) {
+    logger.error(
+      {
+        err: payout,
+        externalId: journal.journalId,
+        address,
+        tokens: Number(paymentFlow.btcPaymentAmount.amount),
+        success: false,
+      },
+      `Could not queue payout with id ${payout}`,
+    )
+    const reverted = await LedgerService().revertOnChainPayment({
+      journalId: journal.journalId,
+    })
+    if (reverted instanceof Error) return reverted
+    return payout
+  }
+
+  const walletTransaction = await getTransactionForWalletByJournalId({
+    walletId: senderWalletDescriptor.id,
+    journalId: journal.journalId,
+  })
+  if (walletTransaction instanceof Error) return walletTransaction
+
+  return { status: PaymentSendStatus.Success, transaction: walletTransaction }
 }
