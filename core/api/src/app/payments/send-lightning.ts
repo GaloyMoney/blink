@@ -106,19 +106,61 @@ export const payInvoiceByWalletId = async ({
 
   // Get display currency price... add to payment flow builder?
 
-  const { decodedInvoice } = validatedPaymentInputs
-  return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
-    ? executePaymentViaIntraledger({
-        paymentFlow,
-        senderAccount,
-        memo,
-      })
-    : executePaymentViaLn({
-        decodedInvoice,
-        paymentFlow,
-        senderAccount,
-        memo,
-      })
+  const {
+    decodedInvoice,
+    senderWallet: { id: senderWalletId },
+  } = validatedPaymentInputs
+
+  if (paymentFlow.settlementMethod !== SettlementMethod.IntraLedger) {
+    return executePaymentViaLn({
+      decodedInvoice,
+      paymentFlow,
+      senderAccount,
+      memo,
+    })
+  }
+
+  const { walletDescriptor: recipientWalletDescriptor } = paymentFlow.recipientDetails()
+  if (!recipientWalletDescriptor) {
+    return new InvalidLightningPaymentFlowBuilderStateError(
+      "Expected recipient details missing",
+    )
+  }
+  const { id: recipientWalletId, accountId: recipientAccountId } =
+    recipientWalletDescriptor
+
+  const recipientAccount = await AccountsRepository().findById(recipientAccountId)
+  if (recipientAccount instanceof Error) return recipientAccount
+
+  const accountValidator = AccountValidator(recipientAccount)
+  if (accountValidator instanceof Error) return accountValidator
+
+  const paymentSendResult = await executePaymentViaIntraledger({
+    paymentFlow,
+    senderWalletId,
+    senderAccount,
+    recipientWalletId,
+    recipientAccount,
+    memo,
+  })
+  if (paymentSendResult instanceof Error) return paymentSendResult
+
+  if (senderAccount.id !== recipientAccount.id) {
+    const addContactResult = await addContactsAfterSend({
+      senderContactEnabled: senderAccount.contactEnabled,
+      senderAccountId: senderAccount.id,
+      senderUsername: senderAccount.username,
+
+      recipientContactEnabled: recipientAccount.contactEnabled,
+      recipientAccountId: recipientAccount.id,
+      recipientUsername: recipientAccount.username,
+    })
+    if (addContactResult instanceof Error) {
+      recordExceptionInCurrentSpan({ error: addContactResult, level: ErrorLevel.Warn })
+    }
+  }
+
+  return paymentSendResult
 }
 
 const payNoAmountInvoiceByWalletId = async ({
@@ -154,19 +196,61 @@ const payNoAmountInvoiceByWalletId = async ({
 
   // Get display currency price... add to payment flow builder?
 
-  const { decodedInvoice } = validatedNoAmountPaymentInputs
-  return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
-    ? executePaymentViaIntraledger({
-        paymentFlow,
-        senderAccount,
-        memo,
-      })
-    : executePaymentViaLn({
-        decodedInvoice,
-        paymentFlow,
-        senderAccount,
-        memo,
-      })
+  const {
+    decodedInvoice,
+    senderWallet: { id: senderWalletId },
+  } = validatedNoAmountPaymentInputs
+
+  if (paymentFlow.settlementMethod !== SettlementMethod.IntraLedger) {
+    return executePaymentViaLn({
+      decodedInvoice,
+      paymentFlow,
+      senderAccount,
+      memo,
+    })
+  }
+
+  const { walletDescriptor: recipientWalletDescriptor } = paymentFlow.recipientDetails()
+  if (!recipientWalletDescriptor) {
+    return new InvalidLightningPaymentFlowBuilderStateError(
+      "Expected recipient details missing",
+    )
+  }
+  const { id: recipientWalletId, accountId: recipientAccountId } =
+    recipientWalletDescriptor
+
+  const recipientAccount = await AccountsRepository().findById(recipientAccountId)
+  if (recipientAccount instanceof Error) return recipientAccount
+
+  const accountValidator = AccountValidator(recipientAccount)
+  if (accountValidator instanceof Error) return accountValidator
+
+  const paymentSendResult = await executePaymentViaIntraledger({
+    paymentFlow,
+    senderWalletId,
+    senderAccount,
+    recipientWalletId,
+    recipientAccount,
+    memo,
+  })
+  if (paymentSendResult instanceof Error) return paymentSendResult
+
+  if (senderAccount.id !== recipientAccount.id) {
+    const addContactResult = await addContactsAfterSend({
+      senderContactEnabled: senderAccount.contactEnabled,
+      senderAccountId: senderAccount.id,
+      senderUsername: senderAccount.username,
+
+      recipientContactEnabled: recipientAccount.contactEnabled,
+      recipientAccountId: recipientAccount.id,
+      recipientUsername: recipientAccount.username,
+    })
+    if (addContactResult instanceof Error) {
+      recordExceptionInCurrentSpan({ error: addContactResult, level: ErrorLevel.Warn })
+    }
+  }
+
+  return paymentSendResult
 }
 
 export const payNoAmountInvoiceByWalletIdForBtcWallet = async (
@@ -354,40 +438,27 @@ const executePaymentViaIntraledger = async <
 >({
   paymentFlow,
   senderAccount,
+  senderWalletId,
+  recipientAccount,
+  recipientWalletId,
   memo,
 }: {
   paymentFlow: PaymentFlow<S, R>
   senderAccount: Account
+  senderWalletId: WalletId
+  recipientAccount: Account
+  recipientWalletId: WalletId
   memo: string | null
 }): Promise<PaymentSendResult | ApplicationError> => {
   addAttributesToCurrentSpan({
     "payment.settlement_method": SettlementMethod.IntraLedger,
   })
 
-  const { id: senderWalletId } = paymentFlow.senderWalletDescriptor()
-
   const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
   const paymentHash = paymentFlow.paymentHashForFlow()
   if (paymentHash instanceof Error) return paymentHash
-
-  const { walletDescriptor: recipientWalletDescriptor } = paymentFlow.recipientDetails()
-  if (!recipientWalletDescriptor) {
-    return new InvalidLightningPaymentFlowBuilderStateError(
-      "Expected recipient details missing",
-    )
-  }
-  const { id: recipientWalletId } = recipientWalletDescriptor
-
-  const recipientWallet = await WalletsRepository().findById(recipientWalletId)
-  if (recipientWallet instanceof Error) return recipientWallet
-
-  const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
-  if (recipientAccount instanceof Error) return recipientAccount
-
-  const accountValidator = AccountValidator(recipientAccount)
-  if (accountValidator instanceof Error) return accountValidator
 
   const checkLimits =
     senderAccount.id === recipientAccount.id
@@ -420,43 +491,23 @@ const executePaymentViaIntraledger = async <
     level: senderAccount.level,
   }
 
-  const paymentSendResult = await LockService().lockWalletId(
-    senderWalletId,
-    async (signal) =>
-      lockedPaymentViaIntraledgerSteps({
-        signal,
+  return LockService().lockWalletId(senderWalletId, async (signal) =>
+    lockedPaymentViaIntraledgerSteps({
+      signal,
 
-        paymentHash,
-        paymentFlow,
-        senderDisplayCurrency: senderAccount.displayCurrency,
-        senderUsername: senderAccount.username,
-        recipientDisplayCurrency: recipientAccount.displayCurrency,
-        recipientUsername: recipientAccount.username,
-
-        memo,
-
-        senderAsNotificationRecipient,
-        recipientAsNotificationRecipient,
-      }),
-  )
-  if (paymentSendResult instanceof Error) return paymentSendResult
-
-  if (senderAccount.id !== recipientAccount.id) {
-    const addContactResult = await addContactsAfterSend({
-      senderContactEnabled: senderAccount.contactEnabled,
-      senderAccountId: senderAccount.id,
+      paymentHash,
+      paymentFlow,
+      senderDisplayCurrency: senderAccount.displayCurrency,
       senderUsername: senderAccount.username,
-
-      recipientContactEnabled: recipientAccount.contactEnabled,
-      recipientAccountId: recipientAccount.id,
+      recipientDisplayCurrency: recipientAccount.displayCurrency,
       recipientUsername: recipientAccount.username,
-    })
-    if (addContactResult instanceof Error) {
-      recordExceptionInCurrentSpan({ error: addContactResult, level: ErrorLevel.Warn })
-    }
-  }
 
-  return paymentSendResult
+      memo,
+
+      senderAsNotificationRecipient,
+      recipientAsNotificationRecipient,
+    }),
+  )
 }
 
 const lockedPaymentViaIntraledgerSteps = async ({
@@ -617,7 +668,7 @@ const lockedPaymentViaIntraledgerSteps = async ({
   if (newWalletInvoice instanceof Error) return newWalletInvoice
 
   const recipientWalletTransaction = await getTransactionForWalletByJournalId({
-    walletId: recipientAsNotificationRecipient.walletId,
+    walletId: recipientWalletDescriptor.id,
     journalId: journal.journalId,
   })
   if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
@@ -627,7 +678,7 @@ const lockedPaymentViaIntraledgerSteps = async ({
   })
 
   const senderWalletTransaction = await getTransactionForWalletByJournalId({
-    walletId: senderAsNotificationRecipient.walletId,
+    walletId: senderWalletDescriptor.id,
     journalId: journal.journalId,
   })
   if (senderWalletTransaction instanceof Error) return senderWalletTransaction
