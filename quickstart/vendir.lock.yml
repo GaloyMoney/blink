@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(core): add permissions query (#4100)...'
-      sha: 8fa4c9bf95d7c8fcf824392e3b2c3bd52b078493
+      commitTitle: 'chore: make user to be able to connect if their is in our system
+        (#4192)...'
+      sha: 86f313e3a8589a3d3203aae432eab148fdeaf57f
       tags:
-      - 0.20.120-2-g8fa4c9bf9
+      - 0.20.121-2-g86f313e3a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(core): add permissions query (#4100)...'
-      sha: 8fa4c9bf95d7c8fcf824392e3b2c3bd52b078493
+      commitTitle: 'chore: make user to be able to connect if their is in our system
+        (#4192)...'
+      sha: 86f313e3a8589a3d3203aae432eab148fdeaf57f
       tags:
-      - 0.20.120-2-g8fa4c9bf9
+      - 0.20.121-2-g86f313e3a
     path: schemas/
   - git:
-      commitTitle: 'feat(core): add permissions query (#4100)...'
-      sha: 8fa4c9bf95d7c8fcf824392e3b2c3bd52b078493
+      commitTitle: 'chore: make user to be able to connect if their is in our system
+        (#4192)...'
+      sha: 86f313e3a8589a3d3203aae432eab148fdeaf57f
       tags:
-      - 0.20.120-2-g8fa4c9bf9
+      - 0.20.121-2-g86f313e3a
     path: gql/
   path: ./graphql
 kind: LockConfig
