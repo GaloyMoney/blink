@@ -147,13 +147,8 @@ export const payInvoiceByWalletId = async ({
 
   if (senderAccount.id !== recipientAccount.id) {
     const addContactResult = await addContactsAfterSend({
-      senderContactEnabled: senderAccount.contactEnabled,
-      senderAccountId: senderAccount.id,
-      senderUsername: senderAccount.username,
-
-      recipientContactEnabled: recipientAccount.contactEnabled,
-      recipientAccountId: recipientAccount.id,
-      recipientUsername: recipientAccount.username,
+      senderAccount,
+      recipientAccount,
     })
     if (addContactResult instanceof Error) {
       recordExceptionInCurrentSpan({ error: addContactResult, level: ErrorLevel.Warn })
@@ -237,13 +232,8 @@ const payNoAmountInvoiceByWalletId = async ({
 
   if (senderAccount.id !== recipientAccount.id) {
     const addContactResult = await addContactsAfterSend({
-      senderContactEnabled: senderAccount.contactEnabled,
-      senderAccountId: senderAccount.id,
-      senderUsername: senderAccount.username,
-
-      recipientContactEnabled: recipientAccount.contactEnabled,
-      recipientAccountId: recipientAccount.id,
-      recipientUsername: recipientAccount.username,
+      senderAccount,
+      recipientAccount,
     })
     if (addContactResult instanceof Error) {
       recordExceptionInCurrentSpan({ error: addContactResult, level: ErrorLevel.Warn })
