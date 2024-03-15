@@ -734,6 +734,15 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
         logger: baseLogger,
         forwardToClient: false,
       })
+    case "InvalidPushBodyError":
+      message = error.message
+      return new ValidationInternalError({ message, logger: baseLogger })
+    case "InvalidPushTitleError":
+      message = error.message
+      return new ValidationInternalError({ message, logger: baseLogger })
+    case "DuplicateLocalizedPushContentError":
+      message = "Multiple localized push contents with the same language"
+      return new ValidationInternalError({ message, logger: baseLogger })
 
     // ----------
     // Unknown below here

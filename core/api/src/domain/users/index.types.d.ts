@@ -70,22 +70,15 @@ type UserUpdateInput = Omit<Partial<User>, "createdAt"> & {
   id: UserId
 }
 
+type UsersFilter = {
+  userIds: UserId[]
+  phoneCountryCodes: string[]
+}
+
 interface IUsersRepository {
   findById(id: UserId): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
-  findByFilter({
-    userIds,
-    phoneCountryCodes,
-  }: {
-    userIds: UserId[]
-    phoneCountryCodes: string[]
-  }): AsyncGenerator<UserId> | RepositoryError
-  filteredCount({
-    userIds,
-    phoneCountryCodes,
-  }: {
-    userIds: UserId[]
-    phoneCountryCodes: string[]
-  }): Promise<number | RepositoryError>
+  find(usersFilter: UsersFilter): AsyncGenerator<UserId> | RepositoryError
+  count(usersFilter: UsersFilter): Promise<number | RepositoryError>
   update(user: UserUpdateInput): Promise<User | RepositoryError>
 }

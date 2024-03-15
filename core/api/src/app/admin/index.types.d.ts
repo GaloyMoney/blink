@@ -2,7 +2,7 @@ type AdminTriggerMarketingNotificationArgs = {
   userIdsFilter: string[] | undefined
   phoneCountryCodesFilter: string[] | undefined
   deepLink: DeepLink | undefined
-  localizedPushContent: {
+  localizedPushContents: {
     title: string
     body: string
     language: string

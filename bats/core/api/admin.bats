@@ -189,7 +189,7 @@ setup_file() {
     jq -n \
     '{
       input: {
-        localizedPushContent: [
+        localizedPushContents: [
           {
             language: "en",
             title: "Test title",
@@ -200,9 +200,9 @@ setup_file() {
       }
     }'
   )
-  exec_admin_graphql "$admin_token" 'trigger-marketing-notification' "$variables"
-  num_errors="$(graphql_output '.data.triggerMarketingNotification.errors | length')"
-  success="$(graphql_output '.data.triggerMarketingNotification.success')"
+  exec_admin_graphql "$admin_token" 'marketing-notification-trigger' "$variables"
+  num_errors="$(graphql_output '.data.marketingNotificationTrigger.errors | length')"
+  success="$(graphql_output '.data.marketingNotificationTrigger.success')"
   [[ "$num_errors" == "0" && "$success" == "true" ]] || exit 1
 }
 

@@ -1,5 +1,5 @@
 import { checkedToUserId } from "@/domain/accounts"
-import { checkedToNonEmptyLanguage } from "@/domain/users"
+import { checkedToLocalizedPushContentsMap } from "@/domain/notifications"
 import { UsersRepository } from "@/services/mongoose"
 import { NotificationsService } from "@/services/notifications"
 
@@ -7,7 +7,7 @@ export const triggerMarketingNotification = async ({
   userIdsFilter,
   phoneCountryCodesFilter,
   deepLink,
-  localizedPushContent,
+  localizedPushContents,
 }: AdminTriggerMarketingNotificationArgs): Promise<ApplicationError | true> => {
   const checkedUserIds: UserId[] = []
   for (const userId of userIdsFilter || []) {
@@ -18,21 +18,15 @@ export const triggerMarketingNotification = async ({
     checkedUserIds.push(checkedUserId)
   }
 
-  const checkedLocalizedPushContent: LocalizedPushContent[] = []
-  for (const content of localizedPushContent) {
-    const checkedLanguage = checkedToNonEmptyLanguage(content.language)
-    if (checkedLanguage instanceof Error) {
-      return checkedLanguage
-    }
-    checkedLocalizedPushContent.push({
-      title: content.title,
-      body: content.body,
-      language: checkedLanguage,
-    })
+  const localizedPushContentsMap =
+    checkedToLocalizedPushContentsMap(localizedPushContents)
+
+  if (localizedPushContentsMap instanceof Error) {
+    return localizedPushContentsMap
   }
 
   const userIdsToNotify: UserId[] = []
-  const userIdsGenerator = UsersRepository().findByFilter({
+  const userIdsGenerator = UsersRepository().find({
     userIds: checkedUserIds,
     phoneCountryCodes: phoneCountryCodesFilter || [],
   })
@@ -48,7 +42,7 @@ export const triggerMarketingNotification = async ({
   const res = await NotificationsService().triggerMarketingNotification({
     userIds: userIdsToNotify,
     deepLink,
-    localizedPushContent: checkedLocalizedPushContent,
+    localizedPushContents: localizedPushContentsMap,
   })
 
   if (res instanceof Error) {
@@ -56,29 +50,4 @@ export const triggerMarketingNotification = async ({
   }
 
   return true
-}
-
-export const filteredUserCount = async ({
-  userIdsFilter,
-  phoneCountryCodesFilter,
-}: AdminFilteredUserCountArgs): Promise<ApplicationError | number> => {
-  const checkedUserIds: UserId[] = []
-  for (const userId of userIdsFilter || []) {
-    const checkedUserId = checkedToUserId(userId)
-    if (checkedUserId instanceof Error) {
-      return checkedUserId
-    }
-    checkedUserIds.push(checkedUserId)
-  }
-
-  const count = UsersRepository().filteredCount({
-    userIds: checkedUserIds,
-    phoneCountryCodes: phoneCountryCodesFilter || [],
-  })
-
-  if (count instanceof Error) {
-    return count
-  }
-
-  return count
 }

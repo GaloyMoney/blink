@@ -270,6 +270,13 @@ input LocalizedPushContentInput {
   title: String!
 }
 
+input MarketingNotificationTriggerInput {
+  deepLink: DeepLink
+  localizedPushContents: [LocalizedPushContentInput!]!
+  phoneCountryCodesFilter: [CountryCode!]
+  userIdsFilter: [ID!]
+}
+
 """Text field in a lightning payment transaction"""
 scalar Memo
 
@@ -305,9 +312,9 @@ type MerchantPayload {
 type Mutation {
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
+  marketingNotificationTrigger(input: MarketingNotificationTriggerInput!): SuccessPayload!
   merchantMapDelete(input: MerchantMapDeleteInput!): MerchantPayload!
   merchantMapValidate(input: MerchantMapValidateInput!): MerchantPayload!
-  triggerMarketingNotification(input: TriggerMarketingNotificationInput!): SuccessPayload!
   userUpdatePhone(input: UserUpdatePhoneInput!): AccountDetailPayload!
 }
 
@@ -468,13 +475,6 @@ type TransactionEdge {
 
   """The item at the end of the edge"""
   node: Transaction!
-}
-
-input TriggerMarketingNotificationInput {
-  deepLink: DeepLink
-  localizedPushContent: [LocalizedPushContentInput!]!
-  phoneCountryCodesFilter: [CountryCode!]
-  userIdsFilter: [ID!]
 }
 
 enum TxDirection {

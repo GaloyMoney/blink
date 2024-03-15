@@ -619,15 +619,15 @@ export const NotificationsService = (): INotificationsService => {
 
   const triggerMarketingNotification = async ({
     userIds,
-    localizedPushContent,
+    localizedPushContents,
     deepLink,
   }: TriggerMarketingNotificationArgs): Promise<true | NotificationsServiceError> => {
     try {
       const marketingNotification = new MarketingNotificationTriggered()
       marketingNotification.setUserIdsList(userIds)
 
-      localizedPushContent.forEach((content) => {
-        const { title, body, language } = content
+      localizedPushContents.forEach((content, language) => {
+        const { title, body } = content
         const localizedContent = new LocalizedPushContent()
         localizedContent.setTitle(title)
         localizedContent.setBody(body)

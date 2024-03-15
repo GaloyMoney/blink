@@ -57,7 +57,7 @@ export const UsersRepository = (): IUsersRepository => {
     return conditions.length > 0 ? { $and: conditions } : {}
   }
 
-  const findByFilter = async function* ({
+  const find = async function* ({
     userIds,
     phoneCountryCodes,
   }: {
@@ -75,7 +75,7 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  const filteredCount = async ({
+  const count = async ({
     userIds,
     phoneCountryCodes,
   }: {
@@ -144,8 +144,8 @@ export const UsersRepository = (): IUsersRepository => {
   return {
     findById,
     findByPhone,
-    findByFilter,
-    filteredCount,
+    find,
+    count,
     update,
   }
 }

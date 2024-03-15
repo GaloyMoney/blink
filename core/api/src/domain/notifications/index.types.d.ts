@@ -57,9 +57,13 @@ type SendFilteredPushNotificationArgs = {
 type DeepLink =
   (typeof import("./index").DeepLink)[keyof typeof import("./index").DeepLink]
 
+type LocalizedPushTitle = string & { readonly brand: unique symbol }
+
+type LocalizedPushBody = string & { readonly brand: unique symbol }
+
 type LocalizedPushContent = {
-  title: string
-  body: string
+  title: LocalizedPushTitle
+  body: LocalizedPushBody
   language: UserLanguage
 }
 interface INotificationsService {
@@ -125,5 +129,5 @@ interface INotificationsService {
 type TriggerMarketingNotificationArgs = {
   userIds: UserId[]
   deepLink: DeepLink | undefined
-  localizedPushContent: LocalizedPushContent[]
+  localizedPushContents: Map<UserLanguage, LocalizedPushContent>
 }
