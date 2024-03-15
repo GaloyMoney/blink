@@ -1,8 +1,4 @@
-import {
-  constructPaymentFlowBuilder,
-  getPriceRatioForLimits,
-  addContactsAfterSend,
-} from "./helpers"
+import { constructPaymentFlowBuilder, getPriceRatioForLimits } from "./helpers"
 
 import { reimburseFee } from "./reimburse-fee"
 
@@ -59,6 +55,7 @@ import {
 } from "@/services/tracing"
 
 import {
+  addContactsAfterSend,
   checkIntraledgerLimits,
   checkTradeIntraAccountLimits,
   checkWithdrawalLimits,

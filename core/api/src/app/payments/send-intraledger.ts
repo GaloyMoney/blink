@@ -1,8 +1,12 @@
-import { addContactsAfterSend, getPriceRatioForLimits } from "./helpers"
+import { getPriceRatioForLimits } from "./helpers"
 
 import { getValuesToSkipProbe } from "@/config"
 
-import { checkIntraledgerLimits, checkTradeIntraAccountLimits } from "@/app/accounts"
+import {
+  addContactsAfterSend,
+  checkIntraledgerLimits,
+  checkTradeIntraAccountLimits,
+} from "@/app/accounts"
 import {
   btcFromUsdMidPriceFn,
   getCurrentPriceAsDisplayPriceRatio,

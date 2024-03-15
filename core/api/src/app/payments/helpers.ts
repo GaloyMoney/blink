@@ -1,5 +1,4 @@
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@/app/prices"
-import { addNewContact } from "@/app/accounts/add-new-contact"
 import { getValuesToSkipProbe, MIN_SATS_FOR_PRICE_RATIO_PRECISION } from "@/config"
 import { AlreadyPaidError } from "@/domain/errors"
 import { LightningPaymentFlowBuilder, WalletPriceRatio } from "@/domain/payments"
@@ -144,33 +143,3 @@ export const getPriceRatioForLimits = wrapAsyncToRunInSpan({
     return WalletPriceRatio(paymentAmounts)
   },
 })
-
-export const addContactsAfterSend = async ({
-  senderAccount,
-  recipientAccount,
-}: {
-  senderAccount: Account
-  recipientAccount: Account
-}): Promise<true | ApplicationError> => {
-  if (!(senderAccount.contactEnabled && recipientAccount.contactEnabled)) {
-    return true
-  }
-
-  if (recipientAccount.username) {
-    const addContactToPayerResult = await addNewContact({
-      accountId: senderAccount.id,
-      contactUsername: recipientAccount.username,
-    })
-    if (addContactToPayerResult instanceof Error) return addContactToPayerResult
-  }
-
-  if (senderAccount.username) {
-    const addContactToPayeeResult = await addNewContact({
-      accountId: recipientAccount.id,
-      contactUsername: senderAccount.username,
-    })
-    if (addContactToPayeeResult instanceof Error) return addContactToPayeeResult
-  }
-
-  return true
-}
