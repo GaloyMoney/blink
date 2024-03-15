@@ -119,21 +119,13 @@ export function SideBar({ username }: { username: string }) {
             <div
               className="flex flex-col gap-0 bg-slate-200 p-2 m-0 rounded-md cursor-pointer"
               onClick={() => {
-                router.push("/api/auth/signin")
+                if (!signedInUser) router.push("/api/auth/signin")
               }}
             >
               {signedInUser ? (
                 <>
                   <div className="flex justify-between">
                     <p className="text-md font-semibold mb-1">Signed in as</p>
-                    <Image
-                      className="cursor-pointer"
-                      onClick={() => signOut()}
-                      alt="logout"
-                      src={"/icons/logout.svg"}
-                      width={20}
-                      height={20}
-                    ></Image>
                   </div>
                   <p className="text-sm mb-0">
                     {signedInUser.username || signedInUser.id}
@@ -176,7 +168,21 @@ export function SideBar({ username }: { username: string }) {
                 </SheetClose>
               ),
             )}
-
+            <div
+              className="bg-white text-black p-2 rounded-md no-underline hover:no-underline visited:text-black flex items-center gap-2 cursor-pointer"
+              onClick={() => {
+                localStorage.removeItem("username")
+                signOut({ callbackUrl: "/setuppwa" })
+              }}
+            >
+              <Image
+                width={24}
+                height={24}
+                src="/icons/log-out.svg"
+                alt="change username"
+              />
+              {signedInUser ? "Log out" : "Change username"}
+            </div>
             <div className="flex flex-col justify-start align-content-center gap-1">
               <div className="text-md font-semibold flex ">Currency</div>
               <CurrencyDropdown

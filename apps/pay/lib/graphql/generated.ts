@@ -2137,7 +2137,7 @@ export type GetPaginatedTransactionsQuery = { readonly __typename: 'Query', read
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly id: string, readonly username?: string | null } | null };
+export type MeQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly id: string, readonly username?: string | null, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly displayCurrency: string } } | null };
 
 export type LnInvoiceCreateOnBehalfOfRecipientMutationVariables = Exact<{
   walletId: Scalars['WalletId'];
@@ -2343,6 +2343,9 @@ export const MeDocument = gql`
   me {
     id
     username
+    defaultAccount {
+      displayCurrency
+    }
   }
 }
     `;
