@@ -55,6 +55,7 @@ export function SideBar({ username }: { username: string }) {
       icon: "/icons/cash-register-icon.svg",
       dataTestId: "cash-register-link",
       hardRefresh: true,
+      protected: false,
     },
     {
       name: "Printable Paycode",
@@ -62,6 +63,7 @@ export function SideBar({ username }: { username: string }) {
       icon: "/icons/print-sharp.svg",
       dataTestId: "printable-paycode-link",
       hardRefresh: false,
+      protected: false,
     },
     {
       name: "Transactions",
@@ -69,6 +71,7 @@ export function SideBar({ username }: { username: string }) {
       icon: "/icons/receipt-sharp.svg",
       dataTestId: "transaction-link",
       hardRefresh: false,
+      protected: true,
     },
   ]
 
@@ -159,7 +162,9 @@ export function SideBar({ username }: { username: string }) {
                 <SheetClose key={link.name} asChild>
                   <Link
                     data-testid={link.dataTestId}
-                    href={link.href}
+                    href={
+                      link.protected && !signedInUser ? "/api/auth/signin" : link.href
+                    }
                     className="bg-white text-black p-2 rounded-md no-underline hover:no-underline visited:text-black flex items-center gap-2"
                   >
                     <Image src={link.icon} alt={link.name} width={24} height={24} />
