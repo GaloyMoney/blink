@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: make user to be able to connect if their is in our system
-        (#4192)...'
-      sha: 86f313e3a8589a3d3203aae432eab148fdeaf57f
+      commitTitle: 'refactor(core): move onchain send lock steps to function (#4188)...'
+      sha: 22d44e9f8096ac1d8f9ce319eb0944b1c6b49759
       tags:
-      - 0.20.121-2-g86f313e3a
+      - 0.20.122-3-g22d44e9f8
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: make user to be able to connect if their is in our system
-        (#4192)...'
-      sha: 86f313e3a8589a3d3203aae432eab148fdeaf57f
+      commitTitle: 'refactor(core): move onchain send lock steps to function (#4188)...'
+      sha: 22d44e9f8096ac1d8f9ce319eb0944b1c6b49759
       tags:
-      - 0.20.121-2-g86f313e3a
+      - 0.20.122-3-g22d44e9f8
     path: schemas/
   - git:
-      commitTitle: 'chore: make user to be able to connect if their is in our system
-        (#4192)...'
-      sha: 86f313e3a8589a3d3203aae432eab148fdeaf57f
+      commitTitle: 'refactor(core): move onchain send lock steps to function (#4188)...'
+      sha: 22d44e9f8096ac1d8f9ce319eb0944b1c6b49759
       tags:
-      - 0.20.121-2-g86f313e3a
+      - 0.20.122-3-g22d44e9f8
     path: gql/
   path: ./graphql
 kind: LockConfig
