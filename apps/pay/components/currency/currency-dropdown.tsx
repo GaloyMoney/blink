@@ -23,12 +23,14 @@ type CurrencyDropdownProps = {
   name?: string
   style?: React.CSSProperties
   showOnlyFlag?: boolean
+  menuPlacement?: "auto" | "bottom" | "top"
 }
 
 const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({
   onSelectedDisplayCurrencyChange,
   name,
   showOnlyFlag = false,
+  menuPlacement = "auto",
 }) => {
   const searchParams = useSearchParams()
   const display = searchParams?.get("display")
@@ -111,6 +113,7 @@ const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({
       isSearchable
       placeholder="Select a currency..."
       styles={customStyles}
+      menuPlacement={menuPlacement}
     />
   )
 }

@@ -2,7 +2,13 @@
 import { useRouter } from "next/navigation"
 import React, { Suspense, useEffect, useState } from "react"
 
+import Image from "next/image"
+
 import CurrencyDropdown from "../../components/currency/currency-dropdown"
+
+import styles from "./setuppwa.module.css"
+
+import LoadingComponent from "@/components/loading"
 
 const SetupPwa = () => {
   const router = useRouter()
@@ -45,26 +51,36 @@ const SetupPwa = () => {
 
   if (!usernameFromLocal) {
     return (
-      <div
-        className="flex flex-col justify-center items-center h-screen"
-        style={{ maxWidth: "90%", margin: "0 auto" }}
-      >
-        <h4>Welcome to Blink POS application.</h4>
-
+      <div className={styles.container}>
+        <div className="flex flex-col justify-center items-center">
+          <Image
+            style={{
+              marginLeft: "2em",
+            }}
+            src="BlinkPOS.svg"
+            alt="Blink POS"
+            width={220}
+            height={220}
+          ></Image>
+          <p
+            style={{
+              maxWidth: "45ch",
+              textAlign: "center",
+              padding: "0.5em",
+              marginTop: "0.5em",
+            }}
+          >
+            To use the app, enter the Blink username you would like to receive payments
+            for.
+          </p>
+        </div>
         <form
-          className="flex flex-col justify-center items-center"
+          className="flex flex-col justify-center items-center max-w-96 w-full"
           autoComplete="off"
           onSubmit={handleSubmit}
         >
           <div className="flex flex-col justify-center items-center w-full gap-2 rounded-md ">
-            <p>
-              To use the app, enter the Blink username you would like to receive payments
-              for.
-            </p>
             <div className="flex flex-col w-full">
-              <label className="m-1" htmlFor="username">
-                Blink username
-              </label>
               <input
                 data-testid="username-input"
                 className="w-full p-1.5 border-2 rounded-md bg-[var(--lighterGrey)]"
@@ -79,9 +95,6 @@ const SetupPwa = () => {
               />
             </div>
             <div className="flex flex-col w-full">
-              <label className="m-1" htmlFor="display">
-                Currency
-              </label>
               <Suspense fallback={<div>Loading...</div>}>
                 <CurrencyDropdown
                   name="display"
@@ -92,7 +105,7 @@ const SetupPwa = () => {
               </Suspense>
             </div>
           </div>
-          <button data-testid="submit-btn" className="print-paycode-button w-1/2 m-2">
+          <button data-testid="submit-btn" className="print-paycode-button w-full mt-3">
             Submit
           </button>
         </form>
@@ -101,7 +114,7 @@ const SetupPwa = () => {
   }
   return (
     <div className="loader-wrapper">
-      <div className="loader"></div>
+      <LoadingComponent />
     </div>
   )
 }
