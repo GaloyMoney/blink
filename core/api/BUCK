@@ -15,6 +15,11 @@ load(
 )
 load("@toolchains//rover:macros.bzl", "sdl", "diff_check", "dev_update_file")
 
+dev_deps_srcs = {
+  "lib/eslint-config": "//lib/eslint-config:src",
+}
+
+
 dev_pnpm_task_binary(
   name = "fix-lint",
   command = "eslint-fix",
@@ -141,6 +146,7 @@ eslint(
     srcs = [":src"] + [":test_src"] + glob([".eslint*"]),
     extensions = [".ts"],
     allow_warnings = True,
+    dev_deps_srcs = dev_deps_srcs,
 )
 
 dev_pnpm_task_test(
