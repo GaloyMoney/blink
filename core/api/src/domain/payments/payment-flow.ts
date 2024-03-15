@@ -56,7 +56,12 @@ export const PaymentFlowCommon = <S extends WalletCurrency, R extends WalletCurr
     }
   }
 
-  const recipientDetails = () => ({
+  const recipientDetails = (): {
+    walletDescriptor: WalletDescriptor<R> | undefined
+    recipientPubkey: Pubkey | undefined
+    recipientUsername: Username | undefined
+    recipientUserId: UserId | undefined
+  } => ({
     walletDescriptor:
       state.recipientWalletId && state.recipientWalletCurrency && state.recipientAccountId
         ? {
