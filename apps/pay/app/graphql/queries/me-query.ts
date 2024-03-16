@@ -8,6 +8,9 @@ gql`
     me {
       id
       username
+      defaultAccount {
+        displayCurrency
+      }
     }
   }
 `

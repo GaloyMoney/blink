@@ -66,5 +66,15 @@ export const authOptions: NextAuthOptions = {
       session.accessToken = token.accessToken
       return session
     },
+    async signIn({ account }) {
+      if (!account?.access_token) {
+        return false
+      }
+      const res = await fetchUserData({ token: account.access_token })
+      if (res instanceof Error || !res.data.me?.username) {
+        return "/error?errorMessage=This account does not have a username. Please update your profile from the mobile app and update your username"
+      }
+      return true
+    },
   },
 }
