@@ -68,7 +68,7 @@ const SetupPwa = () => {
     router.push(`${username}?display=${selectedDisplayCurrency}`)
   }
 
-  if (!usernameFromLocal && !loading) {
+  if (!usernameFromLocal && !loading && session.status !== "loading") {
     return (
       <div className={styles.container}>
         <div className="flex flex-col justify-center items-center">
