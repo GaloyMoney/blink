@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth"
 
 import { env } from "@/env"
-import { fetchUserData } from "@/app/graphql/quries/me-query"
+import { fetchUserData } from "@/app/graphql/queries/me-query"
 import { MeQuery } from "@/lib/graphql/generated"
 
 declare module "next-auth" {
@@ -65,6 +65,16 @@ export const authOptions: NextAuthOptions = {
       session.sub = token.sub
       session.accessToken = token.accessToken
       return session
+    },
+    async signIn({ account }) {
+      if (!account?.access_token) {
+        return false
+      }
+      const res = await fetchUserData({ token: account.access_token })
+      if (res instanceof Error || !res.data.me?.username) {
+        return "/error?errorMessage=This account does not have a username. Please update your profile from the mobile app and update your username"
+      }
+      return true
     },
   },
 }
