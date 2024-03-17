@@ -51,7 +51,12 @@ main() {
     sleep 1
   done
 
-  initialize_user_from_onchain "alice" "+16505554328" "000000" 
+  initialize_user_from_onchain "alice" "+16505554328" "000000"
+  bitcoin_cli -generate 3
+
+  exec_graphql "alice" "wallets-for-account"
+  echo $output
+
   echo "Alice account set up, token: $(read_value "alice")"
   
   echo "TOKEN_ALICE=$(read_value "alice")"
