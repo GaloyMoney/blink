@@ -44,11 +44,12 @@
   .digitsGrid > button {
     font-size: 250%;
   }
+  .digitsGrid > button:active {
+    background-color: rgba(233, 233, 236, 0.3); /* Light touch feedback */
+  }
 }
 
-.digitsGrid > button:hover,
-.digitsGrid > button:focus,
-.digitsGrid > button:focus-visible {
+.digitsGrid > button:active {
   border: 1px solid rgb(233, 233, 236);
 }
 
