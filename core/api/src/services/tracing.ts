@@ -481,6 +481,12 @@ export const wrapAsyncToRunInSpan = <
   const functionName = fnName || fn.name || "unknown"
 
   const wrappedFn = (...args: A): Promise<PromiseReturnType<R>> => {
+    // Determine if there's an active span that's recording
+    const currentContext = context.active()
+    const activeSpan = trace.getSpan(currentContext)
+    const parentSpanIsRecording = activeSpan?.isRecording()
+    const parentSpanName = (activeSpan as unknown as { name?: string })?.name
+
     const spanName = `${namespace}.${functionName}`
     const spanOptions = resolveFunctionSpanOptions({
       namespace,
@@ -495,6 +501,9 @@ export const wrapAsyncToRunInSpan = <
           function: spanOptions.attributes?.["code.function"],
           isRecording: span.isRecording(),
           spanId: span.spanContext().spanId,
+          parentSpanIsRecording,
+          parentSpanId: activeSpan?.spanContext().spanId,
+          parentSpanName,
         },
         `spanName: ${spanName}`,
       )
