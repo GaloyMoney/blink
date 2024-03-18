@@ -10,6 +10,7 @@ import PeopleIcon from "./icons/people.svg"
 import TransactionsIcon from "./icons/transactions.svg"
 import GlobeIcon from "./icons/search-globe.svg"
 import LogoutIcon from "./icons/logout.svg"
+import ComposeIcon from "./icons/compose.svg"
 
 const dashboardRoutes = [
   {
@@ -29,7 +30,7 @@ const dashboardRoutes = [
   },
   {
     name: "Notifications",
-    icon: GlobeIcon,
+    icon: ComposeIcon,
     path: "/notifications",
   },
 ]

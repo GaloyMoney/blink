@@ -54,7 +54,7 @@ const NotificationTestSender = ({ notification }: NotificationTestSenderArgs) =>
               type="text"
               id="title"
               name="Username"
-              placeholder="Enter user id"
+              placeholder="Enter username"
               className="border border-2 rounded block p-1 w-full"
               onChange={(e) => setUsername(e.target.value)}
             />
