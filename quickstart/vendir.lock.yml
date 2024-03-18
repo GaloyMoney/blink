@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(core): move onchain send lock steps to function (#4188)...'
-      sha: 22d44e9f8096ac1d8f9ce319eb0944b1c6b49759
+      commitTitle: 'chore(core): bump monodb image (#4205)'
+      sha: c1a17ce4da10d5f7642aa49b53cccdb1f3da2480
       tags:
-      - 0.20.122-3-g22d44e9f8
+      - 0.20.123-1-gc1a17ce4d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(core): move onchain send lock steps to function (#4188)...'
-      sha: 22d44e9f8096ac1d8f9ce319eb0944b1c6b49759
+      commitTitle: 'chore(core): bump monodb image (#4205)'
+      sha: c1a17ce4da10d5f7642aa49b53cccdb1f3da2480
       tags:
-      - 0.20.122-3-g22d44e9f8
+      - 0.20.123-1-gc1a17ce4d
     path: schemas/
   - git:
-      commitTitle: 'refactor(core): move onchain send lock steps to function (#4188)...'
-      sha: 22d44e9f8096ac1d8f9ce319eb0944b1c6b49759
+      commitTitle: 'chore(core): bump monodb image (#4205)'
+      sha: c1a17ce4da10d5f7642aa49b53cccdb1f3da2480
       tags:
-      - 0.20.122-3-g22d44e9f8
+      - 0.20.123-1-gc1a17ce4d
     path: gql/
   path: ./graphql
 kind: LockConfig
