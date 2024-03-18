@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): bump monodb image (#4205)'
-      sha: c1a17ce4da10d5f7642aa49b53cccdb1f3da2480
+      commitTitle: 'chore(core): add parent span logging (#4206)'
+      sha: 084066c01d7fbab483c7da78415593610bc78c35
       tags:
-      - 0.20.123-1-gc1a17ce4d
+      - 0.20.124-1-g084066c01
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): bump monodb image (#4205)'
-      sha: c1a17ce4da10d5f7642aa49b53cccdb1f3da2480
+      commitTitle: 'chore(core): add parent span logging (#4206)'
+      sha: 084066c01d7fbab483c7da78415593610bc78c35
       tags:
-      - 0.20.123-1-gc1a17ce4d
+      - 0.20.124-1-g084066c01
     path: schemas/
   - git:
-      commitTitle: 'chore(core): bump monodb image (#4205)'
-      sha: c1a17ce4da10d5f7642aa49b53cccdb1f3da2480
+      commitTitle: 'chore(core): add parent span logging (#4206)'
+      sha: 084066c01d7fbab483c7da78415593610bc78c35
       tags:
-      - 0.20.123-1-gc1a17ce4d
+      - 0.20.124-1-g084066c01
     path: gql/
   path: ./graphql
 kind: LockConfig
