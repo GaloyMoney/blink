@@ -1,7 +1,11 @@
 "use server"
 
 import { getClient } from "../../app/graphql-rsc"
+import { validUsername } from "../../app/utils"
 import {
+  AccountDetailsByUsernameDocument,
+  AccountDetailsByUsernameQuery,
+  AccountDetailsByUsernameQueryVariables,
   DeepLink,
   FilteredUserCountDocument,
   FilteredUserCountQuery,
@@ -91,5 +95,37 @@ export const triggerMarketingNotification = async ({
 
   return {
     success: true,
+  }
+}
+
+export const userIdByUsername = async (username: string) => {
+  try {
+    if (!validUsername(username)) {
+      return {
+        message: "Invalid username",
+      } as const
+    }
+
+    const data = await getClient().query<
+      AccountDetailsByUsernameQuery,
+      AccountDetailsByUsernameQueryVariables
+    >({
+      query: AccountDetailsByUsernameDocument,
+      variables: { username },
+    })
+    const userId = data.data?.accountDetailsByUsername.owner.id
+
+    return {
+      userId,
+    } as const
+  } catch (err) {
+    if (err instanceof Error) {
+      return {
+        message: err.message,
+      } as const
+    }
+    return {
+      message: "Unknown error occurred while fetching user id",
+    } as const
   }
 }

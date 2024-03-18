@@ -2,14 +2,14 @@
 
 import { useState } from "react"
 import { NotificationContent } from "./builder"
-import { triggerMarketingNotification } from "./notifcation-actions"
+import { triggerMarketingNotification, userIdByUsername } from "./notifcation-actions"
 
 type NotificationTestSenderArgs = {
   notification: NotificationContent
 }
 
 const NotificationTestSender = ({ notification }: NotificationTestSenderArgs) => {
-  const [userId, setUserId] = useState("")
+  const [username, setUsername] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | undefined>(undefined)
   const [success, setSuccess] = useState(false)
@@ -19,8 +19,17 @@ const NotificationTestSender = ({ notification }: NotificationTestSenderArgs) =>
     setLoading(true)
     setSuccess(false)
     setError(undefined)
+
+    const userIdRes = await userIdByUsername(username)
+
+    if (userIdRes.userId === undefined) {
+      setLoading(false)
+      setError(userIdRes.message)
+      return
+    }
+
     const res = await triggerMarketingNotification({
-      userIdsFilter: [userId],
+      userIdsFilter: [userIdRes.userId],
       localizedPushContents: notification.localizedPushContents,
       deepLink: notification.deepLink,
     })
@@ -40,18 +49,18 @@ const NotificationTestSender = ({ notification }: NotificationTestSenderArgs) =>
       <div>
         <form onSubmit={sendTestNotification} className="space-y-4">
           <div>
-            <label htmlFor="userId">User Id</label>
+            <label htmlFor="username">Username</label>
             <input
               type="text"
               id="title"
-              name="userId"
+              name="Username"
               placeholder="Enter user id"
               className="border border-2 rounded block p-1 w-full"
-              onChange={(e) => setUserId(e.target.value)}
+              onChange={(e) => setUsername(e.target.value)}
             />
           </div>
           <button
-            disabled={!userId}
+            disabled={!username}
             className="bg-blue-500 text-white px-4 py-2 rounded block w-full disabled:opacity-50"
           >
             Send Test Notification
