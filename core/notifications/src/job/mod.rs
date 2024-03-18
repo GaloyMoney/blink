@@ -31,6 +31,7 @@ pub async fn start_job_runner(
         all_user_event_dispatch,
         send_push_notification,
         send_email_notification,
+        multi_user_event_dispatch,
     ]);
     registry.set_context(push_executor);
     registry.set_context(email_executor);
