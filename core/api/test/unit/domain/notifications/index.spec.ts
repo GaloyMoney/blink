@@ -1,172 +1,78 @@
 import {
-  NotificationChannel,
-  disableNotificationCategory,
-  enableNotificationChannel,
-  disableNotificationChannel,
-  shouldSendNotification,
+  InvalidPushBodyError,
+  InvalidPushNotificationSettingError,
+  InvalidPushTitleError,
+  checkedToLocalizedPushBody,
+  checkedToLocalizedPushContentsMap,
+  checkedToLocalizedPushTitle,
+  checkedToNotificationCategory,
 } from "@/domain/notifications"
 
-describe("Notifications - push notification filtering", () => {
-  describe("shouldSendPushNotification", () => {
-    it("returns false when push notifications are disabled", () => {
-      const notificationSettings: NotificationSettings = {
-        push: {
-          enabled: false,
-          disabledCategories: [],
-        },
-      }
-
-      const notificationCategory = "transaction" as NotificationCategory
-
-      expect(
-        shouldSendNotification({
-          notificationSettings,
-          notificationCategory,
-          notificationChannel: NotificationChannel.Push,
-        }),
-      ).toBe(false)
-    })
-
-    it("returns true when a notification is not disabled", () => {
-      const notificationSettings: NotificationSettings = {
-        push: {
-          enabled: true,
-          disabledCategories: [],
-        },
-      }
-
-      const notificationCategory = "transaction" as NotificationCategory
-
-      expect(
-        shouldSendNotification({
-          notificationSettings,
-          notificationCategory,
-          notificationChannel: NotificationChannel.Push,
-        }),
-      ).toBe(true)
-    })
-
-    it("returns false when a notification is disabled", () => {
-      const notificationCategory = "transaction" as NotificationCategory
-
-      const notificationSettings: NotificationSettings = {
-        push: {
-          enabled: true,
-          disabledCategories: [notificationCategory],
-        },
-      }
-
-      expect(
-        shouldSendNotification({
-          notificationSettings,
-          notificationCategory,
-          notificationChannel: NotificationChannel.Push,
-        }),
-      ).toBe(false)
-    })
+describe("checkedToNotificationCategory", () => {
+  it("passes when category is valid", () => {
+    const category = "Circles"
+    expect(checkedToNotificationCategory("Circles")).toBe(category)
   })
 
-  describe("enableNotificationChannel", () => {
-    it("clears disabled categories when enabling a channel", () => {
-      const notificationSettings: NotificationSettings = {
-        push: {
-          enabled: false,
-          disabledCategories: ["transaction" as NotificationCategory],
-        },
-      }
+  it("fails when category is invalid", () => {
+    expect(checkedToNotificationCategory("")).toBeInstanceOf(
+      InvalidPushNotificationSettingError,
+    )
+  })
+})
 
-      const notificationChannel = NotificationChannel.Push
-
-      const result = enableNotificationChannel({
-        notificationSettings,
-        notificationChannel,
-      })
-
-      expect(result).toEqual({
-        push: {
-          enabled: true,
-          disabledCategories: [],
-        },
-      })
-    })
+describe("checkedToLocalizedPushTitle", () => {
+  it("passes when title is valid", () => {
+    const title = "Circle Grew"
+    expect(checkedToLocalizedPushTitle("Circle Grew")).toBe(title)
   })
 
-  describe("disableNotificationChannel", () => {
-    it("clears disabled categories when disabling a channel", () => {
-      const notificationSettings: NotificationSettings = {
-        push: {
-          enabled: true,
-          disabledCategories: ["transaction" as NotificationCategory],
-        },
-      }
+  it("fails when title is empty", () => {
+    expect(checkedToLocalizedPushTitle("")).toBeInstanceOf(InvalidPushTitleError)
+  })
+})
 
-      const notificationChannel = NotificationChannel.Push
-
-      const result = disableNotificationChannel({
-        notificationSettings,
-        notificationChannel,
-      })
-
-      expect(result).toEqual({
-        push: {
-          enabled: false,
-          disabledCategories: [],
-        },
-      })
-    })
+describe("localized push body check", () => {
+  it("passes when body in valid", () => {
+    const body = "Your inner circle grew!"
+    expect(checkedToLocalizedPushBody("Your inner circle grew!")).toBe(body)
   })
 
-  describe("disableNotificationCategoryForChannel", () => {
-    it("adds a category to the disabled categories", () => {
-      const notificationSettings: NotificationSettings = {
-        push: {
-          enabled: true,
-          disabledCategories: [],
-        },
-      }
+  it("fails when body is empty", () => {
+    expect(checkedToLocalizedPushBody("")).toBeInstanceOf(InvalidPushBodyError)
+  })
+})
 
-      const notificationChannel = NotificationChannel.Push
+describe("localized push contents map check", () => {
+  it("passes when contents are valid", () => {
+    const contents = [
+      { title: "Title", body: "Body", language: "en" },
+      { title: "Titulo", body: "Cuerpo", language: "es" },
+    ]
+    expect(checkedToLocalizedPushContentsMap(contents)).toBeInstanceOf(Map)
+  })
 
-      const notificationCategory = "transaction" as NotificationCategory
+  it("fails when there are duplicate languages", () => {
+    const contents = [
+      { title: "Title", body: "Body", language: "en" },
+      { title: "Title", body: "Body", language: "en" },
+    ]
+    expect(checkedToLocalizedPushContentsMap(contents)).toBeInstanceOf(
+      InvalidPushNotificationSettingError,
+    )
+  })
 
-      const result = disableNotificationCategory({
-        notificationSettings,
-        notificationChannel,
-        notificationCategory,
-      })
+  it("fails when title is invalid", () => {
+    const contents = [{ title: "", body: "Body", language: "en" }]
+    expect(checkedToLocalizedPushContentsMap(contents)).toBeInstanceOf(
+      InvalidPushTitleError,
+    )
+  })
 
-      expect(result).toEqual({
-        push: {
-          enabled: true,
-          disabledCategories: [notificationCategory],
-        },
-      })
-    })
-
-    it("does not add a category to the disabled categories if it is already there", () => {
-      const notificationCategory = "transaction" as NotificationCategory
-
-      const notificationSettings: NotificationSettings = {
-        push: {
-          enabled: true,
-          disabledCategories: [notificationCategory],
-        },
-      }
-
-      const notificationChannel = NotificationChannel.Push
-
-      const result = disableNotificationCategory({
-        notificationSettings,
-        notificationChannel,
-        notificationCategory,
-      })
-
-      expect(result).toEqual({
-        push: {
-          enabled: true,
-          disabledCategories: [notificationCategory],
-        },
-      })
-    })
+  it("fails when body is invalid", () => {
+    const contents = [{ title: "Title", body: "", language: "en" }]
+    expect(checkedToLocalizedPushContentsMap(contents)).toBeInstanceOf(
+      InvalidPushBodyError,
+    )
   })
 })

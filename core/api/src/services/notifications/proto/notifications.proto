@@ -28,6 +28,7 @@ enum NotificationCategory {
   PAYMENTS = 1;
   BALANCE = 2;
   ADMIN_NOTIFICATION = 3;
+  MARKETING = 4;
 }
 
 message ShouldSendNotificationRequest {
@@ -153,6 +154,7 @@ message NotificationEvent {
     IdentityVerificationReviewStarted identity_verification_review_started = 5;
     TransactionOccurred transaction_occurred = 6;
     PriceChanged price = 7;
+    MarketingNotificationTriggered marketing_notification_triggered = 8;
   }
 }
 
@@ -233,4 +235,23 @@ message PriceChanged {
   Money price_of_one_bitcoin = 1;
   PriceChangeDirection direction = 2;
   double price_change_percentage = 3;
+}
+
+message MarketingNotificationTriggered {
+  repeated string user_ids = 1;
+  map<string, LocalizedPushContent> localized_push_content = 2;
+  optional DeepLink deep_link = 3;
+}
+
+message LocalizedPushContent {
+  string title = 2;
+  string body = 3;
+}
+
+enum DeepLink {
+  Circles = 0;
+  Price = 1;
+  Earn = 2;
+  Map = 3;
+  People = 4;
 }

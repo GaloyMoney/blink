@@ -48,6 +48,13 @@ export const checkedToLanguage = (
   return new InvalidLanguageError()
 }
 
+export const checkedToNonEmptyLanguage = (
+  language: string,
+): UserLanguage | ValidationError => {
+  if (Languages.includes(language)) return language as UserLanguage
+  return new InvalidLanguageError()
+}
+
 export const checkedToDeviceToken = (token: string): DeviceToken | ValidationError => {
   // token from firebase have a length of 163
   const correctLength = 163
