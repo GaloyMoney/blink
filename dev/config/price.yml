@@ -1,0 +1,13 @@
+exchanges:
+  - provider: "dev-mock"
+    base: "BTC"
+    quote: "*"
+    enabled: true
+    config:
+      devMockPrice:
+        BTC:
+          EUR: 17500
+          USD: 20000
+    # Following require dummy values
+    name: ""
+    cron: "*/5 * * * * *"
