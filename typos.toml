@@ -8,6 +8,7 @@ files.extend-exclude = [
   "quickstart/dev",
   "prelude",
   "core/notifications/locales/*.yml",
+  "apps/admin-panel/components/notification/languages.ts",
 ]
 
 default.extend-ignore-identifiers-re = [

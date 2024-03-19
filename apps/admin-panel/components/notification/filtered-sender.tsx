@@ -1,11 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
+
 import { NotificationContent } from "./builder"
 import {
   filteredUserCount as gqlFilteredUserCount,
   triggerMarketingNotification,
-} from "./notifcation-actions"
+} from "./notification-actions"
 import { CountryCodes } from "./languages"
 
 type NotificationFilteredSenderArgs = {
@@ -104,6 +105,7 @@ const NotificationFilteredSender = ({ notification }: NotificationFilteredSender
           {phoneCountryCodesFilter.map((phoneCountryCode) => (
             <RemovablePill
               text={phoneCountryCode}
+              key={phoneCountryCode}
               onRemove={() => removeCountryCode(phoneCountryCode)}
             />
           ))}

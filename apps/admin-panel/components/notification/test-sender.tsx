@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
+
 import { NotificationContent } from "./builder"
-import { triggerMarketingNotification, userIdByUsername } from "./notifcation-actions"
+import { triggerMarketingNotification, userIdByUsername } from "./notification-actions"
 
 type NotificationTestSenderArgs = {
   notification: NotificationContent

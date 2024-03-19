@@ -1,7 +1,9 @@
 "use client"
 
 import { ChangeEvent, useState } from "react"
+
 import { DeepLink } from "../../generated"
+
 import { LanguageCodes } from "./languages"
 
 export type NotificationContent = {
