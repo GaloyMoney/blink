@@ -44,7 +44,7 @@ const MarketingNotificationTriggerMutation = GT.Field<
   GraphQLAdminContext,
   {
     input: {
-      userIdsFilter: string[] | undefined
+      userIdsFilter: (string | Error)[] | undefined
       phoneCountryCodesFilter: (string | Error)[] | undefined
       deepLink: DeepLink | Error | undefined
       localizedPushContents: {
@@ -65,6 +65,14 @@ const MarketingNotificationTriggerMutation = GT.Field<
   resolve: async (_, args) => {
     const { userIdsFilter, phoneCountryCodesFilter, deepLink, localizedPushContents } =
       args.input
+
+    const nonErrorUserIdsFilter: string[] = []
+    for (const id of userIdsFilter || []) {
+      if (id instanceof Error) {
+        return { errors: [{ message: id.message }], success: false }
+      }
+      nonErrorUserIdsFilter.push(id)
+    }
 
     if (deepLink instanceof Error) {
       return { errors: [{ message: deepLink.message }], success: false }
@@ -96,7 +104,7 @@ const MarketingNotificationTriggerMutation = GT.Field<
     }
 
     const res = await Admin.triggerMarketingNotification({
-      userIdsFilter,
+      userIdsFilter: nonErrorUserIdsFilter,
       phoneCountryCodesFilter: nonErrorPhoneCountryCodesFilter,
       deepLink,
       localizedPushContents: nonErrorLocalizedPushContents,

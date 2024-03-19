@@ -16,6 +16,14 @@ const FilteredUserCountQuery = GT.Field({
   resolve: async (_, args) => {
     const { userIdsFilter, phoneCountryCodesFilter } = args
 
+    const nonErrorUserIdsFilter: string[] = []
+    for (const id of userIdsFilter || []) {
+      if (id instanceof Error) {
+        throw id
+      }
+      nonErrorUserIdsFilter.push(id)
+    }
+
     const nonErrorPhoneCountryCodesFilter: string[] = []
     for (const code of phoneCountryCodesFilter || []) {
       if (code instanceof Error) {
@@ -25,7 +33,7 @@ const FilteredUserCountQuery = GT.Field({
     }
 
     const count = await Admin.filteredUserCount({
-      userIdsFilter,
+      userIdsFilter: nonErrorUserIdsFilter,
       phoneCountryCodesFilter: nonErrorPhoneCountryCodesFilter,
     })
 
