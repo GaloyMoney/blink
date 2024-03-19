@@ -19,6 +19,8 @@ export type Scalars = {
   Float: { input: number; output: number; }
   /** Unique identifier of an account */
   AccountId: { input: string; output: string; }
+  /** A CCA2 country code (ex US, FR, etc) */
+  CountryCode: { input: string; output: string; }
   /** Display currency of an account */
   DisplayCurrency: { input: string; output: string; }
   /** Email address */
@@ -31,8 +33,6 @@ export type Scalars = {
   LnPubkey: { input: string; output: string; }
   /** Text field in a lightning payment transaction */
   Memo: { input: string; output: string; }
-  NotificationCategory: { input: string; output: string; }
-  Object: { input: string; output: string; }
   /** An address for an on-chain bitcoin destination */
   OnChainAddress: { input: string; output: string; }
   OnChainTxHash: { input: string; output: string; }
@@ -86,20 +86,6 @@ export type AccountUpdateStatusInput = {
   readonly accountId: Scalars['AccountId']['input'];
   readonly comment?: InputMaybe<Scalars['String']['input']>;
   readonly status: AccountStatus;
-};
-
-export type AdminPushNotificationSendInput = {
-  readonly accountId: Scalars['String']['input'];
-  readonly body: Scalars['String']['input'];
-  readonly data?: InputMaybe<Scalars['Object']['input']>;
-  readonly notificationCategory?: InputMaybe<Scalars['NotificationCategory']['input']>;
-  readonly title: Scalars['String']['input'];
-};
-
-export type AdminPushNotificationSendPayload = {
-  readonly __typename: 'AdminPushNotificationSendPayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly success?: Maybe<Scalars['Boolean']['output']>;
 };
 
 /** Accounts are core to the Galoy architecture. they have users, and own wallets */
@@ -212,6 +198,15 @@ export type Coordinates = {
   readonly longitude: Scalars['Float']['output'];
 };
 
+export const DeepLink = {
+  Circles: 'CIRCLES',
+  Earn: 'EARN',
+  Map: 'MAP',
+  People: 'PEOPLE',
+  Price: 'PRICE'
+} as const;
+
+export type DeepLink = typeof DeepLink[keyof typeof DeepLink];
 export type Email = {
   readonly __typename: 'Email';
   readonly address?: Maybe<Scalars['EmailAddress']['output']>;
@@ -320,6 +315,19 @@ export const LnPaymentStatus = {
 } as const;
 
 export type LnPaymentStatus = typeof LnPaymentStatus[keyof typeof LnPaymentStatus];
+export type LocalizedPushContentInput = {
+  readonly body: Scalars['String']['input'];
+  readonly language: Scalars['Language']['input'];
+  readonly title: Scalars['String']['input'];
+};
+
+export type MarketingNotificationTriggerInput = {
+  readonly deepLink?: InputMaybe<DeepLink>;
+  readonly localizedPushContents: ReadonlyArray<LocalizedPushContentInput>;
+  readonly phoneCountryCodesFilter?: InputMaybe<ReadonlyArray<Scalars['CountryCode']['input']>>;
+  readonly userIdsFilter?: InputMaybe<ReadonlyArray<Scalars['ID']['input']>>;
+};
+
 export type Merchant = {
   readonly __typename: 'Merchant';
   /** GPS coordinates for the merchant that can be used to place the related business on a map */
@@ -351,7 +359,7 @@ export type Mutation = {
   readonly __typename: 'Mutation';
   readonly accountUpdateLevel: AccountDetailPayload;
   readonly accountUpdateStatus: AccountDetailPayload;
-  readonly adminPushNotificationSend: AdminPushNotificationSendPayload;
+  readonly marketingNotificationTrigger: SuccessPayload;
   readonly merchantMapDelete: MerchantPayload;
   readonly merchantMapValidate: MerchantPayload;
   readonly userUpdatePhone: AccountDetailPayload;
@@ -368,8 +376,8 @@ export type MutationAccountUpdateStatusArgs = {
 };
 
 
-export type MutationAdminPushNotificationSendArgs = {
-  input: AdminPushNotificationSendInput;
+export type MutationMarketingNotificationTriggerArgs = {
+  input: MarketingNotificationTriggerInput;
 };
 
 
@@ -426,6 +434,7 @@ export type Query = {
   readonly accountDetailsByUserPhone: AuditedAccount;
   readonly accountDetailsByUsername: AuditedAccount;
   readonly allLevels: ReadonlyArray<AccountLevel>;
+  readonly filteredUserCount: Scalars['Int']['output'];
   readonly lightningInvoice: LightningInvoice;
   readonly lightningPayment: LightningPayment;
   readonly listWalletIds: ReadonlyArray<Scalars['WalletId']['output']>;
@@ -459,6 +468,12 @@ export type QueryAccountDetailsByUserPhoneArgs = {
 
 export type QueryAccountDetailsByUsernameArgs = {
   username: Scalars['Username']['input'];
+};
+
+
+export type QueryFilteredUserCountArgs = {
+  phoneCountryCodesFilter?: InputMaybe<ReadonlyArray<Scalars['CountryCode']['input']>>;
+  userIdsFilter?: InputMaybe<ReadonlyArray<Scalars['ID']['input']>>;
 };
 
 
@@ -518,6 +533,12 @@ export type SettlementViaOnChain = {
   readonly arrivalInMempoolEstimatedAt?: Maybe<Scalars['Timestamp']['output']>;
   readonly transactionHash?: Maybe<Scalars['OnChainTxHash']['output']>;
   readonly vout?: Maybe<Scalars['Int']['output']>;
+};
+
+export type SuccessPayload = {
+  readonly __typename: 'SuccessPayload';
+  readonly errors: ReadonlyArray<Error>;
+  readonly success?: Maybe<Scalars['Boolean']['output']>;
 };
 
 /**

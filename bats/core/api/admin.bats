@@ -10,6 +10,8 @@ setup_file() {
   create_user 'tester'
   user_update_username 'tester'
 
+  create_user 'tester2'
+
   login_admin
 }
 
@@ -152,6 +154,56 @@ setup_file() {
   exec_admin_graphql $admin_token 'user-update-phone' "$variables"
   update_error_message="$(graphql_output '.data.userUpdatePhone.errors[0].message')"
   [[ "$update_error_message" == "Account is inactive." ]] || exit 1
+}
+
+@test "admin: can get filtered user count" {
+  admin_token="$(read_value 'admin.token')"
+
+  # all users
+  variables=$(
+    jq -n \
+    '{}'
+  )
+  exec_admin_graphql "$admin_token" 'filtered-user-count' "$variables"
+  count="$(graphql_output '.data.filteredUserCount')"
+  [[ "$count" -gt 1 ]] || exit 1
+
+  # single user
+  variables=$(
+    jq -n \
+    --arg userId "$(read_value 'tester.user_id')" \
+    '{
+      userIdsFilter: [$userId]
+    }'
+  )
+
+  exec_admin_graphql "$admin_token" 'filtered-user-count' "$variables"
+  count="$(graphql_output '.data.filteredUserCount')"
+  [[ "$count" -eq 1 ]] || exit 1
+}
+
+@test "admin: can trigger marketing notification" {
+  admin_token="$(read_value 'admin.token')"
+
+  variables=$(
+    jq -n \
+    '{
+      input: {
+        localizedPushContents: [
+          {
+            language: "en",
+            title: "Test title",
+            body: "test body"
+          }
+        ],
+        deepLink: "EARN"
+      }
+    }'
+  )
+  exec_admin_graphql "$admin_token" 'marketing-notification-trigger' "$variables"
+  num_errors="$(graphql_output '.data.marketingNotificationTrigger.errors | length')"
+  success="$(graphql_output '.data.marketingNotificationTrigger.success')"
+  [[ "$num_errors" == "0" && "$success" == "true" ]] || exit 1
 }
 
 # TODO: add check by email

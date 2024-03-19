@@ -54,18 +54,24 @@ type SendFilteredPushNotificationArgs = {
   notificationCategory: NotificationCategory
 }
 
+type DeepLink =
+  (typeof import("./index").DeepLink)[keyof typeof import("./index").DeepLink]
+
+type LocalizedPushTitle = string & { readonly brand: unique symbol }
+
+type LocalizedPushBody = string & { readonly brand: unique symbol }
+
+type LocalizedPushContent = {
+  title: LocalizedPushTitle
+  body: LocalizedPushBody
+  language: UserLanguage
+}
 interface INotificationsService {
   sendTransaction: (
     args: NotificatioSendTransactionArgs,
   ) => Promise<true | NotificationsServiceError>
   sendBalance(args: SendBalanceArgs): Promise<true | NotificationsServiceError>
   priceUpdate: <C extends DisplayCurrency>(args: PriceUpdateArgs<C>) => void
-  adminPushNotificationSend(
-    args: SendPushNotificationArgs,
-  ): Promise<true | NotificationsServiceError>
-  adminPushNotificationFilteredSend(
-    args: SendFilteredPushNotificationArgs,
-  ): Promise<true | NotificationsServiceError>
 
   getUserNotificationSettings(
     userId: UserId,
@@ -114,4 +120,14 @@ interface INotificationsService {
   }): Promise<true | NotificationsServiceError>
 
   removeEmailAddress(args: { userId: UserId }): Promise<true | NotificationsServiceError>
+
+  triggerMarketingNotification(
+    args: TriggerMarketingNotificationArgs,
+  ): Promise<true | NotificationsServiceError>
+}
+
+type TriggerMarketingNotificationArgs = {
+  userIds: UserId[]
+  deepLink: DeepLink | undefined
+  localizedPushContents: Map<UserLanguage, LocalizedPushContent>
 }

@@ -7,6 +7,7 @@ import {
 import {
   TransactionType as ProtoTransactionType,
   Money as ProtoMoney,
+  LocalizedPushContent,
   AddPushDeviceTokenRequest,
   DisableNotificationCategoryRequest,
   DisableNotificationChannelRequest,
@@ -20,6 +21,8 @@ import {
   HandleNotificationEventRequest,
   NotificationEvent,
   TransactionOccurred,
+  MarketingNotificationTriggered,
+  DeepLink as ProtoDeepLink,
 } from "./proto/notifications_pb"
 
 import * as notificationsGrpc from "./grpc-client"
@@ -33,6 +36,7 @@ import { createPushNotificationContent } from "./create-push-notification-conten
 import { getCallbackServiceConfig } from "@/config"
 
 import {
+  DeepLink,
   GaloyNotificationCategories,
   NotificationsServiceError,
   NotificationType,
@@ -50,7 +54,7 @@ import { majorToMinorUnit, toCents, UsdDisplayCurrency } from "@/domain/fiat"
 
 import { PubSubService } from "@/services/pubsub"
 import { CallbackService } from "@/services/svix"
-import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
+import { wrapAsyncFunctionsToRunInSpan, wrapAsyncToRunInSpan } from "@/services/tracing"
 
 export const NotificationsService = (): INotificationsService => {
   const pubsub = PubSubService()
@@ -358,72 +362,6 @@ export const NotificationsService = (): INotificationsService => {
     }
   }
 
-  const adminPushNotificationSend = async ({
-    title,
-    body,
-    data,
-    userId,
-  }: SendPushNotificationArgs): Promise<true | NotificationsServiceError> => {
-    const settings = await getUserNotificationSettings(userId)
-
-    if (settings instanceof Error) {
-      return settings
-    }
-
-    const { pushDeviceTokens: deviceTokens } = settings
-
-    const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
-    if (!hasDeviceTokens) return true
-
-    try {
-      return pushNotification.sendNotification({
-        deviceTokens,
-        title,
-        body,
-        data,
-      })
-    } catch (err) {
-      return handleCommonNotificationErrors(err)
-    }
-  }
-
-  const adminPushNotificationFilteredSend = async ({
-    title,
-    body,
-    data,
-    userId,
-    notificationCategory,
-  }: SendFilteredPushNotificationArgs): Promise<true | NotificationsServiceError> => {
-    const settings = await getUserNotificationSettings(userId)
-    if (settings instanceof Error) {
-      return settings
-    }
-
-    const { pushDeviceTokens: deviceTokens } = settings
-
-    const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
-    if (!hasDeviceTokens) return true
-
-    try {
-      const result = await pushNotification.sendFilteredNotification({
-        deviceTokens,
-        title,
-        body,
-        data,
-        notificationCategory,
-        userId,
-      })
-
-      if (result instanceof NotificationsServiceError) {
-        return result
-      }
-
-      return true
-    } catch (err) {
-      return handleCommonNotificationErrors(err)
-    }
-  }
-
   const addPushDeviceToken = async ({
     userId,
     deviceToken,
@@ -679,16 +617,76 @@ export const NotificationsService = (): INotificationsService => {
     }
   }
 
+  const triggerMarketingNotification = async ({
+    userIds,
+    localizedPushContents,
+    deepLink,
+  }: TriggerMarketingNotificationArgs): Promise<true | NotificationsServiceError> => {
+    try {
+      const marketingNotification = new MarketingNotificationTriggered()
+      marketingNotification.setUserIdsList(userIds)
+
+      localizedPushContents.forEach((content, language) => {
+        const { title, body } = content
+        const localizedContent = new LocalizedPushContent()
+        localizedContent.setTitle(title)
+        localizedContent.setBody(body)
+        marketingNotification.getLocalizedPushContentMap().set(language, localizedContent)
+      })
+
+      let protoDeepLink: ProtoDeepLink | undefined = undefined
+      switch (deepLink) {
+        case DeepLink.Circles:
+          protoDeepLink = ProtoDeepLink.CIRCLES
+          break
+        case DeepLink.Price:
+          protoDeepLink = ProtoDeepLink.PRICE
+          break
+        case DeepLink.Earn:
+          protoDeepLink = ProtoDeepLink.EARN
+          break
+        case DeepLink.Map:
+          protoDeepLink = ProtoDeepLink.MAP
+          break
+        case DeepLink.People:
+          protoDeepLink = ProtoDeepLink.PEOPLE
+          break
+      }
+
+      if (protoDeepLink) {
+        marketingNotification.setDeepLink(protoDeepLink)
+      }
+
+      const event = new NotificationEvent()
+      event.setMarketingNotificationTriggered(marketingNotification)
+
+      const request = new HandleNotificationEventRequest()
+      request.setEvent(event)
+
+      await notificationsGrpc.handleNotificationEvent(
+        request,
+        notificationsGrpc.notificationsMetadata,
+      )
+
+      return true
+    } catch (err) {
+      return handleCommonNotificationErrors(err)
+    }
+  }
+
   // trace everything except price update because it runs every 30 seconds
   return {
     priceUpdate,
+    triggerMarketingNotification: wrapAsyncToRunInSpan({
+      namespace: "services.notifications",
+      fn: triggerMarketingNotification,
+      ignoreFnArgs: true,
+    }),
     ...wrapAsyncFunctionsToRunInSpan({
       namespace: "services.notifications",
       fns: {
         sendTransaction,
         sendBalance,
-        adminPushNotificationSend,
-        adminPushNotificationFilteredSend,
         getUserNotificationSettings,
         updateUserLanguage,
         enableNotificationChannel,

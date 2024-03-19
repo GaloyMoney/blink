@@ -5,7 +5,8 @@ import MerchantMapValidateMutation from "./root/mutation/merchant-map-validate"
 
 import AccountUpdateLevelMutation from "./root/mutation/account-update-level"
 import AccountUpdateStatusMutation from "./root/mutation/account-update-status"
-import AdminPushNotificationSendMutation from "./root/mutation/admin-push-notification-send"
+
+import TriggerMarketingNotificationMutation from "./root/mutation/marketing-notification-trigger"
 
 import { GT } from "@/graphql/index"
 
@@ -17,7 +18,7 @@ export const mutationFields = {
     accountUpdateStatus: AccountUpdateStatusMutation,
     merchantMapValidate: MerchantMapValidateMutation,
     merchantMapDelete: MerchantMapDeleteMutation,
-    adminPushNotificationSend: AdminPushNotificationSendMutation,
+    marketingNotificationTrigger: TriggerMarketingNotificationMutation,
   },
 }
 

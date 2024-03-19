@@ -19,9 +19,20 @@ use error::*;
 impl DeepLink {
     fn add_to_data(&self, data: &mut HashMap<String, String>) {
         match self {
-            DeepLink::None => {}
             DeepLink::Circles => {
                 data.insert("linkTo".to_string(), "/people/circles".to_string());
+            }
+            DeepLink::Price => {
+                data.insert("linkTo".to_string(), "/price".to_string());
+            }
+            DeepLink::Earn => {
+                data.insert("linkTo".to_string(), "/earn".to_string());
+            }
+            DeepLink::Map => {
+                data.insert("linkTo".to_string(), "/map".to_string());
+            }
+            DeepLink::People => {
+                data.insert("linkTo".to_string(), "/people".to_string());
             }
         }
     }
@@ -64,10 +75,12 @@ impl FcmClient {
         &self,
         device_token: &PushDeviceToken,
         msg: &LocalizedPushMessage,
-        deep_link: DeepLink,
+        deep_link: Option<DeepLink>,
     ) -> Result<(), FcmError> {
         let mut data = HashMap::new();
-        deep_link.add_to_data(&mut data);
+        if let Some(link) = deep_link {
+            link.add_to_data(&mut data);
+        }
 
         let notification = Notification {
             title: Some(msg.title.clone()),
