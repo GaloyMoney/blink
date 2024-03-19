@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(core): add admin api marketing notification (#4167)...'
-      sha: 2c01734c9ccaa2183ee38295ef3da02380b04cdb
+      commitTitle: 'ci: add mock config for realtime price server (#4210)'
+      sha: 17cbcf91074c4dde393661ba6865f4a56367132b
       tags:
-      - 0.20.125-3-g2c01734c9
+      - 0.20.125-5-g17cbcf910
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(core): add admin api marketing notification (#4167)...'
-      sha: 2c01734c9ccaa2183ee38295ef3da02380b04cdb
+      commitTitle: 'ci: add mock config for realtime price server (#4210)'
+      sha: 17cbcf91074c4dde393661ba6865f4a56367132b
       tags:
-      - 0.20.125-3-g2c01734c9
+      - 0.20.125-5-g17cbcf910
     path: schemas/
   - git:
-      commitTitle: 'feat(core): add admin api marketing notification (#4167)...'
-      sha: 2c01734c9ccaa2183ee38295ef3da02380b04cdb
+      commitTitle: 'ci: add mock config for realtime price server (#4210)'
+      sha: 17cbcf91074c4dde393661ba6865f4a56367132b
       tags:
-      - 0.20.125-3-g2c01734c9
+      - 0.20.125-5-g17cbcf910
     path: gql/
   path: ./graphql
 kind: LockConfig

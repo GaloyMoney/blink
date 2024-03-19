@@ -7,6 +7,8 @@ services:
     ports:
     - 50051:50051
     - 9464:9464
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/price.yml:/var/yaml/custom.yaml
   price-history:
     image: us.gcr.io/galoy-org/price-history:edge
     ports:
