@@ -7680,23 +7680,23 @@ cargo.rust_library(
 
 alias(
     name = "serde_yaml",
-    actual = ":serde_yaml-0.9.32",
+    actual = ":serde_yaml-0.9.33",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "serde_yaml-0.9.32.crate",
-    sha256 = "8fd075d994154d4a774f95b51fb96bdc2832b0ea48425c92546073816cda1f2f",
-    strip_prefix = "serde_yaml-0.9.32",
-    urls = ["https://crates.io/api/v1/crates/serde_yaml/0.9.32/download"],
+    name = "serde_yaml-0.9.33.crate",
+    sha256 = "a0623d197252096520c6f2a5e1171ee436e5af99a5d7caa2891e55e61950e6d9",
+    strip_prefix = "serde_yaml-0.9.33",
+    urls = ["https://crates.io/api/v1/crates/serde_yaml/0.9.33/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "serde_yaml-0.9.32",
-    srcs = [":serde_yaml-0.9.32.crate"],
+    name = "serde_yaml-0.9.33",
+    srcs = [":serde_yaml-0.9.33.crate"],
     crate = "serde_yaml",
-    crate_root = "serde_yaml-0.9.32.crate/src/lib.rs",
+    crate_root = "serde_yaml-0.9.33.crate/src/lib.rs",
     edition = "2021",
     visibility = [],
     deps = [
@@ -7704,7 +7704,7 @@ cargo.rust_library(
         ":itoa-1.0.9",
         ":ryu-1.0.15",
         ":serde-1.0.197",
-        ":unsafe-libyaml-0.2.10",
+        ":unsafe-libyaml-0.2.11",
     ],
 )
 
@@ -8921,7 +8921,7 @@ cargo.rust_binary(
         ":serde-1.0.197",
         ":serde_json-1.0.114",
         ":serde_with-3.7.0",
-        ":serde_yaml-0.9.32",
+        ":serde_yaml-0.9.33",
         ":sqlx-0.7.4",
         ":sqlxmq-0.5.0",
         ":thiserror-1.0.58",
@@ -10315,18 +10315,18 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "unsafe-libyaml-0.2.10.crate",
-    sha256 = "ab4c90930b95a82d00dc9e9ac071b4991924390d46cbd0dfe566148667605e4b",
-    strip_prefix = "unsafe-libyaml-0.2.10",
-    urls = ["https://crates.io/api/v1/crates/unsafe-libyaml/0.2.10/download"],
+    name = "unsafe-libyaml-0.2.11.crate",
+    sha256 = "673aac59facbab8a9007c7f6108d11f63b603f7cabff99fabf650fea5c32b861",
+    strip_prefix = "unsafe-libyaml-0.2.11",
+    urls = ["https://crates.io/api/v1/crates/unsafe-libyaml/0.2.11/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "unsafe-libyaml-0.2.10",
-    srcs = [":unsafe-libyaml-0.2.10.crate"],
+    name = "unsafe-libyaml-0.2.11",
+    srcs = [":unsafe-libyaml-0.2.11.crate"],
     crate = "unsafe_libyaml",
-    crate_root = "unsafe-libyaml-0.2.10.crate/src/lib.rs",
+    crate_root = "unsafe-libyaml-0.2.11.crate/src/lib.rs",
     edition = "2021",
     visibility = [],
 )
