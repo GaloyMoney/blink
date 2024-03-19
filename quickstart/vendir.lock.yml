@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): add parent span logging (#4206)'
-      sha: 084066c01d7fbab483c7da78415593610bc78c35
+      commitTitle: 'feat(core): add admin api marketing notification (#4167)...'
+      sha: 2c01734c9ccaa2183ee38295ef3da02380b04cdb
       tags:
-      - 0.20.124-1-g084066c01
+      - 0.20.125-3-g2c01734c9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): add parent span logging (#4206)'
-      sha: 084066c01d7fbab483c7da78415593610bc78c35
+      commitTitle: 'feat(core): add admin api marketing notification (#4167)...'
+      sha: 2c01734c9ccaa2183ee38295ef3da02380b04cdb
       tags:
-      - 0.20.124-1-g084066c01
+      - 0.20.125-3-g2c01734c9
     path: schemas/
   - git:
-      commitTitle: 'chore(core): add parent span logging (#4206)'
-      sha: 084066c01d7fbab483c7da78415593610bc78c35
+      commitTitle: 'feat(core): add admin api marketing notification (#4167)...'
+      sha: 2c01734c9ccaa2183ee38295ef3da02380b04cdb
       tags:
-      - 0.20.124-1-g084066c01
+      - 0.20.125-3-g2c01734c9
     path: gql/
   path: ./graphql
 kind: LockConfig
