@@ -9,6 +9,7 @@ use crate::{messages::*, primitives::*};
 pub struct MarketingNotificationTriggered {
     pub push_content: HashMap<GaloyLocale, LocalizedPushMessage>,
     pub default_push_content: LocalizedPushMessage,
+    pub deep_link: Option<DeepLink>,
 }
 
 impl NotificationEvent for MarketingNotificationTriggered {
@@ -16,8 +17,8 @@ impl NotificationEvent for MarketingNotificationTriggered {
         UserNotificationCategory::Marketing
     }
 
-    fn deep_link(&self) -> DeepLink {
-        DeepLink::None
+    fn deep_link(&self) -> Option<DeepLink> {
+        self.deep_link.clone()
     }
 
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {

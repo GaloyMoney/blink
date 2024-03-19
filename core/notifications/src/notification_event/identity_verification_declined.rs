@@ -24,8 +24,8 @@ impl NotificationEvent for IdentityVerificationDeclined {
         UserNotificationCategory::AdminNotification
     }
 
-    fn deep_link(&self) -> DeepLink {
-        DeepLink::None
+    fn deep_link(&self) -> Option<DeepLink> {
+        None
     }
 
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
