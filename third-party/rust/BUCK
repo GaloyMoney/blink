@@ -1054,23 +1054,23 @@ cargo.rust_library(
 
 alias(
     name = "clap",
-    actual = ":clap-4.5.2",
+    actual = ":clap-4.5.3",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "clap-4.5.2.crate",
-    sha256 = "b230ab84b0ffdf890d5a10abdbc8b83ae1c4918275daea1ab8801f71536b2651",
-    strip_prefix = "clap-4.5.2",
-    urls = ["https://crates.io/api/v1/crates/clap/4.5.2/download"],
+    name = "clap-4.5.3.crate",
+    sha256 = "949626d00e063efc93b6dca932419ceb5432f99769911c0b995f7e884c778813",
+    strip_prefix = "clap-4.5.3",
+    urls = ["https://crates.io/api/v1/crates/clap/4.5.3/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "clap-4.5.2",
-    srcs = [":clap-4.5.2.crate"],
+    name = "clap-4.5.3",
+    srcs = [":clap-4.5.3.crate"],
     crate = "clap",
-    crate_root = "clap-4.5.2.crate/src/lib.rs",
+    crate_root = "clap-4.5.3.crate/src/lib.rs",
     edition = "2021",
     features = [
         "color",
@@ -1086,7 +1086,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":clap_builder-4.5.2",
-        ":clap_derive-4.5.0",
+        ":clap_derive-4.5.3",
     ],
 )
 
@@ -1123,24 +1123,24 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "clap_derive-4.5.0.crate",
-    sha256 = "307bc0538d5f0f83b8248db3087aa92fe504e4691294d0c96c0eabc33f47ba47",
-    strip_prefix = "clap_derive-4.5.0",
-    urls = ["https://crates.io/api/v1/crates/clap_derive/4.5.0/download"],
+    name = "clap_derive-4.5.3.crate",
+    sha256 = "90239a040c80f5e14809ca132ddc4176ab33d5e17e49691793296e3fcb34d72f",
+    strip_prefix = "clap_derive-4.5.3",
+    urls = ["https://crates.io/api/v1/crates/clap_derive/4.5.3/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "clap_derive-4.5.0",
-    srcs = [":clap_derive-4.5.0.crate"],
+    name = "clap_derive-4.5.3",
+    srcs = [":clap_derive-4.5.3.crate"],
     crate = "clap_derive",
-    crate_root = "clap_derive-4.5.0.crate/src/lib.rs",
+    crate_root = "clap_derive-4.5.3.crate/src/lib.rs",
     edition = "2021",
     features = ["default"],
     proc_macro = True,
     visibility = [],
     deps = [
-        ":heck-0.4.1",
+        ":heck-0.5.0",
         ":proc-macro2-1.0.76",
         ":quote-1.0.35",
         ":syn-2.0.48",
@@ -2878,6 +2878,23 @@ cargo.rust_library(
     ],
     visibility = [],
     deps = [":unicode-segmentation-1.10.1"],
+)
+
+http_archive(
+    name = "heck-0.5.0.crate",
+    sha256 = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea",
+    strip_prefix = "heck-0.5.0",
+    urls = ["https://crates.io/api/v1/crates/heck/0.5.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "heck-0.5.0",
+    srcs = [":heck-0.5.0.crate"],
+    crate = "heck",
+    crate_root = "heck-0.5.0.crate/src/lib.rs",
+    edition = "2021",
+    visibility = [],
 )
 
 http_archive(
@@ -8884,7 +8901,7 @@ cargo.rust_binary(
         ":async-graphql-axum-6.0.11",
         ":axum-0.6.20",
         ":chrono-0.4.35",
-        ":clap-4.5.2",
+        ":clap-4.5.3",
         ":derive_builder-0.13.1",
         ":futures-0.3.30",
         ":google-fcm1-5.0.4+20240227",
