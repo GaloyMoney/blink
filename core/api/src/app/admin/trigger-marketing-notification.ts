@@ -39,15 +39,9 @@ export const triggerMarketingNotification = async ({
     userIdsToNotify.push(userIdToNotify)
   }
 
-  const res = await NotificationsService().triggerMarketingNotification({
+  return NotificationsService().triggerMarketingNotification({
     userIds: userIdsToNotify,
     deepLink,
     localizedPushContents: localizedPushContentsMap,
   })
-
-  if (res instanceof Error) {
-    return res
-  }
-
-  return true
 }
