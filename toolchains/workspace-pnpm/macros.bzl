@@ -1090,7 +1090,7 @@ fi
 
 dev_pnpm_task_binary = rule(impl = pnpm_task_binary_impl, attrs = {
     "command": attrs.string(doc = """pnpm command to run"""),
-    "local_node_modules": attrs.bool(default = True, doc = """Need to run pnpm install first?"""),
+    "local_node_modules": attrs.bool(default = False, doc = """Need to run pnpm install first?"""),
     "srcs": attrs.list(attrs.source(), default = [], doc = """List of sources we require"""),
     "deps": attrs.list(attrs.source(), default = [], doc = """List of dependencies we require"""),
     "env_json": attrs.option(
@@ -1136,7 +1136,7 @@ exec pnpm run --report-summary "$npm_run_command"
 
 dev_pnpm_task_test = rule(impl = pnpm_task_test_impl, attrs = {
     "command": attrs.string(default = "start", doc = """pnpm command to run"""),
-    "local_node_modules": attrs.bool(default = True, doc = """Need to run pnpm install first?"""),
+    "local_node_modules": attrs.bool(default = False, doc = """Need to run pnpm install first?"""),
     "srcs": attrs.list(attrs.source(), default = [], doc = """List of sources we require"""),
     "deps": attrs.list(attrs.source(), default = [], doc = """List of dependencies we require"""),
     "env_json": attrs.option(
