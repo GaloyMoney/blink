@@ -879,6 +879,21 @@ export type MerchantsPendingApprovalQueryVariables = Exact<{ [key: string]: neve
 
 export type MerchantsPendingApprovalQuery = { readonly __typename: 'Query', readonly merchantsPendingApproval: ReadonlyArray<{ readonly __typename: 'Merchant', readonly id: string, readonly title: string, readonly createdAt: number, readonly validated: boolean, readonly username: string, readonly coordinates: { readonly __typename: 'Coordinates', readonly latitude: number, readonly longitude: number } }> };
 
+export type FilteredUserCountQueryVariables = Exact<{
+  phoneCountryCodesFilter?: InputMaybe<ReadonlyArray<Scalars['CountryCode']['input']> | Scalars['CountryCode']['input']>;
+  userIdsFilter?: InputMaybe<ReadonlyArray<Scalars['ID']['input']> | Scalars['ID']['input']>;
+}>;
+
+
+export type FilteredUserCountQuery = { readonly __typename: 'Query', readonly filteredUserCount: number };
+
+export type MarketingNotificationTriggerMutationVariables = Exact<{
+  input: MarketingNotificationTriggerInput;
+}>;
+
+
+export type MarketingNotificationTriggerMutation = { readonly __typename: 'Mutation', readonly marketingNotificationTrigger: { readonly __typename: 'SuccessPayload', readonly success?: boolean | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
+
 
 export const AccountDetailsByUserPhoneDocument = gql`
     query accountDetailsByUserPhone($phone: Phone!) {
@@ -1675,3 +1690,81 @@ export type MerchantsPendingApprovalQueryHookResult = ReturnType<typeof useMerch
 export type MerchantsPendingApprovalLazyQueryHookResult = ReturnType<typeof useMerchantsPendingApprovalLazyQuery>;
 export type MerchantsPendingApprovalSuspenseQueryHookResult = ReturnType<typeof useMerchantsPendingApprovalSuspenseQuery>;
 export type MerchantsPendingApprovalQueryResult = Apollo.QueryResult<MerchantsPendingApprovalQuery, MerchantsPendingApprovalQueryVariables>;
+export const FilteredUserCountDocument = gql`
+    query filteredUserCount($phoneCountryCodesFilter: [CountryCode!], $userIdsFilter: [ID!]) {
+  filteredUserCount(
+    phoneCountryCodesFilter: $phoneCountryCodesFilter
+    userIdsFilter: $userIdsFilter
+  )
+}
+    `;
+
+/**
+ * __useFilteredUserCountQuery__
+ *
+ * To run a query within a React component, call `useFilteredUserCountQuery` and pass it any options that fit your needs.
+ * When your component renders, `useFilteredUserCountQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useFilteredUserCountQuery({
+ *   variables: {
+ *      phoneCountryCodesFilter: // value for 'phoneCountryCodesFilter'
+ *      userIdsFilter: // value for 'userIdsFilter'
+ *   },
+ * });
+ */
+export function useFilteredUserCountQuery(baseOptions?: Apollo.QueryHookOptions<FilteredUserCountQuery, FilteredUserCountQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<FilteredUserCountQuery, FilteredUserCountQueryVariables>(FilteredUserCountDocument, options);
+      }
+export function useFilteredUserCountLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<FilteredUserCountQuery, FilteredUserCountQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<FilteredUserCountQuery, FilteredUserCountQueryVariables>(FilteredUserCountDocument, options);
+        }
+export function useFilteredUserCountSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<FilteredUserCountQuery, FilteredUserCountQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<FilteredUserCountQuery, FilteredUserCountQueryVariables>(FilteredUserCountDocument, options);
+        }
+export type FilteredUserCountQueryHookResult = ReturnType<typeof useFilteredUserCountQuery>;
+export type FilteredUserCountLazyQueryHookResult = ReturnType<typeof useFilteredUserCountLazyQuery>;
+export type FilteredUserCountSuspenseQueryHookResult = ReturnType<typeof useFilteredUserCountSuspenseQuery>;
+export type FilteredUserCountQueryResult = Apollo.QueryResult<FilteredUserCountQuery, FilteredUserCountQueryVariables>;
+export const MarketingNotificationTriggerDocument = gql`
+    mutation marketingNotificationTrigger($input: MarketingNotificationTriggerInput!) {
+  marketingNotificationTrigger(input: $input) {
+    errors {
+      message
+    }
+    success
+  }
+}
+    `;
+export type MarketingNotificationTriggerMutationFn = Apollo.MutationFunction<MarketingNotificationTriggerMutation, MarketingNotificationTriggerMutationVariables>;
+
+/**
+ * __useMarketingNotificationTriggerMutation__
+ *
+ * To run a mutation, you first call `useMarketingNotificationTriggerMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMarketingNotificationTriggerMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [marketingNotificationTriggerMutation, { data, loading, error }] = useMarketingNotificationTriggerMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useMarketingNotificationTriggerMutation(baseOptions?: Apollo.MutationHookOptions<MarketingNotificationTriggerMutation, MarketingNotificationTriggerMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<MarketingNotificationTriggerMutation, MarketingNotificationTriggerMutationVariables>(MarketingNotificationTriggerDocument, options);
+      }
+export type MarketingNotificationTriggerMutationHookResult = ReturnType<typeof useMarketingNotificationTriggerMutation>;
+export type MarketingNotificationTriggerMutationResult = Apollo.MutationResult<MarketingNotificationTriggerMutation>;
+export type MarketingNotificationTriggerMutationOptions = Apollo.BaseMutationOptions<MarketingNotificationTriggerMutation, MarketingNotificationTriggerMutationVariables>;
