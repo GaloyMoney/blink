@@ -12,26 +12,31 @@ load(
 dev_pnpm_task_binary(
     name="dev",
     command="dev",
+    deps = ["//:node_modules"],
 )
 
 dev_pnpm_task_binary(
     name="lint-fix",
     command="lint:fix",
+    deps = ["//:node_modules"],
 )
 
 dev_pnpm_task_binary(
     name="cypress-open",
     command="cypress:open",
+    deps = ["//:node_modules"],
 )
 
 dev_pnpm_task_binary(
     name="codegen",
     command="codegen",
+    deps = ["//:node_modules"],
 )
 
 dev_pnpm_task_test(
     name="test-integration",
     command="cypress:run",
+    deps = ["//:node_modules"],
 )
 
 export_file(
