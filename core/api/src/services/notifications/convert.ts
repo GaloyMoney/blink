@@ -45,6 +45,8 @@ export const grpcNotificationCategoryToNotificationCategory = (
   switch (category) {
     case GrpcNotificationCategory.PAYMENTS:
       return GaloyNotificationCategories.Payments
+    case GrpcNotificationCategory.PRICE:
+      return "Price" as NotificationCategory
     case GrpcNotificationCategory.CIRCLES:
       return "Circles" as NotificationCategory
     case GrpcNotificationCategory.BALANCE:
@@ -67,6 +69,8 @@ export const notificationCategoryToGrpcNotificationCategory = (
       return GrpcNotificationCategory.PAYMENTS
     case "Circles":
       return GrpcNotificationCategory.CIRCLES
+    case "Price":
+      return GrpcNotificationCategory.PRICE
     case GaloyNotificationCategories.AdminNotification:
       return GrpcNotificationCategory.ADMIN_NOTIFICATION
     case GaloyNotificationCategories.Balance:
