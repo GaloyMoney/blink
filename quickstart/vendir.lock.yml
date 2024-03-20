@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: add mock config for realtime price server (#4210)'
-      sha: 17cbcf91074c4dde393661ba6865f4a56367132b
+      commitTitle: 'feat(core): add price notification setting (#4128)...'
+      sha: ac5794cc879a0a3cad427d0677aa623f7b2dffc8
       tags:
-      - 0.20.125-5-g17cbcf910
+      - 0.20.126-2-gac5794cc8
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: add mock config for realtime price server (#4210)'
-      sha: 17cbcf91074c4dde393661ba6865f4a56367132b
+      commitTitle: 'feat(core): add price notification setting (#4128)...'
+      sha: ac5794cc879a0a3cad427d0677aa623f7b2dffc8
       tags:
-      - 0.20.125-5-g17cbcf910
+      - 0.20.126-2-gac5794cc8
     path: schemas/
   - git:
-      commitTitle: 'ci: add mock config for realtime price server (#4210)'
-      sha: 17cbcf91074c4dde393661ba6865f4a56367132b
+      commitTitle: 'feat(core): add price notification setting (#4128)...'
+      sha: ac5794cc879a0a3cad427d0677aa623f7b2dffc8
       tags:
-      - 0.20.125-5-g17cbcf910
+      - 0.20.126-2-gac5794cc8
     path: gql/
   path: ./graphql
 kind: LockConfig

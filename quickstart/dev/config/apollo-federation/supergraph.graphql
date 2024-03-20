@@ -2106,6 +2106,7 @@ enum UserNotificationCategory
   BALANCE @join__enumValue(graph: NOTIFICATIONS)
   ADMIN_NOTIFICATION @join__enumValue(graph: NOTIFICATIONS)
   MARKETING @join__enumValue(graph: NOTIFICATIONS)
+  PRICE @join__enumValue(graph: NOTIFICATIONS)
 }
 
 enum UserNotificationChannel
