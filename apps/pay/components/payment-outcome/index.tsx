@@ -1,6 +1,6 @@
 "use client"
 import { useParams, useSearchParams } from "next/navigation"
-import React, { useRef } from "react"
+import React, { useEffect, useRef } from "react"
 import Image from "react-bootstrap/Image"
 
 import { useReactToPrint } from "react-to-print"
@@ -33,9 +33,25 @@ gql`
         __typename
       }
       status
+      paymentHash
     }
   }
 `
+
+const sendDataToPosCompanion = ({
+  username,
+  amount,
+  paymentHash,
+}: {
+  username: string
+  amount: string
+  paymentHash: string
+}) => {
+  const deepLinkUrl = `blink-pos-companion://print?username=${encodeURIComponent(
+    username,
+  )}&amount=${encodeURIComponent(amount)}&paymentHash=${encodeURIComponent(paymentHash)}`
+  window.location.href = deepLinkUrl
+}
 
 function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: Props) {
   const searchParams = useSearchParams()
@@ -55,6 +71,24 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: P
     },
     skip: !paymentRequest,
   })
+
+  useEffect(() => {
+    if (
+      username &&
+      typeof username === "string" &&
+      localStorage.getItem("formattedFiatValue") &&
+      data &&
+      data.lnInvoicePaymentStatus.paymentHash &&
+      data.lnInvoicePaymentStatus.status === "PAID" &&
+      /Android/i.test(navigator.userAgent)
+    ) {
+      sendDataToPosCompanion({
+        username,
+        amount: localStorage.getItem("formattedFiatValue") || "",
+        paymentHash: data.lnInvoicePaymentStatus.paymentHash,
+      })
+    }
+  }, [data])
 
   if (!paymentRequest) {
     return null
