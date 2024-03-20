@@ -24,3 +24,5 @@ export class UnknownNotificationsServiceError extends NotificationsError {
 }
 
 export class InvalidPushNotificationSettingError extends NotificationsError {}
+
+export class InvalidNotificationCategoryError extends NotificationsError {}

@@ -1,4 +1,5 @@
 import {
+  InvalidNotificationCategoryError,
   InvalidPushBodyError,
   InvalidPushNotificationSettingError,
   InvalidPushTitleError,
@@ -16,7 +17,7 @@ describe("checkedToNotificationCategory", () => {
 
   it("fails when category is invalid", () => {
     expect(checkedToNotificationCategory("")).toBeInstanceOf(
-      InvalidPushNotificationSettingError,
+      InvalidNotificationCategoryError,
     )
   })
 })

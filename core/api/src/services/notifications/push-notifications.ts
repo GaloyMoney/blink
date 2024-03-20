@@ -139,9 +139,12 @@ export const PushNotificationsService = (): IPushNotificationSenderService => {
       const request = new ShouldSendNotificationRequest()
       request.setUserId(userId)
       request.setChannel(GrpcNotificationChannel.PUSH)
-      request.setCategory(
-        notificationCategoryToGrpcNotificationCategory(notificationCategory),
-      )
+      const category =
+        notificationCategoryToGrpcNotificationCategory(notificationCategory)
+      if (category instanceof Error) {
+        return category
+      }
+      request.setCategory(category)
 
       const response = await grpcShouldSendNotification(request, notificationsMetadata)
 
