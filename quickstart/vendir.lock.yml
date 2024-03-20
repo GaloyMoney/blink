@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(core): add price notification setting (#4128)...'
-      sha: ac5794cc879a0a3cad427d0677aa623f7b2dffc8
+      commitTitle: 'feat(admin-panel): add marketing notification UI (#4207)...'
+      sha: 8abd59e1b8ebd15350365c8a4c5a085fa9647176
       tags:
-      - 0.20.126-2-gac5794cc8
+      - 0.20.127-1-g8abd59e1b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(core): add price notification setting (#4128)...'
-      sha: ac5794cc879a0a3cad427d0677aa623f7b2dffc8
+      commitTitle: 'feat(admin-panel): add marketing notification UI (#4207)...'
+      sha: 8abd59e1b8ebd15350365c8a4c5a085fa9647176
       tags:
-      - 0.20.126-2-gac5794cc8
+      - 0.20.127-1-g8abd59e1b
     path: schemas/
   - git:
-      commitTitle: 'feat(core): add price notification setting (#4128)...'
-      sha: ac5794cc879a0a3cad427d0677aa623f7b2dffc8
+      commitTitle: 'feat(admin-panel): add marketing notification UI (#4207)...'
+      sha: 8abd59e1b8ebd15350365c8a4c5a085fa9647176
       tags:
-      - 0.20.126-2-gac5794cc8
+      - 0.20.127-1-g8abd59e1b
     path: gql/
   path: ./graphql
 kind: LockConfig
