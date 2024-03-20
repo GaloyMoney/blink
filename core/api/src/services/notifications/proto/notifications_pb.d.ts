@@ -957,6 +957,7 @@ export enum NotificationCategory {
     BALANCE = 2,
     ADMIN_NOTIFICATION = 3,
     MARKETING = 4,
+    PRICE = 5,
 }
 
 export enum CircleType {
