@@ -293,27 +293,28 @@ export const NotificationsService = (): INotificationsService => {
   const priceUpdate = <C extends DisplayCurrency>({
     pricePerSat,
     pricePerUsdCent,
+    currency,
   }: PriceUpdateArgs<C>) => {
     const timestamp = pricePerSat.timestamp
-    const displayCurrency = pricePerSat.currency
     const payload = {
       timestamp,
-      displayCurrency,
+      currency,
+      displayCurrency: currency.code,
       pricePerSat: pricePerSat.price,
       pricePerUsdCent: pricePerUsdCent.price,
     }
 
     const priceUpdateTrigger = customPubSubTrigger({
       event: PubSubDefaultTriggers.PriceUpdate,
-      suffix: displayCurrency,
+      suffix: currency.code,
     })
     pubsub.publish({ trigger: priceUpdateTrigger, payload })
 
     const userPriceUpdateTrigger = customPubSubTrigger({
       event: PubSubDefaultTriggers.UserPriceUpdate,
-      suffix: displayCurrency,
+      suffix: currency.code,
     })
-    if (displayCurrency === UsdDisplayCurrency) {
+    if (currency.code === UsdDisplayCurrency) {
       pubsub.publish({ trigger: userPriceUpdateTrigger, payload: { price: payload } })
     }
     pubsub.publish({

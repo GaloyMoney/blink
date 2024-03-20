@@ -113,6 +113,7 @@ type MePayloadPrice = {
   timestamp: Date
   pricePerSat: number
   pricePerUsdCent: number
+  currency: PriceCurrency
   displayCurrency: DisplayCurrency
 }
 
@@ -134,6 +135,7 @@ type MeResolveRealtimePrice = {
   resolveType: "RealtimePrice"
   id: string
   timestamp: Date
+  currency: PriceCurrency
   denominatorCurrency: DisplayCurrency
   btcSatPrice: IPrice
   usdCentPrice: IPrice
@@ -227,20 +229,20 @@ const MeSubscription = {
     // authed request
     const myPayload = userPayload(ctx.domainAccount)
     if (source.realtimePrice) {
-      const { timestamp, displayCurrency, pricePerSat, pricePerUsdCent } =
-        source.realtimePrice
+      const { timestamp, currency, pricePerSat, pricePerUsdCent } = source.realtimePrice
       const minorUnitPerSat = majorToMinorUnit({
         amount: pricePerSat,
-        displayCurrency,
+        displayCurrency: currency.code,
       })
       const minorUnitPerUsdCent = majorToMinorUnit({
         amount: pricePerUsdCent,
-        displayCurrency,
+        displayCurrency: currency.code,
       })
       return myPayload({
         resolveType: "RealtimePrice",
         timestamp: new Date(timestamp),
-        denominatorCurrency: displayCurrency,
+        currency,
+        denominatorCurrency: currency.code,
         btcSatPrice: {
           base: Math.round(minorUnitPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
           offset: SAT_PRICE_PRECISION_OFFSET,
@@ -288,13 +290,19 @@ const MeSubscription = {
       suffix: id,
     })
 
+    const currency = await Prices.getCurrency({ currency: displayCurrency })
     const pricePerSat = await Prices.getCurrentSatPrice({ currency: displayCurrency })
     const pricePerUsdCent = await Prices.getCurrentUsdCentPrice({
       currency: displayCurrency,
     })
-    if (!(pricePerSat instanceof Error) && !(pricePerUsdCent instanceof Error)) {
+    if (
+      !(currency instanceof Error) &&
+      !(pricePerSat instanceof Error) &&
+      !(pricePerUsdCent instanceof Error)
+    ) {
       const priceData = {
         timestamp: pricePerSat.timestamp,
+        currency,
         displayCurrency,
         pricePerSat: pricePerSat.price,
         pricePerUsdCent: pricePerUsdCent.price,

@@ -30,7 +30,7 @@ describe("Prices", () => {
           listCurrencies: () =>
             Promise.resolve([
               {
-                code: "USD",
+                code: "USD" as DisplayCurrency,
                 symbol: "$",
                 name: "US Dollar",
                 flag: "🇺🇸",

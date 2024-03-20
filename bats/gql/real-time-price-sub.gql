@@ -6,6 +6,13 @@ subscription realtimePrice($currency: DisplayCurrency!) {
     realtimePrice {
       id
       timestamp
+      currency {
+        flag
+        fractionDigits
+        id
+        name
+        symbol
+      }
       denominatorCurrency
       btcSatPrice {
         base

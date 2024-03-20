@@ -139,8 +139,8 @@ export const publishCurrentPrices = async () => {
     )
   }
 
-  for (const { code } of currencies) {
-    const displayCurrency = checkedToDisplayCurrency(code)
+  for (const currency of currencies) {
+    const displayCurrency = checkedToDisplayCurrency(currency.code)
     if (displayCurrency instanceof Error) continue
 
     const pricePerSat = await Prices.getCurrentSatPrice({
@@ -157,7 +157,11 @@ export const publishCurrentPrices = async () => {
       return logger.error({ err: pricePerUsdCent }, "can't publish the price")
     }
 
-    NotificationsService().priceUpdate({ pricePerSat, pricePerUsdCent })
+    NotificationsService().priceUpdate({
+      pricePerSat,
+      pricePerUsdCent,
+      currency: { ...currency, code: displayCurrency },
+    })
   }
 }
 

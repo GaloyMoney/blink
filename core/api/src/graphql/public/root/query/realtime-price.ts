@@ -14,7 +14,7 @@ import DisplayCurrencyGT from "@/graphql/shared/types/scalar/display-currency"
 
 const RealtimePriceQuery = GT.Field({
   type: GT.NonNull(RealtimePrice),
-  description: `Returns 1 Sat and 1 Usd Cent price for the given currency`,
+  description: `Returns 1 Sat and 1 Usd Cent price for the given currency in minor unit`,
   args: {
     currency: {
       type: DisplayCurrencyGT,
@@ -25,14 +25,13 @@ const RealtimePriceQuery = GT.Field({
     const { currency } = args
     if (currency instanceof Error) throw currency
 
-    const btcPrice = await Prices.getCurrentSatPrice({
-      currency,
-    })
+    const priceCurrency = await Prices.getCurrency({ currency })
+    if (priceCurrency instanceof Error) throw mapError(priceCurrency)
+
+    const btcPrice = await Prices.getCurrentSatPrice({ currency })
     if (btcPrice instanceof Error) throw mapError(btcPrice)
 
-    const usdPrice = await Prices.getCurrentUsdCentPrice({
-      currency,
-    })
+    const usdPrice = await Prices.getCurrentUsdCentPrice({ currency })
     if (usdPrice instanceof Error) throw mapError(usdPrice)
 
     const minorUnitPerSat = majorToMinorUnit({
@@ -46,7 +45,8 @@ const RealtimePriceQuery = GT.Field({
 
     return {
       timestamp: btcPrice.timestamp,
-      denominatorCurrency: currency,
+      currency: priceCurrency,
+      denominatorCurrency: priceCurrency.code,
       btcSatPrice: {
         base: Math.round(minorUnitPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
         offset: SAT_PRICE_PRECISION_OFFSET,

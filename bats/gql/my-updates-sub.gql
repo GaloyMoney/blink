@@ -25,6 +25,13 @@ subscription myUpdates {
       ... on RealtimePrice {
         id
         timestamp
+        currency {
+          flag
+          fractionDigits
+          id
+          name
+          symbol
+        }
         denominatorCurrency
         btcSatPrice {
           base

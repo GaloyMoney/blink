@@ -10,9 +10,14 @@ type SendBalanceArgs = {
   displayBalanceAmount?: DisplayAmount<DisplayCurrency>
 }
 
+type PriceCurrencyArg<T extends DisplayCurrency> = PriceCurrency & {
+  readonly code: T
+}
+
 type PriceUpdateArgs<C extends DisplayCurrency> = {
   pricePerSat: RealTimePrice<C>
   pricePerUsdCent: RealTimePrice<C>
+  currency: PriceCurrencyArg<C>
 }
 
 type NotificationChannel =

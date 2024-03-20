@@ -1481,7 +1481,7 @@ export type Query = {
   readonly onChainTxFee: OnChainTxFee;
   readonly onChainUsdTxFee: OnChainUsdTxFee;
   readonly onChainUsdTxFeeAsBtcDenominated: OnChainUsdTxFee;
-  /** Returns 1 Sat and 1 Usd Cent price for the given currency */
+  /** Returns 1 Sat and 1 Usd Cent price for the given currency in minor unit */
   readonly realtimePrice: RealtimePrice;
   /** @deprecated will be migrated to AccountDefaultWalletId */
   readonly userDefaultWalletId: Scalars['WalletId'];
@@ -1575,6 +1575,8 @@ export type QuizClaimPayload = {
 export type RealtimePrice = {
   readonly __typename: 'RealtimePrice';
   readonly btcSatPrice: PriceOfOneSatInMinorUnit;
+  readonly currency: Currency;
+  /** @deprecated Deprecated in favor of currency */
   readonly denominatorCurrency: Scalars['DisplayCurrency'];
   readonly id: Scalars['ID'];
   /** Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC) */
