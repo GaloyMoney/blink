@@ -3,6 +3,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GaloyUserId(String);
 impl GaloyUserId {
+    pub fn search_begin() -> Self {
+        GaloyUserId(String::new())
+    }
+
     pub fn into_inner(self) -> String {
         self.0
     }

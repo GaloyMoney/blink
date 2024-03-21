@@ -312,7 +312,7 @@ pub(super) struct AllUserEventDispatchData {
 impl From<NotificationEventPayload> for AllUserEventDispatchData {
     fn from(payload: NotificationEventPayload) -> Self {
         Self {
-            search_id: GaloyUserId::from(String::new()),
+            search_id: GaloyUserId::search_begin(),
             payload,
             tracing_data: tracing::extract_tracing_data(),
         }
@@ -330,7 +330,7 @@ pub(super) struct LinkEmailReminderData {
 impl From<NotificationEventPayload> for LinkEmailReminderData {
     fn from(payload: NotificationEventPayload) -> Self {
         Self {
-            search_id: GaloyUserId::from(String::new()),
+            search_id: GaloyUserId::search_begin(),
             payload,
             tracing_data: tracing::extract_tracing_data(),
         }
