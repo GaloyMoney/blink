@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(admin-panel): add marketing notification UI (#4207)...'
-      sha: 8abd59e1b8ebd15350365c8a4c5a085fa9647176
+      commitTitle: 'refactor(core): move intraledger send locked steps into function
+        (#4181)...'
+      sha: d087845ddbb5044c0eede2691c47ccd0b912157b
       tags:
-      - 0.20.127-1-g8abd59e1b
+      - 0.20.128-2-gd087845dd
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(admin-panel): add marketing notification UI (#4207)...'
-      sha: 8abd59e1b8ebd15350365c8a4c5a085fa9647176
+      commitTitle: 'refactor(core): move intraledger send locked steps into function
+        (#4181)...'
+      sha: d087845ddbb5044c0eede2691c47ccd0b912157b
       tags:
-      - 0.20.127-1-g8abd59e1b
+      - 0.20.128-2-gd087845dd
     path: schemas/
   - git:
-      commitTitle: 'feat(admin-panel): add marketing notification UI (#4207)...'
-      sha: 8abd59e1b8ebd15350365c8a4c5a085fa9647176
+      commitTitle: 'refactor(core): move intraledger send locked steps into function
+        (#4181)...'
+      sha: d087845ddbb5044c0eede2691c47ccd0b912157b
       tags:
-      - 0.20.127-1-g8abd59e1b
+      - 0.20.128-2-gd087845dd
     path: gql/
   path: ./graphql
 kind: LockConfig
