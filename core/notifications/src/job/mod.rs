@@ -14,8 +14,8 @@ use std::collections::HashMap;
 use job_executor::{JobExecutor, JobResult};
 
 use crate::{
-    email_executor::EmailExecutor, notification_event::*, primitives::GaloyUserId,
-    push_executor::PushExecutor, user_notification_settings::*, user_transaction_tracker::*,
+    email_executor::EmailExecutor, email_reminder_projection::*, notification_event::*,
+    primitives::GaloyUserId, push_executor::PushExecutor, user_notification_settings::*,
 };
 
 pub use config::*;
@@ -30,7 +30,7 @@ pub async fn start_job_runner(
     push_executor: PushExecutor,
     email_executor: EmailExecutor,
     settings: UserNotificationSettingsRepo,
-    user_transaction_tracker: UserTransactionTrackerRepo,
+    email_reminder_projection: EmailReminderProjection,
 ) -> Result<JobRunnerHandle, JobError> {
     let mut registry = JobRegistry::new(&[
         all_user_event_dispatch,
@@ -42,7 +42,7 @@ pub async fn start_job_runner(
     registry.set_context(push_executor);
     registry.set_context(email_executor);
     registry.set_context(settings);
-    registry.set_context(user_transaction_tracker);
+    registry.set_context(email_reminder_projection);
 
     Ok(registry.runner(pool).set_keep_alive(false).run().await?)
 }
@@ -89,7 +89,7 @@ async fn all_user_event_dispatch(
 #[job(name = "link_email_reminder", channel_name = "link_email_reminder")]
 async fn link_email_reminder(
     mut current_job: CurrentJob,
-    user_transaction_tracker: UserTransactionTrackerRepo,
+    email_reminder_projection: EmailReminderProjection,
 ) -> Result<(), JobError> {
     let pool = current_job.pool().clone();
     JobExecutor::builder(&mut current_job)
@@ -97,8 +97,8 @@ async fn link_email_reminder(
         .expect("couldn't build JobExecutor")
         .execute(|data| async move {
             let data: LinkEmailReminderData = data.expect("no LinkEmailReminderData available");
-            let (ids, more) = user_transaction_tracker
-                .list_ids_after(&data.search_id)
+            let (ids, more) = email_reminder_projection
+                .list_ids_after(&data.search_id) this needs to be replaced with new query
                 .await?;
             let mut tx = pool.begin().await?;
             if more {

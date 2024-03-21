@@ -10,7 +10,7 @@ use std::sync::Arc;
 use crate::{
     email_executor::EmailExecutor, email_reminder_projection::EmailReminderProjection, job,
     notification_cool_off_tracker::*, notification_event::*, primitives::*, push_executor::*,
-    user_notification_settings::*, user_transaction_tracker::UserTransactionTrackerRepo,
+    user_notification_settings::*,
 };
 
 pub use config::*;
@@ -31,14 +31,13 @@ impl NotificationsApp {
         let push_executor =
             PushExecutor::init(config.push_executor.clone(), settings.clone()).await?;
         let email_executor = EmailExecutor::init(config.email_executor.clone(), settings.clone())?;
-        let user_transaction_tracker = UserTransactionTrackerRepo::new(&pool);
         let email_reminder_projection = EmailReminderProjection::new(&pool);
         let runner = job::start_job_runner(
             &pool,
             push_executor,
             email_executor,
             settings.clone(),
-            user_transaction_tracker.clone(),
+            email_reminder_projection.clone(),
         )
         .await?;
         Self::spawn_link_email_reminder(pool.clone(), config.jobs.link_email_reminder_delay)

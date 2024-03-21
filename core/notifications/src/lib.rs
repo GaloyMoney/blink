@@ -18,4 +18,3 @@ pub mod notification_event;
 pub mod primitives;
 pub mod push_executor;
 pub mod user_notification_settings;
-pub mod user_transaction_tracker;
