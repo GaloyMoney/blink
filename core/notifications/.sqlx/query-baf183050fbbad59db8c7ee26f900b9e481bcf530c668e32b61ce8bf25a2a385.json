@@ -1,0 +1,47 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT a.id, e.sequence, e.event,\n                      a.created_at AS entity_created_at, e.recorded_at AS event_recorded_at\n            FROM user_notification_settings a\n            JOIN user_notification_settings_events e ON a.id = e.id\n            WHERE galoy_user_id > $1\n            ORDER BY galoy_user_id, e.sequence\n            LIMIT $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "sequence",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "event",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 3,
+        "name": "entity_created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "event_recorded_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "baf183050fbbad59db8c7ee26f900b9e481bcf530c668e32b61ce8bf25a2a385"
+}

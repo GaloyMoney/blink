@@ -1,4 +1,5 @@
 use serde::{de::DeserializeOwned, Serialize};
+use sqlx::Row;
 
 use super::error::EntityError;
 
@@ -84,8 +85,20 @@ where
             builder.push_bind(event_type);
             builder.push_bind(event_json);
         });
+        query_builder.push("RETURNING recorded_at");
         let query = query_builder.build();
-        query.execute(&mut **tx).await?;
+
+        let rows = query.fetch_all(&mut **tx).await?;
+
+        let recorded_at: chrono::DateTime<chrono::Utc> = rows
+            .last()
+            .map(|row| row.get::<chrono::DateTime<chrono::Utc>, _>("recorded_at"))
+            .expect("Could not get recorded_at");
+
+        self.latest_event_persisted_at = Some(recorded_at);
+        if self.entity_first_persisted_at.is_none() {
+            self.entity_first_persisted_at = Some(recorded_at);
+        }
 
         self.persisted_events.extend(events);
         Ok(n_persisted)

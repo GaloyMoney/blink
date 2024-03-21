@@ -8,9 +8,9 @@ use tracing::instrument;
 use std::sync::Arc;
 
 use crate::{
-    email_executor::EmailExecutor, job, notification_cool_off_tracker::*, notification_event::*,
-    primitives::*, push_executor::*, user_notification_settings::*,
-    user_transaction_tracker::UserTransactionTrackerRepo,
+    email_executor::EmailExecutor, email_reminder_projection::EmailReminderProjection, job,
+    notification_cool_off_tracker::*, notification_event::*, primitives::*, push_executor::*,
+    user_notification_settings::*, user_transaction_tracker::UserTransactionTrackerRepo,
 };
 
 pub use config::*;
@@ -20,6 +20,7 @@ use error::*;
 pub struct NotificationsApp {
     _config: AppConfig,
     settings: UserNotificationSettingsRepo,
+    email_reminder_projection: EmailReminderProjection,
     pool: Pool<Postgres>,
     _runner: Arc<JobRunnerHandle>,
 }
@@ -31,6 +32,7 @@ impl NotificationsApp {
             PushExecutor::init(config.push_executor.clone(), settings.clone()).await?;
         let email_executor = EmailExecutor::init(config.email_executor.clone(), settings.clone())?;
         let user_transaction_tracker = UserTransactionTrackerRepo::new(&pool);
+        let email_reminder_projection = EmailReminderProjection::new(&pool);
         let runner = job::start_job_runner(
             &pool,
             push_executor,
@@ -45,6 +47,7 @@ impl NotificationsApp {
             _config: config,
             pool,
             settings,
+            email_reminder_projection,
             _runner: Arc::new(runner),
         })
     }
@@ -145,7 +148,21 @@ impl NotificationsApp {
     ) -> Result<UserNotificationSettings, ApplicationError> {
         let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
         user_settings.add_push_device_token(device_token);
-        self.settings.persist(&mut user_settings).await?;
+        let new_user = user_settings.is_new();
+        let mut tx = self.pool.begin().await?;
+        self.settings
+            .persist_in_tx(&mut tx, &mut user_settings)
+            .await?;
+        if new_user {
+            self.email_reminder_projection
+                .new_user_without_email(
+                    &mut tx,
+                    user_id,
+                    user_settings.created_at().expect("already persisted"),
+                )
+                .await?;
+        }
+        tx.commit().await?;
         Ok(user_settings)
     }
 

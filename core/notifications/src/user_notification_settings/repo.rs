@@ -71,16 +71,25 @@ impl UserNotificationSettingsRepo {
         settings: &mut UserNotificationSettings,
     ) -> Result<(), UserNotificationSettingsError> {
         let mut tx = self.pool.begin().await?;
+        self.persist_in_tx(&mut tx, settings).await?;
+        tx.commit().await?;
+        Ok(())
+    }
+
+    pub async fn persist_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        settings: &mut UserNotificationSettings,
+    ) -> Result<(), UserNotificationSettingsError> {
         sqlx::query!(
             r#"INSERT INTO user_notification_settings (id, galoy_user_id)
             VALUES ($1, $2) ON CONFLICT DO NOTHING"#,
             settings.id as UserNotificationSettingsId,
             settings.galoy_user_id.as_ref(),
         )
-        .execute(&mut *tx)
+        .execute(&mut **tx)
         .await?;
-        settings.events.persist(&mut tx).await?;
-        tx.commit().await?;
+        settings.events.persist(tx).await?;
         Ok(())
     }
 
