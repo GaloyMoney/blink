@@ -23,7 +23,8 @@ impl UserNotificationSettingsRepo {
     ) -> Result<UserNotificationSettings, UserNotificationSettingsError> {
         let rows = sqlx::query_as!(
             GenericEvent,
-            r#"SELECT a.id, e.sequence, e.event
+            r#"SELECT a.id, e.sequence, e.event,
+                      a.created_at AS entity_created_at, e.recorded_at AS event_recorded_at
             FROM user_notification_settings a
             JOIN user_notification_settings_events e ON a.id = e.id
             WHERE a.galoy_user_id = $1
@@ -46,7 +47,8 @@ impl UserNotificationSettingsRepo {
     ) -> Result<(Vec<UserNotificationSettings>, bool), UserNotificationSettingsError> {
         let rows = sqlx::query_as!(
             GenericEvent,
-            r#"SELECT a.id, e.sequence, e.event
+            r#"SELECT a.id, e.sequence, e.event,
+                      a.created_at AS entity_created_at, e.recorded_at AS event_recorded_at
             FROM user_notification_settings a
             JOIN user_notification_settings_events e ON a.id = e.id
             WHERE galoy_user_id > $1

@@ -7,6 +7,8 @@ pub struct GenericEvent {
     pub id: uuid::Uuid,
     pub sequence: i32,
     pub event: serde_json::Value,
+    pub entity_created_at: chrono::DateTime<chrono::Utc>,
+    pub event_recorded_at: chrono::DateTime<chrono::Utc>,
 }
 
 pub trait EntityEvent: DeserializeOwned + Serialize {
@@ -22,6 +24,8 @@ pub trait EsEntity: TryFrom<EntityEvents<<Self as EsEntity>::Event>, Error = Ent
 }
 
 pub struct EntityEvents<T: EntityEvent> {
+    pub entity_first_persisted_at: Option<chrono::DateTime<chrono::Utc>>,
+    latest_event_persisted_at: Option<chrono::DateTime<chrono::Utc>>,
     entity_id: <T as EntityEvent>::EntityId,
     persisted_events: Vec<T>,
     new_events: Vec<T>,
@@ -36,6 +40,8 @@ where
         initial_events: impl IntoIterator<Item = T>,
     ) -> Self {
         Self {
+            entity_first_persisted_at: None,
+            latest_event_persisted_at: None,
             entity_id: id,
             persisted_events: Vec::new(),
             new_events: initial_events.into_iter().collect(),
@@ -94,6 +100,8 @@ where
             if current_id.is_none() {
                 current_id = Some(e.id);
                 current = Some(Self {
+                    entity_first_persisted_at: Some(e.entity_created_at),
+                    latest_event_persisted_at: None,
                     entity_id: e.id.into(),
                     persisted_events: Vec::new(),
                     new_events: Vec::new(),
@@ -102,10 +110,9 @@ where
             if current_id != Some(e.id) {
                 break;
             }
-            current
-                .as_mut()
-                .expect("Could not get current")
-                .persisted_events
+            let cur = current.as_mut().expect("Could not get current");
+            cur.latest_event_persisted_at = Some(e.event_recorded_at);
+            cur.persisted_events
                 .push(serde_json::from_value(e.event).expect("Could not deserialize event"));
         }
         if let Some(current) = current {
@@ -133,15 +140,16 @@ where
 
                 current_id = Some(e.id);
                 current = Some(Self {
+                    entity_first_persisted_at: Some(e.entity_created_at),
+                    latest_event_persisted_at: None,
                     entity_id: e.id.into(),
                     persisted_events: Vec::new(),
                     new_events: Vec::new(),
                 });
             }
-            current
-                .as_mut()
-                .expect("Could not get current")
-                .persisted_events
+            let cur = current.as_mut().expect("Could not get current");
+            cur.latest_event_persisted_at = Some(e.event_recorded_at);
+            cur.persisted_events
                 .push(serde_json::from_value(e.event).expect("Could not deserialize event"));
         }
         if let Some(current) = current.take() {
@@ -216,6 +224,8 @@ mod tests {
             sequence: 1,
             event: serde_json::to_value(DummyEvent::Created("dummy-name".to_owned()))
                 .expect("Could not serialize"),
+            entity_created_at: chrono::Utc::now(),
+            event_recorded_at: chrono::Utc::now(),
         }];
         let entity: DummyEntity = EntityEvents::load_first(generic_events).expect("Could not load");
         assert!(entity.name == "dummy-name");
@@ -229,12 +239,16 @@ mod tests {
                 sequence: 1,
                 event: serde_json::to_value(DummyEvent::Created("dummy-name".to_owned()))
                     .expect("Could not serialize"),
+                entity_created_at: chrono::Utc::now(),
+                event_recorded_at: chrono::Utc::now(),
             },
             GenericEvent {
                 id: uuid::Uuid::new_v4(),
                 sequence: 1,
                 event: serde_json::to_value(DummyEvent::Created("other-name".to_owned()))
                     .expect("Could not serialize"),
+                entity_created_at: chrono::Utc::now(),
+                event_recorded_at: chrono::Utc::now(),
             },
         ];
         let (entity, more): (Vec<DummyEntity>, _) =
