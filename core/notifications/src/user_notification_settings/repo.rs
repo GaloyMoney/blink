@@ -5,6 +5,8 @@ use es_entity::*;
 use super::{entity::*, error::*};
 use crate::primitives::*;
 
+const PAGINATION_BATCH_SIZE: i64 = 1000;
+
 #[derive(Debug, Clone)]
 pub struct UserNotificationSettingsRepo {
     pool: PgPool,
@@ -38,6 +40,30 @@ impl UserNotificationSettingsRepo {
         Ok(res?)
     }
 
+    pub async fn list_after_id(
+        &self,
+        id: &GaloyUserId,
+    ) -> Result<(Vec<UserNotificationSettings>, bool), UserNotificationSettingsError> {
+        let rows = sqlx::query_as!(
+            GenericEvent,
+            r#"SELECT a.id, e.sequence, e.event
+            FROM user_notification_settings a
+            JOIN user_notification_settings_events e ON a.id = e.id
+            WHERE galoy_user_id > $1
+            ORDER BY galoy_user_id, e.sequence
+            LIMIT $2"#,
+            id.as_ref(),
+            PAGINATION_BATCH_SIZE + 1,
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(EntityEvents::load_n::<UserNotificationSettings>(
+            rows,
+            PAGINATION_BATCH_SIZE as usize,
+        )?)
+    }
+
     pub async fn persist(
         &self,
         settings: &mut UserNotificationSettings,
@@ -60,7 +86,6 @@ impl UserNotificationSettingsRepo {
         &self,
         id: &GaloyUserId,
     ) -> Result<(Vec<GaloyUserId>, bool), UserNotificationSettingsError> {
-        let batch_limit = 1000;
         let rows = sqlx::query!(
             r#"SELECT galoy_user_id
                FROM user_notification_settings
@@ -68,14 +93,14 @@ impl UserNotificationSettingsRepo {
                ORDER BY galoy_user_id
                LIMIT $2"#,
             id.as_ref(),
-            batch_limit as i64 + 1,
+            PAGINATION_BATCH_SIZE + 1,
         )
         .fetch_all(&self.pool)
         .await?;
-        let more = rows.len() > batch_limit;
+        let more = rows.len() > PAGINATION_BATCH_SIZE as usize;
         Ok((
             rows.into_iter()
-                .take(batch_limit)
+                .take(PAGINATION_BATCH_SIZE as usize)
                 .map(|r| GaloyUserId::from(r.galoy_user_id))
                 .collect(),
             more,

@@ -115,6 +115,41 @@ where
         }
     }
 
+    pub fn load_n<E: EsEntity<Event = T>>(
+        events: impl IntoIterator<Item = GenericEvent>,
+        n: usize,
+    ) -> Result<(Vec<E>, bool), EntityError> {
+        let mut ret: Vec<E> = Vec::new();
+        let mut current_id = None;
+        let mut current = None;
+        for e in events {
+            if current_id != Some(e.id) {
+                if let Some(current) = current.take() {
+                    ret.push(E::try_from(current)?);
+                    if ret.len() == n {
+                        return Ok((ret, true));
+                    }
+                }
+
+                current_id = Some(e.id);
+                current = Some(Self {
+                    entity_id: e.id.into(),
+                    persisted_events: Vec::new(),
+                    new_events: Vec::new(),
+                });
+            }
+            current
+                .as_mut()
+                .expect("Could not get current")
+                .persisted_events
+                .push(serde_json::from_value(e.event).expect("Could not deserialize event"));
+        }
+        if let Some(current) = current.take() {
+            ret.push(E::try_from(current)?);
+        }
+        Ok((ret, false))
+    }
+
     pub fn iter(&self) -> impl DoubleEndedIterator<Item = &T> {
         self.persisted_events.iter().chain(self.new_events.iter())
     }
@@ -184,5 +219,27 @@ mod tests {
         }];
         let entity: DummyEntity = EntityEvents::load_first(generic_events).expect("Could not load");
         assert!(entity.name == "dummy-name");
+    }
+
+    #[test]
+    fn load_n() {
+        let generic_events = vec![
+            GenericEvent {
+                id: uuid::Uuid::new_v4(),
+                sequence: 1,
+                event: serde_json::to_value(DummyEvent::Created("dummy-name".to_owned()))
+                    .expect("Could not serialize"),
+            },
+            GenericEvent {
+                id: uuid::Uuid::new_v4(),
+                sequence: 1,
+                event: serde_json::to_value(DummyEvent::Created("other-name".to_owned()))
+                    .expect("Could not serialize"),
+            },
+        ];
+        let (entity, more): (Vec<DummyEntity>, _) =
+            EntityEvents::load_n(generic_events, 2).expect("Could not load");
+        assert!(!more);
+        assert_eq!(entity.len(), 2);
     }
 }
