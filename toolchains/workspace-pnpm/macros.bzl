@@ -1157,14 +1157,25 @@ fi
 cd "$rootpath/$npm_package_path"
 exec pnpm run --report-summary "$npm_run_command"
 """, is_executable = True)
+
     env_json = ctx.attrs.env_json if ctx.attrs.env_json else ""
-    command = [
+
+    run_cmd_args = cmd_args([
         script,
         ctx.label.package,
         env_json,
         ctx.attrs.command,
+    ])
+    run_cmd_args.hidden([ctx.attrs.deps])
+    run_cmd_args.hidden([ctx.attrs.srcs])
+
+    return [
+        DefaultInfo(),
+        ExternalRunnerTestInfo(
+            type = "integration",
+            command = [run_cmd_args],
+        )
     ]
-    return [DefaultInfo(), ExternalRunnerTestInfo(type = "integration", command = command)]
 
 dev_pnpm_task_test = rule(impl = pnpm_task_test_impl, attrs = {
     "command": attrs.string(default = "start", doc = """pnpm command to run"""),
