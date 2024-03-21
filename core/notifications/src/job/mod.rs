@@ -98,24 +98,27 @@ async fn link_email_reminder(
         .execute(|data| async move {
             let data: LinkEmailReminderData = data.expect("no LinkEmailReminderData available");
             let (ids, more) = email_reminder_projection
-                .list_ids_after(&data.search_id) this needs to be replaced with new query
+                .list_ids_to_notify_after(data.search_id.clone())
                 .await?;
             let mut tx = pool.begin().await?;
+
             if more {
                 let data = LinkEmailReminderData {
                     search_id: ids.last().expect("there should always be an id").clone(),
-                    payload: data.payload.clone(),
                     tracing_data: tracing::extract_tracing_data(),
                 };
                 spawn_link_email_reminder(&pool, data).await?;
             }
             for user_id in ids {
-                let payload = data.payload.clone();
+                let payload = NotificationEventPayload::from(LinkEmailReminder {});
                 if payload.should_send_email() {
                     spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone()))
                         .await?;
                 }
-                spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
+                spawn_send_push_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
+                email_reminder_projection
+                    .user_notified(&mut tx, user_id.clone())
+                    .await?;
             }
             Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
         })
@@ -246,6 +249,7 @@ pub async fn spawn_link_email_reminder(
     data: impl Into<LinkEmailReminderData>,
 ) -> Result<(), JobError> {
     let data = data.into();
+    // TODO: I think reusing the id here might cause a bug
     match JobBuilder::new_with_id(LINK_EMAIL_REMINDER_ID, "link_email_reminder")
         .set_channel_name("link_email_reminder")
         .set_json(&data)
@@ -322,16 +326,14 @@ impl From<NotificationEventPayload> for AllUserEventDispatchData {
 #[derive(Debug, Serialize, Deserialize)]
 pub(super) struct LinkEmailReminderData {
     search_id: GaloyUserId,
-    payload: NotificationEventPayload,
     #[serde(flatten)]
     pub(super) tracing_data: HashMap<String, serde_json::Value>,
 }
 
-impl From<NotificationEventPayload> for LinkEmailReminderData {
-    fn from(payload: NotificationEventPayload) -> Self {
+impl From<()> for LinkEmailReminderData {
+    fn from(_: ()) -> Self {
         Self {
             search_id: GaloyUserId::search_begin(),
-            payload,
             tracing_data: tracing::extract_tracing_data(),
         }
     }

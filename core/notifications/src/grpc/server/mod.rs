@@ -393,7 +393,7 @@ impl NotificationsService for Notifications {
                     .map_err(|e| Status::invalid_argument(e.to_string()))?;
                 let user_id = GaloyUserId::from(user_id);
                 self.app
-                    .handle_single_user_event(
+                    .handle_transaction_occurred_event(
                         user_id,
                         notification_event::TransactionOccurred {
                             transaction_type,

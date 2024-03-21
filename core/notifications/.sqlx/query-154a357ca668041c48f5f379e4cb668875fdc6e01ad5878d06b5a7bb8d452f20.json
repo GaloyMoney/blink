@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT galoy_user_id\n               FROM email_reminder_projection\n               WHERE galoy_user_id > $1 AND last_transaction_at IS NOT NULL AND last_transaction_at > $2 AND user_first_seen_at < $3 AND (last_notified_at IS NULL OR last_notified_at < $4)\n               ORDER BY galoy_user_id\n               LIMIT $5",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "galoy_user_id",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamptz",
+        "Timestamptz",
+        "Timestamptz",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "154a357ca668041c48f5f379e4cb668875fdc6e01ad5878d06b5a7bb8d452f20"
+}
