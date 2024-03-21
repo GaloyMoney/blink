@@ -74,6 +74,7 @@ impl From<UserNotificationCategory> for proto::NotificationCategory {
             }
             UserNotificationCategory::Marketing => proto::NotificationCategory::Marketing,
             UserNotificationCategory::Price => proto::NotificationCategory::Price,
+            _ => unimplemented!(),
         }
     }
 }

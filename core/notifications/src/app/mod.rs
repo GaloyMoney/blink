@@ -8,13 +8,9 @@ use tracing::instrument;
 use std::sync::Arc;
 
 use crate::{
-    email_executor::EmailExecutor,
-    job::{self},
-    notification_cool_off_tracker::*,
-    notification_event::*,
-    primitives::*,
-    push_executor::*,
-    user_notification_settings::*,
+    email_executor::EmailExecutor, job, notification_cool_off_tracker::*, notification_event::*,
+    primitives::*, push_executor::*, user_notification_settings::*,
+    user_transaction_tracker::UserTransactionTrackerRepo,
 };
 
 pub use config::*;
@@ -34,8 +30,17 @@ impl NotificationsApp {
         let push_executor =
             PushExecutor::init(config.push_executor.clone(), settings.clone()).await?;
         let email_executor = EmailExecutor::init(config.email_executor.clone(), settings.clone())?;
-        let runner =
-            job::start_job_runner(&pool, push_executor, email_executor, settings.clone()).await?;
+        let user_transaction_tracker = UserTransactionTrackerRepo::new(&pool);
+        let runner = job::start_job_runner(
+            &pool,
+            push_executor,
+            email_executor,
+            settings.clone(),
+            user_transaction_tracker.clone(),
+        )
+        .await?;
+        Self::spawn_link_email_reminder(pool.clone(), config.jobs.link_email_reminder_delay)
+            .await?;
         Ok(Self {
             _config: config,
             pool,
@@ -237,6 +242,24 @@ impl NotificationsApp {
         )
         .await?;
         tx.commit().await?;
+        Ok(())
+    }
+
+    #[instrument(name = "app.link_email_reminder", level = "trace", skip_all, err)]
+    async fn spawn_link_email_reminder(
+        pool: sqlx::PgPool,
+        delay: std::time::Duration,
+    ) -> Result<(), ApplicationError> {
+        tokio::spawn(async move {
+            loop {
+                let _ = job::spawn_link_email_reminder(
+                    &pool,
+                    NotificationEventPayload::from(LinkEmailReminder {}),
+                )
+                .await;
+                tokio::time::sleep(delay).await;
+            }
+        });
         Ok(())
     }
 }

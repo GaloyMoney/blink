@@ -6,6 +6,8 @@
 # grpc_server:
 #   port: 6685
 app:
+  # jobs:
+  #   link_email_reminder_delay: 5
   push_executor:
     fcm:
       google_application_credentials_path: "./config/notifications/fake_service_account.json"

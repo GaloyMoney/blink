@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE user_transaction_tracker SET updated_at = NOW()\n               where galoy_user_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "9ceeede103be384587349947a79fa47ff9756f7581fb0c06862f22e34da7c5dd"
+}
