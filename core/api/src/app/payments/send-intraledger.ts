@@ -1,8 +1,12 @@
-import { addContactsAfterSend, getPriceRatioForLimits } from "./helpers"
+import { getPriceRatioForLimits } from "./helpers"
 
 import { getValuesToSkipProbe } from "@/config"
 
-import { checkIntraledgerLimits, checkTradeIntraAccountLimits } from "@/app/accounts"
+import {
+  addContactsAfterSend,
+  checkIntraledgerLimits,
+  checkTradeIntraAccountLimits,
+} from "@/app/accounts"
 import {
   btcFromUsdMidPriceFn,
   getCurrentPriceAsDisplayPriceRatio,
@@ -118,9 +122,9 @@ const intraledgerPaymentSendWalletId = async ({
   const paymentSendResult = await executePaymentViaIntraledger({
     paymentFlow,
     senderAccount,
-    senderWallet,
+    senderWalletId: senderWallet.id,
     recipientAccount,
-    recipientWallet,
+    recipientWalletId: recipientWallet.id,
     memo,
   })
   if (paymentSendResult instanceof Error) return paymentSendResult
@@ -206,16 +210,16 @@ const executePaymentViaIntraledger = async <
 >({
   paymentFlow,
   senderAccount,
-  senderWallet,
+  senderWalletId,
   recipientAccount,
-  recipientWallet,
+  recipientWalletId,
   memo,
 }: {
   paymentFlow: PaymentFlow<S, R>
   senderAccount: Account
-  senderWallet: WalletDescriptor<S>
+  senderWalletId: WalletId
   recipientAccount: Account
-  recipientWallet: WalletDescriptor<R>
+  recipientWalletId: WalletId
   memo: string | null
 }): Promise<PaymentSendResult | ApplicationError> => {
   addAttributesToCurrentSpan({
@@ -226,161 +230,200 @@ const executePaymentViaIntraledger = async <
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
   const checkLimits =
-    senderWallet.accountId === recipientWallet.accountId
+    senderAccount.id === recipientAccount.id
       ? checkTradeIntraAccountLimits
       : checkIntraledgerLimits
   const limitCheck = await checkLimits({
     amount: paymentFlow.usdPaymentAmount,
-    accountId: senderWallet.accountId,
+    accountId: senderAccount.id,
     priceRatio: priceRatioForLimits,
   })
   if (limitCheck instanceof Error) return limitCheck
 
-  const { walletDescriptor: recipientWalletDescriptor, recipientUsername } =
-    paymentFlow.recipientDetails()
+  const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
+  if (recipientUser instanceof Error) return recipientUser
+
+  const recipientAsNotificationRecipient = {
+    accountId: recipientAccount.id,
+    walletId: recipientWalletId,
+    userId: recipientUser.id,
+    level: recipientAccount.level,
+  }
+
+  const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
+  if (senderUser instanceof Error) return senderUser
+
+  const senderAsNotificationRecipient = {
+    accountId: senderAccount.id,
+    walletId: senderWalletId,
+    userId: senderUser.id,
+    level: senderAccount.level,
+  }
+
+  return LockService().lockWalletId(senderWalletId, async (signal) =>
+    lockedPaymentViaIntraledgerSteps({
+      signal,
+
+      paymentFlow,
+      senderDisplayCurrency: senderAccount.displayCurrency,
+      senderUsername: senderAccount.username,
+      recipientDisplayCurrency: recipientAccount.displayCurrency,
+      recipientUsername: recipientAccount.username,
+
+      memo,
+
+      senderAsNotificationRecipient,
+      recipientAsNotificationRecipient,
+    }),
+  )
+}
+
+const lockedPaymentViaIntraledgerSteps = async ({
+  signal,
+
+  paymentFlow,
+  senderDisplayCurrency,
+  senderUsername,
+  recipientDisplayCurrency,
+  recipientUsername,
+
+  memo,
+
+  senderAsNotificationRecipient,
+  recipientAsNotificationRecipient,
+}: {
+  signal: WalletIdAbortSignal
+
+  paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
+  senderDisplayCurrency: DisplayCurrency
+  senderUsername: Username | undefined
+  recipientDisplayCurrency: DisplayCurrency
+  recipientUsername: Username | undefined
+
+  memo: string | null
+
+  senderAsNotificationRecipient: NotificationRecipient
+  recipientAsNotificationRecipient: NotificationRecipient
+}): Promise<PaymentSendResult | ApplicationError> => {
+  const senderWalletDescriptor = paymentFlow.senderWalletDescriptor()
+  const recipientWalletDescriptor = paymentFlow.recipientWalletDescriptor()
   if (!recipientWalletDescriptor) {
     return new InvalidLightningPaymentFlowBuilderStateError(
       "Expected recipient details missing",
     )
   }
 
-  return LockService().lockWalletId(senderWallet.id, async (signal) => {
-    const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
-    if (balance instanceof Error) return balance
+  const balance = await LedgerService().getWalletBalanceAmount(senderWalletDescriptor)
+  if (balance instanceof Error) return balance
 
-    const balanceCheck = paymentFlow.checkBalanceForSend(balance)
-    if (balanceCheck instanceof Error) return balanceCheck
+  const balanceCheck = paymentFlow.checkBalanceForSend(balance)
+  if (balanceCheck instanceof Error) return balanceCheck
 
-    const { displayCurrency: senderDisplayCurrency } = senderAccount
-    const senderDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-      currency: senderDisplayCurrency,
-    })
-    if (senderDisplayPriceRatio instanceof Error) return senderDisplayPriceRatio
-    const { displayAmount: senderDisplayAmount, displayFee: senderDisplayFee } =
-      DisplayAmountsConverter(senderDisplayPriceRatio).convert(paymentFlow)
-
-    const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-      currency: recipientAccount.displayCurrency,
-    })
-    if (recipientDisplayPriceRatio instanceof Error) return recipientDisplayPriceRatio
-    const { displayAmount: recipientDisplayAmount, displayFee: recipientDisplayFee } =
-      DisplayAmountsConverter(recipientDisplayPriceRatio).convert(paymentFlow)
-
-    if (signal.aborted) {
-      return new ResourceExpiredLockServiceError(signal.error?.message)
-    }
-
-    let metadata:
-      | AddWalletIdIntraledgerSendLedgerMetadata
-      | AddWalletIdTradeIntraAccountLedgerMetadata
-    let additionalDebitMetadata: {
-      [key: string]: Username | DisplayCurrencyBaseAmount | DisplayCurrency | undefined
-    } = {}
-    let additionalCreditMetadata: {
-      [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
-    }
-    let additionalInternalMetadata: {
-      [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
-    } = {}
-    if (senderWallet.accountId === recipientWallet.accountId) {
-      ;({
-        metadata,
-        debitAccountAdditionalMetadata: additionalDebitMetadata,
-        creditAccountAdditionalMetadata: additionalCreditMetadata,
-        internalAccountsAdditionalMetadata: additionalInternalMetadata,
-      } = LedgerFacade.WalletIdTradeIntraAccountLedgerMetadata({
-        paymentAmounts: paymentFlow,
-
-        senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
-        senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
-        senderDisplayCurrency: senderDisplayCurrency,
-
-        memoOfPayer: memo || undefined,
-      }))
-    } else {
-      ;({
-        metadata,
-        debitAccountAdditionalMetadata: additionalDebitMetadata,
-        creditAccountAdditionalMetadata: additionalCreditMetadata,
-        internalAccountsAdditionalMetadata: additionalInternalMetadata,
-      } = LedgerFacade.WalletIdIntraledgerLedgerMetadata({
-        paymentAmounts: paymentFlow,
-
-        senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
-        senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
-        senderDisplayCurrency: senderDisplayCurrency,
-
-        recipientAmountDisplayCurrency: toDisplayBaseAmount(recipientDisplayAmount),
-        recipientFeeDisplayCurrency: toDisplayBaseAmount(recipientDisplayFee),
-        recipientDisplayCurrency: recipientAccount.displayCurrency,
-
-        memoOfPayer: memo || undefined,
-        senderUsername: senderAccount.username,
-        recipientUsername,
-      }))
-    }
-
-    const senderWalletDescriptor = paymentFlow.senderWalletDescriptor()
-    const recipientWalletDescriptor = paymentFlow.recipientWalletDescriptor()
-    if (!senderWalletDescriptor || !recipientWalletDescriptor)
-      return new InvalidLightningPaymentFlowBuilderStateError()
-
-    const journal = await LedgerFacade.recordIntraledger({
-      description: paymentFlow.descriptionFromInvoice,
-      amount: {
-        btc: paymentFlow.btcPaymentAmount,
-        usd: paymentFlow.usdPaymentAmount,
-      },
-      senderWalletDescriptor,
-      recipientWalletDescriptor,
-      metadata,
-      additionalDebitMetadata,
-      additionalCreditMetadata,
-      additionalInternalMetadata,
-    })
-    if (journal instanceof Error) return journal
-
-    const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
-    if (recipientUser instanceof Error) return recipientUser
-
-    const recipientWalletTransaction = await getTransactionForWalletByJournalId({
-      walletId: recipientWalletDescriptor.id,
-      journalId: journal.journalId,
-    })
-    if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
-
-    NotificationsService().sendTransaction({
-      recipient: {
-        accountId: recipientAccount.id,
-        walletId: recipientWalletDescriptor.id,
-        userId: recipientUser.id,
-        level: recipientAccount.level,
-      },
-      transaction: recipientWalletTransaction,
-    })
-
-    const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
-    if (senderUser instanceof Error) return senderUser
-
-    const senderWalletTransaction = await getTransactionForWalletByJournalId({
-      walletId: senderWalletDescriptor.id,
-      journalId: journal.journalId,
-    })
-    if (senderWalletTransaction instanceof Error) return senderWalletTransaction
-
-    NotificationsService().sendTransaction({
-      recipient: {
-        accountId: senderAccount.id,
-        walletId: senderWalletDescriptor.id,
-        userId: senderUser.id,
-        level: senderAccount.level,
-      },
-      transaction: senderWalletTransaction,
-    })
-
-    return {
-      status: PaymentSendStatus.Success,
-      transaction: senderWalletTransaction,
-    }
+  const senderDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+    currency: senderDisplayCurrency,
   })
+  if (senderDisplayPriceRatio instanceof Error) return senderDisplayPriceRatio
+  const { displayAmount: senderDisplayAmount, displayFee: senderDisplayFee } =
+    DisplayAmountsConverter(senderDisplayPriceRatio).convert(paymentFlow)
+
+  const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+    currency: recipientDisplayCurrency,
+  })
+  if (recipientDisplayPriceRatio instanceof Error) return recipientDisplayPriceRatio
+  const { displayAmount: recipientDisplayAmount, displayFee: recipientDisplayFee } =
+    DisplayAmountsConverter(recipientDisplayPriceRatio).convert(paymentFlow)
+
+  if (signal.aborted) {
+    return new ResourceExpiredLockServiceError(signal.error?.message)
+  }
+
+  let metadata:
+    | AddWalletIdIntraledgerSendLedgerMetadata
+    | AddWalletIdTradeIntraAccountLedgerMetadata
+  let additionalDebitMetadata: {
+    [key: string]: Username | DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+  } = {}
+  let additionalCreditMetadata: {
+    [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+  }
+  let additionalInternalMetadata: {
+    [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+  } = {}
+  if (senderWalletDescriptor.accountId === recipientWalletDescriptor.accountId) {
+    ;({
+      metadata,
+      debitAccountAdditionalMetadata: additionalDebitMetadata,
+      creditAccountAdditionalMetadata: additionalCreditMetadata,
+      internalAccountsAdditionalMetadata: additionalInternalMetadata,
+    } = LedgerFacade.WalletIdTradeIntraAccountLedgerMetadata({
+      paymentAmounts: paymentFlow,
+
+      senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
+      senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
+      senderDisplayCurrency,
+
+      memoOfPayer: memo || undefined,
+    }))
+  } else {
+    ;({
+      metadata,
+      debitAccountAdditionalMetadata: additionalDebitMetadata,
+      creditAccountAdditionalMetadata: additionalCreditMetadata,
+      internalAccountsAdditionalMetadata: additionalInternalMetadata,
+    } = LedgerFacade.WalletIdIntraledgerLedgerMetadata({
+      paymentAmounts: paymentFlow,
+
+      senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
+      senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
+      senderDisplayCurrency,
+
+      recipientAmountDisplayCurrency: toDisplayBaseAmount(recipientDisplayAmount),
+      recipientFeeDisplayCurrency: toDisplayBaseAmount(recipientDisplayFee),
+      recipientDisplayCurrency,
+
+      memoOfPayer: memo || undefined,
+      senderUsername,
+      recipientUsername,
+    }))
+  }
+
+  const journal = await LedgerFacade.recordIntraledger({
+    description: paymentFlow.descriptionFromInvoice,
+    amount: {
+      btc: paymentFlow.btcPaymentAmount,
+      usd: paymentFlow.usdPaymentAmount,
+    },
+    senderWalletDescriptor,
+    recipientWalletDescriptor,
+    metadata,
+    additionalDebitMetadata,
+    additionalCreditMetadata,
+    additionalInternalMetadata,
+  })
+  if (journal instanceof Error) return journal
+
+  const recipientWalletTransaction = await getTransactionForWalletByJournalId({
+    walletId: recipientWalletDescriptor.id,
+    journalId: journal.journalId,
+  })
+  if (recipientWalletTransaction instanceof Error) return recipientWalletTransaction
+  NotificationsService().sendTransaction({
+    recipient: recipientAsNotificationRecipient,
+    transaction: recipientWalletTransaction,
+  })
+
+  const senderWalletTransaction = await getTransactionForWalletByJournalId({
+    walletId: senderWalletDescriptor.id,
+    journalId: journal.journalId,
+  })
+  if (senderWalletTransaction instanceof Error) return senderWalletTransaction
+  NotificationsService().sendTransaction({
+    recipient: senderAsNotificationRecipient,
+    transaction: senderWalletTransaction,
+  })
+
+  return {
+    status: PaymentSendStatus.Success,
+    transaction: senderWalletTransaction,
+  }
 }
