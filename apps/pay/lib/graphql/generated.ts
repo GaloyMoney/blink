@@ -2161,7 +2161,7 @@ export type LnInvoicePaymentStatusSubscriptionVariables = Exact<{
 }>;
 
 
-export type LnInvoicePaymentStatusSubscription = { readonly __typename: 'Subscription', readonly lnInvoicePaymentStatus: { readonly __typename: 'LnInvoicePaymentStatusPayload', readonly status?: InvoicePaymentStatus | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
+export type LnInvoicePaymentStatusSubscription = { readonly __typename: 'Subscription', readonly lnInvoicePaymentStatus: { readonly __typename: 'LnInvoicePaymentStatusPayload', readonly status?: InvoicePaymentStatus | null, readonly paymentHash?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
 
 export type LnUsdInvoiceCreateOnBehalfOfRecipientMutationVariables = Exact<{
   input: LnUsdInvoiceCreateOnBehalfOfRecipientInput;
@@ -2466,6 +2466,7 @@ export const LnInvoicePaymentStatusDocument = gql`
       __typename
     }
     status
+    paymentHash
   }
 }
     `;
