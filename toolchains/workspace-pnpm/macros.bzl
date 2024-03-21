@@ -1137,7 +1137,11 @@ dev_pnpm_task_binary = rule(impl = pnpm_task_binary_impl, attrs = {
     ),
 })
 
-def pnpm_task_test_impl(ctx: AnalysisContext) -> list[[DefaultInfo, ExternalRunnerTestInfo]]:
+def pnpm_task_test_impl(ctx: AnalysisContext) -> list[[
+    DefaultInfo,
+    RunInfo,
+    ExternalRunnerTestInfo
+]]:
     script = ctx.actions.write("pnpm-run.sh", """\
 #!/usr/bin/env bash
 set -euo pipefail
@@ -1168,13 +1172,16 @@ exec pnpm run --report-summary "$npm_run_command"
     ])
     run_cmd_args.hidden([ctx.attrs.deps])
     run_cmd_args.hidden([ctx.attrs.srcs])
+    args_file = ctx.actions.write("args.txt", run_cmd_args)
 
-    return [
-        DefaultInfo(),
+    return inject_test_run_info(
+        ctx,
         ExternalRunnerTestInfo(
             type = "integration",
             command = [run_cmd_args],
         )
+     ) + [
+        DefaultInfo(default_output = args_file),
     ]
 
 dev_pnpm_task_test = rule(impl = pnpm_task_test_impl, attrs = {
@@ -1185,6 +1192,9 @@ dev_pnpm_task_test = rule(impl = pnpm_task_test_impl, attrs = {
         attrs.source(),
         doc = """buck2 target for json file with env variables required.""",
         default = None,
+    ),
+    "_inject_test_env": attrs.default_only(
+        attrs.dep(default = "prelude//test/tools:inject_test_env"),
     ),
 })
 
