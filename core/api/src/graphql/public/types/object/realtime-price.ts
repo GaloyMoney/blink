@@ -23,9 +23,9 @@ const RealtimePrice = GT.Object({
       description:
         "Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC)",
     },
-    currency: { type: GT.NonNull(Currency) },
+    denominatorCurrencyDetails: { type: GT.NonNull(Currency) },
     denominatorCurrency: {
-      deprecationReason: "Deprecated in favor of currency",
+      deprecationReason: "Deprecated in favor of denominatorCurrencyDetails",
       type: GT.NonNull(DisplayCurrencyGT),
     },
 

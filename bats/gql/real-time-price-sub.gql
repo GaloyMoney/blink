@@ -6,7 +6,7 @@ subscription realtimePrice($currency: DisplayCurrency!) {
     realtimePrice {
       id
       timestamp
-      currency {
+      denominatorCurrencyDetails {
         flag
         fractionDigits
         id

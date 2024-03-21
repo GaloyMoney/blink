@@ -4,7 +4,7 @@ query RealtimePrice($currency: DisplayCurrency) {
       base
       offset
     }
-    currency {
+    denominatorCurrencyDetails {
       flag
       fractionDigits
       id

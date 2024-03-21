@@ -25,7 +25,7 @@ subscription myUpdates {
       ... on RealtimePrice {
         id
         timestamp
-        currency {
+        denominatorCurrencyDetails {
           flag
           fractionDigits
           id

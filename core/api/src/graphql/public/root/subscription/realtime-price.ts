@@ -101,7 +101,7 @@ const RealtimePriceSubscription = {
       errors: [],
       realtimePrice: {
         timestamp: new Date(timestamp),
-        currency: priceCurrency,
+        denominatorCurrencyDetails: priceCurrency,
         denominatorCurrency: priceCurrency.code,
         btcSatPrice: {
           base: Math.round(minorUnitPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),

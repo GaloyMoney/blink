@@ -1576,9 +1576,9 @@ export type QuizClaimPayload = {
 export type RealtimePrice = {
   readonly __typename: 'RealtimePrice';
   readonly btcSatPrice: PriceOfOneSatInMinorUnit;
-  readonly currency: Currency;
-  /** @deprecated Deprecated in favor of currency */
+  /** @deprecated Deprecated in favor of denominatorCurrencyDetails */
   readonly denominatorCurrency: Scalars['DisplayCurrency']['output'];
+  readonly denominatorCurrencyDetails: Currency;
   readonly id: Scalars['ID']['output'];
   /** Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC) */
   readonly timestamp: Scalars['Timestamp']['output'];

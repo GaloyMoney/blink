@@ -1262,8 +1262,8 @@ type QuizClaimPayload {
 
 type RealtimePrice {
   btcSatPrice: PriceOfOneSatInMinorUnit!
-  currency: Currency!
-  denominatorCurrency: DisplayCurrency! @deprecated(reason: "Deprecated in favor of currency")
+  denominatorCurrency: DisplayCurrency! @deprecated(reason: "Deprecated in favor of denominatorCurrencyDetails")
+  denominatorCurrencyDetails: Currency!
   id: ID!
 
   """

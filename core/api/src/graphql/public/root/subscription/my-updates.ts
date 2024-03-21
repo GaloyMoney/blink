@@ -135,7 +135,7 @@ type MeResolveRealtimePrice = {
   resolveType: "RealtimePrice"
   id: string
   timestamp: Date
-  currency: PriceCurrency
+  denominatorCurrencyDetails: PriceCurrency
   denominatorCurrency: DisplayCurrency
   btcSatPrice: IPrice
   usdCentPrice: IPrice
@@ -241,7 +241,7 @@ const MeSubscription = {
       return myPayload({
         resolveType: "RealtimePrice",
         timestamp: new Date(timestamp),
-        currency,
+        denominatorCurrencyDetails: currency,
         denominatorCurrency: currency.code,
         btcSatPrice: {
           base: Math.round(minorUnitPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),

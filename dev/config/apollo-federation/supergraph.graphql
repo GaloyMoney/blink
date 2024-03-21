@@ -1633,8 +1633,8 @@ type RealtimePrice
   @join__type(graph: PUBLIC)
 {
   btcSatPrice: PriceOfOneSatInMinorUnit!
-  currency: Currency!
-  denominatorCurrency: DisplayCurrency! @deprecated(reason: "Deprecated in favor of currency")
+  denominatorCurrency: DisplayCurrency! @deprecated(reason: "Deprecated in favor of denominatorCurrencyDetails")
+  denominatorCurrencyDetails: Currency!
   id: ID!
 
   """

@@ -45,7 +45,7 @@ const RealtimePriceQuery = GT.Field({
 
     return {
       timestamp: btcPrice.timestamp,
-      currency: priceCurrency,
+      denominatorCurrencyDetails: priceCurrency,
       denominatorCurrency: priceCurrency.code,
       btcSatPrice: {
         base: Math.round(minorUnitPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),

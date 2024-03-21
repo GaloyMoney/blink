@@ -21,8 +21,8 @@ load "../../helpers/subscriber.bash"
   errors="$(graphql_output '.errors | length')"
   [[ "${errors}" = "0" ]] || exit 1
 
-  currency_id="$(graphql_output '.data.realtimePrice.currency.id')"
-  currency_frac_digits="$(graphql_output '.data.realtimePrice.currency.fractionDigits')"
+  currency_id="$(graphql_output '.data.realtimePrice.denominatorCurrencyDetails.id')"
+  currency_frac_digits="$(graphql_output '.data.realtimePrice.denominatorCurrencyDetails.fractionDigits')"
   denominatorCurrency="$(graphql_output '.data.realtimePrice.denominatorCurrency')"
   sat_price_base="$(graphql_output '.data.realtimePrice.btcSatPrice.base')"
   sat_price_offset="$(graphql_output '.data.realtimePrice.btcSatPrice.offset')"
