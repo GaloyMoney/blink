@@ -98,10 +98,10 @@ async fn link_email_reminder(
         .expect("couldn't build JobExecutor")
         .execute(|data| async move {
             let data: LinkEmailReminderData = data.expect("no LinkEmailReminderData available");
-            let (ids, more) = email_reminder_projection
-                .list_ids_to_notify_after(data.search_id.clone())
-                .await?;
             let mut tx = pool.begin().await?;
+            let (ids, more) = email_reminder_projection
+                .list_ids_to_notify_after(&mut tx, data.search_id.clone())
+                .await?;
 
             if more {
                 let data = LinkEmailReminderData {
@@ -117,9 +117,6 @@ async fn link_email_reminder(
                         .await?;
                 }
                 spawn_send_push_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
-                email_reminder_projection
-                    .user_notified(&mut tx, user_id.clone())
-                    .await?;
             }
             Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
         })

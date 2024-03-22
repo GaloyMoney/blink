@@ -1,5 +1,4 @@
 pub mod error;
-pub mod seed;
 
 use chrono::*;
 use sqlx::PgPool;
@@ -22,23 +21,6 @@ impl EmailReminderProjection {
 
     pub fn new(pool: &PgPool) -> Self {
         Self { pool: pool.clone() }
-    }
-
-    pub async fn new_user_without_email(
-        &self,
-        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-        galoy_user_id: GaloyUserId,
-        user_first_seen_at: DateTime<Utc>,
-    ) -> Result<(), EmailReminderProjectionError> {
-        sqlx::query!(
-            r#"INSERT INTO email_reminder_projection
-               (galoy_user_id, user_first_seen_at) VALUES ($1, $2)"#,
-            galoy_user_id.as_ref(),
-            user_first_seen_at
-        )
-        .execute(&mut **tx)
-        .await?;
-        Ok(())
     }
 
     pub async fn transaction_occurred_for_user_without_email(
@@ -72,25 +54,9 @@ impl EmailReminderProjection {
         Ok(())
     }
 
-    pub async fn user_notified(
-        &self,
-        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-        galoy_user_id: GaloyUserId,
-    ) -> Result<(), EmailReminderProjectionError> {
-        // set last notified at to now
-        sqlx::query!(
-            r#"UPDATE email_reminder_projection
-            SET last_notified_at = now()
-            WHERE galoy_user_id = $1"#,
-            galoy_user_id.as_ref()
-        )
-        .execute(&mut **tx)
-        .await?;
-        Ok(())
-    }
-
     pub async fn list_ids_to_notify_after(
         &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
         search_id: GaloyUserId,
     ) -> Result<(Vec<GaloyUserId>, bool), EmailReminderProjectionError> {
         let last_transaction_at_threshold = Utc::now()
@@ -104,18 +70,34 @@ impl EmailReminderProjection {
                 .expect("Should be valid duration");
 
         let rows = sqlx::query!(
-            r#"SELECT galoy_user_id
-               FROM email_reminder_projection
-               WHERE galoy_user_id > $1 AND last_transaction_at IS NOT NULL AND last_transaction_at > $2 AND user_first_seen_at < $3 AND (last_notified_at IS NULL OR last_notified_at < $4)
-               ORDER BY galoy_user_id
-               LIMIT $5"#,
+            r#"WITH selected_rows AS (
+                 SELECT galoy_user_id
+                 FROM email_reminder_projection
+                 WHERE galoy_user_id > $1
+                   AND last_transaction_at IS NOT NULL
+                   AND last_transaction_at > $2
+                   AND user_first_seen_at < $3
+                   AND (last_notified_at IS NULL OR last_notified_at < $4)
+                 ORDER BY galoy_user_id
+                 LIMIT $5
+             ),
+             updated AS (
+                 UPDATE email_reminder_projection
+                 SET last_notified_at = NOW()
+                 FROM selected_rows
+                 WHERE email_reminder_projection.galoy_user_id = selected_rows.galoy_user_id
+                 RETURNING email_reminder_projection.galoy_user_id
+             )
+             SELECT galoy_user_id
+             FROM updated
+             "#,
             search_id.as_ref(),
             last_transaction_at_threshold,
             user_first_seen_at_threshold,
             last_notified_at_threshold,
             PAGINATION_BATCH_SIZE + 1,
         )
-        .fetch_all(&self.pool)
+        .fetch_all(&mut **tx)
         .await?;
 
         let more = rows.len() > PAGINATION_BATCH_SIZE as usize;
