@@ -2110,6 +2110,7 @@ enum UserNotificationCategory
   ADMIN_NOTIFICATION @join__enumValue(graph: NOTIFICATIONS)
   MARKETING @join__enumValue(graph: NOTIFICATIONS)
   PRICE @join__enumValue(graph: NOTIFICATIONS)
+  SECURITY @join__enumValue(graph: NOTIFICATIONS)
 }
 
 enum UserNotificationChannel
