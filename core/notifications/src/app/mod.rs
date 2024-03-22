@@ -45,8 +45,11 @@ impl NotificationsApp {
             email_reminder_projection.clone(),
         )
         .await?;
-        Self::spawn_link_email_reminder(pool.clone(), config.jobs.link_email_reminder_delay)
-            .await?;
+        Self::spawn_kickoff_link_email_reminder(
+            pool.clone(),
+            config.jobs.kickoff_link_email_remainder_delay,
+        )
+        .await?;
         Ok(Self {
             _config: config,
             pool,
@@ -275,14 +278,23 @@ impl NotificationsApp {
         Ok(())
     }
 
-    #[instrument(name = "app.link_email_reminder", level = "trace", skip_all, err)]
-    async fn spawn_link_email_reminder(
+    #[instrument(
+        name = "app.kickoff_link_email_reminder",
+        level = "trace",
+        skip_all,
+        err
+    )]
+    async fn spawn_kickoff_link_email_reminder(
         pool: sqlx::PgPool,
         delay: std::time::Duration,
     ) -> Result<(), ApplicationError> {
         tokio::spawn(async move {
             loop {
-                let _ = job::spawn_link_email_reminder(&pool, ()).await;
+                let _ = job::spawn_kickoff_link_email_reminder(
+                    &pool,
+                    std::time::Duration::from_secs(1),
+                )
+                .await;
                 tokio::time::sleep(delay).await;
             }
         });

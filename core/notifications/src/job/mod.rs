@@ -23,7 +23,7 @@ use error::JobError;
 use send_email_notification::SendEmailNotificationData;
 use send_push_notification::SendPushNotificationData;
 
-const LINK_EMAIL_REMINDER_ID: Uuid = uuid!("00000000-0000-0000-0000-000000000001");
+const KICKOFF_LINK_EMAIL_REMINDER_ID: Uuid = uuid!("00000000-0000-0000-0000-000000000001");
 
 pub async fn start_job_runner(
     pool: &sqlx::PgPool,
@@ -37,6 +37,7 @@ pub async fn start_job_runner(
         send_push_notification,
         send_email_notification,
         multi_user_event_dispatch,
+        kickoff_link_email_reminder,
         link_email_reminder,
     ]);
     registry.set_context(push_executor);
@@ -107,7 +108,7 @@ async fn link_email_reminder(
                     search_id: ids.last().expect("there should always be an id").clone(),
                     tracing_data: tracing::extract_tracing_data(),
                 };
-                spawn_link_email_reminder(&pool, data).await?;
+                spawn_link_email_reminder(&mut tx, data).await?;
             }
             for user_id in ids {
                 let payload = NotificationEventPayload::from(LinkEmailReminder {});
@@ -122,6 +123,35 @@ async fn link_email_reminder(
             }
             Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
         })
+        .await?;
+    Ok(())
+}
+
+#[job(
+    name = "kickoff_link_email_reminder",
+    channel_name = "link_email_reminder"
+)]
+async fn kickoff_link_email_reminder(
+    mut current_job: CurrentJob,
+    JobsConfig {
+        kickoff_link_email_remainder_delay,
+    }: JobsConfig,
+) -> Result<(), JobError> {
+    let pool = current_job.pool().clone();
+    JobExecutor::builder(&mut current_job)
+        .build()
+        .expect("couldn't build JobExecutor")
+        .execute(|_: Option<()>| async move {
+            let data = LinkEmailReminderData {
+                search_id: GaloyUserId::search_begin(),
+                tracing_data: tracing::extract_tracing_data(),
+            };
+            let mut tx = pool.begin().await?;
+            spawn_link_email_reminder(&mut tx, data).await?;
+            Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
+        })
+        .await?;
+    spawn_kickoff_link_email_reminder(current_job.pool(), kickoff_link_email_remainder_delay)
         .await?;
     Ok(())
 }
@@ -245,17 +275,36 @@ pub async fn spawn_multi_user_event_dispatch(
 
 #[instrument(name = "job.spawn_link_email_reminder", skip_all, fields(error, error.level, error.message), err)]
 pub async fn spawn_link_email_reminder(
-    pool: &sqlx::PgPool,
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     data: impl Into<LinkEmailReminderData>,
 ) -> Result<(), JobError> {
     let data = data.into();
-    // TODO: I think reusing the id here might cause a bug
-    match JobBuilder::new_with_id(LINK_EMAIL_REMINDER_ID, "link_email_reminder")
-        .set_channel_name("link_email_reminder")
+    if let Err(e) = link_email_reminder
+        .builder()
         .set_json(&data)
         .expect("Couldn't set json")
-        .spawn(pool)
+        .spawn(&mut **tx)
         .await
+    {
+        tracing::insert_error_fields(tracing::Level::WARN, &e);
+        return Err(e.into());
+    }
+    Ok(())
+}
+
+#[instrument(name = "job.spawn_kickoff_link_email_reminder", skip_all, fields(error, error.level, error.message), err)]
+pub async fn spawn_kickoff_link_email_reminder(
+    pool: &sqlx::PgPool,
+    duration: std::time::Duration,
+) -> Result<(), JobError> {
+    match JobBuilder::new_with_id(
+        KICKOFF_LINK_EMAIL_REMINDER_ID,
+        "kickoff_link_email_reminder",
+    )
+    .set_channel_name("link_email_reminder")
+    .set_delay(duration)
+    .spawn(pool)
+    .await
     {
         Err(sqlx::Error::Database(err)) if err.message().contains("duplicate key") => Ok(()),
         Err(e) => {
