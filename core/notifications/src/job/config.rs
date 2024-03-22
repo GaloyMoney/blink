@@ -6,13 +6,13 @@ use std::time::Duration;
 pub struct JobsConfig {
     #[serde_as(as = "serde_with::DurationSeconds<u64>")]
     #[serde(default = "default_kickoff_link_email_reminder_delay")]
-    pub kickoff_link_email_remainder_delay: Duration,
+    pub kickoff_link_email_reminder_delay: Duration,
 }
 
 impl Default for JobsConfig {
     fn default() -> Self {
         Self {
-            kickoff_link_email_remainder_delay: default_kickoff_link_email_reminder_delay(),
+            kickoff_link_email_reminder_delay: default_kickoff_link_email_reminder_delay(),
         }
     }
 }

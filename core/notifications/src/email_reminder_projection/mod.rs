@@ -84,7 +84,7 @@ impl EmailReminderProjection {
              "#,
             search_id.as_ref(),
             self.config.account_liveness_threshold_minutes,
-            self.config.account_aged_threshold_minutes,
+            self.config.account_age_threshold_minutes,
             self.config.notification_cool_off_threshold_minutes,
             PAGINATION_BATCH_SIZE + 1,
         )

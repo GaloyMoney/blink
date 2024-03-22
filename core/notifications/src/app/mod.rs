@@ -44,11 +44,12 @@ impl NotificationsApp {
             email_executor,
             settings.clone(),
             email_reminder_projection.clone(),
+            config.jobs.clone(),
         )
         .await?;
         Self::spawn_kickoff_link_email_reminder(
             pool.clone(),
-            config.jobs.kickoff_link_email_remainder_delay,
+            config.jobs.kickoff_link_email_reminder_delay,
         )
         .await?;
         Ok(Self {
