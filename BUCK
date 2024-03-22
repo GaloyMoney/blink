@@ -1,4 +1,4 @@
-load("@toolchains//workspace-pnpm:macros.bzl", "pnpm_workspace")
+load("@toolchains//workspace-pnpm:macros.bzl", "pnpm_workspace", "build_workspace_node_modules")
 
 pnpm_workspace(
   name = "workspace",
@@ -17,5 +17,10 @@ pnpm_workspace(
 
 export_file(
     name = "rustfmt.toml",
+    visibility = ["PUBLIC"],
+)
+
+build_workspace_node_modules(
+    name = "node_modules",
     visibility = ["PUBLIC"],
 )

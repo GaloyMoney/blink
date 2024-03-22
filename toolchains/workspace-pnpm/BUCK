@@ -4,6 +4,11 @@ export_file(
 )
 
 export_file(
+  name = "build_workspace_node_modules.py",
+  visibility = ["PUBLIC"],
+)
+
+export_file(
   name = "build_npm_bin.py",
   visibility = ["PUBLIC"],
 )

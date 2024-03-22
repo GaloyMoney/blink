@@ -1,4 +1,5 @@
 WorkspacePnpmToolchainInfo = provider(fields = [
+  "build_workspace_node_modules",
   "build_node_modules",
   "build_npm_bin",
   "prepare_package_context",
@@ -18,6 +19,7 @@ def workspace_pnpm_toolchain_impl(ctx) -> list[[DefaultInfo, WorkspacePnpmToolch
     return [
         DefaultInfo(),
         WorkspacePnpmToolchainInfo(
+            build_workspace_node_modules = ctx.attrs._build_workspace_node_modules,
             build_node_modules = ctx.attrs._build_node_modules,
             build_npm_bin = ctx.attrs._build_npm_bin,
             prepare_package_context = ctx.attrs._prepare_package_context,
@@ -34,6 +36,9 @@ def workspace_pnpm_toolchain_impl(ctx) -> list[[DefaultInfo, WorkspacePnpmToolch
 workspace_pnpm_toolchain = rule(
     impl = workspace_pnpm_toolchain_impl,
     attrs = {
+        "_build_workspace_node_modules": attrs.dep(
+            default = "toolchains//workspace-pnpm:build_workspace_node_modules.py",
+        ),
         "_build_node_modules": attrs.dep(
             default = "toolchains//workspace-pnpm:build_node_modules.py",
         ),

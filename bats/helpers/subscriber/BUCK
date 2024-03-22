@@ -6,4 +6,5 @@ load(
 dev_pnpm_task_binary(
   name = "run",
   command = "subscriber",
+  deps = ["//:node_modules"],
 )

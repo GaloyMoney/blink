@@ -132,6 +132,50 @@ _pnpm_workspace = rule(
     },
 )
 
+def build_workspace_node_modules_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
+    out = ctx.actions.declare_output("root", dir = True)
+
+    pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
+    package_dir = cmd_args(ctx.label.package).relative_to(ctx.label.cell_root)
+
+    cmd = cmd_args(
+        ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
+        pnpm_toolchain.build_workspace_node_modules[DefaultInfo].default_outputs,
+    )
+    if ctx.attrs.root_workspace:
+        cmd.add("--package-dir")
+        cmd.add(package_dir)
+    else:
+        cmd.add("--root-dir")
+        cmd.add(package_dir)
+    cmd.add(out.as_output())
+    cmd.hidden([ctx.attrs.pnpm_lock])
+
+    ctx.actions.run(cmd, category = "pnpm", identifier = "install")
+
+    return [DefaultInfo(default_output = out)]
+
+build_workspace_node_modules = rule(
+    impl = build_workspace_node_modules_impl,
+    attrs = {
+        "pnpm_lock": attrs.source(
+            default = "//:pnpm-lock.yaml",
+            doc = """Workspace Pnpm lock file""",
+        ),
+        "root_workspace": attrs.bool(
+            default = True,
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
+
 def build_node_modules_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
     out = ctx.actions.declare_output("root", dir = True)
 
@@ -1051,16 +1095,11 @@ def pnpm_task_binary_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
 set -euo pipefail
 
 rootpath="$(git rev-parse --show-toplevel)"
-install_node_modules="$1"
-npm_package_path="$2"
-env_json="$3"
-npm_run_command="$4"
+npm_package_path="$1"
+env_json="$2"
+npm_run_command="$3"
 
 cd "$rootpath/$npm_package_path"
-if [ "$install_node_modules" = "True" ]; then
-    pnpm install --frozen-lockfile
-fi
-
 if [[ -f "$env_json" ]]; then
     while IFS="=" read -r key value
     do
@@ -1068,8 +1107,8 @@ if [[ -f "$env_json" ]]; then
     done < <(jq -r "to_entries|map(\\"\(.key)=\(.value|tostring)\\")|.[]" "$env_json")
 fi
 
-if [ "${*:5}" ]; then
-    exec pnpm run --report-summary "$npm_run_command" -- "${@:5}"
+if [ "${*:4}" ]; then
+    exec pnpm run --report-summary "$npm_run_command" -- "${@:4}"
 else
     exec pnpm run --report-summary "$npm_run_command"
 fi
@@ -1078,7 +1117,6 @@ fi
     env_json = ctx.attrs.env_json if ctx.attrs.env_json else ""
     args = cmd_args([
         script,
-        str(ctx.attrs.local_node_modules),
         ctx.label.package,
         env_json,
         ctx.attrs.command
@@ -1090,7 +1128,6 @@ fi
 
 dev_pnpm_task_binary = rule(impl = pnpm_task_binary_impl, attrs = {
     "command": attrs.string(doc = """pnpm command to run"""),
-    "local_node_modules": attrs.bool(default = True, doc = """Need to run pnpm install first?"""),
     "srcs": attrs.list(attrs.source(), default = [], doc = """List of sources we require"""),
     "deps": attrs.list(attrs.source(), default = [], doc = """List of dependencies we require"""),
     "env_json": attrs.option(
@@ -1100,16 +1137,19 @@ dev_pnpm_task_binary = rule(impl = pnpm_task_binary_impl, attrs = {
     ),
 })
 
-def pnpm_task_test_impl(ctx: AnalysisContext) -> list[[DefaultInfo, ExternalRunnerTestInfo]]:
+def pnpm_task_test_impl(ctx: AnalysisContext) -> list[[
+    DefaultInfo,
+    RunInfo,
+    ExternalRunnerTestInfo
+]]:
     script = ctx.actions.write("pnpm-run.sh", """\
 #!/usr/bin/env bash
 set -euo pipefail
 
 rootpath="$(git rev-parse --show-toplevel)"
-install_node_modules="$1"
-npm_package_path="$2"
-env_json="$3"
-npm_run_command="$4"
+npm_package_path="$1"
+env_json="$2"
+npm_run_command="$3"
 
 if [[ -f "$env_json" ]]; then
     while IFS="=" read -r key value
@@ -1119,30 +1159,42 @@ if [[ -f "$env_json" ]]; then
 fi
 
 cd "$rootpath/$npm_package_path"
-if [ "$install_node_modules" = "True" ]; then
-    pnpm install --frozen-lockfile
-fi
 exec pnpm run --report-summary "$npm_run_command"
 """, is_executable = True)
+
     env_json = ctx.attrs.env_json if ctx.attrs.env_json else ""
-    command = [
+
+    run_cmd_args = cmd_args([
         script,
-        str(ctx.attrs.local_node_modules),
         ctx.label.package,
         env_json,
         ctx.attrs.command,
+    ])
+    run_cmd_args.hidden([ctx.attrs.deps])
+    run_cmd_args.hidden([ctx.attrs.srcs])
+    args_file = ctx.actions.write("args.txt", run_cmd_args)
+
+    return inject_test_run_info(
+        ctx,
+        ExternalRunnerTestInfo(
+            type = "integration",
+            command = [run_cmd_args],
+        )
+     ) + [
+        DefaultInfo(default_output = args_file),
     ]
-    return [DefaultInfo(), ExternalRunnerTestInfo(type = "integration", command = command)]
 
 dev_pnpm_task_test = rule(impl = pnpm_task_test_impl, attrs = {
     "command": attrs.string(default = "start", doc = """pnpm command to run"""),
-    "local_node_modules": attrs.bool(default = True, doc = """Need to run pnpm install first?"""),
     "srcs": attrs.list(attrs.source(), default = [], doc = """List of sources we require"""),
     "deps": attrs.list(attrs.source(), default = [], doc = """List of dependencies we require"""),
     "env_json": attrs.option(
         attrs.source(),
         doc = """buck2 target for json file with env variables required.""",
         default = None,
+    ),
+    "_inject_test_env": attrs.default_only(
+        attrs.dep(default = "prelude//test/tools:inject_test_env"),
     ),
 })
 

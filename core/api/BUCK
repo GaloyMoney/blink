@@ -23,6 +23,7 @@ dev_deps_srcs = {
 dev_pnpm_task_binary(
   name = "fix-lint",
   command = "eslint-fix",
+  deps = ["//:node_modules"],
 )
 
 export_file(
@@ -152,6 +153,7 @@ eslint(
 dev_pnpm_task_test(
   name = "dev-check-lint",
   command = "eslint-check",
+  deps = ["//:node_modules"],
 )
 
 typescript_check(
@@ -162,6 +164,7 @@ typescript_check(
 dev_pnpm_task_test(
   name = "dev-check-type",
   command = "tsc-check",
+  deps = ["//:node_modules"],
 )
 
 yaml_check(
@@ -182,6 +185,7 @@ madge_check(
 dev_pnpm_task_test(
   name = "dev-check-circular-dependencies",
   command = "circular-deps-check",
+  deps = ["//:node_modules"],
 )
 
 jest_test(
@@ -231,12 +235,14 @@ dev_pnpm_task_binary(
   name = "dev",
   command = "dev:api",
   srcs = [":src"],
+  deps = ["//:node_modules"],
 )
 
 dev_pnpm_task_binary(
   name = "dev-trigger",
   command = "dev:api-trigger",
   srcs = [":src"],
+  deps = ["//:node_modules"],
   visibility = ["PUBLIC"],
 )
 
@@ -244,6 +250,7 @@ dev_pnpm_task_binary(
   name = "dev-exporter",
   command = "dev:api-exporter",
   srcs = [":src"],
+  deps = ["//:node_modules"],
   visibility = ["PUBLIC"],
 )
 
@@ -251,6 +258,7 @@ dev_pnpm_task_binary(
   name = "dev-ws-server",
   command = "dev:api-ws-server",
   srcs = [":src"],
+  deps = ["//:node_modules"],
   visibility = ["PUBLIC"],
 )
 
@@ -258,6 +266,7 @@ dev_pnpm_task_binary(
   name = "dev-cron",
   command = "dev:cron",
   srcs = [":src"],
+  deps = ["//:node_modules"],
   visibility = ["PUBLIC"],
   env_json = "//dev:serve_env",
 )
@@ -266,11 +275,13 @@ dev_pnpm_task_binary(
   name = "watch-compile",
   command = "watch:compile",
   srcs = [":src"] + [":test_src"],
+  deps = ["//:node_modules"],
 )
 
 dev_pnpm_task_binary(
   name = "watch-unit",
   command = "test:watch-unit",
+  deps = ["//:node_modules"],
   env_json = "//dev:dummy_env",
 )
 
@@ -278,4 +289,5 @@ dev_pnpm_task_binary(
   name = "mongodb-migrate",
   command = "mongodb-migrate",
   srcs = [":src"],
+  deps = ["//:node_modules"],
 )
