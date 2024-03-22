@@ -133,7 +133,7 @@ async fn link_email_reminder(
 async fn kickoff_link_email_reminder(
     mut current_job: CurrentJob,
     JobsConfig {
-        kickoff_link_email_remainder_delay,
+        kickoff_link_email_reminder_delay,
     }: JobsConfig,
 ) -> Result<(), JobError> {
     let pool = current_job.pool().clone();
@@ -150,7 +150,7 @@ async fn kickoff_link_email_reminder(
             Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
         })
         .await?;
-    spawn_kickoff_link_email_reminder(current_job.pool(), kickoff_link_email_remainder_delay)
+    spawn_kickoff_link_email_reminder(current_job.pool(), kickoff_link_email_reminder_delay)
         .await?;
     Ok(())
 }
