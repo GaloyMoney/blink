@@ -7,7 +7,7 @@
 #   port: 6685
 app:
   # jobs:
-  #   link_email_reminder_delay: 5
+  #   kickoff_link_email_reminder_delay: 5
   # link_email_reminder:
   #   account_liveness_threshold_minutes: 30240
   #   account_aged_threshold_minutes: 30240
