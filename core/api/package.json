@@ -30,7 +30,8 @@
     "dev:cron": "tsx src/servers/cron.ts",
     "migrate:status": "migrate-mongo status -f src/migrations/migrate-mongo-config.js",
     "migrate:up": "migrate-mongo up -f src/migrations/migrate-mongo-config.js",
-    "mongodb-migrate": "pnpm run migrate:status && pnpm run migrate:up && pnpm run migrate:status"
+    "mongodb-migrate": "pnpm run migrate:status && pnpm run migrate:up && pnpm run migrate:status",
+    "codegen:notifications": "cd ./src/services/notifications/proto && buf generate"
   },
   "engines": {
     "node": "20"
