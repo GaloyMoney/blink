@@ -9,6 +9,7 @@ use std::sync::Arc;
 
 use crate::{
     email_executor::EmailExecutor,
+    email_reminder_projection::EmailReminderProjection,
     job::{self},
     notification_cool_off_tracker::*,
     notification_event::*,
@@ -24,6 +25,7 @@ use error::*;
 pub struct NotificationsApp {
     _config: AppConfig,
     settings: UserNotificationSettingsRepo,
+    email_reminder_projection: EmailReminderProjection,
     pool: Pool<Postgres>,
     _runner: Arc<JobRunnerHandle>,
 }
@@ -34,12 +36,26 @@ impl NotificationsApp {
         let push_executor =
             PushExecutor::init(config.push_executor.clone(), settings.clone()).await?;
         let email_executor = EmailExecutor::init(config.email_executor.clone(), settings.clone())?;
-        let runner =
-            job::start_job_runner(&pool, push_executor, email_executor, settings.clone()).await?;
+        let email_reminder_projection =
+            EmailReminderProjection::new(&pool, config.email_reminder_projection.clone());
+        let runner = job::start_job_runner(
+            &pool,
+            push_executor,
+            email_executor,
+            settings.clone(),
+            email_reminder_projection.clone(),
+        )
+        .await?;
+        Self::spawn_kickoff_link_email_reminder(
+            pool.clone(),
+            config.jobs.kickoff_link_email_remainder_delay,
+        )
+        .await?;
         Ok(Self {
             _config: config,
             pool,
             settings,
+            email_reminder_projection,
             _runner: Arc::new(runner),
         })
     }
@@ -164,7 +180,14 @@ impl NotificationsApp {
     ) -> Result<(), ApplicationError> {
         let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
         user_settings.update_email_address(addr);
-        self.settings.persist(&mut user_settings).await?;
+        let mut tx = self.pool.begin().await?;
+        self.settings
+            .persist_in_tx(&mut tx, &mut user_settings)
+            .await?;
+        self.email_reminder_projection
+            .user_added_email(&mut tx, user_id)
+            .await?;
+        tx.commit().await?;
         Ok(())
     }
 
@@ -193,6 +216,22 @@ impl NotificationsApp {
         job::spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
         tx.commit().await?;
         Ok(())
+    }
+
+    #[instrument(name = "app.handle_transaction_occurred_event", skip(self), err)]
+    pub async fn handle_transaction_occurred_event(
+        &self,
+        user_id: GaloyUserId,
+        transaction_occurred: TransactionOccurred,
+    ) -> Result<(), ApplicationError> {
+        let user_settings = self.settings.find_for_user_id(&user_id).await?;
+        if user_settings.email_address().is_none() {
+            self.email_reminder_projection
+                .transaction_occurred_for_user_without_email(&user_id)
+                .await?;
+        }
+        self.handle_single_user_event(user_id, transaction_occurred)
+            .await
     }
 
     #[instrument(name = "app.handle_price_changed_event", skip(self), err)]
@@ -237,6 +276,29 @@ impl NotificationsApp {
         )
         .await?;
         tx.commit().await?;
+        Ok(())
+    }
+
+    #[instrument(
+        name = "app.kickoff_link_email_reminder",
+        level = "trace",
+        skip_all,
+        err
+    )]
+    async fn spawn_kickoff_link_email_reminder(
+        pool: sqlx::PgPool,
+        delay: std::time::Duration,
+    ) -> Result<(), ApplicationError> {
+        tokio::spawn(async move {
+            loop {
+                let _ = job::spawn_kickoff_link_email_reminder(
+                    &pool,
+                    std::time::Duration::from_secs(1),
+                )
+                .await;
+                tokio::time::sleep(delay).await;
+            }
+        });
         Ok(())
     }
 }

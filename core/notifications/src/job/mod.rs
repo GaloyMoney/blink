@@ -1,41 +1,49 @@
+mod config;
 mod send_email_notification;
 mod send_push_notification;
 
 pub mod error;
 
 use serde::{Deserialize, Serialize};
-use sqlxmq::{job, CurrentJob, JobRegistry, JobRunnerHandle};
+use sqlxmq::{job, CurrentJob, JobBuilder, JobRegistry, JobRunnerHandle};
 use tracing::instrument;
+use uuid::{uuid, Uuid};
 
 use std::collections::HashMap;
 
 use job_executor::{JobExecutor, JobResult};
 
 use crate::{
-    email_executor::EmailExecutor, notification_event::*, primitives::GaloyUserId,
-    push_executor::PushExecutor, user_notification_settings::*,
+    email_executor::EmailExecutor, email_reminder_projection::*, notification_event::*,
+    primitives::GaloyUserId, push_executor::PushExecutor, user_notification_settings::*,
 };
 
+pub use config::*;
 use error::JobError;
-
 use send_email_notification::SendEmailNotificationData;
 use send_push_notification::SendPushNotificationData;
+
+const KICKOFF_LINK_EMAIL_REMINDER_ID: Uuid = uuid!("00000000-0000-0000-0000-000000000001");
 
 pub async fn start_job_runner(
     pool: &sqlx::PgPool,
     push_executor: PushExecutor,
     email_executor: EmailExecutor,
     settings: UserNotificationSettingsRepo,
+    email_reminder_projection: EmailReminderProjection,
 ) -> Result<JobRunnerHandle, JobError> {
     let mut registry = JobRegistry::new(&[
         all_user_event_dispatch,
         send_push_notification,
         send_email_notification,
         multi_user_event_dispatch,
+        kickoff_link_email_reminder,
+        link_email_reminder,
     ]);
     registry.set_context(push_executor);
     registry.set_context(email_executor);
     registry.set_context(settings);
+    registry.set_context(email_reminder_projection);
 
     Ok(registry.runner(pool).set_keep_alive(false).run().await?)
 }
@@ -75,6 +83,72 @@ async fn all_user_event_dispatch(
             }
             Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
         })
+        .await?;
+    Ok(())
+}
+
+#[job(name = "link_email_reminder", channel_name = "link_email_reminder")]
+async fn link_email_reminder(
+    mut current_job: CurrentJob,
+    email_reminder_projection: EmailReminderProjection,
+) -> Result<(), JobError> {
+    let pool = current_job.pool().clone();
+    JobExecutor::builder(&mut current_job)
+        .build()
+        .expect("couldn't build JobExecutor")
+        .execute(|data| async move {
+            let data: LinkEmailReminderData = data.expect("no LinkEmailReminderData available");
+            let mut tx = pool.begin().await?;
+            let (ids, more) = email_reminder_projection
+                .list_ids_to_notify_after(&mut tx, data.search_id.clone())
+                .await?;
+
+            if more {
+                let data = LinkEmailReminderData {
+                    search_id: ids.last().expect("there should always be an id").clone(),
+                    tracing_data: tracing::extract_tracing_data(),
+                };
+                spawn_link_email_reminder(&mut tx, data).await?;
+            }
+            for user_id in ids {
+                let payload = NotificationEventPayload::from(LinkEmailReminder {});
+                if payload.should_send_email() {
+                    spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone()))
+                        .await?;
+                }
+                spawn_send_push_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
+            }
+            Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
+        })
+        .await?;
+    Ok(())
+}
+
+#[job(
+    name = "kickoff_link_email_reminder",
+    channel_name = "link_email_reminder"
+)]
+async fn kickoff_link_email_reminder(
+    mut current_job: CurrentJob,
+    JobsConfig {
+        kickoff_link_email_remainder_delay,
+    }: JobsConfig,
+) -> Result<(), JobError> {
+    let pool = current_job.pool().clone();
+    JobExecutor::builder(&mut current_job)
+        .build()
+        .expect("couldn't build JobExecutor")
+        .execute(|_: Option<()>| async move {
+            let data = LinkEmailReminderData {
+                search_id: GaloyUserId::search_begin(),
+                tracing_data: tracing::extract_tracing_data(),
+            };
+            let mut tx = pool.begin().await?;
+            spawn_link_email_reminder(&mut tx, data).await?;
+            Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
+        })
+        .await?;
+    spawn_kickoff_link_email_reminder(current_job.pool(), kickoff_link_email_remainder_delay)
         .await?;
     Ok(())
 }
@@ -196,6 +270,48 @@ pub async fn spawn_multi_user_event_dispatch(
     Ok(())
 }
 
+#[instrument(name = "job.spawn_link_email_reminder", skip_all, fields(error, error.level, error.message), err)]
+pub async fn spawn_link_email_reminder(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    data: impl Into<LinkEmailReminderData>,
+) -> Result<(), JobError> {
+    let data = data.into();
+    if let Err(e) = link_email_reminder
+        .builder()
+        .set_json(&data)
+        .expect("Couldn't set json")
+        .spawn(&mut **tx)
+        .await
+    {
+        tracing::insert_error_fields(tracing::Level::WARN, &e);
+        return Err(e.into());
+    }
+    Ok(())
+}
+
+#[instrument(name = "job.spawn_kickoff_link_email_reminder", skip_all, fields(error, error.level, error.message), err)]
+pub async fn spawn_kickoff_link_email_reminder(
+    pool: &sqlx::PgPool,
+    duration: std::time::Duration,
+) -> Result<(), JobError> {
+    match JobBuilder::new_with_id(
+        KICKOFF_LINK_EMAIL_REMINDER_ID,
+        "kickoff_link_email_reminder",
+    )
+    .set_channel_name("link_email_reminder")
+    .set_delay(duration)
+    .spawn(pool)
+    .await
+    {
+        Err(sqlx::Error::Database(err)) if err.message().contains("duplicate key") => Ok(()),
+        Err(e) => {
+            tracing::insert_error_fields(tracing::Level::ERROR, &e);
+            Err(e.into())
+        }
+        Ok(_) => Ok(()),
+    }
+}
+
 #[job(
     name = "send_email_notification",
     channel_name = "send_email_notification"
@@ -246,8 +362,24 @@ pub(super) struct AllUserEventDispatchData {
 impl From<NotificationEventPayload> for AllUserEventDispatchData {
     fn from(payload: NotificationEventPayload) -> Self {
         Self {
-            search_id: GaloyUserId::from(String::new()),
+            search_id: GaloyUserId::search_begin(),
             payload,
+            tracing_data: tracing::extract_tracing_data(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub(super) struct LinkEmailReminderData {
+    search_id: GaloyUserId,
+    #[serde(flatten)]
+    pub(super) tracing_data: HashMap<String, serde_json::Value>,
+}
+
+impl From<()> for LinkEmailReminderData {
+    fn from(_: ()) -> Self {
+        Self {
+            search_id: GaloyUserId::search_begin(),
             tracing_data: tracing::extract_tracing_data(),
         }
     }

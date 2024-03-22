@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM email_reminder_projection\n               WHERE galoy_user_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d05bfed34ba510df8ab1913377c36cdba1db9f4be114ba666008ad2732d479b5"
+}

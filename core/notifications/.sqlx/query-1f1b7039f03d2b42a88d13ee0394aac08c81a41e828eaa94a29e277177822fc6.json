@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO email_reminder_projection\n               (galoy_user_id, last_transaction_at) VALUES ($1, now())\n               ON CONFLICT (galoy_user_id) DO UPDATE\n               SET last_transaction_at = now()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1f1b7039f03d2b42a88d13ee0394aac08c81a41e828eaa94a29e277177822fc6"
+}

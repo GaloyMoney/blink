@@ -9,6 +9,7 @@ galoy_rust_lib(
         "//third-party/rust:serde",
         "//third-party/rust:sqlx",
         "//third-party/rust:uuid",
+        "//third-party/rust:chrono",
     ],
     srcs = glob(["src/**/*.rs"]),
     env = {
