@@ -36,7 +36,8 @@ impl NotificationsApp {
         let push_executor =
             PushExecutor::init(config.push_executor.clone(), settings.clone()).await?;
         let email_executor = EmailExecutor::init(config.email_executor.clone(), settings.clone())?;
-        let email_reminder_projection = EmailReminderProjection::new(&pool);
+        let email_reminder_projection =
+            EmailReminderProjection::new(&pool, config.email_reminder_projection.clone());
         let runner = job::start_job_runner(
             &pool,
             push_executor,

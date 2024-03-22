@@ -9,7 +9,7 @@ pub struct LinkEmailReminder {}
 
 impl NotificationEvent for LinkEmailReminder {
     fn category(&self) -> UserNotificationCategory {
-        UserNotificationCategory::Onboarding
+        UserNotificationCategory::Security
     }
 
     fn deep_link(&self) -> Option<DeepLink> {

@@ -1,26 +1,27 @@
+mod config;
 pub mod error;
 
-use chrono::*;
 use sqlx::PgPool;
 
 use crate::primitives::*;
 
+pub use config::*;
 use error::*;
 
 #[derive(Debug, Clone)]
 pub struct EmailReminderProjection {
     pool: PgPool,
+    config: EmailReminderProjectionConfig,
 }
 
 const PAGINATION_BATCH_SIZE: i64 = 1000;
 
 impl EmailReminderProjection {
-    const ACCOUNT_LIVENESS_THRESHOLD_DAYS: i64 = 21;
-    const ACCOUNT_AGED_THRESHOLD_DAYS: i64 = 21;
-    const NOTIFICATION_COOL_OFF_THRESHOLD_DAYS: i64 = 90;
-
-    pub fn new(pool: &PgPool) -> Self {
-        Self { pool: pool.clone() }
+    pub fn new(pool: &PgPool, config: EmailReminderProjectionConfig) -> Self {
+        Self {
+            pool: pool.clone(),
+            config,
+        }
     }
 
     pub async fn transaction_occurred_for_user_without_email(
@@ -59,25 +60,15 @@ impl EmailReminderProjection {
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
         search_id: GaloyUserId,
     ) -> Result<(Vec<GaloyUserId>, bool), EmailReminderProjectionError> {
-        let last_transaction_at_threshold = Utc::now()
-            - Duration::try_days(Self::ACCOUNT_LIVENESS_THRESHOLD_DAYS)
-                .expect("Should be valid duration");
-        let user_first_seen_at_threshold = Utc::now()
-            - Duration::try_days(Self::ACCOUNT_AGED_THRESHOLD_DAYS)
-                .expect("Should be valid duration");
-        let last_notified_at_threshold = Utc::now()
-            - Duration::try_days(Self::NOTIFICATION_COOL_OFF_THRESHOLD_DAYS)
-                .expect("Should be valid duration");
-
         let rows = sqlx::query!(
             r#"WITH selected_rows AS (
                  SELECT galoy_user_id
                  FROM email_reminder_projection
                  WHERE galoy_user_id > $1
                    AND last_transaction_at IS NOT NULL
-                   AND last_transaction_at > $2
-                   AND user_first_seen_at < $3
-                   AND (last_notified_at IS NULL OR last_notified_at < $4)
+                   AND last_transaction_at > (NOW() - make_interval(days => $2))
+                   AND user_first_seen_at < (NOW() - make_interval(days => $3))
+                   AND (last_notified_at IS NULL OR last_notified_at < (NOW() - make_interval(days => $4)))
                  ORDER BY galoy_user_id
                  LIMIT $5
              ),
@@ -92,9 +83,9 @@ impl EmailReminderProjection {
              FROM updated
              "#,
             search_id.as_ref(),
-            last_transaction_at_threshold,
-            user_first_seen_at_threshold,
-            last_notified_at_threshold,
+            self.config.account_liveness_threshold_days as i16,
+            self.config.account_aged_threshold_days as i16 ,
+            self.config.notification_cool_off_threshold_days as i16,
             PAGINATION_BATCH_SIZE + 1,
         )
         .fetch_all(&mut **tx)
