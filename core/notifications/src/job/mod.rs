@@ -31,6 +31,7 @@ pub async fn start_job_runner(
     email_executor: EmailExecutor,
     settings: UserNotificationSettingsRepo,
     email_reminder_projection: EmailReminderProjection,
+    jobs_config: JobsConfig,
 ) -> Result<JobRunnerHandle, JobError> {
     let mut registry = JobRegistry::new(&[
         all_user_event_dispatch,
@@ -44,6 +45,7 @@ pub async fn start_job_runner(
     registry.set_context(email_executor);
     registry.set_context(settings);
     registry.set_context(email_reminder_projection);
+    registry.set_context(jobs_config);
 
     Ok(registry.runner(pool).set_keep_alive(false).run().await?)
 }
@@ -131,7 +133,7 @@ async fn link_email_reminder(
 async fn kickoff_link_email_reminder(
     mut current_job: CurrentJob,
     JobsConfig {
-        kickoff_link_email_remainder_delay,
+        kickoff_link_email_reminder_delay,
     }: JobsConfig,
 ) -> Result<(), JobError> {
     let pool = current_job.pool().clone();
@@ -148,7 +150,7 @@ async fn kickoff_link_email_reminder(
             Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
         })
         .await?;
-    spawn_kickoff_link_email_reminder(current_job.pool(), kickoff_link_email_remainder_delay)
+    spawn_kickoff_link_email_reminder(current_job.pool(), kickoff_link_email_reminder_delay)
         .await?;
     Ok(())
 }
