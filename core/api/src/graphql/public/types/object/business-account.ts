@@ -78,6 +78,10 @@ const BusinessAccount = GT.Object({
       type: GT.NonNull(RealtimePrice),
       resolve: async (source) => {
         const currency = source.displayCurrency
+
+        const priceCurrency = await Prices.getCurrency({ currency })
+        if (priceCurrency instanceof Error) throw mapError(priceCurrency)
+
         const btcPrice = await Prices.getCurrentSatPrice({ currency })
         if (btcPrice instanceof Error) throw mapError(btcPrice)
 
@@ -95,7 +99,8 @@ const BusinessAccount = GT.Object({
 
         return {
           timestamp: btcPrice.timestamp,
-          denominatorCurrency: currency,
+          denominatorCurrencyDetails: priceCurrency,
+          denominatorCurrency: priceCurrency.code,
           btcSatPrice: {
             base: Math.round(minorUnitPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
             offset: SAT_PRICE_PRECISION_OFFSET,

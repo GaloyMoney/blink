@@ -4,7 +4,6 @@ import { Prices } from "@/app"
 
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@/domain/pubsub"
 import {
-  checkedToDisplayCurrency,
   majorToMinorUnit,
   SAT_PRICE_PRECISION_OFFSET,
   USD_PRICE_PRECISION_OFFSET,
@@ -51,6 +50,7 @@ const RealtimePriceSubscription = {
           timestamp?: Date
           pricePerSat?: number
           pricePerUsdCent?: number
+          currency?: PriceCurrency
           displayCurrency?: DisplayCurrency
         }
       | undefined,
@@ -65,16 +65,22 @@ const RealtimePriceSubscription = {
       })
     }
 
-    const { errors, timestamp, pricePerSat, pricePerUsdCent, displayCurrency } = source
+    const {
+      errors,
+      timestamp,
+      pricePerSat,
+      pricePerUsdCent,
+      currency: priceCurrency,
+    } = source
     if (errors) return { errors: errors }
-    if (!timestamp || !pricePerSat || !pricePerUsdCent || !displayCurrency) {
+    if (!timestamp || !pricePerSat || !pricePerUsdCent || !priceCurrency) {
       return { errors: [{ message: "No price info" }] }
     }
 
     const { currency } = args.input
     if (currency instanceof Error) throw currency
 
-    if (displayCurrency !== currency) {
+    if (priceCurrency.code !== currency) {
       throw new UnknownClientError({
         message: "Got 'invalid' payload.",
         level: "fatal",
@@ -95,7 +101,8 @@ const RealtimePriceSubscription = {
       errors: [],
       realtimePrice: {
         timestamp: new Date(timestamp),
-        denominatorCurrency: currency,
+        denominatorCurrencyDetails: priceCurrency,
+        denominatorCurrency: priceCurrency.code,
         btcSatPrice: {
           base: Math.round(minorUnitPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
           offset: SAT_PRICE_PRECISION_OFFSET,
@@ -125,39 +132,33 @@ const RealtimePriceSubscription = {
       return pubsub.createAsyncIterator({ trigger: immediateTrigger })
     }
 
-    const currencies = await Prices.listCurrencies()
-    if (currencies instanceof Error) {
+    const currency = await Prices.getCurrency({ currency: displayCurrency })
+    if (currency instanceof Error) {
       pubsub.publishDelayed({
         trigger: immediateTrigger,
-        payload: { errors: [mapAndParseErrorForGqlResponse(currencies)] },
-      })
-      return pubsub.createAsyncIterator({ trigger: immediateTrigger })
-    }
-
-    const priceCurrency = currencies.find((c) => displayCurrency === c.code)
-    const checkedDisplayCurrency = checkedToDisplayCurrency(priceCurrency?.code)
-
-    if (checkedDisplayCurrency instanceof Error) {
-      pubsub.publishDelayed({
-        trigger: immediateTrigger,
-        payload: { errors: [{ message: "Unsupported exchange unit" }] },
+        payload: { errors: [mapAndParseErrorForGqlResponse(currency)] },
       })
       return pubsub.createAsyncIterator({ trigger: immediateTrigger })
     }
 
     const pricePerSat = await Prices.getCurrentSatPrice({
-      currency: checkedDisplayCurrency,
+      currency: currency.code,
     })
     const pricePerUsdCent = await Prices.getCurrentUsdCentPrice({
-      currency: checkedDisplayCurrency,
+      currency: currency.code,
     })
-    if (!(pricePerSat instanceof Error) && !(pricePerUsdCent instanceof Error)) {
+    if (
+      !(currency instanceof Error) &&
+      !(pricePerSat instanceof Error) &&
+      !(pricePerUsdCent instanceof Error)
+    ) {
       const { timestamp } = pricePerSat
       pubsub.publishDelayed({
         trigger: immediateTrigger,
         payload: {
           timestamp,
-          displayCurrency,
+          currency,
+          displayCurrency: currency.code,
           pricePerSat: pricePerSat.price,
           pricePerUsdCent: pricePerUsdCent.price,
         },

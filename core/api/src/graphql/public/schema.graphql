@@ -1235,7 +1235,9 @@ type Query {
   onChainUsdTxFee(address: OnChainAddress!, amount: CentAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainUsdTxFee!
   onChainUsdTxFeeAsBtcDenominated(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainUsdTxFee!
 
-  """Returns 1 Sat and 1 Usd Cent price for the given currency"""
+  """
+  Returns 1 Sat and 1 Usd Cent price for the given currency in minor unit
+  """
   realtimePrice(currency: DisplayCurrency = "USD"): RealtimePrice!
   userDefaultWalletId(username: Username!): WalletId! @deprecated(reason: "will be migrated to AccountDefaultWalletId")
   usernameAvailable(username: Username!): Boolean
@@ -1260,7 +1262,8 @@ type QuizClaimPayload {
 
 type RealtimePrice {
   btcSatPrice: PriceOfOneSatInMinorUnit!
-  denominatorCurrency: DisplayCurrency!
+  denominatorCurrency: DisplayCurrency! @deprecated(reason: "Deprecated in favor of denominatorCurrencyDetails")
+  denominatorCurrencyDetails: Currency!
   id: ID!
 
   """
