@@ -13,5 +13,5 @@ pub struct AppConfig {
     #[serde(default)]
     pub jobs: JobsConfig,
     #[serde(default)]
-    pub email_reminder_projection: EmailReminderProjectionConfig,
+    pub link_email_reminder: EmailReminderProjectionConfig,
 }
