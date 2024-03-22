@@ -49,7 +49,7 @@ impl NotificationsApp {
         .await?;
         Self::spawn_kickoff_link_email_reminder(
             pool.clone(),
-            config.jobs.kickoff_link_email_reminder_delay,
+            config.jobs.kickoff_link_email_reminder_delay(),
         )
         .await?;
         Ok(Self {
