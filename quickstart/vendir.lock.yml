@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(toolchain): refactor pnpm install from dev_task rules (#4219)...'
-      sha: 9361d388b6d578eb5521739a2ebf41b18fb32640
+      commitTitle: 'chore: configure otel sampling to be ''always on'' (#4226)...'
+      sha: 4d96d0bce4ce093ccb2166253f16bd1070118df8
       tags:
-      - 0.20.130-6-g9361d388b
+      - 0.20.130-8-g4d96d0bce
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(toolchain): refactor pnpm install from dev_task rules (#4219)...'
-      sha: 9361d388b6d578eb5521739a2ebf41b18fb32640
+      commitTitle: 'chore: configure otel sampling to be ''always on'' (#4226)...'
+      sha: 4d96d0bce4ce093ccb2166253f16bd1070118df8
       tags:
-      - 0.20.130-6-g9361d388b
+      - 0.20.130-8-g4d96d0bce
     path: schemas/
   - git:
-      commitTitle: 'chore(toolchain): refactor pnpm install from dev_task rules (#4219)...'
-      sha: 9361d388b6d578eb5521739a2ebf41b18fb32640
+      commitTitle: 'chore: configure otel sampling to be ''always on'' (#4226)...'
+      sha: 4d96d0bce4ce093ccb2166253f16bd1070118df8
       tags:
-      - 0.20.130-6-g9361d388b
+      - 0.20.130-8-g4d96d0bce
     path: gql/
   path: ./graphql
 kind: LockConfig
