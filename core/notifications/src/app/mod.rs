@@ -220,21 +220,14 @@ impl NotificationsApp {
         user_id: GaloyUserId,
         transaction_occurred: TransactionOccurred,
     ) -> Result<(), ApplicationError> {
-        let payload = NotificationEventPayload::from(transaction_occurred);
-        let mut tx = self.pool.begin().await?;
-        if payload.should_send_email() {
-            job::spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
-        }
-        job::spawn_send_push_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
-
         let user_settings = self.settings.find_for_user_id(&user_id).await?;
         if user_settings.email_address().is_none() {
             self.email_reminder_projection
-                .transaction_occurred_for_user_without_email(&mut tx, user_id)
+                .transaction_occurred_for_user_without_email(&user_id)
                 .await?;
         }
-        tx.commit().await?;
-        Ok(())
+        self.handle_single_user_event(user_id, transaction_occurred)
+            .await
     }
 
     #[instrument(name = "app.handle_price_changed_event", skip(self), err)]

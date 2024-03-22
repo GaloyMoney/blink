@@ -10,7 +10,7 @@ use error::*;
 
 #[derive(Debug, Clone)]
 pub struct EmailReminderProjection {
-    _pool: PgPool,
+    pool: PgPool,
 }
 
 const PAGINATION_BATCH_SIZE: i64 = 1000;
@@ -21,9 +21,7 @@ impl EmailReminderProjection {
     const NOTIFICATION_COOL_OFF_THRESHOLD_DAYS: i64 = 90;
 
     pub fn new(pool: &PgPool) -> Self {
-        Self {
-            _pool: pool.clone(),
-        }
+        Self { pool: pool.clone() }
     }
 
     pub async fn new_user_without_email(
@@ -45,8 +43,7 @@ impl EmailReminderProjection {
 
     pub async fn transaction_occurred_for_user_without_email(
         &self,
-        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-        galoy_user_id: GaloyUserId,
+        galoy_user_id: &GaloyUserId,
     ) -> Result<(), EmailReminderProjectionError> {
         sqlx::query!(
             r#"INSERT INTO email_reminder_projection
@@ -55,7 +52,7 @@ impl EmailReminderProjection {
                SET last_transaction_at = now()"#,
             galoy_user_id.as_ref(),
         )
-        .execute(&mut **tx)
+        .execute(&self.pool)
         .await?;
         Ok(())
     }
@@ -118,7 +115,7 @@ impl EmailReminderProjection {
             last_notified_at_threshold,
             PAGINATION_BATCH_SIZE + 1,
         )
-        .fetch_all(&self._pool)
+        .fetch_all(&self.pool)
         .await?;
 
         let more = rows.len() > PAGINATION_BATCH_SIZE as usize;
