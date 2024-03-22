@@ -1,3 +1,7 @@
+type GetCurrencyArgs = {
+  currency: string
+}
+
 type GetCurrentPriceArgs = {
   walletCurrency: WalletCurrency
   displayCurrency: string

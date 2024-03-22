@@ -1,13 +1,14 @@
 import getUuidByString from "uuid-by-string"
 
-import Timestamp from "../../../shared/types/scalar/timestamp"
-
-import DisplayCurrencyGT from "../../../shared/types/scalar/display-currency"
+import Currency from "./currency"
 
 import PriceOfOneSatInMinorUnit from "./price-of-one-sat-in-minor-unit"
+
 import PriceOfOneUsdCentInMinorUnit from "./price-of-one-usd-cent-in-minor-unit"
 
 import { GT } from "@/graphql/index"
+import Timestamp from "@/graphql/shared/types/scalar/timestamp"
+import DisplayCurrencyGT from "@/graphql/shared/types/scalar/display-currency"
 
 const RealtimePrice = GT.Object({
   name: "RealtimePrice",
@@ -22,7 +23,11 @@ const RealtimePrice = GT.Object({
       description:
         "Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC)",
     },
-    denominatorCurrency: { type: GT.NonNull(DisplayCurrencyGT) },
+    denominatorCurrencyDetails: { type: GT.NonNull(Currency) },
+    denominatorCurrency: {
+      deprecationReason: "Deprecated in favor of denominatorCurrencyDetails",
+      type: GT.NonNull(DisplayCurrencyGT),
+    },
 
     btcSatPrice: { type: GT.NonNull(PriceOfOneSatInMinorUnit) },
     usdCentPrice: { type: GT.NonNull(PriceOfOneUsdCentInMinorUnit) },

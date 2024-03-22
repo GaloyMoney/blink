@@ -126,7 +126,7 @@ export const PriceService = (): IPriceService => {
 
       return currencies.map(
         (c: {
-          code: string
+          code: DisplayCurrency
           symbol: string
           name: string
           flag: string

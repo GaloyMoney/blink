@@ -9,6 +9,34 @@ load "../../helpers/subscriber.bash"
   [[ "${network}" = "regtest" ]] || exit 1
 }
 
+@test "public: can query realtime price" {
+  currency="EUR"
+  variables=$(
+    jq -n \
+    --arg currency "$currency" \
+    '{currency: $currency}'
+  )
+  exec_graphql 'anon' 'real-time-price' "$variables"
+
+  errors="$(graphql_output '.errors | length')"
+  [[ "${errors}" = "0" ]] || exit 1
+
+  currency_id="$(graphql_output '.data.realtimePrice.denominatorCurrencyDetails.id')"
+  currency_frac_digits="$(graphql_output '.data.realtimePrice.denominatorCurrencyDetails.fractionDigits')"
+  denominatorCurrency="$(graphql_output '.data.realtimePrice.denominatorCurrency')"
+  sat_price_base="$(graphql_output '.data.realtimePrice.btcSatPrice.base')"
+  sat_price_offset="$(graphql_output '.data.realtimePrice.btcSatPrice.offset')"
+  cents_price_base="$(graphql_output '.data.realtimePrice.usdCentPrice.base')"
+  cents_price_offset="$(graphql_output '.data.realtimePrice.usdCentPrice.offset')"
+  [[ "${currency_id}" = "${currency}" ]] || exit 1
+  [[ "${currency_frac_digits}" = 2 ]] || exit 1
+  [[ "${denominatorCurrency}" = "${currency}" ]] || exit 1
+  [[ "$sat_price_base" -gt 0 ]] || exit 1
+  [[ "$sat_price_offset" = 12 ]] || exit 1
+  [[ "$cents_price_base" -gt 0 ]] || exit 1
+  [[ "$cents_price_offset" = 6 ]] || exit 1
+}
+
 @test "public: can apply idempotency key to queries" {
   fixed_idempotency_key=$(new_idempotency_key)
   original_new_idempotency_key=$(declare -f new_idempotency_key)
@@ -55,7 +83,6 @@ load "../../helpers/subscriber.bash"
 }
 
 @test "public: can subscribe to realtime price" {
-  skip "until price server can take a mocked realtime price config"
   subscribe_to 'anon' real-time-price-sub '{"currency": "EUR"}'
   retry 10 1 grep 'Data.*\brealtimePrice\b.*EUR' "${SUBSCRIBER_LOG_FILE}"
 
