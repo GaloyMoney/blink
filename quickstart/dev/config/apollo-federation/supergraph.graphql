@@ -1598,7 +1598,9 @@ type Query
   onChainUsdTxFee(address: OnChainAddress!, amount: CentAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainUsdTxFee! @join__field(graph: PUBLIC)
   onChainUsdTxFeeAsBtcDenominated(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainUsdTxFee! @join__field(graph: PUBLIC)
 
-  """Returns 1 Sat and 1 Usd Cent price for the given currency"""
+  """
+  Returns 1 Sat and 1 Usd Cent price for the given currency in minor unit
+  """
   realtimePrice(currency: DisplayCurrency = "USD"): RealtimePrice! @join__field(graph: PUBLIC)
   userDefaultWalletId(username: Username!): WalletId! @join__field(graph: PUBLIC) @deprecated(reason: "will be migrated to AccountDefaultWalletId")
   usernameAvailable(username: Username!): Boolean @join__field(graph: PUBLIC)
@@ -1631,7 +1633,8 @@ type RealtimePrice
   @join__type(graph: PUBLIC)
 {
   btcSatPrice: PriceOfOneSatInMinorUnit!
-  denominatorCurrency: DisplayCurrency!
+  denominatorCurrency: DisplayCurrency! @deprecated(reason: "Deprecated in favor of denominatorCurrencyDetails")
+  denominatorCurrencyDetails: Currency!
   id: ID!
 
   """

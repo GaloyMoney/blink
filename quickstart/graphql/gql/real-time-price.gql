@@ -1,0 +1,22 @@
+query RealtimePrice($currency: DisplayCurrency) {
+  realtimePrice(currency: $currency) {
+    btcSatPrice {
+      base
+      offset
+    }
+    denominatorCurrencyDetails {
+      flag
+      fractionDigits
+      id
+      name
+      symbol
+    }
+    denominatorCurrency
+    id
+    timestamp
+    usdCentPrice {
+      base
+      offset
+    }
+  }
+}

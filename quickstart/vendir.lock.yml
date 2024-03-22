@@ -2,27 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(core): move intraledger send locked steps into function
-        (#4181)...'
-      sha: d087845ddbb5044c0eede2691c47ccd0b912157b
+      commitTitle: 'refactor(core): add price currency to real time price query/subscriptions
+        (#4212)...'
+      sha: d02c36bd2199d657680875478210faa2a80064a4
       tags:
-      - 0.20.128-2-gd087845dd
+      - 0.20.129-1-gd02c36bd2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(core): move intraledger send locked steps into function
-        (#4181)...'
-      sha: d087845ddbb5044c0eede2691c47ccd0b912157b
+      commitTitle: 'refactor(core): add price currency to real time price query/subscriptions
+        (#4212)...'
+      sha: d02c36bd2199d657680875478210faa2a80064a4
       tags:
-      - 0.20.128-2-gd087845dd
+      - 0.20.129-1-gd02c36bd2
     path: schemas/
   - git:
-      commitTitle: 'refactor(core): move intraledger send locked steps into function
-        (#4181)...'
-      sha: d087845ddbb5044c0eede2691c47ccd0b912157b
+      commitTitle: 'refactor(core): add price currency to real time price query/subscriptions
+        (#4212)...'
+      sha: d02c36bd2199d657680875478210faa2a80064a4
       tags:
-      - 0.20.128-2-gd087845dd
+      - 0.20.129-1-gd02c36bd2
     path: gql/
   path: ./graphql
 kind: LockConfig
