@@ -74,6 +74,14 @@ impl UserNotificationSettings {
         .expect("Could not create default")
     }
 
+    pub fn created_at(&self) -> Option<chrono::DateTime<chrono::Utc>> {
+        self.events.entity_first_persisted_at
+    }
+
+    pub fn is_new(&self) -> bool {
+        self.created_at().is_none()
+    }
+
     pub fn update_locale(&mut self, locale: GaloyLocale) {
         if self.locale().as_ref() != Some(&locale) {
             self.events

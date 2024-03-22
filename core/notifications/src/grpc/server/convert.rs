@@ -74,6 +74,9 @@ impl From<UserNotificationCategory> for proto::NotificationCategory {
             }
             UserNotificationCategory::Marketing => proto::NotificationCategory::Marketing,
             UserNotificationCategory::Price => proto::NotificationCategory::Price,
+            UserNotificationCategory::Security => {
+                unreachable!("should never match security to grpc category")
+            }
         }
     }
 }

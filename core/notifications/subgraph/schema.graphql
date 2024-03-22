@@ -37,6 +37,7 @@ enum UserNotificationCategory {
 	ADMIN_NOTIFICATION
 	MARKETING
 	PRICE
+	SECURITY
 }
 
 enum UserNotificationChannel {
