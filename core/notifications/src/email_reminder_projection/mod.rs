@@ -66,9 +66,9 @@ impl EmailReminderProjection {
                  FROM email_reminder_projection
                  WHERE galoy_user_id > $1
                    AND last_transaction_at IS NOT NULL
-                   AND last_transaction_at > (NOW() - make_interval(days => $2))
-                   AND user_first_seen_at < (NOW() - make_interval(days => $3))
-                   AND (last_notified_at IS NULL OR last_notified_at < (NOW() - make_interval(days => $4)))
+                   AND last_transaction_at > (NOW() - make_interval(mins => $2))
+                   AND user_first_seen_at < (NOW() - make_interval(mins => $3))
+                   AND (last_notified_at IS NULL OR last_notified_at < (NOW() - make_interval(mins => $4)))
                  ORDER BY galoy_user_id
                  LIMIT $5
              ),
@@ -83,9 +83,9 @@ impl EmailReminderProjection {
              FROM updated
              "#,
             search_id.as_ref(),
-            self.config.account_liveness_threshold_days as i16,
-            self.config.account_aged_threshold_days as i16 ,
-            self.config.notification_cool_off_threshold_days as i16,
+            self.config.account_liveness_threshold_minutes,
+            self.config.account_aged_threshold_minutes,
+            self.config.notification_cool_off_threshold_minutes,
             PAGINATION_BATCH_SIZE + 1,
         )
         .fetch_all(&mut **tx)

@@ -9,9 +9,9 @@ app:
   # jobs:
   #   link_email_reminder_delay: 5
   # email_reminder_projection:
-  #   account_liveness_threshold_days: 21
-  #   account_aged_threshold_days: 21
-  #   notification_cool_off_threshold_days: 90
+  #   account_liveness_threshold_minutes: 30240
+  #   account_aged_threshold_minutes: 30240
+  #   notification_cool_off_threshold_minutes: 129600
   push_executor:
     fcm:
       google_application_credentials_path: "./config/notifications/fake_service_account.json"
