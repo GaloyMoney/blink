@@ -1,4 +1,5 @@
 use serde::{de::DeserializeOwned, Serialize};
+use sqlx::Row;
 
 use super::error::EntityError;
 
@@ -7,6 +8,8 @@ pub struct GenericEvent {
     pub id: uuid::Uuid,
     pub sequence: i32,
     pub event: serde_json::Value,
+    pub entity_created_at: chrono::DateTime<chrono::Utc>,
+    pub event_recorded_at: chrono::DateTime<chrono::Utc>,
 }
 
 pub trait EntityEvent: DeserializeOwned + Serialize {
@@ -22,6 +25,8 @@ pub trait EsEntity: TryFrom<EntityEvents<<Self as EsEntity>::Event>, Error = Ent
 }
 
 pub struct EntityEvents<T: EntityEvent> {
+    pub entity_first_persisted_at: Option<chrono::DateTime<chrono::Utc>>,
+    latest_event_persisted_at: Option<chrono::DateTime<chrono::Utc>>,
     entity_id: <T as EntityEvent>::EntityId,
     persisted_events: Vec<T>,
     new_events: Vec<T>,
@@ -36,6 +41,8 @@ where
         initial_events: impl IntoIterator<Item = T>,
     ) -> Self {
         Self {
+            entity_first_persisted_at: None,
+            latest_event_persisted_at: None,
             entity_id: id,
             persisted_events: Vec::new(),
             new_events: initial_events.into_iter().collect(),
@@ -78,8 +85,20 @@ where
             builder.push_bind(event_type);
             builder.push_bind(event_json);
         });
+        query_builder.push("RETURNING recorded_at");
         let query = query_builder.build();
-        query.execute(&mut **tx).await?;
+
+        let rows = query.fetch_all(&mut **tx).await?;
+
+        let recorded_at: chrono::DateTime<chrono::Utc> = rows
+            .last()
+            .map(|row| row.get::<chrono::DateTime<chrono::Utc>, _>("recorded_at"))
+            .expect("Could not get recorded_at");
+
+        self.latest_event_persisted_at = Some(recorded_at);
+        if self.entity_first_persisted_at.is_none() {
+            self.entity_first_persisted_at = Some(recorded_at);
+        }
 
         self.persisted_events.extend(events);
         Ok(n_persisted)
@@ -94,6 +113,8 @@ where
             if current_id.is_none() {
                 current_id = Some(e.id);
                 current = Some(Self {
+                    entity_first_persisted_at: Some(e.entity_created_at),
+                    latest_event_persisted_at: None,
                     entity_id: e.id.into(),
                     persisted_events: Vec::new(),
                     new_events: Vec::new(),
@@ -102,10 +123,9 @@ where
             if current_id != Some(e.id) {
                 break;
             }
-            current
-                .as_mut()
-                .expect("Could not get current")
-                .persisted_events
+            let cur = current.as_mut().expect("Could not get current");
+            cur.latest_event_persisted_at = Some(e.event_recorded_at);
+            cur.persisted_events
                 .push(serde_json::from_value(e.event).expect("Could not deserialize event"));
         }
         if let Some(current) = current {
@@ -113,6 +133,42 @@ where
         } else {
             Err(EntityError::NoEntityEventsPresent)
         }
+    }
+
+    pub fn load_n<E: EsEntity<Event = T>>(
+        events: impl IntoIterator<Item = GenericEvent>,
+        n: usize,
+    ) -> Result<(Vec<E>, bool), EntityError> {
+        let mut ret: Vec<E> = Vec::new();
+        let mut current_id = None;
+        let mut current = None;
+        for e in events {
+            if current_id != Some(e.id) {
+                if let Some(current) = current.take() {
+                    ret.push(E::try_from(current)?);
+                    if ret.len() == n {
+                        return Ok((ret, true));
+                    }
+                }
+
+                current_id = Some(e.id);
+                current = Some(Self {
+                    entity_first_persisted_at: Some(e.entity_created_at),
+                    latest_event_persisted_at: None,
+                    entity_id: e.id.into(),
+                    persisted_events: Vec::new(),
+                    new_events: Vec::new(),
+                });
+            }
+            let cur = current.as_mut().expect("Could not get current");
+            cur.latest_event_persisted_at = Some(e.event_recorded_at);
+            cur.persisted_events
+                .push(serde_json::from_value(e.event).expect("Could not deserialize event"));
+        }
+        if let Some(current) = current.take() {
+            ret.push(E::try_from(current)?);
+        }
+        Ok((ret, false))
     }
 
     pub fn iter(&self) -> impl DoubleEndedIterator<Item = &T> {
@@ -181,8 +237,36 @@ mod tests {
             sequence: 1,
             event: serde_json::to_value(DummyEvent::Created("dummy-name".to_owned()))
                 .expect("Could not serialize"),
+            entity_created_at: chrono::Utc::now(),
+            event_recorded_at: chrono::Utc::now(),
         }];
         let entity: DummyEntity = EntityEvents::load_first(generic_events).expect("Could not load");
         assert!(entity.name == "dummy-name");
+    }
+
+    #[test]
+    fn load_n() {
+        let generic_events = vec![
+            GenericEvent {
+                id: uuid::Uuid::new_v4(),
+                sequence: 1,
+                event: serde_json::to_value(DummyEvent::Created("dummy-name".to_owned()))
+                    .expect("Could not serialize"),
+                entity_created_at: chrono::Utc::now(),
+                event_recorded_at: chrono::Utc::now(),
+            },
+            GenericEvent {
+                id: uuid::Uuid::new_v4(),
+                sequence: 1,
+                event: serde_json::to_value(DummyEvent::Created("other-name".to_owned()))
+                    .expect("Could not serialize"),
+                entity_created_at: chrono::Utc::now(),
+                event_recorded_at: chrono::Utc::now(),
+            },
+        ];
+        let (entity, more): (Vec<DummyEntity>, _) =
+            EntityEvents::load_n(generic_events, 2).expect("Could not load");
+        assert!(!more);
+        assert_eq!(entity.len(), 2);
     }
 }

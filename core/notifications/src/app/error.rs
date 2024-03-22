@@ -1,7 +1,8 @@
 use thiserror::Error;
 
 use crate::{
-    email_executor::error::EmailExecutorError, job::error::JobError,
+    email_executor::error::EmailExecutorError,
+    email_reminder_projection::error::EmailReminderProjectionError, job::error::JobError,
     notification_cool_off_tracker::NotificationCoolOffTrackerError,
     push_executor::error::PushExecutorError,
     user_notification_settings::error::UserNotificationSettingsError,
@@ -13,6 +14,8 @@ pub enum ApplicationError {
     UnknownCurrencyCode(String),
     #[error("{0}")]
     UserNotificationSettingsError(#[from] UserNotificationSettingsError),
+    #[error("{0}")]
+    EmailReminderProjectionError(#[from] EmailReminderProjectionError),
     #[error("{0}")]
     JobError(#[from] JobError),
     #[error("{0}")]
