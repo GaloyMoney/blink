@@ -1558,7 +1558,7 @@ export type Query = {
   readonly onChainTxFee: OnChainTxFee;
   readonly onChainUsdTxFee: OnChainUsdTxFee;
   readonly onChainUsdTxFeeAsBtcDenominated: OnChainUsdTxFee;
-  /** Returns 1 Sat and 1 Usd Cent price for the given currency */
+  /** Returns 1 Sat and 1 Usd Cent price for the given currency in minor unit */
   readonly realtimePrice: RealtimePrice;
   /** @deprecated will be migrated to AccountDefaultWalletId */
   readonly userDefaultWalletId: Scalars['WalletId']['output'];
@@ -1652,7 +1652,9 @@ export type QuizClaimPayload = {
 export type RealtimePrice = {
   readonly __typename: 'RealtimePrice';
   readonly btcSatPrice: PriceOfOneSatInMinorUnit;
+  /** @deprecated Deprecated in favor of denominatorCurrencyDetails */
   readonly denominatorCurrency: Scalars['DisplayCurrency']['output'];
+  readonly denominatorCurrencyDetails: Currency;
   readonly id: Scalars['ID']['output'];
   /** Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC) */
   readonly timestamp: Scalars['Timestamp']['output'];
@@ -2047,7 +2049,8 @@ export const UserNotificationCategory = {
   Balance: 'BALANCE',
   Circles: 'CIRCLES',
   Marketing: 'MARKETING',
-  Payments: 'PAYMENTS'
+  Payments: 'PAYMENTS',
+  Price: 'PRICE'
 } as const;
 
 export type UserNotificationCategory = typeof UserNotificationCategory[keyof typeof UserNotificationCategory];
@@ -4548,6 +4551,7 @@ export type QuizClaimPayloadResolvers<ContextType = any, ParentType extends Reso
 export type RealtimePriceResolvers<ContextType = any, ParentType extends ResolversParentTypes['RealtimePrice'] = ResolversParentTypes['RealtimePrice']> = {
   btcSatPrice?: Resolver<ResolversTypes['PriceOfOneSatInMinorUnit'], ParentType, ContextType>;
   denominatorCurrency?: Resolver<ResolversTypes['DisplayCurrency'], ParentType, ContextType>;
+  denominatorCurrencyDetails?: Resolver<ResolversTypes['Currency'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   timestamp?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
   usdCentPrice?: Resolver<ResolversTypes['PriceOfOneUsdCentInMinorUnit'], ParentType, ContextType>;
