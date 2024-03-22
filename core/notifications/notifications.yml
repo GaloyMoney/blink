@@ -8,7 +8,7 @@
 app:
   # jobs:
   #   link_email_reminder_delay: 5
-  # email_reminder_projection:
+  # link_email_reminder:
   #   account_liveness_threshold_minutes: 30240
   #   account_aged_threshold_minutes: 30240
   #   notification_cool_off_threshold_minutes: 129600
