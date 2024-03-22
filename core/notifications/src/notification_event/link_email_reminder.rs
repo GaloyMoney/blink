@@ -18,12 +18,12 @@ impl NotificationEvent for LinkEmailReminder {
 
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
         let title = t!(
-            "onboarding.link_email_reminder.title",
+            "security.link_email_reminder.title",
             locale = locale.as_ref()
         )
         .to_string();
         let body = t!(
-            "onboarding.link_email_reminder.body",
+            "security.link_email_reminder.body",
             locale = locale.as_ref(),
         )
         .to_string();

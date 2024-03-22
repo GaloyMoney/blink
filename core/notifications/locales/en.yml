@@ -61,5 +61,5 @@ transaction.paid_invoice.body_display_currency: "+%{displayCurrencyAmount} | %{f
 price_changed.title: "Bitcoin is on the move!"
 price_changed.body: "Bitcoin is up %{percent_increase}% in the last day to %{price}!"
 
-onboarding.link_email_reminder.title: "Link Email to Secure Account"
-onboarding.link_email_reminder.body: "Link your email to secure your account and receive important updates"
+security.link_email_reminder.title: "Link Email to Secure Account"
+security.link_email_reminder.body: "Link your email to secure your account and receive important updates"
