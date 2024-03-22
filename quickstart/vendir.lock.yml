@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(notifications): implement email reminder use case (#4216)...'
-      sha: 0fb73bdfd42404386a75c132ccc967f19ab3c5a0
+      commitTitle: 'chore(toolchain): refactor pnpm install from dev_task rules (#4219)...'
+      sha: 9361d388b6d578eb5521739a2ebf41b18fb32640
       tags:
-      - 0.20.129-3-g0fb73bdfd
+      - 0.20.130-6-g9361d388b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(notifications): implement email reminder use case (#4216)...'
-      sha: 0fb73bdfd42404386a75c132ccc967f19ab3c5a0
+      commitTitle: 'chore(toolchain): refactor pnpm install from dev_task rules (#4219)...'
+      sha: 9361d388b6d578eb5521739a2ebf41b18fb32640
       tags:
-      - 0.20.129-3-g0fb73bdfd
+      - 0.20.130-6-g9361d388b
     path: schemas/
   - git:
-      commitTitle: 'feat(notifications): implement email reminder use case (#4216)...'
-      sha: 0fb73bdfd42404386a75c132ccc967f19ab3c5a0
+      commitTitle: 'chore(toolchain): refactor pnpm install from dev_task rules (#4219)...'
+      sha: 9361d388b6d578eb5521739a2ebf41b18fb32640
       tags:
-      - 0.20.129-3-g0fb73bdfd
+      - 0.20.130-6-g9361d388b
     path: gql/
   path: ./graphql
 kind: LockConfig
