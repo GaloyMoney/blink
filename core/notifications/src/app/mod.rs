@@ -44,6 +44,7 @@ impl NotificationsApp {
             email_executor,
             settings.clone(),
             email_reminder_projection.clone(),
+            config.jobs.clone(),
         )
         .await?;
         Self::spawn_kickoff_link_email_reminder(

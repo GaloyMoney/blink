@@ -31,6 +31,7 @@ pub async fn start_job_runner(
     email_executor: EmailExecutor,
     settings: UserNotificationSettingsRepo,
     email_reminder_projection: EmailReminderProjection,
+    jobs_config: JobsConfig,
 ) -> Result<JobRunnerHandle, JobError> {
     let mut registry = JobRegistry::new(&[
         all_user_event_dispatch,
@@ -44,6 +45,7 @@ pub async fn start_job_runner(
     registry.set_context(email_executor);
     registry.set_context(settings);
     registry.set_context(email_reminder_projection);
+    registry.set_context(jobs_config);
 
     Ok(registry.runner(pool).set_keep_alive(false).run().await?)
 }

@@ -254,6 +254,9 @@ mod tests {
                 "wait_till_next_attempt": 1
             }
         }"#;
+        let job_data: JobData<()> = JobData::from_raw_payload(Some(json)).unwrap();
+        assert!(job_data.data.is_some());
+
         let job_data: JobData<DummyData> = JobData::from_raw_payload(Some(json)).unwrap();
         assert!(job_data.job_meta.attempts == 1);
         assert!(job_data.data.is_none());
