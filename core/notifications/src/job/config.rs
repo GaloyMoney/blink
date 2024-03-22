@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde_with::serde_as]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct JobsConfig {
     #[serde_as(as = "serde_with::DurationSeconds<u64>")]
     #[serde(default = "default_kickoff_link_email_reminder_delay")]
