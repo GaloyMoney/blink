@@ -82,6 +82,7 @@ export type Scalars = {
 
 export type Account = {
   readonly callbackEndpoints: ReadonlyArray<CallbackEndpoint>;
+  /** @deprecated use mutation csvReportGenerate instead */
   readonly csvTransactions: Scalars['String']['output'];
   readonly defaultWallet: PublicWallet;
   /** @deprecated Shifting property to 'defaultWallet.id' */
@@ -307,6 +308,15 @@ export type BuildInformation = {
   readonly helmRevision?: Maybe<Scalars['Int']['output']>;
 };
 
+export const CsvReportGenerateChannel = {
+  InlineBase64Csv: 'InlineBase64CSV'
+} as const;
+
+export type CsvReportGenerateChannel = typeof CsvReportGenerateChannel[keyof typeof CsvReportGenerateChannel];
+export type CsvReportGenerateInput = {
+  readonly channel?: InputMaybe<CsvReportGenerateChannel>;
+};
+
 export type CallbackEndpoint = {
   readonly __typename: 'CallbackEndpoint';
   readonly id: Scalars['EndpointId']['output'];
@@ -359,7 +369,10 @@ export type CentAmountPayload = {
 export type ConsumerAccount = Account & {
   readonly __typename: 'ConsumerAccount';
   readonly callbackEndpoints: ReadonlyArray<CallbackEndpoint>;
-  /** return CSV stream, base64 encoded, of the list of transactions in the wallet */
+  /**
+   * return CSV stream, base64 encoded, of the list of transactions in the wallet
+   * @deprecated use mutation csvReportGenerate instead
+   */
   readonly csvTransactions: Scalars['String']['output'];
   readonly defaultWallet: PublicWallet;
   readonly defaultWalletId: Scalars['WalletId']['output'];
@@ -423,6 +436,12 @@ export type Country = {
   readonly __typename: 'Country';
   readonly id: Scalars['CountryCode']['output'];
   readonly supportedAuthChannels: ReadonlyArray<PhoneCodeChannelType>;
+};
+
+export type CsvReportGeneratePayload = {
+  readonly __typename: 'CsvReportGeneratePayload';
+  readonly content?: Maybe<Scalars['String']['output']>;
+  readonly errors: ReadonlyArray<Error>;
 };
 
 export type Currency = {
@@ -871,6 +890,7 @@ export type Mutation = {
   readonly callbackEndpointDelete: SuccessPayload;
   readonly captchaCreateChallenge: CaptchaCreateChallengePayload;
   readonly captchaRequestAuthCode: SuccessPayload;
+  readonly csvReportGenerate: CsvReportGeneratePayload;
   readonly deviceNotificationTokenCreate: SuccessPayload;
   readonly feedbackSubmit: SuccessPayload;
   /**
@@ -1028,6 +1048,11 @@ export type MutationCallbackEndpointDeleteArgs = {
 
 export type MutationCaptchaRequestAuthCodeArgs = {
   input: CaptchaRequestAuthCodeInput;
+};
+
+
+export type MutationCsvReportGenerateArgs = {
+  input?: InputMaybe<CsvReportGenerateInput>;
 };
 
 

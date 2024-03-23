@@ -116,6 +116,7 @@ const BusinessAccount = GT.Object({
     },
 
     csvTransactions: {
+      deprecationReason: "use mutation csvReportGenerate instead",
       description:
         "return CSV stream, base64 encoded, of the list of transactions in the wallet",
       type: GT.NonNull(GT.String),

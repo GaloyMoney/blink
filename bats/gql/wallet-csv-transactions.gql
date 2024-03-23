@@ -1,0 +1,10 @@
+mutation csvReportGenerate {
+  csvReportGenerate {
+    content
+    errors {
+      code
+      message
+      path
+    }
+  }
+}

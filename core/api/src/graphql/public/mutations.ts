@@ -64,6 +64,7 @@ import CaptchaCreateChallengeMutation from "@/graphql/public/root/mutation/captc
 import CaptchaRequestAuthCodeMutation from "@/graphql/public/root/mutation/captcha-request-auth-code"
 import QuizClaimMutation from "@/graphql/public/root/mutation/quiz-claim"
 import MerchantMapSuggest from "@/graphql/public/root/mutation/merchant-map-suggest"
+import CSVReportGenerate from "@/graphql/public/root/mutation/csv-report-generate"
 
 // TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLPublicContext> }
 export const mutationFields = {
@@ -114,6 +115,8 @@ export const mutationFields = {
 
       callbackEndpointAdd: CallbackEndpointAdd,
       callbackEndpointDelete: CallbackEndpointDelete,
+
+      csvReportGenerate: CSVReportGenerate,
     },
 
     atWalletLevel: {

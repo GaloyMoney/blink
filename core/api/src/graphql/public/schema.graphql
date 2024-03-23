@@ -1,6 +1,6 @@
 interface Account {
   callbackEndpoints: [CallbackEndpoint!]!
-  csvTransactions(walletIds: [WalletId!]!): String!
+  csvTransactions(walletIds: [WalletId!]!): String! @deprecated(reason: "use mutation csvReportGenerate instead")
   defaultWallet: PublicWallet!
   defaultWalletId: WalletId! @deprecated(reason: "Shifting property to 'defaultWallet.id'")
   displayCurrency: DisplayCurrency!
@@ -208,6 +208,14 @@ type BuildInformation {
   helmRevision: Int
 }
 
+enum CSVReportGenerateChannel {
+  InlineBase64CSV
+}
+
+input CSVReportGenerateInput {
+  channel: CSVReportGenerateChannel
+}
+
 type CallbackEndpoint {
   id: EndpointId!
   url: EndpointUrl!
@@ -261,7 +269,7 @@ type ConsumerAccount implements Account {
   """
   return CSV stream, base64 encoded, of the list of transactions in the wallet
   """
-  csvTransactions(walletIds: [WalletId!]!): String!
+  csvTransactions(walletIds: [WalletId!]!): String! @deprecated(reason: "use mutation csvReportGenerate instead")
   defaultWallet: PublicWallet!
   defaultWalletId: WalletId!
   displayCurrency: DisplayCurrency!
@@ -329,6 +337,11 @@ type Country {
 
 """A CCA2 country code (ex US, FR, etc)"""
 scalar CountryCode
+
+type CsvReportGeneratePayload {
+  content: String
+  errors: [Error!]!
+}
 
 type Currency {
   flag: String!
@@ -855,6 +868,7 @@ type Mutation {
   callbackEndpointDelete(input: CallbackEndpointDeleteInput!): SuccessPayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
+  csvReportGenerate(input: CSVReportGenerateInput): CsvReportGeneratePayload!
   deviceNotificationTokenCreate(input: DeviceNotificationTokenCreateInput!): SuccessPayload!
   feedbackSubmit(input: FeedbackSubmitInput!): SuccessPayload!
 
