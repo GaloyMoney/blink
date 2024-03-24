@@ -35,14 +35,17 @@ LinkerInfo = provider(
         # GiBs of object files (which can also lead to RE errors/timesouts etc).
         "link_libraries_locally": provider_field(typing.Any, default = None),
         "link_style": provider_field(typing.Any, default = None),  # LinkStyle
-        "link_weight": provider_field(typing.Any, default = None),  # int
+        "link_weight": provider_field(int, default = 1),  # int
         "link_ordering": provider_field(typing.Any, default = None),  # LinkOrdering
         "linker": provider_field(typing.Any, default = None),
         "linker_flags": provider_field(typing.Any, default = None),
+        "post_linker_flags": provider_field(typing.Any, default = None),
         "lto_mode": provider_field(typing.Any, default = None),
         "mk_shlib_intf": provider_field(typing.Any, default = None),
         # "o" on Unix, "obj" on Windows
         "object_file_extension": provider_field(typing.Any, default = None),  # str
+        "sanitizer_runtime_enabled": provider_field(bool, default = False),
+        "sanitizer_runtime_files": provider_field(list[Artifact], default = []),
         "shlib_interfaces": provider_field(ShlibInterfacesMode),
         "shared_dep_runtime_ld_flags": provider_field(typing.Any, default = None),
         # "lib" on Linux/Mac/Android, "" on Windows.
@@ -116,10 +119,14 @@ _compiler_fields = [
     "preprocessor_type",
     "preprocessor_flags",
     "dep_files_processor",
+    # Controls cache upload for object files
+    "allow_cache_upload",
 ]
 
 HipCompilerInfo = provider(fields = _compiler_fields)
 CudaCompilerInfo = provider(fields = _compiler_fields)
+CvtresCompilerInfo = provider(fields = _compiler_fields)
+RcCompilerInfo = provider(fields = _compiler_fields)
 CCompilerInfo = provider(fields = _compiler_fields)
 CxxCompilerInfo = provider(fields = _compiler_fields)
 AsmCompilerInfo = provider(fields = _compiler_fields)
@@ -178,6 +185,8 @@ CxxToolchainInfo = provider(
         "as_compiler_info": provider_field(typing.Any, default = None),
         "hip_compiler_info": provider_field(typing.Any, default = None),
         "cuda_compiler_info": provider_field(typing.Any, default = None),
+        "cvtres_compiler_info": provider_field(typing.Any, default = None),
+        "rc_compiler_info": provider_field(typing.Any, default = None),
         "mk_comp_db": provider_field(typing.Any, default = None),
         "mk_hmap": provider_field(typing.Any, default = None),
         "llvm_link": provider_field(typing.Any, default = None),
@@ -228,6 +237,8 @@ def cxx_toolchain_infos(
         as_compiler_info = None,
         hip_compiler_info = None,
         cuda_compiler_info = None,
+        cvtres_compiler_info = None,
+        rc_compiler_info = None,
         object_format = CxxObjectFormat("native"),
         mk_comp_db = None,
         mk_hmap = None,
@@ -269,6 +280,8 @@ def cxx_toolchain_infos(
         as_compiler_info = as_compiler_info,
         hip_compiler_info = hip_compiler_info,
         cuda_compiler_info = cuda_compiler_info,
+        cvtres_compiler_info = cvtres_compiler_info,
+        rc_compiler_info = rc_compiler_info,
         mk_comp_db = mk_comp_db,
         mk_hmap = mk_hmap,
         object_format = object_format,
@@ -303,9 +316,10 @@ def cxx_toolchain_infos(
         # NOTE(agallagher): The arg-less variants of the ldflags macro are
         # identical, and are just separate to match v1's behavior (ideally,
         # we just have a single `ldflags` macro for this case).
-        "ldflags-shared": _shell_quote(linker_info.linker_flags),
-        "ldflags-static": _shell_quote(linker_info.linker_flags),
-        "ldflags-static-pic": _shell_quote(linker_info.linker_flags),
+        "ldflags-shared": _shell_quote(linker_info.linker_flags or []),
+        "ldflags-static": _shell_quote(linker_info.linker_flags or []),
+        "ldflags-static-pic": _shell_quote(linker_info.linker_flags or []),
+        "objcopy": binary_utilities_info.objcopy,
         # TODO(T110378148): $(platform-name) is almost unusued. Should we remove it?
         "platform-name": platform_name,
     }

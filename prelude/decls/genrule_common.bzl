@@ -49,13 +49,13 @@ def _cmd_arg():
      A string expansion of the `srcs` argument delimited
      by the `environment_expansion_separator` argument
      where each element of `srcs` will be translated
-     into an absolute path.
+     into a relative path.
 
 
     `${SRCDIR}`
 
 
-     The absolute path to a directory to which sources are copied
+     The relative path to a directory to which sources are copied
      prior to running the command.
 
 
@@ -72,7 +72,9 @@ def _cmd_arg():
      command determine whether this filepath is treated as a file or a
      directory. If the filepath is a directory, then the shell command
      needs to create it if not using named outputs. Otherwise, it will
-     be automatically created.
+     be automatically created. All outputs (directories and files) must
+     be readable, writable, and (in the case of directories) executable
+     by the current user.
 
 
      The file or directory specified by this variable must always
@@ -97,8 +99,7 @@ def _cmd_arg():
      to be dependencies of the `genrule()`.
 
 
-     Note that the paths returned by these macros are *absolute* paths. You should convert these paths to be relative paths before
-     embedding them in, for example, a shell script or batch file. Using
+     Note that the paths returned by these macros are *relative* paths. Using
      relative paths ensures that your builds are *hermetic*, that
      is, they are reproducible across different machine environments.
 

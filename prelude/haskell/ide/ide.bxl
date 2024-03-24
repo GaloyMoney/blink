@@ -5,7 +5,7 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
-load("@prelude//haskell:compile.bzl", "HaskellLibraryProvider")
+load("@prelude//haskell:library_info.bzl", "HaskellLibraryProvider")
 load("@prelude//haskell:link_info.bzl", "HaskellLinkInfo")
 load("@prelude//haskell:toolchain.bzl", "HaskellToolchainInfo")
 load("@prelude//linking:link_info.bzl", "LinkStyle")
@@ -62,7 +62,18 @@ def _solution_for_file(ctx, file, project_universe):
     target_universe = ctx.target_universe(unconfigured_owners).target_set()
     owners = ctx.cquery().owner(file, target_universe)
     if not owners or len(owners) == 0:
-        fail("No owner found for " + file)
+        return {
+            "external_dependencies": [],
+            "flags": [],
+            "generated_dependencies": [],
+            "haskell_deps": {},
+            "import_dirs": [],
+            "owner": "No owner found for " + file,
+            "project": "",
+            "project_type": "",
+            "sources": [],
+            "targets": [],
+        }
 
     owner = owners[0]
 

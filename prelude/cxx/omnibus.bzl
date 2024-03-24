@@ -587,11 +587,18 @@ def _build_omnibus_spec(
         if label not in excluded
     }
 
-    # Find the deps of the root nodes.  These form the roots of the nodes
-    # included in the omnibus link.
+    # Find the deps of the root nodes that should be linked into
+    # 'libomnibus.so'.
+    #
+    # If a dep indicates preferred linkage static, it is linked directly into
+    # this omnimbus root and therefore not added to `first_order_root_deps` and
+    # thereby will not be linked into 'libomnibus.so'. If the dep does not
+    # indicate preferred linkage static, then it is added to
+    # `first_order_root_deps` and thereby will be linked into 'libomnibus.so'.
     first_order_root_deps = []
     for label in _link_deps(graph.nodes, flatten([r.deps for r in roots.values()]), get_cxx_toolchain_info(ctx).pic_behavior):
-        # We only consider deps which aren't *only* statically linked.
+        # Per the comment above, only consider deps which aren't *only*
+        # statically linked.
         if _is_static_only(graph.nodes[label]):
             continue
 
@@ -647,9 +654,10 @@ def _ordered_roots(
     """
 
     # Calculate all deps each root node needs to link against.
-    link_deps = {}
-    for label, root in spec.roots.items():
-        link_deps[label] = _link_deps(spec.link_infos, root.deps, pic_behavior)
+    link_deps = {
+        label: _link_deps(spec.link_infos, root.deps, pic_behavior)
+        for label, root in spec.roots.items()
+    }
 
     # Used the link deps to create the graph of root nodes.
     root_graph = {
@@ -657,14 +665,12 @@ def _ordered_roots(
         for node, deps in link_deps.items()
     }
 
-    ordered_roots = []
-
     # Emit the root link info in post-order, so that we generate root link rules
     # for dependencies before their dependents.
-    for label in post_order_traversal(root_graph):
-        root = spec.roots[label]
-        deps = link_deps[label]
-        ordered_roots.append((label, root, deps))
+    ordered_roots = [
+        (label, spec.roots[label], link_deps[label])
+        for label in post_order_traversal(root_graph)
+    ]
 
     return ordered_roots
 

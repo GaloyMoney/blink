@@ -6,7 +6,6 @@
 # of this source tree.
 
 load("@prelude//:paths.bzl", "paths")
-load("@prelude//apple:apple_buck2_compatibility.bzl", "apple_check_buck2_compatibility")
 load("@prelude//apple:apple_library.bzl", "AppleLibraryAdditionalParams", "apple_library_rule_constructor_params_and_swift_providers")
 load("@prelude//apple:apple_toolchain_types.bzl", "AppleToolchainInfo")
 # @oss-disable: load("@prelude//apple/meta_only:apple_test_re_capabilities.bzl", "ios_test_re_capabilities", "macos_test_re_capabilities") 
@@ -48,8 +47,6 @@ load(":xcode.bzl", "apple_populate_xcode_attributes")
 load(":xctest_swift_support.bzl", "XCTestSwiftSupportInfo")
 
 def apple_test_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
-    apple_check_buck2_compatibility(ctx)
-
     def get_apple_test_providers(deps_providers) -> list[Provider]:
         xctest_bundle = bundle_output(ctx)
 
@@ -130,6 +127,16 @@ def apple_test_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
         expect(xctest_swift_support_needed != None, "Expected `XCTestSwiftSupportInfo` provider to be present")
 
         bundle_parts = part_list_output.parts + _get_xctest_framework(ctx, xctest_swift_support_needed)
+
+        for sanitizer_runtime_dylib in cxx_library_output.sanitizer_runtime_files:
+            frameworks_destination = AppleBundleDestination("frameworks")
+            bundle_parts.append(
+                AppleBundlePart(
+                    source = sanitizer_runtime_dylib,
+                    destination = frameworks_destination,
+                    codesign_on_copy = True,
+                ),
+            )
 
         primary_binary_rel_path = get_apple_bundle_part_relative_destination_path(ctx, binary_part)
         swift_stdlib_args = SwiftStdlibArguments(primary_binary_rel_path = primary_binary_rel_path)

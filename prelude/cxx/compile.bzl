@@ -7,6 +7,7 @@
 
 load("@prelude//:paths.bzl", "paths")
 load("@prelude//cxx:cxx_toolchain_types.bzl", "CxxToolchainInfo")
+load("@prelude//cxx:cxx_utility.bzl", "cxx_attrs_get_allow_cache_upload")
 load("@prelude//linking:lto.bzl", "LtoMode")
 load("@prelude//utils:set.bzl", "set")
 load(
@@ -48,6 +49,7 @@ CxxExtension = enum(
     ".c++",
     ".c",
     ".s",
+    ".sx",
     ".S",
     ".m",
     ".mm",
@@ -104,6 +106,7 @@ _CxxCompileCommand = record(
     compiler_type = field(str),
     # The action category
     category = field(str),
+    allow_cache_upload = field(bool),
 )
 
 # Information about how to compile a source file.
@@ -322,12 +325,14 @@ def create_compile_cmds(
             argsfile_by_ext[ext.value] = _mk_argsfile(ctx, compiler_info, pre, ext, headers_tag, False)
             abs_argsfile_by_ext[ext.value] = _mk_argsfile(ctx, compiler_info, pre, ext, abs_headers_tag, True)
 
+            allow_cache_upload = cxx_attrs_get_allow_cache_upload(ctx.attrs, default = compiler_info.allow_cache_upload)
             cxx_compile_cmd_by_ext[ext] = _CxxCompileCommand(
                 base_compile_cmd = base_compile_cmd,
                 argsfile = argsfile_by_ext[ext.value],
                 headers_dep_files = headers_dep_files,
                 compiler_type = compiler_info.compiler_type,
                 category = category,
+                allow_cache_upload = allow_cache_upload,
             )
 
         cxx_compile_cmd = cxx_compile_cmd_by_ext[ext]
@@ -461,6 +466,7 @@ def compile_cxx(
             category = src_compile_cmd.cxx_compile_cmd.category,
             identifier = identifier,
             dep_files = action_dep_files,
+            allow_cache_upload = src_compile_cmd.cxx_compile_cmd.allow_cache_upload,
         )
 
         # If we're building with split debugging, where the debug info is in the
@@ -510,7 +516,7 @@ def _get_compiler_info(toolchain: CxxToolchainInfo, ext: CxxExtension) -> typing
         compiler_info = toolchain.cxx_compiler_info
     elif ext.value in (".c", ".m"):
         compiler_info = toolchain.c_compiler_info
-    elif ext.value in (".s", ".S"):
+    elif ext.value in (".s", ".sx", ".S"):
         compiler_info = toolchain.as_compiler_info
     elif ext.value == ".cu":
         compiler_info = toolchain.cuda_compiler_info
@@ -536,7 +542,7 @@ def _get_category(ext: CxxExtension) -> str:
         return "objc_compile"
     if ext.value == ".mm":
         return "objcxx_compile"
-    elif ext.value in (".s", ".S", ".asm", ".asmpp"):
+    elif ext.value in (".s", ".sx", ".S", ".asm", ".asmpp"):
         return "asm_compile"
     elif ext.value == ".cu":
         return "cuda_compile"
@@ -557,6 +563,8 @@ def _get_compile_base(compiler_info: typing.Any) -> cmd_args:
 
 def _dep_file_type(ext: CxxExtension) -> [DepFileType, None]:
     # Raw assembly doesn't make sense to capture dep files for.
+    # .S is preprocessed assembly, but some builds use it with
+    # assemblers that don't support -MF, so leave depfiles off.
     if ext.value in (".s", ".S", ".asm"):
         return None
     elif ext.value == ".hip":
@@ -571,7 +579,7 @@ def _dep_file_type(ext: CxxExtension) -> [DepFileType, None]:
         return DepFileType("c")
     elif ext.value == ".cu":
         return DepFileType("cuda")
-    elif ext.value in (".asmpp"):
+    elif ext.value in (".asmpp", ".sx"):
         return DepFileType("asm")
     else:
         # This should be unreachable as long as we handle all enum values

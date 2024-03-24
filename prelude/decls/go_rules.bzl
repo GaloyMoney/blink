@@ -14,6 +14,7 @@ load(":common.bzl", "CxxRuntimeType", "CxxSourceType", "HeadersAsRawHeadersMode"
 load(":cxx_common.bzl", "cxx_common")
 load(":go_common.bzl", "go_common")
 load(":native_common.bzl", "native_common")
+load(":re_test_common.bzl", "re_test_common")
 
 BuildMode = ["executable", "c_shared", "c_archive"]
 
@@ -125,7 +126,8 @@ cgo_library = prelude_rule(
             "thin_lto": attrs.bool(default = False),
             "version_universe": attrs.option(attrs.string(), default = None),
             "weak_framework_names": attrs.list(attrs.string(), default = []),
-        }
+        } |
+        buck.allow_cache_upload_arg()
     ),
 )
 
@@ -182,6 +184,9 @@ go_binary = prelude_rule(
         go_common.linker_flags_arg() |
         go_common.external_linker_flags_arg() |
         go_common.embedcfg_arg() |
+        go_common.cgo_enabled_arg() |
+        go_common.race_arg() |
+        go_common.tags_arg() |
         {
             "resources": attrs.list(attrs.source(), default = [], doc = """
                 Static files to be symlinked into the working directory of the test. You can access these in your
@@ -266,6 +271,9 @@ go_exported_library = prelude_rule(
         go_common.assembler_flags_arg() |
         go_common.linker_flags_arg() |
         go_common.external_linker_flags_arg() |
+        go_common.cgo_enabled_arg() |
+        go_common.race_arg() |
+        go_common.tags_arg() |
         {
             "resources": attrs.list(attrs.source(), default = [], doc = """
                 Static files to be symlinked into the working directory of the test. You can access these in your
@@ -415,6 +423,9 @@ go_test = prelude_rule(
         go_common.linker_flags_arg() |
         go_common.external_linker_flags_arg() |
         go_common.embedcfg_arg() |
+        go_common.cgo_enabled_arg() |
+        go_common.race_arg() |
+        go_common.tags_arg() |
         {
             "resources": attrs.list(attrs.source(), default = [], doc = """
                 Static files that are symlinked into the working directory of the
@@ -437,7 +448,8 @@ go_test = prelude_rule(
             "platform": attrs.option(attrs.string(), default = None),
             "runner": attrs.option(attrs.dep(), default = None),
             "specs": attrs.option(attrs.arg(json = True), default = None),
-        }
+        } |
+        re_test_common.test_args()
     ),
 )
 

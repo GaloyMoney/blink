@@ -5,6 +5,8 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
+# pyre-strict
+
 import datetime
 import logging
 from dataclasses import dataclass
@@ -25,7 +27,7 @@ from .provisioning_profile_diagnostics import (
 )
 from .provisioning_profile_metadata import ProvisioningProfileMetadata
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class CodeSignProvisioningError(Exception):
@@ -45,8 +47,8 @@ def _parse_team_id_from_entitlements(
 
 def _matches_or_array_is_subset_of(
     entitlement_name: str,
-    expected_value: Any,
-    actual_value: Any,
+    expected_value: object,
+    actual_value: object,
     platform: ApplePlatform,
 ) -> bool:
     if expected_value is None:
@@ -98,7 +100,7 @@ def _check_entitlements_match(
 ) -> Tuple[bool, Optional[EntitlementsMismatch]]:
     if expected_entitlements is None:
         return (True, None)
-    for (key, value) in expected_entitlements.items():
+    for key, value in expected_entitlements.items():
         profile_entitlement = profile.entitlements.get(key)
         if (key not in _IGNORE_MISMATCH_ENTITLEMENTS_KEYS) and (
             not _matches_or_array_is_subset_of(
@@ -170,7 +172,7 @@ def select_best_provisioning_profile(
     result = None
 
     # Used for error messages
-    diagnostics = []
+    diagnostics: List[IProvisioningProfileDiagnostics] = []
 
     def log_mismatched_profile(mismatch: IProvisioningProfileDiagnostics) -> None:
         diagnostics.append(mismatch)

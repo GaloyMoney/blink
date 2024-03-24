@@ -16,6 +16,7 @@ load(
     "get_project_root_file",
 )
 load("@prelude//cxx:cxx_sources.bzl", "get_srcs_with_flags")
+load("@prelude//cxx:cxx_utility.bzl", "cxx_attrs_get_allow_cache_upload")
 load("@prelude//linking:execution_preference.bzl", "LinkExecutionPreference")
 load(
     "@prelude//linking:link_groups.bzl",
@@ -25,6 +26,7 @@ load(
     "@prelude//linking:link_info.bzl",
     "Archive",
     "ArchiveLinkable",
+    "CxxSanitizerRuntimeInfo",
     "LibOutputStyle",
     "LinkArgs",
     "LinkCommandDebugOutputInfo",
@@ -235,7 +237,7 @@ def cxx_binary_impl(ctx: AnalysisContext) -> list[Provider]:
         link_group_info = link_group_info,
         auto_link_group_specs = get_auto_link_group_specs(ctx, link_group_info),
         prefer_stripped_objects = ctx.attrs.prefer_stripped_objects,
-        exe_allow_cache_upload = ctx.attrs.allow_cache_upload,
+        exe_allow_cache_upload = cxx_attrs_get_allow_cache_upload(ctx.attrs),
         extra_link_roots = linkables(ctx.attrs.link_group_deps),
     )
     output = cxx_executable(ctx, params)
@@ -243,6 +245,8 @@ def cxx_binary_impl(ctx: AnalysisContext) -> list[Provider]:
     extra_providers = []
     if output.link_command_debug_output:
         extra_providers.append(LinkCommandDebugOutputInfo(debug_outputs = [output.link_command_debug_output]))
+    if output.sanitizer_runtime_files:
+        extra_providers.append(CxxSanitizerRuntimeInfo(runtime_files = output.sanitizer_runtime_files))
 
     # When an executable is the output of a build, also materialize all the
     # unpacked external debuginfo that goes with it. This makes `buck2 build
@@ -675,9 +679,14 @@ def cxx_test_impl(ctx: AnalysisContext) -> list[Provider]:
             use_project_relative_paths = re_executor != None,
         ),
     ) + [
-        DefaultInfo(default_output = output.binary, other_outputs = output.runtime_files, sub_targets = output.sub_targets),
+        DefaultInfo(
+            default_output = output.binary,
+            other_outputs = output.runtime_files + output.external_debug_info_artifacts,
+            sub_targets = output.sub_targets,
+        ),
         output.compilation_db,
         output.xcode_data,
+        output.dist_info,
     ]
 
 def _get_params_for_android_binary_cxx_library() -> (CxxRuleSubTargetParams, CxxRuleProviderParams):

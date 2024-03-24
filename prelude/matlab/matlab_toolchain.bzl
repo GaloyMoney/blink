@@ -5,8 +5,12 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
-# A provider that's used as a marker for `genrule()`, allows dependents
-# to distinguish such outputs
-GenruleMarkerInfo = provider(fields = {})
+load(":matlab_info.bzl", "MatlabToolchainInfo")
 
-GENRULE_MARKER_SUBTARGET_NAME = "genrule_marker"
+def matlab_toolchain():
+    return attrs.default_only(
+        attrs.toolchain_dep(
+            default = "toolchains//:matlab",
+            providers = [MatlabToolchainInfo],
+        ),
+    )

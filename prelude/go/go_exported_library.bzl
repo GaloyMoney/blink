@@ -25,16 +25,18 @@ def go_exported_library_impl(ctx: AnalysisContext) -> list[Provider]:
         deps = ctx.attrs.deps,
         compile_flags = ctx.attrs.compiler_flags,
         shared = True,
+        race = ctx.attrs._race,
     )
     (bin, runtime_files, _external_debug_info) = link(
         ctx,
-        lib,
+        lib.pkg,
         deps = ctx.attrs.deps,
         build_mode = GoBuildMode(ctx.attrs.build_mode),
         link_style = value_or(map_val(LinkStyle, ctx.attrs.link_style), LinkStyle("static_pic")),
         linker_flags = ctx.attrs.linker_flags,
         external_linker_flags = ctx.attrs.external_linker_flags,
         shared = True,
+        race = ctx.attrs._race,
     )
     return [
         DefaultInfo(

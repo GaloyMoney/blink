@@ -1,0 +1,40 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+#
+# This source code is licensed under both the MIT license found in the
+# LICENSE-MIT file in the root directory of this source tree and the Apache
+# License, Version 2.0 found in the LICENSE-APACHE file in the root directory
+# of this source tree.
+
+load("@prelude//python/sourcedb/filter.bxl", "do_filter")
+
+def _run_entry_point(ctx: bxl.Context) -> None:
+    uquery = ctx.uquery()
+    checked_targets = ctx.configured_targets(
+        do_filter(uquery, [uquery.eval(target) for target in ctx.cli_args.target]),
+    )
+
+    build_result = ctx.build([
+        target.label.with_sub_target("typecheck")
+        for target in checked_targets
+    ])
+    output = ctx.output.ensure_multiple(build_result)
+
+    ctx.output.print_json({
+        "artifacts": {
+            label.raw_target(): [artifact.rel_path() for artifact in artifacts]
+            for label, artifacts in output.items()
+        },
+        "root": ctx.root(),
+    })
+
+run = bxl_main(
+    doc = "Run [typecheck] on a set of targets or target patterns.",
+    impl = _run_entry_point,
+    cli_args = {
+        "target": cli_args.list(
+            cli_args.string(
+                doc = "Target pattern to run type checking on",
+            ),
+        ),
+    },
+)

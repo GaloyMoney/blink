@@ -5,10 +5,12 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
-import os
+# pyre-strict
 
-from distutils.version import StrictVersion
+import os
 from typing import List, Optional
+
+from packaging.version import Version
 
 from .idb_companion import IdbCompanion
 
@@ -75,7 +77,7 @@ def _compatible_device_type_from_runtime(runtime: XCSimRuntime) -> Optional[str]
 
 
 def _select_latest_simulator_spec(runtimes: List[XCSimRuntime]) -> str:
-    runtimes.sort(key=lambda x: StrictVersion(x.version), reverse=True)
+    runtimes.sort(key=lambda x: Version(x.version), reverse=True)
     for runtime in runtimes:
         device_type = _compatible_device_type_from_runtime(runtime)
         if device_type:

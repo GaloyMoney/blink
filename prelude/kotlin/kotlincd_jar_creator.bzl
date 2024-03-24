@@ -62,6 +62,7 @@ def create_jar_artifact_kotlincd(
         resources_root: [str, None],
         annotation_processor_properties: AnnotationProcessorProperties,
         plugin_params: [PluginParams, None],
+        manifest_file: [Artifact, None],
         source_level: int,
         target_level: int,
         deps: list[Dependency],
@@ -76,7 +77,8 @@ def create_jar_artifact_kotlincd(
         extra_kotlinc_arguments: list[str],
         k2: bool,
         is_creating_subtarget: bool = False,
-        optional_dirs: list[OutputArtifact] = []) -> JavaCompileOutputs:
+        optional_dirs: list[OutputArtifact] = [],
+        jar_postprocessor: [RunInfo, None] = None) -> JavaCompileOutputs:
     resources_map = get_resources_map(
         java_toolchain = java_toolchain,
         package = label.package,
@@ -145,7 +147,7 @@ def create_jar_artifact_kotlincd(
     compiling_deps_tset = get_compiling_deps_tset(actions, deps, additional_classpath_entries)
 
     # external javac does not support used classes
-    track_class_usage = javac_tool == None
+    track_class_usage = javac_tool == None and kotlin_toolchain.track_class_usage_plugin != None
 
     def encode_library_command(
             output_paths: OutputPaths,
@@ -168,6 +170,7 @@ def create_jar_artifact_kotlincd(
             resources_map,
             annotation_processor_properties = annotation_processor_properties,
             plugin_params = plugin_params,
+            manifest_file = manifest_file,
             extra_arguments = cmd_args(extra_arguments),
             source_only_abi_compiling_deps = [],
             track_class_usage = track_class_usage,
@@ -211,11 +214,12 @@ def create_jar_artifact_kotlincd(
             resources_map,
             annotation_processor_properties,
             plugin_params,
+            manifest_file,
             cmd_args(extra_arguments),
             source_only_abi_compiling_deps = source_only_abi_compiling_deps,
             track_class_usage = True,
         )
-        abi_params = encode_jar_params(remove_classes, output_paths)
+        abi_params = encode_jar_params(remove_classes, output_paths, manifest_file)
         abi_command = struct(
             kotlinExtraParams = kotlin_extra_params,
             baseJarCommand = base_jar_command,
@@ -331,6 +335,7 @@ def create_jar_artifact_kotlincd(
             local_only = local_only,
             low_pass_filter = False,
             weight = 2,
+            error_handler = kotlin_toolchain.kotlin_error_handler,
         )
 
     library_classpath_jars_tag = actions.artifact_tag()
@@ -355,6 +360,7 @@ def create_jar_artifact_kotlincd(
         output_paths = output_paths,
         additional_compiled_srcs = None,
         jar_builder = java_toolchain.jar_builder,
+        jar_postprocessor = jar_postprocessor,
     )
 
     if not is_creating_subtarget:

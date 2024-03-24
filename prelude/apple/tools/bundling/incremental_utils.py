@@ -5,6 +5,8 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
+# pyre-strict
+
 import logging
 import os
 from pathlib import Path
@@ -80,7 +82,7 @@ def should_assemble_incrementally(
 def _codesigned_on_copy_paths_from_previous_build_which_are_present_in_current_build(
     previously_codesigned_on_copy_paths: Set[Path],
     all_input_files: Set[Path],
-):
+) -> Set[Path]:
     all_input_files_and_directories = all_input_files | {
         i for file in all_input_files for i in file.parents
     }
@@ -111,7 +113,7 @@ def calculate_incremental_state(
     """
     result = []
     source_with_destination_files = _source_with_destination_files(spec)
-    for (src, dst) in source_with_destination_files:
+    for src, dst in source_with_destination_files:
         is_symlink = src.is_symlink()
         new_digest = _get_new_digest(action_metadata, src) if not is_symlink else None
         resolved_symlink = Path(os.readlink(src)) if is_symlink else None

@@ -8,6 +8,10 @@
 load("@prelude//:artifacts.bzl", "single_artifact")
 load("@prelude//:paths.bzl", "paths")
 load("@prelude//apple:apple_toolchain_types.bzl", "AppleToolchainInfo")
+load(
+    "@prelude//linking:link_info.bzl",
+    "CxxSanitizerRuntimeInfo",
+)
 load("@prelude//utils:utils.bzl", "flatten_dict")
 load(
     ":apple_asset_catalog.bzl",
@@ -58,6 +62,7 @@ def get_apple_bundle_resource_part_list(ctx: AnalysisContext) -> AppleBundleReso
     parts = []
 
     parts.extend(_create_pkg_info_if_needed(ctx))
+    parts.extend(_copy_privacy_manifest_if_needed(ctx))
 
     (resource_specs, asset_catalog_specs, core_data_specs, scene_kit_assets_spec, cxx_resource_specs) = _select_resources(ctx)
 
@@ -78,6 +83,16 @@ def get_apple_bundle_resource_part_list(ctx: AnalysisContext) -> AppleBundleReso
                 destination = AppleResourceDestination("resources"),
             ),
         )
+
+    cxx_sanitizer_runtime_info = ctx.attrs.binary.get(CxxSanitizerRuntimeInfo) if ctx.attrs.binary else None
+    if cxx_sanitizer_runtime_info:
+        runtime_resource_spec = AppleResourceSpec(
+            files = cxx_sanitizer_runtime_info.runtime_files,
+            destination = AppleResourceDestination("frameworks"),
+            # Sanitizer dylibs require signing, for hardened runtime on macOS and iOS device builds
+            codesign_files_on_copy = True,
+        )
+        resource_specs.append(runtime_resource_spec)
 
     asset_catalog_result = compile_apple_asset_catalog(ctx, asset_catalog_specs)
     if asset_catalog_result != None:
@@ -126,6 +141,19 @@ def _create_pkg_info_if_needed(ctx: AnalysisContext) -> list[AppleBundlePart]:
     if extension == "xpc" or extension == "qlgenerator":
         return []
     artifact = ctx.actions.write("PkgInfo", "APPLWRUN\n")
+    return [AppleBundlePart(source = artifact, destination = AppleBundleDestination("metadata"))]
+
+def _copy_privacy_manifest_if_needed(ctx: AnalysisContext) -> list[AppleBundlePart]:
+    privacy_manifest = ctx.attrs.privacy_manifest
+    if privacy_manifest == None:
+        return []
+
+    # According to apple docs, privacy manifest has to be named as `PrivacyInfo.xcprivacy`
+    if privacy_manifest.short_path.split("/", 1)[-1] == "PrivacyInfo.xcprivacy":
+        artifact = privacy_manifest
+    else:
+        output = ctx.actions.declare_output("PrivacyInfo.xcprivacy")
+        artifact = ctx.actions.copy_file(output.as_output(), privacy_manifest)
     return [AppleBundlePart(source = artifact, destination = AppleBundleDestination("metadata"))]
 
 def _select_resources(ctx: AnalysisContext) -> ((list[AppleResourceSpec], list[AppleAssetCatalogSpec], list[AppleCoreDataSpec], list[SceneKitAssetsSpec], list[CxxResourceSpec])):

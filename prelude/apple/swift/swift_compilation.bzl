@@ -194,10 +194,7 @@ def compile_swift(
         exported_headers: list[CHeader],
         objc_modulemap_pp_info: [CPreprocessor, None],
         framework_search_paths_flags: cmd_args,
-        extra_search_paths_flags: list[ArgLike] = []) -> [SwiftCompilationOutput, None]:
-    if not srcs:
-        return None
-
+        extra_search_paths_flags: list[ArgLike] = []) -> ([SwiftCompilationOutput, None], DefaultInfo):
     # If this target imports XCTest we need to pass the search path to its swiftmodule.
     framework_search_paths = cmd_args()
     framework_search_paths.add(_get_xctest_swiftmodule_search_path(ctx))
@@ -228,12 +225,7 @@ def compile_swift(
     else:
         compiled_underlying_pcm = None
 
-    toolchain = ctx.attrs._apple_toolchain[AppleToolchainInfo].swift_toolchain_info
-
     module_name = get_module_name(ctx)
-    output_header = ctx.actions.declare_output(module_name + "-Swift.h")
-
-    output_swiftmodule = ctx.actions.declare_output(module_name + SWIFTMODULE_EXTENSION)
 
     shared_flags = _get_shared_flags(
         ctx,
@@ -246,6 +238,23 @@ def compile_swift(
         extra_search_paths_flags,
     )
     shared_flags.add(framework_search_paths)
+    swift_interface_info = _create_swift_interface(ctx, shared_flags, module_name)
+
+    if not srcs:
+        return (None, swift_interface_info)
+
+    toolchain = ctx.attrs._apple_toolchain[AppleToolchainInfo].swift_toolchain_info
+
+    if ctx.attrs.serialize_debugging_options:
+        if exported_headers:
+            # TODO(T99100029): We cannot use VFS overlays with Buck2, so we have to disable
+            # serializing debugging options for mixed libraries to debug successfully
+            warning("Mixed libraries cannot serialize debugging options, disabling for module `{}` in rule `{}`".format(module_name, ctx.label))
+        elif not toolchain.prefix_serialized_debugging_options:
+            warning("The current toolchain does not support prefixing serialized debugging options, disabling for module `{}` in rule `{}`".format(module_name, ctx.label))
+
+    output_header = ctx.actions.declare_output(module_name + "-Swift.h")
+    output_swiftmodule = ctx.actions.declare_output(module_name + SWIFTMODULE_EXTENSION)
 
     if toolchain.can_toolchain_emit_obj_c_header_textually:
         _compile_swiftmodule(ctx, toolchain, shared_flags, srcs, output_swiftmodule, output_header)
@@ -268,6 +277,7 @@ def compile_swift(
         headers = [exported_swift_header],
         modular_args = modulemap_pp_info.modular_args,
         relative_args = CPreprocessorArgs(args = modulemap_pp_info.relative_args.args),
+        absolute_args = CPreprocessorArgs(args = modulemap_pp_info.absolute_args.args),
         modulemap_path = modulemap_pp_info.modulemap_path,
     )
 
@@ -281,7 +291,7 @@ def compile_swift(
     pre = CPreprocessor(headers = [swift_header])
 
     # Pass up the swiftmodule paths for this module and its exported_deps
-    return SwiftCompilationOutput(
+    return (SwiftCompilationOutput(
         output_map_artifact = object_output.output_map_artifact,
         object_files = object_output.object_files,
         object_format = toolchain.object_format,
@@ -293,7 +303,7 @@ def compile_swift(
         swift_debug_info = extract_and_merge_swift_debug_infos(ctx, deps_providers, [output_swiftmodule]),
         clang_debug_info = extract_and_merge_clang_debug_infos(ctx, deps_providers),
         compilation_database = _create_compilation_database(ctx, srcs, object_output.argsfiles.absolute[SWIFT_EXTENSION]),
-    )
+    ), swift_interface_info)
 
 # Swift headers are postprocessed to make them compatible with Objective-C
 # compilation that does not use -fmodules. This is a workaround for the bad
@@ -480,13 +490,20 @@ def _get_shared_flags(
         ])
 
     if uses_explicit_modules(ctx):
-        # We set -fmodule-file-home-is-cwd as this is used to correctly
-        # set the working directory of modules when generating debug info.
         cmd.add([
             "-Xcc",
             "-Xclang",
             "-Xcc",
+            # We set -fmodule-file-home-is-cwd as this is used to correctly
+            # set the working directory of modules when generating debug info.
             "-fmodule-file-home-is-cwd",
+            "-Xcc",
+            "-Xclang",
+            "-Xcc",
+            # This is the default for compilation, but not in sourcekitd.
+            # Set it explicitly here so that indexing will not fail with
+            # invalid module format errors.
+            "-fmodule-format=obj",
         ])
         cmd.add(get_disable_pch_validation_flags())
 
@@ -505,19 +522,7 @@ def _get_shared_flags(
         else:
             cmd.add(["-enable-experimental-cxx-interop"])
 
-    serialize_debugging_options = False
-    if ctx.attrs.serialize_debugging_options:
-        if objc_headers:
-            # TODO(T99100029): We cannot use VFS overlays with Buck2, so we have to disable
-            # serializing debugging options for mixed libraries to debug successfully
-            warning("Mixed libraries cannot serialize debugging options, disabling for module `{}` in rule `{}`".format(module_name, ctx.label))
-        elif not toolchain.prefix_serialized_debugging_options:
-            warning("The current toolchain does not support prefixing serialized debugging options, disabling for module `{}` in rule `{}`".format(module_name, ctx.label))
-        else:
-            # Apply the debug prefix map to Swift serialized debugging info.
-            # This will allow for debugging remotely built swiftmodule files.
-            serialize_debugging_options = True
-
+    serialize_debugging_options = ctx.attrs.serialize_debugging_options and not objc_headers and toolchain.prefix_serialized_debugging_options
     if serialize_debugging_options:
         cmd.add([
             "-Xfrontend",
@@ -641,17 +646,18 @@ def _add_mixed_library_flags_to_cmd(
     if not objc_headers:
         return
 
-    # TODO(T99100029): We cannot use VFS overlays to mask this import from
-    # the debugger as they require absolute paths. Instead we will enforce
-    # that mixed libraries do not have serialized debugging info and rely on
-    # rdeps to serialize the correct paths.
-    for arg in objc_modulemap_pp_info.relative_args.args:
-        cmd.add("-Xcc")
-        cmd.add(arg)
+    if objc_modulemap_pp_info:
+        # TODO(T99100029): We cannot use VFS overlays to mask this import from
+        # the debugger as they require absolute paths. Instead we will enforce
+        # that mixed libraries do not have serialized debugging info and rely on
+        # rdeps to serialize the correct paths.
+        for arg in objc_modulemap_pp_info.relative_args.args:
+            cmd.add("-Xcc")
+            cmd.add(arg)
 
-    for arg in objc_modulemap_pp_info.modular_args:
-        cmd.add("-Xcc")
-        cmd.add(arg)
+        for arg in objc_modulemap_pp_info.modular_args:
+            cmd.add("-Xcc")
+            cmd.add(arg)
 
     cmd.add("-import-underlying-module")
 
@@ -832,6 +838,47 @@ def _create_compilation_database(
     ctx.actions.run(cmd, category = "swift_compilation_database", identifier = identifier)
 
     return SwiftCompilationDatabase(db = cdb_artifact, other_outputs = argfile.cmd_form)
+
+def _create_swift_interface(ctx: AnalysisContext, shared_flags: cmd_args, module_name: str) -> DefaultInfo:
+    swift_toolchain = ctx.attrs._apple_toolchain[AppleToolchainInfo].swift_toolchain_info
+    swift_ide_test_tool = swift_toolchain.swift_ide_test_tool
+    if not swift_ide_test_tool:
+        return DefaultInfo()
+    mk_swift_interface = swift_toolchain.mk_swift_interface
+
+    identifier = module_name + ".interface.swift"
+
+    argsfile, _ = ctx.actions.write(
+        identifier + ".argsfile",
+        shared_flags,
+        allow_args = True,
+    )
+    interface_artifact = ctx.actions.declare_output(identifier)
+
+    mk_swift_args = cmd_args(
+        mk_swift_interface,
+        "--swift-ide-test-tool",
+        swift_ide_test_tool,
+        "--module",
+        module_name,
+        "--out",
+        interface_artifact.as_output(),
+        "--",
+        cmd_args(cmd_args(argsfile, format = "@{}", delimiter = "")).hidden([shared_flags]),
+    )
+
+    ctx.actions.run(
+        mk_swift_args,
+        category = "mk_swift_interface",
+        identifier = identifier,
+    )
+
+    return DefaultInfo(
+        default_output = interface_artifact,
+        other_outputs = [
+            argsfile,
+        ],
+    )
 
 def _exported_deps(ctx) -> list[Dependency]:
     if ctx.attrs.reexport_all_header_dependencies:

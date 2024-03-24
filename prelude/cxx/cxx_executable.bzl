@@ -184,6 +184,7 @@ CxxExecutableOutput = record(
     linker_map_data = [CxxLinkerMapData, None],
     link_command_debug_output = field([LinkCommandDebugOutput, None], None),
     dist_info = DistInfo,
+    sanitizer_runtime_files = field(list[Artifact], []),
 )
 
 def cxx_executable(ctx: AnalysisContext, impl_params: CxxRuleConstructorParams, is_cxx_test: bool = False) -> CxxExecutableOutput:
@@ -325,6 +326,7 @@ def cxx_executable(ctx: AnalysisContext, impl_params: CxxRuleConstructorParams, 
                 other_roots = link_group_extra_link_roots,
                 prefer_stripped_objects = impl_params.prefer_stripped_objects,
                 anonymous = ctx.attrs.anonymous_link_groups,
+                allow_cache_upload = impl_params.exe_allow_cache_upload,
             )
             for name, linked_link_group in linked_link_groups.libs.items():
                 auto_link_groups[name] = linked_link_group.artifact
@@ -678,6 +680,7 @@ def cxx_executable(ctx: AnalysisContext, impl_params: CxxRuleConstructorParams, 
             shared_libs = shlib_info.set,
             nondebug_runtime_files = runtime_files,
         ),
+        sanitizer_runtime_files = link_result.sanitizer_runtime_files,
     )
 
 _CxxLinkExecutableResult = record(
@@ -694,6 +697,7 @@ _CxxLinkExecutableResult = record(
     # Optional shared libs symlink tree symlinked_dir action
     shared_libs_symlink_tree = [list[Artifact], Artifact, None],
     linker_map_data = [CxxLinkerMapData, None],
+    sanitizer_runtime_files = list[Artifact],
 )
 
 def _link_into_executable(
@@ -709,7 +713,7 @@ def _link_into_executable(
         output_name = "{}{}".format(executable_name if executable_name else get_cxx_executable_product_name(ctx), "." + binary_extension if binary_extension else "")
     output = ctx.actions.declare_output(output_name)
     executable_args = executable_shared_lib_arguments(
-        ctx.actions,
+        ctx,
         get_cxx_toolchain_info(ctx),
         output,
         shared_libs,
@@ -727,10 +731,11 @@ def _link_into_executable(
 
     return _CxxLinkExecutableResult(
         exe = link_result.linked_object,
-        runtime_files = executable_args.runtime_files,
+        runtime_files = executable_args.runtime_files + link_result.sanitizer_runtime_files,
         external_debug_info = executable_args.external_debug_info,
         shared_libs_symlink_tree = executable_args.shared_libs_symlink_tree,
         linker_map_data = link_result.linker_map_data,
+        sanitizer_runtime_files = link_result.sanitizer_runtime_files,
     )
 
 def get_cxx_executable_product_name(ctx: AnalysisContext) -> str:

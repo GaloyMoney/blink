@@ -83,7 +83,7 @@ apple_asset_catalog = prelude_rule(
 apple_binary = prelude_rule(
     name = "apple_binary",
     docs = """
-        An `apple_binary()` rule builds a native executable\342\200\224such as an iOS or OSX app\342\200\224from
+        An `apple_binary()` rule builds a native executable - such as an iOS or OSX app - from
         the supplied set of Objective-C/C++ source files and dependencies. It is similar to
         a `cxx\\_binary()`rule with which it shares many attributes. In addition
         to those common attributes, `apple_binary()` has a some additional attributes
@@ -225,7 +225,8 @@ apple_binary = prelude_rule(
             "uses_modules": attrs.bool(default = False),
             "xcode_private_headers_symlinks": attrs.option(attrs.bool(), default = None),
             "xcode_public_headers_symlinks": attrs.option(attrs.bool(), default = None),
-        }
+        } |
+        buck.allow_cache_upload_arg()
     ),
 )
 
@@ -342,10 +343,12 @@ apple_bundle = prelude_rule(
         } |
         apple_common.info_plist_arg() |
         apple_common.info_plist_substitutions_arg() |
+        apple_common.privacy_manifest_arg() |
         {
             "asset_catalogs_compilation_options": attrs.dict(key = attrs.string(), value = attrs.any(), default = {}, doc = """
                 A dict holding parameters for asset catalogs compiler (actool). Its options include:
-                 * `notices` (defaults to `True`)
+
+                * `notices` (defaults to `True`)
                 * `warnings` (defaults to `True`)
                 * `errors` (defaults to `True`)
                 * `compress_pngs` (defaults to `True`)
@@ -513,7 +516,8 @@ apple_library = prelude_rule(
             "uses_modules": attrs.bool(default = False),
             "xcode_private_headers_symlinks": attrs.option(attrs.bool(), default = None),
             "xcode_public_headers_symlinks": attrs.option(attrs.bool(), default = None),
-        }
+        } |
+        buck.allow_cache_upload_arg()
     ),
 )
 
@@ -781,7 +785,8 @@ apple_test = prelude_rule(
             "xcode_private_headers_symlinks": attrs.option(attrs.bool(), default = None),
             "xcode_product_type": attrs.option(attrs.string(), default = None),
             "xcode_public_headers_symlinks": attrs.option(attrs.bool(), default = None),
-        }
+        } |
+        buck.allow_cache_upload_arg()
     ),
 )
 

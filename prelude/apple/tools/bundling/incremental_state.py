@@ -5,11 +5,13 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
+# pyre-strict
+
 import json
 from dataclasses import dataclass
 from io import TextIOBase
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from apple.tools.code_signing.codesign_bundle import CodesignConfiguration
 
@@ -49,14 +51,14 @@ class IncrementalState:
 
 
 class IncrementalStateJSONEncoder(json.JSONEncoder):
-    def default(self, o: Any) -> Any:
+    def default(self, o: object) -> object:
         if isinstance(o, IncrementalState):
             return {
                 "items": [self.default(i) for i in o.items],
                 "codesigned": o.codesigned,
-                "codesign_configuration": o.codesign_configuration.value
-                if o.codesign_configuration
-                else None,
+                "codesign_configuration": (
+                    o.codesign_configuration.value if o.codesign_configuration else None
+                ),
                 "codesign_on_copy_paths": [str(p) for p in o.codesign_on_copy_paths],
                 "codesign_identity": o.codesign_identity,
                 "swift_stdlib_paths": [str(p) for p in o.swift_stdlib_paths],
@@ -76,7 +78,7 @@ class IncrementalStateJSONEncoder(json.JSONEncoder):
             return super().default(o)
 
 
-def _object_hook(dict: Dict[str, Any]) -> Any:
+def _object_hook(dict: Dict[str, Any]) -> Union[IncrementalState, IncrementalStateItem]:
     if "version" in dict:
         dict["codesign_on_copy_paths"] = [
             Path(p) for p in dict.pop("codesign_on_copy_paths")

@@ -41,14 +41,15 @@ def get_android_binary_resources_info(
         resource_infos_to_exclude: [set_type, None] = None,
         r_dot_java_packages_to_exclude: [list[str], None] = [],
         generate_strings_and_ids_separately: [bool, None] = True,
-        aapt2_min_sdk: [str, None] = None,
         aapt2_preferred_density: [str, None] = None) -> AndroidBinaryResourcesInfo:
     android_toolchain = ctx.attrs._android_toolchain[AndroidToolchainInfo]
-    unfiltered_resource_infos = [
+
+    # Use reverse topological sort in resource merging to make sure a resource target will overwrite its dependencies.
+    unfiltered_resource_infos = reversed([
         resource_info
-        for resource_info in list(android_packageable_info.resource_infos.traverse() if android_packageable_info.resource_infos else [])
+        for resource_info in list(android_packageable_info.resource_infos.traverse(ordering = "topological") if android_packageable_info.resource_infos else [])
         if not (resource_infos_to_exclude and resource_infos_to_exclude.contains(resource_info.raw_target))
-    ]
+    ])
     filtered_resources_output = _maybe_filter_resources(
         ctx,
         unfiltered_resource_infos,
@@ -56,13 +57,14 @@ def get_android_binary_resources_info(
     )
     resource_infos = filtered_resources_output.resource_infos
 
-    android_manifest = get_manifest(ctx, android_packageable_info, manifest_entries)
+    android_manifest = get_manifest(ctx, android_packageable_info, manifest_entries, should_replace_application_id_placeholders = True)
 
     non_proto_format_aapt2_link_info, proto_format_aapt2_link_info = get_aapt2_link(
         ctx,
         ctx.attrs._android_toolchain[AndroidToolchainInfo],
         resource_infos,
         android_manifest,
+        manifest_entries = getattr(ctx.attrs, "manifest_entries", {}),
         includes_vector_drawables = getattr(ctx.attrs, "includes_vector_drawables", False),
         no_auto_version = getattr(ctx.attrs, "no_auto_version_resources", False),
         no_version_transitions = getattr(ctx.attrs, "no_version_transitions_resources", False),
@@ -76,7 +78,6 @@ def get_android_binary_resources_info(
         extra_filtered_resources = getattr(ctx.attrs, "extra_filtered_resources", []),
         locales = getattr(ctx.attrs, "locales", []) or getattr(ctx.attrs, "locales_for_binary_resources", []),
         filter_locales = getattr(ctx.attrs, "aapt2_locale_filtering", False) or bool(getattr(ctx.attrs, "locales_for_binary_resources", [])),
-        min_sdk = aapt2_min_sdk,
         preferred_density = aapt2_preferred_density,
     )
 
@@ -94,12 +95,14 @@ def get_android_binary_resources_info(
 
     cxx_resources = get_cxx_resources(ctx, deps)
     is_exopackaged_enabled_for_resources = "resources" in getattr(ctx.attrs, "exopackage_modes", [])
-    primary_resources_apk, exopackaged_assets, exopackaged_assets_hash = _merge_assets(
+    primary_resources_apk, exopackaged_assets, exopackaged_assets_hash, module_assets_apks_dir = _merge_assets(
         ctx,
         is_exopackaged_enabled_for_resources,
         aapt2_link_info.primary_resources_apk,
         resource_infos,
         cxx_resources,
+        use_proto_format,  # indicates that this is a .aab build
+        apk_module_graph_file,
     )
 
     if is_exopackaged_enabled_for_resources:
@@ -180,6 +183,7 @@ def get_android_binary_resources_info(
         exopackage_info = exopackage_info,
         manifest = android_manifest,
         module_manifests = module_manifests,
+        module_assets = module_assets_apks_dir,
         packaged_string_assets = packaged_string_assets,
         primary_resources_apk = primary_resources_apk,
         proguard_config_file = aapt2_link_info.proguard_config_file,
@@ -428,7 +432,8 @@ def _maybe_package_strings_as_assets(
 def get_manifest(
         ctx: AnalysisContext,
         android_packageable_info: AndroidPackageableInfo,
-        manifest_entries: dict) -> Artifact:
+        manifest_entries: dict,
+        should_replace_application_id_placeholders: bool) -> Artifact:
     robolectric_manifest = getattr(ctx.attrs, "robolectric_manifest", None)
     if robolectric_manifest:
         return robolectric_manifest
@@ -456,7 +461,7 @@ def get_manifest(
             manifest_entries.get("placeholders", {}),
         )
 
-    if android_toolchain.set_application_id_to_specified_package:
+    if android_toolchain.set_application_id_to_specified_package and should_replace_application_id_placeholders:
         android_manifest_with_replaced_application_id = ctx.actions.declare_output("android_manifest_with_replaced_application_id/AndroidManifest.xml")
         replace_application_id_placeholders_cmd = cmd_args([
             ctx.attrs._android_toolchain[AndroidToolchainInfo].replace_application_id_placeholders[RunInfo],
@@ -541,39 +546,87 @@ def _merge_assets(
         is_exopackaged_enabled_for_resources: bool,
         base_apk: Artifact,
         resource_infos: list[AndroidResourceInfo],
-        cxx_resources: [Artifact, None]) -> (Artifact, [Artifact, None], [Artifact, None]):
-    assets_dirs = [resource_info.assets for resource_info in resource_infos if resource_info.assets]
-    if cxx_resources != None:
-        assets_dirs.extend([cxx_resources])
-    if len(assets_dirs) == 0:
-        return base_apk, None, None
-
-    merge_assets_cmd = cmd_args(ctx.attrs._android_toolchain[AndroidToolchainInfo].merge_assets[RunInfo])
+        cxx_resources: [Artifact, None],
+        is_bundle_build: bool,
+        apk_module_graph_file: [Artifact, None]) -> (Artifact, [Artifact, None], [Artifact, None], [Artifact, None]):
+    expect(
+        not (is_exopackaged_enabled_for_resources and is_bundle_build),
+        "Cannot use exopackage-for-resources with AAB builds.",
+    )
+    asset_resource_infos = [resource_info for resource_info in resource_infos if resource_info.assets]
+    if not asset_resource_infos and not cxx_resources:
+        return base_apk, None, None, None
 
     merged_assets_output = ctx.actions.declare_output("merged_assets.ap_")
-    merge_assets_cmd.add(["--output-apk", merged_assets_output.as_output()])
 
-    if is_exopackaged_enabled_for_resources:
-        merged_assets_output_hash = ctx.actions.declare_output("merged_assets.ap_.hash")
-        merge_assets_cmd.add(["--output-apk-hash", merged_assets_output_hash.as_output()])
+    def get_common_merge_assets_cmd(
+            ctx: AnalysisContext,
+            output_apk: Artifact) -> (cmd_args, [Artifact, None]):
+        merge_assets_cmd = cmd_args(ctx.attrs._android_toolchain[AndroidToolchainInfo].merge_assets[RunInfo])
+        merge_assets_cmd.add(["--output-apk", output_apk.as_output()])
+
+        if getattr(ctx.attrs, "extra_no_compress_asset_extensions", None):
+            merge_assets_cmd.add("--extra-no-compress-asset-extensions")
+            merge_assets_cmd.add(ctx.attrs.extra_no_compress_asset_extensions)
+
+        if is_exopackaged_enabled_for_resources:
+            merged_assets_output_hash = ctx.actions.declare_output("merged_assets.ap_.hash")
+            merge_assets_cmd.add(["--output-apk-hash", merged_assets_output_hash.as_output()])
+        else:
+            merge_assets_cmd.add(["--base-apk", base_apk])
+            merged_assets_output_hash = None
+
+        return merge_assets_cmd, merged_assets_output_hash
+
+    # For Voltron AAB builds, we need to put assets into a separate "APK" for each module.
+    if is_bundle_build and apk_module_graph_file:
+        module_assets_apks_dir = ctx.actions.declare_output("module_assets_apks")
+
+        def merge_assets_modular(ctx: AnalysisContext, artifacts, outputs):
+            apk_module_graph_info = get_apk_module_graph_info(ctx, apk_module_graph_file, artifacts)
+
+            module_to_assets_dirs = {}
+            if cxx_resources != None:
+                module_to_assets_dirs.setdefault(ROOT_MODULE, []).extend([cxx_resources])
+            for asset_resource_info in asset_resource_infos:
+                module_name = apk_module_graph_info.target_to_module_mapping_function(str(asset_resource_info.raw_target))
+                module_to_assets_dirs.setdefault(module_name, []).append(asset_resource_info.assets)
+
+            merge_assets_cmd, _ = get_common_merge_assets_cmd(ctx, outputs[merged_assets_output])
+
+            merge_assets_cmd.add(["--module-assets-apks-dir", outputs[module_assets_apks_dir].as_output()])
+
+            assets_dirs_file = ctx.actions.write_json("assets_dirs.json", module_to_assets_dirs)
+            merge_assets_cmd.add(["--assets-dirs", assets_dirs_file])
+            merge_assets_cmd.hidden([resource_info.assets for resource_info in asset_resource_infos])
+
+            ctx.actions.run(merge_assets_cmd, category = "merge_assets")
+
+        ctx.actions.dynamic_output(
+            dynamic = [apk_module_graph_file],
+            inputs = [],
+            outputs = [module_assets_apks_dir, merged_assets_output],
+            f = merge_assets_modular,
+        )
+
+        return merged_assets_output, None, None, module_assets_apks_dir
+
     else:
-        merge_assets_cmd.add(["--base-apk", base_apk])
-        merged_assets_output_hash = None
+        merge_assets_cmd, merged_assets_output_hash = get_common_merge_assets_cmd(ctx, merged_assets_output)
 
-    assets_dirs_file = ctx.actions.write("assets_dirs", assets_dirs)
-    merge_assets_cmd.add(["--assets-dirs", assets_dirs_file])
-    merge_assets_cmd.hidden(assets_dirs)
+        assets_dirs = [resource_info.assets for resource_info in asset_resource_infos]
+        if cxx_resources:
+            assets_dirs.extend([cxx_resources])
+        assets_dirs_file = ctx.actions.write_json("assets_dirs.json", {ROOT_MODULE: assets_dirs})
+        merge_assets_cmd.add(["--assets-dirs", assets_dirs_file])
+        merge_assets_cmd.hidden(assets_dirs)
 
-    if getattr(ctx.attrs, "extra_no_compress_asset_extensions", None):
-        merge_assets_cmd.add("--extra-no-compress-asset-extensions")
-        merge_assets_cmd.add(ctx.attrs.extra_no_compress_asset_extensions)
+        ctx.actions.run(merge_assets_cmd, category = "merge_assets")
 
-    ctx.actions.run(merge_assets_cmd, category = "merge_assets")
-
-    if is_exopackaged_enabled_for_resources:
-        return base_apk, merged_assets_output, merged_assets_output_hash
-    else:
-        return merged_assets_output, None, None
+        if is_exopackaged_enabled_for_resources:
+            return base_apk, merged_assets_output, merged_assets_output_hash, None
+        else:
+            return merged_assets_output, None, None, None
 
 def get_effective_banned_duplicate_resource_types(
         duplicate_resource_behavior: str,

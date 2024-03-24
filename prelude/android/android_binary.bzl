@@ -82,6 +82,7 @@ def get_binary_info(ctx: AnalysisContext, use_proto_format: bool) -> AndroidBina
         use_proto_format = use_proto_format,
         referenced_resources_lists = referenced_resources_lists,
         manifest_entries = ctx.attrs.manifest_entries,
+        generate_strings_and_ids_separately = should_pre_dex,
         aapt2_preferred_density = ctx.attrs.aapt2_preferred_density,
     )
     android_toolchain = ctx.attrs._android_toolchain[AndroidToolchainInfo]
@@ -209,6 +210,8 @@ def get_build_config_java_libraries(
 
     default_build_config_fields = get_build_config_fields(ctx.attrs.build_config_values)
 
+    android_binary_values_file = ctx.attrs.build_config_values_file[DefaultInfo].default_outputs[0] if isinstance(ctx.attrs.build_config_values_file, Dependency) else ctx.attrs.build_config_values_file
+
     java_libraries = []
     java_packages_seen = []
     for build_config_info in build_config_infos:
@@ -220,13 +223,14 @@ def get_build_config_java_libraries(
         for build_config_field in build_config_info.build_config_fields + default_build_config_fields + build_config_constants:
             all_build_config_values[build_config_field.name] = build_config_field
 
+        values_file = android_binary_values_file if android_binary_values_file else build_config_info.values_file
         java_libraries.append(generate_android_build_config(
             ctx,
             java_package,
             java_package,
             True,  # use_constant_expressions
             all_build_config_values.values(),
-            ctx.attrs.build_config_values_file[DefaultInfo].default_outputs[0] if isinstance(ctx.attrs.build_config_values_file, Dependency) else ctx.attrs.build_config_values_file,
+            values_file,
         )[1])
 
     return java_libraries

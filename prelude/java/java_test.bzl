@@ -50,6 +50,9 @@ def build_junit_test(
     java = ctx.attrs.java[RunInfo] if ctx.attrs.java else ctx.attrs._java_toolchain[JavaToolchainInfo].java_for_tests
 
     cmd = [java] + extra_cmds + ctx.attrs.vm_args + ["-XX:-MaxFDLimit"]
+    if len(java_test_toolchain.jvm_args) > 0:
+        cmd.extend(java_test_toolchain.jvm_args)
+
     classpath = []
 
     if java_test_toolchain.use_java_custom_class_loader:
@@ -112,19 +115,21 @@ def build_junit_test(
     if ctx.attrs.test_case_timeout_ms:
         cmd.extend(["--default_test_timeout", str(ctx.attrs.test_case_timeout_ms)])
 
-    expect(tests_java_library_info.library_output != None, "Built test library has no output, likely due to missing srcs")
-
-    class_names = ctx.actions.declare_output("class_names")
-    list_class_names_cmd = cmd_args([
-        java_test_toolchain.list_class_names[RunInfo],
-        "--jar",
-        tests_java_library_info.library_output.full_library,
-        "--sources",
-        ctx.actions.write("sources.txt", ctx.attrs.srcs),
-        "--output",
-        class_names.as_output(),
-    ]).hidden(ctx.attrs.srcs)
-    ctx.actions.run(list_class_names_cmd, category = "list_class_names")
+    if ctx.attrs.test_class_names_file:
+        class_names = ctx.attrs.test_class_names_file
+    else:
+        expect(tests_java_library_info.library_output != None, "Built test library has no output, likely due to missing srcs")
+        class_names = ctx.actions.declare_output("class_names")
+        list_class_names_cmd = cmd_args([
+            java_test_toolchain.list_class_names[RunInfo],
+            "--jar",
+            tests_java_library_info.library_output.full_library,
+            "--sources",
+            ctx.actions.write("sources.txt", ctx.attrs.srcs),
+            "--output",
+            class_names.as_output(),
+        ]).hidden(ctx.attrs.srcs)
+        ctx.actions.run(list_class_names_cmd, category = "list_class_names")
 
     cmd.extend(["--test-class-names-file", class_names])
 
@@ -139,7 +144,7 @@ def build_junit_test(
     if tests_class_to_source_info != None:
         transitive_class_to_src_map = merge_class_to_source_map_from_jar(
             actions = ctx.actions,
-            name = ctx.attrs.name + ".transitive_class_to_src.json",
+            name = ctx.label.name + ".transitive_class_to_src.json",
             java_test_toolchain = java_test_toolchain,
             relative_to = ctx.label.cell_root if run_from_cell_root else None,
             deps = [tests_class_to_source_info],

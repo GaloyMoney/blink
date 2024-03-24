@@ -170,10 +170,12 @@ _GENRULE_LOCAL_LABELS = {label: True for label in [
 
     # Some Qt genrules don't support RE yet
     "qt_moc",
-    "qt_qrc_gen",
-    "qt_qrc_compile",
-    "qt_qsb_gen",
     "qt_qmlcachegen",
+    "qt_qrc_compile",
+    "qt_qrc_gen",
+    "qt_qsb_gen",
+    "qt_rcc",
+    "qt_uic",
 
     # use local jar
     "uses_jar",
@@ -201,6 +203,14 @@ _GENRULE_LOCAL_LABELS = {label: True for label in [
 
     # Uses Apple's codesign command which might not be in RE
     "uses_codesign",
+
+    # Uses jf which is not on RE
+    "uses_jf",
+
+    # On Messenger Desktop few targets are massive and take much longer on RE than
+    # locally to build on Windows. This is a mitigation until we can break down these
+    # targets
+    "zeratul_windows_capacity_hog",
 ]}
 
 def genrule_labels_require_local(labels):

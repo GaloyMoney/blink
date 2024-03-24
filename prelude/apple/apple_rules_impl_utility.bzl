@@ -5,17 +5,9 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
-load("@prelude//apple:apple_buck2_compatibility.bzl", "BUCK2_COMPATIBILITY_ATTRIB_NAME", "BUCK2_COMPATIBILITY_ATTRIB_TYPE")
 load("@prelude//apple:apple_bundle_attrs.bzl", "get_apple_info_plist_build_system_identification_attrs")
 load("@prelude//apple:apple_bundle_types.bzl", "AppleBundleResourceInfo", "AppleBundleTypeAttributeType")
 load("@prelude//apple:apple_code_signing_types.bzl", "CodeSignType")
-load(
-    "@prelude//apple:apple_genrule_deps.bzl",
-    "APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_NAME",
-    "APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_TYPE",
-    "APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_NAME",
-    "APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_TYPE",
-)
 load("@prelude//apple:apple_toolchain_types.bzl", "AppleToolchainInfo", "AppleToolsInfo")
 load("@prelude//apple/swift:swift_incremental_support.bzl", "SwiftCompilationMode")
 load("@prelude//apple/user:apple_selective_debugging.bzl", "AppleSelectiveDebuggingInfo")
@@ -46,6 +38,8 @@ def get_apple_xctoolchain_bundle_id_attr():
 APPLE_ARCHIVE_OBJECTS_LOCALLY_OVERRIDE_ATTR_NAME = "_archive_objects_locally_override"
 APPLE_USE_ENTITLEMENTS_WHEN_ADHOC_CODE_SIGNING_CONFIG_OVERRIDE_ATTR_NAME = "_use_entitlements_when_adhoc_code_signing"
 APPLE_USE_ENTITLEMENTS_WHEN_ADHOC_CODE_SIGNING_ATTR_NAME = "use_entitlements_when_adhoc_code_signing"
+APPLE_EMBED_PROVISIONING_PROFILE_WHEN_ADHOC_CODE_SIGNING_CONFIG_OVERRIDE_ATTR_NAME = "_embed_provisioning_profile_when_adhoc_code_signing"
+APPLE_EMBED_PROVISIONING_PROFILE_WHEN_ADHOC_CODE_SIGNING_ATTR_NAME = "embed_provisioning_profile_when_adhoc_code_signing"
 
 APPLE_VALIDATION_DEPS_ATTR_NAME = "validation_deps"
 APPLE_VALIDATION_DEPS_ATTR_TYPE = attrs.set(attrs.dep(), sorted = True, default = [])
@@ -65,11 +59,11 @@ def _apple_bundle_like_common_attrs():
         "_bundling_cache_buster": attrs.option(attrs.string(), default = None),
         "_bundling_log_file_enabled": attrs.bool(default = False),
         "_bundling_log_file_level": attrs.option(attrs.string(), default = None),
-        "_bundling_path_conflicts_check_enabled": attrs.bool(default = False),
         "_codesign_type": attrs.option(attrs.enum(CodeSignType.values()), default = None),
         "_compile_resources_locally_override": attrs.option(attrs.bool(), default = None),
         "_dry_run_code_signing": attrs.bool(default = False),
         "_fast_adhoc_signing_enabled": attrs.bool(default = False),
+        "_fast_provisioning_profile_parsing_enabled": attrs.bool(default = False),
         "_incremental_bundling_enabled": attrs.bool(default = False),
         "_profile_bundling_enabled": attrs.bool(default = False),
         # FIXME: prelude// should be standalone (not refer to fbsource//)
@@ -77,7 +71,8 @@ def _apple_bundle_like_common_attrs():
         "_resource_bundle": attrs.option(attrs.dep(providers = [AppleBundleResourceInfo]), default = None),
         APPLE_USE_ENTITLEMENTS_WHEN_ADHOC_CODE_SIGNING_CONFIG_OVERRIDE_ATTR_NAME: attrs.option(attrs.bool(), default = None),
         APPLE_USE_ENTITLEMENTS_WHEN_ADHOC_CODE_SIGNING_ATTR_NAME: attrs.bool(default = False),
-        BUCK2_COMPATIBILITY_ATTRIB_NAME: BUCK2_COMPATIBILITY_ATTRIB_TYPE,
+        APPLE_EMBED_PROVISIONING_PROFILE_WHEN_ADHOC_CODE_SIGNING_CONFIG_OVERRIDE_ATTR_NAME: attrs.option(attrs.bool(), default = None),
+        APPLE_EMBED_PROVISIONING_PROFILE_WHEN_ADHOC_CODE_SIGNING_ATTR_NAME: attrs.bool(default = False),
         APPLE_VALIDATION_DEPS_ATTR_NAME: APPLE_VALIDATION_DEPS_ATTR_TYPE,
     }
     attribs.update(get_apple_info_plist_build_system_identification_attrs())
@@ -106,6 +101,7 @@ def apple_test_extra_attrs():
         "resource_group": attrs.option(attrs.string(), default = None),
         # Expected by `apple_bundle`, for `apple_test` this field is always None.
         "resource_group_map": attrs.option(attrs.string(), default = None),
+        "sanitizer_runtime_enabled": attrs.option(attrs.bool(), default = None),
         "stripped": attrs.bool(default = False),
         "swift_compilation_mode": attrs.enum(SwiftCompilationMode.values(), default = "wmo"),
         "use_m1_simulator": attrs.bool(default = False),
@@ -115,10 +111,6 @@ def apple_test_extra_attrs():
         "_macos_idb_companion": attrs.transition_dep(cfg = apple_simulators_transition, default = "fbsource//xplat/buck2/platform/apple:macos_idb_companion", providers = [LocalResourceInfo]),
     }
     attribs.update(_apple_bundle_like_common_attrs())
-    attribs.update({
-        APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_NAME: APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_TYPE,
-        APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_NAME: APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_TYPE,
-    })
     return attribs
 
 def apple_xcuitest_extra_attrs():
@@ -151,8 +143,6 @@ def apple_bundle_extra_attrs():
         "universal": attrs.option(attrs.bool(), default = None),
         "_apple_toolchain": get_apple_bundle_toolchain_attr(),
         "_codesign_entitlements": attrs.option(attrs.source(), default = None),
-        APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_NAME: APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_TYPE,
-        APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_NAME: APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_TYPE,
     }
     attribs.update(_apple_bundle_like_common_attrs())
     return attribs
