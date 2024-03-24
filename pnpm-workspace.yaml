@@ -6,6 +6,9 @@ packages:
   - apps/admin-panel
   - apps/pay
   - apps/map
+  - bats/helpers/callback
+  - bats/helpers/subscriber
+  - bats/helpers/totp
   - lib/eslint-config
   - lib/gt3-server-node-express-sdk
   - lib/galoy-components
