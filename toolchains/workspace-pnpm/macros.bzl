@@ -159,7 +159,7 @@ build_workspace_node_modules = rule(
     impl = build_workspace_node_modules_impl,
     attrs = {
         "pnpm_lock": attrs.source(
-            default = "//:pnpm-lock.yaml",
+            default = "root//:pnpm-lock.yaml",
             doc = """Workspace Pnpm lock file""",
         ),
         "root_workspace": attrs.bool(
@@ -209,11 +209,11 @@ build_node_modules = rule(
     attrs = {
         "turbo_bin": attrs.dep(
             providers = [RunInfo],
-            default = "//third-party/node/turbo:turbo_bin",
+            default = "root//third-party/node/turbo:turbo_bin",
             doc = """Turbo dependency.""",
         ),
         "workspace": attrs.source(
-            default = "//:workspace",
+            default = "root//:workspace",
             doc = """Workspace root files""",
         ),
         "prod_only": attrs.bool(
