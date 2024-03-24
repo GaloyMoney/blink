@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: configure otel sampling to be ''always on'' (#4226)...'
-      sha: 4d96d0bce4ce093ccb2166253f16bd1070118df8
+      commitTitle: 'chore(deps-dev): bump eslint-webpack-plugin from 3.2.0 to 4.1.0
+        (#4202)...'
+      sha: 15ca8e27783fa145aea055db61b9bc8df0618498
       tags:
-      - 0.20.130-8-g4d96d0bce
+      - 0.20.130-10-g15ca8e277
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: configure otel sampling to be ''always on'' (#4226)...'
-      sha: 4d96d0bce4ce093ccb2166253f16bd1070118df8
+      commitTitle: 'chore(deps-dev): bump eslint-webpack-plugin from 3.2.0 to 4.1.0
+        (#4202)...'
+      sha: 15ca8e27783fa145aea055db61b9bc8df0618498
       tags:
-      - 0.20.130-8-g4d96d0bce
+      - 0.20.130-10-g15ca8e277
     path: schemas/
   - git:
-      commitTitle: 'chore: configure otel sampling to be ''always on'' (#4226)...'
-      sha: 4d96d0bce4ce093ccb2166253f16bd1070118df8
+      commitTitle: 'chore(deps-dev): bump eslint-webpack-plugin from 3.2.0 to 4.1.0
+        (#4202)...'
+      sha: 15ca8e27783fa145aea055db61b9bc8df0618498
       tags:
-      - 0.20.130-8-g4d96d0bce
+      - 0.20.130-10-g15ca8e277
     path: gql/
   path: ./graphql
 kind: LockConfig
