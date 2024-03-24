@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps-dev): bump eslint-webpack-plugin from 3.2.0 to 4.1.0
-        (#4202)...'
-      sha: 15ca8e27783fa145aea055db61b9bc8df0618498
+      commitTitle: 'build: bump flake + buck2 (#4227)...'
+      sha: d3a10fcd0a67ec154486decf81774008df97cc2c
       tags:
-      - 0.20.130-10-g15ca8e277
+      - 0.20.131-1-gd3a10fcd0
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps-dev): bump eslint-webpack-plugin from 3.2.0 to 4.1.0
-        (#4202)...'
-      sha: 15ca8e27783fa145aea055db61b9bc8df0618498
+      commitTitle: 'build: bump flake + buck2 (#4227)...'
+      sha: d3a10fcd0a67ec154486decf81774008df97cc2c
       tags:
-      - 0.20.130-10-g15ca8e277
+      - 0.20.131-1-gd3a10fcd0
     path: schemas/
   - git:
-      commitTitle: 'chore(deps-dev): bump eslint-webpack-plugin from 3.2.0 to 4.1.0
-        (#4202)...'
-      sha: 15ca8e27783fa145aea055db61b9bc8df0618498
+      commitTitle: 'build: bump flake + buck2 (#4227)...'
+      sha: d3a10fcd0a67ec154486decf81774008df97cc2c
       tags:
-      - 0.20.130-10-g15ca8e277
+      - 0.20.131-1-gd3a10fcd0
     path: gql/
   path: ./graphql
 kind: LockConfig
