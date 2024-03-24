@@ -177,6 +177,10 @@ LinkOrdering = enum(
     "topological",
 )
 
+CxxSanitizerRuntimeInfo = provider(fields = {
+    "runtime_files": provider_field(list[Artifact]),
+})
+
 def set_link_info_link_whole(info: LinkInfo) -> LinkInfo:
     linkables = [set_linkable_link_whole(linkable) for linkable in info.linkables]
     return LinkInfo(

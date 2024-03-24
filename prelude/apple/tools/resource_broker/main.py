@@ -5,6 +5,8 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
+# pyre-strict
+
 import argparse
 import asyncio
 import json
@@ -56,7 +58,7 @@ class _ResourceType(str, Enum):
     macosIdbCompanion = "macos_idb_companion"
 
 
-def _exit_gracefully(*args):
+def _exit_gracefully(*args: List[object]) -> None:
     for idb_companion in idb_companions:
         idb_companion.cleanup()
     exit(0)
@@ -67,7 +69,7 @@ def _check_simulator_manager_exists(simulator_manager: Optional[str]) -> None:
         raise Exception("Simulator manager is not specified")
 
 
-def main():
+def main() -> None:
     args = _args_parser().parse_args()
     if args.type == _ResourceType.iosBootedSimulator:
         _check_simulator_manager_exists(args.simulator_manager)

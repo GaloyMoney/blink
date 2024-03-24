@@ -12,7 +12,7 @@
 # **all** interpreted files.
 
 load("@prelude//android:cpu_filters.bzl", "ALL_CPU_FILTERS", "CPU_FILTER_FOR_DEFAULT_PLATFORM")
-load("@prelude//apple:apple_macro_layer.bzl", "apple_binary_macro_impl", "apple_bundle_macro_impl", "apple_library_macro_impl", "apple_package_macro_impl", "apple_test_macro_impl", "apple_universal_executable_macro_impl")
+load("@prelude//apple:apple_macro_layer.bzl", "apple_binary_macro_impl", "apple_bundle_macro_impl", "apple_library_macro_impl", "apple_package_macro_impl", "apple_test_macro_impl", "apple_universal_executable_macro_impl", "apple_xcuitest_macro_impl")
 load("@prelude//apple/swift:swift_toolchain_macro_layer.bzl", "swift_toolchain_macro_impl")
 load("@prelude//cxx:cxx_toolchain.bzl", "cxx_toolchain_inheriting_target_platform")
 load("@prelude//cxx:cxx_toolchain_macro_layer.bzl", "cxx_toolchain_macro_impl")
@@ -182,6 +182,14 @@ def _get_valid_cpu_filters(cpu_filters: [list[str], None]) -> list[str]:
 
     return [cpu_filter for cpu_filter in cpu_filters if cpu_filter in cpu_abis]
 
+def _android_aar_macro_stub(
+        cpu_filters = None,
+        **kwargs):
+    __rules__["android_aar"](
+        cpu_filters = _get_valid_cpu_filters(cpu_filters),
+        **kwargs
+    )
+
 def _android_binary_macro_stub(
         allow_r_dot_java_in_secondary_dex = False,
         cpu_filters = None,
@@ -203,9 +211,17 @@ def _android_binary_macro_stub(
 
 def _android_instrumentation_apk_macro_stub(
         cpu_filters = None,
+        primary_dex_patterns = [],
         **kwargs):
+    primary_dex_patterns = primary_dex_patterns + [
+        "/R^",
+        "/R$",
+        # Pin this to the primary for apps with no primary dex classes.
+        "^com/facebook/buck_generated/AppWithoutResourcesStub^",
+    ]
     __rules__["android_instrumentation_apk"](
         cpu_filters = _get_valid_cpu_filters(cpu_filters),
+        primary_dex_patterns = primary_dex_patterns,
         **kwargs
     )
 
@@ -326,6 +342,12 @@ def _apple_test_macro_stub(**kwargs):
         **kwargs
     )
 
+def _apple_xcuitest_macro_stub(**kwargs):
+    apple_xcuitest_macro_impl(
+        apple_xcuitest_rule = __rules__["apple_xcuitest"],
+        **kwargs
+    )
+
 def _apple_binary_macro_stub(**kwargs):
     apple_binary_macro_impl(
         apple_binary_rule = __rules__["apple_binary"],
@@ -418,6 +440,7 @@ def _rust_test_macro_stub(**kwargs):
 # Probably good if they were defined to take in the base rule that
 # they are wrapping and return the wrapped one.
 __extra_rules__ = {
+    "android_aar": _android_aar_macro_stub,
     "android_binary": _android_binary_macro_stub,
     "android_instrumentation_apk": _android_instrumentation_apk_macro_stub,
     "apple_binary": _apple_binary_macro_stub,
@@ -427,6 +450,7 @@ __extra_rules__ = {
     "apple_test": _apple_test_macro_stub,
     "apple_universal_executable": _apple_universal_executable_macro_stub,
     "apple_watchos_bundle": _apple_watchos_bundle_macro_stub,
+    "apple_xcuitest": _apple_xcuitest_macro_stub,
     "configured_alias": _configured_alias_macro_stub,
     "cxx_toolchain": _cxx_toolchain_macro_stub,
     "cxx_toolchain_override": _cxx_toolchain_override_macro_stub,

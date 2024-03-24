@@ -5,13 +5,10 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
-load("@prelude//apple:apple_buck2_compatibility.bzl", "BUCK2_COMPATIBILITY_ATTRIB_NAME", "BUCK2_COMPATIBILITY_ATTRIB_TYPE")
 load(
-    "@prelude//apple:apple_genrule_deps.bzl",
-    "APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_NAME",
-    "APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_TYPE",
-    "APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_NAME",
-    "APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_TYPE",
+    "@prelude//:validation_deps.bzl",
+    "VALIDATION_DEPS_ATTR_NAME",
+    "VALIDATION_DEPS_ATTR_TYPE",
 )
 load("@prelude//apple/swift:swift_incremental_support.bzl", "SwiftCompilationMode")
 load("@prelude//apple/swift:swift_toolchain.bzl", "swift_toolchain_impl")
@@ -27,15 +24,13 @@ load(":apple_binary.bzl", "apple_binary_impl")
 load(":apple_bundle.bzl", "apple_bundle_impl")
 load(":apple_bundle_types.bzl", "AppleBundleInfo")
 load(":apple_core_data.bzl", "apple_core_data_impl")
-load(":apple_library.bzl", "apple_library_impl")
+load(":apple_library.bzl", "AppleSharedLibraryMachOFileType", "apple_library_impl")
 load(":apple_package.bzl", "apple_package_impl")
 load(":apple_package_config.bzl", "IpaCompressionLevel")
 load(":apple_resource.bzl", "apple_resource_impl")
 load(
     ":apple_rules_impl_utility.bzl",
     "APPLE_ARCHIVE_OBJECTS_LOCALLY_OVERRIDE_ATTR_NAME",
-    "APPLE_VALIDATION_DEPS_ATTR_NAME",
-    "APPLE_VALIDATION_DEPS_ATTR_TYPE",
     "apple_bundle_extra_attrs",
     "apple_dsymutil_attrs",
     "apple_test_extra_attrs",
@@ -94,6 +89,7 @@ def _apple_binary_extra_attrs():
         "precompiled_header": attrs.option(attrs.dep(providers = [CPrecompiledHeaderInfo]), default = None),
         "prefer_stripped_objects": attrs.bool(default = False),
         "preferred_linkage": attrs.enum(Linkage, default = "any"),
+        "sanitizer_runtime_enabled": attrs.option(attrs.bool(), default = None),
         "stripped": attrs.option(attrs.bool(), default = None),
         "swift_compilation_mode": attrs.enum(SwiftCompilationMode.values(), default = "wmo"),
         "_apple_toolchain": _APPLE_TOOLCHAIN_ATTR,
@@ -101,10 +97,7 @@ def _apple_binary_extra_attrs():
         "_apple_xctoolchain": get_apple_xctoolchain_attr(),
         "_apple_xctoolchain_bundle_id": get_apple_xctoolchain_bundle_id_attr(),
         "_stripped_default": attrs.bool(default = False),
-        APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_NAME: APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_TYPE,
-        APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_NAME: APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_TYPE,
-        BUCK2_COMPATIBILITY_ATTRIB_NAME: BUCK2_COMPATIBILITY_ATTRIB_TYPE,
-        APPLE_VALIDATION_DEPS_ATTR_NAME: APPLE_VALIDATION_DEPS_ATTR_TYPE,
+        VALIDATION_DEPS_ATTR_NAME: VALIDATION_DEPS_ATTR_TYPE,
     }
     attribs.update(apple_dsymutil_attrs())
     return attribs
@@ -119,6 +112,8 @@ def _apple_library_extra_attrs():
         "precompiled_header": attrs.option(attrs.dep(providers = [CPrecompiledHeaderInfo]), default = None),
         "preferred_linkage": attrs.enum(Linkage, default = "any"),
         "serialize_debugging_options": attrs.bool(default = True),
+        # Mach-O file type for binary when the target is built as a shared library.
+        "shared_library_macho_file_type": attrs.enum(AppleSharedLibraryMachOFileType.values(), default = "dylib"),
         "stripped": attrs.option(attrs.bool(), default = None),
         "supports_header_symlink_subtarget": attrs.bool(default = False),
         "supports_shlib_interfaces": attrs.bool(default = True),
@@ -130,10 +125,7 @@ def _apple_library_extra_attrs():
         "_apple_xctoolchain_bundle_id": get_apple_xctoolchain_bundle_id_attr(),
         "_stripped_default": attrs.bool(default = False),
         APPLE_ARCHIVE_OBJECTS_LOCALLY_OVERRIDE_ATTR_NAME: attrs.option(attrs.bool(), default = None),
-        APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_NAME: APPLE_BUILD_GENRULE_DEPS_DEFAULT_ATTRIB_TYPE,
-        APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_NAME: APPLE_BUILD_GENRULE_DEPS_TARGET_ATTRIB_TYPE,
-        BUCK2_COMPATIBILITY_ATTRIB_NAME: BUCK2_COMPATIBILITY_ATTRIB_TYPE,
-        APPLE_VALIDATION_DEPS_ATTR_NAME: APPLE_VALIDATION_DEPS_ATTR_TYPE,
+        VALIDATION_DEPS_ATTR_NAME: VALIDATION_DEPS_ATTR_TYPE,
     }
     attribs.update(apple_dsymutil_attrs())
     return attribs
@@ -142,7 +134,7 @@ def _apple_universal_executable_extra_attrs():
     attribs = {
         "executable": attrs.split_transition_dep(cfg = cpu_split_transition),
         "executable_name": attrs.option(attrs.string(), default = None),
-        "labels": attrs.list(attrs.string()),
+        "labels": attrs.list(attrs.string(), default = []),
         "split_arch_dsym": attrs.bool(default = False),
         "universal": attrs.option(attrs.bool(), default = None),
         "_apple_toolchain": _APPLE_TOOLCHAIN_ATTR,
@@ -161,10 +153,16 @@ extra_attributes = {
     "apple_package": {
         "bundle": attrs.dep(providers = [AppleBundleInfo]),
         "ext": attrs.enum(ApplePackageExtension.values(), default = "ipa"),
+        "package_name": attrs.option(attrs.string(), default = None),
         "packager": attrs.option(attrs.exec_dep(providers = [RunInfo]), default = None),
         "packager_args": attrs.list(attrs.arg(), default = []),
-        "validator": attrs.option(attrs.exec_dep(providers = [RunInfo]), default = None),
-        "validator_args": attrs.list(attrs.arg(), default = []),
+        "prepackaged_validators": attrs.list(
+            attrs.one_of(
+                attrs.exec_dep(providers = [RunInfo]),
+                attrs.tuple(attrs.exec_dep(providers = [RunInfo]), attrs.list(attrs.arg())),
+            ),
+            default = [],
+        ),
         "_apple_toolchain": get_apple_bundle_toolchain_attr(),
         "_apple_tools": attrs.exec_dep(default = "prelude//apple/tools:apple-tools", providers = [AppleToolsInfo]),
         "_ipa_compression_level": attrs.enum(IpaCompressionLevel.values()),
@@ -198,6 +196,7 @@ extra_attributes = {
         "lipo": attrs.exec_dep(providers = [RunInfo]),
         "min_version": attrs.option(attrs.string(), default = None),
         "momc": attrs.exec_dep(providers = [RunInfo]),
+        "objdump": attrs.option(attrs.exec_dep(providers = [RunInfo]), default = None),
         "odrcov": attrs.option(attrs.exec_dep(providers = [RunInfo]), default = None),
         # A placeholder tool that can be used to set up toolchain constraints.
         # Useful when fat and thin toolchahins share the same underlying tools via `command_alias()`,
@@ -240,6 +239,7 @@ extra_attributes = {
     "swift_toolchain": {
         "architecture": attrs.option(attrs.string(), default = None),  # TODO(T115173356): Make field non-optional
         "make_swift_comp_db": attrs.default_only(attrs.dep(providers = [RunInfo], default = "prelude//apple/tools:make_swift_comp_db")),
+        "make_swift_interface": attrs.default_only(attrs.dep(providers = [RunInfo], default = "prelude//apple/tools:make_swift_interface")),
         "object_format": attrs.enum(SwiftObjectFormat.values(), default = "object"),
         # A placeholder tool that can be used to set up toolchain constraints.
         # Useful when fat and thin toolchahins share the same underlying tools via `command_alias()`,
@@ -248,6 +248,7 @@ extra_attributes = {
         "platform_path": attrs.option(attrs.source(), default = None),  # Mark as optional until we remove `_internal_platform_path`
         "sdk_modules": attrs.list(attrs.exec_dep(), default = []),  # A list or a root target that represent a graph of sdk modules (e.g Frameworks)
         "sdk_path": attrs.option(attrs.source(), default = None),  # Mark as optional until we remove `_internal_sdk_path`
+        "swift_ide_test_tool": attrs.option(attrs.exec_dep(providers = [RunInfo]), default = None),
         "swift_stdlib_tool": attrs.exec_dep(providers = [RunInfo]),
         "swiftc": attrs.exec_dep(providers = [RunInfo]),
         # TODO(T111858757): Mirror of `platform_path` but treated as a string. It allows us to

@@ -135,6 +135,17 @@ def compile_context(ctx: AnalysisContext) -> CompileContext:
         panic_runtime = toolchain_info.panic_runtime,
     )
 
+    # When we pass explicit sysroot deps, we need to override the default sysroot to avoid accidentally
+    # linking against the prebuilt sysroot libs provided by the toolchain. Rustc requires a specific layout
+    # for these libs, so we need to carefully recreate the directory structure below.
+    if toolchain_info.explicit_sysroot_deps:
+        empty_dir = ctx.actions.copied_dir("empty_dir", {})
+        empty_sysroot = ctx.actions.copied_dir("empty_sysroot", {"lib/rustlib/" + toolchain_info.rustc_target_triple + "/lib": empty_dir})
+
+        sysroot_args = cmd_args("--sysroot=", empty_sysroot, delimiter = "")
+    else:
+        sysroot_args = cmd_args()
+
     return CompileContext(
         toolchain_info = toolchain_info,
         cxx_toolchain_info = cxx_toolchain_info,
@@ -143,9 +154,8 @@ def compile_context(ctx: AnalysisContext) -> CompileContext:
         linker_args = linker,
         clippy_wrapper = clippy_wrapper,
         common_args = {},
-        flagfiles_for_extern = {},
-        flagfiles_for_crate_map = {},
         transitive_dependency_dirs = {},
+        sysroot_args = sysroot_args,
     )
 
 def generate_rustdoc(
@@ -176,11 +186,9 @@ def generate_rustdoc(
     output = ctx.actions.declare_output(subdir)
 
     plain_env, path_env = _process_env(compile_ctx, ctx.attrs.env, exec_is_windows)
+    plain_env["RUSTDOC_BUCK_TARGET"] = cmd_args(str(ctx.label.raw_target()))
 
     rustdoc_cmd = cmd_args(
-        [cmd_args("--env=", k, "=", v, delimiter = "") for k, v in plain_env.items()],
-        [cmd_args("--path-env=", k, "=", v, delimiter = "") for k, v in path_env.items()],
-        cmd_args(str(ctx.label.raw_target()), format = "--env=RUSTDOC_BUCK_TARGET={}"),
         toolchain_info.rustdoc,
         toolchain_info.rustdoc_flags,
         ctx.attrs.rustdoc_flags,
@@ -194,6 +202,7 @@ def generate_rustdoc(
     url_prefix = toolchain_info.extern_html_root_url_prefix
     if url_prefix != None:
         # Flag --extern-html-root-url used below is only supported on nightly.
+        plain_env["RUSTC_BOOTSTRAP"] = cmd_args("1")
         rustdoc_cmd.add("-Zunstable-options")
 
         for dep in resolve_rust_deps(ctx, compile_ctx.dep_ctx):
@@ -214,14 +223,76 @@ def generate_rustdoc(
 
     rustdoc_cmd.hidden(toolchain_info.rustdoc, compile_ctx.symlinked_srcs)
 
+    rustdoc_cmd_action = cmd_args(
+        [cmd_args("--env=", k, "=", v, delimiter = "") for k, v in plain_env.items()],
+        [cmd_args("--path-env=", k, "=", v, delimiter = "") for k, v in path_env.items()],
+        rustdoc_cmd,
+    )
+
     rustdoc_cmd = _long_command(
         ctx = ctx,
         exe = toolchain_info.rustc_action,
-        args = rustdoc_cmd,
+        args = rustdoc_cmd_action,
         argfile_name = "{}.args".format(subdir),
     )
 
     ctx.actions.run(rustdoc_cmd, category = "rustdoc")
+
+    return output
+
+def generate_rustdoc_coverage(
+        ctx: AnalysisContext,
+        compile_ctx: CompileContext,
+        # link strategy doesn't matter, but caller should pass in build params
+        # with static-pic (to get best cache hits for deps)
+        params: BuildParams,
+        default_roots: list[str]) -> Artifact:
+    toolchain_info = compile_ctx.toolchain_info
+
+    common_args = _compute_common_args(
+        ctx = ctx,
+        compile_ctx = compile_ctx,
+        dep_ctx = compile_ctx.dep_ctx,
+        # to make sure we get the rmeta's generated for the crate dependencies,
+        # rather than full .rlibs
+        emit = Emit("metadata"),
+        params = params,
+        default_roots = default_roots,
+        is_rustdoc_test = False,
+    )
+
+    file = common_args.subdir + "-rustdoc-coverage"
+    output = ctx.actions.declare_output(file)
+
+    rustdoc_cmd = cmd_args(
+        toolchain_info.rustdoc,
+        toolchain_info.rustdoc_flags,
+        ctx.attrs.rustdoc_flags,
+        common_args.args,
+        "-Zunstable-options",
+        "--show-coverage",
+    )
+
+    exec_is_windows = ctx.attrs._exec_os_type[OsLookup].platform == "windows"
+    plain_env, path_env = _process_env(compile_ctx, ctx.attrs.env, exec_is_windows)
+    plain_env["RUSTDOC_BUCK_TARGET"] = cmd_args(str(ctx.label.raw_target()))
+
+    rustdoc_cmd_action = cmd_args(
+        [cmd_args("--env=", k, "=", v, delimiter = "") for k, v in plain_env.items()],
+        [cmd_args("--path-env=", k, "=", v, delimiter = "") for k, v in path_env.items()],
+        rustdoc_cmd,
+    )
+
+    rustdoc_cmd = _long_command(
+        ctx = ctx,
+        exe = toolchain_info.rustc_action,
+        args = rustdoc_cmd_action,
+        argfile_name = "{}.args".format(file),
+    )
+
+    cmd = cmd_args([toolchain_info.rustdoc_coverage, output.as_output(), rustdoc_cmd])
+
+    ctx.actions.run(cmd, category = "rustdoc_coverage")
 
     return output
 
@@ -231,7 +302,7 @@ def generate_rustdoc_test(
         link_strategy: LinkStrategy,
         rlib: Artifact,
         params: BuildParams,
-        default_roots: list[str]) -> (cmd_args, dict[str, cmd_args]):
+        default_roots: list[str]) -> cmd_args:
     exec_is_windows = ctx.attrs._exec_os_type[OsLookup].platform == "windows"
 
     toolchain_info = compile_ctx.toolchain_info
@@ -264,7 +335,7 @@ def generate_rustdoc_test(
         for soname, shared_lib in traverse_shared_library_info(shlib_info).items():
             shared_libs[soname] = shared_lib.lib
     executable_args = executable_shared_lib_arguments(
-        ctx.actions,
+        ctx,
         compile_ctx.cxx_toolchain_info,
         resources,
         shared_libs,
@@ -307,14 +378,30 @@ def generate_rustdoc_test(
     else:
         runtool = ["--runtool=/usr/bin/env"]
 
+    plain_env, path_env = _process_env(compile_ctx, ctx.attrs.env, exec_is_windows)
+    doc_plain_env, doc_path_env = _process_env(compile_ctx, ctx.attrs.doc_env, exec_is_windows)
+    for k, v in doc_plain_env.items():
+        path_env.pop(k, None)
+        plain_env[k] = v
+    for k, v in doc_path_env.items():
+        plain_env.pop(k, None)
+        path_env[k] = v
+
+    # `--runtool` is unstable.
+    plain_env["RUSTC_BOOTSTRAP"] = cmd_args("1")
+    unstable_options = ["-Zunstable-options"]
+
     rustdoc_cmd = cmd_args(
+        [cmd_args("--env=", k, "=", v, delimiter = "") for k, v in plain_env.items()],
+        [cmd_args("--path-env=", k, "=", v, delimiter = "") for k, v in path_env.items()],
+        toolchain_info.rustdoc,
         "--test",
-        "-Zunstable-options",
+        unstable_options,
         cmd_args("--test-builder=", toolchain_info.compiler, delimiter = ""),
         toolchain_info.rustdoc_flags,
         ctx.attrs.rustdoc_flags,
         common_args.args,
-        extern_arg(ctx, compile_ctx, [], attr_crate(ctx), rlib),
+        extern_arg([], attr_crate(ctx), rlib),
         "--extern=proc_macro" if ctx.attrs.proc_macro else [],
         compile_ctx.linker_args,
         cmd_args(linker_argsfile, format = "-Clink-arg=@{}"),
@@ -331,20 +418,12 @@ def generate_rustdoc_test(
         executable_args.runtime_files,
     )
 
-    rustdoc_cmd = _long_command(
+    return _long_command(
         ctx = ctx,
-        exe = toolchain_info.rustdoc,
+        exe = toolchain_info.rustc_action,
         args = rustdoc_cmd,
         argfile_name = "{}.args".format(common_args.subdir),
     )
-
-    plain_env, path_env = _process_env(compile_ctx, ctx.attrs.env, exec_is_windows)
-    rustdoc_env = plain_env | path_env
-    for k, v in ctx.attrs.doc_env.items():
-        rustdoc_env[k] = cmd_args(v)
-    rustdoc_env["RUSTC_BOOTSTRAP"] = cmd_args("1")  # for `-Zunstable-options`
-
-    return (rustdoc_cmd, rustdoc_env)
 
 # Generate multiple compile artifacts so that distinct sets of artifacts can be
 # generated concurrently.
@@ -417,7 +496,6 @@ def rust_compile(
         lints,
         # Report unused --extern crates in the notification stream.
         ["--json=unused-externs-silent", "-Wunused-crate-dependencies"] if toolchain_info.report_unused_deps else [],
-        "--json=artifacts",  # only needed for pipeline but no harm in always leaving it enabled
         common_args.args,
         cmd_args("--remap-path-prefix=", compile_ctx.symlinked_srcs, path_sep, "=", ctx.label.path, path_sep, delimiter = ""),
         compile_ctx.linker_args,
@@ -431,7 +509,7 @@ def rust_compile(
     # use the predeclared one as the output after the failure filter action
     # below. Otherwise we'll use the predeclared outputs directly.
     if toolchain_info.failure_filter:
-        emit_output, emit_args, extra_out = _rustc_emit(
+        emit_op = _rustc_emit(
             ctx = ctx,
             compile_ctx = compile_ctx,
             emit = emit,
@@ -440,7 +518,7 @@ def rust_compile(
             params = params,
         )
     else:
-        emit_output, emit_args, extra_out = _rustc_emit(
+        emit_op = _rustc_emit(
             ctx = ctx,
             compile_ctx = compile_ctx,
             emit = emit,
@@ -481,7 +559,7 @@ def rust_compile(
                 inherited_link_args,
             ],
             "{}-{}".format(subdir, tempfile),
-            output_short_path = emit_output.short_path,
+            output_short_path = emit_op.output.short_path,
         )
         linker_argsfile, _ = ctx.actions.write(
             "{}/__{}_linker_args.txt".format(subdir, tempfile),
@@ -498,20 +576,20 @@ def rust_compile(
         ctx = ctx,
         compile_ctx = compile_ctx,
         prefix = "{}/{}".format(common_args.subdir, common_args.tempfile),
-        rustc_cmd = cmd_args(toolchain_info.compiler, rustc_cmd, emit_args),
+        rustc_cmd = cmd_args(toolchain_info.compiler, rustc_cmd, emit_op.args),
         diag = "diag",
-        required_outputs = [emit_output],
+        required_outputs = [emit_op.output],
         short_cmd = common_args.short_cmd,
         is_binary = is_binary,
         allow_cache_upload = allow_cache_upload,
         crate_map = common_args.crate_map,
-        only_artifact = "metadata" if toolchain_info.pipelined and emit == Emit("metadata") else None,
+        env = emit_op.env,
     )
 
     # Add clippy diagnostic targets for check builds
     if common_args.is_check:
         # We don't really need the outputs from this build, just to keep the artifact accounting straight
-        clippy_out, clippy_emit_args, _extra_out = _rustc_emit(
+        clippy_emit_op = _rustc_emit(
             ctx = ctx,
             compile_ctx = compile_ctx,
             emit = emit,
@@ -519,7 +597,7 @@ def rust_compile(
             subdir = common_args.subdir + "-clippy",
             params = params,
         )
-        clippy_env = dict()
+        clippy_env = clippy_emit_op.env
         if toolchain_info.clippy_toml:
             # Clippy wants to be given a path to a directory containing a
             # clippy.toml (or .clippy.toml). Our buckconfig accepts an arbitrary
@@ -536,10 +614,10 @@ def rust_compile(
             compile_ctx = compile_ctx,
             prefix = "{}/{}".format(common_args.subdir, common_args.tempfile),
             # Lints go first to allow other args to override them.
-            rustc_cmd = cmd_args(compile_ctx.clippy_wrapper, clippy_lints, rustc_cmd, clippy_emit_args),
+            rustc_cmd = cmd_args(compile_ctx.clippy_wrapper, clippy_lints, rustc_cmd, clippy_emit_op.args),
             env = clippy_env,
             diag = "clippy",
-            required_outputs = [clippy_out],
+            required_outputs = [clippy_emit_op.output],
             short_cmd = common_args.short_cmd,
             is_binary = False,
             allow_cache_upload = False,
@@ -554,7 +632,7 @@ def rust_compile(
         stderr = diag["diag.txt"]
         filter_prov = RustFailureFilter(
             buildstatus = build_status,
-            required = emit_output,
+            required = emit_op.output,
             stderr = stderr,
         )
 
@@ -567,11 +645,11 @@ def rust_compile(
             short_cmd = common_args.short_cmd,
         )
     else:
-        filtered_output = emit_output
+        filtered_output = emit_op.output
 
     split_debug_mode = compile_ctx.cxx_toolchain_info.split_debug_mode or SplitDebugMode("none")
     if emit == Emit("link") and split_debug_mode != SplitDebugMode("none"):
-        dwo_output_directory = extra_out
+        dwo_output_directory = emit_op.extra_out
 
         # staticlibs and cdylibs are "bundled" in the sense that they are used
         # without their dependencies by the rest of the rules. This is normally
@@ -602,7 +680,7 @@ def rust_compile(
         dwp_output = dwp(
             ctx,
             compile_ctx.cxx_toolchain_info,
-            emit_output,
+            emit_op.output,
             identifier = "{}/__{}_{}_dwp".format(common_args.subdir, common_args.tempfile, str(emit)),
             category_suffix = "rust",
             # TODO(T110378142): Ideally, referenced objects are a list of
@@ -665,7 +743,20 @@ def dependency_args(
 
         strategy = strategy_info(dep.info, dep_link_strategy)
 
-        use_rmeta = is_check or (compile_ctx.toolchain_info.pipelined and not crate_type_codegen(crate_type) and not is_rustdoc_test)
+        # With `advanced_unstable_linking`, we unconditionally pass the metadata
+        # artifacts. There are two things that work together to make this possible
+        # in the case of binaries:
+        #
+        #  1. The actual rlibs appear in the link providers, so they'll still be
+        #     available for the linker to link in
+        #  2. The metadata artifacts aren't rmetas, but rather rlibs that just
+        #     don't contain any generated code. Rustc can't distinguish these
+        #     from real rlibs, and so doesn't throw an error
+        #
+        # The benefit of doing this is that there's no requirment that the
+        # dependency's generated code be provided to the linker via an rlib. It
+        # could be provided by other means, say, a link group
+        use_rmeta = is_check or compile_ctx.dep_ctx.advanced_unstable_linking or (compile_ctx.toolchain_info.pipelined and not crate_type_codegen(crate_type) and not is_rustdoc_test)
 
         # Use rmeta dependencies whenever possible because they
         # should be cheaper to produce.
@@ -681,7 +772,7 @@ def dependency_args(
             strategy = strategy_info(info, dep_link_strategy)
             transitive_deps[strategy.rmeta if use_rmeta else strategy.rlib] = info.crate
 
-        args.add(extern_arg(ctx, compile_ctx, dep.flags, crate, artifact))
+        args.add(extern_arg(dep.flags, crate, artifact))
         crate_targets.append((crate, dep.label))
 
         # Because deps of this *target* can also be transitive deps of this compiler
@@ -906,7 +997,6 @@ def _compute_common_args(
         # TODO: SplitDebugMode("split"): ["-Csplit-debuginfo=unpacked"],
     }[compile_ctx.cxx_toolchain_info.split_debug_mode or SplitDebugMode("none")]
 
-    null_path = "nul" if ctx.attrs._exec_os_type[OsLookup].platform == "windows" else "/dev/null"
     args = cmd_args(
         cmd_args(compile_ctx.symlinked_srcs, path_sep, crate_root, delimiter = ""),
         crate_name_arg,
@@ -919,7 +1009,7 @@ def _compute_common_args(
         ["-Cprefer-dynamic=yes"] if crate_type == CrateType("dylib") else [],
         ["--target={}".format(toolchain_info.rustc_target_triple)] if toolchain_info.rustc_target_triple else [],
         split_debuginfo_flags,
-        ["--sysroot=" + null_path] if toolchain_info.explicit_sysroot_deps != None else [],
+        compile_ctx.sysroot_args,
         ["-Cpanic=abort", "-Zpanic-abort-tests=yes"] if toolchain_info.panic_runtime == PanicRuntime("abort") else [],
         _rustc_flags(toolchain_info.rustc_flags),
         _rustc_flags(toolchain_info.rustc_check_flags) if is_check else [],
@@ -962,11 +1052,8 @@ def _clippy_wrapper(
             [
                 "@echo off",
                 "set __CLIPPY_INTERNAL_TESTS=true",
-                cmd_args(rustc_print_sysroot, format = 'FOR /F "tokens=* USEBACKQ" %%F IN (`{}`) DO ('),
-            ] + (
-                [] if skip_setting_sysroot else ["set SYSROOT=%%F"]
-            ) + [
-                ")",
+            ] + [
+                cmd_args(rustc_print_sysroot, format = 'FOR /F "tokens=* USEBACKQ" %%F IN (`{}`) DO (set SYSROOT=%%F)') if not skip_setting_sysroot else "",
                 cmd_args(clippy_driver, format = "{} %*"),
             ],
             allow_args = True,
@@ -1044,6 +1131,13 @@ def _crate_root(
 
     fail("Could not infer crate_root. candidates=%s\nAdd 'crate_root = \"src/example.rs\"' to your attributes to disambiguate." % candidates.list())
 
+EmitOperation = record(
+    output = field(Artifact),
+    args = field(cmd_args),
+    env = field(dict[str, str]),
+    extra_out = field(Artifact | None),
+)
+
 # Take a desired output and work out how to convince rustc to generate it
 def _rustc_emit(
         ctx: AnalysisContext,
@@ -1051,54 +1145,68 @@ def _rustc_emit(
         emit: Emit,
         predeclared_outputs: dict[Emit, Artifact],
         subdir: str,
-        params: BuildParams) -> (Artifact, cmd_args, [Artifact, None]):
+        params: BuildParams) -> EmitOperation:
     toolchain_info = compile_ctx.toolchain_info
     simple_crate = attr_simple_crate_for_filenames(ctx)
     crate_type = params.crate_type
 
-    # Metadata for pipelining needs has enough info to be used as an input for
-    # dependents. To do this reliably, follow Cargo's pattern of always doing
-    # --emit metadata,link, but only using the output we actually need.
+    # Metadata for pipelining needs has enough info to be used as an input
+    # for dependents. To do this reliably, we actually emit "link" but
+    # suppress actual codegen with -Zno-codegen.
     #
     # We don't bother to do this with "codegen" crates - ie, ones which are
-    # linked into an artifact like binaries and dylib, since they're not used as
-    # a pipelined dependency input.
-    pipeline_artifact = toolchain_info.pipelined and \
-                        emit in (Emit("metadata"), Emit("link")) and \
-                        not crate_type_codegen(crate_type)
+    # linked into an artifact like binaries and dylib, since they're not
+    # used as a pipelined dependency input.
+    pipeline_meta = emit == Emit("metadata") and \
+                    toolchain_info.pipelined and \
+                    not crate_type_codegen(crate_type)
 
     emit_args = cmd_args()
+    emit_env = {}
+    extra_out = None
+
     if emit in predeclared_outputs:
         emit_output = predeclared_outputs[emit]
     else:
         extra_hash = "-" + _metadata(ctx.label, False)[1]
         emit_args.add("-Cextra-filename={}".format(extra_hash))
-        filename = subdir + "/" + output_filename(simple_crate, emit, params, extra_hash)
+        if pipeline_meta:
+            # Make sure hollow rlibs are distinct from real ones
+            filename = subdir + "/hollow/" + output_filename(simple_crate, Emit("link"), params, extra_hash)
+        else:
+            filename = subdir + "/" + output_filename(simple_crate, emit, params, extra_hash)
 
         emit_output = ctx.actions.declare_output(filename)
 
-    # For pipelined builds if we're emitting either metadata or link then make
-    # sure we generate both and take the one we want.
-    if pipeline_artifact:
-        metaext = "" if emit == Emit("metadata") else "_unwanted"
-        linkext = "" if emit == Emit("link") else "_unwanted"
-
-        emit_args.add(
-            cmd_args("--emit=metadata=", emit_output.as_output(), metaext, delimiter = ""),
-            cmd_args("--emit=link=", emit_output.as_output(), linkext, delimiter = ""),
-        )
-    elif emit == Emit("expand"):
+    if emit == Emit("expand"):
+        emit_env["RUSTC_BOOTSTRAP"] = "1"
         emit_args.add(
             "-Zunpretty=expanded",
             cmd_args(emit_output.as_output(), format = "-o{}"),
         )
     else:
-        # Assume https://github.com/rust-lang/rust/issues/85356 is fixed (ie
-        # https://github.com/rust-lang/rust/pull/85362 is applied)
-        emit_args.add(cmd_args("--emit=", emit.value, "=", emit_output.as_output(), delimiter = ""))
+        if toolchain_info.pipelined:
+            # Even though the unstable flag only appears on one of the branches, we need
+            # an identical environment between the `-Zno-codegen` and non-`-Zno-codegen`
+            # command or else there are "found possibly newer version of crate" errors.
+            emit_env["RUSTC_BOOTSTRAP"] = "1"
 
-    extra_out = None
-    if emit != Emit("expand"):
+        if pipeline_meta:
+            # If we're doing a pipelined build, instead of emitting an actual rmeta
+            # we emit a "hollow" .rlib - ie, it only contains lib.rmeta and no object
+            # code. It should contain full information needed by any dependent
+            # crate which is generating code (MIR, etc).
+            #
+            # IMPORTANT: this flag is the only way that the Emit("metadata") and
+            # Emit("link") operations are allowed to diverge without causing them to
+            # get different crate hashes.
+            emit_args.add("-Zno-codegen")
+            effective_emit = Emit("link")
+        else:
+            effective_emit = emit
+
+        emit_args.add(cmd_args("--emit=", effective_emit.value, "=", emit_output.as_output(), delimiter = ""))
+
         # Strip file extension from directory name.
         base, _ext = paths.split_extension(output_filename(simple_crate, emit, params))
         extra_dir = subdir + "/extras/" + base
@@ -1111,7 +1219,12 @@ def _rustc_emit(
             incremental_cmd = cmd_args(incremental_out.as_output(), format = "-Cincremental={}")
             emit_args.add(incremental_cmd)
 
-    return (emit_output, emit_args, extra_out)
+    return EmitOperation(
+        output = emit_output,
+        args = emit_args,
+        env = emit_env,
+        extra_out = extra_out,
+    )
 
 # Invoke rustc and capture outputs
 def _rustc_invoke(
@@ -1125,8 +1238,7 @@ def _rustc_invoke(
         is_binary: bool,
         allow_cache_upload: bool,
         crate_map: list[(CrateName, Label)],
-        env: dict[str, [ResolvedStringWithMacros, Artifact]] = {},
-        only_artifact: [None, str] = None) -> (dict[str, Artifact], [Artifact, None]):
+        env: dict[str, str | ResolvedStringWithMacros | Artifact]) -> (dict[str, Artifact], [Artifact, None]):
     exec_is_windows = ctx.attrs._exec_os_type[OsLookup].platform == "windows"
 
     toolchain_info = compile_ctx.toolchain_info
@@ -1148,11 +1260,8 @@ def _rustc_invoke(
         "--buck-target={}".format(ctx.label.raw_target()),
     )
 
-    if only_artifact:
-        compile_cmd.add("--only-artifact=" + only_artifact)
-
     for k, v in crate_map:
-        compile_cmd.add(crate_map_arg(ctx, compile_ctx, k, v))
+        compile_cmd.add(crate_map_arg(k, v))
     for k, v in plain_env.items():
         compile_cmd.add(cmd_args("--env=", k, "=", v, delimiter = ""))
     for k, v in path_env.items():
@@ -1221,7 +1330,7 @@ _ESCAPED_NEWLINE_RE = regex("\\n")
 # path and non-path content, but we'll burn that bridge when we get to it.)
 def _process_env(
         compile_ctx: CompileContext,
-        env: dict[str, [ResolvedStringWithMacros, Artifact]],
+        env: dict[str, str | ResolvedStringWithMacros | Artifact],
         exec_is_windows: bool) -> (dict[str, cmd_args], dict[str, cmd_args]):
     # Values with inputs (ie artifact references).
     path_env = {}

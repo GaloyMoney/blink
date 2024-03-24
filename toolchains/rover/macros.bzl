@@ -96,7 +96,7 @@ supergraph = rule(
     attrs = {
         "rover_bin": attrs.dep(
             providers = [RunInfo],
-            default = "//third-party/node/rover:rover_bin",
+            default = "root//third-party/node/rover:rover_bin",
             doc = """Rover dependency.""",
         ),
         "config": attrs.source(

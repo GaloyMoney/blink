@@ -110,16 +110,16 @@ LINK_GROUP_MAPPINGS_FILENAME_SUFFIX = ".link_group_map.json"
 LinkGroupInfo = provider(
     # @unsorted-dict-items
     fields = {
-        "groups": provider_field(typing.Any, default = None),  # dict[str, Group]
-        "groups_hash": provider_field(typing.Any, default = None),  # str
-        "mappings": provider_field(typing.Any, default = None),  # dict[ConfiguredProvidersLabel, str]
+        "groups": provider_field(dict[str, Group]),
+        "groups_hash": provider_field(int),
+        "mappings": provider_field(dict[Label, str]),
         # Additional graphs needed to cover labels referenced by the groups above.
         # This is useful in cases where the consumer of this provider won't already
         # have deps covering these.
         # NOTE(agallagher): We do this to maintain existing behavior w/ the
         # standalone `link_group_map()` rule, but it's not clear if it's actually
         # desirable behavior.
-        "graph": provider_field(typing.Any, default = None),  # LinkableGraph
+        "graph": provider_field(LinkableGraph),
     },
 )
 
@@ -419,7 +419,9 @@ def get_filtered_labels_to_links_map(
             target_link_group = link_group_mappings.get(target)
 
             # Always add force-static libs to the link.
-            if force_static_follows_dependents and node.preferred_linkage == Linkage("static"):
+            if (force_static_follows_dependents and
+                node.preferred_linkage == Linkage("static") and
+                not node.ignore_force_static_follows_dependents):
                 add_link(target, output_style)
             elif not target_link_group and not link_group:
                 # Ungrouped linkable targets belong to the unlabeled executable
@@ -535,7 +537,7 @@ def find_relevant_roots(
     # link group.
     def collect_and_traverse_roots(roots, node_target):
         node = linkable_graph_node_map.get(node_target)
-        if node.preferred_linkage == Linkage("static"):
+        if node.preferred_linkage == Linkage("static") and not node.ignore_force_static_follows_dependents:
             return node.deps + node.exported_deps
         node_link_group = link_group_mappings.get(node_target)
         if node_link_group == MATCH_ALL_LABEL:
@@ -573,7 +575,8 @@ def _create_link_group(
         link_group_libs: dict[str, ([Label, None], LinkInfos)] = {},
         prefer_stripped_objects: bool = False,
         category_suffix: [str, None] = None,
-        anonymous: bool = False) -> [LinkedObject, None]:
+        anonymous: bool = False,
+        allow_cache_upload = False) -> [LinkedObject, None]:
     """
     Link a link group library, described by a `LinkGroupLibSpec`.  This is
     intended to handle regular shared libs and e.g. Python extensions.
@@ -662,6 +665,7 @@ def _create_link_group(
             # TODO: anonymous targets cannot be used with dynamic output yet
             enable_distributed_thinlto = False if anonymous else spec.group.attrs.enable_distributed_thinlto,
             link_execution_preference = LinkExecutionPreference("any"),
+            allow_cache_upload = allow_cache_upload,
         ),
         anonymous = anonymous,
     )
@@ -782,7 +786,8 @@ def create_link_groups(
         linkable_graph_node_map: dict[Label, LinkableNode] = {},
         link_group_preferred_linkage: dict[Label, Linkage] = {},
         link_group_mappings: [dict[Label, str], None] = None,
-        anonymous: bool = False) -> _LinkedLinkGroups:
+        anonymous: bool = False,
+        allow_cache_upload = False) -> _LinkedLinkGroups:
     # Generate stubs first, so that subsequent links can link against them.
     link_group_shared_links = {}
     specs = []
@@ -840,6 +845,7 @@ def create_link_groups(
             prefer_stripped_objects = prefer_stripped_objects,
             category_suffix = "link_group",
             anonymous = anonymous,
+            allow_cache_upload = allow_cache_upload,
         )
 
         if link_group_lib == None:

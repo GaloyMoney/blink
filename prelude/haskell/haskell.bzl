@@ -14,6 +14,10 @@ load(
     "get_auto_link_group_specs",
 )
 load(
+    "@prelude//cxx:cxx_context.bzl",
+    "get_cxx_toolchain_info",
+)
+load(
     "@prelude//cxx:cxx_toolchain_types.bzl",
     "CxxToolchainInfo",
     "PicBehavior",
@@ -31,6 +35,12 @@ load(
     "is_link_group_shlib",
 )
 load(
+    "@prelude//cxx:linker.bzl",
+    "LINKERS",
+    "get_rpath_origin",
+    "get_shared_library_flags",
+)
+load(
     "@prelude//cxx:preprocessor.bzl",
     "CPreprocessor",
     "CPreprocessorArgs",
@@ -40,8 +50,6 @@ load(
 load(
     "@prelude//haskell:compile.bzl",
     "CompileResultInfo",
-    "HaskellLibraryInfo",
-    "HaskellLibraryProvider",
     "compile",
 )
 load(
@@ -49,8 +57,14 @@ load(
     "haskell_haddock_lib",
 )
 load(
+    "@prelude//haskell:library_info.bzl",
+    "HaskellLibraryInfo",
+    "HaskellLibraryProvider",
+)
+load(
     "@prelude//haskell:link_info.bzl",
     "HaskellLinkInfo",
+    "HaskellProfLinkInfo",
     "attr_link_style",
     "cxx_toolchain_link_style",
     "merge_haskell_link_infos",
@@ -62,6 +76,10 @@ load(
 load(
     "@prelude//haskell:util.bzl",
     "attr_deps",
+    "attr_deps_haskell_link_infos_sans_template_deps",
+    "attr_deps_merged_link_infos",
+    "attr_deps_profiling_link_infos",
+    "attr_deps_shared_library_infos",
     "get_artifact_suffix",
     "is_haskell_src",
     "output_extensions",
@@ -129,21 +147,6 @@ HaskellIndexInfo = provider(
         "info": provider_field(typing.Any, default = None),  # dict[LinkStyle, HaskellIndexingTset]
     },
 )
-
-# HaskellProfLinkInfo exposes the MergedLinkInfo of a target and all of its
-# dependencies built for profiling. This allows top-level targets (e.g.
-# `haskell_binary`) to be defined with profiling enabled by default.
-HaskellProfLinkInfo = provider(
-    fields = {
-        "prof_infos": provider_field(typing.Any, default = None),  # MergedLinkInfo
-    },
-)
-
-# --
-
-# Disable until we have a need to call this.
-# def _attr_deps_merged_link_infos(ctx: AnalysisContext) -> [MergedLinkInfo]:
-#     return filter(None, [d[MergedLinkInfo] for d in attr_deps(ctx)])
 
 # This conversion is non-standard, see TODO about link style below
 def _to_lib_output_style(link_style: LinkStyle) -> LibOutputStyle:
@@ -479,6 +482,17 @@ HaskellLibBuildOutput = record(
     libs = list[Artifact],
 )
 
+def _get_haskell_shared_library_name_linker_flags(linker_type: str, soname: str) -> list[str]:
+    if linker_type == "gnu":
+        return ["-Wl,-soname,{}".format(soname)]
+    elif linker_type == "darwin":
+        # Passing `-install_name @rpath/...` or
+        # `-Xlinker -install_name -Xlinker @rpath/...` instead causes
+        # ghc-9.6.3: panic! (the 'impossible' happened)
+        return ["-Wl,-install_name,@rpath/{}".format(soname)]
+    else:
+        fail("Unknown linker type '{}'.".format(linker_type))
+
 def _build_haskell_lib(
         ctx,
         libname: str,
@@ -511,8 +525,9 @@ def _build_haskell_lib(
     if link_style == LinkStyle("static_pic"):
         libstem += "_pic"
 
+    dynamic_lib_suffix = "." + LINKERS[linker_info.type].default_shared_library_extension
     static_lib_suffix = "_p.a" if enable_profiling else ".a"
-    libfile = "lib" + libstem + (".so" if link_style == LinkStyle("shared") else static_lib_suffix)
+    libfile = "lib" + libstem + (dynamic_lib_suffix if link_style == LinkStyle("shared") else static_lib_suffix)
 
     lib_short_path = paths.join("lib-{}".format(artifact_suffix), libfile)
 
@@ -528,12 +543,12 @@ def _build_haskell_lib(
         link.add(ctx.attrs.linker_flags)
         link.add("-o", lib.as_output())
         link.add(
-            "-shared",
+            get_shared_library_flags(linker_info.type),
             "-dynamic",
-            "-optl",
-            "-Wl,-soname",
-            "-optl",
-            "-Wl," + libfile,
+            cmd_args(
+                _get_haskell_shared_library_name_linker_flags(linker_info.type, libfile),
+                prepend = "-optl",
+            ),
         )
 
         link.add(objfiles)
@@ -635,27 +650,10 @@ def haskell_library_impl(ctx: AnalysisContext) -> list[Provider]:
         preferred_linkage = Linkage("static")
 
     # Get haskell and native link infos from all deps
-    hlis = []
-    nlis = []
-    prof_nlis = []
-    shared_library_infos = []
-    for lib in attr_deps(ctx):
-        li = lib.get(HaskellLinkInfo)
-        if li != None:
-            hlis.append(li)
-        li = lib.get(MergedLinkInfo)
-        if li != None:
-            nlis.append(li)
-            if HaskellLinkInfo not in lib:
-                # MergedLinkInfo from non-haskell deps should be part of the
-                # profiling MergedLinkInfo
-                prof_nlis.append(li)
-        li = lib.get(HaskellProfLinkInfo)
-        if li != None:
-            prof_nlis.append(li.prof_infos)
-        li = lib.get(SharedLibraryInfo)
-        if li != None:
-            shared_library_infos.append(li)
+    hlis = attr_deps_haskell_link_infos_sans_template_deps(ctx)
+    nlis = attr_deps_merged_link_infos(ctx)
+    prof_nlis = attr_deps_profiling_link_infos(ctx)
+    shared_library_infos = attr_deps_shared_library_infos(ctx)
 
     solibs = {}
     link_infos = {}
@@ -1061,7 +1059,9 @@ def haskell_binary_impl(ctx: AnalysisContext) -> list[Provider]:
 
     if link_style == LinkStyle("shared") or link_group_info != None:
         sos_dir = "__{}__shared_libs_symlink_tree".format(ctx.attrs.name)
-        link.add("-optl", "-Wl,-rpath", "-optl", "-Wl,$ORIGIN/{}".format(sos_dir))
+        rpath_ref = get_rpath_origin(get_cxx_toolchain_info(ctx).linker_info.type)
+        rpath_ldflag = "-Wl,{}/{}".format(rpath_ref, sos_dir)
+        link.add("-optl", "-Wl,-rpath", "-optl", rpath_ldflag)
         symlink_dir = ctx.actions.symlinked_dir(sos_dir, {n: o.output for n, o in sos.items()})
         run.hidden(symlink_dir)
 

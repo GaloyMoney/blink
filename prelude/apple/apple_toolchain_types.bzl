@@ -9,6 +9,7 @@ AppleToolchainInfo = provider(
     # @unsorted-dict-items
     fields = {
         "actool": provider_field(typing.Any, default = None),  # "RunInfo"
+        "architecture": provider_field(typing.Any, default = None),  # str
         "codesign_allocate": provider_field(typing.Any, default = None),  # "RunInfo"
         "codesign_identities_command": provider_field(typing.Any, default = None),  # ["RunInfo", None]
         "codesign": provider_field(typing.Any, default = None),  # "RunInfo"
@@ -25,6 +26,7 @@ AppleToolchainInfo = provider(
         "lipo": provider_field(typing.Any, default = None),  # "RunInfo"
         "min_version": provider_field(typing.Any, default = None),  # [None, str]
         "momc": provider_field(typing.Any, default = None),  # "RunInfo"
+        "objdump": provider_field(RunInfo | None, default = None),
         "odrcov": provider_field(typing.Any, default = None),  # ["RunInfo", None]
         "platform_path": provider_field(typing.Any, default = None),  # [str, artifact]
         "sdk_build_version": provider_field(typing.Any, default = None),  # "[None, str]"

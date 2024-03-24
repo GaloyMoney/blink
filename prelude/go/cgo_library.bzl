@@ -49,7 +49,7 @@ load(
     "map_idx",
 )
 load(":compile.bzl", "GoPkgCompileInfo", "compile", "get_filtered_srcs", "get_inherited_compile_pkgs")
-load(":coverage.bzl", "GoCoverageMode", "cover_srcs")
+load(":coverage.bzl", "GoCoverageMode")
 load(":link.bzl", "GoPkgLinkInfo", "get_inherited_link_pkgs")
 load(":packages.bzl", "GoPkg", "go_attr_pkg_name", "merge_pkgs")
 load(":toolchain.bzl", "GoToolchainInfo", "get_toolchain_cmd_args")
@@ -96,7 +96,7 @@ def _cgo(
     cxx_toolchain = ctx.attrs._cxx_toolchain[CxxToolchainInfo]
 
     cmd = get_toolchain_cmd_args(go_toolchain, go_root = False)
-    cmd.add(go_toolchain.cgo_wrapper[RunInfo])
+    cmd.add(go_toolchain.cgo_wrapper)
 
     args = cmd_args()
     args.add(cmd_args(go_toolchain.cgo, format = "--cgo={}"))
@@ -118,10 +118,7 @@ def _cgo(
     cxx_cmd.add(c_compiler.compiler_flags)
     cxx_cmd.add(pre_args)
     cxx_cmd.add(pre_include_dirs)
-
-    # Passing the same value as go-build, because our -g flags break cgo
-    # in some buck modes
-    cxx_cmd.add("-g")
+    cxx_cmd.add(go_toolchain.c_compiler_flags)
 
     # Wrap the C/C++ command in a wrapper script to avoid arg length limits.
     is_win = ctx.attrs._exec_os_type[OsLookup].platform == "windows"
@@ -159,20 +156,6 @@ def _cgo(
     ctx.actions.run(cmd, category = "cgo")
 
     return go_srcs, c_headers, c_srcs
-
-def _compile_with_coverage(ctx: AnalysisContext, pkg_name: str, srcs: cmd_args, coverage_mode: GoCoverageMode, shared: bool = False) -> (Artifact, cmd_args):
-    cov_res = cover_srcs(ctx, pkg_name, coverage_mode, srcs, shared)
-    srcs = cov_res.srcs
-    coverage_vars = cov_res.variables
-    coverage_pkg = compile(
-        ctx,
-        pkg_name,
-        srcs = srcs,
-        deps = ctx.attrs.deps + ctx.attrs.exported_deps,
-        coverage_mode = coverage_mode,
-        shared = shared,
-    )
-    return (coverage_pkg, coverage_vars)
 
 def cgo_library_impl(ctx: AnalysisContext) -> list[Provider]:
     pkg_name = go_attr_pkg_name(ctx)
@@ -240,31 +223,30 @@ def cgo_library_impl(ctx: AnalysisContext) -> list[Provider]:
     if ctx.attrs.go_srcs:
         all_srcs.add(get_filtered_srcs(ctx, ctx.attrs.go_srcs))
 
+    shared = ctx.attrs._compile_shared
+    race = ctx.attrs._race
+    coverage_mode = GoCoverageMode(ctx.attrs._coverage_mode) if ctx.attrs._coverage_mode else None
+
     # Build Go library.
-    static_pkg = compile(
+    compiled_pkg = compile(
         ctx,
         pkg_name,
         all_srcs,
         deps = ctx.attrs.deps + ctx.attrs.exported_deps,
-        shared = False,
+        shared = shared,
+        race = race,
+        coverage_mode = coverage_mode,
     )
-    shared_pkg = compile(
-        ctx,
-        pkg_name,
-        all_srcs,
-        deps = ctx.attrs.deps + ctx.attrs.exported_deps,
-        shared = True,
+
+    # Temporarily hack, it seems like we can update record, so create new one
+    compiled_pkg = GoPkg(
+        cgo = True,
+        pkg = compiled_pkg.pkg,
+        coverage_vars = compiled_pkg.coverage_vars,
     )
-    coverage_shared = {mode: _compile_with_coverage(ctx, pkg_name, all_srcs, mode, True) for mode in GoCoverageMode}
-    coverage_static = {mode: _compile_with_coverage(ctx, pkg_name, all_srcs, mode, False) for mode in GoCoverageMode}
+
     pkgs = {
-        pkg_name: GoPkg(
-            shared = shared_pkg,
-            static = static_pkg,
-            cgo = True,
-            coverage_shared = coverage_shared,
-            coverage_static = coverage_static,
-        ),
+        pkg_name: compiled_pkg,
     }
 
     # We need to keep pre-processed cgo source files,
@@ -272,7 +254,7 @@ def cgo_library_impl(ctx: AnalysisContext) -> list[Provider]:
     # to work with cgo. And when nearly every FB service client is cgo,
     # we need to support it well.
     return [
-        DefaultInfo(default_output = static_pkg, other_outputs = go_srcs),
+        DefaultInfo(default_output = compiled_pkg.pkg, other_outputs = go_srcs),
         GoPkgCompileInfo(pkgs = merge_pkgs([
             pkgs,
             get_inherited_compile_pkgs(ctx.attrs.exported_deps),

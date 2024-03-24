@@ -16,6 +16,7 @@ load("@prelude//cxx:cxx_toolchain.bzl", "cxx_toolchain_extra_attributes", "cxx_t
 load("@prelude//cxx:cxx_toolchain_types.bzl", "CxxPlatformInfo", "CxxToolchainInfo")
 load("@prelude//cxx:headers.bzl", "CPrecompiledHeaderInfo", "HeaderMode")
 load("@prelude//cxx:prebuilt_cxx_library_group.bzl", "prebuilt_cxx_library_group_impl")
+load("@prelude//cxx:windows_resource.bzl", "windows_resource_impl")
 load("@prelude//cxx/user:link_group_map.bzl", "link_group_map_attr")
 load("@prelude//erlang:erlang.bzl", _erlang_implemented_rules = "implemented_rules")
 load("@prelude//git:git_fetch.bzl", "git_fetch_impl")
@@ -24,12 +25,14 @@ load("@prelude//go:coverage.bzl", "GoCoverageMode")
 load("@prelude//go:go_binary.bzl", "go_binary_impl")
 load("@prelude//go:go_exported_library.bzl", "go_exported_library_impl")
 load("@prelude//go:go_library.bzl", "go_library_impl")
+load("@prelude//go:go_stdlib.bzl", "go_stdlib_impl")
 load("@prelude//go:go_test.bzl", "go_test_impl")
-load("@prelude//haskell:compile.bzl", "HaskellLibraryProvider")
+load("@prelude//go/transitions:defs.bzl", "cgo_enabled_attr", "compile_shared_attr", "coverage_mode_attr", "go_binary_transition", "go_exported_library_transition", "go_test_transition", "race_attr", "tags_attr")
 load("@prelude//haskell:haskell.bzl", "haskell_binary_impl", "haskell_library_impl", "haskell_prebuilt_library_impl")
 load("@prelude//haskell:haskell_ghci.bzl", "haskell_ghci_impl")
 load("@prelude//haskell:haskell_haddock.bzl", "haskell_haddock_impl")
 load("@prelude//haskell:haskell_ide.bzl", "haskell_ide_impl")
+load("@prelude//haskell:library_info.bzl", "HaskellLibraryProvider")
 load("@prelude//http_archive:http_archive.bzl", "http_archive_impl")
 load("@prelude//java:java.bzl", _java_extra_attributes = "extra_attributes", _java_implemented_rules = "implemented_rules")
 load("@prelude//js:js.bzl", _js_extra_attributes = "extra_attributes", _js_implemented_rules = "implemented_rules")
@@ -40,6 +43,7 @@ load("@prelude//linking:link_info.bzl", "LinkOrdering")
 load("@prelude//lua:cxx_lua_extension.bzl", "cxx_lua_extension_impl")
 load("@prelude//lua:lua_binary.bzl", "lua_binary_impl")
 load("@prelude//lua:lua_library.bzl", "lua_library_impl")
+load("@prelude//matlab:matlab.bzl", _matlab_extra_attributes = "extra_attributes", _matlab_implemented_rules = "implemented_rules")
 load("@prelude//ocaml:attrs.bzl", _ocaml_extra_attributes = "ocaml_extra_attributes")
 load("@prelude//ocaml:ocaml.bzl", "ocaml_binary_impl", "ocaml_library_impl", "ocaml_object_impl", "ocaml_shared_impl", "prebuilt_ocaml_library_impl")
 load("@prelude//python:cxx_python_extension.bzl", "cxx_python_extension_impl")
@@ -156,6 +160,7 @@ extra_implemented_rules = struct(
     cxx_python_extension = cxx_python_extension_impl,
     prebuilt_cxx_library = prebuilt_cxx_library_impl,
     prebuilt_cxx_library_group = prebuilt_cxx_library_group_impl,
+    windows_resource = windows_resource_impl,
 
     # C++ / LLVM
     llvm_link_bitcode = llvm_link_bitcode_impl,
@@ -169,6 +174,7 @@ extra_implemented_rules = struct(
     go_exported_library = go_exported_library_impl,
     go_library = go_library_impl,
     go_test = go_test_impl,
+    go_stdlib = go_stdlib_impl,
 
     #haskell
     haskell_library = haskell_library_impl,
@@ -211,6 +217,7 @@ extra_implemented_rules = struct(
         _js_implemented_rules,
         _julia_implemented_rules,
         _kotlin_implemented_rules,
+        _matlab_implemented_rules,
         _zip_file_implemented_rules,
     ])
 )
@@ -287,14 +294,21 @@ def _python_executable_attrs():
         """,
         ),
         "make_py_package": attrs.option(attrs.exec_dep(providers = [RunInfo]), default = None),
-        # entries for the generated __manifest__ python module
-        "manifest_module_entries": attrs.option(attrs.dict(
-            key = attrs.string(),
-            value = attrs.one_of(
-                attrs.dict(key = attrs.string(), value = attrs.option(attrs.any())),
-                attrs.list(attrs.string()),
+        "manifest_module_entries": attrs.option(
+            attrs.dict(
+                key = attrs.string(),
+                value = attrs.one_of(
+                    attrs.dict(key = attrs.string(), value = attrs.option(attrs.any())),
+                    attrs.list(attrs.string()),
+                ),
             ),
-        ), default = None),
+            default = None,
+            doc = """If present, it should be a `string` -> `entry` mapping that
+            gets generated into a `__manifest__` module in the executable. Top
+            level string keys will be the names of variables in this module (so
+            they must be valid Python identifiers). An `entry` can be a list of
+            `string`s, or a further `string`-keyed dictionary.""",
+        ),
         "native_link_strategy": attrs.option(attrs.enum(NativeLinkStrategy), default = None),
         "package_split_dwarf_dwp": attrs.bool(default = False),
         "par_style": attrs.option(attrs.string(), default = None),
@@ -330,6 +344,7 @@ def _cxx_binary_and_test_attrs():
         "binary_linker_flags": attrs.list(attrs.arg(anon_target_compatible = True), default = []),
         "bolt_flags": attrs.list(attrs.arg(), default = []),
         "bolt_profile": attrs.option(attrs.source(), default = None),
+        "constraint_overrides": attrs.list(attrs.string(), default = []),
         "distributed_thinlto_partial_split_dwarf": attrs.bool(default = False),
         "enable_distributed_thinlto": attrs.bool(default = False),
         "link_execution_preference": link_execution_preference_attr(),
@@ -369,9 +384,14 @@ inlined_extra_attributes = {
     # go
     "cgo_library": {
         "embedcfg": attrs.option(attrs.source(allow_directory = False), default = None),
+        "_compile_shared": compile_shared_attr,
+        "_coverage_mode": coverage_mode_attr,
         "_cxx_toolchain": toolchains_common.cxx(),
         "_exec_os_type": buck.exec_os_type_arg(),
+        "_go_stdlib": attrs.default_only(attrs.dep(default = "prelude//go/tools:stdlib")),
         "_go_toolchain": toolchains_common.go(),
+        "_race": race_attr,
+        "_tags": tags_attr,
     },
     # csharp
     "csharp_library": {
@@ -416,23 +436,47 @@ inlined_extra_attributes = {
         "embedcfg": attrs.option(attrs.source(allow_directory = False), default = None),
         "resources": attrs.list(attrs.one_of(attrs.dep(), attrs.source(allow_directory = True)), default = []),
         "_exec_os_type": buck.exec_os_type_arg(),
+        "_go_stdlib": attrs.default_only(attrs.dep(default = "prelude//go/tools:stdlib")),
         "_go_toolchain": toolchains_common.go(),
+        "_race": race_attr,
+        "_tags": tags_attr,
     },
     "go_exported_library": {
         "embedcfg": attrs.option(attrs.source(allow_directory = False), default = None),
         "_exec_os_type": buck.exec_os_type_arg(),
+        "_go_stdlib": attrs.default_only(attrs.dep(default = "prelude//go/tools:stdlib")),
         "_go_toolchain": toolchains_common.go(),
+        "_race": race_attr,
+        "_tags": tags_attr,
     },
     "go_library": {
         "embedcfg": attrs.option(attrs.source(allow_directory = False), default = None),
+        "_cgo_enabled": cgo_enabled_attr,
+        "_compile_shared": compile_shared_attr,
+        "_coverage_mode": coverage_mode_attr,
+        "_go_stdlib": attrs.default_only(attrs.dep(default = "prelude//go/tools:stdlib")),
         "_go_toolchain": toolchains_common.go(),
+        "_race": race_attr,
+        "_tags": tags_attr,
+    },
+    "go_stdlib": {
+        "_cgo_enabled": cgo_enabled_attr,
+        "_compile_shared": compile_shared_attr,
+        "_exec_os_type": buck.exec_os_type_arg(),
+        "_go_toolchain": toolchains_common.go(),
+        "_race": race_attr,
+        "_tags": tags_attr,
     },
     "go_test": {
         "coverage_mode": attrs.option(attrs.enum(GoCoverageMode.values()), default = None),
         "embedcfg": attrs.option(attrs.source(allow_directory = False), default = None),
         "resources": attrs.list(attrs.source(allow_directory = True), default = []),
+        "_coverage_mode": coverage_mode_attr,
         "_exec_os_type": buck.exec_os_type_arg(),
+        "_go_stdlib": attrs.default_only(attrs.dep(default = "prelude//go/tools:stdlib")),
         "_go_toolchain": toolchains_common.go(),
+        "_race": race_attr,
+        "_tags": tags_attr,
         "_testmaingen": attrs.default_only(attrs.exec_dep(default = "prelude//go/tools:testmaingen")),
     },
 
@@ -480,6 +524,7 @@ inlined_extra_attributes = {
         "header_dirs": attrs.option(attrs.list(attrs.source(allow_directory = True)), default = None),
         "linker_flags": attrs.list(attrs.arg(anon_target_compatible = True), default = []),
         "platform_header_dirs": attrs.option(attrs.list(attrs.tuple(attrs.regex(), attrs.list(attrs.source(allow_directory = True)))), default = None),
+        "post_linker_flags": attrs.list(attrs.arg(anon_target_compatible = True), default = []),
         "preferred_linkage": attrs.enum(Linkage, default = "any"),
         "public_include_directories": attrs.set(attrs.string(), sorted = True, default = []),
         "public_system_include_directories": attrs.set(attrs.string(), sorted = True, default = []),
@@ -542,6 +587,9 @@ inlined_extra_attributes = {
     },
     "rust_test": {},
     "sh_test": {},
+    "windows_resource": {
+        "_cxx_toolchain": toolchains_common.cxx(),
+    },
 }
 
 all_extra_attributes = _merge_dictionaries([
@@ -553,6 +601,7 @@ all_extra_attributes = _merge_dictionaries([
     _js_extra_attributes,
     _julia_extra_attributes,
     _kotlin_extra_attributes,
+    _matlab_extra_attributes,
     _ocaml_extra_attributes,
     _zip_file_extra_attributes,
 ])
@@ -587,6 +636,11 @@ extra_attributes = struct(**all_extra_attributes)
 transitions = {
     "android_binary": constraint_overrides_transition,
     "apple_resource": apple_resource_transition,
+    "cxx_binary": constraint_overrides_transition,
+    "cxx_test": constraint_overrides_transition,
+    "go_binary": go_binary_transition,
+    "go_exported_library": go_exported_library_transition,
+    "go_test": go_test_transition,
     "python_binary": constraint_overrides_transition,
     "python_test": constraint_overrides_transition,
 }

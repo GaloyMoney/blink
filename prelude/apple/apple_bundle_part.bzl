@@ -104,7 +104,8 @@ def assemble_bundle(
             codesign_tool,
         ]
 
-        if codesign_type.value != "adhoc":
+        profile_selection_required = _should_embed_provisioning_profile(ctx, codesign_type)
+        if profile_selection_required:
             provisioning_profiles = ctx.attrs._provisioning_profiles[DefaultInfo]
             expect(
                 len(provisioning_profiles.default_outputs) == 1,
@@ -116,10 +117,13 @@ def assemble_bundle(
             identities_command = ctx.attrs._apple_toolchain[AppleToolchainInfo].codesign_identities_command
             identities_command_args = ["--codesign-identities-command", cmd_args(identities_command)] if identities_command else []
             codesign_args.extend(identities_command_args)
-        else:
+
+        if codesign_type.value == "adhoc":
             codesign_args.append("--ad-hoc")
             if ctx.attrs.codesign_identity:
                 codesign_args.extend(["--ad-hoc-codesign-identity", ctx.attrs.codesign_identity])
+            if profile_selection_required:
+                codesign_args.append("--embed-provisioning-profile-when-signing-ad-hoc")
 
         codesign_args += get_entitlements_codesign_args(ctx, codesign_type)
         codesign_args += _get_extra_codesign_args(ctx)
@@ -169,6 +173,9 @@ def assemble_bundle(
         profile_output = ctx.actions.declare_output("bundling_profile.txt").as_output()
         command.add("--profile-output", profile_output)
 
+    if ctx.attrs._fast_provisioning_profile_parsing_enabled:
+        command.add("--fast-provisioning-profile-parsing")
+
     subtargets = {}
     if ctx.attrs._bundling_log_file_enabled:
         bundling_log_output = ctx.actions.declare_output("bundling_log.txt")
@@ -177,9 +184,7 @@ def assemble_bundle(
             command.add("--log-level-file", ctx.attrs._bundling_log_file_level)
         subtargets["bundling-log"] = [DefaultInfo(default_output = bundling_log_output)]
 
-    if ctx.attrs._bundling_path_conflicts_check_enabled:
-        command.add("--check-conflicts")
-
+    command.add("--check-conflicts")
     command.add(codesign_configuration_args)
 
     # Ensures any genrule deps get built, such targets are used for validation
@@ -261,3 +266,15 @@ def _detect_codesign_type(ctx: AnalysisContext, skip_adhoc_signing: bool) -> Cod
 def _get_extra_codesign_args(ctx: AnalysisContext) -> list[str]:
     codesign_args = ctx.attrs.codesign_flags if hasattr(ctx.attrs, "codesign_flags") else []
     return ["--codesign-args={}".format(flag) for flag in codesign_args]
+
+def _should_embed_provisioning_profile(ctx: AnalysisContext, codesign_type: CodeSignType) -> bool:
+    if codesign_type.value == "distribution":
+        return True
+
+    if codesign_type.value == "adhoc":
+        # The config-based override value takes priority over target value
+        if ctx.attrs._embed_provisioning_profile_when_adhoc_code_signing != None:
+            return ctx.attrs._embed_provisioning_profile_when_adhoc_code_signing
+        return ctx.attrs.embed_provisioning_profile_when_adhoc_code_signing
+
+    return False

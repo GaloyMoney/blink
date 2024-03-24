@@ -31,6 +31,7 @@ load(
 )
 load("@prelude//java/utils:java_more_utils.bzl", "get_path_separator_for_exec_os")
 load("@prelude//java/utils:java_utils.bzl", "declare_prefixed_name", "derive_javac", "get_abi_generation_mode", "get_class_to_source_map_info", "get_default_info", "get_java_version_attributes", "to_java_version")
+load("@prelude//jvm:cd_jar_creator_util.bzl", "postprocess_jar")
 load("@prelude//jvm:nullsafe.bzl", "get_nullsafe_info")
 load("@prelude//linking:shared_libraries.bzl", "SharedLibraryInfo")
 load("@prelude//utils:expect.bzl", "expect")
@@ -88,8 +89,7 @@ def _process_plugins(
 
     # Process Javac Plugins
     if plugin_params:
-        plugin = plugin_params.processors[0]
-        args = plugin_params.args.get(plugin, cmd_args())
+        plugin, args = plugin_params.processors[0]
 
         # Produces "-Xplugin:PluginName arg1 arg2 arg3", as a single argument
         plugin_and_args = cmd_args(plugin)
@@ -434,8 +434,11 @@ def _create_jar_artifact(
 
     abi = None if (not srcs and not additional_compiled_srcs) or abi_generation_mode == AbiGenerationMode("none") or java_toolchain.is_bootstrap_toolchain else create_abi(ctx.actions, java_toolchain.class_abi_generator, jar_out)
 
+    has_postprocessor = hasattr(ctx.attrs, "jar_postprocessor") and ctx.attrs.jar_postprocessor
+    final_jar = postprocess_jar(ctx.actions, ctx.attrs.jar_postprocessor[RunInfo], jar_out, actions_identifier) if has_postprocessor else jar_out
+
     return make_compile_outputs(
-        full_library = jar_out,
+        full_library = final_jar,
         class_abi = abi,
         required_for_source_only_abi = required_for_source_only_abi,
         annotation_processor_output = generated_sources_dir,

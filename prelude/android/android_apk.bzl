@@ -5,6 +5,7 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
+load("@prelude//:validation_deps.bzl", "get_validation_deps_outputs")
 load("@prelude//android:android_binary.bzl", "get_binary_info")
 load("@prelude//android:android_providers.bzl", "AndroidApkInfo", "AndroidApkUnderTestInfo", "AndroidBinaryNativeLibsInfo", "AndroidBinaryResourcesInfo", "DexFilesInfo", "ExopackageInfo")
 load("@prelude//android:android_toolchain.bzl", "AndroidToolchainInfo")
@@ -31,20 +32,22 @@ def android_apk_impl(ctx: AnalysisContext) -> list[Provider]:
         native_library_info = native_library_info,
         resources_info = resources_info,
         compress_resources_dot_arsc = ctx.attrs.resource_compression == "enabled" or ctx.attrs.resource_compression == "enabled_with_strings_as_assets",
+        validation_deps_outputs = get_validation_deps_outputs(ctx),
     )
 
-    has_native_libs = bool(
-        native_library_info.exopackage_info or
-        native_library_info.native_libs_for_primary_apk or
-        native_library_info.root_module_native_lib_assets or
-        native_library_info.non_root_module_native_lib_assets,
-    )
-
-    exopackage_info = ExopackageInfo(
-        secondary_dex_info = dex_files_info.secondary_dex_exopackage_info,
-        native_library_info = native_library_info.exopackage_info,
-        resources_info = resources_info.exopackage_info,
-    )
+    if dex_files_info.secondary_dex_exopackage_info or native_library_info.exopackage_info or resources_info.exopackage_info:
+        exopackage_info = ExopackageInfo(
+            secondary_dex_info = dex_files_info.secondary_dex_exopackage_info,
+            native_library_info = native_library_info.exopackage_info,
+            resources_info = resources_info.exopackage_info,
+        )
+        exopackage_outputs = _get_exopackage_outputs(exopackage_info)
+        default_output = ctx.actions.write("exopackage_apk_warning", "exopackage apks should not be used externally, try buck install or building with exopackage disabled\n")
+        sub_targets["exo_apk"] = [DefaultInfo(default_output = output_apk)]  # Used by tests
+    else:
+        exopackage_info = None
+        exopackage_outputs = []
+        default_output = output_apk
 
     class_to_srcs, class_to_srcs_subtargets = get_class_to_source_map_info(
         ctx,
@@ -52,21 +55,24 @@ def android_apk_impl(ctx: AnalysisContext) -> list[Provider]:
         deps = android_binary_info.deps_by_platform[android_binary_info.primary_platform],
     )
 
+    # We can only be sure that an APK has native libs if it has any shared libraries. Prebuilt native libraries dirs can exist but be empty.
+    definitely_has_native_libs = bool(native_library_info.shared_libraries)
+
     return [
         AndroidApkInfo(apk = output_apk, manifest = resources_info.manifest, materialized_artifacts = android_binary_info.materialized_artifacts),
         AndroidApkUnderTestInfo(
             java_packaging_deps = set([dep.label.raw_target() for dep in java_packaging_deps]),
             keystore = keystore,
             manifest_entries = ctx.attrs.manifest_entries,
-            prebuilt_native_library_dirs = set([native_lib.raw_target for native_lib in native_library_info.apk_under_test_prebuilt_native_library_dirs]),
+            prebuilt_native_library_dirs = set([native_lib.raw_target for native_lib in native_library_info.prebuilt_native_library_dirs]),
             platforms = android_binary_info.deps_by_platform.keys(),
             primary_platform = android_binary_info.primary_platform,
             resource_infos = set([info.raw_target for info in resources_info.unfiltered_resource_infos]),
             r_dot_java_packages = set([info.specified_r_dot_java_package for info in resources_info.unfiltered_resource_infos if info.specified_r_dot_java_package]),
-            shared_libraries = set(native_library_info.apk_under_test_shared_libraries),
+            shared_libraries = set(native_library_info.shared_libraries),
         ),
-        DefaultInfo(default_output = output_apk, other_outputs = _get_exopackage_outputs(exopackage_info) + android_binary_info.materialized_artifacts, sub_targets = sub_targets | class_to_srcs_subtargets),
-        get_install_info(ctx, output_apk = output_apk, manifest = resources_info.manifest, exopackage_info = exopackage_info, has_native_libs = has_native_libs),
+        DefaultInfo(default_output = default_output, other_outputs = exopackage_outputs + android_binary_info.materialized_artifacts, sub_targets = sub_targets | class_to_srcs_subtargets),
+        get_install_info(ctx, output_apk = output_apk, manifest = resources_info.manifest, exopackage_info = exopackage_info, definitely_has_native_libs = definitely_has_native_libs),
         TemplatePlaceholderInfo(
             keyed_variables = {
                 "classpath": cmd_args([dep.jar for dep in java_packaging_deps if dep.jar], delimiter = get_path_separator_for_exec_os(ctx)),
@@ -84,7 +90,8 @@ def build_apk(
         dex_files_info: DexFilesInfo,
         native_library_info: AndroidBinaryNativeLibsInfo,
         resources_info: AndroidBinaryResourcesInfo,
-        compress_resources_dot_arsc: bool = False) -> Artifact:
+        compress_resources_dot_arsc: bool = False,
+        validation_deps_outputs: [list[Artifact], None] = None) -> Artifact:
     output_apk = actions.declare_output("{}.apk".format(label.name))
 
     apk_builder_args = cmd_args([
@@ -102,6 +109,11 @@ def build_apk(
         "--zipalign_tool",
         android_toolchain.zipalign[RunInfo],
     ])
+
+    # The outputs of validation_deps need to be added as hidden arguments
+    # to an action for the validation_deps targets to be built and enforced.
+    if validation_deps_outputs:
+        apk_builder_args.hidden(validation_deps_outputs)
 
     if android_toolchain.package_meta_inf_version_files:
         apk_builder_args.add("--package-meta-inf-version-files")
@@ -145,7 +157,7 @@ def get_install_info(
         output_apk: Artifact,
         manifest: Artifact,
         exopackage_info: [ExopackageInfo, None],
-        has_native_libs: bool = True) -> InstallInfo:
+        definitely_has_native_libs: bool = True) -> InstallInfo:
     files = {
         ctx.attrs.name: output_apk,
         "manifest": manifest,
@@ -180,7 +192,7 @@ def get_install_info(
     if secondary_dex_exopackage_info or native_library_exopackage_info or resources_info:
         files["exopackage_agent_apk"] = ctx.attrs._android_toolchain[AndroidToolchainInfo].exopackage_agent_apk
 
-    if has_native_libs and hasattr(ctx.attrs, "cpu_filters"):
+    if definitely_has_native_libs and hasattr(ctx.attrs, "cpu_filters"):
         files["cpu_filters"] = ctx.actions.write("cpu_filters.txt", ctx.attrs.cpu_filters)
 
     return InstallInfo(

@@ -157,8 +157,61 @@ ExecutableSharedLibArguments = record(
     shared_libs_symlink_tree = field(list[Artifact] | Artifact | None, None),
 )
 
+CxxSanitizerRuntimeArguments = record(
+    extra_link_args = field(list[ArgLike], []),
+    sanitizer_runtime_files = field(list[Artifact], []),
+)
+
+# @executable_path/Frameworks
+
+def cxx_sanitizer_runtime_arguments(
+        ctx: AnalysisContext,
+        cxx_toolchain: CxxToolchainInfo,
+        output: Artifact) -> CxxSanitizerRuntimeArguments:
+    linker_info = cxx_toolchain.linker_info
+    target_sanitizer_runtime_enabled = ctx.attrs.sanitizer_runtime_enabled if hasattr(ctx.attrs, "sanitizer_runtime_enabled") else None
+    sanitizer_runtime_enabled = target_sanitizer_runtime_enabled if target_sanitizer_runtime_enabled != None else linker_info.sanitizer_runtime_enabled
+    if not sanitizer_runtime_enabled:
+        return CxxSanitizerRuntimeArguments()
+
+    if not linker_info.sanitizer_runtime_files:
+        fail("C++ sanitizer runtime enabled but there are no runtime files")
+
+    if linker_info.type == "darwin":
+        runtime_rpath = cmd_args()
+        runtime_files = linker_info.sanitizer_runtime_files
+        for runtime_shared_lib in runtime_files:
+            # Rpath-relative dylibs have an install name of `@rpath/libName.dylib`,
+            # which means we need to add the parent dir of the dylib as an rpath.
+            runtime_shared_lib_dir = cmd_args(runtime_shared_lib).parent()
+
+            # The parent dir of the runtime shared lib must appear as a path
+            # relative to the parent dir of the binary. `@executable_path`
+            # represents the parent dir of the binary, not the binary itself.
+            runtime_shared_lib_rpath = cmd_args(runtime_shared_lib_dir, format = "-Wl,-rpath,@executable_path/{}").relative_to(output, parent = 1)
+            runtime_rpath.add(runtime_shared_lib_rpath)
+
+        # Ignore_artifacts() as the runtime directory is not required at _link_ time
+        runtime_rpath = runtime_rpath.ignore_artifacts()
+        return CxxSanitizerRuntimeArguments(
+            extra_link_args = [
+                runtime_rpath,
+                # Add rpaths in case the binary gets bundled and the app bundle is expected to be standalone.
+                # Not all transitive callers have `CxxPlatformInfo`, so just add both iOS and macOS rpaths.
+                # There's no downsides to having both, except dyld would check in both locations (and it won't
+                # find anything for the non-current platform).
+                "-Wl,-rpath,@loader_path/Frameworks",  # iOS
+                "-Wl,-rpath,@executable_path/Frameworks",  # iOS
+                "-Wl,-rpath,@loader_path/../Frameworks",  # macOS
+                "-Wl,-rpath,@executable_path/../Frameworks",  # macOS
+            ],
+            sanitizer_runtime_files = runtime_files,
+        )
+
+    return CxxSanitizerRuntimeArguments()
+
 def executable_shared_lib_arguments(
-        actions: AnalysisActions,
+        ctx: AnalysisContext,
         cxx_toolchain: CxxToolchainInfo,
         output: Artifact,
         shared_libs: dict[str, LinkedObject]) -> ExecutableSharedLibArguments:
@@ -169,7 +222,7 @@ def executable_shared_lib_arguments(
     # External debug info is materialized only when the executable is the output
     # of a build. Do not add to runtime_files.
     external_debug_info = project_artifacts(
-        actions = actions,
+        actions = ctx.actions,
         tsets = [shlib.external_debug_info for shlib in shared_libs.values()],
     )
 
@@ -177,7 +230,7 @@ def executable_shared_lib_arguments(
 
     if len(shared_libs) > 0:
         if linker_type == "windows":
-            shared_libs_symlink_tree = [actions.symlink_file(
+            shared_libs_symlink_tree = [ctx.actions.symlink_file(
                 shlib.output.basename,
                 shlib.output,
             ) for _, shlib in shared_libs.items()]
@@ -185,7 +238,7 @@ def executable_shared_lib_arguments(
             # Windows doesn't support rpath.
 
         else:
-            shared_libs_symlink_tree = actions.symlinked_dir(
+            shared_libs_symlink_tree = ctx.actions.symlinked_dir(
                 shared_libs_symlink_tree_name(output),
                 {name: shlib.output for name, shlib in shared_libs.items()},
             )
@@ -203,20 +256,35 @@ def executable_shared_lib_arguments(
         shared_libs_symlink_tree = shared_libs_symlink_tree,
     )
 
-def cxx_link_cmd_parts(toolchain: CxxToolchainInfo) -> ((RunInfo | cmd_args), cmd_args):
+LinkCmdParts = record(
+    linker = [RunInfo, cmd_args],
+    linker_flags = cmd_args,
+    post_linker_flags = cmd_args,
+    # linker + linker_flags, for convenience
+    link_cmd = cmd_args,
+)
+
+def cxx_link_cmd_parts(toolchain: CxxToolchainInfo) -> LinkCmdParts:
     # `toolchain_linker_flags` can either be a list of strings, `cmd_args` or `None`,
     # so we need to do a bit more work to satisfy the type checker
     toolchain_linker_flags = toolchain.linker_info.linker_flags
+    toolchain_post_linker_flags = toolchain.linker_info.post_linker_flags
     if toolchain_linker_flags == None:
         toolchain_linker_flags = cmd_args()
     elif not type(toolchain_linker_flags) == "cmd_args":
         toolchain_linker_flags = cmd_args(toolchain_linker_flags)
 
-    return toolchain.linker_info.linker, toolchain_linker_flags
+    if toolchain_post_linker_flags == None:
+        toolchain_post_linker_flags = cmd_args()
+    elif not type(toolchain_post_linker_flags) == "cmd_args":
+        toolchain_post_linker_flags = cmd_args(toolchain_post_linker_flags)
 
-# The command line for linking with C++
-def cxx_link_cmd(toolchain: CxxToolchainInfo) -> cmd_args:
-    linker, toolchain_linker_flags = cxx_link_cmd_parts(toolchain)
-    command = cmd_args(linker)
-    command.add(toolchain_linker_flags)
-    return command
+    link_cmd = cmd_args(toolchain.linker_info.linker)
+    link_cmd.add(toolchain_linker_flags)
+
+    return LinkCmdParts(
+        linker = toolchain.linker_info.linker,
+        linker_flags = toolchain_linker_flags,
+        post_linker_flags = toolchain_post_linker_flags,
+        link_cmd = link_cmd,
+    )

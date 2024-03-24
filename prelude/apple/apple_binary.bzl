@@ -6,7 +6,7 @@
 # of this source tree.
 
 load("@prelude//:paths.bzl", "paths")
-load("@prelude//apple:apple_buck2_compatibility.bzl", "apple_check_buck2_compatibility")
+load("@prelude//:validation_deps.bzl", "get_validation_deps_outputs")
 load("@prelude//apple:apple_stripping.bzl", "apple_strip_args")
 # @oss-disable: load("@prelude//apple/meta_only:linker_outputs.bzl", "add_extra_linker_outputs") 
 load(
@@ -52,6 +52,7 @@ load(
 )
 load(
     "@prelude//linking:link_info.bzl",
+    "CxxSanitizerRuntimeInfo",
     "LinkCommandDebugOutputInfo",
     "UnstrippedLinkOutputInfo",
 )
@@ -63,17 +64,13 @@ load(":apple_code_signing_types.bzl", "AppleEntitlementsInfo")
 load(":apple_dsym.bzl", "DSYM_SUBTARGET", "get_apple_dsym")
 load(":apple_entitlements.bzl", "entitlements_link_flags")
 load(":apple_frameworks.bzl", "get_framework_search_path_flags")
-load(":apple_genrule_deps.bzl", "get_apple_build_genrule_deps_attr_value", "get_apple_genrule_deps_outputs")
 load(":apple_target_sdk_version.bzl", "get_min_deployment_version_for_node", "get_min_deployment_version_target_linker_flags", "get_min_deployment_version_target_preprocessor_flags")
 load(":apple_utility.bzl", "get_apple_cxx_headers_layout", "get_apple_stripped_attr_value_with_default_fallback")
-load(":apple_validation_deps.bzl", "get_apple_validation_deps_outputs")
 load(":debug.bzl", "AppleDebuggableInfo")
 load(":resource_groups.bzl", "create_resource_graph")
 load(":xcode.bzl", "apple_populate_xcode_attributes")
 
 def apple_binary_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
-    apple_check_buck2_compatibility(ctx)
-
     def get_apple_binary_providers(deps_providers) -> list[Provider]:
         # FIXME: Ideally we'd like to remove the support of "bridging header",
         # cause it affects build time and in general considered a bad practise.
@@ -83,7 +80,7 @@ def apple_binary_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
         cxx_srcs, swift_srcs = _filter_swift_srcs(ctx)
 
         framework_search_path_flags = get_framework_search_path_flags(ctx)
-        swift_compile = compile_swift(
+        swift_compile, _ = compile_swift(
             ctx,
             swift_srcs,
             False,  # parse_as_library
@@ -112,10 +109,7 @@ def apple_binary_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
             swift_compile,
         )
 
-        validation_deps_outputs = get_apple_validation_deps_outputs(ctx)
-        if get_apple_build_genrule_deps_attr_value(ctx):
-            validation_deps_outputs += get_apple_genrule_deps_outputs(cxx_attr_deps(ctx))
-
+        validation_deps_outputs = get_validation_deps_outputs(ctx)
         stripped = get_apple_stripped_attr_value_with_default_fallback(ctx)
         constructor_params = CxxRuleConstructorParams(
             rule_type = "apple_binary",
@@ -191,6 +185,10 @@ def apple_binary_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
         if cxx_output.link_command_debug_output:
             link_command_providers.append(LinkCommandDebugOutputInfo(debug_outputs = [cxx_output.link_command_debug_output]))
 
+        sanitizer_runtime_providers = []
+        if cxx_output.sanitizer_runtime_files:
+            sanitizer_runtime_providers.append(CxxSanitizerRuntimeInfo(runtime_files = cxx_output.sanitizer_runtime_files))
+
         return [
             DefaultInfo(default_output = cxx_output.binary, sub_targets = cxx_output.sub_targets),
             RunInfo(args = cmd_args(cxx_output.binary).hidden(cxx_output.runtime_files)),
@@ -200,7 +198,7 @@ def apple_binary_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
             cxx_output.compilation_db,
             merge_bundle_linker_maps_info(bundle_infos),
             UnstrippedLinkOutputInfo(artifact = unstripped_binary),
-        ] + [resource_graph] + min_version_providers + link_command_providers
+        ] + [resource_graph] + min_version_providers + link_command_providers + sanitizer_runtime_providers
 
     if uses_explicit_modules(ctx):
         return get_swift_anonymous_targets(ctx, get_apple_binary_providers)

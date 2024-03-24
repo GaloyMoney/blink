@@ -116,6 +116,7 @@ android_aar = prelude_rule(
             "contacts": attrs.list(attrs.string(), default = []),
             "default_host_platform": attrs.option(attrs.configuration_label(), default = None),
             "enable_relinker": attrs.bool(default = False),
+            "excluded_java_deps": attrs.list(attrs.dep(), default = []),
             "extra_arguments": attrs.list(attrs.string(), default = []),
             "extra_kotlinc_arguments": attrs.list(attrs.string(), default = []),
             "extra_non_source_only_abi_kotlinc_arguments": attrs.list(attrs.string(), default = []),
@@ -151,6 +152,7 @@ android_aar = prelude_rule(
             "srcs": attrs.list(attrs.source(), default = []),
             "target": attrs.option(attrs.string(), default = None),
             "use_jvm_abi_gen": attrs.option(attrs.bool(), default = None),
+            "_wip_java_plugin_arguments": attrs.dict(attrs.label(), attrs.list(attrs.string()), default = {}),
         }
     ),
 )
@@ -262,6 +264,7 @@ android_binary = prelude_rule(
             "secondary_dex_weight_limit": attrs.option(attrs.int(), default = None),
             "skip_crunch_pngs": attrs.option(attrs.bool(), default = None),
             "skip_proguard": attrs.bool(default = False),
+            "strip_libraries": attrs.bool(default = True),
             "trim_resource_ids": attrs.bool(default = False),
             "use_split_dex": attrs.bool(default = False),
             "xz_compression_level": attrs.int(default = 4),
@@ -750,6 +753,7 @@ android_library = prelude_rule(
             "extra_non_source_only_abi_kotlinc_arguments": attrs.list(attrs.string(), default = []),
             "friend_paths": attrs.list(attrs.dep(), default = []),
             "java_version": attrs.option(attrs.string(), default = None),
+            "jar_postprocessor": attrs.option(attrs.exec_dep(), default = None),
             "kotlin_compiler_plugins": attrs.dict(key = attrs.source(), value = attrs.dict(key = attrs.string(), value = attrs.string(), sorted = False), sorted = False, default = {}),
             "labels": attrs.list(attrs.string(), default = []),
             "language": attrs.option(attrs.enum(JvmLanguage), default = None),
@@ -765,6 +769,7 @@ android_library = prelude_rule(
             "runtime_deps": attrs.list(attrs.dep(), default = []),
             "source_abi_verification_mode": attrs.option(attrs.enum(SourceAbiVerificationMode), default = None),
             "use_jvm_abi_gen": attrs.option(attrs.bool(), default = None),
+            "_wip_java_plugin_arguments": attrs.dict(attrs.label(), attrs.list(attrs.string()), default = {}),
         }
     ),
 )
@@ -1451,6 +1456,7 @@ robolectric_test = prelude_rule(
             "used_as_dependency_deprecated_do_not_use": attrs.bool(default = False),
             "use_jvm_abi_gen": attrs.option(attrs.bool(), default = None),
             "vm_args": attrs.list(attrs.arg(), default = []),
+            "_wip_java_plugin_arguments": attrs.dict(attrs.label(), attrs.list(attrs.string()), default = {}),
         } | jvm_common.k2() |
         re_test_common.test_args()
     ),

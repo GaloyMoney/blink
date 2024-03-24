@@ -23,3 +23,13 @@ erlang_application(
     use_global_parse_transforms = False,
     visibility = ["PUBLIC"],
 )
+
+erlang_tests(
+    contacts = ["whatsapp_testing_infra"],
+    labels = ["unit"],
+    suites = ["test/ct_executor_SUITE.erl"],
+    deps = [
+        "stdlib",
+        ":test_exec",
+    ],
+)

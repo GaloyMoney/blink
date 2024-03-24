@@ -77,6 +77,8 @@ rust_toolchain_attrs = {
     "rustc_action": provider_field(RunInfo | None, default = None),
     # Wrapper for rustdoc-generated test executables
     "rustdoc_test_with_resources": provider_field(RunInfo | None, default = None),
+    # Wrapper for rustdoc coverage
+    "rustdoc_coverage": provider_field(RunInfo | None, default = None),
     # Failure filter action
     "failure_filter_action": provider_field(RunInfo | None, default = None),
     # The default edition to use, if not specified.
@@ -91,7 +93,6 @@ rust_toolchain_attrs = {
     # linking types in signatures to their definition in another crate.
     "extern_html_root_url_prefix": provider_field(str | None, default = None),
     # Utilities used for building flagfiles containing dynamic crate names
-    "concat_tool": provider_field(RunInfo | None, default = None),
     "transitive_dependency_symlinks_tool": provider_field(RunInfo | None, default = None),
     # Setting this enables additional behaviors that improves linking at the
     # cost of using unstable implementation details of rustc. At the moment,

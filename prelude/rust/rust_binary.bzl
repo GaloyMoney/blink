@@ -19,6 +19,7 @@ load(
     "cxx_attr_deps",
 )
 load("@prelude//cxx:cxx_link_utility.bzl", "executable_shared_lib_arguments")
+load("@prelude//cxx:cxx_utility.bzl", "cxx_attrs_get_allow_cache_upload")
 load(
     "@prelude//cxx:link_groups.bzl",
     "LINK_GROUP_MAPPINGS_FILENAME_SUFFIX",
@@ -183,7 +184,7 @@ def _rust_binary_common(
         # link groups shared libraries link args are directly added to the link command,
         # we don't have to add them here
         executable_args = executable_shared_lib_arguments(
-            ctx.actions,
+            ctx,
             compile_ctx.cxx_toolchain_info,
             output,
             shared_libs,
@@ -365,7 +366,7 @@ def rust_binary_impl(ctx: AnalysisContext) -> list[Provider]:
         compile_ctx = compile_ctx,
         default_roots = ["main.rs"],
         extra_flags = [],
-        allow_cache_upload = ctx.attrs.allow_cache_upload,
+        allow_cache_upload = cxx_attrs_get_allow_cache_upload(ctx.attrs),
     )
 
     return providers + [RunInfo(args = args)]

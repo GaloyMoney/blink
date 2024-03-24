@@ -12,7 +12,7 @@ load(
     "project_artifacts",
 )
 load("@prelude//:paths.bzl", "paths")
-load("@prelude//apple:apple_buck2_compatibility.bzl", "apple_check_buck2_compatibility")
+load("@prelude//:validation_deps.bzl", "get_validation_deps_outputs")
 load("@prelude//apple:apple_toolchain_types.bzl", "AppleToolchainInfo", "AppleToolsInfo")
 # @oss-disable: load("@prelude//apple/meta_only:linker_outputs.bzl", "subtargets_for_apple_bundle_extra_outputs") 
 load("@prelude//apple/user:apple_selected_debug_path_file.bzl", "SELECTED_DEBUG_PATH_FILE_NAME")
@@ -61,10 +61,8 @@ load(
 )
 load(":apple_bundle_utility.bzl", "get_bundle_min_target_version", "get_default_binary_dep", "get_flattened_binary_deps", "get_product_name")
 load(":apple_dsym.bzl", "DSYM_INFO_SUBTARGET", "DSYM_SUBTARGET", "get_apple_dsym", "get_apple_dsym_ext", "get_apple_dsym_info")
-load(":apple_genrule_deps.bzl", "get_apple_build_genrule_deps_attr_value", "get_apple_genrule_deps_outputs")
 load(":apple_sdk.bzl", "get_apple_sdk_name")
 load(":apple_universal_binaries.bzl", "create_universal_binary")
-load(":apple_validation_deps.bzl", "get_apple_validation_deps_outputs")
 load(
     ":debug.bzl",
     "AggregatedAppleDebugInfo",
@@ -268,12 +266,18 @@ def _get_all_agg_debug_info(ctx: AnalysisContext, binary_output: AppleBundleBina
         all_debug_infos = all_debug_infos + [binary_debuggable_info]
     return get_aggregated_debug_info(ctx, all_debug_infos)
 
+def _maybe_scrub_selected_debug_paths_file(ctx: AnalysisContext, package_names: list[str]) -> Artifact:
+    if not ctx.attrs.selective_debugging:
+        return ctx.actions.write(SELECTED_DEBUG_PATH_FILE_NAME, sorted(set(package_names).list()))
+
+    selective_debugging_info = ctx.attrs.selective_debugging[AppleSelectiveDebuggingInfo]
+    return selective_debugging_info.scrub_selected_debug_paths_file(ctx, package_names, SELECTED_DEBUG_PATH_FILE_NAME)
+
 def _get_selected_debug_targets_part(ctx: AnalysisContext, agg_debug_info: AggregatedAppleDebugInfo) -> [AppleBundlePart, None]:
     # Only app bundle need this, and this file is searched by FBReport at the bundle root
     if ctx.attrs.extension == "app" and agg_debug_info.debug_info.filtered_map:
         package_names = [label.package for label in agg_debug_info.debug_info.filtered_map.keys()]
-        package_names = set(package_names).list()
-        output = ctx.actions.write(SELECTED_DEBUG_PATH_FILE_NAME, package_names)
+        output = _maybe_scrub_selected_debug_paths_file(ctx, package_names)
         return AppleBundlePart(source = output, destination = AppleBundleDestination("bundleroot"), new_name = SELECTED_DEBUG_PATH_FILE_NAME)
     else:
         return None
@@ -307,7 +311,6 @@ def _infer_apple_bundle_type(ctx: AnalysisContext) -> AppleBundleType:
 
 def apple_bundle_impl(ctx: AnalysisContext) -> list[Provider]:
     _apple_bundle_run_validity_checks(ctx)
-    apple_check_buck2_compatibility(ctx)
 
     binary_outputs = _get_binary(ctx)
 
@@ -321,10 +324,7 @@ def apple_bundle_impl(ctx: AnalysisContext) -> list[Provider]:
 
     primary_binary_rel_path = get_apple_bundle_part_relative_destination_path(ctx, primary_binary_part)
 
-    validation_deps_outputs = get_apple_validation_deps_outputs(ctx)
-    if get_apple_build_genrule_deps_attr_value(ctx):
-        validation_deps_outputs += get_apple_genrule_deps_outputs(ctx.attrs.deps)
-
+    validation_deps_outputs = get_validation_deps_outputs(ctx)
     sub_targets = assemble_bundle(
         ctx,
         bundle,
@@ -466,6 +466,7 @@ def generate_install_data(
     data = {
         "fullyQualifiedName": ctx.label,
         "info_plist": plist_path,
+        "platform_name": get_apple_sdk_name(ctx),
         "use_idb": "true",
         ## TODO(T110665037): read from .buckconfig
         # We require the user to have run `xcode-select` and `/var/db/xcode_select_link` to symlink

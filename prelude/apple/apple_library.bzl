@@ -9,7 +9,7 @@ load(
     "@prelude//:artifact_tset.bzl",
     "project_artifacts",
 )
-load("@prelude//apple:apple_buck2_compatibility.bzl", "apple_check_buck2_compatibility")
+load("@prelude//:validation_deps.bzl", "get_validation_deps_outputs")
 load("@prelude//apple:apple_dsym.bzl", "DSYM_SUBTARGET", "get_apple_dsym")
 load("@prelude//apple:apple_stripping.bzl", "apple_strip_args")
 load("@prelude//apple:apple_toolchain_types.bzl", "AppleToolchainInfo")
@@ -71,11 +71,9 @@ load("@prelude//utils:arglike.bzl", "ArgLike")
 load("@prelude//utils:expect.bzl", "expect")
 load(":apple_bundle_types.bzl", "AppleBundleLinkerMapInfo", "AppleMinDeploymentVersionInfo")
 load(":apple_frameworks.bzl", "get_framework_search_path_flags")
-load(":apple_genrule_deps.bzl", "get_apple_build_genrule_deps_attr_value", "get_apple_genrule_deps_outputs")
 load(":apple_modular_utility.bzl", "MODULE_CACHE_PATH")
 load(":apple_target_sdk_version.bzl", "get_min_deployment_version_for_node", "get_min_deployment_version_target_linker_flags", "get_min_deployment_version_target_preprocessor_flags")
 load(":apple_utility.bzl", "get_apple_cxx_headers_layout", "get_apple_stripped_attr_value_with_default_fallback", "get_module_name")
-load(":apple_validation_deps.bzl", "get_apple_validation_deps_outputs")
 load(
     ":debug.bzl",
     "AppleDebuggableInfo",
@@ -85,6 +83,13 @@ load(":modulemap.bzl", "preprocessor_info_for_modulemap")
 load(":resource_groups.bzl", "create_resource_graph")
 load(":xcode.bzl", "apple_populate_xcode_attributes")
 load(":xctest_swift_support.bzl", "xctest_swift_support_info")
+
+AppleSharedLibraryMachOFileType = enum(
+    # dynamicly bound shared library file
+    "dylib",
+    # dynamicly bound bundle file aka Mach-O bundle
+    "bundle",
+)
 
 AppleLibraryAdditionalParams = record(
     # Name of the top level rule utilizing the apple_library rule.
@@ -109,9 +114,18 @@ AppleLibraryAdditionalParams = record(
 )
 
 def apple_library_impl(ctx: AnalysisContext) -> [Promise, list[Provider]]:
-    apple_check_buck2_compatibility(ctx)
-
     def get_apple_library_providers(deps_providers) -> list[Provider]:
+        shared_type = AppleSharedLibraryMachOFileType(ctx.attrs.shared_library_macho_file_type)
+        if shared_type == AppleSharedLibraryMachOFileType("bundle"):
+            shared_library_flags_overrides = SharedLibraryFlagOverrides(
+                # When `-bundle` is used we can't use the `-install_name` args, thus we keep this field empty.
+                shared_library_name_linker_flags_format = [],
+                shared_library_flags = ["-bundle"],
+            )
+        elif shared_type == AppleSharedLibraryMachOFileType("dylib"):
+            shared_library_flags_overrides = None
+        else:
+            fail("Unsupported `shared_library_macho_file_type` attribute value: `{}`".format(shared_type))
         constructor_params = apple_library_rule_constructor_params_and_swift_providers(
             ctx,
             AppleLibraryAdditionalParams(
@@ -123,6 +137,7 @@ def apple_library_impl(ctx: AnalysisContext) -> [Promise, list[Provider]]:
                     # We generate a provider on our own, disable to avoid several providers of same type.
                     cxx_resources_as_apple_resources = False,
                 ),
+                shared_library_flags = shared_library_flags_overrides,
             ),
             deps_providers,
         )
@@ -146,7 +161,7 @@ def apple_library_rule_constructor_params_and_swift_providers(ctx: AnalysisConte
         modulemap_pre = None
 
     framework_search_paths_flags = get_framework_search_path_flags(ctx)
-    swift_compile = compile_swift(
+    swift_compile, swift_interface = compile_swift(
         ctx,
         swift_srcs,
         True,  # parse_as_library
@@ -222,10 +237,7 @@ def apple_library_rule_constructor_params_and_swift_providers(ctx: AnalysisConte
         relative_args = CPreprocessorArgs(args = [framework_search_paths_flags]),
     )
 
-    validation_deps_outputs = get_apple_validation_deps_outputs(ctx)
-    if get_apple_build_genrule_deps_attr_value(ctx):
-        validation_deps_outputs += get_apple_genrule_deps_outputs(cxx_attr_deps(ctx) + cxx_attr_exported_deps(ctx))
-
+    validation_deps_outputs = get_validation_deps_outputs(ctx)
     return CxxRuleConstructorParams(
         rule_type = params.rule_type,
         is_test = (params.rule_type == "apple_test"),
@@ -258,6 +270,7 @@ def apple_library_rule_constructor_params_and_swift_providers(ctx: AnalysisConte
                         default_outputs = swift_compile.object_files if swift_compile else None,
                     ),
                 ],
+                "swift-interface": [swift_interface],
                 "swift-output-file-map": [
                     DefaultInfo(
                         default_output = swift_compile.output_map_artifact if swift_compile else None,

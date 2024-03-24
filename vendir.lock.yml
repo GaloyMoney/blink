@@ -2,20 +2,18 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'rules: Reimplement native unbundled deps to better support `FORCE_RLIB`:
-        Take 3...'
-      sha: 7fe874bfabed4147e5fa6fa614fd2e0f8ef98b37
+      commitTitle: 'buck2: glossary: snake casing nit...'
+      sha: 7f091ff001f6e1da2ce2d6fdefa940f07d7dc9d0
       tags:
-      - "2024-01-15"
+      - "2024-03-15"
     path: .
   path: prelude
 - contents:
   - git:
-      commitTitle: 'rules: Reimplement native unbundled deps to better support `FORCE_RLIB`:
-        Take 3...'
-      sha: 7fe874bfabed4147e5fa6fa614fd2e0f8ef98b37
+      commitTitle: 'buck2: glossary: snake casing nit...'
+      sha: 7f091ff001f6e1da2ce2d6fdefa940f07d7dc9d0
       tags:
-      - "2024-01-15"
+      - "2024-03-15"
     path: .
   path: third-party/macros
 - contents:

@@ -136,8 +136,8 @@ cxx_genrule = prelude_rule(
     name = "cxx_genrule",
     docs = """
         A `cxx_genrule()` enables you to run shell commands as part
-        of the Buck build process. A `cxx_genrule()` exposes\342\200\224through
-        a set of string parameter macros and variables\342\200\224information about the
+        of the Buck build process. A `cxx_genrule()` exposes - through
+        a set of string parameter macros and variables - information about the
         tools and configuration options used by the
         Buck environment, specifically those related to the C/C++ toolchain.
 
@@ -588,7 +588,8 @@ cxx_library = prelude_rule(
             "weak_framework_names": attrs.list(attrs.string(), default = []),
             "xcode_private_headers_symlinks": attrs.option(attrs.bool(), default = None),
             "xcode_public_headers_symlinks": attrs.option(attrs.bool(), default = None),
-        }
+        } |
+        buck.allow_cache_upload_arg()
     ),
 )
 
@@ -729,6 +730,51 @@ cxx_precompiled_header = prelude_rule(
     ),
 )
 
+windows_resource = prelude_rule(
+    name = "windows_resource",
+    docs = """
+        A `windows_resource()` rule specifies a set of Window's Resource File (.rc) that
+        are compiled into object files.
+
+        The files are compiled into .res files using rc.exe and then compiled into object files
+        using cvtres.exe.
+        They are not part of cxx_library because Microsoft's linker ignores the resources
+        unless they are specified as an object file, meaning including them in a possibly static
+        library is unintuitive.
+    """,
+    examples = """
+        ```
+
+        # A rule that includes a single .rc file and compiles it into an object file.
+        windows_resource(
+          name = "resources",
+          srcs = [
+            "resources.rc",
+          ],
+        )
+
+        # A rule that links against the above windows_resource rule.
+        cxx_binary(
+          name = "app",
+          srcs = [
+            "main.cpp",
+          ],
+          deps = [
+            ":resources"
+          ],
+        )
+
+        ```
+    """,
+    further = None,
+    attrs = (
+        cxx_common.srcs_arg() |
+        {
+            "labels": attrs.list(attrs.string(), default = []),
+        }
+    ),
+)
+
 cxx_test = prelude_rule(
     name = "cxx_test",
     docs = """
@@ -849,7 +895,8 @@ cxx_test = prelude_rule(
             "use_default_test_main": attrs.option(attrs.bool(), default = None),
             "version_universe": attrs.option(attrs.string(), default = None),
             "weak_framework_names": attrs.list(attrs.string(), default = []),
-        }
+        } |
+        buck.allow_cache_upload_arg()
     ),
 )
 
@@ -889,6 +936,10 @@ cxx_toolchain = prelude_rule(
             "cuda_compiler_flags": attrs.list(attrs.arg(), default = []),
             "cuda_compiler_type": attrs.option(attrs.enum(CxxToolProviderType), default = None),
             "cuda_preprocessor_flags": attrs.list(attrs.arg(), default = []),
+            "cvtres_compiler": attrs.option(attrs.source(), default = None),
+            "cvtres_compiler_flags": attrs.list(attrs.arg(), default = []),
+            "cvtres_compiler_type": attrs.option(attrs.enum(CxxToolProviderType), default = None),
+            "cvtres_preprocessor_flags": attrs.list(attrs.arg(), default = []),
             "cxx_compiler": attrs.source(),
             "cxx_compiler_flags": attrs.list(attrs.arg(), default = []),
             "cxx_compiler_type": attrs.option(attrs.enum(CxxToolProviderType), default = None),
@@ -915,10 +966,15 @@ cxx_toolchain = prelude_rule(
             "objcopy_recalculates_layout": attrs.bool(default = False),
             "object_file_extension": attrs.string(default = ""),
             "pic_type_for_shared_linking": attrs.enum(PicType, default = "pic"),
+            "post_linker_flags": attrs.list(attrs.arg(anon_target_compatible = True), default = []),
             "private_headers_symlinks_enabled": attrs.bool(default = False),
             "public_headers_symlinks_enabled": attrs.bool(default = False),
             "ranlib": attrs.option(attrs.source(), default = None),
             "ranlib_flags": attrs.list(attrs.arg(), default = []),
+            "rc_compiler": attrs.option(attrs.source(), default = None),
+            "rc_compiler_flags": attrs.list(attrs.arg(), default = []),
+            "rc_compiler_type": attrs.option(attrs.enum(CxxToolProviderType), default = None),
+            "rc_preprocessor_flags": attrs.list(attrs.arg(), default = []),
             "requires_archives": attrs.bool(default = False),
             "shared_dep_runtime_ld_flags": attrs.list(attrs.arg(), default = []),
             "shared_library_extension": attrs.string(default = ""),
@@ -1093,7 +1149,8 @@ prebuilt_cxx_library = prelude_rule(
             "versioned_soname": attrs.option(attrs.versioned(attrs.string()), default = None),
             "versioned_static_lib": attrs.option(attrs.versioned(attrs.source()), default = None),
             "versioned_static_pic_lib": attrs.option(attrs.versioned(attrs.source()), default = None),
-        }
+        } |
+        buck.allow_cache_upload_arg()
     ),
 )
 
@@ -1240,6 +1297,7 @@ cxx_rules = struct(
     cxx_genrule = cxx_genrule,
     cxx_library = cxx_library,
     cxx_precompiled_header = cxx_precompiled_header,
+    windows_resource = windows_resource,
     cxx_test = cxx_test,
     cxx_toolchain = cxx_toolchain,
     prebuilt_cxx_library = prebuilt_cxx_library,

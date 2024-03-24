@@ -145,10 +145,12 @@ def make_py_package(
         srcs.append(pex_modules.extensions.manifest)
 
     preload_libraries = _preload_libraries_args(ctx, shared_libraries)
+    startup_function = generate_startup_function_loader(ctx)
     manifest_module = generate_manifest_module(ctx, python_toolchain, srcs)
     common_modules_args, dep_artifacts, debug_artifacts = _pex_modules_common_args(
         ctx,
         pex_modules,
+        [startup_function] if startup_function else [],
         {name: lib for name, (lib, _) in shared_libraries.items()},
     )
 
@@ -190,6 +192,10 @@ def make_py_package(
             allow_cache_upload = allow_cache_upload,
         )
         default.sub_targets[style] = make_py_package_providers(pex_providers)
+
+    # cpp binaries already emit a `debuginfo` subtarget with a different format,
+    # so we opt to use a more specific subtarget
+    default.sub_targets["par-debuginfo"] = _debuginfo_subtarget(ctx, debug_artifacts)
     return default
 
 def _make_py_package_impl(
@@ -258,6 +264,7 @@ def _make_py_package_impl(
         preload_libraries,
         symlink_tree_path,
         package_style,
+        True if ctx.attrs.zip_safe == None else ctx.attrs.zip_safe,
     )
     bootstrap_args.add(build_args)
     if standalone:
@@ -325,6 +332,10 @@ def _make_py_package_impl(
         run_cmd = cmd_args(run_args).hidden([a for a, _ in runtime_files] + hidden_resources),
     )
 
+def _debuginfo_subtarget(ctx: AnalysisContext, debug_artifacts: list[(ArgLike, str)]) -> list[Provider]:
+    out = ctx.actions.write_json("debuginfo.manifest.json", debug_artifacts)
+    return [DefaultInfo(default_output = out, other_outputs = [a for a, _ in debug_artifacts])]
+
 def _preload_libraries_args(ctx: AnalysisContext, shared_libraries: dict[str, (LinkedObject, bool)]) -> cmd_args:
     preload_libraries_path = ctx.actions.write(
         "__preload_libraries.txt",
@@ -343,7 +354,8 @@ def _pex_bootstrap_args(
         shared_libraries: dict[str, (LinkedObject, bool)],
         preload_libraries: cmd_args,
         symlink_tree_path: Artifact | None,
-        package_style: PackageStyle) -> cmd_args:
+        package_style: PackageStyle,
+        zip_safe: bool) -> cmd_args:
     cmd = cmd_args()
     cmd.add(preload_libraries)
     cmd.add([
@@ -367,11 +379,15 @@ def _pex_bootstrap_args(
         cmd.add("--use-lite")
     cmd.add(output.as_output())
 
+    if package_style == PackageStyle("standalone") and not zip_safe:
+        cmd.add("--no-zip-safe")
+
     return cmd
 
 def _pex_modules_common_args(
         ctx: AnalysisContext,
         pex_modules: PexModules,
+        extra_manifests: list[ArgLike],
         shared_libraries: dict[str, LinkedObject]) -> (cmd_args, list[(ArgLike, str)], list[(ArgLike, str)]):
     srcs = []
     src_artifacts = []
@@ -388,6 +404,9 @@ def _pex_modules_common_args(
     if pex_modules.extra_manifests:
         srcs.append(pex_modules.extra_manifests.manifest)
         src_artifacts.extend(pex_modules.extra_manifests.artifacts)
+
+    if extra_manifests:
+        srcs.extend(extra_manifests)
 
     deps.extend(src_artifacts)
     resources = pex_modules.manifests.resource_manifests()
@@ -543,6 +562,59 @@ def _hidden_resources_error_message(current_target: Label, hidden_resources: lis
         for resource in sorted(resources):
             msg += "  {}\n".format(resource)
     return msg
+
+def generate_startup_function_loader(ctx: AnalysisContext) -> ArgLike:
+    """
+    Generate `__startup_function_loader__.py` used for early bootstrap of a par.
+    Things that go here are also enumerated in `__manifest__['startup_functions']`
+    Some examples include:
+     * static extension finder init
+     * eager import loader init
+     * cinderx init
+    """
+
+    if ctx.attrs.manifest_module_entries == None:
+        startup_functions_list = ""
+    else:
+        startup_functions_list = "\n".join(
+            [
+                '"' + startup_function + '",'
+                for _, startup_function in sorted(ctx.attrs.manifest_module_entries.get("startup_functions", {}).items())
+            ],
+        )
+
+    src_startup_functions_path = ctx.actions.write(
+        "manifest/__startup_function_loader__.py",
+        """
+import importlib
+import warnings
+
+STARTUP_FUNCTIONS=[{startup_functions_list}]
+
+def load_startup_functions():
+    for func in STARTUP_FUNCTIONS:
+        mod, sep, func = func.partition(":")
+        if sep:
+            try:
+                module = importlib.import_module(mod)
+                getattr(module, func)()
+            except Exception as e:
+                # TODO: Ignoring errors for now.
+                warnings.warn(
+                    "Startup function %s (%s:%s) not executed: %s"
+                    % (mod, name, func, e),
+                    stacklevel=1,
+                )
+
+        """.format(startup_functions_list = startup_functions_list),
+    )
+    return ctx.actions.write_json(
+        "manifest/startup_function_loader.manifest",
+        [
+            ["__par__/__startup_function_loader__.py", src_startup_functions_path, "prelude//python:make_py_package.bzl"],
+        ],
+        with_inputs = True,
+    )
 
 def generate_manifest_module(
         ctx: AnalysisContext,

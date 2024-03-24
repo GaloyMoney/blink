@@ -84,9 +84,6 @@ def create_jar_artifact_javacd(
     actions = ctx.actions
     resources_map = get_resources_map(java_toolchain, label.package, resources, resources_root)
 
-    # TODO(cjhopman): Handle manifest file.
-    _ = manifest_file  # buildifier: disable=unused-variable
-
     bootclasspath_entries = add_java_7_8_bootclasspath(target_level, bootclasspath_entries, java_toolchain)
     abi_generation_mode = get_abi_generation_mode(abi_generation_mode, java_toolchain, srcs, annotation_processor_properties)
 
@@ -132,6 +129,7 @@ def create_jar_artifact_javacd(
             resources_map,
             annotation_processor_properties,
             plugin_params,
+            manifest_file,
             extra_arguments,
             source_only_abi_compiling_deps = [],
             track_class_usage = track_class_usage,
@@ -171,11 +169,12 @@ def create_jar_artifact_javacd(
             resources_map,
             annotation_processor_properties,
             plugin_params,
+            manifest_file,
             extra_arguments,
             source_only_abi_compiling_deps = source_only_abi_compiling_deps,
             track_class_usage = track_class_usage,
         )
-        abi_params = encode_jar_params(remove_classes, output_paths)
+        abi_params = encode_jar_params(remove_classes, output_paths, manifest_file)
 
         abi_command = struct(
             baseJarCommand = base_jar_command,
@@ -288,6 +287,7 @@ def create_jar_artifact_javacd(
             local_only = local_only,
             low_pass_filter = False,
             weight = 2,
+            error_handler = java_toolchain.java_error_handler,
         )
 
     library_classpath_jars_tag = actions.artifact_tag()
@@ -304,7 +304,17 @@ def create_jar_artifact_javacd(
         path_to_class_hashes_out,
         is_creating_subtarget,
     )
-    final_jar = prepare_final_jar(actions, actions_identifier, output, output_paths, additional_compiled_srcs, java_toolchain.jar_builder)
+    jar_postprocessor = ctx.attrs.jar_postprocessor[RunInfo] if hasattr(ctx.attrs, "jar_postprocessor") and ctx.attrs.jar_postprocessor else None
+    final_jar = prepare_final_jar(
+        actions = actions,
+        actions_identifier = actions_identifier,
+        output = output,
+        output_paths = output_paths,
+        additional_compiled_srcs = additional_compiled_srcs,
+        jar_builder = java_toolchain.jar_builder,
+        jar_postprocessor = jar_postprocessor,
+    )
+
     if not is_creating_subtarget:
         class_abi, source_abi, source_only_abi, classpath_abi, classpath_abi_dir = generate_abi_jars(
             actions,

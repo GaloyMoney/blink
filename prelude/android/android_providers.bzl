@@ -47,10 +47,10 @@ RDotJavaInfo = record(
 )
 
 AndroidBinaryNativeLibsInfo = record(
-    apk_under_test_prebuilt_native_library_dirs = list[PrebuiltNativeLibraryDir],
+    prebuilt_native_library_dirs = list[PrebuiltNativeLibraryDir],
     # Indicates which shared lib producing targets are included in the binary. Used by instrumentation tests
     # to exclude those from the test apk.
-    apk_under_test_shared_libraries = list[TargetLabel],
+    shared_libraries = list[TargetLabel],
     exopackage_info = ["ExopackageNativeInfo", None],
     root_module_native_lib_assets = list[Artifact],
     non_root_module_native_lib_assets = list[Artifact],
@@ -65,6 +65,8 @@ AndroidBinaryResourcesInfo = record(
     manifest = Artifact,
     # per-module manifests (packaged as assets)
     module_manifests = list[Artifact],
+    # per-module assets APKs (for .aabs only)
+    module_assets = [Artifact, None],
     # zip containing any strings packaged as assets
     packaged_string_assets = [Artifact, None],
     # "APK" containing resources to be used by the Android binary
@@ -95,6 +97,7 @@ AndroidBuildConfigInfo = provider(
     fields = {
         "package": str,
         "build_config_fields": list[BuildConfigField],
+        "values_file": provider_field(typing.Any, default = None),
     },
 )
 

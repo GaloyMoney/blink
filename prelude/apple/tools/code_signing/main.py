@@ -5,6 +5,8 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
+# pyre-strict
+
 import argparse
 import pathlib
 import sys
@@ -13,8 +15,9 @@ from .apple_platform import ApplePlatform
 from .codesign_bundle import (
     AdhocSigningContext,
     codesign_bundle,
-    non_adhoc_signing_context,
+    signing_context_with_profile_selection,
 )
+from .list_codesign_identities import ListCodesignIdentities
 from .provisioning_profile_selection import CodeSignProvisioningError
 
 
@@ -77,6 +80,11 @@ def _args_parser() -> argparse.ArgumentParser:
         required=False,
         help="Bundle relative path that should be codesigned prior to result bundle.",
     )
+    parser.add_argument(
+        "--fast-provisioning-profile-parsing",
+        action="store_true",
+        help="Uses experimental faster provisioning profile parsing.",
+    )
 
     return parser
 
@@ -86,7 +94,7 @@ def decorate_error_message(message: str) -> str:
     return " ".join(["❗️", message])
 
 
-def _main():
+def _main() -> None:
     args = _args_parser().parse_args()
     try:
         if args.ad_hoc:
@@ -97,12 +105,14 @@ def _main():
             assert (
                 args.profiles_dir
             ), "Path to directory with provisioning profile files should be set when signing is not ad-hoc."
-            signing_context = non_adhoc_signing_context(
+            signing_context = signing_context_with_profile_selection(
                 info_plist_source=args.bundle_path / args.info_plist,
                 info_plist_destination=args.info_plist,
                 provisioning_profiles_dir=args.profiles_dir,
                 entitlements_path=args.entitlements,
+                list_codesign_identities=ListCodesignIdentities.default(),
                 platform=args.platform,
+                should_use_fast_provisioning_profile_parsing=args.fast_provisioning_profile_parsing,
             )
         codesign_bundle(
             bundle_path=args.bundle_path,

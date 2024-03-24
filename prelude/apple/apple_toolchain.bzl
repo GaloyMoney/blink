@@ -16,6 +16,7 @@ def apple_toolchain_impl(ctx: AnalysisContext) -> list[Provider]:
         DefaultInfo(),
         AppleToolchainInfo(
             actool = ctx.attrs.actool[RunInfo],
+            architecture = ctx.attrs.architecture,
             codesign = ctx.attrs.codesign[RunInfo],
             codesign_allocate = ctx.attrs.codesign_allocate[RunInfo],
             codesign_identities_command = ctx.attrs.codesign_identities_command[RunInfo] if ctx.attrs.codesign_identities_command else None,
@@ -32,6 +33,7 @@ def apple_toolchain_impl(ctx: AnalysisContext) -> list[Provider]:
             lipo = ctx.attrs.lipo[RunInfo],
             min_version = ctx.attrs.min_version,
             momc = ctx.attrs.momc[RunInfo],
+            objdump = ctx.attrs.objdump[RunInfo] if ctx.attrs.objdump else None,
             odrcov = ctx.attrs.odrcov[RunInfo] if ctx.attrs.odrcov else None,
             platform_path = platform_path,
             sdk_build_version = ctx.attrs.build_version,

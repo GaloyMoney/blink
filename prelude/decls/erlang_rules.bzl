@@ -121,6 +121,9 @@ rules_attributes = {
                 [application_opt()](https://www.erlang.org/doc/man/application.html#load-2). The key-value pair will be stored in the
                 applications `.app` file and can be accessed by `file:consult/1`.
             """),
+        "include_src": attrs.bool(default = True, doc = """
+                This field controlls if the generated application directory contains a src/ directory with the Erlang code or not.
+            """),
         "includes": attrs.list(attrs.source(), default = [], doc = """
                 The public header files accessible via `-include_lib("appname/include/header.hrl")` from other erlang files.
             """),
@@ -129,6 +132,11 @@ rules_attributes = {
                 difference, that the module name, and the individual start arguments need to be given as the string representation
                 of the corresponding Erlang terms.
              """),
+        "peek_private_includes": attrs.bool(default = False, doc = """
+                This attribute allows you to use the private includes of the applictions dependencies. This can be useful for
+                test applications, to create shared abstractions for tests. It's not advisable to use this attribute for prodution
+                code. All private inclues transitively must be non-ambiguous.
+            """),
         "resources": attrs.list(attrs.dep(), default = [], doc = """
                 The `resources` field specifies targets whose default output are placed in the applications `priv/` directory. For
                 regular files this field is typically combined with `export_file`, `filegroup`, or similar targets. However, it
