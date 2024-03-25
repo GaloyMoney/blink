@@ -5,8 +5,9 @@ import {
 } from "./proto/notifications_pb"
 
 import {
-  GaloyNotificationCategories,
+  InvalidNotificationCategoryError,
   InvalidPushNotificationSettingError,
+  NotificationCategory,
   NotificationChannel,
 } from "@/domain/notifications"
 
@@ -41,20 +42,20 @@ export const grpcNotificationSettingsToNotificationSettings = (
 
 export const grpcNotificationCategoryToNotificationCategory = (
   category: GrpcNotificationCategory,
-): NotificationCategory | InvalidPushNotificationSettingError => {
+): NotificationCategory | InvalidNotificationCategoryError => {
   switch (category) {
     case GrpcNotificationCategory.PAYMENTS:
-      return GaloyNotificationCategories.Payments
+      return NotificationCategory.Payments
     case GrpcNotificationCategory.PRICE:
-      return "Price" as NotificationCategory
+      return NotificationCategory.Price
     case GrpcNotificationCategory.CIRCLES:
-      return "Circles" as NotificationCategory
+      return NotificationCategory.Circles
     case GrpcNotificationCategory.BALANCE:
-      return GaloyNotificationCategories.Balance
+      return NotificationCategory.Balance
     case GrpcNotificationCategory.ADMIN_NOTIFICATION:
-      return GaloyNotificationCategories.AdminNotification
+      return NotificationCategory.AdminNotification
     default:
-      return new InvalidPushNotificationSettingError(
+      return new InvalidNotificationCategoryError(
         `Invalid notification category: ${category}`,
       )
   }
@@ -63,20 +64,24 @@ export const grpcNotificationCategoryToNotificationCategory = (
 // TODO: Add support for AdminPushNotification and Balance to Notifications pod
 export const notificationCategoryToGrpcNotificationCategory = (
   category: NotificationCategory,
-): GrpcNotificationCategory => {
+): GrpcNotificationCategory | InvalidNotificationCategoryError => {
   switch (category) {
-    case GaloyNotificationCategories.Payments:
+    case NotificationCategory.Payments:
       return GrpcNotificationCategory.PAYMENTS
-    case "Circles":
+    case NotificationCategory.Circles:
       return GrpcNotificationCategory.CIRCLES
-    case "Price":
+    case NotificationCategory.Price:
       return GrpcNotificationCategory.PRICE
-    case GaloyNotificationCategories.AdminNotification:
+    case NotificationCategory.AdminNotification:
       return GrpcNotificationCategory.ADMIN_NOTIFICATION
-    case GaloyNotificationCategories.Balance:
+    case NotificationCategory.Balance:
       return GrpcNotificationCategory.BALANCE
+    case NotificationCategory.Marketing:
+      return GrpcNotificationCategory.MARKETING
     default:
-      throw new Error(`Not implemented: ${category}`)
+      return new InvalidNotificationCategoryError(
+        `Invalid notification category: ${category}`,
+      )
   }
 }
 

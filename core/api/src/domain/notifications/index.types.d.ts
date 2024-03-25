@@ -13,6 +13,8 @@ type SendBalanceArgs = {
 type PriceCurrencyArg<T extends DisplayCurrency> = PriceCurrency & {
   readonly code: T
 }
+type NotificationCategory =
+  (typeof import("./index").NotificationCategory)[keyof typeof import("./index").NotificationCategory]
 
 type PriceUpdateArgs<C extends DisplayCurrency> = {
   pricePerSat: RealTimePrice<C>

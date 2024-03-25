@@ -3,6 +3,7 @@ import { checkedToNonEmptyLanguage } from "../users"
 
 import {
   InvalidPushBodyError,
+  InvalidNotificationCategoryError,
   InvalidPushNotificationSettingError,
   InvalidPushTitleError,
 } from "./errors"
@@ -17,12 +18,28 @@ export const NotificationType = {
   LigtningPayment: "lightning_payment",
 } as const
 
+export const NotificationCategory = {
+  Payments: "Payments",
+  Circles: "Circles",
+  Price: "Price",
+  AdminNotification: "AdminNotification",
+  Balance: "Balance",
+  Marketing: "Marketing",
+} as const
+
 export const checkedToNotificationCategory = (
   notificationCategory: string,
 ): NotificationCategory | ValidationError => {
   // TODO: add validation
-  if (!notificationCategory) {
-    return new InvalidPushNotificationSettingError("Invalid notification category")
+  if (
+    !notificationCategory ||
+    !Object.values(NotificationCategory).find(
+      (category) => category === notificationCategory,
+    )
+  ) {
+    return new InvalidNotificationCategoryError(
+      `Invalid notification category: ${notificationCategory}`,
+    )
   }
 
   return notificationCategory as NotificationCategory
@@ -30,12 +47,6 @@ export const checkedToNotificationCategory = (
 
 export const NotificationChannel = {
   Push: "push",
-} as const
-
-export const GaloyNotificationCategories = {
-  Payments: "Payments" as NotificationCategory,
-  Balance: "Balance" as NotificationCategory,
-  AdminNotification: "AdminNotification" as NotificationCategory,
 } as const
 
 export const DeepLink = {

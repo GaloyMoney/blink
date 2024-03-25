@@ -304,6 +304,10 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = "Invalid push notification setting was passed."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "InvalidNotificationCategoryError":
+      message = error.message
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "QuizAlreadyPresentError":
       message = "Quiz question was already claimed."
       return new ValidationInternalError({ message, logger: baseLogger })
