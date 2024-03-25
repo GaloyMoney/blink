@@ -37,7 +37,7 @@ import { getCallbackServiceConfig } from "@/config"
 
 import {
   DeepLink,
-  GaloyNotificationCategories,
+  NotificationCategory,
   NotificationsServiceError,
   NotificationType,
   UnknownNotificationsServiceError,
@@ -329,7 +329,7 @@ export const NotificationsService = (): INotificationsService => {
     displayBalanceAmount,
   }: SendBalanceArgs): Promise<true | NotificationsServiceError> => {
     try {
-      const notificationCategory = GaloyNotificationCategories.Payments
+      const notificationCategory = NotificationCategory.Balance
 
       const settings = await getUserNotificationSettings(recipientUserId)
       if (settings instanceof Error) {
@@ -565,6 +565,11 @@ export const NotificationsService = (): INotificationsService => {
 
       const grpcNotificationCategory =
         notificationCategoryToGrpcNotificationCategory(notificationCategory)
+
+      if (grpcNotificationCategory instanceof Error) {
+        return grpcNotificationCategory
+      }
+
       request.setCategory(grpcNotificationCategory)
 
       const response = await notificationsGrpc.enableNotificationCatgeory(
@@ -601,6 +606,11 @@ export const NotificationsService = (): INotificationsService => {
 
       const grpcNotificationCategory =
         notificationCategoryToGrpcNotificationCategory(notificationCategory)
+
+      if (grpcNotificationCategory instanceof Error) {
+        return grpcNotificationCategory
+      }
+
       request.setCategory(grpcNotificationCategory)
 
       const response = await notificationsGrpc.disableNotificationCategory(
