@@ -3500,23 +3500,23 @@ cargo.rust_library(
 
 alias(
     name = "jsonwebtoken",
-    actual = ":jsonwebtoken-9.2.0",
+    actual = ":jsonwebtoken-9.3.0",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "jsonwebtoken-9.2.0.crate",
-    sha256 = "5c7ea04a7c5c055c175f189b6dc6ba036fd62306b58c66c9f6389036c503a3f4",
-    strip_prefix = "jsonwebtoken-9.2.0",
-    urls = ["https://crates.io/api/v1/crates/jsonwebtoken/9.2.0/download"],
+    name = "jsonwebtoken-9.3.0.crate",
+    sha256 = "b9ae10193d25051e74945f1ea2d0b42e03cc3b890f7e4cc5faa44997d808193f",
+    strip_prefix = "jsonwebtoken-9.3.0",
+    urls = ["https://crates.io/api/v1/crates/jsonwebtoken/9.3.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "jsonwebtoken-9.2.0",
-    srcs = [":jsonwebtoken-9.2.0.crate"],
+    name = "jsonwebtoken-9.3.0",
+    srcs = [":jsonwebtoken-9.3.0.crate"],
     crate = "jsonwebtoken",
-    crate_root = "jsonwebtoken-9.2.0.crate/src/lib.rs",
+    crate_root = "jsonwebtoken-9.3.0.crate/src/lib.rs",
     edition = "2021",
     features = [
         "default",
@@ -8907,7 +8907,7 @@ cargo.rust_binary(
         ":google-fcm1-5.0.4+20240227",
         ":handlebars-5.1.0",
         ":http-0.2.12",
-        ":jsonwebtoken-9.2.0",
+        ":jsonwebtoken-9.3.0",
         ":lettre-0.11.4",
         ":opentelemetry-0.20.0",
         ":opentelemetry-http-0.9.0",
