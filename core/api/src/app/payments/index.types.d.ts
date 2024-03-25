@@ -21,8 +21,20 @@ type IntraLedgerSendAttemptResult =
       error: ApplicationError
     }
 
-type PaymentSendAttemptResult =
-  | IntraLedgerSendAttemptResult
+type LnSendAttemptResult =
+  | {
+      type: PaymentSendAttemptResultTypeObj["Ok"]
+      journalId: LedgerJournalId
+    }
   | {
       type: PaymentSendAttemptResultTypeObj["Pending"]
+      journalId: LedgerJournalId
+    }
+  | {
+      type: PaymentSendAttemptResultTypeObj["AlreadyPaid"]
+      journalId: LedgerJournalId
+    }
+  | {
+      type: PaymentSendAttemptResultTypeObj["Error"]
+      error: ApplicationError
     }

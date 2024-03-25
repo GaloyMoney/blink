@@ -1,5 +1,11 @@
 import { constructPaymentFlowBuilder, getPriceRatioForLimits } from "./helpers"
 
+import {
+  IntraLedgerSendAttemptResult,
+  LnSendAttemptResult,
+  PaymentSendAttemptResultType,
+} from "./ln-send-result"
+
 import { reimburseFee } from "./reimburse-fee"
 
 import { AccountValidator } from "@/domain/accounts"
@@ -69,11 +75,6 @@ import {
 } from "@/app/wallets"
 
 import { ResourceExpiredLockServiceError } from "@/domain/lock"
-
-import {
-  IntraLedgerSendAttemptResult,
-  PaymentSendAttemptResultType,
-} from "./ln-send-result"
 
 const dealer = DealerPriceService()
 const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
@@ -750,19 +751,55 @@ const executePaymentViaLn = async ({
     level: senderAccount.level,
   }
 
-  return LockService().lockWalletId(senderWalletId, (signal) =>
-    lockedPaymentViaLnSteps({
-      signal,
+  const paymentSendAttemptResult = await LockService().lockWalletId(
+    senderWalletId,
+    (signal) =>
+      lockedPaymentViaLnSteps({
+        signal,
 
-      decodedInvoice,
-      paymentFlow,
-      senderDisplayCurrency: senderAccount.displayCurrency,
-      memo,
+        decodedInvoice,
+        paymentFlow,
+        senderDisplayCurrency: senderAccount.displayCurrency,
+        memo,
 
-      walletIds,
-      notificationRecipient,
-    }),
+        walletIds,
+      }),
   )
+  if (paymentSendAttemptResult instanceof Error) return paymentSendAttemptResult
+  if (paymentSendAttemptResult.type === PaymentSendAttemptResultType.Error) {
+    return paymentSendAttemptResult.error
+  }
+
+  const walletTransaction = await getTransactionForWalletByJournalId({
+    walletId: senderWalletId,
+    journalId: paymentSendAttemptResult.journalId,
+  })
+  if (walletTransaction instanceof Error) return walletTransaction
+  NotificationsService().sendTransaction({
+    recipient: notificationRecipient,
+    transaction: walletTransaction,
+  })
+
+  const { paymentHash } = decodedInvoice
+  switch (paymentSendAttemptResult.type) {
+    case PaymentSendAttemptResultType.Pending:
+      return getPendingPaymentResponse({
+        walletId: senderWalletId,
+        paymentHash,
+      })
+
+    case PaymentSendAttemptResultType.AlreadyPaid:
+      return getAlreadyPaidResponse({
+        walletId: senderWalletId,
+        paymentHash,
+      })
+
+    default:
+      return {
+        status: PaymentSendStatus.Success,
+        transaction: walletTransaction,
+      }
+  }
 }
 
 const lockedPaymentViaLnSteps = async ({
@@ -774,7 +811,6 @@ const lockedPaymentViaLnSteps = async ({
   memo,
 
   walletIds,
-  notificationRecipient,
 }: {
   signal: WalletIdAbortSignal
 
@@ -784,8 +820,7 @@ const lockedPaymentViaLnSteps = async ({
   memo: string | null
 
   walletIds: WalletId[]
-  notificationRecipient: NotificationRecipient
-}): Promise<PaymentSendResult | ApplicationError> => {
+}): Promise<LnSendAttemptResult> => {
   const { paymentHash } = decodedInvoice
   const { rawRoute, outgoingNodePubkey } = paymentFlow.routeDetails()
   const senderWalletDescriptor = paymentFlow.senderWalletDescriptor()
@@ -807,29 +842,35 @@ const lockedPaymentViaLnSteps = async ({
   const ledgerService = LedgerService()
 
   const ledgerTransactions = await ledgerService.getTransactionsByHash(paymentHash)
-  if (ledgerTransactions instanceof Error) return ledgerTransactions
+  if (ledgerTransactions instanceof Error) {
+    return LnSendAttemptResult.err(ledgerTransactions)
+  }
 
   const pendingPayment = ledgerTransactions.find((tx) => tx.pendingConfirmation)
-  if (pendingPayment) return new LnPaymentRequestInTransitError()
+  if (pendingPayment) return LnSendAttemptResult.err(new LnPaymentRequestInTransitError())
 
   const balance = await ledgerService.getWalletBalanceAmount(senderWalletDescriptor)
-  if (balance instanceof Error) return balance
+  if (balance instanceof Error) return LnSendAttemptResult.err(balance)
   const balanceCheck = paymentFlow.checkBalanceForSend(balance)
-  if (balanceCheck instanceof Error) return balanceCheck
+  if (balanceCheck instanceof Error) return LnSendAttemptResult.err(balanceCheck)
 
   // Prepare ledger transaction
   const lndService = LndService()
-  if (lndService instanceof Error) return lndService
+  if (lndService instanceof Error) return LnSendAttemptResult.err(lndService)
 
   const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
     currency: senderDisplayCurrency,
   })
-  if (displayPriceRatio instanceof Error) return displayPriceRatio
+  if (displayPriceRatio instanceof Error) {
+    return LnSendAttemptResult.err(displayPriceRatio)
+  }
   const { displayAmount, displayFee } =
     DisplayAmountsConverter(displayPriceRatio).convert(paymentFlow)
 
   if (signal.aborted) {
-    return new ResourceExpiredLockServiceError(signal.error?.message)
+    return LnSendAttemptResult.err(
+      new ResourceExpiredLockServiceError(signal.error?.message),
+    )
   }
 
   const { metadata, debitAccountAdditionalMetadata, internalAccountsAdditionalMetadata } =
@@ -850,7 +891,7 @@ const lockedPaymentViaLnSteps = async ({
     usd: paymentFlow.usdPaymentAmount,
     btc: paymentFlow.btcPaymentAmount,
   })
-  if (walletPriceRatio instanceof Error) return walletPriceRatio
+  if (walletPriceRatio instanceof Error) return LnSendAttemptResult.err(walletPriceRatio)
 
   // Record pending payment entries
   const journal = await LedgerFacade.recordSendOffChain({
@@ -872,7 +913,7 @@ const lockedPaymentViaLnSteps = async ({
     additionalDebitMetadata: debitAccountAdditionalMetadata,
     additionalInternalMetadata: internalAccountsAdditionalMetadata,
   })
-  if (journal instanceof Error) return journal
+  if (journal instanceof Error) return LnSendAttemptResult.err(journal)
   const { journalId } = journal
 
   // Execute payment
@@ -925,38 +966,44 @@ const lockedPaymentViaLnSteps = async ({
       recordExceptionInCurrentSpan({ error: updateResult })
     }
 
-    return finalizePaymentViaLn({
-      payResult,
+    const updateJournalTxnsState = await LedgerFacade.updateLnPaymentState({
       walletIds,
       paymentHash,
       journalId,
-      notificationRecipient,
     })
+    if (updateJournalTxnsState instanceof Error) {
+      return LnSendAttemptResult.err(updateJournalTxnsState)
+    }
+    return LnSendAttemptResult.pending(journalId)
   }
 
   // Settle and record reversion entries
   if (payResult instanceof Error) {
     const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
-    if (settled instanceof Error) return settled
+    if (settled instanceof Error) return LnSendAttemptResult.err(settled)
 
     const voided = await LedgerFacade.recordLnSendRevert({
       journalId,
       paymentHash,
     })
-    if (voided instanceof Error) return voided
+    if (voided instanceof Error) return LnSendAttemptResult.err(voided)
 
-    return finalizePaymentViaLn({
-      payResult,
+    const updateJournalTxnsState = await LedgerFacade.updateLnPaymentState({
       walletIds,
       paymentHash,
       journalId,
-      notificationRecipient,
     })
+    if (updateJournalTxnsState instanceof Error) {
+      return LnSendAttemptResult.err(updateJournalTxnsState)
+    }
+    return payResult instanceof LnAlreadyPaidError
+      ? LnSendAttemptResult.alreadyPaid(journalId)
+      : LnSendAttemptResult.err(payResult)
   }
 
   // Settle and conditionally record reimbursement entries
   const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
-  if (settled instanceof Error) return settled
+  if (settled instanceof Error) return LnSendAttemptResult.err(settled)
 
   if (!rawRoute) {
     const reimbursed = await reimburseFee({
@@ -967,71 +1014,18 @@ const lockedPaymentViaLnSteps = async ({
       actualFee: payResult.roundedUpFee,
       revealedPreImage: payResult.revealedPreImage,
     })
-    if (reimbursed instanceof Error) return reimbursed
+    if (reimbursed instanceof Error) return LnSendAttemptResult.err(reimbursed)
   }
 
-  return finalizePaymentViaLn({
-    payResult,
-    walletIds,
-    paymentHash,
-    journalId,
-    notificationRecipient,
-  })
-}
-
-const finalizePaymentViaLn = async ({
-  payResult,
-  walletIds,
-  paymentHash,
-  journalId,
-  notificationRecipient,
-}: {
-  payResult: PayInvoiceResult | LightningServiceError
-  walletIds: WalletId[]
-  paymentHash: PaymentHash
-  journalId: LedgerJournalId
-  notificationRecipient: NotificationRecipient
-}) => {
-  const { walletId } = notificationRecipient
   const updateJournalTxnsState = await LedgerFacade.updateLnPaymentState({
     walletIds,
     paymentHash,
     journalId,
   })
-  if (updateJournalTxnsState instanceof Error) return updateJournalTxnsState
-
-  const walletTransaction = await getTransactionForWalletByJournalId({
-    walletId,
-    journalId,
-  })
-  if (walletTransaction instanceof Error) return walletTransaction
-  NotificationsService().sendTransaction({
-    recipient: notificationRecipient,
-    transaction: walletTransaction,
-  })
-
-  switch (true) {
-    case payResult instanceof LnPaymentPendingError:
-      return getPendingPaymentResponse({
-        walletId,
-        paymentHash,
-      })
-
-    case payResult instanceof LnAlreadyPaidError:
-      return getAlreadyPaidResponse({
-        walletId,
-        paymentHash,
-      })
-
-    case payResult instanceof Error:
-      return payResult
-
-    default:
-      return {
-        status: PaymentSendStatus.Success,
-        transaction: walletTransaction,
-      }
+  if (updateJournalTxnsState instanceof Error) {
+    return LnSendAttemptResult.err(updateJournalTxnsState)
   }
+  return LnSendAttemptResult.ok(journalId)
 }
 
 const getAlreadyPaidResponse = async (args: {

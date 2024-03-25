@@ -20,18 +20,20 @@ export const IntraLedgerSendAttemptResult = {
 }
 
 export const LnSendAttemptResult = {
-  ok: (journalId: LedgerJournalId): PaymentSendAttemptResult => ({
+  ok: (journalId: LedgerJournalId): LnSendAttemptResult => ({
     type: PaymentSendAttemptResultType.Ok,
     journalId,
   }),
-  alreadyPaid: (): PaymentSendAttemptResult => ({
-    type: PaymentSendAttemptResultType.AlreadyPaid,
+  pending: (journalId: LedgerJournalId): LnSendAttemptResult => ({
+    type: PaymentSendAttemptResultType.Pending,
+    journalId,
   }),
-  err: (error: ApplicationError): PaymentSendAttemptResult => ({
+  alreadyPaid: (journalId: LedgerJournalId): LnSendAttemptResult => ({
+    type: PaymentSendAttemptResultType.AlreadyPaid,
+    journalId,
+  }),
+  err: (error: ApplicationError): LnSendAttemptResult => ({
     type: PaymentSendAttemptResultType.Error,
     error,
-  }),
-  pending: (): PaymentSendAttemptResult => ({
-    type: PaymentSendAttemptResultType.Pending,
   }),
 }
