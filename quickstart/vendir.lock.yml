@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build: bump flake + buck2 (#4227)...'
-      sha: d3a10fcd0a67ec154486decf81774008df97cc2c
+      commitTitle: 'chore(core): validate NotificationCategory (#4218)'
+      sha: ff4f0c002ef65b0fdcb98ab36e139a9a9d69a1b3
       tags:
-      - 0.20.131-1-gd3a10fcd0
+      - 0.20.132-1-gff4f0c002
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build: bump flake + buck2 (#4227)...'
-      sha: d3a10fcd0a67ec154486decf81774008df97cc2c
+      commitTitle: 'chore(core): validate NotificationCategory (#4218)'
+      sha: ff4f0c002ef65b0fdcb98ab36e139a9a9d69a1b3
       tags:
-      - 0.20.131-1-gd3a10fcd0
+      - 0.20.132-1-gff4f0c002
     path: schemas/
   - git:
-      commitTitle: 'build: bump flake + buck2 (#4227)...'
-      sha: d3a10fcd0a67ec154486decf81774008df97cc2c
+      commitTitle: 'chore(core): validate NotificationCategory (#4218)'
+      sha: ff4f0c002ef65b0fdcb98ab36e139a9a9d69a1b3
       tags:
-      - 0.20.131-1-gd3a10fcd0
+      - 0.20.132-1-gff4f0c002
     path: gql/
   path: ./graphql
 kind: LockConfig
