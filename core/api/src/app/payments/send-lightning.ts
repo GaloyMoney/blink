@@ -458,21 +458,12 @@ const executePaymentViaIntraledger = async <
   })
   if (limitCheck instanceof Error) return limitCheck
 
-  const {
-    walletDescriptor: recipientWalletDescriptor,
-    recipientUserId: recipientUserIdFromFlow,
-  } = paymentFlow.recipientDetails()
-  if (!recipientWalletDescriptor) {
+  const { walletDescriptor: recipientWalletDescriptor, recipientUserId } =
+    paymentFlow.recipientDetails()
+  if (!(recipientWalletDescriptor && recipientUserId)) {
     return new InvalidLightningPaymentFlowBuilderStateError(
       "Expected recipient details missing",
     )
-  }
-
-  let recipientUserId = recipientUserIdFromFlow
-  if (!recipientUserId) {
-    const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
-    if (recipientUser instanceof Error) return recipientUser
-    recipientUserId = recipientUser.id
   }
 
   const recipientAsNotificationRecipient = {
