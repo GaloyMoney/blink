@@ -2708,34 +2708,34 @@ cargo.rust_library(
 
 alias(
     name = "handlebars",
-    actual = ":handlebars-5.1.0",
+    actual = ":handlebars-5.1.2",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "handlebars-5.1.0.crate",
-    sha256 = "ab283476b99e66691dee3f1640fea91487a8d81f50fb5ecc75538f8f8879a1e4",
-    strip_prefix = "handlebars-5.1.0",
-    urls = ["https://crates.io/api/v1/crates/handlebars/5.1.0/download"],
+    name = "handlebars-5.1.2.crate",
+    sha256 = "d08485b96a0e6393e9e4d1b8d48cf74ad6c063cd905eb33f42c1ce3f0377539b",
+    strip_prefix = "handlebars-5.1.2",
+    urls = ["https://crates.io/api/v1/crates/handlebars/5.1.2/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "handlebars-5.1.0",
-    srcs = [":handlebars-5.1.0.crate"],
+    name = "handlebars-5.1.2",
+    srcs = [":handlebars-5.1.2.crate"],
     crate = "handlebars",
-    crate_root = "handlebars-5.1.0.crate/src/lib.rs",
+    crate_root = "handlebars-5.1.2.crate/src/lib.rs",
     edition = "2021",
     env = {
-        "CARGO_MANIFEST_DIR": "handlebars-5.1.0.crate",
+        "CARGO_MANIFEST_DIR": "handlebars-5.1.2.crate",
         "CARGO_PKG_AUTHORS": "Ning Sun <sunng@pm.me>",
         "CARGO_PKG_DESCRIPTION": "Handlebars templating implemented in Rust.",
         "CARGO_PKG_NAME": "handlebars",
         "CARGO_PKG_REPOSITORY": "https://github.com/sunng87/handlebars-rust",
-        "CARGO_PKG_VERSION": "5.1.0",
+        "CARGO_PKG_VERSION": "5.1.2",
         "CARGO_PKG_VERSION_MAJOR": "5",
         "CARGO_PKG_VERSION_MINOR": "1",
-        "CARGO_PKG_VERSION_PATCH": "0",
+        "CARGO_PKG_VERSION_PATCH": "2",
     },
     features = ["default"],
     visibility = [],
@@ -8905,7 +8905,7 @@ cargo.rust_binary(
         ":derive_builder-0.13.1",
         ":futures-0.3.30",
         ":google-fcm1-5.0.4+20240227",
-        ":handlebars-5.1.0",
+        ":handlebars-5.1.2",
         ":http-0.2.12",
         ":jsonwebtoken-9.2.0",
         ":lettre-0.11.4",

@@ -50,7 +50,7 @@ http = "0.2.12"
 rust-i18n = "3"
 google-fcm1 = "5.0.4"
 lettre = { version = "0.11.4", default-features = false, features = ["builder", "tokio1", "tokio1-rustls-tls", "smtp-transport"] }
-handlebars = "5.1.0"
+handlebars = "5.1.2"
 rusty-money = { version = "0.4.1", features = ["iso", "crypto" ] }
 
 prost = "0.12"
