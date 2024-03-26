@@ -19,7 +19,7 @@ import Language from "@/graphql/shared/types/scalar/language"
 import Username from "@/graphql/shared/types/scalar/username"
 import Timestamp from "@/graphql/shared/types/scalar/timestamp"
 import GraphQLEmail from "@/graphql/shared/types/object/email"
-import { getSupportChatMessages } from "@/app/support"
+import { SupportChat } from "@/app"
 
 const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
   name: "User",
@@ -129,7 +129,7 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
     supportChat: {
       type: GT.NonNullList(SupportMessage),
       resolve: async (source, args, { domainAccount }) => {
-        return getSupportChatMessages(domainAccount.id)
+        return SupportChat.getSupportChatMessages(domainAccount.id)
       },
     },
 

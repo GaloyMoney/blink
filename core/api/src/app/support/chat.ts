@@ -1,19 +1,14 @@
+import { ChatSupportNotFoundError } from "@/domain/chat-support/errors"
 import { RepositoryError } from "@/domain/errors"
 import { AccountsRepository, UsersRepository } from "@/services/mongoose"
+import { SupportChatRepository } from "@/services/mongoose/support-chat"
 import { Assistant } from "@/services/openai"
 
 export const getSupportChatMessages = async (accountId: AccountId) => {
-  const account = await AccountsRepository().findById(accountId)
+  const supportChatId = await SupportChatRepository().getLastFromAccountId(accountId)
 
-  if (account instanceof RepositoryError) {
-    return account
-  }
-
-  // account.supportChatId should be an array
-  const supportChatId = account.supportChatId
-
-  if (!supportChatId) {
-    return []
+  if (supportChatId instanceof ChatSupportNotFoundError) {
+    return supportChatId
   }
 
   return Assistant().getMessages(supportChatId)
@@ -28,19 +23,20 @@ export const addSupportChatMessage = async ({
 }) => {
   // TODO: rate limits
 
-  const account = await AccountsRepository().findById(accountId)
-  if (account instanceof RepositoryError) return account
+  let supportChatId = await SupportChatRepository().getLastFromAccountId(accountId)
 
-  let supportChatId = account.supportChatId
-
-  if (!supportChatId) {
+  if (supportChatId instanceof ChatSupportNotFoundError) {
     const supportChatIdOrError = await Assistant().initialize()
     if (supportChatIdOrError instanceof Error) return supportChatIdOrError
 
     supportChatId = supportChatIdOrError
-    const updateThread = await AccountsRepository().update({ ...account, supportChatId })
-    if (updateThread instanceof RepositoryError) return updateThread
+
+    const res = await SupportChatRepository().add({ supportChatId, accountId })
+    if (res instanceof RepositoryError) return res
   }
+
+  const account = await AccountsRepository().findById(accountId)
+  if (account instanceof RepositoryError) return account
 
   const user = await UsersRepository().findById(account.kratosUserId)
   if (user instanceof RepositoryError) return user

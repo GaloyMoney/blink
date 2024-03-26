@@ -292,6 +292,26 @@ QuizSchema.index({ accountId: 1, quizId: 1 }, { unique: true })
 
 export const Quiz = mongoose.model<QuizCompletedRecord>("Quiz", QuizSchema)
 
+const SupportChatSchema = new Schema<SupportChatRecord>({
+  accountId: {
+    type: String,
+    ref: "Account",
+    required: true,
+  },
+  supportChatId: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+})
+
+SupportChatSchema.index({ accountId: 1, supportChatId: 1 }, { unique: true })
+
+export const SupportChat = mongoose.model<SupportChatRecord>("SupportChat", SupportChatSchema)
+
 const pointSchema = new Schema<LocationRecord>({
   type: {
     type: String,
