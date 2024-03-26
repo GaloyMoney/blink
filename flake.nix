@@ -74,6 +74,7 @@
           gitMinimal
           grpcurl
           buf
+          netcat
         ]
         ++ buck2NativeBuildInputs
         ++ lib.optionals pkgs.stdenv.isLinux [
