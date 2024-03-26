@@ -20,6 +20,12 @@ export_file(
     visibility = ["PUBLIC"],
 )
 
+export_file(
+    name = "local_env",
+    src = ".env.local",
+    visibility = ["PUBLIC"],
+)
+
 build_workspace_node_modules(
     name = "node_modules",
     visibility = ["PUBLIC"],
