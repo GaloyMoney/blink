@@ -1076,23 +1076,23 @@ cargo.rust_library(
 
 alias(
     name = "clap",
-    actual = ":clap-4.5.3",
+    actual = ":clap-4.5.4",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "clap-4.5.3.crate",
-    sha256 = "949626d00e063efc93b6dca932419ceb5432f99769911c0b995f7e884c778813",
-    strip_prefix = "clap-4.5.3",
-    urls = ["https://crates.io/api/v1/crates/clap/4.5.3/download"],
+    name = "clap-4.5.4.crate",
+    sha256 = "90bc066a67923782aa8515dbaea16946c5bcc5addbd668bb80af688e53e548a0",
+    strip_prefix = "clap-4.5.4",
+    urls = ["https://crates.io/api/v1/crates/clap/4.5.4/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "clap-4.5.3",
-    srcs = [":clap-4.5.3.crate"],
+    name = "clap-4.5.4",
+    srcs = [":clap-4.5.4.crate"],
     crate = "clap",
-    crate_root = "clap-4.5.3.crate/src/lib.rs",
+    crate_root = "clap-4.5.4.crate/src/lib.rs",
     edition = "2021",
     features = [
         "color",
@@ -1108,7 +1108,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":clap_builder-4.5.2",
-        ":clap_derive-4.5.3",
+        ":clap_derive-4.5.4",
     ],
 )
 
@@ -1145,18 +1145,18 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "clap_derive-4.5.3.crate",
-    sha256 = "90239a040c80f5e14809ca132ddc4176ab33d5e17e49691793296e3fcb34d72f",
-    strip_prefix = "clap_derive-4.5.3",
-    urls = ["https://crates.io/api/v1/crates/clap_derive/4.5.3/download"],
+    name = "clap_derive-4.5.4.crate",
+    sha256 = "528131438037fd55894f62d6e9f068b8f45ac57ffa77517819645d10aed04f64",
+    strip_prefix = "clap_derive-4.5.4",
+    urls = ["https://crates.io/api/v1/crates/clap_derive/4.5.4/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "clap_derive-4.5.3",
-    srcs = [":clap_derive-4.5.3.crate"],
+    name = "clap_derive-4.5.4",
+    srcs = [":clap_derive-4.5.4.crate"],
     crate = "clap_derive",
-    crate_root = "clap_derive-4.5.3.crate/src/lib.rs",
+    crate_root = "clap_derive-4.5.4.crate/src/lib.rs",
     edition = "2021",
     features = ["default"],
     proc_macro = True,
@@ -8958,7 +8958,7 @@ cargo.rust_binary(
         ":async-graphql-axum-6.0.11",
         ":axum-0.6.20",
         ":chrono-0.4.35",
-        ":clap-4.5.3",
+        ":clap-4.5.4",
         ":derive_builder-0.13.1",
         ":futures-0.3.30",
         ":google-fcm1-5.0.4+20240227",
