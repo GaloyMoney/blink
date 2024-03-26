@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): add .envrc for local pnpm execution (#4237)'
-      sha: 52a884d766156956b8bd88e09005821459f7df64
+      commitTitle: 'feat(toolchain): include local env in serve_env load (#4239)...'
+      sha: d2f9b9254919f1e68f7551ee2d07d6d135ec42f7
       tags:
-      - 0.20.133-5-g52a884d76
+      - 0.20.134-2-gd2f9b9254
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): add .envrc for local pnpm execution (#4237)'
-      sha: 52a884d766156956b8bd88e09005821459f7df64
+      commitTitle: 'feat(toolchain): include local env in serve_env load (#4239)...'
+      sha: d2f9b9254919f1e68f7551ee2d07d6d135ec42f7
       tags:
-      - 0.20.133-5-g52a884d76
+      - 0.20.134-2-gd2f9b9254
     path: schemas/
   - git:
-      commitTitle: 'chore(core): add .envrc for local pnpm execution (#4237)'
-      sha: 52a884d766156956b8bd88e09005821459f7df64
+      commitTitle: 'feat(toolchain): include local env in serve_env load (#4239)...'
+      sha: d2f9b9254919f1e68f7551ee2d07d6d135ec42f7
       tags:
-      - 0.20.133-5-g52a884d76
+      - 0.20.134-2-gd2f9b9254
     path: gql/
   path: ./graphql
 kind: LockConfig

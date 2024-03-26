@@ -49,6 +49,27 @@ def _buck2_dep_inputs(target):
 
     return rel_file_paths
 
+def merge_env_file(file_path_str, env_vars={}):
+    repo_root = str(local("git rev-parse --show-toplevel")).strip()
+    env_file_path = "{}/{}".format(repo_root, file_path_str)
+
+    file_blob = read_file(env_file_path, "")
+    lines = str(file_blob).split('\n')
+    for raw_line in lines:
+        if raw_line.startswith('#') or raw_line.strip() == '':
+            continue
+
+        line = raw_line
+        if raw_line.startswith('export '):
+            line = raw_line[len('export '):].strip()
+
+        key_value = line.split('=', 1)
+        if len(key_value) == 2:
+            key, value = key_value[0], key_value[1].strip('"')
+            env_vars[key] = value
+
+    return env_vars
+
 dashboard_target = "//apps/dashboard:dev"
 if is_ci:
   dashboard_target = '//apps/dashboard:dashboard'
@@ -382,7 +403,9 @@ local_resource(
 )
 
 env_json = _buck2_dep_inputs("//dev:serve_env")[0]
-core_serve_env = read_json(env_json)
+core_serve_env_from_json = read_json(env_json)
+local_env_file = ".env.local"
+core_serve_env = merge_env_file(local_env_file, core_serve_env_from_json)
 
 callback_target = "//bats/helpers/callback:run"
 local_resource(
