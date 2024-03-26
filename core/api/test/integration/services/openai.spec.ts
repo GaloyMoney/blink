@@ -1,9 +1,8 @@
 import { Assistant } from "@/services/openai"
-
-// this test needs an OpenAI API key to run
-// not running this test in CI
 describe("conversation", () => {
   it("add 2 message to the thread", async () => {
+    // this test needs an OpenAI API key to run
+    // not running this test in CI
     if (!process.env.OPENAI_API_KEY) {
       console.log("No OpenAI API key found, skipping test")
       return

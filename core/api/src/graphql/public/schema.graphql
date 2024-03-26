@@ -1363,8 +1363,13 @@ type SupportChatMessageAddPayload {
 type SupportMessage {
   id: ID!
   message: String!
-  role: String!
+  role: SupportRole!
   timestamp: Timestamp!
+}
+
+enum SupportRole {
+  ASSISTANT
+  USER
 }
 
 """

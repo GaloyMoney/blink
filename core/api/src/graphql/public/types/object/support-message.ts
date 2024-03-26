@@ -1,4 +1,5 @@
 import Timestamp from "@/graphql/shared/types/scalar/timestamp"
+import SupportRole from "@/graphql/public/types/scalar/support-role"
 
 import { GT } from "@/graphql/index"
 
@@ -10,8 +11,7 @@ const SupportMessage = GT.Object({
       type: GT.NonNull(GT.String),
     },
     role: {
-      // "user" | "assistant"
-      type: GT.NonNull(GT.String),
+      type: GT.NonNull(SupportRole),
     },
     timestamp: { type: GT.NonNull(Timestamp) },
   }),
