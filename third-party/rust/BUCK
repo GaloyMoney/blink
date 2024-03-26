@@ -769,6 +769,28 @@ cargo.rust_library(
 )
 
 http_archive(
+    name = "base64-0.22.0.crate",
+    sha256 = "9475866fec1451be56a3c2400fd081ff546538961565ccb5b7142cbd22bc7a51",
+    strip_prefix = "base64-0.22.0",
+    urls = ["https://crates.io/api/v1/crates/base64/0.22.0/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "base64-0.22.0",
+    srcs = [":base64-0.22.0.crate"],
+    crate = "base64",
+    crate_root = "base64-0.22.0.crate/src/lib.rs",
+    edition = "2018",
+    features = [
+        "alloc",
+        "default",
+        "std",
+    ],
+    visibility = [],
+)
+
+http_archive(
     name = "base64ct-1.6.0.crate",
     sha256 = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b",
     strip_prefix = "base64ct-1.6.0",
@@ -1666,7 +1688,7 @@ cargo.rust_library(
     deps = [
         ":const-oid-0.9.5",
         ":pem-rfc7468-0.7.0",
-        ":zeroize-1.6.0",
+        ":zeroize-1.7.0",
     ],
 )
 
@@ -3578,23 +3600,23 @@ cargo.rust_library(
 
 alias(
     name = "lettre",
-    actual = ":lettre-0.11.4",
+    actual = ":lettre-0.11.5",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "lettre-0.11.4.crate",
-    sha256 = "357ff5edb6d8326473a64c82cf41ddf78ab116f89668c50c4fac1b321e5e80f4",
-    strip_prefix = "lettre-0.11.4",
-    urls = ["https://crates.io/api/v1/crates/lettre/0.11.4/download"],
+    name = "lettre-0.11.5.crate",
+    sha256 = "8305b122b8ccc64e437b0de101851f9f00aade5886246e85f341c1d9a15a91b7",
+    strip_prefix = "lettre-0.11.5",
+    urls = ["https://crates.io/api/v1/crates/lettre/0.11.5/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "lettre-0.11.4",
-    srcs = [":lettre-0.11.4.crate"],
+    name = "lettre-0.11.5",
+    srcs = [":lettre-0.11.5.crate"],
     crate = "lettre",
-    crate_root = "lettre-0.11.4.crate/src/lib.rs",
+    crate_root = "lettre-0.11.5.crate/src/lib.rs",
     edition = "2021",
     features = [
         "builder",
@@ -3605,12 +3627,12 @@ cargo.rust_library(
     ],
     named_deps = {
         "tokio1_crate": ":tokio-1.36.0",
-        "tokio1_rustls": ":tokio-rustls-0.25.0",
+        "tokio1_rustls": ":tokio-rustls-0.26.0",
     },
     visibility = [],
     deps = [
         ":async-trait-0.1.74",
-        ":base64-0.21.5",
+        ":base64-0.22.0",
         ":chumsky-0.9.3",
         ":email-encoding-0.2.0",
         ":email_address-0.2.4",
@@ -3623,7 +3645,7 @@ cargo.rust_library(
         ":nom-7.1.3",
         ":percent-encoding-2.3.0",
         ":quoted_printable-0.5.0",
-        ":rustls-0.22.2",
+        ":rustls-0.23.4",
         ":rustls-pemfile-2.1.0",
         ":socket2-0.5.5",
         ":url-2.4.1",
@@ -4207,7 +4229,7 @@ cargo.rust_library(
         ":num-traits-0.2.17",
         ":rand-0.8.5",
         ":smallvec-1.13.1",
-        ":zeroize-1.6.0",
+        ":zeroize-1.7.0",
     ],
 )
 
@@ -6662,7 +6684,7 @@ cargo.rust_library(
         ":signature-2.1.0",
         ":spki-0.7.2",
         ":subtle-2.5.0",
-        ":zeroize-1.6.0",
+        ":zeroize-1.7.0",
     ],
 )
 
@@ -6979,7 +7001,42 @@ cargo.rust_library(
         ":ring-0.17.5",
         ":rustls-webpki-0.102.2",
         ":subtle-2.5.0",
-        ":zeroize-1.6.0",
+        ":zeroize-1.7.0",
+    ],
+)
+
+http_archive(
+    name = "rustls-0.23.4.crate",
+    sha256 = "8c4d6d8ad9f2492485e13453acbb291dd08f64441b6609c491f1c2cd2c6b4fe1",
+    strip_prefix = "rustls-0.23.4",
+    urls = ["https://crates.io/api/v1/crates/rustls/0.23.4/download"],
+    visibility = [],
+)
+
+cargo.rust_library(
+    name = "rustls-0.23.4",
+    srcs = [":rustls-0.23.4.crate"],
+    crate = "rustls",
+    crate_root = "rustls-0.23.4.crate/src/lib.rs",
+    edition = "2021",
+    features = [
+        "log",
+        "logging",
+        "ring",
+        "std",
+        "tls12",
+    ],
+    named_deps = {
+        "pki_types": ":rustls-pki-types-1.3.0",
+    },
+    visibility = [],
+    deps = [
+        ":log-0.4.20",
+        ":once_cell-1.18.0",
+        ":ring-0.17.5",
+        ":rustls-webpki-0.102.2",
+        ":subtle-2.5.0",
+        ":zeroize-1.7.0",
     ],
 )
 
@@ -8908,7 +8965,7 @@ cargo.rust_binary(
         ":handlebars-5.1.2",
         ":http-0.2.12",
         ":jsonwebtoken-9.3.0",
-        ":lettre-0.11.4",
+        ":lettre-0.11.5",
         ":opentelemetry-0.20.0",
         ":opentelemetry-http-0.9.0",
         ":opentelemetry-otlp-0.13.0",
@@ -9316,21 +9373,20 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "tokio-rustls-0.25.0.crate",
-    sha256 = "775e0c0f0adb3a2f22a00c4745d728b479985fc15ee7ca6a2608388c5569860f",
-    strip_prefix = "tokio-rustls-0.25.0",
-    urls = ["https://crates.io/api/v1/crates/tokio-rustls/0.25.0/download"],
+    name = "tokio-rustls-0.26.0.crate",
+    sha256 = "0c7bc40d0e5a97695bb96e27995cd3a08538541b0a846f65bba7a359f36700d4",
+    strip_prefix = "tokio-rustls-0.26.0",
+    urls = ["https://crates.io/api/v1/crates/tokio-rustls/0.26.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "tokio-rustls-0.25.0",
-    srcs = [":tokio-rustls-0.25.0.crate"],
+    name = "tokio-rustls-0.26.0",
+    srcs = [":tokio-rustls-0.26.0.crate"],
     crate = "tokio_rustls",
-    crate_root = "tokio-rustls-0.25.0.crate/src/lib.rs",
+    crate_root = "tokio-rustls-0.26.0.crate/src/lib.rs",
     edition = "2021",
     features = [
-        "default",
         "logging",
         "ring",
         "tls12",
@@ -9340,7 +9396,7 @@ cargo.rust_library(
     },
     visibility = [],
     deps = [
-        ":rustls-0.22.2",
+        ":rustls-0.23.4",
         ":tokio-1.36.0",
     ],
 )
@@ -11188,18 +11244,18 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "zeroize-1.6.0.crate",
-    sha256 = "2a0956f1ba7c7909bfb66c2e9e4124ab6f6482560f6628b5aaeba39207c9aad9",
-    strip_prefix = "zeroize-1.6.0",
-    urls = ["https://crates.io/api/v1/crates/zeroize/1.6.0/download"],
+    name = "zeroize-1.7.0.crate",
+    sha256 = "525b4ec142c6b68a2d10f01f7bbf6755599ca3f81ea53b8431b7dd348f5fdb2d",
+    strip_prefix = "zeroize-1.7.0",
+    urls = ["https://crates.io/api/v1/crates/zeroize/1.7.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "zeroize-1.6.0",
-    srcs = [":zeroize-1.6.0.crate"],
+    name = "zeroize-1.7.0",
+    srcs = [":zeroize-1.7.0.crate"],
     crate = "zeroize",
-    crate_root = "zeroize-1.6.0.crate/src/lib.rs",
+    crate_root = "zeroize-1.7.0.crate/src/lib.rs",
     edition = "2021",
     features = [
         "alloc",
