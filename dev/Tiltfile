@@ -401,9 +401,9 @@ local_resource(
 
 env_json = _buck2_dep_inputs("//dev:serve_env")[0]
 core_serve_env = read_json(env_json)
-
-local_env_file = _buck2_dep_inputs("//dev:local_env")[0]
-core_serve_env_with_local = merge_env_file(local_env_file, core_serve_env)
+if not is_ci:
+    local_env_file = _buck2_dep_inputs("//dev:local_env")[0]
+    core_serve_env = merge_env_file(local_env_file, core_serve_env)
 
 callback_target = "//bats/helpers/callback:run"
 local_resource(
@@ -422,7 +422,7 @@ local_resource(
     labels = ["core"],
     cmd = "buck2 build {}".format(api_target),
     serve_cmd = "buck2 run {}".format(api_target),
-    serve_env = core_serve_env_with_local,
+    serve_env = core_serve_env,
     allow_parallel = True,
     readiness_probe = probe(
         period_secs  = 5,
@@ -453,7 +453,7 @@ local_resource(
     labels = ["core"],
     cmd = "buck2 build {}".format(api_trigger_target),
     serve_cmd = "buck2 run //dev:stoppable-trigger {}".format(api_trigger_target),
-    serve_env = core_serve_env_with_local,
+    serve_env = core_serve_env,
     allow_parallel = True,
     readiness_probe = probe(
         period_secs  = 5,
@@ -482,7 +482,7 @@ local_resource(
     labels = ["core"],
     cmd = "buck2 build {}".format(api_exporter_target),
     serve_cmd = "buck2 run {}".format(api_exporter_target),
-    serve_env = core_serve_env_with_local,
+    serve_env = core_serve_env,
     allow_parallel = True,
     readiness_probe = probe(
         period_secs  = 5,
@@ -511,7 +511,7 @@ local_resource(
     labels = ["core"],
     cmd = "buck2 build {}".format(api_ws_server_target),
     serve_cmd = "buck2 run {}".format(api_ws_server_target),
-    serve_env = core_serve_env_with_local,
+    serve_env = core_serve_env,
     allow_parallel = True,
     readiness_probe = probe(
         period_secs  = 5,
