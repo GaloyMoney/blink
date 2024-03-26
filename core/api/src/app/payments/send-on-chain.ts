@@ -534,20 +534,31 @@ const executePaymentViaOnChain = async <
   })
   if (limitCheck instanceof Error) return limitCheck
 
-  return LockService().lockWalletId(senderWalletDescriptor.id, async (signal) =>
-    lockedPaymentViaOnChainSteps({
-      signal,
+  const journalId = await LockService().lockWalletId(
+    senderWalletDescriptor.id,
+    async (signal) =>
+      lockedPaymentViaOnChainSteps({
+        signal,
 
-      builder,
-      speed,
+        builder,
+        speed,
 
-      senderDisplayCurrency,
-      memo,
-      sendAll,
+        senderDisplayCurrency,
+        memo,
+        sendAll,
 
-      logger,
-    }),
+        logger,
+      }),
   )
+  if (journalId instanceof Error) return journalId
+
+  const walletTransaction = await getTransactionForWalletByJournalId({
+    walletId: senderWalletDescriptor.id,
+    journalId,
+  })
+  if (walletTransaction instanceof Error) return walletTransaction
+
+  return { status: PaymentSendStatus.Success, transaction: walletTransaction }
 }
 
 const lockedPaymentViaOnChainSteps = async <
@@ -575,7 +586,7 @@ const lockedPaymentViaOnChainSteps = async <
   sendAll: boolean
 
   logger: Logger
-}): Promise<PaymentSendResult | ApplicationError> => {
+}): Promise<LedgerJournalId | ApplicationError> => {
   const address = await builder.addressForFlow()
 
   // Get estimated miner fee and create 'paymentFlow'
@@ -658,19 +669,21 @@ const lockedPaymentViaOnChainSteps = async <
   })
   if (journal instanceof Error) return journal
 
+  const { journalId } = journal
+
   // Execute payment onchain
   const payout = await OnChainService().queuePayoutToAddress({
     walletDescriptor: senderWalletDescriptor,
     address: paymentFlow.address,
     amount: paymentFlow.btcPaymentAmount,
     speed,
-    journalId: journal.journalId,
+    journalId,
   })
   if (payout instanceof Error) {
     logger.error(
       {
         err: payout,
-        externalId: journal.journalId,
+        externalId: journalId,
         address,
         tokens: Number(paymentFlow.btcPaymentAmount.amount),
         success: false,
@@ -678,17 +691,11 @@ const lockedPaymentViaOnChainSteps = async <
       `Could not queue payout with id ${payout}`,
     )
     const reverted = await LedgerService().revertOnChainPayment({
-      journalId: journal.journalId,
+      journalId,
     })
     if (reverted instanceof Error) return reverted
     return payout
   }
 
-  const walletTransaction = await getTransactionForWalletByJournalId({
-    walletId: senderWalletDescriptor.id,
-    journalId: journal.journalId,
-  })
-  if (walletTransaction instanceof Error) return walletTransaction
-
-  return { status: PaymentSendStatus.Success, transaction: walletTransaction }
+  return journalId
 }
