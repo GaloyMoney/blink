@@ -1,5 +1,5 @@
 import { Assistant } from "@/services/openai"
-describe("conversation", () => {
+describe("ChatSupport", () => {
   it("add 2 message to the thread", async () => {
     // this test needs an OpenAI API key to run
     // not running this test in CI
