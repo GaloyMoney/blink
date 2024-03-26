@@ -9,14 +9,14 @@ export const getSupportChatMessages = async (accountId: AccountId) => {
     return account
   }
 
-  // account.threadId should be an array
-  const threadId = account.threadId
+  // account.supportChatId should be an array
+  const supportChatId = account.supportChatId
 
-  if (!threadId) {
+  if (!supportChatId) {
     return []
   }
 
-  return Assistant().getMessages(threadId)
+  return Assistant().getMessages(supportChatId)
 }
 
 export const addSupportChatMessage = async ({
@@ -31,18 +31,15 @@ export const addSupportChatMessage = async ({
   const account = await AccountsRepository().findById(accountId)
   if (account instanceof RepositoryError) return account
 
-  let threadId = account.threadId
+  let supportChatId = account.supportChatId
 
-  if (!threadId) {
-    const threadIdOrError = await Assistant().initialize()
+  if (!supportChatId) {
+    const supportChatIdOrError = await Assistant().initialize()
+    if (supportChatIdOrError instanceof Error) return supportChatIdOrError
 
-    if (threadIdOrError instanceof Error) {
-      return threadIdOrError
-    } else {
-      threadId = threadIdOrError
-      const updateThread = await AccountsRepository().update({ ...account, threadId })
-      if (updateThread instanceof RepositoryError) return updateThread
-    }
+    supportChatId = supportChatIdOrError
+    const updateThread = await AccountsRepository().update({ ...account, supportChatId })
+    if (updateThread instanceof RepositoryError) return updateThread
   }
 
   const user = await UsersRepository().findById(account.kratosUserId)
@@ -54,12 +51,12 @@ export const addSupportChatMessage = async ({
 
   const result = await Assistant().addUserMessage({
     message,
-    threadId,
+    supportChatId,
     level,
     countryCode,
     language,
   })
   if (result instanceof Error) return result
 
-  return Assistant().getMessages(threadId)
+  return Assistant().getMessages(supportChatId)
 }

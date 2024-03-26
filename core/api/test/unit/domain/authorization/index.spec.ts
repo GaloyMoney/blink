@@ -16,7 +16,7 @@ describe("resolveScopes", () => {
     contacts: [],
     kratosUserId: "kratosUserId" as UserId,
     displayCurrency: UsdDisplayCurrency,
-    threadId: "threadId" as ThreadId,
+    supportChatId: "supportChatId" as SupportChatId,
   }
 
   it("returns read scope when account is not active", () => {

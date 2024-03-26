@@ -9,8 +9,8 @@ describe("conversation", () => {
       return
     }
 
-    const threadId = await Assistant().initialize()
-    if (threadId instanceof Error) throw threadId
+    const supportChatId = await Assistant().initialize()
+    if (supportChatId instanceof Error) throw supportChatId
 
     const level = 1
     const countryCode = "SV"
@@ -18,7 +18,7 @@ describe("conversation", () => {
 
     await Assistant().addUserMessage({
       message: "I can't receive a transactions",
-      threadId,
+      supportChatId,
       level,
       countryCode,
       language,
@@ -26,13 +26,13 @@ describe("conversation", () => {
 
     await Assistant().addUserMessage({
       message: "How can I send sats onchain?",
-      threadId,
+      supportChatId,
       level,
       countryCode,
       language,
     })
 
-    const messages = await Assistant().getMessages(threadId)
+    const messages = await Assistant().getMessages(supportChatId)
 
     expect(messages).toEqual([
       {

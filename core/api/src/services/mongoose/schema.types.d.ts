@@ -90,7 +90,7 @@ interface AccountRecord {
   defaultWalletId: WalletId
   displayCurrency?: string
 
-  threadId?: string
+  supportChatId?: string
 
   // mongoose in-built functions
   save: () => Promise<AccountRecord>

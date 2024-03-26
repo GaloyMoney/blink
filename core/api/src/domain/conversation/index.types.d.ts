@@ -1,4 +1,4 @@
-type ThreadId = string & { readonly brand: unique symbol }
+type SupportChatId = string & { readonly brand: unique symbol }
 
 type Message = {
   id: string

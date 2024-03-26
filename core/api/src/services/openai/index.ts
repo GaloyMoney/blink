@@ -3,6 +3,7 @@ import OpenAI, { OpenAIError } from "openai"
 import { env } from "@/config/env"
 import { sleep } from "@/utils"
 import { UnknownDomainError } from "@/domain/shared"
+import { ConversationError, UnknownConversationError } from "@/domain/conversation/errors"
 
 let openai: OpenAI
 
@@ -10,6 +11,24 @@ if (env.OPENAI_API_KEY) {
   openai = new OpenAI({
     apiKey: env.OPENAI_API_KEY,
   })
+}
+
+interface Assistant {
+  getMessages: (supportChatId: SupportChatId) => Promise<Message[] | ConversationError>
+  addUserMessage: ({
+    message,
+    supportChatId,
+    level,
+    countryCode,
+    language,
+  }: {
+    message: string
+    supportChatId: SupportChatId
+    level: number
+    countryCode: string
+    language: string
+  }) => Promise<true | ConversationError>
+  initialize: () => Promise<SupportChatId | ConversationError>
 }
 
 export const Assistant = () => {
@@ -21,9 +40,112 @@ export const Assistant = () => {
     throw new Error("No openai instance found")
   }
 
-  const getMessages = async (threadId: ThreadId): Promise<Message[] | Error> => {
+  const initialize = async () => {
     try {
-      const messages = await openai.beta.threads.messages.list(threadId)
+      const thread = await openai.beta.threads.create()
+      const supportChatId = thread.id as SupportChatId
+
+      return supportChatId
+    } catch (err) {
+      if (err instanceof OpenAIError) {
+        return new UnknownConversationError(err.message)
+      }
+      return new UnknownConversationError("openai unknown beta.threads.create error")
+    }
+  }
+
+  const addUserMessage = async ({
+    message,
+    supportChatId,
+    level,
+    countryCode,
+    language,
+  }: {
+    message: string
+    supportChatId: SupportChatId
+    level: number
+    countryCode: string
+    language: string
+  }): Promise<true | Error> => {
+    try {
+      await openai.beta.threads.messages.create(supportChatId, {
+        role: "user",
+        content: message,
+      })
+    } catch (err) {
+      if (err instanceof OpenAIError) {
+        return new UnknownConversationError(err.message)
+      }
+      return new UnknownConversationError("openai unknown beta.threads.messages error")
+    }
+
+    const additionalInstructions = `This user has a phone number from ${countryCode}, is at level ${level}, and is using the ${language} ISO language`
+
+    let run: OpenAI.Beta.Threads.Runs.Run
+
+    try {
+      run = await openai.beta.threads.runs.create(supportChatId, {
+        assistant_id: assistantId,
+        additional_instructions: additionalInstructions,
+      })
+    } catch (err) {
+      if (err instanceof OpenAIError) {
+        return new UnknownConversationError(err.message)
+      }
+      return new UnknownConversationError("openai unknown beta.threads.runs.create error")
+    }
+
+    while (["queued", "in_progress", "cancelling"].includes(run.status)) {
+      // TODO: max timer for this loop
+      // console.log(run.status, "run.status")
+      // add open telemetry here? or is it already present with the http requests?
+
+      await sleep(1000)
+      try {
+        run = await openai.beta.threads.runs.retrieve(run.thread_id, run.id)
+      } catch (err) {
+        if (err instanceof OpenAIError) {
+          return new UnknownConversationError(err.message)
+        }
+        return new UnknownConversationError(
+          "openai unknown beta.threads.runs.retrieve error",
+        )
+      }
+    }
+
+    if (run.status === "completed") {
+      let messages: OpenAI.Beta.Threads.Messages.MessagesPage
+
+      try {
+        messages = await openai.beta.threads.messages.list(run.thread_id)
+      } catch (err) {
+        if (err instanceof OpenAIError) {
+          return new UnknownConversationError(err.message)
+        }
+        return new UnknownConversationError(
+          "openai unknown beta.threads.messages.list error",
+        )
+      }
+
+      const responseThread = messages.data[0]
+
+      if (responseThread.content[0]?.type !== "text") {
+        console.log("last message is not text")
+        return new UnknownConversationError("last message is not text")
+      }
+
+      return true
+    } else {
+      console.log(run.status, "issue running the assistant")
+      return new UnknownConversationError("issue running the assistant")
+    }
+  }
+
+  const getMessages = async (
+    supportChatId: SupportChatId,
+  ): Promise<Message[] | Error> => {
+    try {
+      const messages = await openai.beta.threads.messages.list(supportChatId)
 
       const processedResponse = messages.data
         .map((item) => ({
@@ -46,69 +168,5 @@ export const Assistant = () => {
     }
   }
 
-  const initialize = async () => {
-    try {
-      const thread = await openai.beta.threads.create()
-      const threadId = thread.id as ThreadId
-
-      return threadId
-    } catch (err) {
-      if (err instanceof OpenAIError) {
-        return err
-      }
-      return new UnknownDomainError("openai unknown error")
-    }
-  }
-
-  const addUserMessage = async ({
-    message,
-    threadId,
-    level,
-    countryCode,
-    language,
-  }: {
-    message: string
-    threadId: ThreadId
-    level: number
-    countryCode: string
-    language: string
-  }): Promise<true | Error> => {
-    await openai.beta.threads.messages.create(threadId, {
-      role: "user",
-      content: message,
-    })
-
-    const additionalInstructions = `This user has a phone number from ${countryCode}, is at level ${level}, and is using the ${language} ISO language`
-
-    let run = await openai.beta.threads.runs.create(threadId, {
-      assistant_id: assistantId,
-      additional_instructions: additionalInstructions,
-    })
-
-    while (["queued", "in_progress", "cancelling"].includes(run.status)) {
-      // TODO: max timer for this loop
-      console.log(run.status, "run.status")
-
-      await sleep(1000)
-      run = await openai.beta.threads.runs.retrieve(run.thread_id, run.id)
-    }
-
-    if (run.status === "completed") {
-      const messages = await openai.beta.threads.messages.list(run.thread_id)
-
-      const responseThread = messages.data[0]
-
-      if (responseThread.content[0]?.type !== "text") {
-        console.log("last message is not text")
-        return new Error("last message is not text")
-      }
-
-      return true
-    } else {
-      console.log(run.status, "issue running the assistant")
-      return new Error("issue running the assistant")
-    }
-  }
-
-  return { getMessages, addUserMessage, initialize }
+  return { initialize, addUserMessage, getMessages }
 }
