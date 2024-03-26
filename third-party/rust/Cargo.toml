@@ -24,7 +24,7 @@ async-graphql = { version = "6.0.11", default-features = false, features = ["tra
 async-graphql-axum = "6.0.11"
 axum = { version = "0.6.20", features = ["headers", "macros"] }
 jsonwebtoken = "9.3.0"
-clap = { version = "4.5.3", features = ["derive", "env"] }
+clap = { version = "4.5.4", features = ["derive", "env"] }
 derive_builder = "0.13.1"
 tokio = { version = "1.36", features = ["full"] }
 serde = { version = "1.0.197", features = ["derive"] }
