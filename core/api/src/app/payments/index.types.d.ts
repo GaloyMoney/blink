@@ -35,6 +35,11 @@ type LnSendAttemptResult =
       journalId: LedgerJournalId
     }
   | {
+      type: PaymentSendAttemptResultTypeObj["ErrorWithJournal"]
+      journalId: LedgerJournalId
+      error: ApplicationError
+    }
+  | {
       type: PaymentSendAttemptResultTypeObj["Error"]
       error: ApplicationError
     }

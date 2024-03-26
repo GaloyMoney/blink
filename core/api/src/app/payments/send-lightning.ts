@@ -778,6 +778,9 @@ const executePaymentViaLn = async ({
 
   const { paymentHash } = decodedInvoice
   switch (paymentSendAttemptResult.type) {
+    case PaymentSendAttemptResultType.ErrorWithJournal:
+      return paymentSendAttemptResult.error
+
     case PaymentSendAttemptResultType.Pending:
       return getPendingPaymentResponse({
         walletId: senderWalletId,
@@ -994,7 +997,7 @@ const lockedPaymentViaLnSteps = async ({
     }
     return payResult instanceof LnAlreadyPaidError
       ? LnSendAttemptResult.alreadyPaid(journalId)
-      : LnSendAttemptResult.err(payResult)
+      : LnSendAttemptResult.errWithJournal({ journalId, error: payResult })
   }
 
   // Settle and conditionally record reimbursement entries

@@ -2,6 +2,7 @@ export const PaymentSendAttemptResultType = {
   Ok: "success",
   Pending: "pending",
   AlreadyPaid: "alreadyPaid",
+  ErrorWithJournal: "errorWithJournal",
   Error: "error",
 } as const
 
@@ -31,6 +32,17 @@ export const LnSendAttemptResult = {
   alreadyPaid: (journalId: LedgerJournalId): LnSendAttemptResult => ({
     type: PaymentSendAttemptResultType.AlreadyPaid,
     journalId,
+  }),
+  errWithJournal: ({
+    journalId,
+    error,
+  }: {
+    journalId: LedgerJournalId
+    error: ApplicationError
+  }): LnSendAttemptResult => ({
+    type: PaymentSendAttemptResultType.ErrorWithJournal,
+    journalId,
+    error,
   }),
   err: (error: ApplicationError): LnSendAttemptResult => ({
     type: PaymentSendAttemptResultType.Error,
