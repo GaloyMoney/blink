@@ -11,6 +11,7 @@ setup_suite() {
   await_api_is_up
   await_api_keys_is_up
   await_pay_is_up
+  await_notifications_is_up
 }
 
 teardown_suite() {
@@ -45,4 +46,12 @@ await_api_keys_is_up() {
   }
 
   retry 360 1 api_keys_is_up
+}
+
+await_notifications_is_up() {
+  notifications_is_up() {
+    nc -zv localhost 6685 || exit 1
+  }
+
+  retry 360 1 notifications_is_up
 }
