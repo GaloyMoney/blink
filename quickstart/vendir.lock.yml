@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): validate NotificationCategory (#4218)'
-      sha: ff4f0c002ef65b0fdcb98ab36e139a9a9d69a1b3
+      commitTitle: 'chore(core): add .envrc for local pnpm execution (#4237)'
+      sha: 52a884d766156956b8bd88e09005821459f7df64
       tags:
-      - 0.20.132-1-gff4f0c002
+      - 0.20.133-5-g52a884d76
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): validate NotificationCategory (#4218)'
-      sha: ff4f0c002ef65b0fdcb98ab36e139a9a9d69a1b3
+      commitTitle: 'chore(core): add .envrc for local pnpm execution (#4237)'
+      sha: 52a884d766156956b8bd88e09005821459f7df64
       tags:
-      - 0.20.132-1-gff4f0c002
+      - 0.20.133-5-g52a884d76
     path: schemas/
   - git:
-      commitTitle: 'chore(core): validate NotificationCategory (#4218)'
-      sha: ff4f0c002ef65b0fdcb98ab36e139a9a9d69a1b3
+      commitTitle: 'chore(core): add .envrc for local pnpm execution (#4237)'
+      sha: 52a884d766156956b8bd88e09005821459f7df64
       tags:
-      - 0.20.132-1-gff4f0c002
+      - 0.20.133-5-g52a884d76
     path: gql/
   path: ./graphql
 kind: LockConfig
