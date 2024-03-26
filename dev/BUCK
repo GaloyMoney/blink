@@ -32,11 +32,6 @@ export_file(
     visibility = ["PUBLIC"],
 )
 
-alias(
-    name = "local_env",
-    actual = "//:local_env",
-)
-
 python_bootstrap_binary(
     name = "healthcheck",
     main = "healthcheck.py",
