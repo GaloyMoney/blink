@@ -1,10 +1,11 @@
+import { baseLogger } from "@/services/logger"
 import { Assistant } from "@/services/openai"
 describe("ChatSupport", () => {
   it("add 2 message to the thread", async () => {
     // this test needs an OpenAI API key to run
     // not running this test in CI
     if (!process.env.OPENAI_API_KEY) {
-      console.log("No OpenAI API key found, skipping test")
+      baseLogger.info("No OpenAI API key found, skipping test")
       return
     }
 

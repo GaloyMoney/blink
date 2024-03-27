@@ -74,7 +74,6 @@ export const Assistant = (): ChatAssistant => {
 
     while (["queued", "in_progress", "cancelling"].includes(run.status)) {
       // TODO: max timer for this loop
-      // console.log(run.status, "run.status")
       // add open telemetry here? or is it already present with the http requests?
 
       await sleep(1000)
@@ -107,13 +106,11 @@ export const Assistant = (): ChatAssistant => {
       const responseThread = messages.data[0]
 
       if (responseThread.content[0]?.type !== "text") {
-        console.log("last message is not text")
         return new UnknownChatAssistantError("last message is not text")
       }
 
       return true
     } else {
-      console.log(run.status, "issue running the assistant")
       return new UnknownChatAssistantError("issue running the assistant")
     }
   }
