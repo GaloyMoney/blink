@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: openAi Assistant (#4166)...'
-      sha: 67fdf00d27d6b68379967ff7857a1e6196a77a64
+      commitTitle: 'fix: api resource deps in tilt file (#4243)...'
+      sha: 05ae7d9fec7701175d65ad7f221092846b2be201
       tags:
-      - 0.20.136-4-g67fdf00d2
+      - 0.20.136-6-g05ae7d9fe
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: openAi Assistant (#4166)...'
-      sha: 67fdf00d27d6b68379967ff7857a1e6196a77a64
+      commitTitle: 'fix: api resource deps in tilt file (#4243)...'
+      sha: 05ae7d9fec7701175d65ad7f221092846b2be201
       tags:
-      - 0.20.136-4-g67fdf00d2
+      - 0.20.137
     path: schemas/
   - git:
-      commitTitle: 'feat: openAi Assistant (#4166)...'
-      sha: 67fdf00d27d6b68379967ff7857a1e6196a77a64
+      commitTitle: 'fix: api resource deps in tilt file (#4243)...'
+      sha: 05ae7d9fec7701175d65ad7f221092846b2be201
       tags:
-      - 0.20.136-4-g67fdf00d2
+      - 0.20.137
     path: gql/
   path: ./graphql
 kind: LockConfig
