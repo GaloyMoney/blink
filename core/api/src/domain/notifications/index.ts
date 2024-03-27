@@ -23,7 +23,6 @@ export const NotificationCategory = {
   Circles: "Circles",
   Price: "Price",
   AdminNotification: "AdminNotification",
-  Balance: "Balance",
   Marketing: "Marketing",
 } as const
 

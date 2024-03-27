@@ -3,7 +3,6 @@
 'use strict';
 var grpc = require('@grpc/grpc-js');
 var notifications_pb = require('./notifications_pb.js');
-var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
 
 function serialize_services_notifications_v1_AddPushDeviceTokenRequest(arg) {
   if (!(arg instanceof notifications_pb.AddPushDeviceTokenRequest)) {
@@ -203,28 +202,6 @@ function deserialize_services_notifications_v1_RemovePushDeviceTokenResponse(buf
   return notifications_pb.RemovePushDeviceTokenResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_services_notifications_v1_ShouldSendNotificationRequest(arg) {
-  if (!(arg instanceof notifications_pb.ShouldSendNotificationRequest)) {
-    throw new Error('Expected argument of type services.notifications.v1.ShouldSendNotificationRequest');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_services_notifications_v1_ShouldSendNotificationRequest(buffer_arg) {
-  return notifications_pb.ShouldSendNotificationRequest.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_services_notifications_v1_ShouldSendNotificationResponse(arg) {
-  if (!(arg instanceof notifications_pb.ShouldSendNotificationResponse)) {
-    throw new Error('Expected argument of type services.notifications.v1.ShouldSendNotificationResponse');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_services_notifications_v1_ShouldSendNotificationResponse(buffer_arg) {
-  return notifications_pb.ShouldSendNotificationResponse.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
 function serialize_services_notifications_v1_UpdateEmailAddressRequest(arg) {
   if (!(arg instanceof notifications_pb.UpdateEmailAddressRequest)) {
     throw new Error('Expected argument of type services.notifications.v1.UpdateEmailAddressRequest');
@@ -271,17 +248,6 @@ function deserialize_services_notifications_v1_UpdateUserLocaleResponse(buffer_a
 
 
 var NotificationsServiceService = exports.NotificationsServiceService = {
-  shouldSendNotification: {
-    path: '/services.notifications.v1.NotificationsService/ShouldSendNotification',
-    requestStream: false,
-    responseStream: false,
-    requestType: notifications_pb.ShouldSendNotificationRequest,
-    responseType: notifications_pb.ShouldSendNotificationResponse,
-    requestSerialize: serialize_services_notifications_v1_ShouldSendNotificationRequest,
-    requestDeserialize: deserialize_services_notifications_v1_ShouldSendNotificationRequest,
-    responseSerialize: serialize_services_notifications_v1_ShouldSendNotificationResponse,
-    responseDeserialize: deserialize_services_notifications_v1_ShouldSendNotificationResponse,
-  },
   enableNotificationChannel: {
     path: '/services.notifications.v1.NotificationsService/EnableNotificationChannel',
     requestStream: false,

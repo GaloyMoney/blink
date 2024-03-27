@@ -6,10 +6,8 @@
 
 import * as grpc from "@grpc/grpc-js";
 import * as notifications_pb from "./notifications_pb";
-import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 
 interface INotificationsServiceService extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
-    shouldSendNotification: INotificationsServiceService_IShouldSendNotification;
     enableNotificationChannel: INotificationsServiceService_IEnableNotificationChannel;
     disableNotificationChannel: INotificationsServiceService_IDisableNotificationChannel;
     enableNotificationCategory: INotificationsServiceService_IEnableNotificationCategory;
@@ -23,15 +21,6 @@ interface INotificationsServiceService extends grpc.ServiceDefinition<grpc.Untyp
     handleNotificationEvent: INotificationsServiceService_IHandleNotificationEvent;
 }
 
-interface INotificationsServiceService_IShouldSendNotification extends grpc.MethodDefinition<notifications_pb.ShouldSendNotificationRequest, notifications_pb.ShouldSendNotificationResponse> {
-    path: "/services.notifications.v1.NotificationsService/ShouldSendNotification";
-    requestStream: false;
-    responseStream: false;
-    requestSerialize: grpc.serialize<notifications_pb.ShouldSendNotificationRequest>;
-    requestDeserialize: grpc.deserialize<notifications_pb.ShouldSendNotificationRequest>;
-    responseSerialize: grpc.serialize<notifications_pb.ShouldSendNotificationResponse>;
-    responseDeserialize: grpc.deserialize<notifications_pb.ShouldSendNotificationResponse>;
-}
 interface INotificationsServiceService_IEnableNotificationChannel extends grpc.MethodDefinition<notifications_pb.EnableNotificationChannelRequest, notifications_pb.EnableNotificationChannelResponse> {
     path: "/services.notifications.v1.NotificationsService/EnableNotificationChannel";
     requestStream: false;
@@ -135,7 +124,6 @@ interface INotificationsServiceService_IHandleNotificationEvent extends grpc.Met
 export const NotificationsServiceService: INotificationsServiceService;
 
 export interface INotificationsServiceServer extends grpc.UntypedServiceImplementation {
-    shouldSendNotification: grpc.handleUnaryCall<notifications_pb.ShouldSendNotificationRequest, notifications_pb.ShouldSendNotificationResponse>;
     enableNotificationChannel: grpc.handleUnaryCall<notifications_pb.EnableNotificationChannelRequest, notifications_pb.EnableNotificationChannelResponse>;
     disableNotificationChannel: grpc.handleUnaryCall<notifications_pb.DisableNotificationChannelRequest, notifications_pb.DisableNotificationChannelResponse>;
     enableNotificationCategory: grpc.handleUnaryCall<notifications_pb.EnableNotificationCategoryRequest, notifications_pb.EnableNotificationCategoryResponse>;
@@ -150,9 +138,6 @@ export interface INotificationsServiceServer extends grpc.UntypedServiceImplemen
 }
 
 export interface INotificationsServiceClient {
-    shouldSendNotification(request: notifications_pb.ShouldSendNotificationRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.ShouldSendNotificationResponse) => void): grpc.ClientUnaryCall;
-    shouldSendNotification(request: notifications_pb.ShouldSendNotificationRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.ShouldSendNotificationResponse) => void): grpc.ClientUnaryCall;
-    shouldSendNotification(request: notifications_pb.ShouldSendNotificationRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.ShouldSendNotificationResponse) => void): grpc.ClientUnaryCall;
     enableNotificationChannel(request: notifications_pb.EnableNotificationChannelRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
     enableNotificationChannel(request: notifications_pb.EnableNotificationChannelRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
     enableNotificationChannel(request: notifications_pb.EnableNotificationChannelRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
@@ -190,9 +175,6 @@ export interface INotificationsServiceClient {
 
 export class NotificationsServiceClient extends grpc.Client implements INotificationsServiceClient {
     constructor(address: string, credentials: grpc.ChannelCredentials, options?: Partial<grpc.ClientOptions>);
-    public shouldSendNotification(request: notifications_pb.ShouldSendNotificationRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.ShouldSendNotificationResponse) => void): grpc.ClientUnaryCall;
-    public shouldSendNotification(request: notifications_pb.ShouldSendNotificationRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.ShouldSendNotificationResponse) => void): grpc.ClientUnaryCall;
-    public shouldSendNotification(request: notifications_pb.ShouldSendNotificationRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.ShouldSendNotificationResponse) => void): grpc.ClientUnaryCall;
     public enableNotificationChannel(request: notifications_pb.EnableNotificationChannelRequest, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
     public enableNotificationChannel(request: notifications_pb.EnableNotificationChannelRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;
     public enableNotificationChannel(request: notifications_pb.EnableNotificationChannelRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: notifications_pb.EnableNotificationChannelResponse) => void): grpc.ClientUnaryCall;

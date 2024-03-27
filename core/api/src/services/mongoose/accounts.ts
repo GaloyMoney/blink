@@ -65,7 +65,6 @@ export const AccountsRepository = (): IAccountsRepository => {
     withdrawFee,
     kratosUserId,
     displayCurrency,
-
     role,
   }: Account): Promise<Account | RepositoryError> => {
     try {
@@ -87,7 +86,6 @@ export const AccountsRepository = (): IAccountsRepository => {
           withdrawFee,
           kratosUserId,
           displayCurrency,
-
           role,
         },
         {

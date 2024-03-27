@@ -5,7 +5,6 @@
 /* eslint-disable */
 
 import * as jspb from "google-protobuf";
-import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 
 export class ShouldSendNotificationRequest extends jspb.Message { 
     getUserId(): string;
@@ -954,7 +953,6 @@ export enum NotificationChannel {
 export enum NotificationCategory {
     CIRCLES = 0,
     PAYMENTS = 1,
-    BALANCE = 2,
     ADMIN_NOTIFICATION = 3,
     MARKETING = 4,
     PRICE = 5,

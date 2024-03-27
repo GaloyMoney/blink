@@ -21,8 +21,6 @@ var global =
     (function () { return this; }).call(null) ||
     Function('return this')();
 
-var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
-goog.object.extend(proto, google_protobuf_struct_pb);
 goog.exportSymbol('proto.services.notifications.v1.AddPushDeviceTokenRequest', null, global);
 goog.exportSymbol('proto.services.notifications.v1.AddPushDeviceTokenResponse', null, global);
 goog.exportSymbol('proto.services.notifications.v1.ChannelNotificationSettings', null, global);
@@ -7345,7 +7343,6 @@ proto.services.notifications.v1.NotificationChannel = {
 proto.services.notifications.v1.NotificationCategory = {
   CIRCLES: 0,
   PAYMENTS: 1,
-  BALANCE: 2,
   ADMIN_NOTIFICATION: 3,
   MARKETING: 4,
   PRICE: 5

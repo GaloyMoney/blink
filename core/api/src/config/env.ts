@@ -131,6 +131,9 @@ export const env = createEnv({
 
     SVIX_SECRET: z.string().optional(),
     SVIX_ENDPOINT: z.union([z.string().url().nullish(), z.literal("")]), // optional url
+
+    OPENAI_API_KEY: z.string().min(1).optional(),
+    OPENAI_ASSISTANT_ID: z.string().min(1).optional(),
   },
 
   runtimeEnvStrict: {
@@ -226,5 +229,8 @@ export const env = createEnv({
 
     SVIX_SECRET: process.env.SVIX_SECRET,
     SVIX_ENDPOINT: process.env.SVIX_ENDPOINT,
+
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    OPENAI_ASSISTANT_ID: process.env.OPENAI_ASSISTANT_ID,
   },
 })

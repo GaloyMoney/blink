@@ -114,6 +114,12 @@ interface QuizCompletedRecord {
   createdAt: Date
 }
 
+interface SupportChatRecord {
+  accountId: string
+  supportChatId: string
+  createdAt: Date
+}
+
 interface AccountIpsRecord {
   ip: string
   metadata: {
