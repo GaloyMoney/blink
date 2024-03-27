@@ -5,7 +5,7 @@ import Account from "../abstract/account"
 import SupportMessage from "./support-message"
 import AccountContact from "./account-contact"
 
-import { Accounts, Users } from "@/app"
+import { Accounts, Users, SupportChat } from "@/app"
 
 import { baseLogger } from "@/services/logger"
 // FIXME should not use service
@@ -19,7 +19,6 @@ import Language from "@/graphql/shared/types/scalar/language"
 import Username from "@/graphql/shared/types/scalar/username"
 import Timestamp from "@/graphql/shared/types/scalar/timestamp"
 import GraphQLEmail from "@/graphql/shared/types/object/email"
-import { SupportChat } from "@/app"
 
 const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
   name: "User",
