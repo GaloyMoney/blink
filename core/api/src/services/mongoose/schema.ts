@@ -300,14 +300,13 @@ const SupportChatSchema = new Schema<SupportChatRecord>({
   supportChatId: {
     type: String,
     required: true,
+    unique: true,
   },
   createdAt: {
     type: Date,
     default: Date.now,
   },
 })
-
-SupportChatSchema.index({ accountId: 1, supportChatId: 1 }, { unique: true })
 
 export const SupportChat = mongoose.model<SupportChatRecord>(
   "SupportChat",

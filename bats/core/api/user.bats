@@ -26,7 +26,7 @@ setup_file() {
 }
 
 @test "support: default support message result" {
-  exec_graphql 'alice' 'support-messages'
+  exec_graphql 'alice' 'support-chat'
   language="$(graphql_output '.data.me.supportChat')"
   
   # expect an empty array

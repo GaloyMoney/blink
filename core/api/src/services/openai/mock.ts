@@ -1,28 +1,12 @@
-export const AssistantMock = (): Assistant => {
+export const AssistantMock = (): ChatAssistant => {
   const initialize = async () => {
     // return random ID
     return "123" as SupportChatId
   }
 
-  let messages = [] as Message[]
+  const messages = [] as Message[]
 
-  const addUserMessage = async ({
-    message,
-    supportChatId,
-    level,
-    countryCode,
-    language,
-  }: {
-    message: string
-    supportChatId: SupportChatId
-    level: number
-    countryCode: string
-    language: string
-  }): Promise<true | Error> => {
-    return true
-  }
-
-  const getMessages = async (supportChatId: string) => {
+  const addUserMessage = async (): Promise<true | Error> => {
     messages.push({
       id: "1",
       role: "user",
@@ -35,6 +19,10 @@ export const AssistantMock = (): Assistant => {
       message: "Hi, how can I help?",
       timestamp: Date.now(),
     })
+    return true
+  }
+
+  const getMessages = async () => {
     return messages as Message[]
   }
 

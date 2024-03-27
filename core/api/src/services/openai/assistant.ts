@@ -14,7 +14,7 @@ if (env.OPENAI_API_KEY && assistantId) {
     apiKey: env.OPENAI_API_KEY,
   })
 }
-export const Assistant = () => {
+export const Assistant = (): ChatAssistant => {
   const initialize = async (): Promise<SupportChatId | ChatAssistantError> => {
     try {
       const thread = await openai.beta.threads.create()
