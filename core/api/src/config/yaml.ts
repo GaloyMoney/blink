@@ -4,7 +4,6 @@ import path from "path"
 
 import Ajv from "ajv"
 import yaml from "js-yaml"
-import { I18n } from "i18n"
 
 import mergeWith from "lodash.mergewith"
 
@@ -111,18 +110,6 @@ export const getValuesToSkipProbe = (): SkipFeeProbeConfig => {
     chanId: (yamlConfig.skipFeeProbeConfig.chanId || []) as ChanId[],
   }
 }
-
-const i18n = new I18n()
-i18n.configure({
-  objectNotation: true,
-  updateFiles: false,
-  locales: ["en", "es"],
-  defaultLocale: "en",
-  retryInDefaultLocale: true,
-  directory: path.join(__dirname, "locales"),
-})
-
-export const getI18nInstance = (): I18n => i18n
 
 export const getDisplayCurrencyConfig = (): {
   code: DisplayCurrency

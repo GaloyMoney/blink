@@ -77,7 +77,6 @@ interface INotificationsService {
   sendTransaction: (
     args: NotificatioSendTransactionArgs,
   ) => Promise<true | NotificationsServiceError>
-  sendBalance(args: SendBalanceArgs): Promise<true | NotificationsServiceError>
   priceUpdate: <C extends DisplayCurrency>(args: PriceUpdateArgs<C>) => void
 
   getUserNotificationSettings(
