@@ -444,6 +444,7 @@ local_resource(
         "mongodb",
         "oathkeeper",
         "svix",
+        "notifications",
     ]
 )
 
