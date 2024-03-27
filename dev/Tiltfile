@@ -549,7 +549,6 @@ local_resource(
     deps = _buck2_dep_inputs(notifications_target),
     allow_parallel = True,
     resource_deps = [
-       "api",
        "notifications-pg"
     ]
 )
