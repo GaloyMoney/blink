@@ -26,9 +26,7 @@ setup_file() {
 }
 
 @test "support: default support message result" {
-  "skip"
-
-  exec_graphql 'alice' 'support-chat'
+  exec_graphql 'alice' 'support-messages'
   language="$(graphql_output '.data.me.supportChat')"
   
   # expect an empty array
@@ -36,8 +34,6 @@ setup_file() {
 }
 
 @test "support: ask 2 questions" {
-  "skip"
-
   local variables=$(
     jq -n \
     '{input: {message: "Hello"}}'
@@ -55,6 +51,4 @@ setup_file() {
   language="$(graphql_output '.data.supportChatMessageAdd.supportMessage')"
   length=$(echo "$language" | jq '. | length')
   [[ $length -eq 4 ]] || exit 1
-
-  echo "$language"
 }
