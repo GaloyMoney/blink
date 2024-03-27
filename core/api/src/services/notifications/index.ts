@@ -29,10 +29,6 @@ import * as notificationsGrpc from "./grpc-client"
 
 import { handleCommonNotificationErrors } from "./errors"
 
-import { PushNotificationsService } from "./push-notifications"
-
-import { createPushNotificationContent } from "./create-push-notification-content"
-
 import { getCallbackServiceConfig } from "@/config"
 
 import {
@@ -58,7 +54,6 @@ import { wrapAsyncFunctionsToRunInSpan, wrapAsyncToRunInSpan } from "@/services/
 
 export const NotificationsService = (): INotificationsService => {
   const pubsub = PubSubService()
-  const pushNotification = PushNotificationsService()
   const callbackService = CallbackService(getCallbackServiceConfig())
 
   const getUserNotificationSettings = async (
@@ -321,46 +316,6 @@ export const NotificationsService = (): INotificationsService => {
       trigger: userPriceUpdateTrigger,
       payload: { realtimePrice: payload },
     })
-  }
-
-  const sendBalance = async ({
-    balanceAmount,
-    recipientUserId,
-    displayBalanceAmount,
-  }: SendBalanceArgs): Promise<true | NotificationsServiceError> => {
-    try {
-      const notificationCategory = NotificationCategory.Balance
-
-      const settings = await getUserNotificationSettings(recipientUserId)
-      if (settings instanceof Error) {
-        return settings
-      }
-      const { pushDeviceTokens: deviceTokens } = settings
-      const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
-      if (!hasDeviceTokens) return true
-      const { title, body } = createPushNotificationContent({
-        type: "balance",
-        userLanguage: settings.language,
-        amount: balanceAmount,
-        displayAmount: displayBalanceAmount,
-      })
-
-      const result = await pushNotification.sendFilteredNotification({
-        deviceTokens,
-        title,
-        body,
-        notificationCategory,
-        userId: recipientUserId,
-      })
-
-      if (result instanceof NotificationsServiceError) {
-        return result
-      }
-
-      return true
-    } catch (err) {
-      return handleCommonNotificationErrors(err)
-    }
   }
 
   const addPushDeviceToken = async ({
@@ -697,7 +652,6 @@ export const NotificationsService = (): INotificationsService => {
       namespace: "services.notifications",
       fns: {
         sendTransaction,
-        sendBalance,
         getUserNotificationSettings,
         updateUserLanguage,
         enableNotificationChannel,
