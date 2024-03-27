@@ -1,11 +1,8 @@
 syntax = "proto3";
 
-import "google/protobuf/struct.proto";
-
 package services.notifications.v1;
 
 service NotificationsService {
-  rpc ShouldSendNotification (ShouldSendNotificationRequest) returns (ShouldSendNotificationResponse) {}
   rpc EnableNotificationChannel (EnableNotificationChannelRequest) returns (EnableNotificationChannelResponse) {}
   rpc DisableNotificationChannel (DisableNotificationChannelRequest) returns (DisableNotificationChannelResponse) {}
   rpc EnableNotificationCategory (EnableNotificationCategoryRequest) returns (EnableNotificationCategoryResponse) {}
@@ -26,7 +23,7 @@ enum NotificationChannel {
 enum NotificationCategory {
   CIRCLES = 0;
   PAYMENTS = 1;
-  BALANCE = 2;
+  // BALANCE = 2; Deprecated
   ADMIN_NOTIFICATION = 3;
   MARKETING = 4;
   PRICE = 5;

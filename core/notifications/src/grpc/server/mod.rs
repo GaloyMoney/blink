@@ -30,35 +30,6 @@ pub struct Notifications {
 
 #[tonic::async_trait]
 impl NotificationsService for Notifications {
-    #[instrument(name = "notifications.should_send_notification", skip_all, err)]
-    async fn should_send_notification(
-        &self,
-        request: Request<ShouldSendNotificationRequest>,
-    ) -> Result<Response<ShouldSendNotificationResponse>, Status> {
-        grpc::extract_tracing(&request);
-        let request = request.into_inner();
-        let ShouldSendNotificationRequest {
-            user_id,
-            channel,
-            category,
-        } = request;
-        let channel = proto::NotificationChannel::try_from(channel)
-            .map(UserNotificationChannel::from)
-            .map_err(|e| Status::invalid_argument(e.to_string()))?;
-        let category = proto::NotificationCategory::try_from(category)
-            .map(UserNotificationCategory::from)
-            .map_err(|e| Status::invalid_argument(e.to_string()))?;
-        let should_send = self
-            .app
-            .should_send_notification(user_id.clone().into(), channel, category)
-            .await?;
-
-        Ok(Response::new(ShouldSendNotificationResponse {
-            user_id,
-            should_send,
-        }))
-    }
-
     #[instrument(name = "notifications.enable_notification_channel", skip_all, err)]
     async fn enable_notification_channel(
         &self,

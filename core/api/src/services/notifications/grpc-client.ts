@@ -5,8 +5,6 @@ import { credentials, Metadata } from "@grpc/grpc-js"
 import { NotificationsServiceClient } from "./proto/notifications_grpc_pb"
 
 import {
-  ShouldSendNotificationRequest,
-  ShouldSendNotificationResponse,
   DisableNotificationCategoryRequest,
   DisableNotificationCategoryResponse,
   EnableNotificationCategoryRequest,
@@ -41,12 +39,6 @@ const notificationsClient = new NotificationsServiceClient(
 )
 
 export const notificationsMetadata = new Metadata()
-
-export const shouldSendNotification = promisify<
-  ShouldSendNotificationRequest,
-  Metadata,
-  ShouldSendNotificationResponse
->(notificationsClient.shouldSendNotification.bind(notificationsClient))
 
 export const enableNotificationCatgeory = promisify<
   EnableNotificationCategoryRequest,
