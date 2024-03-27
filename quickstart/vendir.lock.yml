@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(toolchain): include local env in serve_env load (#4239)...'
-      sha: d2f9b9254919f1e68f7551ee2d07d6d135ec42f7
+      commitTitle: 'ci: remove locales from Dockerfile-migrate (#4242)'
+      sha: 0e57a2ed5881e306522ba0775bb39865b4c3d7f7
       tags:
-      - 0.20.134-2-gd2f9b9254
+      - 0.20.136-2-g0e57a2ed5
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(toolchain): include local env in serve_env load (#4239)...'
-      sha: d2f9b9254919f1e68f7551ee2d07d6d135ec42f7
+      commitTitle: 'ci: remove locales from Dockerfile-migrate (#4242)'
+      sha: 0e57a2ed5881e306522ba0775bb39865b4c3d7f7
       tags:
-      - 0.20.134-2-gd2f9b9254
+      - 0.20.136-2-g0e57a2ed5
     path: schemas/
   - git:
-      commitTitle: 'feat(toolchain): include local env in serve_env load (#4239)...'
-      sha: d2f9b9254919f1e68f7551ee2d07d6d135ec42f7
+      commitTitle: 'ci: remove locales from Dockerfile-migrate (#4242)'
+      sha: 0e57a2ed5881e306522ba0775bb39865b4c3d7f7
       tags:
-      - 0.20.134-2-gd2f9b9254
+      - 0.20.136-2-g0e57a2ed5
     path: gql/
   path: ./graphql
 kind: LockConfig
