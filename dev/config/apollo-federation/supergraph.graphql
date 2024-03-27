@@ -1769,8 +1769,15 @@ type SupportMessage
 {
   id: ID!
   message: String!
-  role: String!
+  role: SupportRole!
   timestamp: Timestamp!
+}
+
+enum SupportRole
+  @join__type(graph: PUBLIC)
+{
+  ASSISTANT @join__enumValue(graph: PUBLIC)
+  USER @join__enumValue(graph: PUBLIC)
 }
 
 """
