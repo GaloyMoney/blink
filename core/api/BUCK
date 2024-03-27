@@ -189,46 +189,46 @@ dev_pnpm_task_test(
 )
 
 jest_test(
-  name = "unit-tests",
-  srcs = [":src"] + [":test_src"] + glob(["galoy.yaml"]),
-  config_file = "test/unit/jest.config.js",
-  env_json = "//dev:dummy_env",
-  env = {
-      "LOGLEVEL": "warn",
-  }
+    name = "unit-tests",
+    srcs = [":src"] + [":test_src"] + glob(["galoy.yaml"]),
+    config_file = "test/unit/jest.config.js",
+    env_json = "//dev:dummy_env",
+    env = {
+        "LOGLEVEL": "warn",
+    }
 )
 
 jest_test(
-  name = "test-integration",
-  srcs = [":src"] + [":test_src"] + glob(["galoy.yaml"]),
-  prod_deps_srcs = prod_deps_srcs,
-  config_file = "test/integration/jest.config.js",
-  run_serially = True,
-  env_json = "//dev:integration_env",
-  env = {
-      "LOGLEVEL": "warn",
-  }
+    name = "test-integration",
+    srcs = [":src"] + [":test_src"] + glob(["galoy.yaml"]),
+    prod_deps_srcs = prod_deps_srcs,
+    config_file = "test/integration/jest.config.js",
+    run_serially = True,
+    env_json = "//dev:integration_env",
+    env = {
+        "LOGLEVEL": "warn",
+    }
 )
 
 test_suite(
-  name = "test",
-  tests = [
-      ":audit",
-      ":check-lint",
-      ":check-type",
-      ":check-yaml",
-      ":check-circular-dependencies",
-      ":unit-tests",
-  ],
+    name = "test",
+    tests = [
+        ":audit",
+        ":check-lint",
+        ":check-type",
+        ":check-yaml",
+        ":check-circular-dependencies",
+        ":unit-tests",
+    ],
 )
 
 test_suite(
-  name = "dev-check-code",
-  tests = [
-      ":dev-check-lint",
-      ":dev-check-type",
-      ":dev-check-circular-dependencies",
-  ],
+    name = "dev-check-code",
+    tests = [
+        ":dev-check-lint",
+        ":dev-check-type",
+        ":dev-check-circular-dependencies",
+    ],
 )
 
 dev_pnpm_task_binary(
