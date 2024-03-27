@@ -6,6 +6,10 @@ import { Assistant } from "@/services/openai"
 export const getSupportChatMessages = async (accountId: AccountId) => {
   const supportChatId = await SupportChatRepository().findNewestByAccountId(accountId)
 
+  if (supportChatId instanceof CouldNotFindError) {
+    return []
+  }
+
   if (supportChatId instanceof Error) {
     return supportChatId
   }

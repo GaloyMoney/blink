@@ -1,10 +1,10 @@
+const messages = [] as Message[]
+
 export const AssistantMock = (): ChatAssistant => {
   const initialize = async () => {
-    // return random ID
-    return "123" as SupportChatId
+    // return a random value
+    return (Math.random() * 10000000 + "") as SupportChatId
   }
-
-  const messages = [] as Message[]
 
   const addUserMessage = async (): Promise<true | Error> => {
     messages.push({
