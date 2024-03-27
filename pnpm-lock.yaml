@@ -968,9 +968,6 @@ importers:
       graphql-ws:
         specifier: ^5.15.0
         version: 5.15.0(graphql@16.8.1)
-      i18n:
-        specifier: ^0.15.1
-        version: 0.15.1
       invoices:
         specifier: ^3.0.0
         version: 3.0.0
@@ -1131,9 +1128,6 @@ importers:
       '@types/google-protobuf':
         specifier: ^3.15.12
         version: 3.15.12
-      '@types/i18n':
-        specifier: ^0.13.10
-        version: 0.13.10
       '@types/jest':
         specifier: ^29.5.12
         version: 29.5.12
@@ -8773,37 +8767,6 @@ packages:
       react: 18.2.0
     dev: true
 
-  /@messageformat/core@3.2.0:
-    resolution: {integrity: sha512-ppbb/7OYqg/t4WdFk8VAfZEV2sNUq3+7VeBAo5sKFhmF786sh6gB7fUeXa2qLTDIcTHS49HivTBN7QNOU5OFTg==}
-    dependencies:
-      '@messageformat/date-skeleton': 1.0.1
-      '@messageformat/number-skeleton': 1.2.0
-      '@messageformat/parser': 5.1.0
-      '@messageformat/runtime': 3.0.1
-      make-plural: 7.3.0
-      safe-identifier: 0.4.2
-    dev: false
-
-  /@messageformat/date-skeleton@1.0.1:
-    resolution: {integrity: sha512-jPXy8fg+WMPIgmGjxSlnGJn68h/2InfT0TNSkVx0IGXgp4ynnvYkbZ51dGWmGySEK+pBiYUttbQdu5XEqX5CRg==}
-    dev: false
-
-  /@messageformat/number-skeleton@1.2.0:
-    resolution: {integrity: sha512-xsgwcL7J7WhlHJ3RNbaVgssaIwcEyFkBqxHdcdaiJzwTZAWEOD8BuUFxnxV9k5S0qHN3v/KzUpq0IUpjH1seRg==}
-    dev: false
-
-  /@messageformat/parser@5.1.0:
-    resolution: {integrity: sha512-jKlkls3Gewgw6qMjKZ9SFfHUpdzEVdovKFtW1qRhJ3WI4FW5R/NnGDqr8SDGz+krWDO3ki94boMmQvGke1HwUQ==}
-    dependencies:
-      moo: 0.5.2
-    dev: false
-
-  /@messageformat/runtime@3.0.1:
-    resolution: {integrity: sha512-6RU5ol2lDtO8bD9Yxe6CZkl0DArdv0qkuoZC+ZwowU+cdRlVE1157wjCmlA5Rsf1Xc/brACnsZa5PZpEDfTFFg==}
-    dependencies:
-      make-plural: 7.3.0
-    dev: false
-
   /@mongodb-js/saslprep@1.1.4:
     resolution: {integrity: sha512-8zJ8N1x51xo9hwPh6AWnKdLGEC5N3lDa6kms1YHmFBoRhTpJR6HG8wWk0td1MVCu9cD4YBrvjZEtd5Obw0Fbnw==}
     dependencies:
@@ -13904,10 +13867,6 @@ packages:
       '@types/node': 20.11.24
     dev: true
 
-  /@types/i18n@0.13.10:
-    resolution: {integrity: sha512-V5uwFXEzC1BRvDSQkd5zWB7ktZa1yfLKFimlluTFrgBGeFJQNNaLk3J67Sje+c0+m2C7r1BU47cItOk/WRfJcQ==}
-    dev: true
-
   /@types/invariant@2.2.37:
     resolution: {integrity: sha512-IwpIMieE55oGWiXkQPSBY1nw1nFs6bsKXTFskNY8sdS17K24vyEBRQZEwlRS7ZmXCWnJcQtbxWzly+cODWGs2A==}
     dev: false
@@ -16760,10 +16719,6 @@ packages:
 
   /boolbase@1.0.0:
     resolution: {integrity: sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==}
-
-  /boolean@3.2.0:
-    resolution: {integrity: sha512-d0II/GO9uf9lfUHH2BQsjxzRJZBdsjgsBiW4BvhWk/3qoKwQFjIDVN19PfX8F2D/r9PCMTtLWjYVCFrpeYUzsw==}
-    dev: false
 
   /bootstrap@4.6.2(jquery@3.7.1)(popper.js@1.16.1):
     resolution: {integrity: sha512-51Bbp/Uxr9aTuy6ca/8FbFloBUJZLHwnhTcnjIeRn2suQWsWzcuJhGjKDB5eppVte/8oCdOL3VuwxvZDUggwGQ==}
@@ -20430,13 +20385,6 @@ packages:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
     dev: true
 
-  /fast-printf@1.6.9:
-    resolution: {integrity: sha512-FChq8hbz65WMj4rstcQsFB0O7Cy++nmbNfLYnD9cYv2cRn8EG6k/MGn9kO/tjO66t09DLDugj3yL+V2o6Qftrg==}
-    engines: {node: '>=10.0'}
-    dependencies:
-      boolean: 3.2.0
-    dev: false
-
   /fast-querystring@1.1.2:
     resolution: {integrity: sha512-g6KuKWmFXc0fID8WWH0jit4g0AGBoJhCkJMb1RmbsSEUNvQ+ZC8D6CUZ+GtF8nMzSPXnhiePyyqqipzNNEnHjg==}
     dependencies:
@@ -22414,20 +22362,6 @@ packages:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
     engines: {node: '>=10.17.0'}
     dev: true
-
-  /i18n@0.15.1:
-    resolution: {integrity: sha512-yue187t8MqUPMHdKjiZGrX+L+xcUsDClGO0Cz4loaKUOK9WrGw5pgan4bv130utOwX7fHE9w2iUeHFalVQWkXA==}
-    engines: {node: '>=10'}
-    dependencies:
-      '@messageformat/core': 3.2.0
-      debug: 4.3.4(supports-color@5.5.0)
-      fast-printf: 1.6.9
-      make-plural: 7.3.0
-      math-interval-parser: 2.0.1
-      mustache: 4.2.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
 
   /iconv-lite@0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
@@ -24716,10 +24650,6 @@ packages:
       kind-of: 6.0.3
     dev: true
 
-  /make-plural@7.3.0:
-    resolution: {integrity: sha512-/K3BC0KIsO+WK2i94LkMPv3wslMrazrQhfi5We9fMbLlLjzoOSJWr7TAdupLlDWaJcWxwoNosBkhFDejiu5VDw==}
-    dev: false
-
   /makeerror@1.0.12:
     resolution: {integrity: sha512-JmqCvUhmt43madlpFzG4BQzG2Z3m6tvQDNKdClZnO3VbIudJYmxsT0FNJMeiB2+JTSlTQTSbU8QdesVmwJcmLg==}
     dependencies:
@@ -24749,11 +24679,6 @@ packages:
     engines: {node: '>= 12'}
     hasBin: true
     dev: true
-
-  /math-interval-parser@2.0.1:
-    resolution: {integrity: sha512-VmlAmb0UJwlvMyx8iPhXUDnVW1F9IrGEd9CIOmv+XL8AErCUUuozoDMrgImvnYt2A+53qVX/tPW6YJurMKYsvA==}
-    engines: {node: '>=0.10.0'}
-    dev: false
 
   /maxmin@3.0.0:
     resolution: {integrity: sha512-wcahMInmGtg/7c6a75fr21Ch/Ks1Tb+Jtoan5Ft4bAI0ZvJqyOw8kkM7e7p8hDSzY805vmxwHT50KcjGwKyJ0g==}
@@ -25189,10 +25114,6 @@ packages:
       - supports-color
     dev: false
 
-  /moo@0.5.2:
-    resolution: {integrity: sha512-iSAJLHYKnX41mKcJKjqvnAN9sf0LMDTXDEvFv+ffuRR9a1MIuXLjMNL6EsnDHSkKLTWNqQQ5uo61P4EbU4NU+Q==}
-    dev: false
-
   /morgan@1.10.0:
     resolution: {integrity: sha512-AbegBVI4sh6El+1gNwvD5YIck7nSA36weD7xvIxG4in80j/UoK8AEGaWnnz8v1GxonMCltmlNs5ZKbGvl9b1XQ==}
     engines: {node: '>= 0.8.0'}
@@ -25233,11 +25154,6 @@ packages:
 
   /ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
-
-  /mustache@4.2.0:
-    resolution: {integrity: sha512-71ippSywq5Yb7/tVYyGbkBggbU8H3u5Rz56fH60jGFgr8uHwxs+aSKeqmluIVzM0m0kB7xQjKS6qPfd0b2ZoqQ==}
-    hasBin: true
-    dev: false
 
   /mute-stream@0.0.8:
     resolution: {integrity: sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==}
@@ -28215,10 +28131,6 @@ packages:
 
   /safe-buffer@5.2.1:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
-
-  /safe-identifier@0.4.2:
-    resolution: {integrity: sha512-6pNbSMW6OhAi9j+N8V+U715yBQsaWJ7eyEUaOrawX+isg5ZxhUlV1NipNtgaKHmFGiABwt+ZF04Ii+3Xjkg+8w==}
-    dev: false
 
   /safe-json-parse@1.0.1:
     resolution: {integrity: sha512-o0JmTu17WGUaUOHa1l0FPGXKBfijbxK6qoHzlkihsDXxzBHvJcA7zgviKR92Xs841rX9pK16unfphLq0/KqX7A==}
