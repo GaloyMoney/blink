@@ -61,17 +61,6 @@ impl NotificationsApp {
         })
     }
 
-    #[instrument(name = "app.should_send_notification", skip(self), ret, err)]
-    pub async fn should_send_notification(
-        &self,
-        user_id: GaloyUserId,
-        channel: UserNotificationChannel,
-        category: UserNotificationCategory,
-    ) -> Result<bool, ApplicationError> {
-        let user_settings = self.settings.find_for_user_id(&user_id).await?;
-        Ok(user_settings.should_send_notification(channel, category))
-    }
-
     #[instrument(name = "app.notification_settings_for_user", skip(self), err)]
     pub async fn notification_settings_for_user(
         &self,
