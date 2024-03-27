@@ -3,7 +3,7 @@ import OpenAI, { OpenAIError } from "openai"
 import { env } from "@/config/env"
 import { sleep } from "@/utils"
 import { UnknownDomainError } from "@/domain/shared"
-import { ChatSupportError, UnknownChatSupportError } from "@/domain/chat-support/errors"
+import { ChatAssistantError, UnknownChatAssistantError } from "@/domain/support/errors"
 
 let openai: OpenAI
 
@@ -11,24 +11,6 @@ if (env.OPENAI_API_KEY) {
   openai = new OpenAI({
     apiKey: env.OPENAI_API_KEY,
   })
-}
-
-interface Assistant {
-  getMessages: (supportChatId: SupportChatId) => Promise<Message[] | ChatSupportError>
-  addUserMessage: ({
-    message,
-    supportChatId,
-    level,
-    countryCode,
-    language,
-  }: {
-    message: string
-    supportChatId: SupportChatId
-    level: number
-    countryCode: string
-    language: string
-  }) => Promise<true | ChatSupportError>
-  initialize: () => Promise<SupportChatId | ChatSupportError>
 }
 
 export const Assistant = () => {
@@ -40,7 +22,7 @@ export const Assistant = () => {
     throw new Error("No openai instance found")
   }
 
-  const initialize = async () => {
+  const initialize = async (): Promise<SupportChatId | ChatAssistantError> => {
     try {
       const thread = await openai.beta.threads.create()
       const supportChatId = thread.id as SupportChatId
@@ -48,9 +30,9 @@ export const Assistant = () => {
       return supportChatId
     } catch (err) {
       if (err instanceof OpenAIError) {
-        return new UnknownChatSupportError(err.message)
+        return new UnknownChatAssistantError(err.message)
       }
-      return new UnknownChatSupportError("openai unknown beta.threads.create error")
+      return new UnknownChatAssistantError("openai unknown beta.threads.create error")
     }
   }
 
@@ -74,9 +56,9 @@ export const Assistant = () => {
       })
     } catch (err) {
       if (err instanceof OpenAIError) {
-        return new UnknownChatSupportError(err.message)
+        return new UnknownChatAssistantError(err.message)
       }
-      return new UnknownChatSupportError("openai unknown beta.threads.messages error")
+      return new UnknownChatAssistantError("openai unknown beta.threads.messages error")
     }
 
     const additionalInstructions = `This user has a phone number from ${countryCode}, is at level ${level}, and is using the ${language} ISO language`
@@ -90,9 +72,11 @@ export const Assistant = () => {
       })
     } catch (err) {
       if (err instanceof OpenAIError) {
-        return new UnknownChatSupportError(err.message)
+        return new UnknownChatAssistantError(err.message)
       }
-      return new UnknownChatSupportError("openai unknown beta.threads.runs.create error")
+      return new UnknownChatAssistantError(
+        "openai unknown beta.threads.runs.create error",
+      )
     }
 
     while (["queued", "in_progress", "cancelling"].includes(run.status)) {
@@ -105,9 +89,9 @@ export const Assistant = () => {
         run = await openai.beta.threads.runs.retrieve(run.thread_id, run.id)
       } catch (err) {
         if (err instanceof OpenAIError) {
-          return new UnknownChatSupportError(err.message)
+          return new UnknownChatAssistantError(err.message)
         }
-        return new UnknownChatSupportError(
+        return new UnknownChatAssistantError(
           "openai unknown beta.threads.runs.retrieve error",
         )
       }
@@ -120,9 +104,9 @@ export const Assistant = () => {
         messages = await openai.beta.threads.messages.list(run.thread_id)
       } catch (err) {
         if (err instanceof OpenAIError) {
-          return new UnknownChatSupportError(err.message)
+          return new UnknownChatAssistantError(err.message)
         }
-        return new UnknownChatSupportError(
+        return new UnknownChatAssistantError(
           "openai unknown beta.threads.messages.list error",
         )
       }
@@ -131,13 +115,13 @@ export const Assistant = () => {
 
       if (responseThread.content[0]?.type !== "text") {
         console.log("last message is not text")
-        return new UnknownChatSupportError("last message is not text")
+        return new UnknownChatAssistantError("last message is not text")
       }
 
       return true
     } else {
       console.log(run.status, "issue running the assistant")
-      return new UnknownChatSupportError("issue running the assistant")
+      return new UnknownChatAssistantError("issue running the assistant")
     }
   }
 

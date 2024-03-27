@@ -1,14 +1,14 @@
-import { UnknownRepositoryError } from "@/domain/errors"
 import { SupportChat } from "./schema"
-import { ChatSupportNotFoundError } from "@/domain/chat-support/errors"
 
-export const SupportChatRepository = () => {
+import { UnknownRepositoryError, CouldNotFindError } from "@/domain/errors"
+
+export const SupportChatRepository = (): ISupportChatRepository => {
   const add = async ({
     supportChatId,
     accountId,
   }: {
-    supportChatId: string
-    accountId: string
+    supportChatId: SupportChatId
+    accountId: AccountId
   }) => {
     try {
       await SupportChat.create({ accountId, supportChatId })
@@ -18,13 +18,13 @@ export const SupportChatRepository = () => {
     }
   }
 
-  const getLastFromAccountId = async (
-    accountId: string,
-  ): Promise<SupportChatId | ChatSupportNotFoundError> => {
+  const findNewestByAccountId = async (
+    accountId: AccountId,
+  ): Promise<SupportChatId | RepositoryError> => {
     try {
       const result = await SupportChat.findOne({ accountId }).sort({ createdAt: -1 })
       if (!result) {
-        return new ChatSupportNotFoundError("No support chat found")
+        return new CouldNotFindError("No support chat found")
       }
 
       return result.supportChatId as SupportChatId
@@ -35,6 +35,6 @@ export const SupportChatRepository = () => {
 
   return {
     add,
-    getLastFromAccountId,
+    findNewestByAccountId,
   }
 }

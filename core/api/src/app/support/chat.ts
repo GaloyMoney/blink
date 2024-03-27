@@ -1,13 +1,12 @@
-import { ChatSupportNotFoundError } from "@/domain/chat-support/errors"
-import { RepositoryError } from "@/domain/errors"
+import { RepositoryError, CouldNotFindError } from "@/domain/errors"
 import { AccountsRepository, UsersRepository } from "@/services/mongoose"
 import { SupportChatRepository } from "@/services/mongoose/support-chat"
 import { Assistant } from "@/services/openai"
 
 export const getSupportChatMessages = async (accountId: AccountId) => {
-  const supportChatId = await SupportChatRepository().getLastFromAccountId(accountId)
+  const supportChatId = await SupportChatRepository().findNewestByAccountId(accountId)
 
-  if (supportChatId instanceof ChatSupportNotFoundError) {
+  if (supportChatId instanceof Error) {
     return supportChatId
   }
 
@@ -23,9 +22,9 @@ export const addSupportChatMessage = async ({
 }) => {
   // TODO: rate limits
 
-  let supportChatId = await SupportChatRepository().getLastFromAccountId(accountId)
+  let supportChatId = await SupportChatRepository().findNewestByAccountId(accountId)
 
-  if (supportChatId instanceof ChatSupportNotFoundError) {
+  if (supportChatId instanceof CouldNotFindError) {
     const supportChatIdOrError = await Assistant().initialize()
     if (supportChatIdOrError instanceof Error) return supportChatIdOrError
 
@@ -33,6 +32,8 @@ export const addSupportChatMessage = async ({
 
     const res = await SupportChatRepository().add({ supportChatId, accountId })
     if (res instanceof RepositoryError) return res
+  } else if (supportChatId instanceof Error) {
+    return supportChatId
   }
 
   const account = await AccountsRepository().findById(accountId)

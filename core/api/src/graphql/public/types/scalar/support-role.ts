@@ -1,4 +1,4 @@
-import { DomainSupportRole } from "@/domain/chat-support"
+import { SupportRole as DomainSupportRole } from "@/domain/support"
 import { GT } from "@/graphql/index"
 
 const SupportRole = GT.Enum({
