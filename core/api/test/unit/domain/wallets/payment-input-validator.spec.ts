@@ -20,7 +20,6 @@ describe("PaymentInputValidator", () => {
     contacts: [],
     kratosUserId: "kratosUserId" as UserId,
     displayCurrency: UsdDisplayCurrency,
-    supportChatId: "supportChatId" as SupportChatId,
   }
 
   const dummySenderWallet: Wallet = {

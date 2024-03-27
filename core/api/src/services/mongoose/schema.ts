@@ -260,7 +260,6 @@ const AccountSchema = new Schema<AccountRecord>(
     },
 
     displayCurrency: String, // FIXME: should be an enum
-    supportChatId: String,
   },
   { id: false },
 )
@@ -310,7 +309,10 @@ const SupportChatSchema = new Schema<SupportChatRecord>({
 
 SupportChatSchema.index({ accountId: 1, supportChatId: 1 }, { unique: true })
 
-export const SupportChat = mongoose.model<SupportChatRecord>("SupportChat", SupportChatSchema)
+export const SupportChat = mongoose.model<SupportChatRecord>(
+  "SupportChat",
+  SupportChatSchema,
+)
 
 const pointSchema = new Schema<LocationRecord>({
   type: {
