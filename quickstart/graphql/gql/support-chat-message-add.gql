@@ -1,0 +1,16 @@
+mutation supportChatMessageAdd($input: SupportChatMessageAddInput!) {
+  supportChatMessageAdd(input: $input) {
+    errors {
+      message
+      __typename
+    }
+    supportMessage {
+      id
+      message
+      role
+      timestamp
+      __typename
+    }
+    __typename
+  }
+}

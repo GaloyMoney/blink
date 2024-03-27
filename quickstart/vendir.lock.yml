@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: remove locales from Dockerfile-migrate (#4242)'
-      sha: 0e57a2ed5881e306522ba0775bb39865b4c3d7f7
+      commitTitle: 'feat: openAi Assistant (#4166)...'
+      sha: 67fdf00d27d6b68379967ff7857a1e6196a77a64
       tags:
-      - 0.20.136-2-g0e57a2ed5
+      - 0.20.136-4-g67fdf00d2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: remove locales from Dockerfile-migrate (#4242)'
-      sha: 0e57a2ed5881e306522ba0775bb39865b4c3d7f7
+      commitTitle: 'feat: openAi Assistant (#4166)...'
+      sha: 67fdf00d27d6b68379967ff7857a1e6196a77a64
       tags:
-      - 0.20.136-2-g0e57a2ed5
+      - 0.20.136-4-g67fdf00d2
     path: schemas/
   - git:
-      commitTitle: 'ci: remove locales from Dockerfile-migrate (#4242)'
-      sha: 0e57a2ed5881e306522ba0775bb39865b4c3d7f7
+      commitTitle: 'feat: openAi Assistant (#4166)...'
+      sha: 67fdf00d27d6b68379967ff7857a1e6196a77a64
       tags:
-      - 0.20.136-2-g0e57a2ed5
+      - 0.20.136-4-g67fdf00d2
     path: gql/
   path: ./graphql
 kind: LockConfig
