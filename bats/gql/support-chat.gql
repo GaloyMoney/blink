@@ -1,0 +1,11 @@
+query supportChat {
+  me {
+    id
+    supportChat {
+      id
+      message
+      role
+      timestamp
+    }
+  }
+}

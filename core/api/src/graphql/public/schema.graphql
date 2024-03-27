@@ -965,6 +965,7 @@ type Mutation {
   onChainUsdPaymentSend(input: OnChainUsdPaymentSendInput!): PaymentSendPayload!
   onChainUsdPaymentSendAsBtcDenominated(input: OnChainUsdPaymentSendAsBtcDenominatedInput!): PaymentSendPayload!
   quizClaim(input: QuizClaimInput!): QuizClaimPayload!
+  supportChatMessageAdd(input: SupportChatMessageAddInput!): SupportChatMessageAddPayload!
   userContactUpdateAlias(input: UserContactUpdateAliasInput!): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
   userEmailDelete: UserEmailDeletePayload!
   userEmailRegistrationInitiate(input: UserEmailRegistrationInitiateInput!): UserEmailRegistrationInitiatePayload!
@@ -1350,6 +1351,27 @@ type SuccessPayload {
   success: Boolean
 }
 
+input SupportChatMessageAddInput {
+  message: String!
+}
+
+type SupportChatMessageAddPayload {
+  errors: [Error!]!
+  supportMessage: [SupportMessage]
+}
+
+type SupportMessage {
+  id: ID!
+  message: String!
+  role: SupportRole!
+  timestamp: Timestamp!
+}
+
+enum SupportRole {
+  ASSISTANT
+  USER
+}
+
 """
 Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)
 """
@@ -1535,6 +1557,7 @@ type User {
 
   """Phone number with international calling code."""
   phone: Phone
+  supportChat: [SupportMessage!]!
 
   """Whether TOTP is enabled for this user."""
   totpEnabled: Boolean!

@@ -1252,6 +1252,7 @@ type Mutation
   onChainUsdPaymentSend(input: OnChainUsdPaymentSendInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
   onChainUsdPaymentSendAsBtcDenominated(input: OnChainUsdPaymentSendAsBtcDenominatedInput!): PaymentSendPayload! @join__field(graph: PUBLIC)
   quizClaim(input: QuizClaimInput!): QuizClaimPayload! @join__field(graph: PUBLIC)
+  supportChatMessageAdd(input: SupportChatMessageAddInput!): SupportChatMessageAddPayload! @join__field(graph: PUBLIC)
   userContactUpdateAlias(input: UserContactUpdateAliasInput!): UserContactUpdateAliasPayload! @join__field(graph: PUBLIC) @deprecated(reason: "will be moved to AccountContact")
   userEmailDelete: UserEmailDeletePayload! @join__field(graph: PUBLIC)
   userEmailRegistrationInitiate(input: UserEmailRegistrationInitiateInput!): UserEmailRegistrationInitiatePayload! @join__field(graph: PUBLIC)
@@ -1750,6 +1751,35 @@ type SuccessPayload
   success: Boolean
 }
 
+input SupportChatMessageAddInput
+  @join__type(graph: PUBLIC)
+{
+  message: String!
+}
+
+type SupportChatMessageAddPayload
+  @join__type(graph: PUBLIC)
+{
+  errors: [Error!]!
+  supportMessage: [SupportMessage]
+}
+
+type SupportMessage
+  @join__type(graph: PUBLIC)
+{
+  id: ID!
+  message: String!
+  role: SupportRole!
+  timestamp: Timestamp!
+}
+
+enum SupportRole
+  @join__type(graph: PUBLIC)
+{
+  ASSISTANT @join__enumValue(graph: PUBLIC)
+  USER @join__enumValue(graph: PUBLIC)
+}
+
 """
 Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)
 """
@@ -1964,6 +1994,7 @@ type User
 
   """Phone number with international calling code."""
   phone: Phone @join__field(graph: PUBLIC)
+  supportChat: [SupportMessage!]! @join__field(graph: PUBLIC)
 
   """Whether TOTP is enabled for this user."""
   totpEnabled: Boolean! @join__field(graph: PUBLIC)

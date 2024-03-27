@@ -2,9 +2,10 @@ import dedent from "dedent"
 
 import Account from "../abstract/account"
 
+import SupportMessage from "./support-message"
 import AccountContact from "./account-contact"
 
-import { Accounts, Users } from "@/app"
+import { Accounts, Users, SupportChat } from "@/app"
 
 import { baseLogger } from "@/services/logger"
 // FIXME should not use service
@@ -121,6 +122,13 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
       type: GT.NonNull(Account),
       resolve: async (source, args, { domainAccount }) => {
         return domainAccount
+      },
+    },
+
+    supportChat: {
+      type: GT.NonNullList(SupportMessage),
+      resolve: async (source, args, { domainAccount }) => {
+        return SupportChat.getSupportChatMessages(domainAccount.id)
       },
     },
 

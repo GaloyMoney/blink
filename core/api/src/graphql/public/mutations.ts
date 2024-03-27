@@ -64,6 +64,7 @@ import CaptchaCreateChallengeMutation from "@/graphql/public/root/mutation/captc
 import CaptchaRequestAuthCodeMutation from "@/graphql/public/root/mutation/captcha-request-auth-code"
 import QuizClaimMutation from "@/graphql/public/root/mutation/quiz-claim"
 import MerchantMapSuggest from "@/graphql/public/root/mutation/merchant-map-suggest"
+import SupportChatMessageAdd from "@/graphql/public/root/mutation/support-chat-message-add"
 
 // TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLPublicContext> }
 export const mutationFields = {
@@ -98,6 +99,8 @@ export const mutationFields = {
 
       quizClaim: QuizClaimMutation,
       deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,
+
+      supportChatMessageAdd: SupportChatMessageAdd,
 
       userUpdateLanguage: UserUpdateLanguageMutation,
       userUpdateUsername: UserUpdateUsernameMutation,
