@@ -9,7 +9,6 @@ filegroup(
 sdl(
   name = "sdl",
   generator = ":write-sdl",
-  deps_srcs = [":src"],
   visibility = ["PUBLIC"],
 )
 
