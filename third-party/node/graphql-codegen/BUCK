@@ -1,0 +1,11 @@
+load("@toolchains//simple-pnpm:macros.bzl", "build_node_modules", "npm_bin")
+
+build_node_modules(
+  name = "node_modules",
+)
+
+npm_bin(
+  name = "graphql_codegen_bin",
+  bin_name = "graphql-codegen",
+  visibility = ["PUBLIC"],
+)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Builds a portable, standalone npm binary.
+Creates a supergraph
 """
 import argparse
 import subprocess

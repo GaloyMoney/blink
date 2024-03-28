@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Builds a portable, standalone npm binary.
+Executes a generator to output an sql file
 """
 import argparse
 import subprocess

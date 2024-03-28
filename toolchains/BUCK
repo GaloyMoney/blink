@@ -60,6 +60,13 @@ rover_toolchain(
   visibility = ["PUBLIC"],
 )
 
+load("@toolchains//graphql-codegen:toolchain.bzl", "graphql_codegen_toolchain")
+
+graphql_codegen_toolchain(
+  name = "graphql_codegen",
+  visibility = ["PUBLIC"],
+)
+
 load("@toolchains//rust:toolchain.bzl", "galoy_rust_toolchain")
 
 galoy_rust_toolchain(

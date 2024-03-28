@@ -46,6 +46,7 @@ supergraph(
     "NOTIFICATIONS_SCHEMA": "//core/notifications:sdl",
     "PUBLIC_SCHEMA": "//core/api:public-sdl",
   },
+  visibility = ["PUBLIC"],
 )
 
 diff_check(
