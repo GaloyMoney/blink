@@ -39,7 +39,8 @@ rust_binary(
 
 galoy_rust_bin(
     name = "notifications",
-    srcs = [":src"] + glob([
+    srcs = glob([
+      "src/**/*.rs",
       ".sqlx/*",
       "migrations/*",
       "locales/*",

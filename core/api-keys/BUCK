@@ -60,7 +60,8 @@ galoy_rust_bin(
         "//third-party/rust:serde_with",
     ],
     extra_tests = ["//lib/tracing-rs:tracing"],
-    srcs = [":src"] + glob([
+    srcs = glob([
+      "src/**/*.rs",
       ".sqlx/*",
       "migrations/*",
       "api-keys.yml"
