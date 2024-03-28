@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: api resource deps in tilt file (#4243)...'
-      sha: 05ae7d9fec7701175d65ad7f221092846b2be201
+      commitTitle: 'refactor(toolchain): add deps_srcs to sdl rule (#4241)...'
+      sha: 6ee4ac8d0d8148d3b91e467038def8ba6278f326
       tags:
-      - 0.20.136-6-g05ae7d9fe
+      - 0.20.137-3-g6ee4ac8d0
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: api resource deps in tilt file (#4243)...'
-      sha: 05ae7d9fec7701175d65ad7f221092846b2be201
+      commitTitle: 'refactor(toolchain): add deps_srcs to sdl rule (#4241)...'
+      sha: 6ee4ac8d0d8148d3b91e467038def8ba6278f326
       tags:
-      - 0.20.137
+      - 0.20.137-3-g6ee4ac8d0
     path: schemas/
   - git:
-      commitTitle: 'fix: api resource deps in tilt file (#4243)...'
-      sha: 05ae7d9fec7701175d65ad7f221092846b2be201
+      commitTitle: 'refactor(toolchain): add deps_srcs to sdl rule (#4241)...'
+      sha: 6ee4ac8d0d8148d3b91e467038def8ba6278f326
       tags:
-      - 0.20.137
+      - 0.20.137-3-g6ee4ac8d0
     path: gql/
   path: ./graphql
 kind: LockConfig
