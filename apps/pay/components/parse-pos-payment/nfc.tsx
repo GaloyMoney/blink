@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react"
 
 import { getParams } from "js-lnurl"
-import Image from "next/image"
 
-import styles from "./parse-payment.module.css"
+import { Switch } from "../switch"
 
 type Props = {
   paymentRequest?: string | undefined
@@ -19,6 +18,12 @@ function NFCComponent({ paymentRequest }: Props) {
   const [hasNFCPermission, setHasNFCPermission] = useState(false)
   const [nfcMessage, setNfcMessage] = useState("")
   const [isNfcSupported, setIsNfcSupported] = useState(false)
+  const [isNfcTurnedOn, setIsNfcTurnedOn] = useState(false)
+
+  useEffect(() => {
+    const nfcTurnedOn = localStorage.getItem("isNfcTurnedOn") === "true"
+    setIsNfcTurnedOn(nfcTurnedOn)
+  }, [])
 
   const decodeNDEFRecord = (record: NFCRecord) => {
     if (!record.data) {
@@ -41,25 +46,30 @@ function NFCComponent({ paymentRequest }: Props) {
   }
 
   const activateNfcScan = async () => {
-    await handleNFCScan()
-    alert(
-      "Boltcard is now active. There will be no need to activate it again. Please tap your card to redeem the payment",
-    )
+    const response = await handleNFCScan()
+    if (response instanceof Error) {
+      alert(response.message)
+      return
+    } else {
+      setIsNfcTurnedOn(true)
+      localStorage.setItem("isNfcTurnedOn", "true")
+      alert(
+        "Boltcard is now active. There will be no need to activate it again. Please tap your card to redeem the payment",
+      )
+    }
   }
 
   const handleNFCScan = async () => {
     if (!("NDEFReader" in window)) {
       console.error("NFC is not supported")
-      return
+      return new Error("NFC is not supported")
     }
 
     console.log("NFC is supported, start reading")
-
     const ndef = new NDEFReader()
 
     try {
       await ndef.scan()
-
       console.log("NFC scan started successfully.")
 
       ndef.onreading = (event) => {
@@ -74,9 +84,12 @@ function NFCComponent({ paymentRequest }: Props) {
 
       ndef.onreadingerror = () => {
         console.error("Cannot read data from the NFC tag. Try another one?")
+        throw Error("Cannot read data from the NFC tag. Try another one?")
       }
+
+      return
     } catch (error) {
-      console.error(`Error! Scan failed to start: ${error}.`)
+      return new Error(`Error! Scan failed to start: ${error}.`)
     }
   }
 
@@ -119,7 +132,7 @@ function NFCComponent({ paymentRequest }: Props) {
   React.useEffect(() => {
     console.log("hasNFCPermission", hasNFCPermission)
 
-    if (hasNFCPermission) {
+    if (hasNFCPermission && isNfcTurnedOn) {
       handleNFCScan()
     }
 
@@ -202,26 +215,27 @@ function NFCComponent({ paymentRequest }: Props) {
     })()
   }, [nfcMessage, paymentRequest])
 
+  const handleSwitchChange = async () => {
+    if (!isNfcTurnedOn) {
+      activateNfcScan()
+    } else {
+      localStorage.setItem("isNfcTurnedOn", "false")
+      setIsNfcTurnedOn(false)
+    }
+  }
+
   return (
-    <div>
-      {isNfcSupported && !hasNFCPermission && (
-        <div className="d-flex justify-content-center" style={{ marginTop: "20px" }}>
-          <button
-            data-testid="nfc-btn"
-            className={styles.payNewBtn}
-            onClick={activateNfcScan}
-          >
-            <Image
-              src={"/icons/lightning-icon.svg"}
-              alt="lightning icon"
-              width="20"
-              height="20"
-            />
-            Activate boltcard
-          </button>
+    <>
+      {isNfcSupported && !paymentRequest && (
+        <div className="flex flex-row justify-between align-middle align-content-center m-0 rounded-md">
+          <p className="mb-4 font-semibold">Boltcard</p>
+          <Switch
+            checked={hasNFCPermission && isNfcTurnedOn}
+            onCheckedChange={handleSwitchChange}
+          />
         </div>
       )}
-    </div>
+    </>
   )
 }
 
