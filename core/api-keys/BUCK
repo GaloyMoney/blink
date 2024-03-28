@@ -1,11 +1,6 @@
 load("@toolchains//rover:macros.bzl", "sdl", "diff_check", "dev_update_file")
 load("@toolchains//rust:macros.bzl", "galoy_rust_bin", "rustfmt_check", "clippy_check")
 
-filegroup(
-    name = "src",
-    srcs = glob(["src/**/*.rs"]),
-)
-
 sdl(
   name = "sdl",
   generator = ":write-sdl",
@@ -27,8 +22,8 @@ dev_update_file(
 rust_binary(
     name = "write-sdl",
     edition = "2021",
-    crate_root = "src/src/bin/write_sdl.rs",
-    srcs = [":src"],
+    crate_root = "src/bin/write_sdl.rs",
+    srcs = glob(["src/**/*.rs"]),
     deps = [
         ":lib-api-keys",
         "//third-party/rust:async-graphql",
