@@ -30,7 +30,7 @@ identity_verification_declined.body: "No pudimos procesar sus documentos debido 
 identity_verification_review_started.title: "Su verificación está en proceso!"
 identity_verification_review_started.body: "Hemos recibido sus documentos y los estamos procesando."
 
-transaction.intra_ledger_payment.title: "%{walletCurrency} Transacció"
+transaction.intra_ledger_payment.title: "%{walletCurrency} Transacción"
 transaction.intra_ledger_payment.body: "Enviat pagament de %{formattedCurrencyAmount}"
 transaction.intra_ledger_payment.body_display_currency: "Enviat pagament de %{displayCurrencyAmount}  | %{formattedCurrencyAmount}"
 
