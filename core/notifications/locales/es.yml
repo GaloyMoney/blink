@@ -50,7 +50,7 @@ transaction.lightning_receipt.title: "%{walletCurrency} Transacción"
 transaction.lightning_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
 transaction.lightning_receipt.body: "+%{formattedCurrencyAmount}"
 
-transaction.onchain_receipt_pending.title: "%{walletCurrency} Transacció | Pendent"
+transaction.onchain_receipt_pending.title: "%{walletCurrency} Transacción | Pendiente"
 transaction.onchain_receipt_pending.body_display_currency: "pendent +%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
 transaction.onchain_receipt_pending.body: "pendent +%{formattedCurrencyAmount}"
 
