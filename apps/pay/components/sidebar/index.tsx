@@ -196,6 +196,7 @@ export function SideBar({ username }: { username: string }) {
                 onSelectedDisplayCurrencyChange={updateCurrencyAndReload}
               />
             </div>
+            <NFCComponent />
             <div className="flex flex-row justify-between align-middle align-content-center ">
               <div className="flex flex-col gap-0 p-0">
                 <p className="text-md font-semibold mb-1">lightning address</p>
@@ -229,7 +230,6 @@ export function SideBar({ username }: { username: string }) {
               <p className="mb-2 font-semibold">Memo</p>
               <Switch checked={memoChecked} onCheckedChange={handleMemoShow} />
             </div>
-            <NFCComponent />
             <div className="flex flex-col items-center justify-center gap-3 mt-2">
               <button
                 onClick={shareCurrentUrl}
