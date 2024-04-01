@@ -1886,22 +1886,22 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "email-encoding-0.2.0.crate",
-    sha256 = "dbfb21b9878cf7a348dcb8559109aabc0ec40d69924bd706fa5149846c4fef75",
-    strip_prefix = "email-encoding-0.2.0",
-    urls = ["https://crates.io/api/v1/crates/email-encoding/0.2.0/download"],
+    name = "email-encoding-0.3.0.crate",
+    sha256 = "60d1d33cdaede7e24091f039632eb5d3c7469fe5b066a985281a34fc70fa317f",
+    strip_prefix = "email-encoding-0.3.0",
+    urls = ["https://crates.io/api/v1/crates/email-encoding/0.3.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "email-encoding-0.2.0",
-    srcs = [":email-encoding-0.2.0.crate"],
+    name = "email-encoding-0.3.0",
+    srcs = [":email-encoding-0.3.0.crate"],
     crate = "email_encoding",
-    crate_root = "email-encoding-0.2.0.crate/src/lib.rs",
+    crate_root = "email-encoding-0.3.0.crate/src/lib.rs",
     edition = "2021",
     visibility = [],
     deps = [
-        ":base64-0.21.5",
+        ":base64-0.22.0",
         ":memchr-2.6.4",
     ],
 )
@@ -3600,23 +3600,23 @@ cargo.rust_library(
 
 alias(
     name = "lettre",
-    actual = ":lettre-0.11.5",
+    actual = ":lettre-0.11.6",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "lettre-0.11.5.crate",
-    sha256 = "8305b122b8ccc64e437b0de101851f9f00aade5886246e85f341c1d9a15a91b7",
-    strip_prefix = "lettre-0.11.5",
-    urls = ["https://crates.io/api/v1/crates/lettre/0.11.5/download"],
+    name = "lettre-0.11.6.crate",
+    sha256 = "47460276655930189e0919e4fbf46e46476b14f934f18a63dd726a5fb7b60e2e",
+    strip_prefix = "lettre-0.11.6",
+    urls = ["https://crates.io/api/v1/crates/lettre/0.11.6/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "lettre-0.11.5",
-    srcs = [":lettre-0.11.5.crate"],
+    name = "lettre-0.11.6",
+    srcs = [":lettre-0.11.6.crate"],
     crate = "lettre",
-    crate_root = "lettre-0.11.5.crate/src/lib.rs",
+    crate_root = "lettre-0.11.6.crate/src/lib.rs",
     edition = "2021",
     features = [
         "builder",
@@ -3634,7 +3634,7 @@ cargo.rust_library(
         ":async-trait-0.1.74",
         ":base64-0.22.0",
         ":chumsky-0.9.3",
-        ":email-encoding-0.2.0",
+        ":email-encoding-0.3.0",
         ":email_address-0.2.4",
         ":fastrand-2.0.1",
         ":futures-io-0.3.30",
@@ -8965,7 +8965,7 @@ cargo.rust_binary(
         ":handlebars-5.1.2",
         ":http-0.2.12",
         ":jsonwebtoken-9.3.0",
-        ":lettre-0.11.5",
+        ":lettre-0.11.6",
         ":opentelemetry-0.20.0",
         ":opentelemetry-http-0.9.0",
         ":opentelemetry-otlp-0.13.0",

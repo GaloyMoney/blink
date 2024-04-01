@@ -49,7 +49,7 @@ opentelemetry-http = "0.9.0"
 http = "0.2.12"
 rust-i18n = "3"
 google-fcm1 = "5.0.4"
-lettre = { version = "0.11.5", default-features = false, features = ["builder", "tokio1", "tokio1-rustls-tls", "smtp-transport"] }
+lettre = { version = "0.11.6", default-features = false, features = ["builder", "tokio1", "tokio1-rustls-tls", "smtp-transport"] }
 handlebars = "5.1.2"
 rusty-money = { version = "0.4.1", features = ["iso", "crypto" ] }
 
