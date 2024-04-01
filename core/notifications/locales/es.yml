@@ -46,7 +46,7 @@ transaction.onchain_receipt.title: "%{walletCurrency} Transacción"
 transaction.onchain_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
 transaction.onchain_receipt.body: "+%{formattedCurrencyAmount}"
 
-transaction.lightning_receipt.title: "%{walletCurrency} Transacció"
+transaction.lightning_receipt.title: "%{walletCurrency} Transacción"
 transaction.lightning_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
 transaction.lightning_receipt.body: "+%{formattedCurrencyAmount}"
 
