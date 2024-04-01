@@ -32,9 +32,9 @@ identity_verification_review_started.body: "Hemos recibido sus documentos y los 
 
 transaction.intra_ledger_payment.title: "%{walletCurrency} Transacción"
 transaction.intra_ledger_payment.body: "Enviado pago de %{formattedCurrencyAmount}"
-transaction.intra_ledger_payment.body_display_currency: "Enviat pagament de %{displayCurrencyAmount}  | %{formattedCurrencyAmount}"
+transaction.intra_ledger_payment.body_display_currency: "Enviado pago de %{displayCurrencyAmount}  | %{formattedCurrencyAmount}"
 
-transaction.intra_ledger_receipt.title: "%{walletCurrency} Transacció"
+transaction.intra_ledger_receipt.title: "%{walletCurrency} Transacción"
 transaction.intra_ledger_receipt.body: "+%{formattedCurrencyAmount}"
 transaction.intra_ledger_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
 
