@@ -21,7 +21,7 @@ identity_verification_approved.body: "Los documentos para tu verificación han s
 identity_verification_declined.reason.documents_not_clear: "los documentos cargados no estaban claros"
 identity_verification_declined.reason.photo_not_clear: "La imagen que enviaste no estaba clara."
 identity_verification_declined.reason.documents_do_not_match: "los documentos que enviaste no coinciden con tu selfie y/o la información que proporcionaste"
-identity_verification_declined.reason.documents_expired: "els documents que has enviat estan caducats"
+identity_verification_declined.reason.documents_expired: "los documentos que enviaste estan caducados"
 identity_verification_declined.reason.documents_not_supported: "els documents que has enviat no estan aceptats"
 identity_verification_declined.reason.other: "s'ha produït un error, posa'ts en contacte amb el servei d'assistència"
 identity_verification_declined.title: "No s'ha pogut verificar la teva identitat!"
