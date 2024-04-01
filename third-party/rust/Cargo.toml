@@ -26,7 +26,7 @@ axum = { version = "0.6.20", features = ["headers", "macros"] }
 jsonwebtoken = "9.3.0"
 clap = { version = "4.5.4", features = ["derive", "env"] }
 derive_builder = "0.13.1"
-tokio = { version = "1.36", features = ["full"] }
+tokio = { version = "1.37", features = ["full"] }
 serde = { version = "1.0.197", features = ["derive"] }
 reqwest = { version = "0.11.27", default-features = false, features = ["json", "rustls-tls"] }
 thiserror = "1.0.58"
