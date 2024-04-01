@@ -27,7 +27,7 @@ identity_verification_declined.reason.other: "se produjo un error, por favor pó
 identity_verification_declined.title: "No se ha podido verificar su identidad!"
 identity_verification_declined.body: "No pudimos procesar sus documentos debido a %{reason}."
 
-identity_verification_review_started.title: "La teva verificació està en procés!"
+identity_verification_review_started.title: "Su verificación está en proceso!"
 identity_verification_review_started.body: "Hem rebut els teus documents i els estem processant."
 
 transaction.intra_ledger_payment.title: "%{walletCurrency} Transacció"
