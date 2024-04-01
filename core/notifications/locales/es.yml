@@ -39,7 +39,7 @@ transaction.intra_ledger_receipt.body: "+%{formattedCurrencyAmount}"
 transaction.intra_ledger_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
 
 transaction.onchain_payment.title: "%{walletCurrency} Transacción"
-transaction.onchain_payment.body_display_currency: "Pagament en cadena enviat %{displayCurrencyAmount} | %{formattedCurrencyAmount} confirmat"
+transaction.onchain_payment.body_display_currency: "Pago en cadena enviado %{displayCurrencyAmount} | %{formattedCurrencyAmount} confirmado"
 transaction.onchain_payment.body: "Pagament enviat en cadena de %{formattedCurrencyAmount} confirmat"
 
 transaction.onchain_receipt.title: "%{walletCurrency} Transacció"
