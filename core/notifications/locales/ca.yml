@@ -1,0 +1,65 @@
+_version: 1
+
+circle_time_frame.month: "Aquest mes"
+circle_time_frame.all_time: ""
+
+circle_type.inner: "circle intern"
+circle_type.outer: "circle extern"
+
+circle_grew.title: "Els teus cercles Blink estan creixent!"
+circle_grew.body: "S'acaba d'afegir algú al teu %{circle_type}."
+
+circle_threshold_reached.inner.title: "Guanys del cercle intern! \U0001F919"
+circle_threshold_reached.inner.body: "Has donat la benvinguda a %{threshold} persones a Blink%{time_frame}. Segueix així!"
+
+circle_threshold_reached.outer.title: "Guanys del cercle extern \U0001F4AA"
+circle_threshold_reached.outer.body: "El teu cercle exterior ha arribat a %{threshold} persones. Estàs impulsant l'adopció de Bitcoin!"
+
+identity_verification_approved.title: "La teva identitat s'ha verificat!"
+identity_verification_approved.body: "S'han processat els documents de la teva verificació."
+
+identity_verification_declined.reason.documents_not_clear: "els documents enviats no eren prou clars"
+identity_verification_declined.reason.photo_not_clear: "la imatge que has enviat no era prou clara"
+identity_verification_declined.reason.documents_do_not_match: "els documents que has enviat no coincideixen amb la teva selfie i/o la informació que has proporcionat"
+identity_verification_declined.reason.documents_expired: "els documents que has enviat estan caducats"
+identity_verification_declined.reason.documents_not_supported: "els documents que has enviat no estan aceptats"
+identity_verification_declined.reason.other: "s'ha produït un error, posa'ts en contacte amb el servei d'assistència"
+identity_verification_declined.title: "No s'ha pogut verificar la teva identitat!"
+identity_verification_declined.body: "No hem pogut processar els teus documents perquè %{reason}."
+
+identity_verification_review_started.title: "La teva verificació està en procés!"
+identity_verification_review_started.body: "Hem rebut els teus documents i els estem processant."
+
+transaction.intra_ledger_payment.title: "%{walletCurrency} Transacció"
+transaction.intra_ledger_payment.body: "Pagament enviat de %{formattedCurrencyAmount}"
+transaction.intra_ledger_payment.body_display_currency: "Pagament enviat de %{displayCurrencyAmount}  | %{formattedCurrencyAmount}"
+
+transaction.intra_ledger_receipt.title: "%{walletCurrency} Transacció"
+transaction.intra_ledger_receipt.body: "+%{formattedCurrencyAmount}"
+transaction.intra_ledger_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+transaction.onchain_payment.title: "%{walletCurrency} Transacció"
+transaction.onchain_payment.body_display_currency: "Pagament en xarxa enviat de %{displayCurrencyAmount} | %{formattedCurrencyAmount} confirmed"
+transaction.onchain_payment.body: "Pagament en xarxa enviat de %{formattedCurrencyAmount} confirmed"
+
+transaction.onchain_receipt.title: "%{walletCurrency} Transacció"
+transaction.onchain_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt.body: "+%{formattedCurrencyAmount}"
+
+transaction.lightning_receipt.title: "%{walletCurrency} Transacció"
+transaction.lightning_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.lightning_receipt.body: "+%{formattedCurrencyAmount}"
+
+transaction.onchain_receipt_pending.title: "%{walletCurrency} Transacció | Pendent"
+transaction.onchain_receipt_pending.body_display_currency: "pendent +%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt_pending.body: "pendent +%{formattedCurrencyAmount}"
+
+transaction.paid_invoice.title: "%{walletCurrency} Transacció"
+transaction.paid_invoice.body: "+%{formattedCurrencyAmount}"
+transaction.paid_invoice.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+price_changed.title: "Bitcoin s'està movent!"
+price_changed.body: "Bitcoin s'ha incrementat %{percent_increase}% l'útim dia %{price}!"
+
+security.link_email_reminder.title: "Enllaça el correu electrònic per assegurar el compte"
+security.link_email_reminder.body: "Enllaça el teu correu electrònic per protegir el teu compte i rebre actualitzacions importants"
