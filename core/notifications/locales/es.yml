@@ -51,8 +51,8 @@ transaction.lightning_receipt.body_display_currency: "+%{displayCurrencyAmount} 
 transaction.lightning_receipt.body: "+%{formattedCurrencyAmount}"
 
 transaction.onchain_receipt_pending.title: "%{walletCurrency} Transacción | Pendiente"
-transaction.onchain_receipt_pending.body_display_currency: "pendent +%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
-transaction.onchain_receipt_pending.body: "pendent +%{formattedCurrencyAmount}"
+transaction.onchain_receipt_pending.body_display_currency: "pendiente +%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt_pending.body: "pendiente +%{formattedCurrencyAmount}"
 
 transaction.paid_invoice.title: "%{walletCurrency} Transacció"
 transaction.paid_invoice.body: "+%{formattedCurrencyAmount}"
