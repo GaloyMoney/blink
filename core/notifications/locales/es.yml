@@ -24,7 +24,7 @@ identity_verification_declined.reason.documents_do_not_match: "los documentos qu
 identity_verification_declined.reason.documents_expired: "los documentos que enviaste estan caducados"
 identity_verification_declined.reason.documents_not_supported: "los documentos que enviaste no estan aceptados"
 identity_verification_declined.reason.other: "se produjo un error, por favor póngase en contacto con el soporte"
-identity_verification_declined.title: "No s'ha pogut verificar la teva identitat!"
+identity_verification_declined.title: "No se ha podido verificar su identidad!"
 identity_verification_declined.body: "No pudimos procesar sus documentos debido a %{reason}."
 
 identity_verification_review_started.title: "La teva verificació està en procés!"
