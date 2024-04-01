@@ -96,7 +96,7 @@ const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({
     option: (base: CSSObjectWithLabel, state: OptionProps<OptionType, false>) => {
       return {
         ...base,
-        backgroundColor: state.isFocused ? "var(--primaryColor)" : undefined,
+        backgroundColor: state.isFocused ? "var(--primary3)" : undefined,
         color: state.isFocused ? "white" : "black",
       } as CSSObjectWithLabel
     },

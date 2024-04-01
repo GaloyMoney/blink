@@ -62,7 +62,7 @@
 
 .payBtn,
 .payNewBtn {
-  background: var(--primaryColor);
+  background: var(--primary3);
   color: #fff;
   font-weight: 600;
   width: 75%;

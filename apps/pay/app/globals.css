@@ -169,7 +169,7 @@ body {
 .print-paycode-button {
   padding: 9px 32px;
   border-radius: 10em;
-  background: var(--primaryColor);
+  background: var(--primary3);
   border: none;
   color: #fff;
   font-weight: 600;
@@ -188,7 +188,7 @@ body {
   --sky: #c3ccff;
   --primaryColor: #fc5805;
   --primaryColorDisabled: #c54404;
-  --primary3: #010101;
+  --primary3: #fd800b;
   --primary4: #fe990d;
   --primary4Disabled: #b36800;
   --primary5: #ffad0d;
