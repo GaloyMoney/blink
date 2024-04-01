@@ -54,7 +54,7 @@ transaction.onchain_receipt_pending.title: "%{walletCurrency} Transacción | Pen
 transaction.onchain_receipt_pending.body_display_currency: "pendiente +%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
 transaction.onchain_receipt_pending.body: "pendiente +%{formattedCurrencyAmount}"
 
-transaction.paid_invoice.title: "%{walletCurrency} Transacció"
+transaction.paid_invoice.title: "%{walletCurrency} Transacción"
 transaction.paid_invoice.body: "+%{formattedCurrencyAmount}"
 transaction.paid_invoice.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
 
