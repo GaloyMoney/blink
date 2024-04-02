@@ -9,11 +9,12 @@ files.extend-exclude = [
   "prelude",
   "core/notifications/locales/*.yml",
   "apps/admin-panel/components/notification/languages.ts",
+  "apps/pay/components/success-animation.json",
 ]
 
 default.extend-ignore-identifiers-re = [
   "^bc1\\w+",
-  "^lnbc1\\w+",
+  "^lnbc\\w+",
   "[Ww][Ss]",
 ]
 
