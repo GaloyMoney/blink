@@ -1,6 +1,6 @@
 "use client"
 import { useParams, useSearchParams } from "next/navigation"
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import Image from "react-bootstrap/Image"
 
 import { useReactToPrint } from "react-to-print"
@@ -60,6 +60,7 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: P
   const { state } = useInvoiceContext()
   const isCurrencySats = state.displayCurrencyMetaData.id === "SAT"
   const componentRef = useRef<HTMLDivElement | null>(null)
+  const [posCompanionInstalled, setPosCompanionInstalled] = useState(false)
 
   const printReceipt = useReactToPrint({
     content: () => componentRef.current,
@@ -71,6 +72,28 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: P
     },
     skip: !paymentRequest,
   })
+
+  useEffect(() => {
+    const checkRelatedApps = async () => {
+      try {
+        if ("getInstalledRelatedApps" in navigator) {
+          /* eslint @typescript-eslint/ban-ts-comment: "off" */
+          // @ts-ignore-next-line no-implicit-any error
+          const apps = await navigator.getInstalledRelatedApps()
+          const isAppInstalled = apps.some(
+            (app: { id: string }) => app.id === "com.blink.pos.companion",
+          )
+          setPosCompanionInstalled(isAppInstalled)
+        } else {
+          console.error("getInstalledRelatedApps is not supported in this browser.")
+        }
+      } catch (error) {
+        console.error("Error checking installed related apps:", error)
+      }
+    }
+
+    checkRelatedApps()
+  }, [])
 
   useEffect(() => {
     if (
@@ -108,7 +131,22 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: P
   )
 
   const downloadReceipt = (
-    <button className={styles.payNewBtn} onClick={() => printReceipt()}>
+    <button
+      className={styles.payNewBtn}
+      onClick={() => {
+        if (posCompanionInstalled && username && typeof username === "string") {
+          sendDataToPosCompanion({
+            username,
+            amount: localStorage.getItem("formattedFiatValue") || "",
+            paymentHash: data?.lnInvoicePaymentStatus.paymentHash || "",
+          })
+          console.log("sent data to pos companion")
+        } else {
+          console.log("using default print")
+          printReceipt()
+        }
+      }}
+    >
       <Image src="/icons/print-icon.svg" alt="print icon" width="18" height="18" />
       Print Receipt
     </button>
