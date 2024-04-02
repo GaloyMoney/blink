@@ -17,7 +17,7 @@ export const QuizzesSectionsConfig = [
       "moneyEvolution",
       "whyStonesShellGold",
       "moneyIsImportant",
-      "moneyImportantGovernment",
+      "moneyImportantGovernement",
     ],
   },
   {
@@ -25,7 +25,7 @@ export const QuizzesSectionsConfig = [
     quiz: [
       "WhatIsFiat",
       "whyCareAboutFiatMoney",
-      "GovernmentCanPrintMoney",
+      "GovernementCanPrintMoney",
       "FiatLosesValueOverTime",
       "OtherIssues",
     ],
