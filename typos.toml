@@ -18,12 +18,14 @@ default.extend-ignore-identifiers-re = [
   "[Ww][Ss]",
 ]
 
-default.extend-ignore-re = ["\"eyJ[a-zA-Z0-9_\\-\\.]+\""]
+default.extend-ignore-re = ["\"eyJ[a-zA-Z0-9_\\-\\.]+\"",
+  "moneyImportantGovernement",
+  "GovernementCanPrintMoney",
+  "moneySocialAggrement",
+]
 
 [default.extend-words]
 # returned from twilio API referenced in src/debug/text-sms.ts
 Ons = "Ons"
 Lsat = "Lsat"
 quizs = "quizs"
-Aggrement = "Aggrement"
-Governement = "Governement"
