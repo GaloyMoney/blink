@@ -105,7 +105,7 @@ describe("quiz", () => {
       { quizId: "moneyEvolution" as QuizQuestionId, createdAt: new Date() },
       { quizId: "whyStonesShellGold" as QuizQuestionId, createdAt: new Date() },
       { quizId: "moneyIsImportant" as QuizQuestionId, createdAt: new Date() },
-      { quizId: "moneyImportantGovernement" as QuizQuestionId, createdAt: new Date() },
+      { quizId: "moneyImportantGovernment" as QuizQuestionId, createdAt: new Date() },
     ]
     const filledInfo = fillQuizInformation(quizzesCompleted)
     expect(filledInfo.currentSection).toBe(2)
@@ -160,7 +160,7 @@ describe("quiz", () => {
       { quizId: "whyStonesShellGold" as QuizQuestionId, createdAt: dateFromLastHour },
       { quizId: "moneyIsImportant" as QuizQuestionId, createdAt: dateFromLastHour },
       {
-        quizId: "moneyImportantGovernement" as QuizQuestionId,
+        quizId: "moneyImportantGovernment" as QuizQuestionId,
         createdAt: dateFromLastHour,
       },
       { quizId: "whatIsBitcoin" as QuizQuestionId, createdAt: dateFromLastWeek },
