@@ -31,7 +31,7 @@ const bundleErrMsg = ({
       id: tx.id,
       journalId: tx.journalId,
       type: tx.type,
-      pendingConfirmaton: tx.pendingConfirmation,
+      pendingConfirmation: tx.pendingConfirmation,
       currency: tx.currency,
       debit: tx.debit,
       credit: tx.credit,
