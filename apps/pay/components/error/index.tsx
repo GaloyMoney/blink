@@ -9,7 +9,7 @@ function ErrorMessage({ errorMessage }: { errorMessage: string }) {
       <Link
         href="/"
         onClick={() => localStorage.removeItem("username")}
-        className="px-4 py-2 text-sm font-semibold text-white bg-[var(--primaryColor)] rounded-full"
+        className="px-4 py-2 text-sm font-semibold text-white bg-[var(--primary3)] rounded-full"
       >
         <div>Go back</div>
       </Link>
