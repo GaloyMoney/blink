@@ -21,7 +21,7 @@ function page({ searchParams }: Prop) {
             callbackUrl: "/setuppwa",
           })
         }}
-        className="px-4 py-2 text-sm font-semibold text-white bg-[var(--primaryColor)] rounded-full cursor-pointer"
+        className="px-4 py-2 text-sm font-semibold text-white bg-[var(--primary3)] rounded-full cursor-pointer"
       >
         <div>Go Back</div>
       </div>

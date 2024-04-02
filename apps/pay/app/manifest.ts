@@ -12,6 +12,13 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: "/",
     display: "standalone",
     id: "/",
+    related_applications: [
+      {
+        platform: "play",
+        id: "com.blink.pos.companion",
+        url: "https://github.com/GaloyMoney/pos-print-companion",
+      },
+    ],
     icons: [
       {
         src: "/icon-POS.png",
