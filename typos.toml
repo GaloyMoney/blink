@@ -25,3 +25,4 @@ default.extend-ignore-re = ["\"eyJ[a-zA-Z0-9_\\-\\.]+\""]
 Ons = "Ons"
 Lsat = "Lsat"
 quizs = "quizs"
+Aggrement = "Aggrement"
