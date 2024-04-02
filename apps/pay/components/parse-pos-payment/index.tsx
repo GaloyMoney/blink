@@ -23,6 +23,7 @@ import ReceiveInvoice from "./receive-invoice"
 import NFCComponent from "./nfc"
 
 import { satCurrencyMetadata } from "@/app/sats-currency-metadata"
+import useDynamicFontSize from "@/hooks/use-dynamic-font-size"
 
 interface Props {
   defaultWalletCurrency: string
@@ -50,7 +51,10 @@ function ParsePayment({
       : false
   const currencyMetadata = state.displayCurrencyMetaData
   const language = typeof navigator !== "undefined" ? navigator?.language : "en"
-
+  const amountFontSize = useDynamicFontSize({
+    inputValue: state.currentAmount,
+    defaultSize: 3,
+  })
   // set all query params on first load, even if they are not passed
   useEffect(() => {
     const initialAmount = safeAmount(state.currentAmount).toString()
@@ -175,7 +179,8 @@ function ParsePayment({
           backgroundColor: "transparent",
           textAlign: "center",
           fontWeight: 600,
-          fontSize: "2rem",
+          fontSize: amountFontSize,
+          height: "3rem",
         }}
         value={state.currentAmount}
         intlConfig={{ locale: language, currency: display }}
