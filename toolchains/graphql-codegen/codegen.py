@@ -6,6 +6,8 @@ import argparse
 import subprocess
 import os
 import sys
+import shutil
+import tempfile
 
 def update_config_file(original_config_path, schemas, output_path):
     with open(original_config_path, 'r') as file:
@@ -28,44 +30,83 @@ def update_config_file(original_config_path, schemas, output_path):
         for schema in schemas:
             lines.append(f"  - \"{schema}\"\n")
     
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
     # Write to a new config file
     with open(output_path, 'w') as file:
         file.writelines(lines)
+    with open(output_path, 'r') as file:
+        for line in file:
+            print(line, end='')
 
 def main(args):
-    # Prepare the updated config file
-    updated_config_path = "updated_config.yml"
-    update_config_file(args.config, args.schema, updated_config_path)
+    with tempfile.TemporaryDirectory() as tempdir:
+        root_dir = os.path.join(tempdir, "root")
+        # Prepare the updated config file
+        updated_config_path = os.path.join(root_dir, "updated_config.yml")
+        update_config_file(args.config, args.schema, updated_config_path)
 
-    # Check if the generator binary exists
-    codegen_bin = args.graphql_codegen_bin
+        for arg in args.src or []:
+            dst, src = arg.split("=")
 
-    # Run the generator binary and pass the updated out-path directly to the command
-    cmd = [
-        codegen_bin,
-        "--verbose",
-        "--config",
-        updated_config_path,
-    ]
+            parent_dir = os.path.dirname(dst)
+            if parent_dir:
+                dst_dir = os.path.join(root_dir, parent_dir)
+                if not os.path.isdir(dst_dir):
+                    os.makedirs(dst_dir, exist_ok=True)
+            abspath_src = os.path.abspath(src)
+            if os.path.isdir(abspath_src):
+                shutil.copytree(
+                    abspath_src,
+                    os.path.join(root_dir, dst),
+                    symlinks=True,
+                    dirs_exist_ok=True,
+                )
+            else:
+                shutil.copy(
+                    abspath_src,
+                    os.path.join(root_dir, dst),
+                )
 
-    # Print out the command for debugging purposes
-    print("Running Command:")
-    print(' '.join(cmd))
+        # Use os.listdir() to get everything in the directory
+        contents = os.listdir(root_dir)
+        
+        # Print the contents
+        for item in contents:
+            print(item)
 
-    try:
-        # Run the command without redirecting stdout since output is handled by rover itself
-        result = subprocess.run(cmd, stderr=subprocess.PIPE, text=True)
+        # Check if the generator binary exists
+        codegen_bin = args.graphql_codegen_bin
 
-        # Check if the generator command was successful
-        if result.returncode != 0:
-            print(f"Error: The generator binary failed to run with error:\n{result.stderr}")
-            sys.exit(result.returncode)
+        # Run the generator binary and pass the updated out-path directly to the command
+        cmd = [
+            codegen_bin,
+            "--verbose",
+            "--config",
+            updated_config_path
+        ]
+        # Print out the command for debugging purposes
+        print("Running Command:")
+        print(' '.join(cmd))
 
-        print(f"Success: Output written to {args.out_path}")
+        try:
+            # Run the command without redirecting stdout since output is handled by rover itself
+            result = subprocess.run(cmd, stderr=subprocess.PIPE, text=True)
+    
+            # Check if the generator command was successful
+            if result.returncode != 0:
+                print(f"Error: The generator binary failed to run with error:\n{result.stderr}")
+                sys.exit(result.returncode)
+    
+            print(f"Success: Output written to {args.out_path}")
+    
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            sys.exit(1)
 
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        sys.exit(1)
+        os.makedirs(os.path.dirname(args.out_path), exist_ok=True)
+        shutil.move(os.path.join(root_dir), os.path.join(args.out_path))
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
@@ -78,6 +119,11 @@ if __name__ == "__main__":
         "--config",
         required=True,
         help="Path to codegen.yml",
+    )
+    parser.add_argument(
+        "--src",
+        action="append",
+        help="Add a source into the source tree"
     )
     parser.add_argument(
         "--schema",

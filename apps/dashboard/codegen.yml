@@ -2,11 +2,10 @@ overwrite: true
 schema:
   - "../../dev/config/apollo-federation/supergraph.graphql"
 documents:
-  - "app/**/*.ts"
-  - "app/**/*.tsx"
-  - "services/**/*.ts"
-  - "services/**/*.tsx"
-  - "e2e/**/*.ts"
+  - "apps/dashboard/app/**/*.ts"
+  - "apps/dashboard/app/**/*.tsx"
+  - "apps/dashboard/services/**/*.ts"
+  - "apps/dashboard/services/**/*.tsx"
 generates:
   services/graphql/generated.ts:
     plugins:

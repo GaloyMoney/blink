@@ -7,7 +7,7 @@ load("@prelude//python:toolchain.bzl", "PythonToolchainInfo",)
 load(":toolchain.bzl", "GraphqlCodegenToolchainInfo",)
 
 def graphql_codegen_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
-    out = ctx.actions.declare_output("codegen-out", dir = True)
+    out = ctx.actions.declare_output("out", dir = True)
 
     codegen_toolchain = ctx.attrs._codegen_toolchain[GraphqlCodegenToolchainInfo]
 
@@ -19,6 +19,9 @@ def graphql_codegen_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
         "--config",
         ctx.attrs.config
     )
+    for src in ctx.attrs.srcs:
+        cmd.add("--src")
+        cmd.add(cmd_args(src, format = "={}"))
     for schema in ctx.attrs.schemas:
         cmd.add(
             "--schema",
@@ -32,6 +35,11 @@ def graphql_codegen_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
 graphql_codegen = rule(
     impl = graphql_codegen_impl,
     attrs = {
+        "srcs": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """List of package source files to track.""",
+        ),
         "schemas": attrs.list(
             attrs.source(),
             default = [],

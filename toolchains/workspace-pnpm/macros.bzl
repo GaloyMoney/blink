@@ -1295,3 +1295,47 @@ def jest_test(
         visibility = visibility,
         **kwargs,
     )
+
+def graphql_codegen(
+        node_modules = ":node_modules",
+        visibility = ["PUBLIC"],
+        **kwargs):
+    codegen_bin = "graphql_codegen_bin"
+    if not rule_exists(codegen_bin):
+        npm_bin(
+            name = codegen_bin,
+            bin_name = "graphql-codegen",
+        )
+
+    _graphql_codegen(
+        graphql_codegen = ":{}".format(jest_bin),
+        node_modules = node_modules,
+        visibility = visibility,
+        **kwargs,
+    )
+
+_graphql_codegen = rule(
+    impl = graphql_codegen_impl,
+    attrs = {
+        "schemas": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """List of all schemas""",
+        ),
+        "config": attrs.source(
+            doc = """Configuration file to use for codegen""",
+        ),
+        "graphql_codegen": attrs.dep(
+            providers = [RunInfo],
+            doc = """graphql-codegen dependency.""",
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
