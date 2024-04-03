@@ -8,6 +8,7 @@ load(
   "eslint",
   "audit",
   "graphql_codegen",
+  "dev_update_paths"
 )
 
 dev_pnpm_task_binary(
@@ -101,6 +102,11 @@ graphql_codegen(
   config = ":codegen.yml",
   schemas = ["//core/api:public-sdl"],
   srcs = [":src"]
+)
+
+dev_update_paths(
+  name = "update-codegen",
+  generated = ":codegen",
 )
 
 dev_deps_srcs = {
