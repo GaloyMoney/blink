@@ -40,6 +40,7 @@ generates:
         SignedAmount: "number"
         TargetConfirmations: "number"
         Timestamp: "number"
+        TxExternalId: "string"
         Username: "string"
         WalletId: "string"
         Seconds: "number"
