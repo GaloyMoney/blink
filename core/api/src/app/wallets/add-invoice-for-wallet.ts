@@ -17,6 +17,7 @@ import {
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@/services/mongoose"
+import { checkedToLedgerExternalId } from "@/domain/ledger"
 
 const defaultBtcExpiration = DEFAULT_EXPIRATIONS["BTC"].delayMinutes
 const defaultUsdExpiration = DEFAULT_EXPIRATIONS["USD"].delayMinutes
@@ -26,6 +27,7 @@ const addInvoiceForSelf = async ({
   walletAmount,
   memo = "",
   expiresIn,
+  externalId,
 }: AddInvoiceForSelfArgs): Promise<WalletInvoice | ApplicationError> =>
   addInvoice({
     walletId,
@@ -35,7 +37,7 @@ const addInvoiceForSelf = async ({
       recipientWalletDescriptor,
     }: BuildWIBWithAmountFnArgs) =>
       walletInvoiceBuilder
-        .withExternalId()
+        .withExternalId(externalId)
         .withDescription({ description: memo })
         .generatedForSelf()
         .withRecipientWallet(recipientWalletDescriptor)
@@ -58,7 +60,18 @@ export const addInvoiceForSelfForBtcWallet = async (
   const walletAmount = checkedToBtcPaymentAmount(args.amount)
   if (walletAmount instanceof Error) return walletAmount
 
-  return addInvoiceForSelf({ walletId, walletAmount, expiresIn, memo: args.memo })
+  const externalId = args.externalId
+    ? checkedToLedgerExternalId(args.externalId)
+    : undefined
+  if (externalId instanceof Error) return externalId
+
+  return addInvoiceForSelf({
+    walletId,
+    walletAmount,
+    expiresIn,
+    memo: args.memo,
+    externalId,
+  })
 }
 
 export const addInvoiceForSelfForUsdWallet = async (
@@ -76,40 +89,67 @@ export const addInvoiceForSelfForUsdWallet = async (
   const walletAmount = checkedToUsdPaymentAmount(args.amount)
   if (walletAmount instanceof Error) return walletAmount
 
-  return addInvoiceForSelf({ walletId, walletAmount, expiresIn, memo: args.memo })
+  const externalId = args.externalId
+    ? checkedToLedgerExternalId(args.externalId)
+    : undefined
+  if (externalId instanceof Error) return externalId
+
+  return addInvoiceForSelf({
+    walletId,
+    walletAmount,
+    expiresIn,
+    memo: args.memo,
+    externalId,
+  })
 }
 
-export const addInvoiceNoAmountForSelf = async ({
+const addInvoiceNoAmountForSelf = async ({
   walletId,
   memo = "",
   expiresIn,
-}: AddInvoiceNoAmountForSelfArgs): Promise<WalletInvoice | ApplicationError> => {
-  const walletIdChecked = checkedToWalletId(walletId)
-  if (walletIdChecked instanceof Error) return walletIdChecked
-
-  let defaultExpiresIn = defaultBtcExpiration
-  const validated = await validateIsBtcWallet(walletIdChecked)
-  if (validated instanceof Error) {
-    defaultExpiresIn = defaultUsdExpiration
-  }
-
-  const expiresInChecked = checkedToMinutes(expiresIn || defaultExpiresIn)
-  if (expiresInChecked instanceof Error) return expiresInChecked
-
-  return addInvoice({
-    walletId: walletIdChecked,
+  externalId,
+}: AddInvoiceNoAmountForSelfArgs): Promise<WalletInvoice | ApplicationError> =>
+  addInvoice({
+    walletId,
     limitCheckFn: checkSelfWalletIdRateLimits,
     buildWIBWithAmountFn: ({
       walletInvoiceBuilder,
       recipientWalletDescriptor,
     }: BuildWIBWithAmountFnArgs) =>
       walletInvoiceBuilder
-        .withExternalId()
+        .withExternalId(externalId)
         .withDescription({ description: memo })
         .generatedForSelf()
         .withRecipientWallet(recipientWalletDescriptor)
-        .withExpiration(expiresInChecked)
+        .withExpiration(expiresIn)
         .withoutAmount(),
+  })
+
+export const addInvoiceNoAmountForSelfForAnyWallet = async (
+  args: AddInvoiceNoAmountForSelfForAnyWalletArgs,
+): Promise<WalletInvoice | ApplicationError> => {
+  const walletId = checkedToWalletId(args.walletId)
+  if (walletId instanceof Error) return walletId
+
+  let defaultExpiresIn = defaultBtcExpiration
+  const validated = await validateIsBtcWallet(walletId)
+  if (validated instanceof Error) {
+    defaultExpiresIn = defaultUsdExpiration
+  }
+
+  const expiresIn = checkedToMinutes(args.expiresIn || defaultExpiresIn)
+  if (expiresIn instanceof Error) return expiresIn
+
+  const externalId = args.externalId
+    ? checkedToLedgerExternalId(args.externalId)
+    : undefined
+  if (externalId instanceof Error) return externalId
+
+  return addInvoiceNoAmountForSelf({
+    walletId,
+    expiresIn,
+    memo: args.memo,
+    externalId,
   })
 }
 
@@ -119,6 +159,7 @@ const addInvoiceForRecipient = async ({
   memo = "",
   descriptionHash,
   expiresIn,
+  externalId,
 }: AddInvoiceForRecipientArgs): Promise<WalletInvoice | ApplicationError> =>
   addInvoice({
     walletId: recipientWalletId,
@@ -128,7 +169,7 @@ const addInvoiceForRecipient = async ({
       recipientWalletDescriptor,
     }: BuildWIBWithAmountFnArgs) =>
       walletInvoiceBuilder
-        .withExternalId()
+        .withExternalId(externalId)
         .withDescription({ description: memo, descriptionHash })
         .generatedForRecipient()
         .withRecipientWallet(recipientWalletDescriptor)
@@ -151,12 +192,18 @@ export const addInvoiceForRecipientForBtcWallet = async (
   const walletAmount = checkedToBtcPaymentAmount(args.amount)
   if (walletAmount instanceof Error) return walletAmount
 
+  const externalId = args.externalId
+    ? checkedToLedgerExternalId(args.externalId)
+    : undefined
+  if (externalId instanceof Error) return externalId
+
   return addInvoiceForRecipient({
     recipientWalletId,
     walletAmount,
     expiresIn,
     descriptionHash: args.descriptionHash,
     memo: args.memo,
+    externalId,
   })
 }
 
@@ -175,12 +222,18 @@ export const addInvoiceForRecipientForUsdWallet = async (
   const walletAmount = checkedToUsdPaymentAmount(args.amount)
   if (walletAmount instanceof Error) return walletAmount
 
+  const externalId = args.externalId
+    ? checkedToLedgerExternalId(args.externalId)
+    : undefined
+  if (externalId instanceof Error) return externalId
+
   return addInvoiceForRecipient({
     recipientWalletId,
     walletAmount,
     expiresIn,
     descriptionHash: args.descriptionHash,
     memo: args.memo,
+    externalId,
   })
 }
 
@@ -199,46 +252,68 @@ export const addInvoiceForRecipientForUsdWalletAndBtcAmount = async (
   const walletAmount = checkedToBtcPaymentAmount(args.amount)
   if (walletAmount instanceof Error) return walletAmount
 
+  const externalId = args.externalId
+    ? checkedToLedgerExternalId(args.externalId)
+    : undefined
+  if (externalId instanceof Error) return externalId
+
   return addInvoiceForRecipient({
     recipientWalletId,
     walletAmount,
     expiresIn,
     descriptionHash: args.descriptionHash,
     memo: args.memo,
+    externalId,
   })
 }
 
-export const addInvoiceNoAmountForRecipient = async ({
+const addInvoiceNoAmountForRecipient = async ({
   recipientWalletId,
   memo = "",
   expiresIn,
-}: AddInvoiceNoAmountForRecipientArgs): Promise<WalletInvoice | ApplicationError> => {
-  const walletId = checkedToWalletId(recipientWalletId)
-  if (walletId instanceof Error) return walletId
-
-  let defaultExpiresIn = defaultBtcExpiration
-  const validated = await validateIsBtcWallet(walletId)
-  if (validated instanceof Error) {
-    defaultExpiresIn = defaultUsdExpiration
-  }
-
-  const expiresInChecked = checkedToMinutes(expiresIn || defaultExpiresIn)
-  if (expiresInChecked instanceof Error) return expiresInChecked
-
-  return addInvoice({
-    walletId,
+  externalId,
+}: AddInvoiceNoAmountForRecipientArgs): Promise<WalletInvoice | ApplicationError> =>
+  addInvoice({
+    walletId: recipientWalletId,
     limitCheckFn: checkRecipientWalletIdRateLimits,
     buildWIBWithAmountFn: ({
       walletInvoiceBuilder,
       recipientWalletDescriptor,
     }: BuildWIBWithAmountFnArgs) =>
       walletInvoiceBuilder
-        .withExternalId()
+        .withExternalId(externalId)
         .withDescription({ description: memo })
         .generatedForRecipient()
         .withRecipientWallet(recipientWalletDescriptor)
-        .withExpiration(expiresInChecked)
+        .withExpiration(expiresIn)
         .withoutAmount(),
+  })
+
+export const addInvoiceNoAmountForRecipientForAnyWallet = async (
+  args: AddInvoiceNoAmountForRecipientForAnyWalletArgs,
+): Promise<WalletInvoice | ApplicationError> => {
+  const recipientWalletId = checkedToWalletId(args.recipientWalletId)
+  if (recipientWalletId instanceof Error) return recipientWalletId
+
+  let defaultExpiresIn = defaultBtcExpiration
+  const validated = await validateIsBtcWallet(recipientWalletId)
+  if (validated instanceof Error) {
+    defaultExpiresIn = defaultUsdExpiration
+  }
+
+  const expiresIn = checkedToMinutes(args.expiresIn || defaultExpiresIn)
+  if (expiresIn instanceof Error) return expiresIn
+
+  const externalId = args.externalId
+    ? checkedToLedgerExternalId(args.externalId)
+    : undefined
+  if (externalId instanceof Error) return externalId
+
+  return addInvoiceNoAmountForRecipient({
+    recipientWalletId,
+    expiresIn,
+    memo: args.memo,
+    externalId,
   })
 }
 

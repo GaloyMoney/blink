@@ -224,6 +224,7 @@ export const fundWallet = async ({
     walletId: wallet.id,
     amount: Number(balanceAmount.amount),
     memo: `Fund new wallet ${wallet.id}`,
+    externalId: undefined,
   })
   if (invoice instanceof Error) throw invoice
   const { paymentRequest, paymentHash } = invoice.lnInvoice
