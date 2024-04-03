@@ -199,7 +199,11 @@ plan:
 #@   "map": {
 #@     "YAML_PATH": ".image.digest",
 #@     "CHART": "map"
-#@   }
+#@   },
+#@   "voucher": {
+#@     "YAML_PATH": ".image.digest",
+#@     "CHART": "voucher"
+#@   },
 #@ }
 name: #@ bump_image_in_chart_name(app)
 serial: true

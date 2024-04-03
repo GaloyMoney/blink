@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gradient-orange: linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.1),
+      rgba(0, 0, 0, 0.1)
+    ),
+    linear-gradient(45deg, #f6a139 0%, #fb5607 100%);
+  --orange: #fe7434;
+}
+
+
+body {
+  color: #212529;
+  background-color: rgb(255, 255, 255);
+}
+
+.top_page_container {
+  margin: 0 auto;
+  margin-top: 2em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+  max-width: 30em;
+}
+
+.top_page_container_user_links {
+  margin: 0 auto;
+  margin-top: 2em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 65em;
+}
+
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print_this,
+  .print_this * {
+    visibility: visible;
+    position: initial;
+
+  }
+
+  @page {
+    size: auto;
+    margin: 0;
+  }
+}

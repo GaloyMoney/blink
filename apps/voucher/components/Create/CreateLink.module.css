@@ -1,0 +1,89 @@
+.container {
+  margin: 0 auto;
+  margin-top: 5em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+  max-width: 90%;
+}
+
+.currency_drop_down_option {
+  text-align: center;
+  padding: 1em;
+}
+
+.currency_drop_down {
+  width: 90%;
+  padding: 10px;
+  border-radius: 0.5em;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px,
+    rgb(209, 213, 219) 0px 0px 0px 1px inset;
+}
+
+.account_type {
+  width: 90%;
+  display: flex;
+  gap: 1em;
+  padding: 10px;
+  border-radius: 1em;
+}
+
+.account_type_button {
+  border-radius: 0.5em;
+  border-width: 0.124em;
+  border-color: var(--orange);
+  text-align: center;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  padding: 0.5em 1em;
+  cursor: pointer;
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
+    rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+  width: 100%;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.percentage_amount {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2em;
+}
+
+.account_type_button_selected {
+  border-radius: 0.5em;
+  border-width: 0.124em;
+  border-color: var(--orange);
+  text-align: center;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  padding: 0.5em 1em;
+  cursor: pointer;
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
+    rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+  width: 100%;
+  transition: background-color 0.3s, color 0.3s;
+  background: var(--gradient-orange);
+  color: rgb(255, 255, 255);
+}
+
+.alert_box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+}
+
+.commission_and_submit_buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+  width: 90%;
+}
