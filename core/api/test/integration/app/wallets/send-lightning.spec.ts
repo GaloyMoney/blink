@@ -647,6 +647,7 @@ describe("initiated via lightning", () => {
         paid: false,
         lnInvoice,
         processingCompleted: false,
+        externalId: undefined,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -698,6 +699,7 @@ describe("initiated via lightning", () => {
         paid: false,
         lnInvoice,
         processingCompleted: false,
+        externalId: undefined,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -771,6 +773,7 @@ describe("initiated via lightning", () => {
         usdAmount,
         lnInvoice,
         processingCompleted: false,
+        externalId: undefined,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -793,6 +796,7 @@ describe("initiated via lightning", () => {
         paid: false,
         lnInvoice,
         processingCompleted: false,
+        externalId: undefined,
       })
       if (noAmountPersisted instanceof Error) throw noAmountPersisted
 
@@ -853,6 +857,7 @@ describe("initiated via lightning", () => {
         paid: false,
         lnInvoice,
         processingCompleted: false,
+        externalId: undefined,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -875,6 +880,7 @@ describe("initiated via lightning", () => {
         paid: false,
         lnInvoice,
         processingCompleted: false,
+        externalId: undefined,
       })
       if (noAmountPersisted instanceof Error) throw noAmountPersisted
 
@@ -932,6 +938,7 @@ describe("initiated via lightning", () => {
         paid: false,
         lnInvoice,
         processingCompleted: false,
+        externalId: undefined,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -1000,6 +1007,7 @@ describe("initiated via lightning", () => {
         paid: false,
         lnInvoice,
         processingCompleted: false,
+        externalId: undefined,
       })
       if (persisted instanceof Error) throw persisted
 

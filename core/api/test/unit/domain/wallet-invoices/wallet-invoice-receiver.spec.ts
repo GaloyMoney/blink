@@ -81,6 +81,7 @@ describe("WalletInvoiceReceiver", () => {
       createdAt: new Date(),
       lnInvoice: mockLnInvoice,
       processingCompleted: false,
+      externalId: undefined,
     }
 
     it("returns correct amounts", async () => {
@@ -122,6 +123,7 @@ describe("WalletInvoiceReceiver", () => {
         paid: false,
         createdAt: new Date(),
         lnInvoice: mockLnInvoice,
+        externalId: undefined,
         processingCompleted: false,
       }
 
@@ -158,6 +160,7 @@ describe("WalletInvoiceReceiver", () => {
         createdAt: new Date(),
         lnInvoice: mockLnInvoice,
         processingCompleted: false,
+        externalId: undefined,
       }
 
       it("returns correct amounts", async () => {

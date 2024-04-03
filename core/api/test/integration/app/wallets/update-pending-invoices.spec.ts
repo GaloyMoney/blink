@@ -71,6 +71,7 @@ describe("update pending invoices", () => {
         paid: false,
         lnInvoice: mockLnInvoice,
         processingCompleted: false,
+        externalId: undefined,
       }
       const persisted = await WalletInvoicesRepository().persistNew(
         expiredUsdWalletInvoice,
@@ -124,6 +125,7 @@ describe("update pending invoices", () => {
         paid: false,
         lnInvoice: mockLnInvoice,
         processingCompleted: false,
+        externalId: undefined,
       }
       const persisted = await WalletInvoicesRepository().persistNew(
         expiredBtcWalletInvoice,
@@ -203,6 +205,7 @@ describe("update pending invoices", () => {
         paid: false,
         lnInvoice: mockLnInvoice,
         processingCompleted: false,
+        externalId: undefined,
       }
 
       const persisted = await walletInvoices.persistNew(btcWalletInvoice)
@@ -296,6 +299,7 @@ describe("update pending invoices", () => {
         paid: false,
         lnInvoice: mockLnInvoice,
         processingCompleted: false,
+        externalId: undefined,
       }
 
       const persisted = await walletInvoices.persistNew(btcWalletInvoice)

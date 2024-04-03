@@ -22,6 +22,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     pubkey,
     paid,
     usdAmount,
+    externalId,
     lnInvoice,
   }: WalletInvoicesPersistNewArgs): Promise<WalletInvoice | RepositoryError> => {
     try {
@@ -35,6 +36,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
         cents: usdAmount ? Number(usdAmount.amount) : undefined,
         currency: recipientWalletDescriptor.currency,
         paymentRequest: lnInvoice.paymentRequest,
+        externalId,
       }).save()
       return ensureWalletInvoiceHasLnInvoice(walletInvoiceFromRaw(walletInvoice))
     } catch (err) {
@@ -276,6 +278,7 @@ const walletInvoiceFromRaw = (
     usdAmount: result.cents ? UsdPaymentAmount(BigInt(result.cents)) : undefined,
     createdAt: new Date(result.timestamp.getTime()),
     processingCompleted: result.processingCompleted,
+    externalId: (result.externalId as LedgerExternalId) || undefined,
     lnInvoice,
   }
 }

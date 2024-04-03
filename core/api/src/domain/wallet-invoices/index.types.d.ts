@@ -94,6 +94,7 @@ type WalletInvoiceWithOptionalLnInvoice = {
   paid: boolean
   createdAt: Date
   processingCompleted: boolean
+  externalId: LedgerExternalId | undefined
   lnInvoice?: LnInvoice // LnInvoice is optional because some older invoices don't have it
 }
 

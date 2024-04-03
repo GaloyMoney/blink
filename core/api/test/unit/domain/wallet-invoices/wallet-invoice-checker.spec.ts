@@ -3,7 +3,7 @@ import { CouldNotFindWalletInvoiceError, RepositoryError } from "@/domain/errors
 import { WalletCurrency } from "@/domain/shared"
 import { WalletInvoiceChecker } from "@/domain/wallet-invoices"
 
-const goodWalletInvoice = {
+const goodWalletInvoice: WalletInvoiceWithOptionalLnInvoice = {
   paymentHash: "paymentHash" as PaymentHash,
   secret: "secretPreImage" as SecretPreImage,
   selfGenerated: true,
@@ -12,6 +12,7 @@ const goodWalletInvoice = {
   paid: false,
   createdAt: new Date(Date.now()),
   processingCompleted: false,
+  externalId: undefined,
 }
 
 describe("WalletInvoiceChecker", () => {

@@ -20,5 +20,6 @@ export const createMockWalletInvoice = (recipientWalletDescriptor: {
     ) as LnInvoice, // Use a real invoice to test decoding
     createdAt: new Date(),
     processingCompleted: false,
+    externalId: undefined,
   }
 }
