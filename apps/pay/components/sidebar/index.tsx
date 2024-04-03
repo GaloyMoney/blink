@@ -18,6 +18,8 @@ import PinToHomescreen from "../pin-to-homescreen"
 
 import { Switch } from "../switch"
 
+import NFCComponent from "../parse-pos-payment/nfc"
+
 import { useInvoiceContext } from "@/context/invoice-context"
 import { ACTIONS } from "@/app/reducer"
 import { getClientSidePayDomain } from "@/config/config"
@@ -194,6 +196,7 @@ export function SideBar({ username }: { username: string }) {
                 onSelectedDisplayCurrencyChange={updateCurrencyAndReload}
               />
             </div>
+            <NFCComponent />
             <div className="flex flex-row justify-between align-middle align-content-center ">
               <div className="flex flex-col gap-0 p-0">
                 <p className="text-md font-semibold mb-1">lightning address</p>
@@ -224,7 +227,7 @@ export function SideBar({ username }: { username: string }) {
               </OverlayTrigger>
             </div>
             <div className="flex flex-row justify-between align-middle align-content-center m-0 rounded-md">
-              <p className="mb-4 font-semibold">Memo</p>
+              <p className="mb-2 font-semibold">Memo</p>
               <Switch checked={memoChecked} onCheckedChange={handleMemoShow} />
             </div>
             <div className="flex flex-col items-center justify-center gap-3 mt-2">

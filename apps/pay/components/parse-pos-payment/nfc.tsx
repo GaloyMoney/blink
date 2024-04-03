@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react"
 
 import { getParams } from "js-lnurl"
-import Image from "next/image"
 
 import styles from "./parse-payment.module.css"
 
@@ -203,25 +202,26 @@ function NFCComponent({ paymentRequest }: Props) {
   }, [nfcMessage, paymentRequest])
 
   return (
-    <div>
-      {isNfcSupported && !hasNFCPermission && (
-        <div className="d-flex justify-content-center" style={{ marginTop: "20px" }}>
+    <>
+      {isNfcSupported && paymentRequest === undefined && (
+        <div className="d-flex justify-content-center w-full">
           <button
             data-testid="nfc-btn"
-            className={styles.payNewBtn}
+            className={styles.secondaryBtn}
+            style={{
+              width: "100%",
+              borderRadius: "0.5em",
+              padding: "0.4rem",
+              fontWeight: "normal",
+            }}
             onClick={activateNfcScan}
+            disabled={hasNFCPermission}
           >
-            <Image
-              src={"/icons/lightning-icon.svg"}
-              alt="lightning icon"
-              width="20"
-              height="20"
-            />
-            Activate boltcard
+            {hasNFCPermission ? "Boltcard activated" : "Activate boltcard"}
           </button>
         </div>
       )}
-    </div>
+    </>
   )
 }
 
