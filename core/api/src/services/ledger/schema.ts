@@ -172,13 +172,13 @@ const transactionMetadataSchema = new Schema<TransactionMetadataRecord>(
       type: String,
       index: true,
     },
+    external_id: String,
   },
   { id: false },
 )
 
-transactionMetadataSchema.index({
-  hash: 1,
-})
+transactionMetadataSchema.index({ hash: 1 })
+transactionMetadataSchema.index({ external_id: 1 })
 
 export const TransactionMetadata = mongoose.model(
   "Medici_Transaction_Metadata",

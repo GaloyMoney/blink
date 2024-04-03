@@ -51,4 +51,5 @@ interface TransactionMetadataRecord {
 
   hash?: string
   revealedPreImage?: string
+  external_id?: string
 }
