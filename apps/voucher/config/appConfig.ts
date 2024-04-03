@@ -1,4 +1,4 @@
-import { Currency } from "@/utils/generated/graphql"
+import { Currency } from "@/lib/graphql/generated"
 
 export const MAX_INPUT_VALUE_LENGTH = 14
 export const DEFAULT_CURRENCY: Currency = {

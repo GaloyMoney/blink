@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { ExchangeCurrencyUnit, usePriceSubscription } from "@/utils/generated/graphql"
+import { ExchangeCurrencyUnit, usePriceSubscription } from "@/lib/graphql/generated"
 
 const useSatPrice = () => {
   const priceRef = React.useRef<number>(0)

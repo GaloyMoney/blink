@@ -5,7 +5,7 @@ import Bold from "../Bold"
 import styles from "./LinkDetails.module.css"
 
 import { timeSince } from "@/utils/helpers"
-import { WithdrawLink, Status } from "@/utils/generated/graphql"
+import { WithdrawLink, Status } from "@/lib/graphql/generated"
 import useSatPrice from "@/hooks/useSatsPrice"
 import { TimeBar } from "@/components/TimeBar/TimeBar"
 interface LinkDetailsProps {
@@ -32,8 +32,8 @@ export default function LinkDetails({ withdrawLink, setExpired }: LinkDetailsPro
         {withdrawLink?.status === Status.Unfunded
           ? "Not Funded"
           : withdrawLink?.status === Status.Funded
-            ? "Funded and Active"
-            : null}
+          ? "Funded and Active"
+          : null}
       </div>
       {withdrawLink.status === Status.Unfunded ? (
         <>

@@ -3,7 +3,7 @@ import { useState } from "react"
 import {
   useLnInvoiceCreateOnBehalfOfRecipientMutation,
   useLnUsdInvoiceCreateOnBehalfOfRecipientMutation,
-} from "@/utils/generated/graphql"
+} from "@/lib/graphql/generated"
 import { env } from "@/env"
 const { NEXT_PUBLIC_ESCROW_WALLET_BTC, NEXT_PUBLIC_ESCROW_WALLET_USD } = env
 
@@ -31,7 +31,7 @@ export const useCreateInvoice = ({ recipientWalletCurrency }: Props) => {
           },
         },
         context: {
-          endpoint: "MAINNET",
+          endpoint: "GALOY",
         },
       })
 
@@ -49,7 +49,7 @@ export const useCreateInvoice = ({ recipientWalletCurrency }: Props) => {
           },
         },
         context: {
-          endpoint: "MAINNET",
+          endpoint: "GALOY",
         },
       })
       return {

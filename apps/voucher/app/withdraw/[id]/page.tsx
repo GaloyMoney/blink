@@ -3,7 +3,7 @@ import React from "react"
 import Link from "next/link"
 
 import { env } from "@/env"
-import { useGetWithdrawLinkQuery, Status } from "@/utils/generated/graphql"
+import { useGetWithdrawLinkQuery, Status } from "@/lib/graphql/generated"
 import Button from "@/components/Button/Button"
 import LinkDetails from "@/components/LinkDetails/LinkDetails"
 import InfoComponent from "@/components/InfoComponent/InfoComponent"

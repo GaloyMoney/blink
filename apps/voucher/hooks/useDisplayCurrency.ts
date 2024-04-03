@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react"
 
-import { useCurrencyListQuery } from "@/utils/generated/graphql"
+import { useCurrencyListQuery } from "@/lib/graphql/generated"
 
 const usdDisplayCurrency = {
   symbol: "$",
@@ -35,19 +35,16 @@ const formatCurrencyHelper = ({
 export const useDisplayCurrency = () => {
   const { data: dataCurrencyList, loading } = useCurrencyListQuery({
     context: {
-      endpoint: "MAINNET",
+      endpoint: "GALOY",
     },
   })
 
   const displayCurrencyDictionary = useMemo(() => {
     const currencyList = dataCurrencyList?.currencyList || []
-    return currencyList.reduce(
-      (acc, currency) => {
-        acc[currency.id] = currency
-        return acc
-      },
-      {} as Record<string, typeof defaultDisplayCurrency>,
-    )
+    return currencyList.reduce((acc, currency) => {
+      acc[currency.id] = currency
+      return acc
+    }, {} as Record<string, typeof defaultDisplayCurrency>)
   }, [dataCurrencyList?.currencyList])
 
   const formatCurrency = useCallback(

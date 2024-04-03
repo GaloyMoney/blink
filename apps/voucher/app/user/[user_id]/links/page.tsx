@@ -9,7 +9,7 @@ import {
   Status,
   WithdrawLink,
   useGetWithdrawLinksByUserIdQuery,
-} from "@/utils/generated/graphql"
+} from "@/lib/graphql/generated"
 
 import PageLoadingComponent from "@/components/Loading/PageLoadingComponent"
 import UserLinksComponent from "@/components/UserLinks/UserLinks"

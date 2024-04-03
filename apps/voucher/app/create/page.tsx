@@ -9,7 +9,7 @@ import {
   Currency,
   useCreateWithdrawLinkMutation,
   useLnUsdInvoiceCreateOnBehalfOfRecipientMutation,
-} from "@/utils/generated/graphql"
+} from "@/lib/graphql/generated"
 import useSatsPrice from "@/hooks/useSatsPrice"
 import PageLoadingComponent from "@/components/Loading/PageLoadingComponent"
 import {
@@ -75,7 +75,7 @@ export default function CreatePage() {
           },
         },
         context: {
-          endpoint: "MAINNET",
+          endpoint: "GALOY",
         },
       })
 

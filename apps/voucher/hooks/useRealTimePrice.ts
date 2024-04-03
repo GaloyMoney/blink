@@ -8,7 +8,7 @@ import {
   RealtimePriceWsSubscription,
   useRealtimePriceInitialQuery,
   useRealtimePriceWsSubscription,
-} from "@/utils/generated/graphql"
+} from "@/lib/graphql/generated"
 
 interface Currency {
   __typename: string
@@ -38,7 +38,7 @@ const useRealtimePrice = (
       if (onSubscriptionDataCallback) onSubscriptionDataCallback(subscriptionData)
     },
     context: {
-      endpoint: "MAINNET",
+      endpoint: "GALOY",
     },
   })
 
@@ -56,7 +56,7 @@ const useRealtimePrice = (
       }
     },
     context: {
-      endpoint: "MAINNET",
+      endpoint: "GALOY",
     },
   })
   React.useEffect(() => {

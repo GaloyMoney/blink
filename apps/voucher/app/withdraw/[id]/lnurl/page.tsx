@@ -6,7 +6,7 @@ import styles from "./LnurlPage.module.css"
 
 import { encodeURLToLNURL, formatSecretCode } from "@/utils/helpers"
 import PageLoadingComponet from "@/components/Loading/PageLoadingComponent"
-import { useGetWithdrawLinkQuery, Status } from "@/utils/generated/graphql"
+import { useGetWithdrawLinkQuery, Status } from "@/lib/graphql/generated"
 import { env } from "@/env"
 import Button from "@/components/Button/Button"
 import InfoComponent from "@/components/InfoComponent/InfoComponent"
@@ -108,7 +108,7 @@ export default function Page({ params: { id } }: Params) {
               <div className={`${styles.LNURL_container} print_this`}>
                 <Heading>LNURL fund withdraw</Heading>
                 <p>scan to redeem</p>
-                <QRCode size={300} value={lnurl.toLowerCase()} />
+                <QRCode size={300} value={url} />
                 <p>or visit voucher.blink.sv and redeem with </p>
                 <div className={styles.voucher_container}>
                   <p> VOUCHER CODE </p>

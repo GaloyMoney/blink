@@ -5,7 +5,7 @@ import styles from "./ConfirmModal.module.css"
 import Button from "@/components/Button/Button"
 import ModalComponent from "@/components/ModalComponent"
 import { formatOperand } from "@/utils/helpers"
-import { Currency } from "@/utils/generated/graphql"
+import { Currency } from "@/lib/graphql/generated"
 
 interface Props {
   open: boolean

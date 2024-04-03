@@ -6,7 +6,7 @@ import Bold from "../Bold"
 import styles from "./UserLinks.module.css"
 
 import { formatDate } from "@/utils/helpers"
-import { Status, WithdrawLink } from "@/utils/generated/graphql"
+import { Status, WithdrawLink } from "@/lib/graphql/generated"
 
 interface UserLinksProps {
   withdrawLink: WithdrawLink
@@ -21,8 +21,8 @@ export default function UserLinks({ withdrawLink }: UserLinksProps) {
           withdrawLink.status === Status.Unfunded
             ? `/fund/${withdrawLink.id}`
             : withdrawLink.status === Status.Funded
-              ? `/withdraw/${withdrawLink.id}`
-              : "#"
+            ? `/withdraw/${withdrawLink.id}`
+            : "#"
         }
         onClick={(event) => {
           if (
@@ -63,18 +63,18 @@ export default function UserLinks({ withdrawLink }: UserLinksProps) {
                   withdrawLink.status === Status.Unfunded
                     ? "#d12b2b67"
                     : withdrawLink.status === Status.Paid
-                      ? "#a9a9a975"
-                      : withdrawLink.status === Status.Funded
-                        ? "#207f3c75"
-                        : "white",
+                    ? "#a9a9a975"
+                    : withdrawLink.status === Status.Funded
+                    ? "#207f3c75"
+                    : "white",
                 color:
                   withdrawLink.status === Status.Unfunded
                     ? "#b82222"
                     : withdrawLink.status === Status.Paid
-                      ? "#757575"
-                      : withdrawLink.status === Status.Funded
-                        ? "#0a802d"
-                        : "white",
+                    ? "#757575"
+                    : withdrawLink.status === Status.Funded
+                    ? "#0a802d"
+                    : "white",
               }}
               className={styles.Status}
             >

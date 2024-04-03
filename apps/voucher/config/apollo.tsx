@@ -74,7 +74,7 @@ function makeClient() {
       errorLink,
       retryLink,
       ApolloLink.split(
-        (operation) => operation.getContext().endpoint === "MAINNET",
+        (operation) => operation.getContext().endpoint === "GALOY",
         httpLinkMainnet,
         httpLinkLocal,
       ),

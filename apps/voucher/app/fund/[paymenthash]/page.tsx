@@ -18,7 +18,7 @@ import {
   useLnInvoicePaymentStatusSubscription,
   useDeleteWithdrawLinkMutation,
   InvoicePaymentStatus,
-} from "@/utils/generated/graphql"
+} from "@/lib/graphql/generated"
 import LinkDetails from "@/components/LinkDetails/LinkDetails"
 import ModalComponent from "@/components/ModalComponent"
 

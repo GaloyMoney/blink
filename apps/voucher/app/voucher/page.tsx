@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import styles from "./VoucherPage.module.css"
 
 import Heading from "@/components/Heading"
-import { useGetWithdrawLinkBySecretQuery } from "@/utils/generated/graphql"
+import { useGetWithdrawLinkBySecretQuery } from "@/lib/graphql/generated"
 
 import Button from "@/components/Button/Button"
 

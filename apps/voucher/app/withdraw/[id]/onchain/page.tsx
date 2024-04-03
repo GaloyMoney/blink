@@ -12,7 +12,7 @@ import {
   useSendPaymentOnChainMutation,
   useGetWithdrawLinkQuery,
   Status,
-} from "@/utils/generated/graphql"
+} from "@/lib/graphql/generated"
 import LoadingComponent from "@/components/Loading/LoadingComponent"
 import Button from "@/components/Button/Button"
 import Input from "@/components/Input"

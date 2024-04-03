@@ -32,7 +32,7 @@ type SendPaymentOnChainResult {
 
 type WithdrawLinksByUserIdResult {
   withdrawLinks: [WithdrawLink!]!
-  totalLinks: Int
+  totalLinks: Int!
 }
 
 enum Status {
@@ -56,7 +56,6 @@ type Mutation {
 }
 
 input CreateWithdrawLinkInput {
-  id:ID
   userId: ID!
   paymentRequest: String!
   paymentHash: String!
@@ -64,12 +63,9 @@ input CreateWithdrawLinkInput {
   salesAmount: Float!
   accountType: String!
   escrowWallet: String!
-  status: Status
   title: String!
   voucherAmount: Float!
   uniqueHash: String!
-  k1: String
-  commissionPercentage: Float
 }
 
 input UpdateWithdrawLinkInput {
