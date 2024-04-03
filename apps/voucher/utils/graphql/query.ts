@@ -1,30 +1,30 @@
-import { gql } from "@apollo/client";
+import { gql } from "@apollo/client"
 
 export const GET_WITHDRAW_LINK = gql`
   query GetWithdrawLink($getWithdrawLinkId: ID) {
     getWithdrawLink(id: $getWithdrawLinkId) {
       id
-      user_id
-      payment_request
-      payment_hash
-      payment_secret
-      sales_amount
-      account_type
-      escrow_wallet
+      userId
+      paymentRequest
+      paymentHash
+      paymentSecret
+      salesAmount
+      accountType
+      escrowWallet
       status
       title
-      voucher_amount
-      unique_hash
+      voucherAmount
+      uniqueHash
       k1
-      created_at
-      updated_at
-      commission_percentage
-      identifier_code
-      secret_code
-      invoice_expiration
+      createdAt
+      updatedAt
+      commissionPercentage
+      identifierCode
+      secretCode
+      invoiceExpiration
     }
   }
-`;
+`
 
 export const GET_WITHDRAW_LINKS_BY_USER_ID = gql`
   query GetWithdrawLinksByUserId(
@@ -34,36 +34,36 @@ export const GET_WITHDRAW_LINKS_BY_USER_ID = gql`
     $offset: Int
   ) {
     getWithdrawLinksByUserId(
-      user_id: $userId
+      userId: $userId
       status: $status
       limit: $limit
       offset: $offset
     ) {
-      total_links
+      totalLinks
       withdrawLinks {
         id
-        user_id
-        payment_request
-        payment_hash
-        payment_secret
-        sales_amount
-        account_type
-        escrow_wallet
+        userId
+        paymentRequest
+        paymentHash
+        paymentSecret
+        salesAmount
+        accountType
+        escrowWallet
         status
         title
-        voucher_amount
-        unique_hash
+        voucherAmount
+        uniqueHash
         k1
-        created_at
-        updated_at
-        commission_percentage
-        identifier_code
-        secret_code
-        invoice_expiration
+        createdAt
+        updatedAt
+        commissionPercentage
+        identifierCode
+        secretCode
+        invoiceExpiration
       }
     }
   }
-`;
+`
 
 export const GET_CURRENCY_LIST = gql`
   query CurrencyList {
@@ -75,10 +75,10 @@ export const GET_CURRENCY_LIST = gql`
       fractionDigits
     }
   }
-`;
+`
 
 export const GET_REAL_TIME_PRICE = gql`
-  query realtimePriceInitial($currency: DisplayCurrency!) {
+  query RealtimePriceInitial($currency: DisplayCurrency!) {
     realtimePrice(currency: $currency) {
       timestamp
       btcSatPrice {
@@ -92,26 +92,23 @@ export const GET_REAL_TIME_PRICE = gql`
       denominatorCurrency
     }
   }
-`;
+`
 
 export const GET_ON_CHAIN_PAYMENT_FEES = gql`
-  query GetOnChainPaymentFees(
-    $getOnChainPaymentFeesId: ID!
-    $btcWalletAddress: String!
-  ) {
+  query GetOnChainPaymentFees($getOnChainPaymentFeesId: ID!, $btcWalletAddress: String!) {
     getOnChainPaymentFees(
       id: $getOnChainPaymentFeesId
-      btc_wallet_address: $btcWalletAddress
+      btcWalletAddress: $btcWalletAddress
     ) {
       fees
     }
   }
-`;
+`
 
 export const GET_WITHDRAW_LINK_BY_VOUCHER_CODE = gql`
-  query GetWithdrawLinkBySecret($secret_code: String!) {
-    getWithdrawLink(secret_code: $secret_code) {
+  query GetWithdrawLinkBySecret($secretCode: String!) {
+    getWithdrawLink(secretCode: $secretCode) {
       id
     }
   }
-`;
+`

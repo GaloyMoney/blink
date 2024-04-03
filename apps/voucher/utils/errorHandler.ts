@@ -1,4 +1,4 @@
-import { GraphQLError } from "graphql";
+import { GraphQLError } from "graphql"
 
 export const messageCode: { [key: string]: MessageCodeInterface } = {
   INTERNAL_SERVER_ERROR: {
@@ -11,36 +11,35 @@ export const messageCode: { [key: string]: MessageCodeInterface } = {
     statusCode: 400,
     message: "Invalid input",
   },
-  
-};
+}
 
 interface MessageCodeInterface {
-  message: string;
-  statusCode: number;
-  messageCode: string;
+  message: string
+  statusCode: number
+  messageCode: string
 }
 
 export class CustomError extends Error {
-  public messageCode: string;
-  public customMessage?: string;
+  public messageCode: string
+  public customMessage?: string
 
   constructor(messageCode: string, customMessage?: string) {
-    super(messageCode);
-    this.name = "CustomError";
-    this.messageCode = messageCode;
-    this.customMessage = customMessage;
+    super(messageCode)
+    this.name = "CustomError"
+    this.messageCode = messageCode
+    this.customMessage = customMessage
   }
 }
 
 export function createCustomError(
   messageCodeData: MessageCodeInterface,
-  ErrorData?: Error
+  ErrorData?: Error,
 ): never {
   if (ErrorData instanceof CustomError) {
-    const customMessageCode = ErrorData.messageCode;
+    const customMessageCode = ErrorData.messageCode
     const customMessage =
-      ErrorData.customMessage || messageCode[customMessageCode].message;
-    const customStatusCode = messageCode[customMessageCode].statusCode;
+      ErrorData.customMessage || messageCode[customMessageCode].message
+    const customStatusCode = messageCode[customMessageCode].statusCode
     throw new GraphQLError(customMessage, {
       extensions: {
         code: customMessageCode,
@@ -48,7 +47,7 @@ export function createCustomError(
           status: customStatusCode,
         },
       },
-    });
+    })
   } else {
     throw new GraphQLError(messageCodeData.message, {
       extensions: {
@@ -57,6 +56,6 @@ export function createCustomError(
           status: messageCodeData.statusCode,
         },
       },
-    });
+    })
   }
 }

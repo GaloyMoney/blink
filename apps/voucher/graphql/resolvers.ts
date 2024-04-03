@@ -1,4 +1,4 @@
-import { errorArrayToString } from "@/utils/helpers";
+import { errorArrayToString } from "@/utils/helpers"
 import {
   getAllWithdrawLinksQuery,
   createWithdrawLinkMutation,
@@ -10,196 +10,221 @@ import {
   getWithdrawLinkByPaymentHashQuery,
   getWithdrawLinksByUserIdQuery,
   updateWithdrawLinkStatus,
-  GetWithdrawLinkBySecret,
-} from "../utils/crud";
+  getWithdrawLinkBySecret,
+} from "@/services/db"
 import {
   getOnChainTxFeeBTC,
   getOnChainTxFeeUSD,
   sendOnChainPaymentBTC,
   sendOnChainPaymentUSD,
-} from "@/services/galoy";
+} from "@/services/galoy"
 // import { CustomError, createCustomError } from "@/utils/errorHandler";
 // import { messageCode } from "@/utils/errorHandler";
 //TODO need to send and handel errors
 
 const resolvers = {
   Query: {
-    getWithdrawLink: async (parent: any, args: any, context: any) => {
-      const { id, unique_hash, k1, payment_hash, secret_code } = args;
-      let data;
+    getWithdrawLink: async (args: {
+      id: string
+      uniqueHash: string
+      k1: string
+      paymentHash: string
+      secretCode: string
+    }) => {
+      const { id, uniqueHash, k1, paymentHash, secretCode } = args
+      let data
       if (id) {
-        data = await getWithdrawLinkByIdQuery(id);
-      } else if (unique_hash) {
-        data = await getWithdrawLinkByUniqueHashQuery(unique_hash);
+        data = await getWithdrawLinkByIdQuery({ id })
+      } else if (uniqueHash) {
+        data = await getWithdrawLinkByUniqueHashQuery({ uniqueHash })
       } else if (k1) {
-        data = await getWithdrawLinkByK1Query(k1);
-      } else if (payment_hash) {
-        data = await getWithdrawLinkByPaymentHashQuery(payment_hash);
-      } else if (secret_code) {
-        data = await GetWithdrawLinkBySecret(secret_code);
+        data = await getWithdrawLinkByK1Query({ k1 })
+      } else if (paymentHash) {
+        data = await getWithdrawLinkByPaymentHashQuery({ paymentHash })
+      } else if (secretCode) {
+        data = await getWithdrawLinkBySecret({ secretCode })
       } else {
-        throw new Error("input not provided");
+        throw new Error("input not provided")
       }
       if (data instanceof Error) {
-        throw new Error("Internal server error");
+        throw new Error("Internal server error")
       }
-      return data;
+      return data
     },
-    getAllWithdrawLinks: async (parent: any, args: any, context: any) => {
-      const data = await getAllWithdrawLinksQuery();
+    getAllWithdrawLinks: async () => {
+      const data = await getAllWithdrawLinksQuery()
       if (data instanceof Error) {
-        throw new Error("Internal server error");
+        throw new Error("Internal server error")
       }
-      return data;
+      return data
     },
-    getWithdrawLinksByUserId: async (parent: any, args: any, context: any) => {
-      const { user_id, status, limit, offset } = args;
-      if (!user_id) {
-        throw new Error("user_id is not provided");
+    getWithdrawLinksByUserId: async (args: {
+      userId: string
+      status: string
+      limit: number
+      offset: number
+    }) => {
+      const { userId, status, limit, offset } = args
+      if (!userId) {
+        throw new Error("userId is not provided")
       }
-      const data = await getWithdrawLinksByUserIdQuery(
-        user_id,
-        status,
-        limit,
-        offset
-      );
+      const data = await getWithdrawLinksByUserIdQuery({ userId, status, limit, offset })
       if (data instanceof Error) {
-        throw new Error("Internal server error");
+        throw new Error("Internal server error")
       }
-      return data;
+      return data
     },
-    getOnChainPaymentFees: async (parent: any, args: any, context: any) => {
-      const { id, btc_wallet_address } = args;
-      const data = await getWithdrawLinkByIdQuery(id);
-      const { escrow_wallet, account_type, voucher_amount: amount } = data;
-      if (account_type === "BTC") {
-        const result = await getOnChainTxFeeBTC(
-          escrow_wallet,
-          btc_wallet_address,
-          amount
-        );
-        const errorMessage = errorArrayToString(result.errors);
+    getOnChainPaymentFees: async (args: { id: string; btc_wallet_address: string }) => {
+      const { id, btc_wallet_address } = args
+      const data = await getWithdrawLinkByIdQuery({ id })
+      const { escrowWallet, accountType, voucherAmount: amount } = data
+      if (accountType === "BTC") {
+        const result = await getOnChainTxFeeBTC(escrowWallet, btc_wallet_address, amount)
+        const errorMessage = errorArrayToString(result.errors)
         if (errorMessage) {
-          throw new Error(errorMessage);
+          throw new Error(errorMessage)
         }
-        return { fees: result.data.onChainTxFee.amount };
+        return { fees: result.data.onChainTxFee.amount }
       } else {
-        console.log("USD");
-        const result = await getOnChainTxFeeUSD(
-          escrow_wallet,
-          btc_wallet_address,
-          amount
-        );
-        const errorMessage = errorArrayToString(result.errors);
+        console.log("USD")
+        const result = await getOnChainTxFeeUSD(escrowWallet, btc_wallet_address, amount)
+        const errorMessage = errorArrayToString(result.errors)
         if (errorMessage) {
-          throw new Error(errorMessage);
+          throw new Error(errorMessage)
         }
-        return { fees: result.data.onChainUsdTxFee.amount };
+        return { fees: result.data.onChainUsdTxFee.amount }
       }
     },
   },
 
   Mutation: {
-    createWithdrawLink: async (parent: any, args: any, context: any) => {
-      const { input } = args;
-      const data = await createWithdrawLinkMutation(input);
-      if (data instanceof Error) {
-        throw new Error("Internal server error");
+    createWithdrawLink: async (args: {
+      input: {
+        paymentHash: string
+        userId: string
+        paymentRequest: string
+        paymentSecret: string
+        salesAmount: number
+        accountType: string
+        escrowWallet: string
+        title: string
+        voucherAmount: number
+        uniqueHash: string
+        k1: string
+        commissionPercentage: number
       }
-      return data;
+    }) => {
+      const { input } = args
+      const data = await createWithdrawLinkMutation({
+        ...input,
+      })
+      if (data instanceof Error) {
+        throw new Error("Internal server error")
+      }
+      return data
     },
-    updateWithdrawLink: async (parent: any, args: any, context: any) => {
-      const { id, input } = args;
+    updateWithdrawLink: async (args: {
+      id: string
+      input: {
+        paymentHash: string
+        userId: string
+        paymentRequest: string
+        paymentSecret: string
+        salesAmount: number
+        accountType: string
+        escrowWallet: string
+        title: string
+        voucherAmount: number
+        uniqueHash: string
+        k1: string
+        commissionPercentage: number
+      }
+    }) => {
+      const { id, input } = args
       if (!id) {
-        throw new Error("id is not provided");
+        throw new Error("id is not provided")
       }
-      const data = await updateWithdrawLinkMutation(id, input);
+      const data = await updateWithdrawLinkMutation({ id, input })
       if (data instanceof Error) {
-        throw new Error("Internal server error");
+        throw new Error("Internal server error")
       }
-      return data;
+      return data
     },
-    deleteWithdrawLink: async (parent: any, args: any, context: any) => {
-      const { id } = args;
+    deleteWithdrawLink: async (args: { id: string }) => {
+      const { id } = args
       if (!id) {
-        throw new Error("id is not provided");
+        throw new Error("id is not provided")
       }
-      const data: any = await deleteWithdrawLinkMutation(id);
+      const data: any = await deleteWithdrawLinkMutation({ id })
       if (data instanceof Error) {
-        throw new Error("Internal server error");
+        throw new Error("Internal server error")
       }
-      return data;
+      return data
     },
-    sendPaymentOnChain: async (parent: any, args: any, context: any) => {
-      const { id, btc_wallet_address } = args;
-      const data = await getWithdrawLinkByIdQuery(id);
-      const {
-        escrow_wallet,
-        account_type,
-        voucher_amount: amount,
-        title,
-        status,
-      } = data;
+    sendPaymentOnChain: async (args: { id: string; btc_wallet_address: string }) => {
+      const { id, btc_wallet_address } = args
+      const data = await getWithdrawLinkByIdQuery({ id })
+      const { escrowWallet, accountType, voucherAmount: amount, title, status } = data
 
-      if (account_type === "BTC") {
+      if (accountType === "BTC") {
         const fees_result = await getOnChainTxFeeBTC(
-          escrow_wallet,
+          escrowWallet,
           btc_wallet_address,
-          amount
-        );
-        const final_amount = amount - fees_result.data.onChainTxFee.amount;
+          amount,
+        )
+        const final_amount = amount - fees_result.data.onChainTxFee.amount
         if (final_amount <= 0) {
-          throw new Error("Amount is less than fees");
+          throw new Error("Amount is less than fees")
         }
         if (status === "PAID") {
-          throw new Error("Payment already sent");
+          throw new Error("Payment already sent")
         }
-        await updateWithdrawLinkStatus(id, "PAID");
+        await updateWithdrawLinkStatus({ id, status: "PAID" })
         const result = await sendOnChainPaymentBTC(
-          escrow_wallet,
+          escrowWallet,
           btc_wallet_address,
           final_amount,
-          title
-        );
-        const errorMessage = errorArrayToString(result.errors);
+          title,
+        )
+        const errorMessage = errorArrayToString(result.errors)
         if (errorMessage) {
-          throw new Error(errorMessage);
+          throw new Error(errorMessage)
         }
         return {
           status: result.data.onChainPaymentSend.status,
           amount: final_amount,
-        };
+        }
       } else {
         const fees_result = await getOnChainTxFeeUSD(
-          escrow_wallet,
+          escrowWallet,
           btc_wallet_address,
-          amount
-        );
-        const final_amount = amount - fees_result.data.onChainUsdTxFee.amount;
+          amount,
+        )
+        const final_amount = amount - fees_result.data.onChainUsdTxFee.amount
         if (final_amount <= 0) {
-          throw new Error("Amount is less than fees");
+          throw new Error("Amount is less than fees")
         }
         if (status === "PAID") {
-          throw new Error("Payment already sent");
+          throw new Error("Payment already sent")
         }
-        await updateWithdrawLinkStatus(id, "PAID");
+        await updateWithdrawLinkStatus({ id, status: "PAID" })
         const result = await sendOnChainPaymentUSD(
-          escrow_wallet,
+          escrowWallet,
           btc_wallet_address,
           final_amount,
-          title
-        );
-        const errorMessage = errorArrayToString(result.errors);
+          title,
+        )
+        const errorMessage = errorArrayToString(result.errors)
         if (errorMessage) {
-          throw new Error(errorMessage);
+          throw new Error(errorMessage)
         }
         return {
           status: result.data.onChainUsdPaymentSend.status,
           amount: final_amount,
-        };
+        }
       }
     },
   },
-};
+}
 
-export default resolvers;
+export default resolvers

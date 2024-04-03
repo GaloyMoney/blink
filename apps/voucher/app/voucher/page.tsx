@@ -1,62 +1,66 @@
-"use client";
-import Heading from "@/components/Heading";
-import React, { useEffect, useState } from "react";
-import { useGetWithdrawLinkBySecretQuery } from "@/utils/generated/graphql";
-import styles from "./VoucherPage.module.css";
-import Button from "@/components/Button/Button";
-import { useRouter } from "next/navigation";
-import ModalComponent from "@/components/ModalComponent";
-import LoadingPageComponent from "@/components/Loading/PageLoadingComponent";
+"use client"
+import React, { useEffect, useState } from "react"
+
+import { useRouter } from "next/navigation"
+
+import styles from "./VoucherPage.module.css"
+
+import Heading from "@/components/Heading"
+import { useGetWithdrawLinkBySecretQuery } from "@/utils/generated/graphql"
+
+import Button from "@/components/Button/Button"
+
+import ModalComponent from "@/components/ModalComponent"
+import LoadingPageComponent from "@/components/Loading/PageLoadingComponent"
 interface SecretCode {
-  input1: string;
-  input2: string;
-  input3: string;
+  input1: string
+  input2: string
+  input3: string
 }
 
 export default function VoucherPage() {
-  const router = useRouter();
-  const [secret, setSecret] = useState<string>("");
+  const router = useRouter()
+  const [secret, setSecret] = useState<string>("")
   const [inputs, setInputs] = useState<SecretCode>({
     input1: "",
     input2: "",
     input3: "",
-  });
-  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  })
+  const [modalOpen, setModalOpen] = useState<boolean>(false)
   const { loading, error, data } = useGetWithdrawLinkBySecretQuery({
-    variables: { secret_code: secret },
+    variables: { secretCode: secret },
     context: {
       endpoint: "SELF",
     },
     skip: secret.length !== 12,
-  });
+  })
 
-  const handleInputChange = (e : React.ChangeEvent<HTMLInputElement>
-    ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputs((prevState) => ({
       ...prevState,
       [e.target.name]: e.target.value,
-    }));
-  };
+    }))
+  }
 
   const handleSubmit = () => {
-    setSecret(inputs.input1 + inputs.input2 + inputs.input3);
-  };
+    setSecret(inputs.input1 + inputs.input2 + inputs.input3)
+  }
 
   useEffect(() => {
     if (data?.getWithdrawLink?.id) {
-      router.push(`/withdraw/${data?.getWithdrawLink?.id}`);
+      router.push(`/withdraw/${data?.getWithdrawLink?.id}`)
     } else if (data?.getWithdrawLink === null || error) {
       setInputs({
         input1: "",
         input2: "",
         input3: "",
-      });
-      setModalOpen(true);
+      })
+      setModalOpen(true)
     }
-  }, [data]);
+  }, [data])
 
   if (loading) {
-    return <LoadingPageComponent />;
+    return <LoadingPageComponent />
   }
 
   return (
@@ -109,5 +113,5 @@ export default function VoucherPage() {
         Submit
       </Button>
     </div>
-  );
+  )
 }

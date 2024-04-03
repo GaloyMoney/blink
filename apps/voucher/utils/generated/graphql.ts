@@ -10,87 +10,111 @@ export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' |
 const defaultOptions = {} as const;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: { input: string | number; output: string; }
+  ID: { input: string; output: string; }
   String: { input: string; output: string; }
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
   /** An Opaque Bearer token */
-  AuthToken: { input: string; output: string; }
+  AuthToken: { input: any; output: any; }
   /** (Positive) Cent amount (1/100 of a dollar) */
-  CentAmount: { input: number; output: number; }
+  CentAmount: { input: any; output: any; }
   /** An alias name that a user can set for a wallet (with which they have transactions) */
-  ContactAlias: { input: string; output: string; }
+  ContactAlias: { input: any; output: any; }
   /** A CCA2 country code (ex US, FR, etc) */
-  CountryCode: { input: string; output: string; }
+  CountryCode: { input: any; output: any; }
   /** Display currency of an account */
-  DisplayCurrency: { input: string; output: string; }
+  DisplayCurrency: { input: any; output: any; }
   /** Email address */
-  EmailAddress: { input: string; output: string; }
+  EmailAddress: { input: any; output: any; }
   /** An id to be passed between registrationInitiate and registrationValidate for confirming email */
-  EmailRegistrationId: { input: string; output: string; }
+  EmailRegistrationId: { input: any; output: any; }
+  EndpointId: { input: any; output: any; }
+  /** Url that will be fetched on events for the account */
+  EndpointUrl: { input: any; output: any; }
   /** Feedback shared with our user */
-  Feedback: { input: string; output: string; }
+  Feedback: { input: any; output: any; }
   /** Hex-encoded string of 32 bytes */
-  Hex32Bytes: { input: string; output: string; }
-  Language: { input: string; output: string; }
-  LnPaymentPreImage: { input: string; output: string; }
+  Hex32Bytes: { input: any; output: any; }
+  Language: { input: any; output: any; }
+  LeaderboardName: { input: any; output: any; }
+  LnPaymentPreImage: { input: any; output: any; }
   /** BOLT11 lightning invoice payment request with the amount included */
-  LnPaymentRequest: { input: string; output: string; }
-  LnPaymentSecret: { input: string; output: string; }
+  LnPaymentRequest: { input: any; output: any; }
+  LnPaymentSecret: { input: any; output: any; }
   /** Text field in a lightning payment transaction */
-  Memo: { input: string; output: string; }
+  Memo: { input: any; output: any; }
   /** (Positive) amount of minutes */
-  Minutes: { input: number; output: number; }
+  Minutes: { input: any; output: any; }
+  NotificationCategory: { input: any; output: any; }
   /** An address for an on-chain bitcoin destination */
-  OnChainAddress: { input: string; output: string; }
-  OnChainTxHash: { input: string; output: string; }
+  OnChainAddress: { input: any; output: any; }
+  OnChainTxHash: { input: any; output: any; }
   /** An authentication code valid for a single use */
-  OneTimeAuthCode: { input: string; output: string; }
-  PaymentHash: { input: string; output: string; }
+  OneTimeAuthCode: { input: any; output: any; }
+  PaymentHash: { input: any; output: any; }
   /** Phone number which includes country code */
-  Phone: { input: string; output: string; }
+  Phone: { input: any; output: any; }
   /** Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1 */
-  SafeInt: { input: number; output: number; }
+  SafeInt: { input: any; output: any; }
   /** (Positive) Satoshi amount */
-  SatAmount: { input: number; output: number; }
+  SatAmount: { input: any; output: any; }
   /** (Positive) amount of seconds */
-  Seconds: { input: number; output: number; }
+  Seconds: { input: any; output: any; }
   /** An amount (of a currency) that can be negative (e.g. in a transaction) */
-  SignedAmount: { input: number; output: number; }
+  SignedAmount: { input: any; output: any; }
   /** A string amount (of a currency) that can be negative (e.g. in a transaction) */
-  SignedDisplayMajorAmount: { input: string; output: string; }
-  /** (Positive) Number of blocks in which the transaction is expected to be confirmed */
-  TargetConfirmations: { input: number; output: number; }
+  SignedDisplayMajorAmount: { input: any; output: any; }
   /** Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch) */
-  Timestamp: { input: number; output: number; }
+  Timestamp: { input: any; output: any; }
   /** A time-based one-time password */
-  TotpCode: { input: string; output: string; }
+  TotpCode: { input: any; output: any; }
   /** An id to be passed between set and verify for confirming totp */
-  TotpRegistrationId: { input: string; output: string; }
+  TotpRegistrationId: { input: any; output: any; }
   /** A secret to generate time-based one-time password */
-  TotpSecret: { input: string; output: string; }
+  TotpSecret: { input: any; output: any; }
   /** Unique identifier of a user */
-  Username: { input: string; output: string; }
+  Username: { input: any; output: any; }
   /** Unique identifier of a wallet */
-  WalletId: { input: string; output: string; }
+  WalletId: { input: any; output: any; }
 };
 
 export type Account = {
-  readonly csvTransactions: Scalars['String']['output'];
-  readonly defaultWalletId: Scalars['WalletId']['output'];
-  readonly displayCurrency: Scalars['DisplayCurrency']['output'];
-  readonly id: Scalars['ID']['output'];
-  readonly level: AccountLevel;
-  readonly limits: AccountLimits;
-  readonly realtimePrice: RealtimePrice;
-  readonly transactions?: Maybe<TransactionConnection>;
-  readonly wallets: ReadonlyArray<Wallet>;
+  callbackEndpoints: Array<CallbackEndpoint>;
+  csvTransactions: Scalars['String']['output'];
+  defaultWallet: PublicWallet;
+  /** @deprecated Shifting property to 'defaultWallet.id' */
+  defaultWalletId: Scalars['WalletId']['output'];
+  displayCurrency: Scalars['DisplayCurrency']['output'];
+  id: Scalars['ID']['output'];
+  invoices?: Maybe<InvoiceConnection>;
+  level: AccountLevel;
+  limits: AccountLimits;
+  notificationSettings: NotificationSettings;
+  pendingIncomingTransactions: Array<Transaction>;
+  realtimePrice: RealtimePrice;
+  transactions?: Maybe<TransactionConnection>;
+  walletById: Wallet;
+  wallets: Array<Wallet>;
 };
 
 
 export type AccountCsvTransactionsArgs = {
-  walletIds: ReadonlyArray<Scalars['WalletId']['input']>;
+  walletIds: Array<Scalars['WalletId']['input']>;
+};
+
+
+export type AccountInvoicesArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  walletIds?: InputMaybe<Array<InputMaybe<Scalars['WalletId']['input']>>>;
+};
+
+
+export type AccountPendingIncomingTransactionsArgs = {
+  walletIds?: InputMaybe<Array<InputMaybe<Scalars['WalletId']['input']>>>;
 };
 
 
@@ -99,81 +123,183 @@ export type AccountTransactionsArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
-  walletIds?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['WalletId']['input']>>>;
+  walletIds?: InputMaybe<Array<InputMaybe<Scalars['WalletId']['input']>>>;
+};
+
+
+export type AccountWalletByIdArgs = {
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type AccountDeletePayload = {
-  readonly __typename: 'AccountDeletePayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly success: Scalars['Boolean']['output'];
+  __typename?: 'AccountDeletePayload';
+  errors: Array<Error>;
+  success: Scalars['Boolean']['output'];
 };
 
-export const AccountLevel = {
-  One: 'ONE',
-  Two: 'TWO',
-  Zero: 'ZERO'
-} as const;
+export type AccountDisableNotificationCategoryInput = {
+  category: Scalars['NotificationCategory']['input'];
+  channel?: InputMaybe<NotificationChannel>;
+};
 
-export type AccountLevel = typeof AccountLevel[keyof typeof AccountLevel];
+export type AccountDisableNotificationChannelInput = {
+  channel: NotificationChannel;
+};
+
+export type AccountEnableNotificationCategoryInput = {
+  category: Scalars['NotificationCategory']['input'];
+  channel?: InputMaybe<NotificationChannel>;
+};
+
+export type AccountEnableNotificationChannelInput = {
+  channel: NotificationChannel;
+};
+
+export enum AccountLevel {
+  One = 'ONE',
+  Two = 'TWO',
+  Zero = 'ZERO'
+}
+
 export type AccountLimit = {
   /** The rolling time interval in seconds that the limits would apply for. */
-  readonly interval?: Maybe<Scalars['Seconds']['output']>;
+  interval?: Maybe<Scalars['Seconds']['output']>;
   /** The amount of cents remaining below the limit for the current 24 hour period. */
-  readonly remainingLimit?: Maybe<Scalars['CentAmount']['output']>;
+  remainingLimit?: Maybe<Scalars['CentAmount']['output']>;
   /** The current maximum limit for a given 24 hour period. */
-  readonly totalLimit: Scalars['CentAmount']['output'];
+  totalLimit: Scalars['CentAmount']['output'];
 };
 
 export type AccountLimits = {
-  readonly __typename: 'AccountLimits';
+  __typename?: 'AccountLimits';
   /** Limits for converting between currencies among a account's own wallets. */
-  readonly convert: ReadonlyArray<AccountLimit>;
+  convert: Array<AccountLimit>;
   /** Limits for sending to other internal accounts. */
-  readonly internalSend: ReadonlyArray<AccountLimit>;
+  internalSend: Array<AccountLimit>;
   /** Limits for withdrawing to external onchain or lightning destinations. */
-  readonly withdrawal: ReadonlyArray<AccountLimit>;
+  withdrawal: Array<AccountLimit>;
 };
 
 export type AccountUpdateDefaultWalletIdInput = {
-  readonly walletId: Scalars['WalletId']['input'];
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type AccountUpdateDefaultWalletIdPayload = {
-  readonly __typename: 'AccountUpdateDefaultWalletIdPayload';
-  readonly account?: Maybe<ConsumerAccount>;
-  readonly errors: ReadonlyArray<Error>;
+  __typename?: 'AccountUpdateDefaultWalletIdPayload';
+  account?: Maybe<ConsumerAccount>;
+  errors: Array<Error>;
 };
 
 export type AccountUpdateDisplayCurrencyInput = {
-  readonly currency: Scalars['DisplayCurrency']['input'];
+  currency: Scalars['DisplayCurrency']['input'];
 };
 
 export type AccountUpdateDisplayCurrencyPayload = {
-  readonly __typename: 'AccountUpdateDisplayCurrencyPayload';
-  readonly account?: Maybe<ConsumerAccount>;
-  readonly errors: ReadonlyArray<Error>;
+  __typename?: 'AccountUpdateDisplayCurrencyPayload';
+  account?: Maybe<ConsumerAccount>;
+  errors: Array<Error>;
+};
+
+export type AccountUpdateNotificationSettingsPayload = {
+  __typename?: 'AccountUpdateNotificationSettingsPayload';
+  account?: Maybe<ConsumerAccount>;
+  errors: Array<Error>;
+};
+
+export type ApiKey = {
+  __typename?: 'ApiKey';
+  createdAt: Scalars['Timestamp']['output'];
+  expired: Scalars['Boolean']['output'];
+  expiresAt?: Maybe<Scalars['Timestamp']['output']>;
+  id: Scalars['ID']['output'];
+  lastUsedAt?: Maybe<Scalars['Timestamp']['output']>;
+  name: Scalars['String']['output'];
+  readOnly: Scalars['Boolean']['output'];
+  revoked: Scalars['Boolean']['output'];
+  scopes: Array<Scope>;
+};
+
+export type ApiKeyCreateInput = {
+  expireInDays?: InputMaybe<Scalars['Int']['input']>;
+  name: Scalars['String']['input'];
+  scopes?: Array<Scope>;
+};
+
+export type ApiKeyCreatePayload = {
+  __typename?: 'ApiKeyCreatePayload';
+  apiKey: ApiKey;
+  apiKeySecret: Scalars['String']['output'];
+};
+
+export type ApiKeyRevokeInput = {
+  id: Scalars['ID']['input'];
+};
+
+export type ApiKeyRevokePayload = {
+  __typename?: 'ApiKeyRevokePayload';
+  apiKey: ApiKey;
 };
 
 export type AuthTokenPayload = {
-  readonly __typename: 'AuthTokenPayload';
-  readonly authToken?: Maybe<Scalars['AuthToken']['output']>;
-  readonly errors: ReadonlyArray<Error>;
-  readonly totpRequired?: Maybe<Scalars['Boolean']['output']>;
+  __typename?: 'AuthTokenPayload';
+  authToken?: Maybe<Scalars['AuthToken']['output']>;
+  errors: Array<Error>;
+  totpRequired?: Maybe<Scalars['Boolean']['output']>;
+};
+
+export type Authorization = {
+  __typename?: 'Authorization';
+  scopes: Array<Scope>;
 };
 
 /** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
 export type BtcWallet = Wallet & {
-  readonly __typename: 'BTCWallet';
-  readonly accountId: Scalars['ID']['output'];
+  __typename?: 'BTCWallet';
+  accountId: Scalars['ID']['output'];
   /** A balance stored in BTC. */
-  readonly balance: Scalars['SignedAmount']['output'];
-  readonly id: Scalars['ID']['output'];
+  balance: Scalars['SignedAmount']['output'];
+  id: Scalars['ID']['output'];
+  invoiceByPaymentHash: Invoice;
+  /** A list of all invoices associated with walletIds optionally passed. */
+  invoices?: Maybe<InvoiceConnection>;
   /** An unconfirmed incoming onchain balance. */
-  readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
+  pendingIncomingBalance: Scalars['SignedAmount']['output'];
+  pendingIncomingTransactions: Array<Transaction>;
+  pendingIncomingTransactionsByAddress: Array<Transaction>;
+  transactionById: Transaction;
   /** A list of BTC transactions associated with this wallet. */
-  readonly transactions?: Maybe<TransactionConnection>;
-  readonly transactionsByAddress?: Maybe<TransactionConnection>;
-  readonly walletCurrency: WalletCurrency;
+  transactions?: Maybe<TransactionConnection>;
+  transactionsByAddress?: Maybe<TransactionConnection>;
+  transactionsByPaymentHash: Array<Transaction>;
+  transactionsByPaymentRequest: Array<Transaction>;
+  walletCurrency: WalletCurrency;
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletInvoiceByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletInvoicesArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletPendingIncomingTransactionsByAddressArgs = {
+  address: Scalars['OnChainAddress']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletTransactionByIdArgs = {
+  transactionId: Scalars['ID']['input'];
 };
 
 
@@ -195,61 +321,118 @@ export type BtcWalletTransactionsByAddressArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
 };
 
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletTransactionsByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletTransactionsByPaymentRequestArgs = {
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
+};
+
 export type BuildInformation = {
-  readonly __typename: 'BuildInformation';
-  readonly buildTime?: Maybe<Scalars['Timestamp']['output']>;
-  readonly commitHash?: Maybe<Scalars['String']['output']>;
-  readonly helmRevision?: Maybe<Scalars['Int']['output']>;
+  __typename?: 'BuildInformation';
+  commitHash?: Maybe<Scalars['String']['output']>;
+  helmRevision?: Maybe<Scalars['Int']['output']>;
+};
+
+export type CallbackEndpoint = {
+  __typename?: 'CallbackEndpoint';
+  id: Scalars['EndpointId']['output'];
+  url: Scalars['EndpointUrl']['output'];
+};
+
+export type CallbackEndpointAddInput = {
+  /** callback endpoint to be called */
+  url: Scalars['EndpointUrl']['input'];
+};
+
+export type CallbackEndpointAddPayload = {
+  __typename?: 'CallbackEndpointAddPayload';
+  errors: Array<Error>;
+  id?: Maybe<Scalars['EndpointId']['output']>;
+};
+
+export type CallbackEndpointDeleteInput = {
+  id: Scalars['EndpointId']['input'];
 };
 
 export type CaptchaCreateChallengePayload = {
-  readonly __typename: 'CaptchaCreateChallengePayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly result?: Maybe<CaptchaCreateChallengeResult>;
+  __typename?: 'CaptchaCreateChallengePayload';
+  errors: Array<Error>;
+  result?: Maybe<CaptchaCreateChallengeResult>;
 };
 
 export type CaptchaCreateChallengeResult = {
-  readonly __typename: 'CaptchaCreateChallengeResult';
-  readonly challengeCode: Scalars['String']['output'];
-  readonly failbackMode: Scalars['Boolean']['output'];
-  readonly id: Scalars['String']['output'];
-  readonly newCaptcha: Scalars['Boolean']['output'];
+  __typename?: 'CaptchaCreateChallengeResult';
+  challengeCode: Scalars['String']['output'];
+  failbackMode: Scalars['Boolean']['output'];
+  id: Scalars['String']['output'];
+  newCaptcha: Scalars['Boolean']['output'];
 };
 
 export type CaptchaRequestAuthCodeInput = {
-  readonly challengeCode: Scalars['String']['input'];
-  readonly channel?: InputMaybe<PhoneCodeChannelType>;
-  readonly phone: Scalars['Phone']['input'];
-  readonly secCode: Scalars['String']['input'];
-  readonly validationCode: Scalars['String']['input'];
+  challengeCode: Scalars['String']['input'];
+  channel?: InputMaybe<PhoneCodeChannelType>;
+  phone: Scalars['Phone']['input'];
+  secCode: Scalars['String']['input'];
+  validationCode: Scalars['String']['input'];
 };
 
 export type CentAmountPayload = {
-  readonly __typename: 'CentAmountPayload';
-  readonly amount?: Maybe<Scalars['CentAmount']['output']>;
-  readonly errors: ReadonlyArray<Error>;
+  __typename?: 'CentAmountPayload';
+  amount?: Maybe<Scalars['CentAmount']['output']>;
+  errors: Array<Error>;
 };
 
 export type ConsumerAccount = Account & {
-  readonly __typename: 'ConsumerAccount';
+  __typename?: 'ConsumerAccount';
+  callbackEndpoints: Array<CallbackEndpoint>;
   /** return CSV stream, base64 encoded, of the list of transactions in the wallet */
-  readonly csvTransactions: Scalars['String']['output'];
-  readonly defaultWalletId: Scalars['WalletId']['output'];
-  readonly displayCurrency: Scalars['DisplayCurrency']['output'];
-  readonly id: Scalars['ID']['output'];
-  readonly level: AccountLevel;
-  readonly limits: AccountLimits;
+  csvTransactions: Scalars['String']['output'];
+  defaultWallet: PublicWallet;
+  defaultWalletId: Scalars['WalletId']['output'];
+  displayCurrency: Scalars['DisplayCurrency']['output'];
+  firstName?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  /** A list of all invoices associated with walletIds optionally passed. */
+  invoices?: Maybe<InvoiceConnection>;
+  lastName?: Maybe<Scalars['String']['output']>;
+  level: AccountLevel;
+  limits: AccountLimits;
+  notificationSettings: NotificationSettings;
+  onboardingStatus?: Maybe<OnboardingStatus>;
+  pendingIncomingTransactions: Array<Transaction>;
   /** List the quiz questions of the consumer account */
-  readonly quiz: ReadonlyArray<Quiz>;
-  readonly realtimePrice: RealtimePrice;
+  quiz: Array<Quiz>;
+  realtimePrice: RealtimePrice;
   /** A list of all transactions associated with walletIds optionally passed. */
-  readonly transactions?: Maybe<TransactionConnection>;
-  readonly wallets: ReadonlyArray<Wallet>;
+  transactions?: Maybe<TransactionConnection>;
+  walletById: Wallet;
+  wallets: Array<Wallet>;
+  welcomeProfile?: Maybe<WelcomeProfile>;
 };
 
 
 export type ConsumerAccountCsvTransactionsArgs = {
-  walletIds: ReadonlyArray<Scalars['WalletId']['input']>;
+  walletIds: Array<Scalars['WalletId']['input']>;
+};
+
+
+export type ConsumerAccountInvoicesArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  walletIds?: InputMaybe<Array<InputMaybe<Scalars['WalletId']['input']>>>;
+};
+
+
+export type ConsumerAccountPendingIncomingTransactionsArgs = {
+  walletIds?: InputMaybe<Array<InputMaybe<Scalars['WalletId']['input']>>>;
 };
 
 
@@ -258,465 +441,645 @@ export type ConsumerAccountTransactionsArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
-  walletIds?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['WalletId']['input']>>>;
+  walletIds?: InputMaybe<Array<InputMaybe<Scalars['WalletId']['input']>>>;
+};
+
+
+export type ConsumerAccountWalletByIdArgs = {
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type Coordinates = {
-  readonly __typename: 'Coordinates';
-  readonly latitude: Scalars['Float']['output'];
-  readonly longitude: Scalars['Float']['output'];
+  __typename?: 'Coordinates';
+  latitude: Scalars['Float']['output'];
+  longitude: Scalars['Float']['output'];
 };
 
 export type Country = {
-  readonly __typename: 'Country';
-  readonly id: Scalars['CountryCode']['output'];
-  readonly supportedAuthChannels: ReadonlyArray<PhoneCodeChannelType>;
+  __typename?: 'Country';
+  id: Scalars['CountryCode']['output'];
+  supportedAuthChannels: Array<PhoneCodeChannelType>;
 };
 
 export type CreateWithdrawLinkInput = {
-  readonly account_type: Scalars['String']['input'];
-  readonly commission_percentage?: InputMaybe<Scalars['Float']['input']>;
-  readonly escrow_wallet: Scalars['String']['input'];
-  readonly id?: InputMaybe<Scalars['ID']['input']>;
-  readonly k1?: InputMaybe<Scalars['String']['input']>;
-  readonly payment_hash: Scalars['String']['input'];
-  readonly payment_request: Scalars['String']['input'];
-  readonly payment_secret: Scalars['String']['input'];
-  readonly sales_amount: Scalars['Float']['input'];
-  readonly status?: InputMaybe<Status>;
-  readonly title: Scalars['String']['input'];
-  readonly unique_hash: Scalars['String']['input'];
-  readonly user_id: Scalars['ID']['input'];
-  readonly voucher_amount: Scalars['Float']['input'];
+  accountType: Scalars['String']['input'];
+  commissionPercentage?: InputMaybe<Scalars['Float']['input']>;
+  escrowWallet: Scalars['String']['input'];
+  id?: InputMaybe<Scalars['ID']['input']>;
+  k1?: InputMaybe<Scalars['String']['input']>;
+  paymentHash: Scalars['String']['input'];
+  paymentRequest: Scalars['String']['input'];
+  paymentSecret: Scalars['String']['input'];
+  salesAmount: Scalars['Float']['input'];
+  status?: InputMaybe<Status>;
+  title: Scalars['String']['input'];
+  uniqueHash: Scalars['String']['input'];
+  userId: Scalars['ID']['input'];
+  voucherAmount: Scalars['Float']['input'];
 };
 
 export type Currency = {
-  readonly __typename: 'Currency';
-  readonly flag: Scalars['String']['output'];
-  readonly fractionDigits: Scalars['Int']['output'];
-  readonly id: Scalars['ID']['output'];
-  readonly name: Scalars['String']['output'];
-  readonly symbol: Scalars['String']['output'];
+  __typename?: 'Currency';
+  flag: Scalars['String']['output'];
+  fractionDigits: Scalars['Int']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  symbol: Scalars['String']['output'];
 };
 
 export type DepositFeesInformation = {
-  readonly __typename: 'DepositFeesInformation';
-  readonly minBankFee: Scalars['String']['output'];
+  __typename?: 'DepositFeesInformation';
+  minBankFee: Scalars['String']['output'];
   /** below this amount minBankFee will be charged */
-  readonly minBankFeeThreshold: Scalars['String']['output'];
+  minBankFeeThreshold: Scalars['String']['output'];
   /** ratio to charge as basis points above minBankFeeThreshold amount */
-  readonly ratio: Scalars['String']['output'];
+  ratio: Scalars['String']['output'];
 };
 
 export type DeviceNotificationTokenCreateInput = {
-  readonly deviceToken: Scalars['String']['input'];
+  deviceToken: Scalars['String']['input'];
 };
 
 export type Email = {
-  readonly __typename: 'Email';
-  readonly address?: Maybe<Scalars['EmailAddress']['output']>;
-  readonly verified?: Maybe<Scalars['Boolean']['output']>;
+  __typename?: 'Email';
+  address?: Maybe<Scalars['EmailAddress']['output']>;
+  verified?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export type Error = {
-  readonly code?: Maybe<Scalars['String']['output']>;
-  readonly message: Scalars['String']['output'];
-  readonly path?: Maybe<ReadonlyArray<Maybe<Scalars['String']['output']>>>;
+  code?: Maybe<Scalars['String']['output']>;
+  message: Scalars['String']['output'];
+  path?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 
-export const ExchangeCurrencyUnit = {
-  Btcsat: 'BTCSAT',
-  Usdcent: 'USDCENT'
-} as const;
+export enum ExchangeCurrencyUnit {
+  Btcsat = 'BTCSAT',
+  Usdcent = 'USDCENT'
+}
 
-export type ExchangeCurrencyUnit = typeof ExchangeCurrencyUnit[keyof typeof ExchangeCurrencyUnit];
 export type FeedbackSubmitInput = {
-  readonly feedback: Scalars['Feedback']['input'];
+  feedback: Scalars['Feedback']['input'];
 };
 
 export type FeesInformation = {
-  readonly __typename: 'FeesInformation';
-  readonly deposit: DepositFeesInformation;
+  __typename?: 'FeesInformation';
+  deposit: DepositFeesInformation;
 };
 
 export type FeesResult = {
-  readonly __typename: 'FeesResult';
-  readonly fees: Scalars['Float']['output'];
+  __typename?: 'FeesResult';
+  fees: Scalars['Float']['output'];
 };
 
 /** Provides global settings for the application which might have an impact for the user. */
 export type Globals = {
-  readonly __typename: 'Globals';
-  readonly buildInformation: BuildInformation;
-  readonly feesInformation: FeesInformation;
+  __typename?: 'Globals';
+  buildInformation: BuildInformation;
+  feesInformation: FeesInformation;
   /** The domain name for lightning addresses accepted by this Galoy instance */
-  readonly lightningAddressDomain: Scalars['String']['output'];
-  readonly lightningAddressDomainAliases: ReadonlyArray<Scalars['String']['output']>;
+  lightningAddressDomain: Scalars['String']['output'];
+  lightningAddressDomainAliases: Array<Scalars['String']['output']>;
   /** Which network (mainnet, testnet, regtest, signet) this instance is running on. */
-  readonly network: Network;
+  network: Network;
   /**
    * A list of public keys for the running lightning nodes.
    * This can be used to know if an invoice belongs to one of our nodes.
    */
-  readonly nodesIds: ReadonlyArray<Scalars['String']['output']>;
+  nodesIds: Array<Scalars['String']['output']>;
   /** A list of countries and their supported auth channels */
-  readonly supportedCountries: ReadonlyArray<Country>;
+  supportedCountries: Array<Country>;
 };
 
 export type GraphQlApplicationError = Error & {
-  readonly __typename: 'GraphQLApplicationError';
-  readonly code?: Maybe<Scalars['String']['output']>;
-  readonly message: Scalars['String']['output'];
-  readonly path?: Maybe<ReadonlyArray<Maybe<Scalars['String']['output']>>>;
+  __typename?: 'GraphQLApplicationError';
+  code?: Maybe<Scalars['String']['output']>;
+  message: Scalars['String']['output'];
+  path?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 
 export type InitiationVia = InitiationViaIntraLedger | InitiationViaLn | InitiationViaOnChain;
 
 export type InitiationViaIntraLedger = {
-  readonly __typename: 'InitiationViaIntraLedger';
-  readonly counterPartyUsername?: Maybe<Scalars['Username']['output']>;
-  readonly counterPartyWalletId?: Maybe<Scalars['WalletId']['output']>;
+  __typename?: 'InitiationViaIntraLedger';
+  counterPartyUsername?: Maybe<Scalars['Username']['output']>;
+  counterPartyWalletId?: Maybe<Scalars['WalletId']['output']>;
 };
 
 export type InitiationViaLn = {
-  readonly __typename: 'InitiationViaLn';
-  readonly paymentHash: Scalars['PaymentHash']['output'];
+  __typename?: 'InitiationViaLn';
+  paymentHash: Scalars['PaymentHash']['output'];
+  /** Bolt11 invoice */
+  paymentRequest: Scalars['LnPaymentRequest']['output'];
 };
 
 export type InitiationViaOnChain = {
-  readonly __typename: 'InitiationViaOnChain';
-  readonly address: Scalars['OnChainAddress']['output'];
+  __typename?: 'InitiationViaOnChain';
+  address: Scalars['OnChainAddress']['output'];
 };
 
 export type IntraLedgerPaymentSendInput = {
   /** Amount in satoshis. */
-  readonly amount: Scalars['SatAmount']['input'];
+  amount: Scalars['SatAmount']['input'];
   /** Optional memo to be attached to the payment. */
-  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly recipientWalletId: Scalars['WalletId']['input'];
+  memo?: InputMaybe<Scalars['Memo']['input']>;
+  recipientWalletId: Scalars['WalletId']['input'];
   /** The wallet ID of the sender. */
-  readonly walletId: Scalars['WalletId']['input'];
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type IntraLedgerUpdate = {
-  readonly __typename: 'IntraLedgerUpdate';
-  readonly amount: Scalars['SatAmount']['output'];
-  readonly displayCurrencyPerSat: Scalars['Float']['output'];
-  readonly txNotificationType: TxNotificationType;
+  __typename?: 'IntraLedgerUpdate';
+  /** @deprecated Deprecated in favor of transaction */
+  amount: Scalars['SatAmount']['output'];
+  /** @deprecated Deprecated in favor of transaction */
+  displayCurrencyPerSat: Scalars['Float']['output'];
+  transaction: Transaction;
+  txNotificationType: TxNotificationType;
   /** @deprecated updated over displayCurrencyPerSat */
-  readonly usdPerSat: Scalars['Float']['output'];
-  readonly walletId: Scalars['WalletId']['output'];
+  usdPerSat: Scalars['Float']['output'];
+  /** @deprecated Deprecated in favor of transaction */
+  walletId: Scalars['WalletId']['output'];
 };
 
 export type IntraLedgerUsdPaymentSendInput = {
   /** Amount in cents. */
-  readonly amount: Scalars['CentAmount']['input'];
+  amount: Scalars['CentAmount']['input'];
   /** Optional memo to be attached to the payment. */
-  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly recipientWalletId: Scalars['WalletId']['input'];
+  memo?: InputMaybe<Scalars['Memo']['input']>;
+  recipientWalletId: Scalars['WalletId']['input'];
   /** The wallet ID of the sender. */
-  readonly walletId: Scalars['WalletId']['input'];
+  walletId: Scalars['WalletId']['input'];
 };
 
-export const InvoicePaymentStatus = {
-  Expired: 'EXPIRED',
-  Paid: 'PAID',
-  Pending: 'PENDING'
-} as const;
+/** A lightning invoice. */
+export type Invoice = {
+  createdAt: Scalars['Timestamp']['output'];
+  /** The payment hash of the lightning invoice. */
+  paymentHash: Scalars['PaymentHash']['output'];
+  /** The bolt11 invoice to be paid. */
+  paymentRequest: Scalars['LnPaymentRequest']['output'];
+  /** The payment secret of the lightning invoice. This is not the preimage of the payment hash. */
+  paymentSecret: Scalars['LnPaymentSecret']['output'];
+  /** The payment status of the invoice. */
+  paymentStatus: InvoicePaymentStatus;
+};
 
-export type InvoicePaymentStatus = typeof InvoicePaymentStatus[keyof typeof InvoicePaymentStatus];
-export type LnInvoice = {
-  readonly __typename: 'LnInvoice';
-  readonly paymentHash: Scalars['PaymentHash']['output'];
-  readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
-  readonly paymentSecret: Scalars['LnPaymentSecret']['output'];
-  readonly satoshis?: Maybe<Scalars['SatAmount']['output']>;
+/** A connection to a list of items. */
+export type InvoiceConnection = {
+  __typename?: 'InvoiceConnection';
+  /** A list of edges. */
+  edges?: Maybe<Array<InvoiceEdge>>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+};
+
+/** An edge in a connection. */
+export type InvoiceEdge = {
+  __typename?: 'InvoiceEdge';
+  /** A cursor for use in pagination */
+  cursor: Scalars['String']['output'];
+  /** The item at the end of the edge */
+  node: Invoice;
+};
+
+export enum InvoicePaymentStatus {
+  Expired = 'EXPIRED',
+  Paid = 'PAID',
+  Pending = 'PENDING'
+}
+
+export type Leader = {
+  __typename?: 'Leader';
+  name?: Maybe<Scalars['LeaderboardName']['output']>;
+  points: Scalars['Int']['output'];
+  rank: Scalars['Int']['output'];
+};
+
+export type Leaderboard = {
+  __typename?: 'Leaderboard';
+  leaders: Array<Leader>;
+  range: WelcomeRange;
+};
+
+export type LnAddressPaymentSendInput = {
+  /** Amount in satoshis. */
+  amount: Scalars['SatAmount']['input'];
+  /** Lightning address to send to. */
+  lnAddress: Scalars['String']['input'];
+  /** Wallet ID to send bitcoin from. */
+  walletId: Scalars['WalletId']['input'];
+};
+
+export type LnInvoice = Invoice & {
+  __typename?: 'LnInvoice';
+  createdAt: Scalars['Timestamp']['output'];
+  paymentHash: Scalars['PaymentHash']['output'];
+  paymentRequest: Scalars['LnPaymentRequest']['output'];
+  paymentSecret: Scalars['LnPaymentSecret']['output'];
+  paymentStatus: InvoicePaymentStatus;
+  satoshis: Scalars['SatAmount']['output'];
+};
+
+export type LnInvoiceCancelInput = {
+  paymentHash: Scalars['PaymentHash']['input'];
+  /** Wallet ID for a wallet associated with the current account. */
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type LnInvoiceCreateInput = {
   /** Amount in satoshis. */
-  readonly amount: Scalars['SatAmount']['input'];
+  amount: Scalars['SatAmount']['input'];
   /** Optional invoice expiration time in minutes. */
-  readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
   /** Optional memo for the lightning invoice. */
-  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
+  memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a BTC wallet belonging to the current account. */
-  readonly walletId: Scalars['WalletId']['input'];
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type LnInvoiceCreateOnBehalfOfRecipientInput = {
   /** Amount in satoshis. */
-  readonly amount: Scalars['SatAmount']['input'];
-  readonly descriptionHash?: InputMaybe<Scalars['Hex32Bytes']['input']>;
+  amount: Scalars['SatAmount']['input'];
+  descriptionHash?: InputMaybe<Scalars['Hex32Bytes']['input']>;
   /** Optional invoice expiration time in minutes. */
-  readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
   /** Optional memo for the lightning invoice. */
-  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
+  memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a BTC wallet which belongs to any account. */
-  readonly recipientWalletId: Scalars['WalletId']['input'];
+  recipientWalletId: Scalars['WalletId']['input'];
 };
 
 export type LnInvoiceFeeProbeInput = {
-  readonly paymentRequest: Scalars['LnPaymentRequest']['input'];
-  readonly walletId: Scalars['WalletId']['input'];
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type LnInvoicePayload = {
-  readonly __typename: 'LnInvoicePayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly invoice?: Maybe<LnInvoice>;
+  __typename?: 'LnInvoicePayload';
+  errors: Array<Error>;
+  invoice?: Maybe<LnInvoice>;
 };
 
 export type LnInvoicePaymentInput = {
   /** Optional memo to associate with the lightning invoice. */
-  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
+  memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Payment request representing the invoice which is being paid. */
-  readonly paymentRequest: Scalars['LnPaymentRequest']['input'];
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
   /** Wallet ID with sufficient balance to cover amount of invoice.  Must belong to the account of the current user. */
-  readonly walletId: Scalars['WalletId']['input'];
+  walletId: Scalars['WalletId']['input'];
+};
+
+export type LnInvoicePaymentStatus = {
+  __typename?: 'LnInvoicePaymentStatus';
+  paymentHash?: Maybe<Scalars['PaymentHash']['output']>;
+  paymentRequest?: Maybe<Scalars['LnPaymentRequest']['output']>;
+  status?: Maybe<InvoicePaymentStatus>;
+};
+
+export type LnInvoicePaymentStatusByHashInput = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
+export type LnInvoicePaymentStatusByPaymentRequestInput = {
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
 };
 
 export type LnInvoicePaymentStatusInput = {
-  readonly paymentRequest: Scalars['LnPaymentRequest']['input'];
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
 };
 
 export type LnInvoicePaymentStatusPayload = {
-  readonly __typename: 'LnInvoicePaymentStatusPayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly status?: Maybe<InvoicePaymentStatus>;
+  __typename?: 'LnInvoicePaymentStatusPayload';
+  errors: Array<Error>;
+  paymentHash?: Maybe<Scalars['PaymentHash']['output']>;
+  paymentRequest?: Maybe<Scalars['LnPaymentRequest']['output']>;
+  status?: Maybe<InvoicePaymentStatus>;
 };
 
-export type LnNoAmountInvoice = {
-  readonly __typename: 'LnNoAmountInvoice';
-  readonly paymentHash: Scalars['PaymentHash']['output'];
-  readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
-  readonly paymentSecret: Scalars['LnPaymentSecret']['output'];
+export type LnNoAmountInvoice = Invoice & {
+  __typename?: 'LnNoAmountInvoice';
+  createdAt: Scalars['Timestamp']['output'];
+  paymentHash: Scalars['PaymentHash']['output'];
+  paymentRequest: Scalars['LnPaymentRequest']['output'];
+  paymentSecret: Scalars['LnPaymentSecret']['output'];
+  paymentStatus: InvoicePaymentStatus;
 };
 
 export type LnNoAmountInvoiceCreateInput = {
   /** Optional invoice expiration time in minutes. */
-  readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
   /** Optional memo for the lightning invoice. */
-  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
+  memo?: InputMaybe<Scalars['Memo']['input']>;
   /** ID for either a USD or BTC wallet belonging to the account of the current user. */
-  readonly walletId: Scalars['WalletId']['input'];
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = {
   /** Optional invoice expiration time in minutes. */
-  readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
   /** Optional memo for the lightning invoice. */
-  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
+  memo?: InputMaybe<Scalars['Memo']['input']>;
   /** ID for either a USD or BTC wallet which belongs to the account of any user. */
-  readonly recipientWalletId: Scalars['WalletId']['input'];
+  recipientWalletId: Scalars['WalletId']['input'];
 };
 
 export type LnNoAmountInvoiceFeeProbeInput = {
-  readonly amount: Scalars['SatAmount']['input'];
-  readonly paymentRequest: Scalars['LnPaymentRequest']['input'];
-  readonly walletId: Scalars['WalletId']['input'];
+  amount: Scalars['SatAmount']['input'];
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type LnNoAmountInvoicePayload = {
-  readonly __typename: 'LnNoAmountInvoicePayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly invoice?: Maybe<LnNoAmountInvoice>;
+  __typename?: 'LnNoAmountInvoicePayload';
+  errors: Array<Error>;
+  invoice?: Maybe<LnNoAmountInvoice>;
 };
 
 export type LnNoAmountInvoicePaymentInput = {
   /** Amount to pay in satoshis. */
-  readonly amount: Scalars['SatAmount']['input'];
+  amount: Scalars['SatAmount']['input'];
   /** Optional memo to associate with the lightning invoice. */
-  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
+  memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Payment request representing the invoice which is being paid. */
-  readonly paymentRequest: Scalars['LnPaymentRequest']['input'];
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
   /** Wallet ID with sufficient balance to cover amount defined in mutation request.  Must belong to the account of the current user. */
-  readonly walletId: Scalars['WalletId']['input'];
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type LnNoAmountUsdInvoiceFeeProbeInput = {
-  readonly amount: Scalars['CentAmount']['input'];
-  readonly paymentRequest: Scalars['LnPaymentRequest']['input'];
-  readonly walletId: Scalars['WalletId']['input'];
+  amount: Scalars['CentAmount']['input'];
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type LnNoAmountUsdInvoicePaymentInput = {
   /** Amount to pay in USD cents. */
-  readonly amount: Scalars['CentAmount']['input'];
+  amount: Scalars['CentAmount']['input'];
   /** Optional memo to associate with the lightning invoice. */
-  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
+  memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Payment request representing the invoice which is being paid. */
-  readonly paymentRequest: Scalars['LnPaymentRequest']['input'];
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
   /** Wallet ID with sufficient balance to cover amount defined in mutation request.  Must belong to the account of the current user. */
-  readonly walletId: Scalars['WalletId']['input'];
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type LnUpdate = {
-  readonly __typename: 'LnUpdate';
-  readonly paymentHash: Scalars['PaymentHash']['output'];
-  readonly status: InvoicePaymentStatus;
-  readonly walletId: Scalars['WalletId']['output'];
+  __typename?: 'LnUpdate';
+  /** @deprecated Deprecated in favor of transaction */
+  paymentHash: Scalars['PaymentHash']['output'];
+  status: InvoicePaymentStatus;
+  transaction: Transaction;
+  /** @deprecated Deprecated in favor of transaction */
+  walletId: Scalars['WalletId']['output'];
+};
+
+export type LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput = {
+  /** Amount in satoshis. */
+  amount: Scalars['SatAmount']['input'];
+  descriptionHash?: InputMaybe<Scalars['Hex32Bytes']['input']>;
+  /** Optional invoice expiration time in minutes. */
+  expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  /** Optional memo for the lightning invoice. Acts as a note to the recipient. */
+  memo?: InputMaybe<Scalars['Memo']['input']>;
+  /** Wallet ID for a USD wallet which belongs to the account of any user. */
+  recipientWalletId: Scalars['WalletId']['input'];
 };
 
 export type LnUsdInvoiceCreateInput = {
   /** Amount in USD cents. */
-  readonly amount: Scalars['CentAmount']['input'];
+  amount: Scalars['CentAmount']['input'];
   /** Optional invoice expiration time in minutes. */
-  readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
   /** Optional memo for the lightning invoice. */
-  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
+  memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a USD wallet belonging to the current user. */
-  readonly walletId: Scalars['WalletId']['input'];
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type LnUsdInvoiceCreateOnBehalfOfRecipientInput = {
   /** Amount in USD cents. */
-  readonly amount: Scalars['CentAmount']['input'];
-  readonly descriptionHash?: InputMaybe<Scalars['Hex32Bytes']['input']>;
+  amount: Scalars['CentAmount']['input'];
+  descriptionHash?: InputMaybe<Scalars['Hex32Bytes']['input']>;
   /** Optional invoice expiration time in minutes. */
-  readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
   /** Optional memo for the lightning invoice. Acts as a note to the recipient. */
-  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
+  memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a USD wallet which belongs to the account of any user. */
-  readonly recipientWalletId: Scalars['WalletId']['input'];
+  recipientWalletId: Scalars['WalletId']['input'];
 };
 
 export type LnUsdInvoiceFeeProbeInput = {
-  readonly paymentRequest: Scalars['LnPaymentRequest']['input'];
-  readonly walletId: Scalars['WalletId']['input'];
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
+  walletId: Scalars['WalletId']['input'];
+};
+
+export type LnurlPaymentSendInput = {
+  /** Amount in satoshis. */
+  amount: Scalars['SatAmount']['input'];
+  /** Lnurl string to send to. */
+  lnurl: Scalars['String']['input'];
+  /** Wallet ID to send bitcoin from. */
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type MapInfo = {
-  readonly __typename: 'MapInfo';
-  readonly coordinates: Coordinates;
-  readonly title: Scalars['String']['output'];
+  __typename?: 'MapInfo';
+  coordinates: Coordinates;
+  title: Scalars['String']['output'];
 };
 
 export type MapMarker = {
-  readonly __typename: 'MapMarker';
-  readonly mapInfo: MapInfo;
-  readonly username?: Maybe<Scalars['Username']['output']>;
+  __typename?: 'MapMarker';
+  mapInfo: MapInfo;
+  username: Scalars['Username']['output'];
+};
+
+export type Merchant = {
+  __typename?: 'Merchant';
+  /** GPS coordinates for the merchant that can be used to place the related business on a map */
+  coordinates: Coordinates;
+  createdAt: Scalars['Timestamp']['output'];
+  id: Scalars['ID']['output'];
+  title: Scalars['String']['output'];
+  /** The username of the merchant */
+  username: Scalars['Username']['output'];
+  /** Whether the merchant has been validated */
+  validated: Scalars['Boolean']['output'];
+};
+
+export type MerchantMapSuggestInput = {
+  latitude: Scalars['Float']['input'];
+  longitude: Scalars['Float']['input'];
+  title: Scalars['String']['input'];
+  username: Scalars['Username']['input'];
+};
+
+export type MerchantPayload = {
+  __typename?: 'MerchantPayload';
+  errors: Array<Error>;
+  merchant?: Maybe<Merchant>;
 };
 
 export type MobileVersions = {
-  readonly __typename: 'MobileVersions';
-  readonly currentSupported: Scalars['Int']['output'];
-  readonly minSupported: Scalars['Int']['output'];
-  readonly platform: Scalars['String']['output'];
+  __typename?: 'MobileVersions';
+  currentSupported: Scalars['Int']['output'];
+  minSupported: Scalars['Int']['output'];
+  platform: Scalars['String']['output'];
 };
 
 export type Mutation = {
-  readonly __typename: 'Mutation';
-  readonly accountDelete: AccountDeletePayload;
-  readonly accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdPayload;
-  readonly accountUpdateDisplayCurrency: AccountUpdateDisplayCurrencyPayload;
-  readonly captchaCreateChallenge: CaptchaCreateChallengePayload;
-  readonly captchaRequestAuthCode: SuccessPayload;
-  readonly createWithdrawLink: WithdrawLink;
-  readonly deleteWithdrawLink: Scalars['ID']['output'];
-  readonly deviceNotificationTokenCreate: SuccessPayload;
-  readonly feedbackSubmit: SuccessPayload;
+  __typename?: 'Mutation';
+  accountDelete: AccountDeletePayload;
+  accountDisableNotificationCategory: AccountUpdateNotificationSettingsPayload;
+  accountDisableNotificationChannel: AccountUpdateNotificationSettingsPayload;
+  accountEnableNotificationCategory: AccountUpdateNotificationSettingsPayload;
+  accountEnableNotificationChannel: AccountUpdateNotificationSettingsPayload;
+  accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdPayload;
+  accountUpdateDisplayCurrency: AccountUpdateDisplayCurrencyPayload;
+  apiKeyCreate: ApiKeyCreatePayload;
+  apiKeyRevoke: ApiKeyRevokePayload;
+  callbackEndpointAdd: CallbackEndpointAddPayload;
+  callbackEndpointDelete: SuccessPayload;
+  captchaCreateChallenge: CaptchaCreateChallengePayload;
+  captchaRequestAuthCode: SuccessPayload;
+  createWithdrawLink: WithdrawLink;
+  deleteWithdrawLink: Scalars['ID']['output'];
+  deviceNotificationTokenCreate: SuccessPayload;
+  feedbackSubmit: SuccessPayload;
   /**
    * Actions a payment which is internal to the ledger e.g. it does
    * not use onchain/lightning. Returns payment status (success,
    * failed, pending, already_paid).
    */
-  readonly intraLedgerPaymentSend: PaymentSendPayload;
+  intraLedgerPaymentSend: PaymentSendPayload;
   /**
    * Actions a payment which is internal to the ledger e.g. it does
    * not use onchain/lightning. Returns payment status (success,
    * failed, pending, already_paid).
    */
-  readonly intraLedgerUsdPaymentSend: PaymentSendPayload;
+  intraLedgerUsdPaymentSend: PaymentSendPayload;
+  /** Sends a payment to a lightning address. */
+  lnAddressPaymentSend: PaymentSendPayload;
+  /** Cancel an unpaid lightning invoice for an associated wallet. */
+  lnInvoiceCancel: SuccessPayload;
   /**
    * Returns a lightning invoice for an associated wallet.
    * When invoice is paid the value will be credited to a BTC wallet.
    * Expires after 'expiresIn' or 24 hours.
    */
-  readonly lnInvoiceCreate: LnInvoicePayload;
+  lnInvoiceCreate: LnInvoicePayload;
   /**
    * Returns a lightning invoice for an associated wallet.
    * When invoice is paid the value will be credited to a BTC wallet.
    * Expires after 'expiresIn' or 24 hours.
    */
-  readonly lnInvoiceCreateOnBehalfOfRecipient: LnInvoicePayload;
-  readonly lnInvoiceFeeProbe: SatAmountPayload;
+  lnInvoiceCreateOnBehalfOfRecipient: LnInvoicePayload;
+  lnInvoiceFeeProbe: SatAmountPayload;
   /**
    * Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user.
    * Provided wallet can be USD or BTC and must have sufficient balance to cover amount in lightning invoice.
    * Returns payment status (success, failed, pending, already_paid).
    */
-  readonly lnInvoicePaymentSend: PaymentSendPayload;
+  lnInvoicePaymentSend: PaymentSendPayload;
   /**
    * Returns a lightning invoice for an associated wallet.
    * Can be used to receive any supported currency value (currently USD or BTC).
    * Expires after 'expiresIn' or 24 hours for BTC invoices or 5 minutes for USD invoices.
    */
-  readonly lnNoAmountInvoiceCreate: LnNoAmountInvoicePayload;
+  lnNoAmountInvoiceCreate: LnNoAmountInvoicePayload;
   /**
    * Returns a lightning invoice for an associated wallet.
    * Can be used to receive any supported currency value (currently USD or BTC).
    * Expires after 'expiresIn' or 24 hours for BTC invoices or 5 minutes for USD invoices.
    */
-  readonly lnNoAmountInvoiceCreateOnBehalfOfRecipient: LnNoAmountInvoicePayload;
-  readonly lnNoAmountInvoiceFeeProbe: SatAmountPayload;
+  lnNoAmountInvoiceCreateOnBehalfOfRecipient: LnNoAmountInvoicePayload;
+  lnNoAmountInvoiceFeeProbe: SatAmountPayload;
   /**
    * Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user.
    * Provided wallet must be BTC and must have sufficient balance to cover amount specified in mutation request.
    * Returns payment status (success, failed, pending, already_paid).
    */
-  readonly lnNoAmountInvoicePaymentSend: PaymentSendPayload;
-  readonly lnNoAmountUsdInvoiceFeeProbe: CentAmountPayload;
+  lnNoAmountInvoicePaymentSend: PaymentSendPayload;
+  lnNoAmountUsdInvoiceFeeProbe: CentAmountPayload;
   /**
    * Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user.
    * Provided wallet must be USD and have sufficient balance to cover amount specified in mutation request.
    * Returns payment status (success, failed, pending, already_paid).
    */
-  readonly lnNoAmountUsdInvoicePaymentSend: PaymentSendPayload;
-  /**
-   * Returns a lightning invoice denominated in satoshis for an associated wallet.
-   * When invoice is paid the equivalent value at invoice creation will be credited to a USD wallet.
-   * Expires after 'expiresIn' or 5 minutes (short expiry time because there is a USD/BTC exchange rate
-   * associated with the amount).
-   */
-  readonly lnUsdInvoiceCreate: LnInvoicePayload;
+  lnNoAmountUsdInvoicePaymentSend: PaymentSendPayload;
   /**
    * Returns a lightning invoice denominated in satoshis for an associated wallet.
    * When invoice is paid the equivalent value at invoice creation will be credited to a USD wallet.
    * Expires after 'expiresIn' or 5 minutes (short expiry time because there is a USD/BTC exchange rate
    *   associated with the amount).
    */
-  readonly lnUsdInvoiceCreateOnBehalfOfRecipient: LnInvoicePayload;
-  readonly lnUsdInvoiceFeeProbe: SatAmountPayload;
-  readonly onChainAddressCreate: OnChainAddressPayload;
-  readonly onChainAddressCurrent: OnChainAddressPayload;
-  readonly onChainPaymentSend: PaymentSendPayload;
-  readonly onChainPaymentSendAll: PaymentSendPayload;
-  readonly onChainUsdPaymentSend: PaymentSendPayload;
-  readonly onChainUsdPaymentSendAsBtcDenominated: PaymentSendPayload;
-  readonly quizCompleted: QuizCompletedPayload;
-  readonly sendPaymentOnChain: SendPaymentOnChainResult;
-  readonly updateWithdrawLink: WithdrawLink;
+  lnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipient: LnInvoicePayload;
+  /**
+   * Returns a lightning invoice denominated in satoshis for an associated wallet.
+   * When invoice is paid the equivalent value at invoice creation will be credited to a USD wallet.
+   * Expires after 'expiresIn' or 5 minutes (short expiry time because there is a USD/BTC exchange rate
+   * associated with the amount).
+   */
+  lnUsdInvoiceCreate: LnInvoicePayload;
+  /**
+   * Returns a lightning invoice denominated in satoshis for an associated wallet.
+   * When invoice is paid the equivalent value at invoice creation will be credited to a USD wallet.
+   * Expires after 'expiresIn' or 5 minutes (short expiry time because there is a USD/BTC exchange rate
+   *   associated with the amount).
+   */
+  lnUsdInvoiceCreateOnBehalfOfRecipient: LnInvoicePayload;
+  lnUsdInvoiceFeeProbe: SatAmountPayload;
+  /** Sends a payment to a lightning address. */
+  lnurlPaymentSend: PaymentSendPayload;
+  merchantMapSuggest: MerchantPayload;
+  onChainAddressCreate: OnChainAddressPayload;
+  onChainAddressCurrent: OnChainAddressPayload;
+  onChainPaymentSend: PaymentSendPayload;
+  onChainPaymentSendAll: PaymentSendPayload;
+  onChainUsdPaymentSend: PaymentSendPayload;
+  onChainUsdPaymentSendAsBtcDenominated: PaymentSendPayload;
+  onboardingFlowStart: OnboardingFlowStartResult;
+  quizClaim: QuizClaimPayload;
+  sendPaymentOnChain: SendPaymentOnChainResult;
+  supportChatMessageAdd: SupportChatMessageAddPayload;
+  updateWithdrawLink: WithdrawLink;
   /** @deprecated will be moved to AccountContact */
-  readonly userContactUpdateAlias: UserContactUpdateAliasPayload;
-  readonly userEmailDelete: UserEmailDeletePayload;
-  readonly userEmailRegistrationInitiate: UserEmailRegistrationInitiatePayload;
-  readonly userEmailRegistrationValidate: UserEmailRegistrationValidatePayload;
-  readonly userLogin: AuthTokenPayload;
-  readonly userLoginUpgrade: UpgradePayload;
-  readonly userLogout: SuccessPayload;
-  readonly userPhoneDelete: UserPhoneDeletePayload;
-  readonly userPhoneRegistrationInitiate: SuccessPayload;
-  readonly userPhoneRegistrationValidate: UserPhoneRegistrationValidatePayload;
-  /** @deprecated Use QuizCompletedMutation instead */
-  readonly userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedPayload;
-  readonly userRequestAuthCode: SuccessPayload;
-  readonly userTotpDelete: UserTotpDeletePayload;
-  readonly userTotpRegistrationInitiate: UserTotpRegistrationInitiatePayload;
-  readonly userTotpRegistrationValidate: UserTotpRegistrationValidatePayload;
-  readonly userUpdateLanguage: UserUpdateLanguagePayload;
+  userContactUpdateAlias: UserContactUpdateAliasPayload;
+  userEmailDelete: UserEmailDeletePayload;
+  userEmailRegistrationInitiate: UserEmailRegistrationInitiatePayload;
+  userEmailRegistrationValidate: UserEmailRegistrationValidatePayload;
+  userLogin: AuthTokenPayload;
+  userLoginUpgrade: UpgradePayload;
+  userLogout: SuccessPayload;
+  userPhoneDelete: UserPhoneDeletePayload;
+  userPhoneRegistrationInitiate: SuccessPayload;
+  userPhoneRegistrationValidate: UserPhoneRegistrationValidatePayload;
+  userTotpDelete: UserTotpDeletePayload;
+  userTotpRegistrationInitiate: UserTotpRegistrationInitiatePayload;
+  userTotpRegistrationValidate: UserTotpRegistrationValidatePayload;
+  userUpdateLanguage: UserUpdateLanguagePayload;
   /** @deprecated Username will be moved to @Handle in Accounts. Also SetUsername naming should be used instead of UpdateUsername to reflect the idempotency of Handles */
-  readonly userUpdateUsername: UserUpdateUsernamePayload;
+  userUpdateUsername: UserUpdateUsernamePayload;
+};
+
+
+export type MutationAccountDisableNotificationCategoryArgs = {
+  input: AccountDisableNotificationCategoryInput;
+};
+
+
+export type MutationAccountDisableNotificationChannelArgs = {
+  input: AccountDisableNotificationChannelInput;
+};
+
+
+export type MutationAccountEnableNotificationCategoryArgs = {
+  input: AccountEnableNotificationCategoryInput;
+};
+
+
+export type MutationAccountEnableNotificationChannelArgs = {
+  input: AccountEnableNotificationChannelInput;
 };
 
 
@@ -727,6 +1090,26 @@ export type MutationAccountUpdateDefaultWalletIdArgs = {
 
 export type MutationAccountUpdateDisplayCurrencyArgs = {
   input: AccountUpdateDisplayCurrencyInput;
+};
+
+
+export type MutationApiKeyCreateArgs = {
+  input: ApiKeyCreateInput;
+};
+
+
+export type MutationApiKeyRevokeArgs = {
+  input: ApiKeyRevokeInput;
+};
+
+
+export type MutationCallbackEndpointAddArgs = {
+  input: CallbackEndpointAddInput;
+};
+
+
+export type MutationCallbackEndpointDeleteArgs = {
+  input: CallbackEndpointDeleteInput;
 };
 
 
@@ -762,6 +1145,16 @@ export type MutationIntraLedgerPaymentSendArgs = {
 
 export type MutationIntraLedgerUsdPaymentSendArgs = {
   input: IntraLedgerUsdPaymentSendInput;
+};
+
+
+export type MutationLnAddressPaymentSendArgs = {
+  input: LnAddressPaymentSendInput;
+};
+
+
+export type MutationLnInvoiceCancelArgs = {
+  input: LnInvoiceCancelInput;
 };
 
 
@@ -815,6 +1208,11 @@ export type MutationLnNoAmountUsdInvoicePaymentSendArgs = {
 };
 
 
+export type MutationLnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientArgs = {
+  input: LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput;
+};
+
+
 export type MutationLnUsdInvoiceCreateArgs = {
   input: LnUsdInvoiceCreateInput;
 };
@@ -827,6 +1225,16 @@ export type MutationLnUsdInvoiceCreateOnBehalfOfRecipientArgs = {
 
 export type MutationLnUsdInvoiceFeeProbeArgs = {
   input: LnUsdInvoiceFeeProbeInput;
+};
+
+
+export type MutationLnurlPaymentSendArgs = {
+  input: LnurlPaymentSendInput;
+};
+
+
+export type MutationMerchantMapSuggestArgs = {
+  input: MerchantMapSuggestInput;
 };
 
 
@@ -860,14 +1268,24 @@ export type MutationOnChainUsdPaymentSendAsBtcDenominatedArgs = {
 };
 
 
-export type MutationQuizCompletedArgs = {
-  input: QuizCompletedInput;
+export type MutationOnboardingFlowStartArgs = {
+  input: OnboardingFlowStartInput;
+};
+
+
+export type MutationQuizClaimArgs = {
+  input: QuizClaimInput;
 };
 
 
 export type MutationSendPaymentOnChainArgs = {
-  btc_wallet_address: Scalars['String']['input'];
+  btcWalletAddress: Scalars['String']['input'];
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationSupportChatMessageAddArgs = {
+  input: SupportChatMessageAddInput;
 };
 
 
@@ -903,7 +1321,7 @@ export type MutationUserLoginUpgradeArgs = {
 
 
 export type MutationUserLogoutArgs = {
-  input: UserLogoutInput;
+  input?: InputMaybe<UserLogoutInput>;
 };
 
 
@@ -914,26 +1332,6 @@ export type MutationUserPhoneRegistrationInitiateArgs = {
 
 export type MutationUserPhoneRegistrationValidateArgs = {
   input: UserPhoneRegistrationValidateInput;
-};
-
-
-export type MutationUserQuizQuestionUpdateCompletedArgs = {
-  input: UserQuizQuestionUpdateCompletedInput;
-};
-
-
-export type MutationUserRequestAuthCodeArgs = {
-  input: UserRequestAuthCodeInput;
-};
-
-
-export type MutationUserTotpDeleteArgs = {
-  input: UserTotpDeleteInput;
-};
-
-
-export type MutationUserTotpRegistrationInitiateArgs = {
-  input: UserTotpRegistrationInitiateInput;
 };
 
 
@@ -952,245 +1350,285 @@ export type MutationUserUpdateUsernameArgs = {
 };
 
 export type MyUpdatesPayload = {
-  readonly __typename: 'MyUpdatesPayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly me?: Maybe<User>;
-  readonly update?: Maybe<UserUpdate>;
+  __typename?: 'MyUpdatesPayload';
+  errors: Array<Error>;
+  me?: Maybe<User>;
+  update?: Maybe<UserUpdate>;
 };
 
-export const Network = {
-  Mainnet: 'mainnet',
-  Regtest: 'regtest',
-  Signet: 'signet',
-  Testnet: 'testnet'
-} as const;
+export enum Network {
+  Mainnet = 'mainnet',
+  Regtest = 'regtest',
+  Signet = 'signet',
+  Testnet = 'testnet'
+}
 
-export type Network = typeof Network[keyof typeof Network];
+export enum NotificationChannel {
+  Push = 'PUSH'
+}
+
+export type NotificationChannelSettings = {
+  __typename?: 'NotificationChannelSettings';
+  disabledCategories: Array<Scalars['NotificationCategory']['output']>;
+  enabled: Scalars['Boolean']['output'];
+};
+
+export type NotificationSettings = {
+  __typename?: 'NotificationSettings';
+  push: NotificationChannelSettings;
+};
+
 export type OnChainAddressCreateInput = {
-  readonly walletId: Scalars['WalletId']['input'];
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type OnChainAddressCurrentInput = {
-  readonly walletId: Scalars['WalletId']['input'];
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type OnChainAddressPayload = {
-  readonly __typename: 'OnChainAddressPayload';
-  readonly address?: Maybe<Scalars['OnChainAddress']['output']>;
-  readonly errors: ReadonlyArray<Error>;
+  __typename?: 'OnChainAddressPayload';
+  address?: Maybe<Scalars['OnChainAddress']['output']>;
+  errors: Array<Error>;
 };
 
 export type OnChainPaymentSendAllInput = {
-  readonly address: Scalars['OnChainAddress']['input'];
-  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly speed?: InputMaybe<PayoutSpeed>;
-  readonly walletId: Scalars['WalletId']['input'];
+  address: Scalars['OnChainAddress']['input'];
+  memo?: InputMaybe<Scalars['Memo']['input']>;
+  speed?: PayoutSpeed;
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type OnChainPaymentSendInput = {
-  readonly address: Scalars['OnChainAddress']['input'];
-  readonly amount: Scalars['SatAmount']['input'];
-  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly speed?: InputMaybe<PayoutSpeed>;
-  readonly walletId: Scalars['WalletId']['input'];
+  address: Scalars['OnChainAddress']['input'];
+  amount: Scalars['SatAmount']['input'];
+  memo?: InputMaybe<Scalars['Memo']['input']>;
+  speed?: PayoutSpeed;
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type OnChainTxFee = {
-  readonly __typename: 'OnChainTxFee';
-  readonly amount: Scalars['SatAmount']['output'];
-  /** @deprecated Ignored - will be removed */
-  readonly targetConfirmations: Scalars['TargetConfirmations']['output'];
+  __typename?: 'OnChainTxFee';
+  amount: Scalars['SatAmount']['output'];
 };
 
 export type OnChainUpdate = {
-  readonly __typename: 'OnChainUpdate';
-  readonly amount: Scalars['SatAmount']['output'];
-  readonly displayCurrencyPerSat: Scalars['Float']['output'];
-  readonly txHash: Scalars['OnChainTxHash']['output'];
-  readonly txNotificationType: TxNotificationType;
+  __typename?: 'OnChainUpdate';
+  /** @deprecated Deprecated in favor of transaction */
+  amount: Scalars['SatAmount']['output'];
+  /** @deprecated Deprecated in favor of transaction */
+  displayCurrencyPerSat: Scalars['Float']['output'];
+  transaction: Transaction;
+  /** @deprecated Deprecated in favor of transaction */
+  txHash: Scalars['OnChainTxHash']['output'];
+  txNotificationType: TxNotificationType;
   /** @deprecated updated over displayCurrencyPerSat */
-  readonly usdPerSat: Scalars['Float']['output'];
-  readonly walletId: Scalars['WalletId']['output'];
+  usdPerSat: Scalars['Float']['output'];
+  /** @deprecated Deprecated in favor of transaction */
+  walletId: Scalars['WalletId']['output'];
 };
 
 export type OnChainUsdPaymentSendAsBtcDenominatedInput = {
-  readonly address: Scalars['OnChainAddress']['input'];
-  readonly amount: Scalars['SatAmount']['input'];
-  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly speed?: InputMaybe<PayoutSpeed>;
-  readonly walletId: Scalars['WalletId']['input'];
+  address: Scalars['OnChainAddress']['input'];
+  amount: Scalars['SatAmount']['input'];
+  memo?: InputMaybe<Scalars['Memo']['input']>;
+  speed?: PayoutSpeed;
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type OnChainUsdPaymentSendInput = {
-  readonly address: Scalars['OnChainAddress']['input'];
-  readonly amount: Scalars['CentAmount']['input'];
-  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly speed?: InputMaybe<PayoutSpeed>;
-  readonly walletId: Scalars['WalletId']['input'];
+  address: Scalars['OnChainAddress']['input'];
+  amount: Scalars['CentAmount']['input'];
+  memo?: InputMaybe<Scalars['Memo']['input']>;
+  speed?: PayoutSpeed;
+  walletId: Scalars['WalletId']['input'];
 };
 
 export type OnChainUsdTxFee = {
-  readonly __typename: 'OnChainUsdTxFee';
-  readonly amount: Scalars['CentAmount']['output'];
-  /** @deprecated Ignored - will be removed */
-  readonly targetConfirmations: Scalars['TargetConfirmations']['output'];
+  __typename?: 'OnChainUsdTxFee';
+  amount: Scalars['CentAmount']['output'];
 };
 
+export type OnboardingFlowStartInput = {
+  firstName: Scalars['String']['input'];
+  lastName: Scalars['String']['input'];
+};
+
+export type OnboardingFlowStartResult = {
+  __typename?: 'OnboardingFlowStartResult';
+  tokenAndroid: Scalars['String']['output'];
+  tokenIos: Scalars['String']['output'];
+  tokenWeb: Scalars['String']['output'];
+  workflowRunId: Scalars['String']['output'];
+};
+
+export enum OnboardingStatus {
+  Abandoned = 'ABANDONED',
+  Approved = 'APPROVED',
+  AwaitingInput = 'AWAITING_INPUT',
+  Declined = 'DECLINED',
+  Error = 'ERROR',
+  NotStarted = 'NOT_STARTED',
+  Processing = 'PROCESSING',
+  Review = 'REVIEW'
+}
+
 export type OneDayAccountLimit = AccountLimit & {
-  readonly __typename: 'OneDayAccountLimit';
+  __typename?: 'OneDayAccountLimit';
   /** The rolling time interval value in seconds for the current 24 hour period. */
-  readonly interval?: Maybe<Scalars['Seconds']['output']>;
+  interval?: Maybe<Scalars['Seconds']['output']>;
   /** The amount of cents remaining below the limit for the current 24 hour period. */
-  readonly remainingLimit?: Maybe<Scalars['CentAmount']['output']>;
+  remainingLimit?: Maybe<Scalars['CentAmount']['output']>;
   /** The current maximum limit for a given 24 hour period. */
-  readonly totalLimit: Scalars['CentAmount']['output'];
+  totalLimit: Scalars['CentAmount']['output'];
 };
 
 /** Information about pagination in a connection. */
 export type PageInfo = {
-  readonly __typename: 'PageInfo';
+  __typename?: 'PageInfo';
   /** When paginating forwards, the cursor to continue. */
-  readonly endCursor?: Maybe<Scalars['String']['output']>;
+  endCursor?: Maybe<Scalars['String']['output']>;
   /** When paginating forwards, are there more items? */
-  readonly hasNextPage: Scalars['Boolean']['output'];
+  hasNextPage: Scalars['Boolean']['output'];
   /** When paginating backwards, are there more items? */
-  readonly hasPreviousPage: Scalars['Boolean']['output'];
+  hasPreviousPage: Scalars['Boolean']['output'];
   /** When paginating backwards, the cursor to continue. */
-  readonly startCursor?: Maybe<Scalars['String']['output']>;
+  startCursor?: Maybe<Scalars['String']['output']>;
 };
 
 export type PaymentSendPayload = {
-  readonly __typename: 'PaymentSendPayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly status?: Maybe<PaymentSendResult>;
+  __typename?: 'PaymentSendPayload';
+  errors: Array<Error>;
+  status?: Maybe<PaymentSendResult>;
+  transaction?: Maybe<Transaction>;
 };
 
-export const PaymentSendResult = {
-  AlreadyPaid: 'ALREADY_PAID',
-  Failure: 'FAILURE',
-  Pending: 'PENDING',
-  Success: 'SUCCESS'
-} as const;
+export enum PaymentSendResult {
+  AlreadyPaid = 'ALREADY_PAID',
+  Failure = 'FAILURE',
+  Pending = 'PENDING',
+  Success = 'SUCCESS'
+}
 
-export type PaymentSendResult = typeof PaymentSendResult[keyof typeof PaymentSendResult];
-export const PayoutSpeed = {
-  Fast: 'FAST'
-} as const;
+export enum PayoutSpeed {
+  Fast = 'FAST'
+}
 
-export type PayoutSpeed = typeof PayoutSpeed[keyof typeof PayoutSpeed];
-export const PhoneCodeChannelType = {
-  Sms: 'SMS',
-  Whatsapp: 'WHATSAPP'
-} as const;
+export enum PhoneCodeChannelType {
+  Sms = 'SMS',
+  Whatsapp = 'WHATSAPP'
+}
 
-export type PhoneCodeChannelType = typeof PhoneCodeChannelType[keyof typeof PhoneCodeChannelType];
 /** Price amount expressed in base/offset. To calculate, use: `base / 10^offset` */
 export type Price = {
-  readonly __typename: 'Price';
-  readonly base: Scalars['SafeInt']['output'];
-  readonly currencyUnit: Scalars['String']['output'];
-  readonly formattedAmount: Scalars['String']['output'];
-  readonly offset: Scalars['Int']['output'];
+  __typename?: 'Price';
+  base: Scalars['SafeInt']['output'];
+  currencyUnit: Scalars['String']['output'];
+  formattedAmount: Scalars['String']['output'];
+  offset: Scalars['Int']['output'];
 };
 
 /** The range for the X axis in the BTC price graph */
-export const PriceGraphRange = {
-  FiveYears: 'FIVE_YEARS',
-  OneDay: 'ONE_DAY',
-  OneMonth: 'ONE_MONTH',
-  OneWeek: 'ONE_WEEK',
-  OneYear: 'ONE_YEAR'
-} as const;
+export enum PriceGraphRange {
+  FiveYears = 'FIVE_YEARS',
+  OneDay = 'ONE_DAY',
+  OneMonth = 'ONE_MONTH',
+  OneWeek = 'ONE_WEEK',
+  OneYear = 'ONE_YEAR'
+}
 
-export type PriceGraphRange = typeof PriceGraphRange[keyof typeof PriceGraphRange];
 export type PriceInput = {
-  readonly amount: Scalars['SatAmount']['input'];
-  readonly amountCurrencyUnit: ExchangeCurrencyUnit;
-  readonly priceCurrencyUnit: ExchangeCurrencyUnit;
+  amount: Scalars['SatAmount']['input'];
+  amountCurrencyUnit: ExchangeCurrencyUnit;
+  priceCurrencyUnit: ExchangeCurrencyUnit;
 };
 
 export type PriceInterface = {
-  readonly base: Scalars['SafeInt']['output'];
+  base: Scalars['SafeInt']['output'];
   /** @deprecated Deprecated due to type renaming */
-  readonly currencyUnit: Scalars['String']['output'];
-  readonly offset: Scalars['Int']['output'];
+  currencyUnit: Scalars['String']['output'];
+  offset: Scalars['Int']['output'];
 };
 
 /** Price of 1 sat in base/offset. To calculate, use: `base / 10^offset` */
 export type PriceOfOneSatInMinorUnit = PriceInterface & {
-  readonly __typename: 'PriceOfOneSatInMinorUnit';
-  readonly base: Scalars['SafeInt']['output'];
+  __typename?: 'PriceOfOneSatInMinorUnit';
+  base: Scalars['SafeInt']['output'];
   /** @deprecated Deprecated due to type renaming */
-  readonly currencyUnit: Scalars['String']['output'];
-  readonly offset: Scalars['Int']['output'];
+  currencyUnit: Scalars['String']['output'];
+  offset: Scalars['Int']['output'];
 };
 
 /** Price of 1 sat or 1 usd cent in base/offset. To calculate, use: `base / 10^offset` */
 export type PriceOfOneSettlementMinorUnitInDisplayMinorUnit = PriceInterface & {
-  readonly __typename: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit';
-  readonly base: Scalars['SafeInt']['output'];
+  __typename?: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit';
+  base: Scalars['SafeInt']['output'];
   /** @deprecated Deprecated due to type renaming */
-  readonly currencyUnit: Scalars['String']['output'];
+  currencyUnit: Scalars['String']['output'];
   /** @deprecated Deprecated please use `base / 10^offset` */
-  readonly formattedAmount: Scalars['String']['output'];
-  readonly offset: Scalars['Int']['output'];
+  formattedAmount: Scalars['String']['output'];
+  offset: Scalars['Int']['output'];
 };
 
 /** Price of 1 usd cent in base/offset. To calculate, use: `base / 10^offset` */
 export type PriceOfOneUsdCentInMinorUnit = PriceInterface & {
-  readonly __typename: 'PriceOfOneUsdCentInMinorUnit';
-  readonly base: Scalars['SafeInt']['output'];
+  __typename?: 'PriceOfOneUsdCentInMinorUnit';
+  base: Scalars['SafeInt']['output'];
   /** @deprecated Deprecated due to type renaming */
-  readonly currencyUnit: Scalars['String']['output'];
-  readonly offset: Scalars['Int']['output'];
+  currencyUnit: Scalars['String']['output'];
+  offset: Scalars['Int']['output'];
 };
 
 export type PricePayload = {
-  readonly __typename: 'PricePayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly price?: Maybe<Price>;
+  __typename?: 'PricePayload';
+  errors: Array<Error>;
+  price?: Maybe<Price>;
 };
 
 export type PricePoint = {
-  readonly __typename: 'PricePoint';
-  readonly price: Price;
+  __typename?: 'PricePoint';
+  price: Price;
   /** Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC) */
-  readonly timestamp: Scalars['Timestamp']['output'];
+  timestamp: Scalars['Timestamp']['output'];
 };
 
 /** A public view of a generic wallet which stores value in one of our supported currencies. */
 export type PublicWallet = {
-  readonly __typename: 'PublicWallet';
-  readonly id: Scalars['ID']['output'];
-  readonly walletCurrency: WalletCurrency;
+  __typename?: 'PublicWallet';
+  currency: WalletCurrency;
+  id: Scalars['ID']['output'];
+  /** @deprecated Shifting property to 'currency' */
+  walletCurrency: WalletCurrency;
 };
 
 export type Query = {
-  readonly __typename: 'Query';
-  readonly accountDefaultWallet: PublicWallet;
-  /** @deprecated Deprecated in favor of realtimePrice */
-  readonly btcPrice?: Maybe<Price>;
-  readonly btcPriceList?: Maybe<ReadonlyArray<Maybe<PricePoint>>>;
-  readonly businessMapMarkers?: Maybe<ReadonlyArray<Maybe<MapMarker>>>;
-  readonly currencyList: ReadonlyArray<Currency>;
-  readonly getAllWithdrawLinks: ReadonlyArray<WithdrawLink>;
-  readonly getOnChainPaymentFees: FeesResult;
-  readonly getWithdrawLink?: Maybe<WithdrawLink>;
-  readonly getWithdrawLinksByUserId: WithdrawLinksByUserIdResult;
-  readonly globals?: Maybe<Globals>;
-  readonly lnInvoicePaymentStatus: LnInvoicePaymentStatusPayload;
-  readonly me?: Maybe<User>;
-  readonly mobileVersions?: Maybe<ReadonlyArray<Maybe<MobileVersions>>>;
-  readonly onChainTxFee: OnChainTxFee;
-  readonly onChainUsdTxFee: OnChainUsdTxFee;
-  readonly onChainUsdTxFeeAsBtcDenominated: OnChainUsdTxFee;
-  /** @deprecated TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated */
-  readonly quizQuestions?: Maybe<ReadonlyArray<Maybe<QuizQuestion>>>;
-  /** Returns 1 Sat and 1 Usd Cent price for the given currency */
-  readonly realtimePrice: RealtimePrice;
+  __typename?: 'Query';
+  accountDefaultWallet: PublicWallet;
+  /** Retrieve the list of scopes permitted for the user's token or API key */
+  authorization: Authorization;
+  btcPriceList?: Maybe<Array<Maybe<PricePoint>>>;
+  businessMapMarkers: Array<MapMarker>;
+  currencyList: Array<Currency>;
+  getAllWithdrawLinks: Array<WithdrawLink>;
+  getOnChainPaymentFees: FeesResult;
+  getWithdrawLink?: Maybe<WithdrawLink>;
+  getWithdrawLinksByUserId: WithdrawLinksByUserIdResult;
+  globals?: Maybe<Globals>;
+  /** @deprecated Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest */
+  lnInvoicePaymentStatus: LnInvoicePaymentStatusPayload;
+  lnInvoicePaymentStatusByHash: LnInvoicePaymentStatus;
+  lnInvoicePaymentStatusByPaymentRequest: LnInvoicePaymentStatus;
+  me?: Maybe<User>;
+  mobileVersions?: Maybe<Array<Maybe<MobileVersions>>>;
+  onChainTxFee: OnChainTxFee;
+  onChainUsdTxFee: OnChainUsdTxFee;
+  onChainUsdTxFeeAsBtcDenominated: OnChainUsdTxFee;
+  /** Returns 1 Sat and 1 Usd Cent price for the given currency in minor unit */
+  realtimePrice: RealtimePrice;
   /** @deprecated will be migrated to AccountDefaultWalletId */
-  readonly userDefaultWalletId: Scalars['WalletId']['output'];
-  readonly usernameAvailable?: Maybe<Scalars['Boolean']['output']>;
+  userDefaultWalletId: Scalars['WalletId']['output'];
+  usernameAvailable?: Maybe<Scalars['Boolean']['output']>;
+  welcomeLeaderboard: Leaderboard;
 };
 
 
@@ -1200,29 +1638,24 @@ export type QueryAccountDefaultWalletArgs = {
 };
 
 
-export type QueryBtcPriceArgs = {
-  currency?: Scalars['DisplayCurrency']['input'];
-};
-
-
 export type QueryBtcPriceListArgs = {
   range: PriceGraphRange;
 };
 
 
 export type QueryGetOnChainPaymentFeesArgs = {
-  btc_wallet_address: Scalars['String']['input'];
+  btcWalletAddress: Scalars['String']['input'];
   id: Scalars['ID']['input'];
 };
 
 
 export type QueryGetWithdrawLinkArgs = {
   id?: InputMaybe<Scalars['ID']['input']>;
-  identifier_code?: InputMaybe<Scalars['String']['input']>;
+  identifierCode?: InputMaybe<Scalars['String']['input']>;
   k1?: InputMaybe<Scalars['String']['input']>;
-  payment_hash?: InputMaybe<Scalars['String']['input']>;
-  secret_code?: InputMaybe<Scalars['String']['input']>;
-  unique_hash?: InputMaybe<Scalars['String']['input']>;
+  paymentHash?: InputMaybe<Scalars['String']['input']>;
+  secretCode?: InputMaybe<Scalars['String']['input']>;
+  uniqueHash?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -1230,7 +1663,7 @@ export type QueryGetWithdrawLinksByUserIdArgs = {
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   status?: InputMaybe<Status>;
-  user_id: Scalars['ID']['input'];
+  userId: Scalars['ID']['input'];
 };
 
 
@@ -1239,10 +1672,20 @@ export type QueryLnInvoicePaymentStatusArgs = {
 };
 
 
+export type QueryLnInvoicePaymentStatusByHashArgs = {
+  input: LnInvoicePaymentStatusByHashInput;
+};
+
+
+export type QueryLnInvoicePaymentStatusByPaymentRequestArgs = {
+  input: LnInvoicePaymentStatusByPaymentRequestInput;
+};
+
+
 export type QueryOnChainTxFeeArgs = {
   address: Scalars['OnChainAddress']['input'];
   amount: Scalars['SatAmount']['input'];
-  speed?: InputMaybe<PayoutSpeed>;
+  speed?: PayoutSpeed;
   walletId: Scalars['WalletId']['input'];
 };
 
@@ -1250,7 +1693,7 @@ export type QueryOnChainTxFeeArgs = {
 export type QueryOnChainUsdTxFeeArgs = {
   address: Scalars['OnChainAddress']['input'];
   amount: Scalars['CentAmount']['input'];
-  speed?: InputMaybe<PayoutSpeed>;
+  speed?: PayoutSpeed;
   walletId: Scalars['WalletId']['input'];
 };
 
@@ -1258,7 +1701,7 @@ export type QueryOnChainUsdTxFeeArgs = {
 export type QueryOnChainUsdTxFeeAsBtcDenominatedArgs = {
   address: Scalars['OnChainAddress']['input'];
   amount: Scalars['SatAmount']['input'];
-  speed?: InputMaybe<PayoutSpeed>;
+  speed?: PayoutSpeed;
   walletId: Scalars['WalletId']['input'];
 };
 
@@ -1277,98 +1720,125 @@ export type QueryUsernameAvailableArgs = {
   username: Scalars['Username']['input'];
 };
 
+
+export type QueryWelcomeLeaderboardArgs = {
+  input: WelcomeLeaderboardInput;
+};
+
 export type Quiz = {
-  readonly __typename: 'Quiz';
+  __typename?: 'Quiz';
   /** The reward in Satoshis for the quiz question */
-  readonly amount: Scalars['SatAmount']['output'];
-  readonly completed: Scalars['Boolean']['output'];
-  readonly id: Scalars['ID']['output'];
+  amount: Scalars['SatAmount']['output'];
+  completed: Scalars['Boolean']['output'];
+  id: Scalars['ID']['output'];
+  notBefore?: Maybe<Scalars['Timestamp']['output']>;
 };
 
-export type QuizCompletedInput = {
-  readonly id: Scalars['ID']['input'];
+export type QuizClaimInput = {
+  id: Scalars['ID']['input'];
 };
 
-export type QuizCompletedPayload = {
-  readonly __typename: 'QuizCompletedPayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly quiz?: Maybe<Quiz>;
-};
-
-export type QuizQuestion = {
-  readonly __typename: 'QuizQuestion';
-  /** The earn reward in Satoshis for the quiz question */
-  readonly earnAmount: Scalars['SatAmount']['output'];
-  readonly id: Scalars['ID']['output'];
+export type QuizClaimPayload = {
+  __typename?: 'QuizClaimPayload';
+  errors: Array<Error>;
+  quizzes: Array<Quiz>;
 };
 
 export type RealtimePrice = {
-  readonly __typename: 'RealtimePrice';
-  readonly btcSatPrice: PriceOfOneSatInMinorUnit;
-  readonly denominatorCurrency: Scalars['DisplayCurrency']['output'];
-  readonly id: Scalars['ID']['output'];
+  __typename?: 'RealtimePrice';
+  btcSatPrice: PriceOfOneSatInMinorUnit;
+  /** @deprecated Deprecated in favor of denominatorCurrencyDetails */
+  denominatorCurrency: Scalars['DisplayCurrency']['output'];
+  denominatorCurrencyDetails: Currency;
+  id: Scalars['ID']['output'];
   /** Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC) */
-  readonly timestamp: Scalars['Timestamp']['output'];
-  readonly usdCentPrice: PriceOfOneUsdCentInMinorUnit;
+  timestamp: Scalars['Timestamp']['output'];
+  usdCentPrice: PriceOfOneUsdCentInMinorUnit;
 };
 
 export type RealtimePriceInput = {
-  readonly currency?: InputMaybe<Scalars['DisplayCurrency']['input']>;
+  currency?: InputMaybe<Scalars['DisplayCurrency']['input']>;
 };
 
 export type RealtimePricePayload = {
-  readonly __typename: 'RealtimePricePayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly realtimePrice?: Maybe<RealtimePrice>;
+  __typename?: 'RealtimePricePayload';
+  errors: Array<Error>;
+  realtimePrice?: Maybe<RealtimePrice>;
 };
 
 export type SatAmountPayload = {
-  readonly __typename: 'SatAmountPayload';
-  readonly amount?: Maybe<Scalars['SatAmount']['output']>;
-  readonly errors: ReadonlyArray<Error>;
+  __typename?: 'SatAmountPayload';
+  amount?: Maybe<Scalars['SatAmount']['output']>;
+  errors: Array<Error>;
+};
+
+export enum Scope {
+  Read = 'READ',
+  Receive = 'RECEIVE',
+  Write = 'WRITE'
+}
+
+export type SendPaymentOnChainResult = {
+  __typename?: 'SendPaymentOnChainResult';
+  amount: Scalars['Float']['output'];
+  status: Scalars['String']['output'];
 };
 
 export type SettlementVia = SettlementViaIntraLedger | SettlementViaLn | SettlementViaOnChain;
 
 export type SettlementViaIntraLedger = {
-  readonly __typename: 'SettlementViaIntraLedger';
+  __typename?: 'SettlementViaIntraLedger';
   /** Settlement destination: Could be null if the payee does not have a username */
-  readonly counterPartyUsername?: Maybe<Scalars['Username']['output']>;
-  readonly counterPartyWalletId?: Maybe<Scalars['WalletId']['output']>;
+  counterPartyUsername?: Maybe<Scalars['Username']['output']>;
+  counterPartyWalletId?: Maybe<Scalars['WalletId']['output']>;
+  preImage?: Maybe<Scalars['LnPaymentPreImage']['output']>;
 };
 
 export type SettlementViaLn = {
-  readonly __typename: 'SettlementViaLn';
+  __typename?: 'SettlementViaLn';
   /** @deprecated Shifting property to 'preImage' to improve granularity of the LnPaymentSecret type */
-  readonly paymentSecret?: Maybe<Scalars['LnPaymentSecret']['output']>;
-  readonly preImage?: Maybe<Scalars['LnPaymentPreImage']['output']>;
+  paymentSecret?: Maybe<Scalars['LnPaymentSecret']['output']>;
+  preImage?: Maybe<Scalars['LnPaymentPreImage']['output']>;
 };
 
 export type SettlementViaOnChain = {
-  readonly __typename: 'SettlementViaOnChain';
-  readonly transactionHash?: Maybe<Scalars['OnChainTxHash']['output']>;
-  readonly vout?: Maybe<Scalars['Int']['output']>;
+  __typename?: 'SettlementViaOnChain';
+  arrivalInMempoolEstimatedAt?: Maybe<Scalars['Timestamp']['output']>;
+  transactionHash?: Maybe<Scalars['OnChainTxHash']['output']>;
+  vout?: Maybe<Scalars['Int']['output']>;
 };
 
-export const Status = {
-  Funded: 'FUNDED',
-  Paid: 'PAID',
-  Unfunded: 'UNFUNDED'
-} as const;
+export enum Status {
+  Funded = 'FUNDED',
+  Paid = 'PAID',
+  Unfunded = 'UNFUNDED'
+}
 
-export type Status = typeof Status[keyof typeof Status];
 export type Subscription = {
-  readonly __typename: 'Subscription';
-  readonly lnInvoicePaymentStatus: LnInvoicePaymentStatusPayload;
-  readonly myUpdates: MyUpdatesPayload;
-  readonly price: PricePayload;
+  __typename?: 'Subscription';
+  /** @deprecated Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest */
+  lnInvoicePaymentStatus: LnInvoicePaymentStatusPayload;
+  lnInvoicePaymentStatusByHash: LnInvoicePaymentStatusPayload;
+  lnInvoicePaymentStatusByPaymentRequest: LnInvoicePaymentStatusPayload;
+  myUpdates: MyUpdatesPayload;
+  price: PricePayload;
   /** Returns the price of 1 satoshi */
-  readonly realtimePrice: RealtimePricePayload;
+  realtimePrice: RealtimePricePayload;
 };
 
 
 export type SubscriptionLnInvoicePaymentStatusArgs = {
   input: LnInvoicePaymentStatusInput;
+};
+
+
+export type SubscriptionLnInvoicePaymentStatusByHashArgs = {
+  input: LnInvoicePaymentStatusByHashInput;
+};
+
+
+export type SubscriptionLnInvoicePaymentStatusByPaymentRequestArgs = {
+  input: LnInvoicePaymentStatusByPaymentRequestInput;
 };
 
 
@@ -1382,10 +1852,33 @@ export type SubscriptionRealtimePriceArgs = {
 };
 
 export type SuccessPayload = {
-  readonly __typename: 'SuccessPayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly success?: Maybe<Scalars['Boolean']['output']>;
+  __typename?: 'SuccessPayload';
+  errors: Array<Error>;
+  success?: Maybe<Scalars['Boolean']['output']>;
 };
+
+export type SupportChatMessageAddInput = {
+  message: Scalars['String']['input'];
+};
+
+export type SupportChatMessageAddPayload = {
+  __typename?: 'SupportChatMessageAddPayload';
+  errors: Array<Error>;
+  supportMessage?: Maybe<Array<Maybe<SupportMessage>>>;
+};
+
+export type SupportMessage = {
+  __typename?: 'SupportMessage';
+  id: Scalars['ID']['output'];
+  message: Scalars['String']['output'];
+  role: SupportRole;
+  timestamp: Scalars['Timestamp']['output'];
+};
+
+export enum SupportRole {
+  Assistant = 'ASSISTANT',
+  User = 'USER'
+}
 
 /**
  * Give details about an individual transaction.
@@ -1395,103 +1888,135 @@ export type SuccessPayload = {
  * or with lightning but settled intraledger.
  */
 export type Transaction = {
-  readonly __typename: 'Transaction';
-  readonly createdAt: Scalars['Timestamp']['output'];
-  readonly direction: TxDirection;
-  readonly id: Scalars['ID']['output'];
+  __typename?: 'Transaction';
+  createdAt: Scalars['Timestamp']['output'];
+  direction: TxDirection;
+  id: Scalars['ID']['output'];
   /** From which protocol the payment has been initiated. */
-  readonly initiationVia: InitiationVia;
-  readonly memo?: Maybe<Scalars['Memo']['output']>;
+  initiationVia: InitiationVia;
+  memo?: Maybe<Scalars['Memo']['output']>;
   /** Amount of the settlement currency sent or received. */
-  readonly settlementAmount: Scalars['SignedAmount']['output'];
+  settlementAmount: Scalars['SignedAmount']['output'];
   /** Wallet currency for transaction. */
-  readonly settlementCurrency: WalletCurrency;
-  readonly settlementDisplayAmount: Scalars['SignedDisplayMajorAmount']['output'];
-  readonly settlementDisplayCurrency: Scalars['DisplayCurrency']['output'];
-  readonly settlementDisplayFee: Scalars['SignedDisplayMajorAmount']['output'];
-  readonly settlementFee: Scalars['SignedAmount']['output'];
+  settlementCurrency: WalletCurrency;
+  settlementDisplayAmount: Scalars['SignedDisplayMajorAmount']['output'];
+  settlementDisplayCurrency: Scalars['DisplayCurrency']['output'];
+  settlementDisplayFee: Scalars['SignedDisplayMajorAmount']['output'];
+  settlementFee: Scalars['SignedAmount']['output'];
   /** Price in WALLETCURRENCY/SETTLEMENTUNIT at time of settlement. */
-  readonly settlementPrice: PriceOfOneSettlementMinorUnitInDisplayMinorUnit;
+  settlementPrice: PriceOfOneSettlementMinorUnitInDisplayMinorUnit;
   /** To which protocol the payment has settled on. */
-  readonly settlementVia: SettlementVia;
-  readonly status: TxStatus;
+  settlementVia: SettlementVia;
+  status: TxStatus;
 };
 
 /** A connection to a list of items. */
 export type TransactionConnection = {
-  readonly __typename: 'TransactionConnection';
+  __typename?: 'TransactionConnection';
   /** A list of edges. */
-  readonly edges?: Maybe<ReadonlyArray<TransactionEdge>>;
+  edges?: Maybe<Array<TransactionEdge>>;
   /** Information to aid in pagination. */
-  readonly pageInfo: PageInfo;
+  pageInfo: PageInfo;
 };
 
 /** An edge in a connection. */
 export type TransactionEdge = {
-  readonly __typename: 'TransactionEdge';
+  __typename?: 'TransactionEdge';
   /** A cursor for use in pagination */
-  readonly cursor: Scalars['String']['output'];
+  cursor: Scalars['String']['output'];
   /** The item at the end of the edge */
-  readonly node: Transaction;
+  node: Transaction;
 };
 
-export const TxDirection = {
-  Receive: 'RECEIVE',
-  Send: 'SEND'
-} as const;
+export enum TxDirection {
+  Receive = 'RECEIVE',
+  Send = 'SEND'
+}
 
-export type TxDirection = typeof TxDirection[keyof typeof TxDirection];
-export const TxNotificationType = {
-  IntraLedgerPayment: 'IntraLedgerPayment',
-  IntraLedgerReceipt: 'IntraLedgerReceipt',
-  LnInvoicePaid: 'LnInvoicePaid',
-  OnchainPayment: 'OnchainPayment',
-  OnchainReceipt: 'OnchainReceipt',
-  OnchainReceiptPending: 'OnchainReceiptPending'
-} as const;
+export enum TxNotificationType {
+  IntraLedgerPayment = 'IntraLedgerPayment',
+  IntraLedgerReceipt = 'IntraLedgerReceipt',
+  LigtningReceipt = 'LigtningReceipt',
+  OnchainPayment = 'OnchainPayment',
+  OnchainReceipt = 'OnchainReceipt',
+  OnchainReceiptPending = 'OnchainReceiptPending'
+}
 
-export type TxNotificationType = typeof TxNotificationType[keyof typeof TxNotificationType];
-export const TxStatus = {
-  Failure: 'FAILURE',
-  Pending: 'PENDING',
-  Success: 'SUCCESS'
-} as const;
+export enum TxStatus {
+  Failure = 'FAILURE',
+  Pending = 'PENDING',
+  Success = 'SUCCESS'
+}
 
-export type TxStatus = typeof TxStatus[keyof typeof TxStatus];
 export type UpdateWithdrawLinkInput = {
-  readonly account_type?: InputMaybe<Scalars['String']['input']>;
-  readonly commission_percentage?: InputMaybe<Scalars['Float']['input']>;
-  readonly escrow_wallet?: InputMaybe<Scalars['String']['input']>;
-  readonly k1?: InputMaybe<Scalars['String']['input']>;
-  readonly payment_hash?: InputMaybe<Scalars['String']['input']>;
-  readonly payment_request?: InputMaybe<Scalars['String']['input']>;
-  readonly payment_secret?: InputMaybe<Scalars['String']['input']>;
-  readonly sales_amount?: InputMaybe<Scalars['Float']['input']>;
-  readonly status?: InputMaybe<Status>;
-  readonly title?: InputMaybe<Scalars['String']['input']>;
-  readonly unique_hash?: InputMaybe<Scalars['String']['input']>;
-  readonly user_id?: InputMaybe<Scalars['ID']['input']>;
-  readonly voucher_amount?: InputMaybe<Scalars['Float']['input']>;
+  accountType?: InputMaybe<Scalars['String']['input']>;
+  commissionPercentage?: InputMaybe<Scalars['Float']['input']>;
+  escrowWallet?: InputMaybe<Scalars['String']['input']>;
+  k1?: InputMaybe<Scalars['String']['input']>;
+  paymentHash?: InputMaybe<Scalars['String']['input']>;
+  paymentRequest?: InputMaybe<Scalars['String']['input']>;
+  paymentSecret?: InputMaybe<Scalars['String']['input']>;
+  salesAmount?: InputMaybe<Scalars['Float']['input']>;
+  status?: InputMaybe<Status>;
+  title?: InputMaybe<Scalars['String']['input']>;
+  uniqueHash?: InputMaybe<Scalars['String']['input']>;
+  userId?: InputMaybe<Scalars['ID']['input']>;
+  voucherAmount?: InputMaybe<Scalars['Float']['input']>;
 };
 
 export type UpgradePayload = {
-  readonly __typename: 'UpgradePayload';
-  readonly authToken?: Maybe<Scalars['AuthToken']['output']>;
-  readonly errors: ReadonlyArray<Error>;
-  readonly success: Scalars['Boolean']['output'];
+  __typename?: 'UpgradePayload';
+  authToken?: Maybe<Scalars['AuthToken']['output']>;
+  errors: Array<Error>;
+  success: Scalars['Boolean']['output'];
 };
 
 /** A wallet belonging to an account which contains a USD balance and a list of transactions. */
 export type UsdWallet = Wallet & {
-  readonly __typename: 'UsdWallet';
-  readonly accountId: Scalars['ID']['output'];
-  readonly balance: Scalars['SignedAmount']['output'];
-  readonly id: Scalars['ID']['output'];
+  __typename?: 'UsdWallet';
+  accountId: Scalars['ID']['output'];
+  balance: Scalars['SignedAmount']['output'];
+  id: Scalars['ID']['output'];
+  invoiceByPaymentHash: Invoice;
+  /** A list of all invoices associated with walletIds optionally passed. */
+  invoices?: Maybe<InvoiceConnection>;
   /** An unconfirmed incoming onchain balance. */
-  readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
-  readonly transactions?: Maybe<TransactionConnection>;
-  readonly transactionsByAddress?: Maybe<TransactionConnection>;
-  readonly walletCurrency: WalletCurrency;
+  pendingIncomingBalance: Scalars['SignedAmount']['output'];
+  pendingIncomingTransactions: Array<Transaction>;
+  pendingIncomingTransactionsByAddress: Array<Transaction>;
+  transactionById: Transaction;
+  transactions?: Maybe<TransactionConnection>;
+  transactionsByAddress?: Maybe<TransactionConnection>;
+  transactionsByPaymentHash: Array<Transaction>;
+  transactionsByPaymentRequest: Array<Transaction>;
+  walletCurrency: WalletCurrency;
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletInvoiceByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletInvoicesArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletPendingIncomingTransactionsByAddressArgs = {
+  address: Scalars['OnChainAddress']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletTransactionByIdArgs = {
+  transactionId: Scalars['ID']['input'];
 };
 
 
@@ -1513,44 +2038,53 @@ export type UsdWalletTransactionsByAddressArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
 };
 
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletTransactionsByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletTransactionsByPaymentRequestArgs = {
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
+};
+
 export type User = {
-  readonly __typename: 'User';
+  __typename?: 'User';
+  apiKeys: Array<ApiKey>;
   /**
    * Get single contact details.
    * Can include the transactions associated with the contact.
    * @deprecated will be moved to Accounts
    */
-  readonly contactByUsername: UserContact;
+  contactByUsername: UserContact;
   /**
    * Get full list of contacts.
    * Can include the transactions associated with each contact.
    * @deprecated will be moved to account
    */
-  readonly contacts: ReadonlyArray<UserContact>;
-  readonly createdAt: Scalars['Timestamp']['output'];
-  readonly defaultAccount: Account;
+  contacts: Array<UserContact>;
+  createdAt: Scalars['Timestamp']['output'];
+  defaultAccount: Account;
   /** Email address */
-  readonly email?: Maybe<Email>;
-  readonly id: Scalars['ID']['output'];
+  email?: Maybe<Email>;
+  id: Scalars['ID']['output'];
   /**
    * Preferred language for user.
    * When value is 'default' the intent is to use preferred language from OS settings.
    */
-  readonly language: Scalars['Language']['output'];
+  language: Scalars['Language']['output'];
   /** Phone number with international calling code. */
-  readonly phone?: Maybe<Scalars['Phone']['output']>;
-  /**
-   * List the quiz questions the user may have completed.
-   * @deprecated use Quiz from Account instead
-   */
-  readonly quizQuestions: ReadonlyArray<UserQuizQuestion>;
+  phone?: Maybe<Scalars['Phone']['output']>;
+  supportChat: Array<SupportMessage>;
   /** Whether TOTP is enabled for this user. */
-  readonly totpEnabled: Scalars['Boolean']['output'];
+  totpEnabled: Scalars['Boolean']['output'];
   /**
    * Optional immutable user friendly identifier.
    * @deprecated will be moved to @Handle in Account and Wallet
    */
-  readonly username?: Maybe<Scalars['Username']['output']>;
+  username?: Maybe<Scalars['Username']['output']>;
 };
 
 
@@ -1559,18 +2093,18 @@ export type UserContactByUsernameArgs = {
 };
 
 export type UserContact = {
-  readonly __typename: 'UserContact';
+  __typename?: 'UserContact';
   /**
    * Alias the user can set for this contact.
    * Only the user can see the alias attached to their contact.
    */
-  readonly alias?: Maybe<Scalars['ContactAlias']['output']>;
-  readonly id: Scalars['Username']['output'];
+  alias?: Maybe<Scalars['ContactAlias']['output']>;
+  id: Scalars['Username']['output'];
   /** Paginated list of transactions sent to/from this contact. */
-  readonly transactions?: Maybe<TransactionConnection>;
-  readonly transactionsCount: Scalars['Int']['output'];
+  transactions?: Maybe<TransactionConnection>;
+  transactionsCount: Scalars['Int']['output'];
   /** Actual identifier of the contact. */
-  readonly username: Scalars['Username']['output'];
+  username: Scalars['Username']['output'];
 };
 
 
@@ -1582,173 +2116,192 @@ export type UserContactTransactionsArgs = {
 };
 
 export type UserContactUpdateAliasInput = {
-  readonly alias: Scalars['ContactAlias']['input'];
-  readonly username: Scalars['Username']['input'];
+  alias: Scalars['ContactAlias']['input'];
+  username: Scalars['Username']['input'];
 };
 
 export type UserContactUpdateAliasPayload = {
-  readonly __typename: 'UserContactUpdateAliasPayload';
-  readonly contact?: Maybe<UserContact>;
-  readonly errors: ReadonlyArray<Error>;
+  __typename?: 'UserContactUpdateAliasPayload';
+  contact?: Maybe<UserContact>;
+  errors: Array<Error>;
 };
 
 export type UserEmailDeletePayload = {
-  readonly __typename: 'UserEmailDeletePayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly me?: Maybe<User>;
+  __typename?: 'UserEmailDeletePayload';
+  errors: Array<Error>;
+  me?: Maybe<User>;
 };
 
 export type UserEmailRegistrationInitiateInput = {
-  readonly email: Scalars['EmailAddress']['input'];
+  email: Scalars['EmailAddress']['input'];
 };
 
 export type UserEmailRegistrationInitiatePayload = {
-  readonly __typename: 'UserEmailRegistrationInitiatePayload';
-  readonly emailRegistrationId?: Maybe<Scalars['EmailRegistrationId']['output']>;
-  readonly errors: ReadonlyArray<Error>;
-  readonly me?: Maybe<User>;
+  __typename?: 'UserEmailRegistrationInitiatePayload';
+  emailRegistrationId?: Maybe<Scalars['EmailRegistrationId']['output']>;
+  errors: Array<Error>;
+  me?: Maybe<User>;
 };
 
 export type UserEmailRegistrationValidateInput = {
-  readonly code: Scalars['OneTimeAuthCode']['input'];
-  readonly emailRegistrationId: Scalars['EmailRegistrationId']['input'];
+  code: Scalars['OneTimeAuthCode']['input'];
+  emailRegistrationId: Scalars['EmailRegistrationId']['input'];
 };
 
 export type UserEmailRegistrationValidatePayload = {
-  readonly __typename: 'UserEmailRegistrationValidatePayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly me?: Maybe<User>;
+  __typename?: 'UserEmailRegistrationValidatePayload';
+  errors: Array<Error>;
+  me?: Maybe<User>;
 };
 
 export type UserLoginInput = {
-  readonly code: Scalars['OneTimeAuthCode']['input'];
-  readonly phone: Scalars['Phone']['input'];
+  code: Scalars['OneTimeAuthCode']['input'];
+  phone: Scalars['Phone']['input'];
 };
 
 export type UserLoginUpgradeInput = {
-  readonly code: Scalars['OneTimeAuthCode']['input'];
-  readonly phone: Scalars['Phone']['input'];
+  code: Scalars['OneTimeAuthCode']['input'];
+  phone: Scalars['Phone']['input'];
 };
 
 export type UserLogoutInput = {
-  readonly authToken: Scalars['AuthToken']['input'];
+  deviceToken: Scalars['String']['input'];
 };
 
 export type UserPhoneDeletePayload = {
-  readonly __typename: 'UserPhoneDeletePayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly me?: Maybe<User>;
+  __typename?: 'UserPhoneDeletePayload';
+  errors: Array<Error>;
+  me?: Maybe<User>;
 };
 
 export type UserPhoneRegistrationInitiateInput = {
-  readonly channel?: InputMaybe<PhoneCodeChannelType>;
-  readonly phone: Scalars['Phone']['input'];
+  channel?: InputMaybe<PhoneCodeChannelType>;
+  phone: Scalars['Phone']['input'];
 };
 
 export type UserPhoneRegistrationValidateInput = {
-  readonly code: Scalars['OneTimeAuthCode']['input'];
-  readonly phone: Scalars['Phone']['input'];
+  code: Scalars['OneTimeAuthCode']['input'];
+  phone: Scalars['Phone']['input'];
 };
 
 export type UserPhoneRegistrationValidatePayload = {
-  readonly __typename: 'UserPhoneRegistrationValidatePayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly me?: Maybe<User>;
-};
-
-export type UserQuizQuestion = {
-  readonly __typename: 'UserQuizQuestion';
-  readonly completed: Scalars['Boolean']['output'];
-  readonly question: QuizQuestion;
-};
-
-export type UserQuizQuestionUpdateCompletedInput = {
-  readonly id: Scalars['ID']['input'];
-};
-
-export type UserQuizQuestionUpdateCompletedPayload = {
-  readonly __typename: 'UserQuizQuestionUpdateCompletedPayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly userQuizQuestion?: Maybe<UserQuizQuestion>;
-};
-
-export type UserRequestAuthCodeInput = {
-  readonly channel?: InputMaybe<PhoneCodeChannelType>;
-  readonly phone: Scalars['Phone']['input'];
-};
-
-export type UserTotpDeleteInput = {
-  readonly authToken: Scalars['AuthToken']['input'];
+  __typename?: 'UserPhoneRegistrationValidatePayload';
+  errors: Array<Error>;
+  me?: Maybe<User>;
 };
 
 export type UserTotpDeletePayload = {
-  readonly __typename: 'UserTotpDeletePayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly me?: Maybe<User>;
-};
-
-export type UserTotpRegistrationInitiateInput = {
-  readonly authToken: Scalars['AuthToken']['input'];
+  __typename?: 'UserTotpDeletePayload';
+  errors: Array<Error>;
+  me?: Maybe<User>;
 };
 
 export type UserTotpRegistrationInitiatePayload = {
-  readonly __typename: 'UserTotpRegistrationInitiatePayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly totpRegistrationId?: Maybe<Scalars['TotpRegistrationId']['output']>;
-  readonly totpSecret?: Maybe<Scalars['TotpSecret']['output']>;
+  __typename?: 'UserTotpRegistrationInitiatePayload';
+  errors: Array<Error>;
+  totpRegistrationId?: Maybe<Scalars['TotpRegistrationId']['output']>;
+  totpSecret?: Maybe<Scalars['TotpSecret']['output']>;
 };
 
 export type UserTotpRegistrationValidateInput = {
-  readonly authToken: Scalars['AuthToken']['input'];
-  readonly totpCode: Scalars['TotpCode']['input'];
-  readonly totpRegistrationId: Scalars['TotpRegistrationId']['input'];
+  authToken?: InputMaybe<Scalars['AuthToken']['input']>;
+  totpCode: Scalars['TotpCode']['input'];
+  totpRegistrationId: Scalars['TotpRegistrationId']['input'];
 };
 
 export type UserTotpRegistrationValidatePayload = {
-  readonly __typename: 'UserTotpRegistrationValidatePayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly me?: Maybe<User>;
+  __typename?: 'UserTotpRegistrationValidatePayload';
+  errors: Array<Error>;
+  me?: Maybe<User>;
 };
 
 export type UserUpdate = IntraLedgerUpdate | LnUpdate | OnChainUpdate | Price | RealtimePrice;
 
 export type UserUpdateLanguageInput = {
-  readonly language: Scalars['Language']['input'];
+  language: Scalars['Language']['input'];
 };
 
 export type UserUpdateLanguagePayload = {
-  readonly __typename: 'UserUpdateLanguagePayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly user?: Maybe<User>;
+  __typename?: 'UserUpdateLanguagePayload';
+  errors: Array<Error>;
+  user?: Maybe<User>;
 };
 
 export type UserUpdateUsernameInput = {
-  readonly username: Scalars['Username']['input'];
+  username: Scalars['Username']['input'];
 };
 
 export type UserUpdateUsernamePayload = {
-  readonly __typename: 'UserUpdateUsernamePayload';
-  readonly errors: ReadonlyArray<Error>;
-  readonly user?: Maybe<User>;
+  __typename?: 'UserUpdateUsernamePayload';
+  errors: Array<Error>;
+  user?: Maybe<User>;
 };
 
 /** A generic wallet which stores value in one of our supported currencies. */
 export type Wallet = {
-  readonly accountId: Scalars['ID']['output'];
-  readonly balance: Scalars['SignedAmount']['output'];
-  readonly id: Scalars['ID']['output'];
-  readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
+  accountId: Scalars['ID']['output'];
+  balance: Scalars['SignedAmount']['output'];
+  id: Scalars['ID']['output'];
+  invoiceByPaymentHash: Invoice;
+  invoices?: Maybe<InvoiceConnection>;
+  pendingIncomingBalance: Scalars['SignedAmount']['output'];
+  /**
+   * Pending incoming OnChain transactions. When transactions
+   * are confirmed they will receive a new id and be found in the transactions
+   * list. Transactions are ordered anti-chronologically,
+   * ie: the newest transaction will be first
+   */
+  pendingIncomingTransactions: Array<Transaction>;
+  /**
+   * Pending incoming OnChain transactions. When transactions
+   * are confirmed they will receive a new id and be found in the transactions
+   * list. Transactions are ordered anti-chronologically,
+   * ie: the newest transaction will be first
+   */
+  pendingIncomingTransactionsByAddress: Array<Transaction>;
+  transactionById: Transaction;
   /**
    * Transactions are ordered anti-chronologically,
    * ie: the newest transaction will be first
    */
-  readonly transactions?: Maybe<TransactionConnection>;
+  transactions?: Maybe<TransactionConnection>;
   /**
    * Transactions are ordered anti-chronologically,
    * ie: the newest transaction will be first
    */
-  readonly transactionsByAddress?: Maybe<TransactionConnection>;
-  readonly walletCurrency: WalletCurrency;
+  transactionsByAddress?: Maybe<TransactionConnection>;
+  /** Returns the transactions that include this paymentHash. This should be a list of size one for a received lightning payment. This can be more that one transaction for a sent lightning payment. */
+  transactionsByPaymentHash: Array<Transaction>;
+  /** Returns the transactions that include this paymentRequest. */
+  transactionsByPaymentRequest: Array<Transaction>;
+  walletCurrency: WalletCurrency;
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletInvoiceByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletInvoicesArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletPendingIncomingTransactionsByAddressArgs = {
+  address: Scalars['OnChainAddress']['input'];
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletTransactionByIdArgs = {
+  transactionId: Scalars['ID']['input'];
 };
 
 
@@ -1770,45 +2323,72 @@ export type WalletTransactionsByAddressArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
 };
 
-export const WalletCurrency = {
-  Btc: 'BTC',
-  Usd: 'USD'
-} as const;
 
-export type WalletCurrency = typeof WalletCurrency[keyof typeof WalletCurrency];
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletTransactionsByPaymentHashArgs = {
+  paymentHash: Scalars['PaymentHash']['input'];
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletTransactionsByPaymentRequestArgs = {
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
+};
+
+export enum WalletCurrency {
+  Btc = 'BTC',
+  Usd = 'USD'
+}
+
+export type WelcomeLeaderboardInput = {
+  range: WelcomeRange;
+};
+
+export type WelcomeProfile = {
+  __typename?: 'WelcomeProfile';
+  allTimePoints: Scalars['Int']['output'];
+  allTimeRank: Scalars['Int']['output'];
+  innerCircleAllTimeCount: Scalars['Int']['output'];
+  innerCircleThisMonthCount: Scalars['Int']['output'];
+  leaderboardName?: Maybe<Scalars['LeaderboardName']['output']>;
+  outerCircleAllTimeCount: Scalars['Int']['output'];
+  outerCircleThisMonthCount: Scalars['Int']['output'];
+  thisMonthPoints: Scalars['Int']['output'];
+  thisMonthRank: Scalars['Int']['output'];
+};
+
+export enum WelcomeRange {
+  AllTime = 'AllTime',
+  ThisMonth = 'ThisMonth'
+}
+
 export type WithdrawLink = {
-  readonly __typename: 'WithdrawLink';
-  readonly account_type: Scalars['String']['output'];
-  readonly commission_percentage?: Maybe<Scalars['Float']['output']>;
-  readonly created_at: Scalars['String']['output'];
-  readonly escrow_wallet: Scalars['String']['output'];
-  readonly id: Scalars['ID']['output'];
-  readonly identifier_code?: Maybe<Scalars['String']['output']>;
-  readonly invoice_expiration: Scalars['String']['output'];
-  readonly k1?: Maybe<Scalars['String']['output']>;
-  readonly payment_hash: Scalars['String']['output'];
-  readonly payment_request: Scalars['String']['output'];
-  readonly payment_secret: Scalars['String']['output'];
-  readonly sales_amount: Scalars['Float']['output'];
-  readonly secret_code?: Maybe<Scalars['String']['output']>;
-  readonly status: Status;
-  readonly title: Scalars['String']['output'];
-  readonly unique_hash: Scalars['String']['output'];
-  readonly updated_at: Scalars['String']['output'];
-  readonly user_id: Scalars['ID']['output'];
-  readonly voucher_amount: Scalars['Float']['output'];
+  __typename?: 'WithdrawLink';
+  accountType: Scalars['String']['output'];
+  commissionPercentage?: Maybe<Scalars['Float']['output']>;
+  createdAt: Scalars['String']['output'];
+  escrowWallet: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  identifierCode?: Maybe<Scalars['String']['output']>;
+  invoiceExpiration: Scalars['String']['output'];
+  k1?: Maybe<Scalars['String']['output']>;
+  paymentHash: Scalars['String']['output'];
+  paymentRequest: Scalars['String']['output'];
+  paymentSecret: Scalars['String']['output'];
+  salesAmount: Scalars['Float']['output'];
+  secretCode?: Maybe<Scalars['String']['output']>;
+  status: Status;
+  title: Scalars['String']['output'];
+  uniqueHash: Scalars['String']['output'];
+  updatedAt: Scalars['String']['output'];
+  userId: Scalars['ID']['output'];
+  voucherAmount: Scalars['Float']['output'];
 };
 
 export type WithdrawLinksByUserIdResult = {
-  readonly __typename: 'WithdrawLinksByUserIdResult';
-  readonly total_links?: Maybe<Scalars['Int']['output']>;
-  readonly withdrawLinks: ReadonlyArray<WithdrawLink>;
-};
-
-export type SendPaymentOnChainResult = {
-  readonly __typename: 'sendPaymentOnChainResult';
-  readonly amount: Scalars['Float']['output'];
-  readonly status: Scalars['String']['output'];
+  __typename?: 'WithdrawLinksByUserIdResult';
+  totalLinks?: Maybe<Scalars['Int']['output']>;
+  withdrawLinks: Array<WithdrawLink>;
 };
 
 export type CreateWithdrawLinkMutationVariables = Exact<{
@@ -1816,7 +2396,7 @@ export type CreateWithdrawLinkMutationVariables = Exact<{
 }>;
 
 
-export type CreateWithdrawLinkMutation = { readonly __typename: 'Mutation', readonly createWithdrawLink: { readonly __typename: 'WithdrawLink', readonly id: string, readonly user_id: string, readonly payment_request: string, readonly payment_hash: string, readonly payment_secret: string, readonly sales_amount: number, readonly account_type: string, readonly escrow_wallet: string, readonly status: Status, readonly title: string, readonly voucher_amount: number, readonly unique_hash: string, readonly k1?: string | null, readonly created_at: string, readonly updated_at: string, readonly commission_percentage?: number | null } };
+export type CreateWithdrawLinkMutation = { __typename?: 'Mutation', createWithdrawLink: { __typename?: 'WithdrawLink', id: string, userId: string, paymentRequest: string, paymentHash: string, paymentSecret: string, salesAmount: number, accountType: string, escrowWallet: string, status: Status, title: string, voucherAmount: number, uniqueHash: string, k1?: string | null, createdAt: string, updatedAt: string, commissionPercentage?: number | null } };
 
 export type UpdateWithdrawLinkMutationVariables = Exact<{
   updateWithdrawLinkId: Scalars['ID']['input'];
@@ -1824,21 +2404,21 @@ export type UpdateWithdrawLinkMutationVariables = Exact<{
 }>;
 
 
-export type UpdateWithdrawLinkMutation = { readonly __typename: 'Mutation', readonly updateWithdrawLink: { readonly __typename: 'WithdrawLink', readonly account_type: string, readonly sales_amount: number, readonly created_at: string, readonly escrow_wallet: string, readonly id: string, readonly k1?: string | null, readonly voucher_amount: number, readonly payment_hash: string, readonly payment_request: string, readonly payment_secret: string, readonly status: Status, readonly title: string, readonly unique_hash: string, readonly user_id: string, readonly updated_at: string, readonly commission_percentage?: number | null } };
+export type UpdateWithdrawLinkMutation = { __typename?: 'Mutation', updateWithdrawLink: { __typename?: 'WithdrawLink', accountType: string, salesAmount: number, createdAt: string, escrowWallet: string, id: string, k1?: string | null, voucherAmount: number, paymentHash: string, paymentRequest: string, paymentSecret: string, status: Status, title: string, uniqueHash: string, userId: string, updatedAt: string, commissionPercentage?: number | null } };
 
 export type LnInvoiceCreateOnBehalfOfRecipientMutationVariables = Exact<{
   input: LnInvoiceCreateOnBehalfOfRecipientInput;
 }>;
 
 
-export type LnInvoiceCreateOnBehalfOfRecipientMutation = { readonly __typename: 'Mutation', readonly lnInvoiceCreateOnBehalfOfRecipient: { readonly __typename: 'LnInvoicePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string, readonly path?: ReadonlyArray<string | null> | null, readonly code?: string | null }>, readonly invoice?: { readonly __typename: 'LnInvoice', readonly paymentRequest: string, readonly paymentHash: string, readonly paymentSecret: string, readonly satoshis?: number | null } | null } };
+export type LnInvoiceCreateOnBehalfOfRecipientMutation = { __typename?: 'Mutation', lnInvoiceCreateOnBehalfOfRecipient: { __typename?: 'LnInvoicePayload', errors: Array<{ __typename?: 'GraphQLApplicationError', message: string, path?: Array<string | null> | null, code?: string | null }>, invoice?: { __typename?: 'LnInvoice', paymentRequest: any, paymentHash: any, paymentSecret: any, satoshis: any } | null } };
 
 export type LnUsdInvoiceCreateOnBehalfOfRecipientMutationVariables = Exact<{
   input: LnUsdInvoiceCreateOnBehalfOfRecipientInput;
 }>;
 
 
-export type LnUsdInvoiceCreateOnBehalfOfRecipientMutation = { readonly __typename: 'Mutation', readonly lnUsdInvoiceCreateOnBehalfOfRecipient: { readonly __typename: 'LnInvoicePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string, readonly path?: ReadonlyArray<string | null> | null, readonly code?: string | null }>, readonly invoice?: { readonly __typename: 'LnInvoice', readonly paymentRequest: string, readonly paymentHash: string, readonly paymentSecret: string, readonly satoshis?: number | null } | null } };
+export type LnUsdInvoiceCreateOnBehalfOfRecipientMutation = { __typename?: 'Mutation', lnUsdInvoiceCreateOnBehalfOfRecipient: { __typename?: 'LnInvoicePayload', errors: Array<{ __typename?: 'GraphQLApplicationError', message: string, path?: Array<string | null> | null, code?: string | null }>, invoice?: { __typename?: 'LnInvoice', paymentRequest: any, paymentHash: any, paymentSecret: any, satoshis: any } | null } };
 
 export type SendPaymentOnChainMutationVariables = Exact<{
   sendPaymentOnChainId: Scalars['ID']['input'];
@@ -1846,21 +2426,21 @@ export type SendPaymentOnChainMutationVariables = Exact<{
 }>;
 
 
-export type SendPaymentOnChainMutation = { readonly __typename: 'Mutation', readonly sendPaymentOnChain: { readonly __typename: 'sendPaymentOnChainResult', readonly amount: number, readonly status: string } };
+export type SendPaymentOnChainMutation = { __typename?: 'Mutation', sendPaymentOnChain: { __typename?: 'SendPaymentOnChainResult', amount: number, status: string } };
 
 export type DeleteWithdrawLinkMutationVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type DeleteWithdrawLinkMutation = { readonly __typename: 'Mutation', readonly deleteWithdrawLink: string };
+export type DeleteWithdrawLinkMutation = { __typename?: 'Mutation', deleteWithdrawLink: string };
 
 export type GetWithdrawLinkQueryVariables = Exact<{
   getWithdrawLinkId?: InputMaybe<Scalars['ID']['input']>;
 }>;
 
 
-export type GetWithdrawLinkQuery = { readonly __typename: 'Query', readonly getWithdrawLink?: { readonly __typename: 'WithdrawLink', readonly id: string, readonly user_id: string, readonly payment_request: string, readonly payment_hash: string, readonly payment_secret: string, readonly sales_amount: number, readonly account_type: string, readonly escrow_wallet: string, readonly status: Status, readonly title: string, readonly voucher_amount: number, readonly unique_hash: string, readonly k1?: string | null, readonly created_at: string, readonly updated_at: string, readonly commission_percentage?: number | null, readonly identifier_code?: string | null, readonly secret_code?: string | null, readonly invoice_expiration: string } | null };
+export type GetWithdrawLinkQuery = { __typename?: 'Query', getWithdrawLink?: { __typename?: 'WithdrawLink', id: string, userId: string, paymentRequest: string, paymentHash: string, paymentSecret: string, salesAmount: number, accountType: string, escrowWallet: string, status: Status, title: string, voucherAmount: number, uniqueHash: string, k1?: string | null, createdAt: string, updatedAt: string, commissionPercentage?: number | null, identifierCode?: string | null, secretCode?: string | null, invoiceExpiration: string } | null };
 
 export type GetWithdrawLinksByUserIdQueryVariables = Exact<{
   userId: Scalars['ID']['input'];
@@ -1870,19 +2450,19 @@ export type GetWithdrawLinksByUserIdQueryVariables = Exact<{
 }>;
 
 
-export type GetWithdrawLinksByUserIdQuery = { readonly __typename: 'Query', readonly getWithdrawLinksByUserId: { readonly __typename: 'WithdrawLinksByUserIdResult', readonly total_links?: number | null, readonly withdrawLinks: ReadonlyArray<{ readonly __typename: 'WithdrawLink', readonly id: string, readonly user_id: string, readonly payment_request: string, readonly payment_hash: string, readonly payment_secret: string, readonly sales_amount: number, readonly account_type: string, readonly escrow_wallet: string, readonly status: Status, readonly title: string, readonly voucher_amount: number, readonly unique_hash: string, readonly k1?: string | null, readonly created_at: string, readonly updated_at: string, readonly commission_percentage?: number | null, readonly identifier_code?: string | null, readonly secret_code?: string | null, readonly invoice_expiration: string }> } };
+export type GetWithdrawLinksByUserIdQuery = { __typename?: 'Query', getWithdrawLinksByUserId: { __typename?: 'WithdrawLinksByUserIdResult', totalLinks?: number | null, withdrawLinks: Array<{ __typename?: 'WithdrawLink', id: string, userId: string, paymentRequest: string, paymentHash: string, paymentSecret: string, salesAmount: number, accountType: string, escrowWallet: string, status: Status, title: string, voucherAmount: number, uniqueHash: string, k1?: string | null, createdAt: string, updatedAt: string, commissionPercentage?: number | null, identifierCode?: string | null, secretCode?: string | null, invoiceExpiration: string }> } };
 
 export type CurrencyListQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CurrencyListQuery = { readonly __typename: 'Query', readonly currencyList: ReadonlyArray<{ readonly __typename: 'Currency', readonly id: string, readonly symbol: string, readonly name: string, readonly flag: string, readonly fractionDigits: number }> };
+export type CurrencyListQuery = { __typename?: 'Query', currencyList: Array<{ __typename?: 'Currency', id: string, symbol: string, name: string, flag: string, fractionDigits: number }> };
 
 export type RealtimePriceInitialQueryVariables = Exact<{
   currency: Scalars['DisplayCurrency']['input'];
 }>;
 
 
-export type RealtimePriceInitialQuery = { readonly __typename: 'Query', readonly realtimePrice: { readonly __typename: 'RealtimePrice', readonly timestamp: number, readonly denominatorCurrency: string, readonly btcSatPrice: { readonly __typename: 'PriceOfOneSatInMinorUnit', readonly base: number, readonly offset: number }, readonly usdCentPrice: { readonly __typename: 'PriceOfOneUsdCentInMinorUnit', readonly base: number, readonly offset: number } } };
+export type RealtimePriceInitialQuery = { __typename?: 'Query', realtimePrice: { __typename?: 'RealtimePrice', timestamp: any, denominatorCurrency: any, btcSatPrice: { __typename?: 'PriceOfOneSatInMinorUnit', base: any, offset: number }, usdCentPrice: { __typename?: 'PriceOfOneUsdCentInMinorUnit', base: any, offset: number } } };
 
 export type GetOnChainPaymentFeesQueryVariables = Exact<{
   getOnChainPaymentFeesId: Scalars['ID']['input'];
@@ -1890,28 +2470,28 @@ export type GetOnChainPaymentFeesQueryVariables = Exact<{
 }>;
 
 
-export type GetOnChainPaymentFeesQuery = { readonly __typename: 'Query', readonly getOnChainPaymentFees: { readonly __typename: 'FeesResult', readonly fees: number } };
+export type GetOnChainPaymentFeesQuery = { __typename?: 'Query', getOnChainPaymentFees: { __typename?: 'FeesResult', fees: number } };
 
 export type GetWithdrawLinkBySecretQueryVariables = Exact<{
-  secret_code: Scalars['String']['input'];
+  secretCode: Scalars['String']['input'];
 }>;
 
 
-export type GetWithdrawLinkBySecretQuery = { readonly __typename: 'Query', readonly getWithdrawLink?: { readonly __typename: 'WithdrawLink', readonly id: string } | null };
+export type GetWithdrawLinkBySecretQuery = { __typename?: 'Query', getWithdrawLink?: { __typename?: 'WithdrawLink', id: string } | null };
 
 export type LnInvoicePaymentStatusSubscriptionVariables = Exact<{
-  payment_request: Scalars['LnPaymentRequest']['input'];
+  paymentRequest: Scalars['LnPaymentRequest']['input'];
 }>;
 
 
-export type LnInvoicePaymentStatusSubscription = { readonly __typename: 'Subscription', readonly lnInvoicePaymentStatus: { readonly __typename: 'LnInvoicePaymentStatusPayload', readonly status?: InvoicePaymentStatus | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string, readonly path?: ReadonlyArray<string | null> | null, readonly code?: string | null }> } };
+export type LnInvoicePaymentStatusSubscription = { __typename?: 'Subscription', lnInvoicePaymentStatus: { __typename?: 'LnInvoicePaymentStatusPayload', status?: InvoicePaymentStatus | null, errors: Array<{ __typename?: 'GraphQLApplicationError', message: string, path?: Array<string | null> | null, code?: string | null }> } };
 
 export type RealtimePriceWsSubscriptionVariables = Exact<{
   currency: Scalars['DisplayCurrency']['input'];
 }>;
 
 
-export type RealtimePriceWsSubscription = { readonly __typename: 'Subscription', readonly realtimePrice: { readonly __typename: 'RealtimePricePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly realtimePrice?: { readonly __typename: 'RealtimePrice', readonly timestamp: number, readonly denominatorCurrency: string, readonly btcSatPrice: { readonly __typename: 'PriceOfOneSatInMinorUnit', readonly base: number, readonly offset: number }, readonly usdCentPrice: { readonly __typename: 'PriceOfOneUsdCentInMinorUnit', readonly base: number, readonly offset: number } } | null } };
+export type RealtimePriceWsSubscription = { __typename?: 'Subscription', realtimePrice: { __typename?: 'RealtimePricePayload', errors: Array<{ __typename?: 'GraphQLApplicationError', message: string }>, realtimePrice?: { __typename?: 'RealtimePrice', timestamp: any, denominatorCurrency: any, btcSatPrice: { __typename?: 'PriceOfOneSatInMinorUnit', base: any, offset: number }, usdCentPrice: { __typename?: 'PriceOfOneUsdCentInMinorUnit', base: any, offset: number } } | null } };
 
 export type PriceSubscriptionVariables = Exact<{
   amount: Scalars['SatAmount']['input'];
@@ -1920,28 +2500,28 @@ export type PriceSubscriptionVariables = Exact<{
 }>;
 
 
-export type PriceSubscription = { readonly __typename: 'Subscription', readonly price: { readonly __typename: 'PricePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly price?: { readonly __typename: 'Price', readonly base: number, readonly offset: number, readonly currencyUnit: string, readonly formattedAmount: string } | null } };
+export type PriceSubscription = { __typename?: 'Subscription', price: { __typename?: 'PricePayload', errors: Array<{ __typename?: 'GraphQLApplicationError', message: string }>, price?: { __typename?: 'Price', base: any, offset: number, currencyUnit: string, formattedAmount: string } | null } };
 
 
 export const CreateWithdrawLinkDocument = gql`
     mutation CreateWithdrawLink($input: CreateWithdrawLinkInput!) {
   createWithdrawLink(input: $input) {
     id
-    user_id
-    payment_request
-    payment_hash
-    payment_secret
-    sales_amount
-    account_type
-    escrow_wallet
+    userId
+    paymentRequest
+    paymentHash
+    paymentSecret
+    salesAmount
+    accountType
+    escrowWallet
     status
     title
-    voucher_amount
-    unique_hash
+    voucherAmount
+    uniqueHash
     k1
-    created_at
-    updated_at
-    commission_percentage
+    createdAt
+    updatedAt
+    commissionPercentage
   }
 }
     `;
@@ -1974,22 +2554,22 @@ export type CreateWithdrawLinkMutationOptions = Apollo.BaseMutationOptions<Creat
 export const UpdateWithdrawLinkDocument = gql`
     mutation UpdateWithdrawLink($updateWithdrawLinkId: ID!, $updateWithdrawLinkInput: UpdateWithdrawLinkInput!) {
   updateWithdrawLink(id: $updateWithdrawLinkId, input: $updateWithdrawLinkInput) {
-    account_type
-    sales_amount
-    created_at
-    escrow_wallet
+    accountType
+    salesAmount
+    createdAt
+    escrowWallet
     id
     k1
-    voucher_amount
-    payment_hash
-    payment_request
-    payment_secret
+    voucherAmount
+    paymentHash
+    paymentRequest
+    paymentSecret
     status
     title
-    unique_hash
-    user_id
-    updated_at
-    commission_percentage
+    uniqueHash
+    userId
+    updatedAt
+    commissionPercentage
   }
 }
     `;
@@ -2110,7 +2690,7 @@ export const SendPaymentOnChainDocument = gql`
     mutation SendPaymentOnChain($sendPaymentOnChainId: ID!, $btcWalletAddress: String!) {
   sendPaymentOnChain(
     id: $sendPaymentOnChainId
-    btc_wallet_address: $btcWalletAddress
+    btcWalletAddress: $btcWalletAddress
   ) {
     amount
     status
@@ -2179,24 +2759,24 @@ export const GetWithdrawLinkDocument = gql`
     query GetWithdrawLink($getWithdrawLinkId: ID) {
   getWithdrawLink(id: $getWithdrawLinkId) {
     id
-    user_id
-    payment_request
-    payment_hash
-    payment_secret
-    sales_amount
-    account_type
-    escrow_wallet
+    userId
+    paymentRequest
+    paymentHash
+    paymentSecret
+    salesAmount
+    accountType
+    escrowWallet
     status
     title
-    voucher_amount
-    unique_hash
+    voucherAmount
+    uniqueHash
     k1
-    created_at
-    updated_at
-    commission_percentage
-    identifier_code
-    secret_code
-    invoice_expiration
+    createdAt
+    updatedAt
+    commissionPercentage
+    identifierCode
+    secretCode
+    invoiceExpiration
   }
 }
     `;
@@ -2231,32 +2811,32 @@ export type GetWithdrawLinkQueryResult = Apollo.QueryResult<GetWithdrawLinkQuery
 export const GetWithdrawLinksByUserIdDocument = gql`
     query GetWithdrawLinksByUserId($userId: ID!, $status: Status, $limit: Int, $offset: Int) {
   getWithdrawLinksByUserId(
-    user_id: $userId
+    userId: $userId
     status: $status
     limit: $limit
     offset: $offset
   ) {
-    total_links
+    totalLinks
     withdrawLinks {
       id
-      user_id
-      payment_request
-      payment_hash
-      payment_secret
-      sales_amount
-      account_type
-      escrow_wallet
+      userId
+      paymentRequest
+      paymentHash
+      paymentSecret
+      salesAmount
+      accountType
+      escrowWallet
       status
       title
-      voucher_amount
-      unique_hash
+      voucherAmount
+      uniqueHash
       k1
-      created_at
-      updated_at
-      commission_percentage
-      identifier_code
-      secret_code
-      invoice_expiration
+      createdAt
+      updatedAt
+      commissionPercentage
+      identifierCode
+      secretCode
+      invoiceExpiration
     }
   }
 }
@@ -2331,7 +2911,7 @@ export type CurrencyListQueryHookResult = ReturnType<typeof useCurrencyListQuery
 export type CurrencyListLazyQueryHookResult = ReturnType<typeof useCurrencyListLazyQuery>;
 export type CurrencyListQueryResult = Apollo.QueryResult<CurrencyListQuery, CurrencyListQueryVariables>;
 export const RealtimePriceInitialDocument = gql`
-    query realtimePriceInitial($currency: DisplayCurrency!) {
+    query RealtimePriceInitial($currency: DisplayCurrency!) {
   realtimePrice(currency: $currency) {
     timestamp
     btcSatPrice {
@@ -2378,7 +2958,7 @@ export const GetOnChainPaymentFeesDocument = gql`
     query GetOnChainPaymentFees($getOnChainPaymentFeesId: ID!, $btcWalletAddress: String!) {
   getOnChainPaymentFees(
     id: $getOnChainPaymentFeesId
-    btc_wallet_address: $btcWalletAddress
+    btcWalletAddress: $btcWalletAddress
   ) {
     fees
   }
@@ -2414,8 +2994,8 @@ export type GetOnChainPaymentFeesQueryHookResult = ReturnType<typeof useGetOnCha
 export type GetOnChainPaymentFeesLazyQueryHookResult = ReturnType<typeof useGetOnChainPaymentFeesLazyQuery>;
 export type GetOnChainPaymentFeesQueryResult = Apollo.QueryResult<GetOnChainPaymentFeesQuery, GetOnChainPaymentFeesQueryVariables>;
 export const GetWithdrawLinkBySecretDocument = gql`
-    query GetWithdrawLinkBySecret($secret_code: String!) {
-  getWithdrawLink(secret_code: $secret_code) {
+    query GetWithdrawLinkBySecret($secretCode: String!) {
+  getWithdrawLink(secretCode: $secretCode) {
     id
   }
 }
@@ -2433,7 +3013,7 @@ export const GetWithdrawLinkBySecretDocument = gql`
  * @example
  * const { data, loading, error } = useGetWithdrawLinkBySecretQuery({
  *   variables: {
- *      secret_code: // value for 'secret_code'
+ *      secretCode: // value for 'secretCode'
  *   },
  * });
  */
@@ -2449,8 +3029,8 @@ export type GetWithdrawLinkBySecretQueryHookResult = ReturnType<typeof useGetWit
 export type GetWithdrawLinkBySecretLazyQueryHookResult = ReturnType<typeof useGetWithdrawLinkBySecretLazyQuery>;
 export type GetWithdrawLinkBySecretQueryResult = Apollo.QueryResult<GetWithdrawLinkBySecretQuery, GetWithdrawLinkBySecretQueryVariables>;
 export const LnInvoicePaymentStatusDocument = gql`
-    subscription LnInvoicePaymentStatus($payment_request: LnPaymentRequest!) {
-  lnInvoicePaymentStatus(input: {paymentRequest: $payment_request}) {
+    subscription LnInvoicePaymentStatus($paymentRequest: LnPaymentRequest!) {
+  lnInvoicePaymentStatus(input: {paymentRequest: $paymentRequest}) {
     status
     errors {
       message
@@ -2473,7 +3053,7 @@ export const LnInvoicePaymentStatusDocument = gql`
  * @example
  * const { data, loading, error } = useLnInvoicePaymentStatusSubscription({
  *   variables: {
- *      payment_request: // value for 'payment_request'
+ *      paymentRequest: // value for 'paymentRequest'
  *   },
  * });
  */

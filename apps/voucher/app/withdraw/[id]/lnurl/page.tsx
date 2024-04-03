@@ -1,79 +1,79 @@
-"use client";
-import React, { useState } from "react";
-import { QRCode } from "react-qrcode-logo";
-import { encodeURLToLNURL, formatSecretCode } from "@/utils/helpers";
-import PageLoadingComponet from "@/components/Loading/PageLoadingComponent";
-import { useGetWithdrawLinkQuery } from "@/utils/generated/graphql";
-import { env } from "@/env";
-import Button from "@/components/Button/Button";
-import styles from "./LnurlPage.module.css";
-import InfoComponent from "@/components/InfoComponent/InfoComponent";
-import FundsPaid from "@/components/FundsPaid";
-import Heading from "@/components/Heading";
-import Bold from "@/components/Bold";
-import LinkDetails from "@/components/LinkDetails/LinkDetails";
-import { Status } from "@/utils/generated/graphql";
-import useRealtimePrice from "@/hooks/useRealTimePrice";
-import { DEFAULT_CURRENCY } from "@/config/appConfig";
-const { NEXT_PUBLIC_LOCAL_URL } = env;
+"use client"
+import React, { useState } from "react"
+import { QRCode } from "react-qrcode-logo"
+
+import styles from "./LnurlPage.module.css"
+
+import { encodeURLToLNURL, formatSecretCode } from "@/utils/helpers"
+import PageLoadingComponet from "@/components/Loading/PageLoadingComponent"
+import { useGetWithdrawLinkQuery, Status } from "@/utils/generated/graphql"
+import { env } from "@/env"
+import Button from "@/components/Button/Button"
+import InfoComponent from "@/components/InfoComponent/InfoComponent"
+import FundsPaid from "@/components/FundsPaid"
+import Heading from "@/components/Heading"
+import Bold from "@/components/Bold"
+import LinkDetails from "@/components/LinkDetails/LinkDetails"
+import useRealtimePrice from "@/hooks/useRealTimePrice"
+import { DEFAULT_CURRENCY } from "@/config/appConfig"
+const { NEXT_PUBLIC_LOCAL_URL } = env
 
 interface Params {
   params: {
-    id: string;
-  };
+    id: string
+  }
 }
 
 // this page shows the LNURLw screen after success in fund transfer to escrow account
 export default function Page({ params: { id } }: Params) {
-  const [revealLNURL, setRevealLNURL] = useState<boolean>(false);
+  const [revealLNURL, setRevealLNURL] = useState<boolean>(false)
   const storedCurrency =
-    typeof window !== "undefined" ? localStorage.getItem("currency") : null;
+    typeof window !== "undefined" ? localStorage.getItem("currency") : null
   const [currency, setCurrency] = useState(
-    storedCurrency ? JSON.parse(storedCurrency) : DEFAULT_CURRENCY
-  );
+    storedCurrency ? JSON.parse(storedCurrency) : DEFAULT_CURRENCY,
+  )
 
-  const { centsToCurrency, hasLoaded } = useRealtimePrice(currency.id);
+  const { centsToCurrency, hasLoaded } = useRealtimePrice(currency.id)
   const { loading, error, data } = useGetWithdrawLinkQuery({
     variables: { getWithdrawLinkId: id },
     context: {
       endpoint: "SELF",
     },
-  });
-  const WithdrawLink = data?.getWithdrawLink;
+  })
+  const WithdrawLink = data?.getWithdrawLink
 
   if (loading || !hasLoaded.current) {
-    return <PageLoadingComponet />;
+    return <PageLoadingComponet />
   }
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return <div>Error: {error.message}</div>
   }
   if (!WithdrawLink) {
-    return <div>No data</div>;
+    return <div>No data</div>
   }
-  console.log("-----" , `${NEXT_PUBLIC_LOCAL_URL}/api/lnurlw/${WithdrawLink?.unique_hash}`)
   const lnurl = encodeURLToLNURL(
-    `${NEXT_PUBLIC_LOCAL_URL}/api/lnurlw/${WithdrawLink?.unique_hash}`
-  );
-  const url = `${NEXT_PUBLIC_LOCAL_URL}/withdraw/${id}?lightning=${lnurl}`;
+    `${NEXT_PUBLIC_LOCAL_URL}/api/lnurlw/${WithdrawLink?.uniqueHash}`,
+  )
+  const url = `${NEXT_PUBLIC_LOCAL_URL}/withdraw/${id}?lightning=${lnurl}`
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(lnurl);
-  };
+    navigator.clipboard.writeText(lnurl)
+  }
 
   const sharePage = () => {
     if (navigator.share) {
       navigator.share({
         title: document.title,
         url: window.location.href,
-      });
+      })
     }
-  };
+  }
 
   const handelPrint = () => {
-    setRevealLNURL(true);
+    setRevealLNURL(true)
     setTimeout(() => {
-      window.print();
-    }, 100);
-  };
+      window.print()
+    }, 100)
+  }
 
   return (
     <div className="top_page_container">
@@ -83,7 +83,7 @@ export default function Page({ params: { id } }: Params) {
         <>
           <Heading>
             {" "}
-            Voucher <Bold>{WithdrawLink?.identifier_code}</Bold> created Successfully{" "}
+            Voucher <Bold>{WithdrawLink?.identifierCode}</Bold> created Successfully{" "}
           </Heading>
           <Bold
             style={{
@@ -94,7 +94,7 @@ export default function Page({ params: { id } }: Params) {
             Please collect $
             {Number(
               centsToCurrency(
-                Number(WithdrawLink?.sales_amount) * 100,
+                Number(WithdrawLink?.salesAmount) * 100,
                 currency.id,
                 currency.fractionDigits,
               ).convertedCurrencyAmount,
@@ -112,7 +112,7 @@ export default function Page({ params: { id } }: Params) {
                 <p>or visit voucher.blink.sv and redeem with </p>
                 <div className={styles.voucher_container}>
                   <p> VOUCHER CODE </p>
-                  <p>{formatSecretCode(WithdrawLink?.secret_code)} </p>
+                  <p>{formatSecretCode(WithdrawLink?.secretCode)} </p>
                 </div>
               </div>
               <Button
@@ -156,10 +156,10 @@ export default function Page({ params: { id } }: Params) {
             with Blink
           </InfoComponent>{" "}
           <InfoComponent>
-            To redeem later or onChain visit voucher.blink.sv and enter the voucher
+            {`To redeem later or onChain visit voucher.blink.sv and enter the voucher
             secret, If you can't withdraw links from LNURL, you can scan this QR code with
             a regular QR scanner. After scanning, visit the URL and choose the "onChain"
-            option.
+            option.`}
           </InfoComponent>
         </>
       )}

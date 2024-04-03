@@ -1,56 +1,53 @@
-import { gql } from "@apollo/client";
+import { gql } from "@apollo/client"
 
 export const CREATE_WITHDRAW_LINK = gql`
   mutation CreateWithdrawLink($input: CreateWithdrawLinkInput!) {
     createWithdrawLink(input: $input) {
       id
-      user_id
-      payment_request
-      payment_hash
-      payment_secret
-      sales_amount
-      account_type
-      escrow_wallet
+      userId
+      paymentRequest
+      paymentHash
+      paymentSecret
+      salesAmount
+      accountType
+      escrowWallet
       status
       title
-      voucher_amount
-      unique_hash
+      voucherAmount
+      uniqueHash
       k1
-      created_at
-      updated_at
-      commission_percentage
+      createdAt
+      updatedAt
+      commissionPercentage
     }
   }
-`;
+`
 
 export const UPDATE_WITHDRAW_LINK = gql`
   mutation UpdateWithdrawLink(
     $updateWithdrawLinkId: ID!
     $updateWithdrawLinkInput: UpdateWithdrawLinkInput!
   ) {
-    updateWithdrawLink(
-      id: $updateWithdrawLinkId
-      input: $updateWithdrawLinkInput
-    ) {
-      account_type
-      sales_amount
-      created_at
-      escrow_wallet
+    updateWithdrawLink(id: $updateWithdrawLinkId, input: $updateWithdrawLinkInput) {
+      accountType
+      salesAmount
+      createdAt
+      escrowWallet
       id
       k1
-      voucher_amount
-      payment_hash
-      payment_request
-      payment_secret
+      voucherAmount
+      paymentHash
+      paymentRequest
+      paymentSecret
       status
       title
-      unique_hash
-      user_id
-      updated_at
-      commission_percentage
+      uniqueHash
+      userId
+      updatedAt
+      commissionPercentage
     }
   }
-`;
+`
 
 export const LN_INVOICE_CREATE = gql`
   mutation LnInvoiceCreateOnBehalfOfRecipient(
@@ -70,7 +67,7 @@ export const LN_INVOICE_CREATE = gql`
       }
     }
   }
-`;
+`
 
 export const LN_INVOICE_CREATE_USD = gql`
   mutation LnUsdInvoiceCreateOnBehalfOfRecipient(
@@ -90,25 +87,19 @@ export const LN_INVOICE_CREATE_USD = gql`
       }
     }
   }
-`;
+`
 
 export const ON_CHAIN_PAYMENT = gql`
-  mutation SendPaymentOnChain(
-    $sendPaymentOnChainId: ID!
-    $btcWalletAddress: String!
-  ) {
-    sendPaymentOnChain(
-      id: $sendPaymentOnChainId
-      btc_wallet_address: $btcWalletAddress
-    ) {
+  mutation SendPaymentOnChain($sendPaymentOnChainId: ID!, $btcWalletAddress: String!) {
+    sendPaymentOnChain(id: $sendPaymentOnChainId, btcWalletAddress: $btcWalletAddress) {
       amount
       status
     }
   }
-`;
+`
 
 export const DELETE_WITHDRAW_LINK = gql`
   mutation DeleteWithdrawLink($id: ID!) {
     deleteWithdrawLink(id: $id)
   }
-`;
+`

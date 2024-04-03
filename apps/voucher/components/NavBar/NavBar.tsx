@@ -1,40 +1,41 @@
-import { useRef, useState } from "react";
-import styles from "./NavBar.module.css";
-import Link from "next/link";
-import AddIcon from "@mui/icons-material/Add";
-import ArrowDropDownCircleIcon from "@mui/icons-material/ArrowDropDownCircle";
-import MenuIcon from "@mui/icons-material/Menu";
+import { useRef, useState } from "react"
+import Link from "next/link"
+import AddIcon from "@mui/icons-material/Add"
+import ArrowDropDownCircleIcon from "@mui/icons-material/ArrowDropDownCircle"
+import MenuIcon from "@mui/icons-material/Menu"
+
+import styles from "./NavBar.module.css"
 
 interface NavItem {
-  name: string;
-  link: string;
+  name: string
+  link: string
 }
 
 interface NavigationProps {
   nav_items: {
-    loged_in: NavItem[];
-    loged_out: NavItem[];
-    default: NavItem[];
-  };
+    loged_in: NavItem[]
+    loged_out: NavItem[]
+    default: NavItem[]
+  }
 }
 
 const Navbar: React.FC<NavigationProps> = ({ nav_items }) => {
-  const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const [dropdownVisible, setDropdownVisible] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
 
   const toggleDropdown = () => {
-    setDropdownVisible(!dropdownVisible);
-  };
+    setDropdownVisible(!dropdownVisible)
+  }
 
   const showNavbar = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
+    setMobileMenuOpen(!mobileMenuOpen)
+  }
 
-  const login = true; // Replace with your login logic
+  const login = true // Replace with your login logic
 
-  const navLinks = login ? nav_items.loged_in : nav_items.loged_out;
-  const defaultLinks = nav_items.default;
+  const navLinks = login ? nav_items.loged_in : nav_items.loged_out
+  const defaultLinks = nav_items.default
 
   return (
     <div className={styles.root}>
@@ -138,7 +139,7 @@ const Navbar: React.FC<NavigationProps> = ({ nav_items }) => {
         </div>
       ) : null}
     </div>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar

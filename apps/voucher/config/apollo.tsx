@@ -11,6 +11,7 @@ import { onError } from "@apollo/client/link/error"
 import { getMainDefinition } from "@apollo/client/utilities"
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions"
 import { createClient } from "graphql-ws"
+
 import { env } from "@/env"
 
 const { NEXT_PUBLIC_GALOY_URL, NEXT_PUBLIC_LOCAL_URL } = env

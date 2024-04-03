@@ -1,5 +1,5 @@
-import React from "react";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import React from "react"
+import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 
 export default function FundsPaid() {
   return (
@@ -16,5 +16,5 @@ export default function FundsPaid() {
         Withdraw Link is Paid
       </div>
     </>
-  );
+  )
 }

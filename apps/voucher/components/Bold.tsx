@@ -1,14 +1,14 @@
-import React, { ReactNode } from "react";
+import React from "react"
 
 interface BoldProps {
-  children: ReactNode;
-  [x: string]: any;
+  children: React.ReactNode
+  style?: React.CSSProperties
 }
 
-export default function Bold({ children, ...props }: BoldProps) {
+export default function Bold({ children, style }: BoldProps) {
   return (
-    <span className="font-bold" {...props}>
+    <span className="font-bold" style={style}>
       {children}
     </span>
-  );
+  )
 }

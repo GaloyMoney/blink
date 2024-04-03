@@ -1,8 +1,12 @@
 import React, { useState } from "react"
-import styles from "./NumPad.module.css"
+
 import BackspaceIcon from "@mui/icons-material/Backspace"
-import Button from "../Button/Button"
+
 import RestartAltIcon from "@mui/icons-material/RestartAlt"
+
+import Button from "../Button/Button"
+
+import styles from "./NumPad.module.css"
 interface Props {
   currentAmount: string
   setCurrentAmount: (amount: string) => void
@@ -27,7 +31,7 @@ const Numpad = ({ currentAmount, setCurrentAmount, unit }: Props) => {
   }
 
   const handelPercentageChange = (digit: string) => {
-    let newPercentage = currentAmount + digit
+    const newPercentage = currentAmount + digit
     if (newPercentage === "99.") {
       return
     }

@@ -1,41 +1,45 @@
-"use client";
-import React, { useState, useEffect } from "react";
+"use client"
+import React, { useState, useEffect } from "react"
+
+import Pagination from "@mui/material/Pagination"
+
+import styles from "./UserLinkPage.module.css"
+
 import {
   Status,
   WithdrawLink,
   useGetWithdrawLinksByUserIdQuery,
-} from "@/utils/generated/graphql";
+} from "@/utils/generated/graphql"
 
-import PageLoadingComponent from "@/components/Loading/PageLoadingComponent";
-import UserLinksComponent from "@/components/UserLinks/UserLinks";
-import styles from "./UserLinkPage.module.css";
-import Pagination from "@mui/material/Pagination";
-import { getOffset } from "@/utils/helpers";
+import PageLoadingComponent from "@/components/Loading/PageLoadingComponent"
+import UserLinksComponent from "@/components/UserLinks/UserLinks"
+
+import { getOffset } from "@/utils/helpers"
 interface Params {
   params: {
-    user_id: string;
-  };
+    userId: string
+  }
 }
 
-export default function UserLinks({ params: { user_id } }: Params) {
-  const [status, setStatus] = useState<Status | null>(null); // Initial status is null
-  const [poll, setPoll] = useState<boolean>(false);
-  const [page, setPage] = React.useState(1);
+export default function UserLinks({ params: { userId } }: Params) {
+  const [status, setStatus] = useState<Status | null>(null) // Initial status is null
+  const [poll, setPoll] = useState<boolean>(false)
+  const [page, setPage] = React.useState(1)
 
   const { loading, error, data } = useGetWithdrawLinksByUserIdQuery({
     variables: {
-      userId: user_id,
+      userId: userId,
       status,
       limit: 10,
       offset: getOffset(page, 10),
     },
     pollInterval: poll ? 5000 : 0,
-  });
+  })
 
   useEffect(() => {
-    setPoll(true);
-    return () => setPoll(false);
-  }, []);
+    setPoll(true)
+    return () => setPoll(false)
+  }, [])
 
   if (loading) {
   }
@@ -44,16 +48,16 @@ export default function UserLinks({ params: { user_id } }: Params) {
   }
   const handleStatusChange = (selectedStatus: Status | "ALL") => {
     if (selectedStatus === "ALL") {
-      setStatus(null);
+      setStatus(null)
     } else {
-      setStatus(selectedStatus);
+      setStatus(selectedStatus)
     }
-  };
+  }
 
-  const withdrawLinks = data?.getWithdrawLinksByUserId.withdrawLinks;
-  const totalLinks = data?.getWithdrawLinksByUserId.total_links;
-  const itemsPerPage = 10;
-  const totalPages = Math.ceil(Number(totalLinks) / itemsPerPage);
+  const withdrawLinks = data?.getWithdrawLinksByUserId.withdrawLinks
+  const totalLinks = data?.getWithdrawLinksByUserId.totalLinks
+  const itemsPerPage = 10
+  const totalPages = Math.ceil(Number(totalLinks) / itemsPerPage)
 
   return (
     <div className="top_page_container_user_links">
@@ -82,10 +86,7 @@ export default function UserLinks({ params: { user_id } }: Params) {
           <>
             <div className={styles.LinksContainer}>
               {withdrawLinks?.map((withdrawLink: WithdrawLink) => (
-                <UserLinksComponent
-                  key={withdrawLink.id}
-                  withdrawLink={withdrawLink}
-                />
+                <UserLinksComponent key={withdrawLink.id} withdrawLink={withdrawLink} />
               ))}
             </div>
             <Pagination
@@ -104,5 +105,5 @@ export default function UserLinks({ params: { user_id } }: Params) {
         )}
       </div>
     </div>
-  );
+  )
 }

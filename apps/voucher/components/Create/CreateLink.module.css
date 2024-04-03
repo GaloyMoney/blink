@@ -22,7 +22,7 @@
     rgb(209, 213, 219) 0px 0px 0px 1px inset;
 }
 
-.account_type {
+.accountType {
   width: 90%;
   display: flex;
   gap: 1em;
@@ -30,7 +30,7 @@
   border-radius: 1em;
 }
 
-.account_type_button {
+.accountType_button {
   border-radius: 0.5em;
   border-width: 0.124em;
   border-color: var(--orange);
@@ -54,7 +54,7 @@
   gap: 0.2em;
 }
 
-.account_type_button_selected {
+.accountType_button_selected {
   border-radius: 0.5em;
   border-width: 0.124em;
   border-color: var(--orange);

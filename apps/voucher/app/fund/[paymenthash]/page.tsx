@@ -1,7 +1,16 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import { QRCode } from "react-qrcode-logo";
-import Button from "@/components/Button/Button";
+"use client"
+import React, { useEffect, useState } from "react"
+import { QRCode } from "react-qrcode-logo"
+
+import CheckCircleIcon from "@mui/icons-material/CheckCircle"
+
+import Link from "next/link"
+
+import { useRouter } from "next/navigation"
+
+import styles from "./fundPage.module.css"
+
+import Button from "@/components/Button/Button"
 import {
   Status,
   useGetWithdrawLinkQuery,
@@ -9,35 +18,33 @@ import {
   useLnInvoicePaymentStatusSubscription,
   useDeleteWithdrawLinkMutation,
   InvoicePaymentStatus,
-} from "@/utils/generated/graphql";
-import LinkDetails from "@/components/LinkDetails/LinkDetails";
-import ModalComponent from "@/components/ModalComponent";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import styles from "./fundPage.module.css";
-import Link from "next/link";
-import InfoComponent from "@/components/InfoComponent/InfoComponent";
-import PageLoadingComponent from "@/components/Loading/PageLoadingComponent";
-import { useRouter } from "next/navigation";
-import Heading from "@/components/Heading";
-import Bold from "@/components/Bold";
+} from "@/utils/generated/graphql"
+import LinkDetails from "@/components/LinkDetails/LinkDetails"
+import ModalComponent from "@/components/ModalComponent"
+
+import InfoComponent from "@/components/InfoComponent/InfoComponent"
+import PageLoadingComponent from "@/components/Loading/PageLoadingComponent"
+
+import Heading from "@/components/Heading"
+import Bold from "@/components/Bold"
 interface Params {
   params: {
-    paymenthash: string;
-  };
+    paymenthash: string
+  }
 }
 declare global {
   interface Window {
-    webln: any;
+    webln: any
   }
 }
 
 //this Screen is used to take funds from user for withdraw links
 export default function FundPaymentHash({ params: { paymenthash } }: Params) {
-  const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [expired, setExpired] = useState<boolean>(false);
-  const isClient = typeof window !== "undefined";
-  const isWindows = isClient && navigator.platform.includes("Win");
-  const router = useRouter();
+  const [modalOpen, setModalOpen] = useState<boolean>(false)
+  const [expired, setExpired] = useState<boolean>(false)
+  const isClient = typeof window !== "undefined"
+  const isWindows = isClient && navigator.platform.includes("Win")
+  const router = useRouter()
   const {
     loading: loadingWithdrawLink,
     error: errorWithdrawLink,
@@ -47,13 +54,13 @@ export default function FundPaymentHash({ params: { paymenthash } }: Params) {
     context: {
       endpoint: "SELF",
     },
-  });
+  })
 
-  const withdrawLink = dataWithdrawLink?.getWithdrawLink;
-  const paymentRequest = withdrawLink?.payment_request;
+  const withdrawLink = dataWithdrawLink?.getWithdrawLink
+  const paymentRequest = withdrawLink?.paymentRequest
 
   const [updateWithdrawLink, { loading: updatingWithdrawLink }] =
-    useUpdateWithdrawLinkMutation();
+    useUpdateWithdrawLinkMutation()
 
   const {
     data: paymentStatusData,
@@ -61,20 +68,19 @@ export default function FundPaymentHash({ params: { paymenthash } }: Params) {
     error: paymentStatusDataError,
   } = useLnInvoicePaymentStatusSubscription({
     variables: {
-      payment_request: paymentRequest!,
+      paymentRequest: paymentRequest!,
     },
     skip: withdrawLink?.status === Status.Paid,
-  });
+  })
 
   const [deleteWithdrawLink, { loading: deletingWithdrawLink }] =
-    useDeleteWithdrawLinkMutation();
+    useDeleteWithdrawLinkMutation()
 
   useEffect(() => {
     if (
       expired &&
       withdrawLink?.status === Status.Unfunded &&
-      paymentStatusData?.lnInvoicePaymentStatus.status !==
-        InvoicePaymentStatus.Paid
+      paymentStatusData?.lnInvoicePaymentStatus.status !== InvoicePaymentStatus.Paid
     ) {
       try {
         const deleteLink = async () => {
@@ -82,23 +88,22 @@ export default function FundPaymentHash({ params: { paymenthash } }: Params) {
             variables: {
               id: withdrawLink?.id,
             },
-          });
-          router.push("/create");
-        };
-        deleteLink();
+          })
+          router.push("/create")
+        }
+        deleteLink()
       } catch (err) {
-        console.log("error in deleting link", err);
+        console.log("error in deleting link", err)
       }
     }
-  }, [expired]);
+  }, [expired])
 
   useEffect(() => {
     const handlePaymentStatus = async () => {
       if (
         paymentStatusData &&
         withdrawLink &&
-        paymentStatusData.lnInvoicePaymentStatus.status ===
-          InvoicePaymentStatus.Paid
+        paymentStatusData.lnInvoicePaymentStatus.status === InvoicePaymentStatus.Paid
       ) {
         try {
           await updateWithdrawLink({
@@ -106,36 +111,36 @@ export default function FundPaymentHash({ params: { paymenthash } }: Params) {
               updateWithdrawLinkId: withdrawLink?.id,
               updateWithdrawLinkInput: { status: Status.Funded },
             },
-          });
-          setModalOpen(true);
+          })
+          setModalOpen(true)
         } catch (error) {
-          alert(error);
+          alert(error)
         }
       }
-    };
+    }
 
-    handlePaymentStatus();
-  }, [paymentStatusData]);
+    handlePaymentStatus()
+  }, [paymentStatusData])
 
   useEffect(() => {
-    if (withdrawLink?.payment_request) {
+    if (withdrawLink?.paymentRequest) {
       try {
-        (async () => {
+        ;(async () => {
           if (window.webln) {
-            const result = await window.webln.enable();
+            const result = await window.webln.enable()
             if (result.enabled) {
-              window.webln.sendPayment(withdrawLink.payment_request);
+              window.webln.sendPayment(withdrawLink.paymentRequest)
             }
           }
-        })();
+        })()
       } catch (error) {
-        console.log("error in webln", error);
+        console.log("error in webln", error)
       }
     }
-  }, [withdrawLink?.payment_request]);
+  }, [withdrawLink?.paymentRequest])
 
   if (loadingWithdrawLink || updatingWithdrawLink || deletingWithdrawLink) {
-    return <PageLoadingComponent />;
+    return <PageLoadingComponent />
   }
 
   if (errorWithdrawLink || paymentStatusDataError) {
@@ -144,14 +149,14 @@ export default function FundPaymentHash({ params: { paymenthash } }: Params) {
       <div className="flex flex-col items-center justify-center h-screen">
         Error: {errorWithdrawLink?.message} {paymentStatusDataError?.message}
       </div>
-    );
+    )
   }
 
   const handleCopyToClipboard = () => {
     if (isClient) {
-      navigator.clipboard?.writeText(withdrawLink?.payment_request || "");
+      navigator.clipboard?.writeText(withdrawLink?.paymentRequest || "")
     }
-  };
+  }
 
   return (
     <>
@@ -161,10 +166,7 @@ export default function FundPaymentHash({ params: { paymenthash } }: Params) {
             <CheckCircleIcon style={{ fontSize: 60, color: "#16ca40" }} />
             <h1 className={styles.modal_heading}>Successfully Paid</h1>
             <Link href={`/withdraw/${withdrawLink?.id}/lnurl`}>
-              <Button
-                style={{ width: "9em" }}
-                onClick={() => setModalOpen(false)}
-              >
+              <Button style={{ width: "9em" }} onClick={() => setModalOpen(false)}>
                 OK
               </Button>
             </Link>
@@ -173,24 +175,21 @@ export default function FundPaymentHash({ params: { paymenthash } }: Params) {
         <div>
           {withdrawLink?.status === Status.Unfunded ? (
             <Heading>
-              Fund Voucher <Bold>{withdrawLink.identifier_code}</Bold> by paying
-              the invoice below{" "}
+              Fund Voucher <Bold>{withdrawLink.identifierCode}</Bold> by paying the
+              invoice below{" "}
             </Heading>
           ) : (
             <Heading>
-              Voucher <Bold>{withdrawLink?.identifier_code}</Bold> is Funded and
-              Link is activate
+              Voucher <Bold>{withdrawLink?.identifierCode}</Bold> is Funded and Link is
+              activate
             </Heading>
           )}
         </div>
-        <LinkDetails
-          withdrawLink={withdrawLink}
-          setExpired={setExpired}
-        ></LinkDetails>
+        <LinkDetails withdrawLink={withdrawLink} setExpired={setExpired}></LinkDetails>
         {withdrawLink?.status === Status.Unfunded ? (
           <div>
             <div className="w-80 h-80 flex flex-col items-center justify-center border border-gray-300 rounded-md p-4">
-              <QRCode size={300} value={withdrawLink?.payment_request} />
+              <QRCode size={300} value={withdrawLink?.paymentRequest} />
             </div>
             <div className={styles.button_container}>
               <Button
@@ -202,7 +201,7 @@ export default function FundPaymentHash({ params: { paymenthash } }: Params) {
                 Copy to Clipboard
               </Button>
 
-              <a href={`lightning:${withdrawLink.payment_request}`}>
+              <a href={`lightning:${withdrawLink.paymentRequest}`}>
                 <Button
                   style={{
                     width: "20em",
@@ -236,12 +235,11 @@ export default function FundPaymentHash({ params: { paymenthash } }: Params) {
 
         {withdrawLink?.status === Status.Unfunded ? (
           <InfoComponent>
-            Please note that a Stable sats invoice is only valid for 5 minutes,
-            while a Regular sats invoice is valid for 24 hours from the point of
-            creation.
+            Please note that a Stable sats invoice is only valid for 5 minutes, while a
+            Regular sats invoice is valid for 24 hours from the point of creation.
           </InfoComponent>
         ) : null}
       </div>
     </>
-  );
+  )
 }

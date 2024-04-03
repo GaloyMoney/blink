@@ -1,8 +1,8 @@
-import { gql } from "@apollo/client";
+import { gql } from "@apollo/client"
 
 export const LN_INVOCE_PAYMENT_STATUS = gql`
-  subscription LnInvoicePaymentStatus($payment_request: LnPaymentRequest!) {
-    lnInvoicePaymentStatus(input: { paymentRequest: $payment_request }) {
+  subscription LnInvoicePaymentStatus($paymentRequest: LnPaymentRequest!) {
+    lnInvoicePaymentStatus(input: { paymentRequest: $paymentRequest }) {
       status
       errors {
         message
@@ -11,7 +11,7 @@ export const LN_INVOCE_PAYMENT_STATUS = gql`
       }
     }
   }
-`;
+`
 
 export const REAL_TIME_WS = gql`
   subscription realtimePriceWs($currency: DisplayCurrency!) {
@@ -33,10 +33,9 @@ export const REAL_TIME_WS = gql`
       }
     }
   }
-`;
+`
 
-
-export  const QUERY_PRICE = gql`
+export const QUERY_PRICE = gql`
   subscription price(
     $amount: SatAmount!
     $amountCurrencyUnit: ExchangeCurrencyUnit!
@@ -60,4 +59,4 @@ export  const QUERY_PRICE = gql`
       }
     }
   }
-`;
+`

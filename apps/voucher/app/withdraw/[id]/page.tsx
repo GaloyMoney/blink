@@ -1,20 +1,21 @@
-"use client";
-import { env } from "@/env";
-import React from "react";
-import { useGetWithdrawLinkQuery ,Status } from "@/utils/generated/graphql";
-import Link from "next/link";
-import Button from "@/components/Button/Button";
-import LinkDetails from "@/components/LinkDetails/LinkDetails";
-import InfoComponent from "@/components/InfoComponent/InfoComponent";
-import FundsPaid from "@/components/FundsPaid";
-import PageLoadingComponent from "@/components/Loading/PageLoadingComponent";
-import Heading from "@/components/Heading";
-const { NEXT_PUBLIC_LOCAL_URL } = env;
+"use client"
+import React from "react"
+import Link from "next/link"
+
+import { env } from "@/env"
+import { useGetWithdrawLinkQuery, Status } from "@/utils/generated/graphql"
+import Button from "@/components/Button/Button"
+import LinkDetails from "@/components/LinkDetails/LinkDetails"
+import InfoComponent from "@/components/InfoComponent/InfoComponent"
+import FundsPaid from "@/components/FundsPaid"
+import PageLoadingComponent from "@/components/Loading/PageLoadingComponent"
+import Heading from "@/components/Heading"
+const { NEXT_PUBLIC_LOCAL_URL } = env
 
 interface Params {
   params: {
-    id: string;
-  };
+    id: string
+  }
 }
 
 // this page shows the LNURLw screen after success in fund transfer to escrow account
@@ -24,23 +25,23 @@ export default function Page({ params: { id } }: Params) {
     context: {
       endpoint: "SELF",
     },
-  });
+  })
 
   if (loading) {
-    return <PageLoadingComponent />;
+    return <PageLoadingComponent />
   }
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return <div>Error: {error.message}</div>
   }
   if (!data) {
-    return <div>No data</div>;
+    return <div>No data</div>
   }
 
   return (
     <div className="top_page_container">
       {data.getWithdrawLink?.status === Status.Paid ? (
         <>
-          <FundsPaid/>
+          <FundsPaid />
         </>
       ) : (
         <>
@@ -65,12 +66,12 @@ export default function Page({ params: { id } }: Params) {
           </Link>
 
           <InfoComponent>
-            You can withdraw funds from supported LNURL wallets or through
-            on-chain transactions. However, please note that on-chain
-            transactions will incur transaction fees.
+            You can withdraw funds from supported LNURL wallets or through on-chain
+            transactions. However, please note that on-chain transactions will incur
+            transaction fees.
           </InfoComponent>
         </>
       )}
     </div>
-  );
+  )
 }

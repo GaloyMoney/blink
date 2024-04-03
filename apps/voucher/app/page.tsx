@@ -1,6 +1,7 @@
-"use client";
-import Link from "next/link";
-import Button from "@/components/Button/Button";
+"use client"
+import Link from "next/link"
+
+import Button from "@/components/Button/Button"
 // path : /
 //TODO home page or welcome screen needed to be created gere
 export default function Home() {
@@ -20,5 +21,5 @@ export default function Home() {
         </Link>
       </div>
     </div>
-  );
+  )
 }

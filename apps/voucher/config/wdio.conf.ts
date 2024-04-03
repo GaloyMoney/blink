@@ -15,7 +15,7 @@ export const config = {
   // remove headless to open browser
   capabilities: [
     {
-      browserName: "chrome",
+      "browserName": "chrome",
       "goog:chromeOptions": {
         args: ["--no-sandbox", "--disable-dev-shm-usage", "--headless"],
       },
@@ -35,4 +35,4 @@ export const config = {
     ui: "bdd",
     timeout: 60000,
   },
-};
+}

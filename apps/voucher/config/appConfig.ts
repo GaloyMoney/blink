@@ -1,6 +1,6 @@
-import { Currency } from "@/utils/generated/graphql";
+import { Currency } from "@/utils/generated/graphql"
 
-export const MAX_INPUT_VALUE_LENGTH = 14;
+export const MAX_INPUT_VALUE_LENGTH = 14
 export const DEFAULT_CURRENCY: Currency = {
   __typename: "Currency",
   id: "USD",
@@ -8,4 +8,4 @@ export const DEFAULT_CURRENCY: Currency = {
   name: "US Dollar",
   flag: "🇺🇸",
   fractionDigits: 2,
-};
+}

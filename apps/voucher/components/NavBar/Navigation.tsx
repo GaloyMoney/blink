@@ -1,6 +1,6 @@
-import Navbar from "./NavBar";
-import React from "react";
+import React from "react"
 
+import Navbar from "./NavBar"
 
 const Navigation = () => {
   const nav_items = {
@@ -15,13 +15,13 @@ const Navigation = () => {
       { name: "How it works", link: "/#" },
       { name: "Help", link: "/#" },
     ],
-  };
+  }
 
   return (
     <div>
       <Navbar nav_items={nav_items} />
     </div>
-  );
-};
+  )
+}
 
-export default Navigation;
+export default Navigation

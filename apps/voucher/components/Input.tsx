@@ -1,6 +1,6 @@
-import TextField from "@mui/material/TextField";
-import React from "react";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+import TextField from "@mui/material/TextField"
+import React from "react"
+import { createTheme, ThemeProvider } from "@mui/material/styles"
 
 const theme = createTheme({
   palette: {
@@ -8,14 +8,14 @@ const theme = createTheme({
       main: "#000000",
     },
   },
-});
+})
 
-const Input = ({ ...props }: any) => {
+const Input = ({ ...props }) => {
   return (
     <ThemeProvider theme={theme}>
       <TextField color="primary" variant="outlined" {...props} />
     </ThemeProvider>
-  );
-};
+  )
+}
 
-export default Input;
+export default Input

@@ -1,9 +1,9 @@
-import React, { ReactElement } from "react";
-import Modal, { ModalProps } from "@mui/material/Modal";
-import Box from "@mui/material/Box";
+import React, { ReactElement } from "react"
+import Modal, { ModalProps } from "@mui/material/Modal"
+import Box from "@mui/material/Box"
 
 interface Props extends ModalProps {
-  children: any;
+  children: any
 }
 
 export default function ModalComponent({ children, ...props }: Props) {
@@ -11,7 +11,7 @@ export default function ModalComponent({ children, ...props }: Props) {
     <Modal {...props}>
       <Box
         sx={{
-          position: "absolute" as "absolute",
+          position: "absolute" as const,
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
@@ -25,5 +25,5 @@ export default function ModalComponent({ children, ...props }: Props) {
         {children}
       </Box>
     </Modal>
-  );
+  )
 }

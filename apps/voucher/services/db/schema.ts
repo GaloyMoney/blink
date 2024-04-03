@@ -1,21 +1,28 @@
 import { Knex } from "knex"
 
-export async function up(knex: Knex): Promise<void> {
-  await knex.schema.createTable("WithdrawLinks", (table) => {
+export default async function createTables(knex: Knex): Promise<void> {
+  const withdrawLinksTableExist = await knex.schema.hasTable("WithdrawLinks")
+
+  if (withdrawLinksTableExist) {
+    console.log("Applicant table already exists, skipping table creation.")
+    return
+  }
+
+  await knex.schema.createTable("withdrawLinks", (table) => {
     table.uuid("id").primary()
     table.uuid("userId").notNullable()
-    table.text("paymentRequest").notNullable() // invoice created by escrow account for to take funds from user
+    table.text("paymentRequest").notNullable() // Invoice created by escrow account to take funds from user
     table.text("paymentHash").notNullable()
     table.text("paymentSecret").notNullable()
-    table.decimal("salesAmount").notNullable() // total sum of amount it will be used if multiple links are created at once like 10 links for 10 sats then this will be 100
+    table.decimal("salesAmount").notNullable() // Total sum of amount, used if multiple links are created at once like 10 links for 10 sats then this will be 100
     table.text("accountType").notNullable() // BTC or USD
-    table.text("escrowWallet").notNullable() // escrow account wallet USD or BTC
-    table.text("title").notNullable() //description ot title of the link
+    table.text("escrowWallet").notNullable() // Escrow account wallet USD or BTC
+    table.text("title").notNullable() // Description or title of the link
     table.decimal("voucherAmount").notNullable()
     table.text("uniqueHash").notNullable()
     table.text("k1")
     table.timestamp("createdAt").defaultTo(knex.fn.now())
-    table.timestamp("updated_at").defaultTo(knex.fn.now())
+    table.timestamp("updatedAt").defaultTo(knex.fn.now())
     table.text("identifierCode").unique().notNullable()
     table.text("secretCode").unique().notNullable()
     table
@@ -32,8 +39,4 @@ export async function up(knex: Knex): Promise<void> {
       .defaultTo(0)
       .comment("min = 0 and max = 100")
   })
-}
-
-export async function down(knex: Knex): Promise<void> {
-  await knex.schema.dropTable("WithdrawLinks")
 }

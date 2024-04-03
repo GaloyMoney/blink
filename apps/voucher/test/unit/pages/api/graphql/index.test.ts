@@ -1,14 +1,13 @@
-import { GET_WITHDRAW_LINK } from "@/utils/graphql/query";
-import { CREATE_WITHDRAW_LINK } from "@/utils/graphql/mutation";
-import { DELETE_WITHDRAW_LINK } from "@/utils/graphql/mutation";
-import { GET_WITHDRAW_LINKS_BY_USER_ID } from "@/utils/graphql/query";
-import { server } from "@/pages/api/graphql/index";
-import { generateRandomHash } from "@/utils/helpers";
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from "uuid"
 
-const random_hash = generateRandomHash();
-const uuid = uuidv4();
-const user_id = "aaaaaaa1-e098-4a16-932b-e4f4abc24366";
+import { GET_WITHDRAW_LINK, GET_WITHDRAW_LINKS_BY_USER_ID } from "@/utils/graphql/query"
+import { CREATE_WITHDRAW_LINK, DELETE_WITHDRAW_LINK } from "@/utils/graphql/mutation"
+import { server } from "@/pages/api/graphql/index"
+import { generateRandomHash } from "@/utils/helpers"
+
+const random_hash = generateRandomHash()
+const uuid = uuidv4()
+const userId = "aaaaaaa1-e098-4a16-932b-e4f4abc24366"
 
 function getExpectedData(propertyName: string) {
   return expect.objectContaining({
@@ -19,7 +18,7 @@ function getExpectedData(propertyName: string) {
         }),
       }),
     }),
-  });
+  })
 }
 
 describe("GraphQL API Tests", () => {
@@ -27,50 +26,50 @@ describe("GraphQL API Tests", () => {
     const variables = {
       input: {
         id: uuid,
-        payment_hash: random_hash,
-        user_id: user_id,
-        payment_request: "paymentRequest",
-        payment_secret: "paymentSecret",
-        sales_amount: 12,
-        account_type: "account",
-        escrow_wallet: "wallet",
+        paymentHash: random_hash,
+        userId: userId,
+        paymentRequest: "paymentRequest",
+        paymentSecret: "paymentSecret",
+        salesAmount: 12,
+        accountType: "account",
+        escrowWallet: "wallet",
         title: `Galoy withdraw test`,
-        voucher_amount: 12,
-        unique_hash: random_hash,
+        voucherAmount: 12,
+        uniqueHash: random_hash,
         k1: random_hash,
-        commission_percentage: 12,
+        commissionPercentage: 12,
       },
-    };
+    }
 
     const response = await server.executeOperation({
       query: CREATE_WITHDRAW_LINK,
       variables,
-    });
-    expect(response.body).toMatchObject(getExpectedData("createWithdrawLink"));
-  });
+    })
+    expect(response.body).toMatchObject(getExpectedData("createWithdrawLink"))
+  })
 
   it("returns data as expected for getWithdrawLink query", async () => {
     const variables = {
       getWithdrawLinkId: uuid,
-    };
+    }
 
     const response = await server.executeOperation({
       query: GET_WITHDRAW_LINK,
       variables,
-    });
+    })
 
-    expect(response.body).toMatchObject(getExpectedData("getWithdrawLink"));
-  });
+    expect(response.body).toMatchObject(getExpectedData("getWithdrawLink"))
+  })
 
   it("returns data as expected for getWithdrawLinksByUserId query", async () => {
     const variables = {
-      userId: user_id,
-    };
+      userId: userId,
+    }
 
     const response = await server.executeOperation({
       query: GET_WITHDRAW_LINKS_BY_USER_ID,
       variables,
-    });
+    })
 
     expect(response.body).toMatchObject(
       expect.objectContaining({
@@ -85,19 +84,19 @@ describe("GraphQL API Tests", () => {
             }),
           }),
         }),
-      })
-    );
-  });
+      }),
+    )
+  })
 
   it("returns data as expected for deleteWithdrawLink query", async () => {
     const variables = {
       id: uuid,
-    };
+    }
 
     const response = await server.executeOperation({
       query: DELETE_WITHDRAW_LINK,
       variables,
-    });
+    })
 
     expect(response.body).toMatchObject(
       expect.objectContaining({
@@ -106,7 +105,7 @@ describe("GraphQL API Tests", () => {
             deleteWithdrawLink: uuid,
           }),
         }),
-      })
-    );
-  });
-});
+      }),
+    )
+  })
+})

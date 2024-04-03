@@ -1,19 +1,21 @@
-import Button from "@/components/Button/Button";
-import ModalComponent from "@/components/ModalComponent";
-import React, { MouseEvent } from "react";
-import styles from "./ConfirmModal.module.css";
-import { formatOperand } from "@/utils/helpers";
-import { Currency } from "@/utils/generated/graphql";
+import React, { MouseEvent } from "react"
+
+import styles from "./ConfirmModal.module.css"
+
+import Button from "@/components/Button/Button"
+import ModalComponent from "@/components/ModalComponent"
+import { formatOperand } from "@/utils/helpers"
+import { Currency } from "@/utils/generated/graphql"
 
 interface Props {
-  open: boolean;
-  onClose: (currency: MouseEvent<HTMLButtonElement>) => void;
-  handleSubmit: (event: MouseEvent<HTMLButtonElement>) => void; // Update the type of handleSubmit
-  amount: string;
-  currency: Currency;
-  commissionPercentage: string;
-  commissionAmountInDollars: string;
-  usdToSats: (currency: number) => number;
+  open: boolean
+  onClose: (currency: MouseEvent<HTMLButtonElement>) => void
+  handleSubmit: (event: MouseEvent<HTMLButtonElement>) => void // Update the type of handleSubmit
+  amount: string
+  currency: Currency
+  commissionPercentage: string
+  commissionAmountInDollars: string
+  usdToSats: (currency: number) => number
 }
 
 const ConfirmModal = ({
@@ -65,7 +67,7 @@ const ConfirmModal = ({
         </div>
       </div>
     </ModalComponent>
-  );
-};
+  )
+}
 
-export default ConfirmModal;
+export default ConfirmModal
