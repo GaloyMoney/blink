@@ -1295,3 +1295,69 @@ def jest_test(
         visibility = visibility,
         **kwargs,
     )
+
+
+def graphql_codegen_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
+    build_context = prepare_package_context(ctx)
+    out = ctx.actions.declare_output("generates", dir = True)
+    pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
+
+    cmd = cmd_args(
+        ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
+        pnpm_toolchain.graphql_codegen[DefaultInfo].default_outputs,
+        "--package-dir",
+        cmd_args([build_context.workspace_root, ctx.label.package], delimiter = "/"),
+        "--config",
+        ctx.attrs.config
+    )
+    for schema in ctx.attrs.schemas:
+        cmd.add(
+            "--schema",
+            cmd_args(schema),
+        )
+    cmd.hidden([ctx.attrs.srcs])
+    cmd.add(out.as_output())
+
+    ctx.actions.run(cmd, category = "codegen")
+    return [DefaultInfo(default_output = out)]
+
+_graphql_codegen = rule(
+    impl = graphql_codegen_impl,
+    attrs = {
+        "srcs": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """List of package source files to track.""",
+        ),
+        "schemas": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """List of all schemas""",
+        ),
+        "config": attrs.source(
+            doc = """Configuration file to use for codegen""",
+        ),
+        "node_modules": attrs.source(
+            doc = """Target which builds package `node_modules`.""",
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
+
+def graphql_codegen(
+  node_modules = ":node_modules",
+  visibility = ["PUBLIC"],
+  **kwargs):
+    _graphql_codegen(
+        node_modules = node_modules,
+        visibility = visibility,
+        **kwargs,
+    )
+

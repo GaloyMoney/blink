@@ -52,3 +52,8 @@ export_file(
   name = "run_audit.py",
   visibility = ["PUBLIC"],
 )
+
+export_file(
+  name = "graphql_codegen.py",
+  visibility = ["PUBLIC"],
+)
