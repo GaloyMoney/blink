@@ -20,7 +20,6 @@ import Memo from "../memo"
 import DigitButton from "./digit-button"
 import styles from "./parse-payment.module.css"
 import ReceiveInvoice from "./receive-invoice"
-import NFCComponent from "./nfc"
 
 import { satCurrencyMetadata } from "@/app/sats-currency-metadata"
 import useDynamicFontSize from "@/hooks/use-dynamic-font-size"
@@ -196,8 +195,6 @@ function ParsePayment({
         />
       ) : (
         <>
-          <NFCComponent />
-
           <div className={styles.digitsGrid}>
             <DigitButton digit={"1"} dispatch={dispatch} />
             <DigitButton digit={"2"} dispatch={dispatch} />
