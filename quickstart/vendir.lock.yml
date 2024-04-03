@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(toolchain): add deps_srcs to sdl rule (#4241)...'
-      sha: 6ee4ac8d0d8148d3b91e467038def8ba6278f326
+      commitTitle: 'chore(core): fix warning in spell check  (#4259)...'
+      sha: a00fffb1e1fc5f09e935b058a89a510cf9a8cd45
       tags:
-      - 0.20.137-3-g6ee4ac8d0
+      - 0.20.137-12-ga00fffb1e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(toolchain): add deps_srcs to sdl rule (#4241)...'
-      sha: 6ee4ac8d0d8148d3b91e467038def8ba6278f326
+      commitTitle: 'chore(core): fix warning in spell check  (#4259)...'
+      sha: a00fffb1e1fc5f09e935b058a89a510cf9a8cd45
       tags:
-      - 0.20.137-3-g6ee4ac8d0
+      - 0.20.137-12-ga00fffb1e
     path: schemas/
   - git:
-      commitTitle: 'refactor(toolchain): add deps_srcs to sdl rule (#4241)...'
-      sha: 6ee4ac8d0d8148d3b91e467038def8ba6278f326
+      commitTitle: 'chore(core): fix warning in spell check  (#4259)...'
+      sha: a00fffb1e1fc5f09e935b058a89a510cf9a8cd45
       tags:
-      - 0.20.137-3-g6ee4ac8d0
+      - 0.20.137-12-ga00fffb1e
     path: gql/
   path: ./graphql
 kind: LockConfig
