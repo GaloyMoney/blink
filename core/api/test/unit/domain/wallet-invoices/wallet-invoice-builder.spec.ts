@@ -84,8 +84,14 @@ describe("WalletInvoiceBuilder", () => {
     expect(lnInvoice).not.toHaveProperty("secret")
   }
 
+  const testExternalId = "testExternalId" as LedgerExternalId
+  const WIBWithExternalId = WIB.withExternalId(testExternalId)
+  const checkMetadata = ({ externalId }: WalletInvoice) => {
+    expect(externalId).toEqual(testExternalId)
+  }
+
   const testDescription = "testdescription"
-  const WIBWithDescription = WIB.withDescription({
+  const WIBWithDescription = WIBWithExternalId.withDescription({
     description: testDescription,
   })
   const checkDescription = ({ lnInvoice }: WalletInvoice) => {
@@ -151,6 +157,7 @@ describe("WalletInvoiceBuilder", () => {
 
           checkSecretAndHash(invoices)
           checkAmount(invoices)
+          checkMetadata(invoices)
           checkDescription(invoices)
           checkCreator(invoices)
           checkRecipientWallet(invoices)
@@ -195,6 +202,7 @@ describe("WalletInvoiceBuilder", () => {
 
           checkSecretAndHash(invoices)
           checkAmount(invoices)
+          checkMetadata(invoices)
           checkDescription(invoices)
           checkCreator(invoices)
           checkRecipientWallet(invoices)
@@ -241,6 +249,7 @@ describe("WalletInvoiceBuilder", () => {
 
           checkSecretAndHash(invoices)
           checkAmount(invoices)
+          checkMetadata(invoices)
           checkDescription(invoices)
           checkCreator(invoices)
           checkRecipientWallet(invoices)
@@ -279,6 +288,7 @@ describe("WalletInvoiceBuilder", () => {
 
           checkSecretAndHash(invoices)
           checkAmount(invoices)
+          checkMetadata(invoices)
           checkDescription(invoices)
           checkCreator(invoices)
           checkRecipientWallet(invoices)
@@ -325,6 +335,7 @@ describe("WalletInvoiceBuilder", () => {
 
           checkSecretAndHash(invoices)
           checkAmount(invoices)
+          checkMetadata(invoices)
           checkDescription(invoices)
           checkCreator(invoices)
           checkRecipientWallet(invoices)

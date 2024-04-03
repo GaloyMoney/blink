@@ -35,6 +35,7 @@ const addInvoiceForSelf = async ({
       recipientWalletDescriptor,
     }: BuildWIBWithAmountFnArgs) =>
       walletInvoiceBuilder
+        .withExternalId()
         .withDescription({ description: memo })
         .generatedForSelf()
         .withRecipientWallet(recipientWalletDescriptor)
@@ -103,6 +104,7 @@ export const addInvoiceNoAmountForSelf = async ({
       recipientWalletDescriptor,
     }: BuildWIBWithAmountFnArgs) =>
       walletInvoiceBuilder
+        .withExternalId()
         .withDescription({ description: memo })
         .generatedForSelf()
         .withRecipientWallet(recipientWalletDescriptor)
@@ -126,6 +128,7 @@ const addInvoiceForRecipient = async ({
       recipientWalletDescriptor,
     }: BuildWIBWithAmountFnArgs) =>
       walletInvoiceBuilder
+        .withExternalId()
         .withDescription({ description: memo, descriptionHash })
         .generatedForRecipient()
         .withRecipientWallet(recipientWalletDescriptor)
@@ -230,6 +233,7 @@ export const addInvoiceNoAmountForRecipient = async ({
       recipientWalletDescriptor,
     }: BuildWIBWithAmountFnArgs) =>
       walletInvoiceBuilder
+        .withExternalId()
         .withDescription({ description: memo })
         .generatedForRecipient()
         .withRecipientWallet(recipientWalletDescriptor)

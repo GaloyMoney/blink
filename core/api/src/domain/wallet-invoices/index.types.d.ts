@@ -26,6 +26,14 @@ type WalletInvoiceBuilderConfig = {
 }
 
 type WalletInvoiceBuilder = {
+  withExternalId: (externalId?: LedgerExternalId) => WIBWithExternalId
+}
+
+type WIBWithExternalIdState = WalletInvoiceBuilderConfig & {
+  externalId?: LedgerExternalId
+}
+
+type WIBWithExternalId = {
   withDescription: ({
     description,
     descriptionHash,
@@ -35,7 +43,7 @@ type WalletInvoiceBuilder = {
   }) => WIBWithDescription
 }
 
-type WIBWithDescriptionState = WalletInvoiceBuilderConfig & {
+type WIBWithDescriptionState = WIBWithExternalIdState & {
   description: string
   descriptionHash?: string
 }

@@ -13,6 +13,19 @@ import { toSeconds } from "@/domain/primitives"
 export const WalletInvoiceBuilder = (
   config: WalletInvoiceBuilderConfig,
 ): WalletInvoiceBuilder => {
+  const withExternalId = (externalId?: LedgerExternalId) => {
+    return WIBWithExternalId({
+      ...config,
+      externalId,
+    })
+  }
+
+  return {
+    withExternalId,
+  }
+}
+
+export const WIBWithExternalId = (state: WIBWithExternalIdState): WIBWithExternalId => {
   const withDescription = ({
     description,
     descriptionHash,
@@ -21,7 +34,7 @@ export const WalletInvoiceBuilder = (
     descriptionHash?: string
   }) => {
     return WIBWithDescription({
-      ...config,
+      ...state,
       description,
       descriptionHash,
     })
@@ -154,7 +167,7 @@ export const WIBWithAmount = (state: WIBWithAmountState): WIBWithAmount => {
       createdAt: new Date(),
       lnInvoice: registeredInvoice.invoice,
       processingCompleted: false,
-      externalId: undefined,
+      externalId: state.externalId,
     }
     return walletInvoice
   }
