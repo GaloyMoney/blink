@@ -1361,3 +1361,21 @@ def graphql_codegen(
         **kwargs,
     )
 
+def dev_update_paths_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
+    script = ctx.actions.write("update-paths.sh", """\
+#!/usr/bin/env bash
+set -euo pipefail
+
+rootpath="$(git rev-parse --show-toplevel)"
+package_path="$1"
+generated="$2"
+
+cd "$rootpath/$package_path"
+cp -r "${generated}"/* "."
+""", is_executable = True)
+    args = cmd_args(script, ctx.label.package, ctx.attrs.generated)
+    return [DefaultInfo(), RunInfo(args = args)]
+
+dev_update_paths = rule(impl = dev_update_paths_impl, attrs = {
+    "generated": attrs.source(),
+})

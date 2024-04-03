@@ -62,6 +62,17 @@ next_build_bin(
     name = "map",
 )
 
+export_file(
+  name = "codegen.yml",
+)
+
+graphql_codegen(
+  name = "codegen",
+  config = ":codegen.yml",
+  schemas = ["//core/api:public-sdl"],
+  srcs = [":src"]
+)
+
 dev_deps_srcs = {
     "lib/eslint-config": "//lib/eslint-config:src",
 }
