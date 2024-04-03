@@ -133,7 +133,7 @@ export default function Page({ params: { id } }: Params) {
     setFetchingFees(false)
   }, [data])
 
-  const handelGetFees = () => {
+  const handleGetFees = () => {
     if (btcWalletAddress) {
       setFetchingFees(true)
     } else {
@@ -265,7 +265,7 @@ export default function Page({ params: { id } }: Params) {
             style={{
               width: "90%",
             }}
-            onClick={handelGetFees}
+            onClick={handleGetFees}
             disabled={loading}
           >
             {loading ? "Loading..." : "Get Fees"}

@@ -58,7 +58,7 @@ export default function HomePage({
     return <PageLoadingComponent></PageLoadingComponent>
   }
 
-  const handelConfimLink = () => {
+  const handleConfirmLink = () => {
     if (Number(commissionAmountInDollars) < 0.01) {
       setAlerts(true)
       return
@@ -125,7 +125,7 @@ export default function HomePage({
         >
           Commission
         </Button>
-        <Button enabled={true} onClick={handelConfimLink}>
+        <Button enabled={true} onClick={handleConfirmLink}>
           Create link
         </Button>
       </div>

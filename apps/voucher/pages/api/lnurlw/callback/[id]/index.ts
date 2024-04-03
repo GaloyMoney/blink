@@ -13,7 +13,7 @@ export default async function handler(req: any, res: any) {
     const { k1, pr } = req.query
 
     try {
-      const withdrawLink = await getWithdrawLinkByK1Query(k1)
+      const withdrawLink = await getWithdrawLinkByK1Query({ k1 })
       if (!withdrawLink) {
         return res
           .status(404)

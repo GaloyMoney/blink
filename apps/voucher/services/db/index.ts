@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid"
 import { Knex } from "knex"
-
-import { knex } from "./connection"
+import knexConfig from "./connection"
+const knex = require("knex")(knexConfig)
 
 import { generateCode } from "@/utils/helpers"
 
@@ -66,18 +66,7 @@ export async function getAllWithdrawLinksQuery() {
     throw error
   }
 }
-export async function createWithdrawLinkMutation(input: {
-  id: string
-  userId: string
-  title: string
-  salesAmount: number
-  voucherAmount: number
-  accountType: string
-  escrowWallet: string
-  status: string
-  commissionPercentage: number
-  invoiceExpiration: string
-}) {
+export async function createWithdrawLinkMutation(input: any) {
   try {
     let identifierCode = generateCode(5)
     let exists = await knex("withdrawLinks").where({ identifierCode }).first()
@@ -96,8 +85,8 @@ export async function createWithdrawLinkMutation(input: {
     }
 
     const withdrawLink = {
-      id: input.id || uuidv4(),
       ...input,
+      id: uuidv4(),
       identifierCode,
       secretCode,
     }
@@ -106,32 +95,15 @@ export async function createWithdrawLinkMutation(input: {
       .insert(withdrawLink)
       .returning("*")
 
+    console.log(createdWithdrawLink)
+
     return createdWithdrawLink
   } catch (error) {
     throw error
   }
 }
 
-export async function updateWithdrawLinkMutation({
-  id,
-  input,
-}: {
-  id: string
-  input: {
-    paymentHash: string
-    userId: string
-    paymentRequest: string
-    paymentSecret: string
-    salesAmount: number
-    accountType: string
-    escrowWallet: string
-    title: string
-    voucherAmount: number
-    uniqueHash: string
-    k1: string
-    commissionPercentage: number
-  }
-}) {
+export async function updateWithdrawLinkMutation({ id, input }: any) {
   try {
     const [withdrawLink] = await knex("withdrawLinks")
       .where({ id })
@@ -220,7 +192,7 @@ export async function updateWithdrawLinkStatus({
   status: string
 }) {
   try {
-    return knex.transaction(async (trx) => {
+    return knex.transaction(async (trx: any) => {
       await trx("withdrawLinks").update({ status }).where({ id })
     })
   } catch (error) {

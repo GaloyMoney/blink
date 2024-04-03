@@ -14,7 +14,7 @@ interface Props {
 }
 
 const Numpad = ({ currentAmount, setCurrentAmount, unit }: Props) => {
-  const handelAmountChange = (digit: string) => {
+  const handleAmountChange = (digit: string) => {
     if (digit == "0" && currentAmount == "0") {
       return
     }
@@ -30,7 +30,7 @@ const Numpad = ({ currentAmount, setCurrentAmount, unit }: Props) => {
     setCurrentAmount(currentAmount + digit)
   }
 
-  const handelPercentageChange = (digit: string) => {
+  const handlePercentageChange = (digit: string) => {
     const newPercentage = currentAmount + digit
     if (newPercentage === "99.") {
       return
@@ -56,9 +56,9 @@ const Numpad = ({ currentAmount, setCurrentAmount, unit }: Props) => {
 
   const handleChange = (digit: string) => {
     if (unit === "PERCENTAGE") {
-      handelPercentageChange(digit)
+      handlePercentageChange(digit)
     } else {
-      handelAmountChange(digit)
+      handleAmountChange(digit)
     }
   }
 

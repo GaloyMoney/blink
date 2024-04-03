@@ -5,7 +5,7 @@ import { QRCode } from "react-qrcode-logo"
 import styles from "./LnurlPage.module.css"
 
 import { encodeURLToLNURL, formatSecretCode } from "@/utils/helpers"
-import PageLoadingComponet from "@/components/Loading/PageLoadingComponent"
+import PageLoadingComponents from "@/components/Loading/PageLoadingComponent"
 import { useGetWithdrawLinkQuery, Status } from "@/lib/graphql/generated"
 import { env } from "@/env"
 import Button from "@/components/Button/Button"
@@ -43,7 +43,7 @@ export default function Page({ params: { id } }: Params) {
   const WithdrawLink = data?.getWithdrawLink
 
   if (loading || !hasLoaded.current) {
-    return <PageLoadingComponet />
+    return <PageLoadingComponents />
   }
   if (error) {
     return <div>Error: {error.message}</div>
@@ -51,9 +51,12 @@ export default function Page({ params: { id } }: Params) {
   if (!WithdrawLink) {
     return <div>No data</div>
   }
+
+  console.log(`${NEXT_PUBLIC_LOCAL_URL}/api/lnurlw/${WithdrawLink?.uniqueHash}`)
   const lnurl = encodeURLToLNURL(
     `${NEXT_PUBLIC_LOCAL_URL}/api/lnurlw/${WithdrawLink?.uniqueHash}`,
   )
+
   const url = `${NEXT_PUBLIC_LOCAL_URL}/withdraw/${id}?lightning=${lnurl}`
   const copyToClipboard = () => {
     navigator.clipboard.writeText(lnurl)
@@ -68,7 +71,7 @@ export default function Page({ params: { id } }: Params) {
     }
   }
 
-  const handelPrint = () => {
+  const handlePrint = () => {
     setRevealLNURL(true)
     setTimeout(() => {
       window.print()
@@ -147,7 +150,7 @@ export default function Page({ params: { id } }: Params) {
             style={{
               width: "90%",
             }}
-            onClick={handelPrint}
+            onClick={handlePrint}
           >
             Print Voucher
           </Button>

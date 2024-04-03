@@ -20,17 +20,11 @@ import {
 } from "@/services/galoy"
 // import { CustomError, createCustomError } from "@/utils/errorHandler";
 // import { messageCode } from "@/utils/errorHandler";
-//TODO need to send and handel errors
+//TODO need to send and handle errors
 
 const resolvers = {
   Query: {
-    getWithdrawLink: async (args: {
-      id: string
-      uniqueHash: string
-      k1: string
-      paymentHash: string
-      secretCode: string
-    }) => {
+    getWithdrawLink: async (parent: any, args: any, context: any) => {
       const { id, uniqueHash, k1, paymentHash, secretCode } = args
       let data
       if (id) {
@@ -58,12 +52,7 @@ const resolvers = {
       }
       return data
     },
-    getWithdrawLinksByUserId: async (args: {
-      userId: string
-      status: string
-      limit: number
-      offset: number
-    }) => {
+    getWithdrawLinksByUserId: async (parent: any, args: any, context: any) => {
       const { userId, status, limit, offset } = args
       if (!userId) {
         throw new Error("userId is not provided")
@@ -74,7 +63,7 @@ const resolvers = {
       }
       return data
     },
-    getOnChainPaymentFees: async (args: { id: string; btc_wallet_address: string }) => {
+    getOnChainPaymentFees: async (parent: any, args: any, context: any) => {
       const { id, btc_wallet_address } = args
       const data = await getWithdrawLinkByIdQuery({ id })
       const { escrowWallet, accountType, voucherAmount: amount } = data
@@ -98,22 +87,7 @@ const resolvers = {
   },
 
   Mutation: {
-    createWithdrawLink: async (args: {
-      input: {
-        paymentHash: string
-        userId: string
-        paymentRequest: string
-        paymentSecret: string
-        salesAmount: number
-        accountType: string
-        escrowWallet: string
-        title: string
-        voucherAmount: number
-        uniqueHash: string
-        k1: string
-        commissionPercentage: number
-      }
-    }) => {
+    createWithdrawLink: async (parent: any, args: any, context: any) => {
       const { input } = args
       const data = await createWithdrawLinkMutation({
         ...input,
@@ -121,25 +95,11 @@ const resolvers = {
       if (data instanceof Error) {
         throw new Error("Internal server error")
       }
+      console.log("input", data)
+
       return data
     },
-    updateWithdrawLink: async (args: {
-      id: string
-      input: {
-        paymentHash: string
-        userId: string
-        paymentRequest: string
-        paymentSecret: string
-        salesAmount: number
-        accountType: string
-        escrowWallet: string
-        title: string
-        voucherAmount: number
-        uniqueHash: string
-        k1: string
-        commissionPercentage: number
-      }
-    }) => {
+    updateWithdrawLink: async (parent: any, args: any, context: any) => {
       const { id, input } = args
       if (!id) {
         throw new Error("id is not provided")
@@ -150,7 +110,7 @@ const resolvers = {
       }
       return data
     },
-    deleteWithdrawLink: async (args: { id: string }) => {
+    deleteWithdrawLink: async (parent: any, args: any, context: any) => {
       const { id } = args
       if (!id) {
         throw new Error("id is not provided")
@@ -161,7 +121,7 @@ const resolvers = {
       }
       return data
     },
-    sendPaymentOnChain: async (args: { id: string; btc_wallet_address: string }) => {
+    sendPaymentOnChain: async (parent: any, args: any, context: any) => {
       const { id, btc_wallet_address } = args
       const data = await getWithdrawLinkByIdQuery({ id })
       const { escrowWallet, accountType, voucherAmount: amount, title, status } = data

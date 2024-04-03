@@ -3,7 +3,7 @@ import Link from "next/link"
 
 import Button from "@/components/Button/Button"
 // path : /
-//TODO home page or welcome screen needed to be created gere
+//TODO home page or welcome screen needed to be created here
 export default function Home() {
   return (
     <div className="flex flex-col mt-36 items-center text-center">

@@ -217,7 +217,6 @@ if is_ci:
   voucher_target = '//apps/voucher:voucher'
 voucher_env = {
     "PORT": "3006",
-    "CORE_URL" : "http://localhost:4455/graphql",
 }
 local_resource(
     "voucher",

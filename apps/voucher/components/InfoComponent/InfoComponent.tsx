@@ -9,7 +9,7 @@ interface Props {
 
 const InfoComponent = ({ children }: Props) => {
   return (
-    <div className={styles.buttom_info}>
+    <div className={styles.bottom_info}>
       <InfoIcon style={{ fontSize: 25, color: "#2f2f2f" }} />
       {children}
     </div>

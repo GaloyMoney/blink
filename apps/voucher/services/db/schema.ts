@@ -1,7 +1,7 @@
 import { Knex } from "knex"
 
 export default async function createTables(knex: Knex): Promise<void> {
-  const withdrawLinksTableExist = await knex.schema.hasTable("WithdrawLinks")
+  const withdrawLinksTableExist = await knex.schema.hasTable("withdrawLinks")
 
   if (withdrawLinksTableExist) {
     console.log("Applicant table already exists, skipping table creation.")

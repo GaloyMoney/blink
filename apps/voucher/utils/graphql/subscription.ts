@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client"
 
-export const LN_INVOCE_PAYMENT_STATUS = gql`
+export const LN_INVOICE_PAYMENT_STATUS = gql`
   subscription LnInvoicePaymentStatus($paymentRequest: LnPaymentRequest!) {
     lnInvoicePaymentStatus(input: { paymentRequest: $paymentRequest }) {
       status

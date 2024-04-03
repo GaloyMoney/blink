@@ -57,11 +57,11 @@ describe("Create Voucher", () => {
     try {
       await browser.url("/create")
 
-      const change_commision = await $(
+      const change_commission = await $(
         "body > div.top_page_container > div.CreateLink_commission_and_submit_buttons__ydXyN > button.Button_Button__VQ4Ej.undefined",
       )
 
-      await change_commision.click()
+      await change_commission.click()
       const percentage = await $(
         "body > div.top_page_container > div.NumPad_numpad__yb7Im > div > button:nth-child(1)",
       )
@@ -72,16 +72,14 @@ describe("Create Voucher", () => {
       )
       await set_commission.click()
 
-      const setted_commission = await $(
-        "body > div.top_page_container > div:nth-child(4)",
-      )
-      const setted_commission_text = await setted_commission.getText()
-      expect(setted_commission_text).toEqual("1% commission")
+      // const set_commission = await $("body > div.top_page_container > div:nth-child(4)")
+      const set_commission_text = await set_commission.getText()
+      expect(set_commission_text).toEqual("1% commission")
 
-      const change_curreny = await $("#currency")
-      await change_curreny.click()
-      const set_curreny = await $("#currency > option:nth-child(1)")
-      await set_curreny.click()
+      const change_currency = await $("#currency")
+      await change_currency.click()
+      const set_currency = await $("#currency > option:nth-child(1)")
+      await set_currency.click()
 
       await createPage.clickCreateButton()
 
