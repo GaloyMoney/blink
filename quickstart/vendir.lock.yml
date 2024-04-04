@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(notifications): remove allow_parallel from notifications'
-      sha: 7bec1cb79da9d62b8e5991254dd9cf77489e92f5
+      commitTitle: 'fix(core): add missing notifications category (#4263)'
+      sha: 541a9eb69a865c207ddcd64bb995c6c5daa16e88
       tags:
-      - 0.20.137-17-g7bec1cb79
+      - 0.20.137-19-g541a9eb69
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(notifications): remove allow_parallel from notifications'
-      sha: 7bec1cb79da9d62b8e5991254dd9cf77489e92f5
+      commitTitle: 'fix(core): add missing notifications category (#4263)'
+      sha: 541a9eb69a865c207ddcd64bb995c6c5daa16e88
       tags:
-      - 0.20.137-17-g7bec1cb79
+      - 0.20.137-19-g541a9eb69
     path: schemas/
   - git:
-      commitTitle: 'test(notifications): remove allow_parallel from notifications'
-      sha: 7bec1cb79da9d62b8e5991254dd9cf77489e92f5
+      commitTitle: 'fix(core): add missing notifications category (#4263)'
+      sha: 541a9eb69a865c207ddcd64bb995c6c5daa16e88
       tags:
-      - 0.20.137-17-g7bec1cb79
+      - 0.20.137-19-g541a9eb69
     path: gql/
   path: ./graphql
 kind: LockConfig
