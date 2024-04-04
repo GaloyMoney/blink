@@ -50,6 +50,8 @@ export const grpcNotificationCategoryToNotificationCategory = (
       return NotificationCategory.Price
     case GrpcNotificationCategory.CIRCLES:
       return NotificationCategory.Circles
+    case GrpcNotificationCategory.MARKETING:
+      return NotificationCategory.Marketing
     case GrpcNotificationCategory.ADMIN_NOTIFICATION:
       return NotificationCategory.AdminNotification
     default:
