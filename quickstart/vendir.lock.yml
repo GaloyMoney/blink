@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(core): move notification steps out of payment send locks
-        (#4232)...'
-      sha: 86c781063197f3e45d27daa619922e4faf024f48
+      commitTitle: 'test(notifications): remove allow_parallel from notifications'
+      sha: 7bec1cb79da9d62b8e5991254dd9cf77489e92f5
       tags:
-      - 0.20.137-14-g86c781063
+      - 0.20.137-17-g7bec1cb79
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(core): move notification steps out of payment send locks
-        (#4232)...'
-      sha: 86c781063197f3e45d27daa619922e4faf024f48
+      commitTitle: 'test(notifications): remove allow_parallel from notifications'
+      sha: 7bec1cb79da9d62b8e5991254dd9cf77489e92f5
       tags:
-      - 0.20.137-14-g86c781063
+      - 0.20.137-17-g7bec1cb79
     path: schemas/
   - git:
-      commitTitle: 'refactor(core): move notification steps out of payment send locks
-        (#4232)...'
-      sha: 86c781063197f3e45d27daa619922e4faf024f48
+      commitTitle: 'test(notifications): remove allow_parallel from notifications'
+      sha: 7bec1cb79da9d62b8e5991254dd9cf77489e92f5
       tags:
-      - 0.20.137-14-g86c781063
+      - 0.20.137-17-g7bec1cb79
     path: gql/
   path: ./graphql
 kind: LockConfig

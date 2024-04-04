@@ -547,7 +547,6 @@ local_resource(
       "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
     },
     deps = _buck2_dep_inputs(notifications_target),
-    allow_parallel = True,
     resource_deps = [
        "notifications-pg"
     ]
