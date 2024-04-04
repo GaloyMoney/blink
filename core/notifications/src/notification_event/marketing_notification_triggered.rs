@@ -37,4 +37,12 @@ impl NotificationEvent for MarketingNotificationTriggered {
     fn should_send_email(&self) -> bool {
         false
     }
+
+    fn should_send_in_app_msg(&self) -> bool {
+        false
+    }
+
+    fn to_localized_in_app_msg(&self, _locale: GaloyLocale) -> Option<LocalizedInAppMessage> {
+        None
+    }
 }
