@@ -1,3 +1,4 @@
+"use client"
 import { useRef, useState } from "react"
 import Link from "next/link"
 import AddIcon from "@mui/icons-material/Add"
@@ -33,7 +34,6 @@ const Navbar: React.FC<NavigationProps> = ({ nav_items }) => {
   }
 
   const login = true // Replace with your login logic
-
   const navLinks = login ? nav_items.logged_in : nav_items.logged_out
   const defaultLinks = nav_items.default
 

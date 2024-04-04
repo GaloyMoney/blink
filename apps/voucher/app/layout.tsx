@@ -1,4 +1,3 @@
-"use client"
 import "./globals.css"
 import { Inter_Tight } from "next/font/google"
 
