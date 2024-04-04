@@ -6,50 +6,60 @@ circle_time_frame.all_time: ""
 circle_type.inner: "círculo interno "
 circle_type.outer: "círculo externo"
 
-circle_grew.title: "Tus círculos blink están creciendo"
+circle_grew.title: "Tus círculos Blink están creciendo"
 circle_grew.body: "Alguien acaba de ser agregado a tu %{circle_type}."
 
 circle_threshold_reached.inner.title: "¡Muy buen círculo interno! \U0001F919"
 circle_threshold_reached.inner.body: "Has dado la bienvenida a %{threshold} personas a Blink%{time_frame}. ¡Sigue así!"
 
-circle_threshold_reached.outer.title: "Ganancias del círculo externo \U0001F4AA"
+circle_threshold_reached.outer.title: "Gains del círculo externo \U0001F4AA"
 circle_threshold_reached.outer.body: "Tu Círculo Externo alcanzó a %{threshold} personas. ¡Estás impulsando la adopción de Bitcoin!"
 
-identity_verification_approved.title: "¡Tu identidad ha sido verificada!"
-identity_verification_approved.body: "Tus documentos documentos para verificación han sido procesados."
+identity_verification_approved.title: "Tu identidad ha sido verificada!  "
+identity_verification_approved.body: "Los documentos para tu verificación han sido procesados."
 
 identity_verification_declined.reason.documents_not_clear: "los documentos cargados no estaban claros"
 identity_verification_declined.reason.photo_not_clear: "La imagen que enviaste no estaba clara."
-identity_verification_declined.title: "¡No se pudo verificar tu identidad!"
+identity_verification_declined.reason.documents_do_not_match: "los documentos que enviaste no coinciden con tu selfie y/o la información que proporcionaste"
+identity_verification_declined.reason.documents_expired: "los documentos que enviaste estan caducados"
+identity_verification_declined.reason.documents_not_supported: "los documentos que enviaste no estan aceptados"
+identity_verification_declined.reason.other: "se produjo un error, por favor póngase en contacto con el soporte"
+identity_verification_declined.title: "No se ha podido verificar su identidad!"
 identity_verification_declined.body: "No pudimos procesar sus documentos debido a %{reason}."
 
-identity_verification_review_started.title: "¡Tu verificación está en proceso!"
-identity_verification_review_started.body: "Hemos recibido tus documentos y los estamos procesando."
+identity_verification_review_started.title: "Su verificación está en proceso!"
+identity_verification_review_started.body: "Hemos recibido sus documentos y los estamos procesando."
 
-transaction.intra_ledger_payment.title: "Transacción %{walletCurrency}"
-transaction.intra_ledger_payment.body: "Pago enviado por %{formattedCurrencyAmount}"
-transaction.intra_ledger_payment.body_display_currency: "Pago enviado por %{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.intra_ledger_payment.title: "%{walletCurrency} Transacción"
+transaction.intra_ledger_payment.body: "Enviado pago de %{formattedCurrencyAmount}"
+transaction.intra_ledger_payment.body_display_currency: "Enviado pago de %{displayCurrencyAmount}  | %{formattedCurrencyAmount}"
 
-transaction.intra_ledger_receipt.title: "Transacción %{walletCurrency}"
+transaction.intra_ledger_receipt.title: "%{walletCurrency} Transacción"
 transaction.intra_ledger_receipt.body: "+%{formattedCurrencyAmount}"
 transaction.intra_ledger_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
 
-transaction.lightning_receipt.title: "Transacción %{walletCurrency}"
-transaction.lightning_receipt.body: "+%{formattedCurrencyAmount}"
-transaction.lightning_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_payment.title: "%{walletCurrency} Transacción"
+transaction.onchain_payment.body_display_currency: "Pago en cadena enviado %{displayCurrencyAmount} | %{formattedCurrencyAmount} confirmado"
+transaction.onchain_payment.body: "Pago enviado en cadena de %{formattedCurrencyAmount} confirmado"
 
-transaction.onchain_payment.title: "Transacción %{walletCurrency}"
-transaction.onchain_payment.body: "Pago onchain por %{formattedCurrencyAmount} confirmado"
-transaction.onchain_payment.body_display_currency: "Pago onchain por %{displayCurrencyAmount} | %{formattedCurrencyAmount} confirmado"
-
-transaction.onchain_receipt.title: "Transacción %{walletCurrency}"
-transaction.onchain_receipt.body: "+%{formattedCurrencyAmount}"
+transaction.onchain_receipt.title: "%{walletCurrency} Transacción"
 transaction.onchain_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt.body: "+%{formattedCurrencyAmount}"
 
-transaction.onchain_receipt_pending.title: "Transacción %{walletCurrency} | Pendiente por confirmar"
-transaction.onchain_receipt_pending.body: "pendiente +%{formattedCurrencyAmount}"
+transaction.lightning_receipt.title: "%{walletCurrency} Transacción"
+transaction.lightning_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.lightning_receipt.body: "+%{formattedCurrencyAmount}"
+
+transaction.onchain_receipt_pending.title: "%{walletCurrency} Transacción | Pendiente"
 transaction.onchain_receipt_pending.body_display_currency: "pendiente +%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt_pending.body: "pendiente +%{formattedCurrencyAmount}"
 
-transaction.paid_invoice.title: "Transacción %{walletCurrency}"
+transaction.paid_invoice.title: "%{walletCurrency} Transacción"
 transaction.paid_invoice.body: "+%{formattedCurrencyAmount}"
 transaction.paid_invoice.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+price_changed.title: "Bitcoin está en movimento!"
+price_changed.body: "Bitcoin ha augmentado %{percent_increase}% en el ultimo dia %{price}!"
+
+security.link_email_reminder.title: "Vincular correo electrónico a una cuenta segura"
+security.link_email_reminder.body: "Vincula tu correo electrónico para proteger tu cuenta y recibir actualizaciones importantes"
