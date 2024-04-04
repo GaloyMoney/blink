@@ -398,6 +398,10 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = "Unsupported operation for wallet's currency."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "DuplicateLedgerExternalIdError":
+      message = `External id for invoice or transaction already exists`
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "InsufficientBalanceError":
       message = error.message
       return new InsufficientBalanceError({ message, logger: baseLogger })
@@ -554,7 +558,6 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "AuthorizationError":
     case "RepositoryError":
     case "PersistError":
-    case "DuplicateError":
     case "CouldNotFindError":
     case "CouldNotUpdateError":
     case "ValidationError":

@@ -7,6 +7,7 @@ import { safeBigInt } from "@/domain/shared/safe"
 
 export * from "./errors"
 export * from "./activity-checker"
+export * from "./generators"
 export * from "./validation"
 
 export const liabilitiesMainAccount = "Liabilities"

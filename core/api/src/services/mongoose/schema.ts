@@ -10,6 +10,7 @@ import { WalletCurrency } from "@/domain/shared"
 import { Languages } from "@/domain/users"
 
 import { CarrierType } from "@/domain/phone-provider"
+import { checkedToLedgerExternalId } from "@/domain/ledger"
 
 // TODO migration:
 // rename InvoiceUser collection to walletInvoice
@@ -89,6 +90,8 @@ const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
 
   externalId: {
     type: String,
+    unique: true,
+    validator: (v: string) => !(checkedToLedgerExternalId(v) instanceof Error),
   },
 })
 

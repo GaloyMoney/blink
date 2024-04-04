@@ -12,7 +12,7 @@ const goodWalletInvoice: WalletInvoiceWithOptionalLnInvoice = {
   paid: false,
   createdAt: new Date(Date.now()),
   processingCompleted: false,
-  externalId: undefined,
+  externalId: "externalId" as LedgerExternalId,
 }
 
 describe("WalletInvoiceChecker", () => {

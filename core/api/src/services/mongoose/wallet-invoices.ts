@@ -278,7 +278,7 @@ const walletInvoiceFromRaw = (
     usdAmount: result.cents ? UsdPaymentAmount(BigInt(result.cents)) : undefined,
     createdAt: new Date(result.timestamp.getTime()),
     processingCompleted: result.processingCompleted,
-    externalId: (result.externalId as LedgerExternalId) || undefined,
+    externalId: result.externalId as LedgerExternalId,
     lnInvoice,
   }
 }

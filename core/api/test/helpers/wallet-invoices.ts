@@ -1,10 +1,14 @@
 import { decodeInvoice, getSecretAndPaymentHash } from "@/domain/bitcoin/lightning"
+import { randomLedgerExternalId } from "@/domain/ledger"
 import { WalletCurrency } from "@/domain/shared"
 
 export const createMockWalletInvoice = (recipientWalletDescriptor: {
   currency: WalletCurrency
   id: WalletId
 }): WalletInvoice => {
+  const externalId = randomLedgerExternalId()
+  if (externalId instanceof Error) throw externalId
+
   return {
     ...getSecretAndPaymentHash(),
     selfGenerated: false,
@@ -20,6 +24,6 @@ export const createMockWalletInvoice = (recipientWalletDescriptor: {
     ) as LnInvoice, // Use a real invoice to test decoding
     createdAt: new Date(),
     processingCompleted: false,
-    externalId: undefined,
+    externalId,
   }
 }

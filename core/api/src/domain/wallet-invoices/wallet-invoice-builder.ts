@@ -13,7 +13,7 @@ import { toSeconds } from "@/domain/primitives"
 export const WalletInvoiceBuilder = (
   config: WalletInvoiceBuilderConfig,
 ): WalletInvoiceBuilder => {
-  const withExternalId = (externalId?: LedgerExternalId) => {
+  const withExternalId = (externalId: LedgerExternalId) => {
     return WIBWithExternalId({
       ...config,
       externalId,

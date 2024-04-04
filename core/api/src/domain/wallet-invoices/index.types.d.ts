@@ -26,11 +26,11 @@ type WalletInvoiceBuilderConfig = {
 }
 
 type WalletInvoiceBuilder = {
-  withExternalId: (externalId?: LedgerExternalId) => WIBWithExternalId
+  withExternalId: (externalId: LedgerExternalId) => WIBWithExternalId
 }
 
 type WIBWithExternalIdState = WalletInvoiceBuilderConfig & {
-  externalId?: LedgerExternalId
+  externalId: LedgerExternalId
 }
 
 type WIBWithExternalId = {
@@ -102,7 +102,7 @@ type WalletInvoiceWithOptionalLnInvoice = {
   paid: boolean
   createdAt: Date
   processingCompleted: boolean
-  externalId: LedgerExternalId | undefined
+  externalId: LedgerExternalId
   lnInvoice?: LnInvoice // LnInvoice is optional because some older invoices don't have it
 }
 
