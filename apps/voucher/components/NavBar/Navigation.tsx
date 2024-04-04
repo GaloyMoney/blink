@@ -10,11 +10,7 @@ const Navigation = () => {
       { name: "Logout", link: "/#" },
     ],
     logged_out: [{ name: "Login", link: "/#" }],
-    default: [
-      { name: "About", link: "/#" },
-      { name: "How it works", link: "/#" },
-      { name: "Help", link: "/#" },
-    ],
+    default: [],
   }
 
   return (
