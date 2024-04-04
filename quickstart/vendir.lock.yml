@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): fix warning in spell check  (#4259)...'
-      sha: a00fffb1e1fc5f09e935b058a89a510cf9a8cd45
+      commitTitle: 'refactor(core): move notification steps out of payment send locks
+        (#4232)...'
+      sha: 86c781063197f3e45d27daa619922e4faf024f48
       tags:
-      - 0.20.137-12-ga00fffb1e
+      - 0.20.137-14-g86c781063
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): fix warning in spell check  (#4259)...'
-      sha: a00fffb1e1fc5f09e935b058a89a510cf9a8cd45
+      commitTitle: 'refactor(core): move notification steps out of payment send locks
+        (#4232)...'
+      sha: 86c781063197f3e45d27daa619922e4faf024f48
       tags:
-      - 0.20.137-12-ga00fffb1e
+      - 0.20.137-14-g86c781063
     path: schemas/
   - git:
-      commitTitle: 'chore(core): fix warning in spell check  (#4259)...'
-      sha: a00fffb1e1fc5f09e935b058a89a510cf9a8cd45
+      commitTitle: 'refactor(core): move notification steps out of payment send locks
+        (#4232)...'
+      sha: 86c781063197f3e45d27daa619922e4faf024f48
       tags:
-      - 0.20.137-12-ga00fffb1e
+      - 0.20.137-14-g86c781063
     path: gql/
   path: ./graphql
 kind: LockConfig
