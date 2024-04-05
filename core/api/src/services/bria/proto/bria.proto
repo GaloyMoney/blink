@@ -1,0 +1,575 @@
+syntax = "proto3";
+
+import "google/protobuf/struct.proto";
+
+package services.bria.v1;
+
+option go_package = "github.com/GaloyMoney/terraform-provider-bria/client/proto/briav1";
+
+service BriaService {
+  rpc CreateProfile (CreateProfileRequest) returns (CreateProfileResponse) {}
+  rpc ListProfiles (ListProfilesRequest) returns (ListProfilesResponse) {}
+  rpc CreateProfileApiKey (CreateProfileApiKeyRequest) returns (CreateProfileApiKeyResponse) {}
+
+  rpc ImportXpub (ImportXpubRequest) returns (ImportXpubResponse) {}
+  rpc ListXpubs (ListXpubsRequest) returns(ListXpubsResponse) {}
+  rpc SetSignerConfig (SetSignerConfigRequest) returns (SetSignerConfigResponse) {}
+
+  rpc SubmitSignedPsbt (SubmitSignedPsbtRequest) returns (SubmitSignedPsbtResponse) {}
+
+  rpc CreateWallet (CreateWalletRequest) returns (CreateWalletResponse) {}
+  rpc ListWallets (ListWalletsRequest) returns (ListWalletsResponse) {}
+  rpc GetWalletBalanceSummary (GetWalletBalanceSummaryRequest) returns (GetWalletBalanceSummaryResponse) {}
+
+  rpc NewAddress (NewAddressRequest) returns (NewAddressResponse) {}
+  rpc UpdateAddress (UpdateAddressRequest) returns (UpdateAddressResponse) {}
+  rpc ListAddresses (ListAddressesRequest) returns (ListAddressesResponse) {}
+  rpc GetAddress (GetAddressRequest) returns (GetAddressResponse) {}
+
+  rpc ListUtxos (ListUtxosRequest) returns (ListUtxosResponse) {}
+
+  rpc CreatePayoutQueue (CreatePayoutQueueRequest) returns (CreatePayoutQueueResponse) {}
+  rpc ListPayoutQueues (ListPayoutQueuesRequest) returns (ListPayoutQueuesResponse) {}
+  rpc UpdatePayoutQueue (UpdatePayoutQueueRequest) returns (UpdatePayoutQueueResponse) {}
+  rpc TriggerPayoutQueue (TriggerPayoutQueueRequest) returns (TriggerPayoutQueueResponse) {}
+
+  rpc EstimatePayoutFee (EstimatePayoutFeeRequest) returns (EstimatePayoutFeeResponse) {}
+  rpc SubmitPayout (SubmitPayoutRequest) returns (SubmitPayoutResponse) {}
+  rpc ListPayouts (ListPayoutsRequest) returns (ListPayoutsResponse) {}
+  rpc GetPayout (GetPayoutRequest) returns (GetPayoutResponse) {}
+  rpc CancelPayout(CancelPayoutRequest) returns (CancelPayoutResponse) {}
+
+  rpc GetBatch (GetBatchRequest) returns (GetBatchResponse) {}
+
+  rpc GetAccountBalanceSummary (GetAccountBalanceSummaryRequest) returns (GetAccountBalanceSummaryResponse) {}
+
+  rpc SubscribeAll (SubscribeAllRequest) returns (stream BriaEvent) {}
+}
+
+message CreateProfileRequest {
+  string name = 1;
+  optional SpendingPolicy spending_policy = 2;
+}
+
+message SpendingPolicy {
+  repeated string allowed_payout_addresses = 1;
+}
+
+message CreateProfileResponse {
+  string id = 1;
+}
+
+message CreateProfileApiKeyRequest {
+  string profile_name = 1;
+}
+
+message CreateProfileApiKeyResponse {
+  string id = 1;
+  string key = 2;
+}
+
+message ListProfilesRequest {}
+
+message Profile {
+  string id = 1;
+  string name = 2;
+  SpendingPolicy spending_policy = 3;
+}
+
+message ListProfilesResponse {
+  repeated Profile profiles = 1;
+}
+
+message ImportXpubRequest {
+  string name = 1;
+  string xpub = 2;
+  string derivation = 3;
+}
+
+message ImportXpubResponse {
+  string id = 1;
+}
+
+message SetSignerConfigRequest {
+  string xpub_ref = 1;
+  oneof config {
+    LndSignerConfig lnd = 2;
+    BitcoindSignerConfig bitcoind = 3;
+  }
+}
+
+message LndSignerConfig {
+  string endpoint = 1;
+  string cert_base64 = 2;
+  string macaroon_base64 = 3;
+}
+
+message BitcoindSignerConfig {
+  string endpoint = 1;
+  string rpc_user = 2;
+  string rpc_password = 3;
+}
+
+message SetSignerConfigResponse {}
+
+message SubmitSignedPsbtRequest {
+  string batch_id = 1;
+  string xpub_ref = 2;
+  string signed_psbt = 3;
+}
+
+message SubmitSignedPsbtResponse {}
+
+message KeychainConfig {
+    message Wpkh {
+        string xpub = 1;
+        optional string derivation_path = 2;
+    }
+    message Descriptors {
+        string external = 1;
+        string internal = 2;
+    }
+    message SortedMultisig {
+        repeated string xpubs = 1;
+        uint32 threshold = 2;
+    }
+    oneof config {
+        Wpkh wpkh = 1;
+        Descriptors descriptors = 2;
+        SortedMultisig sorted_multisig = 3;
+    }
+}
+
+message CreateWalletRequest {
+  string name = 1;
+  KeychainConfig keychain_config = 2;
+}
+
+message CreateWalletResponse {
+  string id = 1;
+  repeated string xpub_ids = 2;
+}
+
+message ListWalletsRequest {}
+
+message ListWalletsResponse {
+  repeated Wallet wallets = 1;
+}
+
+message Wallet {
+  string id = 1;
+  string name = 2;
+  WalletConfig config = 3;
+}
+
+message WalletConfig {
+  uint32 settle_income_after_n_confs = 1;
+  uint32 settle_change_after_n_confs = 2;
+}
+
+message NewAddressRequest {
+  string wallet_name = 1;
+  optional string external_id = 2;
+  optional google.protobuf.Struct metadata = 3;
+}
+
+message NewAddressResponse {
+  string address = 1;
+}
+
+message UpdateAddressRequest {
+  string address = 2;
+  optional string new_external_id = 3;
+  optional google.protobuf.Struct new_metadata = 4;
+}
+
+message UpdateAddressResponse { }
+
+message ListAddressesRequest {
+  string wallet_name = 1;
+}
+
+message ListAddressesResponse {
+  string wallet_id = 1;
+  repeated WalletAddress addresses = 2;
+}
+
+message WalletAddress {
+  string address = 1;
+  string external_id = 2;
+  optional google.protobuf.Struct metadata = 3;
+}
+
+message GetAddressRequest {
+  oneof identifier {
+    string address = 1;
+    string external_id = 2;
+  }
+}
+
+message GetAddressResponse{
+  optional string address = 1;
+  string wallet_id = 2;
+  bool change_address = 3;
+  optional string external_id = 4;
+  optional google.protobuf.Struct metadata = 5;
+}
+
+message ListUtxosRequest {
+  string wallet_name = 1;
+}
+
+message Utxo {
+  string outpoint = 1;
+  uint32 address_idx = 2;
+  uint64 value = 3;
+  optional string address = 4;
+  bool change_output = 5;
+  optional uint32 block_height = 6;
+}
+
+message KeychainUtxos {
+  string keychain_id = 1;
+  repeated Utxo utxos = 2;
+}
+
+enum KeychainKind {
+  INTERNAL = 0;
+  EXTERNAL = 1;
+}
+
+message ListUtxosResponse {
+  string wallet_id = 1;
+  repeated KeychainUtxos keychains = 2;
+}
+
+
+message GetWalletBalanceSummaryRequest {
+  string wallet_name = 1;
+}
+
+message GetWalletBalanceSummaryResponse {
+  uint64 effective_pending_income = 1;
+  uint64 effective_settled = 2;
+  uint64 effective_pending_outgoing = 3;
+  uint64 effective_encumbered_outgoing = 4;
+  uint64 utxo_encumbered_incoming = 5;
+  uint64 utxo_pending_incoming = 6;
+  uint64 utxo_settled = 7;
+  uint64 utxo_pending_outgoing = 8;
+  uint64 fees_pending = 9;
+  uint64 fees_encumbered = 10;
+}
+
+message GetAccountBalanceSummaryRequest {}
+
+message GetAccountBalanceSummaryResponse {
+  uint64 effective_pending_income = 1;
+  uint64 effective_settled = 2;
+  uint64 effective_pending_outgoing = 3;
+  uint64 effective_encumbered_outgoing = 4;
+  uint64 utxo_encumbered_incoming = 5;
+  uint64 utxo_pending_incoming = 6;
+  uint64 utxo_settled = 7;
+  uint64 utxo_pending_outgoing = 8;
+  uint64 fees_pending = 9;
+  uint64 fees_encumbered = 10;
+}
+
+message CreatePayoutQueueRequest {
+  string name = 1;
+  optional string description = 2;
+  PayoutQueueConfig config = 3;
+}
+
+message PayoutQueueConfig {
+  TxPriority tx_priority = 1;
+  bool consolidate_deprecated_keychains = 2;
+  oneof trigger {
+    bool manual = 4;
+    uint32 interval_secs = 5;
+  }
+  optional uint32 cpfp_payouts_after_mins = 6;
+  optional uint32 cpfp_payouts_after_blocks = 7;
+  optional uint64 force_min_change_sats = 8;
+}
+
+enum TxPriority {
+  NEXT_BLOCK = 0;
+  HALF_HOUR = 1;
+  ONE_HOUR = 2;
+}
+
+message CreatePayoutQueueResponse {
+  string id = 1;
+}
+
+message TriggerPayoutQueueRequest {
+  string name = 1;
+}
+
+message TriggerPayoutQueueResponse {}
+
+message PayoutQueue {
+  string id = 1;
+  string name = 2;
+  optional string description = 3;
+  PayoutQueueConfig config = 4;
+}
+
+message ListPayoutQueuesResponse {
+  repeated PayoutQueue payout_queues = 1;
+}
+
+message ListPayoutQueuesRequest {}
+
+message UpdatePayoutQueueRequest{
+  string id = 1;
+  optional string new_description = 2;
+  optional PayoutQueueConfig new_config = 3;
+}
+
+message UpdatePayoutQueueResponse{}
+
+message EstimatePayoutFeeRequest {
+  string wallet_name = 1;
+  string payout_queue_name = 2;
+  oneof destination {
+    string onchain_address = 3;
+    string destination_wallet_name = 5;
+  };
+  uint64 satoshis = 4;
+}
+
+message EstimatePayoutFeeResponse {
+  uint64 satoshis = 1;
+}
+
+message SubmitPayoutRequest {
+  string wallet_name = 1;
+  string payout_queue_name = 2;
+  oneof destination {
+    string onchain_address = 3;
+    string destination_wallet_name = 7;
+  };
+  uint64 satoshis = 4;
+  optional string external_id = 5;
+  optional google.protobuf.Struct metadata = 6;
+}
+
+message SubmitPayoutResponse {
+  string id = 1;
+  optional uint32 batch_inclusion_estimated_at = 2;
+}
+
+message ListPayoutsRequest {
+  string wallet_name = 1;
+}
+
+message BriaWalletDestination {
+  string wallet_id = 1;
+  string address = 2;
+}
+
+message Payout {
+  string id = 1;
+  string wallet_id = 2;
+  string payout_queue_id = 3;
+  optional string batch_id = 4;
+  uint64 satoshis = 5;
+  oneof destination {
+    string onchain_address = 6;
+    BriaWalletDestination wallet = 10;
+  }
+  bool cancelled = 9;
+  string external_id = 7;
+  optional google.protobuf.Struct metadata = 8;
+  optional uint32 batch_inclusion_estimated_at = 11;
+}
+
+message ListPayoutsResponse {
+  repeated Payout payouts = 1;
+}
+
+message GetPayoutRequest {
+  oneof identifier {
+    string id = 1;
+    string external_id = 2;
+  }
+}
+
+message GetPayoutResponse {
+  Payout payout = 1;
+}
+
+message CancelPayoutRequest {
+  string id = 1;
+}
+
+message CancelPayoutResponse {}
+
+message GetBatchRequest {
+  string id = 1;
+}
+
+message GetBatchResponse {
+  string id = 1;
+  string payout_queue_id = 2;
+  string tx_id = 3;
+  string unsigned_psbt = 4;
+  repeated BatchWalletSummary wallet_summaries = 5;
+  repeated SigningSession signing_sessions = 6;
+}
+
+message BatchWalletSummary {
+  string wallet_id = 1;
+  uint64 total_spent_sats = 2;
+  uint64 fee_sats = 3;
+  repeated PayoutSummary payouts = 4;
+}
+
+message PayoutSummary {
+  string id = 1;
+  uint64 satoshis = 2;
+  oneof destination {
+    string onchain_address = 3;
+    BriaWalletDestination wallet = 4;
+  }
+}
+
+message SigningSession {
+  string id = 1;
+  string batch_id = 2;
+  string xpub_id = 3;
+  string state = 4;
+  optional string failure_reason = 5;
+}
+message ListXpubsRequest {}
+
+message ListXpubsResponse {
+  repeated Xpub xpubs = 1;
+}
+
+message Xpub{
+  string id = 4;
+  string name = 1;
+  string xpub = 2;
+  optional string derivation_path = 3;
+  bool has_signer_config = 5;
+}
+
+message SubscribeAllRequest {
+  optional uint64 after_sequence = 1;
+  optional bool augment = 2;
+}
+
+message BriaEvent {
+  uint64 sequence = 1;
+  uint32 recorded_at = 2;
+  optional EventAugmentation augmentation = 3;
+  oneof payload {
+    UtxoDetected utxo_detected = 4;
+    UtxoSettled utxo_settled = 5;
+    UtxoDropped utxo_dropped = 10;
+    PayoutSubmitted payout_submitted = 6;
+    PayoutCancelled payout_cancelled = 11;
+    PayoutCommitted payout_committed = 7;
+    PayoutBroadcast payout_broadcast = 8;
+    PayoutSettled payout_settled = 9;
+  }
+}
+
+message EventAugmentation {
+  optional WalletAddress address_info = 1;
+  optional Payout payout_info = 2;
+}
+
+message UtxoDetected {
+  string wallet_id = 1;
+  string tx_id = 2;
+  uint32 vout = 3;
+  uint64 satoshis = 4;
+  string address = 5;
+}
+
+message UtxoSettled {
+  string wallet_id = 1;
+  string tx_id = 2;
+  uint32 vout = 3;
+  uint64 satoshis = 4;
+  string address = 5;
+  uint32 block_height = 6;
+  uint64 block_time = 7;
+}
+
+message UtxoDropped {
+  string wallet_id = 1;
+  string tx_id = 2;
+  uint32 vout = 3;
+  uint64 satoshis = 4;
+  string address = 5;
+}
+
+message PayoutSubmitted {
+  string id = 1;
+  string wallet_id = 2;
+  string payout_queue_id = 3;
+  uint64 satoshis = 4;
+  oneof destination {
+    string onchain_address = 5;
+    BriaWalletDestination wallet = 6;
+  };
+}
+
+message PayoutCancelled {
+  string id = 1;
+  string wallet_id = 2;
+  string payout_queue_id = 3;
+  uint64 satoshis = 4;
+  oneof destination {
+    string onchain_address = 5;
+    BriaWalletDestination wallet = 6;
+  };
+}
+
+message PayoutCommitted {
+  string id = 1;
+  string tx_id = 2;
+  uint32 vout = 3;
+  string wallet_id = 4;
+  string payout_queue_id = 5;
+  uint64 satoshis = 6;
+  oneof destination {
+    string onchain_address = 7;
+    BriaWalletDestination wallet = 9;
+  };
+  uint64 proportional_fee_sats = 8;
+}
+
+message PayoutBroadcast {
+  string id = 1;
+  string tx_id = 2;
+  uint32 vout = 3;
+  string wallet_id = 4;
+  string payout_queue_id = 5;
+  uint64 satoshis = 6;
+  oneof destination {
+    string onchain_address = 7;
+    BriaWalletDestination wallet = 9;
+  };
+  uint64 proportional_fee_sats = 8;
+}
+
+message PayoutSettled {
+  string id = 1;
+  string tx_id = 2;
+  uint32 vout = 3;
+  string wallet_id = 4;
+  string payout_queue_id = 5;
+  uint64 satoshis = 6;
+  oneof destination {
+    string onchain_address = 7;
+    BriaWalletDestination wallet = 9;
+  };
+  uint64 proportional_fee_sats = 8;
+}
