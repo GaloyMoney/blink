@@ -437,7 +437,6 @@ export type Query = {
   readonly filteredUserCount: Scalars['Int']['output'];
   readonly lightningInvoice: LightningInvoice;
   readonly lightningPayment: LightningPayment;
-  readonly listWalletIds: ReadonlyArray<Scalars['WalletId']['output']>;
   readonly merchantsPendingApproval: ReadonlyArray<Merchant>;
   readonly transactionById?: Maybe<Transaction>;
   readonly transactionsByHash?: Maybe<ReadonlyArray<Maybe<Transaction>>>;
@@ -484,11 +483,6 @@ export type QueryLightningInvoiceArgs = {
 
 export type QueryLightningPaymentArgs = {
   hash: Scalars['PaymentHash']['input'];
-};
-
-
-export type QueryListWalletIdsArgs = {
-  walletCurrency: WalletCurrency;
 };
 
 
