@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): add missing notifications category (#4263)'
-      sha: 541a9eb69a865c207ddcd64bb995c6c5daa16e88
+      commitTitle: 'toolchain(codegen): add codegen capability to workspace-pnpm toolchain
+        (#4260)...'
+      sha: 88d22cf4f6d4dfe1422610784033589a89c6f4da
       tags:
-      - 0.20.137-19-g541a9eb69
+      - 0.20.138-1-g88d22cf4f
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): add missing notifications category (#4263)'
-      sha: 541a9eb69a865c207ddcd64bb995c6c5daa16e88
+      commitTitle: 'toolchain(codegen): add codegen capability to workspace-pnpm toolchain
+        (#4260)...'
+      sha: 88d22cf4f6d4dfe1422610784033589a89c6f4da
       tags:
-      - 0.20.137-19-g541a9eb69
+      - 0.20.138-1-g88d22cf4f
     path: schemas/
   - git:
-      commitTitle: 'fix(core): add missing notifications category (#4263)'
-      sha: 541a9eb69a865c207ddcd64bb995c6c5daa16e88
+      commitTitle: 'toolchain(codegen): add codegen capability to workspace-pnpm toolchain
+        (#4260)...'
+      sha: 88d22cf4f6d4dfe1422610784033589a89c6f4da
       tags:
-      - 0.20.137-19-g541a9eb69
+      - 0.20.138-1-g88d22cf4f
     path: gql/
   path: ./graphql
 kind: LockConfig

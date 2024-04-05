@@ -46,6 +46,7 @@ supergraph(
     "NOTIFICATIONS_SCHEMA": "//core/notifications:sdl",
     "PUBLIC_SCHEMA": "//core/api:public-sdl",
   },
+  visibility = ["PUBLIC"],
 )
 
 diff_check(
@@ -74,11 +75,6 @@ dev_update_file(
 sh_binary(
   name = "update-schemas",
   main = "bin/update-schemas.sh",
-)
-
-sh_binary(
-  name = "codegen",
-  main = "bin/codegen.sh",
 )
 
 sh_binary(
