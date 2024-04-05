@@ -18,14 +18,11 @@ pub struct InAppExecutor {
 }
 
 impl InAppExecutor {
-    pub fn init(
-        settings: UserNotificationSettingsRepo,
-        in_app_channel: InAppChannel,
-    ) -> Result<Self, InAppExecutorError> {
-        Ok(InAppExecutor {
+    pub fn new(settings: UserNotificationSettingsRepo, in_app_channel: InAppChannel) -> Self {
+        Self {
             settings,
             in_app_channel,
-        })
+        }
     }
 
     #[instrument(name = "in_app_executor.notify", skip(self))]
@@ -34,7 +31,7 @@ impl InAppExecutor {
         user_id: &GaloyUserId,
         event: &T,
     ) -> Result<(), InAppExecutorError> {
-        if let Some(settings) = self.settings.find_for_user_id(user_id).await.ok() {
+        if let Ok(settings) = self.settings.find_for_user_id(user_id).await {
             let msg = event.to_localized_in_app_msg(settings.locale().unwrap_or_default());
             if let Some(msg) = msg {
                 self.in_app_channel

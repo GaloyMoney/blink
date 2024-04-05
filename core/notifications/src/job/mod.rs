@@ -1,5 +1,6 @@
 mod config;
 mod send_email_notification;
+mod send_in_app_notification;
 mod send_push_notification;
 
 pub mod error;
@@ -14,13 +15,15 @@ use std::collections::HashMap;
 use job_executor::{JobExecutor, JobResult};
 
 use crate::{
-    email_executor::EmailExecutor, email_reminder_projection::*, notification_event::*,
-    primitives::GaloyUserId, push_executor::PushExecutor, user_notification_settings::*,
+    email_executor::EmailExecutor, email_reminder_projection::*, in_app_executor::InAppExecutor,
+    notification_event::*, primitives::GaloyUserId, push_executor::PushExecutor,
+    user_notification_settings::*,
 };
 
 pub use config::*;
 use error::JobError;
 use send_email_notification::SendEmailNotificationData;
+use send_in_app_notification::SendInAppNotificationData;
 use send_push_notification::SendPushNotificationData;
 
 const KICKOFF_LINK_EMAIL_REMINDER_ID: Uuid = uuid!("00000000-0000-0000-0000-000000000001");
@@ -29,6 +32,7 @@ pub async fn start_job_runner(
     pool: &sqlx::PgPool,
     push_executor: PushExecutor,
     email_executor: EmailExecutor,
+    in_app_executor: InAppExecutor,
     settings: UserNotificationSettingsRepo,
     email_reminder_projection: EmailReminderProjection,
     jobs_config: JobsConfig,
@@ -46,6 +50,7 @@ pub async fn start_job_runner(
     registry.set_context(settings);
     registry.set_context(email_reminder_projection);
     registry.set_context(jobs_config);
+    registry.set_context(in_app_executor);
 
     Ok(registry.runner(pool).set_keep_alive(false).run().await?)
 }
@@ -79,6 +84,10 @@ async fn all_user_event_dispatch(
                 let payload = data.payload.clone();
                 if payload.should_send_email() {
                     spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone()))
+                        .await?;
+                }
+                if payload.should_send_in_app_msg() {
+                    spawn_send_in_app_notification(&mut tx, (user_id.clone(), payload.clone()))
                         .await?;
                 }
                 spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
@@ -116,6 +125,10 @@ async fn link_email_reminder(
                 let payload = NotificationEventPayload::from(LinkEmailReminder {});
                 if payload.should_send_email() {
                     spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone()))
+                        .await?;
+                }
+                if payload.should_send_in_app_msg() {
+                    spawn_send_in_app_notification(&mut tx, (user_id.clone(), payload.clone()))
                         .await?;
                 }
                 spawn_send_push_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
@@ -185,6 +198,10 @@ async fn multi_user_event_dispatch(mut current_job: CurrentJob) -> Result<(), Jo
                 let payload = data.payload.clone();
                 if payload.should_send_email() {
                     spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone()))
+                        .await?;
+                }
+                if payload.should_send_in_app_msg() {
+                    spawn_send_in_app_notification(&mut tx, (user_id.clone(), payload.clone()))
                         .await?;
                 }
                 spawn_send_push_notification(&mut tx, (user_id.clone(), payload)).await?;
@@ -341,6 +358,45 @@ pub async fn spawn_send_email_notification(
 ) -> Result<(), JobError> {
     let data = data.into();
     if let Err(e) = send_email_notification
+        .builder()
+        .set_json(&data)
+        .expect("Couldn't set json")
+        .spawn(&mut **tx)
+        .await
+    {
+        tracing::insert_error_fields(tracing::Level::WARN, &e);
+        return Err(e.into());
+    }
+    Ok(())
+}
+
+#[job(
+    name = "send_in_app_notification",
+    channel_name = "send_in_app_notification"
+)]
+async fn send_in_app_notification(
+    mut current_job: CurrentJob,
+    executor: InAppExecutor,
+) -> Result<(), JobError> {
+    JobExecutor::builder(&mut current_job)
+        .build()
+        .expect("couldn't build JobExecutor")
+        .execute(|data| async move {
+            let data: SendInAppNotificationData =
+                data.expect("no SendInAppNotificationData available");
+            send_in_app_notification::execute(data, executor).await
+        })
+        .await?;
+    Ok(())
+}
+
+#[instrument(name = "job.spawn_send_in_app_notification", skip_all, fields(error, error.level, error.message), err)]
+pub async fn spawn_send_in_app_notification(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    data: impl Into<SendInAppNotificationData>,
+) -> Result<(), JobError> {
+    let data = data.into();
+    if let Err(e) = send_in_app_notification
         .builder()
         .set_json(&data)
         .expect("Couldn't set json")

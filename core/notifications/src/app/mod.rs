@@ -8,13 +8,9 @@ use tracing::instrument;
 use std::sync::Arc;
 
 use crate::{
-    email_executor::EmailExecutor,
-    email_reminder_projection::EmailReminderProjection,
-    job::{self},
-    notification_cool_off_tracker::*,
-    notification_event::*,
-    primitives::*,
-    push_executor::*,
+    email_executor::EmailExecutor, email_reminder_projection::EmailReminderProjection,
+    in_app_channel::InAppChannel, in_app_executor::InAppExecutor, job,
+    notification_cool_off_tracker::*, notification_event::*, primitives::*, push_executor::*,
     user_notification_settings::*,
 };
 
@@ -38,10 +34,13 @@ impl NotificationsApp {
         let email_executor = EmailExecutor::init(config.email_executor.clone(), settings.clone())?;
         let email_reminder_projection =
             EmailReminderProjection::new(&pool, config.link_email_reminder.clone());
+        let in_app_channel = InAppChannel::new(&pool);
+        let in_app_executor = InAppExecutor::new(settings.clone(), in_app_channel);
         let runner = job::start_job_runner(
             &pool,
             push_executor,
             email_executor,
+            in_app_executor,
             settings.clone(),
             email_reminder_projection.clone(),
             config.jobs.clone(),
@@ -202,6 +201,10 @@ impl NotificationsApp {
         let mut tx = self.pool.begin().await?;
         if payload.should_send_email() {
             job::spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
+        }
+        if payload.should_send_in_app_msg() {
+            job::spawn_send_in_app_notification(&mut tx, (user_id.clone(), payload.clone()))
+                .await?;
         }
         job::spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
         tx.commit().await?;
