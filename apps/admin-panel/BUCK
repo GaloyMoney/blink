@@ -7,6 +7,8 @@ load(
     "next_build_bin",
     "eslint",
     "audit",
+    "graphql_codegen",
+    "dev_update_paths"
 )
 
 dev_pnpm_task_binary(
@@ -27,10 +29,24 @@ dev_pnpm_task_binary(
     deps = ["//:node_modules"],
 )
 
-dev_pnpm_task_binary(
-    name="codegen",
-    command="codegen",
-    deps = ["//:node_modules"],
+export_file(
+  name = "codegen.yml",
+)
+
+export_file(
+  name = "graphql.gql"
+)
+
+graphql_codegen(
+  name = "codegen",
+  config = ":codegen.yml",
+  schemas = ["//core/api:admin-sdl"],
+  srcs = [":src", ":graphql.gql"]
+)
+
+dev_update_paths(
+  name = "update-codegen",
+  generated = ":codegen",
 )
 
 dev_pnpm_task_test(

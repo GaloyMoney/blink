@@ -125,6 +125,7 @@ sdl(
   generator = ":write-sdl",
   args = ["admin"],
   deps_srcs = [":src"],
+  visibility = ["PUBLIC"],
 )
 
 diff_check(
