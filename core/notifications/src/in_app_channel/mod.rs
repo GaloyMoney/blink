@@ -7,15 +7,15 @@ pub mod error;
 use error::*;
 
 #[derive(Debug, Clone)]
-pub struct InAppChannelService {}
+pub struct InAppChannel {}
 
-impl InAppChannelService {
+impl InAppChannel {
     pub async fn send_msg(
         &self,
         user_id: &GaloyUserId,
         msg: LocalizedInAppMessage,
         deep_link: Option<DeepLink>,
-    ) -> Result<(), InAppChannelServiceError> {
+    ) -> Result<(), InAppChannelError> {
         Ok(())
     }
 }

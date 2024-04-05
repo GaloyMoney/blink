@@ -1,9 +1,9 @@
 use thiserror::Error;
 
-use crate::in_app_channel_service::error::InAppChannelServiceError;
+use crate::in_app_channel::error::InAppChannelError;
 
 #[derive(Error, Debug)]
 pub enum InAppExecutorError {
-    #[error("InAppExecutorError - InAppChannelServiceError: {0}")]
-    InAppChannelServiceError(#[from] InAppChannelServiceError),
+    #[error("InAppExecutorError - InAppChannelError: {0}")]
+    InAppChannelError(#[from] InAppChannelError),
 }
