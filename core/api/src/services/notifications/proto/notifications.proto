@@ -1,0 +1,255 @@
+syntax = "proto3";
+
+package services.notifications.v1;
+
+service NotificationsService {
+  rpc EnableNotificationChannel (EnableNotificationChannelRequest) returns (EnableNotificationChannelResponse) {}
+  rpc DisableNotificationChannel (DisableNotificationChannelRequest) returns (DisableNotificationChannelResponse) {}
+  rpc EnableNotificationCategory (EnableNotificationCategoryRequest) returns (EnableNotificationCategoryResponse) {}
+  rpc DisableNotificationCategory (DisableNotificationCategoryRequest) returns (DisableNotificationCategoryResponse) {}
+  rpc GetNotificationSettings (GetNotificationSettingsRequest) returns (GetNotificationSettingsResponse) {}
+  rpc UpdateUserLocale (UpdateUserLocaleRequest) returns (UpdateUserLocaleResponse) {}
+  rpc AddPushDeviceToken (AddPushDeviceTokenRequest) returns (AddPushDeviceTokenResponse) {}
+  rpc RemovePushDeviceToken (RemovePushDeviceTokenRequest) returns (RemovePushDeviceTokenResponse) {}
+  rpc UpdateEmailAddress (UpdateEmailAddressRequest) returns (UpdateEmailAddressResponse) {}
+  rpc RemoveEmailAddress (RemoveEmailAddressRequest) returns (RemoveEmailAddressResponse) {}
+  rpc HandleNotificationEvent (HandleNotificationEventRequest) returns (HandleNotificationEventResponse) {}
+}
+
+enum NotificationChannel {
+  PUSH = 0;
+}
+
+enum NotificationCategory {
+  CIRCLES = 0;
+  PAYMENTS = 1;
+  // BALANCE = 2; Deprecated
+  ADMIN_NOTIFICATION = 3;
+  MARKETING = 4;
+  PRICE = 5;
+}
+
+message ShouldSendNotificationRequest {
+  string user_id = 1;
+  NotificationChannel channel = 2;
+  NotificationCategory category = 3;
+}
+
+message ShouldSendNotificationResponse {
+  string user_id = 1;
+  bool should_send = 2;
+}
+
+message EnableNotificationChannelRequest {
+  string user_id = 1;
+  NotificationChannel channel = 2;
+}
+
+message EnableNotificationChannelResponse {
+  NotificationSettings notification_settings = 1;
+}
+
+message NotificationSettings {
+  ChannelNotificationSettings push = 1;
+  optional string locale = 2;
+  repeated string push_device_tokens = 3;
+}
+
+message ChannelNotificationSettings {
+  bool enabled = 1;
+  repeated NotificationCategory disabled_categories = 2;
+}
+
+message DisableNotificationChannelRequest {
+  string user_id = 1;
+  NotificationChannel channel = 2;
+}
+
+message DisableNotificationChannelResponse {
+  NotificationSettings notification_settings = 1;
+}
+
+message DisableNotificationCategoryRequest {
+  string user_id = 1;
+  NotificationChannel channel = 2;
+  NotificationCategory category = 3;
+}
+
+message DisableNotificationCategoryResponse {
+  NotificationSettings notification_settings = 1;
+}
+
+message EnableNotificationCategoryRequest {
+  string user_id = 1;
+  NotificationChannel channel = 2;
+  NotificationCategory category = 3;
+}
+
+message EnableNotificationCategoryResponse {
+  NotificationSettings notification_settings = 1;
+}
+
+message GetNotificationSettingsRequest {
+  string user_id = 1;
+}
+
+message GetNotificationSettingsResponse {
+  NotificationSettings notification_settings = 1;
+}
+
+message UpdateUserLocaleRequest {
+  string user_id = 1;
+  string locale = 2;
+}
+
+message UpdateUserLocaleResponse {
+  NotificationSettings notification_settings = 1;
+}
+
+message AddPushDeviceTokenRequest {
+  string user_id = 1;
+  string device_token = 2;
+}
+
+message AddPushDeviceTokenResponse {
+  NotificationSettings notification_settings = 1;
+}
+
+message RemovePushDeviceTokenRequest {
+  string user_id = 1;
+  string device_token = 2;
+}
+
+message RemovePushDeviceTokenResponse {
+  NotificationSettings notification_settings = 1;
+}
+
+message UpdateEmailAddressRequest {
+  string user_id = 1;
+  string email_address = 2;
+}
+
+message UpdateEmailAddressResponse { }
+
+message RemoveEmailAddressRequest {
+  string user_id = 1;
+}
+
+message RemoveEmailAddressResponse { }
+
+message HandleNotificationEventRequest {
+  NotificationEvent event = 1;
+}
+
+message HandleNotificationEventResponse { }
+
+message NotificationEvent {
+  oneof data {
+    CircleGrew circle_grew = 1;
+    CircleThresholdReached circle_threshold_reached = 2;
+    IdentityVerificationApproved identity_verification_approved = 3;
+    IdentityVerificationDeclined identity_verification_declined = 4;
+    IdentityVerificationReviewStarted identity_verification_review_started = 5;
+    TransactionOccurred transaction_occurred = 6;
+    PriceChanged price = 7;
+    MarketingNotificationTriggered marketing_notification_triggered = 8;
+  }
+}
+
+enum CircleType {
+  INNER = 0;
+  OUTER = 1;
+}
+
+message CircleGrew {
+  string user_id = 1;
+  CircleType circle_type = 2;
+  uint32 this_month_circle_size = 3;
+  uint32 all_time_circle_size = 4;
+}
+
+enum CircleTimeFrame {
+  MONTH = 0;
+  ALL_TIME = 1;
+}
+
+message CircleThresholdReached {
+  string user_id = 1;
+  CircleType circle_type = 2;
+  CircleTimeFrame time_frame = 3;
+  uint32 threshold = 4;
+}
+
+message IdentityVerificationApproved {
+  string user_id = 1;
+}
+
+enum DeclinedReason {
+  DOCUMENTS_NOT_CLEAR = 0;
+  VERIFICATION_PHOTO_NOT_CLEAR = 1;
+  DOCUMENTS_NOT_SUPPORTED = 2;
+  DOCUMENTS_EXPIRED = 3;
+  DOCUMENTS_DO_NOT_MATCH = 4;
+  OTHER = 5;
+}
+
+message IdentityVerificationDeclined {
+  string user_id = 1;
+  DeclinedReason declined_reason = 2;
+}
+
+message IdentityVerificationReviewStarted {
+  string user_id = 1;
+}
+
+message TransactionOccurred {
+  string user_id = 1;
+  TransactionType type = 2;
+  Money settlement_amount = 3;
+  optional Money display_amount = 4;
+}
+
+enum TransactionType {
+  INTRA_LEDGER_RECEIPT = 0;
+  INTRA_LEDGER_PAYMENT= 1;
+  ONCHAIN_RECEIPT = 2;
+  ONCHAIN_RECEIPT_PENDING = 3;
+  ONCHAIN_PAYMENT = 4;
+  LIGHTNING_RECEIPT = 5;
+  LIGHTNING_PAYMENT = 6;
+}
+
+message Money {
+  string currency_code = 1;
+  uint64 minor_units = 2;
+}
+
+enum PriceChangeDirection {
+  UP = 0;
+  DOWN = 1;
+}
+
+message PriceChanged {
+  Money price_of_one_bitcoin = 1;
+  PriceChangeDirection direction = 2;
+  double price_change_percentage = 3;
+}
+
+message MarketingNotificationTriggered {
+  repeated string user_ids = 1;
+  map<string, LocalizedPushContent> localized_push_content = 2;
+  optional DeepLink deep_link = 3;
+}
+
+message LocalizedPushContent {
+  string title = 2;
+  string body = 3;
+}
+
+enum DeepLink {
+  Circles = 0;
+  Price = 1;
+  Earn = 2;
+  Map = 3;
+  People = 4;
+}
