@@ -1,3 +1,13 @@
+type InAppNotification {
+	id: ID!
+	title: String!
+	body: String!
+	deepLink: String
+	createdAt: Timestamp!
+	readAt: Timestamp
+}
+
+
 type Mutation {
 	userDisableNotificationChannel(input: UserDisableNotificationChannelInput!): UserUpdateNotificationSettingsPayload!
 	userEnableNotificationChannel(input: UserEnableNotificationChannelInput!): UserUpdateNotificationSettingsPayload!
@@ -7,9 +17,12 @@ type Mutation {
 
 
 
+scalar Timestamp
+
 extend type User @key(fields: "id") {
 	id: ID! @external
 	notificationSettings: UserNotificationSettings!
+	inAppNotifications(onlyUnread: Boolean): [InAppNotification!]!
 }
 
 input UserDisableNotificationCategoryInput {

@@ -39,6 +39,26 @@ impl User {
 
         Ok(UserNotificationSettings::from(settings))
     }
+
+    async fn in_app_notifications(
+        &self,
+        ctx: &Context<'_>,
+        only_unread: Option<bool>,
+    ) -> async_graphql::Result<Vec<InAppNotification>> {
+        let app = ctx.data_unchecked::<NotificationsApp>();
+
+        let notifications = app
+            .in_app_notifications_for_user(
+                GaloyUserId::from(self.id.0.clone()),
+                only_unread.unwrap_or(false),
+            )
+            .await?;
+
+        Ok(notifications
+            .into_iter()
+            .map(InAppNotification::from)
+            .collect())
+    }
 }
 
 #[derive(SimpleObject)]

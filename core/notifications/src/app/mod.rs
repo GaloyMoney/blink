@@ -8,9 +8,15 @@ use tracing::instrument;
 use std::sync::Arc;
 
 use crate::{
-    email_executor::EmailExecutor, email_reminder_projection::EmailReminderProjection,
-    in_app_channel::InAppChannel, in_app_executor::InAppExecutor, job,
-    notification_cool_off_tracker::*, notification_event::*, primitives::*, push_executor::*,
+    email_executor::EmailExecutor,
+    email_reminder_projection::EmailReminderProjection,
+    in_app_channel::{InAppChannel, InAppNotification},
+    in_app_executor::InAppExecutor,
+    job,
+    notification_cool_off_tracker::*,
+    notification_event::*,
+    primitives::*,
+    push_executor::*,
     user_notification_settings::*,
 };
 
@@ -22,6 +28,7 @@ pub struct NotificationsApp {
     _config: AppConfig,
     settings: UserNotificationSettingsRepo,
     email_reminder_projection: EmailReminderProjection,
+    in_app_channel: InAppChannel,
     pool: Pool<Postgres>,
     _runner: Arc<JobRunnerHandle>,
 }
@@ -35,7 +42,7 @@ impl NotificationsApp {
         let email_reminder_projection =
             EmailReminderProjection::new(&pool, config.link_email_reminder.clone());
         let in_app_channel = InAppChannel::new(&pool);
-        let in_app_executor = InAppExecutor::new(settings.clone(), in_app_channel);
+        let in_app_executor = InAppExecutor::new(settings.clone(), in_app_channel.clone());
         let runner = job::start_job_runner(
             &pool,
             push_executor,
@@ -55,6 +62,7 @@ impl NotificationsApp {
             _config: config,
             pool,
             settings,
+            in_app_channel,
             email_reminder_projection,
             _runner: Arc::new(runner),
         })
@@ -270,6 +278,20 @@ impl NotificationsApp {
         .await?;
         tx.commit().await?;
         Ok(())
+    }
+
+    #[instrument(name = "app.in_app_notifications_for_user", skip(self), err)]
+    pub async fn in_app_notifications_for_user(
+        &self,
+        user_id: GaloyUserId,
+        only_unread: bool,
+    ) -> Result<Vec<InAppNotification>, ApplicationError> {
+        let in_app_notifications = self
+            .in_app_channel
+            .msgs_for_user(&user_id, only_unread)
+            .await?;
+
+        Ok(in_app_notifications)
     }
 
     #[instrument(

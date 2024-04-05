@@ -604,6 +604,17 @@ type GraphQLApplicationError implements Error
 scalar Hex32Bytes
   @join__type(graph: PUBLIC)
 
+type InAppNotification
+  @join__type(graph: NOTIFICATIONS)
+{
+  id: ID!
+  title: String!
+  body: String!
+  deepLink: String
+  createdAt: Timestamp!
+  readAt: Timestamp
+}
+
 union InitiationVia
   @join__type(graph: PUBLIC)
   @join__unionMember(graph: PUBLIC, member: "InitiationViaIntraLedger")
@@ -1822,6 +1833,7 @@ Timestamp field, serialized as Unix time (the number of seconds since the Unix e
 """
 scalar Timestamp
   @join__type(graph: API_KEYS)
+  @join__type(graph: NOTIFICATIONS)
   @join__type(graph: PUBLIC)
 
 """A time-based one-time password"""
@@ -2012,6 +2024,7 @@ type User
   id: ID!
   apiKeys: [ApiKey!]! @join__field(graph: API_KEYS)
   notificationSettings: UserNotificationSettings! @join__field(graph: NOTIFICATIONS)
+  inAppNotifications(onlyUnread: Boolean): [InAppNotification!]! @join__field(graph: NOTIFICATIONS)
 
   """
   Get single contact details.

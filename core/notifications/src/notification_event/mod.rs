@@ -31,6 +31,18 @@ pub enum DeepLink {
     People,
 }
 
+impl DeepLink {
+    pub fn to_link_string(&self) -> String {
+        match self {
+            DeepLink::Circles => "/people/circles".to_string(),
+            DeepLink::Price => "/price".to_string(),
+            DeepLink::Earn => "/earn".to_string(),
+            DeepLink::Map => "/map".to_string(),
+            DeepLink::People => "/people".to_string(),
+        }
+    }
+}
+
 pub trait NotificationEvent: std::fmt::Debug + Send + Sync {
     fn category(&self) -> UserNotificationCategory;
     fn deep_link(&self) -> Option<DeepLink>;
