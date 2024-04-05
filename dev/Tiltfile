@@ -217,12 +217,14 @@ if is_ci:
   voucher_target = '//apps/voucher:voucher'
 voucher_env = {
     "PORT": "3006",
+    "NEXTAUTH_URL":"http://localhost:3006",
+    "NEXTAUTH_SECRET":"secret"
 }
 local_resource(
     "voucher",
     labels = ["apps"],
     cmd = "buck2 build {}".format(voucher_target),
-    serve_cmd = "buck2 run {}".format(voucher_target),
+    serve_cmd = ". .envs/voucher.env && buck2 run {}".format(voucher_target),
     env = voucher_env,
     serve_env = voucher_env,
     readiness_probe = probe(
@@ -237,11 +239,31 @@ local_resource(
     resource_deps = [
         "api",
         "apollo-router",
-        "voucher-pg"
+        "voucher-pg",
+        "hydra-voucher"
     ],
     links = [
         link("http://localhost:3006", "voucher"),
     ],
+)
+
+local_resource(
+  name='hydra-voucher',
+  labels = ['apps'],
+  cmd=[
+    'buck2',
+    'run',
+    '//dev:setup-hydra-client',
+    '--',
+    'voucher',
+    'authorization_code,refresh_token',
+    'http://localhost:3006/api/auth/callback/blink',
+  ],
+  allow_parallel = True,
+  resource_deps = [
+    "hydra",
+    "api",
+  ]
 )
 
 local_resource(
