@@ -599,6 +599,28 @@ function deserialize_services_bria_v1_UpdatePayoutQueueResponse(buffer_arg) {
   return bria_pb.UpdatePayoutQueueResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_services_bria_v1_UpdateProfileRequest(arg) {
+  if (!(arg instanceof bria_pb.UpdateProfileRequest)) {
+    throw new Error('Expected argument of type services.bria.v1.UpdateProfileRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_UpdateProfileRequest(buffer_arg) {
+  return bria_pb.UpdateProfileRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_bria_v1_UpdateProfileResponse(arg) {
+  if (!(arg instanceof bria_pb.UpdateProfileResponse)) {
+    throw new Error('Expected argument of type services.bria.v1.UpdateProfileResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_UpdateProfileResponse(buffer_arg) {
+  return bria_pb.UpdateProfileResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 
 var BriaServiceService = exports.BriaServiceService = {
   createProfile: {
@@ -611,6 +633,17 @@ var BriaServiceService = exports.BriaServiceService = {
     requestDeserialize: deserialize_services_bria_v1_CreateProfileRequest,
     responseSerialize: serialize_services_bria_v1_CreateProfileResponse,
     responseDeserialize: deserialize_services_bria_v1_CreateProfileResponse,
+  },
+  updateProfile: {
+    path: '/services.bria.v1.BriaService/UpdateProfile',
+    requestStream: false,
+    responseStream: false,
+    requestType: bria_pb.UpdateProfileRequest,
+    responseType: bria_pb.UpdateProfileResponse,
+    requestSerialize: serialize_services_bria_v1_UpdateProfileRequest,
+    requestDeserialize: deserialize_services_bria_v1_UpdateProfileRequest,
+    responseSerialize: serialize_services_bria_v1_UpdateProfileResponse,
+    responseDeserialize: deserialize_services_bria_v1_UpdateProfileResponse,
   },
   listProfiles: {
     path: '/services.bria.v1.BriaService/ListProfiles',

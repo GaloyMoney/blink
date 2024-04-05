@@ -10,6 +10,7 @@ import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/stru
 
 interface IBriaServiceService extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
     createProfile: IBriaServiceService_ICreateProfile;
+    updateProfile: IBriaServiceService_IUpdateProfile;
     listProfiles: IBriaServiceService_IListProfiles;
     createProfileApiKey: IBriaServiceService_ICreateProfileApiKey;
     importXpub: IBriaServiceService_IImportXpub;
@@ -46,6 +47,15 @@ interface IBriaServiceService_ICreateProfile extends grpc.MethodDefinition<bria_
     requestDeserialize: grpc.deserialize<bria_pb.CreateProfileRequest>;
     responseSerialize: grpc.serialize<bria_pb.CreateProfileResponse>;
     responseDeserialize: grpc.deserialize<bria_pb.CreateProfileResponse>;
+}
+interface IBriaServiceService_IUpdateProfile extends grpc.MethodDefinition<bria_pb.UpdateProfileRequest, bria_pb.UpdateProfileResponse> {
+    path: "/services.bria.v1.BriaService/UpdateProfile";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<bria_pb.UpdateProfileRequest>;
+    requestDeserialize: grpc.deserialize<bria_pb.UpdateProfileRequest>;
+    responseSerialize: grpc.serialize<bria_pb.UpdateProfileResponse>;
+    responseDeserialize: grpc.deserialize<bria_pb.UpdateProfileResponse>;
 }
 interface IBriaServiceService_IListProfiles extends grpc.MethodDefinition<bria_pb.ListProfilesRequest, bria_pb.ListProfilesResponse> {
     path: "/services.bria.v1.BriaService/ListProfiles";
@@ -286,6 +296,7 @@ export const BriaServiceService: IBriaServiceService;
 
 export interface IBriaServiceServer extends grpc.UntypedServiceImplementation {
     createProfile: grpc.handleUnaryCall<bria_pb.CreateProfileRequest, bria_pb.CreateProfileResponse>;
+    updateProfile: grpc.handleUnaryCall<bria_pb.UpdateProfileRequest, bria_pb.UpdateProfileResponse>;
     listProfiles: grpc.handleUnaryCall<bria_pb.ListProfilesRequest, bria_pb.ListProfilesResponse>;
     createProfileApiKey: grpc.handleUnaryCall<bria_pb.CreateProfileApiKeyRequest, bria_pb.CreateProfileApiKeyResponse>;
     importXpub: grpc.handleUnaryCall<bria_pb.ImportXpubRequest, bria_pb.ImportXpubResponse>;
@@ -318,6 +329,9 @@ export interface IBriaServiceClient {
     createProfile(request: bria_pb.CreateProfileRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.CreateProfileResponse) => void): grpc.ClientUnaryCall;
     createProfile(request: bria_pb.CreateProfileRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.CreateProfileResponse) => void): grpc.ClientUnaryCall;
     createProfile(request: bria_pb.CreateProfileRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.CreateProfileResponse) => void): grpc.ClientUnaryCall;
+    updateProfile(request: bria_pb.UpdateProfileRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.UpdateProfileResponse) => void): grpc.ClientUnaryCall;
+    updateProfile(request: bria_pb.UpdateProfileRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.UpdateProfileResponse) => void): grpc.ClientUnaryCall;
+    updateProfile(request: bria_pb.UpdateProfileRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.UpdateProfileResponse) => void): grpc.ClientUnaryCall;
     listProfiles(request: bria_pb.ListProfilesRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.ListProfilesResponse) => void): grpc.ClientUnaryCall;
     listProfiles(request: bria_pb.ListProfilesRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.ListProfilesResponse) => void): grpc.ClientUnaryCall;
     listProfiles(request: bria_pb.ListProfilesRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.ListProfilesResponse) => void): grpc.ClientUnaryCall;
@@ -402,6 +416,9 @@ export class BriaServiceClient extends grpc.Client implements IBriaServiceClient
     public createProfile(request: bria_pb.CreateProfileRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.CreateProfileResponse) => void): grpc.ClientUnaryCall;
     public createProfile(request: bria_pb.CreateProfileRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.CreateProfileResponse) => void): grpc.ClientUnaryCall;
     public createProfile(request: bria_pb.CreateProfileRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.CreateProfileResponse) => void): grpc.ClientUnaryCall;
+    public updateProfile(request: bria_pb.UpdateProfileRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.UpdateProfileResponse) => void): grpc.ClientUnaryCall;
+    public updateProfile(request: bria_pb.UpdateProfileRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.UpdateProfileResponse) => void): grpc.ClientUnaryCall;
+    public updateProfile(request: bria_pb.UpdateProfileRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.UpdateProfileResponse) => void): grpc.ClientUnaryCall;
     public listProfiles(request: bria_pb.ListProfilesRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.ListProfilesResponse) => void): grpc.ClientUnaryCall;
     public listProfiles(request: bria_pb.ListProfilesRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.ListProfilesResponse) => void): grpc.ClientUnaryCall;
     public listProfiles(request: bria_pb.ListProfilesRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.ListProfilesResponse) => void): grpc.ClientUnaryCall;
