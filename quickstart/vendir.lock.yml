@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'toolchain(codegen): add codegen capability to workspace-pnpm toolchain
-        (#4260)...'
-      sha: 88d22cf4f6d4dfe1422610784033589a89c6f4da
+      commitTitle: 'chore(deps): bump bria proto to ''0.1.103'' (#4266)'
+      sha: 1e2aa89ab4c1950f6d35b89f0da2990ba0365ed9
       tags:
-      - 0.20.138-1-g88d22cf4f
+      - 0.20.139-1-g1e2aa89ab
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'toolchain(codegen): add codegen capability to workspace-pnpm toolchain
-        (#4260)...'
-      sha: 88d22cf4f6d4dfe1422610784033589a89c6f4da
+      commitTitle: 'chore(deps): bump bria proto to ''0.1.103'' (#4266)'
+      sha: 1e2aa89ab4c1950f6d35b89f0da2990ba0365ed9
       tags:
-      - 0.20.138-1-g88d22cf4f
+      - 0.20.139-1-g1e2aa89ab
     path: schemas/
   - git:
-      commitTitle: 'toolchain(codegen): add codegen capability to workspace-pnpm toolchain
-        (#4260)...'
-      sha: 88d22cf4f6d4dfe1422610784033589a89c6f4da
+      commitTitle: 'chore(deps): bump bria proto to ''0.1.103'' (#4266)'
+      sha: 1e2aa89ab4c1950f6d35b89f0da2990ba0365ed9
       tags:
-      - 0.20.138-1-g88d22cf4f
+      - 0.20.139-1-g1e2aa89ab
     path: gql/
   path: ./graphql
 kind: LockConfig
