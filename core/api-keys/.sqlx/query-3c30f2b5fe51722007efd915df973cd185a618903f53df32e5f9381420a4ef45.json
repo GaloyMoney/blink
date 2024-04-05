@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                i.id AS identity_id,\n                a.id AS api_key_id,\n                    a.name,\n                    a.created_at,\n                    a.expires_at,\n                    revoked,\n                    (expires_at IS NOT NULL AND expires_at < NOW()) AS \"expired!\",\n                    scopes,\n                    last_used_at\n            FROM\n                identities i\n            JOIN\n                identity_api_keys a\n                ON i.id = a.identity_id\n            WHERE\n                i.subject_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "identity_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "api_key_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "expires_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 5,
+        "name": "revoked",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 6,
+        "name": "expired!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
+        "name": "scopes",
+        "type_info": "VarcharArray"
+      },
+      {
+        "ordinal": 8,
+        "name": "last_used_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      null,
+      false,
+      true
+    ]
+  },
+  "hash": "3c30f2b5fe51722007efd915df973cd185a618903f53df32e5f9381420a4ef45"
+}

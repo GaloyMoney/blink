@@ -1,0 +1,54 @@
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>{{subject}}</title>
+
+    {{!-- Include Styles --}}
+    {{> styles}}
+  </head>
+  <body>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+      <tr>
+        <td align="center">
+          <!-- Centered Content Wrapper -->
+          <table
+            class="centered-content"
+            role="presentation"
+            cellspacing="0"
+            cellpadding="0"
+          >
+            <!-- Logo Section -->
+            <tr>
+              <td class="logo-section" align="center">
+                <img
+                  src="https://void.cat/d/WhVRCknUEJwCpVCPihYzfU.webp"
+                  alt="Blink - The Everyday Bitcoin Wallet"
+                  width="180"
+                />
+              </td>
+            </tr>
+
+            <!-- Body Section -->
+            {{> @partial-block}}
+
+            <!-- Footer Section -->
+            <tr>
+              <td class="footer-section" align="center">
+                <p class="footer-text">
+                  This is an automated email. If you encounter problems, please
+                  do not respond to it. Reach out to our
+                  <a href="https://www.blink.sv/en/support">Support</a>
+                </p>
+                <br />
+                <p class="footer-link">
+                  <a href="https://www.blink.sv">blink.sv</a>
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

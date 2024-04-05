@@ -1008,6 +1008,7 @@ export type Mutation = {
   readonly onChainUsdPaymentSend: PaymentSendPayload;
   readonly onChainUsdPaymentSendAsBtcDenominated: PaymentSendPayload;
   readonly quizClaim: QuizClaimPayload;
+  readonly supportChatMessageAdd: SupportChatMessageAddPayload;
   /** @deprecated will be moved to AccountContact */
   readonly userContactUpdateAlias: UserContactUpdateAliasPayload;
   readonly userDisableNotificationCategory: UserUpdateNotificationSettingsPayload;
@@ -1229,6 +1230,11 @@ export type MutationOnChainUsdPaymentSendAsBtcDenominatedArgs = {
 
 export type MutationQuizClaimArgs = {
   input: QuizClaimInput;
+};
+
+
+export type MutationSupportChatMessageAddArgs = {
+  input: SupportChatMessageAddInput;
 };
 
 
@@ -1751,6 +1757,30 @@ export type SuccessPayload = {
   readonly success?: Maybe<Scalars['Boolean']['output']>;
 };
 
+export type SupportChatMessageAddInput = {
+  readonly message: Scalars['String']['input'];
+};
+
+export type SupportChatMessageAddPayload = {
+  readonly __typename: 'SupportChatMessageAddPayload';
+  readonly errors: ReadonlyArray<Error>;
+  readonly supportMessage?: Maybe<ReadonlyArray<Maybe<SupportMessage>>>;
+};
+
+export type SupportMessage = {
+  readonly __typename: 'SupportMessage';
+  readonly id: Scalars['ID']['output'];
+  readonly message: Scalars['String']['output'];
+  readonly role: SupportRole;
+  readonly timestamp: Scalars['Timestamp']['output'];
+};
+
+export const SupportRole = {
+  Assistant: 'ASSISTANT',
+  User: 'USER'
+} as const;
+
+export type SupportRole = typeof SupportRole[keyof typeof SupportRole];
 /**
  * Give details about an individual transaction.
  * Galoy have a smart routing system which is automatically
@@ -1936,6 +1966,7 @@ export type User = {
   readonly notificationSettings: UserNotificationSettings;
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']['output']>;
+  readonly supportChat: ReadonlyArray<SupportMessage>;
   /** Whether TOTP is enabled for this user. */
   readonly totpEnabled: Scalars['Boolean']['output'];
   /**
@@ -2046,11 +2077,11 @@ export type UserLogoutInput = {
 
 export const UserNotificationCategory = {
   AdminNotification: 'ADMIN_NOTIFICATION',
-  Balance: 'BALANCE',
   Circles: 'CIRCLES',
   Marketing: 'MARKETING',
   Payments: 'PAYMENTS',
-  Price: 'PRICE'
+  Price: 'PRICE',
+  Security: 'SECURITY'
 } as const;
 
 export type UserNotificationCategory = typeof UserNotificationCategory[keyof typeof UserNotificationCategory];
@@ -3539,6 +3570,10 @@ export type ResolversTypes = {
   SignedDisplayMajorAmount: ResolverTypeWrapper<Scalars['SignedDisplayMajorAmount']['output']>;
   Subscription: ResolverTypeWrapper<{}>;
   SuccessPayload: ResolverTypeWrapper<SuccessPayload>;
+  SupportChatMessageAddInput: SupportChatMessageAddInput;
+  SupportChatMessageAddPayload: ResolverTypeWrapper<SupportChatMessageAddPayload>;
+  SupportMessage: ResolverTypeWrapper<SupportMessage>;
+  SupportRole: SupportRole;
   Timestamp: ResolverTypeWrapper<Scalars['Timestamp']['output']>;
   TotpCode: ResolverTypeWrapper<Scalars['TotpCode']['output']>;
   TotpRegistrationId: ResolverTypeWrapper<Scalars['TotpRegistrationId']['output']>;
@@ -3755,6 +3790,9 @@ export type ResolversParentTypes = {
   SignedDisplayMajorAmount: Scalars['SignedDisplayMajorAmount']['output'];
   Subscription: {};
   SuccessPayload: SuccessPayload;
+  SupportChatMessageAddInput: SupportChatMessageAddInput;
+  SupportChatMessageAddPayload: SupportChatMessageAddPayload;
+  SupportMessage: SupportMessage;
   Timestamp: Scalars['Timestamp']['output'];
   TotpCode: Scalars['TotpCode']['output'];
   TotpRegistrationId: Scalars['TotpRegistrationId']['output'];
@@ -4346,6 +4384,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   onChainUsdPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationOnChainUsdPaymentSendArgs, 'input'>>;
   onChainUsdPaymentSendAsBtcDenominated?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationOnChainUsdPaymentSendAsBtcDenominatedArgs, 'input'>>;
   quizClaim?: Resolver<ResolversTypes['QuizClaimPayload'], ParentType, ContextType, RequireFields<MutationQuizClaimArgs, 'input'>>;
+  supportChatMessageAdd?: Resolver<ResolversTypes['SupportChatMessageAddPayload'], ParentType, ContextType, RequireFields<MutationSupportChatMessageAddArgs, 'input'>>;
   userContactUpdateAlias?: Resolver<ResolversTypes['UserContactUpdateAliasPayload'], ParentType, ContextType, RequireFields<MutationUserContactUpdateAliasArgs, 'input'>>;
   userDisableNotificationCategory?: Resolver<ResolversTypes['UserUpdateNotificationSettingsPayload'], ParentType, ContextType, RequireFields<MutationUserDisableNotificationCategoryArgs, 'input'>>;
   userDisableNotificationChannel?: Resolver<ResolversTypes['UserUpdateNotificationSettingsPayload'], ParentType, ContextType, RequireFields<MutationUserDisableNotificationChannelArgs, 'input'>>;
@@ -4629,6 +4668,20 @@ export type SuccessPayloadResolvers<ContextType = any, ParentType extends Resolv
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type SupportChatMessageAddPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['SupportChatMessageAddPayload'] = ResolversParentTypes['SupportChatMessageAddPayload']> = {
+  errors?: Resolver<ReadonlyArray<ResolversTypes['Error']>, ParentType, ContextType>;
+  supportMessage?: Resolver<Maybe<ReadonlyArray<Maybe<ResolversTypes['SupportMessage']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type SupportMessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['SupportMessage'] = ResolversParentTypes['SupportMessage']> = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  role?: Resolver<ResolversTypes['SupportRole'], ParentType, ContextType>;
+  timestamp?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export interface TimestampScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Timestamp'], any> {
   name: 'Timestamp';
 }
@@ -4711,6 +4764,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   language?: Resolver<ResolversTypes['Language'], ParentType, ContextType>;
   notificationSettings?: Resolver<ResolversTypes['UserNotificationSettings'], ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['Phone']>, ParentType, ContextType>;
+  supportChat?: Resolver<ReadonlyArray<ResolversTypes['SupportMessage']>, ParentType, ContextType>;
   totpEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   username?: Resolver<Maybe<ResolversTypes['Username']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -4956,6 +5010,8 @@ export type Resolvers<ContextType = any> = {
   SignedDisplayMajorAmount?: GraphQLScalarType;
   Subscription?: SubscriptionResolvers<ContextType>;
   SuccessPayload?: SuccessPayloadResolvers<ContextType>;
+  SupportChatMessageAddPayload?: SupportChatMessageAddPayloadResolvers<ContextType>;
+  SupportMessage?: SupportMessageResolvers<ContextType>;
   Timestamp?: GraphQLScalarType;
   TotpCode?: GraphQLScalarType;
   TotpRegistrationId?: GraphQLScalarType;

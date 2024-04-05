@@ -1,0 +1,27 @@
+# db:
+#   pool_size: 20
+# subgraph_server:
+#   port: 6684
+#   jwks_url: "http://localhost:4456/.well-known/jwks.json"
+# grpc_server:
+#   port: 6685
+app:
+  # jobs:
+  #   kickoff_link_email_reminder_delay: 5
+  # link_email_reminder:
+  #   account_liveness_threshold_minutes: 30240
+  #   account_aged_threshold_minutes: 30240
+  #   notification_cool_off_threshold_minutes: 129600
+  push_executor:
+    fcm:
+      google_application_credentials_path: "./config/notifications/fake_service_account.json"
+  # email_executor:
+  #   enabled: false
+  #   smtp:
+  #     username: ""
+  #     from_email: ""
+  #     from_name: ""
+  #     relay: ""
+  #     port: 587
+# kratos_import:
+#   execute_import: true

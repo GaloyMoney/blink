@@ -1,0 +1,16 @@
+_version: 1
+
+circle_time_frame.month: " diesen Monat"
+circle_time_frame.all_time: ""
+
+circle_type.inner: "innerem Kreis"
+circle_type.outer: "äußerem Kreis"
+
+circle_grew.title: "Dein Blink Kreis ist gewachsen!"
+circle_grew.body: "Jemand wurde deinem %{circle_type} hinzugefügt."
+
+circle_threshold_reached.inner.title: "Schöner Innerer Kreis! \U0001F919"
+circle_threshold_reached.inner.body: "Du hast%{time_frame} %{threshold} Menschen zu Blink begrüßt. Weiter so!"
+
+circle_threshold_reached.outer.title: "Äußerer Kreis Wachstum \U0001F4AA"
+circle_threshold_reached.outer.body: "Dein äußerer Kreis ist auf %{threshold} Menschen gewachsen. Du bringst die Bitcoin adoption voran!"
