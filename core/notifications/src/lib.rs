@@ -13,6 +13,8 @@ pub mod email_executor;
 pub mod email_reminder_projection;
 pub mod graphql;
 pub mod grpc;
+pub mod in_app_channel_service;
+pub mod in_app_executor;
 pub mod notification_cool_off_tracker;
 pub mod notification_event;
 pub mod primitives;
