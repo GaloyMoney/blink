@@ -965,6 +965,7 @@ export type Mutation = {
   readonly onChainUsdPaymentSend: PaymentSendPayload;
   readonly onChainUsdPaymentSendAsBtcDenominated: PaymentSendPayload;
   readonly quizClaim: QuizClaimPayload;
+  readonly supportChatMessageAdd: SupportChatMessageAddPayload;
   /** @deprecated will be moved to AccountContact */
   readonly userContactUpdateAlias: UserContactUpdateAliasPayload;
   readonly userEmailDelete: UserEmailDeletePayload;
@@ -1172,6 +1173,11 @@ export type MutationOnChainUsdPaymentSendAsBtcDenominatedArgs = {
 
 export type MutationQuizClaimArgs = {
   input: QuizClaimInput;
+};
+
+
+export type MutationSupportChatMessageAddArgs = {
+  input: SupportChatMessageAddInput;
 };
 
 
@@ -1674,6 +1680,30 @@ export type SuccessPayload = {
   readonly success?: Maybe<Scalars['Boolean']>;
 };
 
+export type SupportChatMessageAddInput = {
+  readonly message: Scalars['String'];
+};
+
+export type SupportChatMessageAddPayload = {
+  readonly __typename: 'SupportChatMessageAddPayload';
+  readonly errors: ReadonlyArray<Error>;
+  readonly supportMessage?: Maybe<ReadonlyArray<Maybe<SupportMessage>>>;
+};
+
+export type SupportMessage = {
+  readonly __typename: 'SupportMessage';
+  readonly id: Scalars['ID'];
+  readonly message: Scalars['String'];
+  readonly role: SupportRole;
+  readonly timestamp: Scalars['Timestamp'];
+};
+
+export const SupportRole = {
+  Assistant: 'ASSISTANT',
+  User: 'USER'
+} as const;
+
+export type SupportRole = typeof SupportRole[keyof typeof SupportRole];
 /**
  * Give details about an individual transaction.
  * Galoy have a smart routing system which is automatically
@@ -1857,6 +1887,7 @@ export type User = {
   readonly language: Scalars['Language'];
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']>;
+  readonly supportChat: ReadonlyArray<SupportMessage>;
   /** Whether TOTP is enabled for this user. */
   readonly totpEnabled: Scalars['Boolean'];
   /**
