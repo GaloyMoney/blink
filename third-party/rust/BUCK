@@ -8416,7 +8416,7 @@ cargo.rust_library(
         ":thiserror-1.0.58",
         ":tracing-0.1.40",
         ":uuid-1.8.0",
-        ":whoami-1.4.1",
+        ":whoami-1.5.1",
     ],
 )
 
@@ -8482,7 +8482,7 @@ cargo.rust_library(
         ":thiserror-1.0.58",
         ":tracing-0.1.40",
         ":uuid-1.8.0",
-        ":whoami-1.4.1",
+        ":whoami-1.5.1",
     ],
 )
 
@@ -10704,18 +10704,18 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "whoami-1.4.1.crate",
-    sha256 = "22fc3756b8a9133049b26c7f61ab35416c130e8c09b660f5b3958b446f52cc50",
-    strip_prefix = "whoami-1.4.1",
-    urls = ["https://crates.io/api/v1/crates/whoami/1.4.1/download"],
+    name = "whoami-1.5.1.crate",
+    sha256 = "a44ab49fad634e88f55bf8f9bb3abd2f27d7204172a112c7c9987e01c1c94ea9",
+    strip_prefix = "whoami-1.5.1",
+    urls = ["https://crates.io/api/v1/crates/whoami/1.5.1/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "whoami-1.4.1",
-    srcs = [":whoami-1.4.1.crate"],
+    name = "whoami-1.5.1",
+    srcs = [":whoami-1.5.1.crate"],
     crate = "whoami",
-    crate_root = "whoami-1.4.1.crate/src/lib.rs",
+    crate_root = "whoami-1.5.1.crate/src/lib.rs",
     edition = "2018",
     visibility = [],
 )
