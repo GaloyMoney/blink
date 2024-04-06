@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump bria proto to ''0.1.103'' (#4266)'
-      sha: 1e2aa89ab4c1950f6d35b89f0da2990ba0365ed9
+      commitTitle: 'refactor(admin): remove unused admin query (#4265)'
+      sha: de7f4711a7d8e5eaa36032109ec7b7b73d14b4c0
       tags:
-      - 0.20.139-1-g1e2aa89ab
+      - 0.20.140-3-gde7f4711a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump bria proto to ''0.1.103'' (#4266)'
-      sha: 1e2aa89ab4c1950f6d35b89f0da2990ba0365ed9
+      commitTitle: 'refactor(admin): remove unused admin query (#4265)'
+      sha: de7f4711a7d8e5eaa36032109ec7b7b73d14b4c0
       tags:
-      - 0.20.139-1-g1e2aa89ab
+      - 0.20.140-3-gde7f4711a
     path: schemas/
   - git:
-      commitTitle: 'chore(deps): bump bria proto to ''0.1.103'' (#4266)'
-      sha: 1e2aa89ab4c1950f6d35b89f0da2990ba0365ed9
+      commitTitle: 'refactor(admin): remove unused admin query (#4265)'
+      sha: de7f4711a7d8e5eaa36032109ec7b7b73d14b4c0
       tags:
-      - 0.20.139-1-g1e2aa89ab
+      - 0.20.140-3-gde7f4711a
     path: gql/
   path: ./graphql
 kind: LockConfig
