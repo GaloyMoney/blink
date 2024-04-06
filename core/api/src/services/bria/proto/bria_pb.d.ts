@@ -39,6 +39,11 @@ export class SpendingPolicy extends jspb.Message {
     setAllowedPayoutAddressesList(value: Array<string>): SpendingPolicy;
     addAllowedPayoutAddresses(value: string, index?: number): string;
 
+    hasMaxPayoutSats(): boolean;
+    clearMaxPayoutSats(): void;
+    getMaxPayoutSats(): number | undefined;
+    setMaxPayoutSats(value: number): SpendingPolicy;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): SpendingPolicy.AsObject;
     static toObject(includeInstance: boolean, msg: SpendingPolicy): SpendingPolicy.AsObject;
@@ -52,6 +57,7 @@ export class SpendingPolicy extends jspb.Message {
 export namespace SpendingPolicy {
     export type AsObject = {
         allowedPayoutAddressesList: Array<string>,
+        maxPayoutSats?: number,
     }
 }
 
@@ -72,6 +78,49 @@ export class CreateProfileResponse extends jspb.Message {
 export namespace CreateProfileResponse {
     export type AsObject = {
         id: string,
+    }
+}
+
+export class UpdateProfileRequest extends jspb.Message { 
+    getId(): string;
+    setId(value: string): UpdateProfileRequest;
+
+    hasSpendingPolicy(): boolean;
+    clearSpendingPolicy(): void;
+    getSpendingPolicy(): SpendingPolicy | undefined;
+    setSpendingPolicy(value?: SpendingPolicy): UpdateProfileRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): UpdateProfileRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: UpdateProfileRequest): UpdateProfileRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: UpdateProfileRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): UpdateProfileRequest;
+    static deserializeBinaryFromReader(message: UpdateProfileRequest, reader: jspb.BinaryReader): UpdateProfileRequest;
+}
+
+export namespace UpdateProfileRequest {
+    export type AsObject = {
+        id: string,
+        spendingPolicy?: SpendingPolicy.AsObject,
+    }
+}
+
+export class UpdateProfileResponse extends jspb.Message { 
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): UpdateProfileResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: UpdateProfileResponse): UpdateProfileResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: UpdateProfileResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): UpdateProfileResponse;
+    static deserializeBinaryFromReader(message: UpdateProfileResponse, reader: jspb.BinaryReader): UpdateProfileResponse;
+}
+
+export namespace UpdateProfileResponse {
+    export type AsObject = {
     }
 }
 
