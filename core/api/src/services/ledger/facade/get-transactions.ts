@@ -1,5 +1,5 @@
-import { translateToLedgerTx } from ".."
 import { MainBook } from "../books"
+import { translateToLedgerTx } from "../translate"
 import { UnknownLedgerError } from "../domain/errors"
 
 import { toLiabilitiesWalletId } from "@/domain/ledger"
