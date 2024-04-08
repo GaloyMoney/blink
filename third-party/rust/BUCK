@@ -5392,33 +5392,34 @@ cargo.rust_library(
 
 alias(
     name = "prost",
-    actual = ":prost-0.12.3",
+    actual = ":prost-0.12.4",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "prost-0.12.3.crate",
-    sha256 = "146c289cda302b98a28d40c8b3b90498d6e526dd24ac2ecea73e4e491685b94a",
-    strip_prefix = "prost-0.12.3",
-    urls = ["https://crates.io/api/v1/crates/prost/0.12.3/download"],
+    name = "prost-0.12.4.crate",
+    sha256 = "d0f5d036824e4761737860779c906171497f6d55681139d8312388f8fe398922",
+    strip_prefix = "prost-0.12.4",
+    urls = ["https://crates.io/api/v1/crates/prost/0.12.4/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "prost-0.12.3",
-    srcs = [":prost-0.12.3.crate"],
+    name = "prost-0.12.4",
+    srcs = [":prost-0.12.4.crate"],
     crate = "prost",
-    crate_root = "prost-0.12.3.crate/src/lib.rs",
+    crate_root = "prost-0.12.4.crate/src/lib.rs",
     edition = "2021",
     features = [
         "default",
+        "derive",
         "prost-derive",
         "std",
     ],
     visibility = [],
     deps = [
         ":bytes-1.5.0",
-        ":prost-derive-0.12.3",
+        ":prost-derive-0.12.4",
     ],
 )
 
@@ -5446,13 +5447,13 @@ cargo.rust_library(
     deps = [
         ":bytes-1.5.0",
         ":heck-0.4.1",
-        ":itertools-0.11.0",
+        ":itertools-0.10.5",
         ":log-0.4.20",
         ":multimap-0.8.3",
         ":once_cell-1.18.0",
         ":petgraph-0.6.4",
         ":prettyplease-0.2.16",
-        ":prost-0.12.3",
+        ":prost-0.12.4",
         ":prost-types-0.12.3",
         ":regex-1.10.2",
         ":syn-2.0.48",
@@ -5487,24 +5488,24 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "prost-derive-0.12.3.crate",
-    sha256 = "efb6c9a1dd1def8e2124d17e83a20af56f1570d6c2d2bd9e266ccb768df3840e",
-    strip_prefix = "prost-derive-0.12.3",
-    urls = ["https://crates.io/api/v1/crates/prost-derive/0.12.3/download"],
+    name = "prost-derive-0.12.4.crate",
+    sha256 = "19de2de2a00075bf566bee3bd4db014b11587e84184d3f7a791bc17f1a8e9e48",
+    strip_prefix = "prost-derive-0.12.4",
+    urls = ["https://crates.io/api/v1/crates/prost-derive/0.12.4/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "prost-derive-0.12.3",
-    srcs = [":prost-derive-0.12.3.crate"],
+    name = "prost-derive-0.12.4",
+    srcs = [":prost-derive-0.12.4.crate"],
     crate = "prost_derive",
-    crate_root = "prost-derive-0.12.3.crate/src/lib.rs",
+    crate_root = "prost-derive-0.12.4.crate/src/lib.rs",
     edition = "2021",
     proc_macro = True,
     visibility = [],
     deps = [
         ":anyhow-1.0.81",
-        ":itertools-0.11.0",
+        ":itertools-0.10.5",
         ":proc-macro2-1.0.76",
         ":quote-1.0.35",
         ":syn-2.0.48",
@@ -5526,7 +5527,7 @@ cargo.rust_library(
     crate_root = "prost-types-0.12.3.crate/src/lib.rs",
     edition = "2021",
     visibility = [],
-    deps = [":prost-0.12.3"],
+    deps = [":prost-0.12.4"],
 )
 
 http_archive(
@@ -8970,7 +8971,7 @@ cargo.rust_binary(
         ":opentelemetry-http-0.9.0",
         ":opentelemetry-otlp-0.13.0",
         ":opentelemetry-semantic-conventions-0.12.0",
-        ":prost-0.12.3",
+        ":prost-0.12.4",
         ":rand-0.8.5",
         ":reqwest-0.11.27",
         ":rust-i18n-3.0.1",
@@ -9618,7 +9619,7 @@ cargo.rust_library(
         ":hyper-timeout-0.4.1",
         ":percent-encoding-2.3.0",
         ":pin-project-1.1.3",
-        ":prost-0.12.3",
+        ":prost-0.12.4",
         ":tokio-1.37.0",
         ":tokio-stream-0.1.14",
         ":tower-0.4.13",
@@ -9748,7 +9749,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":async-stream-0.3.5",
-        ":prost-0.12.3",
+        ":prost-0.12.4",
         ":tokio-1.37.0",
         ":tokio-stream-0.1.14",
         ":tonic-0.10.2",
