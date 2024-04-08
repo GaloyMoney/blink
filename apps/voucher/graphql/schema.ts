@@ -1,33 +1,35 @@
 const typeDefs = `#graphql
+
+enum Status {
+  ACTIVE
+  PENDING 
+  PAID
+}
+
 type WithdrawLink {
   id: ID!
   userId: ID!
-  paymentRequest: String!
-  paymentHash: String!
-  paymentSecret: String!
-  salesAmount: Float!
-  accountType: String!
-  escrowWallet: String!
   status: Status!
-  title: String!
-  voucherAmount: Float!
-  uniqueHash: String!
-  k1: String
+  voucherAmountInCents: Float!
   createdAt: String!
-  updatedAt: String!
-  commissionPercentage: Float
-  identifierCode: String
-  secretCode: String
-  invoiceExpiration: String!
+  paidAt: String
+  salesAmountInCents: Float!
+  commissionPercentage: Float!
+  identifierCode: String!
 }
 
-type FeesResult {
-  fees: Float!
-}
-
-type SendPaymentOnChainResult {
-  status: String!
-  amount: Float!
+type WithdrawLinkWithSecret {
+  id: ID!
+  userId: ID!
+  status: Status!
+  voucherAmountInCents: Float!
+  createdAt: String!
+  paidAt: String
+  salesAmountInCents: Float!
+  identifierCode: String!
+  voucherSecret: String!
+  commissionPercentage: Float!
+  uniqueHash: String!
 }
 
 type WithdrawLinksByUserIdResult {
@@ -35,57 +37,35 @@ type WithdrawLinksByUserIdResult {
   totalLinks: Int
 }
 
-enum Status {
-  FUNDED
-  UNFUNDED
-  PAID
+enum OnChainWithdrawResultStatus{
+  Success
+  Failed
 }
 
+type onChainWithdrawResult {
+  status: OnChainWithdrawResultStatus
+}
+
+
 type Query {
-  getWithdrawLink(id: ID, uniqueHash: String, k1: String, paymentHash: String, secretCode: String, identifierCode: String  ): WithdrawLink
-  getAllWithdrawLinks: [WithdrawLink!]!
-  getWithdrawLinksByUserId(userId: ID!, status: Status, limit: Int, offset: Int): WithdrawLinksByUserIdResult!
-  getOnChainPaymentFees(id: ID!, btcWalletAddress: String!): FeesResult!
+  getWithdrawLink(voucherSecret: String): WithdrawLinkWithSecret
+  getWithdrawLinksByUserId(status: Status, limit: Int, offset: Int): WithdrawLinksByUserIdResult!
 }
 
 type Mutation {
-  createWithdrawLink(input: CreateWithdrawLinkInput!): WithdrawLink!
-  updateWithdrawLink(id: ID!, input: UpdateWithdrawLinkInput!): WithdrawLink!
-  deleteWithdrawLink(id: ID!): ID!
-  sendPaymentOnChain(id: ID!, btcWalletAddress: String!): SendPaymentOnChainResult!
+  createWithdrawLink(input: CreateWithdrawLinkInput!): WithdrawLinkWithSecret!
+  onChainWithdrawLink(input: OnChainWithdrawLinkInput!): onChainWithdrawResult!
 }
 
 input CreateWithdrawLinkInput {
-  id:ID
-  userId: ID!
-  paymentRequest: String!
-  paymentHash: String!
-  paymentSecret: String!
-  salesAmount: Float!
-  accountType: String!
-  escrowWallet: String!
-  status: Status
-  title: String!
-  voucherAmount: Float!
-  uniqueHash: String!
-  k1: String
+  voucherAmountInCents: Float!
+  walletId: ID!
   commissionPercentage: Float
 }
 
-input UpdateWithdrawLinkInput {
-  userId: ID
-  paymentRequest: String
-  paymentHash: String
-  paymentSecret: String
-  salesAmount: Float
-  accountType: String
-  escrowWallet: String
-  status: Status
-  title: String
-  voucherAmount: Float
-  uniqueHash: String
-  k1: String
-  commissionPercentage: Float
+input OnChainWithdrawLinkInput {
+  voucherSecret: String!
+  btcWalletAddress: String!
 }
 `
 

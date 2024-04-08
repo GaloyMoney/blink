@@ -20,7 +20,7 @@ export default function CreatePagePercentage({
 }: Props) {
   return (
     <>
-      <Heading>Please Enter Commission</Heading>
+      <Heading>Commission Percentage</Heading>
       <div className="text-3xl font-semibold">{formatOperand(commissionPercentage)}%</div>
 
       <Numpad
@@ -29,7 +29,7 @@ export default function CreatePagePercentage({
         unit="PERCENTAGE"
       />
       <div className={styles.commission_and_submit_buttons}>
-        <Button style={{ width: "90%" }} onClick={() => setCurrentPage("AMOUNT")}>
+        <Button style={{ width: "80%" }} onClick={() => setCurrentPage("AMOUNT")}>
           Set commission
         </Button>
       </div>

@@ -14,11 +14,11 @@ import { createClient } from "graphql-ws"
 
 import { env } from "@/env"
 
-const { NEXT_PUBLIC_GALOY_URL, NEXT_PUBLIC_LOCAL_URL } = env
+const { NEXT_PUBLIC_GALOY_URL, NEXT_PUBLIC_LOCAL_URL, NEXT_PUBLIC_WS_URL } = env
 
 function makeClient() {
   const httpLinkMainnet = new HttpLink({
-    uri: "https://cors-anywhere.herokuapp.com/https://api.staging.galoy.io/graphql",
+    uri: NEXT_PUBLIC_GALOY_URL,
   })
 
   const httpLinkLocal = new HttpLink({
@@ -27,7 +27,7 @@ function makeClient() {
 
   const wsLink = new GraphQLWsLink(
     createClient({
-      url: "wss://ws.staging.galoy.io/graphql",
+      url: NEXT_PUBLIC_WS_URL,
       retryAttempts: 12,
       connectionParams: {},
       shouldRetry: (errOrCloseEvent) => {

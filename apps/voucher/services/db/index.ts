@@ -1,17 +1,36 @@
-import { v4 as uuidv4 } from "uuid"
-import { Knex } from "knex"
-import knexConfig from "./connection"
-const knex = require("knex")(knexConfig)
+import { v4 as uuidV4 } from "uuid"
+import { knex } from "./connection"
 
-import { generateCode } from "@/utils/helpers"
+import { generateCode, generateRandomHash } from "@/utils/helpers"
+import { Status } from "@/lib/graphql/generated"
 
-// CREATE READ UPDATE DELETE functions
-export async function getWithdrawLinkByIdQuery({ id }: { id: string }) {
+type WithdrawLink = {
+  id: string
+  userId: string
+  identifierCode: string
+  voucherSecret: string
+  k1: string
+  uniqueHash: string
+  createdAt?: Date
+  paidAt?: Date
+  status: Status
+  voucherAmountInCents: number
+  salesAmountInCents: number
+  commissionPercentage: number
+}
+
+export async function getWithdrawLinkBySecret({
+  voucherSecret,
+}: {
+  voucherSecret: string
+}): Promise<WithdrawLink | undefined | Error> {
   try {
-    const query = knex.select().from("withdrawLinks").where({ id })
-    return query.first()
+    const query = knex.select().from("WithdrawLinks").where({ voucherSecret })
+    return await query.first()
   } catch (error) {
-    throw error
+    return error instanceof Error
+      ? error
+      : new Error("Failed to get withdraw link by secret")
   }
 }
 
@@ -19,108 +38,27 @@ export async function getWithdrawLinkByUniqueHashQuery({
   uniqueHash,
 }: {
   uniqueHash: string
-}) {
+}): Promise<WithdrawLink | undefined | Error> {
   try {
-    const query = knex.select().from("withdrawLinks").where({ uniqueHash })
-    return query.first()
+    const query = knex.select().from("WithdrawLinks").where({ uniqueHash })
+    return await query.first()
   } catch (error) {
-    throw error
+    return error instanceof Error
+      ? error
+      : new Error("Failed to get withdraw link by unique hash")
   }
 }
 
-export async function getWithdrawLinkByK1Query({ k1 }: { k1: string }) {
-  try {
-    const query = knex.select().from("withdrawLinks").where({ k1 })
-    return query.first()
-  } catch (error) {
-    throw error
-  }
-}
-
-export async function getWithdrawLinkBySecret({ secretCode }: { secretCode: string }) {
-  try {
-    const query = knex.select().from("withdrawLinks").where({ secretCode })
-    return query.first()
-  } catch (error) {
-    throw error
-  }
-}
-
-export async function getWithdrawLinkByPaymentHashQuery({
-  paymentHash,
+export async function getWithdrawLinkByK1Query({
+  k1,
 }: {
-  paymentHash: string
-}) {
+  k1: string
+}): Promise<WithdrawLink | undefined | Error> {
   try {
-    const query = knex.select().from("withdrawLinks").where({ paymentHash })
-    return query.first()
+    const query = knex.select().from("WithdrawLinks").where({ k1 })
+    return await query.first()
   } catch (error) {
-    throw error
-  }
-}
-
-export async function getAllWithdrawLinksQuery() {
-  try {
-    return knex.select().from("withdrawLinks")
-  } catch (error) {
-    throw error
-  }
-}
-export async function createWithdrawLinkMutation(input: any) {
-  try {
-    let identifierCode = generateCode(5)
-    let exists = await knex("withdrawLinks").where({ identifierCode }).first()
-
-    while (exists) {
-      identifierCode = generateCode(5)
-      exists = await knex("withdrawLinks").where({ identifierCode }).first()
-    }
-
-    let secretCode = generateCode(12)
-    exists = await knex("withdrawLinks").where({ secretCode }).first()
-
-    while (exists) {
-      secretCode = generateCode(12)
-      exists = await knex("withdrawLinks").where({ secretCode }).first()
-    }
-
-    const withdrawLink = {
-      ...input,
-      id: uuidv4(),
-      identifierCode,
-      secretCode,
-    }
-
-    const [createdWithdrawLink] = await knex("withdrawLinks")
-      .insert(withdrawLink)
-      .returning("*")
-
-    console.log(createdWithdrawLink)
-
-    return createdWithdrawLink
-  } catch (error) {
-    throw error
-  }
-}
-
-export async function updateWithdrawLinkMutation({ id, input }: any) {
-  try {
-    const [withdrawLink] = await knex("withdrawLinks")
-      .where({ id })
-      .update(input)
-      .returning("*")
-    return withdrawLink
-  } catch (error) {
-    throw error
-  }
-}
-
-export async function deleteWithdrawLinkMutation({ id }: { id: string }) {
-  try {
-    await knex("withdrawLinks").where({ id }).del()
-    return id
-  } catch (error) {
-    throw error
+    return error instanceof Error ? error : new Error("Failed to get withdraw link by K1")
   }
 }
 
@@ -134,19 +72,9 @@ export async function getWithdrawLinksByUserIdQuery({
   status?: string
   limit?: number
   offset?: number
-}) {
+}): Promise<{ withdrawLinks: WithdrawLink[]; totalLinks: number } | Error> {
   try {
-    let query = knex
-      .select()
-      .from("withdrawLinks")
-      .where({ userId })
-      .andWhere(function (this: Knex.QueryBuilder) {
-        this.where("status", "<>", "UNFUNDED").orWhere(
-          "invoiceExpiration",
-          ">",
-          knex.fn.now(),
-        )
-      })
+    let query = knex.select().from("WithdrawLinks").where({ userId })
 
     if (status) {
       query = query.andWhere({ status })
@@ -160,17 +88,7 @@ export async function getWithdrawLinksByUserIdQuery({
 
     const withdrawLinks = await query.orderBy("createdAt", "desc")
 
-    let countQuery = knex
-      .count()
-      .from("withdrawLinks")
-      .where({ userId })
-      .andWhere(function (this: Knex.QueryBuilder) {
-        this.where("status", "<>", "UNFUNDED").orWhere(
-          "invoiceExpiration",
-          ">",
-          knex.fn.now(),
-        )
-      })
+    let countQuery = knex.count().from("WithdrawLinks").where({ userId })
 
     if (status) {
       countQuery = countQuery.andWhere({ status })
@@ -180,7 +98,63 @@ export async function getWithdrawLinksByUserIdQuery({
 
     return { withdrawLinks, totalLinks }
   } catch (error) {
-    throw error
+    return error instanceof Error
+      ? error
+      : new Error("Failed to get withdraw links by user ID")
+  }
+}
+
+export async function createWithdrawLinkMutation(input: {
+  userId: string
+  voucherAmountInCents: number
+  salesAmountInCents: number
+  commissionPercentage: number
+}): Promise<WithdrawLink | Error> {
+  try {
+    let identifierCode = generateCode(6)
+    let retryIdentifierCode = 0
+    let identifierExists = await knex("WithdrawLinks").where({ identifierCode }).first()
+
+    while (identifierExists) {
+      if (retryIdentifierCode > 10) {
+        throw new Error("Failed to generate unique identifier code.")
+      } else {
+        retryIdentifierCode += 1
+        identifierCode = generateCode(6)
+        identifierExists = await knex("WithdrawLinks").where({ identifierCode }).first()
+      }
+    }
+
+    let voucherSecret = generateCode(12)
+    let retryVoucherSecret = 0
+    let voucherSecretExists = await knex("WithdrawLinks").where({ voucherSecret }).first()
+
+    while (retryVoucherSecret < 10 && voucherSecretExists) {
+      retryVoucherSecret += 1
+      if (retryVoucherSecret >= 10) {
+        throw new Error("Failed to generate unique secret code.")
+      }
+      voucherSecret = generateCode(12)
+      voucherSecretExists = await knex("WithdrawLinks").where({ voucherSecret }).first()
+    }
+
+    const withdrawLink: WithdrawLink = {
+      id: uuidV4(),
+      identifierCode,
+      voucherSecret,
+      status: Status.Pending,
+      k1: generateRandomHash(),
+      uniqueHash: generateRandomHash(),
+      ...input,
+    }
+
+    const [createdWithdrawLink] = await knex("WithdrawLinks")
+      .insert(withdrawLink)
+      .returning("*")
+
+    return createdWithdrawLink
+  } catch (error) {
+    return error instanceof Error ? error : new Error("Failed to create withdraw link")
   }
 }
 
@@ -189,13 +163,19 @@ export async function updateWithdrawLinkStatus({
   status,
 }: {
   id: string
-  status: string
-}) {
+  status: Status
+}): Promise<WithdrawLink | Error> {
   try {
-    return knex.transaction(async (trx: any) => {
-      await trx("withdrawLinks").update({ status }).where({ id })
-    })
+    const [withdrawLink] = await knex("WithdrawLinks")
+      .where({ id })
+      .update({
+        status,
+      })
+      .returning("*")
+    return withdrawLink
   } catch (error) {
-    throw error
+    return error instanceof Error
+      ? error
+      : new Error("Failed to update withdraw link status")
   }
 }

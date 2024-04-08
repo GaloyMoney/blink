@@ -1,12 +1,25 @@
 import { useCallback, useMemo } from "react"
 
 import { useCurrencyListQuery } from "@/lib/graphql/generated"
+import { gql } from "@apollo/client"
 
 const usdDisplayCurrency = {
   symbol: "$",
   id: "USD",
   fractionDigits: 2,
 }
+
+gql`
+  query CurrencyList {
+    currencyList {
+      id
+      symbol
+      name
+      flag
+      fractionDigits
+    }
+  }
+`
 
 const defaultDisplayCurrency = usdDisplayCurrency
 

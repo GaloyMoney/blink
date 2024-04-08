@@ -16,25 +16,7 @@ export default function UserLinks({ withdrawLink }: UserLinksProps) {
   return (
     <>
       {" "}
-      <Link
-        href={
-          withdrawLink.status === Status.Unfunded
-            ? `/fund/${withdrawLink.id}`
-            : withdrawLink.status === Status.Funded
-            ? `/withdraw/${withdrawLink.id}`
-            : "#"
-        }
-        onClick={(event) => {
-          if (
-            withdrawLink.status !== Status.Unfunded &&
-            withdrawLink.status !== Status.Funded
-          ) {
-            event.preventDefault()
-          }
-        }}
-        key={withdrawLink.id}
-        className={styles.TopContainer}
-      >
+      <div key={withdrawLink.id} className={styles.TopContainer}>
         <div className={styles.LinkContainer}>
           <div className={styles.HeadingContainer}>
             <div>
@@ -60,29 +42,23 @@ export default function UserLinks({ withdrawLink }: UserLinksProps) {
             <span
               style={{
                 backgroundColor:
-                  withdrawLink.status === Status.Unfunded
-                    ? "#d12b2b67"
-                    : withdrawLink.status === Status.Paid
+                  withdrawLink.status === Status.Paid
                     ? "#a9a9a975"
-                    : withdrawLink.status === Status.Funded
+                    : withdrawLink.status === Status.Active
                     ? "#207f3c75"
                     : "white",
                 color:
-                  withdrawLink.status === Status.Unfunded
-                    ? "#b82222"
-                    : withdrawLink.status === Status.Paid
+                  withdrawLink.status === Status.Paid
                     ? "#757575"
-                    : withdrawLink.status === Status.Funded
+                    : withdrawLink.status === Status.Active
                     ? "#0a802d"
                     : "white",
               }}
               className={styles.Status}
             >
-              {withdrawLink.status === Status.Unfunded ? (
-                <p>Unfunded</p>
-              ) : withdrawLink.status === Status.Paid ? (
+              {withdrawLink.status === Status.Paid ? (
                 <p>Claimed</p>
-              ) : withdrawLink.status === Status.Funded ? (
+              ) : withdrawLink.status === Status.Active ? (
                 <p>Active</p>
               ) : (
                 ""
@@ -91,21 +67,19 @@ export default function UserLinks({ withdrawLink }: UserLinksProps) {
           </div>
           <div className={styles.DetailsContainer}>
             <div className={styles.LinkDetails}>
-              <Bold>Voucher Amount</Bold> <p>${withdrawLink.voucherAmount / 100} US</p>
+              <Bold>Voucher Amount</Bold>{" "}
+              <p>${withdrawLink.voucherAmountInCents / 100} US</p>
             </div>
             <div className={styles.LinkDetails}>
               <Bold>Percent commission</Bold> <p>{withdrawLink.commissionPercentage}</p>
             </div>
             <div className={styles.LinkDetails}>
               <Bold>Sales amount</Bold>{" "}
-              <p>
-                ${withdrawLink?.salesAmount}{" "}
-                {withdrawLink.accountType === "BTC" ? "sats" : "US"}
-              </p>
+              <p>${withdrawLink?.salesAmountInCents / 100} US</p>
             </div>
           </div>
         </div>
-      </Link>
+      </div>
     </>
   )
 }

@@ -1,8 +1,9 @@
 import { NextAuthOptions } from "next-auth"
 
 import { env } from "@/env"
-// import { fetchUserData } from "@/app/graphql/quries/me-query"
-// import { MeQuery } from "@/lib/graphql/generated"
+import { fetchUserData } from "@/services/galoy/query/me"
+import { MeQuery } from "@/lib/graphql/generated"
+import { apollo } from "@/services/galoy/client"
 
 declare module "next-auth" {
   interface Profile {
@@ -11,7 +12,7 @@ declare module "next-auth" {
   interface Session {
     sub: string | null
     accessToken: string
-    // userData?: MeQuery
+    userData: MeQuery
   }
 }
 
@@ -24,7 +25,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: env.CLIENT_SECRET,
       wellKnown: `${env.HYDRA_PUBLIC}/.well-known/openid-configuration`,
       authorization: {
-        params: { scope: "read" },
+        params: { scope: "read write" },
       },
       idToken: false,
       name: "Blink",
@@ -57,11 +58,15 @@ export const authOptions: NextAuthOptions = {
       ) {
         throw new Error("Invalid token")
       }
-    //   const res = await fetchUserData({ token: token.accessToken })
 
-    //   if (!(res instanceof Error)) {
-    //     session.userData = res.data
-    //   }
+      const client = apollo(token.accessToken).getClient()
+      const fetchUserDataRes = await fetchUserData({ client })
+
+      if (fetchUserDataRes instanceof Error) {
+        throw fetchUserDataRes
+      }
+
+      session.userData = fetchUserDataRes
       session.sub = token.sub
       session.accessToken = token.accessToken
       return session

@@ -1,8 +1,6 @@
 import { v4 as uuidv4 } from "uuid"
 
-import { GET_WITHDRAW_LINK, GET_WITHDRAW_LINKS_BY_USER_ID } from "@/utils/graphql/query"
-import { CREATE_WITHDRAW_LINK, DELETE_WITHDRAW_LINK } from "@/utils/graphql/mutation"
-import { server } from "@/pages/api/graphql/index"
+import { server } from "@/app/api/graphql/route"
 import { generateRandomHash } from "@/utils/helpers"
 
 const random_hash = generateRandomHash()
@@ -30,11 +28,11 @@ describe("GraphQL API Tests", () => {
         userId: userId,
         paymentRequest: "paymentRequest",
         paymentSecret: "paymentSecret",
-        salesAmount: 12,
+        salesAmountInCents: 12,
         accountType: "account",
         escrowWallet: "wallet",
         title: `Galoy withdraw test`,
-        voucherAmount: 12,
+        voucherAmountInCents: 12,
         uniqueHash: random_hash,
         k1: random_hash,
         commissionPercentage: 12,

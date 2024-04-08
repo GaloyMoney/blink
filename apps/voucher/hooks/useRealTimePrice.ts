@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
 
-import { SubscriptionResult } from "@apollo/client"
+import { gql, SubscriptionResult } from "@apollo/client"
 
 import { useDisplayCurrency } from "./useDisplayCurrency"
 
@@ -18,6 +18,45 @@ interface Currency {
   flag: string
   fractionDigits: number
 }
+
+gql`
+  query RealtimePriceInitial($currency: DisplayCurrency!) {
+    realtimePrice(currency: $currency) {
+      timestamp
+      btcSatPrice {
+        base
+        offset
+      }
+      usdCentPrice {
+        base
+        offset
+      }
+      denominatorCurrency
+    }
+  }
+`
+
+gql`
+  subscription realtimePriceWs($currency: DisplayCurrency!) {
+    realtimePrice(input: { currency: $currency }) {
+      errors {
+        message
+      }
+      realtimePrice {
+        timestamp
+        btcSatPrice {
+          base
+          offset
+        }
+        usdCentPrice {
+          base
+          offset
+        }
+        denominatorCurrency
+      }
+    }
+  }
+`
 
 const useRealtimePrice = (
   currency: string,

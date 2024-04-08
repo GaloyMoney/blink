@@ -1,30 +1,40 @@
 "use client"
 import { useState } from "react"
 
-import { useRouter } from "next/navigation"
-
 import CreatePageAmount from "@/components/Create/CreatePageAmount/CreatePageAmount"
 import CreatePagePercentage from "@/components/Create/CreatePagePercentage/CreatePagePercentage"
-import {
-  Currency,
-  useCreateWithdrawLinkMutation,
-  useLnUsdInvoiceCreateOnBehalfOfRecipientMutation,
-} from "@/lib/graphql/generated"
+import { Currency, Wallet } from "@/lib/graphql/generated"
 import useSatsPrice from "@/hooks/useSatsPrice"
 import PageLoadingComponent from "@/components/Loading/PageLoadingComponent"
-import {
-  calculateCommission,
-  errorArrayToString,
-  generateRandomHash,
-} from "@/utils/helpers"
+import { calculateAmountAfterCommission, getWalletDetails } from "@/utils/helpers"
 import ConfirmModal from "@/components/Create/ConifrmModal/ConfirmModal"
 import InfoComponent from "@/components/InfoComponent/InfoComponent"
 import useRealtimePrice from "@/hooks/useRealTimePrice"
 import { DEFAULT_CURRENCY } from "@/config/appConfig"
-import { env } from "@/env"
-const { NEXT_PUBLIC_ESCROW_WALLET_USD } = env
+import { gql } from "@apollo/client"
+import { useSession } from "next-auth/react"
+
+gql`
+  mutation CreateWithdrawLink($input: CreateWithdrawLinkInput!) {
+    createWithdrawLink(input: $input) {
+      commissionPercentage
+      createdAt
+      id
+      identifierCode
+      salesAmountInCents
+      status
+      uniqueHash
+      userId
+      voucherAmountInCents
+      voucherSecret
+      paidAt
+    }
+  }
+`
 
 export default function CreatePage() {
+  const session = useSession()
+
   const { usdToSats } = useSatsPrice()
   const storedCurrency =
     typeof window !== "undefined" ? localStorage.getItem("currency") : null
@@ -34,88 +44,37 @@ export default function CreatePage() {
   const [currency, setCurrency] = useState<Currency>(
     storedCurrency ? JSON.parse(storedCurrency) : DEFAULT_CURRENCY,
   )
-
   const [commissionPercentage, setCommissionPercentage] = useState<string>(
     storedCommission || "0",
   )
   const { currencyToCents, hasLoaded } = useRealtimePrice(currency.id)
-  const [currentPage, setCurrentPage] = useState<string>("AMOUNT")
   const [amount, setAmount] = useState<string>("0")
+
   const [confirmModal, setConfirmModal] = useState<boolean>(false)
-  const [loadingPageChange, setLoadingPageChange] = useState<boolean>(false)
+  const [currentPage, setCurrentPage] = useState<string>("AMOUNT")
 
-  const router = useRouter()
-  const AmountInDollars = (
-    currencyToCents(Number(amount), currency.id, currency.fractionDigits)
-      .convertedCurrencyAmount / 100
-  ).toFixed(2)
-
-  const commissionAmountInDollars = calculateCommission(
-    AmountInDollars,
-    commissionPercentage,
+  const AmountInDollars = Number(
+    (
+      currencyToCents(Number(amount), currency.id, currency.fractionDigits)
+        .convertedCurrencyAmount / 100
+    ).toFixed(2),
   )
 
-  const [createWithdrawLink, { loading: withdrawLinkLoading, error: withdrawLinkError }] =
-    useCreateWithdrawLinkMutation()
+  const voucherAmountInDollars = calculateAmountAfterCommission({
+    amount: AmountInDollars,
+    commissionRatePercentage: Number(commissionPercentage),
+  })
 
-  const [createLnUsdInvoice, { loading: lnUSDInvoiceLoading, error: lnUSDInvoiceError }] =
-    useLnUsdInvoiceCreateOnBehalfOfRecipientMutation()
-
-  const handleSubmit = async () => {
-    setLoadingPageChange(true)
-    try {
-      const result = await createLnUsdInvoice({
-        variables: {
-          input: {
-            recipientWalletId: `${NEXT_PUBLIC_ESCROW_WALLET_USD}`,
-            amount: Math.round(Number(commissionAmountInDollars) * 100),
-            memo: `Galoy withdraw  $${Number(commissionAmountInDollars)} @${Number(
-              commissionPercentage,
-            )}`,
-          },
-        },
-        context: {
-          endpoint: "GALOY",
-        },
-      })
-
-      const data = result.data?.lnUsdInvoiceCreateOnBehalfOfRecipient.invoice
-      const error = errorArrayToString(
-        result.data?.lnUsdInvoiceCreateOnBehalfOfRecipient.errors?.map(
-          (error) => new Error(error.message),
-        ),
-      )
-      if (!error && data) {
-        const createWithdrawLinkResult = await createWithdrawLink({
-          variables: {
-            input: {
-              paymentHash: data.paymentHash,
-              userId: "aaaaaaaa-e098-4a16-932b-e4f4abc24366",
-              paymentRequest: data.paymentRequest,
-              paymentSecret: data.paymentSecret,
-              salesAmount: Number(AmountInDollars),
-              accountType: "USD",
-              escrowWallet: `${NEXT_PUBLIC_ESCROW_WALLET_USD}`,
-              title: `Galoy withdraw  $${Number(commissionAmountInDollars)} @${Number(
-                commissionPercentage,
-              )}`,
-              voucherAmount: Number((Number(commissionAmountInDollars) * 100).toFixed()),
-              uniqueHash: generateRandomHash(),
-              k1: generateRandomHash(),
-              commissionPercentage: Number(commissionPercentage),
-            },
-          },
-        })
-        router.push(`/fund/${createWithdrawLinkResult.data?.createWithdrawLink.id}`)
-      }
-    } catch (err) {
-      setLoadingPageChange(false)
-      console.log("error in creating invoice at create page", err)
-    }
+  if (!session?.data?.userData?.me?.defaultAccount.wallets) {
+    return null
   }
 
-  if (withdrawLinkLoading || lnUSDInvoiceLoading || loadingPageChange) {
-    return <PageLoadingComponent />
+  const { btcWallet, usdWallet } = getWalletDetails({
+    wallets: session?.data?.userData?.me?.defaultAccount?.wallets as Wallet[],
+  })
+
+  if (!btcWallet || !usdWallet) {
+    return null
   }
 
   if (currentPage === "AMOUNT") {
@@ -124,12 +83,12 @@ export default function CreatePage() {
         <ConfirmModal
           open={confirmModal}
           onClose={() => setConfirmModal(false)}
-          handleSubmit={handleSubmit}
           amount={amount}
           currency={currency}
           commissionPercentage={commissionPercentage}
-          commissionAmountInDollars={commissionAmountInDollars}
-          usdToSats={usdToSats}
+          voucherAmountInDollars={voucherAmountInDollars}
+          btcWallet={btcWallet}
+          usdWallet={usdWallet}
         />
 
         <CreatePageAmount
@@ -142,7 +101,7 @@ export default function CreatePage() {
           setConfirmModal={setConfirmModal}
           commissionPercentage={commissionPercentage}
           AmountInDollars={AmountInDollars}
-          commissionAmountInDollars={commissionAmountInDollars}
+          voucherAmountInDollars={voucherAmountInDollars}
           hasLoaded={hasLoaded}
         />
       </div>

@@ -1,6 +1,33 @@
 import * as React from "react"
 
 import { ExchangeCurrencyUnit, usePriceSubscription } from "@/lib/graphql/generated"
+import { gql } from "@apollo/client"
+
+gql`
+  subscription price(
+    $amount: SatAmount!
+    $amountCurrencyUnit: ExchangeCurrencyUnit!
+    $priceCurrencyUnit: ExchangeCurrencyUnit!
+  ) {
+    price(
+      input: {
+        amount: $amount
+        amountCurrencyUnit: $amountCurrencyUnit
+        priceCurrencyUnit: $priceCurrencyUnit
+      }
+    ) {
+      errors {
+        message
+      }
+      price {
+        base
+        offset
+        currencyUnit
+        formattedAmount
+      }
+    }
+  }
+`
 
 const useSatPrice = () => {
   const priceRef = React.useRef<number>(0)

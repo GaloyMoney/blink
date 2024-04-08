@@ -6,7 +6,7 @@ export async function sendPaymentRequest(
   paymentRequest: string,
   memo: string,
 ) {
-  const sendPaymentResponse = await fetch(`https://${NEXT_PUBLIC_GALOY_URL}/graphql`, {
+  const sendPaymentResponse = await fetch(NEXT_PUBLIC_GALOY_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -40,7 +40,7 @@ export async function sendPaymentRequest(
 }
 
 export async function getRealtimePrice() {
-  const response = await fetch(`https://${NEXT_PUBLIC_GALOY_URL}/graphql`, {
+  const response = await fetch(NEXT_PUBLIC_GALOY_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -79,7 +79,7 @@ export async function sendOnChainPaymentBTC(
   amount: number,
   memo: string,
 ) {
-  const sendPaymentResponse = await fetch(`https://${NEXT_PUBLIC_GALOY_URL}/graphql`, {
+  const sendPaymentResponse = await fetch(NEXT_PUBLIC_GALOY_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -118,7 +118,7 @@ export async function sendOnChainPaymentUSD(
   amount: number,
   memo: string,
 ) {
-  const sendPaymentResponse = await fetch(`https://${NEXT_PUBLIC_GALOY_URL}/graphql`, {
+  const sendPaymentResponse = await fetch(NEXT_PUBLIC_GALOY_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -157,7 +157,7 @@ export async function getOnChainTxFeeBTC(
   address: string,
   amount: number,
 ) {
-  const onChainTxFeeResponse = await fetch(`https://${NEXT_PUBLIC_GALOY_URL}/graphql`, {
+  const onChainTxFeeResponse = await fetch(NEXT_PUBLIC_GALOY_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -165,12 +165,7 @@ export async function getOnChainTxFeeBTC(
     },
     body: JSON.stringify({
       query: `
-          query OnChainTxFee($walletId: WalletId!, $address: OnChainAddress!, $amount: SatAmount!) {
-            onChainTxFee(walletId: $walletId, address: $address, amount: $amount) {
-              amount
-              targetConfirmations
-            }
-          }
+    
         `,
       variables: {
         walletId: walletId,
@@ -191,7 +186,7 @@ export async function getOnChainTxFeeUSD(
   address: string,
   amount: number,
 ) {
-  const onChainTxFeeResponse = await fetch(`https://${NEXT_PUBLIC_GALOY_URL}/graphql`, {
+  const onChainTxFeeResponse = await fetch(NEXT_PUBLIC_GALOY_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

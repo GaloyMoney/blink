@@ -428,20 +428,9 @@ export type Country = {
 };
 
 export type CreateWithdrawLinkInput = {
-  accountType: Scalars['String']['input'];
   commissionPercentage?: InputMaybe<Scalars['Float']['input']>;
-  escrowWallet: Scalars['String']['input'];
-  id?: InputMaybe<Scalars['ID']['input']>;
-  k1?: InputMaybe<Scalars['String']['input']>;
-  paymentHash: Scalars['String']['input'];
-  paymentRequest: Scalars['String']['input'];
-  paymentSecret: Scalars['String']['input'];
-  salesAmount: Scalars['Float']['input'];
-  status?: InputMaybe<Status>;
-  title: Scalars['String']['input'];
-  uniqueHash: Scalars['String']['input'];
-  userId: Scalars['ID']['input'];
-  voucherAmount: Scalars['Float']['input'];
+  voucherAmountInCents: Scalars['Float']['input'];
+  walletId: Scalars['ID']['input'];
 };
 
 export type Currency = {
@@ -490,11 +479,6 @@ export type FeedbackSubmitInput = {
 export type FeesInformation = {
   __typename?: 'FeesInformation';
   deposit: DepositFeesInformation;
-};
-
-export type FeesResult = {
-  __typename?: 'FeesResult';
-  fees: Scalars['Float']['output'];
 };
 
 /** Provides global settings for the application which might have an impact for the user. */
@@ -893,8 +877,7 @@ export type Mutation = {
   callbackEndpointDelete: SuccessPayload;
   captchaCreateChallenge: CaptchaCreateChallengePayload;
   captchaRequestAuthCode: SuccessPayload;
-  createWithdrawLink: WithdrawLink;
-  deleteWithdrawLink: Scalars['ID']['output'];
+  createWithdrawLink: WithdrawLinkWithSecret;
   deviceNotificationTokenCreate: SuccessPayload;
   feedbackSubmit: SuccessPayload;
   /**
@@ -989,10 +972,9 @@ export type Mutation = {
   onChainPaymentSendAll: PaymentSendPayload;
   onChainUsdPaymentSend: PaymentSendPayload;
   onChainUsdPaymentSendAsBtcDenominated: PaymentSendPayload;
+  onChainWithdrawLink: OnChainWithdrawResult;
   quizClaim: QuizClaimPayload;
-  sendPaymentOnChain: SendPaymentOnChainResult;
   supportChatMessageAdd: SupportChatMessageAddPayload;
-  updateWithdrawLink: WithdrawLink;
   /** @deprecated will be moved to AccountContact */
   userContactUpdateAlias: UserContactUpdateAliasPayload;
   userEmailDelete: UserEmailDeletePayload;
@@ -1060,11 +1042,6 @@ export type MutationCaptchaRequestAuthCodeArgs = {
 
 export type MutationCreateWithdrawLinkArgs = {
   input: CreateWithdrawLinkInput;
-};
-
-
-export type MutationDeleteWithdrawLinkArgs = {
-  id: Scalars['ID']['input'];
 };
 
 
@@ -1208,25 +1185,18 @@ export type MutationOnChainUsdPaymentSendAsBtcDenominatedArgs = {
 };
 
 
+export type MutationOnChainWithdrawLinkArgs = {
+  input: OnChainWithdrawLinkInput;
+};
+
+
 export type MutationQuizClaimArgs = {
   input: QuizClaimInput;
 };
 
 
-export type MutationSendPaymentOnChainArgs = {
-  btcWalletAddress: Scalars['String']['input'];
-  id: Scalars['ID']['input'];
-};
-
-
 export type MutationSupportChatMessageAddArgs = {
   input: SupportChatMessageAddInput;
-};
-
-
-export type MutationUpdateWithdrawLinkArgs = {
-  id: Scalars['ID']['input'];
-  input: UpdateWithdrawLinkInput;
 };
 
 
@@ -1384,6 +1354,16 @@ export type OnChainUsdTxFee = {
   amount: Scalars['CentAmount']['output'];
 };
 
+export type OnChainWithdrawLinkInput = {
+  btcWalletAddress: Scalars['String']['input'];
+  voucherSecret: Scalars['String']['input'];
+};
+
+export enum OnChainWithdrawResultStatus {
+  Failed = 'Failed',
+  Success = 'Success'
+}
+
 export type OneDayAccountLimit = AccountLimit & {
   __typename?: 'OneDayAccountLimit';
   /** The rolling time interval value in seconds for the current 24 hour period. */
@@ -1520,9 +1500,7 @@ export type Query = {
   btcPriceList?: Maybe<Array<Maybe<PricePoint>>>;
   businessMapMarkers: Array<MapMarker>;
   currencyList: Array<Currency>;
-  getAllWithdrawLinks: Array<WithdrawLink>;
-  getOnChainPaymentFees: FeesResult;
-  getWithdrawLink?: Maybe<WithdrawLink>;
+  getWithdrawLink?: Maybe<WithdrawLinkWithSecret>;
   getWithdrawLinksByUserId: WithdrawLinksByUserIdResult;
   globals?: Maybe<Globals>;
   /** @deprecated Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest */
@@ -1553,19 +1531,8 @@ export type QueryBtcPriceListArgs = {
 };
 
 
-export type QueryGetOnChainPaymentFeesArgs = {
-  btcWalletAddress: Scalars['String']['input'];
-  id: Scalars['ID']['input'];
-};
-
-
 export type QueryGetWithdrawLinkArgs = {
-  id?: InputMaybe<Scalars['ID']['input']>;
-  identifierCode?: InputMaybe<Scalars['String']['input']>;
-  k1?: InputMaybe<Scalars['String']['input']>;
-  paymentHash?: InputMaybe<Scalars['String']['input']>;
-  secretCode?: InputMaybe<Scalars['String']['input']>;
-  uniqueHash?: InputMaybe<Scalars['String']['input']>;
+  voucherSecret?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -1573,7 +1540,6 @@ export type QueryGetWithdrawLinksByUserIdArgs = {
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   status?: InputMaybe<Status>;
-  userId: Scalars['ID']['input'];
 };
 
 
@@ -1683,12 +1649,6 @@ export enum Scope {
   Write = 'WRITE'
 }
 
-export type SendPaymentOnChainResult = {
-  __typename?: 'SendPaymentOnChainResult';
-  amount: Scalars['Float']['output'];
-  status: Scalars['String']['output'];
-};
-
 export type SettlementVia = SettlementViaIntraLedger | SettlementViaLn | SettlementViaOnChain;
 
 export type SettlementViaIntraLedger = {
@@ -1714,9 +1674,9 @@ export type SettlementViaOnChain = {
 };
 
 export enum Status {
-  Funded = 'FUNDED',
+  Active = 'ACTIVE',
   Paid = 'PAID',
-  Unfunded = 'UNFUNDED'
+  Pending = 'PENDING'
 }
 
 export type Subscription = {
@@ -1852,22 +1812,6 @@ export enum TxStatus {
   Pending = 'PENDING',
   Success = 'SUCCESS'
 }
-
-export type UpdateWithdrawLinkInput = {
-  accountType?: InputMaybe<Scalars['String']['input']>;
-  commissionPercentage?: InputMaybe<Scalars['Float']['input']>;
-  escrowWallet?: InputMaybe<Scalars['String']['input']>;
-  k1?: InputMaybe<Scalars['String']['input']>;
-  paymentHash?: InputMaybe<Scalars['String']['input']>;
-  paymentRequest?: InputMaybe<Scalars['String']['input']>;
-  paymentSecret?: InputMaybe<Scalars['String']['input']>;
-  salesAmount?: InputMaybe<Scalars['Float']['input']>;
-  status?: InputMaybe<Status>;
-  title?: InputMaybe<Scalars['String']['input']>;
-  uniqueHash?: InputMaybe<Scalars['String']['input']>;
-  userId?: InputMaybe<Scalars['ID']['input']>;
-  voucherAmount?: InputMaybe<Scalars['Float']['input']>;
-};
 
 export type UpgradePayload = {
   __typename?: 'UpgradePayload';
@@ -2246,25 +2190,30 @@ export enum WalletCurrency {
 
 export type WithdrawLink = {
   __typename?: 'WithdrawLink';
-  accountType: Scalars['String']['output'];
-  commissionPercentage?: Maybe<Scalars['Float']['output']>;
+  commissionPercentage: Scalars['Float']['output'];
   createdAt: Scalars['String']['output'];
-  escrowWallet: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  identifierCode?: Maybe<Scalars['String']['output']>;
-  invoiceExpiration: Scalars['String']['output'];
-  k1?: Maybe<Scalars['String']['output']>;
-  paymentHash: Scalars['String']['output'];
-  paymentRequest: Scalars['String']['output'];
-  paymentSecret: Scalars['String']['output'];
-  salesAmount: Scalars['Float']['output'];
-  secretCode?: Maybe<Scalars['String']['output']>;
+  identifierCode: Scalars['String']['output'];
+  paidAt?: Maybe<Scalars['String']['output']>;
+  salesAmountInCents: Scalars['Float']['output'];
   status: Status;
-  title: Scalars['String']['output'];
-  uniqueHash: Scalars['String']['output'];
-  updatedAt: Scalars['String']['output'];
   userId: Scalars['ID']['output'];
-  voucherAmount: Scalars['Float']['output'];
+  voucherAmountInCents: Scalars['Float']['output'];
+};
+
+export type WithdrawLinkWithSecret = {
+  __typename?: 'WithdrawLinkWithSecret';
+  commissionPercentage: Scalars['Float']['output'];
+  createdAt: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  identifierCode: Scalars['String']['output'];
+  paidAt?: Maybe<Scalars['String']['output']>;
+  salesAmountInCents: Scalars['Float']['output'];
+  status: Status;
+  uniqueHash: Scalars['String']['output'];
+  userId: Scalars['ID']['output'];
+  voucherAmountInCents: Scalars['Float']['output'];
+  voucherSecret: Scalars['String']['output'];
 };
 
 export type WithdrawLinksByUserIdResult = {
@@ -2273,66 +2222,40 @@ export type WithdrawLinksByUserIdResult = {
   withdrawLinks: Array<WithdrawLink>;
 };
 
+export type OnChainWithdrawResult = {
+  __typename?: 'onChainWithdrawResult';
+  status?: Maybe<OnChainWithdrawResultStatus>;
+};
+
 export type CreateWithdrawLinkMutationVariables = Exact<{
   input: CreateWithdrawLinkInput;
 }>;
 
 
-export type CreateWithdrawLinkMutation = { __typename?: 'Mutation', createWithdrawLink: { __typename?: 'WithdrawLink', id: string, userId: string, paymentRequest: string, paymentHash: string, paymentSecret: string, salesAmount: number, accountType: string, escrowWallet: string, status: Status, title: string, voucherAmount: number, uniqueHash: string, k1?: string | null, createdAt: string, updatedAt: string, commissionPercentage?: number | null } };
-
-export type UpdateWithdrawLinkMutationVariables = Exact<{
-  updateWithdrawLinkId: Scalars['ID']['input'];
-  updateWithdrawLinkInput: UpdateWithdrawLinkInput;
-}>;
-
-
-export type UpdateWithdrawLinkMutation = { __typename?: 'Mutation', updateWithdrawLink: { __typename?: 'WithdrawLink', accountType: string, salesAmount: number, createdAt: string, escrowWallet: string, id: string, k1?: string | null, voucherAmount: number, paymentHash: string, paymentRequest: string, paymentSecret: string, status: Status, title: string, uniqueHash: string, userId: string, updatedAt: string, commissionPercentage?: number | null } };
-
-export type LnInvoiceCreateOnBehalfOfRecipientMutationVariables = Exact<{
-  input: LnInvoiceCreateOnBehalfOfRecipientInput;
-}>;
-
-
-export type LnInvoiceCreateOnBehalfOfRecipientMutation = { __typename?: 'Mutation', lnInvoiceCreateOnBehalfOfRecipient: { __typename?: 'LnInvoicePayload', errors: Array<{ __typename?: 'GraphQLApplicationError', message: string, path?: Array<string | null> | null, code?: string | null }>, invoice?: { __typename?: 'LnInvoice', paymentRequest: any, paymentHash: any, paymentSecret: any, satoshis: any } | null } };
-
-export type LnUsdInvoiceCreateOnBehalfOfRecipientMutationVariables = Exact<{
-  input: LnUsdInvoiceCreateOnBehalfOfRecipientInput;
-}>;
-
-
-export type LnUsdInvoiceCreateOnBehalfOfRecipientMutation = { __typename?: 'Mutation', lnUsdInvoiceCreateOnBehalfOfRecipient: { __typename?: 'LnInvoicePayload', errors: Array<{ __typename?: 'GraphQLApplicationError', message: string, path?: Array<string | null> | null, code?: string | null }>, invoice?: { __typename?: 'LnInvoice', paymentRequest: any, paymentHash: any, paymentSecret: any, satoshis: any } | null } };
-
-export type SendPaymentOnChainMutationVariables = Exact<{
-  sendPaymentOnChainId: Scalars['ID']['input'];
-  btcWalletAddress: Scalars['String']['input'];
-}>;
-
-
-export type SendPaymentOnChainMutation = { __typename?: 'Mutation', sendPaymentOnChain: { __typename?: 'SendPaymentOnChainResult', amount: number, status: string } };
-
-export type DeleteWithdrawLinkMutationVariables = Exact<{
-  id: Scalars['ID']['input'];
-}>;
-
-
-export type DeleteWithdrawLinkMutation = { __typename?: 'Mutation', deleteWithdrawLink: string };
-
-export type GetWithdrawLinkQueryVariables = Exact<{
-  getWithdrawLinkId?: InputMaybe<Scalars['ID']['input']>;
-}>;
-
-
-export type GetWithdrawLinkQuery = { __typename?: 'Query', getWithdrawLink?: { __typename?: 'WithdrawLink', id: string, userId: string, paymentRequest: string, paymentHash: string, paymentSecret: string, salesAmount: number, accountType: string, escrowWallet: string, status: Status, title: string, voucherAmount: number, uniqueHash: string, k1?: string | null, createdAt: string, updatedAt: string, commissionPercentage?: number | null, identifierCode?: string | null, secretCode?: string | null, invoiceExpiration: string } | null };
+export type CreateWithdrawLinkMutation = { __typename?: 'Mutation', createWithdrawLink: { __typename?: 'WithdrawLinkWithSecret', commissionPercentage: number, createdAt: string, id: string, identifierCode: string, salesAmountInCents: number, status: Status, uniqueHash: string, userId: string, voucherAmountInCents: number, voucherSecret: string, paidAt?: string | null } };
 
 export type GetWithdrawLinksByUserIdQueryVariables = Exact<{
-  userId: Scalars['ID']['input'];
   status?: InputMaybe<Status>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GetWithdrawLinksByUserIdQuery = { __typename?: 'Query', getWithdrawLinksByUserId: { __typename?: 'WithdrawLinksByUserIdResult', totalLinks?: number | null, withdrawLinks: Array<{ __typename?: 'WithdrawLink', id: string, userId: string, paymentRequest: string, paymentHash: string, paymentSecret: string, salesAmount: number, accountType: string, escrowWallet: string, status: Status, title: string, voucherAmount: number, uniqueHash: string, k1?: string | null, createdAt: string, updatedAt: string, commissionPercentage?: number | null, identifierCode?: string | null, secretCode?: string | null, invoiceExpiration: string }> } };
+export type GetWithdrawLinksByUserIdQuery = { __typename?: 'Query', getWithdrawLinksByUserId: { __typename?: 'WithdrawLinksByUserIdResult', totalLinks?: number | null, withdrawLinks: Array<{ __typename?: 'WithdrawLink', commissionPercentage: number, id: string, createdAt: string, identifierCode: string, paidAt?: string | null, salesAmountInCents: number, status: Status, userId: string, voucherAmountInCents: number }> } };
+
+export type GetWithdrawLinkQueryVariables = Exact<{
+  voucherSecret?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type GetWithdrawLinkQuery = { __typename?: 'Query', getWithdrawLink?: { __typename?: 'WithdrawLinkWithSecret', commissionPercentage: number, createdAt: string, id: string, identifierCode: string, paidAt?: string | null, salesAmountInCents: number, status: Status, uniqueHash: string, userId: string, voucherAmountInCents: number, voucherSecret: string } | null };
+
+export type OnChainWithdrawLinkMutationVariables = Exact<{
+  input: OnChainWithdrawLinkInput;
+}>;
+
+
+export type OnChainWithdrawLinkMutation = { __typename?: 'Mutation', onChainWithdrawLink: { __typename?: 'onChainWithdrawResult', status?: OnChainWithdrawResultStatus | null } };
 
 export type CurrencyListQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2345,28 +2268,6 @@ export type RealtimePriceInitialQueryVariables = Exact<{
 
 
 export type RealtimePriceInitialQuery = { __typename?: 'Query', realtimePrice: { __typename?: 'RealtimePrice', timestamp: any, denominatorCurrency: any, btcSatPrice: { __typename?: 'PriceOfOneSatInMinorUnit', base: any, offset: number }, usdCentPrice: { __typename?: 'PriceOfOneUsdCentInMinorUnit', base: any, offset: number } } };
-
-export type GetOnChainPaymentFeesQueryVariables = Exact<{
-  getOnChainPaymentFeesId: Scalars['ID']['input'];
-  btcWalletAddress: Scalars['String']['input'];
-}>;
-
-
-export type GetOnChainPaymentFeesQuery = { __typename?: 'Query', getOnChainPaymentFees: { __typename?: 'FeesResult', fees: number } };
-
-export type GetWithdrawLinkBySecretQueryVariables = Exact<{
-  secretCode: Scalars['String']['input'];
-}>;
-
-
-export type GetWithdrawLinkBySecretQuery = { __typename?: 'Query', getWithdrawLink?: { __typename?: 'WithdrawLink', id: string } | null };
-
-export type LnInvoicePaymentStatusSubscriptionVariables = Exact<{
-  paymentRequest: Scalars['LnPaymentRequest']['input'];
-}>;
-
-
-export type LnInvoicePaymentStatusSubscription = { __typename?: 'Subscription', lnInvoicePaymentStatus: { __typename?: 'LnInvoicePaymentStatusPayload', status?: InvoicePaymentStatus | null, errors: Array<{ __typename?: 'GraphQLApplicationError', message: string, path?: Array<string | null> | null, code?: string | null }> } };
 
 export type RealtimePriceWsSubscriptionVariables = Exact<{
   currency: Scalars['DisplayCurrency']['input'];
@@ -2384,26 +2285,71 @@ export type PriceSubscriptionVariables = Exact<{
 
 export type PriceSubscription = { __typename?: 'Subscription', price: { __typename?: 'PricePayload', errors: Array<{ __typename?: 'GraphQLApplicationError', message: string }>, price?: { __typename?: 'Price', base: any, offset: number, currencyUnit: string, formattedAmount: string } | null } };
 
+export type LnInvoicePaymentSendMutationVariables = Exact<{
+  input: LnInvoicePaymentInput;
+}>;
+
+
+export type LnInvoicePaymentSendMutation = { __typename?: 'Mutation', lnInvoicePaymentSend: { __typename?: 'PaymentSendPayload', status?: PaymentSendResult | null, errors: Array<{ __typename?: 'GraphQLApplicationError', message: string, code?: string | null }>, transaction?: { __typename?: 'Transaction', createdAt: any, direction: TxDirection, id: string, memo?: any | null, settlementAmount: any, settlementCurrency: WalletCurrency, settlementDisplayAmount: any, settlementDisplayCurrency: any, settlementDisplayFee: any, settlementFee: any, status: TxStatus } | null } };
+
+export type OnChainUsdPaymentSendMutationVariables = Exact<{
+  input: OnChainUsdPaymentSendInput;
+}>;
+
+
+export type OnChainUsdPaymentSendMutation = { __typename?: 'Mutation', onChainUsdPaymentSend: { __typename?: 'PaymentSendPayload', status?: PaymentSendResult | null, errors: Array<{ __typename?: 'GraphQLApplicationError', code?: string | null, message: string }> } };
+
+export type IntraLedgerBtcPaymentSendMutationVariables = Exact<{
+  input: IntraLedgerPaymentSendInput;
+}>;
+
+
+export type IntraLedgerBtcPaymentSendMutation = { __typename?: 'Mutation', intraLedgerPaymentSend: { __typename?: 'PaymentSendPayload', status?: PaymentSendResult | null, errors: Array<{ __typename?: 'GraphQLApplicationError', code?: string | null, message: string }>, transaction?: { __typename?: 'Transaction', createdAt: any, direction: TxDirection, id: string, settlementAmount: any, settlementCurrency: WalletCurrency, settlementDisplayAmount: any, settlementDisplayCurrency: any, settlementFee: any, settlementDisplayFee: any, status: TxStatus, settlementPrice: { __typename?: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit', base: any, offset: number } } | null } };
+
+export type IntraLedgerUsdPaymentSendMutationVariables = Exact<{
+  input: IntraLedgerUsdPaymentSendInput;
+}>;
+
+
+export type IntraLedgerUsdPaymentSendMutation = { __typename?: 'Mutation', intraLedgerUsdPaymentSend: { __typename?: 'PaymentSendPayload', status?: PaymentSendResult | null, errors: Array<{ __typename?: 'GraphQLApplicationError', code?: string | null, message: string }>, transaction?: { __typename?: 'Transaction', createdAt: any, direction: TxDirection, id: string, settlementAmount: any, settlementCurrency: WalletCurrency, settlementDisplayAmount: any, settlementDisplayCurrency: any, settlementFee: any, settlementDisplayFee: any, status: TxStatus, settlementPrice: { __typename?: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit', base: any, offset: number } } | null } };
+
+export type RealtimePriceQueryVariables = Exact<{
+  currency?: InputMaybe<Scalars['DisplayCurrency']['input']>;
+}>;
+
+
+export type RealtimePriceQuery = { __typename?: 'Query', realtimePrice: { __typename?: 'RealtimePrice', denominatorCurrency: any, id: string, timestamp: any, btcSatPrice: { __typename?: 'PriceOfOneSatInMinorUnit', base: any, offset: number }, usdCentPrice: { __typename?: 'PriceOfOneUsdCentInMinorUnit', base: any, offset: number } } };
+
+export type MeQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', createdAt: any, id: string, language: any, phone?: any | null, totpEnabled: boolean, username?: any | null, defaultAccount: { __typename?: 'ConsumerAccount', defaultWalletId: any, displayCurrency: any, id: string, level: AccountLevel, wallets: Array<{ __typename?: 'BTCWallet', accountId: string, balance: any, id: string, pendingIncomingBalance: any, walletCurrency: WalletCurrency } | { __typename?: 'UsdWallet', accountId: string, balance: any, id: string, pendingIncomingBalance: any, walletCurrency: WalletCurrency }> }, email?: { __typename?: 'Email', address?: any | null, verified?: boolean | null } | null } | null };
+
+export type OnChainUsdTxFeeQueryVariables = Exact<{
+  address: Scalars['OnChainAddress']['input'];
+  amount: Scalars['CentAmount']['input'];
+  walletId: Scalars['WalletId']['input'];
+  speed: PayoutSpeed;
+}>;
+
+
+export type OnChainUsdTxFeeQuery = { __typename?: 'Query', onChainUsdTxFee: { __typename?: 'OnChainUsdTxFee', amount: any } };
+
 
 export const CreateWithdrawLinkDocument = gql`
     mutation CreateWithdrawLink($input: CreateWithdrawLinkInput!) {
   createWithdrawLink(input: $input) {
-    id
-    userId
-    paymentRequest
-    paymentHash
-    paymentSecret
-    salesAmount
-    accountType
-    escrowWallet
-    status
-    title
-    voucherAmount
-    uniqueHash
-    k1
-    createdAt
-    updatedAt
     commissionPercentage
+    createdAt
+    id
+    identifierCode
+    salesAmountInCents
+    status
+    uniqueHash
+    userId
+    voucherAmountInCents
+    voucherSecret
+    paidAt
   }
 }
     `;
@@ -2433,292 +2379,20 @@ export function useCreateWithdrawLinkMutation(baseOptions?: Apollo.MutationHookO
 export type CreateWithdrawLinkMutationHookResult = ReturnType<typeof useCreateWithdrawLinkMutation>;
 export type CreateWithdrawLinkMutationResult = Apollo.MutationResult<CreateWithdrawLinkMutation>;
 export type CreateWithdrawLinkMutationOptions = Apollo.BaseMutationOptions<CreateWithdrawLinkMutation, CreateWithdrawLinkMutationVariables>;
-export const UpdateWithdrawLinkDocument = gql`
-    mutation UpdateWithdrawLink($updateWithdrawLinkId: ID!, $updateWithdrawLinkInput: UpdateWithdrawLinkInput!) {
-  updateWithdrawLink(id: $updateWithdrawLinkId, input: $updateWithdrawLinkInput) {
-    accountType
-    salesAmount
-    createdAt
-    escrowWallet
-    id
-    k1
-    voucherAmount
-    paymentHash
-    paymentRequest
-    paymentSecret
-    status
-    title
-    uniqueHash
-    userId
-    updatedAt
-    commissionPercentage
-  }
-}
-    `;
-export type UpdateWithdrawLinkMutationFn = Apollo.MutationFunction<UpdateWithdrawLinkMutation, UpdateWithdrawLinkMutationVariables>;
-
-/**
- * __useUpdateWithdrawLinkMutation__
- *
- * To run a mutation, you first call `useUpdateWithdrawLinkMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useUpdateWithdrawLinkMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [updateWithdrawLinkMutation, { data, loading, error }] = useUpdateWithdrawLinkMutation({
- *   variables: {
- *      updateWithdrawLinkId: // value for 'updateWithdrawLinkId'
- *      updateWithdrawLinkInput: // value for 'updateWithdrawLinkInput'
- *   },
- * });
- */
-export function useUpdateWithdrawLinkMutation(baseOptions?: Apollo.MutationHookOptions<UpdateWithdrawLinkMutation, UpdateWithdrawLinkMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<UpdateWithdrawLinkMutation, UpdateWithdrawLinkMutationVariables>(UpdateWithdrawLinkDocument, options);
-      }
-export type UpdateWithdrawLinkMutationHookResult = ReturnType<typeof useUpdateWithdrawLinkMutation>;
-export type UpdateWithdrawLinkMutationResult = Apollo.MutationResult<UpdateWithdrawLinkMutation>;
-export type UpdateWithdrawLinkMutationOptions = Apollo.BaseMutationOptions<UpdateWithdrawLinkMutation, UpdateWithdrawLinkMutationVariables>;
-export const LnInvoiceCreateOnBehalfOfRecipientDocument = gql`
-    mutation LnInvoiceCreateOnBehalfOfRecipient($input: LnInvoiceCreateOnBehalfOfRecipientInput!) {
-  lnInvoiceCreateOnBehalfOfRecipient(input: $input) {
-    errors {
-      message
-      path
-      code
-    }
-    invoice {
-      paymentRequest
-      paymentHash
-      paymentSecret
-      satoshis
-    }
-  }
-}
-    `;
-export type LnInvoiceCreateOnBehalfOfRecipientMutationFn = Apollo.MutationFunction<LnInvoiceCreateOnBehalfOfRecipientMutation, LnInvoiceCreateOnBehalfOfRecipientMutationVariables>;
-
-/**
- * __useLnInvoiceCreateOnBehalfOfRecipientMutation__
- *
- * To run a mutation, you first call `useLnInvoiceCreateOnBehalfOfRecipientMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useLnInvoiceCreateOnBehalfOfRecipientMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [lnInvoiceCreateOnBehalfOfRecipientMutation, { data, loading, error }] = useLnInvoiceCreateOnBehalfOfRecipientMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useLnInvoiceCreateOnBehalfOfRecipientMutation(baseOptions?: Apollo.MutationHookOptions<LnInvoiceCreateOnBehalfOfRecipientMutation, LnInvoiceCreateOnBehalfOfRecipientMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<LnInvoiceCreateOnBehalfOfRecipientMutation, LnInvoiceCreateOnBehalfOfRecipientMutationVariables>(LnInvoiceCreateOnBehalfOfRecipientDocument, options);
-      }
-export type LnInvoiceCreateOnBehalfOfRecipientMutationHookResult = ReturnType<typeof useLnInvoiceCreateOnBehalfOfRecipientMutation>;
-export type LnInvoiceCreateOnBehalfOfRecipientMutationResult = Apollo.MutationResult<LnInvoiceCreateOnBehalfOfRecipientMutation>;
-export type LnInvoiceCreateOnBehalfOfRecipientMutationOptions = Apollo.BaseMutationOptions<LnInvoiceCreateOnBehalfOfRecipientMutation, LnInvoiceCreateOnBehalfOfRecipientMutationVariables>;
-export const LnUsdInvoiceCreateOnBehalfOfRecipientDocument = gql`
-    mutation LnUsdInvoiceCreateOnBehalfOfRecipient($input: LnUsdInvoiceCreateOnBehalfOfRecipientInput!) {
-  lnUsdInvoiceCreateOnBehalfOfRecipient(input: $input) {
-    errors {
-      message
-      path
-      code
-    }
-    invoice {
-      paymentRequest
-      paymentHash
-      paymentSecret
-      satoshis
-    }
-  }
-}
-    `;
-export type LnUsdInvoiceCreateOnBehalfOfRecipientMutationFn = Apollo.MutationFunction<LnUsdInvoiceCreateOnBehalfOfRecipientMutation, LnUsdInvoiceCreateOnBehalfOfRecipientMutationVariables>;
-
-/**
- * __useLnUsdInvoiceCreateOnBehalfOfRecipientMutation__
- *
- * To run a mutation, you first call `useLnUsdInvoiceCreateOnBehalfOfRecipientMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useLnUsdInvoiceCreateOnBehalfOfRecipientMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [lnUsdInvoiceCreateOnBehalfOfRecipientMutation, { data, loading, error }] = useLnUsdInvoiceCreateOnBehalfOfRecipientMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useLnUsdInvoiceCreateOnBehalfOfRecipientMutation(baseOptions?: Apollo.MutationHookOptions<LnUsdInvoiceCreateOnBehalfOfRecipientMutation, LnUsdInvoiceCreateOnBehalfOfRecipientMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<LnUsdInvoiceCreateOnBehalfOfRecipientMutation, LnUsdInvoiceCreateOnBehalfOfRecipientMutationVariables>(LnUsdInvoiceCreateOnBehalfOfRecipientDocument, options);
-      }
-export type LnUsdInvoiceCreateOnBehalfOfRecipientMutationHookResult = ReturnType<typeof useLnUsdInvoiceCreateOnBehalfOfRecipientMutation>;
-export type LnUsdInvoiceCreateOnBehalfOfRecipientMutationResult = Apollo.MutationResult<LnUsdInvoiceCreateOnBehalfOfRecipientMutation>;
-export type LnUsdInvoiceCreateOnBehalfOfRecipientMutationOptions = Apollo.BaseMutationOptions<LnUsdInvoiceCreateOnBehalfOfRecipientMutation, LnUsdInvoiceCreateOnBehalfOfRecipientMutationVariables>;
-export const SendPaymentOnChainDocument = gql`
-    mutation SendPaymentOnChain($sendPaymentOnChainId: ID!, $btcWalletAddress: String!) {
-  sendPaymentOnChain(
-    id: $sendPaymentOnChainId
-    btcWalletAddress: $btcWalletAddress
-  ) {
-    amount
-    status
-  }
-}
-    `;
-export type SendPaymentOnChainMutationFn = Apollo.MutationFunction<SendPaymentOnChainMutation, SendPaymentOnChainMutationVariables>;
-
-/**
- * __useSendPaymentOnChainMutation__
- *
- * To run a mutation, you first call `useSendPaymentOnChainMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useSendPaymentOnChainMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [sendPaymentOnChainMutation, { data, loading, error }] = useSendPaymentOnChainMutation({
- *   variables: {
- *      sendPaymentOnChainId: // value for 'sendPaymentOnChainId'
- *      btcWalletAddress: // value for 'btcWalletAddress'
- *   },
- * });
- */
-export function useSendPaymentOnChainMutation(baseOptions?: Apollo.MutationHookOptions<SendPaymentOnChainMutation, SendPaymentOnChainMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<SendPaymentOnChainMutation, SendPaymentOnChainMutationVariables>(SendPaymentOnChainDocument, options);
-      }
-export type SendPaymentOnChainMutationHookResult = ReturnType<typeof useSendPaymentOnChainMutation>;
-export type SendPaymentOnChainMutationResult = Apollo.MutationResult<SendPaymentOnChainMutation>;
-export type SendPaymentOnChainMutationOptions = Apollo.BaseMutationOptions<SendPaymentOnChainMutation, SendPaymentOnChainMutationVariables>;
-export const DeleteWithdrawLinkDocument = gql`
-    mutation DeleteWithdrawLink($id: ID!) {
-  deleteWithdrawLink(id: $id)
-}
-    `;
-export type DeleteWithdrawLinkMutationFn = Apollo.MutationFunction<DeleteWithdrawLinkMutation, DeleteWithdrawLinkMutationVariables>;
-
-/**
- * __useDeleteWithdrawLinkMutation__
- *
- * To run a mutation, you first call `useDeleteWithdrawLinkMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useDeleteWithdrawLinkMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [deleteWithdrawLinkMutation, { data, loading, error }] = useDeleteWithdrawLinkMutation({
- *   variables: {
- *      id: // value for 'id'
- *   },
- * });
- */
-export function useDeleteWithdrawLinkMutation(baseOptions?: Apollo.MutationHookOptions<DeleteWithdrawLinkMutation, DeleteWithdrawLinkMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<DeleteWithdrawLinkMutation, DeleteWithdrawLinkMutationVariables>(DeleteWithdrawLinkDocument, options);
-      }
-export type DeleteWithdrawLinkMutationHookResult = ReturnType<typeof useDeleteWithdrawLinkMutation>;
-export type DeleteWithdrawLinkMutationResult = Apollo.MutationResult<DeleteWithdrawLinkMutation>;
-export type DeleteWithdrawLinkMutationOptions = Apollo.BaseMutationOptions<DeleteWithdrawLinkMutation, DeleteWithdrawLinkMutationVariables>;
-export const GetWithdrawLinkDocument = gql`
-    query GetWithdrawLink($getWithdrawLinkId: ID) {
-  getWithdrawLink(id: $getWithdrawLinkId) {
-    id
-    userId
-    paymentRequest
-    paymentHash
-    paymentSecret
-    salesAmount
-    accountType
-    escrowWallet
-    status
-    title
-    voucherAmount
-    uniqueHash
-    k1
-    createdAt
-    updatedAt
-    commissionPercentage
-    identifierCode
-    secretCode
-    invoiceExpiration
-  }
-}
-    `;
-
-/**
- * __useGetWithdrawLinkQuery__
- *
- * To run a query within a React component, call `useGetWithdrawLinkQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetWithdrawLinkQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetWithdrawLinkQuery({
- *   variables: {
- *      getWithdrawLinkId: // value for 'getWithdrawLinkId'
- *   },
- * });
- */
-export function useGetWithdrawLinkQuery(baseOptions?: Apollo.QueryHookOptions<GetWithdrawLinkQuery, GetWithdrawLinkQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetWithdrawLinkQuery, GetWithdrawLinkQueryVariables>(GetWithdrawLinkDocument, options);
-      }
-export function useGetWithdrawLinkLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetWithdrawLinkQuery, GetWithdrawLinkQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetWithdrawLinkQuery, GetWithdrawLinkQueryVariables>(GetWithdrawLinkDocument, options);
-        }
-export type GetWithdrawLinkQueryHookResult = ReturnType<typeof useGetWithdrawLinkQuery>;
-export type GetWithdrawLinkLazyQueryHookResult = ReturnType<typeof useGetWithdrawLinkLazyQuery>;
-export type GetWithdrawLinkQueryResult = Apollo.QueryResult<GetWithdrawLinkQuery, GetWithdrawLinkQueryVariables>;
 export const GetWithdrawLinksByUserIdDocument = gql`
-    query GetWithdrawLinksByUserId($userId: ID!, $status: Status, $limit: Int, $offset: Int) {
-  getWithdrawLinksByUserId(
-    userId: $userId
-    status: $status
-    limit: $limit
-    offset: $offset
-  ) {
+    query GetWithdrawLinksByUserId($status: Status, $limit: Int, $offset: Int) {
+  getWithdrawLinksByUserId(status: $status, limit: $limit, offset: $offset) {
     totalLinks
     withdrawLinks {
-      id
-      userId
-      paymentRequest
-      paymentHash
-      paymentSecret
-      salesAmount
-      accountType
-      escrowWallet
-      status
-      title
-      voucherAmount
-      uniqueHash
-      k1
-      createdAt
-      updatedAt
       commissionPercentage
+      id
+      createdAt
       identifierCode
-      secretCode
-      invoiceExpiration
+      paidAt
+      salesAmountInCents
+      status
+      userId
+      voucherAmountInCents
     }
   }
 }
@@ -2736,14 +2410,13 @@ export const GetWithdrawLinksByUserIdDocument = gql`
  * @example
  * const { data, loading, error } = useGetWithdrawLinksByUserIdQuery({
  *   variables: {
- *      userId: // value for 'userId'
  *      status: // value for 'status'
  *      limit: // value for 'limit'
  *      offset: // value for 'offset'
  *   },
  * });
  */
-export function useGetWithdrawLinksByUserIdQuery(baseOptions: Apollo.QueryHookOptions<GetWithdrawLinksByUserIdQuery, GetWithdrawLinksByUserIdQueryVariables>) {
+export function useGetWithdrawLinksByUserIdQuery(baseOptions?: Apollo.QueryHookOptions<GetWithdrawLinksByUserIdQuery, GetWithdrawLinksByUserIdQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<GetWithdrawLinksByUserIdQuery, GetWithdrawLinksByUserIdQueryVariables>(GetWithdrawLinksByUserIdDocument, options);
       }
@@ -2754,6 +2427,84 @@ export function useGetWithdrawLinksByUserIdLazyQuery(baseOptions?: Apollo.LazyQu
 export type GetWithdrawLinksByUserIdQueryHookResult = ReturnType<typeof useGetWithdrawLinksByUserIdQuery>;
 export type GetWithdrawLinksByUserIdLazyQueryHookResult = ReturnType<typeof useGetWithdrawLinksByUserIdLazyQuery>;
 export type GetWithdrawLinksByUserIdQueryResult = Apollo.QueryResult<GetWithdrawLinksByUserIdQuery, GetWithdrawLinksByUserIdQueryVariables>;
+export const GetWithdrawLinkDocument = gql`
+    query GetWithdrawLink($voucherSecret: String) {
+  getWithdrawLink(voucherSecret: $voucherSecret) {
+    commissionPercentage
+    createdAt
+    id
+    identifierCode
+    paidAt
+    salesAmountInCents
+    status
+    uniqueHash
+    userId
+    voucherAmountInCents
+    voucherSecret
+  }
+}
+    `;
+
+/**
+ * __useGetWithdrawLinkQuery__
+ *
+ * To run a query within a React component, call `useGetWithdrawLinkQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetWithdrawLinkQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetWithdrawLinkQuery({
+ *   variables: {
+ *      voucherSecret: // value for 'voucherSecret'
+ *   },
+ * });
+ */
+export function useGetWithdrawLinkQuery(baseOptions?: Apollo.QueryHookOptions<GetWithdrawLinkQuery, GetWithdrawLinkQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetWithdrawLinkQuery, GetWithdrawLinkQueryVariables>(GetWithdrawLinkDocument, options);
+      }
+export function useGetWithdrawLinkLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetWithdrawLinkQuery, GetWithdrawLinkQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetWithdrawLinkQuery, GetWithdrawLinkQueryVariables>(GetWithdrawLinkDocument, options);
+        }
+export type GetWithdrawLinkQueryHookResult = ReturnType<typeof useGetWithdrawLinkQuery>;
+export type GetWithdrawLinkLazyQueryHookResult = ReturnType<typeof useGetWithdrawLinkLazyQuery>;
+export type GetWithdrawLinkQueryResult = Apollo.QueryResult<GetWithdrawLinkQuery, GetWithdrawLinkQueryVariables>;
+export const OnChainWithdrawLinkDocument = gql`
+    mutation OnChainWithdrawLink($input: OnChainWithdrawLinkInput!) {
+  onChainWithdrawLink(input: $input) {
+    status
+  }
+}
+    `;
+export type OnChainWithdrawLinkMutationFn = Apollo.MutationFunction<OnChainWithdrawLinkMutation, OnChainWithdrawLinkMutationVariables>;
+
+/**
+ * __useOnChainWithdrawLinkMutation__
+ *
+ * To run a mutation, you first call `useOnChainWithdrawLinkMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useOnChainWithdrawLinkMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [onChainWithdrawLinkMutation, { data, loading, error }] = useOnChainWithdrawLinkMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useOnChainWithdrawLinkMutation(baseOptions?: Apollo.MutationHookOptions<OnChainWithdrawLinkMutation, OnChainWithdrawLinkMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<OnChainWithdrawLinkMutation, OnChainWithdrawLinkMutationVariables>(OnChainWithdrawLinkDocument, options);
+      }
+export type OnChainWithdrawLinkMutationHookResult = ReturnType<typeof useOnChainWithdrawLinkMutation>;
+export type OnChainWithdrawLinkMutationResult = Apollo.MutationResult<OnChainWithdrawLinkMutation>;
+export type OnChainWithdrawLinkMutationOptions = Apollo.BaseMutationOptions<OnChainWithdrawLinkMutation, OnChainWithdrawLinkMutationVariables>;
 export const CurrencyListDocument = gql`
     query CurrencyList {
   currencyList {
@@ -2836,115 +2587,6 @@ export function useRealtimePriceInitialLazyQuery(baseOptions?: Apollo.LazyQueryH
 export type RealtimePriceInitialQueryHookResult = ReturnType<typeof useRealtimePriceInitialQuery>;
 export type RealtimePriceInitialLazyQueryHookResult = ReturnType<typeof useRealtimePriceInitialLazyQuery>;
 export type RealtimePriceInitialQueryResult = Apollo.QueryResult<RealtimePriceInitialQuery, RealtimePriceInitialQueryVariables>;
-export const GetOnChainPaymentFeesDocument = gql`
-    query GetOnChainPaymentFees($getOnChainPaymentFeesId: ID!, $btcWalletAddress: String!) {
-  getOnChainPaymentFees(
-    id: $getOnChainPaymentFeesId
-    btcWalletAddress: $btcWalletAddress
-  ) {
-    fees
-  }
-}
-    `;
-
-/**
- * __useGetOnChainPaymentFeesQuery__
- *
- * To run a query within a React component, call `useGetOnChainPaymentFeesQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetOnChainPaymentFeesQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetOnChainPaymentFeesQuery({
- *   variables: {
- *      getOnChainPaymentFeesId: // value for 'getOnChainPaymentFeesId'
- *      btcWalletAddress: // value for 'btcWalletAddress'
- *   },
- * });
- */
-export function useGetOnChainPaymentFeesQuery(baseOptions: Apollo.QueryHookOptions<GetOnChainPaymentFeesQuery, GetOnChainPaymentFeesQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetOnChainPaymentFeesQuery, GetOnChainPaymentFeesQueryVariables>(GetOnChainPaymentFeesDocument, options);
-      }
-export function useGetOnChainPaymentFeesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetOnChainPaymentFeesQuery, GetOnChainPaymentFeesQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetOnChainPaymentFeesQuery, GetOnChainPaymentFeesQueryVariables>(GetOnChainPaymentFeesDocument, options);
-        }
-export type GetOnChainPaymentFeesQueryHookResult = ReturnType<typeof useGetOnChainPaymentFeesQuery>;
-export type GetOnChainPaymentFeesLazyQueryHookResult = ReturnType<typeof useGetOnChainPaymentFeesLazyQuery>;
-export type GetOnChainPaymentFeesQueryResult = Apollo.QueryResult<GetOnChainPaymentFeesQuery, GetOnChainPaymentFeesQueryVariables>;
-export const GetWithdrawLinkBySecretDocument = gql`
-    query GetWithdrawLinkBySecret($secretCode: String!) {
-  getWithdrawLink(secretCode: $secretCode) {
-    id
-  }
-}
-    `;
-
-/**
- * __useGetWithdrawLinkBySecretQuery__
- *
- * To run a query within a React component, call `useGetWithdrawLinkBySecretQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetWithdrawLinkBySecretQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetWithdrawLinkBySecretQuery({
- *   variables: {
- *      secretCode: // value for 'secretCode'
- *   },
- * });
- */
-export function useGetWithdrawLinkBySecretQuery(baseOptions: Apollo.QueryHookOptions<GetWithdrawLinkBySecretQuery, GetWithdrawLinkBySecretQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetWithdrawLinkBySecretQuery, GetWithdrawLinkBySecretQueryVariables>(GetWithdrawLinkBySecretDocument, options);
-      }
-export function useGetWithdrawLinkBySecretLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetWithdrawLinkBySecretQuery, GetWithdrawLinkBySecretQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetWithdrawLinkBySecretQuery, GetWithdrawLinkBySecretQueryVariables>(GetWithdrawLinkBySecretDocument, options);
-        }
-export type GetWithdrawLinkBySecretQueryHookResult = ReturnType<typeof useGetWithdrawLinkBySecretQuery>;
-export type GetWithdrawLinkBySecretLazyQueryHookResult = ReturnType<typeof useGetWithdrawLinkBySecretLazyQuery>;
-export type GetWithdrawLinkBySecretQueryResult = Apollo.QueryResult<GetWithdrawLinkBySecretQuery, GetWithdrawLinkBySecretQueryVariables>;
-export const LnInvoicePaymentStatusDocument = gql`
-    subscription LnInvoicePaymentStatus($paymentRequest: LnPaymentRequest!) {
-  lnInvoicePaymentStatus(input: {paymentRequest: $paymentRequest}) {
-    status
-    errors {
-      message
-      path
-      code
-    }
-  }
-}
-    `;
-
-/**
- * __useLnInvoicePaymentStatusSubscription__
- *
- * To run a query within a React component, call `useLnInvoicePaymentStatusSubscription` and pass it any options that fit your needs.
- * When your component renders, `useLnInvoicePaymentStatusSubscription` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useLnInvoicePaymentStatusSubscription({
- *   variables: {
- *      paymentRequest: // value for 'paymentRequest'
- *   },
- * });
- */
-export function useLnInvoicePaymentStatusSubscription(baseOptions: Apollo.SubscriptionHookOptions<LnInvoicePaymentStatusSubscription, LnInvoicePaymentStatusSubscriptionVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useSubscription<LnInvoicePaymentStatusSubscription, LnInvoicePaymentStatusSubscriptionVariables>(LnInvoicePaymentStatusDocument, options);
-      }
-export type LnInvoicePaymentStatusSubscriptionHookResult = ReturnType<typeof useLnInvoicePaymentStatusSubscription>;
-export type LnInvoicePaymentStatusSubscriptionResult = Apollo.SubscriptionResult<LnInvoicePaymentStatusSubscription>;
 export const RealtimePriceWsDocument = gql`
     subscription realtimePriceWs($currency: DisplayCurrency!) {
   realtimePrice(input: {currency: $currency}) {
@@ -3031,6 +2673,343 @@ export function usePriceSubscription(baseOptions: Apollo.SubscriptionHookOptions
       }
 export type PriceSubscriptionHookResult = ReturnType<typeof usePriceSubscription>;
 export type PriceSubscriptionResult = Apollo.SubscriptionResult<PriceSubscription>;
+export const LnInvoicePaymentSendDocument = gql`
+    mutation LnInvoicePaymentSend($input: LnInvoicePaymentInput!) {
+  lnInvoicePaymentSend(input: $input) {
+    errors {
+      message
+      code
+    }
+    status
+    transaction {
+      createdAt
+      direction
+      id
+      memo
+      settlementAmount
+      settlementCurrency
+      settlementDisplayAmount
+      settlementDisplayCurrency
+      settlementDisplayFee
+      settlementFee
+      status
+    }
+  }
+}
+    `;
+export type LnInvoicePaymentSendMutationFn = Apollo.MutationFunction<LnInvoicePaymentSendMutation, LnInvoicePaymentSendMutationVariables>;
+
+/**
+ * __useLnInvoicePaymentSendMutation__
+ *
+ * To run a mutation, you first call `useLnInvoicePaymentSendMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useLnInvoicePaymentSendMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [lnInvoicePaymentSendMutation, { data, loading, error }] = useLnInvoicePaymentSendMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useLnInvoicePaymentSendMutation(baseOptions?: Apollo.MutationHookOptions<LnInvoicePaymentSendMutation, LnInvoicePaymentSendMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<LnInvoicePaymentSendMutation, LnInvoicePaymentSendMutationVariables>(LnInvoicePaymentSendDocument, options);
+      }
+export type LnInvoicePaymentSendMutationHookResult = ReturnType<typeof useLnInvoicePaymentSendMutation>;
+export type LnInvoicePaymentSendMutationResult = Apollo.MutationResult<LnInvoicePaymentSendMutation>;
+export type LnInvoicePaymentSendMutationOptions = Apollo.BaseMutationOptions<LnInvoicePaymentSendMutation, LnInvoicePaymentSendMutationVariables>;
+export const OnChainUsdPaymentSendDocument = gql`
+    mutation OnChainUsdPaymentSend($input: OnChainUsdPaymentSendInput!) {
+  onChainUsdPaymentSend(input: $input) {
+    errors {
+      code
+      message
+    }
+    status
+  }
+}
+    `;
+export type OnChainUsdPaymentSendMutationFn = Apollo.MutationFunction<OnChainUsdPaymentSendMutation, OnChainUsdPaymentSendMutationVariables>;
+
+/**
+ * __useOnChainUsdPaymentSendMutation__
+ *
+ * To run a mutation, you first call `useOnChainUsdPaymentSendMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useOnChainUsdPaymentSendMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [onChainUsdPaymentSendMutation, { data, loading, error }] = useOnChainUsdPaymentSendMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useOnChainUsdPaymentSendMutation(baseOptions?: Apollo.MutationHookOptions<OnChainUsdPaymentSendMutation, OnChainUsdPaymentSendMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<OnChainUsdPaymentSendMutation, OnChainUsdPaymentSendMutationVariables>(OnChainUsdPaymentSendDocument, options);
+      }
+export type OnChainUsdPaymentSendMutationHookResult = ReturnType<typeof useOnChainUsdPaymentSendMutation>;
+export type OnChainUsdPaymentSendMutationResult = Apollo.MutationResult<OnChainUsdPaymentSendMutation>;
+export type OnChainUsdPaymentSendMutationOptions = Apollo.BaseMutationOptions<OnChainUsdPaymentSendMutation, OnChainUsdPaymentSendMutationVariables>;
+export const IntraLedgerBtcPaymentSendDocument = gql`
+    mutation IntraLedgerBtcPaymentSend($input: IntraLedgerPaymentSendInput!) {
+  intraLedgerPaymentSend(input: $input) {
+    errors {
+      code
+      message
+    }
+    status
+    transaction {
+      createdAt
+      direction
+      id
+      settlementAmount
+      settlementCurrency
+      settlementDisplayAmount
+      settlementDisplayCurrency
+      settlementFee
+      settlementDisplayFee
+      settlementPrice {
+        base
+        offset
+      }
+      status
+    }
+  }
+}
+    `;
+export type IntraLedgerBtcPaymentSendMutationFn = Apollo.MutationFunction<IntraLedgerBtcPaymentSendMutation, IntraLedgerBtcPaymentSendMutationVariables>;
+
+/**
+ * __useIntraLedgerBtcPaymentSendMutation__
+ *
+ * To run a mutation, you first call `useIntraLedgerBtcPaymentSendMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useIntraLedgerBtcPaymentSendMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [intraLedgerBtcPaymentSendMutation, { data, loading, error }] = useIntraLedgerBtcPaymentSendMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useIntraLedgerBtcPaymentSendMutation(baseOptions?: Apollo.MutationHookOptions<IntraLedgerBtcPaymentSendMutation, IntraLedgerBtcPaymentSendMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<IntraLedgerBtcPaymentSendMutation, IntraLedgerBtcPaymentSendMutationVariables>(IntraLedgerBtcPaymentSendDocument, options);
+      }
+export type IntraLedgerBtcPaymentSendMutationHookResult = ReturnType<typeof useIntraLedgerBtcPaymentSendMutation>;
+export type IntraLedgerBtcPaymentSendMutationResult = Apollo.MutationResult<IntraLedgerBtcPaymentSendMutation>;
+export type IntraLedgerBtcPaymentSendMutationOptions = Apollo.BaseMutationOptions<IntraLedgerBtcPaymentSendMutation, IntraLedgerBtcPaymentSendMutationVariables>;
+export const IntraLedgerUsdPaymentSendDocument = gql`
+    mutation intraLedgerUsdPaymentSend($input: IntraLedgerUsdPaymentSendInput!) {
+  intraLedgerUsdPaymentSend(input: $input) {
+    errors {
+      code
+      message
+    }
+    status
+    transaction {
+      createdAt
+      direction
+      id
+      settlementAmount
+      settlementCurrency
+      settlementDisplayAmount
+      settlementDisplayCurrency
+      settlementFee
+      settlementDisplayFee
+      settlementPrice {
+        base
+        offset
+      }
+      status
+    }
+  }
+}
+    `;
+export type IntraLedgerUsdPaymentSendMutationFn = Apollo.MutationFunction<IntraLedgerUsdPaymentSendMutation, IntraLedgerUsdPaymentSendMutationVariables>;
+
+/**
+ * __useIntraLedgerUsdPaymentSendMutation__
+ *
+ * To run a mutation, you first call `useIntraLedgerUsdPaymentSendMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useIntraLedgerUsdPaymentSendMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [intraLedgerUsdPaymentSendMutation, { data, loading, error }] = useIntraLedgerUsdPaymentSendMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useIntraLedgerUsdPaymentSendMutation(baseOptions?: Apollo.MutationHookOptions<IntraLedgerUsdPaymentSendMutation, IntraLedgerUsdPaymentSendMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<IntraLedgerUsdPaymentSendMutation, IntraLedgerUsdPaymentSendMutationVariables>(IntraLedgerUsdPaymentSendDocument, options);
+      }
+export type IntraLedgerUsdPaymentSendMutationHookResult = ReturnType<typeof useIntraLedgerUsdPaymentSendMutation>;
+export type IntraLedgerUsdPaymentSendMutationResult = Apollo.MutationResult<IntraLedgerUsdPaymentSendMutation>;
+export type IntraLedgerUsdPaymentSendMutationOptions = Apollo.BaseMutationOptions<IntraLedgerUsdPaymentSendMutation, IntraLedgerUsdPaymentSendMutationVariables>;
+export const RealtimePriceDocument = gql`
+    query RealtimePrice($currency: DisplayCurrency) {
+  realtimePrice(currency: $currency) {
+    btcSatPrice {
+      base
+      offset
+    }
+    denominatorCurrency
+    id
+    timestamp
+    usdCentPrice {
+      base
+      offset
+    }
+  }
+}
+    `;
+
+/**
+ * __useRealtimePriceQuery__
+ *
+ * To run a query within a React component, call `useRealtimePriceQuery` and pass it any options that fit your needs.
+ * When your component renders, `useRealtimePriceQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useRealtimePriceQuery({
+ *   variables: {
+ *      currency: // value for 'currency'
+ *   },
+ * });
+ */
+export function useRealtimePriceQuery(baseOptions?: Apollo.QueryHookOptions<RealtimePriceQuery, RealtimePriceQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<RealtimePriceQuery, RealtimePriceQueryVariables>(RealtimePriceDocument, options);
+      }
+export function useRealtimePriceLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<RealtimePriceQuery, RealtimePriceQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<RealtimePriceQuery, RealtimePriceQueryVariables>(RealtimePriceDocument, options);
+        }
+export type RealtimePriceQueryHookResult = ReturnType<typeof useRealtimePriceQuery>;
+export type RealtimePriceLazyQueryHookResult = ReturnType<typeof useRealtimePriceLazyQuery>;
+export type RealtimePriceQueryResult = Apollo.QueryResult<RealtimePriceQuery, RealtimePriceQueryVariables>;
+export const MeDocument = gql`
+    query me {
+  me {
+    createdAt
+    id
+    language
+    phone
+    defaultAccount {
+      defaultWalletId
+      displayCurrency
+      id
+      level
+      wallets {
+        accountId
+        balance
+        id
+        pendingIncomingBalance
+        walletCurrency
+      }
+    }
+    totpEnabled
+    username
+    email {
+      address
+      verified
+    }
+  }
+}
+    `;
+
+/**
+ * __useMeQuery__
+ *
+ * To run a query within a React component, call `useMeQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMeQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMeQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMeQuery(baseOptions?: Apollo.QueryHookOptions<MeQuery, MeQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MeQuery, MeQueryVariables>(MeDocument, options);
+      }
+export function useMeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeQuery, MeQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MeQuery, MeQueryVariables>(MeDocument, options);
+        }
+export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
+export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
+export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
+export const OnChainUsdTxFeeDocument = gql`
+    query OnChainUsdTxFee($address: OnChainAddress!, $amount: CentAmount!, $walletId: WalletId!, $speed: PayoutSpeed!) {
+  onChainUsdTxFee(
+    address: $address
+    amount: $amount
+    walletId: $walletId
+    speed: $speed
+  ) {
+    amount
+  }
+}
+    `;
+
+/**
+ * __useOnChainUsdTxFeeQuery__
+ *
+ * To run a query within a React component, call `useOnChainUsdTxFeeQuery` and pass it any options that fit your needs.
+ * When your component renders, `useOnChainUsdTxFeeQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useOnChainUsdTxFeeQuery({
+ *   variables: {
+ *      address: // value for 'address'
+ *      amount: // value for 'amount'
+ *      walletId: // value for 'walletId'
+ *      speed: // value for 'speed'
+ *   },
+ * });
+ */
+export function useOnChainUsdTxFeeQuery(baseOptions: Apollo.QueryHookOptions<OnChainUsdTxFeeQuery, OnChainUsdTxFeeQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<OnChainUsdTxFeeQuery, OnChainUsdTxFeeQueryVariables>(OnChainUsdTxFeeDocument, options);
+      }
+export function useOnChainUsdTxFeeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<OnChainUsdTxFeeQuery, OnChainUsdTxFeeQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<OnChainUsdTxFeeQuery, OnChainUsdTxFeeQueryVariables>(OnChainUsdTxFeeDocument, options);
+        }
+export type OnChainUsdTxFeeQueryHookResult = ReturnType<typeof useOnChainUsdTxFeeQuery>;
+export type OnChainUsdTxFeeLazyQueryHookResult = ReturnType<typeof useOnChainUsdTxFeeLazyQuery>;
+export type OnChainUsdTxFeeQueryResult = Apollo.QueryResult<OnChainUsdTxFeeQuery, OnChainUsdTxFeeQueryVariables>;
 
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -3166,7 +3145,6 @@ export type ResolversTypes = {
   Feedback: ResolverTypeWrapper<Scalars['Feedback']['output']>;
   FeedbackSubmitInput: FeedbackSubmitInput;
   FeesInformation: ResolverTypeWrapper<FeesInformation>;
-  FeesResult: ResolverTypeWrapper<FeesResult>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   Globals: ResolverTypeWrapper<Globals>;
   GraphQLApplicationError: ResolverTypeWrapper<GraphQlApplicationError>;
@@ -3242,6 +3220,8 @@ export type ResolversTypes = {
   OnChainUsdPaymentSendAsBtcDenominatedInput: OnChainUsdPaymentSendAsBtcDenominatedInput;
   OnChainUsdPaymentSendInput: OnChainUsdPaymentSendInput;
   OnChainUsdTxFee: ResolverTypeWrapper<OnChainUsdTxFee>;
+  OnChainWithdrawLinkInput: OnChainWithdrawLinkInput;
+  OnChainWithdrawResultStatus: OnChainWithdrawResultStatus;
   OneDayAccountLimit: ResolverTypeWrapper<OneDayAccountLimit>;
   OneTimeAuthCode: ResolverTypeWrapper<Scalars['OneTimeAuthCode']['output']>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
@@ -3273,7 +3253,6 @@ export type ResolversTypes = {
   SatAmountPayload: ResolverTypeWrapper<SatAmountPayload>;
   Scope: Scope;
   Seconds: ResolverTypeWrapper<Scalars['Seconds']['output']>;
-  SendPaymentOnChainResult: ResolverTypeWrapper<SendPaymentOnChainResult>;
   SettlementVia: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['SettlementVia']>;
   SettlementViaIntraLedger: ResolverTypeWrapper<SettlementViaIntraLedger>;
   SettlementViaLn: ResolverTypeWrapper<SettlementViaLn>;
@@ -3298,7 +3277,6 @@ export type ResolversTypes = {
   TxDirection: TxDirection;
   TxNotificationType: TxNotificationType;
   TxStatus: TxStatus;
-  UpdateWithdrawLinkInput: UpdateWithdrawLinkInput;
   UpgradePayload: ResolverTypeWrapper<UpgradePayload>;
   UsdWallet: ResolverTypeWrapper<UsdWallet>;
   User: ResolverTypeWrapper<User>;
@@ -3331,7 +3309,9 @@ export type ResolversTypes = {
   WalletCurrency: WalletCurrency;
   WalletId: ResolverTypeWrapper<Scalars['WalletId']['output']>;
   WithdrawLink: ResolverTypeWrapper<WithdrawLink>;
+  WithdrawLinkWithSecret: ResolverTypeWrapper<WithdrawLinkWithSecret>;
   WithdrawLinksByUserIdResult: ResolverTypeWrapper<WithdrawLinksByUserIdResult>;
+  onChainWithdrawResult: ResolverTypeWrapper<OnChainWithdrawResult>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -3383,7 +3363,6 @@ export type ResolversParentTypes = {
   Feedback: Scalars['Feedback']['output'];
   FeedbackSubmitInput: FeedbackSubmitInput;
   FeesInformation: FeesInformation;
-  FeesResult: FeesResult;
   Float: Scalars['Float']['output'];
   Globals: Globals;
   GraphQLApplicationError: GraphQlApplicationError;
@@ -3456,6 +3435,7 @@ export type ResolversParentTypes = {
   OnChainUsdPaymentSendAsBtcDenominatedInput: OnChainUsdPaymentSendAsBtcDenominatedInput;
   OnChainUsdPaymentSendInput: OnChainUsdPaymentSendInput;
   OnChainUsdTxFee: OnChainUsdTxFee;
+  OnChainWithdrawLinkInput: OnChainWithdrawLinkInput;
   OneDayAccountLimit: OneDayAccountLimit;
   OneTimeAuthCode: Scalars['OneTimeAuthCode']['output'];
   PageInfo: PageInfo;
@@ -3482,7 +3462,6 @@ export type ResolversParentTypes = {
   SatAmount: Scalars['SatAmount']['output'];
   SatAmountPayload: SatAmountPayload;
   Seconds: Scalars['Seconds']['output'];
-  SendPaymentOnChainResult: SendPaymentOnChainResult;
   SettlementVia: ResolversUnionTypes<ResolversParentTypes>['SettlementVia'];
   SettlementViaIntraLedger: SettlementViaIntraLedger;
   SettlementViaLn: SettlementViaLn;
@@ -3502,7 +3481,6 @@ export type ResolversParentTypes = {
   Transaction: Omit<Transaction, 'initiationVia' | 'settlementVia'> & { initiationVia: ResolversParentTypes['InitiationVia'], settlementVia: ResolversParentTypes['SettlementVia'] };
   TransactionConnection: TransactionConnection;
   TransactionEdge: TransactionEdge;
-  UpdateWithdrawLinkInput: UpdateWithdrawLinkInput;
   UpgradePayload: UpgradePayload;
   UsdWallet: UsdWallet;
   User: User;
@@ -3534,7 +3512,9 @@ export type ResolversParentTypes = {
   Wallet: ResolversInterfaceTypes<ResolversParentTypes>['Wallet'];
   WalletId: Scalars['WalletId']['output'];
   WithdrawLink: WithdrawLink;
+  WithdrawLinkWithSecret: WithdrawLinkWithSecret;
   WithdrawLinksByUserIdResult: WithdrawLinksByUserIdResult;
+  onChainWithdrawResult: OnChainWithdrawResult;
 };
 
 export type AccountResolvers<ContextType = any, ParentType extends ResolversParentTypes['Account'] = ResolversParentTypes['Account']> = {
@@ -3768,11 +3748,6 @@ export type FeesInformationResolvers<ContextType = any, ParentType extends Resol
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type FeesResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeesResult'] = ResolversParentTypes['FeesResult']> = {
-  fees?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export type GlobalsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Globals'] = ResolversParentTypes['Globals']> = {
   buildInformation?: Resolver<ResolversTypes['BuildInformation'], ParentType, ContextType>;
   feesInformation?: Resolver<ResolversTypes['FeesInformation'], ParentType, ContextType>;
@@ -3972,8 +3947,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   callbackEndpointDelete?: Resolver<ResolversTypes['SuccessPayload'], ParentType, ContextType, RequireFields<MutationCallbackEndpointDeleteArgs, 'input'>>;
   captchaCreateChallenge?: Resolver<ResolversTypes['CaptchaCreateChallengePayload'], ParentType, ContextType>;
   captchaRequestAuthCode?: Resolver<ResolversTypes['SuccessPayload'], ParentType, ContextType, RequireFields<MutationCaptchaRequestAuthCodeArgs, 'input'>>;
-  createWithdrawLink?: Resolver<ResolversTypes['WithdrawLink'], ParentType, ContextType, RequireFields<MutationCreateWithdrawLinkArgs, 'input'>>;
-  deleteWithdrawLink?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationDeleteWithdrawLinkArgs, 'id'>>;
+  createWithdrawLink?: Resolver<ResolversTypes['WithdrawLinkWithSecret'], ParentType, ContextType, RequireFields<MutationCreateWithdrawLinkArgs, 'input'>>;
   deviceNotificationTokenCreate?: Resolver<ResolversTypes['SuccessPayload'], ParentType, ContextType, RequireFields<MutationDeviceNotificationTokenCreateArgs, 'input'>>;
   feedbackSubmit?: Resolver<ResolversTypes['SuccessPayload'], ParentType, ContextType, RequireFields<MutationFeedbackSubmitArgs, 'input'>>;
   intraLedgerPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationIntraLedgerPaymentSendArgs, 'input'>>;
@@ -4002,10 +3976,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   onChainPaymentSendAll?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationOnChainPaymentSendAllArgs, 'input'>>;
   onChainUsdPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationOnChainUsdPaymentSendArgs, 'input'>>;
   onChainUsdPaymentSendAsBtcDenominated?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationOnChainUsdPaymentSendAsBtcDenominatedArgs, 'input'>>;
+  onChainWithdrawLink?: Resolver<ResolversTypes['onChainWithdrawResult'], ParentType, ContextType, RequireFields<MutationOnChainWithdrawLinkArgs, 'input'>>;
   quizClaim?: Resolver<ResolversTypes['QuizClaimPayload'], ParentType, ContextType, RequireFields<MutationQuizClaimArgs, 'input'>>;
-  sendPaymentOnChain?: Resolver<ResolversTypes['SendPaymentOnChainResult'], ParentType, ContextType, RequireFields<MutationSendPaymentOnChainArgs, 'btcWalletAddress' | 'id'>>;
   supportChatMessageAdd?: Resolver<ResolversTypes['SupportChatMessageAddPayload'], ParentType, ContextType, RequireFields<MutationSupportChatMessageAddArgs, 'input'>>;
-  updateWithdrawLink?: Resolver<ResolversTypes['WithdrawLink'], ParentType, ContextType, RequireFields<MutationUpdateWithdrawLinkArgs, 'id' | 'input'>>;
   userContactUpdateAlias?: Resolver<ResolversTypes['UserContactUpdateAliasPayload'], ParentType, ContextType, RequireFields<MutationUserContactUpdateAliasArgs, 'input'>>;
   userEmailDelete?: Resolver<ResolversTypes['UserEmailDeletePayload'], ParentType, ContextType>;
   userEmailRegistrationInitiate?: Resolver<ResolversTypes['UserEmailRegistrationInitiatePayload'], ParentType, ContextType, RequireFields<MutationUserEmailRegistrationInitiateArgs, 'input'>>;
@@ -4176,10 +4149,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   btcPriceList?: Resolver<Maybe<Array<Maybe<ResolversTypes['PricePoint']>>>, ParentType, ContextType, RequireFields<QueryBtcPriceListArgs, 'range'>>;
   businessMapMarkers?: Resolver<Array<ResolversTypes['MapMarker']>, ParentType, ContextType>;
   currencyList?: Resolver<Array<ResolversTypes['Currency']>, ParentType, ContextType>;
-  getAllWithdrawLinks?: Resolver<Array<ResolversTypes['WithdrawLink']>, ParentType, ContextType>;
-  getOnChainPaymentFees?: Resolver<ResolversTypes['FeesResult'], ParentType, ContextType, RequireFields<QueryGetOnChainPaymentFeesArgs, 'btcWalletAddress' | 'id'>>;
-  getWithdrawLink?: Resolver<Maybe<ResolversTypes['WithdrawLink']>, ParentType, ContextType, Partial<QueryGetWithdrawLinkArgs>>;
-  getWithdrawLinksByUserId?: Resolver<ResolversTypes['WithdrawLinksByUserIdResult'], ParentType, ContextType, RequireFields<QueryGetWithdrawLinksByUserIdArgs, 'userId'>>;
+  getWithdrawLink?: Resolver<Maybe<ResolversTypes['WithdrawLinkWithSecret']>, ParentType, ContextType, Partial<QueryGetWithdrawLinkArgs>>;
+  getWithdrawLinksByUserId?: Resolver<ResolversTypes['WithdrawLinksByUserIdResult'], ParentType, ContextType, Partial<QueryGetWithdrawLinksByUserIdArgs>>;
   globals?: Resolver<Maybe<ResolversTypes['Globals']>, ParentType, ContextType>;
   lnInvoicePaymentStatus?: Resolver<ResolversTypes['LnInvoicePaymentStatusPayload'], ParentType, ContextType, RequireFields<QueryLnInvoicePaymentStatusArgs, 'input'>>;
   lnInvoicePaymentStatusByHash?: Resolver<ResolversTypes['LnInvoicePaymentStatus'], ParentType, ContextType, RequireFields<QueryLnInvoicePaymentStatusByHashArgs, 'input'>>;
@@ -4241,12 +4212,6 @@ export type SatAmountPayloadResolvers<ContextType = any, ParentType extends Reso
 export interface SecondsScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Seconds'], any> {
   name: 'Seconds';
 }
-
-export type SendPaymentOnChainResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['SendPaymentOnChainResult'] = ResolversParentTypes['SendPaymentOnChainResult']> = {
-  amount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
 
 export type SettlementViaResolvers<ContextType = any, ParentType extends ResolversParentTypes['SettlementVia'] = ResolversParentTypes['SettlementVia']> = {
   __resolveType: TypeResolveFn<'SettlementViaIntraLedger' | 'SettlementViaLn' | 'SettlementViaOnChain', ParentType, ContextType>;
@@ -4503,31 +4468,41 @@ export interface WalletIdScalarConfig extends GraphQLScalarTypeConfig<ResolversT
 }
 
 export type WithdrawLinkResolvers<ContextType = any, ParentType extends ResolversParentTypes['WithdrawLink'] = ResolversParentTypes['WithdrawLink']> = {
-  accountType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  commissionPercentage?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  commissionPercentage?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  escrowWallet?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  identifierCode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  invoiceExpiration?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  k1?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  paymentHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  paymentRequest?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  paymentSecret?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  salesAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  secretCode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  identifierCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  paidAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  salesAmountInCents?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
-  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  uniqueHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  voucherAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  voucherAmountInCents?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type WithdrawLinkWithSecretResolvers<ContextType = any, ParentType extends ResolversParentTypes['WithdrawLinkWithSecret'] = ResolversParentTypes['WithdrawLinkWithSecret']> = {
+  commissionPercentage?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  identifierCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  paidAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  salesAmountInCents?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
+  uniqueHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  voucherAmountInCents?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  voucherSecret?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type WithdrawLinksByUserIdResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['WithdrawLinksByUserIdResult'] = ResolversParentTypes['WithdrawLinksByUserIdResult']> = {
   totalLinks?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   withdrawLinks?: Resolver<Array<ResolversTypes['WithdrawLink']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type OnChainWithdrawResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['onChainWithdrawResult'] = ResolversParentTypes['onChainWithdrawResult']> = {
+  status?: Resolver<Maybe<ResolversTypes['OnChainWithdrawResultStatus']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4566,7 +4541,6 @@ export type Resolvers<ContextType = any> = {
   Error?: ErrorResolvers<ContextType>;
   Feedback?: GraphQLScalarType;
   FeesInformation?: FeesInformationResolvers<ContextType>;
-  FeesResult?: FeesResultResolvers<ContextType>;
   Globals?: GlobalsResolvers<ContextType>;
   GraphQLApplicationError?: GraphQlApplicationErrorResolvers<ContextType>;
   Hex32Bytes?: GraphQLScalarType;
@@ -4630,7 +4604,6 @@ export type Resolvers<ContextType = any> = {
   SatAmount?: GraphQLScalarType;
   SatAmountPayload?: SatAmountPayloadResolvers<ContextType>;
   Seconds?: GraphQLScalarType;
-  SendPaymentOnChainResult?: SendPaymentOnChainResultResolvers<ContextType>;
   SettlementVia?: SettlementViaResolvers<ContextType>;
   SettlementViaIntraLedger?: SettlementViaIntraLedgerResolvers<ContextType>;
   SettlementViaLn?: SettlementViaLnResolvers<ContextType>;
@@ -4668,6 +4641,8 @@ export type Resolvers<ContextType = any> = {
   Wallet?: WalletResolvers<ContextType>;
   WalletId?: GraphQLScalarType;
   WithdrawLink?: WithdrawLinkResolvers<ContextType>;
+  WithdrawLinkWithSecret?: WithdrawLinkWithSecretResolvers<ContextType>;
   WithdrawLinksByUserIdResult?: WithdrawLinksByUserIdResultResolvers<ContextType>;
+  onChainWithdrawResult?: OnChainWithdrawResultResolvers<ContextType>;
 };
 

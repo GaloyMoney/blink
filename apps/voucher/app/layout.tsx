@@ -4,10 +4,18 @@ import { Inter_Tight } from "next/font/google"
 import Navigation from "@/components/NavBar/Navigation"
 import ApolloWrapper from "@/config/apollo"
 import SessionProvider from "@/components/session-provider"
-import { env } from "@/env"
+import { getServerSession } from "next-auth"
+import { authOptions } from "./api/auth/[...nextauth]/auth"
+import { redirect } from "next/navigation"
+
 const inter = Inter_Tight({ subsets: ["latin"], display: "auto" })
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export  default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const session = await getServerSession(authOptions)
+  if (!session || !session?.userData || !session?.accessToken) {
+    redirect("/api/auth/signin")
+  }
+
   return (
     <SessionProvider>
       <ApolloWrapper>

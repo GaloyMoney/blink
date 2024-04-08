@@ -24,8 +24,8 @@ interface Props {
   usdToSats: (accountType: number) => number
   commissionPercentage: string
   setConfirmModal: (currency: boolean) => void
-  AmountInDollars: string
-  commissionAmountInDollars: string
+  AmountInDollars: number
+  voucherAmountInDollars: number
   hasLoaded: {
     current: boolean
   }
@@ -40,7 +40,7 @@ export default function HomePage({
   currency,
   usdToSats,
   commissionPercentage,
-  commissionAmountInDollars,
+  voucherAmountInDollars,
   hasLoaded,
 }: Props) {
   const { currencyList, loading } = useDisplayCurrency()
@@ -59,7 +59,7 @@ export default function HomePage({
   }
 
   const handleConfirmLink = () => {
-    if (Number(commissionAmountInDollars) < 0.01) {
+    if (Number(voucherAmountInDollars) < 0.01) {
       setAlerts(true)
       return
     }
@@ -75,7 +75,7 @@ export default function HomePage({
         }}
       >
         <div className={styles.alert_box}>
-          Amount cannot be less than 0.01 ≈ {(usdToSats(1) / 100).toFixed()} sats
+          Amount cannot be less than $0.01 USD
           <Button
             onClick={() => {
               setAlerts(false)
@@ -106,15 +106,13 @@ export default function HomePage({
         ))}
       </select>
       <div className="text-3xl font-semibold">
-        <div>
-          {currency.symbol} {formatOperand(amount)}
-        </div>
+        {currency.symbol} {formatOperand(amount)}
       </div>
       <div>{Number(commissionPercentage)}% commission</div>
       {hasLoaded.current === false ? (
-        <LoadingComponent></LoadingComponent>
+        <LoadingComponent />
       ) : (
-        <div>≈ ${formatOperand(commissionAmountInDollars)}</div>
+        <div>≈ ${formatOperand(String(voucherAmountInDollars))}</div>
       )}
       <NumPad currentAmount={amount} setCurrentAmount={setAmount} unit="FIAT" />
       <div className={styles.commission_and_submit_buttons}>
@@ -126,14 +124,13 @@ export default function HomePage({
           Commission
         </Button>
         <Button enabled={true} onClick={handleConfirmLink}>
-          Create link
+          Create Voucher
         </Button>
       </div>
 
       <InfoComponent>
-        Regular sats refer to BTC sats, which can fluctuate in value over time, either
-        increasing or decreasing. On the other hand, stable sats are USD sats that
-        maintain a fixed value and do not change their values.
+        Enter the amount you want to create a voucher for. Sales amount refers to the
+        amount that will be deducted from the voucher amount as commission.
       </InfoComponent>
     </>
   )

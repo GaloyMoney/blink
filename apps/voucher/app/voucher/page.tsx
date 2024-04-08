@@ -6,12 +6,12 @@ import { useRouter } from "next/navigation"
 import styles from "./VoucherPage.module.css"
 
 import Heading from "@/components/Heading"
-import { useGetWithdrawLinkBySecretQuery } from "@/lib/graphql/generated"
 
 import Button from "@/components/Button/Button"
 
 import ModalComponent from "@/components/ModalComponent"
 import LoadingPageComponent from "@/components/Loading/PageLoadingComponent"
+import { useGetWithdrawLinkQuery } from "@/lib/graphql/generated"
 interface SecretCode {
   input1: string
   input2: string
@@ -27,8 +27,8 @@ export default function VoucherPage() {
     input3: "",
   })
   const [modalOpen, setModalOpen] = useState<boolean>(false)
-  const { loading, error, data } = useGetWithdrawLinkBySecretQuery({
-    variables: { secretCode: secret },
+  const { loading, error, data } = useGetWithdrawLinkQuery({
+    variables: { voucherSecret: secret },
     context: {
       endpoint: "SELF",
     },
@@ -48,7 +48,7 @@ export default function VoucherPage() {
 
   useEffect(() => {
     if (data?.getWithdrawLink?.id) {
-      router.push(`/withdraw/${data?.getWithdrawLink?.id}`)
+      router.push(`/withdraw/${data?.getWithdrawLink.voucherSecret}`)
     } else if (data?.getWithdrawLink === null || error) {
       setInputs({
         input1: "",
