@@ -616,6 +616,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "CouldNotFindTransactionError":
     case "CouldNotFindTransactionMetadataError":
     case "CouldNotFindExpectedTransactionMetadataError":
+    case "CouldNotFindTransactionsForExternalIdPatternError":
     case "InvalidDocumentIdForDbError":
     case "DuplicateKeyForPersistError":
     case "MismatchedResultForTransactionMetadataQuery":
