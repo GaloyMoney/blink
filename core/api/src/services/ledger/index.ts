@@ -128,17 +128,18 @@ export const LedgerService = (): ILedgerService => {
       if (results.length !== 1) {
         return new CouldNotFindTransactionError()
       }
-      const ledgerTxn = translateToLedgerTx(results[0])
+      const rawTx = results[0]
+      const ledgerTxId = fromObjectId<LedgerTransactionId>(rawTx._id || "")
 
       let txMetadata: LedgerTransactionMetadata | undefined = undefined
-      const rawTxnMetadata = await TransactionsMetadataRepository().findById(ledgerTxn.id)
-      if (rawTxnMetadata instanceof Error) {
-        recordExceptionInCurrentSpan({ error: rawTxnMetadata })
+      const txMetadataResult = await TransactionsMetadataRepository().findById(ledgerTxId)
+      if (txMetadataResult instanceof Error) {
+        recordExceptionInCurrentSpan({ error: txMetadataResult })
       } else {
-        txMetadata = rawTxnMetadata
+        txMetadata = txMetadataResult
       }
 
-      return combineLedgerTxMetadata({ tx: ledgerTxn, txMetadata })
+      return translateToLedgerTxWithMetadata({ rawTx, txMetadata })
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -579,13 +580,14 @@ export const translateToLedgerTx = <S extends WalletCurrency, T extends DisplayC
   }
 }
 
-export const combineLedgerTxMetadata = <S extends WalletCurrency>({
-  tx,
+export const translateToLedgerTxWithMetadata = <S extends WalletCurrency>({
+  rawTx,
   txMetadata,
 }: {
-  tx: LedgerTransaction<S>
+  rawTx: ILedgerTransaction
   txMetadata: LedgerTransactionMetadata | undefined
 }): LedgerTransaction<S> | LedgerServiceError => {
+  const tx = translateToLedgerTx<S, DisplayCurrency>(rawTx)
   if (txMetadata === undefined) {
     return tx
   }
