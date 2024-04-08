@@ -76,6 +76,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
   const baseTransaction: BaseWalletTransaction = {
     id: txn.id,
     walletId: txn.walletId,
+    externalId: txn.externalId,
     settlementAmount,
     settlementFee: currency === WalletCurrency.Btc ? toSats(satsFee) : toCents(centsFee),
     settlementCurrency: txn.currency,

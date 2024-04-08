@@ -71,6 +71,7 @@ type PartialBaseWalletTransaction = {
 
 type BaseWalletTransaction = {
   readonly walletId: WalletId | undefined
+  readonly externalId: LedgerExternalId | undefined
   readonly settlementAmount: Satoshis | UsdCents
   readonly settlementFee: Satoshis | UsdCents
   readonly settlementCurrency: WalletCurrency
