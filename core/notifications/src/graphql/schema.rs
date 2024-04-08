@@ -25,6 +25,7 @@ struct User {
     #[graphql(external)]
     id: ID,
 }
+
 #[ComplexObject]
 impl User {
     async fn notification_settings(

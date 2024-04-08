@@ -4,7 +4,7 @@ pub mod error;
 use tracing::instrument;
 
 use crate::{
-    in_app_channel::*, notification_event::*, primitives::GaloyUserId,
+    in_app_notification::*, notification_event::*, primitives::GaloyUserId,
     user_notification_settings::*,
 };
 
@@ -14,11 +14,11 @@ use error::*;
 #[derive(Clone)]
 pub struct InAppExecutor {
     settings: UserNotificationSettingsRepo,
-    in_app_channel: InAppChannel,
+    in_app_channel: InAppNotifications,
 }
 
 impl InAppExecutor {
-    pub fn new(settings: UserNotificationSettingsRepo, in_app_channel: InAppChannel) -> Self {
+    pub fn new(settings: UserNotificationSettingsRepo, in_app_channel: InAppNotifications) -> Self {
         Self {
             settings,
             in_app_channel,

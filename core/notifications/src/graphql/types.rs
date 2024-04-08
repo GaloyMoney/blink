@@ -51,9 +51,6 @@ impl ScalarType for Timestamp {
 #[derive(SimpleObject)]
 pub(super) struct InAppNotification {
     pub id: ID,
-    pub title: String,
-    pub body: String,
-    pub deep_link: Option<String>,
     pub created_at: Timestamp,
     pub read_at: Option<Timestamp>,
 }

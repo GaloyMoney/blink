@@ -10,8 +10,8 @@ use std::sync::Arc;
 use crate::{
     email_executor::EmailExecutor,
     email_reminder_projection::EmailReminderProjection,
-    in_app_channel::{InAppChannel, InAppNotification},
     in_app_executor::InAppExecutor,
+    in_app_notification::{InAppNotification, InAppNotifications},
     job,
     notification_cool_off_tracker::*,
     notification_event::*,
@@ -28,7 +28,7 @@ pub struct NotificationsApp {
     _config: AppConfig,
     settings: UserNotificationSettingsRepo,
     email_reminder_projection: EmailReminderProjection,
-    in_app_channel: InAppChannel,
+    in_app_notifications: InAppNotifications,
     pool: Pool<Postgres>,
     _runner: Arc<JobRunnerHandle>,
 }
@@ -41,8 +41,8 @@ impl NotificationsApp {
         let email_executor = EmailExecutor::init(config.email_executor.clone(), settings.clone())?;
         let email_reminder_projection =
             EmailReminderProjection::new(&pool, config.link_email_reminder.clone());
-        let in_app_channel = InAppChannel::new(&pool);
-        let in_app_executor = InAppExecutor::new(settings.clone(), in_app_channel.clone());
+        let in_app_notifications = InAppNotifications::new(&pool);
+        let in_app_executor = InAppExecutor::new(settings.clone(), in_app_notifications.clone());
         let runner = job::start_job_runner(
             &pool,
             push_executor,
@@ -62,7 +62,7 @@ impl NotificationsApp {
             _config: config,
             pool,
             settings,
-            in_app_channel,
+            in_app_notifications,
             email_reminder_projection,
             _runner: Arc::new(runner),
         })
@@ -211,7 +211,10 @@ impl NotificationsApp {
             job::spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
         }
         if payload.should_send_in_app_msg() {
-            job::spawn_send_in_app_notification(&mut tx, (user_id.clone(), payload.clone()))
+            // job::spawn_send_in_app_notification(&mut tx, (user_id.clone(), payload.clone()))
+            //     .await?;
+            self.in_app_notifications
+                .persist(&mut tx, user_id.clone(), payload.clone())
                 .await?;
         }
         job::spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
@@ -287,11 +290,24 @@ impl NotificationsApp {
         only_unread: bool,
     ) -> Result<Vec<InAppNotification>, ApplicationError> {
         let in_app_notifications = self
-            .in_app_channel
+            .in_app_notifications
             .msgs_for_user(&user_id, only_unread)
             .await?;
 
         Ok(in_app_notifications)
+    }
+
+    #[instrument(name = "app.mark_notification_as_read", skip(self), err)]
+    pub async fn mark_notification_as_read(
+        &self,
+        user_id: GaloyUserId,
+        notification_id: InAppNotificationId,
+    ) -> Result<(), ApplicationError> {
+        self.in_app_notifications
+            .mark_as_read(&user_id, notification_id)
+            .await?;
+
+        Ok(())
     }
 
     #[instrument(
