@@ -74,6 +74,8 @@ export type Scalars = {
   TotpRegistrationId: { input: string; output: string; }
   /** A secret to generate time-based one-time password */
   TotpSecret: { input: string; output: string; }
+  /** An external reference id that can be optionally added for transactions. */
+  TxExternalId: { input: string; output: string; }
   /** Unique identifier of a user */
   Username: { input: string; output: string; }
   /** Unique identifier of a wallet */
@@ -238,6 +240,7 @@ export type BtcWallet = Wallet & {
   /** A list of BTC transactions associated with this wallet. */
   readonly transactions?: Maybe<TransactionConnection>;
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
+  readonly transactionsByExternalId: ReadonlyArray<Transaction>;
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly transactionsByPaymentRequest: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
@@ -287,6 +290,12 @@ export type BtcWalletTransactionsByAddressArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletTransactionsByExternalIdArgs = {
+  externalId: Scalars['TxExternalId']['input'];
 };
 
 
@@ -633,6 +642,7 @@ export type LnInvoiceCreateInput = {
   readonly amount: Scalars['SatAmount']['input'];
   /** Optional invoice expiration time in minutes. */
   readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  readonly externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a BTC wallet belonging to the current account. */
@@ -645,6 +655,7 @@ export type LnInvoiceCreateOnBehalfOfRecipientInput = {
   readonly descriptionHash?: InputMaybe<Scalars['Hex32Bytes']['input']>;
   /** Optional invoice expiration time in minutes. */
   readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  readonly externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a BTC wallet which belongs to any account. */
@@ -710,6 +721,7 @@ export type LnNoAmountInvoice = Invoice & {
 export type LnNoAmountInvoiceCreateInput = {
   /** Optional invoice expiration time in minutes. */
   readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  readonly externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** ID for either a USD or BTC wallet belonging to the account of the current user. */
@@ -719,6 +731,7 @@ export type LnNoAmountInvoiceCreateInput = {
 export type LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = {
   /** Optional invoice expiration time in minutes. */
   readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  readonly externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** ID for either a USD or BTC wallet which belongs to the account of any user. */
@@ -781,6 +794,7 @@ export type LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput = {
   readonly descriptionHash?: InputMaybe<Scalars['Hex32Bytes']['input']>;
   /** Optional invoice expiration time in minutes. */
   readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  readonly externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. Acts as a note to the recipient. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a USD wallet which belongs to the account of any user. */
@@ -792,6 +806,7 @@ export type LnUsdInvoiceCreateInput = {
   readonly amount: Scalars['CentAmount']['input'];
   /** Optional invoice expiration time in minutes. */
   readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  readonly externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a USD wallet belonging to the current user. */
@@ -804,6 +819,7 @@ export type LnUsdInvoiceCreateOnBehalfOfRecipientInput = {
   readonly descriptionHash?: InputMaybe<Scalars['Hex32Bytes']['input']>;
   /** Optional invoice expiration time in minutes. */
   readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  readonly externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. Acts as a note to the recipient. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a USD wallet which belongs to the account of any user. */
@@ -1735,6 +1751,7 @@ export type Transaction = {
   readonly __typename: 'Transaction';
   readonly createdAt: Scalars['Timestamp']['output'];
   readonly direction: TxDirection;
+  readonly externalId?: Maybe<Scalars['TxExternalId']['output']>;
   readonly id: Scalars['ID']['output'];
   /** From which protocol the payment has been initiated. */
   readonly initiationVia: InitiationVia;
@@ -1818,6 +1835,7 @@ export type UsdWallet = Wallet & {
   readonly transactionById: Transaction;
   readonly transactions?: Maybe<TransactionConnection>;
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
+  readonly transactionsByExternalId: ReadonlyArray<Transaction>;
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly transactionsByPaymentRequest: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
@@ -1867,6 +1885,12 @@ export type UsdWalletTransactionsByAddressArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletTransactionsByExternalIdArgs = {
+  externalId: Scalars['TxExternalId']['input'];
 };
 
 
@@ -2100,6 +2124,8 @@ export type Wallet = {
    * ie: the newest transaction will be first
    */
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
+  /** Returns the transactions that include this external id. */
+  readonly transactionsByExternalId: ReadonlyArray<Transaction>;
   /** Returns the transactions that include this paymentHash. This should be a list of size one for a received lightning payment. This can be more that one transaction for a sent lightning payment. */
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   /** Returns the transactions that include this paymentRequest. */
@@ -2151,6 +2177,12 @@ export type WalletTransactionsByAddressArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletTransactionsByExternalIdArgs = {
+  externalId: Scalars['TxExternalId']['input'];
 };
 
 
