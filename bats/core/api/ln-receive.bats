@@ -145,6 +145,17 @@ usd_amount=50
   # Check for callback
   num_callback_events_after=$(cat_callback | grep "$account_id" | wc -l)
   [[ "$num_callback_events_after" -gt "$num_callback_events_before" ]] || exit 1
+
+  # Check for revealedPreImage in callback
+  revealedPreImageLength=$(
+    cat_callback \
+      | grep "$account_id" \
+      | tail -n 1 \
+      | awk 'BEGIN{RS="callback │ "}{if(NR>1)print $0}' \
+      | jq -r '.transaction.settlementVia.revealedPreImage' \
+      | wc -m
+  )
+  [[ "$revealedPreImageLength" == "65" ]] || exit 1
 }
 
 @test "ln-receive: settle via ln for USD wallet, invoice with amount" {
