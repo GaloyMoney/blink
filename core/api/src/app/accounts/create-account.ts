@@ -9,14 +9,18 @@ import {
   WalletsRepository,
 } from "@/services/mongoose"
 
+import countryToCurrency, { Currencies, Countries } from "country-to-currency"
+
 const initializeCreatedAccount = async ({
   account,
   config,
   phone,
+  phoneMetadata,
 }: {
   account: Account
   config: AccountsConfig
   phone?: PhoneNumber
+  phoneMetadata?: PhoneMetadata
 }): Promise<Account | ApplicationError> => {
   const walletsEnabledConfig = config.initialWallets
 
@@ -50,6 +54,11 @@ const initializeCreatedAccount = async ({
 
   account.statusHistory = [{ status: config.initialStatus, comment: "Initial Status" }]
   account.level = config.initialLevel
+
+  // Set display currency to match phone numbers country code
+  const countryCode = (phoneMetadata?.countryCode || "US") as Countries
+  const currency = countryToCurrency[countryCode]
+  account.displayCurrency = currency as DisplayCurrency
 
   const updatedAccount = await AccountsRepository().update(account)
   if (updatedAccount instanceof Error) return updatedAccount
@@ -98,6 +107,7 @@ export const createAccountWithPhoneIdentifier = async ({
     account: accountNew,
     config,
     phone,
+    phoneMetadata,
   })
   if (account instanceof Error) return account
 
