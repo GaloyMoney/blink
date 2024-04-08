@@ -41,6 +41,9 @@ const assertUnreachable = (x: never): never => {
   throw new Error(`This should never compile with ${x}`)
 }
 
+const revealPreImage = (secretPreImage: SecretPreImage): RevealedPreImage =>
+  secretPreImage as unknown as RevealedPreImage
+
 export const updatePendingInvoice = wrapAsyncToRunInSpan({
   namespace: "app.invoices",
   fnName: "updatePendingInvoice",
@@ -366,6 +369,7 @@ const lockedUpdatePendingInvoiceSteps = async ({
     txMetadata: {
       hash: metadata.hash,
       externalId,
+      revealedPreImage: revealPreImage(walletInvoiceInsideLock.secret),
     },
     additionalCreditMetadata: creditAccountAdditionalMetadata,
     additionalInternalMetadata: internalAccountsAdditionalMetadata,
