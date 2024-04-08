@@ -38,7 +38,7 @@ type SettlementViaIntraledger = {
 
 type SettlementViaLn = {
   readonly type: "lightning"
-  readonly revealedPreImage: undefined // is added by dataloader in resolver
+  readonly revealedPreImage: RevealedPreImage | undefined // is sometimes added by dataloader in resolver
 }
 
 type SettlementViaOnChainIncoming = {

@@ -180,7 +180,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
         },
         settlementVia: {
           type: SettlementMethod.Lightning,
-          revealedPreImage: undefined, // is added by dataloader in resolver
+          revealedPreImage: txn.revealedPreImage, // is sometimes added by dataloader in resolver
         },
       }
       break
