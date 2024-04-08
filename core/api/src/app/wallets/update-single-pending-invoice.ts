@@ -112,6 +112,7 @@ const processPendingInvoice = async ({
   const {
     pubkey,
     paymentHash,
+    externalId,
     recipientWalletDescriptor: recipientInvoiceWalletDescriptor,
   } = walletInvoice
   addAttributesToCurrentSpan({
@@ -196,6 +197,7 @@ const processPendingInvoice = async ({
       paymentHash,
       receivedBtc,
       description,
+      externalId,
       isSettledInLnd: lnInvoiceLookup.isSettled,
       logger: pendingInvoiceLogger,
     }),
@@ -211,6 +213,7 @@ const lockedUpdatePendingInvoiceSteps = async ({
   recipientWalletId,
   receivedBtc,
   description,
+  externalId,
   logger,
 
   // Passed in to lock for idempotent "settle" conditional operation
@@ -220,6 +223,7 @@ const lockedUpdatePendingInvoiceSteps = async ({
   recipientWalletId: WalletId
   receivedBtc: BtcPaymentAmount
   description: string
+  externalId: LedgerExternalId
   logger: Logger
 
   isSettledInLnd: boolean
@@ -361,6 +365,7 @@ const lockedUpdatePendingInvoiceSteps = async ({
     metadata,
     txMetadata: {
       hash: metadata.hash,
+      externalId,
     },
     additionalCreditMetadata: creditAccountAdditionalMetadata,
     additionalInternalMetadata: internalAccountsAdditionalMetadata,
