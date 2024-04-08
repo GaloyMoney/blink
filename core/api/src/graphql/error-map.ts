@@ -623,6 +623,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "MultiplePendingPaymentsForHashError":
     case "MissingExpectedDisplayAmountsForTransactionError":
     case "InvalidLnPaymentTxnsBundleError":
+    case "InvalidTxMetadataFetchedError":
     case "CacheError":
     case "CacheNotAvailableError":
     case "CacheServiceError":

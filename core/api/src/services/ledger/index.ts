@@ -28,6 +28,7 @@ import {
 import { BalanceLessThanZeroError } from "@/domain/errors"
 import {
   CouldNotFindTransactionError,
+  InvalidTxMetadataFetchedError,
   LedgerError,
   LedgerServiceError,
   UnknownLedgerError,
@@ -124,10 +125,20 @@ export const LedgerService = (): ILedgerService => {
         account: liabilitiesWalletId,
         _journal: toObjectId(journalId),
       })
-      if (results.length === 1) {
-        return translateToLedgerTx(results[0])
+      if (results.length !== 1) {
+        return new CouldNotFindTransactionError()
       }
-      return new CouldNotFindTransactionError()
+      const ledgerTxn = translateToLedgerTx(results[0])
+
+      let txMetadata: LedgerTransactionMetadata | undefined = undefined
+      const rawTxnMetadata = await TransactionsMetadataRepository().findById(ledgerTxn.id)
+      if (rawTxnMetadata instanceof Error) {
+        recordExceptionInCurrentSpan({ error: rawTxnMetadata })
+      } else {
+        txMetadata = rawTxnMetadata
+      }
+
+      return combineLedgerTxMetadata({ tx: ledgerTxn, txMetadata })
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -566,4 +577,22 @@ export const translateToLedgerTx = <S extends WalletCurrency, T extends DisplayC
     usd: tx.usd,
     feeUsd: tx.feeUsd,
   }
+}
+
+export const combineLedgerTxMetadata = <S extends WalletCurrency>({
+  tx,
+  txMetadata,
+}: {
+  tx: LedgerTransaction<S>
+  txMetadata: LedgerTransactionMetadata | undefined
+}): LedgerTransaction<S> | LedgerServiceError => {
+  if (txMetadata === undefined) {
+    return tx
+  }
+
+  if (tx.id !== txMetadata.id) {
+    return new InvalidTxMetadataFetchedError()
+  }
+
+  return { ...tx, ...txMetadata }
 }

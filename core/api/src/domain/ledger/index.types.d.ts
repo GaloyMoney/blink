@@ -38,6 +38,7 @@ type LedgerTransaction<S extends WalletCurrency> = {
   readonly timestamp: Date
   readonly pendingConfirmation: boolean
   readonly journalId: LedgerJournalId
+  readonly externalId?: LedgerExternalId
 
   readonly lnMemo?: string
 
@@ -51,6 +52,8 @@ type LedgerTransaction<S extends WalletCurrency> = {
   readonly pubkey?: Pubkey
   readonly feeKnownInAdvance: boolean
   readonly lnPaymentState?: LnPaymentState
+
+  readonly revealedPreImage?: RevealedPreImage
 
   readonly satsAmount?: Satoshis
   readonly centsAmount?: UsdCents
