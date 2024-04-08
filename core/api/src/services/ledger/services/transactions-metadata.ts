@@ -36,10 +36,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
     if (ledgerTxsMetadata.length === 0) return []
 
     try {
-      const ledgerTxsMetadataPersist = ledgerTxsMetadata.map((txMetadata) => {
-        const { id, ...metadata } = txMetadata
-        return { _id: toObjectId<LedgerTransactionId>(id), ...metadata }
-      })
+      const ledgerTxsMetadataPersist = ledgerTxsMetadata.map(translateToTxMetadataRecord)
       const result: TransactionMetadataRecord[] = await TransactionMetadata.insertMany(
         ledgerTxsMetadataPersist,
       )
@@ -143,8 +140,32 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
 
 const translateToLedgerTxMetadata = (
   txMetadata: TransactionMetadataRecord,
-): LedgerTransactionMetadata => ({
-  id: fromObjectId<LedgerTransactionId>(txMetadata._id),
-  hash: (txMetadata.hash as PaymentHash | OnChainTxHash) || undefined,
-  revealedPreImage: (txMetadata.revealedPreImage as RevealedPreImage) || undefined,
-})
+): LedgerTransactionMetadata => {
+  const externalId =
+    txMetadata.external_id === undefined
+      ? txMetadata.external_id
+      : (txMetadata.external_id as LedgerExternalId)
+
+  return {
+    id: fromObjectId<LedgerTransactionId>(txMetadata._id),
+    hash: (txMetadata.hash as PaymentHash | OnChainTxHash) || undefined,
+    revealedPreImage: (txMetadata.revealedPreImage as RevealedPreImage) || undefined,
+    externalId,
+  }
+}
+
+const translateToTxMetadataRecord = (
+  txMetadata: LedgerTransactionMetadata,
+): TransactionMetadataRecord => {
+  return {
+    _id: toObjectId<LedgerTransactionId>(txMetadata.id),
+
+    ...("hash" in txMetadata ? { hash: txMetadata.hash } : {}),
+
+    ...("revealedPreImage" in txMetadata
+      ? { revealedPreImage: txMetadata.revealedPreImage }
+      : {}),
+
+    ...("externalId" in txMetadata ? { external_id: txMetadata.externalId } : {}),
+  }
+}

@@ -146,6 +146,7 @@ type OnChainLedgerTransactionMetadataUpdate = {
 type LnLedgerTransactionMetadataUpdate = {
   hash: PaymentHash
   revealedPreImage?: RevealedPreImage
+  externalId?: LedgerExternalId
 }
 
 // Repeating 'id' key because can't figure out how to type an empty object
