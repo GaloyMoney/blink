@@ -5,6 +5,7 @@ import WalletCurrency from "../scalar/wallet-currency"
 import SignedAmount from "../scalar/signed-amount"
 import OnChainAddress from "../scalar/on-chain-address"
 import LnPaymentRequest from "../scalar/ln-payment-request"
+import TxExternalId from "../scalar/tx-external-id"
 import Transaction, { TransactionConnection } from "../object/transaction"
 
 import IInvoice, { IInvoiceConnection } from "./invoice"
@@ -104,6 +105,16 @@ const IWallet = GT.Interface({
         paymentRequest: {
           type: GT.NonNull(LnPaymentRequest),
           description: "Lightning invoice paid in this transaction.",
+        },
+      },
+    },
+    transactionsByExternalId: {
+      type: GT.NonNullList(Transaction),
+      description: "Returns the transactions that include this external id.",
+      args: {
+        externalId: {
+          type: GT.NonNull(TxExternalId),
+          description: "Full or partial external id to query for.",
         },
       },
     },

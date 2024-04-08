@@ -4,6 +4,7 @@ import SignedAmount from "../scalar/signed-amount"
 import WalletCurrency from "../scalar/wallet-currency"
 import OnChainAddress from "../scalar/on-chain-address"
 import LnPaymentRequest from "../scalar/ln-payment-request"
+import TxExternalId from "../scalar/tx-external-id"
 import IInvoice, { IInvoiceConnection } from "../abstract/invoice"
 
 import Transaction, { TransactionConnection } from "./transaction"
@@ -215,6 +216,29 @@ const BtcWallet = GT.Object<Wallet>({
         const transactions = await Wallets.getTransactionsForWalletByPaymentRequest({
           walletId: source.id,
           uncheckedPaymentRequest: paymentRequest,
+        })
+
+        if (transactions instanceof Error) {
+          throw mapError(transactions)
+        }
+
+        return transactions
+      },
+    },
+    transactionsByExternalId: {
+      type: GT.NonNullList(Transaction),
+      args: {
+        externalId: {
+          type: GT.NonNull(TxExternalId),
+        },
+      },
+      resolve: async (source, args) => {
+        const { externalId } = args
+        if (externalId instanceof Error) throw externalId
+
+        const transactions = await Wallets.getTransactionsForWalletsByExternalId({
+          walletIds: [source.id],
+          uncheckedExternalIdPattern: externalId,
         })
 
         if (transactions instanceof Error) {

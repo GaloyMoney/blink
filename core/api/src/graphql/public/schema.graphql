@@ -198,6 +198,7 @@ type BTCWallet implements Wallet {
     """Returns the last n items from the list."""
     last: Int
   ): TransactionConnection
+  transactionsByExternalId(externalId: TxExternalId!): [Transaction!]!
   transactionsByPaymentHash(paymentHash: PaymentHash!): [Transaction!]!
   transactionsByPaymentRequest(paymentRequest: LnPaymentRequest!): [Transaction!]!
   walletCurrency: WalletCurrency!
@@ -1426,6 +1427,7 @@ or with lightning but settled intraledger.
 type Transaction {
   createdAt: Timestamp!
   direction: TxDirection!
+  externalId: TxExternalId
   id: ID!
 
   """From which protocol the payment has been initiated."""
@@ -1560,6 +1562,7 @@ type UsdWallet implements Wallet {
     """Returns the last n items from the list."""
     last: Int
   ): TransactionConnection
+  transactionsByExternalId(externalId: TxExternalId!): [Transaction!]!
   transactionsByPaymentHash(paymentHash: PaymentHash!): [Transaction!]!
   transactionsByPaymentRequest(paymentRequest: LnPaymentRequest!): [Transaction!]!
   walletCurrency: WalletCurrency!
@@ -1829,6 +1832,12 @@ interface Wallet {
     """Returns the last n items from the list."""
     last: Int
   ): TransactionConnection
+
+  """Returns the transactions that include this external id."""
+  transactionsByExternalId(
+    """Full or partial external id to query for."""
+    externalId: TxExternalId!
+  ): [Transaction!]!
 
   """
   Returns the transactions that include this paymentHash. This should be a list of size one for a received lightning payment. This can be more that one transaction for a sent lightning payment.
