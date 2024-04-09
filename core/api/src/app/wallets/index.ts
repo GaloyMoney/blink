@@ -51,11 +51,3 @@ export const listWalletsByAccountId = async (
 ): Promise<Wallet[] | RepositoryError> => {
   return WalletsRepository().listByAccountId(accountId)
 }
-
-export const listWalletIds = async (
-  walletCurrency: WalletCurrency,
-): Promise<WalletId[] | RepositoryError> => {
-  const wallets = await WalletsRepository().listByWalletCurrency(walletCurrency)
-  if (wallets instanceof Error) return wallets
-  return wallets.map((wallet) => wallet.id)
-}
