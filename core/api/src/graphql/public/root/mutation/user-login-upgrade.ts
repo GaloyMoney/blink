@@ -1,10 +1,15 @@
+import { Authentication } from "@/app"
+
+import { ErrorLevel } from "@/domain/shared"
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
+import { baseLogger } from "@/services/logger"
+
 import { GT } from "@/graphql/index"
 import OneTimeAuthCode from "@/graphql/shared/types/scalar/one-time-auth-code"
-
 import Phone from "@/graphql/shared/types/scalar/phone"
-import { Authentication } from "@/app"
-import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import UpgradePayload from "@/graphql/public/types/payload/upgrade-payload"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import { IpMissingInContextError } from "@/graphql/error"
 
 const UserLoginUpgradeInput = GT.Input({
   name: "UserLoginUpgradeInput",
@@ -47,7 +52,15 @@ const UserLoginUpgradeMutation = GT.Field<
     }
 
     if (ip === undefined) {
-      return { errors: [{ message: "ip is undefined" }], success: false }
+      const error = new IpMissingInContextError({ logger: baseLogger })
+      recordExceptionInCurrentSpan({
+        error,
+        level: ErrorLevel.Critical,
+      })
+      return {
+        errors: [error],
+        success: false,
+      }
     }
 
     const res = await Authentication.loginDeviceUpgradeWithPhone({
