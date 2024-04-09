@@ -23,6 +23,7 @@ type LedgerQueryFilter = {
   }
   username?: string
   addresses?: OnChainAddress[]
+  externalIdPattern?: PartialLedgerExternalId
 }
 
 export const paginatedLedger = async ({
@@ -52,6 +53,10 @@ export const paginatedLedger = async ({
 
   if (filters.addresses) {
     filterQuery["payee_addresses"] = { $in: filters.addresses }
+  }
+
+  if (filters.externalIdPattern) {
+    filterQuery["external_id"] = { $regex: filters.externalIdPattern }
   }
 
   const documentCount = await Transaction.countDocuments(filterQuery)

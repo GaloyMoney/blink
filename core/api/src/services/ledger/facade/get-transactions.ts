@@ -1,11 +1,9 @@
-import { MainBook, Transaction } from "../books"
-import { translateToLedgerTx, translateToLedgerTxAndMetadata } from "../translate"
+import { MainBook } from "../books"
+import { translateToLedgerTx } from "../translate"
 import { UnknownLedgerError } from "../domain/errors"
+import { paginatedLedger } from "../paginated-ledger"
 
-import {
-  CouldNotFindTransactionsForExternalIdPatternError,
-  toLiabilitiesWalletId,
-} from "@/domain/ledger"
+import { toLiabilitiesWalletId } from "@/domain/ledger"
 
 export const getTransactionsForWalletsByPaymentHash = async ({
   walletIds,
@@ -30,41 +28,20 @@ export const getTransactionsForWalletsByPaymentHash = async ({
 export const getTransactionsForWalletsByExternalIdPattern = async ({
   walletIds,
   externalIdPattern,
+  paginationArgs,
 }: {
   walletIds: WalletId[]
   externalIdPattern: PartialLedgerExternalId
-}): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
+  paginationArgs: PaginatedQueryArgs
+}): Promise<PaginatedQueryResult<LedgerTransaction<WalletCurrency>> | LedgerError> => {
+  const liabilitiesWalletIds = walletIds.map(toLiabilitiesWalletId)
   try {
-    const results: (ILedgerTransaction & TransactionMetadataRecord)[] =
-      await Transaction.aggregate([
-        {
-          $match: {
-            account_path: { $in: walletIds },
-          },
-        },
-        {
-          $lookup: {
-            from: "medici_transaction_metadatas",
-            localField: "_id", // field from the transactions collection
-            foreignField: "_id", // field from the metadata collection
-            as: "tx_metadata",
-          },
-        },
-        {
-          $match: {
-            "tx_metadata.external_id": {
-              $regex: externalIdPattern,
-            },
-          },
-        },
-        {
-          $unwind: "$tx_metadata",
-        },
-        {
-          $replaceRoot: { newRoot: { $mergeObjects: ["$$ROOT", "$tx_metadata"] } },
-        },
-      ])
-    return results.map((tx) => translateToLedgerTxAndMetadata(tx))
+    const ledgerResp = await paginatedLedger({
+      filters: { mediciFilters: { account: liabilitiesWalletIds }, externalIdPattern },
+      paginationArgs,
+    })
+
+    return ledgerResp
   } catch (err) {
     return new UnknownLedgerError(err)
   }

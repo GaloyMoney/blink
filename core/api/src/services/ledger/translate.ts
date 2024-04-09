@@ -80,10 +80,3 @@ export const translateToLedgerTxWithMetadata = <S extends WalletCurrency>({
 
   return { ...tx, ...txMetadata }
 }
-
-export const translateToLedgerTxAndMetadata = <S extends WalletCurrency>(
-  rawTxAndMetadata: ILedgerTransaction & TransactionMetadataRecord,
-): LedgerTransaction<S> => ({
-  ...translateToLedgerTx<S, DisplayCurrency>(rawTxAndMetadata),
-  revealedPreImage: (rawTxAndMetadata.revealedPreImage as RevealedPreImage) || undefined,
-})

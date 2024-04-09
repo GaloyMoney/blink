@@ -226,26 +226,27 @@ const BtcWallet = GT.Object<Wallet>({
       },
     },
     transactionsByExternalId: {
-      type: GT.NonNullList(Transaction),
+      type: TransactionConnection,
       args: {
+        ...connectionArgs,
         externalId: {
           type: GT.NonNull(TxExternalId),
         },
       },
       resolve: async (source, args) => {
-        const { externalId } = args
+        const { externalId, ...rawPaginationArgs } = args
         if (externalId instanceof Error) throw externalId
 
-        const transactions = await Wallets.getTransactionsForWalletsByExternalId({
+        const result = await Wallets.getTransactionsForWalletsByExternalId({
           walletIds: [source.id],
           uncheckedExternalIdPattern: externalId,
+          rawPaginationArgs,
         })
-
-        if (transactions instanceof Error) {
-          throw mapError(transactions)
+        if (result instanceof Error) {
+          throw mapError(result)
         }
 
-        return transactions
+        return result
       },
     },
     transactionById: {

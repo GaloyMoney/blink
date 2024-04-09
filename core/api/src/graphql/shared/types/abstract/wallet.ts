@@ -109,9 +109,10 @@ const IWallet = GT.Interface({
       },
     },
     transactionsByExternalId: {
-      type: GT.NonNullList(Transaction),
+      type: TransactionConnection,
       description: "Returns the transactions that include this external id.",
       args: {
+        ...connectionArgs,
         externalId: {
           type: GT.NonNull(TxExternalId),
           description: "Full or partial external id to query for.",
