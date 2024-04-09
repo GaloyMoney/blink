@@ -369,7 +369,6 @@ type Query {
   filteredUserCount(phoneCountryCodesFilter: [CountryCode!], userIdsFilter: [ID!]): Int!
   lightningInvoice(hash: PaymentHash!): LightningInvoice!
   lightningPayment(hash: PaymentHash!): LightningPayment!
-  listWalletIds(walletCurrency: WalletCurrency!): [WalletId!]!
   merchantsPendingApproval: [Merchant!]!
   transactionById(id: ID!): Transaction
   transactionsByHash(hash: PaymentHash!): [Transaction]
