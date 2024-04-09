@@ -575,7 +575,6 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "CouldNotFindWalletFromOnChainAddressError":
     case "CouldNotFindWalletFromOnChainAddressesError":
     case "CouldNotFindBtcWalletForAccountError":
-    case "CouldNotListWalletsFromWalletCurrencyError":
     case "CouldNotFindWalletOnChainPendingReceiveError":
     case "CouldNotFindLnPaymentFromHashError":
     case "LockError":
