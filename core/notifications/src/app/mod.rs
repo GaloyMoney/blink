@@ -40,7 +40,7 @@ impl NotificationsApp {
         let email_executor = EmailExecutor::init(config.email_executor.clone(), settings.clone())?;
         let email_reminder_projection =
             EmailReminderProjection::new(&pool, config.link_email_reminder.clone());
-        let in_app_notifications = InAppNotifications::new(&pool);
+        let in_app_notifications = InAppNotifications::new(&pool, settings.clone());
         let runner = job::start_job_runner(
             &pool,
             push_executor,
@@ -209,11 +209,8 @@ impl NotificationsApp {
             job::spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
         }
         if payload.should_send_in_app_msg() {
-            let user_settings = self.settings.find_for_user_id(&user_id).await?;
-            let notification =
-                InAppNotification::new(user_id.clone(), payload.clone(), user_settings);
             self.in_app_notifications
-                .persist(&mut tx, notification)
+                .persist(&mut tx, &user_id, payload.clone())
                 .await?;
         }
         job::spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
@@ -290,7 +287,7 @@ impl NotificationsApp {
     ) -> Result<Vec<InAppNotification>, ApplicationError> {
         let in_app_notifications = self
             .in_app_notifications
-            .find_for_user(&user_id, only_unread)
+            .find_for_user(user_id, only_unread)
             .await?;
 
         Ok(in_app_notifications)
@@ -304,7 +301,7 @@ impl NotificationsApp {
     ) -> Result<InAppNotification, ApplicationError> {
         let notification = self
             .in_app_notifications
-            .mark_as_read(&user_id, notification_id)
+            .mark_as_read(user_id, notification_id)
             .await?;
 
         Ok(notification)

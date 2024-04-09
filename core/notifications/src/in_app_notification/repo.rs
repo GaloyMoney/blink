@@ -5,13 +5,13 @@ use crate::primitives::*;
 use super::{entity::*, error::*};
 
 #[derive(Debug, Clone)]
-pub struct InAppNotifications {
+pub(super) struct InAppNotificationsRepo {
     pool: PgPool,
 }
 
-impl InAppNotifications {
-    pub fn new(pool: &PgPool) -> Self {
-        InAppNotifications { pool: pool.clone() }
+impl InAppNotificationsRepo {
+    pub fn new(pool: PgPool) -> Self {
+        Self { pool }
     }
 
     pub async fn persist(
@@ -43,7 +43,7 @@ impl InAppNotifications {
     // unread_msgs_for_user and all_msgs_for_user
     pub async fn find_for_user(
         &self,
-        user_id: &GaloyUserId,
+        user_id: GaloyUserId,
         _only_unread: bool,
     ) -> Result<Vec<InAppNotification>, InAppNotificationError> {
         let rows = sqlx::query!(
@@ -78,7 +78,7 @@ impl InAppNotifications {
 
     pub async fn mark_as_read(
         &self,
-        user_id: &GaloyUserId,
+        user_id: GaloyUserId,
         notification_id: InAppNotificationId,
     ) -> Result<InAppNotification, InAppNotificationError> {
         let row = sqlx::query!(

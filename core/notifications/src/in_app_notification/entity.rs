@@ -1,6 +1,4 @@
-use crate::{
-    notification_event::*, primitives::*, user_notification_settings::UserNotificationSettings,
-};
+use crate::{messages::*, notification_event::*, primitives::*};
 use chrono::{DateTime, Utc};
 
 pub struct InAppNotification {
@@ -15,19 +13,15 @@ pub struct InAppNotification {
 
 impl InAppNotification {
     pub fn new(
-        user_id: GaloyUserId,
-        payload: NotificationEventPayload,
-        settings: UserNotificationSettings,
+        user_id: &GaloyUserId,
+        msg: LocalizedInAppMessage,
+        deep_link: Option<DeepLink>,
     ) -> Self {
-        let localized_msg = payload
-            .to_localized_in_app_msg(settings.locale().unwrap_or_default())
-            .unwrap();
-        let deep_link = payload.deep_link();
-        InAppNotification {
+        Self {
             id: InAppNotificationId::new(),
-            user_id,
-            title: localized_msg.title,
-            body: localized_msg.body,
+            user_id: user_id.clone(),
+            title: msg.title,
+            body: msg.body,
             deep_link,
             created_at: Utc::now(),
             read_at: None,

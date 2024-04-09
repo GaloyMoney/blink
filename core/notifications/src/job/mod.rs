@@ -78,14 +78,14 @@ async fn all_user_event_dispatch(
                 };
                 spawn_all_user_event_dispatch(&mut tx, data).await?;
             }
+            // if payload.should_send_in_app_msg() {
+            //     // in_app_notifications.send_to_all(tx, ids, payload);
+            // }
             for user_id in ids {
                 let payload = data.payload.clone();
                 if payload.should_send_email() {
                     spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone()))
                         .await?;
-                }
-                if payload.should_send_in_app_msg() {
-                    unimplemented!()
                 }
                 spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
             }

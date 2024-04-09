@@ -30,26 +30,6 @@ impl std::fmt::Display for GaloyUserId {
     }
 }
 
-// pub struct InAppNotificationId(String);
-
-// impl From<String> for InAppNotificationId {
-//     fn from(id: String) -> Self {
-//         InAppNotificationId(id)
-//     }
-// }
-
-// impl AsRef<str> for InAppNotificationId {
-//     fn as_ref(&self) -> &str {
-//         &self.0
-//     }
-// }
-
-// impl std::fmt::Display for InAppNotificationId {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         write!(f, "{}", self.0)
-//     }
-// }
-
 es_entity::entity_id! { UserNotificationSettingsId }
 es_entity::entity_id! { InAppNotificationId }
 
