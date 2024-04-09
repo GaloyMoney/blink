@@ -59,6 +59,7 @@ pub async fn start_job_runner(
 )]
 async fn all_user_event_dispatch(
     mut current_job: CurrentJob,
+    in_app_notifications: InAppNotifications,
     settings: UserNotificationSettingsRepo,
 ) -> Result<(), JobError> {
     let pool = current_job.pool().clone();
@@ -78,16 +79,20 @@ async fn all_user_event_dispatch(
                 };
                 spawn_all_user_event_dispatch(&mut tx, data).await?;
             }
-            // if payload.should_send_in_app_msg() {
-            //     // in_app_notifications.send_to_all(tx, ids, payload);
-            // }
+            let payload = data.payload.clone();
+
+            if payload.should_send_in_app_msg() {
+                in_app_notifications
+                    .notify_users(&mut tx, ids.clone(), payload.clone())
+                    .await?;
+            }
+
             for user_id in ids {
-                let payload = data.payload.clone();
                 if payload.should_send_email() {
                     spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone()))
                         .await?;
                 }
-                spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
+                spawn_send_push_notification(&mut tx, (user_id, payload.clone())).await?;
             }
             Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
         })
@@ -99,6 +104,7 @@ async fn all_user_event_dispatch(
 async fn link_email_reminder(
     mut current_job: CurrentJob,
     email_reminder_projection: EmailReminderProjection,
+    in_app_notifications: InAppNotifications,
 ) -> Result<(), JobError> {
     let pool = current_job.pool().clone();
     JobExecutor::builder(&mut current_job)
@@ -118,14 +124,16 @@ async fn link_email_reminder(
                 };
                 spawn_link_email_reminder(&mut tx, data).await?;
             }
+
+            let payload = NotificationEventPayload::from(LinkEmailReminder {});
+
+            if payload.should_send_in_app_msg() {
+                in_app_notifications
+                    .notify_users(&mut tx, ids.clone(), payload.clone())
+                    .await?;
+            }
+
             for user_id in ids {
-                let payload = NotificationEventPayload::from(LinkEmailReminder {});
-                if payload.should_send_email() {
-                    unimplemented!()
-                }
-                if payload.should_send_in_app_msg() {
-                    unimplemented!()
-                }
                 spawn_send_push_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
             }
             Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
@@ -167,7 +175,10 @@ async fn kickoff_link_email_reminder(
     name = "multi_user_event_dispatch",
     channel_name = "multi_user_event_dispatch"
 )]
-async fn multi_user_event_dispatch(mut current_job: CurrentJob) -> Result<(), JobError> {
+async fn multi_user_event_dispatch(
+    mut current_job: CurrentJob,
+    in_app_notifications: InAppNotifications,
+) -> Result<(), JobError> {
     let pool = current_job.pool().clone();
     JobExecutor::builder(&mut current_job)
         .build()
@@ -189,15 +200,21 @@ async fn multi_user_event_dispatch(mut current_job: CurrentJob) -> Result<(), Jo
                 };
                 spawn_multi_user_event_dispatch(&mut tx, data).await?;
             }
+
+            let payload = data.payload.clone();
+
+            if payload.should_send_in_app_msg() {
+                in_app_notifications
+                    .notify_users(&mut tx, ids.to_vec(), payload.clone())
+                    .await?;
+            }
+
             for user_id in ids {
-                let payload = data.payload.clone();
                 if payload.should_send_email() {
-                    unimplemented!()
+                    spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone()))
+                        .await?;
                 }
-                if payload.should_send_in_app_msg() {
-                    unimplemented!()
-                }
-                spawn_send_push_notification(&mut tx, (user_id.clone(), payload)).await?;
+                spawn_send_push_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
             }
             Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
         })

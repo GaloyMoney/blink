@@ -210,7 +210,7 @@ impl NotificationsApp {
         }
         if payload.should_send_in_app_msg() {
             self.in_app_notifications
-                .persist(&mut tx, user_id.clone(), payload.clone())
+                .notify_user(&mut tx, user_id.clone(), payload.clone())
                 .await?;
         }
         job::spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
@@ -301,7 +301,7 @@ impl NotificationsApp {
     ) -> Result<InAppNotification, ApplicationError> {
         let notification = self
             .in_app_notifications
-            .mark_as_read(user_id, notification_id)
+            .notification_read(user_id, notification_id)
             .await?;
 
         Ok(notification)

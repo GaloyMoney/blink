@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT *\n            FROM in_app_notifications\n            WHERE galoy_user_id = $1\n            ORDER BY created_at DESC\n            ",
+  "query": "\n                SELECT *\n                FROM in_app_notifications\n                WHERE galoy_user_id = $1 AND read_at IS NULL\n                ORDER BY created_at DESC\n                ",
   "describe": {
     "columns": [
       {
@@ -54,5 +54,5 @@
       true
     ]
   },
-  "hash": "bdb5013b961bedae51a67a9ff5d3dab104d2e486ae626c3f249142b99a975621"
+  "hash": "e6e01efa4d7970e97d96d6b331294ae9c9cb19ecdcfd36561a7834947dbe291a"
 }

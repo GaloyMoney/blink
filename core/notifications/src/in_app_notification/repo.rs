@@ -14,7 +14,7 @@ impl InAppNotificationsRepo {
         Self { pool }
     }
 
-    pub async fn persist(
+    pub async fn persist_new(
         &self,
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
         notification: InAppNotification,
@@ -39,20 +39,63 @@ impl InAppNotificationsRepo {
         Ok(())
     }
 
-    // can we have 2 separate fn's ?
-    // unread_msgs_for_user and all_msgs_for_user
-    pub async fn find_for_user(
+    pub async fn persist_new_batch(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        notifications: Vec<InAppNotification>,
+    ) -> Result<(), InAppNotificationError> {
+        for notification in notifications {
+            // TODO: batch insert
+            self.persist_new(tx, notification).await?;
+        }
+        Ok(())
+    }
+
+    pub async fn find_all_for_user(
         &self,
         user_id: GaloyUserId,
-        _only_unread: bool,
     ) -> Result<Vec<InAppNotification>, InAppNotificationError> {
         let rows = sqlx::query!(
             r#"
-            SELECT *
-            FROM in_app_notifications
-            WHERE galoy_user_id = $1
-            ORDER BY created_at DESC
-            "#,
+                SELECT *
+                FROM in_app_notifications
+                WHERE galoy_user_id = $1
+                ORDER BY created_at DESC
+                "#,
+            user_id.as_ref()
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        let notifications =
+            rows.into_iter()
+                .map(|row| InAppNotification {
+                    id: InAppNotificationId::from(row.id),
+                    user_id: GaloyUserId::from(row.galoy_user_id),
+                    title: row.title,
+                    body: row.body,
+                    deep_link: row.deep_link.as_ref().map(|dl| {
+                        serde_json::from_str(dl).expect("unable to deserialize deep_link")
+                    }),
+                    created_at: row.created_at,
+                    read_at: row.read_at,
+                })
+                .collect();
+
+        Ok(notifications)
+    }
+
+    pub async fn find_unread_for_user(
+        &self,
+        user_id: GaloyUserId,
+    ) -> Result<Vec<InAppNotification>, InAppNotificationError> {
+        let rows = sqlx::query!(
+            r#"
+                SELECT *
+                FROM in_app_notifications
+                WHERE galoy_user_id = $1 AND read_at IS NULL
+                ORDER BY created_at DESC
+                "#,
             user_id.as_ref()
         )
         .fetch_all(&self.pool)
