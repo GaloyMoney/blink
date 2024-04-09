@@ -512,6 +512,14 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "InvalidPaginatedQueryArgsError":
       message = error.message
       return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "InvalidLedgerExternalId":
+      message =
+        "Invalid external id string passed. ID should be either alphanumeric " +
+        "or contain the characters '+', '/', '=', '_', '-'. It should not " +
+        "be more than 100 characters long as well."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "ErrorFetchingLnurlInvoice":
       message = error.message
       return new LnurlRequestInvoiceError({ message, logger: baseLogger })
@@ -664,7 +672,6 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "CouldNotFindAccountFromKratosIdError":
     case "MissingPhoneError":
     case "InvalidUserId":
-    case "InvalidLedgerExternalId":
     case "InvalidLightningPaymentFlowBuilderStateError":
     case "InvalidOnChainPaymentFlowBuilderStateError":
     case "InvalidWalletInvoiceBuilderStateError":

@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 
 import { setTransactionSchema } from "medici"
 
-import { LedgerTransactionType } from "@/domain/ledger"
+import { LedgerTransactionType, checkedToLedgerExternalId } from "@/domain/ledger"
 import { LnPaymentState } from "@/domain/ledger/ln-payment-state"
 
 // TODO migration:
@@ -20,7 +20,10 @@ const transactionSchema = new Schema<ILedgerTransaction>(
       ref: "invoiceusers",
       // TODO: not always, use another hashOnchain?
     },
-    external_id: String,
+    external_id: {
+      type: String,
+      validator: (v: string) => !(checkedToLedgerExternalId(v) instanceof Error),
+    },
     vout: Number,
 
     // used for escrow transaction, to know which channel this transaction is associated with
