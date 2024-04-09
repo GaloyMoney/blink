@@ -140,19 +140,11 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
 
 const translateToLedgerTxMetadata = (
   txMetadata: TransactionMetadataRecord,
-): LedgerTransactionMetadata => {
-  const externalId =
-    txMetadata.external_id === undefined
-      ? txMetadata.external_id
-      : (txMetadata.external_id as LedgerExternalId)
-
-  return {
-    id: fromObjectId<LedgerTransactionId>(txMetadata._id),
-    hash: (txMetadata.hash as PaymentHash | OnChainTxHash) || undefined,
-    revealedPreImage: (txMetadata.revealedPreImage as RevealedPreImage) || undefined,
-    externalId,
-  }
-}
+): LedgerTransactionMetadata => ({
+  id: fromObjectId<LedgerTransactionId>(txMetadata._id),
+  hash: (txMetadata.hash as PaymentHash | OnChainTxHash) || undefined,
+  revealedPreImage: (txMetadata.revealedPreImage as RevealedPreImage) || undefined,
+})
 
 const translateToTxMetadataRecord = (
   txMetadata: LedgerTransactionMetadata,
@@ -165,7 +157,5 @@ const translateToTxMetadataRecord = (
     ...("revealedPreImage" in txMetadata
       ? { revealedPreImage: txMetadata.revealedPreImage }
       : {}),
-
-    ...("externalId" in txMetadata ? { external_id: txMetadata.externalId } : {}),
   }
 }

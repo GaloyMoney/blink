@@ -18,6 +18,7 @@ export const translateToLedgerTx = <S extends WalletCurrency, T extends DisplayC
   return {
     id: fromObjectId<LedgerTransactionId>(tx._id || ""),
     walletId: toWalletId(tx.accounts as LiabilitiesWalletId),
+    externalId: (tx.external_id as LedgerExternalId) || undefined,
     type: tx.type,
     debit,
     credit,
@@ -85,5 +86,4 @@ export const translateToLedgerTxAndMetadata = <S extends WalletCurrency>(
 ): LedgerTransaction<S> => ({
   ...translateToLedgerTx<S, DisplayCurrency>(rawTxAndMetadata),
   revealedPreImage: (rawTxAndMetadata.revealedPreImage as RevealedPreImage) || undefined,
-  externalId: (rawTxAndMetadata.external_id as LedgerExternalId) || undefined,
 })

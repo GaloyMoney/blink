@@ -20,6 +20,7 @@ const transactionSchema = new Schema<ILedgerTransaction>(
       ref: "invoiceusers",
       // TODO: not always, use another hashOnchain?
     },
+    external_id: String,
     vout: Number,
 
     // used for escrow transaction, to know which channel this transaction is associated with
@@ -157,6 +158,7 @@ transactionSchema.index({ hash: 1 })
 transactionSchema.index({ payout_id: 1 })
 transactionSchema.index({ _original_journal: 1 })
 transactionSchema.index({ related_journal: 1 })
+transactionSchema.index({ external_id: 1 })
 
 setTransactionSchema(transactionSchema, undefined, { defaultIndexes: true })
 
@@ -172,13 +174,11 @@ const transactionMetadataSchema = new Schema<TransactionMetadataRecord>(
       type: String,
       index: true,
     },
-    external_id: String,
   },
   { id: false },
 )
 
 transactionMetadataSchema.index({ hash: 1 })
-transactionMetadataSchema.index({ external_id: 1 })
 
 export const TransactionMetadata = mongoose.model(
   "Medici_Transaction_Metadata",

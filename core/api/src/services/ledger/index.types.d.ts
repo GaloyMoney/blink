@@ -24,6 +24,7 @@ type RecordReceiveArgs = {
   metadata: ReceiveLedgerMetadata
   additionalCreditMetadata: TxMetadata
   additionalInternalMetadata: TxMetadata
+  externalId?: LedgerExternalId
   txMetadata?: LnLedgerTransactionMetadataUpdate
   bankFee?: {
     usd: UsdPaymentAmount

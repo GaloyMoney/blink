@@ -31,6 +31,7 @@ type StaticAccountIds = {
 type EntryBuilderConfig<M extends MediciEntry> = {
   entry: M
   staticAccountIds: StaticAccountIds
+  externalId?: LedgerExternalId
   metadata: TxMetadata
   additionalInternalMetadata: TxMetadata
 }
@@ -40,6 +41,7 @@ type EntryBuilderFeeState<M extends MediciEntry> = {
   metadata: TxMetadata
   additionalInternalMetadata: TxMetadata
   staticAccountIds: StaticAccountIds
+  externalId: LedgerExternalId | undefined
   amountWithFees: {
     usdWithFees: UsdPaymentAmount
     btcWithFees: BtcPaymentAmount
@@ -61,6 +63,7 @@ type EntryBuilderDebitState<M extends MediciEntry> = {
   metadata: TxMetadata
   additionalInternalMetadata: TxMetadata
   staticAccountIds: StaticAccountIds
+  externalId: LedgerExternalId | undefined
   amountWithFees: {
     usdWithFees: UsdPaymentAmount
     btcWithFees: BtcPaymentAmount
@@ -101,6 +104,7 @@ type EntryBuilderCreditState<M extends MediciEntry> = {
     dealerBtcAccountId: LedgerAccountId
     dealerUsdAccountId: LedgerAccountId
   }
+  externalId: LedgerExternalId | undefined
 }
 
 type EntryBuilderCredit<M extends MediciEntry> = {
@@ -146,7 +150,6 @@ type OnChainLedgerTransactionMetadataUpdate = {
 type LnLedgerTransactionMetadataUpdate = {
   hash: PaymentHash
   revealedPreImage?: RevealedPreImage
-  externalId?: LedgerExternalId
 }
 
 // Repeating 'id' key because can't figure out how to type an empty object

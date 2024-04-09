@@ -1,5 +1,6 @@
 interface ILedgerTransaction {
   _id?: ObjectId
+  external_id?: string
   credit: number
   debit: number
   meta?: { [k: string]: unknown }
@@ -51,5 +52,4 @@ interface TransactionMetadataRecord {
 
   hash?: string
   revealedPreImage?: string
-  external_id?: string
 }

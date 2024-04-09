@@ -103,6 +103,21 @@ describe("EntryBuilder", () => {
     expect(zeroAmounts.length).toBe(0)
   }
 
+  const expectExternalId = ({
+    externalId,
+    result,
+  }: {
+    externalId: LedgerExternalId
+    result: Entry<ILedgerTransaction, IJournal>
+  }) => {
+    const externalIds = result.transactions.map((tx) => tx.external_id)
+    expect(externalIds).toHaveLength(result.transactions.length)
+
+    const setExternalIds = new Set(externalIds)
+    expect(setExternalIds.size).toEqual(1)
+    expect(setExternalIds).toContain(externalId)
+  }
+
   const calc = AmountCalculator()
   const staticAccountIds = {
     bankOwnerAccountId: "bankOwnerAccountId" as LedgerAccountId,
@@ -186,6 +201,8 @@ describe("EntryBuilder", () => {
     displayFee: 0 as DisplayCurrencyBaseAmount,
     displayCurrency: "EUR" as DisplayCurrency,
   }
+
+  const externalId = "externalId" as LedgerExternalId
 
   describe("Btc account", () => {
     describe("send", () => {
@@ -338,6 +355,7 @@ describe("EntryBuilder", () => {
         const entry = createEntry()
         const builder = EntryBuilder({
           staticAccountIds,
+          externalId,
           entry,
           metadata,
           additionalInternalMetadata,
@@ -355,6 +373,7 @@ describe("EntryBuilder", () => {
         const debits = result.transactions.filter((t) => t.debit > 0)
 
         expectJournalToBeBalanced(result)
+        expectExternalId({ result, externalId })
         testEntryDisplayAmounts(entry, {
           walletAmounts: additionalInternalMetadata,
           senderAmounts: additionalUserUsdMetadata,
@@ -368,6 +387,7 @@ describe("EntryBuilder", () => {
         const entry = createEntry()
         const builder = EntryBuilder({
           staticAccountIds,
+          externalId,
           entry,
           metadata,
           additionalInternalMetadata,
@@ -383,7 +403,9 @@ describe("EntryBuilder", () => {
 
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
+
         expectJournalToBeBalanced(result)
+        expectExternalId({ result, externalId })
         testEntryDisplayAmounts(entry, {
           walletAmounts: additionalInternalMetadata,
           senderAmounts: additionalUserUsdMetadata,
@@ -615,6 +637,7 @@ describe("EntryBuilder", () => {
           const entry = createEntry()
           const builder = EntryBuilder({
             staticAccountIds,
+            externalId,
             entry,
             metadata,
             additionalInternalMetadata,
@@ -633,6 +656,7 @@ describe("EntryBuilder", () => {
           const debits = result.transactions.filter((t) => t.debit > 0)
 
           expectJournalToBeBalanced(result)
+          expectExternalId({ result, externalId })
           testEntryDisplayAmounts(entry, {
             walletAmounts: additionalInternalMetadata,
             senderAmounts: additionalUserUsdMetadata,
@@ -675,6 +699,7 @@ describe("EntryBuilder", () => {
           const entry = createEntry()
           const builder = EntryBuilder({
             staticAccountIds,
+            externalId,
             entry,
             metadata,
             additionalInternalMetadata,
@@ -691,7 +716,9 @@ describe("EntryBuilder", () => {
 
           const credits = result.transactions.filter((t) => t.credit > 0)
           const debits = result.transactions.filter((t) => t.debit > 0)
+
           expectJournalToBeBalanced(result)
+          expectExternalId({ result, externalId })
           testEntryDisplayAmounts(entry, {
             walletAmounts: additionalInternalMetadata,
             senderAmounts: additionalUserUsdMetadata,
@@ -719,6 +746,7 @@ describe("EntryBuilder", () => {
         const entry = createEntry()
         const builder = EntryBuilder({
           staticAccountIds,
+          externalId,
           entry,
           metadata,
           additionalInternalMetadata,
@@ -736,6 +764,7 @@ describe("EntryBuilder", () => {
         const debits = result.transactions.filter((t) => t.debit > 0)
 
         expectJournalToBeBalanced(result)
+        expectExternalId({ result, externalId })
         testEntryDisplayAmounts(entry, {
           walletAmounts: additionalInternalMetadata,
           senderAmounts: additionalUserUsdMetadata,

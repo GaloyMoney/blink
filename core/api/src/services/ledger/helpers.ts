@@ -10,12 +10,10 @@ export const persistAndReturnEntry = async ({
   entry,
   hash,
   revealedPreImage,
-  externalId,
 }: {
   entry: Entry<ILedgerTransaction, IJournal>
   hash?: PaymentHash | OnChainTxHash
   revealedPreImage?: RevealedPreImage
-  externalId?: LedgerExternalId
 }) => {
   try {
     const savedEntry = await entry.commit()
@@ -25,7 +23,6 @@ export const persistAndReturnEntry = async ({
       id,
       hash,
       revealedPreImage,
-      externalId,
     }))
     txMetadataRepo.persistAll(txsMetadataToPersist)
 

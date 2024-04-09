@@ -365,10 +365,10 @@ const lockedUpdatePendingInvoiceSteps = async ({
       usd: usdBankFee,
       btc: btcBankFee,
     },
+    externalId,
     metadata,
     txMetadata: {
       hash: metadata.hash,
-      externalId,
       revealedPreImage: revealPreImage(walletInvoiceInsideLock.secret),
     },
     additionalCreditMetadata: creditAccountAdditionalMetadata,
