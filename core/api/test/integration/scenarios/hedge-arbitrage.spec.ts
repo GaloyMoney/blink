@@ -136,6 +136,7 @@ const newAccountAndWallets = async () => {
       initialStatus: AccountStatus.Active,
       initialWallets,
       initialLevel: AccountLevel.One,
+      maxDeletions: 3,
     },
   })
   if (account instanceof Error) throw account

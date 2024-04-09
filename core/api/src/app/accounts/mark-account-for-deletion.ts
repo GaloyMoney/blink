@@ -1,8 +1,14 @@
+import { getDefaultAccountsConfig } from "@/config"
+
 import { deleteMerchantByUsername } from "@/app/merchants"
 
 import { getBalanceForWallet, listWalletsByAccountId } from "@/app/wallets"
 
-import { AccountStatus, AccountValidator } from "@/domain/accounts"
+import {
+  AccountStatus,
+  AccountValidator,
+  InvalidAccountForDeletionError,
+} from "@/domain/accounts"
 import { AccountHasPositiveBalanceError } from "@/domain/authentication/errors"
 
 import { IdentityRepository } from "@/services/kratos"
@@ -43,10 +49,19 @@ export const markAccountForDeletion = async ({
   }
 
   const { kratosUserId } = account
+  const { maxDeletions } = getDefaultAccountsConfig()
 
   const usersRepo = UsersRepository()
   const user = await usersRepo.findById(kratosUserId)
   if (user instanceof Error) return user
+
+  const deletedPhones: PhoneNumber[] = user.phone ? [user.phone] : []
+  if (user.deletedPhones) {
+    deletedPhones.push(...user.deletedPhones)
+  }
+  const usersByPhones = await usersRepo.findByDeletedPhones(deletedPhones)
+  if (usersByPhones instanceof Error) return usersByPhones
+  if (usersByPhones.length >= maxDeletions) return new InvalidAccountForDeletionError()
 
   if (user.phone) {
     const newUser = {

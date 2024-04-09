@@ -522,6 +522,12 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "InvoiceAlreadyProcessedError":
       message = "The invoice has already been processed"
       return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "InvalidAccountForDeletionError":
+      message =
+        "Unfortunately, we're unable to delete your account automatically at this time. Please reach out to our support team for assistance with the deletion process."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------
