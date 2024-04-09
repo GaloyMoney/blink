@@ -6,26 +6,11 @@
   width: 90%;
   border: 1px solid #ccc;
   border-radius: 0.5em;
-  box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px,
-    rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
   font-size: 1.05rem;
 }
-.status_UNFUNDED {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 0.5em;
-  background-color: #d90429;
-  color: white;
-  border-top-left-radius: 0.5em;
-  border-top-right-radius: 0.5em;
-  box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px,
-    rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
-}
 
-.status_FUNDED {
+.status_ACTIVE {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -36,8 +21,7 @@
   color: white;
   border-top-left-radius: 0.5em;
   border-top-right-radius: 0.5em;
-  box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px,
-    rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
 }
 .time {
   display: flex;

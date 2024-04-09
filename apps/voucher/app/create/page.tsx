@@ -1,14 +1,14 @@
 "use client"
 import { useState } from "react"
 
-import CreatePageAmount from "@/components/Create/CreatePageAmount/CreatePageAmount"
-import CreatePagePercentage from "@/components/Create/CreatePagePercentage/CreatePagePercentage"
+import CreatePageAmount from "@/components/create/create-page-amount"
+import CreatePagePercentage from "@/components/create/create-page-percentage"
 import { Currency, Wallet } from "@/lib/graphql/generated"
 import useSatsPrice from "@/hooks/useSatsPrice"
-import PageLoadingComponent from "@/components/Loading/PageLoadingComponent"
+import PageLoadingComponent from "@/components/loading/page-loading-component"
 import { calculateAmountAfterCommission, getWalletDetails } from "@/utils/helpers"
-import ConfirmModal from "@/components/Create/ConifrmModal/ConfirmModal"
-import InfoComponent from "@/components/InfoComponent/InfoComponent"
+import ConfirmModal from "@/components/create/conifrm-modal"
+import InfoComponent from "@/components/info-component"
 import useRealtimePrice from "@/hooks/useRealTimePrice"
 import { DEFAULT_CURRENCY } from "@/config/appConfig"
 import { gql } from "@apollo/client"
@@ -53,7 +53,7 @@ export default function CreatePage() {
   const [confirmModal, setConfirmModal] = useState<boolean>(false)
   const [currentPage, setCurrentPage] = useState<string>("AMOUNT")
 
-  const AmountInDollars = Number(
+  const amountInDollars = Number(
     (
       currencyToCents(Number(amount), currency.id, currency.fractionDigits)
         .convertedCurrencyAmount / 100
@@ -61,7 +61,7 @@ export default function CreatePage() {
   )
 
   const voucherAmountInDollars = calculateAmountAfterCommission({
-    amount: AmountInDollars,
+    amount: amountInDollars,
     commissionRatePercentage: Number(commissionPercentage),
   })
 
@@ -100,7 +100,7 @@ export default function CreatePage() {
           usdToSats={usdToSats}
           setConfirmModal={setConfirmModal}
           commissionPercentage={commissionPercentage}
-          AmountInDollars={AmountInDollars}
+          amountInDollars={amountInDollars}
           voucherAmountInDollars={voucherAmountInDollars}
           hasLoaded={hasLoaded}
         />

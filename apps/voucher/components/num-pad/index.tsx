@@ -4,9 +4,9 @@ import BackspaceIcon from "@mui/icons-material/Backspace"
 
 import RestartAltIcon from "@mui/icons-material/RestartAlt"
 
-import Button from "../Button/Button"
+import Button from "../button"
 
-import styles from "./NumPad.module.css"
+import styles from "./num-pad.module.css"
 interface Props {
   currentAmount: string
   setCurrentAmount: (amount: string) => void

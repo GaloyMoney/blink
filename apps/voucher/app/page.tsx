@@ -1,13 +1,12 @@
 "use client"
 import Link from "next/link"
 
-import Button from "@/components/Button/Button"
+import Button from "@/components/button"
 import { useSession } from "next-auth/react"
 // path : /
 //TODO home page or welcome screen needed to be created here
 export default function Home() {
   const session = useSession()
-  console.log(session)
 
   return (
     <div className="flex flex-col mt-36 items-center text-center">

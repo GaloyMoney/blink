@@ -1,7 +1,7 @@
 import React from "react"
 import InfoIcon from "@mui/icons-material/Info"
 
-import styles from "./InfoComponent.module.css"
+import styles from "./info-component.module.css"
 
 interface Props {
   children: React.ReactNode

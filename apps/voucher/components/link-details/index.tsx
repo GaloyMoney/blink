@@ -1,8 +1,8 @@
 import React from "react"
 
-import Bold from "../Bold"
+import Bold from "../bold"
 
-import styles from "./LinkDetails.module.css"
+import styles from "./link-details.module.css"
 
 import { timeSince } from "@/utils/helpers"
 import { WithdrawLink, Status, WithdrawLinkWithSecret } from "@/lib/graphql/generated"
@@ -17,7 +17,7 @@ export default function LinkDetails({ withdrawLink }: LinkDetailsProps) {
 
   return (
     <div className={styles.container}>
-      <div className={styles.status_FUNDED}>
+      <div className={styles.status_ACTIVE}>
         {withdrawLink?.status === Status.Active && "Active"}
       </div>
       {withdrawLink?.status === Status.Active && (

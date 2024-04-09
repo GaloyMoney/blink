@@ -4,12 +4,12 @@ import Link from "next/link"
 
 import { env } from "@/env"
 import { useGetWithdrawLinkQuery, Status } from "@/lib/graphql/generated"
-import Button from "@/components/Button/Button"
-import LinkDetails from "@/components/LinkDetails/LinkDetails"
-import InfoComponent from "@/components/InfoComponent/InfoComponent"
-import FundsPaid from "@/components/FundsPaid"
-import PageLoadingComponent from "@/components/Loading/PageLoadingComponent"
-import Heading from "@/components/Heading"
+import Button from "@/components/button"
+import LinkDetails from "@/components/link-details"
+import InfoComponent from "@/components/info-component"
+import FundsPaid from "@/components/funds-paid"
+import PageLoadingComponent from "@/components/loading/page-loading-component"
+import Heading from "@/components/heading"
 const { NEXT_PUBLIC_LOCAL_URL } = env
 
 interface Params {

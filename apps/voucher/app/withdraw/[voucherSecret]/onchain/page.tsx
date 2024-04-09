@@ -3,9 +3,9 @@ import React, { useState, useEffect } from "react"
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 
-import { gql, ServerError } from "@apollo/client"
+import { gql } from "@apollo/client"
 
-import styles from "./OnchainPage.module.css"
+import styles from "./on-chain-page.module.css"
 
 import {
   useOnChainWithdrawLinkMutation,
@@ -13,16 +13,16 @@ import {
   Status,
   OnChainWithdrawResultStatus,
 } from "@/lib/graphql/generated"
-import LoadingComponent from "@/components/Loading/LoadingComponent"
-import Button from "@/components/Button/Button"
-import Input from "@/components/Input"
-import InfoComponent from "@/components/InfoComponent/InfoComponent"
-import LinkDetails from "@/components/LinkDetails/LinkDetails"
-import ModalComponent from "@/components/ModalComponent"
+import LoadingComponent from "@/components/loading/loading-component"
+import Button from "@/components/button"
+import Input from "@/components/input"
+import InfoComponent from "@/components/info-component"
+import LinkDetails from "@/components/link-details"
+import ModalComponent from "@/components/modal-component"
 
-import FundsPaid from "@/components/FundsPaid"
-import PageLoadingComponent from "@/components/Loading/PageLoadingComponent"
-import Heading from "@/components/Heading"
+import FundsPaid from "@/components/funds-paid"
+import PageLoadingComponent from "@/components/loading/page-loading-component"
+import Heading from "@/components/heading"
 
 interface Params {
   params: {

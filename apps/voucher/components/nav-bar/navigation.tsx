@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react"
 import AddIcon from "@mui/icons-material/Add"
 import ArrowDropDownCircleIcon from "@mui/icons-material/ArrowDropDownCircle"
 
-import styles from "./NavBar.module.css"
+import styles from "./nav-bar.module.css"
 import Link from "next/link"
 
 const Navigation: React.FC = () => {

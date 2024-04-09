@@ -1,11 +1,11 @@
 import React from "react"
 
-import styles from "../CreateLink.module.css"
+import styles from "../create-link.module.css"
 
-import Numpad from "@/components/NumPad/NumPad"
+import Numpad from "@/components/num-pad"
 import { formatOperand } from "@/utils/helpers"
-import Button from "@/components/Button/Button"
-import Heading from "@/components/Heading"
+import Button from "@/components/button"
+import Heading from "@/components/heading"
 
 interface Props {
   commissionPercentage: string

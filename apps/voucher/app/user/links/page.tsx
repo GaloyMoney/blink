@@ -3,10 +3,10 @@ import React, { useState, useEffect } from "react"
 
 import Pagination from "@mui/material/Pagination"
 
-import styles from "./UserLinkPage.module.css"
+import styles from "./user-link-page.module.css"
 
-import PageLoadingComponent from "@/components/Loading/PageLoadingComponent"
-import UserLinksComponent from "@/components/UserLinks/UserLinks"
+import PageLoadingComponent from "@/components/loading/page-loading-component"
+import UserLinksComponent from "@/components/user-links"
 
 import { getOffset } from "@/utils/helpers"
 import { gql } from "@apollo/client"

@@ -1,9 +1,9 @@
 import Link from "next/link"
 import React from "react"
 
-import Bold from "../Bold"
+import Bold from "../bold"
 
-import styles from "./UserLinks.module.css"
+import styles from "./user-links.module.css"
 
 import { formatDate } from "@/utils/helpers"
 import { Status, WithdrawLink } from "@/lib/graphql/generated"

@@ -1,13 +1,13 @@
 import React, { useState, MouseEvent } from "react"
 
-import styles from "./ConfirmModal.module.css"
+import styles from "./confirm-modal.module.css"
 
-import Button from "@/components/Button/Button"
-import ModalComponent from "@/components/ModalComponent"
+import Button from "@/components/button"
+import ModalComponent from "@/components/modal-component"
 import { formatOperand } from "@/utils/helpers"
 import { Currency, useCreateWithdrawLinkMutation, Wallet } from "@/lib/graphql/generated"
 import { useRouter } from "next/navigation"
-import LoadingComponent from "@/components/Loading/LoadingComponent"
+import LoadingComponent from "@/components/loading/loading-component"
 import { useSession } from "next-auth/react"
 
 type Props = {

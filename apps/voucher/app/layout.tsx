@@ -1,7 +1,7 @@
 import "./globals.css"
 import { Inter_Tight } from "next/font/google"
 
-import Navigation from "@/components/NavBar/Navigation"
+import Navigation from "@/components/nav-bar/navigation"
 import ApolloWrapper from "@/config/apollo"
 import SessionProvider from "@/components/session-provider"
 import { getServerSession } from "next-auth"

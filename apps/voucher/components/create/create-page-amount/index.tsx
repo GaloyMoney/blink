@@ -1,17 +1,17 @@
 "use client"
 import { useState } from "react"
 
-import styles from "../CreateLink.module.css"
+import styles from "../create-link.module.css"
 
 import { useDisplayCurrency } from "@/hooks/useDisplayCurrency"
-import NumPad from "@/components/NumPad/NumPad"
+import NumPad from "@/components/num-pad"
 import { formatOperand } from "@/utils/helpers"
-import LoadingComponent from "@/components/Loading/LoadingComponent"
-import PageLoadingComponent from "@/components/Loading/PageLoadingComponent"
-import Button from "@/components/Button/Button"
-import ModalComponent from "@/components/ModalComponent"
-import InfoComponent from "@/components/InfoComponent/InfoComponent"
-import Heading from "@/components/Heading"
+import LoadingComponent from "@/components/loading/loading-component"
+import PageLoadingComponent from "@/components/loading/page-loading-component"
+import Button from "@/components/button"
+import ModalComponent from "@/components/modal-component"
+import InfoComponent from "@/components/info-component"
+import Heading from "@/components/heading"
 import { Currency } from "@/lib/graphql/generated"
 import { DEFAULT_CURRENCY } from "@/config/appConfig"
 
@@ -24,7 +24,7 @@ interface Props {
   usdToSats: (accountType: number) => number
   commissionPercentage: string
   setConfirmModal: (currency: boolean) => void
-  AmountInDollars: number
+  amountInDollars: number
   voucherAmountInDollars: number
   hasLoaded: {
     current: boolean

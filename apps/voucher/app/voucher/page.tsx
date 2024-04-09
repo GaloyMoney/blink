@@ -3,14 +3,14 @@ import React, { useEffect, useState } from "react"
 
 import { useRouter } from "next/navigation"
 
-import styles from "./VoucherPage.module.css"
+import styles from "./voucher-page.module.css"
 
-import Heading from "@/components/Heading"
+import Heading from "@/components/heading"
 
-import Button from "@/components/Button/Button"
+import Button from "@/components/button"
 
-import ModalComponent from "@/components/ModalComponent"
-import LoadingPageComponent from "@/components/Loading/PageLoadingComponent"
+import ModalComponent from "@/components/modal-component"
+import LoadingPageComponent from "@/components/loading/page-loading-component"
 import { useGetWithdrawLinkQuery } from "@/lib/graphql/generated"
 interface SecretCode {
   input1: string
