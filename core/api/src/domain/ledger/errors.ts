@@ -25,7 +25,7 @@ export class UnknownLedgerError extends LedgerServiceError {
 
 export class CouldNotFindTransactionError extends LedgerError {}
 export class CouldNotFindTransactionMetadataError extends CouldNotFindTransactionError {}
-export class CouldNotFindTransactionsForExternalIdPatternError extends CouldNotFindTransactionError {}
+export class CouldNotFindTransactionsForExternalIdSubstringError extends CouldNotFindTransactionError {}
 export class CouldNotFindExpectedTransactionMetadataError extends CouldNotFindTransactionError {
   level = ErrorLevel.Critical
 }

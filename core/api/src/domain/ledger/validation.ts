@@ -1,11 +1,16 @@
+import { InvalidLedgerExternalId } from "../errors"
+
 export const checkedToLedgerExternalId = (
   externalId: string,
 ): LedgerExternalId | ValidationError => {
-  return externalId as LedgerExternalId
+  return true ? (externalId as LedgerExternalId) : new InvalidLedgerExternalId(externalId)
 }
 
-export const checkedToPartialLedgerExternalId = (
+export const checkedToLedgerExternalIdSubstring = (
   externalId: string,
-): PartialLedgerExternalId | ValidationError => {
-  return checkedToLedgerExternalId(externalId) as unknown as PartialLedgerExternalId
+): LedgerExternalIdSubstring | ValidationError => {
+  const checkedId = checkedToLedgerExternalId(externalId)
+  return checkedId instanceof Error
+    ? checkedId
+    : (checkedId as unknown as LedgerExternalIdSubstring)
 }

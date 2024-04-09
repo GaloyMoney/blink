@@ -1,5 +1,5 @@
 import { MAX_PAGINATION_PAGE_SIZE, memoSharingConfig } from "@/config"
-import { checkedToPartialLedgerExternalId } from "@/domain/ledger"
+import { checkedToLedgerExternalIdSubstring } from "@/domain/ledger"
 import { checkedToPaginatedQueryArgs } from "@/domain/primitives"
 import { WalletTransactionHistory } from "@/domain/wallets"
 import { getNonEndUserWalletIds } from "@/services/ledger"
@@ -8,11 +8,11 @@ import * as LedgerFacade from "@/services/ledger/facade"
 
 export const getTransactionsForWalletsByExternalId = async ({
   walletIds,
-  uncheckedExternalIdPattern,
+  uncheckedExternalIdSubstring,
   rawPaginationArgs,
 }: {
   walletIds: WalletId[]
-  uncheckedExternalIdPattern: string
+  uncheckedExternalIdSubstring: string
   rawPaginationArgs: RawPaginationArgs
 }): Promise<PaginatedQueryResult<WalletTransaction> | ApplicationError> => {
   const paginationArgs = checkedToPaginatedQueryArgs({
@@ -21,12 +21,14 @@ export const getTransactionsForWalletsByExternalId = async ({
   })
   if (paginationArgs instanceof Error) return paginationArgs
 
-  const externalIdPattern = checkedToPartialLedgerExternalId(uncheckedExternalIdPattern)
-  if (externalIdPattern instanceof Error) return externalIdPattern
+  const externalIdSubstring = checkedToLedgerExternalIdSubstring(
+    uncheckedExternalIdSubstring,
+  )
+  if (externalIdSubstring instanceof Error) return externalIdSubstring
 
-  const ledgerTxs = await LedgerFacade.getTransactionsForWalletsByExternalIdPattern({
+  const ledgerTxs = await LedgerFacade.getTransactionsForWalletsByExternalIdSubstring({
     walletIds,
-    externalIdPattern,
+    externalIdSubstring,
     paginationArgs,
   })
   if (ledgerTxs instanceof Error) return ledgerTxs

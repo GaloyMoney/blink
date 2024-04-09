@@ -25,19 +25,19 @@ export const getTransactionsForWalletsByPaymentHash = async ({
   }
 }
 
-export const getTransactionsForWalletsByExternalIdPattern = async ({
+export const getTransactionsForWalletsByExternalIdSubstring = async ({
   walletIds,
-  externalIdPattern,
+  externalIdSubstring,
   paginationArgs,
 }: {
   walletIds: WalletId[]
-  externalIdPattern: PartialLedgerExternalId
+  externalIdSubstring: LedgerExternalIdSubstring
   paginationArgs: PaginatedQueryArgs
 }): Promise<PaginatedQueryResult<LedgerTransaction<WalletCurrency>> | LedgerError> => {
   const liabilitiesWalletIds = walletIds.map(toLiabilitiesWalletId)
   try {
     const ledgerResp = await paginatedLedger({
-      filters: { mediciFilters: { account: liabilitiesWalletIds }, externalIdPattern },
+      filters: { mediciFilters: { account: liabilitiesWalletIds }, externalIdSubstring },
       paginationArgs,
     })
 

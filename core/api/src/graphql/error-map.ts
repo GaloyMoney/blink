@@ -616,7 +616,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "CouldNotFindTransactionError":
     case "CouldNotFindTransactionMetadataError":
     case "CouldNotFindExpectedTransactionMetadataError":
-    case "CouldNotFindTransactionsForExternalIdPatternError":
+    case "CouldNotFindTransactionsForExternalIdSubstringError":
     case "InvalidDocumentIdForDbError":
     case "DuplicateKeyForPersistError":
     case "MismatchedResultForTransactionMetadataQuery":
@@ -664,6 +664,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "CouldNotFindAccountFromKratosIdError":
     case "MissingPhoneError":
     case "InvalidUserId":
+    case "InvalidLedgerExternalId":
     case "InvalidLightningPaymentFlowBuilderStateError":
     case "InvalidOnChainPaymentFlowBuilderStateError":
     case "InvalidWalletInvoiceBuilderStateError":

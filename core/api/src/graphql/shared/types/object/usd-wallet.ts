@@ -237,7 +237,7 @@ const UsdWallet = GT.Object<Wallet>({
 
         const result = await Wallets.getTransactionsForWalletsByExternalId({
           walletIds: [source.id],
-          uncheckedExternalIdPattern: externalId,
+          uncheckedExternalIdSubstring: externalId,
           rawPaginationArgs,
         })
         if (result instanceof Error) {

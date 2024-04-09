@@ -95,6 +95,7 @@ export class InvalidCoordinatesError extends ValidationError {}
 export class InvalidBusinessTitleLengthError extends ValidationError {}
 export class InvalidPhoneNumber extends ValidationError {}
 export class InvalidUserId extends ValidationError {}
+export class InvalidLedgerExternalId extends ValidationError {}
 export class InvalidEmailAddress extends ValidationError {}
 export class InvalidWalletId extends ValidationError {}
 export class InvalidFlowId extends ValidationError {}
