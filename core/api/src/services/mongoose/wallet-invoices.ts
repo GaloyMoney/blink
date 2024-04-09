@@ -13,6 +13,118 @@ import {
 import { checkedToPaginatedQueryCursor } from "@/domain/primitives"
 import { UsdPaymentAmount } from "@/domain/shared"
 
+type InvoiceFilters = {
+  walletIds: WalletId[]
+}
+
+type InvoicesQueryFilter = {
+  walletId: {
+    $in: WalletId[]
+  }
+  paymentRequest: {
+    $exists: true
+  }
+  timestamp?: {
+    $lt?: Date
+    $gt?: Date
+  }
+}
+
+const paginatedInvoices = async ({
+  filters,
+  paginationArgs,
+}: {
+  filters: InvoiceFilters
+  paginationArgs: PaginatedQueryArgs
+}): Promise<PaginatedQueryResult<WalletInvoice> | RepositoryError> => {
+  const filterQuery: InvoicesQueryFilter = {
+    walletId: { $in: filters.walletIds },
+    paymentRequest: { $exists: true },
+  }
+
+  const { first, last, before, after } = paginationArgs
+
+  const beforeInvoicePromise = before && WalletInvoice.findOne({ _id: before })
+  const afterInvoicePromise = after && WalletInvoice.findOne({ _id: after })
+  const [beforeInvoice, afterInvoice] = await Promise.all([
+    beforeInvoicePromise,
+    afterInvoicePromise,
+  ])
+
+  // this could cause a bug if there are multiple invoices with the same timestamp
+  const beforeDate = beforeInvoice ? beforeInvoice.timestamp : undefined
+  const afterDate = afterInvoice ? afterInvoice.timestamp : undefined
+
+  if (beforeDate || afterDate) {
+    filterQuery["timestamp"] = {}
+
+    if (beforeDate) {
+      filterQuery.timestamp.$gt = beforeDate
+    }
+    if (afterDate) {
+      filterQuery.timestamp.$lt = afterDate
+    }
+  }
+
+  const documentCount = await WalletInvoice.countDocuments(filterQuery)
+
+  // hasPreviousPage and hasNextPage can default to false for the opposite pagination direction per the Connection spec
+  let hasPreviousPage = false
+  let hasNextPage = false
+  let walletInvoiceRecords: WalletInvoiceRecord[]
+
+  if (first !== undefined) {
+    walletInvoiceRecords = await WalletInvoice.collection
+      .find<WalletInvoiceRecord>(filterQuery)
+      .sort({ timestamp: -1, _id: -1 })
+      .limit(first)
+      .toArray()
+    if (documentCount > first) {
+      hasNextPage = true
+    }
+  } else {
+    let skipAmount = 0
+    if (documentCount > last) {
+      hasPreviousPage = true
+      skipAmount = documentCount - last
+    }
+
+    walletInvoiceRecords = await WalletInvoice.collection
+      .find<WalletInvoiceRecord>(filterQuery)
+      .sort({ timestamp: -1, _id: 1 })
+      .skip(skipAmount)
+      .toArray()
+  }
+
+  const maybeWalletInvoices = walletInvoiceRecords
+    .map(walletInvoiceFromRaw)
+    .map(ensureWalletInvoiceHasLnInvoice)
+  const walletInvoices: WalletInvoice[] = []
+  for (const maybeInvoice of maybeWalletInvoices) {
+    if (maybeInvoice instanceof Error) return maybeInvoice
+    walletInvoices.push(maybeInvoice)
+  }
+
+  return {
+    edges: walletInvoices.map((walletInvoice) => ({
+      cursor: checkedToPaginatedQueryCursor(walletInvoice.paymentHash),
+      node: walletInvoice,
+    })),
+    pageInfo: {
+      startCursor: walletInvoices[0]?.paymentHash
+        ? checkedToPaginatedQueryCursor(walletInvoices[0].paymentHash)
+        : undefined,
+      endCursor: walletInvoices[walletInvoices.length - 1]?.paymentHash
+        ? checkedToPaginatedQueryCursor(
+            walletInvoices[walletInvoices.length - 1].paymentHash,
+          )
+        : undefined,
+      hasPreviousPage,
+      hasNextPage,
+    },
+  }
+}
+
 export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
   const persistNew = async ({
     paymentHash,
@@ -142,104 +254,15 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     walletIds: WalletId[]
     paginationArgs: PaginatedQueryArgs
   }): Promise<PaginatedQueryResult<WalletInvoice> | RepositoryError> => {
-    const { first, last, before, after } = paginationArgs
-
     try {
-      const beforeInvoicePromise = before && WalletInvoice.findOne({ _id: before })
-      const afterInvoicePromise = after && WalletInvoice.findOne({ _id: after })
-      const [beforeInvoice, afterInvoice] = await Promise.all([
-        beforeInvoicePromise,
-        afterInvoicePromise,
-      ])
-
-      const filterQuery: {
-        walletId: {
-          $in: WalletId[]
-        }
-        timestamp?: {
-          $lt?: Date
-          $gt?: Date
-        }
-        paymentRequest: {
-          $exists: true
-        }
-      } = {
-        walletId: { $in: walletIds },
-        paymentRequest: { $exists: true },
-      }
-
-      // this could cause a bug if there are multiple invoices with the same timestamp
-      const beforeDate = beforeInvoice ? beforeInvoice.timestamp : undefined
-      const afterDate = afterInvoice ? afterInvoice.timestamp : undefined
-
-      if (beforeDate || afterDate) {
-        filterQuery.timestamp = {}
-
-        if (beforeDate) {
-          filterQuery.timestamp.$gt = beforeDate
-        }
-        if (afterDate) {
-          filterQuery.timestamp.$lt = afterDate
-        }
-      }
-
-      const documentCount = await WalletInvoice.countDocuments(filterQuery)
-
-      // hasPreviousPage and hasNextPage can default to false for the opposite pagination direction per the Connection spec
-      let hasPreviousPage = false
-      let hasNextPage = false
-      let walletInvoiceRecords: WalletInvoiceRecord[]
-
-      if (first !== undefined) {
-        walletInvoiceRecords = await WalletInvoice.collection
-          .find<WalletInvoiceRecord>(filterQuery)
-          .sort({ timestamp: -1, _id: -1 })
-          .limit(first)
-          .toArray()
-        if (documentCount > first) {
-          hasNextPage = true
-        }
-      } else {
-        let skipAmount = 0
-        if (documentCount > last) {
-          hasPreviousPage = true
-          skipAmount = documentCount - last
-        }
-
-        walletInvoiceRecords = await WalletInvoice.collection
-          .find<WalletInvoiceRecord>(filterQuery)
-          .sort({ timestamp: -1, _id: 1 })
-          .skip(skipAmount)
-          .toArray()
-      }
-
-      const maybeWalletInvoices = walletInvoiceRecords
-        .map(walletInvoiceFromRaw)
-        .map(ensureWalletInvoiceHasLnInvoice)
-      const walletInvoices: WalletInvoice[] = []
-      for (const maybeInvoice of maybeWalletInvoices) {
-        if (maybeInvoice instanceof Error) return maybeInvoice
-        walletInvoices.push(maybeInvoice)
-      }
-
-      return {
-        edges: walletInvoices.map((walletInvoice) => ({
-          cursor: checkedToPaginatedQueryCursor(walletInvoice.paymentHash),
-          node: walletInvoice,
-        })),
-        pageInfo: {
-          startCursor: walletInvoices[0]?.paymentHash
-            ? checkedToPaginatedQueryCursor(walletInvoices[0].paymentHash)
-            : undefined,
-          endCursor: walletInvoices[walletInvoices.length - 1]?.paymentHash
-            ? checkedToPaginatedQueryCursor(
-                walletInvoices[walletInvoices.length - 1].paymentHash,
-              )
-            : undefined,
-          hasPreviousPage,
-          hasNextPage,
+      const invoicesResp = await paginatedInvoices({
+        filters: {
+          walletIds,
         },
-      }
+        paginationArgs,
+      })
+
+      return invoicesResp
     } catch (error) {
       return new UnknownRepositoryError(error)
     }
