@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): bump deps (#4274)...'
-      sha: 1ec5718538c47e5d7aa35355f29aaec2519a0952
+      commitTitle: 'fix(core): add success field to ''UserLoginUpgradeMutation'' error
+        return (#4273)...'
+      sha: 327b4238a42a8ba2a5b072797fb3a717f5b330c8
       tags:
-      - 0.20.140-6-g1ec571853
+      - 0.20.142-1-g327b4238a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): bump deps (#4274)...'
-      sha: 1ec5718538c47e5d7aa35355f29aaec2519a0952
+      commitTitle: 'fix(core): add success field to ''UserLoginUpgradeMutation'' error
+        return (#4273)...'
+      sha: 327b4238a42a8ba2a5b072797fb3a717f5b330c8
       tags:
-      - 0.20.140-6-g1ec571853
+      - 0.20.142-1-g327b4238a
     path: schemas/
   - git:
-      commitTitle: 'chore(core): bump deps (#4274)...'
-      sha: 1ec5718538c47e5d7aa35355f29aaec2519a0952
+      commitTitle: 'fix(core): add success field to ''UserLoginUpgradeMutation'' error
+        return (#4273)...'
+      sha: 327b4238a42a8ba2a5b072797fb3a717f5b330c8
       tags:
-      - 0.20.140-6-g1ec571853
+      - 0.20.142-1-g327b4238a
     path: gql/
   path: ./graphql
 kind: LockConfig
