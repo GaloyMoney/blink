@@ -131,7 +131,7 @@ export type BtcWallet = Wallet & {
   /** A list of BTC transactions associated with this wallet. */
   readonly transactions?: Maybe<TransactionConnection>;
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
-  readonly transactionsByExternalId: ReadonlyArray<Transaction>;
+  readonly transactionsByExternalId?: Maybe<TransactionConnection>;
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly transactionsByPaymentRequest: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
@@ -186,7 +186,11 @@ export type BtcWalletTransactionsByAddressArgs = {
 
 /** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
 export type BtcWalletTransactionsByExternalIdArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
   externalId: Scalars['TxExternalId']['input'];
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -622,7 +626,7 @@ export type UsdWallet = Wallet & {
   readonly transactionById: Transaction;
   readonly transactions?: Maybe<TransactionConnection>;
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
-  readonly transactionsByExternalId: ReadonlyArray<Transaction>;
+  readonly transactionsByExternalId?: Maybe<TransactionConnection>;
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly transactionsByPaymentRequest: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
@@ -677,7 +681,11 @@ export type UsdWalletTransactionsByAddressArgs = {
 
 /** A wallet belonging to an account which contains a USD balance and a list of transactions. */
 export type UsdWalletTransactionsByExternalIdArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
   externalId: Scalars['TxExternalId']['input'];
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -731,7 +739,7 @@ export type Wallet = {
    */
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
   /** Returns the transactions that include this external id. */
-  readonly transactionsByExternalId: ReadonlyArray<Transaction>;
+  readonly transactionsByExternalId?: Maybe<TransactionConnection>;
   /** Returns the transactions that include this paymentHash. This should be a list of size one for a received lightning payment. This can be more that one transaction for a sent lightning payment. */
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   /** Returns the transactions that include this paymentRequest. */
@@ -788,7 +796,11 @@ export type WalletTransactionsByAddressArgs = {
 
 /** A generic wallet which stores value in one of our supported currencies. */
 export type WalletTransactionsByExternalIdArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
   externalId: Scalars['TxExternalId']['input'];
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
