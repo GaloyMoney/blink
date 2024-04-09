@@ -7,7 +7,6 @@ import TransactionsByPaymentRequestQuery from "./root/query/transactions-by-paym
 import AccountDetailsByUserPhoneQuery from "./root/query/account-details-by-phone"
 import AccountDetailsByUsernameQuery from "./root/query/account-details-by-username"
 import AccountDetailsByUserEmailQuery from "./root/query/account-details-by-email"
-import ListWalletIdsQuery from "./root/query/all-walletids"
 import WalletQuery from "./root/query/wallet"
 import AccountDetailsByAccountId from "./root/query/account-details-by-account-id"
 import AccountDetailsByUserId from "./root/query/account-details-by-user-id"
@@ -30,7 +29,6 @@ export const queryFields = {
     transactionsByPaymentRequest: TransactionsByPaymentRequestQuery,
     lightningInvoice: LightningInvoiceQuery,
     lightningPayment: LightningPaymentQuery,
-    listWalletIds: ListWalletIdsQuery,
     wallet: WalletQuery,
     merchantsPendingApproval: MerchantsPendingApprovalQuery,
     filteredUserCount: FilteredUserCountQuery,
