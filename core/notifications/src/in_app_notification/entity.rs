@@ -13,13 +13,13 @@ pub struct InAppNotification {
 
 impl InAppNotification {
     pub fn new(
-        user_id: &GaloyUserId,
+        user_id: GaloyUserId,
         msg: LocalizedInAppMessage,
         deep_link: Option<DeepLink>,
     ) -> Self {
         Self {
             id: InAppNotificationId::new(),
-            user_id: user_id.clone(),
+            user_id,
             title: msg.title,
             body: msg.body,
             deep_link,

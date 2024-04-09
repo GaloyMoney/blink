@@ -210,7 +210,7 @@ impl NotificationsApp {
         }
         if payload.should_send_in_app_msg() {
             self.in_app_notifications
-                .persist(&mut tx, &user_id, payload.clone())
+                .persist(&mut tx, user_id.clone(), payload.clone())
                 .await?;
         }
         job::spawn_send_push_notification(&mut tx, (user_id, payload)).await?;

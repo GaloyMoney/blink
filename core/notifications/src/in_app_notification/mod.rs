@@ -32,14 +32,14 @@ impl InAppNotifications {
     pub async fn persist(
         &self,
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-        user_id: &GaloyUserId,
+        user_id: GaloyUserId,
         payload: NotificationEventPayload,
     ) -> Result<(), InAppNotificationError> {
-        let user_settings = self.settings.find_for_user_id(user_id).await?;
+        let user_settings = self.settings.find_for_user_id(&user_id).await?;
         if let Some(msg) =
             payload.to_localized_in_app_msg(user_settings.locale().unwrap_or_default())
         {
-            let notification = InAppNotification::new(&user_id, msg, payload.deep_link());
+            let notification = InAppNotification::new(user_id, msg, payload.deep_link());
             self.in_app_notifications_repo
                 .persist(tx, notification)
                 .await?;
