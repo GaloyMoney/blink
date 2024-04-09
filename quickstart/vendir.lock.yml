@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(admin): remove unused admin query (#4265)'
-      sha: de7f4711a7d8e5eaa36032109ec7b7b73d14b4c0
+      commitTitle: 'chore(core): bump deps (#4274)...'
+      sha: 1ec5718538c47e5d7aa35355f29aaec2519a0952
       tags:
-      - 0.20.140-3-gde7f4711a
+      - 0.20.140-6-g1ec571853
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(admin): remove unused admin query (#4265)'
-      sha: de7f4711a7d8e5eaa36032109ec7b7b73d14b4c0
+      commitTitle: 'chore(core): bump deps (#4274)...'
+      sha: 1ec5718538c47e5d7aa35355f29aaec2519a0952
       tags:
-      - 0.20.140-3-gde7f4711a
+      - 0.20.140-6-g1ec571853
     path: schemas/
   - git:
-      commitTitle: 'refactor(admin): remove unused admin query (#4265)'
-      sha: de7f4711a7d8e5eaa36032109ec7b7b73d14b4c0
+      commitTitle: 'chore(core): bump deps (#4274)...'
+      sha: 1ec5718538c47e5d7aa35355f29aaec2519a0952
       tags:
-      - 0.20.140-3-gde7f4711a
+      - 0.20.140-6-g1ec571853
     path: gql/
   path: ./graphql
 kind: LockConfig
