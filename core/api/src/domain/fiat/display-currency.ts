@@ -22,7 +22,7 @@ export const majorToMinorUnit = ({
   displayCurrency: DisplayCurrency
 }): number => {
   const displayMajorExponent = getCurrencyMajorExponent(displayCurrency)
-  return Math.round(Number(amount) * 10 ** displayMajorExponent)
+  return Number(amount) * 10 ** displayMajorExponent
 }
 
 export const getCurrencyMajorExponent = (

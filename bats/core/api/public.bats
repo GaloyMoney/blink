@@ -95,3 +95,23 @@ load "../../helpers/subscriber.bash"
 
   stop_subscriber
 }
+
+@test "public: can query currency conversion estimation" {
+  fiat_amount=1.75
+  currency="EUR"
+  variables=$(
+    jq -n \
+    --arg amount "$fiat_amount" \
+    --arg currency "$currency" \
+    '{amount: ($amount | tonumber), currency: $currency}'
+  )
+  exec_graphql 'anon' 'currency-conversion-estimation' "$variables"
+
+  errors="$(graphql_output '.errors | length')"
+  [[ "${errors}" = "0" ]] || exit 1
+
+  sat_amount="$(graphql_output '.data.currencyConversionEstimation.btcSatAmount')"
+  cents_amount="$(graphql_output '.data.currencyConversionEstimation.usdCentAmount')"
+  [[ "$sat_amount" -gt 0 ]] || exit 1
+  [[ "$cents_amount" -gt 0 ]] || exit 1
+}
