@@ -14,14 +14,11 @@ use error::*;
 #[derive(Clone)]
 pub struct InAppExecutor {
     settings: UserNotificationSettingsRepo,
-    in_app_channel: InAppNotificationsRepo,
+    in_app_channel: InAppNotifications,
 }
 
 impl InAppExecutor {
-    pub fn new(
-        settings: UserNotificationSettingsRepo,
-        in_app_channel: InAppNotificationsRepo,
-    ) -> Self {
+    pub fn new(settings: UserNotificationSettingsRepo, in_app_channel: InAppNotifications) -> Self {
         Self {
             settings,
             in_app_channel,

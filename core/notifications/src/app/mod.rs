@@ -11,7 +11,7 @@ use crate::{
     email_executor::EmailExecutor,
     email_reminder_projection::EmailReminderProjection,
     in_app_executor::InAppExecutor,
-    in_app_notification::{InAppNotification, InAppNotificationsRepo},
+    in_app_notification::{InAppNotification, InAppNotifications},
     job,
     notification_cool_off_tracker::*,
     notification_event::*,
@@ -28,7 +28,7 @@ pub struct NotificationsApp {
     _config: AppConfig,
     settings: UserNotificationSettingsRepo,
     email_reminder_projection: EmailReminderProjection,
-    in_app_notifications: InAppNotificationsRepo,
+    in_app_notifications: InAppNotifications,
     in_app_executor: InAppExecutor,
     pool: Pool<Postgres>,
     _runner: Arc<JobRunnerHandle>,
@@ -42,7 +42,7 @@ impl NotificationsApp {
         let email_executor = EmailExecutor::init(config.email_executor.clone(), settings.clone())?;
         let email_reminder_projection =
             EmailReminderProjection::new(&pool, config.link_email_reminder.clone());
-        let in_app_notifications = InAppNotificationsRepo::new(&pool);
+        let in_app_notifications = InAppNotifications::new(&pool);
         let in_app_executor = InAppExecutor::new(settings.clone(), in_app_notifications.clone());
         let runner = job::start_job_runner(
             &pool,

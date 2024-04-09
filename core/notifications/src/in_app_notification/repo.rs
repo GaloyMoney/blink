@@ -5,13 +5,13 @@ use crate::primitives::*;
 use super::{entity::*, error::*};
 
 #[derive(Debug, Clone)]
-pub struct InAppNotificationsRepo {
+pub struct InAppNotifications {
     pool: PgPool,
 }
 
-impl InAppNotificationsRepo {
+impl InAppNotifications {
     pub fn new(pool: &PgPool) -> Self {
-        InAppNotificationsRepo { pool: pool.clone() }
+        InAppNotifications { pool: pool.clone() }
     }
 
     pub async fn persist(
