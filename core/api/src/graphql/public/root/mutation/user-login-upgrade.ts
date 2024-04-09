@@ -39,15 +39,15 @@ const UserLoginUpgradeMutation = GT.Field<
     const { phone, code } = args.input
 
     if (phone instanceof Error) {
-      return { errors: [{ message: phone.message }] }
+      return { errors: [{ message: phone.message }], success: false }
     }
 
     if (code instanceof Error) {
-      return { errors: [{ message: code.message }] }
+      return { errors: [{ message: code.message }], success: false }
     }
 
     if (ip === undefined) {
-      return { errors: [{ message: "ip is undefined" }] }
+      return { errors: [{ message: "ip is undefined" }], success: false }
     }
 
     const res = await Authentication.loginDeviceUpgradeWithPhone({
