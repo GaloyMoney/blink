@@ -1,35 +1,35 @@
 use sqlx::PgPool;
 
-use crate::{messages::LocalizedInAppMessage, notification_event::*, primitives::*};
+use crate::primitives::*;
 
 use super::{entity::*, error::*};
 
 #[derive(Debug, Clone)]
-pub struct InAppNotifications {
+pub struct InAppNotificationsRepo {
     pool: PgPool,
 }
 
-impl InAppNotifications {
+impl InAppNotificationsRepo {
     pub fn new(pool: &PgPool) -> Self {
-        InAppNotifications { pool: pool.clone() }
+        InAppNotificationsRepo { pool: pool.clone() }
     }
 
     pub async fn persist(
         &self,
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-        user_id: GaloyUserId,
-        payload: NotificationEventPayload,
+        notification: InAppNotification,
     ) -> Result<(), InAppNotificationError> {
-        let notification_id = InAppNotificationId::new();
-        let payload_json = serde_json::to_value(payload).expect("Could not serialize payload");
         sqlx::query!(
             r#"
-            INSERT INTO in_app_notifications (id, galoy_user_id, payload)
-            VALUES ($1, $2, $3)
+            INSERT INTO in_app_notifications (id, galoy_user_id, title, body, deep_link, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6)
             "#,
-            notification_id as InAppNotificationId,
-            user_id.as_ref(),
-            payload_json
+            notification.id,
+            notification.galoy_user_id.as_ref(),
+            notification.title,
+            notification.body,
+            notification.deep_link,
+            notification.created_at,
         )
         .execute(&mut **tx)
         .await?;
@@ -37,18 +37,9 @@ impl InAppNotifications {
         Ok(())
     }
 
-    pub async fn send_msg(
-        &self,
-        _user_id: &GaloyUserId,
-        _msg: LocalizedInAppMessage,
-        _deep_link: Option<DeepLink>,
-    ) -> Result<(), InAppNotificationError> {
-        unimplemented!()
-    }
-
     // can we have 2 separate fn's ?
     // unread_msgs_for_user and all_msgs_for_user
-    pub async fn msgs_for_user(
+    pub async fn find_for_user(
         &self,
         user_id: &GaloyUserId,
         _only_unread: bool,
@@ -70,7 +61,9 @@ impl InAppNotifications {
             .map(|row| InAppNotification {
                 id: InAppNotificationId::from(row.id),
                 user_id: GaloyUserId::from(row.galoy_user_id),
-                payload: serde_json::from_value(row.payload).expect("invalid payload"),
+                title: row.title,
+                body: row.body,
+                deep_link: row.deep_link,
                 created_at: row.created_at,
                 read_at: row.read_at,
             })
@@ -83,12 +76,13 @@ impl InAppNotifications {
         &self,
         user_id: &GaloyUserId,
         notification_id: InAppNotificationId,
-    ) -> Result<(), InAppNotificationError> {
-        sqlx::query!(
+    ) -> Result<InAppNotification, InAppNotificationError> {
+        let row = sqlx::query!(
             r#"
             UPDATE in_app_notifications
             SET read_at = NOW()
             WHERE galoy_user_id = $1 AND id = $2
+            RETURNING *
             "#,
             user_id.as_ref(),
             notification_id as InAppNotificationId,
@@ -96,6 +90,16 @@ impl InAppNotifications {
         .fetch_one(&self.pool)
         .await?;
 
-        Ok(())
+        let notification = row.map(|row| InAppNotification {
+            id: InAppNotificationId::from(row.id),
+            user_id: GaloyUserId::from(row.galoy_user_id),
+            title: row.title,
+            body: row.body,
+            deep_link: row.deep_link,
+            created_at: row.created_at,
+            read_at: row.read_at,
+        });
+
+        Ok(notification)
     }
 }
