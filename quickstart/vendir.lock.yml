@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): add success field to ''UserLoginUpgradeMutation'' error
-        return (#4273)...'
-      sha: 327b4238a42a8ba2a5b072797fb3a717f5b330c8
+      commitTitle: 'feat(core): add currencyConversionEstimate query (#4222)...'
+      sha: 14b56dc3bf8ae84628568b406e2d11c1e2ab65c4
       tags:
-      - 0.20.142-1-g327b4238a
+      - 0.20.143-1-g14b56dc3b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): add success field to ''UserLoginUpgradeMutation'' error
-        return (#4273)...'
-      sha: 327b4238a42a8ba2a5b072797fb3a717f5b330c8
+      commitTitle: 'feat(core): add currencyConversionEstimate query (#4222)...'
+      sha: 14b56dc3bf8ae84628568b406e2d11c1e2ab65c4
       tags:
-      - 0.20.142-1-g327b4238a
+      - 0.20.143-1-g14b56dc3b
     path: schemas/
   - git:
-      commitTitle: 'fix(core): add success field to ''UserLoginUpgradeMutation'' error
-        return (#4273)...'
-      sha: 327b4238a42a8ba2a5b072797fb3a717f5b330c8
+      commitTitle: 'feat(core): add currencyConversionEstimate query (#4222)...'
+      sha: 14b56dc3bf8ae84628568b406e2d11c1e2ab65c4
       tags:
-      - 0.20.142-1-g327b4238a
+      - 0.20.143-1-g14b56dc3b
     path: gql/
   path: ./graphql
 kind: LockConfig
