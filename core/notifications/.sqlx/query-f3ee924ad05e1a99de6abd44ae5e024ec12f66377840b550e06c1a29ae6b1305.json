@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT *\n            FROM in_app_notifications\n            WHERE galoy_user_id = $1\n            ORDER BY created_at DESC\n            ",
+  "query": "\n            UPDATE in_app_notifications\n            SET read_at = NOW()\n            WHERE galoy_user_id = $1 AND id = $2\n            RETURNING *\n            ",
   "describe": {
     "columns": [
       {
@@ -41,7 +41,8 @@
     ],
     "parameters": {
       "Left": [
-        "Text"
+        "Text",
+        "Uuid"
       ]
     },
     "nullable": [
@@ -54,5 +55,5 @@
       true
     ]
   },
-  "hash": "bdb5013b961bedae51a67a9ff5d3dab104d2e486ae626c3f249142b99a975621"
+  "hash": "f3ee924ad05e1a99de6abd44ae5e024ec12f66377840b550e06c1a29ae6b1305"
 }

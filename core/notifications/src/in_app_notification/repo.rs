@@ -19,16 +19,18 @@ impl InAppNotifications {
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
         notification: InAppNotification,
     ) -> Result<(), InAppNotificationError> {
+        let deep_link =
+            serde_json::to_string(&notification.deep_link).expect("unable to serialize deep_link");
         sqlx::query!(
             r#"
             INSERT INTO in_app_notifications (id, galoy_user_id, title, body, deep_link, created_at)
             VALUES ($1, $2, $3, $4, $5, $6)
             "#,
-            notification.id,
-            notification.galoy_user_id.as_ref(),
+            notification.id as InAppNotificationId,
+            notification.user_id.as_ref(),
             notification.title,
             notification.body,
-            notification.deep_link,
+            deep_link,
             notification.created_at,
         )
         .execute(&mut **tx)
@@ -56,18 +58,20 @@ impl InAppNotifications {
         .fetch_all(&self.pool)
         .await?;
 
-        let notifications = rows
-            .into_iter()
-            .map(|row| InAppNotification {
-                id: InAppNotificationId::from(row.id),
-                user_id: GaloyUserId::from(row.galoy_user_id),
-                title: row.title,
-                body: row.body,
-                deep_link: row.deep_link,
-                created_at: row.created_at,
-                read_at: row.read_at,
-            })
-            .collect();
+        let notifications =
+            rows.into_iter()
+                .map(|row| InAppNotification {
+                    id: InAppNotificationId::from(row.id),
+                    user_id: GaloyUserId::from(row.galoy_user_id),
+                    title: row.title,
+                    body: row.body,
+                    deep_link: row.deep_link.as_ref().map(|dl| {
+                        serde_json::from_str(dl).expect("unable to deserialize deep_link")
+                    }),
+                    created_at: row.created_at,
+                    read_at: row.read_at,
+                })
+                .collect();
 
         Ok(notifications)
     }
@@ -90,15 +94,18 @@ impl InAppNotifications {
         .fetch_one(&self.pool)
         .await?;
 
-        let notification = row.map(|row| InAppNotification {
+        let notification = InAppNotification {
             id: InAppNotificationId::from(row.id),
             user_id: GaloyUserId::from(row.galoy_user_id),
             title: row.title,
             body: row.body,
-            deep_link: row.deep_link,
+            deep_link: row
+                .deep_link
+                .as_ref()
+                .map(|dl| serde_json::from_str(dl).expect("unable to deserialize deep_link")),
             created_at: row.created_at,
             read_at: row.read_at,
-        });
+        };
 
         Ok(notification)
     }

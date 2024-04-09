@@ -10,7 +10,6 @@ use std::sync::Arc;
 use crate::{
     email_executor::EmailExecutor,
     email_reminder_projection::EmailReminderProjection,
-    in_app_executor::InAppExecutor,
     in_app_notification::{InAppNotification, InAppNotifications},
     job,
     notification_cool_off_tracker::*,
@@ -29,7 +28,6 @@ pub struct NotificationsApp {
     settings: UserNotificationSettingsRepo,
     email_reminder_projection: EmailReminderProjection,
     in_app_notifications: InAppNotifications,
-    in_app_executor: InAppExecutor,
     pool: Pool<Postgres>,
     _runner: Arc<JobRunnerHandle>,
 }
@@ -43,13 +41,12 @@ impl NotificationsApp {
         let email_reminder_projection =
             EmailReminderProjection::new(&pool, config.link_email_reminder.clone());
         let in_app_notifications = InAppNotifications::new(&pool);
-        let in_app_executor = InAppExecutor::new(settings.clone(), in_app_notifications.clone());
         let runner = job::start_job_runner(
             &pool,
             push_executor,
             email_executor,
-            in_app_executor.clone(),
             settings.clone(),
+            in_app_notifications.clone(),
             email_reminder_projection.clone(),
             config.jobs.clone(),
         )
@@ -64,7 +61,6 @@ impl NotificationsApp {
             pool,
             settings,
             in_app_notifications,
-            in_app_executor,
             email_reminder_projection,
             _runner: Arc::new(runner),
         })
@@ -213,8 +209,11 @@ impl NotificationsApp {
             job::spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
         }
         if payload.should_send_in_app_msg() {
-            self.in_app_executor
-                .notify(&user_id, payload.as_ref(), &mut tx)
+            let user_settings = self.settings.find_for_user_id(&user_id).await?;
+            let notification =
+                InAppNotification::new(user_id.clone(), payload.clone(), user_settings);
+            self.in_app_notifications
+                .persist(&mut tx, notification)
                 .await?;
         }
         job::spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
