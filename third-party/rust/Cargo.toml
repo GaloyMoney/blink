@@ -19,7 +19,7 @@ path = "top/main.rs"
 # List of packages to be imported, with version constraints, features and all
 # options Cargo supports.
 [dependencies]
-anyhow = "1.0.81"
+anyhow = "1.0.82"
 async-graphql = { version = "6.0.11", default-features = false, features = ["tracing", "chrono", "playground"] }
 async-graphql-axum = "6.0.11"
 axum = { version = "0.6.20", features = ["headers", "macros"] }
