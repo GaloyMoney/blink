@@ -1,0 +1,37 @@
+query invoicesByExternalId(
+  $walletId: WalletId!
+  $externalId: TxExternalId!
+  $first: Int
+  $after: String
+) {
+  me {
+    defaultAccount {
+      id
+      displayCurrency
+      walletById(walletId: $walletId) {
+        id
+        invoicesByExternalId(
+          externalId: $externalId
+          first: $first
+          after: $after
+        ) {
+          ...InvoiceList
+        }
+      }
+    }
+  }
+}
+
+fragment InvoiceList on InvoiceConnection {
+  pageInfo {
+    hasNextPage
+  }
+  edges {
+    cursor
+    node {
+      __typename
+      paymentHash
+      externalId
+    }
+  }
+}

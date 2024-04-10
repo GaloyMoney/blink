@@ -24,6 +24,15 @@ seed_invoices() {
     '{input: {walletId: $wallet_id, amount: $amount}}'
   )
   exec_graphql "$token_name" 'ln-invoice-create' "$variables"
+
+  external_id="seed-$RANDOM"
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg amount "$btc_amount" \
+    --arg external_id "$external_id" \
+    '{input: {walletId: $wallet_id, amount: $amount, externalId: $external_id}}'
+  )
   exec_graphql "$token_name" 'ln-invoice-create' "$variables"
 
   # Generate usd invoice
@@ -107,4 +116,21 @@ seed_invoices() {
 
   invoice_count="$(graphql_output '.data.me.defaultAccount.walletById.invoices.edges | length')"
   [[ "$invoice_count" -eq "2" ]] || exit 1
+}
+
+@test "invoices: get invoices for wallet by external id" {
+  token_name='alice'
+  btc_wallet_name="$token_name.btc_wallet_id"
+  external_id="seed"
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg external_id "$external_id" \
+    '{walletId: $wallet_id, externalId: $external_id}'
+  )
+  exec_graphql "$token_name" 'invoices-by-external-id' "$variables"
+
+  invoice_count="$(graphql_output '.data.me.defaultAccount.walletById.invoicesByExternalId.edges | length')"
+  [[ "$invoice_count" -eq "1" ]] || exit 1
 }
