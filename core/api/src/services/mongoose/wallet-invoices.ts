@@ -15,6 +15,7 @@ import { UsdPaymentAmount } from "@/domain/shared"
 
 type InvoiceFilters = {
   walletIds: WalletId[]
+  externalIdSubstring?: LedgerExternalIdSubstring
 }
 
 type InvoicesQueryFilter = {
@@ -28,6 +29,9 @@ type InvoicesQueryFilter = {
     $lt?: Date
     $gt?: Date
   }
+  externalId?: {
+    $regex: string
+  }
 }
 
 const paginatedInvoices = async ({
@@ -40,6 +44,10 @@ const paginatedInvoices = async ({
   const filterQuery: InvoicesQueryFilter = {
     walletId: { $in: filters.walletIds },
     paymentRequest: { $exists: true },
+  }
+
+  if (filters.externalIdSubstring) {
+    filterQuery.externalId = { $regex: filters.externalIdSubstring }
   }
 
   const { first, last, before, after } = paginationArgs
@@ -268,6 +276,30 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     }
   }
 
+  const findForWalletsByExternalIdSubstring = async ({
+    walletIds,
+    externalIdSubstring,
+    paginationArgs,
+  }: {
+    walletIds: WalletId[]
+    externalIdSubstring: LedgerExternalIdSubstring
+    paginationArgs: PaginatedQueryArgs
+  }): Promise<PaginatedQueryResult<WalletInvoice> | RepositoryError> => {
+    try {
+      const invoicesResp = await paginatedInvoices({
+        filters: {
+          walletIds,
+          externalIdSubstring,
+        },
+        paginationArgs,
+      })
+
+      return invoicesResp
+    } catch (error) {
+      return new UnknownRepositoryError(error)
+    }
+  }
+
   return {
     persistNew,
     markAsPaid,
@@ -276,6 +308,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     findForWalletByPaymentHash,
     yieldPending,
     findInvoicesForWallets,
+    findForWalletsByExternalIdSubstring,
   }
 }
 

@@ -189,11 +189,14 @@ interface IWalletInvoicesRepository {
     paymentHash: PaymentHash,
   ) => Promise<WalletInvoiceWithOptionalLnInvoice | RepositoryError>
 
-  findInvoicesForWallets: ({
-    walletIds,
-    paginationArgs,
-  }: {
+  findInvoicesForWallets: (args: {
     walletIds: WalletId[]
+    paginationArgs: PaginatedQueryArgs
+  }) => Promise<PaginatedQueryResult<WalletInvoice> | RepositoryError>
+
+  findForWalletsByExternalIdSubstring: (args: {
+    walletIds: WalletId[]
+    externalIdSubstring: LedgerExternalIdSubstring
     paginationArgs: PaginatedQueryArgs
   }) => Promise<PaginatedQueryResult<WalletInvoice> | RepositoryError>
 
