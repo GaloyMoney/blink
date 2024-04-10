@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(core): add currencyConversionEstimate query (#4222)...'
-      sha: 14b56dc3bf8ae84628568b406e2d11c1e2ab65c4
+      commitTitle: 'build: bump flake (#4282)'
+      sha: 0c4882ed70e7db4891d94e67b86f027408f39c50
       tags:
-      - 0.20.143-1-g14b56dc3b
+      - 0.20.144-2-g0c4882ed7
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(core): add currencyConversionEstimate query (#4222)...'
-      sha: 14b56dc3bf8ae84628568b406e2d11c1e2ab65c4
+      commitTitle: 'build: bump flake (#4282)'
+      sha: 0c4882ed70e7db4891d94e67b86f027408f39c50
       tags:
-      - 0.20.143-1-g14b56dc3b
+      - 0.20.144-2-g0c4882ed7
     path: schemas/
   - git:
-      commitTitle: 'feat(core): add currencyConversionEstimate query (#4222)...'
-      sha: 14b56dc3bf8ae84628568b406e2d11c1e2ab65c4
+      commitTitle: 'build: bump flake (#4282)'
+      sha: 0c4882ed70e7db4891d94e67b86f027408f39c50
       tags:
-      - 0.20.143-1-g14b56dc3b
+      - 0.20.144-2-g0c4882ed7
     path: gql/
   path: ./graphql
 kind: LockConfig
