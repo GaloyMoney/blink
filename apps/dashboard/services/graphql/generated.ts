@@ -79,6 +79,8 @@ export type Scalars = {
   TotpSecret: { input: string; output: string; }
   /** An external reference id that can be optionally added for transactions. */
   TxExternalId: { input: string; output: string; }
+  /** An external reference id that can be optionally added for transactions. */
+  TxExternalIdSubstring: { input: string; output: string; }
   /** Unique identifier of a user */
   Username: { input: string; output: string; }
   /** Unique identifier of a wallet */
@@ -308,7 +310,7 @@ export type BtcWalletInvoicesArgs = {
 export type BtcWalletInvoicesByExternalIdArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
-  externalId: Scalars['TxExternalId']['input'];
+  externalId: Scalars['TxExternalIdSubstring']['input'];
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -349,7 +351,7 @@ export type BtcWalletTransactionsByAddressArgs = {
 export type BtcWalletTransactionsByExternalIdArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
-  externalId: Scalars['TxExternalId']['input'];
+  externalId: Scalars['TxExternalIdSubstring']['input'];
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -1959,7 +1961,7 @@ export type UsdWalletInvoicesArgs = {
 export type UsdWalletInvoicesByExternalIdArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
-  externalId: Scalars['TxExternalId']['input'];
+  externalId: Scalars['TxExternalIdSubstring']['input'];
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -2000,7 +2002,7 @@ export type UsdWalletTransactionsByAddressArgs = {
 export type UsdWalletTransactionsByExternalIdArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
-  externalId: Scalars['TxExternalId']['input'];
+  externalId: Scalars['TxExternalIdSubstring']['input'];
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -2317,7 +2319,7 @@ export type WalletInvoicesArgs = {
 export type WalletInvoicesByExternalIdArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
-  externalId: Scalars['TxExternalId']['input'];
+  externalId: Scalars['TxExternalIdSubstring']['input'];
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -2358,7 +2360,7 @@ export type WalletTransactionsByAddressArgs = {
 export type WalletTransactionsByExternalIdArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
-  externalId: Scalars['TxExternalId']['input'];
+  externalId: Scalars['TxExternalIdSubstring']['input'];
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -3686,6 +3688,7 @@ export type ResolversTypes = {
   TransactionEdge: ResolverTypeWrapper<TransactionEdge>;
   TxDirection: TxDirection;
   TxExternalId: ResolverTypeWrapper<Scalars['TxExternalId']['output']>;
+  TxExternalIdSubstring: ResolverTypeWrapper<Scalars['TxExternalIdSubstring']['output']>;
   TxNotificationType: TxNotificationType;
   TxStatus: TxStatus;
   UpgradePayload: ResolverTypeWrapper<UpgradePayload>;
@@ -3906,6 +3909,7 @@ export type ResolversParentTypes = {
   TransactionConnection: TransactionConnection;
   TransactionEdge: TransactionEdge;
   TxExternalId: Scalars['TxExternalId']['output'];
+  TxExternalIdSubstring: Scalars['TxExternalIdSubstring']['output'];
   UpgradePayload: UpgradePayload;
   UsdWallet: UsdWallet;
   User: User;
@@ -4853,6 +4857,10 @@ export interface TxExternalIdScalarConfig extends GraphQLScalarTypeConfig<Resolv
   name: 'TxExternalId';
 }
 
+export interface TxExternalIdSubstringScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['TxExternalIdSubstring'], any> {
+  name: 'TxExternalIdSubstring';
+}
+
 export type UpgradePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['UpgradePayload'] = ResolversParentTypes['UpgradePayload']> = {
   authToken?: Resolver<Maybe<ResolversTypes['AuthToken']>, ParentType, ContextType>;
   errors?: Resolver<ReadonlyArray<ResolversTypes['Error']>, ParentType, ContextType>;
@@ -5150,6 +5158,7 @@ export type Resolvers<ContextType = any> = {
   TransactionConnection?: TransactionConnectionResolvers<ContextType>;
   TransactionEdge?: TransactionEdgeResolvers<ContextType>;
   TxExternalId?: GraphQLScalarType;
+  TxExternalIdSubstring?: GraphQLScalarType;
   UpgradePayload?: UpgradePayloadResolvers<ContextType>;
   UsdWallet?: UsdWalletResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

@@ -1,6 +1,6 @@
 query invoicesByExternalId(
   $walletId: WalletId!
-  $externalId: TxExternalId!
+  $externalId: TxExternalIdSubstring!
   $first: Int
   $after: String
 ) {

@@ -47,6 +47,7 @@ generates:
         TargetConfirmations: "number"
         Timestamp: "number"
         TxExternalId: "string"
+        TxExternalIdSubstring: "string"
         Username: "string"
         WalletId: "string"
         Seconds: "number"

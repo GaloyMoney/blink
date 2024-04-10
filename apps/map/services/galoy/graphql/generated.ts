@@ -76,6 +76,8 @@ export type Scalars = {
   TotpSecret: { input: string; output: string; }
   /** An external reference id that can be optionally added for transactions. */
   TxExternalId: { input: string; output: string; }
+  /** An external reference id that can be optionally added for transactions. */
+  TxExternalIdSubstring: { input: string; output: string; }
   /** Unique identifier of a user */
   Username: { input: string; output: string; }
   /** Unique identifier of a wallet */
@@ -268,7 +270,7 @@ export type BtcWalletInvoicesArgs = {
 export type BtcWalletInvoicesByExternalIdArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
-  externalId: Scalars['TxExternalId']['input'];
+  externalId: Scalars['TxExternalIdSubstring']['input'];
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -309,7 +311,7 @@ export type BtcWalletTransactionsByAddressArgs = {
 export type BtcWalletTransactionsByExternalIdArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
-  externalId: Scalars['TxExternalId']['input'];
+  externalId: Scalars['TxExternalIdSubstring']['input'];
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -1883,7 +1885,7 @@ export type UsdWalletInvoicesArgs = {
 export type UsdWalletInvoicesByExternalIdArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
-  externalId: Scalars['TxExternalId']['input'];
+  externalId: Scalars['TxExternalIdSubstring']['input'];
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -1924,7 +1926,7 @@ export type UsdWalletTransactionsByAddressArgs = {
 export type UsdWalletTransactionsByExternalIdArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
-  externalId: Scalars['TxExternalId']['input'];
+  externalId: Scalars['TxExternalIdSubstring']['input'];
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -2190,7 +2192,7 @@ export type WalletInvoicesArgs = {
 export type WalletInvoicesByExternalIdArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
-  externalId: Scalars['TxExternalId']['input'];
+  externalId: Scalars['TxExternalIdSubstring']['input'];
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -2231,7 +2233,7 @@ export type WalletTransactionsByAddressArgs = {
 export type WalletTransactionsByExternalIdArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
-  externalId: Scalars['TxExternalId']['input'];
+  externalId: Scalars['TxExternalIdSubstring']['input'];
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
 };

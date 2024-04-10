@@ -4,7 +4,7 @@ import SignedAmount from "../scalar/signed-amount"
 import WalletCurrency from "../scalar/wallet-currency"
 import OnChainAddress from "../scalar/on-chain-address"
 import LnPaymentRequest from "../scalar/ln-payment-request"
-import TxExternalId from "../scalar/tx-external-id"
+import TxExternalIdSubstring from "../scalar/tx-external-id-substring"
 import IInvoice, { IInvoiceConnection } from "../abstract/invoice"
 
 import Transaction, { TransactionConnection } from "./transaction"
@@ -134,7 +134,7 @@ const UsdWallet = GT.Object<Wallet>({
       type: IInvoiceConnection,
       args: {
         externalId: {
-          type: GT.NonNull(TxExternalId),
+          type: GT.NonNull(TxExternalIdSubstring),
         },
         ...connectionArgs,
       },
@@ -255,7 +255,7 @@ const UsdWallet = GT.Object<Wallet>({
       args: {
         ...connectionArgs,
         externalId: {
-          type: GT.NonNull(TxExternalId),
+          type: GT.NonNull(TxExternalIdSubstring),
         },
       },
       resolve: async (source, args) => {

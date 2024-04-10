@@ -1,4 +1,4 @@
-query transactionsByExternalId($externalId: TxExternalId!) {
+query transactionsByExternalId($externalId: TxExternalIdSubstring!) {
   me {
     defaultAccount {
       displayCurrency

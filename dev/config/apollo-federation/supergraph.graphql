@@ -268,7 +268,7 @@ type BTCWallet implements Wallet
 
     """Returns the items in the list that come before the specified cursor."""
     before: String
-    externalId: TxExternalId!
+    externalId: TxExternalIdSubstring!
 
     """Returns the first n items from the list."""
     first: Int
@@ -322,7 +322,7 @@ type BTCWallet implements Wallet
 
     """Returns the items in the list that come before the specified cursor."""
     before: String
-    externalId: TxExternalId!
+    externalId: TxExternalIdSubstring!
 
     """Returns the first n items from the list."""
     first: Int
@@ -1940,6 +1940,12 @@ An external reference id that can be optionally added for transactions.
 scalar TxExternalId
   @join__type(graph: PUBLIC)
 
+"""
+An external reference id that can be optionally added for transactions.
+"""
+scalar TxExternalIdSubstring
+  @join__type(graph: PUBLIC)
+
 enum TxNotificationType
   @join__type(graph: PUBLIC)
 {
@@ -2003,7 +2009,7 @@ type UsdWallet implements Wallet
 
     """Returns the items in the list that come before the specified cursor."""
     before: String
-    externalId: TxExternalId!
+    externalId: TxExternalIdSubstring!
 
     """Returns the first n items from the list."""
     first: Int
@@ -2055,7 +2061,7 @@ type UsdWallet implements Wallet
 
     """Returns the items in the list that come before the specified cursor."""
     before: String
-    externalId: TxExternalId!
+    externalId: TxExternalIdSubstring!
 
     """Returns the first n items from the list."""
     first: Int
@@ -2405,7 +2411,7 @@ interface Wallet
     before: String
 
     """Full or partial external id to query for."""
-    externalId: TxExternalId!
+    externalId: TxExternalIdSubstring!
 
     """Returns the first n items from the list."""
     first: Int
@@ -2483,7 +2489,7 @@ interface Wallet
     before: String
 
     """Full or partial external id to query for."""
-    externalId: TxExternalId!
+    externalId: TxExternalIdSubstring!
 
     """Returns the first n items from the list."""
     first: Int

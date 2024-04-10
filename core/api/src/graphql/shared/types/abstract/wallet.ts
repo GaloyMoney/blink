@@ -5,7 +5,7 @@ import WalletCurrency from "../scalar/wallet-currency"
 import SignedAmount from "../scalar/signed-amount"
 import OnChainAddress from "../scalar/on-chain-address"
 import LnPaymentRequest from "../scalar/ln-payment-request"
-import TxExternalId from "../scalar/tx-external-id"
+import TxExternalIdSubstring from "../scalar/tx-external-id-substring"
 import Transaction, { TransactionConnection } from "../object/transaction"
 
 import IInvoice, { IInvoiceConnection } from "./invoice"
@@ -91,7 +91,7 @@ const IWallet = GT.Interface({
       args: {
         ...connectionArgs,
         externalId: {
-          type: GT.NonNull(TxExternalId),
+          type: GT.NonNull(TxExternalIdSubstring),
           description: "Full or partial external id to query for.",
         },
       },
@@ -124,7 +124,7 @@ const IWallet = GT.Interface({
       args: {
         ...connectionArgs,
         externalId: {
-          type: GT.NonNull(TxExternalId),
+          type: GT.NonNull(TxExternalIdSubstring),
           description: "Full or partial external id to query for.",
         },
       },
