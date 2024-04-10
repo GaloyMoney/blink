@@ -384,7 +384,7 @@ export const configSchema = {
           items: { type: "string" },
           uniqueItems: true,
         },
-        maxDeletions: { type: "number", default: 3 },
+        maxDeletions: { type: "number", default: 2 },
       },
       required: [
         "initialStatus",

@@ -105,7 +105,7 @@ accounts:
   denyIPCountries: []
   allowASNs: []
   denyASNs: []
-  maxDeletions: 3
+  maxDeletions: 2
 accountLimits:
   withdrawal:
     level:

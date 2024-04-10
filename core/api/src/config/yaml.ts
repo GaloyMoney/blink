@@ -285,7 +285,7 @@ export const getDefaultAccountsConfig = (config = yamlConfig): AccountsConfig =>
   initialStatus: config.accounts.initialStatus as AccountStatus,
   initialWallets: config.accounts.initialWallets,
   initialLevel: AccountLevel.One,
-  maxDeletions: config.accounts.maxDeletions || 3,
+  maxDeletions: config.accounts.maxDeletions || 2,
 })
 
 export const getAccountsOnboardConfig = (config = yamlConfig): AccountsOnboardConfig => {

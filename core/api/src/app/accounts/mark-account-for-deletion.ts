@@ -59,9 +59,11 @@ export const markAccountForDeletion = async ({
   if (user.deletedPhones) {
     deletedPhones.push(...user.deletedPhones)
   }
-  const usersByPhones = await usersRepo.findByDeletedPhones(deletedPhones)
-  if (usersByPhones instanceof Error) return usersByPhones
-  if (usersByPhones.length >= maxDeletions) return new InvalidAccountForDeletionError()
+  if (deletedPhones.length > 0) {
+    const usersByPhones = await usersRepo.findByDeletedPhones(deletedPhones)
+    if (usersByPhones instanceof Error) return usersByPhones
+    if (usersByPhones.length >= maxDeletions) return new InvalidAccountForDeletionError()
+  }
 
   if (user.phone) {
     const newUser = {

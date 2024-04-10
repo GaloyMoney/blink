@@ -177,3 +177,30 @@ setup_file() {
   total_limit=$(graphql_output '.data.me.defaultAccount.limits.withdrawal[0].totalLimit')
   [[ "$remaining_limit" -lt "$prior_remaining_limit" ]] || exit 1
 }
+
+@test "account: deletion limits" {
+  local token_name="bob_to_delete"
+  local phone=$(random_phone)
+
+  # create account and delete it
+  login_user "$token_name" "$phone"
+  exec_graphql "$token_name" 'account-delete'
+  delete_success="$(graphql_output '.data.accountDelete.success')"
+  [[ "$delete_success" == "true" ]] || exit 1
+
+  # re-create account and delete it a second time
+  login_user "$token_name" "$phone"
+  exec_graphql "$token_name" 'account-delete'
+  delete_success="$(graphql_output '.data.accountDelete.success')"
+  [[ "$delete_success" == "true" ]] || exit 1
+
+  # re-create account and fail to delete it
+  login_user "$token_name" "$phone"
+  exec_graphql "$token_name" 'account-delete'
+  delete_success="$(graphql_output '.data.accountDelete.success')"
+  error_code="$(graphql_output '.data.accountDelete.errors[0].code')"
+  error_msg="$(graphql_output '.data.accountDelete.errors[0].message')"
+  [[ "$delete_success" == "false" ]] || exit 1
+  [[ "${error_code}" == "OPERATION_RESTRICTED" ]] || exit 1
+  [[ "${error_msg}" == *"we're unable to delete your account automatically"* ]] || exit 1
+}
