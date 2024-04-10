@@ -123,6 +123,8 @@ export type BtcWallet = Wallet & {
   readonly invoiceByPaymentHash: Invoice;
   /** A list of all invoices associated with walletIds optionally passed. */
   readonly invoices?: Maybe<InvoiceConnection>;
+  /** A list of all invoices by external id associated with walletIds optionally passed. */
+  readonly invoicesByExternalId?: Maybe<InvoiceConnection>;
   /** An unconfirmed incoming onchain balance. */
   readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
   readonly pendingIncomingTransactions: ReadonlyArray<Transaction>;
@@ -148,6 +150,16 @@ export type BtcWalletInvoiceByPaymentHashArgs = {
 export type BtcWalletInvoicesArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
+export type BtcWalletInvoicesByExternalIdArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  externalId: Scalars['TxExternalId']['input'];
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -619,6 +631,8 @@ export type UsdWallet = Wallet & {
   readonly invoiceByPaymentHash: Invoice;
   /** A list of all invoices associated with walletIds optionally passed. */
   readonly invoices?: Maybe<InvoiceConnection>;
+  /** A list of all invoices by external id associated with walletIds optionally passed. */
+  readonly invoicesByExternalId?: Maybe<InvoiceConnection>;
   /** An unconfirmed incoming onchain balance. */
   readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
   readonly pendingIncomingTransactions: ReadonlyArray<Transaction>;
@@ -643,6 +657,16 @@ export type UsdWalletInvoiceByPaymentHashArgs = {
 export type UsdWalletInvoicesArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
+export type UsdWalletInvoicesByExternalIdArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  externalId: Scalars['TxExternalId']['input'];
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -712,6 +736,7 @@ export type Wallet = {
   readonly id: Scalars['ID']['output'];
   readonly invoiceByPaymentHash: Invoice;
   readonly invoices?: Maybe<InvoiceConnection>;
+  readonly invoicesByExternalId?: Maybe<InvoiceConnection>;
   readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
   /**
    * Pending incoming OnChain transactions. When transactions
@@ -758,6 +783,16 @@ export type WalletInvoiceByPaymentHashArgs = {
 export type WalletInvoicesArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+/** A generic wallet which stores value in one of our supported currencies. */
+export type WalletInvoicesByExternalIdArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  externalId: Scalars['TxExternalId']['input'];
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
 };
