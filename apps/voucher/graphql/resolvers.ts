@@ -9,7 +9,7 @@ import {
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth"
 import {
-  OnChainWithdrawResultStatus,
+  RedeemWithdrawLinkOnChainResultStatus,
   PaymentSendResult,
   PayoutSpeed,
   Status,
@@ -207,7 +207,7 @@ const resolvers = {
         return new Error("Invalid wallet Id for user")
       }
     },
-    onChainWithdrawLink: async (
+    redeemWithdrawLinkOnChain: async (
       _: undefined,
       args: {
         input: {
@@ -310,7 +310,7 @@ const resolvers = {
         PaymentSendResult.Success
       ) {
         return {
-          status: OnChainWithdrawResultStatus.Success,
+          status: RedeemWithdrawLinkOnChainResultStatus.Success,
           message: "Payment successful",
         }
       }

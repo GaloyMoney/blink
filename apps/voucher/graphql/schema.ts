@@ -37,15 +37,14 @@ type WithdrawLinksByUserIdResult {
   totalLinks: Int
 }
 
-enum OnChainWithdrawResultStatus{
+enum RedeemWithdrawLinkOnChainResultStatus{
   Success
   Failed
 }
 
-type onChainWithdrawResult {
-  status: OnChainWithdrawResultStatus
+type RedeemWithdrawLinkOnChainResult {
+  status: RedeemWithdrawLinkOnChainResultStatus
 }
-
 
 type Query {
   getWithdrawLink(voucherSecret: String): WithdrawLinkWithSecret
@@ -54,7 +53,7 @@ type Query {
 
 type Mutation {
   createWithdrawLink(input: CreateWithdrawLinkInput!): WithdrawLinkWithSecret!
-  onChainWithdrawLink(input: OnChainWithdrawLinkInput!): onChainWithdrawResult!
+  redeemWithdrawLinkOnChain(input: RedeemWithdrawLinkOnChainInput!): RedeemWithdrawLinkOnChainResult!
 }
 
 input CreateWithdrawLinkInput {
@@ -63,7 +62,7 @@ input CreateWithdrawLinkInput {
   commissionPercentage: Float
 }
 
-input OnChainWithdrawLinkInput {
+input RedeemWithdrawLinkOnChainInput {
   voucherSecret: String!
   onChainAddress: String!
 }

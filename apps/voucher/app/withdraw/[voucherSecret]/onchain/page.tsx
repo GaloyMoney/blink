@@ -11,7 +11,7 @@ import {
   useOnChainWithdrawLinkMutation,
   useGetWithdrawLinkQuery,
   Status,
-  OnChainWithdrawResultStatus,
+  RedeemWithdrawLinkOnChainResultStatus,
 } from "@/lib/graphql/generated"
 import LoadingComponent from "@/components/loading/loading-component"
 import Button from "@/components/button"
@@ -36,8 +36,8 @@ interface ErrorModal {
 }
 
 gql`
-  mutation OnChainWithdrawLink($input: OnChainWithdrawLinkInput!) {
-    onChainWithdrawLink(input: $input) {
+  mutation OnChainWithdrawLink($input: RedeemWithdrawLinkOnChainInput!) {
+    redeemWithdrawLinkOnChain(input: $input) {
       status
     }
   }
@@ -82,7 +82,8 @@ export default function Page({ params: { voucherSecret } }: Params) {
       })
 
       if (
-        response.data?.onChainWithdrawLink.status === OnChainWithdrawResultStatus.Success
+        response.data?.redeemWithdrawLinkOnChain.status ===
+        RedeemWithdrawLinkOnChainResultStatus.Success
       ) {
         setConfirmModal(false)
         setSuccessModal(true)

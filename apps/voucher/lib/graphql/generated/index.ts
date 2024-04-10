@@ -983,8 +983,8 @@ export type Mutation = {
   onChainPaymentSendAll: PaymentSendPayload;
   onChainUsdPaymentSend: PaymentSendPayload;
   onChainUsdPaymentSendAsBtcDenominated: PaymentSendPayload;
-  onChainWithdrawLink: OnChainWithdrawResult;
   quizClaim: QuizClaimPayload;
+  redeemWithdrawLinkOnChain: RedeemWithdrawLinkOnChainResult;
   supportChatMessageAdd: SupportChatMessageAddPayload;
   /** @deprecated will be moved to AccountContact */
   userContactUpdateAlias: UserContactUpdateAliasPayload;
@@ -1196,13 +1196,13 @@ export type MutationOnChainUsdPaymentSendAsBtcDenominatedArgs = {
 };
 
 
-export type MutationOnChainWithdrawLinkArgs = {
-  input: OnChainWithdrawLinkInput;
+export type MutationQuizClaimArgs = {
+  input: QuizClaimInput;
 };
 
 
-export type MutationQuizClaimArgs = {
-  input: QuizClaimInput;
+export type MutationRedeemWithdrawLinkOnChainArgs = {
+  input: RedeemWithdrawLinkOnChainInput;
 };
 
 
@@ -1364,16 +1364,6 @@ export type OnChainUsdTxFee = {
   __typename?: 'OnChainUsdTxFee';
   amount: Scalars['CentAmount']['output'];
 };
-
-export type OnChainWithdrawLinkInput = {
-  onChainAddress: Scalars['String']['input'];
-  voucherSecret: Scalars['String']['input'];
-};
-
-export enum OnChainWithdrawResultStatus {
-  Failed = 'Failed',
-  Success = 'Success'
-}
 
 export type OneDayAccountLimit = AccountLimit & {
   __typename?: 'OneDayAccountLimit';
@@ -1655,6 +1645,21 @@ export type RealtimePricePayload = {
   errors: Array<Error>;
   realtimePrice?: Maybe<RealtimePrice>;
 };
+
+export type RedeemWithdrawLinkOnChainInput = {
+  onChainAddress: Scalars['String']['input'];
+  voucherSecret: Scalars['String']['input'];
+};
+
+export type RedeemWithdrawLinkOnChainResult = {
+  __typename?: 'RedeemWithdrawLinkOnChainResult';
+  status?: Maybe<RedeemWithdrawLinkOnChainResultStatus>;
+};
+
+export enum RedeemWithdrawLinkOnChainResultStatus {
+  Failed = 'Failed',
+  Success = 'Success'
+}
 
 export type SatAmountPayload = {
   __typename?: 'SatAmountPayload';
@@ -2241,11 +2246,6 @@ export type WithdrawLinksByUserIdResult = {
   withdrawLinks: Array<WithdrawLink>;
 };
 
-export type OnChainWithdrawResult = {
-  __typename?: 'onChainWithdrawResult';
-  status?: Maybe<OnChainWithdrawResultStatus>;
-};
-
 export type CreateWithdrawLinkMutationVariables = Exact<{
   input: CreateWithdrawLinkInput;
 }>;
@@ -2270,11 +2270,11 @@ export type GetWithdrawLinkQueryVariables = Exact<{
 export type GetWithdrawLinkQuery = { __typename?: 'Query', getWithdrawLink?: { __typename?: 'WithdrawLinkWithSecret', commissionPercentage: number, createdAt: string, id: string, identifierCode: string, paidAt?: string | null, salesAmountInCents: number, status: Status, uniqueHash: string, userId: string, voucherAmountInCents: number, voucherSecret: string } | null };
 
 export type OnChainWithdrawLinkMutationVariables = Exact<{
-  input: OnChainWithdrawLinkInput;
+  input: RedeemWithdrawLinkOnChainInput;
 }>;
 
 
-export type OnChainWithdrawLinkMutation = { __typename?: 'Mutation', onChainWithdrawLink: { __typename?: 'onChainWithdrawResult', status?: OnChainWithdrawResultStatus | null } };
+export type OnChainWithdrawLinkMutation = { __typename?: 'Mutation', redeemWithdrawLinkOnChain: { __typename?: 'RedeemWithdrawLinkOnChainResult', status?: RedeemWithdrawLinkOnChainResultStatus | null } };
 
 export type CurrencyListQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2492,8 +2492,8 @@ export type GetWithdrawLinkQueryHookResult = ReturnType<typeof useGetWithdrawLin
 export type GetWithdrawLinkLazyQueryHookResult = ReturnType<typeof useGetWithdrawLinkLazyQuery>;
 export type GetWithdrawLinkQueryResult = Apollo.QueryResult<GetWithdrawLinkQuery, GetWithdrawLinkQueryVariables>;
 export const OnChainWithdrawLinkDocument = gql`
-    mutation OnChainWithdrawLink($input: OnChainWithdrawLinkInput!) {
-  onChainWithdrawLink(input: $input) {
+    mutation OnChainWithdrawLink($input: RedeemWithdrawLinkOnChainInput!) {
+  redeemWithdrawLinkOnChain(input: $input) {
     status
   }
 }
@@ -3240,8 +3240,6 @@ export type ResolversTypes = {
   OnChainUsdPaymentSendAsBtcDenominatedInput: OnChainUsdPaymentSendAsBtcDenominatedInput;
   OnChainUsdPaymentSendInput: OnChainUsdPaymentSendInput;
   OnChainUsdTxFee: ResolverTypeWrapper<OnChainUsdTxFee>;
-  OnChainWithdrawLinkInput: OnChainWithdrawLinkInput;
-  OnChainWithdrawResultStatus: OnChainWithdrawResultStatus;
   OneDayAccountLimit: ResolverTypeWrapper<OneDayAccountLimit>;
   OneTimeAuthCode: ResolverTypeWrapper<Scalars['OneTimeAuthCode']['output']>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
@@ -3268,6 +3266,9 @@ export type ResolversTypes = {
   RealtimePrice: ResolverTypeWrapper<RealtimePrice>;
   RealtimePriceInput: RealtimePriceInput;
   RealtimePricePayload: ResolverTypeWrapper<RealtimePricePayload>;
+  RedeemWithdrawLinkOnChainInput: RedeemWithdrawLinkOnChainInput;
+  RedeemWithdrawLinkOnChainResult: ResolverTypeWrapper<RedeemWithdrawLinkOnChainResult>;
+  RedeemWithdrawLinkOnChainResultStatus: RedeemWithdrawLinkOnChainResultStatus;
   SafeInt: ResolverTypeWrapper<Scalars['SafeInt']['output']>;
   SatAmount: ResolverTypeWrapper<Scalars['SatAmount']['output']>;
   SatAmountPayload: ResolverTypeWrapper<SatAmountPayload>;
@@ -3331,7 +3332,6 @@ export type ResolversTypes = {
   WithdrawLink: ResolverTypeWrapper<WithdrawLink>;
   WithdrawLinkWithSecret: ResolverTypeWrapper<WithdrawLinkWithSecret>;
   WithdrawLinksByUserIdResult: ResolverTypeWrapper<WithdrawLinksByUserIdResult>;
-  onChainWithdrawResult: ResolverTypeWrapper<OnChainWithdrawResult>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -3456,7 +3456,6 @@ export type ResolversParentTypes = {
   OnChainUsdPaymentSendAsBtcDenominatedInput: OnChainUsdPaymentSendAsBtcDenominatedInput;
   OnChainUsdPaymentSendInput: OnChainUsdPaymentSendInput;
   OnChainUsdTxFee: OnChainUsdTxFee;
-  OnChainWithdrawLinkInput: OnChainWithdrawLinkInput;
   OneDayAccountLimit: OneDayAccountLimit;
   OneTimeAuthCode: Scalars['OneTimeAuthCode']['output'];
   PageInfo: PageInfo;
@@ -3479,6 +3478,8 @@ export type ResolversParentTypes = {
   RealtimePrice: RealtimePrice;
   RealtimePriceInput: RealtimePriceInput;
   RealtimePricePayload: RealtimePricePayload;
+  RedeemWithdrawLinkOnChainInput: RedeemWithdrawLinkOnChainInput;
+  RedeemWithdrawLinkOnChainResult: RedeemWithdrawLinkOnChainResult;
   SafeInt: Scalars['SafeInt']['output'];
   SatAmount: Scalars['SatAmount']['output'];
   SatAmountPayload: SatAmountPayload;
@@ -3535,7 +3536,6 @@ export type ResolversParentTypes = {
   WithdrawLink: WithdrawLink;
   WithdrawLinkWithSecret: WithdrawLinkWithSecret;
   WithdrawLinksByUserIdResult: WithdrawLinksByUserIdResult;
-  onChainWithdrawResult: OnChainWithdrawResult;
 };
 
 export type AccountResolvers<ContextType = any, ParentType extends ResolversParentTypes['Account'] = ResolversParentTypes['Account']> = {
@@ -4005,8 +4005,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   onChainPaymentSendAll?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationOnChainPaymentSendAllArgs, 'input'>>;
   onChainUsdPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationOnChainUsdPaymentSendArgs, 'input'>>;
   onChainUsdPaymentSendAsBtcDenominated?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationOnChainUsdPaymentSendAsBtcDenominatedArgs, 'input'>>;
-  onChainWithdrawLink?: Resolver<ResolversTypes['onChainWithdrawResult'], ParentType, ContextType, RequireFields<MutationOnChainWithdrawLinkArgs, 'input'>>;
   quizClaim?: Resolver<ResolversTypes['QuizClaimPayload'], ParentType, ContextType, RequireFields<MutationQuizClaimArgs, 'input'>>;
+  redeemWithdrawLinkOnChain?: Resolver<ResolversTypes['RedeemWithdrawLinkOnChainResult'], ParentType, ContextType, RequireFields<MutationRedeemWithdrawLinkOnChainArgs, 'input'>>;
   supportChatMessageAdd?: Resolver<ResolversTypes['SupportChatMessageAddPayload'], ParentType, ContextType, RequireFields<MutationSupportChatMessageAddArgs, 'input'>>;
   userContactUpdateAlias?: Resolver<ResolversTypes['UserContactUpdateAliasPayload'], ParentType, ContextType, RequireFields<MutationUserContactUpdateAliasArgs, 'input'>>;
   userEmailDelete?: Resolver<ResolversTypes['UserEmailDeletePayload'], ParentType, ContextType>;
@@ -4222,6 +4222,11 @@ export type RealtimePriceResolvers<ContextType = any, ParentType extends Resolve
 export type RealtimePricePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['RealtimePricePayload'] = ResolversParentTypes['RealtimePricePayload']> = {
   errors?: Resolver<Array<ResolversTypes['Error']>, ParentType, ContextType>;
   realtimePrice?: Resolver<Maybe<ResolversTypes['RealtimePrice']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type RedeemWithdrawLinkOnChainResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['RedeemWithdrawLinkOnChainResult'] = ResolversParentTypes['RedeemWithdrawLinkOnChainResult']> = {
+  status?: Resolver<Maybe<ResolversTypes['RedeemWithdrawLinkOnChainResultStatus']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4531,11 +4536,6 @@ export type WithdrawLinksByUserIdResultResolvers<ContextType = any, ParentType e
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type OnChainWithdrawResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['onChainWithdrawResult'] = ResolversParentTypes['onChainWithdrawResult']> = {
-  status?: Resolver<Maybe<ResolversTypes['OnChainWithdrawResultStatus']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export type Resolvers<ContextType = any> = {
   Account?: AccountResolvers<ContextType>;
   AccountDeletePayload?: AccountDeletePayloadResolvers<ContextType>;
@@ -4631,6 +4631,7 @@ export type Resolvers<ContextType = any> = {
   QuizClaimPayload?: QuizClaimPayloadResolvers<ContextType>;
   RealtimePrice?: RealtimePriceResolvers<ContextType>;
   RealtimePricePayload?: RealtimePricePayloadResolvers<ContextType>;
+  RedeemWithdrawLinkOnChainResult?: RedeemWithdrawLinkOnChainResultResolvers<ContextType>;
   SafeInt?: GraphQLScalarType;
   SatAmount?: GraphQLScalarType;
   SatAmountPayload?: SatAmountPayloadResolvers<ContextType>;
@@ -4674,6 +4675,5 @@ export type Resolvers<ContextType = any> = {
   WithdrawLink?: WithdrawLinkResolvers<ContextType>;
   WithdrawLinkWithSecret?: WithdrawLinkWithSecretResolvers<ContextType>;
   WithdrawLinksByUserIdResult?: WithdrawLinksByUserIdResultResolvers<ContextType>;
-  onChainWithdrawResult?: OnChainWithdrawResultResolvers<ContextType>;
 };
 
