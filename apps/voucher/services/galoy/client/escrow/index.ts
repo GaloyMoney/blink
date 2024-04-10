@@ -6,7 +6,7 @@ export const escrowApolloClient = () => {
     cache: new InMemoryCache(),
     link: new HttpLink({
       headers: {
-        "Authorization": `Bearer ${env.ESCROW_TOKEN}`,
+        "X-API-KEY": `${env.ESCROW_TOKEN}`,
         "x-requested-with": "XMLHttpRequest",
       },
       uri: env.NEXT_PUBLIC_GALOY_URL,
