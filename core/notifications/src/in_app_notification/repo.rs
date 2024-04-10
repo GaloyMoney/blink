@@ -44,10 +44,22 @@ impl InAppNotificationsRepo {
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
         notifications: Vec<InAppNotification>,
     ) -> Result<(), InAppNotificationError> {
-        for notification in notifications {
-            // TODO: batch insert
-            self.persist_new(tx, notification).await?;
-        }
+        let mut query_builder = sqlx::QueryBuilder::new(
+            "INSERT INTO in_app_notifications (id, galoy_user_id, title, body, deep_link, created_at)"
+            );
+        query_builder.push_values(notifications, |mut builder, notification| {
+            builder.push_bind(notification.id as InAppNotificationId);
+            builder.push_bind(notification.user_id.into_inner());
+            builder.push_bind(notification.title);
+            builder.push_bind(notification.body);
+            builder.push_bind(
+                serde_json::to_string(&notification.deep_link)
+                    .expect("unable to serialize deep_link"),
+            );
+            builder.push_bind(notification.created_at);
+        });
+        let query = query_builder.build();
+        query.execute(&mut **tx).await?;
         Ok(())
     }
 
