@@ -592,6 +592,8 @@ export type IntraLedgerUsdPaymentSendInput = {
 /** A lightning invoice. */
 export type Invoice = {
   readonly createdAt: Scalars['Timestamp'];
+  /** The unique external id set for the invoice. */
+  readonly externalId: Scalars['TxExternalId'];
   /** The payment hash of the lightning invoice. */
   readonly paymentHash: Scalars['PaymentHash'];
   /** The bolt11 invoice to be paid. */
@@ -639,6 +641,7 @@ export type LnAddressPaymentSendInput = {
 export type LnInvoice = Invoice & {
   readonly __typename: 'LnInvoice';
   readonly createdAt: Scalars['Timestamp'];
+  readonly externalId: Scalars['TxExternalId'];
   readonly paymentHash: Scalars['PaymentHash'];
   readonly paymentRequest: Scalars['LnPaymentRequest'];
   readonly paymentSecret: Scalars['LnPaymentSecret'];
@@ -727,6 +730,7 @@ export type LnInvoicePaymentStatusPayload = {
 export type LnNoAmountInvoice = Invoice & {
   readonly __typename: 'LnNoAmountInvoice';
   readonly createdAt: Scalars['Timestamp'];
+  readonly externalId: Scalars['TxExternalId'];
   readonly paymentHash: Scalars['PaymentHash'];
   readonly paymentRequest: Scalars['LnPaymentRequest'];
   readonly paymentSecret: Scalars['LnPaymentSecret'];
