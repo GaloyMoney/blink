@@ -65,7 +65,7 @@ input CreateWithdrawLinkInput {
 
 input OnChainWithdrawLinkInput {
   voucherSecret: String!
-  btcWalletAddress: String!
+  onChainAddress: String!
 }
 `
 

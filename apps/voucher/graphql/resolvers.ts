@@ -212,11 +212,11 @@ const resolvers = {
       args: {
         input: {
           voucherSecret: string
-          btcWalletAddress: string
+          onChainAddress: string
         }
       },
     ) => {
-      const { voucherSecret, btcWalletAddress } = args.input
+      const { voucherSecret, onChainAddress } = args.input
       if (!isValidVoucherSecret(voucherSecret)) {
         return new Error("Invalid voucher secret")
       }
@@ -250,7 +250,7 @@ const resolvers = {
       const onChainUsdTxFeeResponse = await onChainUsdTxFee({
         client: escrowClient,
         input: {
-          address: btcWalletAddress,
+          address: onChainAddress,
           amount: getWithdrawLinkBySecretResponse.voucherAmountInCents,
           walletId: escrowUsdWallet?.id,
           speed: PayoutSpeed.Fast,
@@ -275,7 +275,7 @@ const resolvers = {
       const onChainUsdPaymentSendResponse = await onChainUsdPaymentSend({
         client: escrowClient,
         input: {
-          address: btcWalletAddress,
+          address: onChainAddress,
           amount: getWithdrawLinkBySecretResponse.voucherAmountInCents,
           memo: createMemo({
             voucherAmountInCents: getWithdrawLinkBySecretResponse.voucherAmountInCents,

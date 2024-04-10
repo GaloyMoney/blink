@@ -44,7 +44,7 @@ gql`
 `
 
 export default function Page({ params: { voucherSecret } }: Params) {
-  const [btcWalletAddress, setBtcWalletAddress] = useState<string>("")
+  const [onChainAddress, setOnChainAddress] = useState<string>("")
   const [fetchingFees, setFetchingFees] = useState<boolean>(false)
   const [fees, setFees] = useState<number>(0)
   const [confirmModal, setConfirmModal] = useState<boolean>(false)
@@ -76,7 +76,7 @@ export default function Page({ params: { voucherSecret } }: Params) {
         variables: {
           input: {
             voucherSecret,
-            btcWalletAddress,
+            onChainAddress,
           },
         },
       })
@@ -196,12 +196,12 @@ export default function Page({ params: { voucherSecret } }: Params) {
           <Input
             label="BTC Wallet Address"
             type="text"
-            value={btcWalletAddress}
+            value={onChainAddress}
             style={{
               width: "90%",
             }}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setBtcWalletAddress(e.target.value)
+              setOnChainAddress(e.target.value)
             }
           />
           <Button
