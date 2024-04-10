@@ -130,6 +130,33 @@ const BtcWallet = GT.Object<Wallet>({
         return result
       },
     },
+    invoicesByExternalId: {
+      description:
+        "A list of all invoices by external id associated with walletIds optionally passed.",
+      type: IInvoiceConnection,
+      args: {
+        externalId: {
+          type: GT.NonNull(TxExternalId),
+        },
+        ...connectionArgs,
+      },
+      resolve: async (source, args) => {
+        const { externalId, ...rawPaginationArgs } = args
+        if (externalId instanceof Error) throw externalId
+
+        const result = await Wallets.getInvoicesForWalletsByExternalIdSubstring({
+          wallets: [source],
+          uncheckedExternalIdSubstring: externalId,
+          rawPaginationArgs,
+        })
+
+        if (result instanceof Error) {
+          throw mapError(result)
+        }
+
+        return result
+      },
+    },
     transactionsByAddress: {
       type: TransactionConnection,
       args: {

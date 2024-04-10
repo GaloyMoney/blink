@@ -259,6 +259,24 @@ type BTCWallet implements Wallet
     last: Int
   ): InvoiceConnection
 
+  """
+  A list of all invoices by external id associated with walletIds optionally passed.
+  """
+  invoicesByExternalId(
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+    externalId: TxExternalId!
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+  ): InvoiceConnection
+
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
   pendingIncomingTransactions: [Transaction!]!
@@ -1971,6 +1989,24 @@ type UsdWallet implements Wallet
     last: Int
   ): InvoiceConnection
 
+  """
+  A list of all invoices by external id associated with walletIds optionally passed.
+  """
+  invoicesByExternalId(
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+    externalId: TxExternalId!
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+  ): InvoiceConnection
+
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
   pendingIncomingTransactions: [Transaction!]!
@@ -2349,6 +2385,22 @@ interface Wallet
 
     """Returns the items in the list that come before the specified cursor."""
     before: String
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the last n items from the list."""
+    last: Int
+  ): InvoiceConnection
+  invoicesByExternalId(
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+
+    """Full or partial external id to query for."""
+    externalId: TxExternalId!
 
     """Returns the first n items from the list."""
     first: Int

@@ -86,6 +86,16 @@ const IWallet = GT.Interface({
         ...connectionArgs,
       },
     },
+    invoicesByExternalId: {
+      type: IInvoiceConnection,
+      args: {
+        ...connectionArgs,
+        externalId: {
+          type: GT.NonNull(TxExternalId),
+          description: "Full or partial external id to query for.",
+        },
+      },
+    },
     transactionsByPaymentHash: {
       type: GT.NonNullList(Transaction),
       description:
