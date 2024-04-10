@@ -710,6 +710,9 @@ interface Invoice
 {
   createdAt: Timestamp!
 
+  """The unique external id set for the invoice."""
+  externalId: TxExternalId!
+
   """The payment hash of the lightning invoice."""
   paymentHash: PaymentHash!
 
@@ -798,6 +801,7 @@ type LnInvoice implements Invoice
   @join__type(graph: PUBLIC)
 {
   createdAt: Timestamp!
+  externalId: TxExternalId!
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!
@@ -918,6 +922,7 @@ type LnNoAmountInvoice implements Invoice
   @join__type(graph: PUBLIC)
 {
   createdAt: Timestamp!
+  externalId: TxExternalId!
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!

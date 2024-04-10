@@ -533,6 +533,9 @@ input IntraLedgerUsdPaymentSendInput {
 interface Invoice {
   createdAt: Timestamp!
 
+  """The unique external id set for the invoice."""
+  externalId: TxExternalId!
+
   """The payment hash of the lightning invoice."""
   paymentHash: PaymentHash!
 
@@ -587,6 +590,7 @@ input LnAddressPaymentSendInput {
 
 type LnInvoice implements Invoice {
   createdAt: Timestamp!
+  externalId: TxExternalId!
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!
@@ -682,6 +686,7 @@ type LnInvoicePaymentStatusPayload {
 
 type LnNoAmountInvoice implements Invoice {
   createdAt: Timestamp!
+  externalId: TxExternalId!
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!
