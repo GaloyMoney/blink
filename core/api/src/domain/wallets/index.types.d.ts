@@ -158,7 +158,7 @@ type NewWalletInfo = {
   readonly accountId: AccountId
   readonly type: WalletType
   readonly currency: WalletCurrency
-  readonly created_at: Date
+  readonly createdAt: Date
 }
 
 type Wallet = NewWalletInfo & {

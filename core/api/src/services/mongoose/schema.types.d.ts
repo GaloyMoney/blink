@@ -55,7 +55,7 @@ interface WalletRecord {
   accountId: string
   type: string
   currency: string
-  created_at: Date
+  createdAt: Date
   onchain: OnChainMongooseType[]
 }
 

@@ -122,7 +122,7 @@ const WalletSchema = new Schema<WalletRecord>({
     required: true,
     default: WalletCurrency.Btc,
   },
-  created_ad: {
+  createdAt: {
     type: Date,
     default: Date.now
   },
