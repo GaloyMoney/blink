@@ -1,14 +1,11 @@
 "use client"
 import React, { useState, useEffect } from "react"
 
-import Pagination from "@mui/material/Pagination"
-
 import styles from "./user-link-page.module.css"
 
 import PageLoadingComponent from "@/components/loading/page-loading-component"
 import UserLinksComponent from "@/components/user-links"
 
-import { getOffset } from "@/utils/helpers"
 import { gql } from "@apollo/client"
 
 import {
@@ -18,9 +15,8 @@ import {
 } from "@/lib/graphql/generated"
 
 gql`
-  query GetWithdrawLinksByUserId($status: Status, $limit: Int, $offset: Int) {
-    getWithdrawLinksByUserId(status: $status, limit: $limit, offset: $offset) {
-      totalLinks
+  query GetWithdrawLinksByUserId($status: Status) {
+    getWithdrawLinksByUserId(status: $status) {
       withdrawLinks {
         commissionPercentage
         id
@@ -44,8 +40,6 @@ export default function UserLinks() {
   const { loading, error, data } = useGetWithdrawLinksByUserIdQuery({
     variables: {
       status,
-      limit: 10,
-      offset: getOffset(page, 10),
     },
     pollInterval: poll ? 10000 : 0,
   })
@@ -64,9 +58,6 @@ export default function UserLinks() {
   }
 
   const withdrawLinks = data?.getWithdrawLinksByUserId.withdrawLinks
-  const totalLinks = data?.getWithdrawLinksByUserId.totalLinks
-  const itemsPerPage = 10
-  const totalPages = Math.ceil(Number(totalLinks) / itemsPerPage)
 
   return (
     <div className="top_page_container_user_links">
@@ -97,18 +88,6 @@ export default function UserLinks() {
                 <UserLinksComponent key={withdrawLink.id} withdrawLink={withdrawLink} />
               ))}
             </div>
-            <Pagination
-              style={{
-                paddingTop: "2em",
-                display: "flex",
-                justifyContent: "center",
-              }}
-              count={totalPages}
-              page={page}
-              variant="outlined"
-              shape="rounded"
-              onChange={(event, value) => setPage(value)}
-            />
           </>
         )}
       </div>

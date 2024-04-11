@@ -34,7 +34,6 @@ type WithdrawLinkWithSecret {
 
 type WithdrawLinksByUserIdResult {
   withdrawLinks: [WithdrawLink!]!
-  totalLinks: Int
 }
 
 enum RedeemWithdrawLinkOnChainResultStatus{
@@ -48,7 +47,7 @@ type RedeemWithdrawLinkOnChainResult {
 
 type Query {
   getWithdrawLink(voucherSecret: String): WithdrawLinkWithSecret
-  getWithdrawLinksByUserId(status: Status, limit: Int, offset: Int): WithdrawLinksByUserIdResult!
+  getWithdrawLinksByUserId(status: Status): WithdrawLinksByUserIdResult!
 }
 
 type Mutation {

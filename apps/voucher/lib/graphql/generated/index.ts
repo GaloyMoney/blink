@@ -1546,8 +1546,6 @@ export type QueryGetWithdrawLinkArgs = {
 
 
 export type QueryGetWithdrawLinksByUserIdArgs = {
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
   status?: InputMaybe<Status>;
 };
 
@@ -2242,7 +2240,6 @@ export type WithdrawLinkWithSecret = {
 
 export type WithdrawLinksByUserIdResult = {
   __typename?: 'WithdrawLinksByUserIdResult';
-  totalLinks?: Maybe<Scalars['Int']['output']>;
   withdrawLinks: Array<WithdrawLink>;
 };
 
@@ -2255,12 +2252,10 @@ export type CreateWithdrawLinkMutation = { __typename?: 'Mutation', createWithdr
 
 export type GetWithdrawLinksByUserIdQueryVariables = Exact<{
   status?: InputMaybe<Status>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GetWithdrawLinksByUserIdQuery = { __typename?: 'Query', getWithdrawLinksByUserId: { __typename?: 'WithdrawLinksByUserIdResult', totalLinks?: number | null, withdrawLinks: Array<{ __typename?: 'WithdrawLink', commissionPercentage: number, id: string, createdAt: string, identifierCode: string, paidAt?: string | null, salesAmountInCents: number, status: Status, userId: string, voucherAmountInCents: number }> } };
+export type GetWithdrawLinksByUserIdQuery = { __typename?: 'Query', getWithdrawLinksByUserId: { __typename?: 'WithdrawLinksByUserIdResult', withdrawLinks: Array<{ __typename?: 'WithdrawLink', commissionPercentage: number, id: string, createdAt: string, identifierCode: string, paidAt?: string | null, salesAmountInCents: number, status: Status, userId: string, voucherAmountInCents: number }> } };
 
 export type GetWithdrawLinkQueryVariables = Exact<{
   voucherSecret?: InputMaybe<Scalars['String']['input']>;
@@ -2399,9 +2394,8 @@ export type CreateWithdrawLinkMutationHookResult = ReturnType<typeof useCreateWi
 export type CreateWithdrawLinkMutationResult = Apollo.MutationResult<CreateWithdrawLinkMutation>;
 export type CreateWithdrawLinkMutationOptions = Apollo.BaseMutationOptions<CreateWithdrawLinkMutation, CreateWithdrawLinkMutationVariables>;
 export const GetWithdrawLinksByUserIdDocument = gql`
-    query GetWithdrawLinksByUserId($status: Status, $limit: Int, $offset: Int) {
-  getWithdrawLinksByUserId(status: $status, limit: $limit, offset: $offset) {
-    totalLinks
+    query GetWithdrawLinksByUserId($status: Status) {
+  getWithdrawLinksByUserId(status: $status) {
     withdrawLinks {
       commissionPercentage
       id
@@ -2430,8 +2424,6 @@ export const GetWithdrawLinksByUserIdDocument = gql`
  * const { data, loading, error } = useGetWithdrawLinksByUserIdQuery({
  *   variables: {
  *      status: // value for 'status'
- *      limit: // value for 'limit'
- *      offset: // value for 'offset'
  *   },
  * });
  */
@@ -4531,7 +4523,6 @@ export type WithdrawLinkWithSecretResolvers<ContextType = any, ParentType extend
 };
 
 export type WithdrawLinksByUserIdResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['WithdrawLinksByUserIdResult'] = ResolversParentTypes['WithdrawLinksByUserIdResult']> = {
-  totalLinks?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   withdrawLinks?: Resolver<Array<ResolversTypes['WithdrawLink']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

@@ -65,38 +65,18 @@ export async function getWithdrawLinkByK1Query({
 export async function getWithdrawLinksByUserIdQuery({
   userId,
   status,
-  limit,
-  offset,
 }: {
   userId: string
   status?: string
-  limit?: number
-  offset?: number
-}): Promise<{ withdrawLinks: WithdrawLink[]; totalLinks: number } | Error> {
+}): Promise<{ withdrawLinks: WithdrawLink[] } | Error> {
   try {
     let query = knex.select().from("WithdrawLinks").where({ userId })
-
     if (status) {
       query = query.andWhere({ status })
     }
-    if (limit) {
-      query = query.limit(limit)
-    }
-    if (offset) {
-      query = query.offset(offset)
-    }
 
     const withdrawLinks = await query.orderBy("createdAt", "desc")
-
-    let countQuery = knex.count().from("WithdrawLinks").where({ userId })
-
-    if (status) {
-      countQuery = countQuery.andWhere({ status })
-    }
-    const result = await countQuery
-    const totalLinks = parseInt(String(result[0].count), 10)
-
-    return { withdrawLinks, totalLinks }
+    return { withdrawLinks }
   } catch (error) {
     return error instanceof Error
       ? error

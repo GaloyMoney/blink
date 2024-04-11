@@ -39,11 +39,9 @@ const resolvers = {
       _: undefined,
       args: {
         status?: string
-        limit?: number
-        offset?: number
       },
     ) => {
-      const { status, limit, offset } = args
+      const { status } = args
 
       const session = await getServerSession(authOptions)
       const userData = session?.userData
@@ -54,8 +52,6 @@ const resolvers = {
       const data = await getWithdrawLinksByUserIdQuery({
         userId: userData.me.id,
         status,
-        limit,
-        offset,
       })
       if (data instanceof Error) {
         return new Error("Internal server error")
@@ -302,6 +298,19 @@ const resolvers = {
         })
         return new Error(
           onChainUsdPaymentSendResponse.onChainUsdPaymentSend.errors[0].message,
+        )
+      }
+
+      if (
+        onChainUsdPaymentSendResponse.onChainUsdPaymentSend.status !==
+        PaymentSendResult.Success
+      ) {
+        await updateWithdrawLinkStatus({
+          id: getWithdrawLinkBySecretResponse.id,
+          status: Status.Active,
+        })
+        return new Error(
+          `Transaction not successful got status ${onChainUsdPaymentSendResponse.onChainUsdPaymentSend.status}`,
         )
       }
 
