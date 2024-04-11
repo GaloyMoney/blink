@@ -516,8 +516,8 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "InvalidLedgerExternalId":
       message =
         "Invalid external id string passed. ID should be either alphanumeric " +
-        "or contain the characters '+', '/', '=', '_', '-'. It should not " +
-        "be more than 100 characters long as well."
+        "or contain the characters '_' or '-'. It should not be more than 100 " +
+        "characters long as well."
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "ErrorFetchingLnurlInvoice":
