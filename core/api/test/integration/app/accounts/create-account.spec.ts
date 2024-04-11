@@ -18,6 +18,7 @@ describe("createAccountWithPhoneIdentifier", () => {
           initialLevel: AccountLevel.One,
           initialStatus: AccountStatus.Active,
           initialWallets,
+          maxDeletions: 2,
         },
       })
       if (account instanceof Error) throw account
@@ -53,6 +54,7 @@ describe("createAccountWithPhoneIdentifier", () => {
             initialLevel: AccountLevel.One,
             initialStatus: AccountStatus.Active,
             initialWallets,
+            maxDeletions: 2,
           },
         })
       if (account instanceof Error) throw account
@@ -88,6 +90,7 @@ describe("createAccountWithPhoneIdentifier", () => {
             initialLevel: AccountLevel.One,
             initialStatus: AccountStatus.Active,
             initialWallets,
+            maxDeletions: 2,
           },
         })
       if (account instanceof Error) throw account
