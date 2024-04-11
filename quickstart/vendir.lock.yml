@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build: bump flake (#4282)'
-      sha: 0c4882ed70e7db4891d94e67b86f027408f39c50
+      commitTitle: 'fix(core): add account deletion limit validation (#4277)...'
+      sha: 3e3e89c6a5729b58658c688f412ba50c8c78332a
       tags:
-      - 0.20.144-2-g0c4882ed7
+      - 0.20.145-1-g3e3e89c6a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build: bump flake (#4282)'
-      sha: 0c4882ed70e7db4891d94e67b86f027408f39c50
+      commitTitle: 'fix(core): add account deletion limit validation (#4277)...'
+      sha: 3e3e89c6a5729b58658c688f412ba50c8c78332a
       tags:
-      - 0.20.144-2-g0c4882ed7
+      - 0.20.145-1-g3e3e89c6a
     path: schemas/
   - git:
-      commitTitle: 'build: bump flake (#4282)'
-      sha: 0c4882ed70e7db4891d94e67b86f027408f39c50
+      commitTitle: 'fix(core): add account deletion limit validation (#4277)...'
+      sha: 3e3e89c6a5729b58658c688f412ba50c8c78332a
       tags:
-      - 0.20.144-2-g0c4882ed7
+      - 0.20.145-1-g3e3e89c6a
     path: gql/
   path: ./graphql
 kind: LockConfig
