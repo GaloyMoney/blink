@@ -121,16 +121,16 @@ seed_invoices() {
 @test "invoices: get invoices for wallet by external id" {
   token_name='alice'
   btc_wallet_name="$token_name.btc_wallet_id"
-  external_id="seed"
+  partial_external_id="seed"
 
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value $btc_wallet_name)" \
-    --arg external_id "$external_id" \
-    '{walletId: $wallet_id, externalId: $external_id}'
+    --arg partial_external_id "$partial_external_id" \
+    '{walletId: $wallet_id, partialExternalId: $partial_external_id}'
   )
-  exec_graphql "$token_name" 'invoices-by-external-id' "$variables"
+  exec_graphql "$token_name" 'invoices-by-partial-external-id' "$variables"
 
-  invoice_count="$(graphql_output '.data.me.defaultAccount.walletById.invoicesByExternalId.edges | length')"
+  invoice_count="$(graphql_output '.data.me.defaultAccount.walletById.invoicesByPartialExternalId.edges | length')"
   [[ "$invoice_count" -eq "1" ]] || exit 1
 }

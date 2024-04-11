@@ -1,6 +1,6 @@
-query invoicesByExternalId(
+query invoicesByPartialExternalId(
   $walletId: WalletId!
-  $externalId: TxExternalIdSubstring!
+  $partialExternalId: TxExternalIdSubstring!
   $first: Int
   $after: String
 ) {
@@ -10,8 +10,8 @@ query invoicesByExternalId(
       displayCurrency
       walletById(walletId: $walletId) {
         id
-        invoicesByExternalId(
-          externalId: $externalId
+        invoicesByPartialExternalId(
+          partialExternalId: $partialExternalId
           first: $first
           after: $after
         ) {

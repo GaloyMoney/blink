@@ -130,23 +130,23 @@ const BtcWallet = GT.Object<Wallet>({
         return result
       },
     },
-    invoicesByExternalId: {
+    invoicesByPartialExternalId: {
       description:
         "A list of all invoices by external id associated with walletIds optionally passed.",
       type: IInvoiceConnection,
       args: {
-        externalId: {
+        partialExternalId: {
           type: GT.NonNull(TxExternalIdSubstring),
         },
         ...connectionArgs,
       },
       resolve: async (source, args) => {
-        const { externalId, ...rawPaginationArgs } = args
-        if (externalId instanceof Error) throw externalId
+        const { partialExternalId, ...rawPaginationArgs } = args
+        if (partialExternalId instanceof Error) throw partialExternalId
 
         const result = await Wallets.getInvoicesForWalletsByExternalIdSubstring({
           wallets: [source],
-          uncheckedExternalIdSubstring: externalId,
+          uncheckedExternalIdSubstring: partialExternalId,
           rawPaginationArgs,
         })
 
@@ -252,21 +252,21 @@ const BtcWallet = GT.Object<Wallet>({
         return transactions
       },
     },
-    transactionsByExternalId: {
+    transactionsByPartialExternalId: {
       type: TransactionConnection,
       args: {
         ...connectionArgs,
-        externalId: {
+        partialExternalId: {
           type: GT.NonNull(TxExternalIdSubstring),
         },
       },
       resolve: async (source, args) => {
-        const { externalId, ...rawPaginationArgs } = args
-        if (externalId instanceof Error) throw externalId
+        const { partialExternalId, ...rawPaginationArgs } = args
+        if (partialExternalId instanceof Error) throw partialExternalId
 
         const result = await Wallets.getTransactionsForWalletsByExternalId({
           walletIds: [source.id],
-          uncheckedExternalIdSubstring: externalId,
+          uncheckedExternalIdSubstring: partialExternalId,
           rawPaginationArgs,
         })
         if (result instanceof Error) {

@@ -86,11 +86,11 @@ const IWallet = GT.Interface({
         ...connectionArgs,
       },
     },
-    invoicesByExternalId: {
+    invoicesByPartialExternalId: {
       type: IInvoiceConnection,
       args: {
         ...connectionArgs,
-        externalId: {
+        partialExternalId: {
           type: GT.NonNull(TxExternalIdSubstring),
           description: "Full or partial external id to query for.",
         },
@@ -118,12 +118,12 @@ const IWallet = GT.Interface({
         },
       },
     },
-    transactionsByExternalId: {
+    transactionsByPartialExternalId: {
       type: TransactionConnection,
       description: "Returns the transactions that include this external id.",
       args: {
         ...connectionArgs,
-        externalId: {
+        partialExternalId: {
           type: GT.NonNull(TxExternalIdSubstring),
           description: "Full or partial external id to query for.",
         },

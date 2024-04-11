@@ -1,4 +1,6 @@
-query transactionsByExternalId($externalId: TxExternalIdSubstring!) {
+query transactionsByPartialExternalId(
+  $partialExternalId: TxExternalIdSubstring!
+) {
   me {
     defaultAccount {
       displayCurrency
@@ -6,7 +8,7 @@ query transactionsByExternalId($externalId: TxExternalIdSubstring!) {
         __typename
         id
         walletCurrency
-        transactionsByExternalId(externalId: $externalId) {
+        transactionsByPartialExternalId(partialExternalId: $partialExternalId) {
           ...TransactionList
         }
       }

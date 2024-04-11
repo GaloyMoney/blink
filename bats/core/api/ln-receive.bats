@@ -49,15 +49,15 @@ usd_amount=50
   external_id="test-$RANDOM"
   external_id_txns_variables=$(
   jq -n \
-  --arg external_id "$external_id" \
-  '{"externalId": $external_id}'
+  --arg partial_external_id "$external_id" \
+  '{"partialExternalId": $partial_external_id}'
   )
-  exec_graphql 'alice' 'transactions-by-external-id' "$external_id_txns_variables"
+  exec_graphql 'alice' 'transactions-by-partial-external-id' "$external_id_txns_variables"
   txns_for_external_id=$(
     graphql_output '
       .data.me.defaultAccount.wallets[]
       | select(.__typename == "BTCWallet")
-      .transactionsByExternalId.edges
+      .transactionsByPartialExternalId.edges
       | length'
   )
   [[ "$txns_for_external_id" == "0" ]] || exit 1
@@ -185,12 +185,12 @@ usd_amount=50
   )
   [[ "$external_id_from_callback" == "$external_id" ]] || exit 1
 
-  exec_graphql 'alice' 'transactions-by-external-id' "$external_id_txns_variables"
+  exec_graphql 'alice' 'transactions-by-partial-external-id' "$external_id_txns_variables"
   txns_for_external_id=$(
     graphql_output '
       .data.me.defaultAccount.wallets[]
       | select(.__typename == "BTCWallet")
-      .transactionsByExternalId.edges
+      .transactionsByPartialExternalId.edges
       | length'
   )
   [[ "$txns_for_external_id" == "1" ]] || exit 1
