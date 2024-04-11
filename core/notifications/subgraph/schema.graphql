@@ -13,6 +13,7 @@ type Mutation {
 	userEnableNotificationChannel(input: UserEnableNotificationChannelInput!): UserUpdateNotificationSettingsPayload!
 	userDisableNotificationCategory(input: UserDisableNotificationCategoryInput!): UserUpdateNotificationSettingsPayload!
 	userEnableNotificationCategory(input: UserEnableNotificationCategoryInput!): UserUpdateNotificationSettingsPayload!
+	userMarkInAppNotificationAsRead(input: UserMarkInAppNotificationAsReadInput!): UserMarkInAppNotificationAsReadPayload!
 }
 
 
@@ -41,6 +42,14 @@ input UserEnableNotificationCategoryInput {
 
 input UserEnableNotificationChannelInput {
 	channel: UserNotificationChannel!
+}
+
+input UserMarkInAppNotificationAsReadInput {
+	notificationId: ID!
+}
+
+type UserMarkInAppNotificationAsReadPayload {
+	notification: InAppNotification!
 }
 
 enum UserNotificationCategory {

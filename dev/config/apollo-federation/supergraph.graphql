@@ -1170,6 +1170,7 @@ type Mutation
   userEnableNotificationChannel(input: UserEnableNotificationChannelInput!): UserUpdateNotificationSettingsPayload! @join__field(graph: NOTIFICATIONS)
   userDisableNotificationCategory(input: UserDisableNotificationCategoryInput!): UserUpdateNotificationSettingsPayload! @join__field(graph: NOTIFICATIONS)
   userEnableNotificationCategory(input: UserEnableNotificationCategoryInput!): UserUpdateNotificationSettingsPayload! @join__field(graph: NOTIFICATIONS)
+  userMarkInAppNotificationAsRead(input: UserMarkInAppNotificationAsReadInput!): UserMarkInAppNotificationAsReadPayload! @join__field(graph: NOTIFICATIONS)
   accountDelete: AccountDeletePayload! @join__field(graph: PUBLIC)
   accountDisableNotificationCategory(input: AccountDisableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
   accountDisableNotificationChannel(input: AccountDisableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
@@ -2183,6 +2184,18 @@ input UserLogoutInput
   @join__type(graph: PUBLIC)
 {
   deviceToken: String!
+}
+
+input UserMarkInAppNotificationAsReadInput
+  @join__type(graph: NOTIFICATIONS)
+{
+  notificationId: ID!
+}
+
+type UserMarkInAppNotificationAsReadPayload
+  @join__type(graph: NOTIFICATIONS)
+{
+  notification: InAppNotification!
 }
 
 """Unique identifier of a user"""

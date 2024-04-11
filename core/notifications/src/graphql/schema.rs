@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use async_graphql::*;
 
 use super::types::*;
@@ -65,6 +67,16 @@ impl User {
 #[derive(SimpleObject)]
 pub struct UserUpdateNotificationSettingsPayload {
     notification_settings: UserNotificationSettings,
+}
+
+#[derive(SimpleObject)]
+pub struct UserMarkInAppNotificationAsReadPayload {
+    notification: InAppNotification,
+}
+
+#[derive(InputObject)]
+struct UserMarkInAppNotificationAsReadInput {
+    notification_id: ID,
 }
 
 #[derive(InputObject)]
@@ -176,6 +188,28 @@ impl Mutation {
 
         Ok(UserUpdateNotificationSettingsPayload {
             notification_settings: UserNotificationSettings::from(settings),
+        })
+    }
+
+    async fn user_mark_in_app_notification_as_read(
+        &self,
+        ctx: &Context<'_>,
+        input: UserMarkInAppNotificationAsReadInput,
+    ) -> async_graphql::Result<UserMarkInAppNotificationAsReadPayload> {
+        let subject = ctx.data::<AuthSubject>()?;
+
+        if !subject.can_write {
+            return Err("Permission denied".into());
+        }
+        let app = ctx.data_unchecked::<NotificationsApp>();
+
+        let notification_id = InAppNotificationId::from_str(input.notification_id.0.as_str())?;
+        let notification = app
+            .mark_notification_as_read(GaloyUserId::from(subject.id.clone()), notification_id)
+            .await?;
+
+        Ok(UserMarkInAppNotificationAsReadPayload {
+            notification: InAppNotification::from(notification),
         })
     }
 }
