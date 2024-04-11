@@ -1,0 +1,65 @@
+_version: 1
+
+circle_time_frame.month: "Bu ay"
+circle_time_frame.all_time: ""
+
+circle_type.inner: "Yakın çevre"
+circle_type.outer: "Uzak çevre"
+
+circle_grew.title: "Blink Çevreniz büyüyor!"
+circle_grew.body: "Birisi az önce %{circle_type}'ınıza eklendi."
+
+circle_threshold_reached.inner.title: "Harika bir Yakın Çevre! \U0001F919"
+circle_threshold_reached.inner.body: "Blink%{time_frame}'e %{threshold} kişiyi davet ettiniz. Böyle devam edin!"
+
+circle_threshold_reached.outer.title: "Uzak Çevre kazançları \U0001F4AA"
+circle_threshold_reached.outer.body: "Uzak Çevreniz %{eşik} kişiye ulaştı. Bitcoin'in benimsenmesini sağlıyorsunuz!"
+
+identity_verification_approved.title: "Kimliğiniz doğrulanmıştır!"
+identity_verification_approved.body: "Belgeleriniz doğrulanıyor"
+
+identity_verification_declined.reason.documents_not_clear: "yüklenen belgeler net değil"
+identity_verification_declined.reason.photo_not_clear: "Yüklediğiniz resim net değil"
+identity_verification_declined.reason.documents_do_not_match: "Yüklediğiniz belgelerin özçekiminizle ve/veya verdiğiniz bilgilerle eşleşmiyor"
+identity_verification_declined.reason.documents_expired: "Yüklediğiniz belgelerin geçerlilik süresi dolmuş"
+identity_verification_declined.reason.documents_not_supported: "Yüklediğiniz belgeler desteklenmiyor"
+identity_verification_declined.reason.other: "Bir hata oluştu, lütfen destek ile iletişime geçiniz"
+identity_verification_declined.title: "Kimliğiniz doğrulanamadı!"
+identity_verification_declined.body: "Belgelerinizi işleme alamadık çünkü %{reason}."
+
+identity_verification_review_started.title: "Doğrulama işleminiz devam ediyor!"
+identity_verification_review_started.body: "Belgelerinizi teslim alındı, doğrulanıyor"
+
+transaction.intra_ledger_payment.title: "%{walletCurrency} İşlem"
+transaction.intra_ledger_payment.body: "%{formattedCurrencyAmount} tutarında ödeme gönderildi"
+transaction.intra_ledger_payment.body_display_currency: "Gönderilen ödeme %{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+transaction.intra_ledger_receipt.title: "%{walletCurrency} İşlem"
+transaction.intra_ledger_receipt.body: "+%{formattedCurrencyAmount}"
+transaction.intra_ledger_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+transaction.onchain_payment.title: "%{walletCurrency} İşlem"
+transaction.onchain_payment.body_display_currency: "on-chain üzerinden %{displayCurrencyAmount} tutarında ödeme gönderildi | %{formattedCurrencyAmount} onaylandı"
+transaction.onchain_payment.body: "Gönderilen %{formattedCurrencyAmount} tutarındaki on-chain ödemesi onaylandı"
+
+transaction.onchain_receipt.title: "%{walletCurrency} İşlem"
+transaction.onchain_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt.body: "+%{formattedCurrencyAmount}"
+
+transaction.lightning_receipt.title: "%{walletCurrency} İşlem"
+transaction.lightning_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.lightning_receipt.body: "+%{formattedCurrencyAmount}"
+
+transaction.onchain_receipt_pending.title: "%{walletCurrency} İşlem | Beklemede"
+transaction.onchain_receipt_pending.body_display_currency: "beklemede +%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt_pending.body: "beklemede +%{formattedCurrencyAmount}"
+
+transaction.paid_invoice.title: "%{walletCurrency} İşlem"
+transaction.paid_invoice.body: "+%{formattedCurrencyAmount}"
+transaction.paid_invoice.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+price_changed.title: "Bitcoin yükseliyor!"
+price_changed.body: "Bitcoin son günde %{yüzde_artış}% artışla %{fiyat}%'a yükseldi!"
+
+security.link_email_reminder.title: "E-postayı Güvenli Hesaba Bağlayın"
+security.link_email_reminder.body: "Hesabınızı güvence altına almak ve önemli güncellemeleri almak için e-postanızı bağlayın"
