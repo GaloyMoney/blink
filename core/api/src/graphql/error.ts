@@ -500,3 +500,15 @@ export class LnurlRequestInvoiceError extends CustomGraphQLError {
     })
   }
 }
+
+export class IpMissingInContextError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
+    super({
+      message:
+        "IP missing from request. Please try again or contact support if problem persists.",
+      forwardToClient: true,
+      code: "IP_MISSING_IN_CONTEXT_ERROR",
+      ...errData,
+    })
+  }
+}
