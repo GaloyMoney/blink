@@ -1,5 +1,6 @@
+import { randomLedgerExternalId } from "./random"
+
 import { decodeInvoice, getSecretAndPaymentHash } from "@/domain/bitcoin/lightning"
-import { randomLedgerExternalId } from "@/domain/ledger"
 import { WalletCurrency } from "@/domain/shared"
 
 export const createMockWalletInvoice = (recipientWalletDescriptor: {

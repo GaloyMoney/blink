@@ -14,7 +14,7 @@ import { updatePendingInvoice } from "@/app/wallets/update-single-pending-invoic
 import { toMilliSatsFromNumber, toSats } from "@/domain/bitcoin"
 import { decodeInvoice, getSecretAndPaymentHash } from "@/domain/bitcoin/lightning"
 import { DEFAULT_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
-import { LedgerTransactionType, randomLedgerExternalId } from "@/domain/ledger"
+import { LedgerTransactionType } from "@/domain/ledger"
 import { WalletCurrency } from "@/domain/shared"
 import * as DisplayAmountsConverterImpl from "@/domain/fiat"
 
@@ -27,6 +27,7 @@ import {
   createMandatoryUsers,
   createRandomUserAndBtcWallet,
   getBalanceHelper,
+  randomLedgerExternalId,
 } from "test/helpers"
 
 const mockLnInvoice = decodeInvoice(

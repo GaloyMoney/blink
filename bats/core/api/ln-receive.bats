@@ -198,6 +198,20 @@ usd_amount=50
 
   # Check for subscriber event
   check_for_ln_update "$payment_hash" || exit 1
+
+  # Check for default external id
+  exec_graphql "$token_name" 'default-account'
+  account_id="$(graphql_output '.data.me.defaultAccount.id')"
+  [[ "$account_id" != "null" ]] || exit 1
+
+  external_id_from_callback=$(
+    cat_callback \
+      | grep "$account_id" \
+      | tail -n 1 \
+      | awk 'BEGIN{RS="callback │ "}{if(NR>1)print $0}' \
+      | jq -r '.transaction.externalId'
+  )
+  [[ "$external_id_from_callback" == "$payment_hash" ]] || exit 1
 }
 
 @test "ln-receive: settle via ln for BTC wallet, amountless invoice" {

@@ -11,7 +11,7 @@ import {
 } from "@/domain/bitcoin/lightning"
 import { UsdDisplayCurrency, toCents } from "@/domain/fiat"
 import { LnPaymentRequestNonZeroAmountRequiredError } from "@/domain/payments"
-import { LedgerTransactionType, randomLedgerExternalId } from "@/domain/ledger"
+import { LedgerTransactionType } from "@/domain/ledger"
 import {
   InactiveAccountError,
   InsufficientBalanceError,
@@ -41,6 +41,7 @@ import {
   createRandomUserAndBtcWallet,
   createRandomUserAndWallets,
   getBalanceHelper,
+  randomLedgerExternalId,
   recordReceiveLnPayment,
 } from "test/helpers"
 

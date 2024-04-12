@@ -1,7 +1,7 @@
 import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
 
 import { AccountValidator } from "@/domain/accounts"
-import { checkedToLedgerExternalId, randomLedgerExternalId } from "@/domain/ledger"
+import { checkedToLedgerExternalId } from "@/domain/ledger"
 import { checkedToWalletId } from "@/domain/wallets"
 import { RateLimitConfig } from "@/domain/rate-limit"
 import { checkedToMinutes } from "@/domain/primitives"
@@ -27,11 +27,8 @@ const addInvoiceForSelf = async ({
   walletAmount,
   memo = "",
   expiresIn,
-  externalId: rawExternalId,
+  externalId,
 }: AddInvoiceForSelfArgs): Promise<WalletInvoice | ApplicationError> => {
-  const externalId = rawExternalId || randomLedgerExternalId()
-  if (externalId instanceof Error) return externalId
-
   return addInvoice({
     walletId,
     limitCheckFn: checkSelfWalletIdRateLimits,
@@ -111,11 +108,8 @@ const addInvoiceNoAmountForSelf = async ({
   walletId,
   memo = "",
   expiresIn,
-  externalId: rawExternalId,
+  externalId,
 }: AddInvoiceNoAmountForSelfArgs): Promise<WalletInvoice | ApplicationError> => {
-  const externalId = rawExternalId || randomLedgerExternalId()
-  if (externalId instanceof Error) return externalId
-
   return addInvoice({
     walletId,
     limitCheckFn: checkSelfWalletIdRateLimits,
@@ -167,11 +161,8 @@ const addInvoiceForRecipient = async ({
   memo = "",
   descriptionHash,
   expiresIn,
-  externalId: rawExternalId,
+  externalId,
 }: AddInvoiceForRecipientArgs): Promise<WalletInvoice | ApplicationError> => {
-  const externalId = rawExternalId || randomLedgerExternalId()
-  if (externalId instanceof Error) return externalId
-
   return addInvoice({
     walletId: recipientWalletId,
     limitCheckFn: checkRecipientWalletIdRateLimits,
@@ -283,11 +274,8 @@ const addInvoiceNoAmountForRecipient = async ({
   recipientWalletId,
   memo = "",
   expiresIn,
-  externalId: rawExternalId,
+  externalId,
 }: AddInvoiceNoAmountForRecipientArgs): Promise<WalletInvoice | ApplicationError> => {
-  const externalId = rawExternalId || randomLedgerExternalId()
-  if (externalId instanceof Error) return externalId
-
   return addInvoice({
     walletId: recipientWalletId,
     limitCheckFn: checkRecipientWalletIdRateLimits,
