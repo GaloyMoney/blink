@@ -46,11 +46,13 @@ usd_amount=50
   num_callback_events_before=$(cat_callback | grep "$account_id" | wc -l)
 
   # Generate invoice
+  external_id="test-$RANDOM"
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value $btc_wallet_name)" \
     --arg amount "$btc_amount" \
-    '{input: {walletId: $wallet_id, amount: $amount}}'
+    --arg external_id "$external_id" \
+    '{input: {walletId: $wallet_id, amount: $amount, externalId: $external_id}}'
   )
   exec_graphql "$token_name" 'ln-invoice-create' "$variables"
   invoice="$(graphql_output '.data.lnInvoiceCreate.invoice')"
@@ -165,7 +167,7 @@ usd_amount=50
       | awk 'BEGIN{RS="callback │ "}{if(NR>1)print $0}' \
       | jq -r '.transaction.externalId'
   )
-  [[ "$external_id_from_callback" == "$payment_hash" ]] || exit 1
+  [[ "$external_id_from_callback" == "$external_id" ]] || exit 1
 }
 
 @test "ln-receive: settle via ln for USD wallet, invoice with amount" {
