@@ -103,6 +103,20 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
+  const findByDeletedPhones = async (
+    deletedPhones: PhoneNumber[],
+  ): Promise<User[] | RepositoryError> => {
+    try {
+      const result = await User.find({ deletedPhones: { $in: deletedPhones } })
+
+      if (!result) return new CouldNotFindUserFromPhoneError()
+
+      return result.map(translateToUser)
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
   const update = async ({
     id,
     phoneMetadata,
@@ -144,6 +158,7 @@ export const UsersRepository = (): IUsersRepository => {
   return {
     findById,
     findByPhone,
+    findByDeletedPhones,
     find,
     count,
     update,
