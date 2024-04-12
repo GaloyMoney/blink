@@ -57,10 +57,20 @@ impl NotificationEvent for IdentityVerificationReviewStarted {
     }
 
     fn should_send_in_app_msg(&self) -> bool {
-        false
+        true
     }
 
-    fn to_localized_in_app_msg(&self, _locale: GaloyLocale) -> Option<LocalizedInAppMessage> {
-        None
+    fn to_localized_in_app_msg(&self, locale: GaloyLocale) -> Option<LocalizedInAppMessage> {
+        let title = t!(
+            "identity_verification_review_started.title",
+            locale = locale.as_ref()
+        )
+        .to_string();
+        let body = t!(
+            "identity_verification_review_started.body",
+            locale = locale.as_ref()
+        )
+        .to_string();
+        Some(LocalizedInAppMessage { title, body })
     }
 }

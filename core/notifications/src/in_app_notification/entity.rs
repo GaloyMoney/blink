@@ -1,6 +1,7 @@
 use crate::{messages::*, notification_event::*, primitives::*};
 use chrono::{DateTime, Utc};
 
+#[derive(Debug, Clone)]
 pub struct InAppNotification {
     pub id: InAppNotificationId,
     pub user_id: GaloyUserId,
