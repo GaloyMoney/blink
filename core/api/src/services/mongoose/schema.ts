@@ -90,7 +90,6 @@ const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
 
   externalId: {
     type: String,
-    unique: true,
     validator: (v: string) => !(checkedToLedgerExternalId(v) instanceof Error),
   },
 })
