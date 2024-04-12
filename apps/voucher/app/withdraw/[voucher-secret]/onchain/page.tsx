@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 
@@ -26,7 +26,7 @@ import Heading from "@/components/heading"
 
 interface Params {
   params: {
-    voucherSecret: string
+    "voucher-secret": string
   }
 }
 
@@ -43,10 +43,9 @@ gql`
   }
 `
 
-export default function Page({ params: { voucherSecret } }: Params) {
+export default function Page({ params: { "voucher-secret": voucherSecret } }: Params) {
   const [onChainAddress, setOnChainAddress] = useState<string>("")
   const [fetchingFees, setFetchingFees] = useState<boolean>(false)
-  const [fees, setFees] = useState<number>(0)
   const [confirmModal, setConfirmModal] = useState<boolean>(false)
   const [successModal, setSuccessModal] = useState<boolean>(false)
   const [errorModal, setErrorModal] = useState<ErrorModal>({

@@ -6,10 +6,11 @@ import { escrowApolloClient } from "@/services/galoy/client/escrow"
 import { Status } from "@/lib/graphql/generated"
 const { NEXT_PUBLIC_LOCAL_URL } = env
 
-
-
-export async function GET(request: Request, { params }: { params: { uniqueHash: string } }) {
-  const { uniqueHash } = params
+export async function GET(
+  request: Request,
+  { params }: { params: { "unique-hash": string } },
+) {
+  const { "unique-hash": uniqueHash } = params
 
   try {
     const withdrawLink = await getWithdrawLinkByUniqueHashQuery({ uniqueHash })

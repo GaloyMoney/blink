@@ -14,7 +14,6 @@ import FundsPaid from "@/components/funds-paid"
 import Heading from "@/components/heading"
 import Bold from "@/components/bold"
 import LinkDetails from "@/components/link-details"
-import useRealtimePrice from "@/hooks/useRealTimePrice"
 import { DEFAULT_CURRENCY } from "@/config/appConfig"
 import { gql } from "@apollo/client"
 const { NEXT_PUBLIC_LOCAL_URL } = env
@@ -38,11 +37,11 @@ gql`
 `
 type Props = {
   params: {
-    voucherSecret: string
+    "voucher-secret": string
   }
 }
 
-export default function Page({ params: { voucherSecret } }: Props) {
+export default function Page({ params: { "voucher-secret": voucherSecret } }: Props) {
   const [revealLNURL, setRevealLNURL] = useState<boolean>(false)
   const storedCurrency =
     typeof window !== "undefined" ? localStorage.getItem("currency") : null
@@ -50,7 +49,6 @@ export default function Page({ params: { voucherSecret } }: Props) {
     storedCurrency ? JSON.parse(storedCurrency) : DEFAULT_CURRENCY,
   )
 
-  const { centsToCurrency, hasLoaded } = useRealtimePrice(currency.id)
   const { loading, error, data } = useGetWithdrawLinkQuery({
     variables: { voucherSecret },
     context: {
@@ -59,7 +57,7 @@ export default function Page({ params: { voucherSecret } }: Props) {
   })
   const WithdrawLink = data?.getWithdrawLink
 
-  if (loading || !hasLoaded.current) {
+  if (loading) {
     return <PageLoadingComponents />
   }
   if (error) {

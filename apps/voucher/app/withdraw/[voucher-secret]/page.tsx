@@ -14,12 +14,12 @@ const { NEXT_PUBLIC_LOCAL_URL } = env
 
 interface Params {
   params: {
-    voucherSecret: string
+    "voucher-secret": string
   }
 }
 
 // this page shows the LNURLw screen after success in fund transfer to escrow account
-export default function Page({ params: { voucherSecret } }: Params) {
+export default function Page({ params: { "voucher-secret": voucherSecret } }: Params) {
   const { loading, error, data } = useGetWithdrawLinkQuery({
     variables: { voucherSecret },
     context: {
