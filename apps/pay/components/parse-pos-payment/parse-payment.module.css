@@ -65,13 +65,13 @@
   background: var(--primary3);
   color: #fff;
   font-weight: 600;
-  width: 75%;
+  width: 80%;
   display: flex;
   justify-content: center;
   align-items: center;
   border: none;
   outline: none;
-  padding: 1em 2em;
+  padding: 0.9em 2em;
   border-radius: 10em;
   order: 2;
   margin-top: 1em;

@@ -260,7 +260,14 @@ function ParsePayment({
               Back
             </>
           ) : (
-            <>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.5em",
+              }}
+            >
               <Image
                 src={"/icons/lightning-icon.svg"}
                 alt="lightning icon"
@@ -268,7 +275,7 @@ function ParsePayment({
                 height="20"
               />
               Create invoice
-            </>
+            </div>
           )}
         </button>
       </div>
