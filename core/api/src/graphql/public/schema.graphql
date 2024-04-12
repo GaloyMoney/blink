@@ -159,24 +159,6 @@ type BTCWallet implements Wallet {
     last: Int
   ): InvoiceConnection
 
-  """
-  A list of all invoices by external id associated with walletIds optionally passed.
-  """
-  invoicesByPartialExternalId(
-    """Returns the items in the list that come after the specified cursor."""
-    after: String
-
-    """Returns the items in the list that come before the specified cursor."""
-    before: String
-
-    """Returns the first n items from the list."""
-    first: Int
-
-    """Returns the last n items from the list."""
-    last: Int
-    partialExternalId: TxExternalIdSubstring!
-  ): InvoiceConnection
-
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
   pendingIncomingTransactions: [Transaction!]!
@@ -215,20 +197,6 @@ type BTCWallet implements Wallet {
 
     """Returns the last n items from the list."""
     last: Int
-  ): TransactionConnection
-  transactionsByPartialExternalId(
-    """Returns the items in the list that come after the specified cursor."""
-    after: String
-
-    """Returns the items in the list that come before the specified cursor."""
-    before: String
-
-    """Returns the first n items from the list."""
-    first: Int
-
-    """Returns the last n items from the list."""
-    last: Int
-    partialExternalId: TxExternalIdSubstring!
   ): TransactionConnection
   transactionsByPaymentHash(paymentHash: PaymentHash!): [Transaction!]!
   transactionsByPaymentRequest(paymentRequest: LnPaymentRequest!): [Transaction!]!
@@ -1516,11 +1484,6 @@ An external reference id that can be optionally added for transactions.
 """
 scalar TxExternalId
 
-"""
-An external reference id that can be optionally added for transactions.
-"""
-scalar TxExternalIdSubstring
-
 enum TxNotificationType {
   IntraLedgerPayment
   IntraLedgerReceipt
@@ -1566,24 +1529,6 @@ type UsdWallet implements Wallet {
     last: Int
   ): InvoiceConnection
 
-  """
-  A list of all invoices by external id associated with walletIds optionally passed.
-  """
-  invoicesByPartialExternalId(
-    """Returns the items in the list that come after the specified cursor."""
-    after: String
-
-    """Returns the items in the list that come before the specified cursor."""
-    before: String
-
-    """Returns the first n items from the list."""
-    first: Int
-
-    """Returns the last n items from the list."""
-    last: Int
-    partialExternalId: TxExternalIdSubstring!
-  ): InvoiceConnection
-
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
   pendingIncomingTransactions: [Transaction!]!
@@ -1620,20 +1565,6 @@ type UsdWallet implements Wallet {
 
     """Returns the last n items from the list."""
     last: Int
-  ): TransactionConnection
-  transactionsByPartialExternalId(
-    """Returns the items in the list that come after the specified cursor."""
-    after: String
-
-    """Returns the items in the list that come before the specified cursor."""
-    before: String
-
-    """Returns the first n items from the list."""
-    first: Int
-
-    """Returns the last n items from the list."""
-    last: Int
-    partialExternalId: TxExternalIdSubstring!
   ): TransactionConnection
   transactionsByPaymentHash(paymentHash: PaymentHash!): [Transaction!]!
   transactionsByPaymentRequest(paymentRequest: LnPaymentRequest!): [Transaction!]!
@@ -1844,22 +1775,6 @@ interface Wallet {
     """Returns the last n items from the list."""
     last: Int
   ): InvoiceConnection
-  invoicesByPartialExternalId(
-    """Returns the items in the list that come after the specified cursor."""
-    after: String
-
-    """Returns the items in the list that come before the specified cursor."""
-    before: String
-
-    """Returns the first n items from the list."""
-    first: Int
-
-    """Returns the last n items from the list."""
-    last: Int
-
-    """Full or partial external id to query for."""
-    partialExternalId: TxExternalIdSubstring!
-  ): InvoiceConnection
   pendingIncomingBalance: SignedAmount!
 
   """
@@ -1919,24 +1834,6 @@ interface Wallet {
 
     """Returns the last n items from the list."""
     last: Int
-  ): TransactionConnection
-
-  """Returns the transactions that include this external id."""
-  transactionsByPartialExternalId(
-    """Returns the items in the list that come after the specified cursor."""
-    after: String
-
-    """Returns the items in the list that come before the specified cursor."""
-    before: String
-
-    """Returns the first n items from the list."""
-    first: Int
-
-    """Returns the last n items from the list."""
-    last: Int
-
-    """Full or partial external id to query for."""
-    partialExternalId: TxExternalIdSubstring!
   ): TransactionConnection
 
   """

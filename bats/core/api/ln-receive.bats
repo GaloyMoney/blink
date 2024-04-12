@@ -45,24 +45,8 @@ usd_amount=50
 
   num_callback_events_before=$(cat_callback | grep "$account_id" | wc -l)
 
-  # Check external id txns before
-  external_id="test-$RANDOM"
-  external_id_txns_variables=$(
-  jq -n \
-  --arg partial_external_id "$external_id" \
-  '{"partialExternalId": $partial_external_id}'
-  )
-  exec_graphql 'alice' 'transactions-by-partial-external-id' "$external_id_txns_variables"
-  txns_for_external_id=$(
-    graphql_output '
-      .data.me.defaultAccount.wallets[]
-      | select(.__typename == "BTCWallet")
-      .transactionsByPartialExternalId.edges
-      | length'
-  )
-  [[ "$txns_for_external_id" == "0" ]] || exit 1
-
   # Generate invoice
+  external_id="test-$RANDOM"
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value $btc_wallet_name)" \
@@ -184,16 +168,6 @@ usd_amount=50
       | jq -r '.transaction.externalId'
   )
   [[ "$external_id_from_callback" == "$external_id" ]] || exit 1
-
-  exec_graphql 'alice' 'transactions-by-partial-external-id' "$external_id_txns_variables"
-  txns_for_external_id=$(
-    graphql_output '
-      .data.me.defaultAccount.wallets[]
-      | select(.__typename == "BTCWallet")
-      .transactionsByPartialExternalId.edges
-      | length'
-  )
-  [[ "$txns_for_external_id" == "1" ]] || exit 1
 }
 
 @test "ln-receive: settle via ln for USD wallet, invoice with amount" {

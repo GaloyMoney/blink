@@ -4,7 +4,6 @@ import SignedAmount from "../scalar/signed-amount"
 import WalletCurrency from "../scalar/wallet-currency"
 import OnChainAddress from "../scalar/on-chain-address"
 import LnPaymentRequest from "../scalar/ln-payment-request"
-import TxExternalIdSubstring from "../scalar/tx-external-id-substring"
 import IInvoice, { IInvoiceConnection } from "../abstract/invoice"
 
 import Transaction, { TransactionConnection } from "./transaction"
@@ -128,33 +127,6 @@ const UsdWallet = GT.Object<Wallet>({
         return result
       },
     },
-    invoicesByPartialExternalId: {
-      description:
-        "A list of all invoices by external id associated with walletIds optionally passed.",
-      type: IInvoiceConnection,
-      args: {
-        partialExternalId: {
-          type: GT.NonNull(TxExternalIdSubstring),
-        },
-        ...connectionArgs,
-      },
-      resolve: async (source, args) => {
-        const { partialExternalId, ...rawPaginationArgs } = args
-        if (partialExternalId instanceof Error) throw partialExternalId
-
-        const result = await Wallets.getInvoicesForWalletsByExternalIdSubstring({
-          wallets: [source],
-          uncheckedExternalIdSubstring: partialExternalId,
-          rawPaginationArgs,
-        })
-
-        if (result instanceof Error) {
-          throw mapError(result)
-        }
-
-        return result
-      },
-    },
     transactionsByAddress: {
       type: TransactionConnection,
       args: {
@@ -248,30 +220,6 @@ const UsdWallet = GT.Object<Wallet>({
         }
 
         return transactions
-      },
-    },
-    transactionsByPartialExternalId: {
-      type: TransactionConnection,
-      args: {
-        ...connectionArgs,
-        partialExternalId: {
-          type: GT.NonNull(TxExternalIdSubstring),
-        },
-      },
-      resolve: async (source, args) => {
-        const { partialExternalId, ...rawPaginationArgs } = args
-        if (partialExternalId instanceof Error) throw partialExternalId
-
-        const result = await Wallets.getTransactionsForWalletsByExternalId({
-          walletIds: [source.id],
-          uncheckedExternalIdSubstring: partialExternalId,
-          rawPaginationArgs,
-        })
-        if (result instanceof Error) {
-          throw mapError(result)
-        }
-
-        return result
       },
     },
     transactionById: {
