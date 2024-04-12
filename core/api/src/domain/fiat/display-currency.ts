@@ -64,7 +64,7 @@ export const displayAmountFromNumber = <T extends DisplayCurrency>({
   amount: number
   currency: T
 }): DisplayAmount<T> | ValidationError => {
-  const amountInMinor = safeBigInt(amount)
+  const amountInMinor = safeBigInt(Math.round(amount))
   if (amountInMinor instanceof Error) return amountInMinor
 
   const displayMajorExponent = getCurrencyMajorExponent(currency)
