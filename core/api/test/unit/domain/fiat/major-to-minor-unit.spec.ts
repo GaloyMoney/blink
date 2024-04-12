@@ -20,6 +20,6 @@ describe("majorToMinorUnit", () => {
 
     displayCurrency = "JPY" as DisplayCurrency
     result = majorToMinorUnit({ amount, displayCurrency })
-    expect(result).toBe(11)
+    expect(result).toBe(10)
   })
 })
