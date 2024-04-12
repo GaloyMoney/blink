@@ -74,8 +74,6 @@ export type Scalars = {
   TotpSecret: string;
   /** An external reference id that can be optionally added for transactions. */
   TxExternalId: string;
-  /** An external reference id that can be optionally added for transactions. */
-  TxExternalIdSubstring: string;
   /** Unique identifier of a user */
   Username: string;
   /** Unique identifier of a wallet */
@@ -233,8 +231,6 @@ export type BtcWallet = Wallet & {
   readonly invoiceByPaymentHash: Invoice;
   /** A list of all invoices associated with walletIds optionally passed. */
   readonly invoices?: Maybe<InvoiceConnection>;
-  /** A list of all invoices by external id associated with walletIds optionally passed. */
-  readonly invoicesByPartialExternalId?: Maybe<InvoiceConnection>;
   /** An unconfirmed incoming onchain balance. */
   readonly pendingIncomingBalance: Scalars['SignedAmount'];
   readonly pendingIncomingTransactions: ReadonlyArray<Transaction>;
@@ -243,7 +239,6 @@ export type BtcWallet = Wallet & {
   /** A list of BTC transactions associated with this wallet. */
   readonly transactions?: Maybe<TransactionConnection>;
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
-  readonly transactionsByPartialExternalId?: Maybe<TransactionConnection>;
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly transactionsByPaymentRequest: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
@@ -262,16 +257,6 @@ export type BtcWalletInvoicesArgs = {
   before?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
   last?: InputMaybe<Scalars['Int']>;
-};
-
-
-/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
-export type BtcWalletInvoicesByPartialExternalIdArgs = {
-  after?: InputMaybe<Scalars['String']>;
-  before?: InputMaybe<Scalars['String']>;
-  first?: InputMaybe<Scalars['Int']>;
-  last?: InputMaybe<Scalars['Int']>;
-  partialExternalId: Scalars['TxExternalIdSubstring'];
 };
 
 
@@ -303,16 +288,6 @@ export type BtcWalletTransactionsByAddressArgs = {
   before?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
   last?: InputMaybe<Scalars['Int']>;
-};
-
-
-/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
-export type BtcWalletTransactionsByPartialExternalIdArgs = {
-  after?: InputMaybe<Scalars['String']>;
-  before?: InputMaybe<Scalars['String']>;
-  first?: InputMaybe<Scalars['Int']>;
-  last?: InputMaybe<Scalars['Int']>;
-  partialExternalId: Scalars['TxExternalIdSubstring'];
 };
 
 
@@ -1849,8 +1824,6 @@ export type UsdWallet = Wallet & {
   readonly invoiceByPaymentHash: Invoice;
   /** A list of all invoices associated with walletIds optionally passed. */
   readonly invoices?: Maybe<InvoiceConnection>;
-  /** A list of all invoices by external id associated with walletIds optionally passed. */
-  readonly invoicesByPartialExternalId?: Maybe<InvoiceConnection>;
   /** An unconfirmed incoming onchain balance. */
   readonly pendingIncomingBalance: Scalars['SignedAmount'];
   readonly pendingIncomingTransactions: ReadonlyArray<Transaction>;
@@ -1858,7 +1831,6 @@ export type UsdWallet = Wallet & {
   readonly transactionById: Transaction;
   readonly transactions?: Maybe<TransactionConnection>;
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
-  readonly transactionsByPartialExternalId?: Maybe<TransactionConnection>;
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly transactionsByPaymentRequest: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
@@ -1877,16 +1849,6 @@ export type UsdWalletInvoicesArgs = {
   before?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
   last?: InputMaybe<Scalars['Int']>;
-};
-
-
-/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
-export type UsdWalletInvoicesByPartialExternalIdArgs = {
-  after?: InputMaybe<Scalars['String']>;
-  before?: InputMaybe<Scalars['String']>;
-  first?: InputMaybe<Scalars['Int']>;
-  last?: InputMaybe<Scalars['Int']>;
-  partialExternalId: Scalars['TxExternalIdSubstring'];
 };
 
 
@@ -1918,16 +1880,6 @@ export type UsdWalletTransactionsByAddressArgs = {
   before?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
   last?: InputMaybe<Scalars['Int']>;
-};
-
-
-/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
-export type UsdWalletTransactionsByPartialExternalIdArgs = {
-  after?: InputMaybe<Scalars['String']>;
-  before?: InputMaybe<Scalars['String']>;
-  first?: InputMaybe<Scalars['Int']>;
-  last?: InputMaybe<Scalars['Int']>;
-  partialExternalId: Scalars['TxExternalIdSubstring'];
 };
 
 
@@ -2135,7 +2087,6 @@ export type Wallet = {
   readonly id: Scalars['ID'];
   readonly invoiceByPaymentHash: Invoice;
   readonly invoices?: Maybe<InvoiceConnection>;
-  readonly invoicesByPartialExternalId?: Maybe<InvoiceConnection>;
   readonly pendingIncomingBalance: Scalars['SignedAmount'];
   /**
    * Pending incoming OnChain transactions. When transactions
@@ -2162,8 +2113,6 @@ export type Wallet = {
    * ie: the newest transaction will be first
    */
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
-  /** Returns the transactions that include this external id. */
-  readonly transactionsByPartialExternalId?: Maybe<TransactionConnection>;
   /** Returns the transactions that include this paymentHash. This should be a list of size one for a received lightning payment. This can be more that one transaction for a sent lightning payment. */
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   /** Returns the transactions that include this paymentRequest. */
@@ -2184,16 +2133,6 @@ export type WalletInvoicesArgs = {
   before?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
   last?: InputMaybe<Scalars['Int']>;
-};
-
-
-/** A generic wallet which stores value in one of our supported currencies. */
-export type WalletInvoicesByPartialExternalIdArgs = {
-  after?: InputMaybe<Scalars['String']>;
-  before?: InputMaybe<Scalars['String']>;
-  first?: InputMaybe<Scalars['Int']>;
-  last?: InputMaybe<Scalars['Int']>;
-  partialExternalId: Scalars['TxExternalIdSubstring'];
 };
 
 
@@ -2225,16 +2164,6 @@ export type WalletTransactionsByAddressArgs = {
   before?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
   last?: InputMaybe<Scalars['Int']>;
-};
-
-
-/** A generic wallet which stores value in one of our supported currencies. */
-export type WalletTransactionsByPartialExternalIdArgs = {
-  after?: InputMaybe<Scalars['String']>;
-  before?: InputMaybe<Scalars['String']>;
-  first?: InputMaybe<Scalars['Int']>;
-  last?: InputMaybe<Scalars['Int']>;
-  partialExternalId: Scalars['TxExternalIdSubstring'];
 };
 
 

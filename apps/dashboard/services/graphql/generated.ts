@@ -79,8 +79,6 @@ export type Scalars = {
   TotpSecret: { input: string; output: string; }
   /** An external reference id that can be optionally added for transactions. */
   TxExternalId: { input: string; output: string; }
-  /** An external reference id that can be optionally added for transactions. */
-  TxExternalIdSubstring: { input: string; output: string; }
   /** Unique identifier of a user */
   Username: { input: string; output: string; }
   /** Unique identifier of a wallet */
@@ -274,8 +272,6 @@ export type BtcWallet = Wallet & {
   readonly invoiceByPaymentHash: Invoice;
   /** A list of all invoices associated with walletIds optionally passed. */
   readonly invoices?: Maybe<InvoiceConnection>;
-  /** A list of all invoices by external id associated with walletIds optionally passed. */
-  readonly invoicesByPartialExternalId?: Maybe<InvoiceConnection>;
   /** An unconfirmed incoming onchain balance. */
   readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
   readonly pendingIncomingTransactions: ReadonlyArray<Transaction>;
@@ -284,7 +280,6 @@ export type BtcWallet = Wallet & {
   /** A list of BTC transactions associated with this wallet. */
   readonly transactions?: Maybe<TransactionConnection>;
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
-  readonly transactionsByPartialExternalId?: Maybe<TransactionConnection>;
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly transactionsByPaymentRequest: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
@@ -303,16 +298,6 @@ export type BtcWalletInvoicesArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
-};
-
-
-/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
-export type BtcWalletInvoicesByPartialExternalIdArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  partialExternalId: Scalars['TxExternalIdSubstring']['input'];
 };
 
 
@@ -344,16 +329,6 @@ export type BtcWalletTransactionsByAddressArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
-};
-
-
-/** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
-export type BtcWalletTransactionsByPartialExternalIdArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  partialExternalId: Scalars['TxExternalIdSubstring']['input'];
 };
 
 
@@ -1926,8 +1901,6 @@ export type UsdWallet = Wallet & {
   readonly invoiceByPaymentHash: Invoice;
   /** A list of all invoices associated with walletIds optionally passed. */
   readonly invoices?: Maybe<InvoiceConnection>;
-  /** A list of all invoices by external id associated with walletIds optionally passed. */
-  readonly invoicesByPartialExternalId?: Maybe<InvoiceConnection>;
   /** An unconfirmed incoming onchain balance. */
   readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
   readonly pendingIncomingTransactions: ReadonlyArray<Transaction>;
@@ -1935,7 +1908,6 @@ export type UsdWallet = Wallet & {
   readonly transactionById: Transaction;
   readonly transactions?: Maybe<TransactionConnection>;
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
-  readonly transactionsByPartialExternalId?: Maybe<TransactionConnection>;
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   readonly transactionsByPaymentRequest: ReadonlyArray<Transaction>;
   readonly walletCurrency: WalletCurrency;
@@ -1954,16 +1926,6 @@ export type UsdWalletInvoicesArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
-};
-
-
-/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
-export type UsdWalletInvoicesByPartialExternalIdArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  partialExternalId: Scalars['TxExternalIdSubstring']['input'];
 };
 
 
@@ -1995,16 +1957,6 @@ export type UsdWalletTransactionsByAddressArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
-};
-
-
-/** A wallet belonging to an account which contains a USD balance and a list of transactions. */
-export type UsdWalletTransactionsByPartialExternalIdArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  partialExternalId: Scalars['TxExternalIdSubstring']['input'];
 };
 
 
@@ -2263,7 +2215,6 @@ export type Wallet = {
   readonly id: Scalars['ID']['output'];
   readonly invoiceByPaymentHash: Invoice;
   readonly invoices?: Maybe<InvoiceConnection>;
-  readonly invoicesByPartialExternalId?: Maybe<InvoiceConnection>;
   readonly pendingIncomingBalance: Scalars['SignedAmount']['output'];
   /**
    * Pending incoming OnChain transactions. When transactions
@@ -2290,8 +2241,6 @@ export type Wallet = {
    * ie: the newest transaction will be first
    */
   readonly transactionsByAddress?: Maybe<TransactionConnection>;
-  /** Returns the transactions that include this external id. */
-  readonly transactionsByPartialExternalId?: Maybe<TransactionConnection>;
   /** Returns the transactions that include this paymentHash. This should be a list of size one for a received lightning payment. This can be more that one transaction for a sent lightning payment. */
   readonly transactionsByPaymentHash: ReadonlyArray<Transaction>;
   /** Returns the transactions that include this paymentRequest. */
@@ -2312,16 +2261,6 @@ export type WalletInvoicesArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
-};
-
-
-/** A generic wallet which stores value in one of our supported currencies. */
-export type WalletInvoicesByPartialExternalIdArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  partialExternalId: Scalars['TxExternalIdSubstring']['input'];
 };
 
 
@@ -2353,16 +2292,6 @@ export type WalletTransactionsByAddressArgs = {
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
-};
-
-
-/** A generic wallet which stores value in one of our supported currencies. */
-export type WalletTransactionsByPartialExternalIdArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  partialExternalId: Scalars['TxExternalIdSubstring']['input'];
 };
 
 
@@ -3688,7 +3617,6 @@ export type ResolversTypes = {
   TransactionEdge: ResolverTypeWrapper<TransactionEdge>;
   TxDirection: TxDirection;
   TxExternalId: ResolverTypeWrapper<Scalars['TxExternalId']['output']>;
-  TxExternalIdSubstring: ResolverTypeWrapper<Scalars['TxExternalIdSubstring']['output']>;
   TxNotificationType: TxNotificationType;
   TxStatus: TxStatus;
   UpgradePayload: ResolverTypeWrapper<UpgradePayload>;
@@ -3909,7 +3837,6 @@ export type ResolversParentTypes = {
   TransactionConnection: TransactionConnection;
   TransactionEdge: TransactionEdge;
   TxExternalId: Scalars['TxExternalId']['output'];
-  TxExternalIdSubstring: Scalars['TxExternalIdSubstring']['output'];
   UpgradePayload: UpgradePayload;
   UsdWallet: UsdWallet;
   User: User;
@@ -4112,14 +4039,12 @@ export type BtcWalletResolvers<ContextType = any, ParentType extends ResolversPa
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   invoiceByPaymentHash?: Resolver<ResolversTypes['Invoice'], ParentType, ContextType, RequireFields<BtcWalletInvoiceByPaymentHashArgs, 'paymentHash'>>;
   invoices?: Resolver<Maybe<ResolversTypes['InvoiceConnection']>, ParentType, ContextType, Partial<BtcWalletInvoicesArgs>>;
-  invoicesByPartialExternalId?: Resolver<Maybe<ResolversTypes['InvoiceConnection']>, ParentType, ContextType, RequireFields<BtcWalletInvoicesByPartialExternalIdArgs, 'partialExternalId'>>;
   pendingIncomingBalance?: Resolver<ResolversTypes['SignedAmount'], ParentType, ContextType>;
   pendingIncomingTransactions?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType>;
   pendingIncomingTransactionsByAddress?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType, RequireFields<BtcWalletPendingIncomingTransactionsByAddressArgs, 'address'>>;
   transactionById?: Resolver<ResolversTypes['Transaction'], ParentType, ContextType, RequireFields<BtcWalletTransactionByIdArgs, 'transactionId'>>;
   transactions?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, Partial<BtcWalletTransactionsArgs>>;
   transactionsByAddress?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, RequireFields<BtcWalletTransactionsByAddressArgs, 'address'>>;
-  transactionsByPartialExternalId?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, RequireFields<BtcWalletTransactionsByPartialExternalIdArgs, 'partialExternalId'>>;
   transactionsByPaymentHash?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType, RequireFields<BtcWalletTransactionsByPaymentHashArgs, 'paymentHash'>>;
   transactionsByPaymentRequest?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType, RequireFields<BtcWalletTransactionsByPaymentRequestArgs, 'paymentRequest'>>;
   walletCurrency?: Resolver<ResolversTypes['WalletCurrency'], ParentType, ContextType>;
@@ -4857,10 +4782,6 @@ export interface TxExternalIdScalarConfig extends GraphQLScalarTypeConfig<Resolv
   name: 'TxExternalId';
 }
 
-export interface TxExternalIdSubstringScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['TxExternalIdSubstring'], any> {
-  name: 'TxExternalIdSubstring';
-}
-
 export type UpgradePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['UpgradePayload'] = ResolversParentTypes['UpgradePayload']> = {
   authToken?: Resolver<Maybe<ResolversTypes['AuthToken']>, ParentType, ContextType>;
   errors?: Resolver<ReadonlyArray<ResolversTypes['Error']>, ParentType, ContextType>;
@@ -4874,14 +4795,12 @@ export type UsdWalletResolvers<ContextType = any, ParentType extends ResolversPa
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   invoiceByPaymentHash?: Resolver<ResolversTypes['Invoice'], ParentType, ContextType, RequireFields<UsdWalletInvoiceByPaymentHashArgs, 'paymentHash'>>;
   invoices?: Resolver<Maybe<ResolversTypes['InvoiceConnection']>, ParentType, ContextType, Partial<UsdWalletInvoicesArgs>>;
-  invoicesByPartialExternalId?: Resolver<Maybe<ResolversTypes['InvoiceConnection']>, ParentType, ContextType, RequireFields<UsdWalletInvoicesByPartialExternalIdArgs, 'partialExternalId'>>;
   pendingIncomingBalance?: Resolver<ResolversTypes['SignedAmount'], ParentType, ContextType>;
   pendingIncomingTransactions?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType>;
   pendingIncomingTransactionsByAddress?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType, RequireFields<UsdWalletPendingIncomingTransactionsByAddressArgs, 'address'>>;
   transactionById?: Resolver<ResolversTypes['Transaction'], ParentType, ContextType, RequireFields<UsdWalletTransactionByIdArgs, 'transactionId'>>;
   transactions?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, Partial<UsdWalletTransactionsArgs>>;
   transactionsByAddress?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, RequireFields<UsdWalletTransactionsByAddressArgs, 'address'>>;
-  transactionsByPartialExternalId?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, RequireFields<UsdWalletTransactionsByPartialExternalIdArgs, 'partialExternalId'>>;
   transactionsByPaymentHash?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType, RequireFields<UsdWalletTransactionsByPaymentHashArgs, 'paymentHash'>>;
   transactionsByPaymentRequest?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType, RequireFields<UsdWalletTransactionsByPaymentRequestArgs, 'paymentRequest'>>;
   walletCurrency?: Resolver<ResolversTypes['WalletCurrency'], ParentType, ContextType>;
@@ -5013,14 +4932,12 @@ export type WalletResolvers<ContextType = any, ParentType extends ResolversParen
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   invoiceByPaymentHash?: Resolver<ResolversTypes['Invoice'], ParentType, ContextType, RequireFields<WalletInvoiceByPaymentHashArgs, 'paymentHash'>>;
   invoices?: Resolver<Maybe<ResolversTypes['InvoiceConnection']>, ParentType, ContextType, Partial<WalletInvoicesArgs>>;
-  invoicesByPartialExternalId?: Resolver<Maybe<ResolversTypes['InvoiceConnection']>, ParentType, ContextType, RequireFields<WalletInvoicesByPartialExternalIdArgs, 'partialExternalId'>>;
   pendingIncomingBalance?: Resolver<ResolversTypes['SignedAmount'], ParentType, ContextType>;
   pendingIncomingTransactions?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType>;
   pendingIncomingTransactionsByAddress?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType, RequireFields<WalletPendingIncomingTransactionsByAddressArgs, 'address'>>;
   transactionById?: Resolver<ResolversTypes['Transaction'], ParentType, ContextType, RequireFields<WalletTransactionByIdArgs, 'transactionId'>>;
   transactions?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, Partial<WalletTransactionsArgs>>;
   transactionsByAddress?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, RequireFields<WalletTransactionsByAddressArgs, 'address'>>;
-  transactionsByPartialExternalId?: Resolver<Maybe<ResolversTypes['TransactionConnection']>, ParentType, ContextType, RequireFields<WalletTransactionsByPartialExternalIdArgs, 'partialExternalId'>>;
   transactionsByPaymentHash?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType, RequireFields<WalletTransactionsByPaymentHashArgs, 'paymentHash'>>;
   transactionsByPaymentRequest?: Resolver<ReadonlyArray<ResolversTypes['Transaction']>, ParentType, ContextType, RequireFields<WalletTransactionsByPaymentRequestArgs, 'paymentRequest'>>;
   walletCurrency?: Resolver<ResolversTypes['WalletCurrency'], ParentType, ContextType>;
@@ -5158,7 +5075,6 @@ export type Resolvers<ContextType = any> = {
   TransactionConnection?: TransactionConnectionResolvers<ContextType>;
   TransactionEdge?: TransactionEdgeResolvers<ContextType>;
   TxExternalId?: GraphQLScalarType;
-  TxExternalIdSubstring?: GraphQLScalarType;
   UpgradePayload?: UpgradePayloadResolvers<ContextType>;
   UsdWallet?: UsdWalletResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
