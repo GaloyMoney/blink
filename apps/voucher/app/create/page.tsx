@@ -5,7 +5,6 @@ import CreatePageAmount from "@/components/create/create-page-amount"
 import CreatePagePercentage from "@/components/create/create-page-percentage"
 import { Currency, Wallet } from "@/lib/graphql/generated"
 import useSatsPrice from "@/hooks/useSatsPrice"
-import PageLoadingComponent from "@/components/loading/page-loading-component"
 import { calculateAmountAfterCommission, getWalletDetails } from "@/utils/helpers"
 import ConfirmModal from "@/components/create/confirm-modal"
 import InfoComponent from "@/components/info-component"
@@ -70,7 +69,7 @@ export default function CreatePage() {
   }
 
   const { btcWallet, usdWallet } = getWalletDetails({
-    wallets: session?.data?.userData?.me?.defaultAccount?.wallets as Wallet[],
+    wallets: session?.data?.userData?.me?.defaultAccount?.wallets,
   })
 
   if (!btcWallet || !usdWallet) {

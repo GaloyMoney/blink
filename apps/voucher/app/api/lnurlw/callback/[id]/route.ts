@@ -20,11 +20,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
   const client = escrowApolloClient()
   const escrowData = await fetchUserData({ client })
-  if (escrowData instanceof Error)
+  if (escrowData instanceof Error || !escrowData?.me?.defaultAccount?.wallets)
     return Response.json({ status: "ERROR", reason: "Internal Server Error" })
 
   const { usdWallet } = getWalletDetails({
-    wallets: escrowData?.me?.defaultAccount?.wallets as Wallet[],
+    wallets: escrowData?.me?.defaultAccount?.wallets,
   })
   if (usdWallet instanceof Error || !usdWallet)
     return Response.json({ status: "ERROR", reason: "Internal Server Error" })

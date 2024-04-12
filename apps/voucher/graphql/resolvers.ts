@@ -1,4 +1,9 @@
-import { convertCentsToSats, createMemo, getWalletDetails } from "@/utils/helpers"
+import {
+  convertCentsToSats,
+  createMemo,
+  getWalletDetails,
+  getWalletDetailsFromWalletId,
+} from "@/utils/helpers"
 import {
   createWithdrawLinkMutation,
   getWithdrawLinksByUserIdQuery,
@@ -88,8 +93,12 @@ const resolvers = {
 
       if (escrowData instanceof Error) return escrowData
 
+      if (!escrowData.me?.defaultAccount.wallets) {
+        return new Error("Internal Server Error")
+      }
+
       const { usdWallet: escrowUsdWallet } = getWalletDetails({
-        wallets: escrowData.me?.defaultAccount.wallets as Wallet[],
+        wallets: escrowData.me?.defaultAccount.wallets,
       })
 
       if (!escrowUsdWallet || !escrowUsdWallet.id)
@@ -101,7 +110,7 @@ const resolvers = {
       })
 
       const userWalletDetails = getWalletDetailsFromWalletId({
-        wallets: userData.me?.defaultAccount.wallets as Wallet[],
+        wallets: userData.me?.defaultAccount.wallets,
         walletId,
       })
 
@@ -222,8 +231,12 @@ const resolvers = {
 
       if (escrowData instanceof Error) return escrowData
 
+      if (!escrowData.me?.defaultAccount.wallets) {
+        return new Error("Internal Server Error")
+      }
+
       const { usdWallet: escrowUsdWallet } = getWalletDetails({
-        wallets: escrowData.me?.defaultAccount.wallets as Wallet[],
+        wallets: escrowData.me?.defaultAccount.wallets,
       })
 
       if (!escrowUsdWallet || !escrowUsdWallet.id)
@@ -328,16 +341,6 @@ const resolvers = {
 }
 
 export default resolvers
-
-const getWalletDetailsFromWalletId = ({
-  wallets,
-  walletId,
-}: {
-  wallets: Wallet[]
-  walletId: string
-}) => {
-  return wallets.find((wallet) => wallet.id === walletId)
-}
 
 function calculateSalesAmount({
   commissionPercentage,

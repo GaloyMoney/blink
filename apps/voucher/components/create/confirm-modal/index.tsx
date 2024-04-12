@@ -4,7 +4,7 @@ import styles from "./confirm-modal.module.css"
 
 import Button from "@/components/button"
 import ModalComponent from "@/components/modal-component"
-import { formatOperand } from "@/utils/helpers"
+import { formatOperand, WalletDetails } from "@/utils/helpers"
 import { Currency, useCreateWithdrawLinkMutation, Wallet } from "@/lib/graphql/generated"
 import { useRouter } from "next/navigation"
 import LoadingComponent from "@/components/loading/loading-component"
@@ -17,8 +17,8 @@ type Props = {
   currency: Currency
   commissionPercentage: string
   voucherAmountInDollars: number
-  btcWallet: Wallet
-  usdWallet: Wallet
+  btcWallet: WalletDetails
+  usdWallet: WalletDetails
 }
 
 const ConfirmModal = ({

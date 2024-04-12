@@ -126,13 +126,31 @@ export function getOffset(page: number, limit: number) {
   return (page - 1) * limit
 }
 
-export const getWalletDetails = ({ wallets }: { wallets: Wallet[] }) => {
+export type WalletDetails = {
+  accountId: string
+  balance: number
+  id: string
+  pendingIncomingBalance: number
+  walletCurrency: string
+}
+
+export const getWalletDetails = ({ wallets }: { wallets: WalletDetails[] }) => {
   const btcWallet = wallets.find((wallet) => wallet.walletCurrency === "BTC")
   const usdWallet = wallets.find((wallet) => wallet.walletCurrency === "USD")
   return {
     btcWallet,
     usdWallet,
   }
+}
+
+export const getWalletDetailsFromWalletId = ({
+  wallets,
+  walletId,
+}: {
+  wallets: WalletDetails[]
+  walletId: string
+}) => {
+  return wallets.find((wallet) => wallet.id === walletId)
 }
 
 export const createMemo = ({
