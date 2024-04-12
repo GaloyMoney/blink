@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): add account deletion limit validation (#4277)...'
-      sha: 3e3e89c6a5729b58658c688f412ba50c8c78332a
+      commitTitle: 'chore(pay): adding otel (#4284)'
+      sha: 17e2c8673dae534ff6535aea1a6baaddc71d52ea
       tags:
-      - 0.20.145-1-g3e3e89c6a
+      - 0.20.146-1-g17e2c8673
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): add account deletion limit validation (#4277)...'
-      sha: 3e3e89c6a5729b58658c688f412ba50c8c78332a
+      commitTitle: 'chore(pay): adding otel (#4284)'
+      sha: 17e2c8673dae534ff6535aea1a6baaddc71d52ea
       tags:
-      - 0.20.145-1-g3e3e89c6a
+      - 0.20.146-1-g17e2c8673
     path: schemas/
   - git:
-      commitTitle: 'fix(core): add account deletion limit validation (#4277)...'
-      sha: 3e3e89c6a5729b58658c688f412ba50c8c78332a
+      commitTitle: 'chore(pay): adding otel (#4284)'
+      sha: 17e2c8673dae534ff6535aea1a6baaddc71d52ea
       tags:
-      - 0.20.145-1-g3e3e89c6a
+      - 0.20.146-1-g17e2c8673
     path: gql/
   path: ./graphql
 kind: LockConfig
