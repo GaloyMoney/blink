@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(pay): adding otel (#4284)'
-      sha: 17e2c8673dae534ff6535aea1a6baaddc71d52ea
+      commitTitle: 'fix: js math issue in majorToMinorUnit (#4288)...'
+      sha: 0f7c8bbc6a6c56814441ec5920c895b78eff828d
       tags:
-      - 0.20.146-1-g17e2c8673
+      - 0.20.147-1-g0f7c8bbc6
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(pay): adding otel (#4284)'
-      sha: 17e2c8673dae534ff6535aea1a6baaddc71d52ea
+      commitTitle: 'fix: js math issue in majorToMinorUnit (#4288)...'
+      sha: 0f7c8bbc6a6c56814441ec5920c895b78eff828d
       tags:
-      - 0.20.146-1-g17e2c8673
+      - 0.20.147-1-g0f7c8bbc6
     path: schemas/
   - git:
-      commitTitle: 'chore(pay): adding otel (#4284)'
-      sha: 17e2c8673dae534ff6535aea1a6baaddc71d52ea
+      commitTitle: 'fix: js math issue in majorToMinorUnit (#4288)...'
+      sha: 0f7c8bbc6a6c56814441ec5920c895b78eff828d
       tags:
-      - 0.20.146-1-g17e2c8673
+      - 0.20.147-1-g0f7c8bbc6
     path: gql/
   path: ./graphql
 kind: LockConfig
