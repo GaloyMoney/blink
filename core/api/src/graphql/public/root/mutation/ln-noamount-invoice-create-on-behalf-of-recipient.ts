@@ -5,7 +5,6 @@ import { Wallets } from "@/app"
 import { GT } from "@/graphql/index"
 import Memo from "@/graphql/shared/types/scalar/memo"
 import Minutes from "@/graphql/public/types/scalar/minutes"
-import TxExternalId from "@/graphql/shared/types/scalar/tx-external-id"
 import WalletId from "@/graphql/shared/types/scalar/wallet-id"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import LnNoAmountInvoicePayload from "@/graphql/public/types/payload/ln-noamount-invoice"
@@ -23,7 +22,6 @@ const LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
       type: Minutes,
       description: "Optional invoice expiration time in minutes.",
     },
-    externalId: { type: TxExternalId },
   }),
 })
 
@@ -39,9 +37,9 @@ const LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
     input: { type: GT.NonNull(LnNoAmountInvoiceCreateOnBehalfOfRecipientInput) },
   },
   resolve: async (_, args) => {
-    const { recipientWalletId, memo, expiresIn, externalId } = args.input
+    const { recipientWalletId, memo, expiresIn } = args.input
 
-    for (const input of [recipientWalletId, memo, expiresIn, externalId]) {
+    for (const input of [recipientWalletId, memo, expiresIn]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
@@ -51,7 +49,7 @@ const LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
       recipientWalletId,
       memo,
       expiresIn,
-      externalId,
+      externalId: undefined,
     })
 
     if (invoice instanceof Error) {

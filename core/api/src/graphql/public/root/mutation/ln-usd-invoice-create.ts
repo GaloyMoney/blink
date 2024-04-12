@@ -7,7 +7,6 @@ import Memo from "@/graphql/shared/types/scalar/memo"
 import Minutes from "@/graphql/public/types/scalar/minutes"
 import WalletId from "@/graphql/shared/types/scalar/wallet-id"
 import CentAmount from "@/graphql/public/types/scalar/cent-amount"
-import TxExternalId from "@/graphql/shared/types/scalar/tx-external-id"
 import LnInvoicePayload from "@/graphql/public/types/payload/ln-invoice"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 
@@ -24,7 +23,6 @@ const LnUsdInvoiceCreateInput = GT.Input({
       type: Minutes,
       description: "Optional invoice expiration time in minutes.",
     },
-    externalId: { type: TxExternalId },
   }),
 })
 
@@ -41,9 +39,9 @@ const LnUsdInvoiceCreateMutation = GT.Field({
     input: { type: GT.NonNull(LnUsdInvoiceCreateInput) },
   },
   resolve: async (_, args) => {
-    const { walletId, amount, memo, expiresIn, externalId } = args.input
+    const { walletId, amount, memo, expiresIn } = args.input
 
-    for (const input of [walletId, amount, memo, expiresIn, externalId]) {
+    for (const input of [walletId, amount, memo, expiresIn]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
@@ -54,7 +52,7 @@ const LnUsdInvoiceCreateMutation = GT.Field({
       amount,
       memo,
       expiresIn,
-      externalId,
+      externalId: undefined,
     })
 
     if (invoice instanceof Error) {

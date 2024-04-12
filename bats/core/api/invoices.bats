@@ -25,13 +25,11 @@ seed_invoices() {
   )
   exec_graphql "$token_name" 'ln-invoice-create' "$variables"
 
-  external_id="seed-$RANDOM"
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value $btc_wallet_name)" \
     --arg amount "$btc_amount" \
-    --arg external_id "$external_id" \
-    '{input: {walletId: $wallet_id, amount: $amount, externalId: $external_id}}'
+    '{input: {walletId: $wallet_id, amount: $amount}}'
   )
   exec_graphql "$token_name" 'ln-invoice-create' "$variables"
 
@@ -67,31 +65,6 @@ seed_invoices() {
   exec_graphql "$token_name" 'ln-invoice-create' "$variables"
   num_errors="$(graphql_output '.data.lnInvoiceCreate.errors | length')"
   [[ "$num_errors" == "0" ]] || exit 1
-}
-
-@test "invoices: adding multiple invoices with same external id fails" {
-  token_name='alice'
-  btc_wallet_name="$token_name.btc_wallet_id"
-  btc_amount="1000"
-  external_id="external-id-$RANDOM"
-
-  variables=$(
-    jq -n \
-    --arg wallet_id "$(read_value $btc_wallet_name)" \
-    --arg amount "$btc_amount" \
-    --arg external_id "$external_id" \
-    '{input: {walletId: $wallet_id, amount: $amount, externalId: $external_id}}'
-  )
-
-  exec_graphql "$token_name" 'ln-invoice-create' "$variables"
-  num_errors="$(graphql_output '.data.lnInvoiceCreate.errors | length')"
-  [[ "$num_errors" == "0" ]] || exit 1
-
-  exec_graphql "$token_name" 'ln-invoice-create' "$variables"
-  invoice="$(graphql_output '.data.lnInvoiceCreate.invoice')"
-  [[ "$invoice" == "null" ]] || exit 1
-  error_msg="$(graphql_output '.data.lnInvoiceCreate.errors[0].message')"
-  [[ "${error_msg}" =~ "already exists" ]] || exit 1
 }
 
 @test "invoices: get invoices for account" {
