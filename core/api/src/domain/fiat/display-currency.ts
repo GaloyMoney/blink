@@ -22,7 +22,7 @@ export const majorToMinorUnit = ({
   displayCurrency: DisplayCurrency
 }): number => {
   const displayMajorExponent = getCurrencyMajorExponent(displayCurrency)
-  return Number(amount) * 10 ** displayMajorExponent
+  return Number((Number(amount) * 10 ** displayMajorExponent).toFixed(2))
 }
 
 export const getCurrencyMajorExponent = (
@@ -64,7 +64,7 @@ export const displayAmountFromNumber = <T extends DisplayCurrency>({
   amount: number
   currency: T
 }): DisplayAmount<T> | ValidationError => {
-  const amountInMinor = safeBigInt(amount)
+  const amountInMinor = safeBigInt(Math.round(amount))
   if (amountInMinor instanceof Error) return amountInMinor
 
   const displayMajorExponent = getCurrencyMajorExponent(currency)
