@@ -39,10 +39,16 @@ impl NotificationEvent for MarketingNotificationTriggered {
     }
 
     fn should_send_in_app_msg(&self) -> bool {
-        false
+        true
     }
 
-    fn to_localized_in_app_msg(&self, _locale: GaloyLocale) -> Option<LocalizedInAppMessage> {
-        None
+    fn to_localized_in_app_msg(&self, locale: GaloyLocale) -> Option<LocalizedInAppMessage> {
+        // TODO: use explicit in app messages rather than push message
+        let push_msg = self.to_localized_push_msg(locale);
+
+        Some(LocalizedInAppMessage {
+            title: push_msg.title,
+            body: push_msg.body,
+        })
     }
 }
