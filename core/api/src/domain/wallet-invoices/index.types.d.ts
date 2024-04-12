@@ -26,11 +26,11 @@ type WalletInvoiceBuilderConfig = {
 }
 
 type WalletInvoiceBuilder = {
-  withExternalId: (externalId: LedgerExternalId) => WIBWithExternalId
+  withExternalId: (externalId: LedgerExternalId | undefined) => WIBWithExternalId
 }
 
 type WIBWithExternalIdState = WalletInvoiceBuilderConfig & {
-  externalId: LedgerExternalId
+  externalId: LedgerExternalId | undefined
 }
 
 type WIBWithExternalId = {
