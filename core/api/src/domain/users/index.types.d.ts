@@ -78,6 +78,7 @@ type UsersFilter = {
 interface IUsersRepository {
   findById(id: UserId): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
+  findByDeletedPhones(deletedPhones: PhoneNumber[]): Promise<User[] | RepositoryError>
   find(usersFilter: UsersFilter): AsyncGenerator<UserId> | RepositoryError
   count(usersFilter: UsersFilter): Promise<number | RepositoryError>
   update(user: UserUpdateInput): Promise<User | RepositoryError>

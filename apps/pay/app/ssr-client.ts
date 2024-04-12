@@ -1,5 +1,6 @@
 import { HttpLink } from "@apollo/client"
 import { registerApolloClient } from "@apollo/experimental-nextjs-app-support/rsc"
+import { propagation, context } from "@opentelemetry/api"
 import {
   NextSSRApolloClient,
   NextSSRInMemoryCache,
@@ -19,6 +20,14 @@ const createApolloClient = (options?: ClientOptions) => {
       fetchOptions: { cache: "no-store" },
       headers: {
         ...(options?.token ? { ["Oauth2-Token"]: options.token } : {}),
+      },
+      fetch: (uri, options) => {
+        const headersWithTrace = options?.headers || {}
+        propagation.inject(context.active(), headersWithTrace)
+        return fetch(uri, {
+          ...options,
+          headers: headersWithTrace,
+        })
       },
     }),
   })

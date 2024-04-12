@@ -32,6 +32,12 @@ export class TransactionRestrictedError extends CustomGraphQLError {
   }
 }
 
+export class OperationRestrictedError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
+    super({ code: "OPERATION_RESTRICTED", forwardToClient: true, ...errData })
+  }
+}
+
 export class UnknownClientError extends CustomGraphQLError {
   constructor(errData: CustomGraphQLErrorData) {
     super({ code: "UNKNOWN_CLIENT_ERROR", forwardToClient: true, ...errData })
