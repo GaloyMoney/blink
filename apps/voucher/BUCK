@@ -15,6 +15,14 @@ dev_pnpm_task_binary(
     deps=["//:node_modules"],
 )
 
+
+dev_pnpm_task_binary(
+    name="migrate-voucher-pg",
+    command="db:migrate",
+    deps=["//:node_modules"],
+)
+
+
 dev_pnpm_task_binary(
     name="lint-fix",
     command="lint:fix",

@@ -1,5 +1,5 @@
 import { v4 as uuidV4 } from "uuid"
-import { knex } from "./connection"
+import { knex } from "./knex"
 
 import { generateCode, generateRandomHash } from "@/utils/helpers"
 import { Status } from "@/lib/graphql/generated"

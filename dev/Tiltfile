@@ -239,8 +239,8 @@ local_resource(
     resource_deps = [
         "api",
         "apollo-router",
-        "voucher-pg",
-        "hydra-voucher"
+        "hydra-voucher",
+        "setup-voucher"
     ],
     links = [
         link("http://localhost:3006", "voucher"),
@@ -642,6 +642,14 @@ local_resource(
     "lnd-outside-1",
     "lnd-outside-2",
   ]
+)
+
+local_resource(
+    name="setup-voucher",
+    cmd="buck2 run //apps/voucher:migrate-voucher-pg && buck2 run //dev:setup-voucher-escrow",
+    allow_parallel=False,
+    auto_init=run_apps,
+    resource_deps=["voucher-pg", "api-keys"]
 )
 
 api_keys_target = "//core/api-keys:api-keys"

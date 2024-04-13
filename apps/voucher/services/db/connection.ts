@@ -1,5 +1,5 @@
 import { env } from "../../env"
-import createKnex, { Knex } from "knex"
+import { Knex } from "knex"
 
 const knexConfig: Knex.Config = {
   client: "pg",
@@ -10,4 +10,4 @@ const knexConfig: Knex.Config = {
   },
 }
 
-export const knex = createKnex(knexConfig)
+export default knexConfig
