@@ -1,14 +1,17 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import CreatePageAmount from "@/components/create/create-page-amount"
 import CreatePagePercentage from "@/components/create/create-page-percentage"
-import { Currency, Wallet } from "@/lib/graphql/generated"
+import {
+  Currency,
+  useCurrencyConversionEstimationQuery,
+  Wallet,
+} from "@/lib/graphql/generated"
 import useSatsPrice from "@/hooks/useSatsPrice"
 import { calculateAmountAfterCommission, getWalletDetails } from "@/utils/helpers"
 import ConfirmModal from "@/components/create/confirm-modal"
 import InfoComponent from "@/components/info-component"
-import useRealtimePrice from "@/hooks/useRealTimePrice"
 import { DEFAULT_CURRENCY } from "@/config/appConfig"
 import { gql } from "@apollo/client"
 import { useSession } from "next-auth/react"
@@ -31,6 +34,17 @@ gql`
   }
 `
 
+gql`
+  query CurrencyConversionEstimation($amount: Float!, $currency: DisplayCurrency!) {
+    currencyConversionEstimation(amount: $amount, currency: $currency) {
+      btcSatAmount
+      id
+      usdCentAmount
+      timestamp
+    }
+  }
+`
+
 export default function CreatePage() {
   const session = useSession()
 
@@ -46,17 +60,31 @@ export default function CreatePage() {
   const [commissionPercentage, setCommissionPercentage] = useState<string>(
     storedCommission || "0",
   )
-  const { currencyToCents, hasLoaded } = useRealtimePrice(currency.id)
+
   const [amount, setAmount] = useState<string>("0")
+  const { data: currencyConversion, refetch } = useCurrencyConversionEstimationQuery({
+    variables: {
+      amount: Number(amount),
+      currency: currency.id,
+    },
+    context: {
+      endpoint: "GALOY",
+    },
+    pollInterval: 5000,
+  })
+
+  useEffect(() => {
+    refetch({
+      amount: Number(amount),
+      currency: currency.id,
+    })
+  }, [amount, currency.id, refetch])
 
   const [confirmModal, setConfirmModal] = useState<boolean>(false)
   const [currentPage, setCurrentPage] = useState<string>("AMOUNT")
 
   const amountInDollars = Number(
-    (
-      currencyToCents(Number(amount), currency.id, currency.fractionDigits)
-        .convertedCurrencyAmount / 100
-    ).toFixed(2),
+    (currencyConversion?.currencyConversionEstimation.usdCentAmount / 100).toFixed(2),
   )
 
   const voucherAmountInDollars = calculateAmountAfterCommission({
@@ -101,7 +129,6 @@ export default function CreatePage() {
           commissionPercentage={commissionPercentage}
           amountInDollars={amountInDollars}
           voucherAmountInDollars={voucherAmountInDollars}
-          hasLoaded={hasLoaded}
         />
       </div>
     )

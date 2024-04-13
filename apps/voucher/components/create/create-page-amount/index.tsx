@@ -26,9 +26,6 @@ interface Props {
   setConfirmModal: (currency: boolean) => void
   amountInDollars: number
   voucherAmountInDollars: number
-  hasLoaded: {
-    current: boolean
-  }
 }
 
 export default function HomePage({
@@ -41,7 +38,6 @@ export default function HomePage({
   usdToSats,
   commissionPercentage,
   voucherAmountInDollars,
-  hasLoaded,
 }: Props) {
   const { currencyList, loading } = useDisplayCurrency()
   const [alerts, setAlerts] = useState<boolean>(false)
@@ -109,11 +105,8 @@ export default function HomePage({
         {currency.symbol} {formatOperand(amount)}
       </div>
       <div>{Number(commissionPercentage)}% commission</div>
-      {hasLoaded.current === false ? (
-        <LoadingComponent />
-      ) : (
-        <div>≈ ${formatOperand(String(voucherAmountInDollars))}</div>
-      )}
+
+      <div>≈ ${formatOperand(String(voucherAmountInDollars))}</div>
       <NumPad currentAmount={amount} setCurrentAmount={setAmount} unit="FIAT" />
       <div className={styles.commission_and_submit_buttons}>
         <Button

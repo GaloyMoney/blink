@@ -2250,6 +2250,14 @@ export type CreateWithdrawLinkMutationVariables = Exact<{
 
 export type CreateWithdrawLinkMutation = { __typename?: 'Mutation', createWithdrawLink: { __typename?: 'WithdrawLinkWithSecret', commissionPercentage: number, createdAt: string, id: string, identifierCode: string, salesAmountInCents: number, status: Status, uniqueHash: string, userId: string, voucherAmountInCents: number, voucherSecret: string, paidAt?: string | null } };
 
+export type CurrencyConversionEstimationQueryVariables = Exact<{
+  amount: Scalars['Float']['input'];
+  currency: Scalars['DisplayCurrency']['input'];
+}>;
+
+
+export type CurrencyConversionEstimationQuery = { __typename?: 'Query', currencyConversionEstimation: { __typename?: 'CurrencyConversionEstimation', btcSatAmount: any, id: string, usdCentAmount: any, timestamp: any } };
+
 export type GetWithdrawLinksByUserIdQueryVariables = Exact<{
   status?: InputMaybe<Status>;
 }>;
@@ -2393,6 +2401,45 @@ export function useCreateWithdrawLinkMutation(baseOptions?: Apollo.MutationHookO
 export type CreateWithdrawLinkMutationHookResult = ReturnType<typeof useCreateWithdrawLinkMutation>;
 export type CreateWithdrawLinkMutationResult = Apollo.MutationResult<CreateWithdrawLinkMutation>;
 export type CreateWithdrawLinkMutationOptions = Apollo.BaseMutationOptions<CreateWithdrawLinkMutation, CreateWithdrawLinkMutationVariables>;
+export const CurrencyConversionEstimationDocument = gql`
+    query CurrencyConversionEstimation($amount: Float!, $currency: DisplayCurrency!) {
+  currencyConversionEstimation(amount: $amount, currency: $currency) {
+    btcSatAmount
+    id
+    usdCentAmount
+    timestamp
+  }
+}
+    `;
+
+/**
+ * __useCurrencyConversionEstimationQuery__
+ *
+ * To run a query within a React component, call `useCurrencyConversionEstimationQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCurrencyConversionEstimationQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCurrencyConversionEstimationQuery({
+ *   variables: {
+ *      amount: // value for 'amount'
+ *      currency: // value for 'currency'
+ *   },
+ * });
+ */
+export function useCurrencyConversionEstimationQuery(baseOptions: Apollo.QueryHookOptions<CurrencyConversionEstimationQuery, CurrencyConversionEstimationQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<CurrencyConversionEstimationQuery, CurrencyConversionEstimationQueryVariables>(CurrencyConversionEstimationDocument, options);
+      }
+export function useCurrencyConversionEstimationLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CurrencyConversionEstimationQuery, CurrencyConversionEstimationQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<CurrencyConversionEstimationQuery, CurrencyConversionEstimationQueryVariables>(CurrencyConversionEstimationDocument, options);
+        }
+export type CurrencyConversionEstimationQueryHookResult = ReturnType<typeof useCurrencyConversionEstimationQuery>;
+export type CurrencyConversionEstimationLazyQueryHookResult = ReturnType<typeof useCurrencyConversionEstimationLazyQuery>;
+export type CurrencyConversionEstimationQueryResult = Apollo.QueryResult<CurrencyConversionEstimationQuery, CurrencyConversionEstimationQueryVariables>;
 export const GetWithdrawLinksByUserIdDocument = gql`
     query GetWithdrawLinksByUserId($status: Status) {
   getWithdrawLinksByUserId(status: $status) {
