@@ -1,8 +1,9 @@
-import React, { ReactElement } from "react"
+import React from "react"
 import Modal, { ModalProps } from "@mui/material/Modal"
 import Box from "@mui/material/Box"
 
 interface Props extends ModalProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   children: any
 }
 

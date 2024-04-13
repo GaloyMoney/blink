@@ -5,7 +5,7 @@ import Bold from "../bold"
 import styles from "./link-details.module.css"
 
 import { timeSince } from "@/utils/helpers"
-import { WithdrawLink, Status, WithdrawLinkWithSecret } from "@/lib/graphql/generated"
+import { Status, WithdrawLinkWithSecret } from "@/lib/graphql/generated"
 interface LinkDetailsProps {
   withdrawLink: WithdrawLinkWithSecret | null | undefined
 }

@@ -1,20 +1,18 @@
 "use client"
 import { useEffect, useState } from "react"
 
+import { gql } from "@apollo/client"
+
+import { useSession } from "next-auth/react"
+
 import CreatePageAmount from "@/components/create/create-page-amount"
 import CreatePagePercentage from "@/components/create/create-page-percentage"
-import {
-  Currency,
-  useCurrencyConversionEstimationQuery,
-  Wallet,
-} from "@/lib/graphql/generated"
+import { Currency, useCurrencyConversionEstimationQuery } from "@/lib/graphql/generated"
 import useSatsPrice from "@/hooks/useSatsPrice"
 import { calculateAmountAfterCommission, getWalletDetails } from "@/utils/helpers"
 import ConfirmModal from "@/components/create/confirm-modal"
 import InfoComponent from "@/components/info-component"
 import { DEFAULT_CURRENCY } from "@/config/appConfig"
-import { gql } from "@apollo/client"
-import { useSession } from "next-auth/react"
 
 gql`
   mutation CreateWithdrawLink($input: CreateWithdrawLinkInput!) {

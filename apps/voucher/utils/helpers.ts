@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid"
 import { bech32 } from "bech32"
-import { RealtimePriceQuery, Wallet } from "@/lib/graphql/generated"
+
+import { RealtimePriceQuery } from "@/lib/graphql/generated"
 
 export function generateRandomHash(): string {
   const uuid = uuidv4()

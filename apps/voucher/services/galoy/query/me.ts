@@ -35,7 +35,7 @@ gql`
 export async function fetchUserData({
   client,
 }: {
-  client: ApolloClient<any>
+  client: ApolloClient<unknown>
 }): Promise<MeQuery | Error> {
   try {
     const { data } = await client.query<MeQuery>({

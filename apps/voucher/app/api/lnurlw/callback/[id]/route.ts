@@ -1,10 +1,11 @@
+import { NextRequest } from "next/server"
+
 import { getWithdrawLinkByK1Query, updateWithdrawLinkStatus } from "@/services/db"
 import { createMemo, getWalletDetails } from "@/utils/helpers"
-import { PaymentSendResult, Status, Wallet } from "@/lib/graphql/generated"
+import { PaymentSendResult, Status } from "@/lib/graphql/generated"
 import { escrowApolloClient } from "@/services/galoy/client/escrow"
 import { fetchUserData } from "@/services/galoy/query/me"
 import { lnInvoicePaymentSend } from "@/services/galoy/mutation/ln-invoice-payment-send"
-import { NextRequest } from "next/server"
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const searchParams = request.nextUrl.searchParams

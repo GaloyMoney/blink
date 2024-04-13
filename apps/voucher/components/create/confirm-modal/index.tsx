@@ -1,14 +1,16 @@
 import React, { useState, MouseEvent } from "react"
 
+import { useRouter } from "next/navigation"
+
+import { useSession } from "next-auth/react"
+
 import styles from "./confirm-modal.module.css"
 
 import Button from "@/components/button"
 import ModalComponent from "@/components/modal-component"
 import { formatOperand, WalletDetails } from "@/utils/helpers"
-import { Currency, useCreateWithdrawLinkMutation, Wallet } from "@/lib/graphql/generated"
-import { useRouter } from "next/navigation"
+import { Currency, useCreateWithdrawLinkMutation } from "@/lib/graphql/generated"
 import LoadingComponent from "@/components/loading/loading-component"
-import { useSession } from "next-auth/react"
 
 type Props = {
   open: boolean
@@ -36,7 +38,7 @@ const ConfirmModal = ({
   const [modalError, setModalError] = useState<string | null>(null)
   const [formIsValid, setFormIsValid] = useState(false)
   const { update } = useSession()
-  const [createWithdrawLink, { loading: withdrawLinkLoading, error: withdrawLinkError }] =
+  const [createWithdrawLink, { loading: withdrawLinkLoading }] =
     useCreateWithdrawLinkMutation()
   const router = useRouter()
 
@@ -88,12 +90,7 @@ const ConfirmModal = ({
 
   if (modalLoading || withdrawLinkLoading) {
     return (
-      <ModalComponent
-        open={open}
-        onClose={() => {
-          onClose
-        }}
-      >
+      <ModalComponent open={open} onClose={onClose}>
         <div className={styles.modal_container}>
           <LoadingComponent />
         </div>
@@ -183,7 +180,6 @@ const ConfirmModal = ({
               <Button
                 data-testid="pay-voucher-amount-btn"
                 disabled={!formIsValid}
-
                 onClick={() =>
                   handleSubmit({
                     voucherAmountInCents: Number(

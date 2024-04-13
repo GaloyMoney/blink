@@ -364,6 +364,9 @@ local_resource(
   cmd = "buck2 test {}".format(voucher_test_target),
   resource_deps = [
     "voucher",
+    "consent",
+    "init-test-user",
+    "fund-user",
   ],
 )
 

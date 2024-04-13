@@ -2,6 +2,8 @@
 import React, { useState } from "react"
 import { QRCode } from "react-qrcode-logo"
 
+import { gql } from "@apollo/client"
+
 import styles from "./lnurl-page.module.css"
 
 import { encodeURLToLNURL, formatSecretCode } from "@/utils/helpers"
@@ -14,8 +16,6 @@ import FundsPaid from "@/components/funds-paid"
 import Heading from "@/components/heading"
 import Bold from "@/components/bold"
 import LinkDetails from "@/components/link-details"
-import { DEFAULT_CURRENCY } from "@/config/appConfig"
-import { gql } from "@apollo/client"
 const { NEXT_PUBLIC_LOCAL_URL } = env
 
 gql`
@@ -43,11 +43,6 @@ type Props = {
 
 export default function Page({ params: { "voucher-secret": voucherSecret } }: Props) {
   const [revealLNURL, setRevealLNURL] = useState<boolean>(false)
-  const storedCurrency =
-    typeof window !== "undefined" ? localStorage.getItem("currency") : null
-  const [currency, setCurrency] = useState(
-    storedCurrency ? JSON.parse(storedCurrency) : DEFAULT_CURRENCY,
-  )
 
   const { loading, error, data } = useGetWithdrawLinkQuery({
     variables: { voucherSecret },

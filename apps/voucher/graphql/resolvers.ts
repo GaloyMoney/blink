@@ -1,3 +1,5 @@
+import { getServerSession } from "next-auth"
+
 import {
   convertCentsToSats,
   createMemo,
@@ -11,14 +13,12 @@ import {
   getWithdrawLinkBySecret,
 } from "@/services/db"
 
-import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth"
 import {
   RedeemWithdrawLinkOnChainResultStatus,
   PaymentSendResult,
   PayoutSpeed,
   Status,
-  Wallet,
   WalletCurrency,
 } from "@/lib/graphql/generated"
 import { getRealtimePriceQuery } from "@/services/galoy/query/get-real-time-price"

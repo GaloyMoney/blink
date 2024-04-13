@@ -1,16 +1,20 @@
+// eslint-disable-next-line import/no-unassigned-import
 import "./globals.css"
 import { Inter_Tight } from "next/font/google"
+
+import { getServerSession } from "next-auth"
+
+import { redirect } from "next/navigation"
+
+import { authOptions } from "./api/auth/[...nextauth]/auth"
 
 import Navigation from "@/components/nav-bar/navigation"
 import ApolloWrapper from "@/config/apollo"
 import SessionProvider from "@/components/session-provider"
-import { getServerSession } from "next-auth"
-import { authOptions } from "./api/auth/[...nextauth]/auth"
-import { redirect } from "next/navigation"
 
 const inter = Inter_Tight({ subsets: ["latin"], display: "auto" })
 
-export  default async function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions)
   if (!session || !session?.userData || !session?.accessToken) {
     redirect("/api/auth/signin")

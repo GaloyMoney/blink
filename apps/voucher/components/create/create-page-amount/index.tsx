@@ -6,7 +6,6 @@ import styles from "../create-link.module.css"
 import { useDisplayCurrency } from "@/hooks/useDisplayCurrency"
 import NumPad from "@/components/num-pad"
 import { formatOperand } from "@/utils/helpers"
-import LoadingComponent from "@/components/loading/loading-component"
 import PageLoadingComponent from "@/components/loading/page-loading-component"
 import Button from "@/components/button"
 import ModalComponent from "@/components/modal-component"
@@ -35,7 +34,6 @@ export default function HomePage({
   setConfirmModal,
   amount,
   currency,
-  usdToSats,
   commissionPercentage,
   voucherAmountInDollars,
 }: Props) {

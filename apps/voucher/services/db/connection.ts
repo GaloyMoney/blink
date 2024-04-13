@@ -1,5 +1,6 @@
-import { env } from "../../env"
 import { Knex } from "knex"
+
+import { env } from "../../env"
 
 const knexConfig: Knex.Config = {
   client: "pg",

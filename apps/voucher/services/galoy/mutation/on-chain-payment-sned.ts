@@ -1,8 +1,9 @@
+import { ApolloClient, gql } from "@apollo/client"
+
 import {
   OnChainUsdPaymentSendDocument,
   OnChainUsdPaymentSendMutation,
 } from "@/lib/graphql/generated"
-import { ApolloClient, gql } from "@apollo/client"
 
 gql`
   mutation OnChainUsdPaymentSend($input: OnChainUsdPaymentSendInput!) {
@@ -20,7 +21,7 @@ export async function onChainUsdPaymentSend({
   client,
   input: { address, amount, memo, speed, walletId },
 }: {
-  client: ApolloClient<any>
+  client: ApolloClient<unknown>
   input: {
     address: string
     amount: number

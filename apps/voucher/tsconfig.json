@@ -43,6 +43,7 @@
     "./node_modules",
     "./node_modules/*",
     "./utils/generated/",
-    "./utils/generated/*"
+    "./utils/generated/*",
+    "./cypress/*"
   ]
 }

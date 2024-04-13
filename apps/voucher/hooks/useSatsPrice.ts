@@ -1,7 +1,8 @@
 import * as React from "react"
 
-import { ExchangeCurrencyUnit, usePriceSubscription } from "@/lib/graphql/generated"
 import { gql } from "@apollo/client"
+
+import { ExchangeCurrencyUnit, usePriceSubscription } from "@/lib/graphql/generated"
 
 gql`
   subscription price(

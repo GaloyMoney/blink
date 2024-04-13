@@ -23,7 +23,7 @@ gql`
 export async function getRealtimePriceQuery({
   client,
 }: {
-  client: ApolloClient<any>
+  client: ApolloClient<unknown>
 }): Promise<Error | RealtimePriceQuery> {
   try {
     const { data } = await client.query<RealtimePriceQuery>({

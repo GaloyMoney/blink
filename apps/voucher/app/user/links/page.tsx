@@ -1,12 +1,12 @@
 "use client"
 import React, { useState, useEffect } from "react"
 
+import { gql } from "@apollo/client"
+
 import styles from "./user-link-page.module.css"
 
 import PageLoadingComponent from "@/components/loading/page-loading-component"
 import UserLinksComponent from "@/components/user-links"
-
-import { gql } from "@apollo/client"
 
 import {
   Status,
@@ -35,7 +35,6 @@ gql`
 export default function UserLinks() {
   const [status, setStatus] = useState<Status | null>(null)
   const [poll, setPoll] = useState<boolean>(false)
-  const [page, setPage] = React.useState(1)
 
   const { loading, error, data } = useGetWithdrawLinksByUserIdQuery({
     variables: {

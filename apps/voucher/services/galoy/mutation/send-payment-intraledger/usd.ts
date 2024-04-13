@@ -1,9 +1,11 @@
 import { gql } from "@apollo/client"
+
+import { apollo } from "../../client"
+
 import {
   IntraLedgerUsdPaymentSendDocument,
   IntraLedgerUsdPaymentSendMutation,
 } from "@/lib/graphql/generated"
-import { apollo } from "../../client"
 
 gql`
   mutation intraLedgerUsdPaymentSend($input: IntraLedgerUsdPaymentSendInput!) {

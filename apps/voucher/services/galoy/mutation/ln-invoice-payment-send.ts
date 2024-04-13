@@ -1,8 +1,9 @@
+import { ApolloClient, gql } from "@apollo/client"
+
 import {
   LnInvoicePaymentSendDocument,
   LnInvoicePaymentSendMutation,
 } from "@/lib/graphql/generated"
-import { ApolloClient, gql } from "@apollo/client"
 
 gql`
   mutation LnInvoicePaymentSend($input: LnInvoicePaymentInput!) {
@@ -33,7 +34,7 @@ export async function lnInvoicePaymentSend({
   client,
   input: { memo, paymentRequest, walletId },
 }: {
-  client: ApolloClient<any>
+  client: ApolloClient<unknown>
   input: {
     memo: string
     paymentRequest: string

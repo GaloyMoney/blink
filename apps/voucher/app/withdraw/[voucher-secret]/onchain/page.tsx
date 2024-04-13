@@ -45,7 +45,6 @@ gql`
 
 export default function Page({ params: { "voucher-secret": voucherSecret } }: Params) {
   const [onChainAddress, setOnChainAddress] = useState<string>("")
-  const [fetchingFees, setFetchingFees] = useState<boolean>(false)
   const [confirmModal, setConfirmModal] = useState<boolean>(false)
   const [successModal, setSuccessModal] = useState<boolean>(false)
   const [errorModal, setErrorModal] = useState<ErrorModal>({
@@ -53,21 +52,15 @@ export default function Page({ params: { "voucher-secret": voucherSecret } }: Pa
     open: false,
   })
 
-  const {
-    loading,
-    error,
-    data: withdrawLink,
-  } = useGetWithdrawLinkQuery({
+  const { loading, data: withdrawLink } = useGetWithdrawLinkQuery({
     variables: { voucherSecret },
     context: {
       endpoint: "SELF",
     },
   })
 
-  const [
-    onChainWithdraw,
-    { loading: sendPaymentOnChainLoading, error: sendPaymentOnChainError },
-  ] = useOnChainWithdrawLinkMutation()
+  const [onChainWithdraw, { loading: sendPaymentOnChainLoading }] =
+    useOnChainWithdrawLinkMutation()
 
   const handleConfirm = async () => {
     try {
@@ -131,7 +124,6 @@ export default function Page({ params: { "voucher-secret": voucherSecret } }: Pa
             open={confirmModal}
             onClose={() => {
               setConfirmModal(false)
-              setFetchingFees(false)
             }}
           >
             <div className={styles.modal_container}>
@@ -146,7 +138,6 @@ export default function Page({ params: { "voucher-secret": voucherSecret } }: Pa
                     <Button
                       onClick={() => {
                         setConfirmModal(false)
-                        setFetchingFees(false)
                       }}
                     >
                       Cancel

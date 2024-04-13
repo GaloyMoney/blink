@@ -1,5 +1,6 @@
-import { OnChainUsdTxFeeDocument, OnChainUsdTxFeeQuery } from "@/lib/graphql/generated"
 import { ApolloClient, gql } from "@apollo/client"
+
+import { OnChainUsdTxFeeDocument, OnChainUsdTxFeeQuery } from "@/lib/graphql/generated"
 
 gql`
   query OnChainUsdTxFee(
@@ -23,7 +24,7 @@ export async function onChainUsdTxFee({
   client,
   input: { address, amount, walletId, speed },
 }: {
-  client: ApolloClient<any>
+  client: ApolloClient<unknown>
   input: {
     address: string
     amount: number

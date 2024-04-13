@@ -1,4 +1,5 @@
 import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client"
+
 import { env } from "@/env"
 
 export const escrowApolloClient = () => {

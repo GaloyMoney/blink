@@ -1,14 +1,13 @@
 "use client"
-import React, { useEffect } from "react"
-import { signOut } from "next-auth/react"
+import React, { useEffect, useRef, useState } from "react"
+import { signOut, useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useRef, useState } from "react"
-import { useSession } from "next-auth/react"
 import AddIcon from "@mui/icons-material/Add"
 import ArrowDropDownCircleIcon from "@mui/icons-material/ArrowDropDownCircle"
 
-import styles from "./nav-bar.module.css"
 import Link from "next/link"
+
+import styles from "./nav-bar.module.css"
 
 const Navigation: React.FC = () => {
   const router = useRouter()

@@ -1,4 +1,3 @@
-import Link from "next/link"
 import React from "react"
 
 import Bold from "../bold"
@@ -45,14 +44,14 @@ export default function UserLinks({ withdrawLink }: UserLinksProps) {
                   withdrawLink.status === Status.Paid
                     ? "#a9a9a975"
                     : withdrawLink.status === Status.Active
-                    ? "#207f3c75"
-                    : "white",
+                      ? "#207f3c75"
+                      : "white",
                 color:
                   withdrawLink.status === Status.Paid
                     ? "#757575"
                     : withdrawLink.status === Status.Active
-                    ? "#0a802d"
-                    : "white",
+                      ? "#0a802d"
+                      : "white",
               }}
               className={styles.Status}
             >
