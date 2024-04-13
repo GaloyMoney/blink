@@ -158,15 +158,20 @@ const ConfirmModal = ({
                 defaultValue="default"
                 required={true}
                 onChange={handleSelectChange}
+                data-testid="wallet-select"
               >
                 <option value="default" disabled>
                   Select Wallet
                 </option>
-                <option value="btc">
+                <option data-testid="wallet-select-btc" value="btc">
                   <div>BTC Wallet</div>
                   <div> {btcWallet.balance} sats</div>
                 </option>
-                <option value="usd" className="flex flex-col p-1">
+                <option
+                  data-testid="wallet-select-usd"
+                  value="usd"
+                  className="flex flex-col p-1"
+                >
                   <div>USD Wallet</div>
                   <div> ${usdWallet.balance / 100} USD</div>
                 </option>
@@ -176,7 +181,9 @@ const ConfirmModal = ({
             <div className={styles.button_container}>
               <Button onClick={onClose}>Cancel</Button>
               <Button
+                data-testid="pay-voucher-amount-btn"
                 disabled={!formIsValid}
+
                 onClick={() =>
                   handleSubmit({
                     voucherAmountInCents: Number(

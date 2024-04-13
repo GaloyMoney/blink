@@ -22,11 +22,22 @@ export default function LinkDetails({ withdrawLink }: LinkDetailsProps) {
       </div>
       {withdrawLink?.status === Status.Active && (
         <>
-          <div className={`${styles.amount} print_this`}>
+          <div
+            data-testid="voucher-amount-detail"
+            className={`${styles.amount} print_this`}
+          >
             Voucher Amount ${withdrawLink?.voucherAmountInCents / 100} US
           </div>
           <div className="print_this">
-            Voucher Code <Bold>{withdrawLink.identifierCode}</Bold>{" "}
+            Voucher Code
+            <span
+              style={{
+                marginLeft: "0.3em",
+              }}
+              data-testid="voucher-id-code-detail"
+            >
+              <Bold>{withdrawLink.identifierCode}</Bold>
+            </span>{" "}
           </div>
         </>
       )}

@@ -16,7 +16,7 @@ export default function Home() {
           <Button>My links</Button>
         </Link>
         <Link href="/create">
-          <Button>Create new Link</Button>
+          <Button data-testid="create-link">Create new Link</Button>
         </Link>
         <Link href="/voucher">
           <Button>Redeem Voucher</Button>

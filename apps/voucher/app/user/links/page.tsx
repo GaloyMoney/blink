@@ -81,7 +81,7 @@ export default function UserLinks() {
           <PageLoadingComponent></PageLoadingComponent>
         ) : error ? (
           <p>Error: {error.message}</p>
-        ) : (
+        ) : withdrawLinks ? (
           <>
             <div className={styles.LinksContainer}>
               {withdrawLinks?.map((withdrawLink: WithdrawLink) => (
@@ -89,6 +89,8 @@ export default function UserLinks() {
               ))}
             </div>
           </>
+        ) : (
+          <p>No links found.</p>
         )}
       </div>
     </div>

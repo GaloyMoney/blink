@@ -123,7 +123,11 @@ export default function HomePage({
         >
           Commission
         </Button>
-        <Button enabled={true} onClick={handleConfirmLink}>
+        <Button
+          data-testid="create-voucher-btn"
+          enabled={true}
+          onClick={handleConfirmLink}
+        >
           Create Voucher
         </Button>
       </div>

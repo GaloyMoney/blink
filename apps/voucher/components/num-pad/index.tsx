@@ -2,10 +2,6 @@ import React, { useState } from "react"
 
 import BackspaceIcon from "@mui/icons-material/Backspace"
 
-import RestartAltIcon from "@mui/icons-material/RestartAlt"
-
-import Button from "../button"
-
 import styles from "./num-pad.module.css"
 interface Props {
   currentAmount: string
@@ -69,41 +65,82 @@ const Numpad = ({ currentAmount, setCurrentAmount, unit }: Props) => {
   return (
     <div className={styles.numpad}>
       <div className={styles.grid}>
-        <button className={styles.button} onClick={() => handleChange("1")}>
+        <button
+          className={styles.button}
+          data-testid="numpad-btn-1"
+          onClick={() => handleChange("1")}
+        >
           1
         </button>
-        <button className={styles.button} onClick={() => handleChange("2")}>
+        <button
+          className={styles.button}
+          data-testid="numpad-btn-2"
+          onClick={() => handleChange("2")}
+        >
           2
         </button>
-        <button className={styles.button} onClick={() => handleChange("3")}>
+        <button
+          className={styles.button}
+          data-testid="numpad-btn-3"
+          onClick={() => handleChange("3")}
+        >
           3
         </button>
-        <button className={styles.button} onClick={() => handleChange("4")}>
+        <button
+          className={styles.button}
+          data-testid="numpad-btn-4"
+          onClick={() => handleChange("4")}
+        >
           4
         </button>
-        <button className={styles.button} onClick={() => handleChange("5")}>
+        <button
+          className={styles.button}
+          data-testid="numpad-btn-5"
+          onClick={() => handleChange("5")}
+        >
           5
         </button>
-        <button className={styles.button} onClick={() => handleChange("6")}>
+        <button
+          className={styles.button}
+          data-testid="numpad-btn-6"
+          onClick={() => handleChange("6")}
+        >
           6
         </button>
-        <button className={styles.button} onClick={() => handleChange("7")}>
+        <button
+          className={styles.button}
+          data-testid="numpad-btn-7"
+          onClick={() => handleChange("7")}
+        >
           7
         </button>
-        <button className={styles.button} onClick={() => handleChange("8")}>
+        <button
+          className={styles.button}
+          data-testid="numpad-btn-8"
+          onClick={() => handleChange("8")}
+        >
           8
         </button>
-        <button className={styles.button} onClick={() => handleChange("9")}>
+        <button
+          className={styles.button}
+          data-testid="numpad-btn-9"
+          onClick={() => handleChange("9")}
+        >
           9
         </button>
         <button
           className={styles.button}
           disabled={unit === "SATS" ? true : false}
+          data-testid=""
           onClick={() => handleChange(".")}
         >
           .
         </button>
-        <button className={styles.button} onClick={() => handleChange("0")}>
+        <button
+          className={styles.button}
+          data-testid="numpad-btn-0"
+          onClick={() => handleChange("0")}
+        >
           0
         </button>
         <button className={styles.button} onClick={handleBackspace}>

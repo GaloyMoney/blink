@@ -126,7 +126,9 @@ export default function Page({ params: { "voucher-secret": voucherSecret } }: Pr
                 <p>or visit voucher.blink.sv and redeem with </p>
                 <div className={styles.voucher_container}>
                   <p> VOUCHER CODE </p>
-                  <p>{formatSecretCode(WithdrawLink?.voucherSecret)} </p>
+                  <p data-testid="voucher-secret">
+                    {formatSecretCode(WithdrawLink?.voucherSecret)}
+                  </p>
                 </div>
               </div>
               <Button
@@ -144,6 +146,7 @@ export default function Page({ params: { "voucher-secret": voucherSecret } }: Pr
               style={{
                 width: "90%",
               }}
+              data-testid="reveal-voucher-btn"
               onClick={() => setRevealLNURL(true)}
             >
               Reveal Voucher
