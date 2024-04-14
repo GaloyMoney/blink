@@ -804,6 +804,16 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "UnknownDomainError":
     case "UnknownBriaEventError":
     case "CouldNotFindAccountError":
+    case "OathkeeperError":
+    case "OathkeeperUnauthorizedServiceError":
+    case "OathkeeperMissingAuthorizationHeaderError":
+    case "OathkeeperForbiddenServiceError":
+    case "UnknownOathkeeperServiceError":
+    case "ChatAssistantError":
+    case "SupportError":
+    case "UnknownChatAssistantError":
+    case "UnknownSupportError":
+    case "UnknownPineconeError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 
