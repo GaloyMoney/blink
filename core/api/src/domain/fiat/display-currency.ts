@@ -1,3 +1,5 @@
+import BigNumber from "bignumber.js"
+
 import { safeBigInt, WalletCurrency } from "@/domain/shared"
 
 export const CENTS_PER_USD = 100
@@ -22,7 +24,9 @@ export const majorToMinorUnit = ({
   displayCurrency: DisplayCurrency
 }): number => {
   const displayMajorExponent = getCurrencyMajorExponent(displayCurrency)
-  return Number((Number(amount) * 10 ** displayMajorExponent).toFixed(2))
+  return BigNumber(amount.toString())
+    .times(10 ** displayMajorExponent)
+    .toNumber()
 }
 
 export const getCurrencyMajorExponent = (
