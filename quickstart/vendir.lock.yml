@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: js math issue in majorToMinorUnit (#4288)...'
-      sha: 0f7c8bbc6a6c56814441ec5920c895b78eff828d
+      commitTitle: 'fix(core): add bignumber to solve js math issues (#4290)'
+      sha: 1c4ea28ce564377c9660c80567aa8320530e4c0e
       tags:
-      - 0.20.147-1-g0f7c8bbc6
+      - 0.20.148-1-g1c4ea28ce
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: js math issue in majorToMinorUnit (#4288)...'
-      sha: 0f7c8bbc6a6c56814441ec5920c895b78eff828d
+      commitTitle: 'fix(core): add bignumber to solve js math issues (#4290)'
+      sha: 1c4ea28ce564377c9660c80567aa8320530e4c0e
       tags:
-      - 0.20.147-1-g0f7c8bbc6
+      - 0.20.148-1-g1c4ea28ce
     path: schemas/
   - git:
-      commitTitle: 'fix: js math issue in majorToMinorUnit (#4288)...'
-      sha: 0f7c8bbc6a6c56814441ec5920c895b78eff828d
+      commitTitle: 'fix(core): add bignumber to solve js math issues (#4290)'
+      sha: 1c4ea28ce564377c9660c80567aa8320530e4c0e
       tags:
-      - 0.20.147-1-g0f7c8bbc6
+      - 0.20.148-1-g1c4ea28ce
     path: gql/
   path: ./graphql
 kind: LockConfig
