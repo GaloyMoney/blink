@@ -35,6 +35,7 @@ type AccountsConfig = {
   initialStatus: AccountStatus
   initialWallets: WalletCurrency[]
   initialLevel: AccountLevel
+  maxDeletions: number
 }
 
 type AccountsOnboardConfig = {
