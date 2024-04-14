@@ -384,6 +384,7 @@ export const configSchema = {
           items: { type: "string" },
           uniqueItems: true,
         },
+        maxDeletions: { type: "number", default: 2 },
       },
       required: [
         "initialStatus",
@@ -397,6 +398,7 @@ export const configSchema = {
         "denyIPCountries",
         "allowASNs",
         "denyASNs",
+        "maxDeletions",
       ],
       additionalProperties: false,
       default: {
