@@ -58,8 +58,8 @@ transaction.paid_invoice.title: "%{walletCurrency} Transacció"
 transaction.paid_invoice.body: "+%{formattedCurrencyAmount}"
 transaction.paid_invoice.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
 
-price_changed.title: "Bitcoin s'està movent!"
-price_changed.body: "Bitcoin s'ha incrementat %{percent_increase}% l'útim dia %{price}!"
+price_changed.up.title: "Bitcoin s'està movent!"
+price_changed.up.body: "Bitcoin s'ha incrementat %{change_percent}% l'útim dia %{price}!"
 
 security.link_email_reminder.title: "Enllaça el correu electrònic per assegurar el compte"
 security.link_email_reminder.body: "Enllaça el teu correu electrònic per protegir el teu compte i rebre actualitzacions importants"
