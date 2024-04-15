@@ -58,5 +58,5 @@ transaction.paid_invoice.title: "Tranzacție %{walletCurrency}"
 transaction.paid_invoice.body: "+%{formattedCurrencyAmount}"
 transaction.paid_invoice.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
 
-price_changed.title: "Bitcoin este în mișcare!"
-price_changed.body: "Bitcoin este în creștere cu %{percent_increase}% în ultima zi până la %{price}!"
+price_changed.up.title: "Bitcoin este în mișcare!"
+price_changed.up.body: "Bitcoin este în creștere cu %{change_percent}% în ultima zi până la %{price}!"
