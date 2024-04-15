@@ -76,6 +76,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
   const baseTransaction: BaseWalletTransaction = {
     id: txn.id,
     walletId: txn.walletId,
+    externalId: txn.externalId,
     settlementAmount,
     settlementFee: currency === WalletCurrency.Btc ? toSats(satsFee) : toCents(centsFee),
     settlementCurrency: txn.currency,
@@ -180,7 +181,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
         },
         settlementVia: {
           type: SettlementMethod.Lightning,
-          revealedPreImage: undefined, // is added by dataloader in resolver
+          revealedPreImage: txn.revealedPreImage, // is sometimes added by dataloader in resolver
         },
       }
       break

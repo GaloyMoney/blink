@@ -26,6 +26,14 @@ type WalletInvoiceBuilderConfig = {
 }
 
 type WalletInvoiceBuilder = {
+  withExternalId: (externalId: LedgerExternalId | undefined) => WIBWithExternalId
+}
+
+type WIBWithExternalIdState = WalletInvoiceBuilderConfig & {
+  externalId: LedgerExternalId | undefined
+}
+
+type WIBWithExternalId = {
   withDescription: ({
     description,
     descriptionHash,
@@ -35,7 +43,7 @@ type WalletInvoiceBuilder = {
   }) => WIBWithDescription
 }
 
-type WIBWithDescriptionState = WalletInvoiceBuilderConfig & {
+type WIBWithDescriptionState = WIBWithExternalIdState & {
   description: string
   descriptionHash?: string
 }
@@ -94,6 +102,7 @@ type WalletInvoiceWithOptionalLnInvoice = {
   paid: boolean
   createdAt: Date
   processingCompleted: boolean
+  externalId: LedgerExternalId
   lnInvoice?: LnInvoice // LnInvoice is optional because some older invoices don't have it
 }
 
@@ -180,10 +189,7 @@ interface IWalletInvoicesRepository {
     paymentHash: PaymentHash,
   ) => Promise<WalletInvoiceWithOptionalLnInvoice | RepositoryError>
 
-  findInvoicesForWallets: ({
-    walletIds,
-    paginationArgs,
-  }: {
+  findInvoicesForWallets: (args: {
     walletIds: WalletId[]
     paginationArgs: PaginatedQueryArgs
   }) => Promise<PaginatedQueryResult<WalletInvoice> | RepositoryError>

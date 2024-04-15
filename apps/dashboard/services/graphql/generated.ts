@@ -77,6 +77,8 @@ export type Scalars = {
   TotpRegistrationId: { input: string; output: string; }
   /** A secret to generate time-based one-time password */
   TotpSecret: { input: string; output: string; }
+  /** An external reference id that can be optionally added for transactions. */
+  TxExternalId: { input: string; output: string; }
   /** Unique identifier of a user */
   Username: { input: string; output: string; }
   /** Unique identifier of a wallet */
@@ -608,6 +610,8 @@ export type IntraLedgerUsdPaymentSendInput = {
 /** A lightning invoice. */
 export type Invoice = {
   readonly createdAt: Scalars['Timestamp']['output'];
+  /** The unique external id set for the invoice. */
+  readonly externalId: Scalars['TxExternalId']['output'];
   /** The payment hash of the lightning invoice. */
   readonly paymentHash: Scalars['PaymentHash']['output'];
   /** The bolt11 invoice to be paid. */
@@ -655,6 +659,7 @@ export type LnAddressPaymentSendInput = {
 export type LnInvoice = Invoice & {
   readonly __typename: 'LnInvoice';
   readonly createdAt: Scalars['Timestamp']['output'];
+  readonly externalId: Scalars['TxExternalId']['output'];
   readonly paymentHash: Scalars['PaymentHash']['output'];
   readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
   readonly paymentSecret: Scalars['LnPaymentSecret']['output'];
@@ -741,6 +746,7 @@ export type LnInvoicePaymentStatusPayload = {
 export type LnNoAmountInvoice = Invoice & {
   readonly __typename: 'LnNoAmountInvoice';
   readonly createdAt: Scalars['Timestamp']['output'];
+  readonly externalId: Scalars['TxExternalId']['output'];
   readonly paymentHash: Scalars['PaymentHash']['output'];
   readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
   readonly paymentSecret: Scalars['LnPaymentSecret']['output'];
@@ -1811,6 +1817,7 @@ export type Transaction = {
   readonly __typename: 'Transaction';
   readonly createdAt: Scalars['Timestamp']['output'];
   readonly direction: TxDirection;
+  readonly externalId?: Maybe<Scalars['TxExternalId']['output']>;
   readonly id: Scalars['ID']['output'];
   /** From which protocol the payment has been initiated. */
   readonly initiationVia: InitiationVia;
@@ -3602,6 +3609,7 @@ export type ResolversTypes = {
   TransactionConnection: ResolverTypeWrapper<TransactionConnection>;
   TransactionEdge: ResolverTypeWrapper<TransactionEdge>;
   TxDirection: TxDirection;
+  TxExternalId: ResolverTypeWrapper<Scalars['TxExternalId']['output']>;
   TxNotificationType: TxNotificationType;
   TxStatus: TxStatus;
   UpgradePayload: ResolverTypeWrapper<UpgradePayload>;
@@ -3821,6 +3829,7 @@ export type ResolversParentTypes = {
   Transaction: Omit<Transaction, 'initiationVia' | 'settlementVia'> & { initiationVia: ResolversParentTypes['InitiationVia'], settlementVia: ResolversParentTypes['SettlementVia'] };
   TransactionConnection: TransactionConnection;
   TransactionEdge: TransactionEdge;
+  TxExternalId: Scalars['TxExternalId']['output'];
   UpgradePayload: UpgradePayload;
   UsdWallet: UsdWallet;
   User: User;
@@ -4239,6 +4248,7 @@ export type IntraLedgerUpdateResolvers<ContextType = any, ParentType extends Res
 export type InvoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Invoice'] = ResolversParentTypes['Invoice']> = {
   __resolveType: TypeResolveFn<'LnInvoice' | 'LnNoAmountInvoice', ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
+  externalId?: Resolver<ResolversTypes['TxExternalId'], ParentType, ContextType>;
   paymentHash?: Resolver<ResolversTypes['PaymentHash'], ParentType, ContextType>;
   paymentRequest?: Resolver<ResolversTypes['LnPaymentRequest'], ParentType, ContextType>;
   paymentSecret?: Resolver<ResolversTypes['LnPaymentSecret'], ParentType, ContextType>;
@@ -4263,6 +4273,7 @@ export interface LanguageScalarConfig extends GraphQLScalarTypeConfig<ResolversT
 
 export type LnInvoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['LnInvoice'] = ResolversParentTypes['LnInvoice']> = {
   createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
+  externalId?: Resolver<ResolversTypes['TxExternalId'], ParentType, ContextType>;
   paymentHash?: Resolver<ResolversTypes['PaymentHash'], ParentType, ContextType>;
   paymentRequest?: Resolver<ResolversTypes['LnPaymentRequest'], ParentType, ContextType>;
   paymentSecret?: Resolver<ResolversTypes['LnPaymentSecret'], ParentType, ContextType>;
@@ -4294,6 +4305,7 @@ export type LnInvoicePaymentStatusPayloadResolvers<ContextType = any, ParentType
 
 export type LnNoAmountInvoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['LnNoAmountInvoice'] = ResolversParentTypes['LnNoAmountInvoice']> = {
   createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
+  externalId?: Resolver<ResolversTypes['TxExternalId'], ParentType, ContextType>;
   paymentHash?: Resolver<ResolversTypes['PaymentHash'], ParentType, ContextType>;
   paymentRequest?: Resolver<ResolversTypes['LnPaymentRequest'], ParentType, ContextType>;
   paymentSecret?: Resolver<ResolversTypes['LnPaymentSecret'], ParentType, ContextType>;
@@ -4731,6 +4743,7 @@ export interface TotpSecretScalarConfig extends GraphQLScalarTypeConfig<Resolver
 export type TransactionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Transaction'] = ResolversParentTypes['Transaction']> = {
   createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
   direction?: Resolver<ResolversTypes['TxDirection'], ParentType, ContextType>;
+  externalId?: Resolver<Maybe<ResolversTypes['TxExternalId']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   initiationVia?: Resolver<ResolversTypes['InitiationVia'], ParentType, ContextType>;
   memo?: Resolver<Maybe<ResolversTypes['Memo']>, ParentType, ContextType>;
@@ -4757,6 +4770,10 @@ export type TransactionEdgeResolvers<ContextType = any, ParentType extends Resol
   node?: Resolver<ResolversTypes['Transaction'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
+
+export interface TxExternalIdScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['TxExternalId'], any> {
+  name: 'TxExternalId';
+}
 
 export type UpgradePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['UpgradePayload'] = ResolversParentTypes['UpgradePayload']> = {
   authToken?: Resolver<Maybe<ResolversTypes['AuthToken']>, ParentType, ContextType>;
@@ -5050,6 +5067,7 @@ export type Resolvers<ContextType = any> = {
   Transaction?: TransactionResolvers<ContextType>;
   TransactionConnection?: TransactionConnectionResolvers<ContextType>;
   TransactionEdge?: TransactionEdgeResolvers<ContextType>;
+  TxExternalId?: GraphQLScalarType;
   UpgradePayload?: UpgradePayloadResolvers<ContextType>;
   UsdWallet?: UsdWalletResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
