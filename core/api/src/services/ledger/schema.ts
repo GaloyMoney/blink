@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 
 import { setTransactionSchema } from "medici"
 
-import { LedgerTransactionType } from "@/domain/ledger"
+import { LedgerTransactionType, checkedToLedgerExternalId } from "@/domain/ledger"
 import { LnPaymentState } from "@/domain/ledger/ln-payment-state"
 
 // TODO migration:
@@ -19,6 +19,10 @@ const transactionSchema = new Schema<ILedgerTransaction>(
       type: Schema.Types.String,
       ref: "invoiceusers",
       // TODO: not always, use another hashOnchain?
+    },
+    external_id: {
+      type: String,
+      validator: (v: string) => !(checkedToLedgerExternalId(v) instanceof Error),
     },
     vout: Number,
 
@@ -157,6 +161,7 @@ transactionSchema.index({ hash: 1 })
 transactionSchema.index({ payout_id: 1 })
 transactionSchema.index({ _original_journal: 1 })
 transactionSchema.index({ related_journal: 1 })
+transactionSchema.index({ external_id: 1 })
 
 setTransactionSchema(transactionSchema, undefined, { defaultIndexes: true })
 
@@ -176,9 +181,7 @@ const transactionMetadataSchema = new Schema<TransactionMetadataRecord>(
   { id: false },
 )
 
-transactionMetadataSchema.index({
-  hash: 1,
-})
+transactionMetadataSchema.index({ hash: 1 })
 
 export const TransactionMetadata = mongoose.model(
   "Medici_Transaction_Metadata",

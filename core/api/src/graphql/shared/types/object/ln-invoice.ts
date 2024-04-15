@@ -1,13 +1,12 @@
+import IInvoice from "../abstract/invoice"
+
 import LnPaymentRequest from "../scalar/ln-payment-request"
 import PaymentHash from "../scalar/payment-hash"
 import LnPaymentSecret from "../scalar/ln-payment-secret"
 import SatAmount from "../scalar/sat-amount"
-
-import IInvoice from "../abstract/invoice"
-
 import InvoicePaymentStatus from "../scalar/invoice-payment-status"
-
 import Timestamp from "../scalar/timestamp"
+import TxExternalId from "../scalar/tx-external-id"
 
 import { GT } from "@/graphql/index"
 import { WalletInvoiceStatusChecker } from "@/domain/wallet-invoices/wallet-invoice-status-checker"
@@ -43,7 +42,9 @@ const LnInvoice = GT.Object<WalletInvoice>({
     },
     createdAt: {
       type: GT.NonNull(Timestamp),
-      resolve: (source) => source.createdAt,
+    },
+    externalId: {
+      type: GT.NonNull(TxExternalId),
     },
   }),
 })
