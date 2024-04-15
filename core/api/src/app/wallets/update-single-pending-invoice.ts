@@ -41,6 +41,9 @@ const assertUnreachable = (x: never): never => {
   throw new Error(`This should never compile with ${x}`)
 }
 
+const revealPreImage = (secretPreImage: SecretPreImage): RevealedPreImage =>
+  secretPreImage as unknown as RevealedPreImage
+
 export const updatePendingInvoice = wrapAsyncToRunInSpan({
   namespace: "app.invoices",
   fnName: "updatePendingInvoice",
@@ -112,6 +115,7 @@ const processPendingInvoice = async ({
   const {
     pubkey,
     paymentHash,
+    externalId,
     recipientWalletDescriptor: recipientInvoiceWalletDescriptor,
   } = walletInvoice
   addAttributesToCurrentSpan({
@@ -196,6 +200,7 @@ const processPendingInvoice = async ({
       paymentHash,
       receivedBtc,
       description,
+      externalId,
       isSettledInLnd: lnInvoiceLookup.isSettled,
       logger: pendingInvoiceLogger,
     }),
@@ -211,6 +216,7 @@ const lockedUpdatePendingInvoiceSteps = async ({
   recipientWalletId,
   receivedBtc,
   description,
+  externalId,
   logger,
 
   // Passed in to lock for idempotent "settle" conditional operation
@@ -220,6 +226,7 @@ const lockedUpdatePendingInvoiceSteps = async ({
   recipientWalletId: WalletId
   receivedBtc: BtcPaymentAmount
   description: string
+  externalId: LedgerExternalId
   logger: Logger
 
   isSettledInLnd: boolean
@@ -358,9 +365,11 @@ const lockedUpdatePendingInvoiceSteps = async ({
       usd: usdBankFee,
       btc: btcBankFee,
     },
+    externalId,
     metadata,
     txMetadata: {
       hash: metadata.hash,
+      revealedPreImage: revealPreImage(walletInvoiceInsideLock.secret),
     },
     additionalCreditMetadata: creditAccountAdditionalMetadata,
     additionalInternalMetadata: internalAccountsAdditionalMetadata,

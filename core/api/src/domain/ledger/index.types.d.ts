@@ -8,6 +8,7 @@ type LiabilitiesWalletId = string & { [liabilitiesWalletId]: never }
 
 type LedgerTransactionId = string & { readonly brand: unique symbol }
 type LedgerJournalId = string & { readonly brand: unique symbol }
+type LedgerExternalId = string & { readonly brand: unique symbol }
 
 type AdminLedgerTransactionTypeObject =
   typeof import("./index").AdminLedgerTransactionType
@@ -37,6 +38,7 @@ type LedgerTransaction<S extends WalletCurrency> = {
   readonly timestamp: Date
   readonly pendingConfirmation: boolean
   readonly journalId: LedgerJournalId
+  readonly externalId?: LedgerExternalId
 
   readonly lnMemo?: string
 
@@ -50,6 +52,8 @@ type LedgerTransaction<S extends WalletCurrency> = {
   readonly pubkey?: Pubkey
   readonly feeKnownInAdvance: boolean
   readonly lnPaymentState?: LnPaymentState
+
+  readonly revealedPreImage?: RevealedPreImage
 
   readonly satsAmount?: Satoshis
   readonly centsAmount?: UsdCents

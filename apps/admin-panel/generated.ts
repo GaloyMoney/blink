@@ -49,6 +49,8 @@ export type Scalars = {
   SignedDisplayMajorAmount: { input: string; output: string; }
   /** Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch) */
   Timestamp: { input: number; output: number; }
+  /** An external reference id that can be optionally added for transactions. */
+  TxExternalId: { input: string; output: string; }
   /** Unique identifier of a user */
   Username: { input: string; output: string; }
   /** Unique identifier of a wallet */
@@ -249,6 +251,8 @@ export type InitiationViaOnChain = {
 /** A lightning invoice. */
 export type Invoice = {
   readonly createdAt: Scalars['Timestamp']['output'];
+  /** The unique external id set for the invoice. */
+  readonly externalId: Scalars['TxExternalId']['output'];
   /** The payment hash of the lightning invoice. */
   readonly paymentHash: Scalars['PaymentHash']['output'];
   /** The bolt11 invoice to be paid. */
@@ -546,6 +550,7 @@ export type Transaction = {
   readonly __typename: 'Transaction';
   readonly createdAt: Scalars['Timestamp']['output'];
   readonly direction: TxDirection;
+  readonly externalId?: Maybe<Scalars['TxExternalId']['output']>;
   readonly id: Scalars['ID']['output'];
   /** From which protocol the payment has been initiated. */
   readonly initiationVia: InitiationVia;
