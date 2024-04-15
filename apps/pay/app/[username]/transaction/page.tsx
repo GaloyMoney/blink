@@ -3,9 +3,12 @@
 import React, { useState, useEffect } from "react"
 import { gql } from "@apollo/client"
 
+import { useSession } from "next-auth/react"
+
 import { useGetPaginatedTransactionsQuery, Transaction } from "@/lib/graphql/generated"
 import LoadingComponent from "@/components/loading"
-import { formatCreateAt } from "@/utils/date-util"
+import { formatCreateAt, formatDate, formatTime } from "@/utils/date-util"
+import { sendDataToPosCompanion } from "@/app/print-companion-service"
 
 gql`
   query GetPaginatedTransactions($first: Int, $after: String, $before: String) {
@@ -77,10 +80,34 @@ function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [cursor, setCursor] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState<boolean>(false)
+  const [posCompanionInstalled, setPosCompanionInstalled] = useState<boolean>(false)
+  const session = useSession()
 
   const { data, loading, error, fetchMore } = useGetPaginatedTransactionsQuery({
     variables: { first: 10 },
   })
+
+  useEffect(() => {
+    const checkRelatedApps = async () => {
+      try {
+        if ("getInstalledRelatedApps" in navigator) {
+          /* eslint @typescript-eslint/ban-ts-comment: "off" */
+          // @ts-ignore-next-line no-implicit-any error
+          const apps = await navigator.getInstalledRelatedApps()
+          const isAppInstalled = apps.some(
+            (app: { id: string }) => app.id === "com.blink.pos.companion",
+          )
+          setPosCompanionInstalled(isAppInstalled)
+        } else {
+          console.error("getInstalledRelatedApps is not supported in this browser.")
+        }
+      } catch (error) {
+        console.error("Error checking installed related apps:", error)
+      }
+    }
+
+    checkRelatedApps()
+  }, [])
 
   useEffect(() => {
     if (data?.me?.defaultAccount?.transactions?.edges) {
@@ -161,6 +188,29 @@ function TransactionsPage() {
             <div className="flex justify-between items-center">
               <span className="font-bold text-sm">Wallet</span>
               <span>{transaction.settlementCurrency}</span>
+            </div>
+            <div>
+              {posCompanionInstalled && (
+                <button
+                  className="flex-1 bg-slate-300 p-2 rounded-md text-black w-full"
+                  onClick={() => {
+                    if (session?.data?.userData?.me?.username)
+                      sendDataToPosCompanion({
+                        username: session?.data?.userData?.me?.username,
+                        amount: `${transaction.settlementDisplayAmount} ${transaction.settlementDisplayCurrency}`,
+                        transactionId: transaction.id,
+                        date: formatDate(transaction.createdAt),
+                        time: formatTime(transaction.createdAt),
+                        paymentHash:
+                          transaction.initiationVia.__typename === "InitiationViaLn"
+                            ? transaction.initiationVia?.paymentHash
+                            : undefined,
+                      })
+                  }}
+                >
+                  Print Receipt
+                </button>
+              )}
             </div>
           </div>
         ))
