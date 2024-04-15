@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react"
-
 import { getParams } from "js-lnurl"
+
+import LoadingComponent from "../loading"
 
 import styles from "./parse-payment.module.css"
 
@@ -18,6 +19,7 @@ function NFCComponent({ paymentRequest }: Props) {
   const [hasNFCPermission, setHasNFCPermission] = useState(false)
   const [nfcMessage, setNfcMessage] = useState("")
   const [isNfcSupported, setIsNfcSupported] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const decodeNDEFRecord = (record: NFCRecord) => {
     if (!record.data) {
@@ -152,6 +154,7 @@ function NFCComponent({ paymentRequest }: Props) {
           console.error("Playback failed", error)
         })
 
+      setIsLoading(true)
       const lnurlParams = await getParams(nfcMessage)
 
       if (!("tag" in lnurlParams && lnurlParams.tag === "withdrawRequest")) {
@@ -160,6 +163,7 @@ function NFCComponent({ paymentRequest }: Props) {
             "reason" in lnurlParams && lnurlParams.reason
           }`,
         )
+        setIsLoading(false)
         return
       }
 
@@ -198,12 +202,17 @@ function NFCComponent({ paymentRequest }: Props) {
           alert(message)
         }
       }
+      setIsLoading(false)
     })()
   }, [nfcMessage, paymentRequest])
 
+  if (isLoading) {
+    return <LoadingComponent />
+  }
+
   return (
     <>
-      {isNfcSupported && paymentRequest === undefined && (
+      {paymentRequest === undefined && (
         <div className="d-flex justify-content-center w-full">
           <button
             data-testid="nfc-btn"
@@ -217,7 +226,11 @@ function NFCComponent({ paymentRequest }: Props) {
             onClick={activateNfcScan}
             disabled={hasNFCPermission}
           >
-            {hasNFCPermission ? "Boltcard activated" : "Activate boltcard"}
+            {!isNfcSupported
+              ? "Bold card not supported"
+              : hasNFCPermission
+                ? "Boltcard activated"
+                : "Activate boltcard"}
           </button>
         </div>
       )}
