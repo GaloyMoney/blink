@@ -93,6 +93,7 @@
 }
 
 .invoiceContainer {
+  margin-top: 1.5em;
   display: grid;
   place-items: center;
 }
