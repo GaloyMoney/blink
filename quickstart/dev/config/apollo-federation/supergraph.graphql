@@ -678,6 +678,9 @@ interface Invoice
 {
   createdAt: Timestamp!
 
+  """The unique external id set for the invoice."""
+  externalId: TxExternalId!
+
   """The payment hash of the lightning invoice."""
   paymentHash: PaymentHash!
 
@@ -766,6 +769,7 @@ type LnInvoice implements Invoice
   @join__type(graph: PUBLIC)
 {
   createdAt: Timestamp!
+  externalId: TxExternalId!
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!
@@ -884,6 +888,7 @@ type LnNoAmountInvoice implements Invoice
   @join__type(graph: PUBLIC)
 {
   createdAt: Timestamp!
+  externalId: TxExternalId!
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!
@@ -1836,6 +1841,7 @@ type Transaction
 {
   createdAt: Timestamp!
   direction: TxDirection!
+  externalId: TxExternalId
   id: ID!
 
   """From which protocol the payment has been initiated."""
@@ -1888,6 +1894,12 @@ enum TxDirection
   RECEIVE @join__enumValue(graph: PUBLIC)
   SEND @join__enumValue(graph: PUBLIC)
 }
+
+"""
+An external reference id that can be optionally added for transactions.
+"""
+scalar TxExternalId
+  @join__type(graph: PUBLIC)
 
 enum TxNotificationType
   @join__type(graph: PUBLIC)

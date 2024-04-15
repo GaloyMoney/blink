@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): add bignumber to solve js math issues (#4290)'
-      sha: 1c4ea28ce564377c9660c80567aa8320530e4c0e
+      commitTitle: 'feat: add `externalId` field to lightning invoices & received
+        transactions (#4262)...'
+      sha: 3758b031a5f2ac79145ff4b5c921b57455ac6195
       tags:
-      - 0.20.148-1-g1c4ea28ce
+      - 0.20.149-2-g3758b031a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): add bignumber to solve js math issues (#4290)'
-      sha: 1c4ea28ce564377c9660c80567aa8320530e4c0e
+      commitTitle: 'feat: add `externalId` field to lightning invoices & received
+        transactions (#4262)...'
+      sha: 3758b031a5f2ac79145ff4b5c921b57455ac6195
       tags:
-      - 0.20.148-1-g1c4ea28ce
+      - 0.20.149-2-g3758b031a
     path: schemas/
   - git:
-      commitTitle: 'fix(core): add bignumber to solve js math issues (#4290)'
-      sha: 1c4ea28ce564377c9660c80567aa8320530e4c0e
+      commitTitle: 'feat: add `externalId` field to lightning invoices & received
+        transactions (#4262)...'
+      sha: 3758b031a5f2ac79145ff4b5c921b57455ac6195
       tags:
-      - 0.20.148-1-g1c4ea28ce
+      - 0.20.149-2-g3758b031a
     path: gql/
   path: ./graphql
 kind: LockConfig
