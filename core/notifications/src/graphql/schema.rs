@@ -70,12 +70,12 @@ pub struct UserUpdateNotificationSettingsPayload {
 }
 
 #[derive(SimpleObject)]
-pub struct UserMarkInAppNotificationAsReadPayload {
+pub struct UserInAppNotificationMarkAsReadPayload {
     notification: InAppNotification,
 }
 
 #[derive(InputObject)]
-struct UserMarkInAppNotificationAsReadInput {
+struct UserInAppNotificationMarkAsReadInput {
     notification_id: ID,
 }
 
@@ -191,11 +191,11 @@ impl Mutation {
         })
     }
 
-    async fn user_mark_in_app_notification_as_read(
+    async fn user_in_app_notification_mark_as_read(
         &self,
         ctx: &Context<'_>,
-        input: UserMarkInAppNotificationAsReadInput,
-    ) -> async_graphql::Result<UserMarkInAppNotificationAsReadPayload> {
+        input: UserInAppNotificationMarkAsReadInput,
+    ) -> async_graphql::Result<UserInAppNotificationMarkAsReadPayload> {
         let subject = ctx.data::<AuthSubject>()?;
 
         if !subject.can_write {
@@ -208,7 +208,7 @@ impl Mutation {
             .mark_notification_as_read(GaloyUserId::from(subject.id.clone()), notification_id)
             .await?;
 
-        Ok(UserMarkInAppNotificationAsReadPayload {
+        Ok(UserInAppNotificationMarkAsReadPayload {
             notification: InAppNotification::from(notification),
         })
     }

@@ -89,8 +89,8 @@ NOTIFICATIONS_PROTO_FILE="${REPO_ROOT}/core/notifications/proto/notifications.pr
     )
 
     # mark the notification as read
-    exec_graphql "$token_name" 'user-mark-in-app-notification-as-read' "$variables"
-    read_at="$(graphql_output '.data.userMarkInAppNotificationAsRead.notification.readAt')"
+    exec_graphql "$token_name" 'user-in-app-notification-mark-as-read' "$variables"
+    read_at="$(graphql_output '.data.userInAppNotificationMarkAsRead.notification.readAt')"
 
     # ensure that read at is not null
     [[ "$read_at" != "null" ]] || exit 1
