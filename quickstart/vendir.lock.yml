@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: add `externalId` field to lightning invoices & received
-        transactions (#4262)...'
-      sha: 3758b031a5f2ac79145ff4b5c921b57455ac6195
+      commitTitle: 'chore(core): migrate invoice users external (#4286)...'
+      sha: 1d95ed15b1e2332e3279a7aacc0d6906b099962e
       tags:
-      - 0.20.149-2-g3758b031a
-    path: ./
+      - 0.20.150-1-g1d95ed15b
+    path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: add `externalId` field to lightning invoices & received
-        transactions (#4262)...'
-      sha: 3758b031a5f2ac79145ff4b5c921b57455ac6195
+      commitTitle: 'chore(core): migrate invoice users external (#4286)...'
+      sha: 1d95ed15b1e2332e3279a7aacc0d6906b099962e
       tags:
-      - 0.20.149-2-g3758b031a
-    path: schemas/
+      - 0.20.150-1-g1d95ed15b
+    path: schemas
   - git:
-      commitTitle: 'feat: add `externalId` field to lightning invoices & received
-        transactions (#4262)...'
-      sha: 3758b031a5f2ac79145ff4b5c921b57455ac6195
+      commitTitle: 'chore(core): migrate invoice users external (#4286)...'
+      sha: 1d95ed15b1e2332e3279a7aacc0d6906b099962e
       tags:
-      - 0.20.149-2-g3758b031a
-    path: gql/
-  path: ./graphql
+      - 0.20.150-1-g1d95ed15b
+    path: gql
+  path: graphql
 kind: LockConfig
