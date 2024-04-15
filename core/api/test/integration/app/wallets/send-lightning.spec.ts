@@ -11,6 +11,7 @@ import {
 } from "@/domain/bitcoin/lightning"
 import { UsdDisplayCurrency, toCents } from "@/domain/fiat"
 import { LnPaymentRequestNonZeroAmountRequiredError } from "@/domain/payments"
+import { LedgerTransactionType } from "@/domain/ledger"
 import {
   InactiveAccountError,
   InsufficientBalanceError,
@@ -40,9 +41,9 @@ import {
   createRandomUserAndBtcWallet,
   createRandomUserAndWallets,
   getBalanceHelper,
+  randomLedgerExternalId,
   recordReceiveLnPayment,
 } from "test/helpers"
-import { LedgerTransactionType } from "@/domain/ledger"
 
 let lnInvoice: LnInvoice
 let noAmountLnInvoice: LnInvoice
@@ -637,6 +638,9 @@ describe("initiated via lightning", () => {
       })
       if (receive instanceof Error) throw receive
 
+      const externalId = randomLedgerExternalId()
+      if (externalId instanceof Error) throw externalId
+
       // Add recipient invoice
       const persisted = await WalletInvoicesRepository().persistNew({
         paymentHash,
@@ -647,6 +651,7 @@ describe("initiated via lightning", () => {
         paid: false,
         lnInvoice,
         processingCompleted: false,
+        externalId,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -688,6 +693,9 @@ describe("initiated via lightning", () => {
       )
       if (newAccount instanceof Error) throw newAccount
 
+      const externalId = randomLedgerExternalId()
+      if (externalId instanceof Error) throw externalId
+
       // Persist invoice as self-invoice
       const persisted = await WalletInvoicesRepository().persistNew({
         paymentHash: lnInvoice.paymentHash,
@@ -698,6 +706,7 @@ describe("initiated via lightning", () => {
         paid: false,
         lnInvoice,
         processingCompleted: false,
+        externalId,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -760,6 +769,9 @@ describe("initiated via lightning", () => {
       )
       const usdAmount = receiveAboveLimitAmounts.usd
 
+      let externalId = randomLedgerExternalId()
+      if (externalId instanceof Error) throw externalId
+
       // Persist invoice as self-invoice
       const persisted = await WalletInvoicesRepository().persistNew({
         paymentHash: largeWithAmountLnInvoice.paymentHash,
@@ -771,6 +783,7 @@ describe("initiated via lightning", () => {
         usdAmount,
         lnInvoice,
         processingCompleted: false,
+        externalId,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -783,6 +796,9 @@ describe("initiated via lightning", () => {
       })
       expect(paymentResult).toBeInstanceOf(TradeIntraAccountLimitsExceededError)
 
+      externalId = randomLedgerExternalId()
+      if (externalId instanceof Error) throw externalId
+
       // Persist no-amount invoice as self-invoice
       const noAmountPersisted = await WalletInvoicesRepository().persistNew({
         paymentHash: noAmountLnInvoice.paymentHash,
@@ -793,6 +809,7 @@ describe("initiated via lightning", () => {
         paid: false,
         lnInvoice,
         processingCompleted: false,
+        externalId,
       })
       if (noAmountPersisted instanceof Error) throw noAmountPersisted
 
@@ -843,6 +860,9 @@ describe("initiated via lightning", () => {
         if (receive instanceof Error) throw receive
       }
 
+      let externalId = randomLedgerExternalId()
+      if (externalId instanceof Error) throw externalId
+
       // Persist invoice as self-invoice
       const persisted = await WalletInvoicesRepository().persistNew({
         paymentHash: largeWithAmountLnInvoice.paymentHash,
@@ -853,6 +873,7 @@ describe("initiated via lightning", () => {
         paid: false,
         lnInvoice,
         processingCompleted: false,
+        externalId,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -865,6 +886,9 @@ describe("initiated via lightning", () => {
       })
       expect(paymentResult).toBeInstanceOf(IntraledgerLimitsExceededError)
 
+      externalId = randomLedgerExternalId()
+      if (externalId instanceof Error) throw externalId
+
       // Persist no-amount invoice as self-invoice
       const noAmountPersisted = await WalletInvoicesRepository().persistNew({
         paymentHash: noAmountLnInvoice.paymentHash,
@@ -875,6 +899,7 @@ describe("initiated via lightning", () => {
         paid: false,
         lnInvoice,
         processingCompleted: false,
+        externalId,
       })
       if (noAmountPersisted instanceof Error) throw noAmountPersisted
 
@@ -922,6 +947,9 @@ describe("initiated via lightning", () => {
       )
       if (newAccount instanceof Error) throw newAccount
 
+      const externalId = randomLedgerExternalId()
+      if (externalId instanceof Error) throw externalId
+
       // Persist invoice as self-invoice
       const persisted = await WalletInvoicesRepository().persistNew({
         paymentHash: noAmountLnInvoice.paymentHash,
@@ -932,6 +960,7 @@ describe("initiated via lightning", () => {
         paid: false,
         lnInvoice,
         processingCompleted: false,
+        externalId,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -990,6 +1019,9 @@ describe("initiated via lightning", () => {
 
       const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
 
+      const externalId = randomLedgerExternalId()
+      if (externalId instanceof Error) throw externalId
+
       // Persist invoice as self-invoice
       const persisted = await WalletInvoicesRepository().persistNew({
         paymentHash: noAmountLnInvoice.paymentHash,
@@ -1000,6 +1032,7 @@ describe("initiated via lightning", () => {
         paid: false,
         lnInvoice,
         processingCompleted: false,
+        externalId,
       })
       if (persisted instanceof Error) throw persisted
 

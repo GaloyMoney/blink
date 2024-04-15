@@ -60,6 +60,7 @@ const LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientMutation = GT.Field({
       memo,
       descriptionHash,
       expiresIn,
+      externalId: undefined,
     })
 
     if (invoice instanceof Error) {

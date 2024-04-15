@@ -1,5 +1,7 @@
 import { randomUUID, randomBytes } from "crypto"
 
+import { checkedToLedgerExternalId } from "@/domain/ledger"
+
 export const randomEmail = () =>
   (randomBytes(20).toString("hex") + "@galoy.io") as EmailAddress
 
@@ -13,3 +15,5 @@ export const randomUserId = () => randomUUID() as UserId
 export const randomWalletId = () => randomUUID() as WalletId
 
 export const randomUsername = () => randomUUID() as IdentityUsername
+
+export const randomLedgerExternalId = () => checkedToLedgerExternalId(randomUUID())

@@ -24,6 +24,13 @@ seed_invoices() {
     '{input: {walletId: $wallet_id, amount: $amount}}'
   )
   exec_graphql "$token_name" 'ln-invoice-create' "$variables"
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg amount "$btc_amount" \
+    '{input: {walletId: $wallet_id, amount: $amount}}'
+  )
   exec_graphql "$token_name" 'ln-invoice-create' "$variables"
 
   # Generate usd invoice
@@ -37,6 +44,27 @@ seed_invoices() {
       '{input: {walletId: $wallet_id, amount: $amount}}'
   )
   exec_graphql "$token_name" 'ln-usd-invoice-create' "$variables"
+}
+
+@test "invoices: add multiple invoices with no external id" {
+  token_name='alice'
+  btc_wallet_name="$token_name.btc_wallet_id"
+  btc_amount="1000"
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg amount "$btc_amount" \
+    '{input: {walletId: $wallet_id, amount: $amount}}'
+  )
+
+  exec_graphql "$token_name" 'ln-invoice-create' "$variables"
+  num_errors="$(graphql_output '.data.lnInvoiceCreate.errors | length')"
+  [[ "$num_errors" == "0" ]] || exit 1
+
+  exec_graphql "$token_name" 'ln-invoice-create' "$variables"
+  num_errors="$(graphql_output '.data.lnInvoiceCreate.errors | length')"
+  [[ "$num_errors" == "0" ]] || exit 1
 }
 
 @test "invoices: get invoices for account" {

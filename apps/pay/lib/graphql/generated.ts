@@ -72,6 +72,8 @@ export type Scalars = {
   TotpRegistrationId: string;
   /** A secret to generate time-based one-time password */
   TotpSecret: string;
+  /** An external reference id that can be optionally added for transactions. */
+  TxExternalId: string;
   /** Unique identifier of a user */
   Username: string;
   /** Unique identifier of a wallet */
@@ -567,6 +569,8 @@ export type IntraLedgerUsdPaymentSendInput = {
 /** A lightning invoice. */
 export type Invoice = {
   readonly createdAt: Scalars['Timestamp'];
+  /** The unique external id set for the invoice. */
+  readonly externalId: Scalars['TxExternalId'];
   /** The payment hash of the lightning invoice. */
   readonly paymentHash: Scalars['PaymentHash'];
   /** The bolt11 invoice to be paid. */
@@ -614,6 +618,7 @@ export type LnAddressPaymentSendInput = {
 export type LnInvoice = Invoice & {
   readonly __typename: 'LnInvoice';
   readonly createdAt: Scalars['Timestamp'];
+  readonly externalId: Scalars['TxExternalId'];
   readonly paymentHash: Scalars['PaymentHash'];
   readonly paymentRequest: Scalars['LnPaymentRequest'];
   readonly paymentSecret: Scalars['LnPaymentSecret'];
@@ -700,6 +705,7 @@ export type LnInvoicePaymentStatusPayload = {
 export type LnNoAmountInvoice = Invoice & {
   readonly __typename: 'LnNoAmountInvoice';
   readonly createdAt: Scalars['Timestamp'];
+  readonly externalId: Scalars['TxExternalId'];
   readonly paymentHash: Scalars['PaymentHash'];
   readonly paymentRequest: Scalars['LnPaymentRequest'];
   readonly paymentSecret: Scalars['LnPaymentSecret'];
@@ -1734,6 +1740,7 @@ export type Transaction = {
   readonly __typename: 'Transaction';
   readonly createdAt: Scalars['Timestamp'];
   readonly direction: TxDirection;
+  readonly externalId?: Maybe<Scalars['TxExternalId']>;
   readonly id: Scalars['ID'];
   /** From which protocol the payment has been initiated. */
   readonly initiationVia: InitiationVia;

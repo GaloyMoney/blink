@@ -13,6 +13,7 @@ const baseInvoice: WalletInvoice = {
   paid: false,
   createdAt: new Date(Date.now()),
   processingCompleted: false,
+  externalId: "externalId" as LedgerExternalId,
   lnInvoice: {
     destination: "destination" as Pubkey,
     paymentHash: "paymentHash" as PaymentHash,

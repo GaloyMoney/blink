@@ -27,6 +27,7 @@ import {
   createMandatoryUsers,
   createRandomUserAndBtcWallet,
   getBalanceHelper,
+  randomLedgerExternalId,
 } from "test/helpers"
 
 const mockLnInvoice = decodeInvoice(
@@ -59,6 +60,10 @@ describe("update pending invoices", () => {
 
       // Setup expired USD wallet invoice
       const { paymentHash } = getSecretAndPaymentHash()
+
+      const externalId = randomLedgerExternalId()
+      if (externalId instanceof Error) throw externalId
+
       const expiredUsdWalletInvoice = {
         paymentHash,
         secret: "secretPreImage" as SecretPreImage,
@@ -71,6 +76,7 @@ describe("update pending invoices", () => {
         paid: false,
         lnInvoice: mockLnInvoice,
         processingCompleted: false,
+        externalId,
       }
       const persisted = await WalletInvoicesRepository().persistNew(
         expiredUsdWalletInvoice,
@@ -112,6 +118,10 @@ describe("update pending invoices", () => {
 
       // Setup expired BTC wallet invoice
       const { paymentHash } = getSecretAndPaymentHash()
+
+      const externalId = randomLedgerExternalId()
+      if (externalId instanceof Error) throw externalId
+
       const expiredBtcWalletInvoice = {
         paymentHash,
         secret: "secretPreImage" as SecretPreImage,
@@ -124,6 +134,7 @@ describe("update pending invoices", () => {
         paid: false,
         lnInvoice: mockLnInvoice,
         processingCompleted: false,
+        externalId,
       }
       const persisted = await WalletInvoicesRepository().persistNew(
         expiredBtcWalletInvoice,
@@ -194,6 +205,9 @@ describe("update pending invoices", () => {
       const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
       const initialBalance = await getBalanceHelper(recipientWalletDescriptor.id)
 
+      const externalId = randomLedgerExternalId()
+      if (externalId instanceof Error) throw externalId
+
       const btcWalletInvoice = {
         paymentHash,
         secret: "secretPreImage" as SecretPreImage,
@@ -203,6 +217,7 @@ describe("update pending invoices", () => {
         paid: false,
         lnInvoice: mockLnInvoice,
         processingCompleted: false,
+        externalId,
       }
 
       const persisted = await walletInvoices.persistNew(btcWalletInvoice)
@@ -287,6 +302,9 @@ describe("update pending invoices", () => {
       // Setup BTC wallet and invoice
       const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
 
+      const externalId = randomLedgerExternalId()
+      if (externalId instanceof Error) throw externalId
+
       const btcWalletInvoice = {
         paymentHash,
         secret: "secretPreImage" as SecretPreImage,
@@ -296,6 +314,7 @@ describe("update pending invoices", () => {
         paid: false,
         lnInvoice: mockLnInvoice,
         processingCompleted: false,
+        externalId,
       }
 
       const persisted = await walletInvoices.persistNew(btcWalletInvoice)

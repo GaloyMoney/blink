@@ -9,7 +9,7 @@ import { parseFilterQuery } from "medici/build/helper/parse/parseFilterQuery"
 
 import { MainBook } from "./books"
 
-import { translateToLedgerTx } from "."
+import { translateToLedgerTx } from "./translate"
 
 import { Transaction } from "@/services/ledger/schema"
 import { checkedToPaginatedQueryCursor } from "@/domain/primitives"

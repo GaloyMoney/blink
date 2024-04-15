@@ -50,6 +50,7 @@ describe("NotificationsService", () => {
           status: "success",
           memo: "",
           walletId,
+          externalId: "externalId" as LedgerExternalId,
           initiationVia: {
             type: "onchain",
           },
