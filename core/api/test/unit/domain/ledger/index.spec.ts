@@ -1,5 +1,5 @@
 import { LedgerTransactionType, liabilitiesMainAccount } from "@/domain/ledger"
-import { translateToLedgerTx } from "@/services/ledger"
+import { translateToLedgerTx } from "@/services/ledger/translate"
 import { toObjectId } from "@/services/mongoose/utils"
 
 describe("LedgerService", () => {

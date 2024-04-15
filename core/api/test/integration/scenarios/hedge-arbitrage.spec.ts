@@ -209,6 +209,7 @@ const getUsdEquivalentForWithAmountInvoiceSendToBtc = async ({
   const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
     walletId: newBtcWallet.id,
     amount: toSats(btcPaymentAmount.amount),
+    externalId: undefined,
   })
   if (invoice instanceof Error) throw invoice
 
@@ -236,6 +237,7 @@ const getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc = async ({
   const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
     walletId: newBtcWallet.id,
     amount: toSats(btcPaymentAmount.amount),
+    externalId: undefined,
   })
   if (invoice instanceof Error) throw invoice
 
@@ -266,8 +268,9 @@ const getBtcEquivalentForNoAmountInvoiceSendToUsd = async ({
   const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
   const beforeRecipientUsd = await getBalanceHelper(newUsdWallet.id)
-  const invoice = await Wallets.addInvoiceNoAmountForSelf({
+  const invoice = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
     walletId: newUsdWallet.id,
+    externalId: undefined,
   })
   if (invoice instanceof Error) throw invoice
 
@@ -303,8 +306,9 @@ const getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd = async ({
   const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
   const beforeRecipientUsd = await getBalanceHelper(newUsdWallet.id)
-  const invoice = await Wallets.addInvoiceNoAmountForSelf({
+  const invoice = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
     walletId: newUsdWallet.id,
+    externalId: undefined,
   })
   if (invoice instanceof Error) throw invoice
 
@@ -497,6 +501,7 @@ describe("arbitrage strategies", () => {
           const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -513,6 +518,7 @@ describe("arbitrage strategies", () => {
           const invoiceUsd = await Wallets.addInvoiceForSelfForUsdWallet({
             walletId: newUsdWallet.id,
             amount: toCents(1),
+            externalId: undefined,
           })
           if (invoiceUsd instanceof Error) throw invoiceUsd
 
@@ -561,6 +567,7 @@ describe("arbitrage strategies", () => {
           const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -577,6 +584,7 @@ describe("arbitrage strategies", () => {
           const invoiceUsd = await Wallets.addInvoiceForSelfForUsdWallet({
             walletId: newUsdWallet.id,
             amount: toCents(1),
+            externalId: undefined,
           })
           if (invoiceUsd instanceof Error) throw invoiceUsd
 
@@ -642,6 +650,7 @@ describe("arbitrage strategies", () => {
           const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -714,6 +723,7 @@ describe("arbitrage strategies", () => {
           const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -727,8 +737,9 @@ describe("arbitrage strategies", () => {
           if (result instanceof Error) throw result
 
           // Step 3: Replenish USD from BTC wallet with discovered 'minBtcAmountToSpend' for $0.01
-          const invoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelf({
+          const invoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newUsdWallet.id,
+            externalId: undefined,
           })
           if (invoiceNoAmountUsd instanceof Error) throw invoiceNoAmountUsd
 
@@ -786,6 +797,7 @@ describe("arbitrage strategies", () => {
           const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -799,8 +811,9 @@ describe("arbitrage strategies", () => {
           if (result instanceof Error) throw result
 
           // Step 3: Replenish USD from BTC wallet with discovered 'minBtcAmountToSpend' for $0.01
-          const invoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelf({
+          const invoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newUsdWallet.id,
+            externalId: undefined,
           })
           if (invoiceNoAmountUsd instanceof Error) throw invoiceNoAmountUsd
 
@@ -861,6 +874,7 @@ describe("arbitrage strategies", () => {
           const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -883,6 +897,7 @@ describe("arbitrage strategies", () => {
           const invoiceUsd = await Wallets.addInvoiceForSelfForUsdWallet({
             walletId: newUsdWallet.id,
             amount: toCents(1),
+            externalId: undefined,
           })
           if (invoiceUsd instanceof Error) throw invoiceUsd
 
@@ -931,6 +946,7 @@ describe("arbitrage strategies", () => {
           const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -953,6 +969,7 @@ describe("arbitrage strategies", () => {
           const invoiceUsd = await Wallets.addInvoiceForSelfForUsdWallet({
             walletId: newUsdWallet.id,
             amount: toCents(1),
+            externalId: undefined,
           })
           if (invoiceUsd instanceof Error) throw invoiceUsd
 
@@ -1018,6 +1035,7 @@ describe("arbitrage strategies", () => {
           const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -1096,6 +1114,7 @@ describe("arbitrage strategies", () => {
           const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -1115,8 +1134,9 @@ describe("arbitrage strategies", () => {
           if (result instanceof Error) throw result
 
           // Step 3: Replenish USD from BTC wallet with discovered 'minBtcAmountToSpend' for $0.01
-          const invoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelf({
+          const invoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newUsdWallet.id,
+            externalId: undefined,
           })
           if (invoiceNoAmountUsd instanceof Error) throw invoiceNoAmountUsd
 
@@ -1174,6 +1194,7 @@ describe("arbitrage strategies", () => {
           const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -1193,8 +1214,9 @@ describe("arbitrage strategies", () => {
           if (result instanceof Error) throw result
 
           // Step 3: Replenish USD from BTC wallet with discovered 'minBtcAmountToSpend' for $0.01
-          const invoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelf({
+          const invoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newUsdWallet.id,
+            externalId: undefined,
           })
           if (invoiceNoAmountUsd instanceof Error) throw invoiceNoAmountUsd
 
@@ -1312,8 +1334,9 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const invoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newUsdWallet.id,
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -1366,8 +1389,9 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const invoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newUsdWallet.id,
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -1381,8 +1405,9 @@ describe("arbitrage strategies", () => {
           if (paid instanceof Error) throw paid
 
           // Step 2: Replenish BTC from USD wallet with $0.01
-          const invoiceNoAmountBtc = await Wallets.addInvoiceNoAmountForSelf({
+          const invoiceNoAmountBtc = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newBtcWallet.id,
+            externalId: undefined,
           })
           if (invoiceNoAmountBtc instanceof Error) throw invoiceNoAmountBtc
 
@@ -1425,8 +1450,9 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const invoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newUsdWallet.id,
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -1440,8 +1466,9 @@ describe("arbitrage strategies", () => {
           if (paid instanceof Error) throw paid
 
           // Step 2: Replenish BTC from USD wallet with $0.01
-          const invoiceNoAmountBtc = await Wallets.addInvoiceNoAmountForSelf({
+          const invoiceNoAmountBtc = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newBtcWallet.id,
+            externalId: undefined,
           })
           if (invoiceNoAmountBtc instanceof Error) throw invoiceNoAmountBtc
 
@@ -1505,8 +1532,9 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const invoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newUsdWallet.id,
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -1523,6 +1551,7 @@ describe("arbitrage strategies", () => {
           const invoiceBtc = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
+            externalId: undefined,
           })
           if (invoiceBtc instanceof Error) throw invoiceBtc
 
@@ -1576,8 +1605,9 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const invoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newUsdWallet.id,
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -1594,6 +1624,7 @@ describe("arbitrage strategies", () => {
           const invoiceBtc = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
+            externalId: undefined,
           })
           if (invoiceBtc instanceof Error) throw invoiceBtc
 
@@ -1645,8 +1676,9 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const invoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newUsdWallet.id,
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -1706,8 +1738,9 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const invoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newUsdWallet.id,
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -1728,8 +1761,9 @@ describe("arbitrage strategies", () => {
           if (paid instanceof Error) throw paid
 
           // Step 2: Replenish BTC from USD wallet with $0.01
-          const invoiceNoAmountBtc = await Wallets.addInvoiceNoAmountForSelf({
+          const invoiceNoAmountBtc = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newBtcWallet.id,
+            externalId: undefined,
           })
           if (invoiceNoAmountBtc instanceof Error) throw invoiceNoAmountBtc
 
@@ -1772,8 +1806,9 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const invoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newUsdWallet.id,
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -1794,8 +1829,9 @@ describe("arbitrage strategies", () => {
           if (paid instanceof Error) throw paid
 
           // Step 2: Replenish BTC from USD wallet with $0.01
-          const invoiceNoAmountBtc = await Wallets.addInvoiceNoAmountForSelf({
+          const invoiceNoAmountBtc = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newBtcWallet.id,
+            externalId: undefined,
           })
           if (invoiceNoAmountBtc instanceof Error) throw invoiceNoAmountBtc
 
@@ -1859,8 +1895,9 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const invoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newUsdWallet.id,
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -1884,6 +1921,7 @@ describe("arbitrage strategies", () => {
           const invoiceBtc = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
+            externalId: undefined,
           })
           if (invoiceBtc instanceof Error) throw invoiceBtc
 
@@ -1937,8 +1975,9 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const invoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
             walletId: newUsdWallet.id,
+            externalId: undefined,
           })
           if (invoice instanceof Error) throw invoice
 
@@ -1962,6 +2001,7 @@ describe("arbitrage strategies", () => {
           const invoiceBtc = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
+            externalId: undefined,
           })
           if (invoiceBtc instanceof Error) throw invoiceBtc
 

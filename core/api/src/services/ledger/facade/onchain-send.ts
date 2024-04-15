@@ -8,11 +8,10 @@ import {
   EntryBuilder,
   toLedgerAccountDescriptor,
 } from "../domain"
+import { translateToLedgerTx } from "../translate"
 import { NoTransactionToSettleError, UnknownLedgerError } from "../domain/errors"
 import { persistAndReturnEntry, translateToLedgerJournal } from "../helpers"
 import { TransactionsMetadataRepository } from "../services"
-
-import { translateToLedgerTx } from ".."
 
 import { isOnChainFeeReconciliationTxn } from "./onchain-reconcile"
 import { staticAccountIds } from "./static-account-ids"

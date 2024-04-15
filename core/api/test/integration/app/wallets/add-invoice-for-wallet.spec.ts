@@ -37,14 +37,16 @@ describe("addInvoice", () => {
     expect(updatedAccount.status).toEqual(AccountStatus.Locked)
 
     // Add invoice for self attempt
-    const selfRes = await Wallets.addInvoiceNoAmountForSelf({
+    const selfRes = await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
       walletId: newWalletDescriptor.id,
+      externalId: undefined,
     })
     expect(selfRes).toBeInstanceOf(InactiveAccountError)
 
     // Create invoice for recipient attempt
-    const recipientRes = await Wallets.addInvoiceNoAmountForRecipient({
+    const recipientRes = await Wallets.addInvoiceNoAmountForRecipientForAnyWallet({
       recipientWalletId: newWalletDescriptor.id,
+      externalId: undefined,
     })
     expect(recipientRes).toBeInstanceOf(InactiveAccountError)
   })
@@ -81,6 +83,7 @@ describe("addInvoice", () => {
         await Wallets.addInvoiceForSelfForBtcWallet({
           walletId: newWalletDescriptor.id,
           amount: amountSats,
+          externalId: undefined,
         })
 
         const { keyPrefix } = redisRateLimitServiceSpy.mock.calls[0][0]
@@ -123,6 +126,7 @@ describe("addInvoice", () => {
         await Wallets.addInvoiceForSelfForUsdWallet({
           walletId: newWalletDescriptor.id,
           amount: amountCents,
+          externalId: undefined,
         })
 
         const { keyPrefix } = redisRateLimitServiceSpy.mock.calls[0][0]
@@ -161,8 +165,9 @@ describe("addInvoice", () => {
 
         // Add invoice and check calls
         const newWalletDescriptor = await createRandomUserAndBtcWallet()
-        await Wallets.addInvoiceNoAmountForSelf({
+        await Wallets.addInvoiceNoAmountForSelfForAnyWallet({
           walletId: newWalletDescriptor.id,
+          externalId: undefined,
         })
 
         const { keyPrefix } = redisRateLimitServiceSpy.mock.calls[0][0]
@@ -207,6 +212,7 @@ describe("addInvoice", () => {
       await Wallets.addInvoiceForRecipientForBtcWallet({
         recipientWalletId: newWalletDescriptor.id,
         amount: amountSats,
+        externalId: undefined,
       })
 
       const { keyPrefix } = redisRateLimitServiceSpy.mock.calls[0][0]
@@ -249,6 +255,7 @@ describe("addInvoice", () => {
       await Wallets.addInvoiceForRecipientForUsdWallet({
         recipientWalletId: newWalletDescriptor.id,
         amount: amountCents,
+        externalId: undefined,
       })
 
       const { keyPrefix } = redisRateLimitServiceSpy.mock.calls[0][0]
@@ -291,6 +298,7 @@ describe("addInvoice", () => {
       await Wallets.addInvoiceForRecipientForUsdWalletAndBtcAmount({
         recipientWalletId: newWalletDescriptor.id,
         amount: amountSats,
+        externalId: undefined,
       })
 
       const { keyPrefix } = redisRateLimitServiceSpy.mock.calls[0][0]
@@ -302,7 +310,7 @@ describe("addInvoice", () => {
       expect(consumedKey).toBe(keyToConsume)
     })
 
-    it("calls rate limit check for addInvoiceNoAmountForRecipient", async () => {
+    it("calls rate limit check for addInvoiceNoAmountForRecipientForAnyWallet", async () => {
       // Setup mocks
       const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
       jest.spyOn(LndImpl, "LndService").mockReturnValue({
@@ -329,8 +337,9 @@ describe("addInvoice", () => {
 
       // Add invoice and check calls
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      await Wallets.addInvoiceNoAmountForRecipient({
+      await Wallets.addInvoiceNoAmountForRecipientForAnyWallet({
         recipientWalletId: newWalletDescriptor.id,
+        externalId: undefined,
       })
 
       const { keyPrefix } = redisRateLimitServiceSpy.mock.calls[0][0]

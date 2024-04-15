@@ -45,10 +45,11 @@ const LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
       }
     }
 
-    const invoice = await Wallets.addInvoiceNoAmountForRecipient({
+    const invoice = await Wallets.addInvoiceNoAmountForRecipientForAnyWallet({
       recipientWalletId,
       memo,
       expiresIn,
+      externalId: undefined,
     })
 
     if (invoice instanceof Error) {

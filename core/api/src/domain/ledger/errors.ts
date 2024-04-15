@@ -16,6 +16,9 @@ export class MissingExpectedDisplayAmountsForTransactionError extends LedgerServ
 export class InvalidLnPaymentTxnsBundleError extends LedgerServiceError {
   level = ErrorLevel.Critical
 }
+export class InvalidTxMetadataFetchedError extends LedgerServiceError {
+  level = ErrorLevel.Critical
+}
 export class UnknownLedgerError extends LedgerServiceError {
   level = ErrorLevel.Critical
 }

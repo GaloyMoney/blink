@@ -52,6 +52,7 @@ const LnUsdInvoiceCreateMutation = GT.Field({
       amount,
       memo,
       expiresIn,
+      externalId: undefined,
     })
 
     if (invoice instanceof Error) {

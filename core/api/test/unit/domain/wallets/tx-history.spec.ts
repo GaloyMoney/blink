@@ -28,6 +28,7 @@ describe("translates ledger txs to wallet txs", () => {
 
   const baseLedgerTransaction = {
     id: "id" as LedgerTransactionId,
+    externalId: "externalId" as LedgerExternalId,
     satsFee,
     centsFee,
     displayFee,
@@ -40,6 +41,7 @@ describe("translates ledger txs to wallet txs", () => {
 
   const baseWalletTransaction = {
     id: "id" as LedgerTransactionId,
+    externalId: "externalId" as LedgerExternalId,
     status: TxStatus.Success,
     createdAt: timestamp,
   }

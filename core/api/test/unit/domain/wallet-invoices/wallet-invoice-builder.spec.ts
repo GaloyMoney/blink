@@ -84,13 +84,27 @@ describe("WalletInvoiceBuilder", () => {
     expect(lnInvoice).not.toHaveProperty("secret")
   }
 
+  const testExternalId = "testExternalId" as LedgerExternalId
+  const WIBWithExternalId = WIB.withExternalId(testExternalId)
+  const checkExternalId = ({ externalId }: WalletInvoice) => {
+    expect(externalId).toEqual(testExternalId)
+  }
+
+  const WIBWithNoExternalId = WIB.withExternalId(undefined)
+  const checkDefaultExternalId = ({ paymentHash, externalId }: WalletInvoice) => {
+    expect(externalId).toEqual(paymentHash)
+  }
+
   const testDescription = "testdescription"
-  const WIBWithDescription = WIB.withDescription({
+  const WIBWithDescription = WIBWithExternalId.withDescription({
     description: testDescription,
   })
   const checkDescription = ({ lnInvoice }: WalletInvoice) => {
     expect(lnInvoice.description).toEqual(testDescription)
   }
+  const WIBWithDescriptionAndNoExternalId = WIBWithNoExternalId.withDescription({
+    description: testDescription,
+  })
 
   const expirationInMinutes = checkedToMinutes(3)
   if (expirationInMinutes instanceof Error) throw expirationInMinutes
@@ -114,11 +128,18 @@ describe("WalletInvoiceBuilder", () => {
       expect(walletInvoice.selfGenerated).toEqual(true)
     }
 
+    const WIBWithCreatorAndNoExternalId =
+      WIBWithDescriptionAndNoExternalId.generatedForSelf()
+
     describe("with btc recipient wallet", () => {
-      const WIBWithRecipient = WIBWithCreator.withRecipientWallet(recipientBtcWallet)
       const checkRecipientWallet = (walletInvoice: WalletInvoice) => {
         expect(walletInvoice.recipientWalletDescriptor).toEqual(recipientBtcWallet)
       }
+
+      const WIBWithRecipient = WIBWithCreator.withRecipientWallet(recipientBtcWallet)
+
+      const WIBWithRecipientAndNoExternalId =
+        WIBWithCreatorAndNoExternalId.withRecipientWallet(recipientBtcWallet)
 
       describe("with amount", () => {
         it("registers and persists invoice with no conversion", async () => {
@@ -151,10 +172,52 @@ describe("WalletInvoiceBuilder", () => {
 
           checkSecretAndHash(invoices)
           checkAmount(invoices)
+          checkExternalId(invoices)
           checkDescription(invoices)
           checkCreator(invoices)
           checkRecipientWallet(invoices)
           checkExpiration(invoices)
+        })
+
+        it("registers and persists invoice with no external id and no conversion", async () => {
+          const btcCheckedAmount = checkedToBtcPaymentAmount(uncheckedAmount)
+          if (btcCheckedAmount instanceof Error) throw btcCheckedAmount
+
+          const checkAmount = (walletInvoice: WalletInvoice) => {
+            expect(walletInvoice.lnInvoice).toEqual(
+              expect.objectContaining({
+                amount: uncheckedAmount as Satoshis,
+                paymentAmount: btcCheckedAmount,
+                milliSatsAmount: (1000 * uncheckedAmount) as MilliSatoshis,
+              }),
+            )
+            expect(walletInvoice).toEqual(
+              expect.objectContaining({
+                usdAmount: undefined,
+                paid: false,
+              }),
+            )
+          }
+
+          const WIBWithAmountAndNoExternalId =
+            await WIBWithRecipientAndNoExternalId.withExpiration(
+              expirationInMinutes,
+            ).withAmount(btcCheckedAmount)
+          if (WIBWithAmountAndNoExternalId instanceof Error) {
+            throw WIBWithAmountAndNoExternalId
+          }
+
+          const invoiceWithNoExternalId =
+            await WIBWithAmountAndNoExternalId.registerInvoice()
+          if (invoiceWithNoExternalId instanceof Error) throw invoiceWithNoExternalId
+
+          checkSecretAndHash(invoiceWithNoExternalId)
+          checkAmount(invoiceWithNoExternalId)
+          checkDefaultExternalId(invoiceWithNoExternalId)
+          checkDescription(invoiceWithNoExternalId)
+          checkCreator(invoiceWithNoExternalId)
+          checkRecipientWallet(invoiceWithNoExternalId)
+          checkExpiration(invoiceWithNoExternalId)
         })
 
         it("fails to register and persist invoice with usd amount", async () => {
@@ -195,6 +258,7 @@ describe("WalletInvoiceBuilder", () => {
 
           checkSecretAndHash(invoices)
           checkAmount(invoices)
+          checkExternalId(invoices)
           checkDescription(invoices)
           checkCreator(invoices)
           checkRecipientWallet(invoices)
@@ -241,6 +305,7 @@ describe("WalletInvoiceBuilder", () => {
 
           checkSecretAndHash(invoices)
           checkAmount(invoices)
+          checkExternalId(invoices)
           checkDescription(invoices)
           checkCreator(invoices)
           checkRecipientWallet(invoices)
@@ -279,6 +344,7 @@ describe("WalletInvoiceBuilder", () => {
 
           checkSecretAndHash(invoices)
           checkAmount(invoices)
+          checkExternalId(invoices)
           checkDescription(invoices)
           checkCreator(invoices)
           checkRecipientWallet(invoices)
@@ -325,6 +391,7 @@ describe("WalletInvoiceBuilder", () => {
 
           checkSecretAndHash(invoices)
           checkAmount(invoices)
+          checkExternalId(invoices)
           checkDescription(invoices)
           checkCreator(invoices)
           checkRecipientWallet(invoices)
