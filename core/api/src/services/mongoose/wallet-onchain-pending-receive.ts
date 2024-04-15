@@ -107,6 +107,7 @@ const translateToWalletOnChainTransaction = (
       `${result.transactionHash}:${result.vout}`,
     ) as LedgerTransactionId,
     walletId: result.walletId as WalletId,
+    externalId: undefined,
     settlementAmount: toCurrency(result.walletAmount),
     settlementFee: toCurrency(result.walletFee),
     settlementCurrency: walletCurrency,

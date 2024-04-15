@@ -1,11 +1,9 @@
 import PaymentHash from "../scalar/payment-hash"
 import LnPaymentRequest from "../scalar/ln-payment-request"
-
 import LnPaymentSecret from "../scalar/ln-payment-secret"
-
 import InvoicePaymentStatus from "../scalar/invoice-payment-status"
-
 import Timestamp from "../scalar/timestamp"
+import TxExternalId from "../scalar/tx-external-id"
 
 import { GT } from "@/graphql/index"
 import { connectionDefinitions } from "@/graphql/connections"
@@ -33,6 +31,10 @@ const IInvoice = GT.Interface({
     },
     createdAt: {
       type: GT.NonNull(Timestamp),
+    },
+    externalId: {
+      type: GT.NonNull(TxExternalId),
+      description: "The unique external id set for the invoice.",
     },
   }),
 })

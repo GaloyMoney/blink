@@ -36,10 +36,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
     if (ledgerTxsMetadata.length === 0) return []
 
     try {
-      const ledgerTxsMetadataPersist = ledgerTxsMetadata.map((txMetadata) => {
-        const { id, ...metadata } = txMetadata
-        return { _id: toObjectId<LedgerTransactionId>(id), ...metadata }
-      })
+      const ledgerTxsMetadataPersist = ledgerTxsMetadata.map(translateToTxMetadataRecord)
       const result: TransactionMetadataRecord[] = await TransactionMetadata.insertMany(
         ledgerTxsMetadataPersist,
       )
@@ -148,3 +145,17 @@ const translateToLedgerTxMetadata = (
   hash: (txMetadata.hash as PaymentHash | OnChainTxHash) || undefined,
   revealedPreImage: (txMetadata.revealedPreImage as RevealedPreImage) || undefined,
 })
+
+const translateToTxMetadataRecord = (
+  txMetadata: LedgerTransactionMetadata,
+): TransactionMetadataRecord => {
+  return {
+    _id: toObjectId<LedgerTransactionId>(txMetadata.id),
+
+    ...("hash" in txMetadata ? { hash: txMetadata.hash } : {}),
+
+    ...("revealedPreImage" in txMetadata
+      ? { revealedPreImage: txMetadata.revealedPreImage }
+      : {}),
+  }
+}

@@ -501,6 +501,9 @@ input IntraLedgerUsdPaymentSendInput {
 interface Invoice {
   createdAt: Timestamp!
 
+  """The unique external id set for the invoice."""
+  externalId: TxExternalId!
+
   """The payment hash of the lightning invoice."""
   paymentHash: PaymentHash!
 
@@ -555,6 +558,7 @@ input LnAddressPaymentSendInput {
 
 type LnInvoice implements Invoice {
   createdAt: Timestamp!
+  externalId: TxExternalId!
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!
@@ -648,6 +652,7 @@ type LnInvoicePaymentStatusPayload {
 
 type LnNoAmountInvoice implements Invoice {
   createdAt: Timestamp!
+  externalId: TxExternalId!
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!
@@ -1419,6 +1424,7 @@ or with lightning but settled intraledger.
 type Transaction {
   createdAt: Timestamp!
   direction: TxDirection!
+  externalId: TxExternalId
   id: ID!
 
   """From which protocol the payment has been initiated."""
@@ -1465,6 +1471,11 @@ enum TxDirection {
   RECEIVE
   SEND
 }
+
+"""
+An external reference id that can be optionally added for transactions.
+"""
+scalar TxExternalId
 
 enum TxNotificationType {
   IntraLedgerPayment
