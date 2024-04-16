@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): pin pnpm in Dockerfile-migrate'
-      sha: 4b5fe0a2414e839a9ab11d5a1119204d4a7ef918
+      commitTitle: 'chore: bump deps (#4299)...'
+      sha: d22642efb0471da164a3efa6e7a87f114886b24e
       tags:
-      - 0.20.151-3-g4b5fe0a24
+      - 0.20.152-1-gd22642efb
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): pin pnpm in Dockerfile-migrate'
-      sha: 4b5fe0a2414e839a9ab11d5a1119204d4a7ef918
+      commitTitle: 'chore: bump deps (#4299)...'
+      sha: d22642efb0471da164a3efa6e7a87f114886b24e
       tags:
-      - 0.20.151-3-g4b5fe0a24
+      - 0.20.152-1-gd22642efb
     path: schemas
   - git:
-      commitTitle: 'fix(core): pin pnpm in Dockerfile-migrate'
-      sha: 4b5fe0a2414e839a9ab11d5a1119204d4a7ef918
+      commitTitle: 'chore: bump deps (#4299)...'
+      sha: d22642efb0471da164a3efa6e7a87f114886b24e
       tags:
-      - 0.20.151-3-g4b5fe0a24
+      - 0.20.152-1-gd22642efb
     path: gql
   path: graphql
 kind: LockConfig
