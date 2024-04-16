@@ -501,6 +501,9 @@ input IntraLedgerUsdPaymentSendInput {
 interface Invoice {
   createdAt: Timestamp!
 
+  """The unique external id set for the invoice."""
+  externalId: TxExternalId!
+
   """The payment hash of the lightning invoice."""
   paymentHash: PaymentHash!
 
@@ -555,6 +558,7 @@ input LnAddressPaymentSendInput {
 
 type LnInvoice implements Invoice {
   createdAt: Timestamp!
+  externalId: TxExternalId!
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!
@@ -575,6 +579,7 @@ input LnInvoiceCreateInput {
 
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
+  externalId: TxExternalId
 
   """Optional memo for the lightning invoice."""
   memo: Memo
@@ -590,6 +595,7 @@ input LnInvoiceCreateOnBehalfOfRecipientInput {
 
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
+  externalId: TxExternalId
 
   """Optional memo for the lightning invoice."""
   memo: Memo
@@ -648,6 +654,7 @@ type LnInvoicePaymentStatusPayload {
 
 type LnNoAmountInvoice implements Invoice {
   createdAt: Timestamp!
+  externalId: TxExternalId!
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!
@@ -657,6 +664,7 @@ type LnNoAmountInvoice implements Invoice {
 input LnNoAmountInvoiceCreateInput {
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
+  externalId: TxExternalId
 
   """Optional memo for the lightning invoice."""
   memo: Memo
@@ -670,6 +678,7 @@ input LnNoAmountInvoiceCreateInput {
 input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
+  externalId: TxExternalId
 
   """Optional memo for the lightning invoice."""
   memo: Memo
@@ -750,6 +759,7 @@ input LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput {
 
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
+  externalId: TxExternalId
 
   """
   Optional memo for the lightning invoice. Acts as a note to the recipient.
@@ -766,6 +776,7 @@ input LnUsdInvoiceCreateInput {
 
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
+  externalId: TxExternalId
 
   """Optional memo for the lightning invoice."""
   memo: Memo
@@ -781,6 +792,7 @@ input LnUsdInvoiceCreateOnBehalfOfRecipientInput {
 
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
+  externalId: TxExternalId
 
   """
   Optional memo for the lightning invoice. Acts as a note to the recipient.
@@ -1419,6 +1431,7 @@ or with lightning but settled intraledger.
 type Transaction {
   createdAt: Timestamp!
   direction: TxDirection!
+  externalId: TxExternalId
   id: ID!
 
   """From which protocol the payment has been initiated."""
@@ -1465,6 +1478,11 @@ enum TxDirection {
   RECEIVE
   SEND
 }
+
+"""
+An external reference id that can be optionally added for transactions.
+"""
+scalar TxExternalId
 
 enum TxNotificationType {
   IntraLedgerPayment

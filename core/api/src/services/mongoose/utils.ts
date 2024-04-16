@@ -4,6 +4,7 @@ import {
   CannotConnectToDbError,
   DbConnectionClosedError,
   DuplicateKeyForPersistError,
+  DuplicateLedgerExternalIdError,
   InvalidDocumentIdForDbError,
   UnknownRepositoryError,
 } from "@/domain/errors"
@@ -39,6 +40,9 @@ export const parseRepositoryError = (err: Error | string | unknown) => {
     case match(KnownRepositoryErrorMessages.MongoInvalidDocumentId):
       return new InvalidDocumentIdForDbError()
 
+    case match(KnownRepositoryErrorMessages.MongoDuplicateExternalIdForPersist):
+      return new DuplicateLedgerExternalIdError()
+
     case match(KnownRepositoryErrorMessages.MongoDuplicateKeyForPersist):
       return new DuplicateKeyForPersistError()
 
@@ -56,6 +60,8 @@ const KnownRepositoryErrorMessages = {
 
   MongoInvalidDocumentId:
     /Argument passed in must be a string of 12 bytes or a string of 24 hex characters or an integer/,
+
+  MongoDuplicateExternalIdForPersist: /E11000 duplicate key error collection.*externalId/,
   MongoDuplicateKeyForPersist: /E11000 duplicate key error collection/,
 } as const
 

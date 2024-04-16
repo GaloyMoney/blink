@@ -38,7 +38,7 @@ type SettlementViaIntraledger = {
 
 type SettlementViaLn = {
   readonly type: "lightning"
-  readonly revealedPreImage: undefined // is added by dataloader in resolver
+  readonly revealedPreImage: RevealedPreImage | undefined // is sometimes added by dataloader in resolver
 }
 
 type SettlementViaOnChainIncoming = {
@@ -71,6 +71,7 @@ type PartialBaseWalletTransaction = {
 
 type BaseWalletTransaction = {
   readonly walletId: WalletId | undefined
+  readonly externalId: LedgerExternalId | undefined
   readonly settlementAmount: Satoshis | UsdCents
   readonly settlementFee: Satoshis | UsdCents
   readonly settlementCurrency: WalletCurrency
