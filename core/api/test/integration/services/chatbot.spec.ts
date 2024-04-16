@@ -1,6 +1,6 @@
 import { baseLogger } from "@/services/logger"
 import { Assistant, textToVector } from "@/services/openai"
-import { retrieveRelatedQueries } from "@/services/pinecone"
+import { retrieveRelatedQueries } from "@/services/openai/pinecone"
 
 describe("Embeddings", () => {
   it("get a vector back", async () => {

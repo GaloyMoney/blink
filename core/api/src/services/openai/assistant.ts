@@ -4,12 +4,12 @@ import OpenAI, { OpenAIError } from "openai"
 
 import { textToVector } from "./embeddings"
 
+import { retrieveRelatedQueries } from "./pinecone"
+
 import { env } from "@/config/env"
 import { sleep } from "@/utils"
 import { UnknownDomainError } from "@/domain/shared"
 import { UnknownChatAssistantError } from "@/domain/support/errors"
-
-import { retrieveRelatedQueries } from "@/services/pinecone"
 
 const assistantId = env.OPENAI_ASSISTANT_ID ?? ""
 
