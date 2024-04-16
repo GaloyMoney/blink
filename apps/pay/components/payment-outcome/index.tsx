@@ -1,6 +1,6 @@
 "use client"
 import { useParams, useSearchParams } from "next/navigation"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef } from "react"
 import Image from "react-bootstrap/Image"
 
 import { useReactToPrint } from "react-to-print"
@@ -16,6 +16,7 @@ import Receipt from "./receipt"
 
 import { extractSearchParams } from "@/utils/utils"
 import { useInvoiceContext } from "@/context/invoice-context"
+import useCheckInstalledApps from "@/hooks/use-check-Installed-apps"
 
 interface Props {
   paymentRequest: string
@@ -60,7 +61,9 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: P
   const { state } = useInvoiceContext()
   const isCurrencySats = state.displayCurrencyMetaData.id === "SAT"
   const componentRef = useRef<HTMLDivElement | null>(null)
-  const [posCompanionInstalled, setPosCompanionInstalled] = useState(false)
+  const posCompanionInstalled = useCheckInstalledApps({
+    appId: "com.blink.pos.companion",
+  })
 
   const printReceipt = useReactToPrint({
     content: () => componentRef.current,
@@ -72,28 +75,6 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: P
     },
     skip: !paymentRequest,
   })
-
-  useEffect(() => {
-    const checkRelatedApps = async () => {
-      try {
-        if ("getInstalledRelatedApps" in navigator) {
-          /* eslint @typescript-eslint/ban-ts-comment: "off" */
-          // @ts-ignore-next-line no-implicit-any error
-          const apps = await navigator.getInstalledRelatedApps()
-          const isAppInstalled = apps.some(
-            (app: { id: string }) => app.id === "com.blink.pos.companion",
-          )
-          setPosCompanionInstalled(isAppInstalled)
-        } else {
-          console.error("getInstalledRelatedApps is not supported in this browser.")
-        }
-      } catch (error) {
-        console.error("Error checking installed related apps:", error)
-      }
-    }
-
-    checkRelatedApps()
-  }, [])
 
   useEffect(() => {
     if (

@@ -9,6 +9,7 @@ import { useGetPaginatedTransactionsQuery, Transaction } from "@/lib/graphql/gen
 import LoadingComponent from "@/components/loading"
 import { formatCreateAt, formatDate, formatTime } from "@/utils/date-util"
 import { sendDataToPosCompanion } from "@/app/print-companion-service"
+import useCheckInstalledApps from "@/hooks/use-check-Installed-apps"
 
 gql`
   query GetPaginatedTransactions($first: Int, $after: String, $before: String) {
@@ -80,34 +81,14 @@ function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [cursor, setCursor] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState<boolean>(false)
-  const [posCompanionInstalled, setPosCompanionInstalled] = useState<boolean>(false)
+  const posCompanionInstalled = useCheckInstalledApps({
+    appId: "com.blink.pos.companion",
+  })
   const session = useSession()
 
   const { data, loading, error, fetchMore } = useGetPaginatedTransactionsQuery({
     variables: { first: 10 },
   })
-
-  useEffect(() => {
-    const checkRelatedApps = async () => {
-      try {
-        if ("getInstalledRelatedApps" in navigator) {
-          /* eslint @typescript-eslint/ban-ts-comment: "off" */
-          // @ts-ignore-next-line no-implicit-any error
-          const apps = await navigator.getInstalledRelatedApps()
-          const isAppInstalled = apps.some(
-            (app: { id: string }) => app.id === "com.blink.pos.companion",
-          )
-          setPosCompanionInstalled(isAppInstalled)
-        } else {
-          console.error("getInstalledRelatedApps is not supported in this browser.")
-        }
-      } catch (error) {
-        console.error("Error checking installed related apps:", error)
-      }
-    }
-
-    checkRelatedApps()
-  }, [])
 
   useEffect(() => {
     if (data?.me?.defaultAccount?.transactions?.edges) {
