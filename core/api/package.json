@@ -126,7 +126,7 @@
     "@galoy/eslint-config": "workspace:^",
     "@graphql-tools/jest-transform": "^2.0.0",
     "@jest/test-sequencer": "^29.7.0",
-    "@swc/core": "1.4.14",
+    "@swc/core": "1.3.105",
     "@swc/jest": "^0.2.36",
     "@types/babel__core": "^7.20.5",
     "@types/babel__preset-env": "^7.9.6",
