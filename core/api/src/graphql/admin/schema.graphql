@@ -186,6 +186,9 @@ type InitiationViaOnChain {
 interface Invoice {
   createdAt: Timestamp!
 
+  """The unique external id set for the invoice."""
+  externalId: TxExternalId!
+
   """The payment hash of the lightning invoice."""
   paymentHash: PaymentHash!
 
@@ -434,6 +437,7 @@ or with lightning but settled intraledger.
 type Transaction {
   createdAt: Timestamp!
   direction: TxDirection!
+  externalId: TxExternalId
   id: ID!
 
   """From which protocol the payment has been initiated."""
@@ -480,6 +484,11 @@ enum TxDirection {
   RECEIVE
   SEND
 }
+
+"""
+An external reference id that can be optionally added for transactions.
+"""
+scalar TxExternalId
 
 enum TxStatus {
   FAILURE
