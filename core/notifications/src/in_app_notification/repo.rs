@@ -1,19 +1,12 @@
 use sqlx::PgPool;
 
-use crate::{notification_event::DeepLink, primitives::*};
+use crate::primitives::*;
 
 use super::{entity::*, error::*};
 
 #[derive(Debug, Clone)]
 pub(super) struct InAppNotificationsRepo {
     pool: PgPool,
-}
-
-pub struct NewInAppNotificationData {
-    pub user_id: GaloyUserId,
-    pub title: String,
-    pub body: String,
-    pub deep_link: Option<DeepLink>,
 }
 
 impl InAppNotificationsRepo {
@@ -24,23 +17,19 @@ impl InAppNotificationsRepo {
     pub async fn persist_new(
         &self,
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-        notification_data: NewInAppNotificationData,
+        new_in_app_notification: NewInAppNotification,
     ) -> Result<(), InAppNotificationError> {
-        let NewInAppNotificationData {
-            user_id,
-            title,
-            body,
-            deep_link,
-        } = notification_data;
-        let deep_link = serde_json::to_string(&deep_link).expect("unable to serialize deep_link");
+        let deep_link = serde_json::to_string(&new_in_app_notification.deep_link)
+            .expect("unable to serialize deep_link");
         sqlx::query!(
             r#"
-            INSERT INTO in_app_notifications (galoy_user_id, title, body, deep_link)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO in_app_notifications (id, galoy_user_id, title, body, deep_link)
+            VALUES ($1, $2, $3, $4, $5)
             "#,
-            user_id.as_ref(),
-            title,
-            body,
+            new_in_app_notification.id as InAppNotificationId,
+            new_in_app_notification.user_id.into_inner(),
+            new_in_app_notification.title,
+            new_in_app_notification.body,
             deep_link,
         )
         .execute(&mut **tx)
@@ -52,12 +41,13 @@ impl InAppNotificationsRepo {
     pub async fn persist_new_batch(
         &self,
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-        notifications_data: Vec<NewInAppNotificationData>,
+        new_in_app_notifications: Vec<NewInAppNotification>,
     ) -> Result<(), InAppNotificationError> {
         let mut query_builder = sqlx::QueryBuilder::new(
-            "INSERT INTO in_app_notifications (galoy_user_id, title, body, deep_link)",
+            "INSERT INTO in_app_notifications (id, galoy_user_id, title, body, deep_link)",
         );
-        query_builder.push_values(notifications_data, |mut builder, notification| {
+        query_builder.push_values(new_in_app_notifications, |mut builder, notification| {
+            builder.push_bind(notification.id as InAppNotificationId);
             builder.push_bind(notification.user_id.into_inner());
             builder.push_bind(notification.title);
             builder.push_bind(notification.body);

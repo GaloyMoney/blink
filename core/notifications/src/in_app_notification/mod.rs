@@ -39,14 +39,19 @@ impl InAppNotifications {
         if let Some(msg) =
             payload.to_localized_in_app_msg(user_settings.locale().unwrap_or_default())
         {
-            let notification_data = NewInAppNotificationData {
-                user_id: user_id.clone(),
-                title: msg.title,
-                body: msg.body,
-                deep_link: payload.deep_link(),
-            };
+            let id = InAppNotificationId::new();
+            let mut builder = NewInAppNotification::builder(id);
+            builder
+                .user_id(user_id)
+                .title(msg.title)
+                .body(msg.body)
+                .deep_link(payload.deep_link());
+            let new_in_app_notification = builder
+                .build()
+                .expect("Couldn't build new in app notification");
+
             self.in_app_notifications_repo
-                .persist_new(tx, notification_data)
+                .persist_new(tx, new_in_app_notification)
                 .await?;
         }
         Ok(())
@@ -60,24 +65,29 @@ impl InAppNotifications {
     ) -> Result<(), InAppNotificationError> {
         let user_notification_settings = self.settings.find_for_user_ids(user_ids).await?;
 
-        let mut new_notifications_data: Vec<NewInAppNotificationData> = Vec::new();
+        let mut new_in_app_notifications = Vec::new();
 
         for user_settings in user_notification_settings.iter() {
             if let Some(msg) =
                 payload.to_localized_in_app_msg(user_settings.locale().unwrap_or_default())
             {
-                let notification_data = NewInAppNotificationData {
-                    user_id: user_settings.galoy_user_id.clone(),
-                    title: msg.title,
-                    body: msg.body,
-                    deep_link: payload.deep_link(),
-                };
-                new_notifications_data.push(notification_data);
+                let id = InAppNotificationId::new();
+                let mut builder = NewInAppNotification::builder(id);
+                builder
+                    .user_id(user_settings.galoy_user_id.clone())
+                    .title(msg.title)
+                    .body(msg.body)
+                    .deep_link(payload.deep_link());
+                let new_in_app_notification = builder
+                    .build()
+                    .expect("Couldn't build new in app notification");
+
+                new_in_app_notifications.push(new_in_app_notification);
             }
         }
 
         self.in_app_notifications_repo
-            .persist_new_batch(tx, new_notifications_data)
+            .persist_new_batch(tx, new_in_app_notifications)
             .await?;
 
         Ok(())

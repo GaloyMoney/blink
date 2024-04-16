@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO in_app_notifications (id, galoy_user_id, title, body, deep_link)\n            VALUES ($1, $2, $3, $4, $5)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ecab5bdaeb8ad4b1d1cdd64aa12a602e0cea8538d5f0acb5df2fd4afa7de7106"
+}
