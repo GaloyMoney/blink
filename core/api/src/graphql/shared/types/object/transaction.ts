@@ -11,6 +11,7 @@ import SignedAmount from "../scalar/signed-amount"
 import WalletCurrency from "../scalar/wallet-currency"
 import DisplayCurrency from "../scalar/display-currency"
 import SignedDisplayMajorAmount from "../scalar/signed-display-amount"
+import TxExternalId from "../scalar/tx-external-id"
 import TxDirection, { txDirectionValues } from "../scalar/tx-direction"
 
 import PriceOfOneSettlementMinorUnitInDisplayMinorUnit from "./price-of-one-settlement-minor-unit-in-display-minor-unit"
@@ -136,6 +137,9 @@ const Transaction = GT.Object<WalletTransaction>({
     },
     status: {
       type: GT.NonNull(TxStatus),
+    },
+    externalId: {
+      type: TxExternalId,
     },
     memo: {
       type: Memo,

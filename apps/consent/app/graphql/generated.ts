@@ -74,6 +74,8 @@ export type Scalars = {
   TotpRegistrationId: { input: string; output: string; }
   /** A secret to generate time-based one-time password */
   TotpSecret: { input: string; output: string; }
+  /** An external reference id that can be optionally added for transactions. */
+  TxExternalId: { input: string; output: string; }
   /** Unique identifier of a user */
   Username: { input: string; output: string; }
   /** Unique identifier of a wallet */
@@ -568,6 +570,8 @@ export type IntraLedgerUsdPaymentSendInput = {
 /** A lightning invoice. */
 export type Invoice = {
   readonly createdAt: Scalars['Timestamp']['output'];
+  /** The unique external id set for the invoice. */
+  readonly externalId: Scalars['TxExternalId']['output'];
   /** The payment hash of the lightning invoice. */
   readonly paymentHash: Scalars['PaymentHash']['output'];
   /** The bolt11 invoice to be paid. */
@@ -615,6 +619,7 @@ export type LnAddressPaymentSendInput = {
 export type LnInvoice = Invoice & {
   readonly __typename: 'LnInvoice';
   readonly createdAt: Scalars['Timestamp']['output'];
+  readonly externalId: Scalars['TxExternalId']['output'];
   readonly paymentHash: Scalars['PaymentHash']['output'];
   readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
   readonly paymentSecret: Scalars['LnPaymentSecret']['output'];
@@ -633,6 +638,7 @@ export type LnInvoiceCreateInput = {
   readonly amount: Scalars['SatAmount']['input'];
   /** Optional invoice expiration time in minutes. */
   readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  readonly externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a BTC wallet belonging to the current account. */
@@ -645,6 +651,7 @@ export type LnInvoiceCreateOnBehalfOfRecipientInput = {
   readonly descriptionHash?: InputMaybe<Scalars['Hex32Bytes']['input']>;
   /** Optional invoice expiration time in minutes. */
   readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  readonly externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a BTC wallet which belongs to any account. */
@@ -701,6 +708,7 @@ export type LnInvoicePaymentStatusPayload = {
 export type LnNoAmountInvoice = Invoice & {
   readonly __typename: 'LnNoAmountInvoice';
   readonly createdAt: Scalars['Timestamp']['output'];
+  readonly externalId: Scalars['TxExternalId']['output'];
   readonly paymentHash: Scalars['PaymentHash']['output'];
   readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
   readonly paymentSecret: Scalars['LnPaymentSecret']['output'];
@@ -710,6 +718,7 @@ export type LnNoAmountInvoice = Invoice & {
 export type LnNoAmountInvoiceCreateInput = {
   /** Optional invoice expiration time in minutes. */
   readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  readonly externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** ID for either a USD or BTC wallet belonging to the account of the current user. */
@@ -719,6 +728,7 @@ export type LnNoAmountInvoiceCreateInput = {
 export type LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = {
   /** Optional invoice expiration time in minutes. */
   readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  readonly externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** ID for either a USD or BTC wallet which belongs to the account of any user. */
@@ -781,6 +791,7 @@ export type LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput = {
   readonly descriptionHash?: InputMaybe<Scalars['Hex32Bytes']['input']>;
   /** Optional invoice expiration time in minutes. */
   readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  readonly externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. Acts as a note to the recipient. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a USD wallet which belongs to the account of any user. */
@@ -792,6 +803,7 @@ export type LnUsdInvoiceCreateInput = {
   readonly amount: Scalars['CentAmount']['input'];
   /** Optional invoice expiration time in minutes. */
   readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  readonly externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a USD wallet belonging to the current user. */
@@ -804,6 +816,7 @@ export type LnUsdInvoiceCreateOnBehalfOfRecipientInput = {
   readonly descriptionHash?: InputMaybe<Scalars['Hex32Bytes']['input']>;
   /** Optional invoice expiration time in minutes. */
   readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  readonly externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. Acts as a note to the recipient. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a USD wallet which belongs to the account of any user. */
@@ -1735,6 +1748,7 @@ export type Transaction = {
   readonly __typename: 'Transaction';
   readonly createdAt: Scalars['Timestamp']['output'];
   readonly direction: TxDirection;
+  readonly externalId?: Maybe<Scalars['TxExternalId']['output']>;
   readonly id: Scalars['ID']['output'];
   /** From which protocol the payment has been initiated. */
   readonly initiationVia: InitiationVia;
