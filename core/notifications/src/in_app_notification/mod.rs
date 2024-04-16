@@ -39,9 +39,14 @@ impl InAppNotifications {
         if let Some(msg) =
             payload.to_localized_in_app_msg(user_settings.locale().unwrap_or_default())
         {
-            let notification = InAppNotification::new(user_id, msg, payload.deep_link());
+            let notification_data = NewInAppNotificationData {
+                user_id: user_id.clone(),
+                title: msg.title,
+                body: msg.body,
+                deep_link: payload.deep_link(),
+            };
             self.in_app_notifications_repo
-                .persist_new(tx, notification)
+                .persist_new(tx, notification_data)
                 .await?;
         }
         Ok(())
@@ -55,23 +60,24 @@ impl InAppNotifications {
     ) -> Result<(), InAppNotificationError> {
         let user_notification_settings = self.settings.find_for_user_ids(user_ids).await?;
 
-        let mut new_notifications: Vec<InAppNotification> = Vec::new();
+        let mut new_notifications_data: Vec<NewInAppNotificationData> = Vec::new();
 
         for user_settings in user_notification_settings.iter() {
             if let Some(msg) =
                 payload.to_localized_in_app_msg(user_settings.locale().unwrap_or_default())
             {
-                let notification = InAppNotification::new(
-                    user_settings.galoy_user_id.clone(),
-                    msg,
-                    payload.deep_link(),
-                );
-                new_notifications.push(notification);
+                let notification_data = NewInAppNotificationData {
+                    user_id: user_settings.galoy_user_id.clone(),
+                    title: msg.title,
+                    body: msg.body,
+                    deep_link: payload.deep_link(),
+                };
+                new_notifications_data.push(notification_data);
             }
         }
 
         self.in_app_notifications_repo
-            .persist_new_batch(tx, new_notifications)
+            .persist_new_batch(tx, new_notifications_data)
             .await?;
 
         Ok(())

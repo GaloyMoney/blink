@@ -1,4 +1,4 @@
-use crate::{messages::*, notification_event::*, primitives::*};
+use crate::{notification_event::*, primitives::*};
 use chrono::{DateTime, Utc};
 
 #[derive(Debug, Clone)]
@@ -10,22 +10,4 @@ pub struct InAppNotification {
     pub deep_link: Option<DeepLink>,
     pub created_at: DateTime<Utc>,
     pub read_at: Option<DateTime<Utc>>,
-}
-
-impl InAppNotification {
-    pub fn new(
-        user_id: GaloyUserId,
-        msg: LocalizedInAppMessage,
-        deep_link: Option<DeepLink>,
-    ) -> Self {
-        Self {
-            id: InAppNotificationId::new(),
-            user_id,
-            title: msg.title,
-            body: msg.body,
-            deep_link,
-            created_at: Utc::now(),
-            read_at: None,
-        }
-    }
 }
