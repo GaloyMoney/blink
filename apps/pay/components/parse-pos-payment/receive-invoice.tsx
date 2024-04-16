@@ -260,7 +260,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
             >
               <QRCode
                 value={invoice?.paymentRequest}
-                size={320}
+                size={350}
                 logoImage="/blink-qr-logo.png"
                 logoWidth={100}
               />

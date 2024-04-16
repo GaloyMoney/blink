@@ -107,7 +107,7 @@ export function SideBar({ username }: { username: string }) {
       />
       <Sheet>
         <SheetTrigger asChild>
-          <button data-testid="menu" className="space-y-2">
+          <button data-testid="menu" className="space-y-2 pr-2">
             <span className="block w-8 h-0.5 bg-black"></span>
             <span className="block w-8 h-0.5 bg-black"></span>
             <span className="block w-8 h-0.5 bg-black"></span>
@@ -120,7 +120,7 @@ export function SideBar({ username }: { username: string }) {
           <SheetHeader>
             <p className="text-xl font-semibold text-left m-0">Pay {username}</p>
           </SheetHeader>
-          <div className="grid gap-3 py-3  ">
+          <div className="grid gap-3 py-3 mt-4">
             <div
               className="flex flex-col gap-0 bg-slate-200 p-2 m-0 rounded-md cursor-pointer"
               onClick={() => {
@@ -130,14 +130,14 @@ export function SideBar({ username }: { username: string }) {
               {signedInUser ? (
                 <>
                   <div className="flex justify-between">
-                    <p className="text-md font-semibold mb-1">Signed in as</p>
+                    <p className="text-lg font-semibold mb-1">Signed in as</p>
                   </div>
-                  <p className="text-sm mb-0">
+                  <p className="text-md mb-0">
                     {signedInUser.username || signedInUser.id}
                   </p>
                 </>
               ) : (
-                <p className="text-md font-semibold mb-1">Sign in</p>
+                <p className="text-lg font-semibold mb-1">Sign in</p>
               )}
             </div>
 
@@ -145,7 +145,7 @@ export function SideBar({ username }: { username: string }) {
               pathName === link.href ? (
                 <span
                   key={link.name}
-                  className="bg-slate-200 text-black p-2 rounded-md flex items-center gap-2"
+                  className="bg-slate-200 text-lg text-black p-2 rounded-md flex items-center gap-2"
                 >
                   <Image src={link.icon} alt={link.name} width={24} height={24} />
                   {link.name}
@@ -155,7 +155,7 @@ export function SideBar({ username }: { username: string }) {
                   key={link.name}
                   href={link.href}
                   data-testid={link.dataTestId}
-                  className="bg-white text-black p-2 rounded-md no-underline hover:no-underline visited:text-black flex items-center gap-2"
+                  className="bg-white text-lg text-black p-2 rounded-md no-underline hover:no-underline visited:text-black flex items-center gap-2"
                 >
                   <Image src={link.icon} alt={link.name} width={24} height={24} />
                   {link.name}
@@ -167,7 +167,7 @@ export function SideBar({ username }: { username: string }) {
                     href={
                       link.protected && !signedInUser ? "/api/auth/signin" : link.href
                     }
-                    className="bg-white text-black p-2 rounded-md no-underline hover:no-underline visited:text-black flex items-center gap-2"
+                    className="bg-white text-lg text-black p-2 rounded-md no-underline hover:no-underline visited:text-black flex items-center gap-2"
                   >
                     <Image src={link.icon} alt={link.name} width={24} height={24} />
                     {link.name}
@@ -176,7 +176,7 @@ export function SideBar({ username }: { username: string }) {
               ),
             )}
             <div
-              className="bg-white text-black p-2 rounded-md no-underline hover:no-underline visited:text-black flex items-center gap-2 cursor-pointer"
+              className="bg-white text-lg text-black p-2 rounded-md no-underline hover:no-underline visited:text-black flex items-center gap-2 cursor-pointer"
               onClick={() => {
                 localStorage.removeItem("username")
                 signOut({ callbackUrl: "/setuppwa" })
@@ -191,7 +191,7 @@ export function SideBar({ username }: { username: string }) {
               {signedInUser ? "Log out" : "Change username"}
             </div>
             <div className="flex flex-col justify-start align-content-center gap-1">
-              <div className="text-md font-semibold flex ">Currency</div>
+              <div className="text-lg font-semibold flex ">Currency</div>
               <CurrencyDropdown
                 onSelectedDisplayCurrencyChange={updateCurrencyAndReload}
               />
@@ -199,8 +199,8 @@ export function SideBar({ username }: { username: string }) {
             <NFCComponent />
             <div className="flex flex-row justify-between align-middle align-content-center ">
               <div className="flex flex-col gap-0 p-0">
-                <p className="text-md font-semibold mb-1">lightning address</p>
-                <p className="text-sm">{lightningAddr}</p>
+                <p className="text-lg font-semibold mb-1">lightning address</p>
+                <p className="text-md">{lightningAddr}</p>
               </div>
 
               <OverlayTrigger
@@ -227,7 +227,7 @@ export function SideBar({ username }: { username: string }) {
               </OverlayTrigger>
             </div>
             <div className="flex flex-row justify-between align-middle align-content-center m-0 rounded-md">
-              <p className="mb-2 font-semibold">Memo</p>
+              <p className="mb-2 text-lg font-semibold">Memo</p>
               <Switch checked={memoChecked} onCheckedChange={handleMemoShow} />
             </div>
             <div className="flex flex-col items-center justify-center gap-3 mt-2">
