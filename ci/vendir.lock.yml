@@ -2,14 +2,14 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: allow public or private repo selection (#34)'
-      sha: 53fc9dd805d3574d200e8e6e99f856c0912b52a8
+      commitTitle: 'chore: use kaniko builder in shared build task (#50)'
+      sha: 3d1a7c11c7967952e84231e39aa5425ad704d93d
     path: .
   path: ../.github/workflows/vendor
 - contents:
   - git:
-      commitTitle: 'feat: allow public or private repo selection (#34)'
-      sha: 53fc9dd805d3574d200e8e6e99f856c0912b52a8
+      commitTitle: 'chore: use kaniko builder in shared build task (#50)'
+      sha: 3d1a7c11c7967952e84231e39aa5425ad704d93d
     path: .
   path: ./vendor
 kind: LockConfig
