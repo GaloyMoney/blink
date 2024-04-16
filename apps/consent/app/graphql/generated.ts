@@ -74,6 +74,8 @@ export type Scalars = {
   TotpRegistrationId: { input: string; output: string; }
   /** A secret to generate time-based one-time password */
   TotpSecret: { input: string; output: string; }
+  /** An external reference id that can be optionally added for transactions. */
+  TxExternalId: { input: string; output: string; }
   /** Unique identifier of a user */
   Username: { input: string; output: string; }
   /** Unique identifier of a wallet */
@@ -568,6 +570,8 @@ export type IntraLedgerUsdPaymentSendInput = {
 /** A lightning invoice. */
 export type Invoice = {
   readonly createdAt: Scalars['Timestamp']['output'];
+  /** The unique external id set for the invoice. */
+  readonly externalId: Scalars['TxExternalId']['output'];
   /** The payment hash of the lightning invoice. */
   readonly paymentHash: Scalars['PaymentHash']['output'];
   /** The bolt11 invoice to be paid. */
@@ -615,6 +619,7 @@ export type LnAddressPaymentSendInput = {
 export type LnInvoice = Invoice & {
   readonly __typename: 'LnInvoice';
   readonly createdAt: Scalars['Timestamp']['output'];
+  readonly externalId: Scalars['TxExternalId']['output'];
   readonly paymentHash: Scalars['PaymentHash']['output'];
   readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
   readonly paymentSecret: Scalars['LnPaymentSecret']['output'];
@@ -701,6 +706,7 @@ export type LnInvoicePaymentStatusPayload = {
 export type LnNoAmountInvoice = Invoice & {
   readonly __typename: 'LnNoAmountInvoice';
   readonly createdAt: Scalars['Timestamp']['output'];
+  readonly externalId: Scalars['TxExternalId']['output'];
   readonly paymentHash: Scalars['PaymentHash']['output'];
   readonly paymentRequest: Scalars['LnPaymentRequest']['output'];
   readonly paymentSecret: Scalars['LnPaymentSecret']['output'];
@@ -1735,6 +1741,7 @@ export type Transaction = {
   readonly __typename: 'Transaction';
   readonly createdAt: Scalars['Timestamp']['output'];
   readonly direction: TxDirection;
+  readonly externalId?: Maybe<Scalars['TxExternalId']['output']>;
   readonly id: Scalars['ID']['output'];
   /** From which protocol the payment has been initiated. */
   readonly initiationVia: InitiationVia;

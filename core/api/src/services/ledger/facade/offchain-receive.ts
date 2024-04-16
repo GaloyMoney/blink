@@ -14,6 +14,7 @@ export const recordReceiveOffChain = async ({
   recipientWalletDescriptor,
   amountToCreditReceiver,
   bankFee,
+  externalId,
   metadata,
   txMetadata,
   additionalCreditMetadata,
@@ -26,6 +27,7 @@ export const recordReceiveOffChain = async ({
   let entry = MainBook.entry(description)
   const builder = EntryBuilder({
     staticAccountIds: accountIds,
+    externalId,
     entry,
     metadata,
     additionalInternalMetadata,
