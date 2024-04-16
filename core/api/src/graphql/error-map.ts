@@ -398,6 +398,10 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = "Unsupported operation for wallet's currency."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "DuplicateLedgerExternalIdError":
+      message = `External id for invoice or transaction already exists`
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "InsufficientBalanceError":
       message = error.message
       return new InsufficientBalanceError({ message, logger: baseLogger })
@@ -508,6 +512,14 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "InvalidPaginatedQueryArgsError":
       message = error.message
       return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "InvalidLedgerExternalId":
+      message =
+        "Invalid external id string passed. ID should be either alphanumeric " +
+        "or contain the characters '_' or '-'. It should not be more than 100 " +
+        "characters long as well."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "ErrorFetchingLnurlInvoice":
       message = error.message
       return new LnurlRequestInvoiceError({ message, logger: baseLogger })
@@ -554,7 +566,6 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "AuthorizationError":
     case "RepositoryError":
     case "PersistError":
-    case "DuplicateError":
     case "CouldNotFindError":
     case "CouldNotUpdateError":
     case "ValidationError":
@@ -620,6 +631,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "MultiplePendingPaymentsForHashError":
     case "MissingExpectedDisplayAmountsForTransactionError":
     case "InvalidLnPaymentTxnsBundleError":
+    case "InvalidTxMetadataFetchedError":
     case "CacheError":
     case "CacheNotAvailableError":
     case "CacheServiceError":
