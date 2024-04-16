@@ -4,7 +4,7 @@ WORKDIR /app
 
 RUN apk update && apk add git
 
-RUN npm install -g pnpm
+RUN npm install -g pnpm@8
 
 RUN mkdir -p core/api/
 COPY ./core/api/*.json ./core/api/
