@@ -1166,10 +1166,6 @@ type Mutation
 {
   apiKeyCreate(input: ApiKeyCreateInput!): ApiKeyCreatePayload! @join__field(graph: API_KEYS)
   apiKeyRevoke(input: ApiKeyRevokeInput!): ApiKeyRevokePayload! @join__field(graph: API_KEYS)
-  userDisableNotificationChannel(input: UserDisableNotificationChannelInput!): UserUpdateNotificationSettingsPayload! @join__field(graph: NOTIFICATIONS)
-  userEnableNotificationChannel(input: UserEnableNotificationChannelInput!): UserUpdateNotificationSettingsPayload! @join__field(graph: NOTIFICATIONS)
-  userDisableNotificationCategory(input: UserDisableNotificationCategoryInput!): UserUpdateNotificationSettingsPayload! @join__field(graph: NOTIFICATIONS)
-  userEnableNotificationCategory(input: UserEnableNotificationCategoryInput!): UserUpdateNotificationSettingsPayload! @join__field(graph: NOTIFICATIONS)
   userInAppNotificationMarkAsRead(input: UserInAppNotificationMarkAsReadInput!): UserInAppNotificationMarkAsReadPayload! @join__field(graph: NOTIFICATIONS)
   accountDelete: AccountDeletePayload! @join__field(graph: PUBLIC)
   accountDisableNotificationCategory(input: AccountDisableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
@@ -2024,7 +2020,6 @@ type User
 {
   id: ID!
   apiKeys: [ApiKey!]! @join__field(graph: API_KEYS)
-  notificationSettings: UserNotificationSettings! @join__field(graph: NOTIFICATIONS)
   inAppNotifications(onlyUnread: Boolean): [InAppNotification!]! @join__field(graph: NOTIFICATIONS)
 
   """
@@ -2105,19 +2100,6 @@ type UserContactUpdateAliasPayload
   errors: [Error!]!
 }
 
-input UserDisableNotificationCategoryInput
-  @join__type(graph: NOTIFICATIONS)
-{
-  channel: UserNotificationChannel!
-  category: UserNotificationCategory!
-}
-
-input UserDisableNotificationChannelInput
-  @join__type(graph: NOTIFICATIONS)
-{
-  channel: UserNotificationChannel!
-}
-
 type UserEmailDeletePayload
   @join__type(graph: PUBLIC)
 {
@@ -2151,19 +2133,6 @@ type UserEmailRegistrationValidatePayload
 {
   errors: [Error!]!
   me: User
-}
-
-input UserEnableNotificationCategoryInput
-  @join__type(graph: NOTIFICATIONS)
-{
-  channel: UserNotificationChannel!
-  category: UserNotificationCategory!
-}
-
-input UserEnableNotificationChannelInput
-  @join__type(graph: NOTIFICATIONS)
-{
-  channel: UserNotificationChannel!
 }
 
 input UserInAppNotificationMarkAsReadInput
@@ -2201,36 +2170,6 @@ input UserLogoutInput
 """Unique identifier of a user"""
 scalar Username
   @join__type(graph: PUBLIC)
-
-enum UserNotificationCategory
-  @join__type(graph: NOTIFICATIONS)
-{
-  CIRCLES @join__enumValue(graph: NOTIFICATIONS)
-  PAYMENTS @join__enumValue(graph: NOTIFICATIONS)
-  ADMIN_NOTIFICATION @join__enumValue(graph: NOTIFICATIONS)
-  MARKETING @join__enumValue(graph: NOTIFICATIONS)
-  PRICE @join__enumValue(graph: NOTIFICATIONS)
-  SECURITY @join__enumValue(graph: NOTIFICATIONS)
-}
-
-enum UserNotificationChannel
-  @join__type(graph: NOTIFICATIONS)
-{
-  PUSH @join__enumValue(graph: NOTIFICATIONS)
-}
-
-type UserNotificationChannelSettings
-  @join__type(graph: NOTIFICATIONS)
-{
-  enabled: Boolean!
-  disabledCategories: [UserNotificationCategory!]!
-}
-
-type UserNotificationSettings
-  @join__type(graph: NOTIFICATIONS)
-{
-  push: UserNotificationChannelSettings!
-}
 
 type UserPhoneDeletePayload
   @join__type(graph: PUBLIC)
@@ -2310,12 +2249,6 @@ type UserUpdateLanguagePayload
 {
   errors: [Error!]!
   user: User
-}
-
-type UserUpdateNotificationSettingsPayload
-  @join__type(graph: NOTIFICATIONS)
-{
-  notificationSettings: UserNotificationSettings!
 }
 
 input UserUpdateUsernameInput

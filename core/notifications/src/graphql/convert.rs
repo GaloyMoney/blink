@@ -1,23 +1,7 @@
 use async_graphql::ID;
 
 use super::types;
-use crate::{in_app_notification, primitives::*, user_notification_settings};
-
-impl From<user_notification_settings::UserNotificationSettings>
-    for types::UserNotificationSettings
-{
-    fn from(settings: user_notification_settings::UserNotificationSettings) -> Self {
-        Self {
-            push: types::UserNotificationChannelSettings {
-                enabled: settings.is_channel_enabled(UserNotificationChannel::Push),
-                disabled_categories: settings
-                    .disabled_categories_for(UserNotificationChannel::Push)
-                    .into_iter()
-                    .collect(),
-            },
-        }
-    }
-}
+use crate::in_app_notification;
 
 impl From<in_app_notification::InAppNotification> for types::InAppNotification {
     fn from(notification: in_app_notification::InAppNotification) -> Self {

@@ -1,19 +1,6 @@
 use async_graphql::*;
 use chrono::{DateTime, TimeZone, Utc};
 
-use crate::primitives::*;
-
-#[derive(SimpleObject)]
-pub(super) struct UserNotificationSettings {
-    pub push: UserNotificationChannelSettings,
-}
-
-#[derive(SimpleObject)]
-pub(super) struct UserNotificationChannelSettings {
-    pub enabled: bool,
-    pub disabled_categories: Vec<UserNotificationCategory>,
-}
-
 #[derive(Clone, Copy)]
 pub struct Timestamp(DateTime<Utc>);
 impl From<DateTime<Utc>> for Timestamp {
