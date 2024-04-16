@@ -10,3 +10,5 @@ CREATE TABLE in_app_notifications (
   read_at TIMESTAMPTZ
 );
 
+CREATE INDEX idx_in_app_notifications_galoy_user_id ON in_app_notifications (galoy_user_id);
+
