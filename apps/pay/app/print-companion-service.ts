@@ -22,6 +22,5 @@ export const sendDataToPosCompanion = ({
   if (date) deepLinkUrl += `&date=${encodeURIComponent(date)}`
   if (time) deepLinkUrl += `&time=${encodeURIComponent(time)}`
 
-  console.log(deepLinkUrl)
   window.location.href = deepLinkUrl
 }
