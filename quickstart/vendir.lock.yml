@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): migrate invoice users external (#4286)...'
-      sha: 1d95ed15b1e2332e3279a7aacc0d6906b099962e
+      commitTitle: 'fix(core): pin pnpm in Dockerfile-migrate'
+      sha: 4b5fe0a2414e839a9ab11d5a1119204d4a7ef918
       tags:
-      - 0.20.150-1-g1d95ed15b
+      - 0.20.151-3-g4b5fe0a24
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): migrate invoice users external (#4286)...'
-      sha: 1d95ed15b1e2332e3279a7aacc0d6906b099962e
+      commitTitle: 'fix(core): pin pnpm in Dockerfile-migrate'
+      sha: 4b5fe0a2414e839a9ab11d5a1119204d4a7ef918
       tags:
-      - 0.20.150-1-g1d95ed15b
+      - 0.20.151-3-g4b5fe0a24
     path: schemas
   - git:
-      commitTitle: 'chore(core): migrate invoice users external (#4286)...'
-      sha: 1d95ed15b1e2332e3279a7aacc0d6906b099962e
+      commitTitle: 'fix(core): pin pnpm in Dockerfile-migrate'
+      sha: 4b5fe0a2414e839a9ab11d5a1119204d4a7ef918
       tags:
-      - 0.20.150-1-g1d95ed15b
+      - 0.20.151-3-g4b5fe0a24
     path: gql
   path: graphql
 kind: LockConfig

@@ -794,6 +794,7 @@ input LnInvoiceCreateInput
 
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
+  externalId: TxExternalId
 
   """Optional memo for the lightning invoice."""
   memo: Memo
@@ -811,6 +812,7 @@ input LnInvoiceCreateOnBehalfOfRecipientInput
 
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
+  externalId: TxExternalId
 
   """Optional memo for the lightning invoice."""
   memo: Memo
@@ -900,6 +902,7 @@ input LnNoAmountInvoiceCreateInput
 {
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
+  externalId: TxExternalId
 
   """Optional memo for the lightning invoice."""
   memo: Memo
@@ -915,6 +918,7 @@ input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput
 {
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
+  externalId: TxExternalId
 
   """Optional memo for the lightning invoice."""
   memo: Memo
@@ -1025,6 +1029,7 @@ input LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput
 
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
+  externalId: TxExternalId
 
   """
   Optional memo for the lightning invoice. Acts as a note to the recipient.
@@ -1043,6 +1048,7 @@ input LnUsdInvoiceCreateInput
 
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
+  externalId: TxExternalId
 
   """Optional memo for the lightning invoice."""
   memo: Memo
@@ -1060,6 +1066,7 @@ input LnUsdInvoiceCreateOnBehalfOfRecipientInput
 
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
+  externalId: TxExternalId
 
   """
   Optional memo for the lightning invoice. Acts as a note to the recipient.
