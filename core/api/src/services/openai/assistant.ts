@@ -1,6 +1,6 @@
 import assert from "assert"
 
-import OpenAI, { OpenAIError } from "openai"
+import OpenAI from "openai"
 
 import { textToVector } from "./embeddings"
 
@@ -42,8 +42,7 @@ export const Assistant = (): ChatAssistant => {
           content: message,
         })
       } catch (err) {
-        if (err instanceof OpenAIError) return new UnknownChatAssistantError(err.message)
-        return new UnknownChatAssistantError("unknown beta.threads.messages error")
+        return new UnknownChatAssistantError(err)
       }
 
       let run: OpenAI.Beta.Threads.Runs.Run
@@ -53,8 +52,7 @@ export const Assistant = (): ChatAssistant => {
           assistant_id: assistantId,
         })
       } catch (err) {
-        if (err instanceof OpenAIError) return new UnknownChatAssistantError(err.message)
-        return new UnknownChatAssistantError("unknown beta.threads.runs.create error")
+        return new UnknownChatAssistantError(err)
       }
 
       const res = await waitForCompletion({ runId: run.id, threadId: run.thread_id })
@@ -62,8 +60,7 @@ export const Assistant = (): ChatAssistant => {
 
       return supportChatId
     } catch (err) {
-      if (err instanceof OpenAIError) return new UnknownChatAssistantError(err.message)
-      return new UnknownChatAssistantError("unknown beta.threads.create error")
+      return new UnknownChatAssistantError(err)
     }
   }
 
@@ -82,8 +79,7 @@ export const Assistant = (): ChatAssistant => {
         }
       }
     } catch (err) {
-      if (err instanceof OpenAIError) return new UnknownChatAssistantError(err.message)
-      return new UnknownChatAssistantError("unknown beta.threads.runs.cancel error")
+      return new UnknownChatAssistantError(err)
     }
 
     try {
@@ -92,8 +88,7 @@ export const Assistant = (): ChatAssistant => {
         content: message,
       })
     } catch (err) {
-      if (err instanceof OpenAIError) return new UnknownChatAssistantError(err.message)
-      return new UnknownChatAssistantError("unknown beta.threads.messages error")
+      return new UnknownChatAssistantError(err)
     }
 
     let run: OpenAI.Beta.Threads.Runs.Run
@@ -103,8 +98,7 @@ export const Assistant = (): ChatAssistant => {
         assistant_id: assistantId,
       })
     } catch (err) {
-      if (err instanceof OpenAIError) return new UnknownChatAssistantError(err.message)
-      return new UnknownChatAssistantError("unknown beta.threads.runs.create error")
+      return new UnknownChatAssistantError(err)
     }
 
     return waitForCompletion({ runId: run.id, threadId: run.thread_id })
@@ -130,10 +124,7 @@ export const Assistant = (): ChatAssistant => {
 
       return processedResponse
     } catch (err) {
-      if (err instanceof OpenAIError) {
-        return err
-      }
-      return new UnknownDomainError("openai unknown error")
+      return new UnknownDomainError(err)
     }
   }
 
@@ -174,8 +165,7 @@ export const Assistant = (): ChatAssistant => {
     try {
       run = await openai.beta.threads.runs.retrieve(threadId, runId)
     } catch (err) {
-      if (err instanceof OpenAIError) return new UnknownChatAssistantError(err.message)
-      return new UnknownChatAssistantError("unknown beta.threads.runs.retrieve error")
+      return new UnknownChatAssistantError(err)
     }
 
     while (
@@ -183,14 +173,12 @@ export const Assistant = (): ChatAssistant => {
     ) {
       // TODO: max timer for this loop
       // add open telemetry here? or is it already present with the http requests?
-      console.log("runloop", run.status)
 
-      await sleep(1000)
+      await sleep(500)
       try {
         run = await openai.beta.threads.runs.retrieve(threadId, runId)
       } catch (err) {
-        if (err instanceof OpenAIError) return new UnknownChatAssistantError(err.message)
-        return new UnknownChatAssistantError("unknown beta.threads.runs.retrieve error")
+        return new UnknownChatAssistantError(err)
       }
 
       if (run.status === "requires_action") {
@@ -198,12 +186,7 @@ export const Assistant = (): ChatAssistant => {
         try {
           output = await processAction(run)
         } catch (err) {
-          if (err instanceof OpenAIError) {
-            return new UnknownChatAssistantError(err.message)
-          }
-          return new UnknownChatAssistantError(
-            "unknown beta.threads.runs.actions.execute error",
-          )
+          return new UnknownChatAssistantError(err)
         }
 
         try {
@@ -216,14 +199,7 @@ export const Assistant = (): ChatAssistant => {
             ],
           })
         } catch (err) {
-          if (err instanceof OpenAIError) {
-            console.error(err, "err1")
-            return new UnknownChatAssistantError(err.message)
-          }
-          console.error(err, "err2")
-          return new UnknownChatAssistantError(
-            "unknown beta.threads.runs.actions.complete error",
-          )
+          return new UnknownChatAssistantError(err)
         }
       }
     }
@@ -234,10 +210,7 @@ export const Assistant = (): ChatAssistant => {
       try {
         messages = await openai.beta.threads.messages.list(run.thread_id)
       } catch (err) {
-        if (err instanceof OpenAIError) {
-          return new UnknownChatAssistantError(err.message)
-        }
-        return new UnknownChatAssistantError("unknown beta.threads.messages.list error")
+        return new UnknownChatAssistantError(err)
       }
 
       const responseThread = messages.data[0]
