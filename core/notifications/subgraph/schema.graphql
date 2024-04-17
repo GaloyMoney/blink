@@ -1,59 +1,32 @@
-type Mutation {
-	userDisableNotificationChannel(input: UserDisableNotificationChannelInput!): UserUpdateNotificationSettingsPayload!
-	userEnableNotificationChannel(input: UserEnableNotificationChannelInput!): UserUpdateNotificationSettingsPayload!
-	userDisableNotificationCategory(input: UserDisableNotificationCategoryInput!): UserUpdateNotificationSettingsPayload!
-	userEnableNotificationCategory(input: UserEnableNotificationCategoryInput!): UserUpdateNotificationSettingsPayload!
+type InAppNotification {
+	id: ID!
+	title: String!
+	body: String!
+	deepLink: String
+	createdAt: Timestamp!
+	readAt: Timestamp
 }
 
 
+type Mutation {
+	userInAppNotificationMarkAsRead(input: UserInAppNotificationMarkAsReadInput!): UserInAppNotificationMarkAsReadPayload!
+}
+
+
+
+scalar Timestamp
 
 extend type User @key(fields: "id") {
 	id: ID! @external
-	notificationSettings: UserNotificationSettings!
+	inAppNotifications(onlyUnread: Boolean): [InAppNotification!]!
 }
 
-input UserDisableNotificationCategoryInput {
-	channel: UserNotificationChannel!
-	category: UserNotificationCategory!
+input UserInAppNotificationMarkAsReadInput {
+	notificationId: ID!
 }
 
-input UserDisableNotificationChannelInput {
-	channel: UserNotificationChannel!
-}
-
-input UserEnableNotificationCategoryInput {
-	channel: UserNotificationChannel!
-	category: UserNotificationCategory!
-}
-
-input UserEnableNotificationChannelInput {
-	channel: UserNotificationChannel!
-}
-
-enum UserNotificationCategory {
-	CIRCLES
-	PAYMENTS
-	ADMIN_NOTIFICATION
-	MARKETING
-	PRICE
-	SECURITY
-}
-
-enum UserNotificationChannel {
-	PUSH
-}
-
-type UserNotificationChannelSettings {
-	enabled: Boolean!
-	disabledCategories: [UserNotificationCategory!]!
-}
-
-type UserNotificationSettings {
-	push: UserNotificationChannelSettings!
-}
-
-type UserUpdateNotificationSettingsPayload {
-	notificationSettings: UserNotificationSettings!
+type UserInAppNotificationMarkAsReadPayload {
+	notification: InAppNotification!
 }
 
 extend schema @link(
