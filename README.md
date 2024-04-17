@@ -168,7 +168,7 @@ Every service should eventually have a green checkmark next to them, which ensur
 
 ### (5) Test account credentials
 
-For account login, you can input any random mobile number/email and then use `000000` as the OTP.
+For account login on regtest, you can input any random mobile number and then use `000000` as the OTP.
 
 ### (6) Troubleshooting in Tilt
 
