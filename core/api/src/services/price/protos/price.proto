@@ -25,4 +25,5 @@ message Currency {
   string name = 3;
   string flag = 4;
   int32 fractionDigits = 5;
+  repeated string countryCodes = 6;
 }
