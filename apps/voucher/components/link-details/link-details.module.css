@@ -1,0 +1,47 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 90%;
+  border: 1px solid #ccc;
+  border-radius: 0.5em;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+  font-size: 1.05rem;
+}
+
+.status_ACTIVE {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.5em;
+  background-color: #2a9d8f;
+  color: white;
+  border-top-left-radius: 0.5em;
+  border-top-right-radius: 0.5em;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+}
+.time {
+  display: flex;
+  color: #767575;
+  font-size: 0.8rem;
+}
+
+.expire_time {
+  display: flex;
+  color: #767575;
+  font-size: 0.9rem;
+  margin: 0.5em;
+  gap: 0.3em;
+  align-items: center;
+  justify-content: center;
+}
+
+.amount {
+  margin-top: 0.5em;
+  font-weight: 700;
+  text-align: center;
+  max-width: 70%;
+}

@@ -1,0 +1,45 @@
+.heading {
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+  width: 90%;
+}
+
+.modal_container {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  width: 100%;
+}
+
+.modal_container_success {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  width: 100%;
+  align-items: center;
+}
+
+.modal_heading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.modal_sub_heading {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.modal_button_container {
+  display: flex;
+  justify-content: center;
+  gap: 1em;
+}
+
+.modal_description {
+  font-weight: 400;
+  text-align: center;
+}

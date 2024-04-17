@@ -72,6 +72,14 @@ services:
       interval: 5s
       timeout: 30s
       retries: 5
+  voucher-pg:
+    image: postgres:14.1
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=voucher
+    ports:
+      - "5430:5432"
   oathkeeper:
     image: oryd/oathkeeper:v0.40.6-distroless
     ports:

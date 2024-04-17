@@ -1,0 +1,117 @@
+load(
+    "@toolchains//workspace-pnpm:macros.bzl",
+    "dev_pnpm_task_binary",
+    "dev_pnpm_task_test",
+    "build_node_modules",
+    "next_build",
+    "next_build_bin",
+    "eslint",
+    "audit",
+)
+
+dev_pnpm_task_binary(
+    name="dev",
+    command="dev",
+    deps=["//:node_modules"],
+)
+
+
+dev_pnpm_task_binary(
+    name="migrate-voucher-pg",
+    command="db:migrate",
+    deps=["//:node_modules"],
+)
+
+
+dev_pnpm_task_binary(
+    name="lint-fix",
+    command="lint:fix",
+    deps=["//:node_modules"],
+)
+
+dev_pnpm_task_binary(
+    name="cypress-open",
+    command="cypress:open",
+    deps=["//:node_modules"],
+)
+
+dev_pnpm_task_binary(
+    name="codegen",
+    command="codegen",
+    deps=["//:node_modules"],
+)
+
+dev_pnpm_task_test(
+    name="test-integration",
+    command="cypress:run",
+    deps=["//:node_modules"],
+)
+
+export_file(
+    name="package.json",
+    visibility=["PUBLIC"],
+)
+
+build_node_modules(
+    name="node_modules",
+)
+
+filegroup(
+    name="src",
+    srcs=glob(
+        [
+            "app/**",
+            "theme/**",
+            "services/**",
+            "components/**",
+            "tailwind.config.js",
+            "postcss.config.js",
+            "next.config.js",
+            "tsconfig.json",
+            "lib/**",
+            "utils/**",
+            "config/**",
+            "hooks/**",
+            "pages/**",
+            "public/**",
+            "types/**",
+            "graphql/**",
+            "*.ts",  # env.ts / middleware.ts / instrumentation.ts
+            "instrumentation.node.ts",
+        ]
+    ),
+)
+
+next_build(
+    name="build",
+    srcs=[":src"],
+)
+
+next_build_bin(
+    name="voucher",
+)
+
+dev_deps_srcs = {
+    "lib/eslint-config": "//lib/eslint-config:src",
+}
+
+audit(
+    name="audit",
+    level="critical",
+)
+
+eslint(
+    name="lint",
+    srcs=[":src"] + glob([".eslint*"]),
+    extensions=[".ts", ".tsx"],
+    allow_warnings=True,
+    dev_deps_srcs=dev_deps_srcs,
+)
+
+test_suite(
+    name="test",
+    tests=[
+        ":audit",
+        ":lint",
+    ],
+)

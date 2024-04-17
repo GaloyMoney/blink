@@ -1,0 +1,16 @@
+mutation ApiKeyCreate($input: ApiKeyCreateInput!) {
+  apiKeyCreate(input: $input) {
+    apiKey {
+      createdAt
+      expired
+      expiresAt
+      id
+      lastUsedAt
+      name
+      readOnly
+      revoked
+      scopes
+    }
+    apiKeySecret
+  }
+}

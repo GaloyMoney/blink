@@ -9,6 +9,7 @@ pnpm_workspace(
     "//apps/pay:package.json",
     "//apps/admin-panel:package.json",
     "//apps/map:package.json",
+    "//apps/voucher:package.json",
     "//lib/eslint-config:package.json",
     "//lib/galoy-components:package.json"
   ],

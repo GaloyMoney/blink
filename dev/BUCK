@@ -111,3 +111,8 @@ sh_binary(
   name = "fund-user",
   main = "bin/fund-user.sh",
 )
+
+sh_binary(
+  name = "setup-voucher-escrow",
+  main = "bin/setup-voucher-escrow.sh",
+)

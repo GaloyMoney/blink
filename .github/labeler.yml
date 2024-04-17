@@ -39,6 +39,14 @@ map:
           - flake.lock
           - pnpm-lock.yaml
 
+voucher:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apps/voucher/**/*
+          - flake.lock
+          - pnpm-lock.yaml
+
+
 core:
   - changed-files:
       - any-glob-to-any-file:

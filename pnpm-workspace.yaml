@@ -6,6 +6,7 @@ packages:
   - apps/admin-panel
   - apps/pay
   - apps/map
+  - apps/voucher
   - bats/helpers/callback
   - bats/helpers/subscriber
   - bats/helpers/totp
