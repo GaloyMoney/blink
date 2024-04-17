@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use async_graphql::*;
 
 use super::types::*;
@@ -25,136 +27,63 @@ struct User {
     #[graphql(external)]
     id: ID,
 }
+
 #[ComplexObject]
 impl User {
-    async fn notification_settings(
+    async fn in_app_notifications(
         &self,
         ctx: &Context<'_>,
-    ) -> async_graphql::Result<UserNotificationSettings> {
+        only_unread: Option<bool>,
+    ) -> async_graphql::Result<Vec<InAppNotification>> {
         let app = ctx.data_unchecked::<NotificationsApp>();
 
-        let settings = app
-            .notification_settings_for_user(GaloyUserId::from(self.id.0.clone()))
+        let notifications = app
+            .in_app_notifications_for_user(
+                GaloyUserId::from(self.id.0.clone()),
+                only_unread.unwrap_or(false),
+            )
             .await?;
 
-        Ok(UserNotificationSettings::from(settings))
+        Ok(notifications
+            .into_iter()
+            .map(InAppNotification::from)
+            .collect())
     }
 }
 
 #[derive(SimpleObject)]
-pub struct UserUpdateNotificationSettingsPayload {
-    notification_settings: UserNotificationSettings,
+pub struct UserInAppNotificationMarkAsReadPayload {
+    notification: InAppNotification,
 }
 
 #[derive(InputObject)]
-struct UserDisableNotificationChannelInput {
-    channel: UserNotificationChannel,
-}
-
-#[derive(InputObject)]
-struct UserEnableNotificationChannelInput {
-    channel: UserNotificationChannel,
-}
-
-#[derive(InputObject)]
-struct UserEnableNotificationCategoryInput {
-    channel: UserNotificationChannel,
-    category: UserNotificationCategory,
-}
-
-#[derive(InputObject)]
-struct UserDisableNotificationCategoryInput {
-    channel: UserNotificationChannel,
-    category: UserNotificationCategory,
+struct UserInAppNotificationMarkAsReadInput {
+    notification_id: ID,
 }
 
 pub struct Mutation;
 
 #[Object]
 impl Mutation {
-    async fn user_disable_notification_channel(
+    async fn user_in_app_notification_mark_as_read(
         &self,
         ctx: &Context<'_>,
-        input: UserDisableNotificationChannelInput,
-    ) -> async_graphql::Result<UserUpdateNotificationSettingsPayload> {
+        input: UserInAppNotificationMarkAsReadInput,
+    ) -> async_graphql::Result<UserInAppNotificationMarkAsReadPayload> {
         let subject = ctx.data::<AuthSubject>()?;
-        if !subject.can_write {
-            return Err("Permission denied".into());
-        }
-        let app = ctx.data_unchecked::<NotificationsApp>();
-        let settings = app
-            .disable_channel_on_user(GaloyUserId::from(subject.id.clone()), input.channel)
-            .await?;
-        Ok(UserUpdateNotificationSettingsPayload {
-            notification_settings: UserNotificationSettings::from(settings),
-        })
-    }
 
-    async fn user_enable_notification_channel(
-        &self,
-        ctx: &Context<'_>,
-        input: UserEnableNotificationChannelInput,
-    ) -> async_graphql::Result<UserUpdateNotificationSettingsPayload> {
-        let subject = ctx.data::<AuthSubject>()?;
         if !subject.can_write {
             return Err("Permission denied".into());
         }
         let app = ctx.data_unchecked::<NotificationsApp>();
 
-        let settings = app
-            .enable_channel_on_user(GaloyUserId::from(subject.id.clone()), input.channel)
+        let notification_id = InAppNotificationId::from_str(input.notification_id.0.as_str())?;
+        let notification = app
+            .mark_notification_as_read(GaloyUserId::from(subject.id.clone()), notification_id)
             .await?;
 
-        Ok(UserUpdateNotificationSettingsPayload {
-            notification_settings: UserNotificationSettings::from(settings),
-        })
-    }
-
-    async fn user_disable_notification_category(
-        &self,
-        ctx: &Context<'_>,
-        input: UserDisableNotificationCategoryInput,
-    ) -> async_graphql::Result<UserUpdateNotificationSettingsPayload> {
-        let subject = ctx.data::<AuthSubject>()?;
-        if !subject.can_write {
-            return Err("Permission denied".into());
-        }
-        let app = ctx.data_unchecked::<NotificationsApp>();
-
-        let settings = app
-            .disable_category_on_user(
-                GaloyUserId::from(subject.id.clone()),
-                input.channel,
-                input.category,
-            )
-            .await?;
-
-        Ok(UserUpdateNotificationSettingsPayload {
-            notification_settings: UserNotificationSettings::from(settings),
-        })
-    }
-
-    async fn user_enable_notification_category(
-        &self,
-        ctx: &Context<'_>,
-        input: UserEnableNotificationCategoryInput,
-    ) -> async_graphql::Result<UserUpdateNotificationSettingsPayload> {
-        let subject = ctx.data::<AuthSubject>()?;
-        if !subject.can_write {
-            return Err("Permission denied".into());
-        }
-        let app = ctx.data_unchecked::<NotificationsApp>();
-
-        let settings = app
-            .enable_category_on_user(
-                GaloyUserId::from(subject.id.clone()),
-                input.channel,
-                input.category,
-            )
-            .await?;
-
-        Ok(UserUpdateNotificationSettingsPayload {
-            notification_settings: UserNotificationSettings::from(settings),
+        Ok(UserInAppNotificationMarkAsReadPayload {
+            notification: InAppNotification::from(notification),
         })
     }
 }
