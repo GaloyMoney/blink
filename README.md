@@ -165,6 +165,11 @@ buck2 run dev:up
 Once Tilt starts, you can check on the status of all services by accessing the UI through the given port on your local host (e.g. [http://localhost:10350/](http://localhost:10350/)).
 Every service should eventually have a green checkmark next to them, which ensures that they are in "ready" states.
 
+
+### (5) Test account credentials
+
+For account login on regtest, you can input any random mobile number and then use `000000` as the OTP.
+
 ### (6) Troubleshooting in Tilt
 
 If some services fail to start, you can restart them on the Tilt dashboard.
