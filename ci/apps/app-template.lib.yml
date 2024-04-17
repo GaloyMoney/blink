@@ -46,50 +46,6 @@ plan:
 #@   return "build-" + app + "-edge-image"
 #@ end
 
-#@ def build_edge_image(app):
-name: #@ build_edge_image_name(app)
-serial: true
-plan:
-  - in_parallel:
-      - get: #@ app_src_resource_name(app)
-        trigger: true
-      - { get: pipeline-tasks }
-  - task: prepare-docker-build
-    config:
-      platform: linux
-      image_resource: #@ task_image_config()
-      inputs:
-        - name: pipeline-tasks
-        - name: #@ app_src_resource_name(app)
-          path: repo
-      outputs:
-        - name: repo
-      run:
-        path: pipeline-tasks/ci/apps/tasks/prepare-docker-build.sh
-  - task: build
-    attempts: 2
-    privileged: true
-    config:
-      platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: vito/oci-build-task
-      inputs:
-        - name: repo
-      outputs:
-        - name: image
-      params:
-        CONTEXT: repo
-        DOCKERFILE: #@ "repo/apps/" + app + "/Dockerfile"
-        BUILD_ARGS_FILE: repo/.build-args
-      run:
-        path: build
-  - put: #@ edge_image_resource_name(app)
-    params:
-      image: image/image.tar
-#@ end
-
 #@ def tilt_integration_test_name(app):
 #@  return "tilt-" + app
 #@ end
@@ -151,24 +107,29 @@ plan:
       run:
         path: pipeline-tasks/ci/apps/tasks/prepare-docker-build.sh
   - task: build
+    #@ def build_args(app):
+    #@ dockerfile_path = "repo/apps/" + app + "/Dockerfile"
+    #@ build_args_command = "$(awk -F= '{print \"--build-arg=\"$1\"=\"$2}' repo/.build-args)"
+    #@ kaniko_args="/kaniko/executor --context=repo --use-new-run --single-snapshot --cache=false --no-push --tar-path=image/image.tar --dockerfile=" + dockerfile_path + " " + build_args_command
+    #@ args = ["-exc"]
+    #@ args.append(kaniko_args)
+    #@ return args
+    #@ end
     attempts: 2
-    privileged: true
     config:
       platform: linux
       image_resource:
         type: registry-image
         source:
-          repository: vito/oci-build-task
+          repository: gcr.io/kaniko-project/executor
+          tag: debug
       inputs:
         - name: repo
       outputs:
         - name: image
-      params:
-        CONTEXT: repo
-        DOCKERFILE: #@ "repo/apps/" + app + "/Dockerfile"
-        BUILD_ARGS_FILE: repo/.build-args
       run:
-        path: build
+        path: /bin/sh
+        args: #@ build_args(app)
   - put: #@ edge_image_resource_name(app)
     params:
       image: image/image.tar
