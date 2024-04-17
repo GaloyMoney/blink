@@ -36,21 +36,25 @@ impl PersistentNotifications {
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
         new_notifications: Vec<NewPersistentNotification>,
     ) -> Result<(), NotificationHistoryError> {
-        // let mut query_builder = sqlx::QueryBuilder::new(
-        //     "INSERT INTO in_app_notifications (id, galoy_user_id, title, body, deep_link)",
-        // );
-        // query_builder.push_values(new_in_app_notifications, |mut builder, notification| {
-        //     builder.push_bind(notification.id as InAppNotificationId);
-        //     builder.push_bind(notification.user_id.into_inner());
-        //     builder.push_bind(notification.title);
-        //     builder.push_bind(notification.body);
-        //     builder.push_bind(
-        //         serde_json::to_string(&notification.deep_link)
-        //             .expect("unable to serialize deep_link"),
-        //     );
-        // });
-        // let query = query_builder.build();
-        // query.execute(&mut **tx).await?;
+        let mut query_builder =
+            sqlx::QueryBuilder::new("INSERT INTO persistent_notifications (id, galoy_user_id)");
+        query_builder.push_values(new_notifications.iter(), |mut builder, notification| {
+            builder.push_bind(notification.id as PersistentNotificationId);
+            builder.push_bind(notification.user_id.as_ref());
+            builder.push_bind(notification.title.clone());
+            builder.push_bind(notification.body.clone());
+            builder.push_bind(
+                serde_json::to_string(&notification.deep_link)
+                    .expect("unable to serialize deep_link"),
+            );
+        });
+        let query = query_builder.build();
+        query.execute(&mut **tx).await?;
+        es_entity::EntityEvents::batch_persist(
+            tx,
+            new_notifications.into_iter().map(|n| n.initial_events()),
+        )
+        .await?;
         Ok(())
     }
 
