@@ -13,3 +13,8 @@ pub struct LocalizedEmail {
     pub subject: String,
     pub body: String,
 }
+
+pub struct LocalizedInAppMessage {
+    pub title: String,
+    pub body: String,
+}
