@@ -1,7 +1,7 @@
 import { MainBook } from "../books"
 
-import { translateToLedgerTx } from ".."
 import { getBankOwnerWalletId } from "../caching"
+import { translateToLedgerTx } from "../translate"
 import { UnknownLedgerError } from "../domain/errors"
 import { persistAndReturnEntry } from "../helpers"
 import { FeeOnlyEntryBuilder } from "../domain/fee-only-entry-builder"

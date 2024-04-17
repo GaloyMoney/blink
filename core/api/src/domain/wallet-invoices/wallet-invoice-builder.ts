@@ -3,6 +3,7 @@ import {
   SubOneCentSatAmountForUsdReceiveError,
 } from "./errors"
 
+import { checkedToLedgerExternalId } from "@/domain/ledger"
 import {
   getSecretAndPaymentHash,
   invoiceExpirationForCurrency,
@@ -13,6 +14,19 @@ import { toSeconds } from "@/domain/primitives"
 export const WalletInvoiceBuilder = (
   config: WalletInvoiceBuilderConfig,
 ): WalletInvoiceBuilder => {
+  const withExternalId = (externalId: LedgerExternalId | undefined) => {
+    return WIBWithExternalId({
+      ...config,
+      externalId,
+    })
+  }
+
+  return {
+    withExternalId,
+  }
+}
+
+export const WIBWithExternalId = (state: WIBWithExternalIdState): WIBWithExternalId => {
   const withDescription = ({
     description,
     descriptionHash,
@@ -21,7 +35,7 @@ export const WalletInvoiceBuilder = (
     descriptionHash?: string
   }) => {
     return WIBWithDescription({
-      ...config,
+      ...state,
       description,
       descriptionHash,
     })
@@ -131,6 +145,10 @@ export const WIBWithAmount = (state: WIBWithAmountState): WIBWithAmount => {
   const registerInvoice = async () => {
     const { secret, paymentHash } = getSecretAndPaymentHash()
 
+    const defaultExternalId = checkedToLedgerExternalId(paymentHash)
+    if (defaultExternalId instanceof Error) return defaultExternalId
+    const externalId = state.externalId || defaultExternalId
+
     const registeredInvoice = await state.lnRegisterInvoice({
       paymentHash,
       description: state.description,
@@ -154,6 +172,7 @@ export const WIBWithAmount = (state: WIBWithAmountState): WIBWithAmount => {
       createdAt: new Date(),
       lnInvoice: registeredInvoice.invoice,
       processingCompleted: false,
+      externalId,
     }
     return walletInvoice
   }
