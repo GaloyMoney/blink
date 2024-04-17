@@ -26,33 +26,30 @@ impl NotificationHistory {
         Self { repo, settings }
     }
 
-    // pub async fn notify_user(
-    //     &self,
-    //     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-    //     user_id: GaloyUserId,
-    //     payload: NotificationEventPayload,
-    // ) -> Result<(), InAppNotificationError> {
-    //     let user_settings = self.settings.find_for_user_id(&user_id).await?;
-    //     if let Some(msg) =
-    //         payload.to_localized_in_app_msg(user_settings.locale().unwrap_or_default())
-    //     {
-    //         let id = InAppNotificationId::new();
-    //         let mut builder = NewInAppNotification::builder(id);
-    //         builder
-    //             .user_id(user_id)
-    //             .title(msg.title)
-    //             .body(msg.body)
-    //             .deep_link(payload.deep_link());
-    //         let new_in_app_notification = builder
-    //             .build()
-    //             .expect("Couldn't build new in app notification");
+    pub async fn add_event(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        user_id: GaloyUserId,
+        payload: NotificationEventPayload,
+    ) -> Result<(), NotificationHistoryError> {
+        if !payload.should_be_added_to_history() {
+            return Ok(());
+        }
 
-    //         self.in_app_notifications_repo
-    //             .persist_new(tx, new_in_app_notification)
-    //             .await?;
-    //     }
-    //     Ok(())
-    // }
+        let user_settings = self.settings.find_for_user_id(&user_id).await?;
+        let msg =
+            payload.to_localized_persistent_message(user_settings.locale().unwrap_or_default());
+        let notification = NewPersistentNotification::builder()
+            .user_id(user_id)
+            .title(msg.title)
+            .body(msg.body)
+            .deep_link(payload.deep_link())
+            .build()
+            .expect("Couldn't build new persistent notification");
+
+        self.repo.persist_in_tx(tx, notification).await?;
+        Ok(())
+    }
 
     //     pub async fn notify_users(
     //         &self,

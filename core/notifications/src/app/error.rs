@@ -3,8 +3,8 @@ use thiserror::Error;
 use crate::{
     email_executor::error::EmailExecutorError,
     email_reminder_projection::error::EmailReminderProjectionError,
-    in_app_notification::error::InAppNotificationError, job::error::JobError,
-    notification_cool_off_tracker::NotificationCoolOffTrackerError,
+    history::error::NotificationHistoryError, in_app_notification::error::InAppNotificationError,
+    job::error::JobError, notification_cool_off_tracker::NotificationCoolOffTrackerError,
     push_executor::error::PushExecutorError,
     user_notification_settings::error::UserNotificationSettingsError,
 };
@@ -29,4 +29,6 @@ pub enum ApplicationError {
     NotificationCoolOffTrackerError(#[from] NotificationCoolOffTrackerError),
     #[error("{0}")]
     InAppNotificationError(#[from] InAppNotificationError),
+    #[error("{0}")]
+    NotificationHistory(#[from] NotificationHistoryError),
 }

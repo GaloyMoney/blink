@@ -10,6 +10,7 @@ use std::sync::Arc;
 use crate::{
     email_executor::EmailExecutor,
     email_reminder_projection::EmailReminderProjection,
+    history::*,
     in_app_notification::{InAppNotification, InAppNotifications},
     job,
     notification_cool_off_tracker::*,
@@ -28,6 +29,7 @@ pub struct NotificationsApp {
     settings: UserNotificationSettingsRepo,
     email_reminder_projection: EmailReminderProjection,
     in_app_notifications: InAppNotifications,
+    history: NotificationHistory,
     pool: Pool<Postgres>,
     _runner: Arc<JobRunnerHandle>,
 }
@@ -41,6 +43,7 @@ impl NotificationsApp {
         let email_reminder_projection =
             EmailReminderProjection::new(&pool, config.link_email_reminder.clone());
         let in_app_notifications = InAppNotifications::new(&pool, settings.clone());
+        let history = NotificationHistory::new(&pool, settings.clone());
         let runner = job::start_job_runner(
             &pool,
             push_executor,
@@ -61,6 +64,7 @@ impl NotificationsApp {
             pool,
             settings,
             in_app_notifications,
+            history,
             email_reminder_projection,
             _runner: Arc::new(runner),
         })
@@ -208,11 +212,11 @@ impl NotificationsApp {
         if payload.should_send_email() {
             job::spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
         }
-        if payload.should_send_in_app_msg() {
-            self.in_app_notifications
-                .notify_user(&mut tx, user_id.clone(), payload.clone())
-                .await?;
-        }
+
+        self.history
+            .add_event(&mut tx, user_id.clone(), payload.clone())
+            .await?;
+
         job::spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
         tx.commit().await?;
         Ok(())

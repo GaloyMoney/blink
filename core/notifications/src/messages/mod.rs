@@ -18,3 +18,8 @@ pub struct LocalizedInAppMessage {
     pub title: String,
     pub body: String,
 }
+
+pub struct LocalizedPersistentMessage {
+    pub title: String,
+    pub body: String,
+}

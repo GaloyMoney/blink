@@ -38,7 +38,7 @@ impl NotificationEvent for MarketingNotificationTriggered {
         false
     }
 
-    fn should_send_in_app_msg(&self) -> bool {
+    fn should_be_added_to_history(&self) -> bool {
         true
     }
 

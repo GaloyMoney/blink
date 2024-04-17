@@ -20,7 +20,7 @@ pub enum PersistentNotificationEvent {
 impl EntityEvent for PersistentNotificationEvent {
     type EntityId = PersistentNotificationId;
     fn event_table_name() -> &'static str {
-        "user_notification_settings_events"
+        "persistent_notification_events"
     }
 }
 
@@ -35,18 +35,39 @@ pub struct PersistentNotification {
 #[derive(Debug, Builder, Clone)]
 pub struct NewPersistentNotification {
     #[builder(setter(into))]
+    pub id: PersistentNotificationId,
+    #[builder(setter(into))]
     pub user_id: GaloyUserId,
     #[builder(setter(into))]
     pub title: String,
     #[builder(setter(into))]
     pub body: String,
+    #[builder(setter(into))]
+    pub locale: GaloyLocale,
     #[builder(default, setter(into))]
     pub deep_link: Option<DeepLink>,
 }
 
 impl NewPersistentNotification {
     pub fn builder() -> NewPersistentNotificationBuilder {
-        NewPersistentNotificationBuilder::default()
+        let mut builder = NewPersistentNotificationBuilder::default();
+        builder.id(PersistentNotificationId::new());
+        builder
+    }
+
+    pub(super) fn initial_events(self) -> EntityEvents<PersistentNotificationEvent> {
+        let id = self.id;
+        EntityEvents::init(
+            id,
+            [PersistentNotificationEvent::Initialized {
+                id,
+                galoy_user_id: self.user_id,
+                title: self.title,
+                body: self.body,
+                locale: self.locale,
+                deep_link: self.deep_link,
+            }],
+        )
     }
 }
 

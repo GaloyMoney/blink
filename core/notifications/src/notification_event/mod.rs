@@ -49,8 +49,13 @@ pub trait NotificationEvent: std::fmt::Debug + Send + Sync {
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage;
     fn should_send_email(&self) -> bool;
     fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail>;
-    fn should_send_in_app_msg(&self) -> bool;
     fn to_localized_in_app_msg(&self, locale: GaloyLocale) -> Option<LocalizedInAppMessage>;
+    fn should_be_added_to_history(&self) -> bool {
+        false
+    }
+    fn to_localized_persistent_message(&self, locale: GaloyLocale) -> LocalizedPersistentMessage {
+        unimplemented!()
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

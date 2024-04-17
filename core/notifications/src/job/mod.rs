@@ -81,7 +81,7 @@ async fn all_user_event_dispatch(
             }
             let payload = data.payload.clone();
 
-            if payload.should_send_in_app_msg() {
+            if payload.should_be_added_to_history() {
                 in_app_notifications
                     .notify_users(&mut tx, ids.clone(), payload.clone())
                     .await?;
@@ -127,7 +127,7 @@ async fn link_email_reminder(
 
             let payload = NotificationEventPayload::from(LinkEmailReminder {});
 
-            if payload.should_send_in_app_msg() {
+            if payload.should_be_added_to_history() {
                 in_app_notifications
                     .notify_users(&mut tx, ids.clone(), payload.clone())
                     .await?;
@@ -203,7 +203,7 @@ async fn multi_user_event_dispatch(
 
             let payload = data.payload.clone();
 
-            if payload.should_send_in_app_msg() {
+            if payload.should_be_added_to_history() {
                 in_app_notifications
                     .notify_users(&mut tx, ids.to_vec(), payload.clone())
                     .await?;

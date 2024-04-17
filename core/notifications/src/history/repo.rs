@@ -14,27 +14,20 @@ impl PersistentNotifications {
         Self { pool }
     }
 
-    pub async fn persist_new(
+    pub async fn persist_in_tx(
         &self,
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
         notification: NewPersistentNotification,
     ) -> Result<(), NotificationHistoryError> {
-        // let deep_link = serde_json::to_string(&new_in_app_notification.deep_link)
-        //     .expect("unable to serialize deep_link");
-        // sqlx::query!(
-        //     r#"
-        //     INSERT INTO in_app_notifications (id, galoy_user_id, title, body, deep_link)
-        //     VALUES ($1, $2, $3, $4, $5)
-        //     "#,
-        //     notification.id as InAppNotificationId,
-        //     notification.user_id.into_inner(),
-        //     notification.title,
-        //     notification.body,
-        //     deep_link,
-        // )
-        // .execute(&mut **tx)
-        // .await?;
-
+        sqlx::query!(
+            r#"INSERT INTO persistent_notifications (id, galoy_user_id)
+            VALUES ($1, $2) ON CONFLICT DO NOTHING"#,
+            notification.id as PersistentNotificationId,
+            notification.user_id.as_ref(),
+        )
+        .execute(&mut **tx)
+        .await?;
+        notification.initial_events().persist(tx).await?;
         Ok(())
     }
 
