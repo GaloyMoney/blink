@@ -36,18 +36,18 @@ impl User {
         only_unread: Option<bool>,
     ) -> async_graphql::Result<Vec<InAppNotification>> {
         let app = ctx.data_unchecked::<NotificationsApp>();
+        unimplemented!()
+        // let notifications = app
+        //     .in_app_notifications_for_user(
+        //         GaloyUserId::from(self.id.0.clone()),
+        //         only_unread.unwrap_or(false),
+        //     )
+        //     .await?;
 
-        let notifications = app
-            .in_app_notifications_for_user(
-                GaloyUserId::from(self.id.0.clone()),
-                only_unread.unwrap_or(false),
-            )
-            .await?;
-
-        Ok(notifications
-            .into_iter()
-            .map(InAppNotification::from)
-            .collect())
+        // Ok(notifications
+        //     .into_iter()
+        //     .map(InAppNotification::from)
+        //     .collect())
     }
 }
 
@@ -76,14 +76,14 @@ impl Mutation {
             return Err("Permission denied".into());
         }
         let app = ctx.data_unchecked::<NotificationsApp>();
+        unimplemented!()
+        // let notification_id = InAppNotificationId::from_str(input.notification_id.0.as_str())?;
+        // let notification = app
+        //     .mark_notification_as_read(GaloyUserId::from(subject.id.clone()), notification_id)
+        //     .await?;
 
-        let notification_id = InAppNotificationId::from_str(input.notification_id.0.as_str())?;
-        let notification = app
-            .mark_notification_as_read(GaloyUserId::from(subject.id.clone()), notification_id)
-            .await?;
-
-        Ok(UserInAppNotificationMarkAsReadPayload {
-            notification: InAppNotification::from(notification),
-        })
+        // Ok(UserInAppNotificationMarkAsReadPayload {
+        //     notification: InAppNotification::from(notification),
+        // })
     }
 }

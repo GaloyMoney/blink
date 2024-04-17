@@ -6,7 +6,7 @@ use sqlx::PgPool;
 
 use crate::{
     notification_event::NotificationEventPayload,
-    primitives::{GaloyUserId, PersistentNotificationId},
+    primitives::{GaloyUserId, StatefulNotificationId},
     user_notification_settings::*,
 };
 
@@ -39,7 +39,7 @@ impl NotificationHistory {
         let user_settings = self.settings.find_for_user_id(&user_id).await?;
         let msg =
             payload.to_localized_persistent_message(user_settings.locale().unwrap_or_default());
-        let notification = NewPersistentNotification::builder()
+        let notification = NewStatefulNotification::builder()
             .user_id(user_id)
             .title(msg.title)
             .body(msg.body)
@@ -68,7 +68,7 @@ impl NotificationHistory {
         for user_settings in user_notification_settings.iter() {
             let msg =
                 payload.to_localized_persistent_message(user_settings.locale().unwrap_or_default());
-            let notification = NewPersistentNotification::builder()
+            let notification = NewStatefulNotification::builder()
                 .user_id(user_settings.galoy_user_id.clone())
                 .title(msg.title)
                 .body(msg.body)

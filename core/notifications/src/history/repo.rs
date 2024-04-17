@@ -17,12 +17,12 @@ impl PersistentNotifications {
     pub async fn persist_in_tx(
         &self,
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-        notification: NewPersistentNotification,
+        notification: NewStatefulNotification,
     ) -> Result<(), NotificationHistoryError> {
         sqlx::query!(
             r#"INSERT INTO persistent_notifications (id, galoy_user_id)
             VALUES ($1, $2) ON CONFLICT DO NOTHING"#,
-            notification.id as PersistentNotificationId,
+            notification.id as StatefulNotificationId,
             notification.user_id.as_ref(),
         )
         .execute(&mut **tx)
@@ -34,12 +34,12 @@ impl PersistentNotifications {
     pub async fn persist_new_batch(
         &self,
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-        new_notifications: Vec<NewPersistentNotification>,
+        new_notifications: Vec<NewStatefulNotification>,
     ) -> Result<(), NotificationHistoryError> {
         let mut query_builder =
             sqlx::QueryBuilder::new("INSERT INTO persistent_notifications (id, galoy_user_id)");
         query_builder.push_values(new_notifications.iter(), |mut builder, notification| {
-            builder.push_bind(notification.id as PersistentNotificationId);
+            builder.push_bind(notification.id as StatefulNotificationId);
             builder.push_bind(notification.user_id.as_ref());
             builder.push_bind(notification.title.clone());
             builder.push_bind(notification.body.clone());

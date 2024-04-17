@@ -6,9 +6,9 @@ use crate::{notification_event::DeepLink, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
-pub enum PersistentNotificationEvent {
+pub enum StatefulNotificationEvent {
     Initialized {
-        id: PersistentNotificationId,
+        id: StatefulNotificationId,
         galoy_user_id: GaloyUserId,
         title: String,
         body: String,
@@ -17,25 +17,25 @@ pub enum PersistentNotificationEvent {
     },
 }
 
-impl EntityEvent for PersistentNotificationEvent {
-    type EntityId = PersistentNotificationId;
+impl EntityEvent for StatefulNotificationEvent {
+    type EntityId = StatefulNotificationId;
     fn event_table_name() -> &'static str {
-        "persistent_notification_events"
+        "stateful_notification_events"
     }
 }
 
 #[derive(Builder)]
 #[builder(pattern = "owned", build_fn(error = "EntityError"))]
-pub struct PersistentNotification {
-    pub id: PersistentNotificationId,
+pub struct StatefulNotification {
+    pub id: StatefulNotificationId,
     pub galoy_user_id: GaloyUserId,
-    pub(super) events: EntityEvents<PersistentNotificationEvent>,
+    pub(super) events: EntityEvents<StatefulNotificationEvent>,
 }
 
 #[derive(Debug, Builder, Clone)]
-pub struct NewPersistentNotification {
+pub struct NewStatefulNotification {
     #[builder(setter(into))]
-    pub id: PersistentNotificationId,
+    pub id: StatefulNotificationId,
     #[builder(setter(into))]
     pub user_id: GaloyUserId,
     #[builder(setter(into))]
@@ -48,18 +48,18 @@ pub struct NewPersistentNotification {
     pub deep_link: Option<DeepLink>,
 }
 
-impl NewPersistentNotification {
-    pub fn builder() -> NewPersistentNotificationBuilder {
-        let mut builder = NewPersistentNotificationBuilder::default();
-        builder.id(PersistentNotificationId::new());
+impl NewStatefulNotification {
+    pub fn builder() -> NewStatefulNotificationBuilder {
+        let mut builder = NewStatefulNotificationBuilder::default();
+        builder.id(StatefulNotificationId::new());
         builder
     }
 
-    pub(super) fn initial_events(self) -> EntityEvents<PersistentNotificationEvent> {
+    pub(super) fn initial_events(self) -> EntityEvents<StatefulNotificationEvent> {
         let id = self.id;
         EntityEvents::init(
             id,
-            [PersistentNotificationEvent::Initialized {
+            [StatefulNotificationEvent::Initialized {
                 id,
                 galoy_user_id: self.user_id,
                 title: self.title,
@@ -71,13 +71,13 @@ impl NewPersistentNotification {
     }
 }
 
-impl TryFrom<EntityEvents<PersistentNotificationEvent>> for PersistentNotification {
+impl TryFrom<EntityEvents<StatefulNotificationEvent>> for StatefulNotification {
     type Error = EntityError;
 
-    fn try_from(events: EntityEvents<PersistentNotificationEvent>) -> Result<Self, Self::Error> {
-        let mut builder = PersistentNotificationBuilder::default();
+    fn try_from(events: EntityEvents<StatefulNotificationEvent>) -> Result<Self, Self::Error> {
+        let mut builder = StatefulNotificationBuilder::default();
         for event in events.iter() {
-            if let PersistentNotificationEvent::Initialized {
+            if let StatefulNotificationEvent::Initialized {
                 id, galoy_user_id, ..
             } = event
             {

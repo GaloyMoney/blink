@@ -53,7 +53,7 @@ pub trait NotificationEvent: std::fmt::Debug + Send + Sync {
     fn should_be_added_to_history(&self) -> bool {
         false
     }
-    fn to_localized_persistent_message(&self, locale: GaloyLocale) -> LocalizedPersistentMessage {
+    fn to_localized_persistent_message(&self, locale: GaloyLocale) -> LocalizedStatefulMessage {
         unimplemented!()
     }
 }

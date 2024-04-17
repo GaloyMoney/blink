@@ -8,15 +8,8 @@ use tracing::instrument;
 use std::sync::Arc;
 
 use crate::{
-    email_executor::EmailExecutor,
-    email_reminder_projection::EmailReminderProjection,
-    history::*,
-    in_app_notification::{InAppNotification, InAppNotifications},
-    job,
-    notification_cool_off_tracker::*,
-    notification_event::*,
-    primitives::*,
-    push_executor::*,
+    email_executor::EmailExecutor, email_reminder_projection::EmailReminderProjection, history::*,
+    job, notification_cool_off_tracker::*, notification_event::*, primitives::*, push_executor::*,
     user_notification_settings::*,
 };
 
@@ -285,7 +278,7 @@ impl NotificationsApp {
         &self,
         user_id: GaloyUserId,
         only_unread: bool,
-    ) -> Result<Vec<InAppNotification>, ApplicationError> {
+    ) -> Result<Vec<StatefulNotification>, ApplicationError> {
         unimplemented!()
         // let in_app_notifications = self
         //     .in_app_notifications
@@ -299,8 +292,8 @@ impl NotificationsApp {
     pub async fn mark_notification_as_read(
         &self,
         user_id: GaloyUserId,
-        notification_id: InAppNotificationId,
-    ) -> Result<InAppNotification, ApplicationError> {
+        notification_id: StatefulNotificationId,
+    ) -> Result<StatefulNotification, ApplicationError> {
         unimplemented!()
         // let notification = self
         //     .in_app_notifications

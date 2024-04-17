@@ -19,7 +19,7 @@ pub struct LocalizedInAppMessage {
     pub body: String,
 }
 
-pub struct LocalizedPersistentMessage {
+pub struct LocalizedStatefulMessage {
     pub title: String,
     pub body: String,
 }
