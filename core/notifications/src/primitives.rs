@@ -32,6 +32,7 @@ impl std::fmt::Display for GaloyUserId {
 
 es_entity::entity_id! { UserNotificationSettingsId }
 es_entity::entity_id! { InAppNotificationId }
+es_entity::entity_id! { PersistentNotificationId }
 
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize, Hash)]
 pub struct GaloyLocale(String);
