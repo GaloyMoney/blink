@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(toolchain): add env file inline comment handling to parser
-        (#4292)'
-      sha: dd3d2e98658b8225632c9c8ad94f29ea74d96180
+      commitTitle: 'docs: add test account credentials to README (#4304)...'
+      sha: c9bc35b7ab14cf3d8df6f702a94253d7962ec3d5
       tags:
-      - 0.20.153-5-gdd3d2e986
+      - 0.20.153-7-gc9bc35b7a
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(toolchain): add env file inline comment handling to parser
-        (#4292)'
-      sha: dd3d2e98658b8225632c9c8ad94f29ea74d96180
+      commitTitle: 'docs: add test account credentials to README (#4304)...'
+      sha: c9bc35b7ab14cf3d8df6f702a94253d7962ec3d5
       tags:
-      - 0.20.153-5-gdd3d2e986
+      - 0.20.153-7-gc9bc35b7a
     path: schemas
   - git:
-      commitTitle: 'refactor(toolchain): add env file inline comment handling to parser
-        (#4292)'
-      sha: dd3d2e98658b8225632c9c8ad94f29ea74d96180
+      commitTitle: 'docs: add test account credentials to README (#4304)...'
+      sha: c9bc35b7ab14cf3d8df6f702a94253d7962ec3d5
       tags:
-      - 0.20.153-5-gdd3d2e986
+      - 0.20.153-7-gc9bc35b7a
     path: gql
   path: graphql
 kind: LockConfig
