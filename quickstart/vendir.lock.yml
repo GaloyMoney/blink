@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#4299)...'
-      sha: d22642efb0471da164a3efa6e7a87f114886b24e
+      commitTitle: 'feat(notifications): add InAppMsg to NotificationEvent (#4264)...'
+      sha: 7a743f66aaf57e3eb8f0870adbb110fc02069849
       tags:
-      - 0.20.152-1-gd22642efb
+      - 0.20.153-3-g7a743f66a
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#4299)...'
-      sha: d22642efb0471da164a3efa6e7a87f114886b24e
+      commitTitle: 'feat(notifications): add InAppMsg to NotificationEvent (#4264)...'
+      sha: 7a743f66aaf57e3eb8f0870adbb110fc02069849
       tags:
-      - 0.20.152-1-gd22642efb
+      - 0.20.153-3-g7a743f66a
     path: schemas
   - git:
-      commitTitle: 'chore: bump deps (#4299)...'
-      sha: d22642efb0471da164a3efa6e7a87f114886b24e
+      commitTitle: 'feat(notifications): add InAppMsg to NotificationEvent (#4264)...'
+      sha: 7a743f66aaf57e3eb8f0870adbb110fc02069849
       tags:
-      - 0.20.152-1-gd22642efb
+      - 0.20.153-3-g7a743f66a
     path: gql
   path: graphql
 kind: LockConfig

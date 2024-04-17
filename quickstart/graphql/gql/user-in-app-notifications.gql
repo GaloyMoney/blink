@@ -1,0 +1,13 @@
+query userInAppNotifications {
+  me {
+    id
+    inAppNotifications {
+      id
+      body
+      title
+      deepLink
+      createdAt
+      readAt
+    }
+  }
+}
