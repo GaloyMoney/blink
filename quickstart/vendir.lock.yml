@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(notifications): add InAppMsg to NotificationEvent (#4264)...'
-      sha: 7a743f66aaf57e3eb8f0870adbb110fc02069849
+      commitTitle: 'refactor(toolchain): add env file inline comment handling to parser
+        (#4292)'
+      sha: dd3d2e98658b8225632c9c8ad94f29ea74d96180
       tags:
-      - 0.20.153-3-g7a743f66a
+      - 0.20.153-5-gdd3d2e986
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(notifications): add InAppMsg to NotificationEvent (#4264)...'
-      sha: 7a743f66aaf57e3eb8f0870adbb110fc02069849
+      commitTitle: 'refactor(toolchain): add env file inline comment handling to parser
+        (#4292)'
+      sha: dd3d2e98658b8225632c9c8ad94f29ea74d96180
       tags:
-      - 0.20.153-3-g7a743f66a
+      - 0.20.153-5-gdd3d2e986
     path: schemas
   - git:
-      commitTitle: 'feat(notifications): add InAppMsg to NotificationEvent (#4264)...'
-      sha: 7a743f66aaf57e3eb8f0870adbb110fc02069849
+      commitTitle: 'refactor(toolchain): add env file inline comment handling to parser
+        (#4292)'
+      sha: dd3d2e98658b8225632c9c8ad94f29ea74d96180
       tags:
-      - 0.20.153-3-g7a743f66a
+      - 0.20.153-5-gdd3d2e986
     path: gql
   path: graphql
 kind: LockConfig
