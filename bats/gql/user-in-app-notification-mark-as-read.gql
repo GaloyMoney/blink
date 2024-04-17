@@ -1,0 +1,10 @@
+mutation userInAppNotificationMarkAsRead(
+  $input: UserInAppNotificationMarkAsReadInput!
+) {
+  userInAppNotificationMarkAsRead(input: $input) {
+    notification {
+      id
+      readAt
+    }
+  }
+}
