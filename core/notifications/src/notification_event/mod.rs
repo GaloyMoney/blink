@@ -6,11 +6,10 @@ mod identity_verification_review_started;
 mod link_email_reminder;
 mod marketing_notification_triggered;
 mod price_changed;
+mod traits;
 mod transaction_occurred;
 
 use serde::{Deserialize, Serialize};
-
-use crate::{messages::*, primitives::*};
 
 pub(super) use circle_grew::*;
 pub(super) use circle_threshold_reached::*;
@@ -20,6 +19,7 @@ pub(super) use identity_verification_review_started::*;
 pub(super) use link_email_reminder::*;
 pub(super) use marketing_notification_triggered::*;
 pub(super) use price_changed::*;
+pub use traits::*;
 pub(super) use transaction_occurred::*;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -41,16 +41,6 @@ impl DeepLink {
             DeepLink::People => "/people".to_string(),
         }
     }
-}
-
-pub trait NotificationEvent: std::fmt::Debug + Send + Sync {
-    fn category(&self) -> UserNotificationCategory;
-    fn deep_link(&self) -> Option<DeepLink>;
-    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage;
-    fn should_send_email(&self) -> bool;
-    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail>;
-    fn should_send_in_app_msg(&self) -> bool;
-    fn to_localized_in_app_msg(&self, locale: GaloyLocale) -> Option<LocalizedInAppMessage>;
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

@@ -30,14 +30,6 @@ impl NotificationEvent for MarketingNotificationTriggered {
         msg.clone()
     }
 
-    fn to_localized_email(&self, _locale: GaloyLocale) -> Option<LocalizedEmail> {
-        None
-    }
-
-    fn should_send_email(&self) -> bool {
-        false
-    }
-
     fn should_send_in_app_msg(&self) -> bool {
         true
     }
