@@ -188,8 +188,8 @@ importers:
         specifier: ^1.22.0
         version: 1.22.0
       '@ory/hydra-client':
-        specifier: ^2.2.0-rc.3
-        version: 2.2.0-rc.3
+        specifier: ^2.2.0
+        version: 2.2.0
       '@t3-oss/env-nextjs':
         specifier: ^0.7.1
         version: 0.7.1(typescript@5.3.3)(zod@3.22.4)
@@ -12015,10 +12015,10 @@ packages:
       - debug
     dev: false
 
-  /@ory/hydra-client@2.2.0-rc.3:
-    resolution: {integrity: sha512-FEGhnEBmRlnrZyW5WPIH6Jmc00+kfZYRdFbSHBqqOfWJP7/Vj6z7q3MfA4osvQgGUfvdZsb1/HHCe6aoLaYZaQ==}
+  /@ory/hydra-client@2.2.0:
+    resolution: {integrity: sha512-rSw8JW6tXgC61AzvGKFGTRmEW43xXfsl0y/EHGA9msNP+YiNsxfNNnivvSdkOQRdg4ZG+aO5M/1t0s3+dYg/0w==}
     dependencies:
-      axios: 0.21.4
+      axios: 1.6.8
     transitivePeerDependencies:
       - debug
     dev: false
@@ -18701,14 +18701,6 @@ packages:
       is-buffer: 2.0.5
     dev: true
 
-  /axios@0.21.4:
-    resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
-    dependencies:
-      follow-redirects: 1.15.6
-    transitivePeerDependencies:
-      - debug
-    dev: false
-
   /axios@0.27.2:
     resolution: {integrity: sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==}
     dependencies:
@@ -23939,16 +23931,6 @@ packages:
         optional: true
     dev: false
 
-  /follow-redirects@1.15.5:
-    resolution: {integrity: sha512-vSFWUON1B+yAw1VN4xMfxgn5fTUiaOzAJCKBwIIgT/+7CuGy9+r+5gITvP62j3RmaD5Ph65UaERdOSRGUzZtgw==}
-    engines: {node: '>=4.0'}
-    peerDependencies:
-      debug: '*'
-    peerDependenciesMeta:
-      debug:
-        optional: true
-    dev: true
-
   /follow-redirects@1.15.6:
     resolution: {integrity: sha512-wWN62YITEaOpSK584EZXJafH1AGpO8RVgElfkuXbTOrPX4fIfOyEpW/CsiNd8JdYrAoOvafRTOEnvsO++qCqFA==}
     engines: {node: '>=4.0'}
@@ -25491,7 +25473,7 @@ packages:
     engines: {node: '>=8.0.0'}
     dependencies:
       eventemitter3: 4.0.7
-      follow-redirects: 1.15.5
+      follow-redirects: 1.15.6
       requires-port: 1.0.0
     transitivePeerDependencies:
       - debug
