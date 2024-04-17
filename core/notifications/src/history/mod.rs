@@ -51,41 +51,37 @@ impl NotificationHistory {
         Ok(())
     }
 
-    //     pub async fn notify_users(
-    //         &self,
-    //         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-    //         user_ids: Vec<GaloyUserId>,
-    //         payload: NotificationEventPayload,
-    //     ) -> Result<(), InAppNotificationError> {
-    //         let user_notification_settings = self.settings.find_for_user_ids(user_ids).await?;
+    pub async fn add_events(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        user_ids: Vec<GaloyUserId>,
+        payload: NotificationEventPayload,
+    ) -> Result<(), NotificationHistoryError> {
+        if !payload.should_be_added_to_history() {
+            return Ok(());
+        }
 
-    //         let mut new_in_app_notifications = Vec::new();
+        let user_notification_settings = self.settings.find_for_user_ids(user_ids).await?;
 
-    //         for user_settings in user_notification_settings.iter() {
-    //             if let Some(msg) =
-    //                 payload.to_localized_in_app_msg(user_settings.locale().unwrap_or_default())
-    //             {
-    //                 let id = InAppNotificationId::new();
-    //                 let mut builder = NewInAppNotification::builder(id);
-    //                 builder
-    //                     .user_id(user_settings.galoy_user_id.clone())
-    //                     .title(msg.title)
-    //                     .body(msg.body)
-    //                     .deep_link(payload.deep_link());
-    //                 let new_in_app_notification = builder
-    //                     .build()
-    //                     .expect("Couldn't build new in app notification");
+        let mut new_notifications = Vec::new();
 
-    //                 new_in_app_notifications.push(new_in_app_notification);
-    //             }
-    //         }
+        for user_settings in user_notification_settings.iter() {
+            let msg =
+                payload.to_localized_persistent_message(user_settings.locale().unwrap_or_default());
+            let notification = NewPersistentNotification::builder()
+                .user_id(user_settings.galoy_user_id.clone())
+                .title(msg.title)
+                .body(msg.body)
+                .deep_link(payload.deep_link())
+                .build()
+                .expect("Couldn't build new persistent notification");
+            new_notifications.push(notification);
+        }
 
-    //         self.in_app_notifications_repo
-    //             .persist_new_batch(tx, new_in_app_notifications)
-    //             .await?;
+        self.repo.persist_new_batch(tx, new_notifications).await?;
 
-    //         Ok(())
-    //     }
+        Ok(())
+    }
 
     //     pub async fn notification_read(
     //         &self,

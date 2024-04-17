@@ -28,7 +28,6 @@ pub struct NotificationsApp {
     _config: AppConfig,
     settings: UserNotificationSettingsRepo,
     email_reminder_projection: EmailReminderProjection,
-    in_app_notifications: InAppNotifications,
     history: NotificationHistory,
     pool: Pool<Postgres>,
     _runner: Arc<JobRunnerHandle>,
@@ -42,14 +41,13 @@ impl NotificationsApp {
         let email_executor = EmailExecutor::init(config.email_executor.clone(), settings.clone())?;
         let email_reminder_projection =
             EmailReminderProjection::new(&pool, config.link_email_reminder.clone());
-        let in_app_notifications = InAppNotifications::new(&pool, settings.clone());
         let history = NotificationHistory::new(&pool, settings.clone());
         let runner = job::start_job_runner(
             &pool,
             push_executor,
             email_executor,
             settings.clone(),
-            in_app_notifications.clone(),
+            history.clone(),
             email_reminder_projection.clone(),
             config.jobs.clone(),
         )
@@ -63,7 +61,6 @@ impl NotificationsApp {
             _config: config,
             pool,
             settings,
-            in_app_notifications,
             history,
             email_reminder_projection,
             _runner: Arc::new(runner),
@@ -289,12 +286,13 @@ impl NotificationsApp {
         user_id: GaloyUserId,
         only_unread: bool,
     ) -> Result<Vec<InAppNotification>, ApplicationError> {
-        let in_app_notifications = self
-            .in_app_notifications
-            .find_for_user(user_id, only_unread)
-            .await?;
+        unimplemented!()
+        // let in_app_notifications = self
+        //     .in_app_notifications
+        //     .find_for_user(user_id, only_unread)
+        //     .await?;
 
-        Ok(in_app_notifications)
+        // Ok(in_app_notifications)
     }
 
     #[instrument(name = "app.mark_notification_as_read", skip(self), err)]
@@ -303,12 +301,13 @@ impl NotificationsApp {
         user_id: GaloyUserId,
         notification_id: InAppNotificationId,
     ) -> Result<InAppNotification, ApplicationError> {
-        let notification = self
-            .in_app_notifications
-            .notification_read(user_id, notification_id)
-            .await?;
+        unimplemented!()
+        // let notification = self
+        //     .in_app_notifications
+        //     .notification_read(user_id, notification_id)
+        //     .await?;
 
-        Ok(notification)
+        // Ok(notification)
     }
 
     #[instrument(

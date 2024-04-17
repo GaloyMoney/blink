@@ -31,28 +31,28 @@ impl PersistentNotifications {
         Ok(())
     }
 
-    //     pub async fn persist_new_batch(
-    //         &self,
-    //         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-    //         new_in_app_notifications: Vec<NewInAppNotification>,
-    //     ) -> Result<(), InAppNotificationError> {
-    //         let mut query_builder = sqlx::QueryBuilder::new(
-    //             "INSERT INTO in_app_notifications (id, galoy_user_id, title, body, deep_link)",
-    //         );
-    //         query_builder.push_values(new_in_app_notifications, |mut builder, notification| {
-    //             builder.push_bind(notification.id as InAppNotificationId);
-    //             builder.push_bind(notification.user_id.into_inner());
-    //             builder.push_bind(notification.title);
-    //             builder.push_bind(notification.body);
-    //             builder.push_bind(
-    //                 serde_json::to_string(&notification.deep_link)
-    //                     .expect("unable to serialize deep_link"),
-    //             );
-    //         });
-    //         let query = query_builder.build();
-    //         query.execute(&mut **tx).await?;
-    //         Ok(())
-    //     }
+    pub async fn persist_new_batch(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        new_notifications: Vec<NewPersistentNotification>,
+    ) -> Result<(), NotificationHistoryError> {
+        // let mut query_builder = sqlx::QueryBuilder::new(
+        //     "INSERT INTO in_app_notifications (id, galoy_user_id, title, body, deep_link)",
+        // );
+        // query_builder.push_values(new_in_app_notifications, |mut builder, notification| {
+        //     builder.push_bind(notification.id as InAppNotificationId);
+        //     builder.push_bind(notification.user_id.into_inner());
+        //     builder.push_bind(notification.title);
+        //     builder.push_bind(notification.body);
+        //     builder.push_bind(
+        //         serde_json::to_string(&notification.deep_link)
+        //             .expect("unable to serialize deep_link"),
+        //     );
+        // });
+        // let query = query_builder.build();
+        // query.execute(&mut **tx).await?;
+        Ok(())
+    }
 
     //     pub async fn find_all_for_user(
     //         &self,

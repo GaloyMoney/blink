@@ -14,9 +14,8 @@ use std::collections::HashMap;
 use job_executor::{JobExecutor, JobResult};
 
 use crate::{
-    email_executor::EmailExecutor, email_reminder_projection::*, in_app_notification::*,
-    notification_event::*, primitives::GaloyUserId, push_executor::PushExecutor,
-    user_notification_settings::*,
+    email_executor::EmailExecutor, email_reminder_projection::*, history::*, notification_event::*,
+    primitives::GaloyUserId, push_executor::PushExecutor, user_notification_settings::*,
 };
 
 pub use config::*;
@@ -31,7 +30,7 @@ pub async fn start_job_runner(
     push_executor: PushExecutor,
     email_executor: EmailExecutor,
     settings: UserNotificationSettingsRepo,
-    in_app_notifications: InAppNotifications,
+    history: NotificationHistory,
     email_reminder_projection: EmailReminderProjection,
     jobs_config: JobsConfig,
 ) -> Result<JobRunnerHandle, JobError> {
@@ -46,7 +45,7 @@ pub async fn start_job_runner(
     registry.set_context(push_executor);
     registry.set_context(email_executor);
     registry.set_context(settings);
-    registry.set_context(in_app_notifications);
+    registry.set_context(history);
     registry.set_context(email_reminder_projection);
     registry.set_context(jobs_config);
 
@@ -59,7 +58,7 @@ pub async fn start_job_runner(
 )]
 async fn all_user_event_dispatch(
     mut current_job: CurrentJob,
-    in_app_notifications: InAppNotifications,
+    history: NotificationHistory,
     settings: UserNotificationSettingsRepo,
 ) -> Result<(), JobError> {
     let pool = current_job.pool().clone();
@@ -81,11 +80,9 @@ async fn all_user_event_dispatch(
             }
             let payload = data.payload.clone();
 
-            if payload.should_be_added_to_history() {
-                in_app_notifications
-                    .notify_users(&mut tx, ids.clone(), payload.clone())
-                    .await?;
-            }
+            history
+                .add_events(&mut tx, ids.clone(), payload.clone())
+                .await?;
 
             for user_id in ids {
                 if payload.should_send_email() {
@@ -104,7 +101,7 @@ async fn all_user_event_dispatch(
 async fn link_email_reminder(
     mut current_job: CurrentJob,
     email_reminder_projection: EmailReminderProjection,
-    in_app_notifications: InAppNotifications,
+    history: NotificationHistory,
 ) -> Result<(), JobError> {
     let pool = current_job.pool().clone();
     JobExecutor::builder(&mut current_job)
@@ -127,11 +124,9 @@ async fn link_email_reminder(
 
             let payload = NotificationEventPayload::from(LinkEmailReminder {});
 
-            if payload.should_be_added_to_history() {
-                in_app_notifications
-                    .notify_users(&mut tx, ids.clone(), payload.clone())
-                    .await?;
-            }
+            history
+                .add_events(&mut tx, ids.clone(), payload.clone())
+                .await?;
 
             for user_id in ids {
                 spawn_send_push_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
@@ -177,7 +172,7 @@ async fn kickoff_link_email_reminder(
 )]
 async fn multi_user_event_dispatch(
     mut current_job: CurrentJob,
-    in_app_notifications: InAppNotifications,
+    history: NotificationHistory,
 ) -> Result<(), JobError> {
     let pool = current_job.pool().clone();
     JobExecutor::builder(&mut current_job)
@@ -203,11 +198,9 @@ async fn multi_user_event_dispatch(
 
             let payload = data.payload.clone();
 
-            if payload.should_be_added_to_history() {
-                in_app_notifications
-                    .notify_users(&mut tx, ids.to_vec(), payload.clone())
-                    .await?;
-            }
+            history
+                .add_events(&mut tx, ids.to_vec(), payload.clone())
+                .await?;
 
             for user_id in ids {
                 if payload.should_send_email() {
