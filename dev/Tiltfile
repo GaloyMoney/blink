@@ -56,12 +56,16 @@ def merge_env_file(file_path_str, env_vars={}):
     file_blob = read_file(env_file_path, "")
     lines = str(file_blob).split('\n')
     for raw_line in lines:
-        if raw_line.startswith('#') or raw_line.strip() == '':
+        line_without_comments = raw_line.strip()
+        if '#' in raw_line:
+            line_without_comments = raw_line.split('#')[0].strip()
+
+        if line_without_comments == '':
             continue
 
-        line = raw_line
-        if raw_line.startswith('export '):
-            line = raw_line[len('export '):].strip()
+        line = line_without_comments
+        if line_without_comments.startswith('export '):
+            line = line_without_comments[len('export '):].strip()
 
         key_value = line.split('=', 1)
         if len(key_value) == 2:
