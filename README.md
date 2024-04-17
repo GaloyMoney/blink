@@ -178,6 +178,11 @@ It will also remove the containers and, consequentially, the data held in them.
 buck2 run dev:down
 ```
 
+### (8) Test account credentials
+
+For account login, you can input any random mobile number/email and then use `000000` as the OTP.
+
+
 ## Run integration tests with Galoy as a dependency?
 
 Take a look at the [Quickstart](./quickstart) if you want to take it for a spin.
