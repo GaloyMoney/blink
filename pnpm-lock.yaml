@@ -668,8 +668,8 @@ importers:
         specifier: ^18.2.0
         version: 18.2.0
       react-bootstrap:
-        specifier: ^1.6.4
-        version: 1.6.7(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^2.10.2
+        version: 2.10.2(@types/react@18.2.31)(react-dom@18.2.0)(react@18.2.0)
       react-currency-input-field:
         specifier: ^3.6.10
         version: 3.6.12(react@18.2.0)
@@ -13480,6 +13480,16 @@ packages:
       '@babel/runtime': 7.23.7
     dev: true
 
+  /@react-aria/ssr@3.9.2(react@18.2.0):
+    resolution: {integrity: sha512-0gKkgDYdnq1w+ey8KzG9l+H5Z821qh9vVjztk55rUg71vTk/Eaebeir+WtzcLLwTjw3m/asIjx8Y59y1lJZhBw==}
+    engines: {node: '>= 12'}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
+    dependencies:
+      '@swc/helpers': 0.5.2
+      react: 18.2.0
+    dev: false
+
   /@react-google-maps/api@2.19.2(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-Vt57XWzCKfsUjKOmFUl2erVVfOePkPK5OigF/f+q7UuV/Nm9KDDy1PMFBx+wNahEqOd6a32BxfsykEhBnbU9wQ==}
     peerDependencies:
@@ -13512,14 +13522,6 @@ packages:
     resolution: {integrity: sha512-l3YHBLAol6d/IKnB9LhpD0cEZWAoe3eFKUyTYWmFmCO2Q/WOckxLQAUyMZWwZV2M/m3+4vgRoaolFqaII82/TA==}
     dev: true
 
-  /@restart/context@2.1.4(react@18.2.0):
-    resolution: {integrity: sha512-INJYZQJP7g+IoDUh/475NlGiTeMfwTXUEr3tmRneckHIxNolGOW9CTq83S8cxq0CgJwwcMzMJFchxvlwe7Rk8Q==}
-    peerDependencies:
-      react: '>=16.3.2'
-    dependencies:
-      react: 18.2.0
-    dev: false
-
   /@restart/hooks@0.4.11(react@18.2.0):
     resolution: {integrity: sha512-Ft/ncTULZN6ldGHiF/k5qt72O8JyRMOeg0tApvCni8LkoiEahO+z3TNxfXIVGy890YtWVDvJAl662dVJSJXvMw==}
     peerDependencies:
@@ -13527,6 +13529,25 @@ packages:
     dependencies:
       dequal: 2.0.3
       react: 18.2.0
+    dev: false
+
+  /@restart/ui@1.6.8(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-6ndCv3oZ7r9vuP1Ok9KH55TM1/UkdBnP/fSraW0DFDMbPMzWKhVKeFAIEUCRCSdzayjZDcFYK6xbMlipN9dmMA==}
+    peerDependencies:
+      react: '>=16.14.0'
+      react-dom: '>=16.14.0'
+    dependencies:
+      '@babel/runtime': 7.23.7
+      '@popperjs/core': 2.11.8
+      '@react-aria/ssr': 3.9.2(react@18.2.0)
+      '@restart/hooks': 0.4.11(react@18.2.0)
+      '@types/warning': 3.0.3
+      dequal: 2.0.3
+      dom-helpers: 5.2.1
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      uncontrollable: 8.0.4(react@18.2.0)
+      warning: 4.0.3
     dev: false
 
   /@rushstack/eslint-patch@1.5.1:
@@ -16141,10 +16162,6 @@ packages:
       '@types/node': 20.12.7
     dev: true
 
-  /@types/invariant@2.2.37:
-    resolution: {integrity: sha512-IwpIMieE55oGWiXkQPSBY1nw1nFs6bsKXTFskNY8sdS17K24vyEBRQZEwlRS7ZmXCWnJcQtbxWzly+cODWGs2A==}
-    dev: false
-
   /@types/ioredis@4.28.10:
     resolution: {integrity: sha512-69LyhUgrXdgcNDv7ogs1qXZomnfOEnSmrmMFqKgt1XMJxmoOSG/u3wYy13yACIfKuMJ8IhKgHafDO3sx19zVQQ==}
     dependencies:
@@ -16487,12 +16504,6 @@ packages:
     resolution: {integrity: sha512-hT/+s0VQs2ojCX823m60m5f0sL5idt9SO6Tj6Dg+rdphGPIeJbJ6CxvBYkgkGKrYeDjvIpKTR38UzmtHJOGW3Q==}
     dependencies:
       '@types/react': 18.2.79
-
-  /@types/react-transition-group@4.4.7:
-    resolution: {integrity: sha512-ICCyBl5mvyqYp8Qeq9B5G/fyBSRC0zx3XM3sCC6KkcMsNeAHqXBKkmat4GqdJET5jtYUpZXrxI5flve5qhi2Eg==}
-    dependencies:
-      '@types/react': 18.2.79
-    dev: false
 
   /@types/react@18.2.31:
     resolution: {integrity: sha512-c2UnPv548q+5DFh03y8lEDeMfDwBn9G3dRwfkrxQMo/dOtRHUUO57k6pHvBIfH/VF4Nh+98mZ5aaSe+2echD5g==}
@@ -30766,20 +30777,21 @@ packages:
       minimist: 1.2.8
       strip-json-comments: 2.0.1
 
-  /react-bootstrap@1.6.7(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-IzCYXuLSKDEjGFglbFWk0/iHmdhdcJzTmtS6lXxc0kaNFx2PFgrQf5jKnx5sarF2tiXh9Tgx3pSt3pdK7YwkMA==}
+  /react-bootstrap@2.10.2(@types/react@18.2.31)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-UvB7mRqQjivdZNxJNEA2yOQRB7L9N43nBnKc33K47+cH90/ujmnMwatTCwQLu83gLhrzAl8fsa6Lqig/KLghaA==}
     peerDependencies:
-      react: '>=16.8.0'
-      react-dom: '>=16.8.0'
+      '@types/react': '>=16.14.8'
+      react: '>=16.14.0'
+      react-dom: '>=16.14.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
     dependencies:
-      '@babel/runtime': 7.23.5
-      '@restart/context': 2.1.4(react@18.2.0)
+      '@babel/runtime': 7.23.7
       '@restart/hooks': 0.4.11(react@18.2.0)
-      '@types/invariant': 2.2.37
-      '@types/prop-types': 15.7.11
+      '@restart/ui': 1.6.8(react-dom@18.2.0)(react@18.2.0)
       '@types/react': 18.2.31
-      '@types/react-transition-group': 4.4.7
-      '@types/warning': 3.0.3
+      '@types/react-transition-group': 4.4.10
       classnames: 2.3.2
       dom-helpers: 5.2.1
       invariant: 2.2.4
@@ -30787,7 +30799,6 @@ packages:
       prop-types-extra: 1.1.1(react@18.2.0)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
-      react-overlays: 5.2.1(react-dom@18.2.0)(react@18.2.0)
       react-transition-group: 4.4.5(react-dom@18.2.0)(react@18.2.0)
       uncontrollable: 7.2.1(react@18.2.0)
       warning: 4.0.3
@@ -30942,24 +30953,6 @@ packages:
       babel-runtime: 6.26.0
       lottie-web: 5.12.2
       react: 18.2.0
-    dev: false
-
-  /react-overlays@5.2.1(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-GLLSOLWr21CqtJn8geSwQfoJufdt3mfdsnIiQswouuQ2MMPns+ihZklxvsTDKD3cR2tF8ELbi5xUsvqVhR6WvA==}
-    peerDependencies:
-      react: '>=16.3.0'
-      react-dom: '>=16.3.0'
-    dependencies:
-      '@babel/runtime': 7.23.7
-      '@popperjs/core': 2.11.8
-      '@restart/hooks': 0.4.11(react@18.2.0)
-      '@types/warning': 3.0.3
-      dom-helpers: 5.2.1
-      prop-types: 15.8.1
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      uncontrollable: 7.2.1(react@18.2.0)
-      warning: 4.0.3
     dev: false
 
   /react-phone-number-input@3.3.7(react-dom@18.2.0)(react@18.2.0):
@@ -33968,6 +33961,14 @@ packages:
       invariant: 2.2.4
       react: 18.2.0
       react-lifecycles-compat: 3.0.4
+    dev: false
+
+  /uncontrollable@8.0.4(react@18.2.0):
+    resolution: {integrity: sha512-ulRWYWHvscPFc0QQXvyJjY6LIXU56f0h8pQFvhxiKk5V1fcI8gp9Ht9leVAhrVjzqMw0BgjspBINx9r6oyJUvQ==}
+    peerDependencies:
+      react: '>=16.14.0'
+    dependencies:
+      react: 18.2.0
     dev: false
 
   /undefsafe@2.0.5:
