@@ -114,6 +114,38 @@ describe("createAccountWithPhoneIdentifier", () => {
         throw new Error(`${WalletCurrency.Usd} wallet not found`)
       }
       expect(account.defaultWalletId).toEqual(usdWallet.id)
+      expect(account.displayCurrency).toEqual("USD")
+    })
+
+    it("sets displayCurrency based on country code", async () => {
+      const initialWallets = [WalletCurrency.Btc]
+
+      let account: Account | RepositoryError =
+        await Accounts.createAccountWithPhoneIdentifier({
+          newAccountInfo: { phone: randomPhone(), kratosUserId: randomUserId() },
+          config: {
+            initialLevel: AccountLevel.One,
+            initialStatus: AccountStatus.Active,
+            initialWallets,
+            maxDeletions: 2,
+          },
+          phoneMetadata: {
+            carrier: {
+              error_code: null,
+              mobile_country_code: null,
+              mobile_network_code: null,
+              name: null,
+              type: null,
+            },
+            countryCode: "AD", // Andorra
+          },
+        })
+      if (account instanceof Error) throw account
+
+      // Check expected default display currency was set
+      account = await AccountsRepository().findById(account.id)
+      if (account instanceof Error) throw account
+      expect(account.displayCurrency).toEqual("EUR")
     })
   })
 })

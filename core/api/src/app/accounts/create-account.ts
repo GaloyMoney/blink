@@ -1,5 +1,7 @@
 import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/config"
 
+import { displayCurrencyFromCountryCode } from "@/app/prices"
+
 import { WalletType } from "@/domain/wallets"
 import { AccountLevel } from "@/domain/accounts"
 
@@ -13,10 +15,12 @@ const initializeCreatedAccount = async ({
   account,
   config,
   phone,
+  countryCode,
 }: {
   account: Account
   config: AccountsConfig
   phone?: PhoneNumber
+  countryCode?: string
 }): Promise<Account | ApplicationError> => {
   const walletsEnabledConfig = config.initialWallets
 
@@ -50,6 +54,12 @@ const initializeCreatedAccount = async ({
 
   account.statusHistory = [{ status: config.initialStatus, comment: "Initial Status" }]
   account.level = config.initialLevel
+
+  if (countryCode) {
+    const displayCurrency = await displayCurrencyFromCountryCode(countryCode)
+    if (displayCurrency instanceof Error) return displayCurrency
+    account.displayCurrency = displayCurrency || account.displayCurrency
+  }
 
   const updatedAccount = await AccountsRepository().update(account)
   if (updatedAccount instanceof Error) return updatedAccount
@@ -98,6 +108,7 @@ export const createAccountWithPhoneIdentifier = async ({
     account: accountNew,
     config,
     phone,
+    countryCode: phoneMetadata?.countryCode,
   })
   if (account instanceof Error) return account
 
