@@ -3,7 +3,7 @@ import { SupportChat } from "./schema"
 import { UnknownRepositoryError, CouldNotFindError } from "@/domain/errors"
 
 export const SupportChatRepository = (): ISupportChatRepository => {
-  const add = async ({
+  const create = async ({
     supportChatId,
     accountId,
   }: {
@@ -34,7 +34,7 @@ export const SupportChatRepository = (): ISupportChatRepository => {
   }
 
   return {
-    add,
+    create,
     findNewestByAccountId,
   }
 }
