@@ -57,13 +57,6 @@ filegroup(
 )
 
 filegroup(
-  name = "locales",
-  srcs = glob([
-    "src/config/locales/*.json"
-  ])
-)
-
-filegroup(
   name = "protos",
   srcs = glob([
     "src/services/**/protos/**",
@@ -79,7 +72,7 @@ tsc_build(
   name = "build",
   tsconfig = "tsconfig-build.json",
   srcs = [":src"],
-  additional_dist_files = [":protos", ":locales"],
+  additional_dist_files = [":protos"],
   prod_deps_srcs = prod_deps_srcs,
 )
 
