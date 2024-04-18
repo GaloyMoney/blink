@@ -28,18 +28,6 @@ export const addSupportChatMessage = async ({
 
   let supportChatId = await SupportChatRepository().findNewestByAccountId(accountId)
 
-  if (supportChatId instanceof CouldNotFindError) {
-    const supportChatIdOrError = await Assistant().initialize()
-    if (supportChatIdOrError instanceof Error) return supportChatIdOrError
-
-    supportChatId = supportChatIdOrError
-
-    const res = await SupportChatRepository().add({ supportChatId, accountId })
-    if (res instanceof RepositoryError) return res
-  } else if (supportChatId instanceof Error) {
-    return supportChatId
-  }
-
   const account = await AccountsRepository().findById(accountId)
   if (account instanceof RepositoryError) return account
 
@@ -50,12 +38,25 @@ export const addSupportChatMessage = async ({
   const level = account.level
   const language = "en" // FIXME: get language from user
 
+  if (supportChatId instanceof CouldNotFindError) {
+    const supportChatIdOrError = await Assistant().initialize({
+      level,
+      countryCode,
+      language,
+    })
+    if (supportChatIdOrError instanceof Error) return supportChatIdOrError
+
+    supportChatId = supportChatIdOrError
+
+    const res = await SupportChatRepository().create({ supportChatId, accountId })
+    if (res instanceof RepositoryError) return res
+  } else if (supportChatId instanceof Error) {
+    return supportChatId
+  }
+
   const result = await Assistant().addUserMessage({
     message,
     supportChatId,
-    level,
-    countryCode,
-    language,
   })
   if (result instanceof Error) return result
 
