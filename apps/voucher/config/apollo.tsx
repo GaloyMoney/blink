@@ -1,5 +1,5 @@
 "use client"
-import { ApolloLink, HttpLink, split } from "@apollo/client"
+import { ApolloLink, HttpLink } from "@apollo/client"
 import {
   ApolloNextAppProvider,
   NextSSRInMemoryCache,
@@ -8,7 +8,6 @@ import {
 } from "@apollo/experimental-nextjs-app-support/ssr"
 import { RetryLink } from "@apollo/client/link/retry"
 import { onError } from "@apollo/client/link/error"
-import { getMainDefinition } from "@apollo/client/utilities"
 
 import { env } from "@/env"
 
@@ -47,24 +46,15 @@ function makeClient() {
     },
   })
 
-  const link = split(
-    ({ query }) => {
-      const definition = getMainDefinition(query)
-      return (
-        definition.kind === "OperationDefinition" &&
-        definition.operation === "subscription"
-      )
-    },
-    ApolloLink.from([
-      errorLink,
-      retryLink,
-      ApolloLink.split(
-        (operation) => operation.getContext().endpoint === "GALOY",
-        httpLinkMainnet,
-        httpLinkLocal,
-      ),
-    ]),
-  )
+  const link = ApolloLink.from([
+    errorLink,
+    retryLink,
+    ApolloLink.split(
+      (operation) => operation.getContext().endpoint === "GALOY",
+      httpLinkMainnet,
+      httpLinkLocal,
+    ),
+  ])
 
   return new NextSSRApolloClient({
     cache: new NextSSRInMemoryCache(),
