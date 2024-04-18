@@ -47,7 +47,7 @@ impl NotificationHistory {
             .build()
             .expect("Couldn't build new persistent notification");
 
-        self.repo.persist_in_tx(tx, notification).await?;
+        self.repo.create_in_tx(tx, notification).await?;
         Ok(())
     }
 
@@ -78,20 +78,21 @@ impl NotificationHistory {
             new_notifications.push(notification);
         }
 
-        self.repo.persist_new_batch(tx, new_notifications).await?;
+        self.repo.create_new_batch(tx, new_notifications).await?;
 
         Ok(())
     }
 
-    //     pub async fn notification_read(
-    //         &self,
-    //         user_id: GaloyUserId,
-    //         notification_id: InAppNotificationId,
-    //     ) -> Result<InAppNotification, InAppNotificationError> {
-    //         self.in_app_notifications_repo
-    //             .mark_as_read(user_id, notification_id)
-    //             .await
-    //     }
+    pub async fn notification_read(
+        &self,
+        notification_id: StatefulNotificationId,
+    ) -> Result<StatefulNotification, NotificationHistoryError> {
+        let mut notification = self.repo.find_by_id(notification_id).await?;
+        notification.read();
+        self.repo.update(&mut notification).await?;
+
+        Ok(notification)
+    }
 
     //     pub async fn find_for_user(
     //         &self,

@@ -36,7 +36,7 @@ impl ScalarType for Timestamp {
 }
 
 #[derive(SimpleObject)]
-pub(super) struct InAppNotification {
+pub(super) struct StatefulNotification {
     pub id: ID,
     pub title: String,
     pub body: String,

@@ -279,7 +279,7 @@ impl NotificationsApp {
         user_id: GaloyUserId,
         only_unread: bool,
     ) -> Result<Vec<StatefulNotification>, ApplicationError> {
-        unimplemented!()
+        unimplemented!();
         // let in_app_notifications = self
         //     .in_app_notifications
         //     .find_for_user(user_id, only_unread)
@@ -291,16 +291,10 @@ impl NotificationsApp {
     #[instrument(name = "app.mark_notification_as_read", skip(self), err)]
     pub async fn mark_notification_as_read(
         &self,
-        user_id: GaloyUserId,
         notification_id: StatefulNotificationId,
     ) -> Result<StatefulNotification, ApplicationError> {
-        unimplemented!()
-        // let notification = self
-        //     .in_app_notifications
-        //     .notification_read(user_id, notification_id)
-        //     .await?;
-
-        // Ok(notification)
+        let notification = self.history.notification_read(notification_id).await?;
+        Ok(notification)
     }
 
     #[instrument(

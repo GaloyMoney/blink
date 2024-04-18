@@ -34,9 +34,9 @@ impl User {
         &self,
         ctx: &Context<'_>,
         only_unread: Option<bool>,
-    ) -> async_graphql::Result<Vec<InAppNotification>> {
+    ) -> async_graphql::Result<Vec<StatefulNotification>> {
         let app = ctx.data_unchecked::<NotificationsApp>();
-        unimplemented!()
+        unimplemented!();
         // let notifications = app
         //     .in_app_notifications_for_user(
         //         GaloyUserId::from(self.id.0.clone()),
@@ -53,7 +53,7 @@ impl User {
 
 #[derive(SimpleObject)]
 pub struct UserInAppNotificationMarkAsReadPayload {
-    notification: InAppNotification,
+    notification: StatefulNotification,
 }
 
 #[derive(InputObject)]
@@ -76,14 +76,11 @@ impl Mutation {
             return Err("Permission denied".into());
         }
         let app = ctx.data_unchecked::<NotificationsApp>();
-        unimplemented!()
-        // let notification_id = InAppNotificationId::from_str(input.notification_id.0.as_str())?;
-        // let notification = app
-        //     .mark_notification_as_read(GaloyUserId::from(subject.id.clone()), notification_id)
-        //     .await?;
+        let notification_id = StatefulNotificationId::from_str(input.notification_id.0.as_str())?;
+        let notification = app.mark_notification_as_read(notification_id).await?;
 
-        // Ok(UserInAppNotificationMarkAsReadPayload {
-        //     notification: InAppNotification::from(notification),
-        // })
+        Ok(UserInAppNotificationMarkAsReadPayload {
+            notification: StatefulNotification::from(notification),
+        })
     }
 }

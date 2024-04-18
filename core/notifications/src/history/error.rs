@@ -8,4 +8,6 @@ pub enum NotificationHistoryError {
     Sqlx(#[from] sqlx::Error),
     #[error("NotificationHistoryError - UserNotificationSettings: {0}")]
     UserNotificationSettings(#[from] UserNotificationSettingsError),
+    #[error("UserNotificationSettingsError - EntityError: {0}")]
+    EntityError(#[from] es_entity::EntityError),
 }

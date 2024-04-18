@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use derive_builder::Builder;
 use es_entity::*;
 use serde::{Deserialize, Serialize};
@@ -15,6 +16,9 @@ pub enum StatefulNotificationEvent {
         locale: GaloyLocale,
         deep_link: Option<DeepLink>,
     },
+    Read {
+        read_at: DateTime<Utc>,
+    },
 }
 
 impl EntityEvent for StatefulNotificationEvent {
@@ -24,12 +28,45 @@ impl EntityEvent for StatefulNotificationEvent {
     }
 }
 
+impl EsEntity for StatefulNotification {
+    type Event = StatefulNotificationEvent;
+}
+
 #[derive(Builder)]
 #[builder(pattern = "owned", build_fn(error = "EntityError"))]
 pub struct StatefulNotification {
     pub id: StatefulNotificationId,
     pub galoy_user_id: GaloyUserId,
+    pub title: String,
+    pub body: String,
+    pub locale: GaloyLocale,
+    pub deep_link: Option<DeepLink>,
+
     pub(super) events: EntityEvents<StatefulNotificationEvent>,
+}
+
+impl StatefulNotification {
+    pub fn read(&mut self) {
+        self.events.push(StatefulNotificationEvent::Read {
+            read_at: Utc::now(),
+        });
+    }
+
+    pub fn read_at(&self) -> Option<DateTime<Utc>> {
+        self.events.iter().find_map(|event| {
+            if let StatefulNotificationEvent::Read { read_at } = event {
+                Some(*read_at)
+            } else {
+                None
+            }
+        })
+    }
+
+    pub fn created_at(&self) -> chrono::DateTime<chrono::Utc> {
+        self.events
+            .entity_first_persisted_at
+            .expect("entity_first_persisted_at is set at time on entity creation")
+    }
 }
 
 #[derive(Debug, Builder, Clone)]
@@ -78,11 +115,21 @@ impl TryFrom<EntityEvents<StatefulNotificationEvent>> for StatefulNotification {
         let mut builder = StatefulNotificationBuilder::default();
         for event in events.iter() {
             if let StatefulNotificationEvent::Initialized {
-                id, galoy_user_id, ..
+                id,
+                galoy_user_id,
+                title,
+                body,
+                locale,
+                deep_link,
             } = event
             {
-                builder = builder.id(*id);
-                builder = builder.galoy_user_id(galoy_user_id.clone());
+                builder = builder
+                    .id(*id)
+                    .galoy_user_id(galoy_user_id.clone())
+                    .title(title.clone())
+                    .body(body.clone())
+                    .locale(locale.clone())
+                    .deep_link(deep_link.clone());
             }
         }
         builder.events(events).build()

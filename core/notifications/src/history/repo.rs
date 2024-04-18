@@ -1,3 +1,4 @@
+use es_entity::*;
 use sqlx::PgPool;
 
 use crate::primitives::*;
@@ -14,13 +15,13 @@ impl PersistentNotifications {
         Self { pool }
     }
 
-    pub async fn persist_in_tx(
+    pub async fn create_in_tx(
         &self,
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
         notification: NewStatefulNotification,
     ) -> Result<(), NotificationHistoryError> {
         sqlx::query!(
-            r#"INSERT INTO persistent_notifications (id, galoy_user_id)
+            r#"INSERT INTO stateful_notifications (id, galoy_user_id)
             VALUES ($1, $2) ON CONFLICT DO NOTHING"#,
             notification.id as StatefulNotificationId,
             notification.user_id.as_ref(),
@@ -31,13 +32,13 @@ impl PersistentNotifications {
         Ok(())
     }
 
-    pub async fn persist_new_batch(
+    pub async fn create_new_batch(
         &self,
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
         new_notifications: Vec<NewStatefulNotification>,
     ) -> Result<(), NotificationHistoryError> {
         let mut query_builder =
-            sqlx::QueryBuilder::new("INSERT INTO persistent_notifications (id, galoy_user_id)");
+            sqlx::QueryBuilder::new("INSERT INTO stateful_notifications (id, galoy_user_id)");
         query_builder.push_values(new_notifications.iter(), |mut builder, notification| {
             builder.push_bind(notification.id as StatefulNotificationId);
             builder.push_bind(notification.user_id.as_ref());
@@ -56,6 +57,37 @@ impl PersistentNotifications {
         )
         .await?;
         Ok(())
+    }
+
+    pub async fn update(
+        &self,
+        notification: &mut StatefulNotification,
+    ) -> Result<(), NotificationHistoryError> {
+        let mut tx = self.pool.begin().await?;
+        notification.events.persist(&mut tx).await?;
+        tx.commit().await?;
+        Ok(())
+    }
+
+    pub async fn find_by_id(
+        &self,
+        id: StatefulNotificationId,
+    ) -> Result<StatefulNotification, NotificationHistoryError> {
+        let rows = sqlx::query_as!(
+            GenericEvent,
+            r#"SELECT a.id, e.sequence, e.event,
+                      a.created_at AS entity_created_at, e.recorded_at AS event_recorded_at
+            FROM stateful_notifications a
+            JOIN stateful_notification_events e ON a.id = e.id
+            WHERE a.id = $1
+            ORDER BY e.sequence"#,
+            id as StatefulNotificationId,
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        let res = EntityEvents::load_first::<StatefulNotification>(rows)?;
+        Ok(res)
     }
 
     //     pub async fn find_all_for_user(
