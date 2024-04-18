@@ -21,34 +21,12 @@ impl NotificationEvent for MarketingNotificationTriggered {
         self.deep_link.clone()
     }
 
-    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
+    fn to_localized_push_msg(&self, locale: &GaloyLocale) -> LocalizedPushMessage {
         let msg = self
             .push_content
-            .get(&locale)
+            .get(locale)
             .unwrap_or(&self.default_push_content);
 
         msg.clone()
-    }
-
-    fn to_localized_email(&self, _locale: GaloyLocale) -> Option<LocalizedEmail> {
-        None
-    }
-
-    fn should_send_email(&self) -> bool {
-        false
-    }
-
-    fn should_send_in_app_msg(&self) -> bool {
-        true
-    }
-
-    fn to_localized_in_app_msg(&self, locale: GaloyLocale) -> Option<LocalizedInAppMessage> {
-        // TODO: use explicit in app messages rather than push message
-        let push_msg = self.to_localized_push_msg(locale);
-
-        Some(LocalizedInAppMessage {
-            title: push_msg.title,
-            body: push_msg.body,
-        })
     }
 }

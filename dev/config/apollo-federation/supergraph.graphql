@@ -604,17 +604,6 @@ type GraphQLApplicationError implements Error
 scalar Hex32Bytes
   @join__type(graph: PUBLIC)
 
-type InAppNotification
-  @join__type(graph: NOTIFICATIONS)
-{
-  id: ID!
-  title: String!
-  body: String!
-  deepLink: String
-  createdAt: Timestamp!
-  readAt: Timestamp
-}
-
 union InitiationVia
   @join__type(graph: PUBLIC)
   @join__unionMember(graph: PUBLIC, member: "InitiationViaIntraLedger")
@@ -1166,7 +1155,7 @@ type Mutation
 {
   apiKeyCreate(input: ApiKeyCreateInput!): ApiKeyCreatePayload! @join__field(graph: API_KEYS)
   apiKeyRevoke(input: ApiKeyRevokeInput!): ApiKeyRevokePayload! @join__field(graph: API_KEYS)
-  userInAppNotificationMarkAsRead(input: UserInAppNotificationMarkAsReadInput!): UserInAppNotificationMarkAsReadPayload! @join__field(graph: NOTIFICATIONS)
+  statefulNotificationAcknowledge(input: StatefulNotificationAcknowledgeInput!): StatefulNotificationAcknowledgePayload! @join__field(graph: NOTIFICATIONS)
   accountDelete: AccountDeletePayload! @join__field(graph: PUBLIC)
   accountDisableNotificationCategory(input: AccountDisableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
   accountDisableNotificationChannel(input: AccountDisableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
@@ -1456,21 +1445,22 @@ type OneDayAccountLimit implements AccountLimit
 scalar OneTimeAuthCode
   @join__type(graph: PUBLIC)
 
-"""Information about pagination in a connection."""
+"""Information about pagination in a connection"""
 type PageInfo
+  @join__type(graph: NOTIFICATIONS)
   @join__type(graph: PUBLIC)
 {
-  """When paginating forwards, the cursor to continue."""
-  endCursor: String
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
 
   """When paginating forwards, are there more items?"""
   hasNextPage: Boolean!
 
-  """When paginating backwards, are there more items?"""
-  hasPreviousPage: Boolean!
-
   """When paginating backwards, the cursor to continue."""
   startCursor: String
+
+  """When paginating forwards, the cursor to continue."""
+  endCursor: String
 }
 
 scalar PaymentHash
@@ -1776,6 +1766,53 @@ A string amount (of a currency) that can be negative (e.g. in a transaction)
 scalar SignedDisplayMajorAmount
   @join__type(graph: PUBLIC)
 
+type StatefulNotification
+  @join__type(graph: NOTIFICATIONS)
+{
+  id: ID!
+  title: String!
+  body: String!
+  deepLink: String
+  createdAt: Timestamp!
+  acknowledgedAt: Timestamp
+}
+
+input StatefulNotificationAcknowledgeInput
+  @join__type(graph: NOTIFICATIONS)
+{
+  notificationId: ID!
+}
+
+type StatefulNotificationAcknowledgePayload
+  @join__type(graph: NOTIFICATIONS)
+{
+  notification: StatefulNotification!
+}
+
+type StatefulNotificationConnection
+  @join__type(graph: NOTIFICATIONS)
+{
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [StatefulNotificationEdge!]!
+
+  """A list of nodes."""
+  nodes: [StatefulNotification!]!
+}
+
+"""An edge in a connection."""
+type StatefulNotificationEdge
+  @join__type(graph: NOTIFICATIONS)
+{
+  """The item at the end of the edge"""
+  node: StatefulNotification!
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
 type Subscription
   @join__type(graph: PUBLIC)
 {
@@ -2020,7 +2057,7 @@ type User
 {
   id: ID!
   apiKeys: [ApiKey!]! @join__field(graph: API_KEYS)
-  inAppNotifications(onlyUnread: Boolean): [InAppNotification!]! @join__field(graph: NOTIFICATIONS)
+  statefulNotifications(first: Int!, after: String): StatefulNotificationConnection! @join__field(graph: NOTIFICATIONS)
 
   """
   Get single contact details.
@@ -2133,18 +2170,6 @@ type UserEmailRegistrationValidatePayload
 {
   errors: [Error!]!
   me: User
-}
-
-input UserInAppNotificationMarkAsReadInput
-  @join__type(graph: NOTIFICATIONS)
-{
-  notificationId: ID!
-}
-
-type UserInAppNotificationMarkAsReadPayload
-  @join__type(graph: NOTIFICATIONS)
-{
-  notification: InAppNotification!
 }
 
 input UserLoginInput

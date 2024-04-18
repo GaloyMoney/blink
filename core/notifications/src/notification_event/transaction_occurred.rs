@@ -1,7 +1,7 @@
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-use super::{DeepLink, NotificationEvent};
+use super::NotificationEvent;
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -39,11 +39,7 @@ impl NotificationEvent for TransactionOccurred {
         UserNotificationCategory::Payments
     }
 
-    fn deep_link(&self) -> Option<DeepLink> {
-        None
-    }
-
-    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
+    fn to_localized_push_msg(&self, locale: &GaloyLocale) -> LocalizedPushMessage {
         let txn_type = match self.transaction_type {
             TransactionType::IntraLedgerPayment => "transaction.intra_ledger_payment",
             TransactionType::IntraLedgerReceipt => "transaction.intra_ledger_receipt",
@@ -86,7 +82,7 @@ impl NotificationEvent for TransactionOccurred {
         LocalizedPushMessage { title, body }
     }
 
-    fn to_localized_email(&self, _locale: GaloyLocale) -> Option<LocalizedEmail> {
+    fn to_localized_email(&self, _locale: &GaloyLocale) -> Option<LocalizedEmail> {
         None
     }
 
@@ -94,12 +90,18 @@ impl NotificationEvent for TransactionOccurred {
         false
     }
 
-    fn should_send_in_app_msg(&self) -> bool {
-        false
+    fn should_be_added_to_history(&self) -> bool {
+        true
     }
 
-    fn to_localized_in_app_msg(&self, _locale: GaloyLocale) -> Option<LocalizedInAppMessage> {
-        None
+    fn to_localized_persistent_message(&self, locale: GaloyLocale) -> LocalizedStatefulMessage {
+        let push_msg = self.to_localized_push_msg(&locale);
+
+        LocalizedStatefulMessage {
+            locale,
+            title: push_msg.title,
+            body: push_msg.body,
+        }
     }
 }
 
@@ -117,7 +119,7 @@ mod tests {
             },
             display_amount: None,
         };
-        let localized_message = event.to_localized_push_msg(GaloyLocale::from("en".to_string()));
+        let localized_message = event.to_localized_push_msg(&GaloyLocale::from("en".to_string()));
         assert_eq!(localized_message.title, "USD Transaction");
         assert_eq!(localized_message.body, "Sent payment of $1.00");
     }
@@ -135,7 +137,7 @@ mod tests {
                 currency: Currency::Iso(rusty_money::iso::USD),
             }),
         };
-        let localized_message = event.to_localized_push_msg(GaloyLocale::from("en".to_string()));
+        let localized_message = event.to_localized_push_msg(&GaloyLocale::from("en".to_string()));
         assert_eq!(localized_message.title, "BTC Transaction");
         assert_eq!(localized_message.body, "+$0.04 | 1 sats");
     }

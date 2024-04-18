@@ -768,6 +768,12 @@ cargo.rust_library(
     visibility = [],
 )
 
+alias(
+    name = "base64",
+    actual = ":base64-0.22.0",
+    visibility = ["PUBLIC"],
+)
+
 http_archive(
     name = "base64-0.22.0.crate",
     sha256 = "9475866fec1451be56a3c2400fd081ff546538961565ccb5b7142cbd22bc7a51",
@@ -8958,6 +8964,7 @@ cargo.rust_binary(
         ":async-graphql-6.0.11",
         ":async-graphql-axum-6.0.11",
         ":axum-0.6.20",
+        ":base64-0.22.0",
         ":chrono-0.4.37",
         ":clap-4.5.4",
         ":derive_builder-0.13.1",

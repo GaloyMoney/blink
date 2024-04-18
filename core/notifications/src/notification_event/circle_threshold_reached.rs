@@ -20,7 +20,7 @@ impl NotificationEvent for CircleThresholdReached {
         Some(DeepLink::Circles)
     }
 
-    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
+    fn to_localized_push_msg(&self, locale: &GaloyLocale) -> LocalizedPushMessage {
         let title = match self.circle_type {
             CircleType::Inner => t!(
                 "circle_threshold_reached.inner.title",
@@ -53,22 +53,6 @@ impl NotificationEvent for CircleThresholdReached {
         .to_string();
         LocalizedPushMessage { title, body }
     }
-
-    fn to_localized_email(&self, _locale: GaloyLocale) -> Option<LocalizedEmail> {
-        None
-    }
-
-    fn should_send_email(&self) -> bool {
-        false
-    }
-
-    fn should_send_in_app_msg(&self) -> bool {
-        false
-    }
-
-    fn to_localized_in_app_msg(&self, _locale: GaloyLocale) -> Option<LocalizedInAppMessage> {
-        None
-    }
 }
 
 #[cfg(test)]
@@ -82,7 +66,7 @@ mod tests {
             time_frame: CircleTimeFrame::AllTime,
             threshold: 2,
         };
-        let localized_message = event.to_localized_push_msg(GaloyLocale::from("en".to_string()));
+        let localized_message = event.to_localized_push_msg(&&GaloyLocale::from("en".to_string()));
         assert_eq!(localized_message.title, "Nice Inner Circle! 🤙");
         assert_eq!(
             localized_message.body,

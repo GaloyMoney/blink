@@ -1,0 +1,10 @@
+mutation acknowledgeNotification(
+  $input: StatefulNotificationAcknowledgeInput!
+) {
+  statefulNotificationAcknowledge(input: $input) {
+    notification {
+      id
+      acknowledgedAt
+    }
+  }
+}

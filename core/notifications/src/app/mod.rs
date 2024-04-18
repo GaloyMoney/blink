@@ -8,14 +8,8 @@ use tracing::instrument;
 use std::sync::Arc;
 
 use crate::{
-    email_executor::EmailExecutor,
-    email_reminder_projection::EmailReminderProjection,
-    in_app_notification::{InAppNotification, InAppNotifications},
-    job,
-    notification_cool_off_tracker::*,
-    notification_event::*,
-    primitives::*,
-    push_executor::*,
+    email_executor::EmailExecutor, email_reminder_projection::EmailReminderProjection, history::*,
+    job, notification_cool_off_tracker::*, notification_event::*, primitives::*, push_executor::*,
     user_notification_settings::*,
 };
 
@@ -27,7 +21,7 @@ pub struct NotificationsApp {
     _config: AppConfig,
     settings: UserNotificationSettingsRepo,
     email_reminder_projection: EmailReminderProjection,
-    in_app_notifications: InAppNotifications,
+    history: NotificationHistory,
     pool: Pool<Postgres>,
     _runner: Arc<JobRunnerHandle>,
 }
@@ -40,13 +34,13 @@ impl NotificationsApp {
         let email_executor = EmailExecutor::init(config.email_executor.clone(), settings.clone())?;
         let email_reminder_projection =
             EmailReminderProjection::new(&pool, config.link_email_reminder.clone());
-        let in_app_notifications = InAppNotifications::new(&pool, settings.clone());
+        let history = NotificationHistory::new(&pool, settings.clone());
         let runner = job::start_job_runner(
             &pool,
             push_executor,
             email_executor,
             settings.clone(),
-            in_app_notifications.clone(),
+            history.clone(),
             email_reminder_projection.clone(),
             config.jobs.clone(),
         )
@@ -60,7 +54,7 @@ impl NotificationsApp {
             _config: config,
             pool,
             settings,
-            in_app_notifications,
+            history,
             email_reminder_projection,
             _runner: Arc::new(runner),
         })
@@ -208,11 +202,11 @@ impl NotificationsApp {
         if payload.should_send_email() {
             job::spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
         }
-        if payload.should_send_in_app_msg() {
-            self.in_app_notifications
-                .notify_user(&mut tx, user_id.clone(), payload.clone())
-                .await?;
-        }
+
+        self.history
+            .add_event(&mut tx, user_id.clone(), payload.clone())
+            .await?;
+
         job::spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
         tx.commit().await?;
         Ok(())
@@ -279,31 +273,30 @@ impl NotificationsApp {
         Ok(())
     }
 
-    #[instrument(name = "app.in_app_notifications_for_user", skip(self), err)]
-    pub async fn in_app_notifications_for_user(
+    #[instrument(name = "app.list_stateful_notifications", skip(self), err)]
+    pub async fn list_stateful_notifications(
         &self,
         user_id: GaloyUserId,
-        only_unread: bool,
-    ) -> Result<Vec<InAppNotification>, ApplicationError> {
-        let in_app_notifications = self
-            .in_app_notifications
-            .find_for_user(user_id, only_unread)
+        first: usize,
+        after: Option<StatefulNotificationId>,
+    ) -> Result<(Vec<StatefulNotification>, bool), ApplicationError> {
+        let ret = self
+            .history
+            .list_notifications_for_user(user_id, first, after)
             .await?;
-
-        Ok(in_app_notifications)
+        Ok(ret)
     }
 
-    #[instrument(name = "app.mark_notification_as_read", skip(self), err)]
-    pub async fn mark_notification_as_read(
+    #[instrument(name = "app.acknowledge_notification", skip(self), err)]
+    pub async fn acknowledge_notification(
         &self,
         user_id: GaloyUserId,
-        notification_id: InAppNotificationId,
-    ) -> Result<InAppNotification, ApplicationError> {
+        notification_id: StatefulNotificationId,
+    ) -> Result<StatefulNotification, ApplicationError> {
         let notification = self
-            .in_app_notifications
-            .notification_read(user_id, notification_id)
+            .history
+            .acknowledge_notification_for_user(user_id, notification_id)
             .await?;
-
         Ok(notification)
     }
 
