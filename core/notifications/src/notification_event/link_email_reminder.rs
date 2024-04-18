@@ -12,7 +12,7 @@ impl NotificationEvent for LinkEmailReminder {
         UserNotificationCategory::Security
     }
 
-    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
+    fn to_localized_push_msg(&self, locale: &GaloyLocale) -> LocalizedPushMessage {
         let title = t!(
             "security.link_email_reminder.title",
             locale = locale.as_ref()
@@ -25,14 +25,6 @@ impl NotificationEvent for LinkEmailReminder {
         .to_string();
         LocalizedPushMessage { title, body }
     }
-
-    fn to_localized_email(&self, _locale: GaloyLocale) -> Option<LocalizedEmail> {
-        None
-    }
-
-    fn should_send_email(&self) -> bool {
-        false
-    }
 }
 
 #[cfg(test)]
@@ -42,7 +34,7 @@ mod tests {
     #[test]
     fn push_msg_correctly_formatted() {
         let event = LinkEmailReminder {};
-        let localized_message = event.to_localized_push_msg(GaloyLocale::from("en".to_string()));
+        let localized_message = event.to_localized_push_msg(&GaloyLocale::from("en".to_string()));
         assert_eq!(localized_message.title, "Link Email to Secure Account");
         assert_eq!(
             localized_message.body,

@@ -10,8 +10,8 @@ impl From<history::StatefulNotification> for types::StatefulNotification {
         Self {
             deep_link: notification.deep_link().map(|d| d.to_link_string()),
             id: ID(notification.id.to_string()),
-            title: notification.title,
-            body: notification.body,
+            title: notification.message.title,
+            body: notification.message.body,
             created_at: types::Timestamp::from(created_at),
             acknowledged_at: acknowledeg_at.map(types::Timestamp::from),
         }

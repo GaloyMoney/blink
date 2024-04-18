@@ -64,7 +64,7 @@ impl NotificationEvent for PriceChanged {
         UserNotificationCategory::Payments
     }
 
-    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
+    fn to_localized_push_msg(&self, locale: &GaloyLocale) -> LocalizedPushMessage {
         let (title_key, body_key) = match self.direction {
             PriceChangeDirection::Up => ("price_changed.up.title", "price_changed.up.body"),
             PriceChangeDirection::Down => ("price_changed.down.title", "price_changed.down.body"),
@@ -78,14 +78,6 @@ impl NotificationEvent for PriceChanged {
         )
         .to_string();
         LocalizedPushMessage { title, body }
-    }
-
-    fn to_localized_email(&self, _locale: GaloyLocale) -> Option<LocalizedEmail> {
-        None
-    }
-
-    fn should_send_email(&self) -> bool {
-        false
     }
 }
 
@@ -146,7 +138,7 @@ mod tests {
             change_percent: ChangePercentage(5.13),
         };
         let localized_message =
-            price_changed.to_localized_push_msg(GaloyLocale::from("en".to_string()));
+            price_changed.to_localized_push_msg(&GaloyLocale::from("en".to_string()));
         assert_eq!(localized_message.title, "Bitcoin is on the move!");
         assert_eq!(
             localized_message.body,
@@ -165,7 +157,7 @@ mod tests {
             change_percent: ChangePercentage(5.13),
         };
         let localized_message =
-            price_changed.to_localized_push_msg(GaloyLocale::from("en".to_string()));
+            price_changed.to_localized_push_msg(&GaloyLocale::from("en".to_string()));
         assert_eq!(localized_message.title, "Bitcoin is on the move!");
         assert_eq!(
             localized_message.body,

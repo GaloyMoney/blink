@@ -20,7 +20,7 @@ impl NotificationEvent for CircleGrew {
         Some(DeepLink::Circles)
     }
 
-    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
+    fn to_localized_push_msg(&self, locale: &GaloyLocale) -> LocalizedPushMessage {
         let circle_type = match self.circle_type {
             CircleType::Inner => t!("circle_type.inner", locale = locale.as_ref()),
             CircleType::Outer => t!("circle_type.outer", locale = locale.as_ref()),
@@ -33,14 +33,6 @@ impl NotificationEvent for CircleGrew {
         )
         .to_string();
         LocalizedPushMessage { title, body }
-    }
-
-    fn to_localized_email(&self, _locale: GaloyLocale) -> Option<LocalizedEmail> {
-        None
-    }
-
-    fn should_send_email(&self) -> bool {
-        false
     }
 }
 
@@ -55,7 +47,7 @@ mod tests {
             this_month_circle_size: 1,
             all_time_circle_size: 2,
         };
-        let localized_message = event.to_localized_push_msg(GaloyLocale::from("en".to_string()));
+        let localized_message = event.to_localized_push_msg(&GaloyLocale::from("en".to_string()));
         assert_eq!(localized_message.title, "Your Blink Circles are growing!");
         assert_eq!(
             localized_message.body,

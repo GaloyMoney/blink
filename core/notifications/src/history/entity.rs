@@ -4,6 +4,7 @@ use es_entity::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    messages::LocalizedStatefulMessage,
     notification_event::{DeepLink, NotificationEventPayload},
     primitives::*,
 };
@@ -15,9 +16,7 @@ pub enum StatefulNotificationEvent {
     Initialized {
         id: StatefulNotificationId,
         galoy_user_id: GaloyUserId,
-        title: String,
-        body: String,
-        locale: GaloyLocale,
+        message: LocalizedStatefulMessage,
         payload: NotificationEventPayload,
     },
     Acknowledged {
@@ -41,9 +40,7 @@ impl EsEntity for StatefulNotification {
 pub struct StatefulNotification {
     pub id: StatefulNotificationId,
     pub galoy_user_id: GaloyUserId,
-    pub title: String,
-    pub body: String,
-    pub locale: GaloyLocale,
+    pub message: LocalizedStatefulMessage,
 
     payload: NotificationEventPayload,
 
@@ -90,11 +87,7 @@ pub struct NewStatefulNotification {
     #[builder(setter(into))]
     pub user_id: GaloyUserId,
     #[builder(setter(into))]
-    pub title: String,
-    #[builder(setter(into))]
-    pub body: String,
-    #[builder(setter(into))]
-    pub locale: GaloyLocale,
+    pub message: LocalizedStatefulMessage,
     #[builder(setter(into))]
     pub payload: NotificationEventPayload,
 }
@@ -112,9 +105,7 @@ impl NewStatefulNotification {
             [StatefulNotificationEvent::Initialized {
                 id: self.id,
                 galoy_user_id: self.user_id,
-                title: self.title,
-                body: self.body,
-                locale: self.locale,
+                message: self.message,
                 payload: self.payload,
             }],
         )
@@ -130,18 +121,14 @@ impl TryFrom<EntityEvents<StatefulNotificationEvent>> for StatefulNotification {
             if let StatefulNotificationEvent::Initialized {
                 id,
                 galoy_user_id,
-                title,
-                body,
-                locale,
+                message,
                 payload,
             } = event
             {
                 builder = builder
                     .id(*id)
                     .galoy_user_id(galoy_user_id.clone())
-                    .title(title.clone())
-                    .body(body.clone())
-                    .locale(locale.clone())
+                    .message(message.clone())
                     .payload(payload.clone());
             }
         }
