@@ -14,6 +14,11 @@ export_file(
 )
 
 export_file(
+  name = "migrate_mongo_build_bin.py",
+  visibility = ["PUBLIC"],
+)
+
+export_file(
   name = "prepare_package_context.py",
   visibility = ["PUBLIC"],
 )
