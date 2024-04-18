@@ -121,12 +121,19 @@ interface IAuthWithEmailPasswordlessService {
     kratosUserId: UserId
     email: EmailAddress
   }): Promise<IdentityPhoneEmail | AuthenticationError>
-  sendEmailWithCode(args: { email: EmailAddress }): Promise<EmailFlowId | KratosError>
+  sendEmailWithCode(args: {
+    email: EmailAddress
+  }): Promise<
+    | { id: EmailFlowId; csrf_token_data: string; csrf_token_header: string }
+    | KratosError
+  >
   hasEmail(args: { kratosUserId: UserId }): Promise<boolean | KratosError>
   isEmailVerified(args: { email: EmailAddress }): Promise<boolean | KratosError>
   validateCode(args: {
     code: EmailCode
     emailFlowId: EmailFlowId
+    csrf_token_data: string
+    csrf_token_header: string
   }): Promise<ValidateCodeResult | KratosError>
   loginToken(args: {
     email: EmailAddress

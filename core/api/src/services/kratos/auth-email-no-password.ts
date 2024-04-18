@@ -35,18 +35,47 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
   // this is to avoid account enumeration attacks
   const sendEmailWithCode = async ({ email }: { email: EmailAddress }) => {
     const method = "code"
-    try {
-      const { data } = await kratosPublic.createNativeRecoveryFlow()
-      await kratosPublic.updateRecoveryFlow({
-        flow: data.id,
-        updateRecoveryFlowBody: {
-          email,
-          method,
-        },
-      })
 
-      return data.id as EmailFlowId
+    try {
+      // const { data } = await kratosPublic.createNativeRecoveryFlow()
+      // await kratosPublic.updateRecoveryFlow({
+      //   flow: data.id,
+      //   updateRecoveryFlowBody: {
+      //     email,
+      //     method,
+      //   },
+      // })
+      const { data, headers } = await kratosPublic.createBrowserRecoveryFlow()
+
+      console.dir(data, { depth: 5 })
+
+      const csrf_token_data =
+        data.ui.nodes[0].attributes?.node_type === "input" &&
+        data.ui.nodes[0].attributes?.value
+      console.log({ csrf_token_data })
+      console.log({ headers })
+
+      const csrf_token_header = headers["set-cookie"]?.[0]
+
+      console.log({ csrf_token_header })
+
+      const res = await kratosPublic.updateRecoveryFlow(
+        {
+          flow: data.id,
+          updateRecoveryFlowBody: {
+            email,
+            method,
+            csrf_token: csrf_token_data,
+          },
+        },
+        { headers: { Cookie: csrf_token_header } },
+      )
+
+      console.dir(res.data, { depth: 3 })
+
+      return { id: data.id as EmailFlowId, csrf_token_data, csrf_token_header }
     } catch (err) {
+      console.dir(err, { depth: 3 })
       return new UnknownKratosError(err)
     }
   }
@@ -54,20 +83,28 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
   const validateCode = async ({
     code,
     emailFlowId: flow,
+    csrf_token_data,
+    csrf_token_header,
   }: {
     code: EmailCode
     emailFlowId: EmailFlowId
+    csrf_token_data: string
+    csrf_token_header: string
   }) => {
     const method = "code"
 
     try {
-      const res = await kratosPublic.updateRecoveryFlow({
-        flow,
-        updateRecoveryFlowBody: {
-          method,
-          code,
+      const res = await kratosPublic.updateRecoveryFlow(
+        {
+          flow,
+          updateRecoveryFlowBody: {
+            method,
+            code,
+            csrf_token: csrf_token_data,
+          },
         },
-      })
+        { headers: { Cookie: csrf_token_header } },
+      )
 
       // https://github.com/ory/kratos/blob/master/text/id.go#L145
       const ValidationRecoveryCodeInvalidOrAlreadyUsedIdError = 4060006
@@ -93,6 +130,8 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
       //
       // we do not need to do that because we are passwordless
 
+      console.dir(err, { depth: 3 })
+
       if (
         isAxiosError(err) &&
         err.response?.data?.error?.id === "browser_location_change_required"
@@ -103,6 +142,8 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
         const sessionCookie = cookies.find((cookie) =>
           cookie.startsWith("ory_kratos_session"),
         )
+
+        console.log({ sessionCookie })
 
         let email: EmailAddress
         let kratosUserId: UserId
@@ -166,6 +207,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
       }
       // kratos return a 403 - Forbidden error when the code has expired
       if (isAxiosError(err) && err.response?.status === 403) {
+        console.dir(err, { depth: 3 })
         return new CodeExpiredKratosError()
       }
       return new UnknownKratosError(err)

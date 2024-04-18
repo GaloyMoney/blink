@@ -50,6 +50,7 @@ selfservice:
 
     code:
       enabled: true
+      passwordless_enabled: true
       config:
         # Defines how long the verification or the recovery code is valid for (default 1h)
         lifespan: 15m
