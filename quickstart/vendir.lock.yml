@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(notifications): introduce StatefulNotifications (#4305)...'
-      sha: 4bb2d097ffd14e104af3c909e78773c7f1508841
+      commitTitle: 'chore(pay): previous transaction print (#4294)...'
+      sha: 961b644a7ffeb3e06e3fd6b752fe40a1e8f70315
       tags:
-      - 0.20.155-2-g4bb2d097f
+      - 0.20.156-1-g961b644a7
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(notifications): introduce StatefulNotifications (#4305)...'
-      sha: 4bb2d097ffd14e104af3c909e78773c7f1508841
+      commitTitle: 'chore(pay): previous transaction print (#4294)...'
+      sha: 961b644a7ffeb3e06e3fd6b752fe40a1e8f70315
       tags:
-      - 0.20.155-2-g4bb2d097f
+      - 0.20.156-1-g961b644a7
     path: schemas
   - git:
-      commitTitle: 'feat(notifications): introduce StatefulNotifications (#4305)...'
-      sha: 4bb2d097ffd14e104af3c909e78773c7f1508841
+      commitTitle: 'chore(pay): previous transaction print (#4294)...'
+      sha: 961b644a7ffeb3e06e3fd6b752fe40a1e8f70315
       tags:
-      - 0.20.155-2-g4bb2d097f
+      - 0.20.156-1-g961b644a7
     path: gql
   path: graphql
 kind: LockConfig
