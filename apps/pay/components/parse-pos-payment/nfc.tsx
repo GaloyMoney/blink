@@ -207,7 +207,24 @@ function NFCComponent({ paymentRequest }: Props) {
   }, [nfcMessage, paymentRequest])
 
   if (isLoading) {
-    return <LoadingComponent />
+    return (
+      <div
+        style={{
+          width: "100vw",
+          height: "100dvh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          zIndex: 100,
+          backgroundColor: "rgb(255, 255, 255)",
+        }}
+      >
+        <LoadingComponent />
+      </div>
+    )
   }
 
   return (
@@ -224,7 +241,7 @@ function NFCComponent({ paymentRequest }: Props) {
               fontWeight: "normal",
             }}
             onClick={activateNfcScan}
-            disabled={hasNFCPermission}
+            disabled={hasNFCPermission || !isNfcSupported}
           >
             {!isNfcSupported
               ? "Bold card not supported"
