@@ -53,6 +53,45 @@ where
         self.new_events.push(event);
     }
 
+    pub async fn batch_persist(
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        entities: impl IntoIterator<Item = Self>,
+    ) -> Result<(), sqlx::Error> {
+        let mut query_builder = sqlx::QueryBuilder::new(format!(
+            "INSERT INTO {} (id, sequence, event_type, event)",
+            <T as EntityEvent>::event_table_name(),
+        ));
+
+        query_builder.push_values(
+            entities.into_iter().flat_map(|entity| {
+                let uuid: uuid::Uuid = entity.entity_id.into();
+                let sequence = entity.persisted_events.len() + 1;
+                entity
+                    .new_events
+                    .into_iter()
+                    .enumerate()
+                    .map(move |(offset, event)| (uuid, (sequence + offset) as i32, event))
+            }),
+            |mut builder, (uuid, sequence, event)| {
+                let event_json = serde_json::to_value(event).expect("Could not serialize event");
+                let event_type = event_json
+                    .get("type")
+                    .and_then(serde_json::Value::as_str)
+                    .expect("Could not get type")
+                    .to_owned();
+                builder.push_bind(uuid);
+                builder.push_bind(sequence);
+                builder.push_bind(event_type);
+                builder.push_bind(event_json);
+            },
+        );
+
+        let query = query_builder.build();
+        query.execute(&mut **tx).await?;
+
+        Ok(())
+    }
+
     pub async fn persist(
         &mut self,
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
