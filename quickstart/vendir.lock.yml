@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(pay): previous transaction print (#4294)...'
-      sha: 961b644a7ffeb3e06e3fd6b752fe40a1e8f70315
+      commitTitle: 'refactor(voucher): env variables (#4311)...'
+      sha: 54fdd86b13289f758702fdb860fcd07df4096a42
       tags:
-      - 0.20.156-1-g961b644a7
+      - 0.20.156-3-g54fdd86b1
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(pay): previous transaction print (#4294)...'
-      sha: 961b644a7ffeb3e06e3fd6b752fe40a1e8f70315
+      commitTitle: 'refactor(voucher): env variables (#4311)...'
+      sha: 54fdd86b13289f758702fdb860fcd07df4096a42
       tags:
-      - 0.20.156-1-g961b644a7
+      - 0.20.156-3-g54fdd86b1
     path: schemas
   - git:
-      commitTitle: 'chore(pay): previous transaction print (#4294)...'
-      sha: 961b644a7ffeb3e06e3fd6b752fe40a1e8f70315
+      commitTitle: 'refactor(voucher): env variables (#4311)...'
+      sha: 54fdd86b13289f758702fdb860fcd07df4096a42
       tags:
-      - 0.20.156-1-g961b644a7
+      - 0.20.157
     path: gql
   path: graphql
 kind: LockConfig
