@@ -3,10 +3,14 @@ use derive_builder::Builder;
 use es_entity::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{notification_event::DeepLink, primitives::*};
+use crate::{
+    notification_event::{DeepLink, NotificationEventPayload},
+    primitives::*,
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
+#[allow(clippy::large_enum_variant)]
 pub enum StatefulNotificationEvent {
     Initialized {
         id: StatefulNotificationId,
@@ -14,7 +18,7 @@ pub enum StatefulNotificationEvent {
         title: String,
         body: String,
         locale: GaloyLocale,
-        deep_link: Option<DeepLink>,
+        payload: NotificationEventPayload,
     },
     Acknowledged {
         acknowledged_at: DateTime<Utc>,
@@ -40,12 +44,17 @@ pub struct StatefulNotification {
     pub title: String,
     pub body: String,
     pub locale: GaloyLocale,
-    pub deep_link: Option<DeepLink>,
+
+    payload: NotificationEventPayload,
 
     pub(super) events: EntityEvents<StatefulNotificationEvent>,
 }
 
 impl StatefulNotification {
+    pub fn deep_link(&self) -> Option<DeepLink> {
+        self.payload.deep_link()
+    }
+
     pub(super) fn acknowledge(&mut self) {
         if self.acknowledged_at().is_none() {
             self.events.push(StatefulNotificationEvent::Acknowledged {
@@ -86,8 +95,8 @@ pub struct NewStatefulNotification {
     pub body: String,
     #[builder(setter(into))]
     pub locale: GaloyLocale,
-    #[builder(default, setter(into))]
-    pub deep_link: Option<DeepLink>,
+    #[builder(setter(into))]
+    pub payload: NotificationEventPayload,
 }
 
 impl NewStatefulNotification {
@@ -98,16 +107,15 @@ impl NewStatefulNotification {
     }
 
     pub(super) fn initial_events(self) -> EntityEvents<StatefulNotificationEvent> {
-        let id = self.id;
         EntityEvents::init(
-            id,
+            self.id,
             [StatefulNotificationEvent::Initialized {
-                id,
+                id: self.id,
                 galoy_user_id: self.user_id,
                 title: self.title,
                 body: self.body,
                 locale: self.locale,
-                deep_link: self.deep_link,
+                payload: self.payload,
             }],
         )
     }
@@ -125,7 +133,7 @@ impl TryFrom<EntityEvents<StatefulNotificationEvent>> for StatefulNotification {
                 title,
                 body,
                 locale,
-                deep_link,
+                payload,
             } = event
             {
                 builder = builder
@@ -134,7 +142,7 @@ impl TryFrom<EntityEvents<StatefulNotificationEvent>> for StatefulNotification {
                     .title(title.clone())
                     .body(body.clone())
                     .locale(locale.clone())
-                    .deep_link(deep_link.clone());
+                    .payload(payload.clone());
             }
         }
         builder.events(events).build()

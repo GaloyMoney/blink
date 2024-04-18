@@ -45,10 +45,10 @@ pub(super) struct StatefulNotification {
     pub body: String,
     pub deep_link: Option<String>,
     pub created_at: Timestamp,
-    pub acknowledge_at: Option<Timestamp>,
+    pub acknowledged_at: Option<Timestamp>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(super) struct StatefulNotificationsByCreatedAtCursor {
     pub id: StatefulNotificationId,
 }

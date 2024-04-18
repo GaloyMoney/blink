@@ -1,6 +1,6 @@
 CREATE TABLE stateful_notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    galoy_user_id VARCHAR UNIQUE NOT NULL,
+    galoy_user_id VARCHAR NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX idx_stateful_notifications_galoy_user_id ON stateful_notifications (galoy_user_id);

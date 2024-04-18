@@ -37,13 +37,14 @@ impl NotificationHistory {
         }
 
         let user_settings = self.settings.find_for_user_id(&user_id).await?;
-        let msg =
-            payload.to_localized_persistent_message(user_settings.locale().unwrap_or_default());
+        let locale = user_settings.locale().unwrap_or_default();
+        let msg = payload.to_localized_persistent_message(locale.clone());
         let notification = NewStatefulNotification::builder()
             .user_id(user_id)
             .title(msg.title)
             .body(msg.body)
-            .deep_link(payload.deep_link())
+            .locale(locale)
+            .payload(payload)
             .build()
             .expect("Couldn't build new persistent notification");
 
@@ -72,7 +73,7 @@ impl NotificationHistory {
                 .user_id(user_settings.galoy_user_id.clone())
                 .title(msg.title)
                 .body(msg.body)
-                .deep_link(payload.deep_link())
+                .payload(payload.clone())
                 .build()
                 .expect("Couldn't build new persistent notification");
             new_notifications.push(notification);

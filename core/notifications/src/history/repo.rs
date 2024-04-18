@@ -22,7 +22,7 @@ impl PersistentNotifications {
     ) -> Result<(), NotificationHistoryError> {
         sqlx::query!(
             r#"INSERT INTO stateful_notifications (id, galoy_user_id)
-            VALUES ($1, $2) ON CONFLICT DO NOTHING"#,
+            VALUES ($1, $2)"#,
             notification.id as StatefulNotificationId,
             notification.user_id.as_ref(),
         )
@@ -42,12 +42,6 @@ impl PersistentNotifications {
         query_builder.push_values(new_notifications.iter(), |mut builder, notification| {
             builder.push_bind(notification.id as StatefulNotificationId);
             builder.push_bind(notification.user_id.as_ref());
-            builder.push_bind(notification.title.clone());
-            builder.push_bind(notification.body.clone());
-            builder.push_bind(
-                serde_json::to_string(&notification.deep_link)
-                    .expect("unable to serialize deep_link"),
-            );
         });
         let query = query_builder.build();
         query.execute(&mut **tx).await?;

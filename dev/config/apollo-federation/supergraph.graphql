@@ -1774,7 +1774,7 @@ type StatefulNotification
   body: String!
   deepLink: String
   createdAt: Timestamp!
-  acknowledgeAt: Timestamp
+  acknowledgedAt: Timestamp
 }
 
 input StatefulNotificationAcknowledgeInput
