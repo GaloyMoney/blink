@@ -23,6 +23,7 @@ anyhow = "1.0.82"
 async-graphql = { version = "6.0.11", default-features = false, features = ["tracing", "chrono", "playground"] }
 async-graphql-axum = "6.0.11"
 axum = { version = "0.6.20", features = ["headers", "macros"] }
+base64 = { version = "0.22.0" }
 jsonwebtoken = "9.3.0"
 clap = { version = "4.5.4", features = ["derive", "env"] }
 derive_builder = "0.13.1"

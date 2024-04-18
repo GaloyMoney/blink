@@ -48,6 +48,7 @@ galoy_rust_bin(
         "//lib/job-executor-rs:job-executor",
         "//third-party/rust:tokio",
         "//third-party/rust:anyhow",
+        "//third-party/rust:base64",
         "//third-party/rust:async-graphql",
         "//third-party/rust:async-graphql-axum",
         "//third-party/rust:axum",

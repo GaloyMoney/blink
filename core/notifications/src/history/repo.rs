@@ -92,107 +92,33 @@ impl PersistentNotifications {
         Ok(res)
     }
 
-    //     pub async fn find_all_for_user(
-    //         &self,
-    //         user_id: GaloyUserId,
-    //     ) -> Result<Vec<InAppNotification>, InAppNotificationError> {
-    //         let rows = sqlx::query!(
-    //             r#"
-    //                 SELECT *
-    //                 FROM in_app_notifications
-    //                 WHERE galoy_user_id = $1
-    //                 ORDER BY created_at DESC
-    //                 "#,
-    //             user_id.as_ref()
-    //         )
-    //         .fetch_all(&self.pool)
-    //         .await?;
-
-    //         let notifications = rows
-    //             .into_iter()
-    //             .map(|row| InAppNotification {
-    //                 id: InAppNotificationId::from(row.id),
-    //                 user_id: GaloyUserId::from(row.galoy_user_id),
-    //                 title: row.title,
-    //                 body: row.body,
-    //                 deep_link: match row.deep_link {
-    //                     Some(ref dl) => serde_json::from_str(dl).ok(),
-    //                     None => None,
-    //                 },
-    //                 created_at: row.created_at,
-    //                 read_at: row.read_at,
-    //             })
-    //             .collect();
-
-    //         Ok(notifications)
-    //     }
-
-    //     pub async fn find_unread_for_user(
-    //         &self,
-    //         user_id: GaloyUserId,
-    //     ) -> Result<Vec<InAppNotification>, InAppNotificationError> {
-    //         let rows = sqlx::query!(
-    //             r#"
-    //                 SELECT *
-    //                 FROM in_app_notifications
-    //                 WHERE galoy_user_id = $1 AND read_at IS NULL
-    //                 ORDER BY created_at DESC
-    //                 "#,
-    //             user_id.as_ref()
-    //         )
-    //         .fetch_all(&self.pool)
-    //         .await?;
-
-    //         let notifications = rows
-    //             .into_iter()
-    //             .map(|row| InAppNotification {
-    //                 id: InAppNotificationId::from(row.id),
-    //                 user_id: GaloyUserId::from(row.galoy_user_id),
-    //                 title: row.title,
-    //                 body: row.body,
-    //                 deep_link: match row.deep_link {
-    //                     Some(ref dl) => serde_json::from_str(dl).ok(),
-    //                     None => None,
-    //                 },
-    //                 created_at: row.created_at,
-    //                 read_at: row.read_at,
-    //             })
-    //             .collect();
-
-    //         Ok(notifications)
-    //     }
-
-    //     pub async fn mark_as_read(
-    //         &self,
-    //         user_id: GaloyUserId,
-    //         notification_id: InAppNotificationId,
-    //     ) -> Result<InAppNotification, InAppNotificationError> {
-    //         let row = sqlx::query!(
-    //             r#"
-    //             UPDATE in_app_notifications
-    //             SET read_at = NOW()
-    //             WHERE galoy_user_id = $1 AND id = $2
-    //             RETURNING *
-    //             "#,
-    //             user_id.as_ref(),
-    //             notification_id as InAppNotificationId,
-    //         )
-    //         .fetch_one(&self.pool)
-    //         .await?;
-
-    //         let notification = InAppNotification {
-    //             id: InAppNotificationId::from(row.id),
-    //             user_id: GaloyUserId::from(row.galoy_user_id),
-    //             title: row.title,
-    //             body: row.body,
-    //             deep_link: match row.deep_link {
-    //                 Some(ref dl) => serde_json::from_str(dl).ok(),
-    //                 None => None,
-    //             },
-    //             created_at: row.created_at,
-    //             read_at: row.read_at,
-    //         };
-
-    //         Ok(notification)
-    //     }
+    pub async fn list_for_user(
+        &self,
+        user_id: GaloyUserId,
+        first: usize,
+        after: Option<StatefulNotificationId>,
+    ) -> Result<(Vec<StatefulNotification>, bool), NotificationHistoryError> {
+        let rows = sqlx::query_as!(
+            GenericEvent,
+            r#"WITH anchor AS (
+                 SELECT created_at FROM stateful_notifications WHERE id = $2 LIMIT 1
+               )
+            SELECT a.id, e.sequence, e.event,
+                      a.created_at AS entity_created_at, e.recorded_at AS event_recorded_at
+            FROM stateful_notifications a
+            JOIN stateful_notification_events e ON a.id = e.id
+            WHERE a.galoy_user_id = $1 AND (
+                    $2 IS NOT NULL AND a.created_at < (SELECT created_at FROM anchor)
+                    OR $2 IS NULL)
+            ORDER BY a.created_at DESC, a.id, e.sequence
+            LIMIT $3"#,
+            user_id.as_ref(),
+            after as Option<StatefulNotificationId>,
+            first as i64 + 1
+        )
+        .fetch_all(&self.pool)
+        .await?;
+        let res = EntityEvents::load_n::<StatefulNotification>(rows, first)?;
+        Ok(res)
+    }
 }

@@ -1,7 +1,7 @@
 use async_graphql::ID;
 
 use super::types;
-use crate::history;
+use crate::{history, primitives::StatefulNotificationId};
 
 impl From<history::StatefulNotification> for types::StatefulNotification {
     fn from(notification: history::StatefulNotification) -> Self {
@@ -15,5 +15,11 @@ impl From<history::StatefulNotification> for types::StatefulNotification {
             created_at: types::Timestamp::from(created_at),
             acknowledge_at: acknowledeg_at.map(types::Timestamp::from),
         }
+    }
+}
+
+impl From<StatefulNotificationId> for types::StatefulNotificationsByCreatedAtCursor {
+    fn from(id: StatefulNotificationId) -> Self {
+        Self { id }
     }
 }

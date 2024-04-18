@@ -95,19 +95,12 @@ impl NotificationHistory {
         Ok(notification)
     }
 
-    //     pub async fn find_for_user(
-    //         &self,
-    //         user_id: GaloyUserId,
-    //         only_unread: bool,
-    //     ) -> Result<Vec<InAppNotification>, InAppNotificationError> {
-    //         if only_unread {
-    //             self.in_app_notifications_repo
-    //                 .find_unread_for_user(user_id)
-    //                 .await
-    //         } else {
-    //             self.in_app_notifications_repo
-    //                 .find_all_for_user(user_id)
-    //                 .await
-    //         }
-    //     }
+    pub async fn list_notifications_for_user(
+        &self,
+        user_id: GaloyUserId,
+        first: usize,
+        after: Option<StatefulNotificationId>,
+    ) -> Result<(Vec<StatefulNotification>, bool), NotificationHistoryError> {
+        self.repo.list_for_user(user_id, first, after).await
+    }
 }

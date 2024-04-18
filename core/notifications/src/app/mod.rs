@@ -273,19 +273,18 @@ impl NotificationsApp {
         Ok(())
     }
 
-    #[instrument(name = "app.in_app_notifications_for_user", skip(self), err)]
-    pub async fn in_app_notifications_for_user(
+    #[instrument(name = "app.list_stateful_notifications", skip(self), err)]
+    pub async fn list_stateful_notifications(
         &self,
         user_id: GaloyUserId,
-        only_unread: bool,
-    ) -> Result<Vec<StatefulNotification>, ApplicationError> {
-        unimplemented!();
-        // let in_app_notifications = self
-        //     .in_app_notifications
-        //     .find_for_user(user_id, only_unread)
-        //     .await?;
-
-        // Ok(in_app_notifications)
+        first: usize,
+        after: Option<StatefulNotificationId>,
+    ) -> Result<(Vec<StatefulNotification>, bool), ApplicationError> {
+        let ret = self
+            .history
+            .list_notifications_for_user(user_id, first, after)
+            .await?;
+        Ok(ret)
     }
 
     #[instrument(name = "app.acknowledge_notification", skip(self), err)]

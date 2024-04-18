@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use async_graphql::*;
+use async_graphql::{types::connection::*, *};
 
 use super::types::*;
 use crate::{app::NotificationsApp, primitives::*};
@@ -32,21 +32,44 @@ struct User {
 impl User {
     async fn stateful_notifications(
         &self,
-        _ctx: &Context<'_>,
-    ) -> async_graphql::Result<Vec<StatefulNotification>> {
-        // let app = ctx.data_unchecked::<NotificationsApp>();
-        unimplemented!();
-        // let notifications = app
-        //     .in_app_notifications_for_user(
-        //         GaloyUserId::from(self.id.0.clone()),
-        //         only_unread.unwrap_or(false),
-        //     )
-        //     .await?;
-
-        // Ok(notifications
-        //     .into_iter()
-        //     .map(InAppNotification::from)
-        //     .collect())
+        ctx: &Context<'_>,
+        first: i32,
+        after: Option<String>,
+    ) -> async_graphql::Result<
+        Connection<
+            StatefulNotificationsByCreatedAtCursor,
+            StatefulNotification,
+            EmptyFields,
+            EmptyFields,
+        >,
+    > {
+        let app = ctx.data_unchecked::<NotificationsApp>();
+        let user_id = GaloyUserId::from(self.id.0.clone());
+        query(
+            after,
+            None,
+            Some(first),
+            None,
+            |after, _, first, _| async move {
+                let first = first.expect("First always exists");
+                let (notifications, has_next) = app
+                    .list_stateful_notifications(
+                        user_id,
+                        usize::try_from(first)?,
+                        after.map(|after: StatefulNotificationsByCreatedAtCursor| after.id),
+                    )
+                    .await?;
+                let mut connection = Connection::new(false, has_next);
+                connection
+                    .edges
+                    .extend(notifications.into_iter().map(|notification| {
+                        let cursor = StatefulNotificationsByCreatedAtCursor::from(notification.id);
+                        Edge::new(cursor, StatefulNotification::from(notification))
+                    }));
+                Ok::<_, async_graphql::Error>(connection)
+            },
+        )
+        .await
     }
 }
 
