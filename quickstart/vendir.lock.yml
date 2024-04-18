@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: using vector store for improving knowledge base (#4289)...'
-      sha: 429e9a330a36c6252b22a716fb39f79a5f451497
+      commitTitle: 'feat(notifications): introduce StatefulNotifications (#4305)...'
+      sha: 4bb2d097ffd14e104af3c909e78773c7f1508841
       tags:
-      - 0.20.154-2-g429e9a330
+      - 0.20.155-2-g4bb2d097f
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: using vector store for improving knowledge base (#4289)...'
-      sha: 429e9a330a36c6252b22a716fb39f79a5f451497
+      commitTitle: 'feat(notifications): introduce StatefulNotifications (#4305)...'
+      sha: 4bb2d097ffd14e104af3c909e78773c7f1508841
       tags:
-      - 0.20.154-2-g429e9a330
+      - 0.20.155-2-g4bb2d097f
     path: schemas
   - git:
-      commitTitle: 'feat: using vector store for improving knowledge base (#4289)...'
-      sha: 429e9a330a36c6252b22a716fb39f79a5f451497
+      commitTitle: 'feat(notifications): introduce StatefulNotifications (#4305)...'
+      sha: 4bb2d097ffd14e104af3c909e78773c7f1508841
       tags:
-      - 0.20.154-2-g429e9a330
+      - 0.20.155-2-g4bb2d097f
     path: gql
   path: graphql
 kind: LockConfig
