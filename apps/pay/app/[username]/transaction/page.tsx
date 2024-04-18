@@ -3,9 +3,13 @@
 import React, { useState, useEffect } from "react"
 import { gql } from "@apollo/client"
 
+import { useSession } from "next-auth/react"
+
 import { useGetPaginatedTransactionsQuery, Transaction } from "@/lib/graphql/generated"
 import LoadingComponent from "@/components/loading"
-import { formatCreateAt } from "@/utils/date-util"
+import { formatCreateAt, formatDate, formatTime } from "@/utils/date-util"
+import { sendDataToPosCompanion } from "@/app/print-companion-service"
+import useCheckInstalledApps from "@/hooks/use-check-installed-apps"
 
 gql`
   query GetPaginatedTransactions($first: Int, $after: String, $before: String) {
@@ -77,6 +81,10 @@ function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [cursor, setCursor] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState<boolean>(false)
+  const posCompanionInstalled = useCheckInstalledApps({
+    appId: "com.blink.pos.companion",
+  })
+  const session = useSession()
 
   const { data, loading, error, fetchMore } = useGetPaginatedTransactionsQuery({
     variables: { first: 10 },
@@ -161,6 +169,29 @@ function TransactionsPage() {
             <div className="flex justify-between items-center">
               <span className="font-bold text-sm">Wallet</span>
               <span>{transaction.settlementCurrency}</span>
+            </div>
+            <div>
+              {posCompanionInstalled && (
+                <button
+                  className="flex-1 bg-slate-300 p-2 rounded-md text-black w-full"
+                  onClick={() => {
+                    if (session?.data?.userData?.me?.username)
+                      sendDataToPosCompanion({
+                        username: session?.data?.userData?.me?.username,
+                        amount: `${transaction.settlementDisplayAmount} ${transaction.settlementDisplayCurrency}`,
+                        transactionId: transaction.id,
+                        date: formatDate(transaction.createdAt),
+                        time: formatTime(transaction.createdAt),
+                        paymentHash:
+                          transaction.initiationVia.__typename === "InitiationViaLn"
+                            ? transaction.initiationVia?.paymentHash
+                            : undefined,
+                      })
+                  }}
+                >
+                  Print Receipt
+                </button>
+              )}
             </div>
           </div>
         ))

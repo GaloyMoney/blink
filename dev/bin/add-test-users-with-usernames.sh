@@ -17,6 +17,9 @@ user_b_username="test_user_b"
 user_c="+16505554324"
 user_c_username="test_user_c"
 
+user_d="+16505554350"
+user_d_username="test_user_d"
+
 update_username() {
   echo "Updating username for user: $2"
   local auth_token="$1"
@@ -41,8 +44,13 @@ echo "Logging in user $user_c"
 auth_token_c=$(login_user "${user_c}")
 echo "Auth token for $user_c: $auth_token_c"
 
+echo "Logging in user $user_d"
+auth_token_d=$(login_user "${user_d}")
+echo "Auth token for $user_d: $auth_token_d"
+
 update_username "$auth_token_a" "$user_a_username"
 update_username "$auth_token_b" "$user_b_username"
 update_username "$auth_token_c" "$user_c_username"
+update_username "$auth_token_d" "$user_d_username"
 
 echo "Username update process completed"
