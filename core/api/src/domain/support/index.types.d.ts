@@ -17,24 +17,26 @@ interface ChatAssistant {
   addUserMessage: ({
     message,
     supportChatId,
+  }: {
+    message: string
+    supportChatId: SupportChatId
+  }) => Promise<true | ChatAssistantError>
+  initialize: ({
     level,
     countryCode,
     language,
   }: {
-    message: string
-    supportChatId: SupportChatId
     level: number
     countryCode: string
     language: string
-  }) => Promise<true | ChatAssistantError>
-  initialize: () => Promise<SupportChatId | ChatAssistantError>
+  }) => Promise<SupportChatId | ChatAssistantError>
 }
 
 interface ISupportChatRepository {
   findNewestByAccountId: (
     accountId: AccountId,
   ) => Promise<SupportChatId | RepositoryError>
-  add: (args: {
+  create: (args: {
     supportChatId: SupportChatId
     accountId: AccountId
   }) => Promise<true | RepositoryError>

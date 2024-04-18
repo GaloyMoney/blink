@@ -41,7 +41,7 @@ setup_file() {
   exec_graphql 'alice' 'support-chat-message-add' "$variables"
   language="$(graphql_output '.data.supportChatMessageAdd.supportMessage')"
   length=$(echo "$language" | jq '. | length')
-  [[ $length -eq 2 ]] || exit 1
+  [[ $length -eq 4 ]] || exit 1
 
   local variables=$(
     jq -n \
@@ -50,5 +50,5 @@ setup_file() {
   exec_graphql 'alice' 'support-chat-message-add' "$variables"
   language="$(graphql_output '.data.supportChatMessageAdd.supportMessage')"
   length=$(echo "$language" | jq '. | length')
-  [[ $length -eq 4 ]] || exit 1
+  [[ $length -eq 6 ]] || exit 1
 }
