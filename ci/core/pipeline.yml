@@ -85,7 +85,6 @@ jobs:
         trigger: true
       - task: build
         attempts: 2
-        privileged: true
         config:
           platform: linux
           image_resource:

@@ -52,7 +52,7 @@ plan:
 
 #@ def tilt_integration_test(app):
 #@ params = {}
-#@ params["REPO_PATH"] = data.values.gh_repository + "-" + app
+#@ params["REPO_PATH"] = data.values.gh_repository
 #@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
 #@ params["SSH_PRIVATE_KEY"] = "((staging-ssh.ssh_private_key))"
 #@ params["SSH_PUB_KEY"] = "((staging-ssh.ssh_public_key))"

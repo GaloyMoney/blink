@@ -138,7 +138,7 @@ plan:
 
 #@ def on_nix_host(name, component, cmd, in_dir = ""):
 #@ params = {}
-#@ params["REPO_PATH"] = data.values.gh_repository + "-" + name
+#@ params["REPO_PATH"] = data.values.gh_repository
 #@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
 #@ params["SSH_PRIVATE_KEY"] = "((staging-ssh.ssh_private_key))"
 #@ params["SSH_PUB_KEY"] = "((staging-ssh.ssh_public_key))"
