@@ -553,16 +553,6 @@ export type GraphQlApplicationError = Error & {
   readonly path?: Maybe<ReadonlyArray<Maybe<Scalars['String']['output']>>>;
 };
 
-export type InAppNotification = {
-  readonly __typename: 'InAppNotification';
-  readonly body: Scalars['String']['output'];
-  readonly createdAt: Scalars['Timestamp']['output'];
-  readonly deepLink?: Maybe<Scalars['String']['output']>;
-  readonly id: Scalars['ID']['output'];
-  readonly readAt?: Maybe<Scalars['Timestamp']['output']>;
-  readonly title: Scalars['String']['output'];
-};
-
 export type InitiationVia = InitiationViaIntraLedger | InitiationViaLn | InitiationViaOnChain;
 
 export type InitiationViaIntraLedger = {
@@ -1042,13 +1032,13 @@ export type Mutation = {
   readonly onChainUsdPaymentSend: PaymentSendPayload;
   readonly onChainUsdPaymentSendAsBtcDenominated: PaymentSendPayload;
   readonly quizClaim: QuizClaimPayload;
+  readonly statefulNotificationAcknowledge: StatefulNotificationAcknowledgePayload;
   readonly supportChatMessageAdd: SupportChatMessageAddPayload;
   /** @deprecated will be moved to AccountContact */
   readonly userContactUpdateAlias: UserContactUpdateAliasPayload;
   readonly userEmailDelete: UserEmailDeletePayload;
   readonly userEmailRegistrationInitiate: UserEmailRegistrationInitiatePayload;
   readonly userEmailRegistrationValidate: UserEmailRegistrationValidatePayload;
-  readonly userInAppNotificationMarkAsRead: UserInAppNotificationMarkAsReadPayload;
   readonly userLogin: AuthTokenPayload;
   readonly userLoginUpgrade: UpgradePayload;
   readonly userLogout: SuccessPayload;
@@ -1264,6 +1254,11 @@ export type MutationQuizClaimArgs = {
 };
 
 
+export type MutationStatefulNotificationAcknowledgeArgs = {
+  input: StatefulNotificationAcknowledgeInput;
+};
+
+
 export type MutationSupportChatMessageAddArgs = {
   input: SupportChatMessageAddInput;
 };
@@ -1281,11 +1276,6 @@ export type MutationUserEmailRegistrationInitiateArgs = {
 
 export type MutationUserEmailRegistrationValidateArgs = {
   input: UserEmailRegistrationValidateInput;
-};
-
-
-export type MutationUserInAppNotificationMarkAsReadArgs = {
-  input: UserInAppNotificationMarkAsReadInput;
 };
 
 
@@ -1440,7 +1430,7 @@ export type OneDayAccountLimit = AccountLimit & {
   readonly totalLimit: Scalars['CentAmount']['output'];
 };
 
-/** Information about pagination in a connection. */
+/** Information about pagination in a connection */
 export type PageInfo = {
   readonly __typename: 'PageInfo';
   /** When paginating forwards, the cursor to continue. */
@@ -1738,6 +1728,44 @@ export type SettlementViaOnChain = {
   readonly vout?: Maybe<Scalars['Int']['output']>;
 };
 
+export type StatefulNotification = {
+  readonly __typename: 'StatefulNotification';
+  readonly acknowledgeAt?: Maybe<Scalars['Timestamp']['output']>;
+  readonly body: Scalars['String']['output'];
+  readonly createdAt: Scalars['Timestamp']['output'];
+  readonly deepLink?: Maybe<Scalars['String']['output']>;
+  readonly id: Scalars['ID']['output'];
+  readonly title: Scalars['String']['output'];
+};
+
+export type StatefulNotificationAcknowledgeInput = {
+  readonly notificationId: Scalars['ID']['input'];
+};
+
+export type StatefulNotificationAcknowledgePayload = {
+  readonly __typename: 'StatefulNotificationAcknowledgePayload';
+  readonly notification: StatefulNotification;
+};
+
+export type StatefulNotificationConnection = {
+  readonly __typename: 'StatefulNotificationConnection';
+  /** A list of edges. */
+  readonly edges: ReadonlyArray<StatefulNotificationEdge>;
+  /** A list of nodes. */
+  readonly nodes: ReadonlyArray<StatefulNotification>;
+  /** Information to aid in pagination. */
+  readonly pageInfo: PageInfo;
+};
+
+/** An edge in a connection. */
+export type StatefulNotificationEdge = {
+  readonly __typename: 'StatefulNotificationEdge';
+  /** A cursor for use in pagination */
+  readonly cursor: Scalars['String']['output'];
+  /** The item at the end of the edge */
+  readonly node: StatefulNotification;
+};
+
 export type Subscription = {
   readonly __typename: 'Subscription';
   /** @deprecated Deprecated in favor of lnInvoicePaymentStatusByPaymentRequest */
@@ -1983,7 +2011,6 @@ export type User = {
   /** Email address */
   readonly email?: Maybe<Email>;
   readonly id: Scalars['ID']['output'];
-  readonly inAppNotifications: ReadonlyArray<InAppNotification>;
   /**
    * Preferred language for user.
    * When value is 'default' the intent is to use preferred language from OS settings.
@@ -1991,6 +2018,7 @@ export type User = {
   readonly language: Scalars['Language']['output'];
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']['output']>;
+  readonly statefulNotifications: StatefulNotificationConnection;
   readonly supportChat: ReadonlyArray<SupportMessage>;
   /** Whether TOTP is enabled for this user. */
   readonly totpEnabled: Scalars['Boolean']['output'];
@@ -2007,8 +2035,9 @@ export type UserContactByUsernameArgs = {
 };
 
 
-export type UserInAppNotificationsArgs = {
-  onlyUnread?: InputMaybe<Scalars['Boolean']['input']>;
+export type UserStatefulNotificationsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  first: Scalars['Int']['input'];
 };
 
 export type UserContact = {
@@ -2071,15 +2100,6 @@ export type UserEmailRegistrationValidatePayload = {
   readonly __typename: 'UserEmailRegistrationValidatePayload';
   readonly errors: ReadonlyArray<Error>;
   readonly me?: Maybe<User>;
-};
-
-export type UserInAppNotificationMarkAsReadInput = {
-  readonly notificationId: Scalars['ID']['input'];
-};
-
-export type UserInAppNotificationMarkAsReadPayload = {
-  readonly __typename: 'UserInAppNotificationMarkAsReadPayload';
-  readonly notification: InAppNotification;
 };
 
 export type UserLoginInput = {
@@ -3453,7 +3473,6 @@ export type ResolversTypes = {
   Globals: ResolverTypeWrapper<Globals>;
   GraphQLApplicationError: ResolverTypeWrapper<GraphQlApplicationError>;
   Hex32Bytes: ResolverTypeWrapper<Scalars['Hex32Bytes']['output']>;
-  InAppNotification: ResolverTypeWrapper<InAppNotification>;
   InitiationVia: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['InitiationVia']>;
   InitiationViaIntraLedger: ResolverTypeWrapper<InitiationViaIntraLedger>;
   InitiationViaLn: ResolverTypeWrapper<InitiationViaLn>;
@@ -3560,6 +3579,11 @@ export type ResolversTypes = {
   SettlementViaOnChain: ResolverTypeWrapper<SettlementViaOnChain>;
   SignedAmount: ResolverTypeWrapper<Scalars['SignedAmount']['output']>;
   SignedDisplayMajorAmount: ResolverTypeWrapper<Scalars['SignedDisplayMajorAmount']['output']>;
+  StatefulNotification: ResolverTypeWrapper<StatefulNotification>;
+  StatefulNotificationAcknowledgeInput: StatefulNotificationAcknowledgeInput;
+  StatefulNotificationAcknowledgePayload: ResolverTypeWrapper<StatefulNotificationAcknowledgePayload>;
+  StatefulNotificationConnection: ResolverTypeWrapper<StatefulNotificationConnection>;
+  StatefulNotificationEdge: ResolverTypeWrapper<StatefulNotificationEdge>;
   Subscription: ResolverTypeWrapper<{}>;
   SuccessPayload: ResolverTypeWrapper<SuccessPayload>;
   SupportChatMessageAddInput: SupportChatMessageAddInput;
@@ -3588,8 +3612,6 @@ export type ResolversTypes = {
   UserEmailRegistrationInitiatePayload: ResolverTypeWrapper<UserEmailRegistrationInitiatePayload>;
   UserEmailRegistrationValidateInput: UserEmailRegistrationValidateInput;
   UserEmailRegistrationValidatePayload: ResolverTypeWrapper<UserEmailRegistrationValidatePayload>;
-  UserInAppNotificationMarkAsReadInput: UserInAppNotificationMarkAsReadInput;
-  UserInAppNotificationMarkAsReadPayload: ResolverTypeWrapper<UserInAppNotificationMarkAsReadPayload>;
   UserLoginInput: UserLoginInput;
   UserLoginUpgradeInput: UserLoginUpgradeInput;
   UserLogoutInput: UserLogoutInput;
@@ -3677,7 +3699,6 @@ export type ResolversParentTypes = {
   Globals: Globals;
   GraphQLApplicationError: GraphQlApplicationError;
   Hex32Bytes: Scalars['Hex32Bytes']['output'];
-  InAppNotification: InAppNotification;
   InitiationVia: ResolversUnionTypes<ResolversParentTypes>['InitiationVia'];
   InitiationViaIntraLedger: InitiationViaIntraLedger;
   InitiationViaLn: InitiationViaLn;
@@ -3776,6 +3797,11 @@ export type ResolversParentTypes = {
   SettlementViaOnChain: SettlementViaOnChain;
   SignedAmount: Scalars['SignedAmount']['output'];
   SignedDisplayMajorAmount: Scalars['SignedDisplayMajorAmount']['output'];
+  StatefulNotification: StatefulNotification;
+  StatefulNotificationAcknowledgeInput: StatefulNotificationAcknowledgeInput;
+  StatefulNotificationAcknowledgePayload: StatefulNotificationAcknowledgePayload;
+  StatefulNotificationConnection: StatefulNotificationConnection;
+  StatefulNotificationEdge: StatefulNotificationEdge;
   Subscription: {};
   SuccessPayload: SuccessPayload;
   SupportChatMessageAddInput: SupportChatMessageAddInput;
@@ -3800,8 +3826,6 @@ export type ResolversParentTypes = {
   UserEmailRegistrationInitiatePayload: UserEmailRegistrationInitiatePayload;
   UserEmailRegistrationValidateInput: UserEmailRegistrationValidateInput;
   UserEmailRegistrationValidatePayload: UserEmailRegistrationValidatePayload;
-  UserInAppNotificationMarkAsReadInput: UserInAppNotificationMarkAsReadInput;
-  UserInAppNotificationMarkAsReadPayload: UserInAppNotificationMarkAsReadPayload;
   UserLoginInput: UserLoginInput;
   UserLoginUpgradeInput: UserLoginUpgradeInput;
   UserLogoutInput: UserLogoutInput;
@@ -4168,16 +4192,6 @@ export interface Hex32BytesScalarConfig extends GraphQLScalarTypeConfig<Resolver
   name: 'Hex32Bytes';
 }
 
-export type InAppNotificationResolvers<ContextType = any, ParentType extends ResolversParentTypes['InAppNotification'] = ResolversParentTypes['InAppNotification']> = {
-  body?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
-  deepLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  readAt?: Resolver<Maybe<ResolversTypes['Timestamp']>, ParentType, ContextType>;
-  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export type InitiationViaResolvers<ContextType = any, ParentType extends ResolversParentTypes['InitiationVia'] = ResolversParentTypes['InitiationVia']> = {
   __resolveType: TypeResolveFn<'InitiationViaIntraLedger' | 'InitiationViaLn' | 'InitiationViaOnChain', ParentType, ContextType>;
 };
@@ -4389,12 +4403,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   onChainUsdPaymentSend?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationOnChainUsdPaymentSendArgs, 'input'>>;
   onChainUsdPaymentSendAsBtcDenominated?: Resolver<ResolversTypes['PaymentSendPayload'], ParentType, ContextType, RequireFields<MutationOnChainUsdPaymentSendAsBtcDenominatedArgs, 'input'>>;
   quizClaim?: Resolver<ResolversTypes['QuizClaimPayload'], ParentType, ContextType, RequireFields<MutationQuizClaimArgs, 'input'>>;
+  statefulNotificationAcknowledge?: Resolver<ResolversTypes['StatefulNotificationAcknowledgePayload'], ParentType, ContextType, RequireFields<MutationStatefulNotificationAcknowledgeArgs, 'input'>>;
   supportChatMessageAdd?: Resolver<ResolversTypes['SupportChatMessageAddPayload'], ParentType, ContextType, RequireFields<MutationSupportChatMessageAddArgs, 'input'>>;
   userContactUpdateAlias?: Resolver<ResolversTypes['UserContactUpdateAliasPayload'], ParentType, ContextType, RequireFields<MutationUserContactUpdateAliasArgs, 'input'>>;
   userEmailDelete?: Resolver<ResolversTypes['UserEmailDeletePayload'], ParentType, ContextType>;
   userEmailRegistrationInitiate?: Resolver<ResolversTypes['UserEmailRegistrationInitiatePayload'], ParentType, ContextType, RequireFields<MutationUserEmailRegistrationInitiateArgs, 'input'>>;
   userEmailRegistrationValidate?: Resolver<ResolversTypes['UserEmailRegistrationValidatePayload'], ParentType, ContextType, RequireFields<MutationUserEmailRegistrationValidateArgs, 'input'>>;
-  userInAppNotificationMarkAsRead?: Resolver<ResolversTypes['UserInAppNotificationMarkAsReadPayload'], ParentType, ContextType, RequireFields<MutationUserInAppNotificationMarkAsReadArgs, 'input'>>;
   userLogin?: Resolver<ResolversTypes['AuthTokenPayload'], ParentType, ContextType, RequireFields<MutationUserLoginArgs, 'input'>>;
   userLoginUpgrade?: Resolver<ResolversTypes['UpgradePayload'], ParentType, ContextType, RequireFields<MutationUserLoginUpgradeArgs, 'input'>>;
   userLogout?: Resolver<ResolversTypes['SuccessPayload'], ParentType, ContextType, Partial<MutationUserLogoutArgs>>;
@@ -4656,6 +4670,34 @@ export interface SignedDisplayMajorAmountScalarConfig extends GraphQLScalarTypeC
   name: 'SignedDisplayMajorAmount';
 }
 
+export type StatefulNotificationResolvers<ContextType = any, ParentType extends ResolversParentTypes['StatefulNotification'] = ResolversParentTypes['StatefulNotification']> = {
+  acknowledgeAt?: Resolver<Maybe<ResolversTypes['Timestamp']>, ParentType, ContextType>;
+  body?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
+  deepLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type StatefulNotificationAcknowledgePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['StatefulNotificationAcknowledgePayload'] = ResolversParentTypes['StatefulNotificationAcknowledgePayload']> = {
+  notification?: Resolver<ResolversTypes['StatefulNotification'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type StatefulNotificationConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StatefulNotificationConnection'] = ResolversParentTypes['StatefulNotificationConnection']> = {
+  edges?: Resolver<ReadonlyArray<ResolversTypes['StatefulNotificationEdge']>, ParentType, ContextType>;
+  nodes?: Resolver<ReadonlyArray<ResolversTypes['StatefulNotification']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type StatefulNotificationEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StatefulNotificationEdge'] = ResolversParentTypes['StatefulNotificationEdge']> = {
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['StatefulNotification'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
   lnInvoicePaymentStatus?: SubscriptionResolver<ResolversTypes['LnInvoicePaymentStatusPayload'], "lnInvoicePaymentStatus", ParentType, ContextType, RequireFields<SubscriptionLnInvoicePaymentStatusArgs, 'input'>>;
   lnInvoicePaymentStatusByHash?: SubscriptionResolver<ResolversTypes['LnInvoicePaymentStatusPayload'], "lnInvoicePaymentStatusByHash", ParentType, ContextType, RequireFields<SubscriptionLnInvoicePaymentStatusByHashArgs, 'input'>>;
@@ -4769,9 +4811,9 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   defaultAccount?: Resolver<ResolversTypes['Account'], ParentType, ContextType>;
   email?: Resolver<Maybe<ResolversTypes['Email']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  inAppNotifications?: Resolver<ReadonlyArray<ResolversTypes['InAppNotification']>, ParentType, ContextType, Partial<UserInAppNotificationsArgs>>;
   language?: Resolver<ResolversTypes['Language'], ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['Phone']>, ParentType, ContextType>;
+  statefulNotifications?: Resolver<ResolversTypes['StatefulNotificationConnection'], ParentType, ContextType, RequireFields<UserStatefulNotificationsArgs, 'first'>>;
   supportChat?: Resolver<ReadonlyArray<ResolversTypes['SupportMessage']>, ParentType, ContextType>;
   totpEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   username?: Resolver<Maybe<ResolversTypes['Username']>, ParentType, ContextType>;
@@ -4809,11 +4851,6 @@ export type UserEmailRegistrationInitiatePayloadResolvers<ContextType = any, Par
 export type UserEmailRegistrationValidatePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserEmailRegistrationValidatePayload'] = ResolversParentTypes['UserEmailRegistrationValidatePayload']> = {
   errors?: Resolver<ReadonlyArray<ResolversTypes['Error']>, ParentType, ContextType>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type UserInAppNotificationMarkAsReadPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserInAppNotificationMarkAsReadPayload'] = ResolversParentTypes['UserInAppNotificationMarkAsReadPayload']> = {
-  notification?: Resolver<ResolversTypes['InAppNotification'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -4940,7 +4977,6 @@ export type Resolvers<ContextType = any> = {
   Globals?: GlobalsResolvers<ContextType>;
   GraphQLApplicationError?: GraphQlApplicationErrorResolvers<ContextType>;
   Hex32Bytes?: GraphQLScalarType;
-  InAppNotification?: InAppNotificationResolvers<ContextType>;
   InitiationVia?: InitiationViaResolvers<ContextType>;
   InitiationViaIntraLedger?: InitiationViaIntraLedgerResolvers<ContextType>;
   InitiationViaLn?: InitiationViaLnResolvers<ContextType>;
@@ -5007,6 +5043,10 @@ export type Resolvers<ContextType = any> = {
   SettlementViaOnChain?: SettlementViaOnChainResolvers<ContextType>;
   SignedAmount?: GraphQLScalarType;
   SignedDisplayMajorAmount?: GraphQLScalarType;
+  StatefulNotification?: StatefulNotificationResolvers<ContextType>;
+  StatefulNotificationAcknowledgePayload?: StatefulNotificationAcknowledgePayloadResolvers<ContextType>;
+  StatefulNotificationConnection?: StatefulNotificationConnectionResolvers<ContextType>;
+  StatefulNotificationEdge?: StatefulNotificationEdgeResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   SuccessPayload?: SuccessPayloadResolvers<ContextType>;
   SupportChatMessageAddPayload?: SupportChatMessageAddPayloadResolvers<ContextType>;
@@ -5027,7 +5067,6 @@ export type Resolvers<ContextType = any> = {
   UserEmailDeletePayload?: UserEmailDeletePayloadResolvers<ContextType>;
   UserEmailRegistrationInitiatePayload?: UserEmailRegistrationInitiatePayloadResolvers<ContextType>;
   UserEmailRegistrationValidatePayload?: UserEmailRegistrationValidatePayloadResolvers<ContextType>;
-  UserInAppNotificationMarkAsReadPayload?: UserInAppNotificationMarkAsReadPayloadResolvers<ContextType>;
   UserPhoneDeletePayload?: UserPhoneDeletePayloadResolvers<ContextType>;
   UserPhoneRegistrationValidatePayload?: UserPhoneRegistrationValidatePayloadResolvers<ContextType>;
   UserTotpDeletePayload?: UserTotpDeletePayloadResolvers<ContextType>;
