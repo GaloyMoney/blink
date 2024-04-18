@@ -3,6 +3,7 @@ type AddInvoiceForSelfArgs = {
   walletAmount: PaymentAmount<WalletCurrency>
   memo?: string
   expiresIn: Minutes
+  externalId: LedgerExternalId | undefined
 }
 
 type AddInvoiceForSelfForBtcWalletArgs = {
@@ -10,14 +11,23 @@ type AddInvoiceForSelfForBtcWalletArgs = {
   amount: number
   memo?: string
   expiresIn?: number
+  externalId: string | undefined
 }
 
 type AddInvoiceForSelfForUsdWalletArgs = AddInvoiceForSelfForBtcWalletArgs
 
 type AddInvoiceNoAmountForSelfArgs = {
+  walletId: WalletId
+  memo?: string
+  expiresIn: Minutes
+  externalId: LedgerExternalId | undefined
+}
+
+type AddInvoiceNoAmountForSelfForAnyWalletArgs = {
   walletId: string
   memo?: string
   expiresIn?: number
+  externalId: string | undefined
 }
 
 type AddInvoiceForRecipientArgs = {
@@ -26,6 +36,7 @@ type AddInvoiceForRecipientArgs = {
   memo?: string
   descriptionHash?: string
   expiresIn: Minutes
+  externalId: LedgerExternalId | undefined
 }
 
 type AddInvoiceForRecipientForBtcWalletArgs = {
@@ -34,14 +45,23 @@ type AddInvoiceForRecipientForBtcWalletArgs = {
   memo?: string
   descriptionHash?: string
   expiresIn?: number
+  externalId: string | undefined
 }
 
 type AddInvoiceForRecipientForUsdWalletArgs = AddInvoiceForRecipientForBtcWalletArgs
 
 type AddInvoiceNoAmountForRecipientArgs = {
+  recipientWalletId: WalletId
+  memo?: string
+  expiresIn: Minutes
+  externalId: LedgerExternalId | undefined
+}
+
+type AddInvoiceNoAmountForRecipientForAnyWalletArgs = {
   recipientWalletId: string
   memo?: string
   expiresIn?: number
+  externalId: string | undefined
 }
 
 type CancelInvoiceForWalletArgs = {

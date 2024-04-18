@@ -1,3 +1,5 @@
+import { Entry, IJournal } from "medici"
+
 import { UnknownLedgerError } from "./domain/errors"
 
 import { TransactionsMetadataRepository } from "./services"
@@ -9,9 +11,7 @@ export const persistAndReturnEntry = async ({
   hash,
   revealedPreImage,
 }: {
-  /* eslint @typescript-eslint/ban-ts-comment: "off" */
-  // @ts-ignore-next-line no-implicit-any error
-  entry
+  entry: Entry<ILedgerTransaction, IJournal>
   hash?: PaymentHash | OnChainTxHash
   revealedPreImage?: RevealedPreImage
 }) => {
@@ -32,10 +32,12 @@ export const persistAndReturnEntry = async ({
   }
 }
 
-// @ts-ignore-next-line no-implicit-any error
-export const translateToLedgerJournal = (savedEntry): LedgerJournal => ({
+export const translateToLedgerJournal = (
+  savedEntry: Awaited<ReturnType<Entry<ILedgerTransaction, IJournal>["commit"]>>,
+): LedgerJournal => ({
   journalId: savedEntry._id.toString(),
-  voided: savedEntry.voided,
-  // @ts-ignore-next-line no-implicit-any error
-  transactionIds: savedEntry._transactions.map((id) => id.toString()),
+  voided: !!savedEntry.voided,
+  transactionIds: savedEntry._transactions.map(
+    (id) => id.toString() as LedgerTransactionId,
+  ),
 })

@@ -94,6 +94,7 @@ type YamlSchema = {
     allowIPCountries: string[]
     denyASNs: string[]
     allowASNs: string[]
+    maxDeletions: number
   }
   accountLimits: {
     withdrawal: AccountLimitsConfig

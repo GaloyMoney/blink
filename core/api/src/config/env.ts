@@ -134,6 +134,7 @@ export const env = createEnv({
 
     OPENAI_API_KEY: z.string().min(1).optional(),
     OPENAI_ASSISTANT_ID: z.string().min(1).optional(),
+    PINECONE_API_KEY: z.string().min(1).optional(),
   },
 
   runtimeEnvStrict: {
@@ -232,5 +233,6 @@ export const env = createEnv({
 
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     OPENAI_ASSISTANT_ID: process.env.OPENAI_ASSISTANT_ID,
+    PINECONE_API_KEY: process.env.PINECONE_API_KEY,
   },
 })
