@@ -45,7 +45,9 @@ impl DeepLink {
 
 pub trait NotificationEvent: std::fmt::Debug + Send + Sync {
     fn category(&self) -> UserNotificationCategory;
-    fn deep_link(&self) -> Option<DeepLink>;
+    fn deep_link(&self) -> Option<DeepLink> {
+        None
+    }
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage;
     fn should_send_email(&self) -> bool;
     fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail>;

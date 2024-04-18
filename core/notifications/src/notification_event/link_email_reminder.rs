@@ -1,7 +1,7 @@
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-use super::{DeepLink, NotificationEvent};
+use super::NotificationEvent;
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -10,10 +10,6 @@ pub struct LinkEmailReminder {}
 impl NotificationEvent for LinkEmailReminder {
     fn category(&self) -> UserNotificationCategory {
         UserNotificationCategory::Security
-    }
-
-    fn deep_link(&self) -> Option<DeepLink> {
-        None
     }
 
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {

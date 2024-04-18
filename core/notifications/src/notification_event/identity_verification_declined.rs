@@ -1,7 +1,7 @@
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-use super::{DeepLink, NotificationEvent};
+use super::NotificationEvent;
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -24,10 +24,6 @@ impl NotificationEvent for IdentityVerificationDeclined {
         UserNotificationCategory::AdminNotification
     }
 
-    fn deep_link(&self) -> Option<DeepLink> {
-        None
-    }
-
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
         let reason = self.localized_declined_reason(&locale);
         let title = t!(
@@ -42,6 +38,10 @@ impl NotificationEvent for IdentityVerificationDeclined {
         )
         .to_string();
         LocalizedPushMessage { title, body }
+    }
+
+    fn should_send_email(&self) -> bool {
+        true
     }
 
     fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
@@ -66,10 +66,6 @@ impl NotificationEvent for IdentityVerificationDeclined {
             subject: title,
             body,
         })
-    }
-
-    fn should_send_email(&self) -> bool {
-        true
     }
 }
 

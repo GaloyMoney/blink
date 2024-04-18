@@ -1,7 +1,7 @@
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-use super::{DeepLink, NotificationEvent};
+use super::NotificationEvent;
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -62,10 +62,6 @@ impl NotificationEvent for PriceChanged {
     fn category(&self) -> UserNotificationCategory {
         // TODO: this should be switched to UserNotificationCategory::Price when it's deployed in mobile
         UserNotificationCategory::Payments
-    }
-
-    fn deep_link(&self) -> Option<DeepLink> {
-        None
     }
 
     fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
