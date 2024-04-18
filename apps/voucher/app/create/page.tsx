@@ -8,7 +8,6 @@ import { useSession } from "next-auth/react"
 import CreatePageAmount from "@/components/create/create-page-amount"
 import CreatePagePercentage from "@/components/create/create-page-percentage"
 import { Currency, useCurrencyConversionEstimationQuery } from "@/lib/graphql/generated"
-import useSatsPrice from "@/hooks/useSatsPrice"
 import { calculateAmountAfterCommission, getWalletDetails } from "@/utils/helpers"
 import ConfirmModal from "@/components/create/confirm-modal"
 import InfoComponent from "@/components/info-component"
@@ -46,7 +45,6 @@ gql`
 export default function CreatePage() {
   const session = useSession()
 
-  const { usdToSats } = useSatsPrice()
   const storedCurrency =
     typeof window !== "undefined" ? localStorage.getItem("currency") : null
   const storedCommission =
@@ -122,7 +120,6 @@ export default function CreatePage() {
           setAmount={setAmount}
           setCurrency={setCurrency}
           setCurrentPage={setCurrentPage}
-          usdToSats={usdToSats}
           setConfirmModal={setConfirmModal}
           commissionPercentage={commissionPercentage}
           amountInDollars={amountInDollars}

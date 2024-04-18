@@ -30,10 +30,10 @@ scopes_json='["READ","WRITE"]'
 api_key_secret=$(create_api_key "$user_token" "my-api" "$scopes_json")
 env_file="${DEV_DIR}/.envs/voucher.env"
 
-if grep -q "export ESCROW_TOKEN" "$env_file"; then
-  sed -i "s/^export ESCROW_TOKEN=.*/export ESCROW_TOKEN=$api_key_secret/" "$env_file"
+if grep -q "export ESCROW_API_KEY" "$env_file"; then
+  sed -i "s/^export ESCROW_API_KEY=.*/export ESCROW_API_KEY=$api_key_secret/" "$env_file"
 else
-  echo "export ESCROW_TOKEN=$api_key_secret" >> "$env_file"
+  echo "export ESCROW_API_KEY=$api_key_secret" >> "$env_file"
 fi
 
 echo "DONE"

@@ -1,5 +1,5 @@
 "use client"
-import { ApolloLink, HttpLink, split } from "@apollo/client"
+import { ApolloLink, HttpLink } from "@apollo/client"
 import {
   ApolloNextAppProvider,
   NextSSRInMemoryCache,
@@ -8,34 +8,19 @@ import {
 } from "@apollo/experimental-nextjs-app-support/ssr"
 import { RetryLink } from "@apollo/client/link/retry"
 import { onError } from "@apollo/client/link/error"
-import { getMainDefinition } from "@apollo/client/utilities"
-import { GraphQLWsLink } from "@apollo/client/link/subscriptions"
-import { createClient } from "graphql-ws"
 
 import { env } from "@/env"
 
-const { NEXT_PUBLIC_GALOY_URL, NEXT_PUBLIC_LOCAL_URL, NEXT_PUBLIC_WS_URL } = env
+const { NEXT_PUBLIC_CORE_URL, NEXT_PUBLIC_VOUCHER_URL } = env
 
 function makeClient() {
   const httpLinkMainnet = new HttpLink({
-    uri: NEXT_PUBLIC_GALOY_URL,
+    uri: NEXT_PUBLIC_CORE_URL,
   })
 
   const httpLinkLocal = new HttpLink({
-    uri: `${NEXT_PUBLIC_LOCAL_URL}/api/graphql`,
+    uri: `${NEXT_PUBLIC_VOUCHER_URL}/api/graphql`,
   })
-
-  const wsLink = new GraphQLWsLink(
-    createClient({
-      url: NEXT_PUBLIC_WS_URL,
-      retryAttempts: 12,
-      connectionParams: {},
-      shouldRetry: (errOrCloseEvent) => {
-        console.warn({ errOrCloseEvent }, "entering shouldRetry function for websocket")
-        return true
-      },
-    }),
-  )
 
   const errorLink = onError(({ graphQLErrors, networkError }) => {
     if (graphQLErrors)
@@ -61,25 +46,15 @@ function makeClient() {
     },
   })
 
-  const link = split(
-    ({ query }) => {
-      const definition = getMainDefinition(query)
-      return (
-        definition.kind === "OperationDefinition" &&
-        definition.operation === "subscription"
-      )
-    },
-    wsLink,
-    ApolloLink.from([
-      errorLink,
-      retryLink,
-      ApolloLink.split(
-        (operation) => operation.getContext().endpoint === "GALOY",
-        httpLinkMainnet,
-        httpLinkLocal,
-      ),
-    ]),
-  )
+  const link = ApolloLink.from([
+    errorLink,
+    retryLink,
+    ApolloLink.split(
+      (operation) => operation.getContext().endpoint === "GALOY",
+      httpLinkMainnet,
+      httpLinkLocal,
+    ),
+  ])
 
   return new NextSSRApolloClient({
     cache: new NextSSRInMemoryCache(),
