@@ -14,11 +14,6 @@ pub struct LocalizedEmail {
     pub body: String,
 }
 
-pub struct LocalizedInAppMessage {
-    pub title: String,
-    pub body: String,
-}
-
 pub struct LocalizedStatefulMessage {
     pub title: String,
     pub body: String,

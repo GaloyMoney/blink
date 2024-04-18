@@ -95,11 +95,16 @@ impl NotificationEvent for TransactionOccurred {
     }
 
     fn should_be_added_to_history(&self) -> bool {
-        false
+        true
     }
 
-    fn to_localized_in_app_msg(&self, _locale: GaloyLocale) -> Option<LocalizedInAppMessage> {
-        None
+    fn to_localized_persistent_message(&self, locale: GaloyLocale) -> LocalizedStatefulMessage {
+        let push_msg = self.to_localized_push_msg(locale);
+
+        LocalizedStatefulMessage {
+            title: push_msg.title,
+            body: push_msg.body,
+        }
     }
 }
 

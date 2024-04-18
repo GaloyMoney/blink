@@ -55,7 +55,7 @@ impl User {
                 let (notifications, has_next) = app
                     .list_stateful_notifications(
                         user_id,
-                        usize::try_from(first)?,
+                        first,
                         after.map(|after: StatefulNotificationsByCreatedAtCursor| after.id),
                     )
                     .await?;

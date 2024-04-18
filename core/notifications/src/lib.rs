@@ -14,7 +14,6 @@ pub mod email_reminder_projection;
 pub mod graphql;
 pub mod grpc;
 pub mod history;
-pub mod in_app_notification;
 pub mod notification_cool_off_tracker;
 pub mod notification_event;
 pub mod primitives;

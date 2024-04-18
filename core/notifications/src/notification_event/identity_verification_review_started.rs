@@ -60,7 +60,7 @@ impl NotificationEvent for IdentityVerificationReviewStarted {
         true
     }
 
-    fn to_localized_in_app_msg(&self, locale: GaloyLocale) -> Option<LocalizedInAppMessage> {
+    fn to_localized_persistent_message(&self, locale: GaloyLocale) -> LocalizedStatefulMessage {
         let title = t!(
             "identity_verification_review_started.title",
             locale = locale.as_ref()
@@ -71,6 +71,6 @@ impl NotificationEvent for IdentityVerificationReviewStarted {
             locale = locale.as_ref()
         )
         .to_string();
-        Some(LocalizedInAppMessage { title, body })
+        LocalizedStatefulMessage { title, body }
     }
 }

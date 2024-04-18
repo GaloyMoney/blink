@@ -61,14 +61,6 @@ impl NotificationEvent for CircleThresholdReached {
     fn should_send_email(&self) -> bool {
         false
     }
-
-    fn should_be_added_to_history(&self) -> bool {
-        false
-    }
-
-    fn to_localized_in_app_msg(&self, _locale: GaloyLocale) -> Option<LocalizedInAppMessage> {
-        None
-    }
 }
 
 #[cfg(test)]

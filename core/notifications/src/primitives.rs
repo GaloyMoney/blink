@@ -31,7 +31,6 @@ impl std::fmt::Display for GaloyUserId {
 }
 
 es_entity::entity_id! { UserNotificationSettingsId }
-es_entity::entity_id! { InAppNotificationId }
 es_entity::entity_id! { StatefulNotificationId }
 
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize, Hash)]
