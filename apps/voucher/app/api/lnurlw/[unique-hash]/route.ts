@@ -4,7 +4,7 @@ import { env } from "@/env"
 import { getRealtimePriceQuery } from "@/services/galoy/query/get-real-time-price"
 import { escrowApolloClient } from "@/services/galoy/client/escrow"
 import { Status } from "@/lib/graphql/generated"
-const { NEXT_PUBLIC_LOCAL_URL } = env
+const { NEXT_PUBLIC_VOUCHER_URL } = env
 
 export async function GET(
   request: Request,
@@ -37,7 +37,7 @@ export async function GET(
 
     return Response.json({
       tag: "withdrawRequest",
-      callback: `${NEXT_PUBLIC_LOCAL_URL}/api/lnurlw/callback/${withdrawLink.id}`,
+      callback: `${NEXT_PUBLIC_VOUCHER_URL}/api/lnurlw/callback/${withdrawLink.id}`,
       k1: withdrawLink.k1,
       minWithdrawable: voucherAmountInSats * 1000,
       maxWithdrawable: voucherAmountInSats * 1000,
