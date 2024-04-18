@@ -21,6 +21,7 @@ export const WalletsRepository = (): IWalletsRepository => {
     accountId,
     type,
     currency,
+    createdAt,
   }: NewWalletInfo): Promise<Wallet | RepositoryError> => {
     const account = await AccountsRepository().findById(accountId)
     // verify that the account exist
@@ -31,6 +32,7 @@ export const WalletsRepository = (): IWalletsRepository => {
         accountId,
         type,
         currency,
+        createdAt,
       })
       await wallet.save()
       return resultToWallet(wallet)
