@@ -1,5 +1,8 @@
-use async_graphql::*;
+use async_graphql::{types::connection::*, *};
 use chrono::{DateTime, TimeZone, Utc};
+use serde::{Deserialize, Serialize};
+
+use crate::primitives::StatefulNotificationId;
 
 #[derive(Clone, Copy)]
 pub struct Timestamp(DateTime<Utc>);
@@ -36,11 +39,35 @@ impl ScalarType for Timestamp {
 }
 
 #[derive(SimpleObject)]
-pub(super) struct InAppNotification {
+pub(super) struct StatefulNotification {
     pub id: ID,
     pub title: String,
     pub body: String,
     pub deep_link: Option<String>,
     pub created_at: Timestamp,
-    pub read_at: Option<Timestamp>,
+    pub acknowledged_at: Option<Timestamp>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub(super) struct StatefulNotificationsByCreatedAtCursor {
+    pub id: StatefulNotificationId,
+}
+
+impl CursorType for StatefulNotificationsByCreatedAtCursor {
+    type Error = String;
+
+    fn encode_cursor(&self) -> String {
+        use base64::{engine::general_purpose, Engine as _};
+        let json = serde_json::to_string(&self).expect("could not serialize token");
+        general_purpose::STANDARD_NO_PAD.encode(json.as_bytes())
+    }
+
+    fn decode_cursor(s: &str) -> Result<Self, Self::Error> {
+        use base64::{engine::general_purpose, Engine as _};
+        let bytes = general_purpose::STANDARD_NO_PAD
+            .decode(s.as_bytes())
+            .map_err(|e| e.to_string())?;
+        let json = String::from_utf8(bytes).map_err(|e| e.to_string())?;
+        serde_json::from_str(&json).map_err(|e| e.to_string())
+    }
 }

@@ -3,7 +3,7 @@ use thiserror::Error;
 use crate::{
     email_executor::error::EmailExecutorError,
     email_reminder_projection::error::EmailReminderProjectionError,
-    in_app_notification::error::InAppNotificationError, push_executor::error::PushExecutorError,
+    history::error::NotificationHistoryError, push_executor::error::PushExecutorError,
     user_notification_settings::error::UserNotificationSettingsError,
 };
 
@@ -20,7 +20,7 @@ pub enum JobError {
     #[error("JobError - EmailReminderProjection: {0}")]
     EmailReminderProjection(#[from] EmailReminderProjectionError),
     #[error("JobError - InAppNotificationError: {0}")]
-    InAppNotificationError(#[from] InAppNotificationError),
+    NotificationHistoryError(#[from] NotificationHistoryError),
 }
 
 impl job_executor::JobExecutionError for JobError {}

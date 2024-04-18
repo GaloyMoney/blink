@@ -1,7 +1,7 @@
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-use super::{DeepLink, NotificationEvent};
+use super::NotificationEvent;
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -24,12 +24,8 @@ impl NotificationEvent for IdentityVerificationDeclined {
         UserNotificationCategory::AdminNotification
     }
 
-    fn deep_link(&self) -> Option<DeepLink> {
-        None
-    }
-
-    fn to_localized_push_msg(&self, locale: GaloyLocale) -> LocalizedPushMessage {
-        let reason = self.localized_declined_reason(&locale);
+    fn to_localized_push_msg(&self, locale: &GaloyLocale) -> LocalizedPushMessage {
+        let reason = self.localized_declined_reason(locale);
         let title = t!(
             "identity_verification_declined.title",
             locale = locale.as_ref()
@@ -44,10 +40,14 @@ impl NotificationEvent for IdentityVerificationDeclined {
         LocalizedPushMessage { title, body }
     }
 
-    fn to_localized_email(&self, locale: GaloyLocale) -> Option<LocalizedEmail> {
+    fn should_send_email(&self) -> bool {
+        true
+    }
+
+    fn to_localized_email(&self, locale: &GaloyLocale) -> Option<LocalizedEmail> {
         let email_formatter = EmailFormatter::new();
 
-        let reason = self.localized_declined_reason(&locale);
+        let reason = self.localized_declined_reason(locale);
         let title = t!(
             "identity_verification_declined.title",
             locale = locale.as_ref()
@@ -66,18 +66,6 @@ impl NotificationEvent for IdentityVerificationDeclined {
             subject: title,
             body,
         })
-    }
-
-    fn should_send_email(&self) -> bool {
-        true
-    }
-
-    fn should_send_in_app_msg(&self) -> bool {
-        false
-    }
-
-    fn to_localized_in_app_msg(&self, _locale: GaloyLocale) -> Option<LocalizedInAppMessage> {
-        None
     }
 }
 

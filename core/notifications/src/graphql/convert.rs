@@ -1,17 +1,25 @@
 use async_graphql::ID;
 
 use super::types;
-use crate::in_app_notification;
+use crate::{history, primitives::StatefulNotificationId};
 
-impl From<in_app_notification::InAppNotification> for types::InAppNotification {
-    fn from(notification: in_app_notification::InAppNotification) -> Self {
+impl From<history::StatefulNotification> for types::StatefulNotification {
+    fn from(notification: history::StatefulNotification) -> Self {
+        let created_at = notification.created_at();
+        let acknowledeg_at = notification.acknowledged_at();
         Self {
+            deep_link: notification.deep_link().map(|d| d.to_link_string()),
             id: ID(notification.id.to_string()),
-            title: notification.title,
-            body: notification.body,
-            deep_link: notification.deep_link.map(|d| d.to_link_string()),
-            created_at: types::Timestamp::from(notification.created_at),
-            read_at: notification.read_at.map(types::Timestamp::from),
+            title: notification.message.title,
+            body: notification.message.body,
+            created_at: types::Timestamp::from(created_at),
+            acknowledged_at: acknowledeg_at.map(types::Timestamp::from),
         }
+    }
+}
+
+impl From<StatefulNotificationId> for types::StatefulNotificationsByCreatedAtCursor {
+    fn from(id: StatefulNotificationId) -> Self {
+        Self { id }
     }
 }

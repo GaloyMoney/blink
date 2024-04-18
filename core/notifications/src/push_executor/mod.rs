@@ -45,7 +45,7 @@ impl PushExecutor {
             return Ok(());
         }
 
-        let msg = event.to_localized_push_msg(settings.locale().unwrap_or_default());
+        let msg = event.to_localized_push_msg(&settings.locale().unwrap_or_default());
 
         let mut should_persist = false;
         let mut last_err = None;

@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO stateful_notifications (id, galoy_user_id)\n            VALUES ($1, $2)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "9e09dfcca900fab9bfda7c9377215017afd7ddeb6ff33f236039127a4ac841e6"
+}
