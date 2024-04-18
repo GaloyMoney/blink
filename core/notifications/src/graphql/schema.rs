@@ -30,7 +30,7 @@ struct User {
 
 #[ComplexObject]
 impl User {
-    async fn statefull_notifications(
+    async fn stateful_notifications(
         &self,
         _ctx: &Context<'_>,
     ) -> async_graphql::Result<Vec<StatefulNotification>> {
@@ -51,12 +51,12 @@ impl User {
 }
 
 #[derive(SimpleObject)]
-pub struct StatefullNotificationAcknowledgePayload {
+pub struct StatefulNotificationAcknowledgePayload {
     notification: StatefulNotification,
 }
 
 #[derive(InputObject)]
-struct StatefullNotificationAcknowledgeInput {
+struct StatefulNotificationAcknowledgeInput {
     notification_id: ID,
 }
 
@@ -64,11 +64,11 @@ pub struct Mutation;
 
 #[Object]
 impl Mutation {
-    async fn statefull_notification_acknowledge(
+    async fn stateful_notification_acknowledge(
         &self,
         ctx: &Context<'_>,
-        input: StatefullNotificationAcknowledgeInput,
-    ) -> async_graphql::Result<StatefullNotificationAcknowledgePayload> {
+        input: StatefulNotificationAcknowledgeInput,
+    ) -> async_graphql::Result<StatefulNotificationAcknowledgePayload> {
         let subject = ctx.data::<AuthSubject>()?;
 
         if !subject.can_write {
@@ -80,7 +80,7 @@ impl Mutation {
             .acknowledge_notification(GaloyUserId::from(subject.id.clone()), notification_id)
             .await?;
 
-        Ok(StatefullNotificationAcknowledgePayload {
+        Ok(StatefulNotificationAcknowledgePayload {
             notification: StatefulNotification::from(notification),
         })
     }

@@ -1,5 +1,5 @@
 type Mutation {
-	statefullNotificationAcknowledge(input: StatefullNotificationAcknowledgeInput!): StatefullNotificationAcknowledgePayload!
+	statefulNotificationAcknowledge(input: StatefulNotificationAcknowledgeInput!): StatefulNotificationAcknowledgePayload!
 }
 
 
@@ -12,11 +12,11 @@ type StatefulNotification {
 	acknowledgeAt: Timestamp
 }
 
-input StatefullNotificationAcknowledgeInput {
+input StatefulNotificationAcknowledgeInput {
 	notificationId: ID!
 }
 
-type StatefullNotificationAcknowledgePayload {
+type StatefulNotificationAcknowledgePayload {
 	notification: StatefulNotification!
 }
 
@@ -25,7 +25,7 @@ scalar Timestamp
 
 extend type User @key(fields: "id") {
 	id: ID! @external
-	statefullNotifications: [StatefulNotification!]!
+	statefulNotifications: [StatefulNotification!]!
 }
 
 extend schema @link(
