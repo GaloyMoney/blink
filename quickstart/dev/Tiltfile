@@ -8,6 +8,7 @@ DASHBOARD_TEST_LABEL = "dashboard"
 PAY_TEST_LABEL = "pay"
 ADMIN_PANEL_TEST_LABEL = "admin-panel"
 MAP_TEST_LABEL = "map"
+VOUCHER_TEST_LABEL = "voucher"
 MIGRATE_MONGO_TEST_LABEL = "mongodb-migrate"
 
 TEST_RESOURCES = {
@@ -17,6 +18,7 @@ TEST_RESOURCES = {
    PAY_TEST_LABEL: "test-pay",
    ADMIN_PANEL_TEST_LABEL: "test-admin-panel",
    MAP_TEST_LABEL: "test-map",
+   VOUCHER_TEST_LABEL: "test-voucher",
    MIGRATE_MONGO_TEST_LABEL: "test-mongodb-migrate",
 }
 
@@ -214,6 +216,60 @@ local_resource(
     ],
 )
 
+voucher_target = "//apps/voucher:dev"
+if is_ci:
+  voucher_target = '//apps/voucher:voucher'
+voucher_env = {
+    "PORT": "3006",
+    "NEXTAUTH_URL":"http://localhost:3006",
+    "NEXTAUTH_SECRET":"secret"
+}
+local_resource(
+    "voucher",
+    labels = ["apps"],
+    cmd = "buck2 build {}".format(voucher_target),
+    serve_cmd = ". .envs/voucher.env && buck2 run {}".format(voucher_target),
+    env = voucher_env,
+    serve_env = voucher_env,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3006,
+        ),
+    ),
+    deps = _buck2_dep_inputs(voucher_target),
+    allow_parallel = True,
+    resource_deps = [
+        "api",
+        "apollo-router",
+        "hydra-voucher",
+        "setup-voucher"
+    ],
+    links = [
+        link("http://localhost:3006", "voucher"),
+    ],
+)
+
+local_resource(
+  name='hydra-voucher',
+  labels = ['apps'],
+  cmd=[
+    'buck2',
+    'run',
+    '//dev:setup-hydra-client',
+    '--',
+    'voucher',
+    'authorization_code,refresh_token',
+    'http://localhost:3006/api/auth/callback/blink',
+  ],
+  allow_parallel = True,
+  resource_deps = [
+    "hydra",
+    "api",
+  ]
+)
+
 local_resource(
   name='hydra-dashboard',
   labels = ['apps'],
@@ -303,6 +359,21 @@ local_resource(
     "admin-panel",
   ],
 )
+
+voucher_test_target = "//apps/voucher:test-integration"
+local_resource(
+  "test-voucher",
+  labels = ["test"],
+  auto_init = is_ci and VOUCHER_TEST_LABEL in cfg.get("test", []),
+  cmd = "buck2 test {}".format(voucher_test_target),
+  resource_deps = [
+    "voucher",
+    "consent",
+    "init-test-user",
+    "fund-user",
+  ],
+)
+
 
 map_test_target = "//apps/map:test-integration"
 local_resource(
@@ -578,6 +649,14 @@ local_resource(
     "lnd-outside-1",
     "lnd-outside-2",
   ]
+)
+
+local_resource(
+    name="setup-voucher",
+    cmd="buck2 run //apps/voucher:migrate-voucher-pg && buck2 run //dev:setup-voucher-escrow",
+    allow_parallel=False,
+    auto_init=run_apps,
+    resource_deps=["voucher-pg", "api-keys"]
 )
 
 api_keys_target = "//core/api-keys:api-keys"
