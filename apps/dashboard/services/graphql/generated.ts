@@ -1730,7 +1730,7 @@ export type SettlementViaOnChain = {
 
 export type StatefulNotification = {
   readonly __typename: 'StatefulNotification';
-  readonly acknowledgeAt?: Maybe<Scalars['Timestamp']['output']>;
+  readonly acknowledgedAt?: Maybe<Scalars['Timestamp']['output']>;
   readonly body: Scalars['String']['output'];
   readonly createdAt: Scalars['Timestamp']['output'];
   readonly deepLink?: Maybe<Scalars['String']['output']>;
@@ -4671,7 +4671,7 @@ export interface SignedDisplayMajorAmountScalarConfig extends GraphQLScalarTypeC
 }
 
 export type StatefulNotificationResolvers<ContextType = any, ParentType extends ResolversParentTypes['StatefulNotification'] = ResolversParentTypes['StatefulNotification']> = {
-  acknowledgeAt?: Resolver<Maybe<ResolversTypes['Timestamp']>, ParentType, ContextType>;
+  acknowledgedAt?: Resolver<Maybe<ResolversTypes['Timestamp']>, ParentType, ContextType>;
   body?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
   deepLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
