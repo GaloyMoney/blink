@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT a.id, e.sequence, e.event,\n                      a.created_at AS entity_created_at, e.recorded_at AS event_recorded_at\n            FROM stateful_notifications a\n            JOIN stateful_notification_events e ON a.id = e.id\n            WHERE a.id = $1\n            ORDER BY e.sequence",
+  "query": "SELECT a.id, e.sequence, e.event,\n                      a.created_at AS entity_created_at, e.recorded_at AS event_recorded_at\n            FROM stateful_notifications a\n            JOIN stateful_notification_events e ON a.id = e.id\n            WHERE a.galoy_user_id = $1 AND a.id = $2\n            ORDER BY e.sequence",
   "describe": {
     "columns": [
       {
@@ -31,6 +31,7 @@
     ],
     "parameters": {
       "Left": [
+        "Text",
         "Uuid"
       ]
     },
@@ -42,5 +43,5 @@
       false
     ]
   },
-  "hash": "d72215870b5cf9fca8fe7bb86bb12b79a93c586512668f0499de2a82d2a138a0"
+  "hash": "6f4559f529a6e2aa161d77246c54efcd54103ade3ef23cb60ca7ce719cb1ab36"
 }

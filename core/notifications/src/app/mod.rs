@@ -288,12 +288,16 @@ impl NotificationsApp {
         // Ok(in_app_notifications)
     }
 
-    #[instrument(name = "app.mark_notification_as_read", skip(self), err)]
-    pub async fn mark_notification_as_read(
+    #[instrument(name = "app.acknowledge_notification", skip(self), err)]
+    pub async fn acknowledge_notification(
         &self,
+        user_id: GaloyUserId,
         notification_id: StatefulNotificationId,
     ) -> Result<StatefulNotification, ApplicationError> {
-        let notification = self.history.notification_read(notification_id).await?;
+        let notification = self
+            .history
+            .acknowledge_notification_for_user(user_id, notification_id)
+            .await?;
         Ok(notification)
     }
 

@@ -30,12 +30,11 @@ struct User {
 
 #[ComplexObject]
 impl User {
-    async fn in_app_notifications(
+    async fn statefull_notifications(
         &self,
-        ctx: &Context<'_>,
-        only_unread: Option<bool>,
+        _ctx: &Context<'_>,
     ) -> async_graphql::Result<Vec<StatefulNotification>> {
-        let app = ctx.data_unchecked::<NotificationsApp>();
+        // let app = ctx.data_unchecked::<NotificationsApp>();
         unimplemented!();
         // let notifications = app
         //     .in_app_notifications_for_user(
@@ -52,12 +51,12 @@ impl User {
 }
 
 #[derive(SimpleObject)]
-pub struct UserInAppNotificationMarkAsReadPayload {
+pub struct StatefullNotificationAcknowledgePayload {
     notification: StatefulNotification,
 }
 
 #[derive(InputObject)]
-struct UserInAppNotificationMarkAsReadInput {
+struct StatefullNotificationAcknowledgeInput {
     notification_id: ID,
 }
 
@@ -65,11 +64,11 @@ pub struct Mutation;
 
 #[Object]
 impl Mutation {
-    async fn user_in_app_notification_mark_as_read(
+    async fn statefull_notification_acknowledge(
         &self,
         ctx: &Context<'_>,
-        input: UserInAppNotificationMarkAsReadInput,
-    ) -> async_graphql::Result<UserInAppNotificationMarkAsReadPayload> {
+        input: StatefullNotificationAcknowledgeInput,
+    ) -> async_graphql::Result<StatefullNotificationAcknowledgePayload> {
         let subject = ctx.data::<AuthSubject>()?;
 
         if !subject.can_write {
@@ -77,9 +76,11 @@ impl Mutation {
         }
         let app = ctx.data_unchecked::<NotificationsApp>();
         let notification_id = StatefulNotificationId::from_str(input.notification_id.0.as_str())?;
-        let notification = app.mark_notification_as_read(notification_id).await?;
+        let notification = app
+            .acknowledge_notification(GaloyUserId::from(subject.id.clone()), notification_id)
+            .await?;
 
-        Ok(UserInAppNotificationMarkAsReadPayload {
+        Ok(StatefullNotificationAcknowledgePayload {
             notification: StatefulNotification::from(notification),
         })
     }

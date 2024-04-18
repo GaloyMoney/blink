@@ -16,8 +16,8 @@ pub enum StatefulNotificationEvent {
         locale: GaloyLocale,
         deep_link: Option<DeepLink>,
     },
-    Read {
-        read_at: DateTime<Utc>,
+    Acknowledged {
+        acknowledged_at: DateTime<Utc>,
     },
 }
 
@@ -46,15 +46,20 @@ pub struct StatefulNotification {
 }
 
 impl StatefulNotification {
-    pub fn read(&mut self) {
-        self.events.push(StatefulNotificationEvent::Read {
-            read_at: Utc::now(),
-        });
+    pub(super) fn acknowledge(&mut self) {
+        if self.acknowledged_at().is_none() {
+            self.events.push(StatefulNotificationEvent::Acknowledged {
+                acknowledged_at: Utc::now(),
+            });
+        }
     }
 
-    pub fn read_at(&self) -> Option<DateTime<Utc>> {
+    pub fn acknowledged_at(&self) -> Option<DateTime<Utc>> {
         self.events.iter().find_map(|event| {
-            if let StatefulNotificationEvent::Read { read_at } = event {
+            if let StatefulNotificationEvent::Acknowledged {
+                acknowledged_at: read_at,
+            } = event
+            {
                 Some(*read_at)
             } else {
                 None

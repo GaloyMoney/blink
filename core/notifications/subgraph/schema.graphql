@@ -1,32 +1,31 @@
-type InAppNotification {
+type Mutation {
+	statefullNotificationAcknowledge(input: StatefullNotificationAcknowledgeInput!): StatefullNotificationAcknowledgePayload!
+}
+
+
+type StatefulNotification {
 	id: ID!
 	title: String!
 	body: String!
 	deepLink: String
 	createdAt: Timestamp!
-	readAt: Timestamp
+	acknowledgeAt: Timestamp
 }
 
-
-type Mutation {
-	userInAppNotificationMarkAsRead(input: UserInAppNotificationMarkAsReadInput!): UserInAppNotificationMarkAsReadPayload!
+input StatefullNotificationAcknowledgeInput {
+	notificationId: ID!
 }
 
+type StatefullNotificationAcknowledgePayload {
+	notification: StatefulNotification!
+}
 
 
 scalar Timestamp
 
 extend type User @key(fields: "id") {
 	id: ID! @external
-	inAppNotifications(onlyUnread: Boolean): [InAppNotification!]!
-}
-
-input UserInAppNotificationMarkAsReadInput {
-	notificationId: ID!
-}
-
-type UserInAppNotificationMarkAsReadPayload {
-	notification: InAppNotification!
+	statefullNotifications: [StatefulNotification!]!
 }
 
 extend schema @link(

@@ -83,12 +83,13 @@ impl NotificationHistory {
         Ok(())
     }
 
-    pub async fn notification_read(
+    pub async fn acknowledge_notification_for_user(
         &self,
+        user_id: GaloyUserId,
         notification_id: StatefulNotificationId,
     ) -> Result<StatefulNotification, NotificationHistoryError> {
-        let mut notification = self.repo.find_by_id(notification_id).await?;
-        notification.read();
+        let mut notification = self.repo.find_by_id(user_id, notification_id).await?;
+        notification.acknowledge();
         self.repo.update(&mut notification).await?;
 
         Ok(notification)

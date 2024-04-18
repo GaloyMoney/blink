@@ -42,5 +42,5 @@ pub(super) struct StatefulNotification {
     pub body: String,
     pub deep_link: Option<String>,
     pub created_at: Timestamp,
-    pub read_at: Option<Timestamp>,
+    pub acknowledge_at: Option<Timestamp>,
 }

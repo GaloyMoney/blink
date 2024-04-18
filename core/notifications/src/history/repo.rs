@@ -71,6 +71,7 @@ impl PersistentNotifications {
 
     pub async fn find_by_id(
         &self,
+        user_id: GaloyUserId,
         id: StatefulNotificationId,
     ) -> Result<StatefulNotification, NotificationHistoryError> {
         let rows = sqlx::query_as!(
@@ -79,8 +80,9 @@ impl PersistentNotifications {
                       a.created_at AS entity_created_at, e.recorded_at AS event_recorded_at
             FROM stateful_notifications a
             JOIN stateful_notification_events e ON a.id = e.id
-            WHERE a.id = $1
+            WHERE a.galoy_user_id = $1 AND a.id = $2
             ORDER BY e.sequence"#,
+            user_id.as_ref(),
             id as StatefulNotificationId,
         )
         .fetch_all(&self.pool)
