@@ -12,6 +12,7 @@ load(
   "yaml_check",
   "madge_check",
   "jest_test",
+  "migrate_mongo",
 )
 load("@toolchains//rover:macros.bzl", "sdl", "diff_check", "dev_update_file")
 
@@ -225,6 +226,20 @@ test_suite(
         ":dev-check-type",
         ":dev-check-circular-dependencies",
     ],
+)
+
+migrate_mongo(
+    name = "migrate-mongo-up",
+    subcmd = "up",
+    srcs = [":src"],
+    config_file = "src/migrations/migrate-mongo-config.js",
+)
+
+migrate_mongo(
+    name = "migrate-mongo-status",
+    subcmd = "status",
+    srcs = [":src"],
+    config_file = "src/migrations/migrate-mongo-config.js",
 )
 
 dev_pnpm_task_binary(
