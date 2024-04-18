@@ -9,7 +9,7 @@ import { useGetPaginatedTransactionsQuery, Transaction } from "@/lib/graphql/gen
 import LoadingComponent from "@/components/loading"
 import { formatCreateAt, formatDate, formatTime } from "@/utils/date-util"
 import { sendDataToPosCompanion } from "@/app/print-companion-service"
-import useCheckInstalledApps from "@/hooks/use-check-Installed-apps"
+import useCheckInstalledApps from "@/hooks/use-check-installed-apps"
 
 gql`
   query GetPaginatedTransactions($first: Int, $after: String, $before: String) {

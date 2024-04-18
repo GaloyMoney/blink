@@ -16,7 +16,7 @@ import Receipt from "./receipt"
 
 import { extractSearchParams } from "@/utils/utils"
 import { useInvoiceContext } from "@/context/invoice-context"
-import useCheckInstalledApps from "@/hooks/use-check-Installed-apps"
+import useCheckInstalledApps from "@/hooks/use-check-installed-apps"
 
 interface Props {
   paymentRequest: string
