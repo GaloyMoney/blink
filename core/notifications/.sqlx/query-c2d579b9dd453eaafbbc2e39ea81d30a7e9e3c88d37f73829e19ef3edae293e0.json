@@ -1,0 +1,48 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH anchor AS (\n                 SELECT created_at FROM stateful_notifications WHERE id = $2 LIMIT 1\n               )\n            SELECT a.id, e.sequence, e.event,\n                      a.created_at AS entity_created_at, e.recorded_at AS event_recorded_at\n            FROM stateful_notifications a\n            JOIN stateful_notification_events e ON a.id = e.id\n            WHERE a.galoy_user_id = $1 AND (\n                    $2 IS NOT NULL AND a.created_at < (SELECT created_at FROM anchor)\n                    OR $2 IS NULL)\n            ORDER BY a.created_at DESC, a.id, e.sequence\n            LIMIT $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "sequence",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "event",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 3,
+        "name": "entity_created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "event_recorded_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "c2d579b9dd453eaafbbc2e39ea81d30a7e9e3c88d37f73829e19ef3edae293e0"
+}

@@ -1,32 +1,82 @@
-type InAppNotification {
+type Mutation {
+	statefulNotificationAcknowledge(input: StatefulNotificationAcknowledgeInput!): StatefulNotificationAcknowledgePayload!
+}
+
+"""
+Information about pagination in a connection
+"""
+type PageInfo @shareable {
+	"""
+	When paginating backwards, are there more items?
+	"""
+	hasPreviousPage: Boolean!
+	"""
+	When paginating forwards, are there more items?
+	"""
+	hasNextPage: Boolean!
+	"""
+	When paginating backwards, the cursor to continue.
+	"""
+	startCursor: String
+	"""
+	When paginating forwards, the cursor to continue.
+	"""
+	endCursor: String
+}
+
+
+type StatefulNotification {
 	id: ID!
 	title: String!
 	body: String!
 	deepLink: String
 	createdAt: Timestamp!
-	readAt: Timestamp
+	acknowledgedAt: Timestamp
 }
 
-
-type Mutation {
-	userInAppNotificationMarkAsRead(input: UserInAppNotificationMarkAsReadInput!): UserInAppNotificationMarkAsReadPayload!
+input StatefulNotificationAcknowledgeInput {
+	notificationId: ID!
 }
 
+type StatefulNotificationAcknowledgePayload {
+	notification: StatefulNotification!
+}
+
+type StatefulNotificationConnection @shareable {
+	"""
+	Information to aid in pagination.
+	"""
+	pageInfo: PageInfo!
+	"""
+	A list of edges.
+	"""
+	edges: [StatefulNotificationEdge!]!
+	"""
+	A list of nodes.
+	"""
+	nodes: [StatefulNotification!]!
+}
+
+"""
+An edge in a connection.
+"""
+type StatefulNotificationEdge @shareable {
+	"""
+	The item at the end of the edge
+	"""
+	node: StatefulNotification!
+	"""
+	A cursor for use in pagination
+	"""
+	cursor: String!
+}
 
 
 scalar Timestamp
 
 extend type User @key(fields: "id") {
 	id: ID! @external
-	inAppNotifications(onlyUnread: Boolean): [InAppNotification!]!
-}
-
-input UserInAppNotificationMarkAsReadInput {
-	notificationId: ID!
-}
-
-type UserInAppNotificationMarkAsReadPayload {
-	notification: InAppNotification!
+	statefulNotifications(first: Int!, after: String): StatefulNotificationConnection!
 }
 
 extend schema @link(
