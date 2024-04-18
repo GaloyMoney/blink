@@ -76,7 +76,7 @@ plan:
     - name: pipeline-tasks
     - name: nix-host
     - name: #@ app_src_resource_name(app)
-      path: #@ data.values.gh_repository + "-" + app
+      path: #@ data.values.gh_repository
     params: #@ params
     run:
       path: pipeline-tasks/ci/apps/tasks/run-on-nix-host.sh
