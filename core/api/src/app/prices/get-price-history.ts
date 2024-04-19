@@ -1,7 +1,9 @@
+import { SECS_PER_10_MINS } from "@/config"
+
 import { CacheKeys } from "@/domain/cache"
-import { toSeconds } from "@/domain/primitives"
-import { PriceService } from "@/services/price"
 import { PriceHistoryNotAvailableError } from "@/domain/price"
+
+import { PriceService } from "@/services/price"
 import { LocalCacheService } from "@/services/cache/local-cache"
 
 export const getPriceHistory = async ({
@@ -25,7 +27,7 @@ export const getPriceHistory = async ({
     await localCache.set<Tick[]>({
       key: cacheKey,
       value: priceHistory,
-      ttlSecs: toSeconds(300),
+      ttlSecs: SECS_PER_10_MINS,
     })
     return priceHistory
   }
