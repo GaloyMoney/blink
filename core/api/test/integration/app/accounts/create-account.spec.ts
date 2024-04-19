@@ -1,9 +1,15 @@
 import { Accounts } from "@/app"
 
 import { AccountLevel, AccountStatus } from "@/domain/accounts"
+import {
+  CouldNotFindCurrencyFromCountryError,
+  UnknownPriceServiceError,
+} from "@/domain/price"
+import * as CurrencyFromCountryImpl from "@/domain/price"
 import { WalletCurrency } from "@/domain/shared"
 
 import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
+import * as PriceImpl from "@/services/price"
 
 import { randomPhone, randomUserId } from "test/helpers"
 
@@ -114,6 +120,118 @@ describe("createAccountWithPhoneIdentifier", () => {
         throw new Error(`${WalletCurrency.Usd} wallet not found`)
       }
       expect(account.defaultWalletId).toEqual(usdWallet.id)
+      expect(account.displayCurrency).toEqual("USD")
+    })
+
+    it("sets displayCurrency based on country code", async () => {
+      const initialWallets = [WalletCurrency.Btc]
+
+      let account: Account | RepositoryError =
+        await Accounts.createAccountWithPhoneIdentifier({
+          newAccountInfo: { phone: randomPhone(), kratosUserId: randomUserId() },
+          config: {
+            initialLevel: AccountLevel.One,
+            initialStatus: AccountStatus.Active,
+            initialWallets,
+            maxDeletions: 2,
+          },
+          phoneMetadata: {
+            carrier: {
+              error_code: null,
+              mobile_country_code: null,
+              mobile_network_code: null,
+              name: null,
+              type: null,
+            },
+            countryCode: "AD", // Andorra
+          },
+        })
+      if (account instanceof Error) throw account
+
+      // Check expected default display currency was set
+      account = await AccountsRepository().findById(account.id)
+      if (account instanceof Error) throw account
+      expect(account.displayCurrency).toEqual("EUR")
+    })
+
+    it("sets default display currency if price service errors", async () => {
+      // Setup mocks
+      const { PriceService: PriceServiceOrig } = jest.requireActual("@/services/price")
+      const priceServiceSpy = jest.spyOn(PriceImpl, "PriceService").mockReturnValue({
+        ...PriceServiceOrig(),
+        listCurrencies: () => new UnknownPriceServiceError(),
+      })
+
+      const initialWallets = [WalletCurrency.Btc]
+
+      let account: Account | RepositoryError =
+        await Accounts.createAccountWithPhoneIdentifier({
+          newAccountInfo: { phone: randomPhone(), kratosUserId: randomUserId() },
+          config: {
+            initialLevel: AccountLevel.One,
+            initialStatus: AccountStatus.Active,
+            initialWallets,
+            maxDeletions: 2,
+          },
+          phoneMetadata: {
+            carrier: {
+              error_code: null,
+              mobile_country_code: null,
+              mobile_network_code: null,
+              name: null,
+              type: null,
+            },
+            countryCode: "AD", // Andorra
+          },
+        })
+      if (account instanceof Error) throw account
+
+      // Check expected default display currency was set
+      account = await AccountsRepository().findById(account.id)
+      if (account instanceof Error) throw account
+      expect(account.displayCurrency).toEqual("USD")
+
+      // Restore system state
+      priceServiceSpy.mockRestore()
+    })
+
+    it("sets default display currency if currency selection errors", async () => {
+      // Setup mocks
+      const currencyFromCountrySpy = jest
+        .spyOn(CurrencyFromCountryImpl, "displayCurrencyFromCountryCode")
+        .mockReturnValue(new CouldNotFindCurrencyFromCountryError())
+
+      const initialWallets = [WalletCurrency.Btc]
+
+      let account: Account | RepositoryError =
+        await Accounts.createAccountWithPhoneIdentifier({
+          newAccountInfo: { phone: randomPhone(), kratosUserId: randomUserId() },
+          config: {
+            initialLevel: AccountLevel.One,
+            initialStatus: AccountStatus.Active,
+            initialWallets,
+            maxDeletions: 2,
+          },
+          phoneMetadata: {
+            carrier: {
+              error_code: null,
+              mobile_country_code: null,
+              mobile_network_code: null,
+              name: null,
+              type: null,
+            },
+            countryCode: "AD", // Andorra
+          },
+        })
+      if (account instanceof Error) throw account
+
+      // Check expected default display currency was set
+      account = await AccountsRepository().findById(account.id)
+      if (account instanceof Error) throw account
+      expect(account.displayCurrency).toEqual("USD")
+
+      // Restore system state
+      currencyFromCountrySpy.mockRestore()
     })
   })
 })
