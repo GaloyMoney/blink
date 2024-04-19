@@ -131,14 +131,8 @@ export const PriceService = (): IPriceService => {
           name: string
           flag: string
           fractionDigits: number
-        }) =>
-          ({
-            code: c.code,
-            symbol: c.symbol,
-            name: c.name,
-            flag: c.flag,
-            fractionDigits: c.fractionDigits,
-          }) as PriceCurrency,
+          countryCodes: string[]
+        }) => c as PriceCurrency,
       )
     } catch (err) {
       return handlePriceErrors(err)
