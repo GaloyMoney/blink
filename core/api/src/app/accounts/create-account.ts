@@ -1,22 +1,26 @@
 import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/config"
 
-import { WalletType } from "@/domain/wallets"
 import { AccountLevel } from "@/domain/accounts"
+import { WalletType } from "@/domain/wallets"
+import { displayCurrencyFromCountryCode } from "@/domain/price"
 
 import {
   AccountsRepository,
   UsersRepository,
   WalletsRepository,
 } from "@/services/mongoose"
+import { PriceService } from "@/services/price"
 
 const initializeCreatedAccount = async ({
   account,
   config,
   phone,
+  countryCode,
 }: {
   account: Account
   config: AccountsConfig
   phone?: PhoneNumber
+  countryCode?: string
 }): Promise<Account | ApplicationError> => {
   const walletsEnabledConfig = config.initialWallets
 
@@ -50,6 +54,18 @@ const initializeCreatedAccount = async ({
 
   account.statusHistory = [{ status: config.initialStatus, comment: "Initial Status" }]
   account.level = config.initialLevel
+
+  if (countryCode) {
+    const currencies = await PriceService().listCurrencies()
+    if (!(currencies instanceof Error)) {
+      const displayCurrency = displayCurrencyFromCountryCode({
+        countryCode,
+        currencies,
+      })
+      account.displayCurrency =
+        displayCurrency instanceof Error ? account.displayCurrency : displayCurrency
+    }
+  }
 
   const updatedAccount = await AccountsRepository().update(account)
   if (updatedAccount instanceof Error) return updatedAccount
@@ -98,6 +114,7 @@ export const createAccountWithPhoneIdentifier = async ({
     account: accountNew,
     config,
     phone,
+    countryCode: phoneMetadata?.countryCode,
   })
   if (account instanceof Error) return account
 
