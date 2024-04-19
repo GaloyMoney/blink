@@ -1,15 +1,15 @@
 import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/config"
 
-import { displayCurrencyFromCountryCode } from "@/app/prices"
-
-import { WalletType } from "@/domain/wallets"
 import { AccountLevel } from "@/domain/accounts"
+import { WalletType } from "@/domain/wallets"
+import { displayCurrencyFromCountryCode } from "@/domain/price"
 
 import {
   AccountsRepository,
   UsersRepository,
   WalletsRepository,
 } from "@/services/mongoose"
+import { PriceService } from "@/services/price"
 
 const initializeCreatedAccount = async ({
   account,
@@ -56,9 +56,15 @@ const initializeCreatedAccount = async ({
   account.level = config.initialLevel
 
   if (countryCode) {
-    const displayCurrency = await displayCurrencyFromCountryCode(countryCode)
-    if (displayCurrency instanceof Error) return displayCurrency
-    account.displayCurrency = displayCurrency || account.displayCurrency
+    const currencies = await PriceService().listCurrencies()
+    if (currencies instanceof Error) return currencies
+
+    const displayCurrency = await displayCurrencyFromCountryCode({
+      countryCode,
+      currencies,
+    })
+    account.displayCurrency =
+      displayCurrency instanceof Error ? account.displayCurrency : displayCurrency
   }
 
   const updatedAccount = await AccountsRepository().update(account)

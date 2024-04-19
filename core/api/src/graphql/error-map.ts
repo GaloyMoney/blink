@@ -603,6 +603,8 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "PriceError":
     case "PriceServiceError":
     case "PriceNotAvailableError":
+    case "CouldNotFindPriceCurrencyError":
+    case "CouldNotFindCurrencyFromCountryError":
     case "DealerPriceNotAvailableError":
     case "PriceHistoryNotAvailableError":
     case "PriceCurrenciesNotAvailableError":
