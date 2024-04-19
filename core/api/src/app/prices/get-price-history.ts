@@ -18,7 +18,7 @@ export const getPriceHistory = async ({
   if (!(cachedPriceHistory instanceof Error)) return cachedPriceHistory
 
   const priceHistory = await PriceService().listHistory({ range, interval })
-  if (priceHistory instanceof Error) return priceHistory
+  if (priceHistory instanceof UnknownPriceServiceError) return priceHistory
 
   if (priceHistory.length > 0) {
     // keep price history in cache for 5 mins
