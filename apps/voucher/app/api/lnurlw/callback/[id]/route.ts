@@ -61,7 +61,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     //   cents: Number(withdrawLink.voucherAmount),
     // })
 
-    // if (NEXT_PUBLIC_GALOY_URL !== "api.staging.galoy.io") {
+    // if (NEXT_PUBLIC_CORE_URL !== "api.staging.galoy.io") {
     //   const amount = decode(pr).sections.find(
     //     (section: any) => section.name === "amount",
     //   )?.value

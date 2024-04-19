@@ -12,7 +12,7 @@ export const apollo = (token: string) =>
         headers: {
           ["Oauth2-Token"]: token,
         },
-        uri: env.NEXT_PUBLIC_GALOY_URL,
+        uri: env.NEXT_PUBLIC_CORE_URL,
         fetchOptions: { cache: "no-store" },
         fetch: (uri, options) => {
           const headersWithTrace = options?.headers || {}

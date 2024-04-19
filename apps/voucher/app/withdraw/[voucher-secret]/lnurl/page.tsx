@@ -16,7 +16,7 @@ import FundsPaid from "@/components/funds-paid"
 import Heading from "@/components/heading"
 import Bold from "@/components/bold"
 import LinkDetails from "@/components/link-details"
-const { NEXT_PUBLIC_LOCAL_URL } = env
+const { NEXT_PUBLIC_VOUCHER_URL } = env
 
 gql`
   query GetWithdrawLink($voucherSecret: String) {
@@ -63,10 +63,10 @@ export default function Page({ params: { "voucher-secret": voucherSecret } }: Pr
   }
 
   const lnurl = encodeURLToLNURL(
-    `${NEXT_PUBLIC_LOCAL_URL}/api/lnurlw/${WithdrawLink?.uniqueHash}`,
+    `${NEXT_PUBLIC_VOUCHER_URL}/api/lnurlw/${WithdrawLink?.uniqueHash}`,
   )
 
-  const url = `${NEXT_PUBLIC_LOCAL_URL}/withdraw/${WithdrawLink.voucherSecret}?lightning=${lnurl}`
+  const url = `${NEXT_PUBLIC_VOUCHER_URL}/withdraw/${WithdrawLink.voucherSecret}?lightning=${lnurl}`
   const copyToClipboard = () => {
     navigator.clipboard.writeText(lnurl)
   }

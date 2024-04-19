@@ -20,7 +20,6 @@ interface Props {
   currency: Currency
   setCurrency: (currency: Currency) => void
   setCurrentPage: (accountType: string) => void
-  usdToSats: (accountType: number) => number
   commissionPercentage: string
   setConfirmModal: (currency: boolean) => void
   amountInDollars: number
