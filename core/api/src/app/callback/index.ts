@@ -54,3 +54,11 @@ export const deleteEndpoint = async ({
   if (success instanceof Error) return success
   return success
 }
+
+export const getPortal = async (accountId: AccountId) => {
+  const callbackService = CallbackService(getCallbackServiceConfig())
+  const res = await callbackService.getPortal(accountId)
+
+  if (res instanceof Error) return res
+  return res
+}

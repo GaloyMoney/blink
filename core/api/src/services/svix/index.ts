@@ -39,7 +39,7 @@ export const CallbackService = (config: SvixConfig) => {
     }
     return {
       sendMessage: nullFn,
-      getWebsocketPortal: nullFn,
+      getPortal: nullFn,
       addEndpoint: nullFn,
       listEndpoints: nullFn,
       deleteEndpoint: nullFn,
@@ -113,7 +113,7 @@ export const CallbackService = (config: SvixConfig) => {
   }
 
   // only work for hosted svix
-  const getWebsocketPortal = async (accountId: AccountId) => {
+  const getPortal = async (accountId: AccountId) => {
     const accountCallbackId = getAccountCallbackId(accountId)
 
     const res = await createApplication(accountCallbackId)
@@ -182,7 +182,7 @@ export const CallbackService = (config: SvixConfig) => {
 
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.callback",
-    fns: { sendMessage, getWebsocketPortal, addEndpoint, listEndpoints, deleteEndpoint },
+    fns: { sendMessage, getPortal, addEndpoint, listEndpoints, deleteEndpoint },
   })
 }
 

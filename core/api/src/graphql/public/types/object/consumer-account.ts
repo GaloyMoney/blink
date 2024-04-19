@@ -32,7 +32,7 @@ import WalletId from "@/graphql/shared/types/scalar/wallet-id"
 import RealtimePrice from "@/graphql/public/types/object/realtime-price"
 import DisplayCurrency from "@/graphql/shared/types/scalar/display-currency"
 
-import { listEndpoints } from "@/app/callback"
+import { getPortal, listEndpoints } from "@/app/callback"
 import { IInvoiceConnection } from "@/graphql/shared/types/abstract/invoice"
 
 const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
@@ -50,6 +50,13 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
       type: GT.NonNullList(CallbackEndpoint),
       resolve: async (source, args, { domainAccount }) => {
         return listEndpoints(domainAccount.id)
+      },
+    },
+
+    callbackPortalUrl: {
+      type: GT.NonNull(GT.String),
+      resolve: async (source, args, { domainAccount }) => {
+        return getPortal(domainAccount.id)
       },
     },
 

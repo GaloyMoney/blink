@@ -25,6 +25,7 @@ interface Account
   @join__type(graph: PUBLIC)
 {
   callbackEndpoints: [CallbackEndpoint!]!
+  callbackPortalUrl: String!
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWallet: PublicWallet!
   defaultWalletId: WalletId! @deprecated(reason: "Shifting property to 'defaultWallet.id'")
@@ -379,6 +380,7 @@ type ConsumerAccount implements Account
   @join__type(graph: PUBLIC)
 {
   callbackEndpoints: [CallbackEndpoint!]!
+  callbackPortalUrl: String!
 
   """
   return CSV stream, base64 encoded, of the list of transactions in the wallet
