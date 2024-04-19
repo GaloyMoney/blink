@@ -67,6 +67,7 @@ describe("WalletInvoiceReceiver", () => {
     cltvDelta: null,
     amount: null,
     paymentAmount: null,
+    createdAt: new Date(),
   }
 
   describe("for btc invoice", () => {
