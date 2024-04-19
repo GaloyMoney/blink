@@ -57,14 +57,14 @@ const initializeCreatedAccount = async ({
 
   if (countryCode) {
     const currencies = await PriceService().listCurrencies()
-    if (currencies instanceof Error) return currencies
-
-    const displayCurrency = await displayCurrencyFromCountryCode({
-      countryCode,
-      currencies,
-    })
-    account.displayCurrency =
-      displayCurrency instanceof Error ? account.displayCurrency : displayCurrency
+    if (!(currencies instanceof Error)) {
+      const displayCurrency = displayCurrencyFromCountryCode({
+        countryCode,
+        currencies,
+      })
+      account.displayCurrency =
+        displayCurrency instanceof Error ? account.displayCurrency : displayCurrency
+    }
   }
 
   const updatedAccount = await AccountsRepository().update(account)
