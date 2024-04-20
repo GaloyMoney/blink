@@ -2,7 +2,7 @@ import { ApplicationIn, Svix } from "svix"
 
 import { SvixError, UnknownSvixError } from "./errors"
 
-import { InvalidUrlError } from "@/domain/callback/errors"
+import { CallbackError, InvalidUrlError } from "@/domain/callback/errors"
 import { parseErrorMessageFromUnknown } from "@/domain/shared"
 
 import {
@@ -31,28 +31,7 @@ function prefixObjectKeys(
   }, {})
 }
 
-interface CallbackService {
-  sendMessage: (args: {
-    eventType: string
-    accountId: AccountId
-    walletId: WalletId
-    payload: Record<string, JSONValue>
-  }) => Promise<ApplicationError | true>
-  getPortalUrl: (accountId: AccountId) => Promise<ApplicationError | string>
-  addEndpoint: (args: {
-    accountId: AccountId
-    url: string
-  }) => Promise<ApplicationError | string>
-  listEndpoints: (
-    accountId: AccountId,
-  ) => Promise<ApplicationError | { id: string; url: string }[]>
-  deleteEndpoint: (args: {
-    accountId: AccountId
-    endpointId: string
-  }) => Promise<ApplicationError | true>
-}
-
-export const CallbackService = (config: SvixConfig): CallbackService => {
+export const CallbackService = (config: SvixConfig): ICallbackService => {
   if (!config.secret) {
     const nullFn = async () => {
       baseLogger.warn("CallbackService not configured")
@@ -101,7 +80,7 @@ export const CallbackService = (config: SvixConfig): CallbackService => {
     accountId: AccountId
     walletId: WalletId
     payload: Record<string, JSONValue>
-  }): Promise<ApplicationError | true> => {
+  }): Promise<CallbackError | true> => {
     const accountCallbackId = getAccountCallbackId(accountId)
     addAttributesToCurrentSpan({ "callback.application": accountCallbackId })
     try {
