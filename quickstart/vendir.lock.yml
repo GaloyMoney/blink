@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(voucher): env variables (#4311)...'
-      sha: 54fdd86b13289f758702fdb860fcd07df4096a42
+      commitTitle: 'chore: removing subscriptions-transport-ws (#4317)...'
+      sha: 8147f5d1fd7b4dd0147dd58924103a28bd6c5c97
       tags:
-      - 0.20.156-3-g54fdd86b1
+      - 0.20.157-4-g8147f5d1f
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(voucher): env variables (#4311)...'
-      sha: 54fdd86b13289f758702fdb860fcd07df4096a42
+      commitTitle: 'chore: removing subscriptions-transport-ws (#4317)...'
+      sha: 8147f5d1fd7b4dd0147dd58924103a28bd6c5c97
       tags:
-      - 0.20.156-3-g54fdd86b1
+      - 0.20.157-4-g8147f5d1f
     path: schemas
   - git:
-      commitTitle: 'refactor(voucher): env variables (#4311)...'
-      sha: 54fdd86b13289f758702fdb860fcd07df4096a42
+      commitTitle: 'chore: removing subscriptions-transport-ws (#4317)...'
+      sha: 8147f5d1fd7b4dd0147dd58924103a28bd6c5c97
       tags:
-      - 0.20.157
+      - 0.20.157-4-g8147f5d1f
     path: gql
   path: graphql
 kind: LockConfig
