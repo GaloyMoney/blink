@@ -35,6 +35,7 @@ describe("Prices", () => {
                 name: "US Dollar",
                 flag: "🇺🇸",
                 fractionDigits: 2,
+                countryCodes: ["US"],
               },
             ]),
         }))
