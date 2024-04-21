@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: removing subscriptions-transport-ws (#4317)...'
-      sha: 8147f5d1fd7b4dd0147dd58924103a28bd6c5c97
+      commitTitle: 'feat: exposing portal for webhook (#4318)'
+      sha: 76218766fee63932075a73c1dfa908f379e2d499
       tags:
-      - 0.20.157-4-g8147f5d1f
+      - 0.20.158-1-g76218766f
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: removing subscriptions-transport-ws (#4317)...'
-      sha: 8147f5d1fd7b4dd0147dd58924103a28bd6c5c97
+      commitTitle: 'feat: exposing portal for webhook (#4318)'
+      sha: 76218766fee63932075a73c1dfa908f379e2d499
       tags:
-      - 0.20.157-4-g8147f5d1f
+      - 0.20.158-1-g76218766f
     path: schemas
   - git:
-      commitTitle: 'chore: removing subscriptions-transport-ws (#4317)...'
-      sha: 8147f5d1fd7b4dd0147dd58924103a28bd6c5c97
+      commitTitle: 'feat: exposing portal for webhook (#4318)'
+      sha: 76218766fee63932075a73c1dfa908f379e2d499
       tags:
-      - 0.20.157-4-g8147f5d1f
+      - 0.20.158-1-g76218766f
     path: gql
   path: graphql
 kind: LockConfig
