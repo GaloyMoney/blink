@@ -22,6 +22,7 @@ type PriceCurrency = {
   readonly name: string // currency name. E.g. US Dollar
   readonly flag: string // currency country flag (emoji). E.g. 🇺🇸
   readonly fractionDigits: number // fraction digits . E.g. 2
+  readonly countryCodes: string[] // country code array. E.g. [ "US" ]
 }
 
 type GetRealTimePriceArgs = {

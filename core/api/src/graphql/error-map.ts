@@ -603,6 +603,8 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "PriceError":
     case "PriceServiceError":
     case "PriceNotAvailableError":
+    case "CouldNotFindPriceCurrencyError":
+    case "CouldNotFindCurrencyFromCountryError":
     case "DealerPriceNotAvailableError":
     case "PriceHistoryNotAvailableError":
     case "PriceCurrenciesNotAvailableError":
@@ -814,6 +816,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "UnknownChatAssistantError":
     case "UnknownSupportError":
     case "UnknownPineconeError":
+    case "CallbackServiceError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 
