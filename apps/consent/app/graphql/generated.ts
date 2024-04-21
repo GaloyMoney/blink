@@ -84,6 +84,7 @@ export type Scalars = {
 
 export type Account = {
   readonly callbackEndpoints: ReadonlyArray<CallbackEndpoint>;
+  readonly callbackPortalUrl: Scalars['String']['output'];
   readonly csvTransactions: Scalars['String']['output'];
   readonly defaultWallet: PublicWallet;
   /** @deprecated Shifting property to 'defaultWallet.id' */
@@ -361,6 +362,7 @@ export type CentAmountPayload = {
 export type ConsumerAccount = Account & {
   readonly __typename: 'ConsumerAccount';
   readonly callbackEndpoints: ReadonlyArray<CallbackEndpoint>;
+  readonly callbackPortalUrl: Scalars['String']['output'];
   /** return CSV stream, base64 encoded, of the list of transactions in the wallet */
   readonly csvTransactions: Scalars['String']['output'];
   readonly defaultWallet: PublicWallet;
