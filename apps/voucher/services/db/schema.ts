@@ -1,6 +1,6 @@
-import type { Knex } from "knex"
+import { knex } from "./knex"
 
-export const createWithdrawLinksTable = async (knex: Knex) => {
+export const createWithdrawLinksTable = async () => {
   await knex.schema.createTable("WithdrawLinks", (table) => {
     table.uuid("id").primary()
     table.text("userId").notNullable()
