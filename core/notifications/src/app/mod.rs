@@ -5,7 +5,7 @@ use sqlx::{Pool, Postgres};
 use sqlxmq::JobRunnerHandle;
 use tracing::instrument;
 
-use std::sync::Arc;
+use std::{collections::HashSet, sync::Arc};
 
 use crate::{
     email_executor::EmailExecutor, email_reminder_projection::EmailReminderProjection, history::*,
@@ -257,14 +257,14 @@ impl NotificationsApp {
     )]
     pub async fn handle_marketing_notification_triggered_event(
         &self,
-        user_ids: Vec<GaloyUserId>,
+        user_ids: HashSet<GaloyUserId>,
         marketing_notification: MarketingNotificationTriggered,
     ) -> Result<(), ApplicationError> {
         let mut tx = self.pool.begin().await?;
         job::spawn_multi_user_event_dispatch(
             &mut tx,
             (
-                user_ids,
+                user_ids.into_iter().collect(),
                 NotificationEventPayload::from(marketing_notification),
             ),
         )
