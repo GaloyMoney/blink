@@ -186,6 +186,70 @@
           '';
         };
 
+      npmDerivation = {
+        pkgName,
+        binTarget,
+        npmBinTarget,
+        pathPrefix ? "core",
+      }:
+        pkgs.stdenv.mkDerivation {
+          name = "${binTarget}-${pkgName}";
+          buck2_target = "//${pathPrefix}/${pkgName}";
+          bin_target = binTarget;
+          npm_bin_target = npmBinTarget;
+          __impure = true;
+          src = ./.;
+          nativeBuildInputs = buck2NativeBuildInputs;
+          inherit postPatch;
+
+          buildPhase = ''
+            export HOME="$(dirname $(pwd))/home"
+            buck2 build "$buck2_target" --verbose 8
+
+            npm_bin_result=$(buck2 build --show-simple-output "$buck2_target:$npm_bin_target" 2> /dev/null)
+            bin_result=$(buck2 build --show-simple-output "$buck2_target:$bin_target" 2> /dev/null)
+            bin_parent_path=$(dirname $(dirname $bin_result))
+            node_modules_result=$(buck2 build --show-simple-output "$buck2_target:node_modules" 2> /dev/null)
+
+            mkdir -p build/$name-$system/bin
+
+            echo "$(pwd)/$npm_bin_result" > build/$name-$system/buck2-npm-bin-path
+            echo "$(pwd)/$node_modules_result" > build/$name-$system/buck2-node-modules-path
+            echo "$(pwd)/$bin_parent_path/__workspace" > build/$name-$system/buck2-deps-path
+
+            mv $bin_parent_path/__workspace build/$name-$system/lib
+            cp -rpv $bin_result build/$name-$system/bin/
+            cp -rpv $npm_bin_result build/$name-$system/bin/
+          '';
+
+          installPhase = ''
+            mkdir -pv "$out"
+            cp -rpv "build/$name-$system/lib" "$out/"
+            cp -rpv "build/$name-$system/bin" "$out/"
+
+            npm_bin=$(cat build/$name-$system/buck2-npm-bin-path)
+
+            npm_bin_parent_path=$(dirname $npm_bin)
+            substituteInPlace "$out/bin/run" \
+              --replace "#!${pkgs.coreutils}/bin/env sh" "#!${pkgs.bash}/bin/sh" \
+              --replace "$npm_bin_parent_path" "$out/bin" \
+              --replace "$(cat build/$name-$system/buck2-deps-path)" "$out/lib"
+
+            npm_bin_name=$(basename $npm_bin)
+            substituteInPlace "$out/bin/$npm_bin_name" \
+              --replace "#!${pkgs.coreutils}/bin/env sh" "#!${pkgs.bash}/bin/sh" \
+              --replace "$(cat build/$name-$system/buck2-node-modules-path)" "$out/lib"
+
+            npm_bin_source_file=$(cat "$out/bin/$npm_bin_name" | grep "exec" | awk '{print $2}')
+            substituteInPlace "$npm_bin_source_file" \
+              --replace "$(cat build/$name-$system/buck2-node-modules-path)" "$out/lib" \
+              --replace "exec node" "exec ${pkgs.nodejs}/bin/node" \
+              --replace " sed " " ${pkgs.gnused}/bin/sed " \
+              --replace "dirname" "${pkgs.coreutils}/bin/dirname" \
+              --replace "uname" "${pkgs.coreutils}/bin/uname"
+          '';
+        };
+
       rustDerivation = {
         pkgName,
         pathPrefix ? "core",
@@ -232,6 +296,11 @@
           map = nextDerivation {pkgName = "map";};
           voucher = nextDerivation {pkgName = "voucher";};
 
+          migrate-mongo = npmDerivation {
+            pkgName = "api";
+            binTarget = "migrate-mongo-up";
+            npmBinTarget = "migrate_mongo_bin";
+          };
 
           api-keys = rustDerivation {pkgName = "api-keys";};
           notifications = rustDerivation {pkgName = "notifications";};
