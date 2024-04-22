@@ -653,7 +653,7 @@ local_resource(
 
 local_resource(
     name="setup-voucher",
-    cmd="buck2 run //apps/voucher:migrate-voucher-pg && buck2 run //dev:setup-voucher-escrow",
+    cmd="buck2 run //dev:setup-voucher-escrow",
     allow_parallel=False,
     auto_init=run_apps,
     resource_deps=["voucher-pg", "api-keys"]

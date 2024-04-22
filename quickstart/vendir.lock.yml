@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: exposing portal for webhook (#4318)'
-      sha: 76218766fee63932075a73c1dfa908f379e2d499
+      commitTitle: 'chore(voucher): adding otel (#4329)'
+      sha: 3de4fac3d175f3357a65052f97925c1c3438c14e
       tags:
-      - 0.20.158-1-g76218766f
+      - 0.20.159-3-g3de4fac3d
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: exposing portal for webhook (#4318)'
-      sha: 76218766fee63932075a73c1dfa908f379e2d499
+      commitTitle: 'chore(voucher): adding otel (#4329)'
+      sha: 3de4fac3d175f3357a65052f97925c1c3438c14e
       tags:
-      - 0.20.158-1-g76218766f
+      - 0.20.159-3-g3de4fac3d
     path: schemas
   - git:
-      commitTitle: 'feat: exposing portal for webhook (#4318)'
-      sha: 76218766fee63932075a73c1dfa908f379e2d499
+      commitTitle: 'chore(voucher): adding otel (#4329)'
+      sha: 3de4fac3d175f3357a65052f97925c1c3438c14e
       tags:
-      - 0.20.158-1-g76218766f
+      - 0.20.159-3-g3de4fac3d
     path: gql
   path: graphql
 kind: LockConfig
