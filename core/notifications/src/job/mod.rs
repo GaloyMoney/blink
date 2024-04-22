@@ -47,9 +47,18 @@ pub async fn start_job_runner(
     registry.set_context(settings);
     registry.set_context(history);
     registry.set_context(email_reminder_projection);
+    let (min, max) = (
+        jobs_config.min_concurrent_jobs,
+        jobs_config.max_concurrent_jobs,
+    );
     registry.set_context(jobs_config);
 
-    Ok(registry.runner(pool).set_keep_alive(false).run().await?)
+    Ok(registry
+        .runner(pool)
+        .set_keep_alive(false)
+        .set_concurrency(min, max)
+        .run()
+        .await?)
 }
 
 #[job(
@@ -145,6 +154,7 @@ async fn kickoff_link_email_reminder(
     mut current_job: CurrentJob,
     JobsConfig {
         kickoff_link_email_reminder_delay,
+        ..
     }: JobsConfig,
 ) -> Result<(), JobError> {
     let pool = current_job.pool().clone();
@@ -386,7 +396,7 @@ impl From<NotificationEventPayload> for AllUserEventDispatchData {
         Self {
             search_id: GaloyUserId::search_begin(),
             payload,
-            tracing_data: tracing::extract_tracing_data(),
+            tracing_data: HashMap::default(),
         }
     }
 }
@@ -420,7 +430,7 @@ impl From<(Vec<GaloyUserId>, NotificationEventPayload)> for MultiUserEventDispat
         Self {
             user_ids,
             payload,
-            tracing_data: tracing::extract_tracing_data(),
+            tracing_data: HashMap::default(),
         }
     }
 }
