@@ -1,44 +1,32 @@
-FROM node:20-alpine AS BUILD_IMAGE
+FROM nixos/nix:latest AS builder
+ARG APP=migrate-mongo
 
-WORKDIR /app
+COPY . /workdir
+WORKDIR /workdir
 
-RUN apk update && apk add git
+RUN set -eux; \
+    nix \
+        --extra-experimental-features "nix-command flakes impure-derivations ca-derivations" \
+        --option filter-syscalls false \
+        build \
+        ".#$APP";
 
-RUN npm install -g pnpm@8
+RUN mkdir -p /tmp/nix-store-closure /tmp/local-bin
+RUN cp -R $(nix-store --query --requisites result/) /tmp/nix-store-closure
+RUN ln -snf $(nix-store --query result/)/bin/* /tmp/local-bin/
 
-RUN mkdir -p core/api/
-COPY ./core/api/*.json ./core/api/
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+FROM gcr.io/distroless/static-debian11 AS final
+ARG APP=api
 
-WORKDIR /app/core/api
-
-RUN pnpm install --frozen-lockfile
-
-COPY ./core/api/src ./src
-COPY ./core/api/test ./test
-
-RUN pnpm run build
-
-FROM node:20-alpine
-COPY --from=BUILD_IMAGE /app/core/api/dist /app/core/api/dist
-COPY --from=BUILD_IMAGE /app/node_modules /app/node_modules
-COPY --from=BUILD_IMAGE /app/core/api/node_modules /app/core/api/node_modules
-
-RUN npm install -g pnpm
-
-WORKDIR /app/core/api
-COPY ./core/api/*.js ./core/api/package.json ./core/api/tsconfig.json ./
-RUN touch .env
-
-### debug only
-COPY --from=BUILD_IMAGE /app/core/api/src /app/core/api/src
-COPY --from=BUILD_IMAGE /app/core/api/test /app/core/api/test
-COPY ./core/api/junit.xml ./
-###
+WORKDIR /app/$APP
+COPY --from=builder /tmp/nix-store-closure /nix/store
+COPY --from=builder /tmp/local-bin/* /usr/local/bin/
 
 USER 1000
 
 ARG COMMITHASH
 ENV COMMITHASH ${COMMITHASH}
 
-CMD ["pnpm", "run", "mongodb-migrate"]
+CMD [ \
+  "/usr/local/bin/run" \
+]
