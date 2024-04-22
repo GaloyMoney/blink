@@ -291,18 +291,21 @@ const ApiKeyCreate = ({ usdWalletId, btcWalletId }: Prop) => {
                         id="readScope"
                         label="Read"
                         value="READ"
+                        defaultChecked
                       />
                       <Checkbox
                         name="receiveScope"
                         id="receiveScope"
                         label="Receive"
                         value="RECEIVE"
+                        defaultChecked
                       />
                       <Checkbox
                         name="writeScope"
                         id="writeScope"
                         label="Write"
                         value="WRITE"
+                        defaultChecked
                       />
                     </Box>
                   </Box>
