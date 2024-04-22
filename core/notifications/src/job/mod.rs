@@ -83,7 +83,7 @@ async fn all_user_event_dispatch(
                 let data = AllUserEventDispatchData {
                     search_id: ids.last().expect("there should always be an id").clone(),
                     payload: data.payload.clone(),
-                    tracing_data: tracing::extract_tracing_data(),
+                    tracing_data: HashMap::default(),
                 };
                 spawn_all_user_event_dispatch(&mut tx, data).await?;
             }
@@ -201,7 +201,7 @@ async fn multi_user_event_dispatch(
                 let data = MultiUserEventDispatchData {
                     user_ids: next_user_ids.to_vec(),
                     payload: data.payload.clone(),
-                    tracing_data: tracing::extract_tracing_data(),
+                    tracing_data: HashMap::default(),
                 };
                 spawn_multi_user_event_dispatch(&mut tx, data).await?;
             }
