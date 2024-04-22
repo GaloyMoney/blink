@@ -386,7 +386,7 @@ impl From<NotificationEventPayload> for AllUserEventDispatchData {
         Self {
             search_id: GaloyUserId::search_begin(),
             payload,
-            tracing_data: tracing::extract_tracing_data(),
+            tracing_data: HashMap::default(),
         }
     }
 }
@@ -420,7 +420,7 @@ impl From<(Vec<GaloyUserId>, NotificationEventPayload)> for MultiUserEventDispat
         Self {
             user_ids,
             payload,
-            tracing_data: tracing::extract_tracing_data(),
+            tracing_data: HashMap::default(),
         }
     }
 }
