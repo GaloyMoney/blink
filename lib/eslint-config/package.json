@@ -1,0 +1,22 @@
+{
+  "name": "@galoy/eslint-config",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "preinstall": "npx only-allow pnpm"
+  },
+  "exports": {
+    "./base": "./.eslintrc.base.js",
+    "./prettier": "./.prettierrc.js"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.1.1",
+    "@typescript-eslint/parser": "^7.1.1",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-prettier": "^5.1.3",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3"
+  }
+}
