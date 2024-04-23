@@ -40,7 +40,7 @@ if __name__ == "__main__":
     content = [
         "#!/usr/bin/env sh",
         "export PATH=\"{}:$PATH\"".format(":".join(path)),
-        "exec {} $@".format(bin),
+        "exec {} $@".format(bin), # "exec <bin> ..." format is a dependency for flake.nix build
         ]
 
     with open(args.bin_out_path, "w") as f:
