@@ -24,6 +24,10 @@ impl NotificationEvent for IdentityVerificationDeclined {
         UserNotificationCategory::AdminNotification
     }
 
+    fn should_send_push(&self) -> bool {
+        true
+    }
+
     fn to_localized_push_msg(&self, locale: &GaloyLocale) -> LocalizedPushMessage {
         let reason = self.localized_declined_reason(locale);
         let title = t!(
@@ -44,7 +48,7 @@ impl NotificationEvent for IdentityVerificationDeclined {
         true
     }
 
-    fn to_localized_email(&self, locale: &GaloyLocale) -> Option<LocalizedEmail> {
+    fn to_localized_email(&self, locale: &GaloyLocale) -> LocalizedEmail {
         let email_formatter = EmailFormatter::new();
 
         let reason = self.localized_declined_reason(locale);
@@ -62,10 +66,10 @@ impl NotificationEvent for IdentityVerificationDeclined {
 
         let body = email_formatter.generic_email_template(&title, &body);
 
-        Some(LocalizedEmail {
+        LocalizedEmail {
             subject: title,
             body,
-        })
+        }
     }
 }
 

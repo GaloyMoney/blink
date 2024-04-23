@@ -98,7 +98,9 @@ async fn all_user_event_dispatch(
                     spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone()))
                         .await?;
                 }
-                spawn_send_push_notification(&mut tx, (user_id, payload.clone())).await?;
+                if payload.should_send_push() {
+                    spawn_send_push_notification(&mut tx, (user_id, payload.clone())).await?;
+                }
             }
             Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
         })
@@ -138,7 +140,10 @@ async fn link_email_reminder(
                 .await?;
 
             for user_id in ids {
-                spawn_send_push_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
+                if payload.should_send_push() {
+                    spawn_send_push_notification(&mut tx, (user_id.clone(), payload.clone()))
+                        .await?;
+                }
             }
             Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
         })
@@ -217,7 +222,10 @@ async fn multi_user_event_dispatch(
                     spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone()))
                         .await?;
                 }
-                spawn_send_push_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
+                if payload.should_send_push() {
+                    spawn_send_push_notification(&mut tx, (user_id.clone(), payload.clone()))
+                        .await?;
+                }
             }
             Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
         })

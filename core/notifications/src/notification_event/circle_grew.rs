@@ -20,6 +20,10 @@ impl NotificationEvent for CircleGrew {
         Some(DeepLink::Circles)
     }
 
+    fn should_send_push(&self) -> bool {
+        true
+    }
+
     fn to_localized_push_msg(&self, locale: &GaloyLocale) -> LocalizedPushMessage {
         let circle_type = match self.circle_type {
             CircleType::Inner => t!("circle_type.inner", locale = locale.as_ref()),

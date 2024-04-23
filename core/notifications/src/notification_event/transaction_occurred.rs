@@ -39,6 +39,10 @@ impl NotificationEvent for TransactionOccurred {
         UserNotificationCategory::Payments
     }
 
+    fn should_send_push(&self) -> bool {
+        true
+    }
+
     fn to_localized_push_msg(&self, locale: &GaloyLocale) -> LocalizedPushMessage {
         let txn_type = match self.transaction_type {
             TransactionType::IntraLedgerPayment => "transaction.intra_ledger_payment",
@@ -80,14 +84,6 @@ impl NotificationEvent for TransactionOccurred {
         };
 
         LocalizedPushMessage { title, body }
-    }
-
-    fn to_localized_email(&self, _locale: &GaloyLocale) -> Option<LocalizedEmail> {
-        None
-    }
-
-    fn should_send_email(&self) -> bool {
-        false
     }
 
     fn should_be_added_to_history(&self) -> bool {
