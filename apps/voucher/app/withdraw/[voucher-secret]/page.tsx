@@ -2,7 +2,6 @@
 import React from "react"
 import Link from "next/link"
 
-import { env } from "@/env"
 import { useGetWithdrawLinkQuery, Status } from "@/lib/graphql/generated"
 import Button from "@/components/button"
 import LinkDetails from "@/components/link-details"
@@ -10,7 +9,7 @@ import InfoComponent from "@/components/info-component"
 import FundsPaid from "@/components/funds-paid"
 import PageLoadingComponent from "@/components/loading/page-loading-component"
 import Heading from "@/components/heading"
-const { NEXT_PUBLIC_VOUCHER_URL } = env
+import { getClientSideConfig } from "@/config/client-side-config"
 
 interface Params {
   params: {
@@ -49,7 +48,7 @@ export default function Page({ params: { "voucher-secret": voucherSecret } }: Pa
           <LinkDetails withdrawLink={data.getWithdrawLink}></LinkDetails>
           <Link
             style={{ width: "90%" }}
-            href={`${NEXT_PUBLIC_VOUCHER_URL}/withdraw/${voucherSecret}/lnurl`}
+            href={`${getClientSideConfig().voucherUrl}/withdraw/${voucherSecret}/lnurl`}
           >
             <Button>
               <span>LNURLw Link</span>{" "}
@@ -58,7 +57,7 @@ export default function Page({ params: { "voucher-secret": voucherSecret } }: Pa
 
           <Link
             style={{ width: "90%" }}
-            href={`${NEXT_PUBLIC_VOUCHER_URL}/withdraw/${voucherSecret}/onchain`}
+            href={`${getClientSideConfig().voucherUrl}/withdraw/${voucherSecret}/onchain`}
           >
             <Button>
               <span>On Chain</span>{" "}

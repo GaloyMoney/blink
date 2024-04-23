@@ -9,14 +9,13 @@ import styles from "./lnurl-page.module.css"
 import { encodeURLToLNURL, formatSecretCode } from "@/utils/helpers"
 import PageLoadingComponents from "@/components/loading/page-loading-component"
 import { useGetWithdrawLinkQuery, Status } from "@/lib/graphql/generated"
-import { env } from "@/env"
 import Button from "@/components/button"
 import InfoComponent from "@/components/info-component"
 import FundsPaid from "@/components/funds-paid"
 import Heading from "@/components/heading"
 import Bold from "@/components/bold"
 import LinkDetails from "@/components/link-details"
-const { NEXT_PUBLIC_VOUCHER_URL } = env
+import { getClientSideConfig } from "@/config/client-side-config"
 
 gql`
   query GetWithdrawLink($voucherSecret: String) {
@@ -63,10 +62,12 @@ export default function Page({ params: { "voucher-secret": voucherSecret } }: Pr
   }
 
   const lnurl = encodeURLToLNURL(
-    `${NEXT_PUBLIC_VOUCHER_URL}/api/lnurlw/${WithdrawLink?.uniqueHash}`,
+    `${getClientSideConfig().voucherUrl}/api/lnurlw/${WithdrawLink?.uniqueHash}`,
   )
 
-  const url = `${NEXT_PUBLIC_VOUCHER_URL}/withdraw/${WithdrawLink.voucherSecret}?lightning=${lnurl}`
+  const url = `${getClientSideConfig().voucherUrl}/withdraw/${
+    WithdrawLink.voucherSecret
+  }?lightning=${lnurl}`
   const copyToClipboard = () => {
     navigator.clipboard.writeText(lnurl)
   }

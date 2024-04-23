@@ -9,17 +9,15 @@ import {
 import { RetryLink } from "@apollo/client/link/retry"
 import { onError } from "@apollo/client/link/error"
 
-import { env } from "@/env"
-
-const { NEXT_PUBLIC_CORE_URL, NEXT_PUBLIC_VOUCHER_URL } = env
+import { getClientSideConfig } from "./client-side-config"
 
 function makeClient() {
   const httpLinkMainnet = new HttpLink({
-    uri: NEXT_PUBLIC_CORE_URL,
+    uri: getClientSideConfig().coreGqlUrl,
   })
 
   const httpLinkLocal = new HttpLink({
-    uri: `${NEXT_PUBLIC_VOUCHER_URL}/api/graphql`,
+    uri: `${getClientSideConfig().voucherUrl}/api/graphql`,
   })
 
   const errorLink = onError(({ graphQLErrors, networkError }) => {
