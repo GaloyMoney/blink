@@ -145,6 +145,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
         _id: paymentHash,
         secret,
         walletId: recipientWalletDescriptor.id,
+        accountId: recipientWalletDescriptor.accountId,
         selfGenerated,
         pubkey,
         paid,
@@ -297,6 +298,7 @@ const walletInvoiceFromRaw = (
     recipientWalletDescriptor: {
       id: result.walletId as WalletId,
       currency: result.currency as WalletCurrency,
+      accountId: result.accountId as AccountId,
     },
     selfGenerated: result.selfGenerated,
     pubkey: result.pubkey as Pubkey,
