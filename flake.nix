@@ -2,7 +2,7 @@
   description = "Galoy dev environment";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:vindard/nixpkgs/update-tilt";
     flake-utils.url = "github:numtide/flake-utils";
     concourse-shared.url = "github:galoymoney/concourse-shared";
 
