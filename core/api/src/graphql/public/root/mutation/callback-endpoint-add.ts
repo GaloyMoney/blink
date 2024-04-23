@@ -12,7 +12,7 @@ const CallbackEndpointAddInput = GT.Input({
   }),
 })
 
-const CallbackEndpointAdd = GT.Field<
+const CallbackEndpointAddMutation = GT.Field<
   null,
   GraphQLPublicContextAuth,
   { input: { url: string | Error } }
@@ -46,4 +46,4 @@ const CallbackEndpointAdd = GT.Field<
   },
 })
 
-export default CallbackEndpointAdd
+export default CallbackEndpointAddMutation

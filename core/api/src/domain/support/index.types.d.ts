@@ -40,4 +40,8 @@ interface ISupportChatRepository {
     supportChatId: SupportChatId
     accountId: AccountId
   }) => Promise<true | RepositoryError>
+  remove: (args: {
+    supportChatId: SupportChatId
+    accountId: AccountId
+  }) => Promise<true | RepositoryError>
 }
