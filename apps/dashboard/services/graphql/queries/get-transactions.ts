@@ -171,7 +171,7 @@ export async function fetchPaginatedTransactions({
   const client = await apolloClient.authenticated()
 
   let variables: {
-    first: number
+    first?: number
     after?: string | null
     before?: string | null
   }
