@@ -207,7 +207,10 @@ impl NotificationsApp {
             .add_event(&mut tx, user_id.clone(), payload.clone())
             .await?;
 
-        job::spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
+        if payload.should_send_push() {
+            job::spawn_send_push_notification(&mut tx, (user_id, payload)).await?;
+        }
+
         tx.commit().await?;
         Ok(())
     }
