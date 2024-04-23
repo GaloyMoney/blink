@@ -447,7 +447,6 @@ local_resource(
     allow_parallel = True,
     auto_init = run_apps,
     resource_deps = [
-        "hydra-consent",
         "apollo-router",
         "hydra",
         "api",
@@ -455,26 +454,6 @@ local_resource(
     links = [
         link("http://localhost:3000", "consent"),
     ],
-)
-
-local_resource(
-  name='hydra-consent',
-  labels = ['auth'],
-  cmd=[
-    'buck2',
-    'run',
-    '//dev:setup-hydra-client',
-    '--',
-    'consent',
-    'authorization_code,refresh_token',
-    'http://localhost:3000',
-  ],
-  allow_parallel = True,
-  auto_init = run_apps,
-  resource_deps = [
-    "hydra",
-    "api",
-  ]
 )
 
 env_json = _buck2_dep_inputs("//dev:serve_env")[0]

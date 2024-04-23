@@ -20,7 +20,8 @@ hydra_cli create client \
     --response-type code,id_token \
     --format json \
     --scope read --scope write \
-    --redirect-uri "$redirect_uri" > "${HYDRA_CLIENT_JSON}"
+    --redirect-uri "$redirect_uri" > "${HYDRA_CLIENT_JSON}" \
+    --name "${hydra_client_name}"
 
 CLIENT_ID=$(jq -r '.client_id' < "${HYDRA_CLIENT_JSON}")
 CLIENT_SECRET=$(jq -r '.client_secret' < "${HYDRA_CLIENT_JSON}")
@@ -29,7 +30,7 @@ AUTHORIZATION_URL="${HYDRA_PUBLIC_API}/oauth2/auth?client_id=$CLIENT_ID&scope=re
 
 echo "export CLIENT_ID=$CLIENT_ID" > "${HYDRA_CLIENT_ENV}"
 echo "export CLIENT_SECRET=$CLIENT_SECRET" >> "${HYDRA_CLIENT_ENV}"
-echo "export AUTHORIZATION_URL=$AUTHORIZATION_URL" >> "${HYDRA_CLIENT_ENV}"
+echo "export AUTHORIZATION_URL=\"$AUTHORIZATION_URL\"" >> "${HYDRA_CLIENT_ENV}"
 
 mkdir -p "${DEV_DIR}/.envs"
 cp "${HYDRA_CLIENT_ENV}" "${DEV_DIR}/.envs/${hydra_client_name}.env"
