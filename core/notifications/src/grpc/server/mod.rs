@@ -6,7 +6,7 @@ pub mod proto {
     tonic::include_proto!("services.notifications.v1");
 }
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use tonic::{transport::Server, Request, Response, Status};
 use tracing::{grpc, instrument};
@@ -425,7 +425,7 @@ impl NotificationsService for Notifications {
                         })
                         .collect();
 
-                let user_ids: Vec<GaloyUserId> =
+                let user_ids: HashSet<GaloyUserId> =
                     user_ids.into_iter().map(GaloyUserId::from).collect();
 
                 let default_push_content = push_content
