@@ -22,6 +22,7 @@ gql`
           pendingIncomingBalance
           walletCurrency
         }
+        callbackPortalUrl
       }
       totpEnabled
       username

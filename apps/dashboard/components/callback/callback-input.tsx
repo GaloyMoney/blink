@@ -12,12 +12,18 @@ import InfoOutlined from "@mui/icons-material/InfoOutlined"
 
 import { useFormStatus, useFormState } from "react-dom"
 
+import Link from "next/link"
+
 import FormSubmitButton from "../form-submit-button"
 
 import { createCallbackAction } from "@/app/callback/server-actions"
 import { CallBackAdditionResponse } from "@/app/callback/callback.types"
 
-function CreateCallBack() {
+type Props = {
+  callbackPortalUrl: string | undefined
+}
+
+function CreateCallBack({ callbackPortalUrl }: Props) {
   const [open, setOpen] = useState<boolean>(false)
   const { pending } = useFormStatus()
   const [state, formAction] = useFormState<CallBackAdditionResponse, FormData>(
@@ -118,13 +124,25 @@ function CreateCallBack() {
         <Typography id="modal-desc" textColor="text.tertiary" textAlign="left">
           Attach Callback Endpoints
         </Typography>
-        <Button
-          data-testid="add-callback-btn"
-          loading={pending}
-          onClick={() => setOpen(true)}
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+          }}
         >
-          <AddIcon />
-        </Button>
+          {callbackPortalUrl && (
+            <Link href={callbackPortalUrl} passHref target="_blank">
+              <Button>Callback Portal</Button>
+            </Link>
+          )}
+          <Button
+            data-testid="add-callback-btn"
+            loading={pending}
+            onClick={() => setOpen(true)}
+          >
+            <AddIcon />
+          </Button>
+        </Box>
       </Box>
     </>
   )
