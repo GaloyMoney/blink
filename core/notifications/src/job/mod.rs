@@ -83,15 +83,13 @@ async fn all_user_event_dispatch(
                 let data = AllUserEventDispatchData {
                     search_id: ids.last().expect("there should always be an id").clone(),
                     payload: data.payload.clone(),
-                    tracing_data: tracing::extract_tracing_data(),
+                    tracing_data: HashMap::default(),
                 };
                 spawn_all_user_event_dispatch(&mut tx, data).await?;
             }
             let payload = data.payload.clone();
 
-            history
-                .add_events(&mut tx, ids.clone(), payload.clone())
-                .await?;
+            history.add_events(&mut tx, &ids, payload.clone()).await?;
 
             for user_id in ids {
                 if payload.should_send_email() {
@@ -133,9 +131,7 @@ async fn link_email_reminder(
 
             let payload = NotificationEventPayload::from(LinkEmailReminder {});
 
-            history
-                .add_events(&mut tx, ids.clone(), payload.clone())
-                .await?;
+            history.add_events(&mut tx, &ids, payload.clone()).await?;
 
             for user_id in ids {
                 spawn_send_push_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
@@ -201,16 +197,14 @@ async fn multi_user_event_dispatch(
                 let data = MultiUserEventDispatchData {
                     user_ids: next_user_ids.to_vec(),
                     payload: data.payload.clone(),
-                    tracing_data: tracing::extract_tracing_data(),
+                    tracing_data: HashMap::default(),
                 };
                 spawn_multi_user_event_dispatch(&mut tx, data).await?;
             }
 
             let payload = data.payload.clone();
 
-            history
-                .add_events(&mut tx, ids.to_vec(), payload.clone())
-                .await?;
+            history.add_events(&mut tx, ids, payload.clone()).await?;
 
             for user_id in ids {
                 if payload.should_send_email() {
