@@ -736,7 +736,7 @@ if to_test != []:
             enabled_resources.append(svc)
     config.set_enabled_resources(enabled_resources)
 
-docker_compose("./docker-compose.deps.yml", project_name = "galoy-dev", wait=True)
+docker_compose("./docker-compose.deps.yml", project_name = "galoy-dev")
 
 for service in docker_groups["bitcoin"]:
     dc_resource(service, labels = ["bitcoin"])
