@@ -2420,7 +2420,7 @@ export type GetDefaultWalletByUsernameQuery = { readonly __typename: 'Query', re
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly createdAt: number, readonly id: string, readonly language: string, readonly phone?: string | null, readonly totpEnabled: boolean, readonly username?: string | null, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly defaultWalletId: string, readonly displayCurrency: string, readonly id: string, readonly level: AccountLevel, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly accountId: string, readonly balance: number, readonly id: string, readonly pendingIncomingBalance: number, readonly walletCurrency: WalletCurrency } | { readonly __typename: 'UsdWallet', readonly accountId: string, readonly balance: number, readonly id: string, readonly pendingIncomingBalance: number, readonly walletCurrency: WalletCurrency }> }, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null } | null };
+export type MeQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly createdAt: number, readonly id: string, readonly language: string, readonly phone?: string | null, readonly totpEnabled: boolean, readonly username?: string | null, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly defaultWalletId: string, readonly displayCurrency: string, readonly id: string, readonly level: AccountLevel, readonly callbackPortalUrl: string, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly accountId: string, readonly balance: number, readonly id: string, readonly pendingIncomingBalance: number, readonly walletCurrency: WalletCurrency } | { readonly __typename: 'UsdWallet', readonly accountId: string, readonly balance: number, readonly id: string, readonly pendingIncomingBalance: number, readonly walletCurrency: WalletCurrency }> }, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null } | null };
 
 export type RealtimePriceQueryVariables = Exact<{
   currency?: InputMaybe<Scalars['DisplayCurrency']['input']>;
@@ -3236,6 +3236,7 @@ export const MeDocument = gql`
         pendingIncomingBalance
         walletCurrency
       }
+      callbackPortalUrl
     }
     totpEnabled
     username

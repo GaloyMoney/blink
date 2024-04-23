@@ -26,6 +26,7 @@ export default async function page() {
   }
 
   const endpoints = response.data.me?.defaultAccount.callbackEndpoints || []
+  const callbackPortalUrl = session?.userData?.data?.me?.defaultAccount.callbackPortalUrl
 
   return (
     <ContentContainer>
@@ -36,7 +37,7 @@ export default async function page() {
           width: "100%",
         }}
       >
-        <CreateCallBack />
+        <CreateCallBack callbackPortalUrl={callbackPortalUrl} />
         <Box
           sx={{
             display: {
