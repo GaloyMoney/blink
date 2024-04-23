@@ -43,8 +43,16 @@ impl UserNotificationSettingsRepo {
 
     pub async fn find_for_user_ids(
         &self,
-        user_ids: Vec<GaloyUserId>,
+        user_ids: impl IntoIterator<Item = &GaloyUserId>,
     ) -> Result<Vec<UserNotificationSettings>, UserNotificationSettingsError> {
+        let mut n_ids = 0;
+        let ids = user_ids
+            .into_iter()
+            .map(|id| {
+                n_ids += 1;
+                id.to_string()
+            })
+            .collect::<Vec<_>>();
         let rows = sqlx::query_as!(
             GenericEvent,
             r#"SELECT a.id, e.sequence, e.event,
@@ -53,12 +61,12 @@ impl UserNotificationSettingsRepo {
             JOIN user_notification_settings_events e ON a.id = e.id
             WHERE a.galoy_user_id = ANY($1)
             ORDER BY a.galoy_user_id, e.sequence"#,
-            &user_ids.iter().map(|id| id.to_string()).collect::<Vec<_>>(),
+            &ids
         )
         .fetch_all(&self.pool)
         .await?;
 
-        Ok(EntityEvents::load_n::<UserNotificationSettings>(rows, user_ids.len())?.0)
+        Ok(EntityEvents::load_n::<UserNotificationSettings>(rows, n_ids)?.0)
     }
 
     pub async fn list_after_id(
