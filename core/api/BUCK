@@ -12,6 +12,8 @@ load(
   "yaml_check",
   "madge_check",
   "jest_test",
+  "npm_bin",
+  "migrate_mongo_build_bin",
 )
 load("@toolchains//rover:macros.bzl", "sdl", "diff_check", "dev_update_file")
 
@@ -67,6 +69,25 @@ filegroup(
 prod_deps_srcs = {
   "lib/gt3-server-node-express-sdk": "//lib/gt3-server-node-express-sdk:src",
 }
+
+npm_bin(
+    name = "migrate_mongo_bin",
+    bin_name = "migrate-mongo",
+)
+
+migrate_mongo_build_bin(
+    name = "migrate-mongo-up",
+    srcs = [":src"],
+    subcmd = "up",
+    config_file = "src/migrations/migrate-mongo-config.js",
+)
+
+migrate_mongo_build_bin(
+    name = "migrate-mongo-status",
+    srcs = [":src"],
+    subcmd = "status",
+    config_file = "src/migrations/migrate-mongo-config.js",
+)
 
 tsc_build(
   name = "build",

@@ -698,6 +698,90 @@ def _npm_test_impl(
         DefaultInfo(default_output = args_file),
     ]
 
+def _migrate_mongo_build_bin_impl(ctx: AnalysisContext) -> list[[
+    DefaultInfo,
+    RunInfo,
+]]:
+    build_context = prepare_package_context(ctx)
+
+    bin_name = "bin/run"
+    out = ctx.actions.declare_output(bin_name)
+
+    pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
+
+    cmd = cmd_args([
+        ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
+        pnpm_toolchain.migrate_mongo_build_bin[DefaultInfo].default_outputs,
+        "--package-dir",
+        cmd_args([build_context.workspace_root, ctx.label.package], delimiter = "/"),
+        "--migrate-mongo-bin",
+        cmd_args(ctx.attrs.migrate_mongo_bin[RunInfo]),
+        "--subcmd",
+        cmd_args(ctx.attrs.subcmd),
+        "--config",
+        cmd_args(ctx.attrs.config_file),
+        out.as_output(),
+    ])
+
+    ctx.actions.run(cmd, category = "migrate_mongo_build_bin", identifier = ctx.label.package + " " + bin_name)
+
+    run_cmd = cmd_args(out)
+
+    return [
+        DefaultInfo(default_output = out),
+        RunInfo(run_cmd),
+    ]
+
+_migrate_mongo_build_bin = rule(
+    impl = _migrate_mongo_build_bin_impl,
+    attrs = {
+        "migrate_mongo_bin": attrs.dep(
+            providers = [RunInfo],
+            doc = """migrate-mongo bin dependency.""",
+        ),
+        "srcs": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """List of package source files to track.""",
+        ),
+        "node_modules": attrs.source(
+            doc = """Target which builds package `node_modules`.""",
+        ),
+        "subcmd": attrs.enum(
+            ["up", "down", "status"],
+            doc = """Sub-command to run migrate-mongo with.""",
+        ),
+        "config_file": attrs.option(
+            attrs.string(),
+            doc = """File name and relative path for migrate-mongo config.""",
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
+
+def migrate_mongo_build_bin(
+    node_modules = ":node_modules",
+    **kwargs):
+    migrate_mongo_bin = "migrate_mongo_bin"
+    if not rule_exists(migrate_mongo_bin):
+        npm_bin(
+            name = migrate_mongo_bin,
+            bin_name = "migrate-mongo",
+        )
+
+    _migrate_mongo_build_bin(
+        node_modules = node_modules,
+        migrate_mongo_bin = ":{}".format(migrate_mongo_bin),
+        **kwargs,
+    )
+
 def _audit_impl(ctx: AnalysisContext) -> list[[
     DefaultInfo,
     RunInfo,

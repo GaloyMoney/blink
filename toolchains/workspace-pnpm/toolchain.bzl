@@ -2,6 +2,7 @@ WorkspacePnpmToolchainInfo = provider(fields = [
   "build_workspace_node_modules",
   "build_node_modules",
   "build_npm_bin",
+  "migrate_mongo_build_bin",
   "prepare_package_context",
   "compile_typescript",
   "package_prod_tsc_build",
@@ -23,6 +24,7 @@ def workspace_pnpm_toolchain_impl(ctx) -> list[[DefaultInfo, WorkspacePnpmToolch
             build_workspace_node_modules = ctx.attrs._build_workspace_node_modules,
             build_node_modules = ctx.attrs._build_node_modules,
             build_npm_bin = ctx.attrs._build_npm_bin,
+            migrate_mongo_build_bin = ctx.attrs._migrate_mongo_build_bin,
             prepare_package_context = ctx.attrs._prepare_package_context,
             compile_typescript = ctx.attrs._compile_typescript,
             package_prod_tsc_build = ctx.attrs._package_prod_tsc_build,
@@ -46,6 +48,9 @@ workspace_pnpm_toolchain = rule(
         ),
         "_build_npm_bin": attrs.dep(
             default = "toolchains//workspace-pnpm:build_npm_bin.py",
+        ),
+        "_migrate_mongo_build_bin": attrs.dep(
+            default = "toolchains//workspace-pnpm:migrate_mongo_build_bin.py",
         ),
         "_prepare_package_context": attrs.dep(
             default = "toolchains//workspace-pnpm:prepare_package_context.py",
