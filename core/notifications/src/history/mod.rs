@@ -53,7 +53,7 @@ impl NotificationHistory {
     pub async fn add_events(
         &self,
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-        user_ids: Vec<GaloyUserId>,
+        user_ids: &[GaloyUserId],
         payload: NotificationEventPayload,
     ) -> Result<(), NotificationHistoryError> {
         if !payload.should_be_added_to_history() {

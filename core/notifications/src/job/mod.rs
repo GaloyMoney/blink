@@ -47,9 +47,18 @@ pub async fn start_job_runner(
     registry.set_context(settings);
     registry.set_context(history);
     registry.set_context(email_reminder_projection);
+    let (min, max) = (
+        jobs_config.min_concurrent_jobs,
+        jobs_config.max_concurrent_jobs,
+    );
     registry.set_context(jobs_config);
 
-    Ok(registry.runner(pool).set_keep_alive(false).run().await?)
+    Ok(registry
+        .runner(pool)
+        .set_keep_alive(false)
+        .set_concurrency(min, max)
+        .run()
+        .await?)
 }
 
 #[job(
@@ -74,15 +83,13 @@ async fn all_user_event_dispatch(
                 let data = AllUserEventDispatchData {
                     search_id: ids.last().expect("there should always be an id").clone(),
                     payload: data.payload.clone(),
-                    tracing_data: tracing::extract_tracing_data(),
+                    tracing_data: HashMap::default(),
                 };
                 spawn_all_user_event_dispatch(&mut tx, data).await?;
             }
             let payload = data.payload.clone();
 
-            history
-                .add_events(&mut tx, ids.clone(), payload.clone())
-                .await?;
+            history.add_events(&mut tx, &ids, payload.clone()).await?;
 
             for user_id in ids {
                 if payload.should_send_email() {
@@ -124,9 +131,7 @@ async fn link_email_reminder(
 
             let payload = NotificationEventPayload::from(LinkEmailReminder {});
 
-            history
-                .add_events(&mut tx, ids.clone(), payload.clone())
-                .await?;
+            history.add_events(&mut tx, &ids, payload.clone()).await?;
 
             for user_id in ids {
                 spawn_send_push_notification(&mut tx, (user_id.clone(), payload.clone())).await?;
@@ -145,6 +150,7 @@ async fn kickoff_link_email_reminder(
     mut current_job: CurrentJob,
     JobsConfig {
         kickoff_link_email_reminder_delay,
+        ..
     }: JobsConfig,
 ) -> Result<(), JobError> {
     let pool = current_job.pool().clone();
@@ -191,16 +197,14 @@ async fn multi_user_event_dispatch(
                 let data = MultiUserEventDispatchData {
                     user_ids: next_user_ids.to_vec(),
                     payload: data.payload.clone(),
-                    tracing_data: tracing::extract_tracing_data(),
+                    tracing_data: HashMap::default(),
                 };
                 spawn_multi_user_event_dispatch(&mut tx, data).await?;
             }
 
             let payload = data.payload.clone();
 
-            history
-                .add_events(&mut tx, ids.to_vec(), payload.clone())
-                .await?;
+            history.add_events(&mut tx, ids, payload.clone()).await?;
 
             for user_id in ids {
                 if payload.should_send_email() {
@@ -386,7 +390,7 @@ impl From<NotificationEventPayload> for AllUserEventDispatchData {
         Self {
             search_id: GaloyUserId::search_begin(),
             payload,
-            tracing_data: tracing::extract_tracing_data(),
+            tracing_data: HashMap::default(),
         }
     }
 }
@@ -420,7 +424,7 @@ impl From<(Vec<GaloyUserId>, NotificationEventPayload)> for MultiUserEventDispat
         Self {
             user_ids,
             payload,
-            tracing_data: tracing::extract_tracing_data(),
+            tracing_data: HashMap::default(),
         }
     }
 }
