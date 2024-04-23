@@ -64,6 +64,10 @@ impl NotificationEvent for PriceChanged {
         UserNotificationCategory::Payments
     }
 
+    fn should_send_push(&self) -> bool {
+        true
+    }
+
     fn to_localized_push_msg(&self, locale: &GaloyLocale) -> LocalizedPushMessage {
         let (title_key, body_key) = match self.direction {
             PriceChangeDirection::Up => ("price_changed.up.title", "price_changed.up.body"),
