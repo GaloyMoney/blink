@@ -1,7 +1,5 @@
 import { createEnv } from "@t3-oss/env-nextjs"
 import { z } from "zod"
-import dotenv from "dotenv"
-dotenv.config({ path: "../.env" })
 
 export const env = createEnv({
   server: {
