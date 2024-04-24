@@ -3,7 +3,7 @@ import crypto from "crypto"
 import mongoose from "mongoose"
 
 import { getDefaultAccountsConfig, Levels } from "@/config"
-import { AccountStatus, UsernameRegex } from "@/domain/accounts"
+import { AccountIdRegex, AccountStatus, UsernameRegex } from "@/domain/accounts"
 import { WalletIdRegex, WalletType } from "@/domain/wallets"
 import { WalletCurrency } from "@/domain/shared"
 
@@ -32,6 +32,15 @@ const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
     validate: {
       validator: function (v: string) {
         return v.match(WalletIdRegex)
+      },
+    },
+  },
+
+  accountId: {
+    type: String,
+    validate: {
+      validator: function (v: string) {
+        return v.match(AccountIdRegex)
       },
     },
   },
