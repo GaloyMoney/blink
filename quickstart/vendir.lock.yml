@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(core): add buck2 migrate build and change Dockerfile-migrate
-        (#4332)...'
-      sha: a0b9ee2a0722e43cd5b2263377dcff6261d68717
+      commitTitle: 'refactor(core): update medici indexes (#4312)...'
+      sha: ad30dd933a652b6ab6417de8ca8a948956261738
       tags:
-      - 0.20.160-5-ga0b9ee2a0
+      - 0.20.160-9-gad30dd933
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(core): add buck2 migrate build and change Dockerfile-migrate
-        (#4332)...'
-      sha: a0b9ee2a0722e43cd5b2263377dcff6261d68717
+      commitTitle: 'refactor(core): update medici indexes (#4312)...'
+      sha: ad30dd933a652b6ab6417de8ca8a948956261738
       tags:
-      - 0.20.160-5-ga0b9ee2a0
+      - 0.20.161
     path: schemas
   - git:
-      commitTitle: 'feat(core): add buck2 migrate build and change Dockerfile-migrate
-        (#4332)...'
-      sha: a0b9ee2a0722e43cd5b2263377dcff6261d68717
+      commitTitle: 'refactor(core): update medici indexes (#4312)...'
+      sha: ad30dd933a652b6ab6417de8ca8a948956261738
       tags:
-      - 0.20.160-5-ga0b9ee2a0
+      - 0.20.161
     path: gql
   path: graphql
 kind: LockConfig
