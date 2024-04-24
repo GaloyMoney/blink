@@ -4,7 +4,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string
   id: string
   options: string[]
-  placeHolder: string
+  placeHolder?: string
 }
 
 const SelectComponent: React.FC<SelectProps> = ({
