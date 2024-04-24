@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(core): add accountId field to WalletInvoice (#4345)...'
-      sha: a8d14bdcd0171133fa02001e7daec451e5f5a686
+      commitTitle: 'fix(core): medici balance performance (#4355)'
+      sha: 1e5f75e9d392ad41db2dacd96e82760ba8a11975
       tags:
-      - 0.20.162-2-ga8d14bdcd
+      - 0.20.163-3-g1e5f75e9d
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(core): add accountId field to WalletInvoice (#4345)...'
-      sha: a8d14bdcd0171133fa02001e7daec451e5f5a686
+      commitTitle: 'fix(core): medici balance performance (#4355)'
+      sha: 1e5f75e9d392ad41db2dacd96e82760ba8a11975
       tags:
-      - 0.20.162-2-ga8d14bdcd
+      - 0.20.164
     path: schemas
   - git:
-      commitTitle: 'refactor(core): add accountId field to WalletInvoice (#4345)...'
-      sha: a8d14bdcd0171133fa02001e7daec451e5f5a686
+      commitTitle: 'fix(core): medici balance performance (#4355)'
+      sha: 1e5f75e9d392ad41db2dacd96e82760ba8a11975
       tags:
-      - 0.20.162-2-ga8d14bdcd
+      - 0.20.164
     path: gql
   path: graphql
 kind: LockConfig
