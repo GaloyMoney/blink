@@ -33,6 +33,7 @@ fn default_tracing_config() -> TracingConfig {
 
 pub struct EnvOverride {
     pub db_con: String,
+    pub db_read_con: String,
     pub kratos_pg_con: Option<String>,
     pub email_password: String,
 }
@@ -42,6 +43,7 @@ impl Config {
         path: Option<impl AsRef<Path>>,
         EnvOverride {
             db_con,
+            db_read_con,
             email_password,
             kratos_pg_con,
         }: EnvOverride,
@@ -54,6 +56,7 @@ impl Config {
             Default::default()
         };
         config.db.pg_con = db_con;
+        config.db.pg_read_con = db_read_con;
         config.kratos_import.pg_con = kratos_pg_con;
         config.app.email_executor.smtp.password = email_password;
 
