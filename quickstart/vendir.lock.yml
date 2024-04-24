@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor(core): update medici indexes (#4312)...'
-      sha: ad30dd933a652b6ab6417de8ca8a948956261738
+      commitTitle: 'chore(notifications): introduce ReadPool (#4348)'
+      sha: 5646c01b505c5d7037636866e9b0c396407e2eb7
       tags:
-      - 0.20.160-9-gad30dd933
+      - 0.20.161-3-g5646c01b5
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor(core): update medici indexes (#4312)...'
-      sha: ad30dd933a652b6ab6417de8ca8a948956261738
+      commitTitle: 'chore(notifications): introduce ReadPool (#4348)'
+      sha: 5646c01b505c5d7037636866e9b0c396407e2eb7
       tags:
-      - 0.20.161
+      - 0.20.162
     path: schemas
   - git:
-      commitTitle: 'refactor(core): update medici indexes (#4312)...'
-      sha: ad30dd933a652b6ab6417de8ca8a948956261738
+      commitTitle: 'chore(notifications): introduce ReadPool (#4348)'
+      sha: 5646c01b505c5d7037636866e9b0c396407e2eb7
       tags:
-      - 0.20.161
+      - 0.20.162
     path: gql
   path: graphql
 kind: LockConfig
