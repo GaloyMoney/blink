@@ -1291,8 +1291,8 @@ importers:
         specifier: ^4.6.0
         version: 4.6.0
       medici:
-        specifier: ^6.3.2
-        version: 6.3.2
+        specifier: ^7.0.0
+        version: 7.0.0
       mongoose:
         specifier: 8.0.3
         version: 8.0.3
@@ -28108,8 +28108,8 @@ packages:
     resolution: {integrity: sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==}
     engines: {node: '>= 0.6'}
 
-  /medici@6.3.2:
-    resolution: {integrity: sha512-Hjdnj9IO3rdbKxfrRZT4epba0ZmyvpR+nKkWH35TSWEhRqW14A87TK1gbwQdmvXcLxzqq+jsz6+J/FuVXl5vhA==}
+  /medici@7.0.0:
+    resolution: {integrity: sha512-K+Luyyy6lz85AUdFVCvl92cRwK65utvvpI4yOe1IgzUTOOAuT5X+k6LmwAEGqnDsrh7+HNe40X+pZT2SZoXrVQ==}
     engines: {node: '>=16'}
     dependencies:
       mongoose: 8.0.3

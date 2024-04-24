@@ -103,7 +103,7 @@
     "lodash.mergewith": "^4.6.2",
     "lodash.sortby": "^4.7.0",
     "lodash.sumby": "^4.6.0",
-    "medici": "^6.3.2",
+    "medici": "^7.0.0",
     "mongoose": "8.0.3",
     "node-cache": "^5.1.2",
     "openai": "^4.35.0",

@@ -49,9 +49,7 @@ impl EmailExecutor {
             .and_then(|s| s.email_address().map(|addr| (s, addr)))
         {
             let msg = event.to_localized_email(&settings.locale().unwrap_or_default());
-            if let Some(msg) = msg {
-                self.smtp.send_email(msg, addr).await?;
-            }
+            self.smtp.send_email(msg, addr).await?;
         }
         Ok(())
     }
