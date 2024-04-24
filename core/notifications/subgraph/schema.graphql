@@ -79,7 +79,7 @@ scalar Timestamp
 extend type User @key(fields: "id") {
 	id: ID! @external
 	statefulNotifications(first: Int!, after: String): StatefulNotificationConnection!
-	language: Language
+	language: Language!
 }
 
 extend schema @link(

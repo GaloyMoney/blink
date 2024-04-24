@@ -47,6 +47,12 @@ impl From<GaloyLocale> for Language {
     }
 }
 
+impl Default for Language {
+    fn default() -> Self {
+        Language("".to_string())
+    }
+}
+
 #[Scalar(name = "Language")]
 impl ScalarType for Language {
     fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {

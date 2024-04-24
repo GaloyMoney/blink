@@ -2061,7 +2061,7 @@ type User
   id: ID!
   apiKeys: [ApiKey!]! @join__field(graph: API_KEYS)
   statefulNotifications(first: Int!, after: String): StatefulNotificationConnection! @join__field(graph: NOTIFICATIONS)
-  language: Language @join__field(graph: NOTIFICATIONS)
+  language: Language! @join__field(graph: NOTIFICATIONS)
 
   """
   Get single contact details.
