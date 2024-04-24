@@ -243,3 +243,16 @@ impl From<Currency> for &'static str {
         c.code()
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct ReadPool(sqlx::PgPool);
+impl ReadPool {
+    pub fn inner(&self) -> &sqlx::PgPool {
+        &self.0
+    }
+}
+impl From<sqlx::PgPool> for ReadPool {
+    fn from(pool: sqlx::PgPool) -> Self {
+        Self(pool)
+    }
+}

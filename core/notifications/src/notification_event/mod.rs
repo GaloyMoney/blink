@@ -48,12 +48,17 @@ pub trait NotificationEvent: std::fmt::Debug + Send + Sync {
     fn deep_link(&self) -> Option<DeepLink> {
         None
     }
-    fn to_localized_push_msg(&self, locale: &GaloyLocale) -> LocalizedPushMessage;
+    fn should_send_push(&self) -> bool {
+        false
+    }
+    fn to_localized_push_msg(&self, _locale: &GaloyLocale) -> LocalizedPushMessage {
+        unimplemented!()
+    }
     fn should_send_email(&self) -> bool {
         false
     }
-    fn to_localized_email(&self, _locale: &GaloyLocale) -> Option<LocalizedEmail> {
-        None
+    fn to_localized_email(&self, _locale: &GaloyLocale) -> LocalizedEmail {
+        unimplemented!()
     }
     fn should_be_added_to_history(&self) -> bool {
         false

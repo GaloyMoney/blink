@@ -20,6 +20,10 @@ impl NotificationEvent for CircleThresholdReached {
         Some(DeepLink::Circles)
     }
 
+    fn should_send_push(&self) -> bool {
+        true
+    }
+
     fn to_localized_push_msg(&self, locale: &GaloyLocale) -> LocalizedPushMessage {
         let title = match self.circle_type {
             CircleType::Inner => t!(
