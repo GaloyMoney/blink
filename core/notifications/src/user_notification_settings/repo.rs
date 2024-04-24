@@ -10,16 +10,36 @@ const PAGINATION_BATCH_SIZE: i64 = 1000;
 #[derive(Debug, Clone)]
 pub struct UserNotificationSettingsRepo {
     pool: PgPool,
+    read_pool: ReadPool,
 }
 
 impl UserNotificationSettingsRepo {
-    pub fn new(pool: &PgPool) -> Self {
-        Self { pool: pool.clone() }
+    pub fn new(pool: &PgPool, read_pool: &ReadPool) -> Self {
+        Self {
+            pool: pool.clone(),
+            read_pool: read_pool.clone(),
+        }
+    }
+
+    pub async fn find_for_user_id_for_mut(
+        &self,
+        user_id: &GaloyUserId,
+    ) -> Result<UserNotificationSettings, UserNotificationSettingsError> {
+        self.find_for_user_id_inner(user_id, &self.pool).await
     }
 
     pub async fn find_for_user_id(
         &self,
         user_id: &GaloyUserId,
+    ) -> Result<UserNotificationSettings, UserNotificationSettingsError> {
+        self.find_for_user_id_inner(user_id, self.read_pool.inner())
+            .await
+    }
+
+    async fn find_for_user_id_inner(
+        &self,
+        user_id: &GaloyUserId,
+        pool: &PgPool,
     ) -> Result<UserNotificationSettings, UserNotificationSettingsError> {
         let rows = sqlx::query_as!(
             GenericEvent,
@@ -31,7 +51,7 @@ impl UserNotificationSettingsRepo {
             ORDER BY e.sequence"#,
             user_id.as_ref(),
         )
-        .fetch_all(&self.pool)
+        .fetch_all(pool)
         .await?;
 
         let res = EntityEvents::load_first::<UserNotificationSettings>(rows);

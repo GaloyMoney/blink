@@ -14,6 +14,8 @@ struct Cli {
     config: Option<PathBuf>,
     #[clap(env = "PG_CON")]
     pg_con: String,
+    #[clap(env = "PG_READ_CON")]
+    pg_read_con: String,
     #[clap(env = "EMAIL_PASSWORD", default_value = "password")]
     email_password: String,
     #[clap(env = "KRATOS_PG_CON")]
@@ -27,6 +29,7 @@ pub async fn run() -> anyhow::Result<()> {
         cli.config,
         EnvOverride {
             db_con: cli.pg_con,
+            db_read_con: cli.pg_read_con,
             email_password: cli.email_password,
             kratos_pg_con: cli.kratos_pg_con,
         },
@@ -42,8 +45,8 @@ async fn run_cmd(config: Config) -> anyhow::Result<()> {
 
     let (send, mut receive) = tokio::sync::mpsc::channel(1);
     let mut handles = vec![];
-    let pool = db::init_pool(&config.db).await?;
-    let app = crate::app::NotificationsApp::init(pool, config.app).await?;
+    let (pool, read_pool) = db::init_pool(&config.db).await?;
+    let app = crate::app::NotificationsApp::init(pool, read_pool, config.app).await?;
     if config.kratos_import.execute_import && config.kratos_import.pg_con.is_some() {
         crate::data_import::import_email_addresses(app.clone(), config.kratos_import).await?;
     }

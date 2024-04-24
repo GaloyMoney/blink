@@ -8,11 +8,12 @@ use super::{entity::*, error::*};
 #[derive(Debug, Clone)]
 pub(super) struct PersistentNotifications {
     pool: PgPool,
+    read_pool: ReadPool,
 }
 
 impl PersistentNotifications {
-    pub fn new(pool: PgPool) -> Self {
-        Self { pool }
+    pub fn new(pool: PgPool, read_pool: ReadPool) -> Self {
+        Self { pool, read_pool }
     }
 
     pub async fn create_in_tx(
@@ -110,7 +111,7 @@ impl PersistentNotifications {
             after as Option<StatefulNotificationId>,
             first as i64 + 1
         )
-        .fetch_all(&self.pool)
+        .fetch_all(self.read_pool.inner())
         .await?;
         let res = EntityEvents::load_n::<StatefulNotification>(rows, first)?;
         Ok(res)

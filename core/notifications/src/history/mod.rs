@@ -6,7 +6,7 @@ use sqlx::PgPool;
 
 use crate::{
     notification_event::NotificationEventPayload,
-    primitives::{GaloyUserId, StatefulNotificationId},
+    primitives::{GaloyUserId, ReadPool, StatefulNotificationId},
     user_notification_settings::*,
 };
 
@@ -21,8 +21,12 @@ pub struct NotificationHistory {
 }
 
 impl NotificationHistory {
-    pub fn new(pool: &PgPool, settings: UserNotificationSettingsRepo) -> Self {
-        let repo = PersistentNotifications::new(pool.clone());
+    pub fn new(
+        pool: &PgPool,
+        read_pool: &ReadPool,
+        settings: UserNotificationSettingsRepo,
+    ) -> Self {
+        let repo = PersistentNotifications::new(pool.clone(), read_pool.clone());
         Self { repo, settings }
     }
 
