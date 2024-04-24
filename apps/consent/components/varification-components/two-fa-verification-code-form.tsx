@@ -28,6 +28,7 @@ const TwoFaVerificationForm: React.FC<TwoFaVerificationFormProps> = ({
         id="totpCode"
         name="totpCode"
         placeholder="Enter code here"
+        autoFocus
       />
       <PrimaryButtonComponent type="submit">Submit</PrimaryButtonComponent>
     </form>

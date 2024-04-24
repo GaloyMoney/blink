@@ -128,7 +128,7 @@ const PhoneAuthForm: React.FC<AuthFormProps> = ({
         <SelectComponent
           id="channel"
           name="channel"
-          placeHolder="Channel"
+          defaultValue="SMS"
           options={["SMS", "WhatsApp"]}
           required
         ></SelectComponent>
