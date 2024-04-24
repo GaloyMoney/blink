@@ -23,23 +23,81 @@ pub(super) use price_changed::*;
 pub(super) use transaction_occurred::*;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum DeepLink {
+pub struct DeepLink {
+    pub screen: Option<DeepLinkScreen>,
+    pub action: Option<DeepLinkAction>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum DeepLinkScreen {
     Circles,
     Price,
     Earn,
     Map,
     People,
+    Home,
+    Receive,
+    Convert,
+    ScanQR,
+    Chat,
+    Settings,
+    Settings2FA,
+    SettingsDisplayCurrency,
+    SettingsDefaultAccount,
+    SettingsLanguage,
+    SettingsTheme,
+    SettingsSecurity,
+    SettingsAccount,
+    SettingsTxLimits,
+    SettingsNotifications,
+    SettingsEmail,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum DeepLinkAction {
+    SetLnAddressModal,
+    SetDefaultAccountModal,
+    UpgradeAccountModal,
 }
 
 impl DeepLink {
     pub fn to_link_string(&self) -> String {
-        match self {
-            DeepLink::Circles => "/people/circles".to_string(),
-            DeepLink::Price => "/price".to_string(),
-            DeepLink::Earn => "/earn".to_string(),
-            DeepLink::Map => "/map".to_string(),
-            DeepLink::People => "/people".to_string(),
+        let mut link_string: String = String::from("/");
+        if let Some(screen) = &self.screen {
+            let screen = match screen {
+                DeepLinkScreen::Circles => "people/circles".to_string(),
+                DeepLinkScreen::Price => "price".to_string(),
+                DeepLinkScreen::Earn => "earn".to_string(),
+                DeepLinkScreen::Map => "map".to_string(),
+                DeepLinkScreen::People => "people".to_string(),
+                DeepLinkScreen::Home => "home".to_string(),
+                DeepLinkScreen::Receive => "receive".to_string(),
+                DeepLinkScreen::Convert => "convert".to_string(),
+                DeepLinkScreen::ScanQR => "scan-qr".to_string(),
+                DeepLinkScreen::Chat => "chat".to_string(),
+                DeepLinkScreen::Settings => "settings".to_string(),
+                DeepLinkScreen::Settings2FA => "settings/2fa".to_string(),
+                DeepLinkScreen::SettingsDisplayCurrency => "settings/display-currency".to_string(),
+                DeepLinkScreen::SettingsDefaultAccount => "settings/default-account".to_string(),
+                DeepLinkScreen::SettingsLanguage => "settings/language".to_string(),
+                DeepLinkScreen::SettingsTheme => "settings/theme".to_string(),
+                DeepLinkScreen::SettingsSecurity => "settings/security".to_string(),
+                DeepLinkScreen::SettingsAccount => "settings/account".to_string(),
+                DeepLinkScreen::SettingsTxLimits => "settings/tx-limits".to_string(),
+                DeepLinkScreen::SettingsNotifications => "settings/notifications".to_string(),
+                DeepLinkScreen::SettingsEmail => "settings/email".to_string(),
+            };
+            link_string.push_str(&screen);
         }
+        if let Some(action) = &self.action {
+            let action = match action {
+                DeepLinkAction::SetLnAddressModal => "set-ln-address".to_string(),
+                DeepLinkAction::SetDefaultAccountModal => "set-default-account".to_string(),
+                DeepLinkAction::UpgradeAccountModal => "upgrade-account".to_string(),
+            };
+            link_string.push_str(&format!("?action={}", action));
+        }
+        link_string
     }
 }
 
@@ -63,6 +121,11 @@ pub trait NotificationEvent: std::fmt::Debug + Send + Sync {
     fn should_be_added_to_history(&self) -> bool {
         false
     }
+
+    fn should_be_added_to_bulletin(&self) -> bool {
+        false
+    }
+
     fn to_localized_persistent_message(&self, _locale: GaloyLocale) -> LocalizedStatefulMessage {
         unimplemented!()
     }
