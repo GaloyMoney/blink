@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(notifications): introduce ReadPool (#4348)'
-      sha: 5646c01b505c5d7037636866e9b0c396407e2eb7
+      commitTitle: 'refactor(core): add accountId field to WalletInvoice (#4345)...'
+      sha: a8d14bdcd0171133fa02001e7daec451e5f5a686
       tags:
-      - 0.20.161-3-g5646c01b5
+      - 0.20.162-2-ga8d14bdcd
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(notifications): introduce ReadPool (#4348)'
-      sha: 5646c01b505c5d7037636866e9b0c396407e2eb7
+      commitTitle: 'refactor(core): add accountId field to WalletInvoice (#4345)...'
+      sha: a8d14bdcd0171133fa02001e7daec451e5f5a686
       tags:
-      - 0.20.162
+      - 0.20.162-2-ga8d14bdcd
     path: schemas
   - git:
-      commitTitle: 'chore(notifications): introduce ReadPool (#4348)'
-      sha: 5646c01b505c5d7037636866e9b0c396407e2eb7
+      commitTitle: 'refactor(core): add accountId field to WalletInvoice (#4345)...'
+      sha: a8d14bdcd0171133fa02001e7daec451e5f5a686
       tags:
-      - 0.20.162
+      - 0.20.162-2-ga8d14bdcd
     path: gql
   path: graphql
 kind: LockConfig
