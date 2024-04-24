@@ -62,6 +62,7 @@ const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({
           data-testid="verification_code_input"
           onChange={handleChange}
           value={code}
+          autoFocus
         />
         <PrimaryButtonComponent data-testid="verification_code_submit_btn" type="submit">
           Submit
