@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): medici balance performance (#4355)'
-      sha: 1e5f75e9d392ad41db2dacd96e82760ba8a11975
+      commitTitle: 'chore: upgrade package (#4351)'
+      sha: 2e44b05c7696bdbcceed626e18fef375e1d42b97
       tags:
-      - 0.20.163-3-g1e5f75e9d
+      - 0.20.164-2-g2e44b05c7
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): medici balance performance (#4355)'
-      sha: 1e5f75e9d392ad41db2dacd96e82760ba8a11975
+      commitTitle: 'chore: upgrade package (#4351)'
+      sha: 2e44b05c7696bdbcceed626e18fef375e1d42b97
       tags:
-      - 0.20.164
+      - 0.20.164-2-g2e44b05c7
     path: schemas
   - git:
-      commitTitle: 'fix(core): medici balance performance (#4355)'
-      sha: 1e5f75e9d392ad41db2dacd96e82760ba8a11975
+      commitTitle: 'chore: upgrade package (#4351)'
+      sha: 2e44b05c7696bdbcceed626e18fef375e1d42b97
       tags:
-      - 0.20.164
+      - 0.20.164-2-g2e44b05c7
     path: gql
   path: graphql
 kind: LockConfig
