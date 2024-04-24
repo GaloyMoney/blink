@@ -1,3 +1,5 @@
+scalar Language
+
 type Mutation {
 	statefulNotificationAcknowledge(input: StatefulNotificationAcknowledgeInput!): StatefulNotificationAcknowledgePayload!
 }
@@ -77,6 +79,7 @@ scalar Timestamp
 extend type User @key(fields: "id") {
 	id: ID! @external
 	statefulNotifications(first: Int!, after: String): StatefulNotificationConnection!
+	language: Language
 }
 
 extend schema @link(

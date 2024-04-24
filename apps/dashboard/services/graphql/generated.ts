@@ -2013,11 +2013,7 @@ export type User = {
   /** Email address */
   readonly email?: Maybe<Email>;
   readonly id: Scalars['ID']['output'];
-  /**
-   * Preferred language for user.
-   * When value is 'default' the intent is to use preferred language from OS settings.
-   */
-  readonly language: Scalars['Language']['output'];
+  readonly language?: Maybe<Scalars['Language']['output']>;
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']['output']>;
   readonly statefulNotifications: StatefulNotificationConnection;
@@ -2420,7 +2416,7 @@ export type GetDefaultWalletByUsernameQuery = { readonly __typename: 'Query', re
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly createdAt: number, readonly id: string, readonly language: string, readonly phone?: string | null, readonly totpEnabled: boolean, readonly username?: string | null, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly defaultWalletId: string, readonly displayCurrency: string, readonly id: string, readonly level: AccountLevel, readonly callbackPortalUrl: string, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly accountId: string, readonly balance: number, readonly id: string, readonly pendingIncomingBalance: number, readonly walletCurrency: WalletCurrency } | { readonly __typename: 'UsdWallet', readonly accountId: string, readonly balance: number, readonly id: string, readonly pendingIncomingBalance: number, readonly walletCurrency: WalletCurrency }> }, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null } | null };
+export type MeQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly createdAt: number, readonly id: string, readonly language?: string | null, readonly phone?: string | null, readonly totpEnabled: boolean, readonly username?: string | null, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly defaultWalletId: string, readonly displayCurrency: string, readonly id: string, readonly level: AccountLevel, readonly callbackPortalUrl: string, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly accountId: string, readonly balance: number, readonly id: string, readonly pendingIncomingBalance: number, readonly walletCurrency: WalletCurrency } | { readonly __typename: 'UsdWallet', readonly accountId: string, readonly balance: number, readonly id: string, readonly pendingIncomingBalance: number, readonly walletCurrency: WalletCurrency }> }, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null } | null };
 
 export type RealtimePriceQueryVariables = Exact<{
   currency?: InputMaybe<Scalars['DisplayCurrency']['input']>;
@@ -4816,7 +4812,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   defaultAccount?: Resolver<ResolversTypes['Account'], ParentType, ContextType>;
   email?: Resolver<Maybe<ResolversTypes['Email']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  language?: Resolver<ResolversTypes['Language'], ParentType, ContextType>;
+  language?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['Phone']>, ParentType, ContextType>;
   statefulNotifications?: Resolver<ResolversTypes['StatefulNotificationConnection'], ParentType, ContextType, RequireFields<UserStatefulNotificationsArgs, 'first'>>;
   supportChat?: Resolver<ReadonlyArray<ResolversTypes['SupportMessage']>, ParentType, ContextType>;

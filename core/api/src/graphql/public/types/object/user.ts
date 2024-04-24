@@ -66,15 +66,6 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
       deprecationReason: "will be moved to @Handle in Account and Wallet",
     },
 
-    language: {
-      type: GT.NonNull(Language),
-      description: dedent`Preferred language for user.
-        When value is 'default' the intent is to use preferred language from OS settings.`,
-      resolve: async (source) => {
-        return Users.getUserLanguage(source)
-      },
-    },
-
     contacts: {
       deprecationReason: "will be moved to account",
       type: GT.NonNullList(AccountContact), // TODO: Make it a Connection Interface

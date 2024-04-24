@@ -1592,12 +1592,6 @@ type User {
   email: Email
   id: ID!
 
-  """
-  Preferred language for user.
-  When value is 'default' the intent is to use preferred language from OS settings.
-  """
-  language: Language!
-
   """Phone number with international calling code."""
   phone: Phone
   supportChat: [SupportMessage!]!
