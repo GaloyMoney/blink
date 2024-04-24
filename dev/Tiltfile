@@ -618,6 +618,7 @@ local_resource(
     serve_cmd = "buck2 run {}".format(notifications_target),
     serve_env = {
       "PG_CON": "postgres://user:password@localhost:5433/pg",
+      "PG_READ_CON": "postgres://user:password@localhost:5433/pg",
       "NOTIFICATIONS_CONFIG": "./config/notifications/notifications.yml",
       "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
     },
