@@ -9,7 +9,7 @@ setup_file() {
 
   exec_graphql 'alice' 'user-details'
   language="$(graphql_output '.data.me.language')"
-  [[ "$language" == "" ]] || exit 1
+  [[ "$language" == "null" ]] || exit 1
 
   local variables=$(
     jq -n \
