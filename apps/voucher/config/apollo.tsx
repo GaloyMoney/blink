@@ -9,17 +9,19 @@ import {
 import { RetryLink } from "@apollo/client/link/retry"
 import { onError } from "@apollo/client/link/error"
 
-import { env } from "@/env"
-
-const { NEXT_PUBLIC_CORE_URL, NEXT_PUBLIC_VOUCHER_URL } = env
-
-function makeClient() {
+function makeClient({
+  coreGqlUrl,
+  voucherUrl,
+}: {
+  coreGqlUrl: string
+  voucherUrl: string
+}) {
   const httpLinkMainnet = new HttpLink({
-    uri: NEXT_PUBLIC_CORE_URL,
+    uri: coreGqlUrl,
   })
 
   const httpLinkLocal = new HttpLink({
-    uri: `${NEXT_PUBLIC_VOUCHER_URL}/api/graphql`,
+    uri: `${voucherUrl}/api/graphql`,
   })
 
   const errorLink = onError(({ graphQLErrors, networkError }) => {
@@ -65,8 +67,17 @@ function makeClient() {
   })
 }
 
-export default function ApolloWrapper({ children }: { children: React.ReactNode }) {
-  const client = makeClient()
+export default function ApolloWrapper({
+  config,
+  children,
+}: {
+  config: {
+    coreGqlUrl: string
+    voucherUrl: string
+  }
+  children: React.ReactNode
+}) {
+  const client = makeClient(config)
   return (
     <ApolloNextAppProvider makeClient={() => client}>{children}</ApolloNextAppProvider>
   )
