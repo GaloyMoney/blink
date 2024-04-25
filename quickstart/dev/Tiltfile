@@ -362,7 +362,6 @@ local_resource(
   auto_init = is_ci and PAY_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(pay_test_target),
   resource_deps = [
-    "api",
     "pay",
     "add-test-users-with-usernames",
     "fund-user",

@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: regression on env variable (#4366)...'
-      sha: 91711a54e4e64003969714ffe320216604a30b3b
+      commitTitle: 'ci: separate build steps in integration tests (#4367)'
+      sha: 3e387a9996a428daa6b2f04c04f8317d15de3b3a
       tags:
-      - 0.20.167-2-g91711a54e
+      - 0.20.167-4-g3e387a999
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: regression on env variable (#4366)...'
-      sha: 91711a54e4e64003969714ffe320216604a30b3b
+      commitTitle: 'ci: separate build steps in integration tests (#4367)'
+      sha: 3e387a9996a428daa6b2f04c04f8317d15de3b3a
       tags:
-      - 0.20.167-2-g91711a54e
+      - 0.20.167-4-g3e387a999
     path: schemas
   - git:
-      commitTitle: 'fix: regression on env variable (#4366)...'
-      sha: 91711a54e4e64003969714ffe320216604a30b3b
+      commitTitle: 'ci: separate build steps in integration tests (#4367)'
+      sha: 3e387a9996a428daa6b2f04c04f8317d15de3b3a
       tags:
-      - 0.20.167-2-g91711a54e
+      - 0.20.167-4-g3e387a999
     path: gql
   path: graphql
 kind: LockConfig
