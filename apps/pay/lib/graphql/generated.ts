@@ -2203,6 +2203,13 @@ export type GetPaginatedTransactionsQueryVariables = Exact<{
 
 export type GetPaginatedTransactionsQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly id: string, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly transactions?: { readonly __typename: 'TransactionConnection', readonly edges?: ReadonlyArray<{ readonly __typename: 'TransactionEdge', readonly cursor: string, readonly node: { readonly __typename: 'Transaction', readonly createdAt: number, readonly direction: TxDirection, readonly id: string, readonly memo?: string | null, readonly settlementAmount: number, readonly settlementCurrency: WalletCurrency, readonly settlementDisplayAmount: string, readonly settlementDisplayCurrency: string, readonly settlementDisplayFee: string, readonly settlementFee: number, readonly status: TxStatus, readonly settlementVia: { readonly __typename: 'SettlementViaIntraLedger', readonly counterPartyUsername?: string | null, readonly counterPartyWalletId?: string | null } | { readonly __typename: 'SettlementViaLn', readonly paymentSecret?: string | null, readonly preImage?: string | null } | { readonly __typename: 'SettlementViaOnChain', readonly transactionHash?: string | null, readonly vout?: number | null }, readonly settlementPrice: { readonly __typename: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit', readonly base: number, readonly currencyUnit: string, readonly formattedAmount: string, readonly offset: number }, readonly initiationVia: { readonly __typename: 'InitiationViaIntraLedger', readonly counterPartyUsername?: string | null, readonly counterPartyWalletId?: string | null } | { readonly __typename: 'InitiationViaLn', readonly paymentHash: string } | { readonly __typename: 'InitiationViaOnChain', readonly address: string } } }> | null, readonly pageInfo: { readonly __typename: 'PageInfo', readonly endCursor?: string | null, readonly hasNextPage: boolean, readonly hasPreviousPage: boolean, readonly startCursor?: string | null } } | null } } | null };
 
+export type LnInvoicePaymentStatusByHashQueryVariables = Exact<{
+  input: LnInvoicePaymentStatusByHashInput;
+}>;
+
+
+export type LnInvoicePaymentStatusByHashQuery = { readonly __typename: 'Query', readonly lnInvoicePaymentStatusByHash: { readonly __typename: 'LnInvoicePaymentStatus', readonly paymentHash?: string | null, readonly paymentRequest?: string | null, readonly status?: InvoicePaymentStatus | null } };
+
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2407,6 +2414,43 @@ export function useGetPaginatedTransactionsLazyQuery(baseOptions?: Apollo.LazyQu
 export type GetPaginatedTransactionsQueryHookResult = ReturnType<typeof useGetPaginatedTransactionsQuery>;
 export type GetPaginatedTransactionsLazyQueryHookResult = ReturnType<typeof useGetPaginatedTransactionsLazyQuery>;
 export type GetPaginatedTransactionsQueryResult = Apollo.QueryResult<GetPaginatedTransactionsQuery, GetPaginatedTransactionsQueryVariables>;
+export const LnInvoicePaymentStatusByHashDocument = gql`
+    query LnInvoicePaymentStatusByHash($input: LnInvoicePaymentStatusByHashInput!) {
+  lnInvoicePaymentStatusByHash(input: $input) {
+    paymentHash
+    paymentRequest
+    status
+  }
+}
+    `;
+
+/**
+ * __useLnInvoicePaymentStatusByHashQuery__
+ *
+ * To run a query within a React component, call `useLnInvoicePaymentStatusByHashQuery` and pass it any options that fit your needs.
+ * When your component renders, `useLnInvoicePaymentStatusByHashQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useLnInvoicePaymentStatusByHashQuery({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useLnInvoicePaymentStatusByHashQuery(baseOptions: Apollo.QueryHookOptions<LnInvoicePaymentStatusByHashQuery, LnInvoicePaymentStatusByHashQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<LnInvoicePaymentStatusByHashQuery, LnInvoicePaymentStatusByHashQueryVariables>(LnInvoicePaymentStatusByHashDocument, options);
+      }
+export function useLnInvoicePaymentStatusByHashLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<LnInvoicePaymentStatusByHashQuery, LnInvoicePaymentStatusByHashQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<LnInvoicePaymentStatusByHashQuery, LnInvoicePaymentStatusByHashQueryVariables>(LnInvoicePaymentStatusByHashDocument, options);
+        }
+export type LnInvoicePaymentStatusByHashQueryHookResult = ReturnType<typeof useLnInvoicePaymentStatusByHashQuery>;
+export type LnInvoicePaymentStatusByHashLazyQueryHookResult = ReturnType<typeof useLnInvoicePaymentStatusByHashLazyQuery>;
+export type LnInvoicePaymentStatusByHashQueryResult = Apollo.QueryResult<LnInvoicePaymentStatusByHashQuery, LnInvoicePaymentStatusByHashQueryVariables>;
 export const MeDocument = gql`
     query me {
   me {

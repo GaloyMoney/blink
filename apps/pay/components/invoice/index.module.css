@@ -1,0 +1,60 @@
+.invoiceContainer {
+  margin-top: 1.5em;
+  display: grid;
+  place-items: center;
+}
+
+.timerContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 300px;
+  column-gap: 15px;
+  font-size: 16px;
+  font-weight: 300;
+  margin-top: 30px;
+  margin-bottom: 5px;
+}
+
+.timerContainer > p {
+  margin: 0;
+}
+
+.qrClipboard {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: 1fr 1fr;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.3em 1em;
+}
+
+.qrClipboard > button {
+  width: fit-content;
+  background-color: transparent;
+  color: rgba(145, 155, 186, 1);
+  font-weight: 500;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  outline: none;
+  column-gap: 5px;
+  cursor: pointer;
+}
+
+.qrClipboard > button:first-child {
+  cursor: copy;
+}
+
+.qrClipboard > button:first-child:hover {
+  color: green;
+}
+
+.qrClipboard .shareBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  column-gap: 5px;
+}
