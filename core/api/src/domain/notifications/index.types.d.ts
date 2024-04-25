@@ -61,16 +61,19 @@ type SendFilteredPushNotificationArgs = {
   notificationCategory: NotificationCategory
 }
 
-type DeepLink =
-  (typeof import("./index").DeepLink)[keyof typeof import("./index").DeepLink]
+type DeepLinkScreen =
+  (typeof import("./index").DeepLinkScreen)[keyof typeof import("./index").DeepLinkScreen]
 
-type LocalizedPushTitle = string & { readonly brand: unique symbol }
+type DeepLinkAction =
+  (typeof import("./index").DeepLinkAction)[keyof typeof import("./index").DeepLinkAction]
 
-type LocalizedPushBody = string & { readonly brand: unique symbol }
+type LocalizedNotificationTitle = string & { readonly brand: unique symbol }
 
-type LocalizedPushContent = {
-  title: LocalizedPushTitle
-  body: LocalizedPushBody
+type LocalizedNotificationBody = string & { readonly brand: unique symbol }
+
+type LocalizedNotificationContent = {
+  title: LocalizedNotificationTitle
+  body: LocalizedNotificationBody
   language: UserLanguage
 }
 interface INotificationsService {
@@ -134,6 +137,10 @@ interface INotificationsService {
 
 type TriggerMarketingNotificationArgs = {
   userIds: UserId[]
-  deepLink: DeepLink | undefined
-  localizedPushContents: Map<UserLanguage, LocalizedPushContent>
+  deepLinkScreen: DeepLinkScreen | undefined
+  deepLinkAction: DeepLinkAction | undefined
+  shouldSendPush: boolean
+  shouldAddToHistory: boolean
+  shouldAddToBulletin: boolean
+  localizedContents: Map<UserLanguage, LocalizedNotificationContent>
 }

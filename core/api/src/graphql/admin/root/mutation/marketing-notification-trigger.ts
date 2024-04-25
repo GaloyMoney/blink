@@ -3,11 +3,12 @@ import CountryCode from "@/graphql/public/types/scalar/country-code"
 import Language from "@/graphql/shared/types/scalar/language"
 import { Admin } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
-import DeepLink from "@/graphql/admin/types/scalar/deep-link"
+import DeepLinkScreen from "@/graphql/admin/types/scalar/deep-link-screen"
 import SuccessPayload from "@/graphql/shared/types/payload/success-payload"
+import DeepLinkAction from "../../types/scalar/deep-link-action"
 
-const LocalizedPushContentInput = GT.Input({
-  name: "LocalizedPushContentInput",
+const LocalizedNotificationContentInput = GT.Input({
+  name: "LocalizedNotificationContentInput",
   fields: () => ({
     language: {
       type: GT.NonNull(Language),
@@ -30,11 +31,23 @@ const MarketingNotificationTriggerInput = GT.Input({
     phoneCountryCodesFilter: {
       type: GT.List(GT.NonNull(CountryCode)),
     },
-    deepLink: {
-      type: DeepLink,
+    shouldSendPush: {
+      type: GT.NonNull(GT.Boolean),
     },
-    localizedPushContents: {
-      type: GT.NonNullList(LocalizedPushContentInput),
+    shouldAddToHistory: {
+      type: GT.NonNull(GT.Boolean),
+    },
+    shouldAddToBulletin: {
+      type: GT.NonNull(GT.Boolean),
+    },
+    deepLinkScreen: {
+      type: DeepLinkScreen,
+    },
+    deepLinkAction: {
+      type: DeepLinkAction,
+    },
+    localizedNotificationContents: {
+      type: GT.NonNullList(LocalizedNotificationContentInput),
     },
   }),
 })
@@ -46,8 +59,12 @@ const MarketingNotificationTriggerMutation = GT.Field<
     input: {
       userIdsFilter: (string | Error)[] | undefined
       phoneCountryCodesFilter: (string | Error)[] | undefined
-      deepLink: DeepLink | Error | undefined
-      localizedPushContents: {
+      shouldSendPush: boolean
+      shouldAddToHistory: boolean
+      shouldAddToBulletin: boolean
+      deepLinkScreen: DeepLinkScreen | Error | undefined
+      deepLinkAction: DeepLinkAction | Error | undefined
+      localizedNotificationContents: {
         title: string
         body: string
         language: string | Error
@@ -63,8 +80,16 @@ const MarketingNotificationTriggerMutation = GT.Field<
     input: { type: GT.NonNull(MarketingNotificationTriggerInput) },
   },
   resolve: async (_, args) => {
-    const { userIdsFilter, phoneCountryCodesFilter, deepLink, localizedPushContents } =
-      args.input
+    const {
+      userIdsFilter,
+      phoneCountryCodesFilter,
+      shouldSendPush,
+      shouldAddToHistory,
+      shouldAddToBulletin,
+      deepLinkScreen,
+      deepLinkAction,
+      localizedNotificationContents,
+    } = args.input
 
     const nonErrorUserIdsFilter: string[] = []
     for (const id of userIdsFilter || []) {
@@ -74,8 +99,12 @@ const MarketingNotificationTriggerMutation = GT.Field<
       nonErrorUserIdsFilter.push(id)
     }
 
-    if (deepLink instanceof Error) {
-      return { errors: [{ message: deepLink.message }], success: false }
+    if (deepLinkScreen instanceof Error) {
+      return { errors: [{ message: deepLinkScreen.message }], success: false }
+    }
+
+    if (deepLinkAction instanceof Error) {
+      return { errors: [{ message: deepLinkAction.message }], success: false }
     }
 
     const nonErrorPhoneCountryCodesFilter: string[] = []
@@ -86,17 +115,17 @@ const MarketingNotificationTriggerMutation = GT.Field<
       nonErrorPhoneCountryCodesFilter.push(code)
     }
 
-    const nonErrorLocalizedPushContents: {
+    const nonErrorLocalizedNotificationContents: {
       title: string
       body: string
       language: string
     }[] = []
 
-    for (const content of localizedPushContents) {
+    for (const content of localizedNotificationContents) {
       if (content.language instanceof Error) {
         return { errors: [{ message: content.language.message }], success: false }
       }
-      nonErrorLocalizedPushContents.push({
+      nonErrorLocalizedNotificationContents.push({
         title: content.title,
         body: content.body,
         language: content.language,
@@ -106,8 +135,12 @@ const MarketingNotificationTriggerMutation = GT.Field<
     const res = await Admin.triggerMarketingNotification({
       userIdsFilter: nonErrorUserIdsFilter,
       phoneCountryCodesFilter: nonErrorPhoneCountryCodesFilter,
-      deepLink,
-      localizedPushContents: nonErrorLocalizedPushContents,
+      deepLinkScreen,
+      deepLinkAction,
+      shouldSendPush,
+      shouldAddToHistory,
+      shouldAddToBulletin,
+      localizedNotificationContents: nonErrorLocalizedNotificationContents,
     })
 
     if (res instanceof Error) {

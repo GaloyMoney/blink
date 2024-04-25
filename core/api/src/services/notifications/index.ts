@@ -1,4 +1,6 @@
 import {
+  deepLinkActionToGrpcDeepLinkAction,
+  deepLinkScreenToGrpcDeepLinkScreen,
   grpcNotificationSettingsToNotificationSettings,
   notificationCategoryToGrpcNotificationCategory,
   notificationChannelToGrpcNotificationChannel,
@@ -7,7 +9,7 @@ import {
 import {
   TransactionType as ProtoTransactionType,
   Money as ProtoMoney,
-  LocalizedPushContent,
+  LocalizedContent,
   AddPushDeviceTokenRequest,
   DisableNotificationCategoryRequest,
   DisableNotificationChannelRequest,
@@ -23,16 +25,20 @@ import {
   TransactionOccurred,
   MarketingNotificationTriggered,
   DeepLink as ProtoDeepLink,
+  HandleNotificationEventResponse,
 } from "./proto/notifications_pb"
 
 import * as notificationsGrpc from "./grpc-client"
 
 import { handleCommonNotificationErrors } from "./errors"
 
-import { getCallbackServiceConfig, USER_NOTIFICATION_SETTINGS_TIMEOUT_MS } from "@/config"
+import {
+  getCallbackServiceConfig,
+  MARKETING_NOTIFICATION_USER_BATCH_SIZE,
+  USER_NOTIFICATION_SETTINGS_TIMEOUT_MS,
+} from "@/config"
 
 import {
-  DeepLink,
   NotificationsServiceError,
   NotificationType,
   UnknownNotificationsServiceError,
@@ -587,54 +593,63 @@ export const NotificationsService = (): INotificationsService => {
 
   const triggerMarketingNotification = async ({
     userIds,
-    localizedPushContents,
-    deepLink,
+    localizedContents: localizedPushContents,
+    deepLinkScreen,
+    deepLinkAction,
+    shouldSendPush,
+    shouldAddToHistory,
+    shouldAddToBulletin,
   }: TriggerMarketingNotificationArgs): Promise<true | NotificationsServiceError> => {
     try {
-      const marketingNotification = new MarketingNotificationTriggered()
-      marketingNotification.setUserIdsList(userIds)
+      const protoDeepLink =
+        deepLinkScreen !== undefined
+          ? deepLinkScreenToGrpcDeepLinkScreen(deepLinkScreen)
+          : undefined
 
-      localizedPushContents.forEach((content, language) => {
-        const { title, body } = content
-        const localizedContent = new LocalizedPushContent()
-        localizedContent.setTitle(title)
-        localizedContent.setBody(body)
-        marketingNotification.getLocalizedPushContentMap().set(language, localizedContent)
-      })
+      const protoDeepLinkAction =
+        deepLinkAction !== undefined
+          ? deepLinkActionToGrpcDeepLinkAction(deepLinkAction)
+          : undefined
 
-      let protoDeepLink: ProtoDeepLink | undefined = undefined
-      switch (deepLink) {
-        case DeepLink.Circles:
-          protoDeepLink = ProtoDeepLink.CIRCLES
-          break
-        case DeepLink.Price:
-          protoDeepLink = ProtoDeepLink.PRICE
-          break
-        case DeepLink.Earn:
-          protoDeepLink = ProtoDeepLink.EARN
-          break
-        case DeepLink.Map:
-          protoDeepLink = ProtoDeepLink.MAP
-          break
-        case DeepLink.People:
-          protoDeepLink = ProtoDeepLink.PEOPLE
-          break
+      let deepLink: ProtoDeepLink | undefined = undefined
+      if (protoDeepLink !== undefined || protoDeepLinkAction !== undefined) {
+        deepLink = new ProtoDeepLink()
+        if (protoDeepLink !== undefined) deepLink.setScreen(protoDeepLink)
+        if (protoDeepLinkAction !== undefined) deepLink.setAction(protoDeepLinkAction)
       }
 
-      if (protoDeepLink) {
-        marketingNotification.setDeepLink(protoDeepLink)
+      let marketingNotifictionRequests: Promise<HandleNotificationEventResponse>[] = []
+      for (let i = 0; i < userIds.length; i += MARKETING_NOTIFICATION_USER_BATCH_SIZE) {
+        const userIdsBatch = userIds.slice(i, i + MARKETING_NOTIFICATION_USER_BATCH_SIZE)
+        const marketingNotification = new MarketingNotificationTriggered()
+        marketingNotification.setUserIdsList(userIdsBatch)
+        localizedPushContents.forEach((content, language) => {
+          const { title, body } = content
+          const localizedContent = new LocalizedContent()
+          localizedContent.setTitle(title)
+          localizedContent.setBody(body)
+          marketingNotification.getLocalizedContentMap().set(language, localizedContent)
+        })
+        if (deepLink !== undefined) marketingNotification.setDeepLink(deepLink)
+        marketingNotification.setShouldSendPush(shouldSendPush)
+        marketingNotification.setShouldAddToHistory(shouldAddToHistory)
+        marketingNotification.setShouldAddToBulletin(shouldAddToBulletin)
+
+        const event = new NotificationEvent()
+        event.setMarketingNotificationTriggered(marketingNotification)
+
+        const request = new HandleNotificationEventRequest()
+        request.setEvent(event)
+
+        marketingNotifictionRequests.push(
+          notificationsGrpc.handleNotificationEvent(
+            request,
+            notificationsGrpc.notificationsMetadata,
+          ),
+        )
       }
 
-      const event = new NotificationEvent()
-      event.setMarketingNotificationTriggered(marketingNotification)
-
-      const request = new HandleNotificationEventRequest()
-      request.setEvent(event)
-
-      await notificationsGrpc.handleNotificationEvent(
-        request,
-        notificationsGrpc.notificationsMetadata,
-      )
+      await Promise.all(marketingNotifictionRequests)
 
       return true
     } catch (err) {

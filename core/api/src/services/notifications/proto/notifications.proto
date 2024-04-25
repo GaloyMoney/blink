@@ -237,19 +237,49 @@ message PriceChanged {
 
 message MarketingNotificationTriggered {
   repeated string user_ids = 1;
-  map<string, LocalizedPushContent> localized_push_content = 2;
+  map<string, LocalizedContent> localized_content = 2;
   optional DeepLink deep_link = 3;
+  bool should_send_push = 4;
+  bool should_add_to_history = 5;
+  bool should_add_to_bulletin = 6;
 }
 
-message LocalizedPushContent {
+message LocalizedContent {
   string title = 2;
   string body = 3;
 }
 
-enum DeepLink {
+message DeepLink {
+  optional DeepLinkScreen screen = 1;
+  optional DeepLinkAction action = 2;
+}
+
+enum DeepLinkScreen {
   Circles = 0;
   Price = 1;
   Earn = 2;
   Map = 3;
   People = 4;
+  Home = 5;
+  Receive = 6;
+  Convert = 7;
+  ScanQR = 8;
+  Chat = 9;
+  Settings = 10;
+  Settings2FA = 11;
+  SettingsDisplayCurrency = 12;
+  SettingsDefaultAccount = 13;
+  SettingsLanguage = 14;
+  SettingsTheme = 15;
+  SettingsSecurity = 16;
+  SettingsAccount = 17;
+  SettingsTxLimits = 18;
+  SettingsNotifications = 19;
+  SettingsEmail = 20;
+}
+
+enum DeepLinkAction {
+  SetLnAddressModal = 0;
+  SetDefaultAccountModal = 1;
+  UpgradeAccountModal = 2;
 }

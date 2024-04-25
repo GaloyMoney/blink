@@ -133,12 +133,34 @@ type Coordinates {
 """A CCA2 country code (ex US, FR, etc)"""
 scalar CountryCode
 
-enum DeepLink {
+enum DeepLinkAction {
+  SET_DEFAULT_ACCOUNT_MODAL
+  SET_LN_ADDRESS_MODAL
+  UPGRADE_ACCOUNT_MODAL
+}
+
+enum DeepLinkScreen {
+  CHAT
   CIRCLES
+  CONVERT
   EARN
+  HOME
   MAP
   PEOPLE
   PRICE
+  RECEIVE
+  SCAN_QR
+  SETTINGS
+  SETTINGS_2FA
+  SETTINGS_ACCOUNT
+  SETTINGS_DEFAULT_ACCOUNT
+  SETTINGS_DISPLAY_CURRENCY
+  SETTINGS_EMAIL
+  SETTINGS_LANGUAGE
+  SETTINGS_NOTIFICATIONS
+  SETTINGS_SECURITY
+  SETTINGS_THEME
+  SETTINGS_TX_LIMITS
 }
 
 """Display currency of an account"""
@@ -267,16 +289,20 @@ enum LnPaymentStatus {
 
 scalar LnPubkey
 
-input LocalizedPushContentInput {
+input LocalizedNotificationContentInput {
   body: String!
   language: Language!
   title: String!
 }
 
 input MarketingNotificationTriggerInput {
-  deepLink: DeepLink
-  localizedPushContents: [LocalizedPushContentInput!]!
+  deepLinkAction: DeepLinkAction
+  deepLinkScreen: DeepLinkScreen
+  localizedNotificationContents: [LocalizedNotificationContentInput!]!
   phoneCountryCodesFilter: [CountryCode!]
+  shouldAddToBulletin: Boolean!
+  shouldAddToHistory: Boolean!
+  shouldSendPush: Boolean!
   userIdsFilter: [ID!]
 }
 
