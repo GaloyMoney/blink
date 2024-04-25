@@ -53,7 +53,7 @@
     "js-lnurl": "^0.5.1",
     "knex": "^3.1.0",
     "light-bolt11-decoder": "^3.0.0",
-    "lnurl": "^0.24.2",
+    "lnurl": "^0.26.0",
     "micro-cors": "^0.1.1",
     "next": "^14.1.0",
     "next-auth": "^4.24.6",
