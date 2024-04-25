@@ -379,7 +379,7 @@ cargo.rust_library(
         ":once_cell-1.18.0",
         ":pin-project-lite-0.2.13",
         ":regex-1.10.2",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":serde_urlencoded-0.7.1",
         ":static_assertions-1.1.0",
@@ -470,7 +470,7 @@ cargo.rust_library(
     deps = [
         ":async-graphql-value-6.0.11",
         ":pest-2.7.5",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
     ],
 )
@@ -493,7 +493,7 @@ cargo.rust_library(
     deps = [
         ":bytes-1.5.0",
         ":indexmap-2.2.1",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
     ],
 )
@@ -658,7 +658,7 @@ cargo.rust_library(
         ":mime-0.3.17",
         ":percent-encoding-2.3.0",
         ":pin-project-lite-0.2.13",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":serde_path_to_error-0.1.14",
         ":serde_urlencoded-0.7.1",
@@ -851,7 +851,7 @@ cargo.rust_library(
         "std",
     ],
     visibility = [],
-    deps = [":serde-1.0.197"],
+    deps = [":serde-1.0.198"],
 )
 
 http_archive(
@@ -893,7 +893,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":memchr-2.6.4",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
     ],
 )
 
@@ -938,7 +938,7 @@ cargo.rust_library(
         "std",
     ],
     visibility = [],
-    deps = [":serde-1.0.197"],
+    deps = [":serde-1.0.198"],
 )
 
 http_archive(
@@ -1048,7 +1048,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":num-traits-0.2.17",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
     ],
 )
 
@@ -1721,7 +1721,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":powerfmt-0.2.0",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
     ],
 )
 
@@ -1888,7 +1888,7 @@ cargo.rust_library(
         "use_std",
     ],
     visibility = [],
-    deps = [":serde-1.0.197"],
+    deps = [":serde-1.0.198"],
 )
 
 http_archive(
@@ -2653,7 +2653,7 @@ cargo.rust_library(
         ":hyper-0.14.27",
         ":itertools-0.10.5",
         ":mime-0.3.17",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":serde_with-2.3.3",
         ":tokio-1.37.0",
@@ -2696,7 +2696,7 @@ cargo.rust_library(
         ":hyper-rustls-0.24.2",
         ":itertools-0.10.5",
         ":mime-0.3.17",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":tokio-1.37.0",
         ":tower-service-0.3.2",
@@ -2771,7 +2771,7 @@ cargo.rust_library(
         ":log-0.4.20",
         ":pest-2.7.5",
         ":pest_derive-2.7.5",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":thiserror-1.0.59",
     ],
@@ -3387,7 +3387,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":hashbrown-0.12.3",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
     ],
 )
 
@@ -3415,7 +3415,7 @@ cargo.rust_library(
     deps = [
         ":equivalent-1.0.1",
         ":hashbrown-0.14.2",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
     ],
 )
 
@@ -3576,7 +3576,7 @@ cargo.rust_library(
     deps = [
         ":base64-0.21.5",
         ":pem-3.0.2",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":simple_asn1-0.6.2",
     ],
@@ -4913,7 +4913,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":base64-0.21.5",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
     ],
 )
 
@@ -6028,7 +6028,7 @@ cargo.rust_library(
         ":futures-core-0.3.30",
         ":futures-util-0.3.30",
         ":http-0.2.12",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":serde_urlencoded-0.7.1",
         ":sync_wrapper-0.1.2",
@@ -6746,7 +6746,7 @@ cargo.rust_library(
         ":proc-macro2-1.0.76",
         ":quote-1.0.35",
         ":rust-i18n-support-3.0.1",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":serde_yaml-0.8.26",
         ":syn-2.0.48",
@@ -6776,7 +6776,7 @@ cargo.rust_library(
         ":once_cell-1.18.0",
         ":proc-macro2-1.0.76",
         ":regex-1.10.2",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":serde_yaml-0.8.26",
         ":toml-0.7.8",
@@ -7442,23 +7442,23 @@ cargo.rust_library(
 
 alias(
     name = "serde",
-    actual = ":serde-1.0.197",
+    actual = ":serde-1.0.198",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "serde-1.0.197.crate",
-    sha256 = "3fb1c873e1b9b056a4dc4c0c198b24c3ffa059243875552b2bd0933b1aee4ce2",
-    strip_prefix = "serde-1.0.197",
-    urls = ["https://crates.io/api/v1/crates/serde/1.0.197/download"],
+    name = "serde-1.0.198.crate",
+    sha256 = "9846a40c979031340571da2545a4e5b7c4163bdae79b301d5f86d03979451fcc",
+    strip_prefix = "serde-1.0.198",
+    urls = ["https://crates.io/api/v1/crates/serde/1.0.198/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "serde-1.0.197",
-    srcs = [":serde-1.0.197.crate"],
+    name = "serde-1.0.198",
+    srcs = [":serde-1.0.198.crate"],
     crate = "serde",
-    crate_root = "serde-1.0.197.crate/src/lib.rs",
+    crate_root = "serde-1.0.198.crate/src/lib.rs",
     edition = "2018",
     features = [
         "alloc",
@@ -7469,22 +7469,22 @@ cargo.rust_library(
         "std",
     ],
     visibility = [],
-    deps = [":serde_derive-1.0.197"],
+    deps = [":serde_derive-1.0.198"],
 )
 
 http_archive(
-    name = "serde_derive-1.0.197.crate",
-    sha256 = "7eb0b34b42edc17f6b7cac84a52a1c5f0e1bb2227e997ca9011ea3dd34e8610b",
-    strip_prefix = "serde_derive-1.0.197",
-    urls = ["https://crates.io/api/v1/crates/serde_derive/1.0.197/download"],
+    name = "serde_derive-1.0.198.crate",
+    sha256 = "e88edab869b01783ba905e7d0153f9fc1a6505a96e4ad3018011eedb838566d9",
+    strip_prefix = "serde_derive-1.0.198",
+    urls = ["https://crates.io/api/v1/crates/serde_derive/1.0.198/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "serde_derive-1.0.197",
-    srcs = [":serde_derive-1.0.197.crate"],
+    name = "serde_derive-1.0.198",
+    srcs = [":serde_derive-1.0.198.crate"],
     crate = "serde_derive",
-    crate_root = "serde_derive-1.0.197.crate/src/lib.rs",
+    crate_root = "serde_derive-1.0.198.crate/src/lib.rs",
     edition = "2015",
     features = ["default"],
     proc_macro = True,
@@ -7526,7 +7526,7 @@ cargo.rust_library(
     deps = [
         ":itoa-1.0.9",
         ":ryu-1.0.15",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
     ],
 )
 
@@ -7547,7 +7547,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":itoa-1.0.9",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
     ],
 )
 
@@ -7567,7 +7567,7 @@ cargo.rust_library(
     edition = "2021",
     features = ["serde"],
     visibility = [],
-    deps = [":serde-1.0.197"],
+    deps = [":serde-1.0.198"],
 )
 
 http_archive(
@@ -7589,7 +7589,7 @@ cargo.rust_library(
         ":form_urlencoded-1.2.0",
         ":itoa-1.0.9",
         ":ryu-1.0.15",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
     ],
 )
 
@@ -7622,7 +7622,7 @@ cargo.rust_library(
     deps = [
         ":base64-0.13.1",
         ":hex-0.4.3",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":serde_with_macros-2.3.3",
     ],
@@ -7664,8 +7664,8 @@ cargo.rust_library(
     deps = [
         ":base64-0.21.5",
         ":hex-0.4.3",
-        ":serde-1.0.197",
-        ":serde_derive-1.0.197",
+        ":serde-1.0.198",
+        ":serde_derive-1.0.198",
         ":serde_json-1.0.116",
         ":serde_with_macros-3.7.0",
     ],
@@ -7737,7 +7737,7 @@ cargo.rust_library(
     deps = [
         ":indexmap-1.9.3",
         ":ryu-1.0.15",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":yaml-rust-0.4.5",
     ],
 )
@@ -7767,7 +7767,7 @@ cargo.rust_library(
         ":indexmap-2.2.1",
         ":itoa-1.0.9",
         ":ryu-1.0.15",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":unsafe-libyaml-0.2.11",
     ],
 )
@@ -8264,7 +8264,7 @@ cargo.rust_library(
         ":percent-encoding-2.3.0",
         ":rustls-0.21.11",
         ":rustls-pemfile-1.0.3",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":sha2-0.10.8",
         ":smallvec-1.13.1",
@@ -8349,7 +8349,7 @@ cargo.rust_library(
         ":once_cell-1.18.0",
         ":proc-macro2-1.0.76",
         ":quote-1.0.35",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":sha2-0.10.8",
         ":sqlx-core-0.7.4",
@@ -8414,7 +8414,7 @@ cargo.rust_library(
         ":percent-encoding-2.3.0",
         ":rand-0.8.5",
         ":rsa-0.9.3",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":sha1-0.10.6",
         ":sha2-0.10.8",
         ":smallvec-1.13.1",
@@ -8480,7 +8480,7 @@ cargo.rust_library(
         ":memchr-2.6.4",
         ":once_cell-1.18.0",
         ":rand-0.8.5",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":sha2-0.10.8",
         ":smallvec-1.13.1",
@@ -8529,7 +8529,7 @@ cargo.rust_library(
         ":libsqlite3-sys-0.27.0",
         ":log-0.4.20",
         ":percent-encoding-2.3.0",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":sqlx-core-0.7.4",
         ":tracing-0.1.40",
         ":url-2.4.1",
@@ -8565,7 +8565,7 @@ cargo.rust_library(
         ":chrono-0.4.37",
         ":dotenv-0.15.0",
         ":log-0.4.20",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":sqlx-0.7.4",
         ":sqlxmq_macros-0.5.0",
@@ -8983,7 +8983,7 @@ cargo.rust_binary(
         ":reqwest-0.11.27",
         ":rust-i18n-3.0.1",
         ":rusty-money-0.4.1",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":serde_with-3.7.0",
         ":serde_yaml-0.9.33",
@@ -9126,7 +9126,7 @@ cargo.rust_library(
         ":deranged-0.3.9",
         ":itoa-1.0.9",
         ":powerfmt-0.2.0",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":time-core-0.1.2",
         ":time-macros-0.2.15",
     ],
@@ -9520,7 +9520,7 @@ cargo.rust_library(
     ],
     visibility = [],
     deps = [
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_spanned-0.6.5",
         ":toml_datetime-0.6.5",
         ":toml_edit-0.19.15",
@@ -9543,7 +9543,7 @@ cargo.rust_library(
     edition = "2021",
     features = ["serde"],
     visibility = [],
-    deps = [":serde-1.0.197"],
+    deps = [":serde-1.0.198"],
 )
 
 http_archive(
@@ -9567,7 +9567,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":indexmap-2.2.1",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_spanned-0.6.5",
         ":toml_datetime-0.6.5",
         ":winnow-0.5.18",
@@ -10077,7 +10077,7 @@ cargo.rust_library(
     edition = "2018",
     visibility = [],
     deps = [
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":tracing-core-0.1.32",
     ],
 )
@@ -10130,7 +10130,7 @@ cargo.rust_library(
         ":nu-ansi-term-0.46.0",
         ":once_cell-1.18.0",
         ":regex-1.10.2",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":sharded-slab-0.1.7",
         ":smallvec-1.13.1",
@@ -10166,7 +10166,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":arc-swap-1.6.0",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":stable_deref_trait-1.2.0",
     ],
 )
@@ -10539,7 +10539,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":getrandom-0.2.10",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
     ],
 )
 
@@ -11213,7 +11213,7 @@ cargo.rust_library(
         ":rustls-0.22.2",
         ":rustls-pemfile-1.0.3",
         ":seahash-4.1.0",
-        ":serde-1.0.197",
+        ":serde-1.0.198",
         ":serde_json-1.0.116",
         ":time-0.3.30",
         ":tokio-1.37.0",
