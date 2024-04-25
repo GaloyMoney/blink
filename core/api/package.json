@@ -85,7 +85,7 @@
     "graphql-shield": "^7.6.4",
     "graphql-ws": "^5.16.0",
     "invoices": "^3.0.0",
-    "ioredis": "^5.4.1",
+    "ioredis": "^5.3.2",
     "ioredis-cache": "^2.0.1",
     "ipaddr.js": "^2.2.0",
     "js-yaml": "^4.1.0",
