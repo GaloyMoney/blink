@@ -737,6 +737,7 @@ enum join__Graph {
 }
 
 scalar Language
+  @join__type(graph: NOTIFICATIONS)
   @join__type(graph: PUBLIC)
 
 scalar link__Import
@@ -2060,6 +2061,7 @@ type User
   id: ID!
   apiKeys: [ApiKey!]! @join__field(graph: API_KEYS)
   statefulNotifications(first: Int!, after: String): StatefulNotificationConnection! @join__field(graph: NOTIFICATIONS)
+  language: Language! @join__field(graph: NOTIFICATIONS)
 
   """
   Get single contact details.
@@ -2077,12 +2079,6 @@ type User
 
   """Email address"""
   email: Email @join__field(graph: PUBLIC)
-
-  """
-  Preferred language for user.
-  When value is 'default' the intent is to use preferred language from OS settings.
-  """
-  language: Language! @join__field(graph: PUBLIC)
 
   """Phone number with international calling code."""
   phone: Phone @join__field(graph: PUBLIC)

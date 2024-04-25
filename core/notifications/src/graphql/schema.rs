@@ -71,6 +71,17 @@ impl User {
         )
         .await
     }
+
+    async fn language(&self, ctx: &Context<'_>) -> async_graphql::Result<Language> {
+        let app = ctx.data_unchecked::<NotificationsApp>();
+        let user_id = GaloyUserId::from(self.id.0.clone());
+        Ok::<_, async_graphql::Error>(
+            app.notification_settings_for_user(user_id)
+                .await?
+                .locale()
+                .map_or(Language::default(), Language::from),
+        )
+    }
 }
 
 #[derive(SimpleObject)]

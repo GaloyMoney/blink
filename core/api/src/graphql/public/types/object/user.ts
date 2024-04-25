@@ -5,7 +5,7 @@ import Account from "../abstract/account"
 import SupportMessage from "./support-message"
 import AccountContact from "./account-contact"
 
-import { Accounts, Users, SupportChat } from "@/app"
+import { Accounts, SupportChat } from "@/app"
 
 import { baseLogger } from "@/services/logger"
 // FIXME should not use service
@@ -15,7 +15,6 @@ import { GT } from "@/graphql/index"
 import { mapError } from "@/graphql/error-map"
 import { UnknownClientError } from "@/graphql/error"
 import Phone from "@/graphql/shared/types/scalar/phone"
-import Language from "@/graphql/shared/types/scalar/language"
 import Username from "@/graphql/shared/types/scalar/username"
 import Timestamp from "@/graphql/shared/types/scalar/timestamp"
 import GraphQLEmail from "@/graphql/shared/types/object/email"
@@ -64,15 +63,6 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
         return domainAccount?.username
       },
       deprecationReason: "will be moved to @Handle in Account and Wallet",
-    },
-
-    language: {
-      type: GT.NonNull(Language),
-      description: dedent`Preferred language for user.
-        When value is 'default' the intent is to use preferred language from OS settings.`,
-      resolve: async (source) => {
-        return Users.getUserLanguage(source)
-      },
     },
 
     contacts: {

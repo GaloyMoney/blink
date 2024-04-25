@@ -1915,11 +1915,6 @@ export type User = {
   /** Email address */
   readonly email?: Maybe<Email>;
   readonly id: Scalars['ID'];
-  /**
-   * Preferred language for user.
-   * When value is 'default' the intent is to use preferred language from OS settings.
-   */
-  readonly language: Scalars['Language'];
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']>;
   readonly supportChat: ReadonlyArray<SupportMessage>;

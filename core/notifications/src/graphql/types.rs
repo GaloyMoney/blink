@@ -2,7 +2,7 @@ use async_graphql::{types::connection::*, *};
 use chrono::{DateTime, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::primitives::StatefulNotificationId;
+use crate::primitives::{GaloyLocale, StatefulNotificationId};
 
 #[derive(Clone, Copy)]
 pub struct Timestamp(DateTime<Utc>);
@@ -35,6 +35,35 @@ impl ScalarType for Timestamp {
 
     fn to_value(&self) -> async_graphql::Value {
         async_graphql::Value::Number(self.0.timestamp().into())
+    }
+}
+
+#[derive(Clone)]
+pub struct Language(String);
+
+impl From<GaloyLocale> for Language {
+    fn from(locale: GaloyLocale) -> Self {
+        Language(locale.as_ref().to_string())
+    }
+}
+
+impl Default for Language {
+    fn default() -> Self {
+        Language("".to_string())
+    }
+}
+
+#[Scalar(name = "Language")]
+impl ScalarType for Language {
+    fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {
+        match &value {
+            async_graphql::Value::String(s) => Ok(Language(s.clone())),
+            _ => Err(async_graphql::InputValueError::expected_type(value)),
+        }
+    }
+
+    fn to_value(&self) -> async_graphql::Value {
+        async_graphql::Value::String(self.0.clone())
     }
 }
 
