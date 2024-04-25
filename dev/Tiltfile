@@ -1,6 +1,6 @@
-config.define_string_list("test")
-config.define_bool("bats")
-cfg = config.parse()
+load('./tilt/common.tiltfile', 'buck2_dep_inputs', 'core_serve_env')
+load('./tilt/config.tiltfile', 'tests_to_run', 'is_ci', 'run_apps')
+load('./tilt/docker.tiltfile', 'docker_groups')
 
 CORE_TEST_LABEL = "core"
 CONSENT_TEST_LABEL = "consent"
@@ -22,9 +22,6 @@ TEST_RESOURCES = {
    MIGRATE_MONGO_TEST_LABEL: "test-mongodb-migrate",
 }
 
-is_ci=("ci" in sys.argv) or cfg.get("bats", False)
-run_apps=not cfg.get("bats", False)
-
 # From the Tilt docs:
 #
 # > By default, Tilt will not let you develop against a remote cluster.
@@ -37,44 +34,6 @@ run_apps=not cfg.get("bats", False)
 # - https://docs.tilt.dev/choosing_clusters.html#remote
 # - https://docs.tilt.dev/api.html#api.allow_k8s_contexts
 allow_k8s_contexts(k8s_context())
-
-def _buck2_dep_inputs(target):
-    cmd = [
-        "buck2",
-        "uquery",
-        "\"inputs(deps('{}'))\"".format(target),
-    ]
-    abs_file_paths = str(local(" ".join(cmd))).splitlines()
-
-    repo_root = str(local("git rev-parse --show-toplevel")).strip()
-    rel_file_paths = ["{}/{}".format(repo_root, path) for path in abs_file_paths]
-
-    return rel_file_paths
-
-def merge_env_file(file_path_str, env_vars={}):
-    repo_root = str(local("git rev-parse --show-toplevel")).strip()
-    env_file_path = "{}/{}".format(repo_root, file_path_str)
-
-    file_blob = read_file(env_file_path, "")
-    lines = str(file_blob).split('\n')
-    for raw_line in lines:
-        line_without_comments = raw_line.strip()
-        if '#' in raw_line:
-            line_without_comments = raw_line.split('#')[0].strip()
-
-        if line_without_comments == '':
-            continue
-
-        line = line_without_comments
-        if line_without_comments.startswith('export '):
-            line = line_without_comments[len('export '):].strip()
-
-        key_value = line.split('=', 1)
-        if len(key_value) == 2:
-            key, value = key_value[0], key_value[1].strip('"')
-            env_vars[key] = value
-
-    return env_vars
 
 dashboard_target = "//apps/dashboard:dev"
 if is_ci:
@@ -96,7 +55,7 @@ local_resource(
             port = 3001,
         ),
     ),
-    deps = _buck2_dep_inputs(dashboard_target),
+    deps = buck2_dep_inputs(dashboard_target),
     allow_parallel = True,
     auto_init = run_apps,
     resource_deps = [
@@ -138,7 +97,7 @@ local_resource(
             port = 3002,
         ),
     ),
-    deps = _buck2_dep_inputs(pay_target),
+    deps = buck2_dep_inputs(pay_target),
     allow_parallel = True,
     resource_deps = [
         "api",
@@ -173,7 +132,7 @@ local_resource(
             port = 3004,
         ),
     ),
-    deps = _buck2_dep_inputs(admin_panel_target),
+    deps = buck2_dep_inputs(admin_panel_target),
     allow_parallel = True,
     resource_deps = [
         "api",
@@ -205,7 +164,7 @@ local_resource(
             port = 3005,
         ),
     ),
-    deps = _buck2_dep_inputs(map_target),
+    deps = buck2_dep_inputs(map_target),
     allow_parallel = True,
     resource_deps = [
         "api",
@@ -238,7 +197,7 @@ local_resource(
             port = 3006,
         ),
     ),
-    deps = _buck2_dep_inputs(voucher_target),
+    deps = buck2_dep_inputs(voucher_target),
     allow_parallel = True,
     resource_deps = [
         "api",
@@ -248,6 +207,35 @@ local_resource(
     ],
     links = [
         link("http://localhost:3006", "voucher"),
+    ],
+)
+
+consent_target = "//apps/consent:dev"
+if is_ci:
+  consent_target = '//apps/consent:consent'
+local_resource(
+    "consent",
+    labels = ["auth"],
+    cmd = "buck2 build {}".format(consent_target),
+    serve_cmd = "buck2 run {}".format(consent_target),
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3000,
+        ),
+    ),
+    deps = buck2_dep_inputs(consent_target),
+    allow_parallel = True,
+    auto_init = run_apps,
+    resource_deps = [
+        "hydra-consent",
+        "apollo-router",
+        "hydra",
+        "api",
+    ],
+    links = [
+        link("http://localhost:3000", "consent"),
     ],
 )
 
@@ -309,11 +297,32 @@ local_resource(
   ]
 )
 
+local_resource(
+  name='hydra-consent',
+  labels = ['auth'],
+  cmd=[
+    'buck2',
+    'run',
+    '//dev:setup-hydra-client',
+    '--',
+    'consent',
+    'authorization_code,refresh_token',
+    'http://localhost:3000',
+  ],
+  allow_parallel = True,
+  auto_init = run_apps,
+  resource_deps = [
+    "hydra",
+    "api",
+  ]
+)
+
+
 consent_test_target = "//apps/consent:test-integration"
 local_resource(
   "test-consent",
   labels = ["test"],
-  auto_init = is_ci and CONSENT_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and CONSENT_TEST_LABEL in tests_to_run,
   cmd = "buck2 test {}".format(consent_test_target),
   allow_parallel = True,
   resource_deps = [
@@ -326,7 +335,7 @@ dashboard_test_target = "//apps/dashboard:test-integration"
 local_resource(
   "test-dashboard",
   labels = ["test"],
-  auto_init = is_ci and DASHBOARD_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and DASHBOARD_TEST_LABEL in tests_to_run,
   cmd = "buck2 test {}".format(dashboard_test_target),
   resource_deps = [
     "consent",
@@ -339,7 +348,7 @@ pay_test_target = "//apps/pay:test-integration"
 local_resource(
   "test-pay",
   labels = ["test"],
-  auto_init = is_ci and PAY_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and PAY_TEST_LABEL in tests_to_run,
   cmd = "buck2 test {}".format(pay_test_target),
   resource_deps = [
     "api",
@@ -353,7 +362,7 @@ admin_panel_test_target = "//apps/admin-panel:test-integration"
 local_resource(
   "test-admin-panel",
   labels = ["test"],
-  auto_init = is_ci and ADMIN_PANEL_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and ADMIN_PANEL_TEST_LABEL in tests_to_run,
   cmd = "buck2 test {}".format(admin_panel_test_target),
   resource_deps = [
     "admin-panel",
@@ -364,7 +373,7 @@ voucher_test_target = "//apps/voucher:test-integration"
 local_resource(
   "test-voucher",
   labels = ["test"],
-  auto_init = is_ci and VOUCHER_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and VOUCHER_TEST_LABEL in tests_to_run,
   cmd = "buck2 test {}".format(voucher_test_target),
   resource_deps = [
     "voucher",
@@ -379,11 +388,20 @@ map_test_target = "//apps/map:test-integration"
 local_resource(
   "test-map",
   labels = ["test"],
-  auto_init = is_ci and MAP_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and MAP_TEST_LABEL in tests_to_run,
   cmd = "buck2 test {}".format(map_test_target),
   resource_deps = [
     "map",
   ],
+)
+
+api_test_target = "//core/api:test-integration"
+local_resource(
+  "test-api",
+  labels = ["test"],
+  auto_init = is_ci and CORE_TEST_LABEL in tests_to_run,
+  cmd = "buck2 test {}".format(api_test_target),
+  resource_deps = [res for sublist in docker_groups.values() for res in sublist] + ["notifications"]
 )
 
 local_resource(
@@ -427,60 +445,17 @@ local_resource(
   ]
 )
 
-
-consent_target = "//apps/consent:dev"
-if is_ci:
-  consent_target = '//apps/consent:consent'
 local_resource(
-    "consent",
-    labels = ["auth"],
-    cmd = "buck2 build {}".format(consent_target),
-    serve_cmd = "buck2 run {}".format(consent_target),
-    readiness_probe = probe(
-        period_secs  = 5,
-        http_get = http_get_action(
-            path = "/",
-            port = 3000,
-        ),
-    ),
-    deps = _buck2_dep_inputs(consent_target),
-    allow_parallel = True,
-    auto_init = run_apps,
-    resource_deps = [
-        "hydra-consent",
-        "apollo-router",
-        "hydra",
-        "api",
-    ],
-    links = [
-        link("http://localhost:3000", "consent"),
-    ],
-)
-
-local_resource(
-  name='hydra-consent',
-  labels = ['auth'],
-  cmd=[
-    'buck2',
-    'run',
-    '//dev:setup-hydra-client',
-    '--',
-    'consent',
-    'authorization_code,refresh_token',
-    'http://localhost:3000',
-  ],
+  "test-mongodb-migrate",
+  labels = ["test"],
+  auto_init = is_ci and MIGRATE_MONGO_TEST_LABEL in tests_to_run,
+  cmd='buck2 run //core/api:mongodb-migrate',
   allow_parallel = True,
-  auto_init = run_apps,
   resource_deps = [
-    "hydra",
-    "api",
+    "mongodb",
   ]
 )
 
-env_json = _buck2_dep_inputs("//dev:serve_env")[0]
-core_serve_env_from_json = read_json(env_json)
-local_env_file = ".env.local"
-core_serve_env = merge_env_file(local_env_file, core_serve_env_from_json)
 
 callback_target = "//bats/helpers/callback:run"
 local_resource(
@@ -488,7 +463,7 @@ local_resource(
     labels = ["test"],
     serve_cmd = "buck2 run {}".format(callback_target),
     allow_parallel = True,
-    deps = _buck2_dep_inputs(callback_target),
+    deps = buck2_dep_inputs(callback_target),
 )
 
 api_target = "//core/api:dev"
@@ -508,7 +483,7 @@ local_resource(
             port = 4012,
         ),
     ),
-    deps = _buck2_dep_inputs(api_target),
+    deps = buck2_dep_inputs(api_target),
     resource_deps = [
         "price",
         "init-onchain",
@@ -540,7 +515,7 @@ local_resource(
             port = 8888,
         ),
     ),
-    deps = _buck2_dep_inputs(api_trigger_target),
+    deps = buck2_dep_inputs(api_trigger_target),
     resource_deps = [
         "price",
         "init-onchain",
@@ -569,7 +544,7 @@ local_resource(
             port = 3003,
         ),
     ),
-    deps = _buck2_dep_inputs(api_exporter_target),
+    deps = buck2_dep_inputs(api_exporter_target),
     resource_deps = [
         "price",
         "init-onchain",
@@ -598,7 +573,7 @@ local_resource(
             port = 4012,
         ),
     ),
-    deps = _buck2_dep_inputs(api_ws_server_target),
+    deps = buck2_dep_inputs(api_ws_server_target),
     resource_deps = [
         "price",
         "init-onchain",
@@ -622,9 +597,28 @@ local_resource(
       "NOTIFICATIONS_CONFIG": "./config/notifications/notifications.yml",
       "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
     },
-    deps = _buck2_dep_inputs(notifications_target),
+    deps = buck2_dep_inputs(notifications_target),
     resource_deps = [
        "notifications-pg"
+    ]
+)
+
+api_keys_target = "//core/api-keys:api-keys"
+local_resource(
+    "api-keys",
+    labels = ["auth"],
+    cmd = "buck2 build {}".format(api_keys_target),
+    serve_cmd = "buck2 run {}".format(api_keys_target),
+    serve_env = {
+      "PG_CON": "postgres://user:password@localhost:5431/pg",
+      "API_KEYS_CONFIG": "../core/api-keys/api-keys.yml",
+      "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
+    },
+    deps = buck2_dep_inputs(api_keys_target),
+    allow_parallel = True,
+    resource_deps = [
+       "api",
+       "api-keys-pg"
     ]
 )
 
@@ -660,75 +654,8 @@ local_resource(
     resource_deps=["voucher-pg", "api-keys"]
 )
 
-api_keys_target = "//core/api-keys:api-keys"
-local_resource(
-    "api-keys",
-    labels = ["auth"],
-    cmd = "buck2 build {}".format(api_keys_target),
-    serve_cmd = "buck2 run {}".format(api_keys_target),
-    serve_env = {
-      "PG_CON": "postgres://user:password@localhost:5431/pg",
-      "API_KEYS_CONFIG": "../core/api-keys/api-keys.yml",
-      "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
-    },
-    deps = _buck2_dep_inputs(api_keys_target),
-    allow_parallel = True,
-    resource_deps = [
-       "api",
-       "api-keys-pg"
-    ]
-)
 
-docker_groups = {
-    "auth": [
-        "api-keys-pg",
-        "oathkeeper",
-        "hydra",
-        "hydra-migrate",
-        "hydra-pg",
-        "kratos",
-        "kratos-pg",
-    ],
-    "core": [
-        "apollo-router",
-        "mongodb",
-        "notifications-pg",
-        "oathkeeper",
-        "redis",
-        "stablesats",
-        "svix-pg",
-        "svix",
-    ],
-    "bitcoin": [
-        "lnd1",
-        "lnd2",
-        "bria",
-        "bria-pg",
-        "bitcoind",
-    ],
-    "integration": [
-        "lnd-outside-1",
-        "lnd-outside-2",
-    ],
-    "price": [
-      "price",
-      "price-history",
-      "price-history-migrate",
-      "price-history-pg"
-    ],
-    "tracing": [
-      "otel-agent",
-    ],
-}
-
-to_run = cfg.get("to-run", [])
-if to_run != []:
-    enabled_resources = []
-    for svc in to_run:
-        enabled_resources.append(svc)
-    config.set_enabled_resources(enabled_resources)
-
-to_test = cfg.get("test", [])
+to_test = tests_to_run
 if to_test != []:
     enabled_resources = []
     for label in to_test:
@@ -736,38 +663,3 @@ if to_test != []:
         if svc:
             enabled_resources.append(svc)
     config.set_enabled_resources(enabled_resources)
-
-docker_compose("./docker-compose.deps.yml", project_name = "galoy-dev")
-
-for service in docker_groups["bitcoin"]:
-    dc_resource(service, labels = ["bitcoin"])
-for service in docker_groups["tracing"]:
-    dc_resource(service, labels = ["tracing"])
-for service in docker_groups["core"]:
-    dc_resource(service, labels = ["core"])
-for service in docker_groups["auth"]:
-    dc_resource(service, labels = ["auth"])
-for service in docker_groups["price"]:
-    dc_resource(service, labels = ["price"])
-for service in docker_groups["integration"]:
-    dc_resource(service, labels = ["integration"])
-
-api_test_target = "//core/api:test-integration"
-local_resource(
-  "test-api",
-  labels = ["test"],
-  auto_init = is_ci and CORE_TEST_LABEL in cfg.get("test", []),
-  cmd = "buck2 test {}".format(api_test_target),
-  resource_deps = [res for sublist in docker_groups.values() for res in sublist] + ["notifications"]
-)
-
-local_resource(
-  "test-mongodb-migrate",
-  labels = ["test"],
-  auto_init = is_ci and MIGRATE_MONGO_TEST_LABEL in cfg.get("test", []),
-  cmd='buck2 run //core/api:mongodb-migrate',
-  allow_parallel = True,
-  resource_deps = [
-    "mongodb",
-  ]
-)

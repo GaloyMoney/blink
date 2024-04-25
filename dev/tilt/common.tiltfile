@@ -1,0 +1,42 @@
+def buck2_dep_inputs(target):
+    cmd = [
+        "buck2",
+        "uquery",
+        "\"inputs(deps('{}'))\"".format(target),
+    ]
+    abs_file_paths = str(local(" ".join(cmd))).splitlines()
+
+    repo_root = str(local("git rev-parse --show-toplevel")).strip()
+    rel_file_paths = ["{}/{}".format(repo_root, path) for path in abs_file_paths]
+
+    return rel_file_paths
+
+def merge_env_file(file_path_str, env_vars={}):
+    repo_root = str(local("git rev-parse --show-toplevel")).strip()
+    env_file_path = "{}/{}".format(repo_root, file_path_str)
+
+    file_blob = read_file(env_file_path, "")
+    lines = str(file_blob).split('\n')
+    for raw_line in lines:
+        line_without_comments = raw_line.strip()
+        if '#' in raw_line:
+            line_without_comments = raw_line.split('#')[0].strip()
+
+        if line_without_comments == '':
+            continue
+
+        line = line_without_comments
+        if line_without_comments.startswith('export '):
+            line = line_without_comments[len('export '):].strip()
+
+        key_value = line.split('=', 1)
+        if len(key_value) == 2:
+            key, value = key_value[0], key_value[1].strip('"')
+            env_vars[key] = value
+
+    return env_vars
+
+env_json = buck2_dep_inputs("//dev:serve_env")[0]
+core_serve_env_from_json = read_json(env_json)
+local_env_file = ".env.local"
+core_serve_env = merge_env_file(local_env_file, core_serve_env_from_json)

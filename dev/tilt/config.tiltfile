@@ -1,0 +1,9 @@
+config.define_string_list("test")
+config.define_bool("bats")
+cfg = config.parse()
+
+is_ci = ("ci" in sys.argv) or cfg.get("bats", False)
+
+run_apps = not cfg.get("bats", False)
+
+tests_to_run = cfg.get("test", [])
