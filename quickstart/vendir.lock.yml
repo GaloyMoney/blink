@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: remove unused oauth2 client (#4346)...'
-      sha: ac03abc462014b60d4912ab27dad7793f2cc36e5
+      commitTitle: 'chore(core): add migration for accountIds to invoiceusers collection
+        (#4353)'
+      sha: 954f8336b2790b98bfc07d1792a64c930db141ed
       tags:
-      - 0.20.165-2-gac03abc46
+      - 0.20.166-8-g954f8336b
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: remove unused oauth2 client (#4346)...'
-      sha: ac03abc462014b60d4912ab27dad7793f2cc36e5
+      commitTitle: 'chore(core): add migration for accountIds to invoiceusers collection
+        (#4353)'
+      sha: 954f8336b2790b98bfc07d1792a64c930db141ed
       tags:
-      - 0.20.165-2-gac03abc46
+      - 0.20.166-8-g954f8336b
     path: schemas
   - git:
-      commitTitle: 'chore: remove unused oauth2 client (#4346)...'
-      sha: ac03abc462014b60d4912ab27dad7793f2cc36e5
+      commitTitle: 'chore(core): add migration for accountIds to invoiceusers collection
+        (#4353)'
+      sha: 954f8336b2790b98bfc07d1792a64c930db141ed
       tags:
-      - 0.20.166
+      - 0.20.166-8-g954f8336b
     path: gql
   path: graphql
 kind: LockConfig
