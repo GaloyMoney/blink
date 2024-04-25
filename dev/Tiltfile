@@ -309,6 +309,26 @@ local_resource(
   ]
 )
 
+local_resource(
+  name='hydra-consent-test-client',
+  labels = ['auth'],
+  cmd=[
+    'buck2',
+    'run',
+    '//dev:setup-hydra-client',
+    '--',
+    'consent-test',
+    'authorization_code,refresh_token',
+    'http://localhost:3000',
+  ],
+  allow_parallel = True,
+  auto_init = run_apps,
+  resource_deps = [
+    "hydra",
+    "api",
+  ]
+)
+
 consent_test_target = "//apps/consent:test-integration"
 local_resource(
   "test-consent",
@@ -450,6 +470,7 @@ local_resource(
         "apollo-router",
         "hydra",
         "api",
+        "hydra-consent-test-client",
     ],
     links = [
         link("http://localhost:3000", "consent"),
