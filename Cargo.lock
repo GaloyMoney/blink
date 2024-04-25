@@ -1538,9 +1538,9 @@ dependencies = [
 
 [[package]]
 name = "lettre"
-version = "0.11.6"
+version = "0.11.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47460276655930189e0919e4fbf46e46476b14f934f18a63dd726a5fb7b60e2e"
+checksum = "1a62049a808f1c4e2356a2a380bd5f2aca3b011b0b482cf3b914ba1731426969"
 dependencies = [
  "async-trait",
  "base64 0.22.0",
@@ -1556,7 +1556,7 @@ dependencies = [
  "nom",
  "percent-encoding 2.3.0",
  "quoted_printable",
- "rustls 0.23.4",
+ "rustls 0.23.5",
  "rustls-pemfile 2.1.0",
  "socket2 0.5.5",
  "tokio",
@@ -2587,9 +2587,9 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.23.4"
+version = "0.23.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c4d6d8ad9f2492485e13453acbb291dd08f64441b6609c491f1c2cd2c6b4fe1"
+checksum = "afabcee0551bd1aa3e18e5adbf2c0544722014b899adb31bd186ec638d3da97e"
 dependencies = [
  "log",
  "once_cell",
@@ -3525,7 +3525,7 @@ version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c7bc40d0e5a97695bb96e27995cd3a08538541b0a846f65bba7a359f36700d4"
 dependencies = [
- "rustls 0.23.4",
+ "rustls 0.23.5",
  "rustls-pki-types",
  "tokio",
 ]

@@ -3606,23 +3606,23 @@ cargo.rust_library(
 
 alias(
     name = "lettre",
-    actual = ":lettre-0.11.6",
+    actual = ":lettre-0.11.7",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "lettre-0.11.6.crate",
-    sha256 = "47460276655930189e0919e4fbf46e46476b14f934f18a63dd726a5fb7b60e2e",
-    strip_prefix = "lettre-0.11.6",
-    urls = ["https://crates.io/api/v1/crates/lettre/0.11.6/download"],
+    name = "lettre-0.11.7.crate",
+    sha256 = "1a62049a808f1c4e2356a2a380bd5f2aca3b011b0b482cf3b914ba1731426969",
+    strip_prefix = "lettre-0.11.7",
+    urls = ["https://crates.io/api/v1/crates/lettre/0.11.7/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "lettre-0.11.6",
-    srcs = [":lettre-0.11.6.crate"],
+    name = "lettre-0.11.7",
+    srcs = [":lettre-0.11.7.crate"],
     crate = "lettre",
-    crate_root = "lettre-0.11.6.crate/src/lib.rs",
+    crate_root = "lettre-0.11.7.crate/src/lib.rs",
     edition = "2021",
     features = [
         "builder",
@@ -3651,7 +3651,7 @@ cargo.rust_library(
         ":nom-7.1.3",
         ":percent-encoding-2.3.0",
         ":quoted_printable-0.5.0",
-        ":rustls-0.23.4",
+        ":rustls-0.23.5",
         ":rustls-pemfile-2.1.0",
         ":socket2-0.5.5",
         ":url-2.4.1",
@@ -7013,18 +7013,18 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "rustls-0.23.4.crate",
-    sha256 = "8c4d6d8ad9f2492485e13453acbb291dd08f64441b6609c491f1c2cd2c6b4fe1",
-    strip_prefix = "rustls-0.23.4",
-    urls = ["https://crates.io/api/v1/crates/rustls/0.23.4/download"],
+    name = "rustls-0.23.5.crate",
+    sha256 = "afabcee0551bd1aa3e18e5adbf2c0544722014b899adb31bd186ec638d3da97e",
+    strip_prefix = "rustls-0.23.5",
+    urls = ["https://crates.io/api/v1/crates/rustls/0.23.5/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "rustls-0.23.4",
-    srcs = [":rustls-0.23.4.crate"],
+    name = "rustls-0.23.5",
+    srcs = [":rustls-0.23.5.crate"],
     crate = "rustls",
-    crate_root = "rustls-0.23.4.crate/src/lib.rs",
+    crate_root = "rustls-0.23.5.crate/src/lib.rs",
     edition = "2021",
     features = [
         "log",
@@ -8973,7 +8973,7 @@ cargo.rust_binary(
         ":handlebars-5.1.2",
         ":http-0.2.12",
         ":jsonwebtoken-9.3.0",
-        ":lettre-0.11.6",
+        ":lettre-0.11.7",
         ":opentelemetry-0.20.0",
         ":opentelemetry-http-0.9.0",
         ":opentelemetry-otlp-0.13.0",
@@ -9404,7 +9404,7 @@ cargo.rust_library(
     },
     visibility = [],
     deps = [
-        ":rustls-0.23.4",
+        ":rustls-0.23.5",
         ":tokio-1.37.0",
     ],
 )
