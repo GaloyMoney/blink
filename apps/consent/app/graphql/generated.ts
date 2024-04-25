@@ -877,6 +877,13 @@ export type MerchantPayload = {
   readonly merchant?: Maybe<Merchant>;
 };
 
+export type MobileSession = {
+  readonly __typename: 'MobileSession';
+  readonly expiresAt: Scalars['Timestamp']['output'];
+  readonly id: Scalars['ID']['output'];
+  readonly issuedAt: Scalars['Timestamp']['output'];
+};
+
 export type MobileVersions = {
   readonly __typename: 'MobileVersions';
   readonly currentSupported: Scalars['Int']['output'];
@@ -1922,6 +1929,8 @@ export type User = {
    * When value is 'default' the intent is to use preferred language from OS settings.
    */
   readonly language: Scalars['Language']['output'];
+  /** List of mobile sessions */
+  readonly mobileSessions: ReadonlyArray<MobileSession>;
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']['output']>;
   readonly supportChat: ReadonlyArray<SupportMessage>;

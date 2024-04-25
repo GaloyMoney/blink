@@ -10,27 +10,15 @@ Make sure you have `hydra` command line installed
 brew install ory-hydra
 ```
 
-# run the experiment:
+### list oauth2 client generated from tilt
 
-Follow the instructions below
+hydra list oauth2-clients -e http://localhost:4445
 
+## loading env from automatically created client:
 
-On console 1:
+. ./dev/.dashboard-hydra-client.env
 
-launch the hydra login consent node, which will provide the authentication (interactive with kratos API) and consent page.
-
-```sh
-apps/consent % HYDRA_ADMIN_URL=http://localhost:4445 yarn start
-```
-
-On console 2:
-```sh
-galoy % make start
-```
-
-On console 3:
-Follow the instructions below
-
+TODO: dashboard should have consent: true automatically
 
 ## create a OAuth2 client
 
@@ -41,8 +29,8 @@ The client is concourse in this example.
 
 For the galoy stack, some examples of clients could be Alby, a boltcard service, a nostr wallet connect service, an accountant that access the wallet in read only.
 
-
 from :dashboard
+
 ```sh
 
 . ./.env
@@ -83,7 +71,6 @@ pnpm next
 ```
 
 note: skip consent should be true for trust client, ie: dashboard, but not for third party clients
-
 
 to do a PKCE session:
 
@@ -132,7 +119,6 @@ hydra introspect token \
 
 OR
 
-
 ```sh
 curl -X POST http://localhost:4445/admin/oauth2/introspect -d token=$ory_at_TOKEN
 
@@ -177,7 +163,6 @@ but the response is not returning the scope in the jwt
 curl -s -I -X POST http://localhost:4456/decisions/graphql --user $client_id:$client_secret
 ```
 
-
 ## list OAuth 2.0 consent
 
 ```sh
@@ -185,13 +170,12 @@ export subject="9818ea5e-30a8-4b52-879d-d34590e7250e"
 curl "http://localhost:4445/admin/oauth2/auth/sessions/consent?subject=$subject"
 
 ```
-login_session_id (optional): The login session id to list the consent sessions for.
 
+login_session_id (optional): The login session id to list the consent sessions for.
 
 ## change client token lifespans
 
 https://www.ory.sh/docs/reference/api#tag/oAuth2/operation/setOAuth2ClientLifespans
-
 
 ## delete token by session id
 
@@ -201,10 +185,8 @@ curl -v -X DELETE "http://localhost:4445/admin/oauth2/auth/sessions/login?sid=$s
 export subject=9818ea5e-30a8-4b52-879d-d34590e7250e
 curl -v -X DELETE "http://localhost:4445/admin/oauth2/auth/sessions/login?subject=$subject"
 
-
 # delete all
+
 curl -v -X DELETE "http://localhost:4445/admin/oauth2/auth/sessions/consent?subject=$subject&client=$CLIENT_ID_APP_API_KEY"
-
-
 
 curl http://localhost:4445/admin/oauth2/auth/requests/logout

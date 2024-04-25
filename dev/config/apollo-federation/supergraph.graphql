@@ -1142,6 +1142,14 @@ type MerchantPayload
 scalar Minutes
   @join__type(graph: PUBLIC)
 
+type MobileSession
+  @join__type(graph: PUBLIC)
+{
+  expiresAt: Timestamp!
+  id: ID!
+  issuedAt: Timestamp!
+}
+
 type MobileVersions
   @join__type(graph: PUBLIC)
 {
@@ -2085,6 +2093,9 @@ type User
   When value is 'default' the intent is to use preferred language from OS settings.
   """
   language: Language! @join__field(graph: PUBLIC)
+
+  """List of mobile sessions"""
+  mobileSessions: [MobileSession!]! @join__field(graph: PUBLIC)
 
   """Phone number with international calling code."""
   phone: Phone @join__field(graph: PUBLIC)

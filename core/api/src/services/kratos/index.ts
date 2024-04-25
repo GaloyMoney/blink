@@ -61,7 +61,7 @@ export const checkedToAuthToken = (value: string) => {
 export const validateKratosToken = async (
   authToken: AuthToken,
 ): Promise<ValidateKratosTokenResult | KratosError> => {
-  let session: Session
+  let session: MobileSession
 
   try {
     const { data } = await kratosPublic.toSession({ xSessionToken: authToken })
@@ -80,7 +80,9 @@ export const validateKratosToken = async (
   }
 }
 
-export const listSessions = async (userId: UserId): Promise<Session[] | KratosError> => {
+export const listSessions = async (
+  userId: UserId,
+): Promise<MobileSession[] | KratosError> => {
   try {
     const res = await kratosAdmin.listIdentitySessions({ id: userId })
     if (res.data === null) return []

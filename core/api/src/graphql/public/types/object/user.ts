@@ -19,6 +19,7 @@ import Language from "@/graphql/shared/types/scalar/language"
 import Username from "@/graphql/shared/types/scalar/username"
 import Timestamp from "@/graphql/shared/types/scalar/timestamp"
 import GraphQLEmail from "@/graphql/shared/types/object/email"
+import MobileSession from "./mobile-session"
 
 const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
   name: "User",
@@ -72,6 +73,14 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
         When value is 'default' the intent is to use preferred language from OS settings.`,
       resolve: async (source) => {
         return Users.getUserLanguage(source.id)
+      },
+    },
+
+    mobileSessions: {
+      type: GT.NonNullList(MobileSession),
+      description: "List of mobile sessions",
+      resolve: async (source, args, { user }) => {
+        return Users.listMobileSessions(user.id)
       },
     },
 

@@ -61,10 +61,18 @@ type AnyIdentity =
   | IdentityPhoneEmail
   | IdentityDeviceAccount
 
-type Session = {
+type MobileSession = {
   identity: AnyIdentity
   id: SessionId
   expiresAt: Date
+  issuedAt: Date
+}
+
+type ConsentSession = {
+  scope: string[]
+  handledAt: Date
+  remember: boolean
+  app: string
 }
 
 type WithSessionResponse = {

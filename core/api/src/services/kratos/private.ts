@@ -1,13 +1,8 @@
 import knex from "knex"
 
-import { Configuration, FrontendApi, IdentityApi } from "@ory/client"
+import { Configuration, FrontendApi, Identity, IdentityApi } from "@ory/client"
 
-import {
-  InvalidIdentitySessionKratosError,
-  MissingCreatedAtKratosError,
-  MissingExpiredAtKratosError,
-  UnknownKratosError,
-} from "./errors"
+import { MissingCreatedAtKratosError, UnknownKratosError } from "./errors"
 
 import { SchemaIdType } from "./schema"
 
@@ -30,16 +25,12 @@ export const getKratosPostgres = () =>
     connection: KRATOS_PG_CON,
   })
 
-export const toDomainSession = (session: KratosSession): Session => {
-  // is throw ok? this should not happen I (nb) believe but the type say it can
-  // this may probably be a type issue in kratos SDK
-  if (!session.identity) throw new InvalidIdentitySessionKratosError()
-  if (!session.expires_at) throw new MissingExpiredAtKratosError()
-
+export const toDomainSession = (session: KratosSession): MobileSession => {
   return {
     id: session.id as SessionId,
-    identity: toDomainIdentity(session.identity),
-    expiresAt: new Date(session?.expires_at),
+    identity: toDomainIdentity(session.identity as Identity),
+    expiresAt: new Date(session?.expires_at as string),
+    issuedAt: new Date(session?.issued_at as string),
   }
 }
 

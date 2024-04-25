@@ -14,7 +14,7 @@ type IdentitySchemaContainer = import("@ory/client").IdentitySchemaContainer
 
 type ValidateKratosTokenResult = {
   kratosUserId: UserId
-  session: Session
+  session: MobileSession
 }
 
 type KratosPublicMetadata = {

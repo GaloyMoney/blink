@@ -75,8 +75,19 @@ create_user_with_metadata() {
 }
 
 random_phone() {
-  printf "+1%010d\n" $(( ($RANDOM * 1000000) + ($RANDOM % 1000000) ))
+  # Generate an area code: cannot start with 0 or 1
+  local area_code=415
+  
+  # Generate an exchange code: cannot start with 0 or 1
+  local exchange=$(( $RANDOM % 800 + 200 ))
+  
+  # Generate a subscriber number: four-digit number
+  local subscriber=$(( $RANDOM % 10000 ))
+
+  # Print formatted phone number
+  printf "+1%03d%03d%04d\n" $area_code $exchange $subscriber
 }
+
 
 user_update_username() {
   local token_name="$1"

@@ -1,0 +1,11 @@
+query userDetails {
+  me {
+    id
+    phone
+    mobileSessions {
+      id
+      expiresAt
+      issuedAt
+    }
+  }
+}

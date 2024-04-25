@@ -865,6 +865,12 @@ type MerchantPayload {
 """(Positive) amount of minutes"""
 scalar Minutes
 
+type MobileSession {
+  expiresAt: Timestamp!
+  id: ID!
+  issuedAt: Timestamp!
+}
+
 type MobileVersions {
   currentSupported: Int!
   minSupported: Int!
@@ -1598,6 +1604,9 @@ type User {
   When value is 'default' the intent is to use preferred language from OS settings.
   """
   language: Language!
+
+  """List of mobile sessions"""
+  mobileSessions: [MobileSession!]!
 
   """Phone number with international calling code."""
   phone: Phone

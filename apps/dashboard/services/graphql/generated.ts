@@ -917,6 +917,13 @@ export type MerchantPayload = {
   readonly merchant?: Maybe<Merchant>;
 };
 
+export type MobileSession = {
+  readonly __typename: 'MobileSession';
+  readonly expiresAt: Scalars['Timestamp']['output'];
+  readonly id: Scalars['ID']['output'];
+  readonly issuedAt: Scalars['Timestamp']['output'];
+};
+
 export type MobileVersions = {
   readonly __typename: 'MobileVersions';
   readonly currentSupported: Scalars['Int']['output'];
@@ -2019,6 +2026,8 @@ export type User = {
    * When value is 'default' the intent is to use preferred language from OS settings.
    */
   readonly language: Scalars['Language']['output'];
+  /** List of mobile sessions */
+  readonly mobileSessions: ReadonlyArray<MobileSession>;
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']['output']>;
   readonly statefulNotifications: StatefulNotificationConnection;
@@ -3527,6 +3536,7 @@ export type ResolversTypes = {
   MerchantMapSuggestInput: MerchantMapSuggestInput;
   MerchantPayload: ResolverTypeWrapper<MerchantPayload>;
   Minutes: ResolverTypeWrapper<Scalars['Minutes']['output']>;
+  MobileSession: ResolverTypeWrapper<MobileSession>;
   MobileVersions: ResolverTypeWrapper<MobileVersions>;
   Mutation: ResolverTypeWrapper<{}>;
   MyUpdatesPayload: ResolverTypeWrapper<Omit<MyUpdatesPayload, 'update'> & { update?: Maybe<ResolversTypes['UserUpdate']> }>;
@@ -3752,6 +3762,7 @@ export type ResolversParentTypes = {
   MerchantMapSuggestInput: MerchantMapSuggestInput;
   MerchantPayload: MerchantPayload;
   Minutes: Scalars['Minutes']['output'];
+  MobileSession: MobileSession;
   MobileVersions: MobileVersions;
   Mutation: {};
   MyUpdatesPayload: Omit<MyUpdatesPayload, 'update'> & { update?: Maybe<ResolversParentTypes['UserUpdate']> };
@@ -4360,6 +4371,13 @@ export interface MinutesScalarConfig extends GraphQLScalarTypeConfig<ResolversTy
   name: 'Minutes';
 }
 
+export type MobileSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MobileSession'] = ResolversParentTypes['MobileSession']> = {
+  expiresAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  issuedAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type MobileVersionsResolvers<ContextType = any, ParentType extends ResolversParentTypes['MobileVersions'] = ResolversParentTypes['MobileVersions']> = {
   currentSupported?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   minSupported?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -4820,6 +4838,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   email?: Resolver<Maybe<ResolversTypes['Email']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   language?: Resolver<ResolversTypes['Language'], ParentType, ContextType>;
+  mobileSessions?: Resolver<ReadonlyArray<ResolversTypes['MobileSession']>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['Phone']>, ParentType, ContextType>;
   statefulNotifications?: Resolver<ResolversTypes['StatefulNotificationConnection'], ParentType, ContextType, RequireFields<UserStatefulNotificationsArgs, 'first'>>;
   supportChat?: Resolver<ReadonlyArray<ResolversTypes['SupportMessage']>, ParentType, ContextType>;
@@ -5011,6 +5030,7 @@ export type Resolvers<ContextType = any> = {
   Merchant?: MerchantResolvers<ContextType>;
   MerchantPayload?: MerchantPayloadResolvers<ContextType>;
   Minutes?: GraphQLScalarType;
+  MobileSession?: MobileSessionResolvers<ContextType>;
   MobileVersions?: MobileVersionsResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   MyUpdatesPayload?: MyUpdatesPayloadResolvers<ContextType>;
