@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: upgrade package (#4351)'
-      sha: 2e44b05c7696bdbcceed626e18fef375e1d42b97
+      commitTitle: 'chore: remove unused oauth2 client (#4346)...'
+      sha: ac03abc462014b60d4912ab27dad7793f2cc36e5
       tags:
-      - 0.20.164-2-g2e44b05c7
+      - 0.20.165-2-gac03abc46
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: upgrade package (#4351)'
-      sha: 2e44b05c7696bdbcceed626e18fef375e1d42b97
+      commitTitle: 'chore: remove unused oauth2 client (#4346)...'
+      sha: ac03abc462014b60d4912ab27dad7793f2cc36e5
       tags:
-      - 0.20.164-2-g2e44b05c7
+      - 0.20.165-2-gac03abc46
     path: schemas
   - git:
-      commitTitle: 'chore: upgrade package (#4351)'
-      sha: 2e44b05c7696bdbcceed626e18fef375e1d42b97
+      commitTitle: 'chore: remove unused oauth2 client (#4346)...'
+      sha: ac03abc462014b60d4912ab27dad7793f2cc36e5
       tags:
-      - 0.20.164-2-g2e44b05c7
+      - 0.20.166
     path: gql
   path: graphql
 kind: LockConfig
