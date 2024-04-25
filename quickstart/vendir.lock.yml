@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): add migration for accountIds to invoiceusers collection
-        (#4353)'
-      sha: 954f8336b2790b98bfc07d1792a64c930db141ed
+      commitTitle: 'fix: regression on env variable (#4366)...'
+      sha: 91711a54e4e64003969714ffe320216604a30b3b
       tags:
-      - 0.20.166-8-g954f8336b
+      - 0.20.167-2-g91711a54e
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): add migration for accountIds to invoiceusers collection
-        (#4353)'
-      sha: 954f8336b2790b98bfc07d1792a64c930db141ed
+      commitTitle: 'fix: regression on env variable (#4366)...'
+      sha: 91711a54e4e64003969714ffe320216604a30b3b
       tags:
-      - 0.20.166-8-g954f8336b
+      - 0.20.167-2-g91711a54e
     path: schemas
   - git:
-      commitTitle: 'chore(core): add migration for accountIds to invoiceusers collection
-        (#4353)'
-      sha: 954f8336b2790b98bfc07d1792a64c930db141ed
+      commitTitle: 'fix: regression on env variable (#4366)...'
+      sha: 91711a54e4e64003969714ffe320216604a30b3b
       tags:
-      - 0.20.166-8-g954f8336b
+      - 0.20.167-2-g91711a54e
     path: gql
   path: graphql
 kind: LockConfig
