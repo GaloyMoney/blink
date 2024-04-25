@@ -30,7 +30,7 @@ AUTHORIZATION_URL="${HYDRA_PUBLIC_API}/oauth2/auth?client_id=$CLIENT_ID&scope=re
 
 echo "export CLIENT_ID=$CLIENT_ID" > "${HYDRA_CLIENT_ENV}"
 echo "export CLIENT_SECRET=$CLIENT_SECRET" >> "${HYDRA_CLIENT_ENV}"
-echo "export AUTHORIZATION_URL=\"$AUTHORIZATION_URL\"" >> "${HYDRA_CLIENT_ENV}"
+echo "export AUTHORIZATION_URL=$AUTHORIZATION_URL" >> "${HYDRA_CLIENT_ENV}"
 
 mkdir -p "${DEV_DIR}/.envs"
 cp "${HYDRA_CLIENT_ENV}" "${DEV_DIR}/.envs/${hydra_client_name}.env"
