@@ -79,3 +79,12 @@ setup_file() {
   acknowledged_at=$(graphql_output '.data.statefulNotificationAcknowledge.notification.acknowledgedAt')
   [[ "$acknowledged_at" != "null" ]] || exit 1
 }
+
+@test "notifications: load test" {
+  for in $(seq 1 100); do
+    # create 100000 users
+    # And update their language to spanish
+  done
+
+  # execute a trivial marketing notification
+}
