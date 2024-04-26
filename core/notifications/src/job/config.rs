@@ -4,6 +4,8 @@ use std::time::Duration;
 #[serde_with::serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct JobsConfig {
+    #[serde(default)]
+    pub enabled: bool,
     #[serde_as(as = "serde_with::DurationSeconds<u64>")]
     #[serde(default = "default_kickoff_link_email_reminder_delay")]
     pub kickoff_link_email_reminder_delay: Duration,
@@ -16,6 +18,7 @@ pub struct JobsConfig {
 impl Default for JobsConfig {
     fn default() -> Self {
         Self {
+            enabled: false,
             kickoff_link_email_reminder_delay: default_kickoff_link_email_reminder_delay(),
             max_concurrent_jobs: default_max_concurrent_jobs(),
             min_concurrent_jobs: default_min_concurrent_job(),
