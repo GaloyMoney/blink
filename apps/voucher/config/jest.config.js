@@ -8,4 +8,5 @@ module.exports = {
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
   },
+  reporters: ["jest-standard-reporter"],
 };
