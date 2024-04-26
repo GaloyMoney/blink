@@ -33,7 +33,11 @@ pub async fn start_job_runner(
     history: NotificationHistory,
     email_reminder_projection: EmailReminderProjection,
     jobs_config: JobsConfig,
-) -> Result<JobRunnerHandle, JobError> {
+) -> Result<Option<JobRunnerHandle>, JobError> {
+    if !jobs_config.enabled {
+        return Ok(None);
+    }
+
     let mut registry = JobRegistry::new(&[
         all_user_event_dispatch,
         send_push_notification,
@@ -53,12 +57,14 @@ pub async fn start_job_runner(
     );
     registry.set_context(jobs_config);
 
-    Ok(registry
-        .runner(pool)
-        .set_keep_alive(false)
-        .set_concurrency(min, max)
-        .run()
-        .await?)
+    Ok(Some(
+        registry
+            .runner(pool)
+            .set_keep_alive(false)
+            .set_concurrency(min, max)
+            .run()
+            .await?,
+    ))
 }
 
 #[job(

@@ -23,7 +23,7 @@ pub struct NotificationsApp {
     email_reminder_projection: EmailReminderProjection,
     history: NotificationHistory,
     pool: Pool<Postgres>,
-    _runner: Arc<JobRunnerHandle>,
+    _runner: Arc<Option<JobRunnerHandle>>,
 }
 
 impl NotificationsApp {
