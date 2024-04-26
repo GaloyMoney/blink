@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#4358)...'
-      sha: 4e3a2dacc0d83ee1d03bf84708d79a49a940bb98
+      commitTitle: 'chore: bump axios from 1.6.2 to 1.6.3 (#4368)...'
+      sha: c8a335de87322e8aa339643a8514f8d6342458a3
       tags:
-      - 0.20.169-1-g4e3a2dacc
+      - 0.20.170-2-gc8a335de8
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#4358)...'
-      sha: 4e3a2dacc0d83ee1d03bf84708d79a49a940bb98
+      commitTitle: 'chore: bump axios from 1.6.2 to 1.6.3 (#4368)...'
+      sha: c8a335de87322e8aa339643a8514f8d6342458a3
       tags:
-      - 0.20.169-1-g4e3a2dacc
+      - 0.20.170-2-gc8a335de8
     path: schemas
   - git:
-      commitTitle: 'chore: bump deps (#4358)...'
-      sha: 4e3a2dacc0d83ee1d03bf84708d79a49a940bb98
+      commitTitle: 'chore: bump axios from 1.6.2 to 1.6.3 (#4368)...'
+      sha: c8a335de87322e8aa339643a8514f8d6342458a3
       tags:
-      - 0.20.169-1-g4e3a2dacc
+      - 0.20.170-2-gc8a335de8
     path: gql
   path: graphql
 kind: LockConfig
