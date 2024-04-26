@@ -23,18 +23,22 @@ pub struct NotificationsApp {
     email_reminder_projection: EmailReminderProjection,
     history: NotificationHistory,
     pool: Pool<Postgres>,
-    _runner: Arc<JobRunnerHandle>,
+    _runner: Arc<Option<JobRunnerHandle>>,
 }
 
 impl NotificationsApp {
-    pub async fn init(pool: Pool<Postgres>, config: AppConfig) -> Result<Self, ApplicationError> {
-        let settings = UserNotificationSettingsRepo::new(&pool);
+    pub async fn init(
+        pool: Pool<Postgres>,
+        read_pool: ReadPool,
+        config: AppConfig,
+    ) -> Result<Self, ApplicationError> {
+        let settings = UserNotificationSettingsRepo::new(&pool, &read_pool);
         let push_executor =
             PushExecutor::init(config.push_executor.clone(), settings.clone()).await?;
         let email_executor = EmailExecutor::init(config.email_executor.clone(), settings.clone())?;
         let email_reminder_projection =
             EmailReminderProjection::new(&pool, config.link_email_reminder.clone());
-        let history = NotificationHistory::new(&pool, settings.clone());
+        let history = NotificationHistory::new(&pool, &read_pool, settings.clone());
         let runner = job::start_job_runner(
             &pool,
             push_executor,
@@ -76,7 +80,7 @@ impl NotificationsApp {
         user_id: GaloyUserId,
         channel: UserNotificationChannel,
     ) -> Result<UserNotificationSettings, ApplicationError> {
-        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
+        let mut user_settings = self.settings.find_for_user_id_for_mut(&user_id).await?;
         user_settings.disable_channel(channel);
         self.settings.persist(&mut user_settings).await?;
         Ok(user_settings)
@@ -88,7 +92,7 @@ impl NotificationsApp {
         user_id: GaloyUserId,
         channel: UserNotificationChannel,
     ) -> Result<UserNotificationSettings, ApplicationError> {
-        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
+        let mut user_settings = self.settings.find_for_user_id_for_mut(&user_id).await?;
 
         user_settings.enable_channel(channel);
         self.settings.persist(&mut user_settings).await?;
@@ -102,7 +106,7 @@ impl NotificationsApp {
         channel: UserNotificationChannel,
         category: UserNotificationCategory,
     ) -> Result<UserNotificationSettings, ApplicationError> {
-        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
+        let mut user_settings = self.settings.find_for_user_id_for_mut(&user_id).await?;
         user_settings.disable_category(channel, category);
         self.settings.persist(&mut user_settings).await?;
         Ok(user_settings)
@@ -115,7 +119,7 @@ impl NotificationsApp {
         channel: UserNotificationChannel,
         category: UserNotificationCategory,
     ) -> Result<UserNotificationSettings, ApplicationError> {
-        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
+        let mut user_settings = self.settings.find_for_user_id_for_mut(&user_id).await?;
         user_settings.enable_category(channel, category);
         self.settings.persist(&mut user_settings).await?;
         Ok(user_settings)
@@ -127,7 +131,7 @@ impl NotificationsApp {
         user_id: GaloyUserId,
         locale: String,
     ) -> Result<UserNotificationSettings, ApplicationError> {
-        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
+        let mut user_settings = self.settings.find_for_user_id_for_mut(&user_id).await?;
         if locale.is_empty() {
             user_settings.set_locale_to_default()
         } else {
@@ -143,7 +147,7 @@ impl NotificationsApp {
         user_id: GaloyUserId,
         device_token: PushDeviceToken,
     ) -> Result<UserNotificationSettings, ApplicationError> {
-        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
+        let mut user_settings = self.settings.find_for_user_id_for_mut(&user_id).await?;
         user_settings.add_push_device_token(device_token);
         self.settings.persist(&mut user_settings).await?;
         Ok(user_settings)
@@ -155,7 +159,7 @@ impl NotificationsApp {
         user_id: GaloyUserId,
         device_token: PushDeviceToken,
     ) -> Result<UserNotificationSettings, ApplicationError> {
-        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
+        let mut user_settings = self.settings.find_for_user_id_for_mut(&user_id).await?;
         user_settings.remove_push_device_token(device_token);
         self.settings.persist(&mut user_settings).await?;
         Ok(user_settings)
@@ -167,7 +171,7 @@ impl NotificationsApp {
         user_id: GaloyUserId,
         addr: GaloyEmailAddress,
     ) -> Result<(), ApplicationError> {
-        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
+        let mut user_settings = self.settings.find_for_user_id_for_mut(&user_id).await?;
         user_settings.update_email_address(addr);
         let mut tx = self.pool.begin().await?;
         self.settings
@@ -182,7 +186,7 @@ impl NotificationsApp {
 
     #[instrument(name = "app.remove_email_address", skip(self), err)]
     pub async fn remove_email_address(&self, user_id: GaloyUserId) -> Result<(), ApplicationError> {
-        let mut user_settings = self.settings.find_for_user_id(&user_id).await?;
+        let mut user_settings = self.settings.find_for_user_id_for_mut(&user_id).await?;
         user_settings.remove_email_address();
         self.settings.persist(&mut user_settings).await?;
         Ok(())

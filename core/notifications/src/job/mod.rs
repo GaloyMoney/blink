@@ -33,7 +33,11 @@ pub async fn start_job_runner(
     history: NotificationHistory,
     email_reminder_projection: EmailReminderProjection,
     jobs_config: JobsConfig,
-) -> Result<JobRunnerHandle, JobError> {
+) -> Result<Option<JobRunnerHandle>, JobError> {
+    if !jobs_config.enabled {
+        return Ok(None);
+    }
+
     let mut registry = JobRegistry::new(&[
         all_user_event_dispatch,
         send_push_notification,
@@ -53,17 +57,20 @@ pub async fn start_job_runner(
     );
     registry.set_context(jobs_config);
 
-    Ok(registry
-        .runner(pool)
-        .set_keep_alive(false)
-        .set_concurrency(min, max)
-        .run()
-        .await?)
+    Ok(Some(
+        registry
+            .runner(pool)
+            .set_keep_alive(false)
+            .set_concurrency(min, max)
+            .run()
+            .await?,
+    ))
 }
 
 #[job(
     name = "all_user_event_dispatch",
-    channel_name = "all_user_event_dispatch"
+    channel_name = "all_user_event_dispatch",
+    backoff_secs = 10
 )]
 async fn all_user_event_dispatch(
     mut current_job: CurrentJob,
@@ -72,6 +79,7 @@ async fn all_user_event_dispatch(
 ) -> Result<(), JobError> {
     let pool = current_job.pool().clone();
     JobExecutor::builder(&mut current_job)
+        .initial_retry_delay(std::time::Duration::from_secs(10))
         .build()
         .expect("couldn't build JobExecutor")
         .execute(|data| async move {
@@ -106,7 +114,11 @@ async fn all_user_event_dispatch(
     Ok(())
 }
 
-#[job(name = "link_email_reminder", channel_name = "link_email_reminder")]
+#[job(
+    name = "link_email_reminder",
+    channel_name = "link_email_reminder",
+    backoff_secs = 10
+)]
 async fn link_email_reminder(
     mut current_job: CurrentJob,
     email_reminder_projection: EmailReminderProjection,
@@ -114,6 +126,7 @@ async fn link_email_reminder(
 ) -> Result<(), JobError> {
     let pool = current_job.pool().clone();
     JobExecutor::builder(&mut current_job)
+        .initial_retry_delay(std::time::Duration::from_secs(10))
         .build()
         .expect("couldn't build JobExecutor")
         .execute(|data| async move {
@@ -179,7 +192,8 @@ async fn kickoff_link_email_reminder(
 
 #[job(
     name = "multi_user_event_dispatch",
-    channel_name = "multi_user_event_dispatch"
+    channel_name = "multi_user_event_dispatch",
+    backoff_secs = 10
 )]
 async fn multi_user_event_dispatch(
     mut current_job: CurrentJob,
@@ -187,6 +201,7 @@ async fn multi_user_event_dispatch(
 ) -> Result<(), JobError> {
     let pool = current_job.pool().clone();
     JobExecutor::builder(&mut current_job)
+        .initial_retry_delay(std::time::Duration::from_secs(10))
         .build()
         .expect("couldn't build JobExecutor")
         .execute(|data| async move {
@@ -229,13 +244,15 @@ async fn multi_user_event_dispatch(
 
 #[job(
     name = "send_push_notification",
-    channel_name = "send_push_notification"
+    channel_name = "send_push_notification",
+    backoff_secs = 10
 )]
 async fn send_push_notification(
     mut current_job: CurrentJob,
     executor: PushExecutor,
 ) -> Result<(), JobError> {
     JobExecutor::builder(&mut current_job)
+        .initial_retry_delay(std::time::Duration::from_secs(10))
         .build()
         .expect("couldn't build JobExecutor")
         .execute(|data| async move {
@@ -348,13 +365,15 @@ pub async fn spawn_kickoff_link_email_reminder(
 
 #[job(
     name = "send_email_notification",
-    channel_name = "send_email_notification"
+    channel_name = "send_email_notification",
+    backoff_secs = 10
 )]
 async fn send_email_notification(
     mut current_job: CurrentJob,
     executor: EmailExecutor,
 ) -> Result<(), JobError> {
     JobExecutor::builder(&mut current_job)
+        .initial_retry_delay(std::time::Duration::from_secs(10))
         .build()
         .expect("couldn't build JobExecutor")
         .execute(|data| async move {

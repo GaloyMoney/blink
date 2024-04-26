@@ -61,6 +61,7 @@ interface WalletRecord {
 interface WalletInvoiceRecord {
   _id: string
   walletId: string
+  accountId: string
   cents: number
   secret: string
   currency: string

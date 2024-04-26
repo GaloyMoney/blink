@@ -29,11 +29,10 @@ import * as notificationsGrpc from "./grpc-client"
 
 import { handleCommonNotificationErrors } from "./errors"
 
-import { getCallbackServiceConfig } from "@/config"
+import { getCallbackServiceConfig, USER_NOTIFICATION_SETTINGS_TIMEOUT_MS } from "@/config"
 
 import {
   DeepLink,
-  NotificationCategory,
   NotificationsServiceError,
   NotificationType,
   UnknownNotificationsServiceError,
@@ -65,6 +64,9 @@ export const NotificationsService = (): INotificationsService => {
       const response = await notificationsGrpc.getNotificationSettings(
         request,
         notificationsGrpc.notificationsMetadata,
+        {
+          deadline: Date.now() + USER_NOTIFICATION_SETTINGS_TIMEOUT_MS,
+        },
       )
 
       const notificationSettings = grpcNotificationSettingsToNotificationSettings(
