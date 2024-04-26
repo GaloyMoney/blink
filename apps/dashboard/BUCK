@@ -67,6 +67,8 @@ filegroup(
     "theme/**",
     "services/**",
     "components/**",
+    "lib/**",
+    "hook/**",
     "tailwind.config.ts",
     "postcss.config.js",
     "next.config.js",

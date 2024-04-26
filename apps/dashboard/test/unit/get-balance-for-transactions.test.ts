@@ -1,5 +1,5 @@
-import { transactions } from "./mock-data/transaction"
-import { getBalanceForTransactions } from "../lib/get-balance-for-transactions"
+import { transactions } from "../mock-data/transaction"
+import { getBalanceForTransactions } from "../../lib/get-balance-for-transactions"
 
 describe("getBalanceForTransactions Tests", () => {
   const currentUsdBalance = 36240
@@ -34,8 +34,6 @@ describe("getBalanceForTransactions Tests", () => {
 
     it("transactions items should have correct structure and data types", () => {
       result.usdTransactions.forEach((tx) => {
-        expect(tx).toHaveProperty("createdAt")
-        expect(typeof tx.createdAt).toBe("string")
         expect(tx).toHaveProperty("balance")
         expect(typeof tx.balance).toBe("number")
         expect(tx).toHaveProperty("date")
@@ -45,8 +43,6 @@ describe("getBalanceForTransactions Tests", () => {
       })
 
       result.btcTransactions.forEach((tx) => {
-        expect(tx).toHaveProperty("createdAt")
-        expect(typeof tx.createdAt).toBe("string")
         expect(tx).toHaveProperty("balance")
         expect(typeof tx.balance).toBe("number")
         expect(tx).toHaveProperty("date")
@@ -78,63 +74,53 @@ describe("getBalanceForTransactions Tests", () => {
 const expectedData = {
   usdTransactions: [
     {
-      createdAt: "2024-04-26 16:27:14",
       balance: 362.4, // send 1200 hence balance 36240 cents
       date: "Apr 26",
       dateTime: "April 26, 2024 at 09:57:14 PM",
     },
     {
-      createdAt: "2024-04-26 16:27:12",
       balance: 374.4, // send 1200 hence balance 37440 cents
       date: "Apr 26",
       dateTime: "April 26, 2024 at 09:57:12 PM",
     },
     {
-      createdAt: "2024-04-26 16:27:09",
       balance: 386.4, // sent 1200 cents hence balance 38640 cents
       date: "Apr 26",
       dateTime: "April 26, 2024 at 09:57:09 PM",
     },
     {
-      createdAt: "2024-04-26 16:24:04",
-      balance: 398.4, // recived 19920 again hence balance 39840 cents
+      balance: 398.4, // received 19920 again hence balance 39840 cents
       date: "Apr 26",
       dateTime: "April 26, 2024 at 09:54:04 PM",
     },
     {
-      createdAt: "2024-04-26 16:20:59",
-      balance: 199.2, // recived 19920 cents as starting point
+      balance: 199.2, // received 19920 cents as starting point
       date: "Apr 26",
       dateTime: "April 26, 2024 at 09:50:59 PM",
     },
   ],
   btcTransactions: [
     {
-      createdAt: "2024-04-26 16:27:14",
       balance: 1993700,
       date: "Apr 26",
       dateTime: "April 26, 2024 at 09:57:14 PM",
     },
     {
-      createdAt: "2024-04-26 16:27:12",
       balance: 1993800,
       date: "Apr 26",
       dateTime: "April 26, 2024 at 09:57:12 PM",
     },
     {
-      createdAt: "2024-04-26 16:27:09",
       balance: 1993900,
       date: "Apr 26",
       dateTime: "April 26, 2024 at 09:57:09 PM",
     },
     {
-      createdAt: "2024-04-26 16:24:09",
       balance: 1994000,
       date: "Apr 26",
       dateTime: "April 26, 2024 at 09:54:09 PM",
     },
     {
-      createdAt: "2024-04-26 16:21:04",
       balance: 997000,
       date: "Apr 26",
       dateTime: "April 26, 2024 at 09:51:04 PM",

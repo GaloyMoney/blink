@@ -1,5 +1,6 @@
 import { TransactionEdge } from "@/services/graphql/generated"
 import { ProcessedTransaction } from "./index.types"
+import { formatDateTime, formatMonth } from "@/app/utils"
 
 export const getBalanceForTransactions = ({
   transactions,
@@ -43,24 +44,9 @@ export const getBalanceForTransactions = ({
       maxBalance.usd = Math.max(maxBalance.usd, Number((usdBalance / 100).toFixed(2)))
 
       usdTransactions.push({
-        createdAt: new Date(node.createdAt * 1000)
-          .toISOString()
-          .replace("T", " ")
-          .substring(0, 19),
-
         balance: Number((usdBalance / 100).toFixed(2)),
-        date: new Date(node.createdAt * 1000).toLocaleDateString("en-US", {
-          month: "short",
-          day: "2-digit",
-        }),
-        dateTime: new Date(node.createdAt * 1000).toLocaleString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        }),
+        date: formatMonth(node.createdAt),
+        dateTime: formatDateTime(node.createdAt),
       })
 
       if (node.direction === "RECEIVE") {
@@ -73,24 +59,9 @@ export const getBalanceForTransactions = ({
       maxBalance.btc = Math.max(maxBalance.btc, btcBalance)
 
       btcTransactions.push({
-        createdAt: new Date(node.createdAt * 1000)
-          .toISOString()
-          .replace("T", " ")
-          .substring(0, 19),
-
         balance: btcBalance,
-        date: new Date(node.createdAt * 1000).toLocaleDateString("en-US", {
-          month: "short",
-          day: "2-digit",
-        }),
-        dateTime: new Date(node.createdAt * 1000).toLocaleString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        }),
+        date: formatMonth(node.createdAt),
+        dateTime: formatDateTime(node.createdAt),
       })
 
       if (node.direction === "RECEIVE") {

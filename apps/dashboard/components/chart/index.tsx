@@ -17,17 +17,19 @@ import { TransactionEdge } from "@/services/graphql/generated"
 const CustomTooltip = ({
   active,
   payload,
-}: TooltipProps<number, string>): JSX.Element | null => {
+  walletCurrency,
+}: TooltipProps<number, string> & { walletCurrency: "USD" | "Sats" }) => {
   if (active && payload && payload.length) {
     return (
       <Card style={{ padding: "1em" }}>
         <p>{payload[0].payload.dateTime}</p>
-        <p>{`${payload[0].value}`}</p>
+        <p>{`${payload[0].value} ${walletCurrency}`}</p>
       </Card>
     )
   }
   return null
 }
+
 type Props = {
   transactions: TransactionEdge[]
   currentUsdBalance: number
@@ -102,7 +104,13 @@ const TransactionChart = ({
                 padding={{ bottom: 20 }}
                 dataKey="balance"
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip
+                content={
+                  <CustomTooltip
+                    walletCurrency={walletCurrency === "USD" ? "USD" : "Sats"}
+                  />
+                }
+              />
               <Area
                 type="monotone"
                 dataKey="balance"
