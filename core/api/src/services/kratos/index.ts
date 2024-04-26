@@ -4,6 +4,7 @@ import { kratosAdmin, kratosPublic, toDomainSession } from "./private"
 
 import { KRATOS_MASTER_USER_PASSWORD } from "@/config"
 
+import { UuidRegex } from "@/domain/shared"
 import { InvalidFlowId, InvalidTotpCode } from "@/domain/errors"
 
 export * from "./auth-phone-no-password"
@@ -14,9 +15,6 @@ export * from "./errors"
 export * from "./identity"
 export * from "./totp"
 export * from "./schema"
-
-export const UuidRegex =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 export const checkedToEmailRegistrationId = (
   flow: string,
