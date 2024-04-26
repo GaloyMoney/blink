@@ -2,14 +2,14 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: allow public or private repo selection (#34)'
-      sha: 53fc9dd805d3574d200e8e6e99f856c0912b52a8
+      commitTitle: 'chore: add rust toolchain (#51)'
+      sha: 87fe9058ffc8df9b59c64d5be5f268e18c40abf2
     path: .
   path: ../.github/workflows/vendor
 - contents:
   - git:
-      commitTitle: 'feat: allow public or private repo selection (#34)'
-      sha: 53fc9dd805d3574d200e8e6e99f856c0912b52a8
+      commitTitle: 'chore: add rust toolchain (#51)'
+      sha: 87fe9058ffc8df9b59c64d5be5f268e18c40abf2
     path: .
-  path: ./vendor
+  path: vendor
 kind: LockConfig
