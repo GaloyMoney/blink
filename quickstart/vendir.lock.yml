@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: separate build steps in integration tests (#4367)'
-      sha: 3e387a9996a428daa6b2f04c04f8317d15de3b3a
+      commitTitle: 'chore: bump deps (#4358)...'
+      sha: 4e3a2dacc0d83ee1d03bf84708d79a49a940bb98
       tags:
-      - 0.20.167-4-g3e387a999
+      - 0.20.169-1-g4e3a2dacc
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: separate build steps in integration tests (#4367)'
-      sha: 3e387a9996a428daa6b2f04c04f8317d15de3b3a
+      commitTitle: 'chore: bump deps (#4358)...'
+      sha: 4e3a2dacc0d83ee1d03bf84708d79a49a940bb98
       tags:
-      - 0.20.167-4-g3e387a999
+      - 0.20.169-1-g4e3a2dacc
     path: schemas
   - git:
-      commitTitle: 'ci: separate build steps in integration tests (#4367)'
-      sha: 3e387a9996a428daa6b2f04c04f8317d15de3b3a
+      commitTitle: 'chore: bump deps (#4358)...'
+      sha: 4e3a2dacc0d83ee1d03bf84708d79a49a940bb98
       tags:
-      - 0.20.167-4-g3e387a999
+      - 0.20.169-1-g4e3a2dacc
     path: gql
   path: graphql
 kind: LockConfig
