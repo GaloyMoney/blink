@@ -13,6 +13,7 @@ describe("getInvoicePreImageByHash", () => {
   it("returns a valid preimage when invoice has been paid", async () => {
     const invoice = createMockWalletInvoice({
       id: crypto.randomUUID() as WalletId,
+      accountId: crypto.randomUUID() as AccountId,
       currency: WalletCurrency.Btc,
     })
     await WalletInvoicesRepository().persistNew({ ...invoice, paid: true })
@@ -27,6 +28,7 @@ describe("getInvoicePreImageByHash", () => {
   it("returns error if invoice has not been paid", async () => {
     const invoice = createMockWalletInvoice({
       id: crypto.randomUUID() as WalletId,
+      accountId: crypto.randomUUID() as AccountId,
       currency: WalletCurrency.Btc,
     })
     await WalletInvoicesRepository().persistNew({ ...invoice, paid: false })

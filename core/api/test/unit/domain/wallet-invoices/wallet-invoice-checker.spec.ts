@@ -8,7 +8,11 @@ const goodWalletInvoice: WalletInvoiceWithOptionalLnInvoice = {
   secret: "secretPreImage" as SecretPreImage,
   selfGenerated: true,
   pubkey: "pubkey" as Pubkey,
-  recipientWalletDescriptor: { id: "walletId" as WalletId, currency: WalletCurrency.Usd },
+  recipientWalletDescriptor: {
+    id: "walletId" as WalletId,
+    accountId: crypto.randomUUID() as AccountId,
+    currency: WalletCurrency.Usd,
+  },
   paid: false,
   createdAt: new Date(Date.now()),
   processingCompleted: false,
