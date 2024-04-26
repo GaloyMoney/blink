@@ -268,10 +268,12 @@ impl NotificationsApp {
         marketing_notification: MarketingNotificationTriggered,
     ) -> Result<(), ApplicationError> {
         let mut tx = self.pool.begin().await?;
+        let mut user_ids: Vec<GaloyUserId> = user_ids.into_iter().collect();
+        user_ids.sort();
         job::spawn_multi_user_event_dispatch(
             &mut tx,
             (
-                user_ids.into_iter().collect(),
+                user_ids,
                 NotificationEventPayload::from(marketing_notification),
             ),
         )

@@ -1,4 +1,5 @@
 mod config;
+mod multi_user_event_dispatch;
 mod send_email_notification;
 mod send_push_notification;
 
@@ -20,6 +21,7 @@ use crate::{
 
 pub use config::*;
 use error::JobError;
+use multi_user_event_dispatch::MultiUserEventDispatchData;
 use send_email_notification::SendEmailNotificationData;
 use send_push_notification::SendPushNotificationData;
 
@@ -187,41 +189,13 @@ async fn multi_user_event_dispatch(
 ) -> Result<(), JobError> {
     let pool = current_job.pool().clone();
     JobExecutor::builder(&mut current_job)
+        .initial_retry_delay(std::time::Duration::from_secs(20))
         .build()
         .expect("couldn't build JobExecutor")
         .execute(|data| async move {
             let data: MultiUserEventDispatchData =
                 data.expect("no MultiUserEventDispatchData available");
-            let batch_limit = 1000;
-            let (ids, next_user_ids) = data
-                .user_ids
-                .split_at(std::cmp::min(data.user_ids.len(), batch_limit));
-
-            let mut tx = pool.begin().await?;
-            if !next_user_ids.is_empty() {
-                let data = MultiUserEventDispatchData {
-                    user_ids: next_user_ids.to_vec(),
-                    payload: data.payload.clone(),
-                    tracing_data: HashMap::default(),
-                };
-                spawn_multi_user_event_dispatch(&mut tx, data).await?;
-            }
-
-            let payload = data.payload.clone();
-
-            history.add_events(&mut tx, ids, payload.clone()).await?;
-
-            for user_id in ids {
-                if payload.should_send_email() {
-                    spawn_send_email_notification(&mut tx, (user_id.clone(), payload.clone()))
-                        .await?;
-                }
-                if payload.should_send_push() {
-                    spawn_send_push_notification(&mut tx, (user_id.clone(), payload.clone()))
-                        .await?;
-                }
-            }
-            Ok::<_, JobError>(JobResult::CompleteWithTx(tx))
+            multi_user_event_dispatch::execute(data, history, pool).await
         })
         .await?;
     Ok(())
@@ -252,9 +226,12 @@ pub async fn spawn_send_push_notification(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     data: impl Into<SendPushNotificationData>,
 ) -> Result<(), JobError> {
+    println!("spawn_send_push_notification");
     let data = data.into();
     if let Err(e) = send_push_notification
         .builder()
+        .set_retry_backoff(std::time::Duration::from_secs(20))
+        .set_ordered(true)
         .set_json(&data)
         .expect("Couldn't set json")
         .spawn(&mut **tx)
@@ -290,6 +267,7 @@ pub async fn spawn_multi_user_event_dispatch(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     data: impl Into<MultiUserEventDispatchData>,
 ) -> Result<(), JobError> {
+    println!("spawn_multi_user_event_dispatch");
     let data = data.into();
     if let Err(e) = multi_user_event_dispatch
         .builder()
@@ -415,24 +393,6 @@ impl From<()> for LinkEmailReminderData {
         Self {
             search_id: GaloyUserId::search_begin(),
             tracing_data: tracing::extract_tracing_data(),
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub(super) struct MultiUserEventDispatchData {
-    user_ids: Vec<GaloyUserId>,
-    payload: NotificationEventPayload,
-    #[serde(flatten)]
-    pub(super) tracing_data: HashMap<String, serde_json::Value>,
-}
-
-impl From<(Vec<GaloyUserId>, NotificationEventPayload)> for MultiUserEventDispatchData {
-    fn from((user_ids, payload): (Vec<GaloyUserId>, NotificationEventPayload)) -> Self {
-        Self {
-            user_ids,
-            payload,
-            tracing_data: HashMap::default(),
         }
     }
 }

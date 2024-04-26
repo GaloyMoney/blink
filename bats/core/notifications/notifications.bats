@@ -89,41 +89,35 @@ NOTIFICATIONS_PROTO_FILE="${REPO_ROOT}/core/notifications/proto/notifications.pr
 
   declare -a user_ids
 
-  for i in $(seq 1 500); do
-
-    create_user "user_$i"
-    exec_graphql "user_$i" 'identity'
-    user_id="$(graphql_output '.data.me.id')"
-    user_ids+=("$user_id")
-
-    request_data=$(jq -n --arg userId "$user_id" --arg locale "es" '{
+  for i in $(seq 1 10000); do
+    request_data=$(jq -n --arg userId "$i" --arg locale "es" '{
     "userId": $userId,
     "locale": $locale
     }')
     grpcurl_request $IMPORT_PATH $NOTIFICATIONS_PROTO_FILE $NOTIFICATIONS_GRPC_ENDPOINT "$update_user_locale_method" "$request_data"
 
-    done
+  done
 
-  localized_content_en='{"title": "Hello", "body": "World"}'
-  localized_content_es='{"title": "Hola", "body": "World"}'
-  user_ids=$(printf '%s\n' "${user_ids[@]}" | jq -R . | jq -s .)
-  request_data=$(jq -n \
-    --argjson user_ids "$user_ids" \
-    --argjson localized_content_en "$localized_content_en" \
-    --argjson localized_content_es "$localized_content_es" \
-    '{
-      "event": {
-        "marketingNotificationTriggered": {
-          "user_ids": $user_ids,
-          "localized_push_content": {
-            "en": $localized_content_en,
-            "es": $localized_content_es
-          }
-        }
-      }
-  }')
+  # localized_content_en='{"title": "Hello", "body": "World"}'
+  # localized_content_es='{"title": "Hola", "body": "World"}'
+  # user_ids=$(printf '%s\n' "${user_ids[@]}" | jq -R . | jq -s .)
+  # request_data=$(jq -n \
+  #   --argjson user_ids "$user_ids" \
+  #   --argjson localized_content_en "$localized_content_en" \
+  #   --argjson localized_content_es "$localized_content_es" \
+  #   '{
+  #     "event": {
+  #       "marketingNotificationTriggered": {
+  #         "user_ids": $user_ids,
+  #         "localized_push_content": {
+  #           "en": $localized_content_en,
+  #           "es": $localized_content_es
+  #         }
+  #       }
+  #     }
+  # }')
 
-  handle_notification_event_method="services.notifications.v1.NotificationsService/HandleNotificationEvent"
-  grpcurl_request $IMPORT_PATH $NOTIFICATIONS_PROTO_FILE $NOTIFICATIONS_GRPC_ENDPOINT "$handle_notification_event_method" "$request_data"
+  # handle_notification_event_method="services.notifications.v1.NotificationsService/HandleNotificationEvent"
+  # grpcurl_request $IMPORT_PATH $NOTIFICATIONS_PROTO_FILE $NOTIFICATIONS_GRPC_ENDPOINT "$handle_notification_event_method" "$request_data"
 
 }
