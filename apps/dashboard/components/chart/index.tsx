@@ -1,47 +1,131 @@
 "use client"
-import { Box, Card } from "@mui/joy"
-import React from "react"
+import React, { useState } from "react"
+import { Card, Button, ToggleButtonGroup, Box } from "@mui/joy"
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
+  TooltipProps,
 } from "recharts"
 
-const TransactionChart = ({ usdTransactions, btcTransactions }) => {
-  const data = usdTransactions.map((usd, index) => ({
-    date: new Date(usd.createdAt).toLocaleDateString("en-US", {
-      month: "short",
-      day: "2-digit",
-    }),
-    USD: (usd.balance / 100).toFixed(2),
-  }))
+import { ProcessedTransaction } from "@/lib/index.types"
 
-  const usdValues = data.map((item) => parseFloat(item.USD))
-  const minY = Math.min(...usdValues)
-  const maxY = Math.max(...usdValues)
-  const padding = 10
-  const domainMin = minY - padding
-  const domainMax = maxY + padding
+const CustomTooltip = ({
+  active,
+  payload,
+}: TooltipProps<number, string>): JSX.Element | null => {
+  if (active && payload && payload.length) {
+    return (
+      <Card style={{ padding: "1em" }}>
+        <p>{payload[0].payload.dateTime}</p>
+        <p>{`${payload[0].value}`}</p>
+      </Card>
+    )
+  }
+  return null
+}
+type Props = {
+  usdTransactions: ProcessedTransaction[]
+  btcTransactions: ProcessedTransaction[]
+  maxBalance: {
+    usd: number
+    btc: number
+  }
+  minBalance: {
+    usd: number
+    btc: number
+  }
+}
+
+const TransactionChart = ({
+  usdTransactions,
+  btcTransactions,
+  maxBalance,
+  minBalance,
+}: Props) => {
+  const [walletCurrency, setWalletCurrency] = useState("USD")
+  const data = walletCurrency === "USD" ? usdTransactions : btcTransactions
+  const minDomainY = walletCurrency === "USD" ? minBalance.usd : minBalance.btc
+  const maxDomainY = walletCurrency === "USD" ? maxBalance.usd : maxBalance.btc
+
+  const handleWalletChange = (
+    event: React.MouseEvent<HTMLElement, MouseEvent>,
+    newCurrency: string | null,
+  ) => {
+    if (newCurrency !== null) {
+      setWalletCurrency(newCurrency)
+    }
+  }
 
   return (
-    <Card
-      sx={{
-        marginTop: "0.5em",
-      }}
-    >
-      <ResponsiveContainer width="100%" height={400}>
-        <LineChart data={data}>
-          <XAxis dataKey="date" />
-          <YAxis domain={[domainMin, domainMax]} />
-          <Tooltip labelStyle={{ color: "black" }} />
-          <Line type="monotone" dataKey="USD" stroke="#fe990d" activeDot={{ r: 8 }} />
-        </LineChart>
-      </ResponsiveContainer>
+    <Card sx={{ marginTop: "1.5rem" }}>
+      {data.length ? (
+        <>
+          <Box
+            sx={{ display: "flex", justifyContent: "space-between", p: 2, width: "100%" }}
+          >
+            <ToggleButtonGroup
+              value={walletCurrency}
+              onChange={handleWalletChange}
+              color="neutral"
+            >
+              <Button value="USD">Stablesats (USD)</Button>
+              <Button value="BTC">BTC (Sats)</Button>
+            </ToggleButtonGroup>
+          </Box>
+          <ResponsiveContainer
+            width="100%"
+            style={{
+              padding: "0.6em",
+            }}
+            height={500}
+          >
+            <AreaChart data={data}>
+              <defs>
+                <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#fe990d" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#fe990d" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <XAxis
+                reversed={true}
+                dataKey="date"
+                minTickGap={100}
+                tickMargin={10}
+                padding={{ left: 20 }}
+              />
+
+              <YAxis
+                domain={[minDomainY, maxDomainY]}
+                padding={{ bottom: 20 }}
+                dataKey="balance"
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Area
+                type="monotone"
+                dataKey="balance"
+                stroke="#fe990d"
+                fill="url(#colorValue)"
+                activeDot={{ r: 8 }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </>
+      ) : (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+          }}
+        >
+          <p>No data available</p>
+        </Box>
+      )}
     </Card>
   )
 }

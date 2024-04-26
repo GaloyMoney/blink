@@ -1,5 +1,7 @@
 import { getServerSession } from "next-auth"
 
+import { Box } from "@mui/joy"
+
 import { authOptions } from "./api/auth/[...nextauth]/route"
 
 import WalletBalanceContainer from "@/components/wallet-balance/wallet-balance-container"
@@ -31,26 +33,35 @@ export default async function Home() {
     days,
   })
   // transaction data with balance.
-  const { usdTransactions, btcTransactions } = processTransaction({
-    transactions: response as TransactionEdge[],
-    currentBtcBalance: btcWallet?.balance || 0,
-    currentUsdBalance: usdWallet?.balance || 0,
-    days,
-  })
+  const { usdTransactions, btcTransactions, maxBalance, minBalance } = processTransaction(
+    {
+      transactions: response as TransactionEdge[],
+      currentBtcBalance: btcWallet?.balance || 0,
+      currentUsdBalance: usdWallet?.balance || 0,
+      days,
+    },
+  )
 
   const walletDetails = session?.userData?.data?.me?.defaultAccount?.wallets || []
-
-  console.log("usdTransactions", usdTransactions.reverse())
-  console.log("btcTransactions", btcTransactions)
 
   return (
     <main>
       <ContentContainer>
-        <WalletBalanceContainer walletDetails={walletDetails}></WalletBalanceContainer>
-        <TransactionChart
-          usdTransactions={usdTransactions}
-          btcTransactions={btcTransactions}
-        ></TransactionChart>
+        <Box
+          sx={{
+            maxWidth: "90em",
+            width: "100%",
+            margin: "0 auto",
+          }}
+        >
+          <WalletBalanceContainer walletDetails={walletDetails}></WalletBalanceContainer>
+          <TransactionChart
+            usdTransactions={usdTransactions}
+            btcTransactions={btcTransactions}
+            maxBalance={maxBalance}
+            minBalance={minBalance}
+          ></TransactionChart>
+        </Box>
       </ContentContainer>
     </main>
   )
