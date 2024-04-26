@@ -36,66 +36,10 @@ jobs:
               LABELS=("${DEFAULT_LABELS[@]}")
           fi
 
-          # Handle 'core' dependency
-          for LABEL in "${LABELS[@]}"; do
-            case "$LABEL" in
-              core|dashboard|consent|pay|admin-panel|map|voucher)
-                BUILD_ARGS+=" //core/api:prod_build"
-                BUILD_ARGS+=" //core/notifications:notifications"
-
-                break
-                ;;
-            esac
-          done
-
-          # Handle root 'node_modules' dependency
-          for LABEL in "${LABELS[@]}"; do
-            case "$LABEL" in
-              dashboard|consent|pay|admin-panel|map|voucher)
-                BUILD_ARGS+=" "//:node_modules""
-
-                break
-                ;;
-            esac
-          done
-
-          # Handle 'consent' dependencies
-          for LABEL in "${LABELS[@]}"; do
-            case "$LABEL" in
-              dashboard|voucher)
-                BUILD_ARGS+=" //apps/consent:consent"
-                BUILD_ARGS+=" //core/api-keys:api-keys"
-
-                break
-                ;;
-            esac
-          done
-
-          # Handle other labels
-          for LABEL in "${LABELS[@]}"; do
-            case "$LABEL" in
-              core)
-                ARGS+=" $LABEL"
-                ;;
-            esac
-
-            case "$LABEL" in
-              dashboard|consent|admin-panel|map|voucher)
-                ARGS+=" $LABEL"
-                BUILD_ARGS+=" //apps/$LABEL:$LABEL"
-                ;;
-
-              pay)
-                ARGS+=" $LABEL"
-                BUILD_ARGS+=" //apps/$LABEL:$LABEL-ci"
-                ;;
-            esac
-          done
-
-          echo "Prepared args: $ARGS"
-          echo "Prepared build_args: $BUILD_ARGS"
-          echo "args=$ARGS" >> "$GITHUB_OUTPUT"
-          echo "build_args=$BUILD_ARGS" >> "$GITHUB_OUTPUT"
+          output=$(./dev/bin/prepare-tilt-ci-with-build.sh "${LABELS[@]}")
+          echo "$output"
+          echo "$output" | grep "args=" >> "$GITHUB_OUTPUT"
+          echo "$output" | grep "build_args=" >> "$GITHUB_OUTPUT"
       - name: Build via buck2
         if: steps.prepare_args.outputs.args != ''
         run: nix develop -c buck2 build ${{ steps.prepare_args.outputs.build_args }}
