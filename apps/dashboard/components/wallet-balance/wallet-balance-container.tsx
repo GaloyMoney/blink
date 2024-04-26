@@ -51,6 +51,7 @@ const WalletBalanceContainer: React.FC<WalletBalanceContainerProps> = ({
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-between",
+          gap: "1em",
           flexWrap: {
             xs: "wrap",
             md: "nowrap",

@@ -1,7 +1,7 @@
 import { TransactionEdge } from "@/services/graphql/generated"
 import { ProcessedTransaction } from "./index.types"
 
-const processTransaction = ({
+export const getBalanceForTransactions = ({
   transactions,
   currentUsdBalance,
   currentBtcBalance,
@@ -49,11 +49,11 @@ const processTransaction = ({
           .substring(0, 19),
 
         balance: Number((usdBalance / 100).toFixed(2)),
-        date: new Date(node.createdAt).toLocaleDateString("en-US", {
+        date: new Date(node.createdAt * 1000).toLocaleDateString("en-US", {
           month: "short",
           day: "2-digit",
         }),
-        dateTime: new Date(node.createdAt).toLocaleString("en-US", {
+        dateTime: new Date(node.createdAt * 1000).toLocaleString("en-US", {
           month: "long",
           day: "numeric",
           year: "numeric",
@@ -79,11 +79,11 @@ const processTransaction = ({
           .substring(0, 19),
 
         balance: btcBalance,
-        date: new Date(node.createdAt).toLocaleDateString("en-US", {
+        date: new Date(node.createdAt * 1000).toLocaleDateString("en-US", {
           month: "short",
           day: "2-digit",
         }),
-        dateTime: new Date(node.createdAt).toLocaleString("en-US", {
+        dateTime: new Date(node.createdAt * 1000).toLocaleString("en-US", {
           month: "long",
           day: "numeric",
           year: "numeric",
@@ -104,4 +104,4 @@ const processTransaction = ({
   return { usdTransactions, btcTransactions, minBalance, maxBalance }
 }
 
-export default processTransaction
+export default getBalanceForTransactions
