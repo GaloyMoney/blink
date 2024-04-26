@@ -7,8 +7,7 @@ import { authOptions } from "./api/auth/[...nextauth]/route"
 import WalletBalanceContainer from "@/components/wallet-balance/wallet-balance-container"
 import ContentContainer from "@/components/content-container"
 import { TransactionEdge } from "@/services/graphql/generated"
-import { fetchAllTransactions } from "@/lib/get-all-transactions"
-import processTransaction from "@/lib/get-balance-for-transactions"
+import { fetchAllTransactionsByCount } from "@/lib/get-all-transactions"
 import TransactionChart from "@/components/chart"
 
 export default async function Home() {
@@ -26,21 +25,10 @@ export default async function Home() {
     (wallet) => wallet.walletCurrency === "USD",
   )
 
-  // PREPARE DATA
-  const days = 30
-  const response = await fetchAllTransactions({
+  const response = await fetchAllTransactionsByCount({
     token,
-    days,
+    fetchCount: 5, // Maximum fetch rotation count if set to 5; the API will be called a maximum of 5 times, which gives 500 transactions.
   })
-  // transaction data with balance.
-  const { usdTransactions, btcTransactions, maxBalance, minBalance } = processTransaction(
-    {
-      transactions: response as TransactionEdge[],
-      currentBtcBalance: btcWallet?.balance || 0,
-      currentUsdBalance: usdWallet?.balance || 0,
-      days,
-    },
-  )
 
   const walletDetails = session?.userData?.data?.me?.defaultAccount?.wallets || []
 
@@ -56,10 +44,9 @@ export default async function Home() {
         >
           <WalletBalanceContainer walletDetails={walletDetails}></WalletBalanceContainer>
           <TransactionChart
-            usdTransactions={usdTransactions}
-            btcTransactions={btcTransactions}
-            maxBalance={maxBalance}
-            minBalance={minBalance}
+            currentBtcBalance={btcWallet?.balance || 0}
+            currentUsdBalance={usdWallet?.balance || 0}
+            transactions={response as TransactionEdge[]}
           ></TransactionChart>
         </Box>
       </ContentContainer>

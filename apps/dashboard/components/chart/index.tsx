@@ -11,7 +11,8 @@ import {
   TooltipProps,
 } from "recharts"
 
-import { ProcessedTransaction } from "@/lib/index.types"
+import useProcessedTransactionsForChart from "@/hook/use-processed-transactions-for-chart"
+import { TransactionEdge } from "@/services/graphql/generated"
 
 const CustomTooltip = ({
   active,
@@ -28,41 +29,39 @@ const CustomTooltip = ({
   return null
 }
 type Props = {
-  usdTransactions: ProcessedTransaction[]
-  btcTransactions: ProcessedTransaction[]
-  maxBalance: {
-    usd: number
-    btc: number
-  }
-  minBalance: {
-    usd: number
-    btc: number
-  }
+  transactions: TransactionEdge[]
+  currentUsdBalance: number
+  currentBtcBalance: number
 }
 
 const TransactionChart = ({
-  usdTransactions,
-  btcTransactions,
-  maxBalance,
-  minBalance,
+  currentBtcBalance,
+  currentUsdBalance,
+  transactions,
 }: Props) => {
-  const [walletCurrency, setWalletCurrency] = useState("USD")
+  const { usdTransactions, btcTransactions, minBalance, maxBalance } =
+    useProcessedTransactionsForChart({
+      transactions,
+      currentUsdBalance,
+      currentBtcBalance,
+    })
+  const [walletCurrency, setWalletCurrency] = useState<"USD" | "BTC">("USD")
   const data = walletCurrency === "USD" ? usdTransactions : btcTransactions
   const minDomainY = walletCurrency === "USD" ? minBalance.usd : minBalance.btc
   const maxDomainY = walletCurrency === "USD" ? maxBalance.usd : maxBalance.btc
 
   const handleWalletChange = (
     event: React.MouseEvent<HTMLElement, MouseEvent>,
-    newCurrency: string | null,
+    newCurrency: "USD" | "BTC" | null,
   ) => {
-    if (newCurrency !== null) {
+    if ((newCurrency !== null && newCurrency === "USD") || newCurrency === "BTC") {
       setWalletCurrency(newCurrency)
     }
   }
 
   return (
     <Card sx={{ marginTop: "1.5rem" }}>
-      {data.length ? (
+      {data.length !== 0 ? (
         <>
           <Box
             sx={{ display: "flex", justifyContent: "space-between", p: 2, width: "100%" }}
