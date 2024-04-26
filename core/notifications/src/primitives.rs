@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Hash, PartialEq, Eq, Clone, Debug, Serialize, Deserialize)]
+#[derive(Hash, Ord, PartialOrd, PartialEq, Eq, Clone, Debug, Serialize, Deserialize)]
 pub struct GaloyUserId(String);
 impl GaloyUserId {
     pub fn search_begin() -> Self {

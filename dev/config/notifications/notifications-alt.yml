@@ -2,3 +2,7 @@ app:
   push_executor:
     fcm:
       google_application_credentials_path: "dev/config/notifications/fake_service_account.json"
+subgraph_server:
+  port: 1234
+grpc_server:
+  port: 2345

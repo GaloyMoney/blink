@@ -10,6 +10,10 @@ setup_file() {
   create_user 'alice'
 }
 
+NOTIFICATIONS_GRPC_ENDPOINT="localhost:6685"
+IMPORT_PATH="${REPO_ROOT}/core/notifications/proto"
+NOTIFICATIONS_PROTO_FILE="${REPO_ROOT}/core/notifications/proto/notifications.proto"
+
 @test "notifications: list stateful transactions" {
   btc_wallet_name="alice.btc_wallet_id"
   amount="0.01"
@@ -78,4 +82,42 @@ setup_file() {
   exec_graphql 'alice' 'acknowledge-notification' "$variables"
   acknowledged_at=$(graphql_output '.data.statefulNotificationAcknowledge.notification.acknowledgedAt')
   [[ "$acknowledged_at" != "null" ]] || exit 1
+}
+
+@test "notifications: load test" {
+  update_user_locale_method="services.notifications.v1.NotificationsService/UpdateUserLocale"
+
+  declare -a user_ids
+
+  for i in $(seq 1 10000); do
+    request_data=$(jq -n --arg userId "$i" --arg locale "es" '{
+    "userId": $userId,
+    "locale": $locale
+    }')
+    grpcurl_request $IMPORT_PATH $NOTIFICATIONS_PROTO_FILE $NOTIFICATIONS_GRPC_ENDPOINT "$update_user_locale_method" "$request_data"
+
+  done
+
+  # localized_content_en='{"title": "Hello", "body": "World"}'
+  # localized_content_es='{"title": "Hola", "body": "World"}'
+  # user_ids=$(printf '%s\n' "${user_ids[@]}" | jq -R . | jq -s .)
+  # request_data=$(jq -n \
+  #   --argjson user_ids "$user_ids" \
+  #   --argjson localized_content_en "$localized_content_en" \
+  #   --argjson localized_content_es "$localized_content_es" \
+  #   '{
+  #     "event": {
+  #       "marketingNotificationTriggered": {
+  #         "user_ids": $user_ids,
+  #         "localized_push_content": {
+  #           "en": $localized_content_en,
+  #           "es": $localized_content_es
+  #         }
+  #       }
+  #     }
+  # }')
+
+  # handle_notification_event_method="services.notifications.v1.NotificationsService/HandleNotificationEvent"
+  # grpcurl_request $IMPORT_PATH $NOTIFICATIONS_PROTO_FILE $NOTIFICATIONS_GRPC_ENDPOINT "$handle_notification_event_method" "$request_data"
+
 }
