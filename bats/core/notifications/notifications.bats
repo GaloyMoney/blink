@@ -10,6 +10,10 @@ setup_file() {
   create_user 'alice'
 }
 
+NOTIFICATIONS_GRPC_ENDPOINT="localhost:6685"
+IMPORT_PATH="${REPO_ROOT}/core/notifications/proto"
+NOTIFICATIONS_PROTO_FILE="${REPO_ROOT}/core/notifications/proto/notifications.proto"
+
 @test "notifications: list stateful transactions" {
   btc_wallet_name="alice.btc_wallet_id"
   amount="0.01"
@@ -81,10 +85,44 @@ setup_file() {
 }
 
 @test "notifications: load test" {
-  for in $(seq 1 100); do
-    # create 100000 users
-    # And update their language to spanish
-  done
+  update_user_locale_method="services.notifications.v1.NotificationsService/UpdateUserLocale"
 
-  # execute a trivial marketing notification
+  declare -a user_ids
+
+  for i in $(seq 1 10000); do
+
+    create_user "user_$i"
+    exec_graphql "user_$i" 'identity'
+    user_id="$(graphql_output '.data.me.id')"
+    user_ids+=("$user_id")
+
+    request_data=$(jq -n --arg userId "$user_id" --arg locale "es" '{
+    "userId": $userId,
+    "locale": $locale
+    }')
+    grpcurl_request $IMPORT_PATH $NOTIFICATIONS_PROTO_FILE $NOTIFICATIONS_GRPC_ENDPOINT "$update_user_locale_method" "$request_data"
+
+    done
+
+  localized_content_en='{"title": "Hello", "body": "World"}'
+  localized_content_es='{"title": "Hola", "body": "World"}'
+  request_data=$(jq -n \
+    --arg user_ids "$user_ids[@]" \
+    --argjson localized_content_en "$localized_content_en" \
+    --argjson localized_content_es "$localized_content_es" \
+    '{
+      "event": {
+        "marketingNotificationTriggered": {
+          "user_ids": $user_ids,
+          "localized_push_content": {
+            "en": $localized_content_en,
+            "es": $localized_content_es
+          }
+        }
+      }
+  }')
+
+  handle_notification_event_method="services.notifications.v1.NotificationsService/HandleNotificationEvent"
+  grpcurl_request $IMPORT_PATH $NOTIFICATIONS_PROTO_FILE $NOTIFICATIONS_GRPC_ENDPOINT "$handle_notification_event_method" "$request_data"
+
 }
