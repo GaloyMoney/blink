@@ -6,7 +6,6 @@ import { authOptions } from "./api/auth/[...nextauth]/route"
 
 import WalletBalanceContainer from "@/components/wallet-balance/wallet-balance-container"
 import ContentContainer from "@/components/content-container"
-import { TransactionEdge } from "@/services/graphql/generated"
 import { fetchAllTransactionsByCount } from "@/lib/get-all-transactions"
 import TransactionChart from "@/components/chart"
 
@@ -46,7 +45,7 @@ export default async function Home() {
           <TransactionChart
             currentBtcBalance={btcWallet?.balance || 0}
             currentUsdBalance={usdWallet?.balance || 0}
-            transactions={response as TransactionEdge[]}
+            transactions={response}
           ></TransactionChart>
         </Box>
       </ContentContainer>

@@ -59,6 +59,7 @@ gql`
                 }
                 ... on InitiationViaLn {
                   paymentHash
+                  paymentRequest
                 }
               }
             }
@@ -125,6 +126,7 @@ gql`
                 }
                 ... on InitiationViaLn {
                   paymentHash
+                  paymentRequest
                 }
               }
             }
