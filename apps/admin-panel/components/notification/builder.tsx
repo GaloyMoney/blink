@@ -2,13 +2,17 @@
 
 import { ChangeEvent, useState } from "react"
 
-import { DeepLink } from "../../generated"
+import { DeepLinkScreen, DeepLinkAction } from "../../generated"
 
 import { LanguageCodes } from "./languages"
 
 export type NotificationContent = {
-  localizedPushContents: LocalizedPushContent[]
-  deepLink: DeepLink | undefined
+  localizedNotificationContents: LocalizedNotificationContent[]
+  deepLinkScreen?: DeepLinkScreen | undefined
+  deepLinkAction?: DeepLinkAction | undefined
+  shouldSendPush: boolean
+  shouldAddToHistory: boolean
+  shouldAddToBulletin: boolean
 }
 
 export type NotificationBuilderArgs = {
@@ -24,25 +28,32 @@ const NotificationBuilder = ({
   const [body, setBody] = useState("")
   const [language, setLanguage] = useState(LanguageCodes.English)
 
-  const onSetDeepLink = (e: ChangeEvent<HTMLSelectElement>) => {
-    setNotification({ ...notification, deepLink: e.target.value as DeepLink })
+  const onSetDeepLinkScreen = (e: ChangeEvent<HTMLSelectElement>) => {
+    setNotification({ ...notification, deepLinkScreen: e.target.value as DeepLinkScreen })
   }
-  const addPushContent = (localizedPushContent: LocalizedPushContent) => {
+
+  const onSetDeepLinkAction = (e: ChangeEvent<HTMLSelectElement>) => {
+    setNotification({ ...notification, deepLinkAction: e.target.value as DeepLinkAction })
+  }
+
+  const addNotificationContent = (
+    localizedNotificationContent: LocalizedNotificationContent,
+  ) => {
     setNotification({
       ...notification,
-      localizedPushContents: [
-        ...notification.localizedPushContents.filter(({ language }) => {
-          return language !== localizedPushContent.language
+      localizedNotificationContents: [
+        ...notification.localizedNotificationContents.filter(({ language }) => {
+          return language !== localizedNotificationContent.language
         }),
-        localizedPushContent,
+        localizedNotificationContent,
       ],
     })
   }
 
-  const removePushContent = (language: string) => {
+  const removeNotificationContent = (language: string) => {
     setNotification({
       ...notification,
-      localizedPushContents: notification.localizedPushContents.filter(
+      localizedNotificationContents: notification.localizedNotificationContents.filter(
         (content) => content.language !== language,
       ),
     })
@@ -50,7 +61,7 @@ const NotificationBuilder = ({
 
   const onAddContent = (event: React.FormEvent) => {
     event.preventDefault()
-    addPushContent({ title, body, language })
+    addNotificationContent({ title, body, language })
     setTitle("")
     setBody("")
     setLanguage(LanguageCodes.English)
@@ -64,19 +75,70 @@ const NotificationBuilder = ({
           <label htmlFor="deepLink">Deep Link</label>
           <select
             className="border border-2 rounded block p-1 w-full"
-            id="deepLink"
-            value={notification.deepLink}
-            onChange={onSetDeepLink}
+            id="deepLinkScreen"
+            value={notification.deepLinkScreen}
+            onChange={onSetDeepLinkScreen}
           >
             <option value="">None</option>
-            {Object.values(DeepLink).map((deepLink) => {
+            {Object.values(DeepLinkScreen).map((deepLinkScreen) => {
               return (
-                <option key={deepLink} value={deepLink}>
-                  {deepLink}
+                <option key={deepLinkScreen} value={deepLinkScreen}>
+                  {deepLinkScreen}
                 </option>
               )
             })}
           </select>
+        </div>
+        <div>
+          <label htmlFor="deepLinkAction">Deep Link Action</label>
+          <select
+            className="border border-2 rounded block p-1 w-full"
+            id="deepLinkAction"
+            value={notification.deepLinkAction}
+            onChange={onSetDeepLinkAction}
+          >
+            <option value="">None</option>
+            {Object.values(DeepLinkAction).map((deepLinkAction) => {
+              return (
+                <option key={deepLinkAction} value={deepLinkAction}>
+                  {deepLinkAction}
+                </option>
+              )
+            })}
+          </select>
+        </div>
+        <div className="space-x-4">
+          <input
+            type="checkbox"
+            id="shouldSendPush"
+            checked={notification.shouldSendPush}
+            onChange={(e) =>
+              setNotification({ ...notification, shouldSendPush: e.target.checked })
+            }
+          />
+          <label htmlFor="shouldSendPush">Send Push Notification</label>
+        </div>
+        <div className="space-x-4">
+          <input
+            type="checkbox"
+            id="shouldAddToHistory"
+            checked={notification.shouldAddToHistory}
+            onChange={(e) =>
+              setNotification({ ...notification, shouldAddToHistory: e.target.checked })
+            }
+          />
+          <label htmlFor="shouldAddToHistory">Add to History</label>
+        </div>
+        <div className="space-x-4">
+          <input
+            type="checkbox"
+            id="shouldAddToBulletin"
+            checked={notification.shouldAddToBulletin}
+            onChange={(e) =>
+              setNotification({ ...notification, shouldAddToBulletin: e.target.checked })
+            }
+          />
+          <label htmlFor="shouldAddToBulletin">Add to Bulletin</label>
         </div>
       </form>
       <form className="bg-gray-100 rounded p-6 space-y-4" onSubmit={onAddContent}>
@@ -130,41 +192,45 @@ const NotificationBuilder = ({
         </button>
       </form>
       <div className="flex flex-wrap gap-4">
-        {notification.localizedPushContents.map((localizedPushContent) => (
-          <LocalizedPushContentCard
-            key={localizedPushContent.language}
-            localizedPushContent={localizedPushContent}
-            onRemove={() => removePushContent(localizedPushContent.language)}
-          />
-        ))}
+        {notification.localizedNotificationContents.map(
+          (localizedNotificationContent) => (
+            <LocalizedNotificationContentCard
+              key={localizedNotificationContent.language}
+              localizedNotificationContent={localizedNotificationContent}
+              onRemove={() =>
+                removeNotificationContent(localizedNotificationContent.language)
+              }
+            />
+          ),
+        )}
       </div>
     </div>
   )
 }
 
-type LocalizedPushContent = {
+type LocalizedNotificationContent = {
   title: string
   body: string
   language: string
 }
 
-type LocalizedPushContentCardProps = {
-  localizedPushContent: LocalizedPushContent
+type LocalizedNotificationContentCardProps = {
+  localizedNotificationContent: LocalizedNotificationContent
   onRemove: () => void
 }
 
-const LocalizedPushContentCard = ({
-  localizedPushContent,
+const LocalizedNotificationContentCard = ({
+  localizedNotificationContent,
   onRemove,
-}: LocalizedPushContentCardProps) => {
+}: LocalizedNotificationContentCardProps) => {
   return (
     <div className="border border-2 rounded p-6 min-w-[25rem]">
       <button onClick={onRemove} className="text-red-500 float-right">
         x
       </button>
-      <p>Language: {localizedPushContent.language}</p>
-      <p>Title: {localizedPushContent.title}</p>
-      <p>Body: {localizedPushContent.body}</p>
+      <p>Language: {localizedNotificationContent.language}</p>
+      <p>Title: {localizedNotificationContent.title}</p>
+      <p>Body: {localizedNotificationContent.body}</p>
     </div>
   )
 }

@@ -10,13 +10,18 @@ import NotificationFilteredSender from "../../components/notification/filtered-s
 
 export default function NotificationsScreen() {
   const [notification, setNotification] = useState<NotificationContent>({
-    localizedPushContents: [],
-    deepLink: undefined,
+    localizedNotificationContents: [],
+    deepLinkScreen: undefined,
+    deepLinkAction: undefined,
+    shouldSendPush: false,
+    shouldAddToHistory: false,
+    shouldAddToBulletin: false,
   })
 
-  const notificationContainsEnglishContent = notification.localizedPushContents.some(
-    (content) => content.language === "en",
-  )
+  const notificationContainsEnglishContent =
+    notification.localizedNotificationContents.some(
+      (content) => content.language === "en",
+    )
 
   return (
     <div className="p-6">
