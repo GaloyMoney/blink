@@ -185,7 +185,8 @@ async fn kickoff_link_email_reminder(
 
 #[job(
     name = "multi_user_event_dispatch",
-    channel_name = "multi_user_event_dispatch"
+    channel_name = "multi_user_event_dispatch",
+    backoff_secs = 20
 )]
 async fn multi_user_event_dispatch(
     mut current_job: CurrentJob,
@@ -193,6 +194,7 @@ async fn multi_user_event_dispatch(
 ) -> Result<(), JobError> {
     let pool = current_job.pool().clone();
     JobExecutor::builder(&mut current_job)
+        .initial_retry_delay(std::time::Duration::from_secs(20))
         .build()
         .expect("couldn't build JobExecutor")
         .execute(|data| async move {
