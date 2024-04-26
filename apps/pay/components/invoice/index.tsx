@@ -8,13 +8,14 @@ import Tooltip from "react-bootstrap/Tooltip"
 import { useScreenshot } from "use-react-screenshot"
 import OverlayTrigger from "react-bootstrap/OverlayTrigger"
 
+import styles from "./index.module.css"
+
+import { type InvoiceProps } from "./index.types"
+
 import { Share } from "@/components/share"
 import { decodeInvoice } from "@/components/utils"
 
-import styles from "./index.module.css"
-import { type InvoiceProps } from "./index.types"
-
-export default function Invoice({ title, paymentRequest }: InvoiceProps) {
+export default function Invoice({ title, paymentRequest, status }: InvoiceProps) {
   const invoice = decodeInvoice(paymentRequest)
   if (!invoice) return
 
@@ -66,6 +67,9 @@ export default function Invoice({ title, paymentRequest }: InvoiceProps) {
 
   return (
     <div className={styles.invoiceContainer}>
+      <div className={styles.amountContainer}>
+        <p>{invoice.satoshis} sats</p>
+      </div>
       <div className={styles.timerContainer}>
         <p>Invoice Expires in {`${minutes} Minutes ${seconds} Seconds`}</p>
       </div>

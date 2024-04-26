@@ -58,3 +58,14 @@
   justify-content: center;
   column-gap: 5px;
 }
+
+.amountContainer {
+  width: 100%;
+  border: 0px;
+  color: black;
+  background-color: transparent;
+  text-align: center;
+  font-weight: 600;
+  font-size: 48px;
+  height: 3rem;
+}

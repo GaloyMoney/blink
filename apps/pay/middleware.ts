@@ -15,17 +15,17 @@ async function checkoutMiddleware(request: NextRequest) {
   let returnUrl
 
   const searchParams = request.nextUrl.searchParams
-  returnUrl = searchParams.get('returnUrl')
+  returnUrl = searchParams.get("returnUrl")
   if (!returnUrl && request.method === "POST") {
     try {
       const formData = await request.formData()
       returnUrl = formData.get("returnUrl")?.toString()
-    } catch (error) { }
+    } catch (error) {}
 
     try {
       const data = await request.json()
       returnUrl = data.returnUrl
-    } catch (error) { }
+    } catch (error) {}
   }
 
   returnUrl = returnUrl || request.referrer

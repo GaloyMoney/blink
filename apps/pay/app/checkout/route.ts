@@ -6,16 +6,16 @@ export async function POST(request: Request) {
     const formData = await request.formData()
     hash = formData.get("hash")?.toString()
     returnUrl = formData.get("returnUrl")?.toString()
-  } catch (error) { }
+  } catch (error) {}
 
   try {
     const data = await request.json()
     hash = data.hash
     returnUrl = data.returnUrl
-  } catch (error) { }
+  } catch (error) {}
 
   if (!hash) {
-    return Response.json({ error: "Invalid hash"}, { status: 404 })
+    return Response.json({ error: "Invalid hash" }, { status: 404 })
   }
 
   returnUrl = returnUrl || request.referrer
