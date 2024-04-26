@@ -1,6 +1,6 @@
 import { promisify } from "util"
 
-import { credentials, Metadata } from "@grpc/grpc-js"
+import { credentials, Metadata, CallOptions } from "@grpc/grpc-js"
 
 import { NotificationsServiceClient } from "./proto/notifications_grpc_pb"
 
@@ -67,6 +67,7 @@ export const disableNotificationChannel = promisify<
 export const getNotificationSettings = promisify<
   GetNotificationSettingsRequest,
   Metadata,
+  Partial<CallOptions>,
   GetNotificationSettingsResponse
 >(notificationsClient.getNotificationSettings.bind(notificationsClient))
 

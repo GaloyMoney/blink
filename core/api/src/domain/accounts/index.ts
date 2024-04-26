@@ -2,9 +2,8 @@ import { InvalidAccountIdError } from "./errors"
 
 import { AccountLevel, AccountStatus } from "./primitives"
 
-import { UUIDV4 } from "@/utils/uuid"
-
 import { toSats } from "@/domain/bitcoin"
+import { UuidRegex } from "@/domain/shared"
 import {
   InvalidCoordinatesError,
   InvalidBusinessTitleLengthError,
@@ -22,8 +21,8 @@ export * from "./limits-volume"
 export * from "./account-validator"
 export * from "./primitives"
 
-const KratosUserIdRegex = UUIDV4
-const AccountIdRegex = UUIDV4
+const KratosUserIdRegex = UuidRegex
+export const AccountIdRegex = UuidRegex
 
 // device id format from AppCheck: 1:72279297366:android:35666807ae916c5aa75af7
 const DeviceIdRegex = /^[0-9]+:[0-9]+:[a-z]+:[0-9a-z]+$/i
