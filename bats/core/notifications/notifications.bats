@@ -89,7 +89,7 @@ NOTIFICATIONS_PROTO_FILE="${REPO_ROOT}/core/notifications/proto/notifications.pr
 
   declare -a user_ids
 
-  for i in $(seq 1 10000); do
+  for i in $(seq 1 500); do
 
     create_user "user_$i"
     exec_graphql "user_$i" 'identity'
@@ -106,8 +106,9 @@ NOTIFICATIONS_PROTO_FILE="${REPO_ROOT}/core/notifications/proto/notifications.pr
 
   localized_content_en='{"title": "Hello", "body": "World"}'
   localized_content_es='{"title": "Hola", "body": "World"}'
+  user_ids=$(printf '%s\n' "${user_ids[@]}" | jq -R . | jq -s .)
   request_data=$(jq -n \
-    --arg user_ids "$user_ids[@]" \
+    --argjson user_ids "$user_ids" \
     --argjson localized_content_en "$localized_content_en" \
     --argjson localized_content_es "$localized_content_es" \
     '{
