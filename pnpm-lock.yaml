@@ -1238,7 +1238,7 @@ importers:
         version: 3.0.0
       ioredis:
         specifier: ^5.3.2
-        version: 5.4.1
+        version: 5.3.2
       ioredis-cache:
         specifier: ^2.0.1
         version: 2.0.1
@@ -24841,7 +24841,7 @@ packages:
     dependencies:
       graphql-subscriptions: 2.0.0(graphql@16.8.1)
     optionalDependencies:
-      ioredis: 5.4.1
+      ioredis: 5.3.2
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -25816,30 +25816,13 @@ packages:
   /ioredis-cache@2.0.1:
     resolution: {integrity: sha512-rBr9aTsddSM7AQxyksknjVtRoNaqqjjEVEEc6c1RrHYD88qw8owjp4CQKXuL9v7MebL2NKRfPDuJAprtmXQOIg==}
     dependencies:
-      ioredis: 5.4.1
+      ioredis: 5.3.2
     transitivePeerDependencies:
       - supports-color
     dev: false
 
   /ioredis@5.3.2:
     resolution: {integrity: sha512-1DKMMzlIHM02eBBVOFQ1+AolGjs6+xEcM4PDL7NqOS6szq7H9jSaEkIUH6/a5Hl241LzW6JLSiAbNvTQjUupUA==}
-    engines: {node: '>=12.22.0'}
-    dependencies:
-      '@ioredis/commands': 1.2.0
-      cluster-key-slot: 1.1.2
-      debug: 4.3.4(supports-color@5.5.0)
-      denque: 2.1.0
-      lodash.defaults: 4.2.0
-      lodash.isarguments: 3.1.0
-      redis-errors: 1.2.0
-      redis-parser: 3.0.0
-      standard-as-callback: 2.1.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
-  /ioredis@5.4.1:
-    resolution: {integrity: sha512-2YZsvl7jopIa1gaePkeMtd9rAcSjOOjPtpcLlOeusyO+XH2SK5ZcT+UCrElPP+WVIInh2TzeI4XW9ENaSLVVHA==}
     engines: {node: '>=12.22.0'}
     dependencies:
       '@ioredis/commands': 1.2.0
