@@ -28,6 +28,9 @@ const IAccount = GT.Interface({
     callbackEndpoints: {
       type: GT.NonNullList(CallbackEndpoint),
     },
+    callbackPortalUrl: {
+      type: GT.NonNull(GT.String),
+    },
     wallets: {
       type: GT.NonNullList(Wallet),
     },
