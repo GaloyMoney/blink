@@ -42,7 +42,7 @@ pub struct JobExecutor<'a> {
     warn_retries: u32,
     #[builder(default = "5")]
     max_attempts: u32,
-    #[builder(default = "Duration::from_secs(1)")]
+    #[builder(default = "Duration::from_secs(4)")]
     initial_retry_delay: Duration,
     #[builder(default = "Duration::from_secs(60)")]
     max_retry_delay: Duration,
@@ -99,8 +99,6 @@ impl<'a> JobExecutor<'a> {
         let max_interval = self.max_retry_delay;
         let handle = tokio::spawn(async move {
             loop {
-                tokio::time::sleep(interval / 2).await;
-                interval = max_interval.min(interval * 2);
                 if let Err(e) = sqlx::query("SELECT mq_keep_alive(ARRAY[$1], $2)")
                     .bind(id)
                     .bind(interval)
@@ -110,6 +108,8 @@ impl<'a> JobExecutor<'a> {
                     tracing::error!("Failed to keep job {id} alive: {e}");
                     break;
                 }
+                tokio::time::sleep(interval / 2).await;
+                interval = max_interval.min(interval * 2);
             }
         });
         KeepAliveHandle::new(handle)
