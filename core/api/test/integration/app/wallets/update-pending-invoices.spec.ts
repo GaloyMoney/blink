@@ -72,6 +72,7 @@ describe("update pending invoices", () => {
         recipientWalletDescriptor: {
           id: randomUUID() as WalletId,
           currency: WalletCurrency.Usd,
+          accountId: randomUUID() as AccountId,
         },
         paid: false,
         lnInvoice: mockLnInvoice,
@@ -130,6 +131,7 @@ describe("update pending invoices", () => {
         recipientWalletDescriptor: {
           id: randomUUID() as WalletId,
           currency: WalletCurrency.Btc,
+          accountId: randomUUID() as AccountId,
         },
         paid: false,
         lnInvoice: mockLnInvoice,
