@@ -618,7 +618,7 @@ export const NotificationsService = (): INotificationsService => {
         if (protoDeepLinkAction !== undefined) deepLink.setAction(protoDeepLinkAction)
       }
 
-      let marketingNotifictionRequests: Promise<HandleNotificationEventResponse>[] = []
+      let marketingNotificationRequests: Promise<HandleNotificationEventResponse>[] = []
       for (let i = 0; i < userIds.length; i += MARKETING_NOTIFICATION_USER_BATCH_SIZE) {
         const userIdsBatch = userIds.slice(i, i + MARKETING_NOTIFICATION_USER_BATCH_SIZE)
         const marketingNotification = new MarketingNotificationTriggered()
@@ -641,7 +641,7 @@ export const NotificationsService = (): INotificationsService => {
         const request = new HandleNotificationEventRequest()
         request.setEvent(event)
 
-        marketingNotifictionRequests.push(
+        marketingNotificationRequests.push(
           notificationsGrpc.handleNotificationEvent(
             request,
             notificationsGrpc.notificationsMetadata,
@@ -649,7 +649,7 @@ export const NotificationsService = (): INotificationsService => {
         )
       }
 
-      await Promise.all(marketingNotifictionRequests)
+      await Promise.all(marketingNotificationRequests)
 
       return true
     } catch (err) {
