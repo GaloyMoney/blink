@@ -1,8 +1,5 @@
 load('./tilt/common.tiltfile', 'buck2_dep_inputs', 'core_serve_env')
-
-config.define_string_list("test")
-config.define_bool("bats")
-cfg = config.parse()
+load('./tilt/config.tiltfile', 'tests_to_run', 'is_ci', 'run_apps')
 
 CORE_TEST_LABEL = "core"
 CONSENT_TEST_LABEL = "consent"
@@ -23,9 +20,6 @@ TEST_RESOURCES = {
    VOUCHER_TEST_LABEL: "test-voucher",
    MIGRATE_MONGO_TEST_LABEL: "test-mongodb-migrate",
 }
-
-is_ci=("ci" in sys.argv) or cfg.get("bats", False)
-run_apps=not cfg.get("bats", False)
 
 # From the Tilt docs:
 #
@@ -297,7 +291,7 @@ consent_test_target = "//apps/consent:test-integration"
 local_resource(
   "test-consent",
   labels = ["test"],
-  auto_init = is_ci and CONSENT_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and CONSENT_TEST_LABEL in tests_to_run,
   cmd = "buck2 test {}".format(consent_test_target),
   allow_parallel = True,
   resource_deps = [
@@ -310,7 +304,7 @@ dashboard_test_target = "//apps/dashboard:test-integration"
 local_resource(
   "test-dashboard",
   labels = ["test"],
-  auto_init = is_ci and DASHBOARD_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and DASHBOARD_TEST_LABEL in tests_to_run,
   cmd = "buck2 test {}".format(dashboard_test_target),
   resource_deps = [
     "consent",
@@ -323,7 +317,7 @@ pay_test_target = "//apps/pay:test-integration"
 local_resource(
   "test-pay",
   labels = ["test"],
-  auto_init = is_ci and PAY_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and PAY_TEST_LABEL in tests_to_run,
   cmd = "buck2 test {}".format(pay_test_target),
   resource_deps = [
     "pay",
@@ -336,7 +330,7 @@ admin_panel_test_target = "//apps/admin-panel:test-integration"
 local_resource(
   "test-admin-panel",
   labels = ["test"],
-  auto_init = is_ci and ADMIN_PANEL_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and ADMIN_PANEL_TEST_LABEL in tests_to_run,
   cmd = "buck2 test {}".format(admin_panel_test_target),
   resource_deps = [
     "admin-panel",
@@ -347,7 +341,7 @@ voucher_test_target = "//apps/voucher:test-integration"
 local_resource(
   "test-voucher",
   labels = ["test"],
-  auto_init = is_ci and VOUCHER_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and VOUCHER_TEST_LABEL in tests_to_run,
   cmd = "buck2 test {}".format(voucher_test_target),
   resource_deps = [
     "voucher",
@@ -362,7 +356,7 @@ map_test_target = "//apps/map:test-integration"
 local_resource(
   "test-map",
   labels = ["test"],
-  auto_init = is_ci and MAP_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and MAP_TEST_LABEL in tests_to_run,
   cmd = "buck2 test {}".format(map_test_target),
   resource_deps = [
     "map",
@@ -679,17 +673,9 @@ docker_groups = {
     ],
 }
 
-to_run = cfg.get("to-run", [])
-if to_run != []:
+if tests_to_run != []:
     enabled_resources = []
-    for svc in to_run:
-        enabled_resources.append(svc)
-    config.set_enabled_resources(enabled_resources)
-
-to_test = cfg.get("test", [])
-if to_test != []:
-    enabled_resources = []
-    for label in to_test:
+    for label in tests_to_run:
         svc = TEST_RESOURCES.get(label)
         if svc:
             enabled_resources.append(svc)
@@ -714,7 +700,7 @@ api_test_target = "//core/api:test-integration"
 local_resource(
   "test-api",
   labels = ["test"],
-  auto_init = is_ci and CORE_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and CORE_TEST_LABEL in tests_to_run,
   cmd = "buck2 test {}".format(api_test_target),
   resource_deps = [res for sublist in docker_groups.values() for res in sublist] + ["notifications"]
 )
@@ -722,7 +708,7 @@ local_resource(
 local_resource(
   "test-mongodb-migrate",
   labels = ["test"],
-  auto_init = is_ci and MIGRATE_MONGO_TEST_LABEL in cfg.get("test", []),
+  auto_init = is_ci and MIGRATE_MONGO_TEST_LABEL in tests_to_run,
   cmd='buck2 run //core/api:mongodb-migrate',
   allow_parallel = True,
   resource_deps = [
