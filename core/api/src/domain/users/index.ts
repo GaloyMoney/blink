@@ -1,5 +1,7 @@
 import { Languages } from "./languages"
 
+import { UuidRegex } from "@/domain/shared"
+
 import {
   InvalidDeviceId,
   InvalidDeviceTokenError,
@@ -19,9 +21,6 @@ const PhoneNumberRegex = /^\+\d{7,14}$/i // FIXME {7,14} to be refined
 
 const EmailAddressRegex = /^[\w-.+]+@([\w-]+\.)+[\w-]{2,4}$/i
 
-const UuidRegex =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
 export const checkedToPhoneNumber = (
   phoneNumber: string,
 ): PhoneNumber | ValidationError => {
@@ -39,6 +38,8 @@ export const checkedToEmailAddress = (
   }
   return emailAddress as EmailAddress
 }
+
+export const DefaultLanguage = "" as UserLanguageOrEmpty
 
 export const checkedToLanguage = (
   language: string,
