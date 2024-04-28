@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: pnpm lock redis dep version (#4379)'
-      sha: 5171ff72ed1748addb9ad271d40fe70fd5bfbf28
+      commitTitle: 'chore: removed unused packages (#4381)...'
+      sha: ab472a3ba7d3dda1c7613cb051309371dac7f5dd
       tags:
-      - 0.20.171-4-g5171ff72e
+      - 0.20.171-6-gab472a3ba
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: pnpm lock redis dep version (#4379)'
-      sha: 5171ff72ed1748addb9ad271d40fe70fd5bfbf28
+      commitTitle: 'chore: removed unused packages (#4381)...'
+      sha: ab472a3ba7d3dda1c7613cb051309371dac7f5dd
       tags:
-      - 0.20.171-4-g5171ff72e
+      - 0.20.172
     path: schemas
   - git:
-      commitTitle: 'fix: pnpm lock redis dep version (#4379)'
-      sha: 5171ff72ed1748addb9ad271d40fe70fd5bfbf28
+      commitTitle: 'chore: removed unused packages (#4381)...'
+      sha: ab472a3ba7d3dda1c7613cb051309371dac7f5dd
       tags:
-      - 0.20.171-4-g5171ff72e
+      - 0.20.172
     path: gql
   path: graphql
 kind: LockConfig
