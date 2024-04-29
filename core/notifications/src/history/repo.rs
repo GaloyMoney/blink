@@ -80,7 +80,7 @@ impl PersistentNotifications {
         let count = sqlx::query_scalar!(
             r#"SELECT COUNT(*)
             FROM stateful_notifications
-            WHERE galoy_user_id = $1 AND acknowledged = false"#,
+            WHERE galoy_user_id = $1 AND acknowledged = FALSE"#,
             user_id.as_ref(),
         )
         .fetch_one(self.read_pool.inner())

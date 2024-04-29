@@ -307,7 +307,11 @@ impl NotificationsApp {
         Ok(notification)
     }
 
-    #[instrument(name = "app.unacknowledged_notifications_count", skip(self), err)]
+    #[instrument(
+        name = "app.unacknowledged_stateful_notifications_count",
+        skip(self),
+        err
+    )]
     pub async fn unacknowledged_stateful_notifications_count(
         &self,
         user_id: GaloyUserId,
