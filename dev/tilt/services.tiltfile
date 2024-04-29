@@ -1,5 +1,5 @@
-load('./common.tiltfile', 'buck2_dep_inputs', 'core_serve_env')
-load('./config.tiltfile', 'is_ci', 'run_apps')
+load('./common.tiltfile', 'buck2_dep_inputs')
+load('./config.tiltfile', 'is_ci', 'run_apps', 'core_serve_env')
 
 LOAD_SYMBOL="<dummy-import-symbol>"
 

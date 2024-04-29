@@ -35,8 +35,3 @@ def merge_env_file(file_path_str, env_vars={}):
             env_vars[key] = value
 
     return env_vars
-
-env_json = buck2_dep_inputs("//dev:serve_env")[0]
-core_serve_env_from_json = read_json(env_json)
-local_env_file = ".env.local"
-core_serve_env = merge_env_file(local_env_file, core_serve_env_from_json)
