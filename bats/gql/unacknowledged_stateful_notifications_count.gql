@@ -1,0 +1,6 @@
+query unacknowledgedStatefulNotificationsCount {
+  me {
+    id
+    unacknowledgedStatefulNotificationsCount
+  }
+}
