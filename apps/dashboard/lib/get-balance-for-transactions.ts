@@ -31,14 +31,7 @@ export const getBalanceForTransactions = ({
   const btcTransactions: ProcessedTransaction[] = []
   const usdTransactions: ProcessedTransaction[] = []
 
-  // for now commented this as we are not restricting transaction by date.
-  // const daysAgo = Math.floor(Date.now() / 1000) - days * 24 * 60 * 60
-
   for (const { node } of transactions) {
-    // if (node.createdAt < daysAgo) {
-    //   break
-    // }
-
     if (node.settlementCurrency === "USD") {
       minBalance.usd = Math.min(minBalance.usd, Number((usdBalance / 100).toFixed(2)))
       maxBalance.usd = Math.max(maxBalance.usd, Number((usdBalance / 100).toFixed(2)))
