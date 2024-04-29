@@ -1,4 +1,7 @@
 docker_groups = {
+    "apps": [
+        "voucher-pg",
+    ],
     "auth": [
         "api-keys-pg",
         "oathkeeper",
@@ -24,6 +27,8 @@ docker_groups = {
         "bria",
         "bria-pg",
         "bitcoind",
+        "bitcoind-signer",
+        "fulcrum",
     ],
     "integration": [
         "lnd-outside-1",
@@ -41,17 +46,6 @@ docker_groups = {
 }
 
 docker_compose("../docker-compose.deps.yml", project_name = "galoy-dev")
-
-for service in docker_groups["bitcoin"]:
-    dc_resource(service, labels = ["bitcoin"])
-for service in docker_groups["tracing"]:
-    dc_resource(service, labels = ["tracing"])
-for service in docker_groups["core"]:
-    dc_resource(service, labels = ["core"])
-for service in docker_groups["auth"]:
-    dc_resource(service, labels = ["auth"])
-for service in docker_groups["price"]:
-    dc_resource(service, labels = ["price"])
-for service in docker_groups["integration"]:
-    dc_resource(service, labels = ["integration"])
-
+for (label, services) in  docker_groups.items():
+    for service in services:
+        dc_resource(service, labels = [label])
