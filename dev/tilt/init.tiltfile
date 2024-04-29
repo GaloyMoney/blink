@@ -1,0 +1,66 @@
+LOAD_SYMBOL="<dummy-import-symbol>"
+
+local_resource(
+  name='add-test-users-with-usernames',
+  labels = ['test'],
+  cmd='buck2 run //dev:add-test-users-with-usernames',
+  allow_parallel = True,
+  resource_deps = [
+    "oathkeeper",
+    "kratos",
+    "api",
+  ]
+)
+
+local_resource(
+  name='init-test-user',
+  labels = ['test'],
+  cmd='buck2 run //dev:init-test-user',
+  allow_parallel = True,
+  resource_deps = [
+    "oathkeeper",
+    "kratos",
+    "api",
+  ]
+)
+
+local_resource(
+  name='init-onchain',
+  labels = ['bitcoin'],
+  cmd='buck2 run //dev:init-onchain',
+  allow_parallel = True,
+  resource_deps = [
+    "bitcoind",
+    "bria",
+  ]
+)
+
+local_resource(
+  name='init-lightning',
+  labels = ['bitcoin'],
+  cmd='buck2 run //dev:init-lightning',
+  allow_parallel = True,
+  resource_deps = [
+    "init-onchain",
+    "lnd1",
+    "lnd-outside-1",
+    "lnd-outside-2",
+  ]
+)
+
+local_resource(
+  name='fund-user',
+  labels = ['test'],
+  cmd='buck2 run //dev:fund-user',
+  allow_parallel = True,
+  resource_deps = [
+    "oathkeeper",
+    "kratos",
+    "api",
+    "init-onchain",
+    "init-test-user",
+    "api-trigger",
+    "stablesats",
+    "price",
+  ]
+)

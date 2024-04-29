@@ -1,0 +1,187 @@
+load('./common.tiltfile', 'buck2_dep_inputs')
+load('./config.tiltfile', 'is_ci', 'run_apps', 'tests_to_run')
+load('./docker.tiltfile', 'docker_groups')
+
+LOAD_SYMBOL="<dummy-import-symbol>"
+
+CORE_TEST_LABEL = "core"
+CONSENT_TEST_LABEL = "consent"
+DASHBOARD_TEST_LABEL = "dashboard"
+PAY_TEST_LABEL = "pay"
+ADMIN_PANEL_TEST_LABEL = "admin-panel"
+MAP_TEST_LABEL = "map"
+VOUCHER_TEST_LABEL = "voucher"
+MIGRATE_MONGO_TEST_LABEL = "mongodb-migrate"
+
+TEST_RESOURCES = {
+   CORE_TEST_LABEL: "test-api",
+   CONSENT_TEST_LABEL: "test-consent",
+   DASHBOARD_TEST_LABEL: "test-dashboard",
+   PAY_TEST_LABEL: "test-pay",
+   ADMIN_PANEL_TEST_LABEL: "test-admin-panel",
+   MAP_TEST_LABEL: "test-map",
+   VOUCHER_TEST_LABEL: "test-voucher",
+   MIGRATE_MONGO_TEST_LABEL: "test-mongodb-migrate",
+}
+
+if tests_to_run != []:
+    enabled_resources = []
+    for label in tests_to_run:
+        svc = TEST_RESOURCES.get(label)
+        if svc:
+            enabled_resources.append(svc)
+    config.set_enabled_resources(enabled_resources)
+
+api_test_target = "//core/api:test-integration"
+local_resource(
+  "test-api",
+  labels = ["test"],
+  auto_init = is_ci and CORE_TEST_LABEL in tests_to_run,
+  cmd = "buck2 test {}".format(api_test_target),
+  resource_deps = [res for sublist in docker_groups.values() for res in sublist] + ["notifications"]
+)
+
+callback_target = "//bats/helpers/callback:run"
+local_resource(
+    "callback",
+    labels = ["test"],
+    serve_cmd = "buck2 run {}".format(callback_target),
+    allow_parallel = True,
+    deps = buck2_dep_inputs(callback_target),
+)
+
+local_resource(
+  "test-mongodb-migrate",
+  labels = ["test"],
+  auto_init = is_ci and MIGRATE_MONGO_TEST_LABEL in tests_to_run,
+  cmd='buck2 run //core/api:mongodb-migrate',
+  allow_parallel = True,
+  resource_deps = [
+    "mongodb",
+  ]
+)
+
+consent_test_target = "//apps/consent:test-integration"
+local_resource(
+  "test-consent",
+  labels = ["test"],
+  auto_init = is_ci and CONSENT_TEST_LABEL in tests_to_run,
+  cmd = "buck2 test {}".format(consent_test_target),
+  allow_parallel = True,
+  resource_deps = [
+    "consent",
+    "init-test-user",
+  ],
+)
+
+dashboard_test_target = "//apps/dashboard:test-integration"
+local_resource(
+  "test-dashboard",
+  labels = ["test"],
+  auto_init = is_ci and DASHBOARD_TEST_LABEL in tests_to_run,
+  cmd = "buck2 test {}".format(dashboard_test_target),
+  resource_deps = [
+    "consent",
+    "dashboard",
+    "init-test-user",
+  ],
+)
+
+pay_test_target = "//apps/pay:test-integration"
+local_resource(
+  "test-pay",
+  labels = ["test"],
+  auto_init = is_ci and PAY_TEST_LABEL in tests_to_run,
+  cmd = "buck2 test {}".format(pay_test_target),
+  resource_deps = [
+    "pay",
+    "add-test-users-with-usernames",
+    "fund-user",
+  ],
+)
+
+admin_panel_test_target = "//apps/admin-panel:test-integration"
+local_resource(
+  "test-admin-panel",
+  labels = ["test"],
+  auto_init = is_ci and ADMIN_PANEL_TEST_LABEL in tests_to_run,
+  cmd = "buck2 test {}".format(admin_panel_test_target),
+  resource_deps = [
+    "admin-panel",
+  ],
+)
+
+voucher_test_target = "//apps/voucher:test-integration"
+local_resource(
+  "test-voucher",
+  labels = ["test"],
+  auto_init = is_ci and VOUCHER_TEST_LABEL in tests_to_run,
+  cmd = "buck2 test {}".format(voucher_test_target),
+  resource_deps = [
+    "voucher",
+    "consent",
+    "init-test-user",
+    "fund-user",
+  ],
+)
+
+consent_target = "//apps/consent:dev"
+if is_ci:
+  consent_target = '//apps/consent:consent'
+local_resource(
+    "consent",
+    labels = ["auth"],
+    cmd = "buck2 build {}".format(consent_target),
+    serve_cmd = "buck2 run {}".format(consent_target),
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3000,
+        ),
+    ),
+    deps = buck2_dep_inputs(consent_target),
+    allow_parallel = True,
+    auto_init = run_apps,
+    resource_deps = [
+        "apollo-router",
+        "hydra",
+        "api",
+        "hydra-consent-test-client",
+    ],
+    links = [
+        link("http://localhost:3000", "consent"),
+    ],
+)
+
+local_resource(
+  name='hydra-consent-test-client',
+  labels = ['auth'],
+  cmd=[
+    'buck2',
+    'run',
+    '//dev:setup-hydra-client',
+    '--',
+    'consent-test',
+    'authorization_code,refresh_token',
+    'http://localhost:3000',
+  ],
+  allow_parallel = True,
+  auto_init = run_apps,
+  resource_deps = [
+    "hydra",
+    "api",
+  ]
+)
+
+
+map_test_target = "//apps/map:test-integration"
+local_resource(
+  "test-map",
+  labels = ["test"],
+  auto_init = is_ci and MAP_TEST_LABEL in tests_to_run,
+  cmd = "buck2 test {}".format(map_test_target),
+  resource_deps = [
+    "map",
+  ],
+)

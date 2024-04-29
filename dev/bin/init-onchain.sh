@@ -11,7 +11,7 @@ bitcoin_cli createwallet "outside" || true
 bitcoin_cli -generate 200 > /dev/null 2>&1
 
 bitcoin_signer_cli createwallet "dev" || true
-bitcoin_signer_cli -rpcwallet=dev importdescriptors "$(cat ./config/bitcoind/bitcoind_signer_descriptors.json)"
+bitcoin_signer_cli -rpcwallet=dev importdescriptors "$(cat ${DEV_DIR}/config/bitcoind/bitcoind_signer_descriptors.json)"
 
 echo "Checking that bria is running..."
 

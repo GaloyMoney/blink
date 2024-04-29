@@ -1,0 +1,405 @@
+load('./common.tiltfile', 'buck2_dep_inputs', 'core_serve_env')
+load('./config.tiltfile', 'is_ci', 'run_apps')
+
+LOAD_SYMBOL="<dummy-import-symbol>"
+
+dashboard_target = "//apps/dashboard:dev"
+if is_ci:
+    dashboard_target = '//apps/dashboard:dashboard'
+local_resource(
+    "dashboard",
+    labels = ["apps"],
+    cmd = "buck2 build {}".format(dashboard_target),
+    serve_cmd = ". ../.envs/dashboard.env && buck2 run {}".format(dashboard_target),
+    serve_env = {
+        "NEXTAUTH_URL": "http://localhost:3001",
+        "NEXTAUTH_SECRET": "secret",
+        "PORT": "3001",
+    },
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3001,
+        ),
+    ),
+    deps = buck2_dep_inputs(dashboard_target),
+    allow_parallel = True,
+    auto_init = run_apps,
+    resource_deps = [
+        "hydra-dashboard",
+        "api-keys",
+        "svix",
+        "svix-pg",
+        "add-test-users-with-usernames",
+        "fund-user",
+        "api",
+    ],
+    links = [
+        link("http://localhost:3001", "dashboard"),
+    ],
+)
+
+local_resource(
+  name='hydra-dashboard',
+  labels = ['apps'],
+  cmd=[
+    'buck2',
+    'run',
+    '//dev:setup-hydra-client',
+    '--',
+    'dashboard',
+    'authorization_code,refresh_token',
+    'http://localhost:3001/api/auth/callback/blink',
+  ],
+  allow_parallel = True,
+  auto_init = run_apps,
+  resource_deps = [
+    "hydra",
+    "api",
+  ]
+)
+
+
+pay_target = "//apps/pay:dev"
+if is_ci:
+    pay_target = '//apps/pay:pay-ci'
+pay_env = {
+    "PORT": "3002",
+    "CORE_GQL_URL_INTRANET": "http://localhost:4455/graphql",
+    "NEXT_PUBLIC_CORE_GQL_URL": "http://localhost:4455/graphql",
+    "NEXT_PUBLIC_CORE_GQL_WEB_SOCKET_URL": "ws://localhost:4455/graphqlws",
+    "NEXT_PUBLIC_PAY_DOMAIN": "localhost:3002",
+    "NEXTAUTH_URL":"http://localhost:3002"
+}
+local_resource(
+    "pay",
+    labels = ["apps"],
+    cmd = "buck2 build {}".format(pay_target),
+    serve_cmd = ". ../.envs/pay.env && buck2 run {}".format(pay_target),
+    env = pay_env,
+    serve_env = pay_env,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3002,
+        ),
+    ),
+    deps = buck2_dep_inputs(pay_target),
+    allow_parallel = True,
+    resource_deps = [
+        "api",
+        "api-ws-server",
+        "hydra-pay"
+    ],
+    links = [
+        link("http://localhost:3002", "pay"),
+    ],
+)
+
+local_resource(
+  name='hydra-pay',
+  labels = ['apps'],
+  cmd=[
+    'buck2',
+    'run',
+    '//dev:setup-hydra-client',
+    '--',
+    'pay',
+    'authorization_code,refresh_token',
+    'http://localhost:3002/api/auth/callback/blink',
+  ],
+  allow_parallel = True,
+  resource_deps = [
+    "hydra",
+    "api",
+  ]
+)
+
+
+admin_panel_target = "//apps/admin-panel:dev"
+if is_ci:
+    admin_panel_target = '//apps/admin-panel:admin-panel'
+admin_panel_env = {
+    "PORT": "3004",
+    "ADMIN_CORE_API" : "http://localhost:4455/admin/graphql",
+    "NEXTAUTH_URL" : "http://localhost:3004",
+    "NEXTAUTH_SECRET" : "nextAuthSecret",
+}
+local_resource(
+    "admin-panel",
+    labels = ["apps"],
+    cmd = "buck2 build {}".format(admin_panel_target),
+    serve_cmd = "buck2 run {}".format(admin_panel_target),
+    env = admin_panel_env,
+    serve_env = admin_panel_env,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3004,
+        ),
+    ),
+    deps = buck2_dep_inputs(admin_panel_target),
+    allow_parallel = True,
+    resource_deps = [
+        "api",
+        "apollo-router",
+    ],
+    links = [
+        link("http://localhost:3004", "admin-panel"),
+    ],
+)
+
+map_target = "//apps/map:dev"
+if is_ci:
+    map_target = '//apps/map:map'
+map_env = {
+    "PORT": "3005",
+    "CORE_URL" : "http://localhost:4455/graphql",
+}
+local_resource(
+    "map",
+    labels = ["apps"],
+    cmd = "buck2 build {}".format(map_target),
+    serve_cmd = "buck2 run {}".format(map_target),
+    env = map_env,
+    serve_env = map_env,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/api/health",
+            port = 3005,
+        ),
+    ),
+    deps = buck2_dep_inputs(map_target),
+    allow_parallel = True,
+    resource_deps = [
+        "api",
+        "apollo-router",
+    ],
+    links = [
+        link("http://localhost:3005", "map"),
+    ],
+)
+
+voucher_target = "//apps/voucher:dev"
+if is_ci:
+    voucher_target = '//apps/voucher:voucher'
+voucher_env = {
+    "PORT": "3006",
+    "NEXTAUTH_URL":"http://localhost:3006",
+    "NEXTAUTH_SECRET":"secret"
+}
+local_resource(
+    "voucher",
+    labels = ["apps"],
+    cmd = "buck2 build {}".format(voucher_target),
+    serve_cmd = ". ../.envs/voucher.env && buck2 run {}".format(voucher_target),
+    env = voucher_env,
+    serve_env = voucher_env,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "/",
+            port = 3006,
+        ),
+    ),
+    deps = buck2_dep_inputs(voucher_target),
+    allow_parallel = True,
+    resource_deps = [
+        "api",
+        "apollo-router",
+        "hydra-voucher",
+        "setup-voucher"
+    ],
+    links = [
+        link("http://localhost:3006", "voucher"),
+    ],
+)
+
+local_resource(
+  name='hydra-voucher',
+  labels = ['apps'],
+  cmd=[
+    'buck2',
+    'run',
+    '//dev:setup-hydra-client',
+    '--',
+    'voucher',
+    'authorization_code,refresh_token',
+    'http://localhost:3006/api/auth/callback/blink',
+  ],
+  allow_parallel = True,
+  resource_deps = [
+    "hydra",
+    "api",
+  ]
+)
+
+local_resource(
+    name="setup-voucher",
+    cmd="buck2 run //dev:setup-voucher-escrow",
+    allow_parallel=False,
+    auto_init=run_apps,
+    resource_deps=["voucher-pg", "api-keys"]
+)
+
+
+api_target = "//core/api:dev"
+if is_ci:
+    api_target = "//core/api:api"
+local_resource(
+    "api",
+    labels = ["core"],
+    cmd = "buck2 build {}".format(api_target),
+    serve_cmd = "buck2 run {}".format(api_target),
+    serve_env = core_serve_env,
+    allow_parallel = True,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "healthz",
+            port = 4012,
+        ),
+    ),
+    deps = buck2_dep_inputs(api_target),
+    resource_deps = [
+        "price",
+        "init-onchain",
+        "init-lightning",
+        "lnd1",
+        "lnd2",
+        "redis",
+        "mongodb",
+        "oathkeeper",
+        "svix",
+        "notifications",
+    ]
+)
+
+api_trigger_target = "//core/api-trigger:dev"
+if is_ci:
+    api_trigger_target = "//core/api-trigger:api-trigger"
+local_resource(
+    "api-trigger",
+    labels = ["core"],
+    cmd = "buck2 build {}".format(api_trigger_target),
+    serve_cmd = "buck2 run //dev:stoppable-trigger {}".format(api_trigger_target),
+    serve_env = core_serve_env,
+    allow_parallel = True,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "healthz",
+            port = 8888,
+        ),
+    ),
+    deps = buck2_dep_inputs(api_trigger_target),
+    resource_deps = [
+        "price",
+        "init-onchain",
+        "lnd1",
+        "lnd2",
+        "redis",
+        "mongodb",
+        "oathkeeper",
+    ]
+)
+
+api_exporter_target = "//core/api-exporter:dev"
+if is_ci:
+    api_exporter_target = "//core/api-exporter:api-exporter"
+local_resource(
+    "api-exporter",
+    labels = ["core"],
+    cmd = "buck2 build {}".format(api_exporter_target),
+    serve_cmd = "buck2 run {}".format(api_exporter_target),
+    serve_env = core_serve_env,
+    allow_parallel = True,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "healthz",
+            port = 3003,
+        ),
+    ),
+    deps = buck2_dep_inputs(api_exporter_target),
+    resource_deps = [
+        "price",
+        "init-onchain",
+        "lnd1",
+        "lnd2",
+        "redis",
+        "mongodb",
+        "oathkeeper",
+    ]
+)
+
+api_ws_server_target = "//core/api-ws-server:dev"
+if is_ci:
+    api_ws_server_target = "//core/api-ws-server:api-ws-server"
+local_resource(
+    "api-ws-server",
+    labels = ["core"],
+    cmd = "buck2 build {}".format(api_ws_server_target),
+    serve_cmd = "buck2 run {}".format(api_ws_server_target),
+    serve_env = core_serve_env,
+    allow_parallel = True,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "healthz",
+            port = 4012,
+        ),
+    ),
+    deps = buck2_dep_inputs(api_ws_server_target),
+    resource_deps = [
+        "price",
+        "init-onchain",
+        "lnd1",
+        "lnd2",
+        "redis",
+        "mongodb",
+        "oathkeeper",
+    ]
+)
+
+api_keys_target = "//core/api-keys:api-keys"
+local_resource(
+    "api-keys",
+    labels = ["auth"],
+    cmd = "buck2 build {}".format(api_keys_target),
+    serve_cmd = "buck2 run {}".format(api_keys_target),
+    serve_env = {
+        "PG_CON": "postgres://user:password@localhost:5431/pg",
+        "API_KEYS_CONFIG": "../../core/api-keys/api-keys.yml",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
+    },
+    deps = buck2_dep_inputs(api_keys_target),
+    allow_parallel = True,
+    resource_deps = [
+        "api",
+        "api-keys-pg"
+    ]
+)
+
+notifications_target = "//core/notifications:notifications"
+local_resource(
+    "notifications",
+    labels = ["core"],
+    cmd = "buck2 build {}".format(notifications_target),
+    serve_cmd = "buck2 run {}".format(notifications_target),
+    serve_env = {
+        "PG_CON": "postgres://user:password@localhost:5433/pg",
+        "PG_READ_CON": "postgres://user:password@localhost:5433/pg",
+        "NOTIFICATIONS_CONFIG": "../config/notifications/notifications.yml",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
+    },
+    deps = buck2_dep_inputs(notifications_target),
+    resource_deps = [
+        "notifications-pg"
+    ]
+)
+
