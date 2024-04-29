@@ -28,7 +28,6 @@
     "@ory/hydra-client": "^2.2.0",
     "@t3-oss/env-nextjs": "^0.7.1",
     "axios": "^1.6.3",
-    "cypress-plugin-tab": "^1.0.5",
     "dotenv": "^16.3.1",
     "edge-csrf": "^1.0.6",
     "graphql": "^16.8.1",
