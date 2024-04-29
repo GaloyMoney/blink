@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect, useRef } from "react"
 import copy from "copy-to-clipboard"
 import Image from "react-bootstrap/Image"
 import { QRCode } from "react-qrcode-logo"
@@ -16,14 +16,25 @@ import { Share } from "@/components/share"
 import { decodeInvoice } from "@/components/utils"
 
 export default function Invoice({ title, paymentRequest, status }: InvoiceProps) {
+  const [seconds, setSeconds] = useState(0)
+  const [minutes, setMinutes] = useState(0)
+  const [copied, setCopied] = useState(false)
+  const [shareState, setShareState] = useState<string>()
+  const [errorMessage, setErrorMessage] = useState<string>("")
+  const [image, takeScreenShot] = useScreenshot()
+  const qrImageRef = useRef(null)
+
   const invoice = decodeInvoice(paymentRequest)
-  if (!invoice) return
+  if (!invoice) {
+    setErrorMessage("Invalid Invoice")
+  }
 
-  const [seconds, setSeconds] = React.useState(0)
-  const [minutes, setMinutes] = React.useState(0)
-
-  React.useEffect(() => {
-    if (!invoice.timeExpireDate) return
+  useEffect(() => {
+    if (!invoice || !invoice.timeExpireDate) return
+    if (status === "EXPIRED") {
+      setErrorMessage("Invoice has expired.")
+      return
+    }
     const timerStartTime = new Date(invoice.timeExpireDate * 1000)
 
     const interval = setInterval(() => {
@@ -33,6 +44,7 @@ export default function Invoice({ title, paymentRequest, status }: InvoiceProps)
 
       if (remainingSeconds <= 0) {
         remainingSeconds = 0
+        setErrorMessage("Invoice has expired.")
         clearInterval(interval)
       }
 
@@ -41,12 +53,19 @@ export default function Invoice({ title, paymentRequest, status }: InvoiceProps)
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [paymentRequest])
+  }, [status, invoice])
 
-  const [copied, setCopied] = React.useState<boolean>(false)
-  const [shareState, setShareState] = React.useState<"not-set">()
-  const [image, takeScreenShot] = useScreenshot()
-  const qrImageRef = React.useRef(null)
+  const copyInvoice = () => {
+    if (!invoice?.paymentRequest) {
+      return
+    }
+    copy(invoice.paymentRequest)
+    setCopied(true)
+    setTimeout(() => {
+      setCopied(false)
+    }, 3000)
+  }
+
   const getImage = () => takeScreenShot(qrImageRef.current)
   const shareData = {
     title,
@@ -54,15 +73,12 @@ export default function Invoice({ title, paymentRequest, status }: InvoiceProps)
     url: typeof window !== "undefined" && window.location.href,
   }
 
-  const copyInvoice = () => {
-    if (!invoice?.paymentRequest) {
-      return
-    }
-    copy(invoice.paymentRequest)
-    setCopied(!copied)
-    setTimeout(() => {
-      setCopied(false)
-    }, 3000)
+  if (errorMessage || !invoice || status === "EXPIRED") {
+    return (
+      <div className={styles.error}>
+        <p>{errorMessage || "EXPIRED"}</p>
+      </div>
+    )
   }
 
   return (
@@ -71,7 +87,7 @@ export default function Invoice({ title, paymentRequest, status }: InvoiceProps)
         <p>{invoice.satoshis} sats</p>
       </div>
       <div className={styles.timerContainer}>
-        <p>Invoice Expires in {`${minutes} Minutes ${seconds} Seconds`}</p>
+        <p>{!!seconds && `Expires in ${minutes} Minutes ${seconds} Seconds`}</p>
       </div>
       <div>
         <div

@@ -18,20 +18,19 @@ const CheckoutPage: NextPage<{ params: { hash: string } }> = async (context) => 
     return <div>Error getting invoice for hash: {hash}</div>
   }
 
-  // Invoice request: {invoice.paymentRequest} <br />
-  // Status: {invoice.status}
-  // <br />
-  // Return url: {returnUrl}
   return (
     <CheckoutLayoutContainer>
-      <div className={styles.usernameContainer}>
-        <p className={styles.username}>Pay Invoice</p>
+      <div className={styles.paymentContainer}>
+        <div className={styles.headerContainer}>
+          <p className={styles.title}>Pay Invoice</p>
+        </div>
+        <Invoice
+          title="Pay Invoice"
+          status={invoice.status || "PENDING"}
+          paymentRequest={invoice.paymentRequest}
+          returnUrl={returnUrl}
+        />
       </div>
-      <Invoice
-        title="Pay Invoice"
-        status={invoice.status || "PENDING"}
-        paymentRequest={invoice.paymentRequest}
-      />
     </CheckoutLayoutContainer>
   )
 }

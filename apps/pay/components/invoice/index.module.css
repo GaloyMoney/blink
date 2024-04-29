@@ -69,3 +69,20 @@
   font-size: 48px;
   height: 3rem;
 }
+
+.error {
+  color: red;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 15% 1rem;
+  margin-top: 2rem;
+  outline: 1px dashed rgba(255, 0, 0, 0.35);
+  flex-direction: column;
+}
+
+.error > p {
+  text-align: center;
+}
