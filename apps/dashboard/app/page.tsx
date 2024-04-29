@@ -46,7 +46,7 @@ export default async function Home() {
             currentBtcBalance={btcWallet?.balance || 0}
             currentUsdBalance={usdWallet?.balance || 0}
             transactions={response}
-          ></TransactionChart>
+          />
         </Box>
       </ContentContainer>
     </main>
