@@ -61,8 +61,9 @@ impl PersistentNotifications {
         let mut tx = self.pool.begin().await?;
         sqlx::query!(
             r#"UPDATE stateful_notifications
-            SET acknowledged = true
-            WHERE id = $1 AND galoy_user_id = $2"#,
+            SET acknowledged = $1
+            WHERE id = $2 AND galoy_user_id = $3"#,
+            notification.is_acknowledged(),
             notification.id as StatefulNotificationId,
             notification.galoy_user_id.as_ref(),
         )
