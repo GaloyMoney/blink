@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: removed unused packages (#4381)...'
-      sha: ab472a3ba7d3dda1c7613cb051309371dac7f5dd
+      commitTitle: 'feat(notifications): expose unacknowledgedStatefulNotificationsCount
+        field (#4384)...'
+      sha: 00a325d42299496676547bfe1e2f3084bdb85acd
       tags:
-      - 0.20.171-6-gab472a3ba
+      - 0.20.172-2-g00a325d42
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: removed unused packages (#4381)...'
-      sha: ab472a3ba7d3dda1c7613cb051309371dac7f5dd
+      commitTitle: 'feat(notifications): expose unacknowledgedStatefulNotificationsCount
+        field (#4384)...'
+      sha: 00a325d42299496676547bfe1e2f3084bdb85acd
       tags:
-      - 0.20.172
+      - 0.20.172-2-g00a325d42
     path: schemas
   - git:
-      commitTitle: 'chore: removed unused packages (#4381)...'
-      sha: ab472a3ba7d3dda1c7613cb051309371dac7f5dd
+      commitTitle: 'feat(notifications): expose unacknowledgedStatefulNotificationsCount
+        field (#4384)...'
+      sha: 00a325d42299496676547bfe1e2f3084bdb85acd
       tags:
-      - 0.20.172
+      - 0.20.172-2-g00a325d42
     path: gql
   path: graphql
 kind: LockConfig
