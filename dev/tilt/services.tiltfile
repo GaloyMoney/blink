@@ -31,8 +31,8 @@ local_resource(
         "api-keys",
         "svix",
         "svix-pg",
-        "add-test-users-with-usernames",
-        "fund-user",
+        "init-test-users-with-usernames",
+        "init-user-funds",
         "api",
     ],
     links = [

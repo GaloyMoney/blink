@@ -32,15 +32,6 @@ if tests_to_run != []:
             enabled_resources.append(svc)
     config.set_enabled_resources(enabled_resources)
 
-api_test_target = "//core/api:test-integration"
-local_resource(
-  "test-api",
-  labels = ["test"],
-  auto_init = is_ci and CORE_TEST_LABEL in tests_to_run,
-  cmd = "buck2 test {}".format(api_test_target),
-  resource_deps = [res for sublist in docker_groups.values() for res in sublist] + ["notifications"]
-)
-
 callback_target = "//bats/helpers/callback:run"
 local_resource(
     "callback",
@@ -59,6 +50,15 @@ local_resource(
   resource_deps = [
     "mongodb",
   ]
+)
+
+api_test_target = "//core/api:test-integration"
+local_resource(
+  "test-api",
+  labels = ["test"],
+  auto_init = is_ci and CORE_TEST_LABEL in tests_to_run,
+  cmd = "buck2 test {}".format(api_test_target),
+  resource_deps = [res for sublist in docker_groups.values() for res in sublist] + ["notifications"]
 )
 
 consent_test_target = "//apps/consent:test-integration"
@@ -95,8 +95,8 @@ local_resource(
   cmd = "buck2 test {}".format(pay_test_target),
   resource_deps = [
     "pay",
-    "add-test-users-with-usernames",
-    "fund-user",
+    "init-test-users-with-usernames",
+    "init-user-funds",
   ],
 )
 
@@ -121,7 +121,7 @@ local_resource(
     "voucher",
     "consent",
     "init-test-user",
-    "fund-user",
+    "init-user-funds",
   ],
 )
 
