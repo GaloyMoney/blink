@@ -79,3 +79,26 @@ setup_file() {
   acknowledged_at=$(graphql_output '.data.statefulNotificationAcknowledge.notification.acknowledgedAt')
   [[ "$acknowledged_at" != "null" ]] || exit 1
 }
+
+@test "notifications: unacknowledged_stateful_notifications_count" {
+  exec_graphql 'alice' 'unacknowledged_stateful_notifications_count'
+  count=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsCount')
+  [[ $count -eq 1 ]] || exit 1
+
+  exec_graphql 'alice' 'list-stateful-notifications' '{"first": 2}'
+  n_notifications=$(graphql_output '.data.me.statefulNotifications.nodes | length')
+  id=$(graphql_output '.data.me.statefulNotifications.nodes[1].id')
+  acknowledged_at=$(graphql_output '.data.me.statefulNotifications.nodes[1].acknowledgedAt')
+  [[ "$acknowledged_at" = "null" ]] || exit 1
+  variables=$(
+    jq -n \
+    --arg id "${id}" \
+    '{input: {notificationId: $id}}'
+  )
+  exec_graphql 'alice' 'acknowledge-notification' "$variables"
+
+  exec_graphql 'alice' 'unacknowledged_stateful_notifications_count'
+  count=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsCount')
+  [[ $count -eq 0 ]] || exit 1
+
+}
