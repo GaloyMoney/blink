@@ -211,41 +211,13 @@ local_resource(
     resource_deps = [
         "api",
         "apollo-router",
-        "hydra-voucher",
-        "setup-voucher"
+        "init-voucher-hydra-client",
+        "init-voucher-escrow"
     ],
     links = [
         link("http://localhost:3006", "voucher"),
     ],
 )
-
-local_resource(
-  name='hydra-voucher',
-  labels = ['apps'],
-  cmd=[
-    'buck2',
-    'run',
-    '//dev:setup-hydra-client',
-    '--',
-    'voucher',
-    'authorization_code,refresh_token',
-    'http://localhost:3006/api/auth/callback/blink',
-  ],
-  allow_parallel = True,
-  resource_deps = [
-    "hydra",
-    "api",
-  ]
-)
-
-local_resource(
-    name="setup-voucher",
-    cmd="buck2 run //dev:setup-voucher-escrow",
-    allow_parallel=False,
-    auto_init=run_apps,
-    resource_deps=["voucher-pg", "api-keys"]
-)
-
 
 api_target = "//core/api:dev"
 if is_ci:

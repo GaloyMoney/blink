@@ -1,3 +1,5 @@
+load('./config.tiltfile', 'run_apps')
+
 LOAD_SYMBOL="<dummy-import-symbol>"
 
 local_resource(
@@ -49,6 +51,45 @@ local_resource(
 )
 
 local_resource(
+  name='init-voucher-hydra-client',
+  labels = ['init'],
+  cmd=[
+    'buck2',
+    'run',
+    '//dev:setup-hydra-client',
+    '--',
+    'voucher',
+    'authorization_code,refresh_token',
+    'http://localhost:3006/api/auth/callback/blink',
+  ],
+  allow_parallel = True,
+  resource_deps = [
+    "hydra",
+    "api",
+  ]
+)
+
+local_resource(
+  name='init-consent-hydra-client',
+  labels = ['init'],
+  cmd=[
+    'buck2',
+    'run',
+    '//dev:setup-hydra-client',
+    '--',
+    'consent-test',
+    'authorization_code,refresh_token',
+    'http://localhost:3000',
+  ],
+  allow_parallel = True,
+  auto_init = run_apps,
+  resource_deps = [
+    "hydra",
+    "api",
+  ]
+)
+
+local_resource(
   name='init-user-funds',
   labels = ['init'],
   cmd='buck2 run //dev:init-user-funds',
@@ -63,4 +104,13 @@ local_resource(
     "stablesats",
     "price",
   ]
+)
+
+local_resource(
+    name="init-voucher-escrow",
+    labels = ['init'],
+    cmd="buck2 run //dev:setup-voucher-escrow",
+    allow_parallel=False,
+    auto_init=run_apps,
+    resource_deps=["voucher-pg", "api-keys"]
 )
