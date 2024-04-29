@@ -85,7 +85,7 @@ impl PersistentNotifications {
         )
         .fetch_one(self.read_pool.inner())
         .await?
-        .expect("count can not be null");
+        .expect("count can not be None");
         Ok(count)
     }
 
