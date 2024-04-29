@@ -39,6 +39,8 @@ export const checkedToEmailAddress = (
   return emailAddress as EmailAddress
 }
 
+export const DefaultLanguage = "" as UserLanguageOrEmpty
+
 export const checkedToLanguage = (
   language: string,
 ): UserLanguageOrEmpty | ValidationError => {

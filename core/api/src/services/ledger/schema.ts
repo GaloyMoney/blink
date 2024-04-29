@@ -163,6 +163,17 @@ transactionSchema.index({ _original_journal: 1 })
 transactionSchema.index({ related_journal: 1 })
 transactionSchema.index({ external_id: 1 })
 
+// indexes used by balance queries
+transactionSchema.index({ book: 1, accounts: 1, currency: 1, _id: 1 })
+transactionSchema.index({
+  "book": 1,
+  "account_path.0": 1,
+  "account_path.1": 1,
+  "account_path.2": 1,
+  "currency": 1,
+  "_id": 1,
+})
+
 setTransactionSchema(transactionSchema, undefined, { defaultIndexes: true })
 
 export const Transaction = mongoose.model<ILedgerTransaction>(
