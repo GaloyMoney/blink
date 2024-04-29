@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE stateful_notifications\n            SET acknowledged = true\n            WHERE id = $1 AND galoy_user_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "67244c394ea81b586990cc33a4197dd9ecb88f78c598deca5ec8696602a1f95a"
+}

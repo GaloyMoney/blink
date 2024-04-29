@@ -105,4 +105,11 @@ impl NotificationHistory {
     ) -> Result<(Vec<StatefulNotification>, bool), NotificationHistoryError> {
         self.repo.list_for_user(user_id, first, after).await
     }
+
+    pub async fn unacknowledged_notifications_count(
+        &self,
+        user_id: GaloyUserId,
+    ) -> Result<i64, NotificationHistoryError> {
+        self.repo.unacknowledged_notifications_count(user_id).await
+    }
 }

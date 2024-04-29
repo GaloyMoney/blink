@@ -59,9 +59,34 @@ impl PersistentNotifications {
         notification: &mut StatefulNotification,
     ) -> Result<(), NotificationHistoryError> {
         let mut tx = self.pool.begin().await?;
+        sqlx::query!(
+            r#"UPDATE stateful_notifications
+            SET acknowledged = true
+            WHERE id = $1 AND galoy_user_id = $2"#,
+            notification.id as StatefulNotificationId,
+            notification.galoy_user_id.as_ref(),
+        )
+        .execute(&mut *tx)
+        .await?;
         notification.events.persist(&mut tx).await?;
         tx.commit().await?;
         Ok(())
+    }
+
+    pub async fn unacknowledged_notifications_count(
+        &self,
+        user_id: GaloyUserId,
+    ) -> Result<i64, NotificationHistoryError> {
+        let count = sqlx::query_scalar!(
+            r#"SELECT COUNT(*)
+            FROM stateful_notifications
+            WHERE galoy_user_id = $1 AND acknowledged = false"#,
+            user_id.as_ref(),
+        )
+        .fetch_one(self.read_pool.inner())
+        .await?
+        .expect("count can not be null");
+        Ok(count)
     }
 
     pub async fn find_by_id(

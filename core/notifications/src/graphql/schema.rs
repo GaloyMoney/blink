@@ -71,6 +71,18 @@ impl User {
         )
         .await
     }
+
+    async fn unacknowledged_stateful_notifications_count(
+        &self,
+        ctx: &Context<'_>,
+    ) -> async_graphql::Result<i64> {
+        let app = ctx.data_unchecked::<NotificationsApp>();
+        let user_id = GaloyUserId::from(self.id.0.clone());
+        let count = app
+            .unacknowledged_stateful_notifications_count(user_id)
+            .await?;
+        Ok::<_, async_graphql::Error>(count)
+    }
 }
 
 #[derive(SimpleObject)]
