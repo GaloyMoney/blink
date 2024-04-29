@@ -308,17 +308,17 @@ impl NotificationsApp {
     }
 
     #[instrument(
-        name = "app.unacknowledged_stateful_notifications_count",
+        name = "app.count_unacknowledged_stateful_notifications",
         skip(self),
         err
     )]
-    pub async fn unacknowledged_stateful_notifications_count(
+    pub async fn count_unacknowledged_stateful_notifications(
         &self,
         user_id: GaloyUserId,
-    ) -> Result<i64, ApplicationError> {
+    ) -> Result<u64, ApplicationError> {
         let count = self
             .history
-            .unacknowledged_notifications_count(user_id)
+            .count_unacknowledged_notifications_for_user(user_id)
             .await?;
         Ok(count)
     }

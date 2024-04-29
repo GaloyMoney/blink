@@ -106,10 +106,10 @@ impl NotificationHistory {
         self.repo.list_for_user(user_id, first, after).await
     }
 
-    pub async fn unacknowledged_notifications_count(
+    pub async fn count_unacknowledged_notifications_for_user(
         &self,
         user_id: GaloyUserId,
-    ) -> Result<i64, NotificationHistoryError> {
-        self.repo.unacknowledged_notifications_count(user_id).await
+    ) -> Result<u64, NotificationHistoryError> {
+        self.repo.count_unacknowledged_for_user(user_id).await
     }
 }

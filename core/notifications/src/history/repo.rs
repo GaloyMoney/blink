@@ -74,20 +74,19 @@ impl PersistentNotifications {
         Ok(())
     }
 
-    pub async fn unacknowledged_notifications_count(
+    pub async fn count_unacknowledged_for_user(
         &self,
         user_id: GaloyUserId,
-    ) -> Result<i64, NotificationHistoryError> {
+    ) -> Result<u64, NotificationHistoryError> {
         let count = sqlx::query_scalar!(
-            r#"SELECT COUNT(*)
+            r#"SELECT COUNT(*) AS "count!"
             FROM stateful_notifications
             WHERE galoy_user_id = $1 AND acknowledged = FALSE"#,
             user_id.as_ref(),
         )
         .fetch_one(self.read_pool.inner())
-        .await?
-        .expect("count can not be None");
-        Ok(count)
+        .await?;
+        Ok(count as u64)
     }
 
     pub async fn find_by_id(
