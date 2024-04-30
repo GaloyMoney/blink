@@ -21,7 +21,7 @@ gql`
   }
 `
 
-export async function getRealtimePriceQuery(token: string) {
+export async function getRealtimePriceQuery({ token }: { token: string }) {
   const client = apollo(token).getClient()
 
   try {

@@ -42,12 +42,17 @@ gql`
   }
 `
 
-export async function createApiKey(
-  token: string,
-  name: string,
-  expireInDays: number | null,
-  scopes: Scope[],
-) {
+export async function createApiKey({
+  token,
+  name,
+  expireInDays,
+  scopes,
+}: {
+  token: string
+  name: string
+  expireInDays: number | null
+  scopes: Scope[]
+}) {
   const client = apollo(token).getClient()
   try {
     const { data } = await client.mutate<ApiKeyCreateMutation>({
@@ -61,7 +66,7 @@ export async function createApiKey(
   }
 }
 
-export async function revokeApiKey(token: string, id: string) {
+export async function revokeApiKey({ token, id }: { token: string; id: string }) {
   const client = apollo(token).getClient()
   try {
     const { data } = await client.mutate<ApiKeyRevokeMutation>({

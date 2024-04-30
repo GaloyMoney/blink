@@ -308,6 +308,22 @@ impl NotificationsApp {
     }
 
     #[instrument(
+        name = "app.count_unacknowledged_stateful_notifications",
+        skip(self),
+        err
+    )]
+    pub async fn count_unacknowledged_stateful_notifications(
+        &self,
+        user_id: GaloyUserId,
+    ) -> Result<u64, ApplicationError> {
+        let count = self
+            .history
+            .count_unacknowledged_notifications_for_user(user_id)
+            .await?;
+        Ok(count)
+    }
+
+    #[instrument(
         name = "app.kickoff_link_email_reminder",
         level = "trace",
         skip_all,

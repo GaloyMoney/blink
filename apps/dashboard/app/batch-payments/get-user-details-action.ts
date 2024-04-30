@@ -16,7 +16,10 @@ export const getUserDetailsAction = async ({ username }: { username: string }) =
     }
   }
 
-  const response = await getWalletDetailsByUsername(token, username)
+  const response = await getWalletDetailsByUsername({
+    token,
+    username,
+  })
   if (response instanceof Error) {
     return {
       error: true,

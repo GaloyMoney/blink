@@ -34,10 +34,10 @@ export default async function VerifyEmail({
   }
 
   if (!emailRegistrationId || typeof emailRegistrationId !== "string") {
-    await deleteEmail(token)
+    await deleteEmail({ token })
     let data: UserEmailRegistrationInitiateMutation | null | undefined
     try {
-      data = await emailRegistrationInitiate(email, token)
+      data = await emailRegistrationInitiate({ email, token })
     } catch (err) {
       console.log("error in emailRegistrationInitiate ", err)
       redirect("/security")

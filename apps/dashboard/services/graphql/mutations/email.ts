@@ -40,7 +40,13 @@ gql`
   }
 `
 
-export async function emailRegistrationInitiate(email: string, token: string) {
+export async function emailRegistrationInitiate({
+  email,
+  token,
+}: {
+  email: string
+  token: string
+}) {
   const client = apollo(token).getClient()
   try {
     const { data } = await client.mutate<UserEmailRegistrationInitiateMutation>({
@@ -54,11 +60,15 @@ export async function emailRegistrationInitiate(email: string, token: string) {
   }
 }
 
-export async function emailRegistrationValidate(
-  code: string,
-  emailRegistrationId: string,
-  token: string,
-) {
+export async function emailRegistrationValidate({
+  emailRegistrationId,
+  code,
+  token,
+}: {
+  emailRegistrationId: string
+  code: string
+  token: string
+}) {
   const client = apollo(token).getClient()
   try {
     const { data } = await client.mutate<UserEmailRegistrationValidateMutation>({
@@ -77,7 +87,7 @@ export async function emailRegistrationValidate(
   }
 }
 
-export async function deleteEmail(token: string) {
+export async function deleteEmail({ token }: { token: string }) {
   const client = apollo(token).getClient()
   try {
     const { data } = await client.mutate<UserEmailDeleteMutation>({

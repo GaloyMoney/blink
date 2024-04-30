@@ -71,7 +71,7 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
       description: dedent`Preferred language for user.
         When value is 'default' the intent is to use preferred language from OS settings.`,
       resolve: async (source) => {
-        return Users.getUserLanguage(source)
+        return Users.getUserLanguage(source.id)
       },
     },
 

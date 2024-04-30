@@ -24,7 +24,7 @@ const SupportChatMessageAddPayload = GT.Object({
   }),
 })
 
-const SupportChatMessageAdd = GT.Field<
+const SupportChatMessageAddMutation = GT.Field<
   null,
   GraphQLPublicContextAuth,
   { input: { message: string } }
@@ -55,4 +55,4 @@ const SupportChatMessageAdd = GT.Field<
   },
 })
 
-export default SupportChatMessageAdd
+export default SupportChatMessageAddMutation

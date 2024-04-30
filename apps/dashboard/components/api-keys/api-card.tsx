@@ -18,7 +18,7 @@ const ApiKeysCard: React.FC<ApiKeysCardProps> = ({
   expiredKeys,
   revokedKeys,
 }: ApiKeysCardProps) => {
-  const renderKeyCards = (keyArray: ApiKey[], title: string) => (
+  const renderKeyCards = ({ keyArray, title }: { keyArray: ApiKey[]; title: string }) => (
     <>
       <Typography fontSize={22}>{title}</Typography>
       {keyArray.length === 0 ? (
@@ -55,9 +55,18 @@ const ApiKeysCard: React.FC<ApiKeysCardProps> = ({
 
   return (
     <>
-      {renderKeyCards(activeKeys, "Active Keys")}
-      {renderKeyCards(revokedKeys, "Revoked Keys")}
-      {renderKeyCards(expiredKeys, "Expired Keys")}
+      {renderKeyCards({
+        keyArray: activeKeys,
+        title: "Active Keys",
+      })}
+      {renderKeyCards({
+        keyArray: revokedKeys,
+        title: "Revoked Keys",
+      })}
+      {renderKeyCards({
+        keyArray: expiredKeys,
+        title: "Expired Keys",
+      })}
     </>
   )
 }

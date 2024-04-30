@@ -33,14 +33,14 @@ export default async function page({
   const numberOfTransactions = 50
   let response
   if (cursor && direction) {
-    response = await fetchPaginatedTransactions(
+    response = await fetchPaginatedTransactions({
       token,
       direction,
       cursor,
-      numberOfTransactions,
-    )
+      first: numberOfTransactions,
+    })
   } else {
-    response = await fetchFirstTransactions(token, numberOfTransactions)
+    response = await fetchFirstTransactions({ token, first: numberOfTransactions })
   }
 
   const rows = response?.edges?.map((edge) => ({ node: edge.node })) ?? []
