@@ -4,7 +4,7 @@ export default defineConfig({
   e2e: {
     baseUrl: "http://localhost:3002",
   },
-  defaultCommandTimeout: 60000,
+  defaultCommandTimeout: 30000,
   component: {
     devServer: {
       framework: "next",
