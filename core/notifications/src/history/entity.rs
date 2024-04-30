@@ -82,6 +82,10 @@ impl StatefulNotification {
             .entity_first_persisted_at
             .expect("entity_first_persisted_at is set at time on entity creation")
     }
+
+    pub fn add_to_bulletin(&self) -> bool {
+        self.payload.should_be_added_to_bulletin()
+    }
 }
 
 #[derive(Debug, Builder, Clone)]
