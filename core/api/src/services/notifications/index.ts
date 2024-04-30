@@ -618,7 +618,7 @@ export const NotificationsService = (): INotificationsService => {
         if (protoDeepLinkAction !== undefined) deepLink.setAction(protoDeepLinkAction)
       }
 
-      let marketingNotificationRequests: Promise<HandleNotificationEventResponse>[] = []
+      const marketingNotificationRequests: Promise<HandleNotificationEventResponse>[] = []
       for (let i = 0; i < userIds.length; i += MARKETING_NOTIFICATION_USER_BATCH_SIZE) {
         const userIdsBatch = userIds.slice(i, i + MARKETING_NOTIFICATION_USER_BATCH_SIZE)
         const marketingNotification = new MarketingNotificationTriggered()

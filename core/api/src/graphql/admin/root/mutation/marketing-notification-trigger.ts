@@ -5,7 +5,7 @@ import { Admin } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import DeepLinkScreen from "@/graphql/admin/types/scalar/deep-link-screen"
 import SuccessPayload from "@/graphql/shared/types/payload/success-payload"
-import DeepLinkAction from "../../types/scalar/deep-link-action"
+import DeepLinkAction from "@/graphql/admin/types/scalar/deep-link-action"
 
 const LocalizedNotificationContentInput = GT.Input({
   name: "LocalizedNotificationContentInput",

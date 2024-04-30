@@ -67,7 +67,7 @@ impl UserNotificationSettingsRepo {
     ) -> Result<Vec<UserNotificationSettings>, UserNotificationSettingsError> {
         let mut n_ids = 0;
         let ids = user_ids
-            .into_iter()
+            .iter()
             .map(|id| {
                 n_ids += 1;
                 id.to_string()
@@ -95,10 +95,10 @@ impl UserNotificationSettingsRepo {
             .collect::<std::collections::HashMap<_, _>>();
 
         let user_notification_settings_or_default: Vec<UserNotificationSettings> = user_ids
-            .into_iter()
+            .iter()
             .map(|id| {
                 existing_user_notification_settings_map
-                    .remove(&id)
+                    .remove(id)
                     .unwrap_or_else(|| UserNotificationSettings::new(id.clone()))
             })
             .collect();

@@ -1,12 +1,12 @@
 import {
   InvalidNotificationCategoryError,
   InvalidNotificationBodyError,
-  InvalidPushNotificationSettingError,
   InvalidNotificationTitleError,
   checkedToLocalizedNotificationBody,
   checkedToLocalizedNotificationContentsMap,
   checkedToLocalizedNotificationTitle,
   checkedToNotificationCategory,
+  DuplicateLocalizedNotificationContentError,
 } from "@/domain/notifications"
 
 describe("checkedToNotificationCategory", () => {
@@ -63,7 +63,7 @@ describe("localized push contents map check", () => {
       { title: "Title", body: "Body", language: "en" },
     ]
     expect(checkedToLocalizedNotificationContentsMap(contents)).toBeInstanceOf(
-      InvalidPushNotificationSettingError,
+      DuplicateLocalizedNotificationContentError,
     )
   })
 
