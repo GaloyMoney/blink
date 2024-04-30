@@ -141,7 +141,13 @@ gql`
   }
 `
 
-export async function fetchFirstTransactions(token: string, first: number = 10) {
+export async function fetchFirstTransactions({
+  token,
+  first,
+}: {
+  token: string
+  first: number
+}) {
   const client = apollo(token).getClient()
 
   try {
@@ -159,12 +165,17 @@ export async function fetchFirstTransactions(token: string, first: number = 10) 
   }
 }
 
-export async function fetchPaginatedTransactions(
-  token: string,
-  direction: "next" | "previous",
-  cursor: string | null = null,
-  first: number = 10,
-) {
+export async function fetchPaginatedTransactions({
+  token,
+  first,
+  cursor,
+  direction,
+}: {
+  token: string
+  first: number
+  cursor: string | null
+  direction: "next" | "previous"
+}) {
   const client = apollo(token).getClient()
 
   let variables: {

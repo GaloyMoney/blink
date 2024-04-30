@@ -47,7 +47,7 @@ gql`
   }
 `
 
-export async function userTotpRegistrationInitiate(token: string) {
+export async function userTotpRegistrationInitiate({ token }: { token: string }) {
   const client = apollo(token).getClient()
   try {
     const { data } = await client.mutate<UserTotpRegistrationInitiateMutation>({
@@ -60,11 +60,15 @@ export async function userTotpRegistrationInitiate(token: string) {
   }
 }
 
-export async function userTotpRegistrationValidate(
-  totpCode: string,
-  totpRegistrationId: string,
-  token: string,
-) {
+export async function userTotpRegistrationValidate({
+  token,
+  totpRegistrationId,
+  totpCode,
+}: {
+  token: string
+  totpRegistrationId: string
+  totpCode: string
+}) {
   const client = apollo(token).getClient()
   try {
     const { data } = await client.mutate<UserTotpRegistrationValidateMutation>({
@@ -83,7 +87,7 @@ export async function userTotpRegistrationValidate(
   }
 }
 
-export async function userTotpDelete(token: string) {
+export async function userTotpDelete({ token }: { token: string }) {
   const client = apollo(token).getClient()
   try {
     const { data } = await client.mutate<UserTotpDeleteMutation>({

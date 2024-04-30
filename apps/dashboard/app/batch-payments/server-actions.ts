@@ -31,7 +31,9 @@ export const processPaymentsServerAction = async (records: ProcessedRecords[]) =
 
   const btcWallet = getBTCWallet(session.userData.data)
   const usdWallet = getUSDWallet(session.userData.data)
-  const realtimePrice = await getRealtimePriceQuery(token)
+  const realtimePrice = await getRealtimePriceQuery({
+    token,
+  })
   if (realtimePrice instanceof Error) {
     return {
       error: true,
@@ -160,7 +162,7 @@ export const validatePaymentDetail = async (
     }
   }
 
-  const realtimePrice = await getRealtimePriceQuery(token)
+  const realtimePrice = await getRealtimePriceQuery({ token })
   if (realtimePrice instanceof Error) {
     return {
       error: true,

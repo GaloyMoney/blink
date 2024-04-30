@@ -31,7 +31,13 @@ gql`
     }
   }
 `
-export async function callbackEndpointAdd(url: string, token: string) {
+export async function callbackEndpointAdd({
+  url,
+  token,
+}: {
+  url: string
+  token: string
+}) {
   const client = apollo(token).getClient()
   try {
     const { data } = await client.mutate<CallbackEndpointAddMutation>({
@@ -45,7 +51,13 @@ export async function callbackEndpointAdd(url: string, token: string) {
   }
 }
 
-export async function callbackEndpointDelete(id: string, token: string) {
+export async function callbackEndpointDelete({
+  token,
+  id,
+}: {
+  token: string
+  id: string
+}) {
   const client = apollo(token).getClient()
   try {
     const { data } = await client.mutate<CallbackEndpointDeleteMutation>({

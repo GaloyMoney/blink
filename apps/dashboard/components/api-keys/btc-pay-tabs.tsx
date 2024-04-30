@@ -31,7 +31,13 @@ const BtcPayConnectionGroup = ({ apiKeySecret, btcWalletId, usdWalletId }: Props
     )
   }
 
-  const renderConnectionStringBox = (walletId: string, walletType: string) => (
+  const renderConnectionStringBox = ({
+    walletId,
+    walletType,
+  }: {
+    walletId: string
+    walletType: string
+  }) => (
     <Box
       sx={{
         display: "flex",
@@ -71,8 +77,14 @@ const BtcPayConnectionGroup = ({ apiKeySecret, btcWalletId, usdWalletId }: Props
         gap: "1em",
       }}
     >
-      {renderConnectionStringBox(btcWalletId, "BTC")}
-      {renderConnectionStringBox(usdWalletId, "USD")}
+      {renderConnectionStringBox({
+        walletId: btcWalletId,
+        walletType: "BTC",
+      })}
+      {renderConnectionStringBox({
+        walletId: usdWalletId,
+        walletType: "USD",
+      })}
     </Box>
   )
 }
