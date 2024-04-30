@@ -34,7 +34,7 @@ gql`
   }
 `
 
-export async function fetchUserData(token: string) {
+export async function fetchUserData({ token }: { token: string }) {
   const client = apollo(token).getClient()
 
   try {

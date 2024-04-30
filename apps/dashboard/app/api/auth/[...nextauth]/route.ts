@@ -61,7 +61,7 @@ export const authOptions: AuthOptions = {
         throw new Error("Invalid token")
       }
 
-      const userData = await fetchUserData(token.accessToken)
+      const userData = await fetchUserData({ token: token.accessToken })
       session.sub = token.sub
       session.accessToken = token.accessToken
       session.userData = userData

@@ -16,7 +16,7 @@ gql`
   }
 `
 
-export async function fetchCallbackData(token: string) {
+export async function fetchCallbackData({ token }: { token: string }) {
   const client = apollo(token).getClient()
   try {
     const response = await client.query<CallbackEndpointsQuery>({

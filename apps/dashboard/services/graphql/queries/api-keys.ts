@@ -21,7 +21,7 @@ gql`
   }
 `
 
-export async function apiKeys(token: string) {
+export async function apiKeys({ token }: { token: string }) {
   const client = apollo(token).getClient()
 
   try {

@@ -14,7 +14,13 @@ gql`
     }
   }
 `
-export async function getWalletDetailsByUsername(token: string, username: string) {
+export async function getWalletDetailsByUsername({
+  token,
+  username,
+}: {
+  token: string
+  username: string
+}) {
   const client = apollo(token).getClient()
 
   try {
