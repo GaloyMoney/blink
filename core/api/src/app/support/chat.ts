@@ -3,6 +3,7 @@ import { RepositoryError, CouldNotFindError } from "@/domain/errors"
 import { ChatAssistantNotFoundError } from "@/domain/support/errors"
 import { AccountsRepository, UsersRepository } from "@/services/mongoose"
 import { SupportChatRepository } from "@/services/mongoose/support-chat"
+import { NotificationsService } from "@/services/notifications"
 import { Assistant } from "@/services/openai"
 
 const getMessages = async ({
@@ -34,7 +35,9 @@ export const initializeSupportChat = async ({
 
   const countryCode = user.phoneMetadata?.countryCode ?? "unknown"
   const level = account.level
-  const language = await Users.getUserLanguage(user.id)
+  const setting = await NotificationsService().getUserNotificationSettings(user.id)
+  if (setting instanceof Error) return setting
+  const language = setting.language ?? "en"
 
   const supportChatId = await Assistant().initialize({
     level,
