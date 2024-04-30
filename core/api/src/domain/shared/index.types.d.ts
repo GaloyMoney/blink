@@ -41,6 +41,7 @@ type BalanceAmount<T extends WalletCurrency> = Amount<T> & {
 type PartialWalletDescriptor<T extends WalletCurrency> = {
   id: WalletId
   currency: T
+  accountId?: AccountId // TODO: unify when we migrate accountId to invoices collection
 }
 type WalletDescriptor<T extends WalletCurrency> = PartialWalletDescriptor<T> & {
   accountId: AccountId

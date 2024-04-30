@@ -22,12 +22,12 @@ export const addEndpoint = async ({
   if (accountId instanceof Error) return accountId
 
   const callbackService = CallbackService(getCallbackServiceConfig())
-  const res = await callbackService.addEndpoint({ accountId, url })
+  const endpointId = await callbackService.addEndpoint({ accountId, url })
 
-  if (res instanceof Error) return res
-  if (!res) throw new UnknownSvixError("CallbackService not configured")
+  if (endpointId instanceof Error) return endpointId
+  if (!endpointId) throw new UnknownSvixError("CallbackService not configured")
 
-  return { id: res.id }
+  return { id: endpointId }
 }
 
 export const listEndpoints = async (accountIdRaw: string) => {
@@ -35,10 +35,7 @@ export const listEndpoints = async (accountIdRaw: string) => {
   if (accountId instanceof Error) return accountId
 
   const callbackService = CallbackService(getCallbackServiceConfig())
-  const res = await callbackService.listEndpoints(accountId)
-
-  if (res instanceof Error) return res
-  return res
+  return callbackService.listEndpoints(accountId)
 }
 
 export const deleteEndpoint = async ({
@@ -49,8 +46,10 @@ export const deleteEndpoint = async ({
   id: string
 }) => {
   const callbackService = CallbackService(getCallbackServiceConfig())
-  const success = await callbackService.deleteEndpoint({ accountId, endpointId: id })
+  return callbackService.deleteEndpoint({ accountId, endpointId: id })
+}
 
-  if (success instanceof Error) return success
-  return success
+export const getPortalUrl = async ({ accountId }: { accountId: AccountId }) => {
+  const callbackService = CallbackService(getCallbackServiceConfig())
+  return callbackService.getPortalUrl(accountId)
 }
