@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump @storybook/addon-interactions from 7.6.3 to 8.0.9
-        (#4373)...'
-      sha: 96e2eb40190762760fb1e11330d36e23604c2f5b
+      commitTitle: 'chore(map): adding health endpoint (#4391)'
+      sha: 68db96a8736db1cf81385d7cbd4b16747a1eec5d
       tags:
-      - 0.20.173-3-g96e2eb401
+      - 0.20.174-1-g68db96a87
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump @storybook/addon-interactions from 7.6.3 to 8.0.9
-        (#4373)...'
-      sha: 96e2eb40190762760fb1e11330d36e23604c2f5b
+      commitTitle: 'chore(map): adding health endpoint (#4391)'
+      sha: 68db96a8736db1cf81385d7cbd4b16747a1eec5d
       tags:
-      - 0.20.173-3-g96e2eb401
+      - 0.20.174-1-g68db96a87
     path: schemas
   - git:
-      commitTitle: 'chore: bump @storybook/addon-interactions from 7.6.3 to 8.0.9
-        (#4373)...'
-      sha: 96e2eb40190762760fb1e11330d36e23604c2f5b
+      commitTitle: 'chore(map): adding health endpoint (#4391)'
+      sha: 68db96a8736db1cf81385d7cbd4b16747a1eec5d
       tags:
-      - 0.20.173-3-g96e2eb401
+      - 0.20.174-1-g68db96a87
     path: gql
   path: graphql
 kind: LockConfig
