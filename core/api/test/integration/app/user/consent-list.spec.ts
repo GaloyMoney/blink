@@ -1,95 +1,82 @@
+import { Admin } from "@/app"
 import { consentList } from "@/services/hydra"
-import axios from "axios"
-
-import { createUserAndWalletFromPhone, getUserIdByPhone, randomPhone } from "test/helpers"
+import { sleep } from "@/utils"
+import { exec } from "child_process"
+import puppeteer from "puppeteer"
 
 let userId: UserId
-const phone = randomPhone()
-// const phone = "+14152991378" as PhoneNumber
-
-const redirectUri = "http://localhost/callback"
-const scope = "offline read write"
-const grant_types = ["authorization_code", "refresh_token"]
+const email = "test@galoy.io" as EmailAddress
 
 beforeAll(async () => {
-  await createUserAndWalletFromPhone(phone)
-  userId = await getUserIdByPhone(phone)
+  const account = await Admin.getAccountByUserEmail(email)
+  if (account instanceof Error) throw account
+
+  userId = account.kratosUserId
 })
 
-async function createOAuthClient() {
-  const hydraAdminUrl = "http://localhost:4445/admin/clients"
-
-  try {
-    const response = await axios.post(hydraAdminUrl, {
-      client_name: "integration_test",
-      grant_types,
-      response_types: ["code", "id_token"],
-      redirect_uris: [redirectUri],
-      scope,
-      skip_consent: true,
+const getOTP = (email: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const query = `docker exec -i galoy-dev-kratos-pg-1 psql -U dbuser -d default -t -c "SELECT body FROM courier_messages WHERE recipient='${email}' ORDER BY created_at DESC LIMIT 1;"`
+    exec(query, (error, stdout, stderr) => {
+      if (error) {
+        reject(`error: ${error.message}`)
+        return
+      }
+      if (stderr) {
+        reject(`stderr: ${stderr}`)
+        return
+      }
+      const otpMatch = stdout.match(/(\d{6})/)
+      if (otpMatch && otpMatch[1]) {
+        resolve(otpMatch[1])
+      } else {
+        reject("OTP not found in the message")
+      }
     })
-
-    const clientId = response.data.client_id
-    const clientSecret = response.data.client_secret
-
-    return { clientId, clientSecret }
-  } catch (error) {
-    console.error("Error creating OAuth client:", error.response)
-  }
+  })
 }
 
-async function performOAuthLogin({
-  clientId,
-  clientSecret,
-}: {
-  clientId: string
-  clientSecret: string
-}) {
-  // create oauth2 client
+async function performOAuthLogin() {
+  const screenshots = false
 
-  const responseType = "code"
-  const randomState = "MKfNw-q60talMJ4GU_h1kHFvcPtnQkZI0XLpTkHvJL4"
+  const browser = await puppeteer.launch()
+  // const browser = await puppeteer.launch({ headless: true })
+  const page = await browser.newPage()
 
-  const authUrl = `http://localhost:4444/oauth2/auth?response_type=${responseType}&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&state=${randomState}`
+  // Navigate the page to a URL
+  await page.goto("http://localhost:3001/api/auth/signin")
 
-  // https://oauth.blink.sv/oauth2/auth?client_id=73ae7c3e-e526-412a-856c-25d1ae0cbc55&scope=read%20write&response_type=code&redirect_uri=https%3A%2F%2Fdashboard.blink.sv%2Fapi%2Fauth%2Fcallback%2Fblink&state=MKfNw-q60talMJ4GU_h1kHFvcPtnQkZI0XLpTkHvJL4
+  screenshots && (await page.screenshot({ path: "screenshot0.png" }))
 
-  // Simulate user going to the authorization URL and logging in
-  // This part would require a real user interaction or a browser automation tool like puppeteer
+  await page.waitForSelector(".button")
+  await page.click(".button")
 
-  let data
-  try {
-    const res = await axios.get(authUrl)
-    data = res.data
-  } catch (error) {
-    console.error("Error getting auth URL:", error)
-    return
-  }
+  screenshots && (await page.screenshot({ path: "screenshot1.png" }))
 
-  // You need to extract the code from the callback response
-  const code = data.code // Simplified: Actual extraction depends on your OAuth provider
+  await page.waitForSelector('[data-testid="email_id_input"]')
+  await page.waitForFunction(
+    "document.querySelector(\"[data-testid='email_id_input']\").isConnected",
+  )
+  await page.type('[data-testid="email_id_input"]', email)
+  screenshots && (await page.screenshot({ path: "screenshot2.png" }))
+  await sleep(250)
 
-  console.log("data", data)
-  console.log("code", code)
+  await page.click("#accept")
 
-  try {
-    // Exchange the code for a token
-    const tokenResponse = await axios.post("http://localhost:4444/oauth2/token", {
-      code,
-      redirect_uri: redirectUri,
-      client_id: clientId,
-      client_secret: clientSecret,
-      grant_type: "authorization_code",
-    })
+  await sleep(500)
+  screenshots && (await page.screenshot({ path: "screenshot3.png" }))
 
-    const accessToken = tokenResponse.data.access_token
+  const otp = await getOTP(email)
 
-    // Use the access token to get user info or other secured resources
-    // Update the consent list as needed
-    return accessToken // This might be used for further secured requests
-  } catch (error) {
-    console.error("Error exchanging code for token:", error)
-  }
+  await page.waitForSelector("#code")
+  await page.type("#code", otp, { delay: 100 })
+
+  screenshots && (await page.screenshot({ path: "screenshot4.png" }))
+  await sleep(1500)
+  screenshots && (await page.screenshot({ path: "screenshot5.png" }))
+
+  await page.close()
+  await browser.close()
 }
 
 describe("Hydra", () => {
@@ -99,12 +86,16 @@ describe("Hydra", () => {
   })
 
   it("get consent list when the user had perform oauth2 login", async () => {
-    const res = await createOAuthClient()
-    if (!res) return
-    const { clientId, clientSecret } = res
-    console.log("clientId", clientId, "clientSecret", clientSecret)
+    await performOAuthLogin()
 
-    const accessToken = await performOAuthLogin({ clientId, clientSecret })
-    console.log("accessToken", accessToken)
+    const res = await consentList(userId)
+    expect(res).toEqual([
+      {
+        app: "dashboard",
+        handledAt: expect.any(Date),
+        remember: false,
+        scope: ["read", "write"],
+      },
+    ])
   })
 })

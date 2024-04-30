@@ -18,7 +18,8 @@ export const consentList = async (userId: UserId): Promise<ConsentSession[]> => 
   let sessions: ConsentSession[]
 
   try {
-    console.dir(res.data, { depth: null })
+    /* eslint @typescript-eslint/ban-ts-comment: "off" */
+    // @ts-ignore-next-line no-implicit-any error
     sessions = res.data.map((request) => ({
       scope: request.grant_scope,
       handledAt: new Date(request.handled_at),

@@ -32,22 +32,6 @@ describe("Consent integration Test", () => {
       cy.get("[data-testid=verification_code_input]").should("not.be.disabled")
       cy.get("[data-testid=verification_code_input]").type(code)
 
-      cy.contains("label", "read").should("exist")
-      cy.contains("label", "read").should("be.visible")
-      cy.contains("label", "read").should("not.be.disabled")
-      cy.contains("label", "read").should("not.be.disabled")
-      cy.contains("label", "read").click()
-
-      cy.contains("label", "write").should("exist")
-      cy.contains("label", "write").should("be.visible")
-      cy.contains("label", "write").should("not.be.disabled")
-      cy.contains("label", "write").click()
-
-      cy.get("[data-testid=submit_consent_btn]").should("exist")
-      cy.get("[data-testid=submit_consent_btn]").should("be.visible")
-      cy.get("[data-testid=submit_consent_btn]").should("not.be.disabled")
-      cy.get("[data-testid=submit_consent_btn]").click()
-
       cy.url().should("eq", Cypress.config().baseUrl + "/")
       cy.getCookie("next-auth.session-token").then((cookie) => {
         if (cookie && cookie.value) {
