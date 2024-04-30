@@ -1,7 +1,7 @@
 #!/bin/bash
 
-curl -fsS https://raw.githubusercontent.com/GaloyMoney/galoy-mobile/main/app/graphql/generated.gql -o main.gql
-curl -fsS https://raw.githubusercontent.com/GaloyMoney/galoy-mobile/main/supergraph.graphql -o supergraph.graphql
+curl -fsS https://raw.githubusercontent.com/GaloyMoney/blink-mobile/main/app/graphql/generated.gql -o main.gql
+curl -fsS https://raw.githubusercontent.com/GaloyMoney/blink-mobile/main/supergraph.graphql -o supergraph.graphql
 
 echo Checking compatibility with current main branch of galoy-mobile
 npx @graphql-inspector/cli validate ./main.gql ./supergraph.graphql --apollo --noStrictFragments
