@@ -201,7 +201,7 @@ local_resource(
     readiness_probe = probe(
         period_secs  = 5,
         http_get = http_get_action(
-            path = "/",
+            path = "/api/health",
             port = 3005,
         ),
     ),
