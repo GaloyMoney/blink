@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(map): adding health endpoint (#4391)'
-      sha: 68db96a8736db1cf81385d7cbd4b16747a1eec5d
+      commitTitle: 'feat: reissue chatbotId when errored (#4387)...'
+      sha: 9f839cef0d284005d9bed0373ab597392ad4d775
       tags:
-      - 0.20.174-1-g68db96a87
+      - 0.20.175-2-g9f839cef0
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(map): adding health endpoint (#4391)'
-      sha: 68db96a8736db1cf81385d7cbd4b16747a1eec5d
+      commitTitle: 'feat: reissue chatbotId when errored (#4387)...'
+      sha: 9f839cef0d284005d9bed0373ab597392ad4d775
       tags:
-      - 0.20.174-1-g68db96a87
+      - 0.20.175-2-g9f839cef0
     path: schemas
   - git:
-      commitTitle: 'chore(map): adding health endpoint (#4391)'
-      sha: 68db96a8736db1cf81385d7cbd4b16747a1eec5d
+      commitTitle: 'feat: reissue chatbotId when errored (#4387)...'
+      sha: 9f839cef0d284005d9bed0373ab597392ad4d775
       tags:
-      - 0.20.174-1-g68db96a87
+      - 0.20.175-2-g9f839cef0
     path: gql
   path: graphql
 kind: LockConfig
