@@ -21,6 +21,8 @@ export async function POST(request: Request) {
   returnUrl = returnUrl || request.referrer
 
   const response = NextResponse.redirect(`${request.url}/${hash}`)
-  response.headers.set("x-return-url", returnUrl)
+  if (returnUrl !== "about:client") {
+    response.headers.set("x-return-url", returnUrl)
+  }
   return response
 }

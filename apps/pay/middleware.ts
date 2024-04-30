@@ -31,6 +31,8 @@ async function checkoutMiddleware(request: NextRequest) {
   returnUrl = returnUrl || request.referrer
 
   const response = NextResponse.next({ request })
-  response.headers.set("x-return-url", returnUrl)
+  if (returnUrl !== "about:client") {
+    response.headers.set("x-return-url", returnUrl)
+  }
   return response
 }
