@@ -25,22 +25,18 @@ setup_file() {
   [[ "$language" == "$new_language" ]] || exit 1
 }
 
-@test "support: default support message result" {
+@test "support: ask 2 questions and then reset the chat" {
   exec_graphql 'alice' 'support-chat'
-  language="$(graphql_output '.data.me.supportChat')"
-  
-  # expect an empty array
-  [[ "$language" == "[]" ]] || exit 1
-}
+  messages="$(graphql_output '.data.me.supportChat')"
+  [[ "$messages" == "[]" ]] || exit 1
 
-@test "support: ask 2 questions" {
   local variables=$(
     jq -n \
     '{input: {message: "Hello"}}'
   )
   exec_graphql 'alice' 'support-chat-message-add' "$variables"
-  language="$(graphql_output '.data.supportChatMessageAdd.supportMessage')"
-  length=$(echo "$language" | jq '. | length')
+  messages="$(graphql_output '.data.supportChatMessageAdd.supportMessage')"
+  length=$(echo "$messages" | jq '. | length')
   [[ $length -eq 4 ]] || exit 1
 
   local variables=$(
@@ -48,7 +44,16 @@ setup_file() {
     '{input: {message: "My transaction is stuck"}}'
   )
   exec_graphql 'alice' 'support-chat-message-add' "$variables"
-  language="$(graphql_output '.data.supportChatMessageAdd.supportMessage')"
-  length=$(echo "$language" | jq '. | length')
+  messages="$(graphql_output '.data.supportChatMessageAdd.supportMessage')"
+  length=$(echo "$messages" | jq '. | length')
   [[ $length -eq 6 ]] || exit 1
+
+  exec_graphql 'alice' 'support-chat-reset' "$variables"
+  success="$(graphql_output '.data.supportChatReset.success')"
+  [[ "$success" == "true" ]] || exit 1
+
+  exec_graphql 'alice' 'support-chat'
+  messages="$(graphql_output '.data.me.supportChat')"
+  length=$(echo "$messages" | jq '. | length')
+  [[ $length -eq 2 ]] || exit 1
 }

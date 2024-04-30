@@ -1,18 +1,10 @@
-import { Callback } from "@/app"
+import { SupportChat } from "@/app"
 
 import { GT } from "@/graphql/index"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
-import EndpointId from "@/graphql/public/types/scalar/endpoint-id"
 import SuccessPayload from "@/graphql/shared/types/payload/success-payload"
 
-const CallbackEndpointDeleteInput = GT.Input({
-  name: "CallbackEndpointDeleteInput",
-  fields: () => ({
-    id: { type: GT.NonNull(EndpointId) },
-  }),
-})
-
-const CallbackEndpointDeleteMutation = GT.Field<
+const SupportChatResetMutation = GT.Field<
   null,
   GraphQLPublicContextAuth,
   { input: { id: string } }
@@ -21,15 +13,9 @@ const CallbackEndpointDeleteMutation = GT.Field<
     complexity: 120,
   },
   type: GT.NonNull(SuccessPayload),
-  args: {
-    input: { type: GT.NonNull(CallbackEndpointDeleteInput) },
-  },
   resolve: async (_, args, { domainAccount }: { domainAccount: Account }) => {
-    const { id } = args.input
-
-    const result = await Callback.deleteEndpoint({
+    const result = await SupportChat.initializeSupportChat({
       accountId: domainAccount.id,
-      id,
     })
 
     if (result instanceof Error) {
@@ -38,9 +24,9 @@ const CallbackEndpointDeleteMutation = GT.Field<
 
     return {
       errors: [],
-      success: result,
+      success: Boolean(result),
     }
   },
 })
 
-export default CallbackEndpointDeleteMutation
+export default SupportChatResetMutation
