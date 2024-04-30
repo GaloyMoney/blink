@@ -486,6 +486,15 @@ type CurrencyConversionEstimation
   usdCentAmount: CentAmount!
 }
 
+type Delegation
+  @join__type(graph: PUBLIC)
+{
+  app: String!
+  handledAt: Timestamp!
+  remember: Boolean!
+  scope: [String!]!
+}
+
 type DepositFeesInformation
   @join__type(graph: PUBLIC)
 {
@@ -2084,6 +2093,9 @@ type User
   contacts: [UserContact!]! @join__field(graph: PUBLIC) @deprecated(reason: "will be moved to account")
   createdAt: Timestamp! @join__field(graph: PUBLIC)
   defaultAccount: Account! @join__field(graph: PUBLIC)
+
+  """List of Oauth2 delegations"""
+  delegations: [Delegation!]! @join__field(graph: PUBLIC)
 
   """Email address"""
   email: Email @join__field(graph: PUBLIC)

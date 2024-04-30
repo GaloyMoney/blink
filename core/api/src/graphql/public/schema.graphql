@@ -354,6 +354,13 @@ type CurrencyConversionEstimation {
   usdCentAmount: CentAmount!
 }
 
+type Delegation {
+  app: String!
+  handledAt: Timestamp!
+  remember: Boolean!
+  scope: [String!]!
+}
+
 type DepositFeesInformation {
   minBankFee: String!
 
@@ -1594,6 +1601,9 @@ type User {
   contacts: [UserContact!]! @deprecated(reason: "will be moved to account")
   createdAt: Timestamp!
   defaultAccount: Account!
+
+  """List of Oauth2 delegations"""
+  delegations: [Delegation!]!
 
   """Email address"""
   email: Email

@@ -2,7 +2,9 @@ import axios, { AxiosResponse } from "axios"
 
 const hydraUrl = process.env.HYDRA_ADMIN_URL || "http://localhost:4445"
 
-export const consentList = async (userId: UserId): Promise<ConsentSession[]> => {
+export const consentList = async (userId: UserId): Promise<Delegation[]> => {
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   let res: AxiosResponse<any, any>
 
   try {
@@ -15,7 +17,7 @@ export const consentList = async (userId: UserId): Promise<ConsentSession[]> => 
     return []
   }
 
-  let sessions: ConsentSession[]
+  let sessions: Delegation[]
 
   try {
     /* eslint @typescript-eslint/ban-ts-comment: "off" */

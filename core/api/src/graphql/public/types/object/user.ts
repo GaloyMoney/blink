@@ -4,6 +4,7 @@ import Account from "../abstract/account"
 
 import SupportMessage from "./support-message"
 import AccountContact from "./account-contact"
+import Delegation from "./deleguation"
 
 import { Accounts, Users, SupportChat } from "@/app"
 
@@ -19,7 +20,7 @@ import Language from "@/graphql/shared/types/scalar/language"
 import Username from "@/graphql/shared/types/scalar/username"
 import Timestamp from "@/graphql/shared/types/scalar/timestamp"
 import GraphQLEmail from "@/graphql/shared/types/object/email"
-import MobileSession from "./mobile-session"
+import MobileSession from "@/graphql/public/types/object/mobile-session"
 
 const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
   name: "User",
@@ -81,6 +82,14 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
       description: "List of mobile sessions",
       resolve: async (source, args, { user }) => {
         return Users.listMobileSessions(user.id)
+      },
+    },
+
+    delegations: {
+      type: GT.NonNullList(Delegation),
+      description: "List of Oauth2 delegations",
+      resolve: async (source, args, { user }) => {
+        return Users.listDeleguations(user.id)
       },
     },
 

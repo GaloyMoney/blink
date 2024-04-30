@@ -1,11 +1,10 @@
+import { consentList } from "@/services/hydra"
 import { listSessions as listSessionsService } from "@/services/kratos"
 
 export const listMobileSessions = async (userId: UserId) => {
-  const list = await listSessionsService(userId)
-  console.dir(list)
-  return list
+  return listSessionsService(userId)
 }
 
-export const listDeleguateSessions = async (userId: UserId) => {
-  
+export const listDeleguations = async (userId: UserId) => {
+  return consentList(userId)
 }

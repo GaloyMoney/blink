@@ -1,8 +1,9 @@
+import { exec } from "child_process"
+import puppeteer from "puppeteer"
+
 import { Admin } from "@/app"
 import { consentList } from "@/services/hydra"
 import { sleep } from "@/utils"
-import { exec } from "child_process"
-import puppeteer from "puppeteer"
 
 let userId: UserId
 const email = "test@galoy.io" as EmailAddress

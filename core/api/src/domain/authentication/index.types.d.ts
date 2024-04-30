@@ -68,7 +68,7 @@ type MobileSession = {
   issuedAt: Date
 }
 
-type ConsentSession = {
+type Delegation = {
   scope: string[]
   handledAt: Date
   remember: boolean

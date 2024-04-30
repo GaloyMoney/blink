@@ -449,6 +449,14 @@ export type CurrencyConversionEstimation = {
   readonly usdCentAmount: Scalars['CentAmount']['output'];
 };
 
+export type Delegation = {
+  readonly __typename: 'Delegation';
+  readonly app: Scalars['String']['output'];
+  readonly handledAt: Scalars['Timestamp']['output'];
+  readonly remember: Scalars['Boolean']['output'];
+  readonly scope: ReadonlyArray<Scalars['String']['output']>;
+};
+
 export type DepositFeesInformation = {
   readonly __typename: 'DepositFeesInformation';
   readonly minBankFee: Scalars['String']['output'];
@@ -1921,6 +1929,8 @@ export type User = {
   readonly contacts: ReadonlyArray<UserContact>;
   readonly createdAt: Scalars['Timestamp']['output'];
   readonly defaultAccount: Account;
+  /** List of Oauth2 delegations */
+  readonly delegations: ReadonlyArray<Delegation>;
   /** Email address */
   readonly email?: Maybe<Email>;
   readonly id: Scalars['ID']['output'];
