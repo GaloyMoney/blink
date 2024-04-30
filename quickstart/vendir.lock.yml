@@ -2,27 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(notifications): expose unacknowledgedStatefulNotificationsCount
-        field (#4384)...'
-      sha: 00a325d42299496676547bfe1e2f3084bdb85acd
+      commitTitle: 'chore: bump @storybook/addon-interactions from 7.6.3 to 8.0.9
+        (#4373)...'
+      sha: 96e2eb40190762760fb1e11330d36e23604c2f5b
       tags:
-      - 0.20.172-2-g00a325d42
+      - 0.20.173-3-g96e2eb401
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(notifications): expose unacknowledgedStatefulNotificationsCount
-        field (#4384)...'
-      sha: 00a325d42299496676547bfe1e2f3084bdb85acd
+      commitTitle: 'chore: bump @storybook/addon-interactions from 7.6.3 to 8.0.9
+        (#4373)...'
+      sha: 96e2eb40190762760fb1e11330d36e23604c2f5b
       tags:
-      - 0.20.172-2-g00a325d42
+      - 0.20.173-3-g96e2eb401
     path: schemas
   - git:
-      commitTitle: 'feat(notifications): expose unacknowledgedStatefulNotificationsCount
-        field (#4384)...'
-      sha: 00a325d42299496676547bfe1e2f3084bdb85acd
+      commitTitle: 'chore: bump @storybook/addon-interactions from 7.6.3 to 8.0.9
+        (#4373)...'
+      sha: 96e2eb40190762760fb1e11330d36e23604c2f5b
       tags:
-      - 0.20.172-2-g00a325d42
+      - 0.20.173-3-g96e2eb401
     path: gql
   path: graphql
 kind: LockConfig
