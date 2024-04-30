@@ -17,39 +17,32 @@ import { decodeInvoice } from "@/components/utils"
 
 export default function Invoice({ title, paymentRequest, status }: InvoiceProps) {
   const [seconds, setSeconds] = useState(0)
-  const [minutes, setMinutes] = useState(0)
   const [copied, setCopied] = useState(false)
-  const [shareState, setShareState] = useState<string>()
-  const [errorMessage, setErrorMessage] = useState<string>("")
+  const [shareState, setShareState] = useState<"not-set">()
+  const [errorMessage, setErrorMessage] = useState<string | undefined>()
   const [image, takeScreenShot] = useScreenshot()
   const qrImageRef = useRef(null)
 
   const invoice = decodeInvoice(paymentRequest)
-  if (!invoice) {
-    setErrorMessage("Invalid Invoice")
-  }
+  const memo =
+    invoice?.tags?.find((t) => t.tagName === "description")?.data?.toString() || ""
 
   useEffect(() => {
-    if (!invoice || !invoice.timeExpireDate) return
-    if (status === "EXPIRED") {
-      setErrorMessage("Invoice has expired.")
+    if (!invoice || !invoice.timeExpireDate || status === "EXPIRED") {
       return
     }
-    const timerStartTime = new Date(invoice.timeExpireDate * 1000)
 
+    const timerStartTime = new Date(invoice.timeExpireDate * 1000)
     const interval = setInterval(() => {
       const currentTime = new Date()
       const elapsedTime = timerStartTime.getTime() - currentTime.getTime()
       let remainingSeconds = Math.ceil(elapsedTime / 1000)
-
       if (remainingSeconds <= 0) {
         remainingSeconds = 0
         setErrorMessage("Invoice has expired.")
         clearInterval(interval)
       }
-
-      setMinutes(Math.floor(remainingSeconds / 60))
-      setSeconds(remainingSeconds % 60)
+      setSeconds(remainingSeconds)
     }, 1000)
 
     return () => clearInterval(interval)
@@ -70,13 +63,17 @@ export default function Invoice({ title, paymentRequest, status }: InvoiceProps)
   const shareData = {
     title,
     text: `Use the link embedded below to pay the invoice. Powered by: https://galoy.io`,
-    url: typeof window !== "undefined" && window.location.href,
+    url: typeof window !== "undefined" ? window.location.href : "",
   }
 
-  if (errorMessage || !invoice || status === "EXPIRED") {
+  const handleShareClick = () => {
+    setShareState("not-set")
+  }
+
+  if (errorMessage || !invoice || !invoice.satoshis) {
     return (
       <div className={styles.error}>
-        <p>{errorMessage || "EXPIRED"}</p>
+        <p>{errorMessage || "Invalid Invoice"}</p>
       </div>
     )
   }
@@ -87,7 +84,7 @@ export default function Invoice({ title, paymentRequest, status }: InvoiceProps)
         <p>{invoice.satoshis} sats</p>
       </div>
       <div className={styles.timerContainer}>
-        <p>{!!seconds && `Expires in ${minutes} Minutes ${seconds} Seconds`}</p>
+        <p>{memo}</p>
       </div>
       <div>
         <div
@@ -97,7 +94,7 @@ export default function Invoice({ title, paymentRequest, status }: InvoiceProps)
           onClick={copyInvoice}
         >
           <QRCode
-            value={paymentRequest}
+            value={invoice.paymentRequest}
             size={350}
             logoImage="/blink-qr-logo.png"
             logoWidth={100}
@@ -110,40 +107,57 @@ export default function Invoice({ title, paymentRequest, status }: InvoiceProps)
             placement="right"
             overlay={<Tooltip id="copy">Copied!</Tooltip>}
           >
-            <button data-testid="copy-btn" title="Copy invoice" onClick={copyInvoice}>
-              <Image
-                src="/icons/copy-icon.svg"
-                alt="copy icon"
-                width="18px"
-                height="18px"
-              />
-              {copied ? "Copied" : "Copy"}
-            </button>
+            {() => (
+              // Using the function form of OverlayTrigger avoids a React.findDOMNode warning
+              <button data-testid="copy-btn" title="Copy invoice" onClick={copyInvoice}>
+                <Image
+                  src="/icons/copy-icon.svg"
+                  alt="copy icon"
+                  width="18px"
+                  height="18px"
+                />
+                {copied ? "Copied" : "Copy"}
+              </button>
+            )}
           </OverlayTrigger>
-
+          <span className={styles.expirationLabel}>
+            {formatInvoiceExpirationTime(seconds)}
+          </span>
           <Share
             shareData={shareData}
             getImage={getImage}
             image={image}
             shareState={shareState}
+            onInteraction={handleShareClick}
           >
-            <span
-              data-testid="share-lbl"
-              title="Share lightning invoice"
-              className={styles.shareBtn}
-              onClick={() => setShareState("not-set")}
-            >
-              <Image
-                src="/icons/share-icon.svg"
-                alt="share-icon"
-                width="18px"
-                height="18px"
-              />
-              Share
-            </span>
+            <Image
+              src="/icons/share-icon.svg"
+              alt="share-icon"
+              width="18px"
+              height="18px"
+            />
+            Share
           </Share>
         </div>
       </div>
     </div>
   )
+}
+
+const formatInvoiceExpirationTime = (seconds: number): string => {
+  if (seconds <= 0) {
+    return "Expired"
+  }
+
+  if (seconds >= 3600) {
+    const hours = Math.floor(seconds / 3600)
+    return `Expires in ~${hours} Hour${hours > 1 ? "s" : ""}`
+  }
+
+  if (seconds >= 60) {
+    const minutes = Math.floor(seconds / 60)
+    return `Expires in ~${minutes} Minute${minutes > 1 ? "s" : ""}`
+  }
+
+  return `Expires in ${seconds} Second${seconds > 1 ? "s" : ""}`
 }

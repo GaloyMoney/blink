@@ -4,9 +4,9 @@
   border-radius: 1em;
   width: 95%;
   max-width: 40em;
-  margin: 0 auto;
+  margin: 1em auto;
   align-self: center;
-  margin-top: 1em;
+  padding: 1.5em;
 }
 
 .headerContainer {
@@ -42,6 +42,14 @@
   margin-top: 12px;
   margin-bottom: 6px;
   text-transform: capitalize;
+}
+
+.payBtnContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  column-gap: 0.5rem;
+  margin-top: 1.5em;
 }
 
 @media (max-width: 768px) {

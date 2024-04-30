@@ -1,5 +1,4 @@
 .invoiceContainer {
-  margin-top: 1.5em;
   display: grid;
   place-items: center;
 }
@@ -21,10 +20,7 @@
 }
 
 .qrClipboard {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: 1fr 1fr;
-  align-items: center;
+  text-align: center;
   justify-content: space-between;
   padding: 0.3em 1em;
 }
@@ -43,8 +39,12 @@
   column-gap: 5px;
   cursor: pointer;
 }
+.qrClipboard > .expirationLabel {
+  font-size: 12px;
+}
 
 .qrClipboard > button:first-child {
+  float: left;
   cursor: copy;
 }
 
@@ -52,11 +52,8 @@
   color: green;
 }
 
-.qrClipboard .shareBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  column-gap: 5px;
+.qrClipboard > button:last-child {
+  float: right;
 }
 
 .amountContainer {
@@ -85,4 +82,28 @@
 
 .error > p {
   text-align: center;
+}
+
+.copyAndShare {
+  display: flex;
+  align-items: center;
+}
+
+.textBetween {
+  margin-right: 10px; /* Adjust as needed */
+}
+
+.secondaryBtn {
+  background: var(--lighterGrey);
+  color: #000000;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  outline: none;
+  padding: 0.9em 3em;
+  border-radius: 10em;
+  gap: 0.5em;
+  cursor: pointer;
 }

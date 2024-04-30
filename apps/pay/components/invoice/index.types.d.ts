@@ -4,3 +4,7 @@ export type InvoiceProps = {
   status: string
   returnUrl: string | null
 }
+
+export type CancelInvoiceButtonProps = {
+  returnUrl: string | null
+}
