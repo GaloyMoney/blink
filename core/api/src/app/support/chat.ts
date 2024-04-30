@@ -1,4 +1,3 @@
-import { Users } from "@/app"
 import { RepositoryError, CouldNotFindError } from "@/domain/errors"
 import { ChatAssistantNotFoundError } from "@/domain/support/errors"
 import { AccountsRepository, UsersRepository } from "@/services/mongoose"
