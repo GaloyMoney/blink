@@ -1,4 +1,4 @@
-import { LedgerTransactionType } from "@/domain/ledger"
+import { InvalidLnPaymentTxnsBundleError, LedgerTransactionType } from "@/domain/ledger"
 import {
   FAILED_USD_MEMO,
   LnPaymentState,
@@ -415,6 +415,37 @@ describe("LnPaymentState", () => {
 
       const txState = LnPaymentStateDeterminator(txns).determine()
       expect(txState).toEqual(LnPaymentState.FailedAfterSuccessWithReimbursement)
+    })
+  })
+
+  describe("Externally-routed self-payment transaction", () => {
+    it("returns Success when Success payments present", () => {
+      const txns = [
+        {
+          timestamp: now,
+          type: LedgerTransactionType.Payment,
+          pendingConfirmation: false,
+        } as LedgerTransaction<"BTC">,
+        {
+          timestamp: now,
+          type: LedgerTransactionType.Invoice,
+          pendingConfirmation: false,
+        } as LedgerTransaction<"BTC">,
+      ]
+      const txState = LnPaymentStateDeterminator(txns).determine()
+      expect(txState).toEqual(LnPaymentState.Success)
+    })
+
+    it("errors if no payment present", () => {
+      const txns = [
+        {
+          timestamp: now,
+          type: LedgerTransactionType.Invoice,
+          pendingConfirmation: false,
+        } as LedgerTransaction<"BTC">,
+      ]
+      const txState = LnPaymentStateDeterminator(txns).determine()
+      expect(txState).toBeInstanceOf(InvalidLnPaymentTxnsBundleError)
     })
   })
 })
