@@ -56,7 +56,7 @@ const TransactionChart = ({
     event: React.MouseEvent<HTMLElement, MouseEvent>,
     newCurrency: "USD" | "BTC" | null,
   ) => {
-    if ((newCurrency !== null && newCurrency === "USD") || newCurrency === "BTC") {
+    if (newCurrency !== null && (newCurrency === "USD" || newCurrency === "BTC")) {
       setWalletCurrency(newCurrency)
     }
   }

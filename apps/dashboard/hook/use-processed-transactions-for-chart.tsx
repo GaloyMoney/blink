@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react"
 
 import { TransactionEdge } from "@/services/graphql/generated"
-import getBalanceForTransactions from "@/lib/get-balance-for-transactions"
+import { getBalanceForTransactions } from "@/lib/get-balance-for-transactions"
 
 const useProcessedTransactionsForChart = ({
   transactions,

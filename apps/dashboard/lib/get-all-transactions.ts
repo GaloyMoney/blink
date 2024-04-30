@@ -12,7 +12,7 @@ export async function fetchAllTransactionsByCount({
   fetchCount: number
 }) {
   const allTransactions: TransactionEdge[] = []
-  let response = await fetchFirstTransactions(token)
+  let response = await fetchFirstTransactions()
   let transactions = response?.edges || []
   let pageInfo = response?.pageInfo
 
@@ -22,7 +22,10 @@ export async function fetchAllTransactionsByCount({
 
   while (pageInfo?.hasNextPage && currentFetchCount < fetchCount) {
     const nextCursor = pageInfo.endCursor
-    response = await fetchPaginatedTransactions(token, "next", nextCursor)
+    response = await fetchPaginatedTransactions({
+      direction: "next",
+      cursor: nextCursor,
+    })
     transactions = response?.edges || []
     pageInfo = response?.pageInfo
     allTransactions.push(...transactions)

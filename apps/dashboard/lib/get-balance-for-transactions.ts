@@ -67,5 +67,3 @@ export const getBalanceForTransactions = ({
 
   return { usdTransactions, btcTransactions, minBalance, maxBalance }
 }
-
-export default getBalanceForTransactions
