@@ -5,47 +5,47 @@ services:
   price:
     image: us.gcr.io/galoy-org/price:edge
     ports:
-    - 50051:50051
-    - 9464:9464
+      - 50051:50051
+      - 9464:9464
     volumes:
       - ${HOST_PROJECT_PATH:-.}/config/price.yml:/var/yaml/custom.yaml
   price-history:
     image: us.gcr.io/galoy-org/price-history:edge
     ports:
-    - 50052:50052
+      - 50052:50052
     command: ./scripts/run-servers-dev.sh
     environment:
-    - DB_HOST=price-history-pg
-    - DB_PORT=5432
-    - DB_USER=galoy-price-usr
-    - DB_PWD=galoy-price-pwd
-    - DB_DB=galoy-price-history
-    - DB_POOL_MIN=1
-    - DB_POOL_MAX=5
-    - DB_DEBUG=false
+      - DB_HOST=price-history-pg
+      - DB_PORT=5432
+      - DB_USER=galoy-price-usr
+      - DB_PWD=galoy-price-pwd
+      - DB_DB=galoy-price-history
+      - DB_POOL_MIN=1
+      - DB_POOL_MAX=5
+      - DB_DEBUG=false
     depends_on:
-    - price-history-pg
-    - price-history-migrate
+      - price-history-pg
+      - price-history-migrate
   price-history-migrate:
     image: us.gcr.io/galoy-org/price-history-migrate:edge
     ports: []
     environment:
-    - DB_HOST=price-history-pg
-    - DB_PORT=5432
-    - DB_USER=galoy-price-usr
-    - DB_PWD=galoy-price-pwd
-    - DB_DB=galoy-price-history
-    - DB_POOL_MIN=1
-    - DB_POOL_MAX=5
-    - DB_DEBUG=false
+      - DB_HOST=price-history-pg
+      - DB_PORT=5432
+      - DB_USER=galoy-price-usr
+      - DB_PWD=galoy-price-pwd
+      - DB_DB=galoy-price-history
+      - DB_POOL_MIN=1
+      - DB_POOL_MAX=5
+      - DB_DEBUG=false
     depends_on:
-    - price-history-pg
+      - price-history-pg
   price-history-pg:
     image: postgres:14.1
     environment:
-    - POSTGRES_USER=galoy-price-usr
-    - POSTGRES_PASSWORD=galoy-price-pwd
-    - POSTGRES_DB=galoy-price-history
+      - POSTGRES_USER=galoy-price-usr
+      - POSTGRES_PASSWORD=galoy-price-pwd
+      - POSTGRES_DB=galoy-price-history
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 5s
@@ -178,7 +178,7 @@ services:
     environment:
       - MONGO_INITDB_DATABASE=galoy
   lnd1:
-    image: lightninglabs/lnd:v0.17.4-beta
+    image: lightninglabs/lnd:v0.18.0-beta.rc1
     ports:
       - "10009:10009"
     volumes:
@@ -198,7 +198,7 @@ services:
         cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
         /bin/lnd
   lnd2:
-    image: lightninglabs/lnd:v0.17.4-beta
+    image: lightninglabs/lnd:v0.18.0-beta.rc1
     ports:
       - "10010:10009"
     volumes:
@@ -218,7 +218,7 @@ services:
         cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
         /bin/lnd
   lnd-outside-1:
-    image: lightninglabs/lnd:v0.17.4-beta
+    image: lightninglabs/lnd:v0.18.0-beta.rc1
     ports:
       - "10012:10009"
     volumes:
@@ -238,7 +238,7 @@ services:
         /bin/lnd
     depends_on: [bitcoind]
   lnd-outside-2:
-    image: lightninglabs/lnd:v0.17.4-beta
+    image: lightninglabs/lnd:v0.18.0-beta.rc1
     ports:
       - "10013:10009"
     volumes:
