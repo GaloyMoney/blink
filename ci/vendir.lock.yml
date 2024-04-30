@@ -2,14 +2,14 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: allow public or private repo selection (#34)'
-      sha: 53fc9dd805d3574d200e8e6e99f856c0912b52a8
+      commitTitle: 'fix: remove extra run field in rust-check-code.yml (#54)'
+      sha: cf019b0824456877035b30561f519f7615e6901c
     path: .
   path: ../.github/workflows/vendor
 - contents:
   - git:
-      commitTitle: 'feat: allow public or private repo selection (#34)'
-      sha: 53fc9dd805d3574d200e8e6e99f856c0912b52a8
+      commitTitle: 'fix: remove extra run field in rust-check-code.yml (#54)'
+      sha: cf019b0824456877035b30561f519f7615e6901c
     path: .
-  path: ./vendor
+  path: vendor
 kind: LockConfig
