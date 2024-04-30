@@ -60,8 +60,7 @@ impl PriceChanged {
 
 impl NotificationEvent for PriceChanged {
     fn category(&self) -> UserNotificationCategory {
-        // TODO: this should be switched to UserNotificationCategory::Price when it's deployed in mobile
-        UserNotificationCategory::Payments
+        UserNotificationCategory::Price
     }
 
     fn should_send_push(&self) -> bool {

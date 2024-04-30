@@ -2,6 +2,8 @@ const messages = [] as Message[]
 
 export const AssistantMock = (): ChatAssistant => {
   const initialize = async () => {
+    messages.length = 0
+
     messages.push({
       id: "1",
       role: "user",
