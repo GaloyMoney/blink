@@ -25,7 +25,7 @@ export const initializeSupportChat = async ({
   accountId,
 }: {
   accountId: AccountId
-}): Promise<SupportChatId | ChatAssistantError | RepositoryError> => {
+}): Promise<SupportChatId | ApplicationError> => {
   const account = await AccountsRepository().findById(accountId)
   if (account instanceof RepositoryError) return account
 
