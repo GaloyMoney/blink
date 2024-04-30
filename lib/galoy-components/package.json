@@ -21,7 +21,7 @@
     "@babel/preset-env": "^7.23.5",
     "@babel/preset-react": "^7.23.3",
     "@storybook/addon-essentials": "^7.6.17",
-    "@storybook/addon-interactions": "^7.6.3",
+    "@storybook/addon-interactions": "^8.0.9",
     "@storybook/addon-links": "^7.6.3",
     "@storybook/addon-onboarding": "^1.0.9",
     "@storybook/addon-postcss": "^2.0.0",
