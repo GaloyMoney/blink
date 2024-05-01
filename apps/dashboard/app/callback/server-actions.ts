@@ -34,7 +34,7 @@ export const createCallbackAction = async (
 
   let response
   try {
-    response = await callbackEndpointAdd({ url: callBackUrl, token })
+    response = await callbackEndpointAdd({ url: callBackUrl })
   } catch (err) {
     return {
       error: true,
@@ -79,7 +79,6 @@ export const deleteCallbackAction = async (
   try {
     response = await callbackEndpointDelete({
       id: callBackId,
-      token,
     })
   } catch (err) {
     return {

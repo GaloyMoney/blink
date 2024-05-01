@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client"
 
-import { apollo } from ".."
+import { apolloClient } from ".."
 import {
   CallbackEndpointAddMutation,
   CallbackEndpointAddDocument,
@@ -31,14 +31,8 @@ gql`
     }
   }
 `
-export async function callbackEndpointAdd({
-  url,
-  token,
-}: {
-  url: string
-  token: string
-}) {
-  const client = apollo(token).getClient()
+export async function callbackEndpointAdd({ url }: { url: string }) {
+  const client = await apolloClient.authenticated()
   try {
     const { data } = await client.mutate<CallbackEndpointAddMutation>({
       mutation: CallbackEndpointAddDocument,
@@ -51,14 +45,8 @@ export async function callbackEndpointAdd({
   }
 }
 
-export async function callbackEndpointDelete({
-  token,
-  id,
-}: {
-  token: string
-  id: string
-}) {
-  const client = apollo(token).getClient()
+export async function callbackEndpointDelete({ id }: { id: string }) {
+  const client = await apolloClient.authenticated()
   try {
     const { data } = await client.mutate<CallbackEndpointDeleteMutation>({
       mutation: CallbackEndpointDeleteDocument,

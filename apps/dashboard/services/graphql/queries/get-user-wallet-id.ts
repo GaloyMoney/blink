@@ -4,7 +4,7 @@ import {
   GetDefaultWalletByUsernameDocument,
   GetDefaultWalletByUsernameQuery,
 } from "../generated"
-import { apollo } from ".."
+import { apolloClient } from ".."
 
 gql`
   query GetDefaultWalletByUsername($username: Username!) {
@@ -14,14 +14,8 @@ gql`
     }
   }
 `
-export async function getWalletDetailsByUsername({
-  token,
-  username,
-}: {
-  token: string
-  username: string
-}) {
-  const client = apollo(token).getClient()
+export async function getWalletDetailsByUsername({ username }: { username: string }) {
+  const client = await apolloClient.authenticated()
 
   try {
     const data = await client.query<GetDefaultWalletByUsernameQuery>({

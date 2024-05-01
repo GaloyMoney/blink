@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client"
 
-import { apollo } from ".."
+import { apolloClient } from ".."
 import {
   GetFirstTransactionsDocument,
   GetFirstTransactionsQuery,
@@ -141,14 +141,8 @@ gql`
   }
 `
 
-export async function fetchFirstTransactions({
-  token,
-  first,
-}: {
-  token: string
-  first: number
-}) {
-  const client = apollo(token).getClient()
+export async function fetchFirstTransactions({ first }: { first: number }) {
+  const client = await apolloClient.authenticated()
 
   try {
     const data = await client.query<GetFirstTransactionsQuery>({
@@ -166,17 +160,15 @@ export async function fetchFirstTransactions({
 }
 
 export async function fetchPaginatedTransactions({
-  token,
   first,
   cursor,
   direction,
 }: {
-  token: string
   first: number
   cursor: string | null
   direction: "next" | "previous"
 }) {
-  const client = apollo(token).getClient()
+  const client = await apolloClient.authenticated()
 
   let variables: {
     first: number

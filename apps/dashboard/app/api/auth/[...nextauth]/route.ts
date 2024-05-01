@@ -2,7 +2,7 @@ import NextAuth, { AuthOptions } from "next-auth"
 
 import { ApolloQueryResult } from "@apollo/client"
 
-import { fetchUserData } from "@/services/graphql/queries/me-data"
+import { fetchUserDataForSession } from "@/services/graphql/queries/me-data"
 import { env } from "@/env"
 import { MeQuery } from "@/services/graphql/generated"
 
@@ -61,7 +61,9 @@ export const authOptions: AuthOptions = {
         throw new Error("Invalid token")
       }
 
-      const userData = await fetchUserData({ token: token.accessToken })
+      // This is different from other core API functions as using ApolloClient directly will cause a recursive loop.
+      // Therefore, we are passing the token.
+      const userData = await fetchUserDataForSession({ token: token.accessToken })
       session.sub = token.sub
       session.accessToken = token.accessToken
       session.userData = userData
