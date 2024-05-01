@@ -992,6 +992,7 @@ export type Mutation = {
   readonly onChainUsdPaymentSendAsBtcDenominated: PaymentSendPayload;
   readonly quizClaim: QuizClaimPayload;
   readonly supportChatMessageAdd: SupportChatMessageAddPayload;
+  readonly supportChatReset: SuccessPayload;
   /** @deprecated will be moved to AccountContact */
   readonly userContactUpdateAlias: UserContactUpdateAliasPayload;
   readonly userEmailDelete: UserEmailDeletePayload;

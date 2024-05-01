@@ -1,6 +1,6 @@
 import assert from "assert"
 
-import OpenAI from "openai"
+import OpenAI, { NotFoundError } from "openai"
 
 import { textToVector } from "./embeddings"
 
@@ -9,7 +9,10 @@ import { retrieveRelatedQueries } from "./pinecone"
 import { env } from "@/config/env"
 import { sleep } from "@/utils"
 import { UnknownDomainError } from "@/domain/shared"
-import { UnknownChatAssistantError } from "@/domain/support/errors"
+import {
+  ChatAssistantNotFoundError,
+  UnknownChatAssistantError,
+} from "@/domain/support/errors"
 
 const assistantId = env.OPENAI_ASSISTANT_ID ?? ""
 
@@ -124,6 +127,8 @@ export const Assistant = (): ChatAssistant => {
 
       return processedResponse
     } catch (err) {
+      if (err instanceof NotFoundError) return new ChatAssistantNotFoundError()
+
       return new UnknownDomainError(err)
     }
   }
