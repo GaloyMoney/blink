@@ -189,14 +189,17 @@ setup_file() {
     jq -n \
     '{
       input: {
-        localizedPushContents: [
+        localizedNotificationContents: [
           {
             language: "en",
             title: "Test title",
             body: "test body"
           }
         ],
-        deepLink: "EARN"
+        shouldSendPush: false,
+        shouldAddToHistory: true,
+        shouldAddToBulletin: true,
+        deepLinkScreen: "EARN"
       }
     }'
   )

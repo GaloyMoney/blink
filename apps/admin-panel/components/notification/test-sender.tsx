@@ -31,8 +31,12 @@ const NotificationTestSender = ({ notification }: NotificationTestSenderArgs) =>
 
     const res = await triggerMarketingNotification({
       userIdsFilter: [userIdRes.userId],
-      localizedPushContents: notification.localizedPushContents,
-      deepLink: notification.deepLink,
+      deepLinkScreen: notification.deepLinkScreen,
+      deepLinkAction: notification.deepLinkAction,
+      shouldSendPush: notification.shouldSendPush,
+      shouldAddToBulletin: notification.shouldAddToBulletin,
+      shouldAddToHistory: notification.shouldAddToHistory,
+      localizedNotificationContents: notification.localizedNotificationContents,
     })
     setLoading(false)
 
