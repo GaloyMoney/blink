@@ -1,9 +1,9 @@
-import { exec } from "child_process"
 import puppeteer from "puppeteer"
 
 import { Admin } from "@/app"
 import { consentList } from "@/services/hydra"
 import { sleep } from "@/utils"
+import knex from "knex"
 
 let userId: UserId
 const email = "test@galoy.io" as EmailAddress
@@ -15,26 +15,31 @@ beforeAll(async () => {
   userId = account.kratosUserId
 })
 
+const db = knex({
+  client: "pg",
+  connection: "postgres://dbuser:secret@localhost:5432/default?sslmode=disable",
+})
+
 const getOTP = (email: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const query = `docker exec -i galoy-dev-kratos-pg-1 psql -U dbuser -d default -t -c "SELECT body FROM courier_messages WHERE recipient='${email}' ORDER BY created_at DESC LIMIT 1;"`
-    exec(query, (error, stdout, stderr) => {
-      if (error) {
-        reject(`error: ${error.message}`)
-        return
+  return db<{ body: string }>("courier_messages") // Specifying the expected row structure
+    .select("body")
+    .where("recipient", email)
+    .orderBy("created_at", "desc")
+    .limit(1)
+    .then((rows) => {
+      if (rows.length === 0) {
+        throw new Error("OTP not found in the message")
       }
-      if (stderr) {
-        reject(`stderr: ${stderr}`)
-        return
-      }
-      const otpMatch = stdout.match(/(\d{6})/)
+      const otpMatch = rows[0].body.match(/(\d{6})/)
       if (otpMatch && otpMatch[1]) {
-        resolve(otpMatch[1])
+        return otpMatch[1]
       } else {
-        reject("OTP not found in the message")
+        throw new Error("OTP not found in the message")
       }
     })
-  })
+    .catch((error) => {
+      throw new Error(`Error retrieving OTP: ${error.message}`)
+    })
 }
 
 async function performOAuthLogin() {
@@ -60,17 +65,17 @@ async function performOAuthLogin() {
   )
   await page.type('[data-testid="email_id_input"]', email)
   screenshots && (await page.screenshot({ path: "screenshot2.png" }))
-  await sleep(250)
+  await sleep(1000)
 
   await page.click("#accept")
 
-  await sleep(500)
+  await sleep(1000)
   screenshots && (await page.screenshot({ path: "screenshot3.png" }))
 
   const otp = await getOTP(email)
 
   await page.waitForSelector("#code")
-  await page.type("#code", otp, { delay: 100 })
+  await page.type("#code", otp)
 
   screenshots && (await page.screenshot({ path: "screenshot4.png" }))
   await sleep(1500)
