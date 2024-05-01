@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: reissue chatbotId when errored (#4387)...'
-      sha: 9f839cef0d284005d9bed0373ab597392ad4d775
+      commitTitle: 'chore(notifications): refactor marketing notification (#4357)...'
+      sha: 9f6bba22a68639556fc0c8656410b2a94142c685
       tags:
-      - 0.20.175-2-g9f839cef0
+      - 0.20.176-2-g9f6bba22a
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: reissue chatbotId when errored (#4387)...'
-      sha: 9f839cef0d284005d9bed0373ab597392ad4d775
+      commitTitle: 'chore(notifications): refactor marketing notification (#4357)...'
+      sha: 9f6bba22a68639556fc0c8656410b2a94142c685
       tags:
-      - 0.20.175-2-g9f839cef0
+      - 0.20.176-2-g9f6bba22a
     path: schemas
   - git:
-      commitTitle: 'feat: reissue chatbotId when errored (#4387)...'
-      sha: 9f839cef0d284005d9bed0373ab597392ad4d775
+      commitTitle: 'chore(notifications): refactor marketing notification (#4357)...'
+      sha: 9f6bba22a68639556fc0c8656410b2a94142c685
       tags:
-      - 0.20.175-2-g9f839cef0
+      - 0.20.176-2-g9f6bba22a
     path: gql
   path: graphql
 kind: LockConfig
