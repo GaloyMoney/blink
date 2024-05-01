@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client"
 
 import { RealtimePriceDocument, RealtimePriceQuery } from "../generated"
-import { apollo } from ".."
+import { apolloClient } from ".."
 
 gql`
   query RealtimePrice($currency: DisplayCurrency) {
@@ -21,8 +21,8 @@ gql`
   }
 `
 
-export async function getRealtimePriceQuery({ token }: { token: string }) {
-  const client = apollo(token).getClient()
+export async function getRealtimePriceQuery() {
+  const client = await apolloClient.authenticated()
 
   try {
     const data = await client.query<RealtimePriceQuery>({
