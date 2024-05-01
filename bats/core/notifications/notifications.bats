@@ -2,41 +2,60 @@
 
 load "../../helpers/_common.bash"
 load "../../helpers/user.bash"
-load "../../helpers/onchain.bash"
+load "../../helpers/admin.bash"
 
 setup_file() {
   clear_cache
 
   create_user 'alice'
+
+  login_admin
 }
 
 @test "notifications: list stateful transactions" {
-  btc_wallet_name="alice.btc_wallet_id"
-  amount="0.01"
+  admin_token="$(read_value 'admin.token')"
 
-  # Create address and broadcast transaction 1
+  # trigger a marketing notification
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value $btc_wallet_name)" \
-    '{input: {walletId: $wallet_id}}'
+    '{
+      input: {
+        localizedPushContents: [
+          {
+            language: "en",
+            title: "Test title",
+            body: "test body"
+          }
+        ],
+        deepLink: "EARN"
+      }
+    }'
   )
+  exec_admin_graphql "$admin_token" 'marketing-notification-trigger' "$variables"
 
-  exec_graphql 'alice' 'on-chain-address-create' "$variables"
-  on_chain_address_created_1="$(graphql_output '.data.onChainAddressCreate.address')"
-  [[ "${on_chain_address_created_1}" != "null" ]] || exit 1
-
-  bitcoin_cli sendtoaddress "$on_chain_address_created_1" "$amount"
-  retry 15 1 check_for_incoming_broadcast 'alice' "$on_chain_address_created_1"
-
-  exec_graphql 'alice' 'list-stateful-notifications'
-  n_notifications=$(graphql_output '.data.me.statefulNotifications.nodes | length')
+  local n_notifications
+  for i in {1..15}; do
+    exec_graphql 'alice' 'list-stateful-notifications'
+    n_notifications=$(graphql_output '.data.me.statefulNotifications.nodes | length')
+    if [[ $n_notifications -eq 1 ]]; then
+        break
+    else
+      sleep 1
+    fi
+  done
   [[ $n_notifications -eq 1 ]] || exit 1
 
-  bitcoin_cli -generate 2
-  retry 30 1 check_for_onchain_initiated_settled 'alice' "$on_chain_address_created_1" 2
+  exec_admin_graphql "$admin_token" 'marketing-notification-trigger' "$variables"
 
-  exec_graphql 'alice' 'list-stateful-notifications'
-  n_notifications=$(graphql_output '.data.me.statefulNotifications.nodes | length')
+  for i in {1..15}; do
+    exec_graphql 'alice' 'list-stateful-notifications'
+    n_notifications=$(graphql_output '.data.me.statefulNotifications.nodes | length')
+    if [[ $n_notifications -eq 2 ]]; then
+        break
+    else
+      sleep 1
+    fi
+  done
   [[ $n_notifications -eq 2 ]] || exit 1
 }
 
