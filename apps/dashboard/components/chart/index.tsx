@@ -11,6 +11,8 @@ import {
   TooltipProps,
 } from "recharts"
 
+import CircularProgress from "@mui/joy/CircularProgress"
+
 import useProcessedTransactionsForChart from "@/hook/use-processed-transactions-for-chart"
 import { TransactionEdge } from "@/services/graphql/generated"
 
@@ -41,12 +43,14 @@ const TransactionChart = ({
   currentUsdBalance,
   transactions,
 }: Props) => {
+  const { loading, processedTransactions } = useProcessedTransactionsForChart({
+    transactions,
+    currentUsdBalance,
+    currentBtcBalance,
+  })
   const { usdTransactions, btcTransactions, minBalance, maxBalance } =
-    useProcessedTransactionsForChart({
-      transactions,
-      currentUsdBalance,
-      currentBtcBalance,
-    })
+    processedTransactions
+
   const [walletCurrency, setWalletCurrency] = useState<"USD" | "BTC">("USD")
   const data = walletCurrency === "USD" ? usdTransactions : btcTransactions
   const minDomainY = walletCurrency === "USD" ? minBalance.usd : minBalance.btc
@@ -63,7 +67,16 @@ const TransactionChart = ({
 
   return (
     <Card sx={{ marginTop: "1.5rem" }}>
-      {data.length !== 0 ? (
+      {loading ? (
+        <CircularProgress
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            margin: "0 auto",
+          }}
+        />
+      ) : data.length !== 0 ? (
         <>
           <Box
             sx={{ display: "flex", justifyContent: "space-between", p: 2, width: "100%" }}
