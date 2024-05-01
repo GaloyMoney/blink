@@ -20,7 +20,7 @@ export default async function page() {
   }
   let response
   try {
-    response = await fetchCallbackData(token)
+    response = await fetchCallbackData()
   } catch (err) {
     return null
   }

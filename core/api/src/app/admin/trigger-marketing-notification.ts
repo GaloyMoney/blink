@@ -1,13 +1,17 @@
 import { checkedToUserId } from "@/domain/accounts"
-import { checkedToLocalizedPushContentsMap } from "@/domain/notifications"
+import { checkedToLocalizedNotificationContentsMap } from "@/domain/notifications"
 import { UsersRepository } from "@/services/mongoose"
 import { NotificationsService } from "@/services/notifications"
 
 export const triggerMarketingNotification = async ({
   userIdsFilter,
   phoneCountryCodesFilter,
-  deepLink,
-  localizedPushContents,
+  deepLinkScreen,
+  deepLinkAction,
+  shouldSendPush,
+  shouldAddToHistory,
+  shouldAddToBulletin,
+  localizedNotificationContents,
 }: AdminTriggerMarketingNotificationArgs): Promise<ApplicationError | true> => {
   const checkedUserIds: UserId[] = []
   for (const userId of userIdsFilter || []) {
@@ -18,11 +22,12 @@ export const triggerMarketingNotification = async ({
     checkedUserIds.push(checkedUserId)
   }
 
-  const localizedPushContentsMap =
-    checkedToLocalizedPushContentsMap(localizedPushContents)
+  const localizedNotificationContentsMap = checkedToLocalizedNotificationContentsMap(
+    localizedNotificationContents,
+  )
 
-  if (localizedPushContentsMap instanceof Error) {
-    return localizedPushContentsMap
+  if (localizedNotificationContentsMap instanceof Error) {
+    return localizedNotificationContentsMap
   }
 
   const userIdsToNotify: UserId[] = []
@@ -41,7 +46,11 @@ export const triggerMarketingNotification = async ({
 
   return NotificationsService().triggerMarketingNotification({
     userIds: userIdsToNotify,
-    deepLink,
-    localizedPushContents: localizedPushContentsMap,
+    deepLinkScreen,
+    deepLinkAction,
+    shouldSendPush,
+    shouldAddToHistory,
+    shouldAddToBulletin,
+    localizedContents: localizedNotificationContentsMap,
   })
 }

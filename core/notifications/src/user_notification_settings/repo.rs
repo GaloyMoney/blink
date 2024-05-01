@@ -63,11 +63,11 @@ impl UserNotificationSettingsRepo {
 
     pub async fn find_for_user_ids(
         &self,
-        user_ids: impl IntoIterator<Item = &GaloyUserId>,
+        user_ids: &[GaloyUserId],
     ) -> Result<Vec<UserNotificationSettings>, UserNotificationSettingsError> {
         let mut n_ids = 0;
         let ids = user_ids
-            .into_iter()
+            .iter()
             .map(|id| {
                 n_ids += 1;
                 id.to_string()
@@ -86,7 +86,24 @@ impl UserNotificationSettingsRepo {
         .fetch_all(&self.pool)
         .await?;
 
-        Ok(EntityEvents::load_n::<UserNotificationSettings>(rows, n_ids)?.0)
+        let existing_user_notification_settings =
+            EntityEvents::load_n::<UserNotificationSettings>(rows, n_ids)?.0;
+
+        let mut existing_user_notification_settings_map = existing_user_notification_settings
+            .into_iter()
+            .map(|settings| (settings.galoy_user_id.clone(), settings))
+            .collect::<std::collections::HashMap<_, _>>();
+
+        let user_notification_settings_or_default: Vec<UserNotificationSettings> = user_ids
+            .iter()
+            .map(|id| {
+                existing_user_notification_settings_map
+                    .remove(id)
+                    .unwrap_or_else(|| UserNotificationSettings::new(id.clone()))
+            })
+            .collect();
+
+        Ok(user_notification_settings_or_default)
     }
 
     pub async fn list_after_id(

@@ -43,6 +43,6 @@ pub async fn import_email_addresses(
         }
         println!("First {total_users} synced");
     }
-    println!("SYNCING FINISHED: {total_users} users sycned");
+    println!("SYNCING FINISHED: {total_users} users synced");
     Ok(())
 }

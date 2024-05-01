@@ -761,13 +761,13 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
         logger: baseLogger,
         forwardToClient: false,
       })
-    case "InvalidPushBodyError":
+    case "InvalidNotificationBodyError":
       message = error.message
       return new ValidationInternalError({ message, logger: baseLogger })
-    case "InvalidPushTitleError":
+    case "InvalidNotificationTitleError":
       message = error.message
       return new ValidationInternalError({ message, logger: baseLogger })
-    case "DuplicateLocalizedPushContentError":
+    case "DuplicateLocalizedNotificationContentError":
       message = "Multiple localized push contents with the same language"
       return new ValidationInternalError({ message, logger: baseLogger })
 
@@ -817,6 +817,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "UnknownSupportError":
     case "UnknownPineconeError":
     case "CallbackServiceError":
+    case "ChatAssistantNotFoundError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 

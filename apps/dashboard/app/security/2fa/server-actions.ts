@@ -32,7 +32,7 @@ export const totpRegisterInitiateServerAction =
 
     let data: UserTotpRegistrationInitiateMutation | null | undefined
     try {
-      data = await userTotpRegistrationInitiate(token)
+      data = await userTotpRegistrationInitiate()
     } catch (err) {
       console.log("error in userTotpRegistrationInitiate ", err)
       return {
@@ -95,11 +95,10 @@ export const totpRegisterValidateServerAction = async (
 
   let totpValidationResponse: UserTotpRegistrationValidateMutation | null | undefined
   try {
-    totpValidationResponse = await userTotpRegistrationValidate(
+    totpValidationResponse = await userTotpRegistrationValidate({
       totpCode,
       totpRegistrationId,
-      token,
-    )
+    })
   } catch (err) {
     console.log("error in userTotpRegistrationValidate ", err)
     return {
@@ -127,6 +126,6 @@ export const deleteTotpServerAction = async () => {
   if (!token && typeof token !== "string") {
     return
   }
-  await userTotpDelete(token)
+  await userTotpDelete()
   revalidatePath("/security")
 }

@@ -183,14 +183,64 @@ impl From<proto::PriceChangeDirection> for notification_event::PriceChangeDirect
     }
 }
 
-impl From<proto::DeepLink> for notification_event::DeepLink {
-    fn from(link: proto::DeepLink) -> Self {
-        match link {
-            proto::DeepLink::Circles => notification_event::DeepLink::Circles,
-            proto::DeepLink::Price => notification_event::DeepLink::Price,
-            proto::DeepLink::Earn => notification_event::DeepLink::Earn,
-            proto::DeepLink::Map => notification_event::DeepLink::Map,
-            proto::DeepLink::People => notification_event::DeepLink::People,
+impl From<proto::DeepLinkScreen> for notification_event::DeepLinkScreen {
+    fn from(screen: proto::DeepLinkScreen) -> Self {
+        match screen {
+            proto::DeepLinkScreen::Circles => notification_event::DeepLinkScreen::Circles,
+            proto::DeepLinkScreen::Price => notification_event::DeepLinkScreen::Price,
+            proto::DeepLinkScreen::Earn => notification_event::DeepLinkScreen::Earn,
+            proto::DeepLinkScreen::Map => notification_event::DeepLinkScreen::Map,
+            proto::DeepLinkScreen::People => notification_event::DeepLinkScreen::People,
+            proto::DeepLinkScreen::Home => notification_event::DeepLinkScreen::Home,
+            proto::DeepLinkScreen::Receive => notification_event::DeepLinkScreen::Receive,
+            proto::DeepLinkScreen::Convert => notification_event::DeepLinkScreen::Convert,
+            proto::DeepLinkScreen::ScanQr => notification_event::DeepLinkScreen::ScanQR,
+            proto::DeepLinkScreen::Chat => notification_event::DeepLinkScreen::Chat,
+            proto::DeepLinkScreen::Settings => notification_event::DeepLinkScreen::Settings,
+            proto::DeepLinkScreen::Settings2Fa => notification_event::DeepLinkScreen::Settings2FA,
+            proto::DeepLinkScreen::SettingsDisplayCurrency => {
+                notification_event::DeepLinkScreen::SettingsDisplayCurrency
+            }
+            proto::DeepLinkScreen::SettingsDefaultAccount => {
+                notification_event::DeepLinkScreen::SettingsDefaultAccount
+            }
+            proto::DeepLinkScreen::SettingsLanguage => {
+                notification_event::DeepLinkScreen::SettingsLanguage
+            }
+            proto::DeepLinkScreen::SettingsTheme => {
+                notification_event::DeepLinkScreen::SettingsTheme
+            }
+            proto::DeepLinkScreen::SettingsSecurity => {
+                notification_event::DeepLinkScreen::SettingsSecurity
+            }
+            proto::DeepLinkScreen::SettingsAccount => {
+                notification_event::DeepLinkScreen::SettingsAccount
+            }
+            proto::DeepLinkScreen::SettingsTxLimits => {
+                notification_event::DeepLinkScreen::SettingsTxLimits
+            }
+            proto::DeepLinkScreen::SettingsNotifications => {
+                notification_event::DeepLinkScreen::SettingsNotifications
+            }
+            proto::DeepLinkScreen::SettingsEmail => {
+                notification_event::DeepLinkScreen::SettingsEmail
+            }
+        }
+    }
+}
+
+impl From<proto::DeepLinkAction> for notification_event::DeepLinkAction {
+    fn from(action: proto::DeepLinkAction) -> Self {
+        match action {
+            proto::DeepLinkAction::SetLnAddressModal => {
+                notification_event::DeepLinkAction::SetLnAddressModal
+            }
+            proto::DeepLinkAction::SetDefaultAccountModal => {
+                notification_event::DeepLinkAction::SetDefaultAccountModal
+            }
+            proto::DeepLinkAction::UpgradeAccountModal => {
+                notification_event::DeepLinkAction::UpgradeAccountModal
+            }
         }
     }
 }

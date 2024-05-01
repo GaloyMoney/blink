@@ -1036,6 +1036,7 @@ export type Mutation = {
   readonly quizClaim: QuizClaimPayload;
   readonly statefulNotificationAcknowledge: StatefulNotificationAcknowledgePayload;
   readonly supportChatMessageAdd: SupportChatMessageAddPayload;
+  readonly supportChatReset: SuccessPayload;
   /** @deprecated will be moved to AccountContact */
   readonly userContactUpdateAlias: UserContactUpdateAliasPayload;
   readonly userEmailDelete: UserEmailDeletePayload;
@@ -1733,6 +1734,7 @@ export type SettlementViaOnChain = {
 export type StatefulNotification = {
   readonly __typename: 'StatefulNotification';
   readonly acknowledgedAt?: Maybe<Scalars['Timestamp']['output']>;
+  readonly addToBulletin: Scalars['Boolean']['output'];
   readonly body: Scalars['String']['output'];
   readonly createdAt: Scalars['Timestamp']['output'];
   readonly deepLink?: Maybe<Scalars['String']['output']>;
@@ -2024,6 +2026,7 @@ export type User = {
   readonly supportChat: ReadonlyArray<SupportMessage>;
   /** Whether TOTP is enabled for this user. */
   readonly totpEnabled: Scalars['Boolean']['output'];
+  readonly unacknowledgedStatefulNotificationsCount: Scalars['Int']['output'];
   /**
    * Optional immutable user friendly identifier.
    * @deprecated will be moved to @Handle in Account and Wallet
@@ -4410,6 +4413,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   quizClaim?: Resolver<ResolversTypes['QuizClaimPayload'], ParentType, ContextType, RequireFields<MutationQuizClaimArgs, 'input'>>;
   statefulNotificationAcknowledge?: Resolver<ResolversTypes['StatefulNotificationAcknowledgePayload'], ParentType, ContextType, RequireFields<MutationStatefulNotificationAcknowledgeArgs, 'input'>>;
   supportChatMessageAdd?: Resolver<ResolversTypes['SupportChatMessageAddPayload'], ParentType, ContextType, RequireFields<MutationSupportChatMessageAddArgs, 'input'>>;
+  supportChatReset?: Resolver<ResolversTypes['SuccessPayload'], ParentType, ContextType>;
   userContactUpdateAlias?: Resolver<ResolversTypes['UserContactUpdateAliasPayload'], ParentType, ContextType, RequireFields<MutationUserContactUpdateAliasArgs, 'input'>>;
   userEmailDelete?: Resolver<ResolversTypes['UserEmailDeletePayload'], ParentType, ContextType>;
   userEmailRegistrationInitiate?: Resolver<ResolversTypes['UserEmailRegistrationInitiatePayload'], ParentType, ContextType, RequireFields<MutationUserEmailRegistrationInitiateArgs, 'input'>>;
@@ -4677,6 +4681,7 @@ export interface SignedDisplayMajorAmountScalarConfig extends GraphQLScalarTypeC
 
 export type StatefulNotificationResolvers<ContextType = any, ParentType extends ResolversParentTypes['StatefulNotification'] = ResolversParentTypes['StatefulNotification']> = {
   acknowledgedAt?: Resolver<Maybe<ResolversTypes['Timestamp']>, ParentType, ContextType>;
+  addToBulletin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   body?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
   deepLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -4821,6 +4826,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   statefulNotifications?: Resolver<ResolversTypes['StatefulNotificationConnection'], ParentType, ContextType, RequireFields<UserStatefulNotificationsArgs, 'first'>>;
   supportChat?: Resolver<ReadonlyArray<ResolversTypes['SupportMessage']>, ParentType, ContextType>;
   totpEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  unacknowledgedStatefulNotificationsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   username?: Resolver<Maybe<ResolversTypes['Username']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

@@ -16,7 +16,7 @@ use self::proto::{notifications_service_server::NotificationsService, *};
 use super::config::*;
 use crate::{
     app::*,
-    messages::LocalizedPushMessage,
+    messages::LocalizedStatefulMessage,
     notification_event,
     primitives::{
         self, GaloyEmailAddress, GaloyLocale, GaloyUserId, PushDeviceToken,
@@ -403,42 +403,61 @@ impl NotificationsService for Notifications {
                 data:
                     Some(proto::notification_event::Data::MarketingNotificationTriggered(
                         proto::MarketingNotificationTriggered {
-                            localized_push_content,
+                            localized_content,
+                            should_add_to_bulletin,
+                            should_add_to_history,
+                            should_send_push,
                             user_ids,
                             deep_link,
                         },
                     )),
             }) => {
-                let push_content: HashMap<GaloyLocale, LocalizedPushMessage> =
-                    localized_push_content
-                        .into_iter()
-                        .map(|(locale, localized_push_message)| {
-                            let locale = primitives::GaloyLocale::from(locale);
+                let content: HashMap<GaloyLocale, LocalizedStatefulMessage> = localized_content
+                    .into_iter()
+                    .map(|(locale, localized_push_message)| {
+                        let locale = primitives::GaloyLocale::from(locale);
 
-                            (
-                                locale,
-                                LocalizedPushMessage {
-                                    title: localized_push_message.title,
-                                    body: localized_push_message.body,
-                                },
-                            )
-                        })
-                        .collect();
+                        (
+                            locale.clone(),
+                            LocalizedStatefulMessage {
+                                title: localized_push_message.title,
+                                body: localized_push_message.body,
+                                locale: locale.clone(),
+                            },
+                        )
+                    })
+                    .collect();
 
                 let user_ids: HashSet<GaloyUserId> =
                     user_ids.into_iter().map(GaloyUserId::from).collect();
 
-                let default_push_content = push_content
+                let default_content = content
                     .get(&GaloyLocale::default())
                     .cloned()
-                    .ok_or_else(|| Status::invalid_argument("default push content is required"))?;
+                    .ok_or_else(|| Status::invalid_argument("default content is required"))?;
 
                 let deep_link = if let Some(deep_link) = deep_link {
-                    Some(
-                        proto::DeepLink::try_from(deep_link)
-                            .map(notification_event::DeepLink::from)
-                            .map_err(|e| Status::invalid_argument(e.to_string()))?,
-                    )
+                    let screen = if let Some(screen) = deep_link.screen {
+                        Some(
+                            proto::DeepLinkScreen::try_from(screen)
+                                .map(notification_event::DeepLinkScreen::from)
+                                .map_err(|e| Status::invalid_argument(e.to_string()))?,
+                        )
+                    } else {
+                        None
+                    };
+
+                    let action = if let Some(action) = deep_link.action {
+                        Some(
+                            proto::DeepLinkAction::try_from(action)
+                                .map(notification_event::DeepLinkAction::from)
+                                .map_err(|e| Status::invalid_argument(e.to_string()))?,
+                        )
+                    } else {
+                        None
+                    };
+
+                    Some(notification_event::DeepLink { screen, action })
                 } else {
                     None
                 };
@@ -447,8 +466,11 @@ impl NotificationsService for Notifications {
                     .handle_marketing_notification_triggered_event(
                         user_ids,
                         notification_event::MarketingNotificationTriggered {
-                            push_content,
-                            default_push_content,
+                            content,
+                            default_content,
+                            should_add_to_bulletin,
+                            should_add_to_history,
+                            should_send_push,
                             deep_link,
                         },
                     )

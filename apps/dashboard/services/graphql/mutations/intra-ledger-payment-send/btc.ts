@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client"
 
-import { apollo } from "../.."
+import { apolloClient } from "../.."
 
 import {
   IntraLedgerBtcPaymentSendDocument,
@@ -20,19 +20,17 @@ gql`
 `
 
 export async function intraLedgerBtcPaymentSend({
-  token,
   amount,
   memo,
   recipientWalletId,
   walletId,
 }: {
-  token: string
   amount: number
   memo?: string
   recipientWalletId: string
   walletId: string
 }) {
-  const client = apollo(token).getClient()
+  const client = await apolloClient.authenticated()
   try {
     const { data } = await client.mutate<IntraLedgerBtcPaymentSendMutation>({
       mutation: IntraLedgerBtcPaymentSendDocument,

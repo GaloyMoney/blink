@@ -1,7 +1,7 @@
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-use super::{DeepLink, NotificationEvent};
+use super::{DeepLink, DeepLinkScreen, NotificationEvent};
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -17,7 +17,10 @@ impl NotificationEvent for CircleThresholdReached {
     }
 
     fn deep_link(&self) -> Option<DeepLink> {
-        Some(DeepLink::Circles)
+        Some(DeepLink {
+            screen: Some(DeepLinkScreen::Circles),
+            action: None,
+        })
     }
 
     fn should_send_push(&self) -> bool {

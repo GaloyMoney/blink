@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client"
 
-import { apollo } from ".."
+import { apolloClient } from ".."
 import {
   UserEmailDeleteDocument,
   UserEmailDeleteMutation,
@@ -40,8 +40,8 @@ gql`
   }
 `
 
-export async function emailRegistrationInitiate(email: string, token: string) {
-  const client = apollo(token).getClient()
+export async function emailRegistrationInitiate({ email }: { email: string }) {
+  const client = await apolloClient.authenticated()
   try {
     const { data } = await client.mutate<UserEmailRegistrationInitiateMutation>({
       mutation: UserEmailRegistrationInitiateDocument,
@@ -54,12 +54,14 @@ export async function emailRegistrationInitiate(email: string, token: string) {
   }
 }
 
-export async function emailRegistrationValidate(
-  code: string,
-  emailRegistrationId: string,
-  token: string,
-) {
-  const client = apollo(token).getClient()
+export async function emailRegistrationValidate({
+  emailRegistrationId,
+  code,
+}: {
+  emailRegistrationId: string
+  code: string
+}) {
+  const client = await apolloClient.authenticated()
   try {
     const { data } = await client.mutate<UserEmailRegistrationValidateMutation>({
       mutation: UserEmailRegistrationValidateDocument,
@@ -77,8 +79,8 @@ export async function emailRegistrationValidate(
   }
 }
 
-export async function deleteEmail(token: string) {
-  const client = apollo(token).getClient()
+export async function deleteEmail() {
+  const client = await apolloClient.authenticated()
   try {
     const { data } = await client.mutate<UserEmailDeleteMutation>({
       mutation: UserEmailDeleteDocument,

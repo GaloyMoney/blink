@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client"
 
-import { apollo } from ".."
+import { apolloClient } from ".."
 import {
   UserTotpDeleteDocument,
   UserTotpDeleteMutation,
@@ -47,8 +47,8 @@ gql`
   }
 `
 
-export async function userTotpRegistrationInitiate(token: string) {
-  const client = apollo(token).getClient()
+export async function userTotpRegistrationInitiate() {
+  const client = await apolloClient.authenticated()
   try {
     const { data } = await client.mutate<UserTotpRegistrationInitiateMutation>({
       mutation: UserTotpRegistrationInitiateDocument,
@@ -60,12 +60,14 @@ export async function userTotpRegistrationInitiate(token: string) {
   }
 }
 
-export async function userTotpRegistrationValidate(
-  totpCode: string,
-  totpRegistrationId: string,
-  token: string,
-) {
-  const client = apollo(token).getClient()
+export async function userTotpRegistrationValidate({
+  totpRegistrationId,
+  totpCode,
+}: {
+  totpRegistrationId: string
+  totpCode: string
+}) {
+  const client = await apolloClient.authenticated()
   try {
     const { data } = await client.mutate<UserTotpRegistrationValidateMutation>({
       mutation: UserTotpRegistrationValidateDocument,
@@ -83,8 +85,8 @@ export async function userTotpRegistrationValidate(
   }
 }
 
-export async function userTotpDelete(token: string) {
-  const client = apollo(token).getClient()
+export async function userTotpDelete() {
+  const client = await apolloClient.authenticated()
   try {
     const { data } = await client.mutate<UserTotpDeleteMutation>({
       mutation: UserTotpDeleteDocument,

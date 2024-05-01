@@ -6,7 +6,7 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint:fix": "eslint --fix --ext .ts,.tsx .",
+    "lint:fix": "eslint --max-warnings 0 --fix --ext .ts,.tsx .",
     "codegen": "graphql-codegen --config codegen.yml",
     "cypress:run": "cypress run --spec './cypress/e2e/consent-integration.cy.ts' && cypress run --spec './cypress/e2e/e2e.cy.ts' ",
     "cypress:open": "cypress run --spec './cypress/e2e/consent-integration.cy.ts' && cypress open"

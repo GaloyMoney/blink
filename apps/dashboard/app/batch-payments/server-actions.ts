@@ -31,7 +31,7 @@ export const processPaymentsServerAction = async (records: ProcessedRecords[]) =
 
   const btcWallet = getBTCWallet(session.userData.data)
   const usdWallet = getUSDWallet(session.userData.data)
-  const realtimePrice = await getRealtimePriceQuery(token)
+  const realtimePrice = await getRealtimePriceQuery()
   if (realtimePrice instanceof Error) {
     return {
       error: true,
@@ -51,7 +51,6 @@ export const processPaymentsServerAction = async (records: ProcessedRecords[]) =
     let response
     if (record.sendingWallet === WalletCurrency.Usd) {
       response = await intraLedgerUsdPaymentSend({
-        token,
         amount: dollarsToCents(record.amount),
         memo: record.memo,
         recipientWalletId: record.recipientWalletId,
@@ -80,7 +79,6 @@ export const processPaymentsServerAction = async (records: ProcessedRecords[]) =
         amount = convertUsdToBtcSats(record.amount, realtimePrice.data)
       }
       response = await intraLedgerBtcPaymentSend({
-        token,
         amount,
         memo: record.memo,
         recipientWalletId: record.recipientWalletId,
@@ -148,7 +146,6 @@ export const validatePaymentDetail = async (
     }
   }
 
-  const token = session.accessToken
   const btcWallet = getBTCWallet(session.userData.data)
   const usdWallet = getUSDWallet(session.userData.data)
 
@@ -160,7 +157,7 @@ export const validatePaymentDetail = async (
     }
   }
 
-  const realtimePrice = await getRealtimePriceQuery(token)
+  const realtimePrice = await getRealtimePriceQuery()
   if (realtimePrice instanceof Error) {
     return {
       error: true,

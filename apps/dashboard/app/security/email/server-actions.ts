@@ -43,7 +43,7 @@ export const emailRegisterInitiateServerAction = async (
 
   let data: UserEmailRegistrationInitiateMutation | null | undefined
   try {
-    data = await emailRegistrationInitiate(email, token)
+    data = await emailRegistrationInitiate({ email })
   } catch (err) {
     console.log("error in emailRegistrationInitiate ", err)
     return {
@@ -99,11 +99,10 @@ export const emailRegisterValidateServerAction = async (
 
   let codeVerificationResponse: UserEmailRegistrationValidateMutation | null | undefined
   try {
-    codeVerificationResponse = await emailRegistrationValidate(
+    codeVerificationResponse = await emailRegistrationValidate({
       code,
       emailRegistrationId,
-      token,
-    )
+    })
   } catch (err) {
     console.log("error in emailRegistrationValidate ", err)
     return {
@@ -131,6 +130,6 @@ export const deleteEmailServerAction = async () => {
   if (!token && typeof token !== "string") {
     return
   }
-  await deleteEmail(token)
+  await deleteEmail()
   revalidatePath("/security")
 }
