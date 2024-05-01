@@ -1,6 +1,6 @@
-import CallbackEndpointAdd from "./root/mutation/callback-endpoint-add"
+import CallbackEndpointAddMutation from "./root/mutation/callback-endpoint-add"
 
-import CallbackEndpointDelete from "./root/mutation/callback-endpoint-delete"
+import CallbackEndpointDeleteMutation from "./root/mutation/callback-endpoint-delete"
 
 import AccountEnableNotificationCategoryMutation from "./root/mutation/account-enable-notification-category-for-channel"
 
@@ -63,8 +63,9 @@ import UserUpdateUsernameMutation from "@/graphql/public/root/mutation/user-upda
 import CaptchaCreateChallengeMutation from "@/graphql/public/root/mutation/captcha-create-challenge"
 import CaptchaRequestAuthCodeMutation from "@/graphql/public/root/mutation/captcha-request-auth-code"
 import QuizClaimMutation from "@/graphql/public/root/mutation/quiz-claim"
-import MerchantMapSuggest from "@/graphql/public/root/mutation/merchant-map-suggest"
-import SupportChatMessageAdd from "@/graphql/public/root/mutation/support-chat-message-add"
+import MerchantMapSuggestMutation from "@/graphql/public/root/mutation/merchant-map-suggest"
+import SupportChatMessageAddMutation from "@/graphql/public/root/mutation/support-chat-message-add"
+import SupportChatResetMutation from "@/graphql/public/root/mutation/support-chat-reset"
 
 // TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLPublicContext> }
 export const mutationFields = {
@@ -80,7 +81,7 @@ export const mutationFields = {
     lnNoAmountInvoiceCreateOnBehalfOfRecipient:
       LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation,
 
-    merchantMapSuggest: MerchantMapSuggest,
+    merchantMapSuggest: MerchantMapSuggestMutation,
   },
 
   authed: {
@@ -100,7 +101,8 @@ export const mutationFields = {
       quizClaim: QuizClaimMutation,
       deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,
 
-      supportChatMessageAdd: SupportChatMessageAdd,
+      supportChatMessageAdd: SupportChatMessageAddMutation,
+      supportChatReset: SupportChatResetMutation,
 
       userUpdateLanguage: UserUpdateLanguageMutation,
       userUpdateUsername: UserUpdateUsernameMutation,
@@ -115,8 +117,8 @@ export const mutationFields = {
       accountDelete: AccountDeleteMutation,
       feedbackSubmit: FeedbackSubmitMutation,
 
-      callbackEndpointAdd: CallbackEndpointAdd,
-      callbackEndpointDelete: CallbackEndpointDelete,
+      callbackEndpointAdd: CallbackEndpointAddMutation,
+      callbackEndpointDelete: CallbackEndpointDeleteMutation,
     },
 
     atWalletLevel: {

@@ -33,8 +33,24 @@ export const SupportChatRepository = (): ISupportChatRepository => {
     }
   }
 
+  const remove = async ({
+    supportChatId,
+    accountId,
+  }: {
+    supportChatId: SupportChatId
+    accountId: AccountId
+  }) => {
+    try {
+      await SupportChat.deleteOne({ supportChatId, accountId })
+      return true
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   return {
     create,
+    remove,
     findNewestByAccountId,
   }
 }
