@@ -44,6 +44,8 @@ function ReceivePayment({ searchParams }: Props) {
       type: ACTIONS.SET_AMOUNT_FROM_PARAMS,
       payload: amount ?? "0",
     })
+    // only want to run this once when page loads
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   if (memo) {

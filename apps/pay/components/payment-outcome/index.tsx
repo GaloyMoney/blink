@@ -92,7 +92,7 @@ function PaymentOutcome({ paymentRequest, paymentAmount, dispatch, satoshis }: P
         paymentHash: data.lnInvoicePaymentStatus.paymentHash,
       })
     }
-  }, [data])
+  }, [data, username])
 
   if (!paymentRequest) {
     return null
