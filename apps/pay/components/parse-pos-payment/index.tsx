@@ -106,7 +106,12 @@ function ParsePayment({
     return () => {
       window.removeEventListener("keydown", handleKeyPress)
     }
-  }, [dispatch, currencyMetadata.fractionDigits, state.createdInvoice])
+  }, [
+    dispatch,
+    currencyMetadata.fractionDigits,
+    state.createdInvoice,
+    state.currentAmount,
+  ])
   // Update Params From Current Amount
   const handleAmountChange = (skipRouterPush?: boolean) => {
     const amount = state.currentAmount
@@ -134,6 +139,8 @@ function ParsePayment({
     }
   }
 
+  //only want to run this when amount is changed
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(handleAmountChange, [state.currentAmount])
 
   // Update CurrencyMetadata
@@ -166,6 +173,9 @@ function ParsePayment({
         })
       }
     }
+
+    //only want to run this when display currency is changed or currencyList is loaded/updated
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [display, currencyList])
 
   return (

@@ -104,7 +104,7 @@ eslint(
     name="lint",
     srcs=[":src"] + glob([".eslint*"]),
     extensions=[".ts", ".tsx"],
-    allow_warnings=True,
+    allow_warnings = False,
     dev_deps_srcs=dev_deps_srcs,
 )
 
