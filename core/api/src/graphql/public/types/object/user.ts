@@ -81,7 +81,7 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
       type: GT.NonNullList(MobileSession),
       description: "List of mobile sessions",
       resolve: async (source, args, { user }) => {
-        return Users.listMobileSessions(user.id)
+        return Users.listMobileSessions({ userId: user.id })
       },
     },
 
@@ -89,7 +89,7 @@ const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
       type: GT.NonNullList(Delegation),
       description: "List of Oauth2 delegations",
       resolve: async (source, args, { user }) => {
-        return Users.listDeleguations(user.id)
+        return Users.listDeleguations({ userId: user.id })
       },
     },
 
