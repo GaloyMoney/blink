@@ -5,8 +5,6 @@ setup_file() {
 }
 
 @test "account: updates language" {
-  "skip"
-
   local new_language="de"
 
   exec_graphql 'alice' 'user-details'
