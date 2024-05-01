@@ -6,7 +6,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "lint:fix": "eslint --fix --ext .ts,.tsx .",
+    "lint:fix": "eslint --max-warnings 0 --fix --ext .ts,.tsx .",
     "codegen": "graphql-codegen  --config codegen.yml",
     "test": "echo 'Need to add test'"
   },

@@ -1,12 +1,12 @@
 import {
   InvalidNotificationCategoryError,
-  InvalidPushBodyError,
-  InvalidPushNotificationSettingError,
-  InvalidPushTitleError,
-  checkedToLocalizedPushBody,
-  checkedToLocalizedPushContentsMap,
-  checkedToLocalizedPushTitle,
+  InvalidNotificationBodyError,
+  InvalidNotificationTitleError,
+  checkedToLocalizedNotificationBody,
+  checkedToLocalizedNotificationContentsMap,
+  checkedToLocalizedNotificationTitle,
   checkedToNotificationCategory,
+  DuplicateLocalizedNotificationContentError,
 } from "@/domain/notifications"
 
 describe("checkedToNotificationCategory", () => {
@@ -25,22 +25,26 @@ describe("checkedToNotificationCategory", () => {
 describe("checkedToLocalizedPushTitle", () => {
   it("passes when title is valid", () => {
     const title = "Circle Grew"
-    expect(checkedToLocalizedPushTitle("Circle Grew")).toBe(title)
+    expect(checkedToLocalizedNotificationTitle("Circle Grew")).toBe(title)
   })
 
   it("fails when title is empty", () => {
-    expect(checkedToLocalizedPushTitle("")).toBeInstanceOf(InvalidPushTitleError)
+    expect(checkedToLocalizedNotificationTitle("")).toBeInstanceOf(
+      InvalidNotificationTitleError,
+    )
   })
 })
 
 describe("localized push body check", () => {
   it("passes when body in valid", () => {
     const body = "Your inner circle grew!"
-    expect(checkedToLocalizedPushBody("Your inner circle grew!")).toBe(body)
+    expect(checkedToLocalizedNotificationBody("Your inner circle grew!")).toBe(body)
   })
 
   it("fails when body is empty", () => {
-    expect(checkedToLocalizedPushBody("")).toBeInstanceOf(InvalidPushBodyError)
+    expect(checkedToLocalizedNotificationBody("")).toBeInstanceOf(
+      InvalidNotificationBodyError,
+    )
   })
 })
 
@@ -50,7 +54,7 @@ describe("localized push contents map check", () => {
       { title: "Title", body: "Body", language: "en" },
       { title: "Titulo", body: "Cuerpo", language: "es" },
     ]
-    expect(checkedToLocalizedPushContentsMap(contents)).toBeInstanceOf(Map)
+    expect(checkedToLocalizedNotificationContentsMap(contents)).toBeInstanceOf(Map)
   })
 
   it("fails when there are duplicate languages", () => {
@@ -58,22 +62,22 @@ describe("localized push contents map check", () => {
       { title: "Title", body: "Body", language: "en" },
       { title: "Title", body: "Body", language: "en" },
     ]
-    expect(checkedToLocalizedPushContentsMap(contents)).toBeInstanceOf(
-      InvalidPushNotificationSettingError,
+    expect(checkedToLocalizedNotificationContentsMap(contents)).toBeInstanceOf(
+      DuplicateLocalizedNotificationContentError,
     )
   })
 
   it("fails when title is invalid", () => {
     const contents = [{ title: "", body: "Body", language: "en" }]
-    expect(checkedToLocalizedPushContentsMap(contents)).toBeInstanceOf(
-      InvalidPushTitleError,
+    expect(checkedToLocalizedNotificationContentsMap(contents)).toBeInstanceOf(
+      InvalidNotificationTitleError,
     )
   })
 
   it("fails when body is invalid", () => {
     const contents = [{ title: "Title", body: "", language: "en" }]
-    expect(checkedToLocalizedPushContentsMap(contents)).toBeInstanceOf(
-      InvalidPushBodyError,
+    expect(checkedToLocalizedNotificationContentsMap(contents)).toBeInstanceOf(
+      InvalidNotificationBodyError,
     )
   })
 })

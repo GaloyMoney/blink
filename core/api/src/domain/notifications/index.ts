@@ -2,10 +2,10 @@ export * from "./errors"
 import { checkedToNonEmptyLanguage } from "../users"
 
 import {
-  InvalidPushBodyError,
+  InvalidNotificationBodyError,
   InvalidNotificationCategoryError,
-  InvalidPushNotificationSettingError,
-  InvalidPushTitleError,
+  InvalidNotificationTitleError,
+  DuplicateLocalizedNotificationContentError,
 } from "./errors"
 
 export const NotificationType = {
@@ -48,61 +48,83 @@ export const NotificationChannel = {
   Push: "push",
 } as const
 
-export const DeepLink = {
+export const DeepLinkScreen = {
   Circles: "Circles",
   Price: "Price",
   Earn: "Earn",
   Map: "Map",
   People: "People",
+  Home: "Home",
+  Receive: "Receive",
+  Convert: "Convert",
+  ScanQR: "ScanQR",
+  Chat: "Chat",
+  Settings: "Settings",
+  Settings2FA: "Settings2FA",
+  SettingsDisplayCurrency: "SettingsDisplayCurrency",
+  SettingsDefaultAccount: "SettingsDefaultAccount",
+  SettingsLanguage: "SettingsLanguage",
+  SettingsTheme: "SettingsTheme",
+  SettingsSecurity: "SettingsSecurity",
+  SettingsAccount: "SettingsAccount",
+  SettingsTxLimits: "SettingsTxLimits",
+  SettingsNotifications: "SettingsNotifications",
+  SettingsEmail: "SettingsEmail",
 } as const
 
-export const checkedToLocalizedPushTitle = (
+export const DeepLinkAction = {
+  SetLnAddressModal: "SetLnAddressModal",
+  SetDefaultAccountModal: "SetDefaultAccountModal",
+  UpgradeAccountModal: "UpgradeAccountModal",
+} as const
+
+export const checkedToLocalizedNotificationTitle = (
   title: string,
-): LocalizedPushTitle | ValidationError => {
+): LocalizedNotificationTitle | ValidationError => {
   if (title.length === 0) {
-    return new InvalidPushTitleError()
+    return new InvalidNotificationTitleError()
   }
 
-  return title as LocalizedPushTitle
+  return title as LocalizedNotificationTitle
 }
 
-export const checkedToLocalizedPushBody = (
+export const checkedToLocalizedNotificationBody = (
   body: string,
-): LocalizedPushBody | ValidationError => {
+): LocalizedNotificationBody | ValidationError => {
   if (body.length === 0) {
-    return new InvalidPushBodyError()
+    return new InvalidNotificationBodyError()
   }
 
-  return body as LocalizedPushBody
+  return body as LocalizedNotificationBody
 }
 
-export const checkedToLocalizedPushContentsMap = (
-  localizedPushContents: {
+export const checkedToLocalizedNotificationContentsMap = (
+  localizedNotificationContents: {
     title: string
     body: string
     language: string
   }[],
-): Map<UserLanguage, LocalizedPushContent> | ValidationError => {
-  const map = new Map<UserLanguage, LocalizedPushContent>()
+): Map<UserLanguage, LocalizedNotificationContent> | ValidationError => {
+  const map = new Map<UserLanguage, LocalizedNotificationContent>()
 
-  for (const content of localizedPushContents) {
+  for (const content of localizedNotificationContents) {
     const checkedLanguage = checkedToNonEmptyLanguage(content.language.toLowerCase())
     if (checkedLanguage instanceof Error) {
       return checkedLanguage
     }
 
-    const checkedTitle = checkedToLocalizedPushTitle(content.title)
+    const checkedTitle = checkedToLocalizedNotificationTitle(content.title)
     if (checkedTitle instanceof Error) {
       return checkedTitle
     }
 
-    const checkedBody = checkedToLocalizedPushBody(content.body)
+    const checkedBody = checkedToLocalizedNotificationBody(content.body)
     if (checkedBody instanceof Error) {
       return checkedBody
     }
 
     if (map.has(checkedLanguage)) {
-      return new InvalidPushNotificationSettingError(
+      return new DuplicateLocalizedNotificationContentError(
         `Duplicated language: ${checkedLanguage}`,
       )
     }
