@@ -1,11 +1,10 @@
+import { DefaultLanguage } from "@/domain/users"
 import { NotificationsService } from "@/services/notifications"
 
-export const getUserLanguage = async (
-  user: User,
-): Promise<UserLanguageOrEmpty | ApplicationError> => {
-  const settings = await NotificationsService().getUserNotificationSettings(user.id)
+export const getUserLanguage = async (userId: UserId): Promise<UserLanguageOrEmpty> => {
+  const settings = await NotificationsService().getUserNotificationSettings(userId)
 
-  if (settings instanceof Error) return settings
+  if (settings instanceof Error) return DefaultLanguage
 
   return settings.language
 }

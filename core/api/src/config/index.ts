@@ -32,6 +32,9 @@ export const MAX_LENGTH_FOR_FEEDBACK = 1024
 
 export const MIN_SATS_FOR_PRICE_RATIO_PRECISION = 5000n
 
+export const USER_NOTIFICATION_SETTINGS_TIMEOUT_MS = MS_PER_SEC * 5
+export const MARKETING_NOTIFICATION_USER_BATCH_SIZE = 10000
+
 export const Levels: Levels = [0, 1, 2]
 
 export const getGaloyBuildInformation = () => {

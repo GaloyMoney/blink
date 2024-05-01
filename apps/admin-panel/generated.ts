@@ -200,15 +200,38 @@ export type Coordinates = {
   readonly longitude: Scalars['Float']['output'];
 };
 
-export const DeepLink = {
-  Circles: 'CIRCLES',
-  Earn: 'EARN',
-  Map: 'MAP',
-  People: 'PEOPLE',
-  Price: 'PRICE'
+export const DeepLinkAction = {
+  SetDefaultAccountModal: 'SET_DEFAULT_ACCOUNT_MODAL',
+  SetLnAddressModal: 'SET_LN_ADDRESS_MODAL',
+  UpgradeAccountModal: 'UPGRADE_ACCOUNT_MODAL'
 } as const;
 
-export type DeepLink = typeof DeepLink[keyof typeof DeepLink];
+export type DeepLinkAction = typeof DeepLinkAction[keyof typeof DeepLinkAction];
+export const DeepLinkScreen = {
+  Chat: 'CHAT',
+  Circles: 'CIRCLES',
+  Convert: 'CONVERT',
+  Earn: 'EARN',
+  Home: 'HOME',
+  Map: 'MAP',
+  People: 'PEOPLE',
+  Price: 'PRICE',
+  Receive: 'RECEIVE',
+  ScanQr: 'SCAN_QR',
+  Settings: 'SETTINGS',
+  Settings_2Fa: 'SETTINGS_2FA',
+  SettingsAccount: 'SETTINGS_ACCOUNT',
+  SettingsDefaultAccount: 'SETTINGS_DEFAULT_ACCOUNT',
+  SettingsDisplayCurrency: 'SETTINGS_DISPLAY_CURRENCY',
+  SettingsEmail: 'SETTINGS_EMAIL',
+  SettingsLanguage: 'SETTINGS_LANGUAGE',
+  SettingsNotifications: 'SETTINGS_NOTIFICATIONS',
+  SettingsSecurity: 'SETTINGS_SECURITY',
+  SettingsTheme: 'SETTINGS_THEME',
+  SettingsTxLimits: 'SETTINGS_TX_LIMITS'
+} as const;
+
+export type DeepLinkScreen = typeof DeepLinkScreen[keyof typeof DeepLinkScreen];
 export type Email = {
   readonly __typename: 'Email';
   readonly address?: Maybe<Scalars['EmailAddress']['output']>;
@@ -319,16 +342,20 @@ export const LnPaymentStatus = {
 } as const;
 
 export type LnPaymentStatus = typeof LnPaymentStatus[keyof typeof LnPaymentStatus];
-export type LocalizedPushContentInput = {
+export type LocalizedNotificationContentInput = {
   readonly body: Scalars['String']['input'];
   readonly language: Scalars['Language']['input'];
   readonly title: Scalars['String']['input'];
 };
 
 export type MarketingNotificationTriggerInput = {
-  readonly deepLink?: InputMaybe<DeepLink>;
-  readonly localizedPushContents: ReadonlyArray<LocalizedPushContentInput>;
+  readonly deepLinkAction?: InputMaybe<DeepLinkAction>;
+  readonly deepLinkScreen?: InputMaybe<DeepLinkScreen>;
+  readonly localizedNotificationContents: ReadonlyArray<LocalizedNotificationContentInput>;
   readonly phoneCountryCodesFilter?: InputMaybe<ReadonlyArray<Scalars['CountryCode']['input']>>;
+  readonly shouldAddToBulletin: Scalars['Boolean']['input'];
+  readonly shouldAddToHistory: Scalars['Boolean']['input'];
+  readonly shouldSendPush: Scalars['Boolean']['input'];
   readonly userIdsFilter?: InputMaybe<ReadonlyArray<Scalars['ID']['input']>>;
 };
 

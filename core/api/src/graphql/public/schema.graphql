@@ -1,5 +1,6 @@
 interface Account {
   callbackEndpoints: [CallbackEndpoint!]!
+  callbackPortalUrl: String!
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWallet: PublicWallet!
   defaultWalletId: WalletId! @deprecated(reason: "Shifting property to 'defaultWallet.id'")
@@ -257,6 +258,7 @@ type CentAmountPayload {
 
 type ConsumerAccount implements Account {
   callbackEndpoints: [CallbackEndpoint!]!
+  callbackPortalUrl: String!
 
   """
   return CSV stream, base64 encoded, of the list of transactions in the wallet
@@ -992,6 +994,7 @@ type Mutation {
   onChainUsdPaymentSendAsBtcDenominated(input: OnChainUsdPaymentSendAsBtcDenominatedInput!): PaymentSendPayload!
   quizClaim(input: QuizClaimInput!): QuizClaimPayload!
   supportChatMessageAdd(input: SupportChatMessageAddInput!): SupportChatMessageAddPayload!
+  supportChatReset: SuccessPayload!
   userContactUpdateAlias(input: UserContactUpdateAliasInput!): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
   userEmailDelete: UserEmailDeletePayload!
   userEmailRegistrationInitiate(input: UserEmailRegistrationInitiateInput!): UserEmailRegistrationInitiatePayload!

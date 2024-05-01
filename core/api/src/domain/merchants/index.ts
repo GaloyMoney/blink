@@ -1,8 +1,8 @@
 import { InvalidMerchantIdError } from "./errors"
 
-import { UUIDV4 } from "@/utils/uuid"
+import { UuidRegex } from "@/domain/shared"
 
-const MerchantIdRegex = UUIDV4
+const MerchantIdRegex = UuidRegex
 
 export const checkedToMerchantId = (
   merchantId: string,

@@ -7,6 +7,7 @@ export * from "./safe"
 export * from "./errors"
 export * from "./error-parsers"
 export * from "./error-parsers-unknown"
+export * from "./validation"
 
 export const setErrorWarn = (error: DomainError): DomainError => {
   error.level = ErrorLevel.Warn

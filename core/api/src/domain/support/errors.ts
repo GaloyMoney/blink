@@ -11,6 +11,7 @@ export class UnknownPineconeError extends SupportError {
 }
 
 export class ChatAssistantError extends SupportError {}
+export class ChatAssistantNotFoundError extends SupportError {}
 
 export class UnknownChatAssistantError extends ChatAssistantError {
   level = ErrorLevel.Critical

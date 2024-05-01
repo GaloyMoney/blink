@@ -6,7 +6,8 @@ import {
   AccountDetailsByUsernameDocument,
   AccountDetailsByUsernameQuery,
   AccountDetailsByUsernameQueryVariables,
-  DeepLink,
+  DeepLinkScreen,
+  DeepLinkAction,
   FilteredUserCountDocument,
   FilteredUserCountQuery,
   FilteredUserCountQueryVariables,
@@ -40,8 +41,12 @@ export const filteredUserCount = async ({
 export type TriggerMarketingNotificationArgs = {
   userIdsFilter?: string[]
   phoneCountryCodesFilter?: string[]
-  deepLink?: DeepLink
-  localizedPushContents: {
+  deepLinkScreen: DeepLinkScreen | undefined
+  deepLinkAction: DeepLinkAction | undefined
+  shouldSendPush: boolean
+  shouldAddToHistory: boolean
+  shouldAddToBulletin: boolean
+  localizedNotificationContents: {
     title: string
     body: string
     language: string
@@ -49,8 +54,12 @@ export type TriggerMarketingNotificationArgs = {
 }
 
 export const triggerMarketingNotification = async ({
-  deepLink,
-  localizedPushContents,
+  deepLinkScreen,
+  deepLinkAction,
+  shouldSendPush,
+  shouldAddToBulletin,
+  shouldAddToHistory,
+  localizedNotificationContents,
   phoneCountryCodesFilter,
   userIdsFilter,
 }: TriggerMarketingNotificationArgs) => {
@@ -61,8 +70,12 @@ export const triggerMarketingNotification = async ({
     mutation: MarketingNotificationTriggerDocument,
     variables: {
       input: {
-        deepLink,
-        localizedPushContents,
+        deepLinkScreen,
+        deepLinkAction,
+        shouldSendPush,
+        shouldAddToBulletin,
+        shouldAddToHistory,
+        localizedNotificationContents,
         phoneCountryCodesFilter,
         userIdsFilter,
       },

@@ -64,8 +64,12 @@ const NotificationFilteredSender = ({ notification }: NotificationFilteredSender
     setSendFilteredNotificationSuccess(false)
 
     const res = await triggerMarketingNotification({
-      deepLink: notification.deepLink,
-      localizedPushContents: notification.localizedPushContents,
+      deepLinkScreen: notification.deepLinkScreen,
+      deepLinkAction: notification.deepLinkAction,
+      shouldSendPush: notification.shouldSendPush,
+      shouldAddToHistory: notification.shouldAddToHistory,
+      shouldAddToBulletin: notification.shouldAddToBulletin,
+      localizedNotificationContents: notification.localizedNotificationContents,
       phoneCountryCodesFilter,
     })
     if (!res.success) {

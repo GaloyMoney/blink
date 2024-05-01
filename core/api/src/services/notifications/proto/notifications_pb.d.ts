@@ -896,13 +896,19 @@ export class MarketingNotificationTriggered extends jspb.Message {
     setUserIdsList(value: Array<string>): MarketingNotificationTriggered;
     addUserIds(value: string, index?: number): string;
 
-    getLocalizedPushContentMap(): jspb.Map<string, LocalizedPushContent>;
-    clearLocalizedPushContentMap(): void;
+    getLocalizedContentMap(): jspb.Map<string, LocalizedContent>;
+    clearLocalizedContentMap(): void;
 
     hasDeepLink(): boolean;
     clearDeepLink(): void;
     getDeepLink(): DeepLink | undefined;
-    setDeepLink(value: DeepLink): MarketingNotificationTriggered;
+    setDeepLink(value?: DeepLink): MarketingNotificationTriggered;
+    getShouldSendPush(): boolean;
+    setShouldSendPush(value: boolean): MarketingNotificationTriggered;
+    getShouldAddToHistory(): boolean;
+    setShouldAddToHistory(value: boolean): MarketingNotificationTriggered;
+    getShouldAddToBulletin(): boolean;
+    setShouldAddToBulletin(value: boolean): MarketingNotificationTriggered;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): MarketingNotificationTriggered.AsObject;
@@ -918,31 +924,63 @@ export namespace MarketingNotificationTriggered {
     export type AsObject = {
         userIdsList: Array<string>,
 
-        localizedPushContentMap: Array<[string, LocalizedPushContent.AsObject]>,
-        deepLink?: DeepLink,
+        localizedContentMap: Array<[string, LocalizedContent.AsObject]>,
+        deepLink?: DeepLink.AsObject,
+        shouldSendPush: boolean,
+        shouldAddToHistory: boolean,
+        shouldAddToBulletin: boolean,
     }
 }
 
-export class LocalizedPushContent extends jspb.Message { 
+export class LocalizedContent extends jspb.Message { 
     getTitle(): string;
-    setTitle(value: string): LocalizedPushContent;
+    setTitle(value: string): LocalizedContent;
     getBody(): string;
-    setBody(value: string): LocalizedPushContent;
+    setBody(value: string): LocalizedContent;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): LocalizedPushContent.AsObject;
-    static toObject(includeInstance: boolean, msg: LocalizedPushContent): LocalizedPushContent.AsObject;
+    toObject(includeInstance?: boolean): LocalizedContent.AsObject;
+    static toObject(includeInstance: boolean, msg: LocalizedContent): LocalizedContent.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: LocalizedPushContent, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): LocalizedPushContent;
-    static deserializeBinaryFromReader(message: LocalizedPushContent, reader: jspb.BinaryReader): LocalizedPushContent;
+    static serializeBinaryToWriter(message: LocalizedContent, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): LocalizedContent;
+    static deserializeBinaryFromReader(message: LocalizedContent, reader: jspb.BinaryReader): LocalizedContent;
 }
 
-export namespace LocalizedPushContent {
+export namespace LocalizedContent {
     export type AsObject = {
         title: string,
         body: string,
+    }
+}
+
+export class DeepLink extends jspb.Message { 
+
+    hasScreen(): boolean;
+    clearScreen(): void;
+    getScreen(): DeepLinkScreen | undefined;
+    setScreen(value: DeepLinkScreen): DeepLink;
+
+    hasAction(): boolean;
+    clearAction(): void;
+    getAction(): DeepLinkAction | undefined;
+    setAction(value: DeepLinkAction): DeepLink;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): DeepLink.AsObject;
+    static toObject(includeInstance: boolean, msg: DeepLink): DeepLink.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: DeepLink, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): DeepLink;
+    static deserializeBinaryFromReader(message: DeepLink, reader: jspb.BinaryReader): DeepLink;
+}
+
+export namespace DeepLink {
+    export type AsObject = {
+        screen?: DeepLinkScreen,
+        action?: DeepLinkAction,
     }
 }
 
@@ -992,10 +1030,32 @@ export enum PriceChangeDirection {
     DOWN = 1,
 }
 
-export enum DeepLink {
+export enum DeepLinkScreen {
     CIRCLES = 0,
     PRICE = 1,
     EARN = 2,
     MAP = 3,
     PEOPLE = 4,
+    HOME = 5,
+    RECEIVE = 6,
+    CONVERT = 7,
+    SCANQR = 8,
+    CHAT = 9,
+    SETTINGS = 10,
+    SETTINGS2FA = 11,
+    SETTINGSDISPLAYCURRENCY = 12,
+    SETTINGSDEFAULTACCOUNT = 13,
+    SETTINGSLANGUAGE = 14,
+    SETTINGSTHEME = 15,
+    SETTINGSSECURITY = 16,
+    SETTINGSACCOUNT = 17,
+    SETTINGSTXLIMITS = 18,
+    SETTINGSNOTIFICATIONS = 19,
+    SETTINGSEMAIL = 20,
+}
+
+export enum DeepLinkAction {
+    SETLNADDRESSMODAL = 0,
+    SETDEFAULTACCOUNTMODAL = 1,
+    UPGRADEACCOUNTMODAL = 2,
 }
