@@ -245,8 +245,8 @@ message MarketingNotificationTriggered {
 }
 
 message LocalizedContent {
-  string title = 2;
-  string body = 3;
+  string title = 1;
+  string body = 2;
 }
 
 message DeepLink {

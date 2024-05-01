@@ -7318,8 +7318,8 @@ proto.services.notifications.v1.LocalizedContent.prototype.toObject = function(o
  */
 proto.services.notifications.v1.LocalizedContent.toObject = function(includeInstance, msg) {
   var f, obj = {
-    title: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    body: jspb.Message.getFieldWithDefault(msg, 3, "")
+    title: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    body: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -7356,11 +7356,11 @@ proto.services.notifications.v1.LocalizedContent.deserializeBinaryFromReader = f
     }
     var field = reader.getFieldNumber();
     switch (field) {
-    case 2:
+    case 1:
       var value = /** @type {string} */ (reader.readString());
       msg.setTitle(value);
       break;
-    case 3:
+    case 2:
       var value = /** @type {string} */ (reader.readString());
       msg.setBody(value);
       break;
@@ -7396,14 +7396,14 @@ proto.services.notifications.v1.LocalizedContent.serializeBinaryToWriter = funct
   f = message.getTitle();
   if (f.length > 0) {
     writer.writeString(
-      2,
+      1,
       f
     );
   }
   f = message.getBody();
   if (f.length > 0) {
     writer.writeString(
-      3,
+      2,
       f
     );
   }
@@ -7411,11 +7411,11 @@ proto.services.notifications.v1.LocalizedContent.serializeBinaryToWriter = funct
 
 
 /**
- * optional string title = 2;
+ * optional string title = 1;
  * @return {string}
  */
 proto.services.notifications.v1.LocalizedContent.prototype.getTitle = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
@@ -7424,16 +7424,16 @@ proto.services.notifications.v1.LocalizedContent.prototype.getTitle = function()
  * @return {!proto.services.notifications.v1.LocalizedContent} returns this
  */
 proto.services.notifications.v1.LocalizedContent.prototype.setTitle = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
 /**
- * optional string body = 3;
+ * optional string body = 2;
  * @return {string}
  */
 proto.services.notifications.v1.LocalizedContent.prototype.getBody = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
@@ -7442,7 +7442,7 @@ proto.services.notifications.v1.LocalizedContent.prototype.getBody = function() 
  * @return {!proto.services.notifications.v1.LocalizedContent} returns this
  */
 proto.services.notifications.v1.LocalizedContent.prototype.setBody = function(value) {
-  return jspb.Message.setProto3StringField(this, 3, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
