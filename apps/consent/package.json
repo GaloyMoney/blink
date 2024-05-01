@@ -6,7 +6,7 @@
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start",
-    "lint:fix": "eslint --fix --ext .ts,.tsx .",
+    "lint:fix": "eslint --max-warnings 0 --fix --ext .ts,.tsx .",
     "codegen": "graphql-codegen --config codegen.yml",
     "cypress:setup": "bash ./dev/get-url.sh && echo 'Environment setup complete.'",
     "cypress:open": "cypress open",

@@ -19,7 +19,7 @@
     "eslint-fix": "eslint \"{app,components,graphql,pages}/**/*.ts\" --fix",
     "cypress:run": "cypress run --spec './cypress/e2e/consent-integration.cy.ts' && cypress run --spec './cypress/e2e/e2e.cy.ts' ",
     "cypress:open": "cypress run --spec './cypress/e2e/consent-integration.cy.ts' && cypress open",
-    "lint:fix": "eslint --fix --ext .ts,.tsx ."
+    "lint:fix": "eslint --max-warnings 0 --fix --ext .ts,.tsx ."
   },
   "dependencies": {
     "@apollo/client": "^3.7.12",
