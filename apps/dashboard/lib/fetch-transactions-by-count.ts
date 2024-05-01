@@ -4,23 +4,25 @@ import {
   fetchPaginatedTransactions,
 } from "@/services/graphql/queries/get-transactions"
 
-export async function fetchAllTransactionsByCount({
-  token,
-  fetchCount,
-}: {
-  token: string
-  fetchCount: number
-}) {
+export async function fetchTransactionsByCount({ maxCount }: { maxCount: number }) {
+  if (maxCount <= 0) {
+    return []
+  }
+
   const allTransactions: TransactionEdge[] = []
   let response = await fetchFirstTransactions()
   let transactions = response?.edges || []
   let pageInfo = response?.pageInfo
 
+  if (transactions.length >= maxCount) {
+    return transactions.slice(0, maxCount)
+  }
+
   allTransactions.push(...transactions)
 
-  let currentFetchCount = 1
+  let transactionCount = transactions.length
 
-  while (pageInfo?.hasNextPage && currentFetchCount < fetchCount) {
+  while (pageInfo?.hasNextPage && transactionCount < maxCount) {
     const nextCursor = pageInfo.endCursor
     response = await fetchPaginatedTransactions({
       direction: "next",
@@ -28,9 +30,14 @@ export async function fetchAllTransactionsByCount({
     })
     transactions = response?.edges || []
     pageInfo = response?.pageInfo
-    allTransactions.push(...transactions)
 
-    currentFetchCount++
+    if (transactionCount + transactions.length > maxCount) {
+      allTransactions.push(...transactions.slice(0, maxCount - transactionCount))
+      break
+    }
+
+    allTransactions.push(...transactions)
+    transactionCount += transactions.length
   }
 
   return allTransactions

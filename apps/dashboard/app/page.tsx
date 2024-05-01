@@ -6,8 +6,10 @@ import { authOptions } from "./api/auth/[...nextauth]/route"
 
 import WalletBalanceContainer from "@/components/wallet-balance/wallet-balance-container"
 import ContentContainer from "@/components/content-container"
-import { fetchAllTransactionsByCount } from "@/lib/get-all-transactions"
+import { fetchTransactionsByCount } from "@/lib/fetch-transactions-by-count"
 import TransactionChart from "@/components/chart"
+
+const MAXIMUM_TRANSACTIONS = 500
 
 export default async function Home() {
   const session = await getServerSession(authOptions)
@@ -24,9 +26,8 @@ export default async function Home() {
     (wallet) => wallet.walletCurrency === "USD",
   )
 
-  const response = await fetchAllTransactionsByCount({
-    token,
-    fetchCount: 5, // Maximum fetch rotation count if set to 5; the API will be called a maximum of 5 times, which gives 500 transactions.
+  const response = await fetchTransactionsByCount({
+    maxCount: MAXIMUM_TRANSACTIONS,
   })
 
   const walletDetails = session?.userData?.data?.me?.defaultAccount?.wallets || []
