@@ -85,16 +85,6 @@ impl NotificationEvent for TransactionOccurred {
 
         LocalizedPushMessage { title, body }
     }
-
-    fn to_localized_persistent_message(&self, locale: GaloyLocale) -> LocalizedStatefulMessage {
-        let push_msg = self.to_localized_push_msg(&locale);
-
-        LocalizedStatefulMessage {
-            locale,
-            title: push_msg.title,
-            body: push_msg.body,
-        }
-    }
 }
 
 #[cfg(test)]

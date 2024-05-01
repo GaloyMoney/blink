@@ -12,54 +12,52 @@ setup_file() {
   login_admin
 }
 
-@test "notifications: list stateful transactions" {
+@test "notifications: list stateful notifications" {
   admin_token="$(read_value 'admin.token')"
 
-  # trigger a marketing notification
   variables=$(
     jq -n \
     '{
       input: {
-        localizedPushContents: [
+        localizedNotificationContents: [
           {
             language: "en",
             title: "Test title",
             body: "test body"
           }
         ],
-        deepLink: "EARN"
+        shouldSendPush: false,
+        shouldAddToHistory: true,
+        shouldAddToBulletin: true,
+        deepLinkScreen: "EARN"
       }
     }'
   )
+
+  # trigger a marketing notification
   exec_admin_graphql "$admin_token" 'marketing-notification-trigger' "$variables"
 
   local n_notifications
-  for i in {1..15}; do
+  for i in {1..10}; do
     exec_graphql 'alice' 'list-stateful-notifications'
     n_notifications=$(graphql_output '.data.me.statefulNotifications.nodes | length')
-    if [[ $n_notifications -eq 1 ]]; then
-        break
-    else
-      sleep 1
-    fi
+    [[ $n_notifications -eq 1 ]] && break;
+    sleep 1
   done
-  [[ $n_notifications -eq 1 ]] || exit 1
+  [[ $n_notifications -eq 1 ]] || exit 1;
 
   exec_admin_graphql "$admin_token" 'marketing-notification-trigger' "$variables"
 
-  for i in {1..15}; do
+  for i in {1..10}; do
     exec_graphql 'alice' 'list-stateful-notifications'
     n_notifications=$(graphql_output '.data.me.statefulNotifications.nodes | length')
-    if [[ $n_notifications -eq 2 ]]; then
-        break
-    else
+    [[ $n_notifications -eq 2 ]] && break;
       sleep 1
-    fi
   done
-  [[ $n_notifications -eq 2 ]] || exit 1
+  [[ $n_notifications -eq 2 ]] || exit 1;
 }
 
-@test "notifications: list stateful transactions paginated with cursor" {
+@test "notifications: list stateful notifications paginated with cursor" {
   exec_graphql 'alice' 'list-stateful-notifications' '{"first": 1}'
   n_notifications=$(graphql_output '.data.me.statefulNotifications.nodes | length')
   first_id=$(graphql_output '.data.me.statefulNotifications.nodes[0].id')
@@ -82,7 +80,7 @@ setup_file() {
   [[ "$next_page" = "false" ]] || exit 1
 }
 
-@test "notifications: acknowledge stateful transactions" {
+@test "notifications: acknowledge stateful notification" {
   exec_graphql 'alice' 'list-stateful-notifications' '{"first": 1}'
   n_notifications=$(graphql_output '.data.me.statefulNotifications.nodes | length')
   id=$(graphql_output '.data.me.statefulNotifications.nodes[0].id')
@@ -99,7 +97,7 @@ setup_file() {
   [[ "$acknowledged_at" != "null" ]] || exit 1
 }
 
-@test "notifications: unacknowledged_stateful_notifications_count" {
+@test "notifications: unacknowledged stateful notifications count" {
   exec_graphql 'alice' 'unacknowledged_stateful_notifications_count'
   count=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsCount')
   [[ $count -eq 1 ]] || exit 1
