@@ -4,7 +4,7 @@ import CardContent from "@mui/joy/CardContent"
 import Typography from "@mui/joy/Typography"
 import { Box } from "@mui/joy"
 
-export interface PriceContainerCardProps {
+export interface WalletBalanceCardProps {
   id: string
   walletCurrency: string
   balance: number
@@ -12,7 +12,7 @@ export interface PriceContainerCardProps {
   currencySymbol: string
 }
 
-const PriceContainerCard: React.FC<PriceContainerCardProps> = ({
+const WalletBalanceCard: React.FC<WalletBalanceCardProps> = ({
   id,
   walletCurrency,
   balance,
@@ -81,4 +81,4 @@ const PriceContainerCard: React.FC<PriceContainerCardProps> = ({
   </Card>
 )
 
-export default PriceContainerCard
+export default WalletBalanceCard

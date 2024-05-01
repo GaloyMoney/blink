@@ -1,7 +1,7 @@
 import React from "react"
 import { Box } from "@mui/joy"
 
-import PriceContainerCard from "./price-card-container"
+import WalletBalanceCard from "./wallet-balance-card"
 
 export interface WalletData {
   __typename: string
@@ -12,7 +12,7 @@ export interface WalletData {
   walletCurrency: "BTC" | "USD"
 }
 
-export interface PriceContainerProps {
+export interface WalletBalanceContainerProps {
   walletDetails: ReadonlyArray<WalletData>
 }
 
@@ -33,7 +33,9 @@ const formatBalance = (
   }
 }
 
-const PriceContainer: React.FC<PriceContainerProps> = ({ walletDetails }) => {
+const WalletBalanceContainer: React.FC<WalletBalanceContainerProps> = ({
+  walletDetails,
+}) => {
   const btcWallet = walletDetails.find((wallet) => wallet.walletCurrency === "BTC")
   const usdWallet = walletDetails.find((wallet) => wallet.walletCurrency === "USD")
 
@@ -63,7 +65,7 @@ const PriceContainer: React.FC<PriceContainerProps> = ({ walletDetails }) => {
               btcWallet.walletCurrency,
             )
             return (
-              <PriceContainerCard
+              <WalletBalanceCard
                 id={btcWallet.id}
                 walletCurrency={btcWallet.walletCurrency}
                 balance={balance}
@@ -83,7 +85,7 @@ const PriceContainer: React.FC<PriceContainerProps> = ({ walletDetails }) => {
               usdWallet.walletCurrency,
             )
             return (
-              <PriceContainerCard
+              <WalletBalanceCard
                 id={usdWallet.id}
                 walletCurrency={usdWallet.walletCurrency}
                 balance={balance}
@@ -97,4 +99,4 @@ const PriceContainer: React.FC<PriceContainerProps> = ({ walletDetails }) => {
   )
 }
 
-export default PriceContainer
+export default WalletBalanceContainer

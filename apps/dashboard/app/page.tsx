@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth"
 
 import { authOptions } from "./api/auth/[...nextauth]/route"
 
-import PriceContainer from "@/components/price-container/price-container"
+import WalletBalanceContainer from "@/components/wallet-balance/wallet-balance-container"
 import ContentContainer from "@/components/content-container"
 
 export default async function Home() {
@@ -12,7 +12,7 @@ export default async function Home() {
   return (
     <main>
       <ContentContainer>
-        <PriceContainer walletDetails={walletDetails}></PriceContainer>
+        <WalletBalanceContainer walletDetails={walletDetails}></WalletBalanceContainer>
       </ContentContainer>
     </main>
   )
