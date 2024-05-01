@@ -46,6 +46,7 @@ pub(super) struct StatefulNotification {
     pub deep_link: Option<String>,
     pub created_at: Timestamp,
     pub acknowledged_at: Option<Timestamp>,
+    pub add_to_bulletin: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
