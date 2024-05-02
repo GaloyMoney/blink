@@ -7,7 +7,10 @@
 #   port: 6685
 app:
   # jobs:
-  #   kickoff_link_email_reminder_delay: 5
+  #   enabled: false
+  #   max_concurrent_jobs: 24
+  #   min_concurrent_jobs: 12
+  #   kickoff_link_email_reminder_delay: 21600
   # link_email_reminder:
   #   account_liveness_threshold_minutes: 30240
   #   account_aged_threshold_minutes: 30240
