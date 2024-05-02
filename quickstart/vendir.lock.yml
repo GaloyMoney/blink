@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: need await for support chat messages (#4409)...'
-      sha: 3347b69ea5a2e0603db7e5cfb357cfdf3fb961ff
+      commitTitle: 'chore(notifications): do not persist txn notification to history
+        (#4403)...'
+      sha: 0006351630f7286492fad6744ddbc36b9e610714
       tags:
-      - 0.20.177-2-g3347b69ea
+      - 0.20.178-2-g000635163
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: need await for support chat messages (#4409)...'
-      sha: 3347b69ea5a2e0603db7e5cfb357cfdf3fb961ff
+      commitTitle: 'chore(notifications): do not persist txn notification to history
+        (#4403)...'
+      sha: 0006351630f7286492fad6744ddbc36b9e610714
       tags:
-      - 0.20.177-2-g3347b69ea
+      - 0.20.179
     path: schemas
   - git:
-      commitTitle: 'fix: need await for support chat messages (#4409)...'
-      sha: 3347b69ea5a2e0603db7e5cfb357cfdf3fb961ff
+      commitTitle: 'chore(notifications): do not persist txn notification to history
+        (#4403)...'
+      sha: 0006351630f7286492fad6744ddbc36b9e610714
       tags:
-      - 0.20.178
+      - 0.20.179
     path: gql
   path: graphql
 kind: LockConfig
