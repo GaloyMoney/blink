@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(notifications): do not persist txn notification to history
-        (#4403)...'
-      sha: 0006351630f7286492fad6744ddbc36b9e610714
+      commitTitle: 'fix(core): handle external routed self payments bundle (#4397)...'
+      sha: dd0ac4b306569878b3a64b5a494bf99ad2897272
       tags:
-      - 0.20.178-2-g000635163
+      - 0.20.179-4-gdd0ac4b30
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(notifications): do not persist txn notification to history
-        (#4403)...'
-      sha: 0006351630f7286492fad6744ddbc36b9e610714
+      commitTitle: 'fix(core): handle external routed self payments bundle (#4397)...'
+      sha: dd0ac4b306569878b3a64b5a494bf99ad2897272
       tags:
-      - 0.20.179
+      - 0.20.180
     path: schemas
   - git:
-      commitTitle: 'chore(notifications): do not persist txn notification to history
-        (#4403)...'
-      sha: 0006351630f7286492fad6744ddbc36b9e610714
+      commitTitle: 'fix(core): handle external routed self payments bundle (#4397)...'
+      sha: dd0ac4b306569878b3a64b5a494bf99ad2897272
       tags:
-      - 0.20.179
+      - 0.20.180
     path: gql
   path: graphql
 kind: LockConfig
