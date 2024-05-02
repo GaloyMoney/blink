@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client"
 
-import { apollo } from ".."
+import { apolloClient } from ".."
 import { CallbackEndpointsDocument, CallbackEndpointsQuery } from "../generated"
 
 gql`
@@ -16,8 +16,8 @@ gql`
   }
 `
 
-export async function fetchCallbackData(token: string) {
-  const client = apollo(token).getClient()
+export async function fetchCallbackData() {
+  const client = await apolloClient.authenticated()
   try {
     const response = await client.query<CallbackEndpointsQuery>({
       query: CallbackEndpointsDocument,

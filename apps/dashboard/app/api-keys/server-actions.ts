@@ -28,7 +28,9 @@ export const revokeApiKeyServerAction = async (id: string) => {
   }
 
   try {
-    await revokeApiKey(token, id)
+    await revokeApiKey({
+      id,
+    })
   } catch (err) {
     console.log("error in revokeApiKey ", err)
     return {
@@ -97,7 +99,11 @@ export const createApiKeyServerAction = async (
 
   let data
   try {
-    data = await createApiKey(token, apiKeyName, apiKeyExpiresInDays, scopes)
+    data = await createApiKey({
+      name: apiKeyName,
+      expireInDays: apiKeyExpiresInDays,
+      scopes,
+    })
   } catch (err) {
     console.log("error in createApiKey ", err)
     return {

@@ -73,10 +73,18 @@ impl StatefulNotification {
         })
     }
 
+    pub fn is_acknowledged(&self) -> bool {
+        self.acknowledged_at().is_some()
+    }
+
     pub fn created_at(&self) -> chrono::DateTime<chrono::Utc> {
         self.events
             .entity_first_persisted_at
             .expect("entity_first_persisted_at is set at time on entity creation")
+    }
+
+    pub fn add_to_bulletin(&self) -> bool {
+        self.payload.should_be_added_to_bulletin()
     }
 }
 

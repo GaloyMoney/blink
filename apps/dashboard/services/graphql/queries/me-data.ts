@@ -34,9 +34,8 @@ gql`
   }
 `
 
-export async function fetchUserData(token: string) {
-  const client = apollo(token).getClient()
-
+export async function fetchUserDataForSession({ token }: { token: string }) {
+  const client = apollo(token)
   try {
     const data = await client.query<MeQuery>({
       query: MeDocument,

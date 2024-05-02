@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client"
 
-import { apollo } from ".."
+import { apolloClient } from ".."
 import { ApiKeysDocument, ApiKeysQuery } from "../generated"
 
 gql`
@@ -21,8 +21,8 @@ gql`
   }
 `
 
-export async function apiKeys(token: string) {
-  const client = apollo(token).getClient()
+export async function apiKeys() {
+  const client = await apolloClient.authenticated()
 
   try {
     const { data } = await client.query<ApiKeysQuery>({

@@ -23,7 +23,7 @@ export default async function Home() {
     redirect("/")
   }
 
-  const keys = await apiKeys(token)
+  const keys = await apiKeys()
 
   const activeKeys = keys.filter(({ expired, revoked }) => !expired && !revoked)
   const expiredKeys = keys.filter(({ expired }) => expired)

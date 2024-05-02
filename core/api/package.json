@@ -11,7 +11,7 @@
     "watch": "nodemon -V -e ts,graphql -w ./src -x pnpm run start",
     "watch:compile": "tsc --watch  --noEmit",
     "watch-trigger": "nodemon -V -e ts,graphql -w ./src -x pnpm run trigger",
-    "graphql-check": "curl -fsS https://raw.githubusercontent.com/GaloyMoney/galoy-mobile/main/app/graphql/generated.gql -o generated.gql && npx @graphql-inspector/cli validate ./generated.gql src/graphql/public/schema.graphql --apollo --noStrictFragments",
+    "graphql-check": "curl -fsS https://raw.githubusercontent.com/GaloyMoney/blink-mobile/main/app/graphql/generated.gql -o generated.gql && npx @graphql-inspector/cli validate ./generated.gql src/graphql/public/schema.graphql --apollo --noStrictFragments",
     "cron": "pnpm run build && node dist/servers/cron.js",
     "exporter": "pnpm run build && node dist/servers/exporter.js",
     "daily-notif": "pnpm run build && node dist/servers/daily-balance-notification.js",

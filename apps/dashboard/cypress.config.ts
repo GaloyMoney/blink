@@ -7,7 +7,7 @@ export default defineConfig({
   e2e: {
     baseUrl: "http://localhost:3001",
   },
-  defaultCommandTimeout: 60000,
+  defaultCommandTimeout: 30000,
   env: {
     NEXT_AUTH_SESSION_TOKEN: process.env.NEXT_AUTH_SESSION_TOKEN,
   },
