@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): handle external routed self payments bundle (#4397)...'
-      sha: dd0ac4b306569878b3a64b5a494bf99ad2897272
+      commitTitle: 'ci: correct ''pay'' build target (#4380)'
+      sha: 6d81f4955bf7f10bf96e143c331b3b93e9757d80
       tags:
-      - 0.20.179-4-gdd0ac4b30
+      - 0.20.180-2-g6d81f4955
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): handle external routed self payments bundle (#4397)...'
-      sha: dd0ac4b306569878b3a64b5a494bf99ad2897272
+      commitTitle: 'ci: correct ''pay'' build target (#4380)'
+      sha: 6d81f4955bf7f10bf96e143c331b3b93e9757d80
       tags:
-      - 0.20.180
+      - 0.20.180-2-g6d81f4955
     path: schemas
   - git:
-      commitTitle: 'fix(core): handle external routed self payments bundle (#4397)...'
-      sha: dd0ac4b306569878b3a64b5a494bf99ad2897272
+      commitTitle: 'ci: correct ''pay'' build target (#4380)'
+      sha: 6d81f4955bf7f10bf96e143c331b3b93e9757d80
       tags:
-      - 0.20.180
+      - 0.20.180-2-g6d81f4955
     path: gql
   path: graphql
 kind: LockConfig
