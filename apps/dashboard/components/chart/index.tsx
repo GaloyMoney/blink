@@ -14,13 +14,15 @@ import {
 import CircularProgress from "@mui/joy/CircularProgress"
 
 import useProcessedTransactionsForChart from "@/hook/use-processed-transactions-for-chart"
-import { TransactionEdge } from "@/services/graphql/generated"
+import { TransactionEdge, WalletCurrency } from "@/services/graphql/generated"
+
+type DisplayCurrency = "CENTS" | "SATS"
 
 const CustomTooltip = ({
   active,
   payload,
   displayCurrency,
-}: TooltipProps<number, string> & { displayCurrency: "CENTS" | "SATS" }) => {
+}: TooltipProps<number, string> & { displayCurrency: DisplayCurrency }) => {
   if (active && payload && payload.length) {
     return (
       <Card style={{ padding: "1em" }}>
@@ -51,16 +53,21 @@ const TransactionChart = ({
   const { usdTransactions, btcTransactions, minBalance, maxBalance } =
     processedTransactions
 
-  const [walletCurrency, setWalletCurrency] = useState<"USD" | "BTC">("USD")
-  const data = walletCurrency === "USD" ? usdTransactions : btcTransactions
-  const minDomainY = walletCurrency === "USD" ? minBalance.usd : minBalance.btc
-  const maxDomainY = walletCurrency === "USD" ? maxBalance.usd : maxBalance.btc
+  const [walletCurrency, setWalletCurrency] = useState<WalletCurrency>(WalletCurrency.Usd)
+  const data = walletCurrency === WalletCurrency.Usd ? usdTransactions : btcTransactions
+  const minDomainY =
+    walletCurrency === WalletCurrency.Usd ? minBalance.usd : minBalance.btc
+  const maxDomainY =
+    walletCurrency === WalletCurrency.Usd ? maxBalance.usd : maxBalance.btc
 
   const handleWalletChange = (
     event: React.MouseEvent<HTMLElement, MouseEvent>,
-    walletCurrency: "USD" | "BTC" | null,
+    walletCurrency: WalletCurrency | null,
   ) => {
-    if (walletCurrency !== null && (walletCurrency === "USD" || walletCurrency === "BTC")) {
+    if (
+      walletCurrency !== null &&
+      (walletCurrency === WalletCurrency.Usd || walletCurrency === WalletCurrency.Btc)
+    ) {
       setWalletCurrency(walletCurrency)
     }
   }
@@ -120,7 +127,9 @@ const TransactionChart = ({
               <Tooltip
                 content={
                   <CustomTooltip
-                    displayCurrency={walletCurrency === "USD" ? "CENTS" : "SATS"}
+                    displayCurrency={
+                      walletCurrency === WalletCurrency.Usd ? "CENTS" : "SATS"
+                    }
                   />
                 }
               />

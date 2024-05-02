@@ -1,8 +1,13 @@
-import { TransactionEdge } from "@/services/graphql/generated"
+import {
+  TransactionEdge,
+  TxDirection,
+  TxStatus,
+  WalletCurrency,
+} from "@/services/graphql/generated"
 import { ProcessedTransaction } from "./index.types"
 import { formatDateTime, formatMonth } from "@/app/utils"
 
-export const getBalanceForTransactions = ({
+export const getMinMaxBalanceAndPerWalletTransaction = ({
   transactions,
   currentUsdBalance,
   currentBtcBalance,
@@ -32,7 +37,7 @@ export const getBalanceForTransactions = ({
   const usdTransactions: ProcessedTransaction[] = []
 
   for (const { node } of transactions) {
-    if (node.settlementCurrency === "USD") {
+    if (node.settlementCurrency === WalletCurrency.Usd && node.status === TxStatus.Success) {
       minBalance.usd = Math.min(minBalance.usd, usdBalance)
       maxBalance.usd = Math.max(maxBalance.usd, usdBalance)
 
@@ -42,12 +47,12 @@ export const getBalanceForTransactions = ({
         dateTime: formatDateTime(node.createdAt),
       })
 
-      if (node.direction === "RECEIVE") {
+      if (node.direction === TxDirection.Receive) {
         usdBalance -= Math.abs(node.settlementAmount)
-      } else if (node.direction === "SEND") {
+      } else if (node.direction === TxDirection.Send) {
         usdBalance += Math.abs(node.settlementAmount) + node.settlementFee
       }
-    } else if (node.settlementCurrency === "BTC") {
+    } else if (node.settlementCurrency === WalletCurrency.Btc && node.status === TxStatus.Success) {
       minBalance.btc = Math.min(minBalance.btc, btcBalance)
       maxBalance.btc = Math.max(maxBalance.btc, btcBalance)
 
@@ -57,9 +62,9 @@ export const getBalanceForTransactions = ({
         dateTime: formatDateTime(node.createdAt),
       })
 
-      if (node.direction === "RECEIVE") {
+      if (node.direction === TxDirection.Receive) {
         btcBalance -= Math.abs(node.settlementAmount)
-      } else if (node.direction === "SEND") {
+      } else if (node.direction === TxDirection.Send) {
         btcBalance += Math.abs(node.settlementAmount) + node.settlementFee
       }
     }

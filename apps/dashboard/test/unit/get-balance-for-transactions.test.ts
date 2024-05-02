@@ -1,13 +1,13 @@
 import { transactions } from "../mock-data/transaction"
-import { getBalanceForTransactions } from "../../lib/get-balance-for-transactions"
+import { getMinMaxBalanceAndPerWalletTransaction } from "../../lib/get-balance-for-transactions"
 
-describe("getBalanceForTransactions Tests", () => {
+describe("getMinMaxBalanceAndPerWalletTransaction Tests", () => {
   const currentUsdBalance = 36240
   const currentBtcBalance = 1993700
   let result
 
   beforeAll(() => {
-    result = getBalanceForTransactions({
+    result = getMinMaxBalanceAndPerWalletTransaction({
       transactions,
       currentUsdBalance,
       currentBtcBalance,
@@ -63,8 +63,8 @@ describe("getBalanceForTransactions Tests", () => {
     })
 
     it("should compute minBalance and maxBalance correctly", () => {
-      const expectedMinBalance = { usd: 199.2, btc: 997000 }
-      const expectedMaxBalance = { usd: 398.4, btc: 1994000 }
+      const expectedMinBalance = { usd: 19920, btc: 997000 }
+      const expectedMaxBalance = { usd: 39840, btc: 1994000 }
       expect(result.minBalance).toEqual(expectedMinBalance)
       expect(result.maxBalance).toEqual(expectedMaxBalance)
     })
@@ -74,27 +74,27 @@ describe("getBalanceForTransactions Tests", () => {
 const expectedData = {
   usdTransactions: [
     {
-      balance: 362.4, // send 1200 hence balance 36240 cents
+      balance: 36240, // send 1200 hence balance 36240 cents
       date: "Apr 26",
       dateTime: "April 26, 2024 at 09:57:14 PM",
     },
     {
-      balance: 374.4, // send 1200 hence balance 37440 cents
+      balance: 37440, // send 1200 hence balance 37440 cents
       date: "Apr 26",
       dateTime: "April 26, 2024 at 09:57:12 PM",
     },
     {
-      balance: 386.4, // sent 1200 cents hence balance 38640 cents
+      balance: 38640, // sent 1200 cents hence balance 38640 cents
       date: "Apr 26",
       dateTime: "April 26, 2024 at 09:57:09 PM",
     },
     {
-      balance: 398.4, // received 19920 again hence balance 39840 cents
+      balance: 39840, // received 19920 again hence balance 39840 cents
       date: "Apr 26",
       dateTime: "April 26, 2024 at 09:54:04 PM",
     },
     {
-      balance: 199.2, // received 19920 cents as starting point
+      balance: 19920, // received 19920 cents as starting point
       date: "Apr 26",
       dateTime: "April 26, 2024 at 09:50:59 PM",
     },
@@ -126,6 +126,6 @@ const expectedData = {
       dateTime: "April 26, 2024 at 09:51:04 PM",
     },
   ],
-  minBalance: { usd: 199.2, btc: 997000 },
-  maxBalance: { usd: 398.4, btc: 1994000 },
+  minBalance: { usd: 19920, btc: 997000 },
+  maxBalance: { usd: 39840, btc: 1994000 },
 }

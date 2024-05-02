@@ -8,6 +8,7 @@ import WalletBalanceContainer from "@/components/wallet-balance/wallet-balance-c
 import ContentContainer from "@/components/content-container"
 import { fetchTransactionsByCount } from "@/lib/fetch-transactions-by-count"
 import TransactionChart from "@/components/chart"
+import { WalletCurrency } from "@/services/graphql/generated"
 
 const MAXIMUM_TRANSACTIONS = 500
 
@@ -20,10 +21,10 @@ export default async function Home() {
   }
 
   const btcWallet = session.userData.data.me?.defaultAccount.wallets.find(
-    (wallet) => wallet.walletCurrency === "BTC",
+    (wallet) => wallet.walletCurrency === WalletCurrency.Btc,
   )
   const usdWallet = session.userData.data.me?.defaultAccount.wallets.find(
-    (wallet) => wallet.walletCurrency === "USD",
+    (wallet) => wallet.walletCurrency === WalletCurrency.Usd,
   )
 
   const response = await fetchTransactionsByCount({
@@ -42,7 +43,7 @@ export default async function Home() {
             margin: "0 auto",
           }}
         >
-          <WalletBalanceContainer walletDetails={walletDetails}></WalletBalanceContainer>
+          <WalletBalanceContainer walletDetails={walletDetails} />
           <TransactionChart
             currentBtcBalance={btcWallet?.balance || 0}
             currentUsdBalance={usdWallet?.balance || 0}

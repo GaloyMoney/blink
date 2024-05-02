@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react"
 
 import { TransactionEdge } from "@/services/graphql/generated"
-import { getBalanceForTransactions } from "@/lib/get-balance-for-transactions"
+import { getMinMaxBalanceAndPerWalletTransaction } from "@/lib/get-balance-for-transactions"
 
 const useProcessedTransactionsForChart = ({
   transactions,
@@ -15,7 +15,7 @@ const useProcessedTransactionsForChart = ({
   const [loading, setLoading] = useState(true)
 
   const memoizedProcessTransaction = useCallback(() => {
-    return getBalanceForTransactions({
+    return getMinMaxBalanceAndPerWalletTransaction({
       transactions,
       currentUsdBalance,
       currentBtcBalance,
