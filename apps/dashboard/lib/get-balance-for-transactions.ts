@@ -20,11 +20,11 @@ export const getBalanceForTransactions = ({
   let btcBalance = currentBtcBalance
 
   const minBalance = {
-    usd: Number((currentUsdBalance / 100).toFixed(2)),
+    usd: currentUsdBalance,
     btc: currentBtcBalance,
   }
   const maxBalance = {
-    usd: Number((currentUsdBalance / 100).toFixed(2)),
+    usd: currentUsdBalance,
     btc: currentBtcBalance,
   }
 
@@ -33,11 +33,11 @@ export const getBalanceForTransactions = ({
 
   for (const { node } of transactions) {
     if (node.settlementCurrency === "USD") {
-      minBalance.usd = Math.min(minBalance.usd, Number((usdBalance / 100).toFixed(2)))
-      maxBalance.usd = Math.max(maxBalance.usd, Number((usdBalance / 100).toFixed(2)))
+      minBalance.usd = Math.min(minBalance.usd, usdBalance)
+      maxBalance.usd = Math.max(maxBalance.usd, usdBalance)
 
       usdTransactions.push({
-        balance: Number((usdBalance / 100).toFixed(2)),
+        balance: usdBalance,
         date: formatMonth(node.createdAt),
         dateTime: formatDateTime(node.createdAt),
       })

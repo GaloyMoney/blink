@@ -19,13 +19,13 @@ import { TransactionEdge } from "@/services/graphql/generated"
 const CustomTooltip = ({
   active,
   payload,
-  walletCurrency,
-}: TooltipProps<number, string> & { walletCurrency: "USD" | "Sats" }) => {
+  displayCurrency,
+}: TooltipProps<number, string> & { displayCurrency: "CENTS" | "SATS" }) => {
   if (active && payload && payload.length) {
     return (
       <Card style={{ padding: "1em" }}>
         <p>{payload[0].payload.dateTime}</p>
-        <p>{`${payload[0].value} ${walletCurrency}`}</p>
+        <p>{`${payload[0].value} ${displayCurrency}`}</p>
       </Card>
     )
   }
@@ -58,10 +58,10 @@ const TransactionChart = ({
 
   const handleWalletChange = (
     event: React.MouseEvent<HTMLElement, MouseEvent>,
-    newCurrency: "USD" | "BTC" | null,
+    walletCurrency: "USD" | "BTC" | null,
   ) => {
-    if (newCurrency !== null && (newCurrency === "USD" || newCurrency === "BTC")) {
-      setWalletCurrency(newCurrency)
+    if (walletCurrency !== null && (walletCurrency === "USD" || walletCurrency === "BTC")) {
+      setWalletCurrency(walletCurrency)
     }
   }
 
@@ -86,8 +86,8 @@ const TransactionChart = ({
               onChange={handleWalletChange}
               color="neutral"
             >
-              <Button value="USD">Stablesats (USD)</Button>
-              <Button value="BTC">BTC (Sats)</Button>
+              <Button value="USD">Stablesats (US CENTS)</Button>
+              <Button value="BTC">BTC (SATS)</Button>
             </ToggleButtonGroup>
           </Box>
           <ResponsiveContainer
@@ -120,7 +120,7 @@ const TransactionChart = ({
               <Tooltip
                 content={
                   <CustomTooltip
-                    walletCurrency={walletCurrency === "USD" ? "USD" : "Sats"}
+                    displayCurrency={walletCurrency === "USD" ? "CENTS" : "SATS"}
                   />
                 }
               />
