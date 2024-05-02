@@ -2,45 +2,62 @@
 
 load "../../helpers/_common.bash"
 load "../../helpers/user.bash"
-load "../../helpers/onchain.bash"
+load "../../helpers/admin.bash"
 
 setup_file() {
   clear_cache
 
   create_user 'alice'
+
+  login_admin
 }
 
-@test "notifications: list stateful transactions" {
-  btc_wallet_name="alice.btc_wallet_id"
-  amount="0.01"
+@test "notifications: list stateful notifications" {
+  admin_token="$(read_value 'admin.token')"
 
-  # Create address and broadcast transaction 1
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value $btc_wallet_name)" \
-    '{input: {walletId: $wallet_id}}'
+    '{
+      input: {
+        localizedNotificationContents: [
+          {
+            language: "en",
+            title: "Test title",
+            body: "test body"
+          }
+        ],
+        shouldSendPush: false,
+        shouldAddToHistory: true,
+        shouldAddToBulletin: true,
+        deepLinkScreen: "EARN"
+      }
+    }'
   )
 
-  exec_graphql 'alice' 'on-chain-address-create' "$variables"
-  on_chain_address_created_1="$(graphql_output '.data.onChainAddressCreate.address')"
-  [[ "${on_chain_address_created_1}" != "null" ]] || exit 1
+  # trigger a marketing notification
+  exec_admin_graphql "$admin_token" 'marketing-notification-trigger' "$variables"
 
-  bitcoin_cli sendtoaddress "$on_chain_address_created_1" "$amount"
-  retry 15 1 check_for_incoming_broadcast 'alice' "$on_chain_address_created_1"
+  local n_notifications
+  for i in {1..10}; do
+    exec_graphql 'alice' 'list-stateful-notifications'
+    n_notifications=$(graphql_output '.data.me.statefulNotifications.nodes | length')
+    [[ $n_notifications -eq 1 ]] && break;
+    sleep 1
+  done
+  [[ $n_notifications -eq 1 ]] || exit 1;
 
-  exec_graphql 'alice' 'list-stateful-notifications'
-  n_notifications=$(graphql_output '.data.me.statefulNotifications.nodes | length')
-  [[ $n_notifications -eq 1 ]] || exit 1
+  exec_admin_graphql "$admin_token" 'marketing-notification-trigger' "$variables"
 
-  bitcoin_cli -generate 2
-  retry 30 1 check_for_onchain_initiated_settled 'alice' "$on_chain_address_created_1" 2
-
-  exec_graphql 'alice' 'list-stateful-notifications'
-  n_notifications=$(graphql_output '.data.me.statefulNotifications.nodes | length')
-  [[ $n_notifications -eq 2 ]] || exit 1
+  for i in {1..10}; do
+    exec_graphql 'alice' 'list-stateful-notifications'
+    n_notifications=$(graphql_output '.data.me.statefulNotifications.nodes | length')
+    [[ $n_notifications -eq 2 ]] && break;
+      sleep 1
+  done
+  [[ $n_notifications -eq 2 ]] || exit 1;
 }
 
-@test "notifications: list stateful transactions paginated with cursor" {
+@test "notifications: list stateful notifications paginated with cursor" {
   exec_graphql 'alice' 'list-stateful-notifications' '{"first": 1}'
   n_notifications=$(graphql_output '.data.me.statefulNotifications.nodes | length')
   first_id=$(graphql_output '.data.me.statefulNotifications.nodes[0].id')
@@ -63,7 +80,7 @@ setup_file() {
   [[ "$next_page" = "false" ]] || exit 1
 }
 
-@test "notifications: acknowledge stateful transactions" {
+@test "notifications: acknowledge stateful notification" {
   exec_graphql 'alice' 'list-stateful-notifications' '{"first": 1}'
   n_notifications=$(graphql_output '.data.me.statefulNotifications.nodes | length')
   id=$(graphql_output '.data.me.statefulNotifications.nodes[0].id')
@@ -80,7 +97,7 @@ setup_file() {
   [[ "$acknowledged_at" != "null" ]] || exit 1
 }
 
-@test "notifications: unacknowledged_stateful_notifications_count" {
+@test "notifications: unacknowledged stateful notifications count" {
   exec_graphql 'alice' 'unacknowledged_stateful_notifications_count'
   count=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsCount')
   [[ $count -eq 1 ]] || exit 1
