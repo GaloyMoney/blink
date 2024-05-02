@@ -57,7 +57,7 @@ export default function VoucherPage() {
       })
       setModalOpen(true)
     }
-  }, [data])
+  }, [data, error, router])
 
   if (loading) {
     return <LoadingPageComponent />
