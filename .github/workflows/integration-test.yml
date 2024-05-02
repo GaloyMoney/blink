@@ -80,9 +80,14 @@ jobs:
             esac
 
             case "$LABEL" in
-              dashboard|consent|pay|admin-panel|map|voucher)
+              dashboard|consent|admin-panel|map|voucher)
                 ARGS+=" $LABEL"
                 BUILD_ARGS+=" //apps/$LABEL:$LABEL"
+                ;;
+
+              pay)
+                ARGS+=" $LABEL"
+                BUILD_ARGS+=" //apps/$LABEL:$LABEL-ci"
                 ;;
             esac
           done
