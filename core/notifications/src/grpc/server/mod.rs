@@ -409,6 +409,7 @@ impl NotificationsService for Notifications {
                             should_send_push,
                             user_ids,
                             deep_link,
+                            action,
                         },
                     )),
             }) => {
@@ -462,6 +463,8 @@ impl NotificationsService for Notifications {
                     None
                 };
 
+                let action = action.map(notification_event::Action::from);
+
                 self.app
                     .handle_marketing_notification_triggered_event(
                         user_ids,
@@ -472,6 +475,7 @@ impl NotificationsService for Notifications {
                             should_add_to_history,
                             should_send_push,
                             deep_link,
+                            action,
                         },
                     )
                     .await?;

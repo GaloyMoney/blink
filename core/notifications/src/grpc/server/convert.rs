@@ -244,3 +244,30 @@ impl From<proto::DeepLinkAction> for notification_event::DeepLinkAction {
         }
     }
 }
+
+impl From<proto::Action> for notification_event::Action {
+    fn from(action: proto::Action) -> Self {
+        match action.data {
+            Some(proto::action::Data::DeepLink(deep_link)) => {
+                let screen = deep_link.screen.and_then(|screen| {
+                    proto::DeepLinkScreen::try_from(screen)
+                        .map(notification_event::DeepLinkScreen::from)
+                        .ok()
+                });
+
+                let action = deep_link.action.and_then(|action| {
+                    proto::DeepLinkAction::try_from(action)
+                        .map(notification_event::DeepLinkAction::from)
+                        .ok()
+                });
+
+                let dl = notification_event::DeepLink { screen, action };
+                notification_event::Action::OpenDeepLink(dl)
+            }
+            Some(proto::action::Data::ExternalUrl(url)) => {
+                notification_event::Action::OpenExternalUrl(url)
+            }
+            None => unreachable!("action data should always be set"),
+        }
+    }
+}

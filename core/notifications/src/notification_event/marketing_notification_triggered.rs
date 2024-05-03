@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use super::{DeepLink, NotificationEvent};
+use super::{Action, DeepLink, NotificationEvent};
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -13,6 +13,7 @@ pub struct MarketingNotificationTriggered {
     pub should_add_to_history: bool,
     pub should_add_to_bulletin: bool,
     pub deep_link: Option<DeepLink>,
+    pub action: Option<Action>,
 }
 
 impl NotificationEvent for MarketingNotificationTriggered {
@@ -22,6 +23,10 @@ impl NotificationEvent for MarketingNotificationTriggered {
 
     fn deep_link(&self) -> Option<DeepLink> {
         self.deep_link.clone()
+    }
+
+    fn action(&self) -> Option<Action> {
+        self.action.clone()
     }
 
     fn should_send_push(&self) -> bool {
