@@ -541,6 +541,10 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
         "Unfortunately, we're unable to delete your account automatically at this time. Please reach out to our support team for assistance with the deletion process."
       return new OperationRestrictedError({ message, logger: baseLogger })
 
+    case "InvalidInvoiceAmountError":
+      message = "Invalid invoice amount"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------
@@ -557,6 +561,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "LightningServiceError":
     case "CouldNotDecodeReturnedPaymentRequest":
     case "InvoiceNotFoundError":
+    case "InvoiceAlreadySettledError":
     case "InvoiceNotPaidError":
     case "LnPaymentPendingError":
     case "LnAlreadyPaidError":
