@@ -1,7 +1,7 @@
 type LnPaymentPartial = {
   readonly paymentHash: PaymentHash
   readonly paymentRequest: EncodedPaymentRequest | undefined
-  readonly sentFromPubkey: Pubkey
+  readonly sentFromPubkey: Pubkey | undefined
 }
 
 // Makes all properties non-readonly except the properties passed in as K
