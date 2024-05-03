@@ -1315,6 +1315,12 @@ enum Network
   testnet @join__enumValue(graph: PUBLIC)
 }
 
+union NotificationAction
+  @join__type(graph: NOTIFICATIONS)
+  @join__unionMember(graph: NOTIFICATIONS, member: "OpenDeepLinkAction")
+  @join__unionMember(graph: NOTIFICATIONS, member: "OpenExternalLinkAction")
+ = OpenDeepLinkAction | OpenExternalLinkAction
+
 scalar NotificationCategory
   @join__type(graph: PUBLIC)
 
@@ -1447,6 +1453,18 @@ type OneDayAccountLimit implements AccountLimit
 """An authentication code valid for a single use"""
 scalar OneTimeAuthCode
   @join__type(graph: PUBLIC)
+
+type OpenDeepLinkAction
+  @join__type(graph: NOTIFICATIONS)
+{
+  deepLink: String!
+}
+
+type OpenExternalLinkAction
+  @join__type(graph: NOTIFICATIONS)
+{
+  url: String!
+}
 
 """Information about pagination in a connection"""
 type PageInfo
@@ -1776,6 +1794,7 @@ type StatefulNotification
   title: String!
   body: String!
   deepLink: String
+  action: NotificationAction
   createdAt: Timestamp!
   acknowledgedAt: Timestamp
   bulletinEnabled: Boolean!
