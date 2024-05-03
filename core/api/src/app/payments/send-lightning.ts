@@ -879,7 +879,7 @@ const lockedPaymentViaLnSteps = async ({
       displayCurrency: senderDisplayCurrency,
 
       paymentAmounts: paymentFlow,
-      pubkey: outgoingNodePubkey || lndService.defaultPubkey(),
+      pubkey: outgoingNodePubkey,
       paymentHash,
       feeKnownInAdvance: !!rawRoute,
 
