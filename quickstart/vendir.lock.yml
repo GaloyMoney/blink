@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): update admin queries balanceSnapshotSec (#4418)'
-      sha: 629864294d5b50dbc2ca63028297be91970e960e
+      commitTitle: 'fix(core): lookup payment only by payment hash (#4420)'
+      sha: dc50d894c1c15cd3ba77a4eb95548ec1fb61c221
       tags:
-      - 0.20.182-1-g629864294
+      - 0.20.182-3-gdc50d894c
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): update admin queries balanceSnapshotSec (#4418)'
-      sha: 629864294d5b50dbc2ca63028297be91970e960e
+      commitTitle: 'fix(core): lookup payment only by payment hash (#4420)'
+      sha: dc50d894c1c15cd3ba77a4eb95548ec1fb61c221
       tags:
-      - 0.20.182-1-g629864294
+      - 0.20.182-3-gdc50d894c
     path: schemas
   - git:
-      commitTitle: 'fix(core): update admin queries balanceSnapshotSec (#4418)'
-      sha: 629864294d5b50dbc2ca63028297be91970e960e
+      commitTitle: 'fix(core): lookup payment only by payment hash (#4420)'
+      sha: dc50d894c1c15cd3ba77a4eb95548ec1fb61c221
       tags:
-      - 0.20.182-1-g629864294
+      - 0.20.182-3-gdc50d894c
     path: gql
   path: graphql
 kind: LockConfig
