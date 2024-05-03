@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     messages::LocalizedStatefulMessage,
-    notification_event::{DeepLink, NotificationEventPayload},
+    notification_event::{Action, DeepLink, NotificationEventPayload},
     primitives::*,
 };
 
@@ -85,6 +85,10 @@ impl StatefulNotification {
 
     pub fn add_to_bulletin(&self) -> bool {
         self.payload.should_be_added_to_bulletin()
+    }
+
+    pub fn action(&self) -> Option<Action> {
+        self.payload.action()
     }
 }
 

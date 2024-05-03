@@ -60,6 +60,12 @@ pub enum DeepLinkAction {
     UpgradeAccountModal,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum Action {
+    OpenDeepLink(DeepLink),
+    OpenExternalUrl(String),
+}
+
 impl DeepLink {
     pub fn to_link_string(&self) -> String {
         let mut link_string: String = String::from("/");
@@ -128,6 +134,10 @@ pub trait NotificationEvent: std::fmt::Debug + Send + Sync {
 
     fn to_localized_persistent_message(&self, _locale: GaloyLocale) -> LocalizedStatefulMessage {
         unimplemented!()
+    }
+
+    fn action(&self) -> Option<Action> {
+        None
     }
 }
 

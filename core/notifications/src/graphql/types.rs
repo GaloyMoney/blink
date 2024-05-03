@@ -39,11 +39,28 @@ impl ScalarType for Timestamp {
 }
 
 #[derive(SimpleObject)]
+pub(super) struct OpenDeepLinkAction {
+    pub deep_link: String,
+}
+
+#[derive(SimpleObject)]
+pub(super) struct OpenExternalLinkAction {
+    pub url: String,
+}
+
+#[derive(Union)]
+pub(super) enum NotificationAction {
+    OpenDeepLinkAction(OpenDeepLinkAction),
+    OpenExternalLinkAction(OpenExternalLinkAction),
+}
+
+#[derive(SimpleObject)]
 pub(super) struct StatefulNotification {
     pub id: ID,
     pub title: String,
     pub body: String,
     pub deep_link: Option<String>,
+    pub action: Option<NotificationAction>,
     pub created_at: Timestamp,
     pub acknowledged_at: Option<Timestamp>,
     pub bulletin_enabled: bool,
