@@ -22,7 +22,7 @@ pub(super) use marketing_notification_triggered::*;
 pub(super) use price_changed::*;
 pub(super) use transaction_occurred::*;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DeepLink {
     pub screen: Option<DeepLinkScreen>,
     pub action: Option<DeepLinkAction>,

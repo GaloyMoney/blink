@@ -245,29 +245,42 @@ impl From<proto::DeepLinkAction> for notification_event::DeepLinkAction {
     }
 }
 
-impl From<proto::Action> for notification_event::Action {
-    fn from(action: proto::Action) -> Self {
+impl TryFrom<proto::Action> for notification_event::Action {
+    type Error = tonic::Status;
+
+    fn try_from(action: proto::Action) -> Result<Self, Self::Error> {
         match action.data {
             Some(proto::action::Data::DeepLink(deep_link)) => {
-                let screen = deep_link.screen.and_then(|screen| {
-                    proto::DeepLinkScreen::try_from(screen)
-                        .map(notification_event::DeepLinkScreen::from)
-                        .ok()
-                });
+                let screen = if let Some(screen) = deep_link.screen {
+                    Some(
+                        proto::DeepLinkScreen::try_from(screen)
+                            .map(notification_event::DeepLinkScreen::from)
+                            .map_err(|e| tonic::Status::invalid_argument(e.to_string()))?,
+                    )
+                } else {
+                    None
+                };
 
-                let action = deep_link.action.and_then(|action| {
-                    proto::DeepLinkAction::try_from(action)
-                        .map(notification_event::DeepLinkAction::from)
-                        .ok()
-                });
+                let action = if let Some(action) = deep_link.action {
+                    Some(
+                        proto::DeepLinkAction::try_from(action)
+                            .map(notification_event::DeepLinkAction::from)
+                            .map_err(|e| tonic::Status::invalid_argument(e.to_string()))?,
+                    )
+                } else {
+                    None
+                };
 
                 let dl = notification_event::DeepLink { screen, action };
-                notification_event::Action::OpenDeepLink(dl)
+                Ok(notification_event::Action::OpenDeepLink(dl))
             }
             Some(proto::action::Data::ExternalUrl(url)) => {
-                notification_event::Action::OpenExternalUrl(url)
+                Ok(notification_event::Action::OpenExternalUrl(url))
             }
-            None => unreachable!("action data should always be set"),
+            None => Err(tonic::Status::new(
+                tonic::Code::InvalidArgument,
+                "missing action data",
+            )),
         }
     }
 }

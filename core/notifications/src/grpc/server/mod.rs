@@ -463,7 +463,9 @@ impl NotificationsService for Notifications {
                     None
                 };
 
-                let action = action.map(notification_event::Action::from);
+                let action = action
+                    .map(notification_event::Action::try_from)
+                    .transpose()?;
 
                 self.app
                     .handle_marketing_notification_triggered_event(
