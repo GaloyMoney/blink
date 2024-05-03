@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): handle invoice amount unknown error (#4416)'
-      sha: 978ee7529f2e356e9c78e7f623a7710bf5e34789
+      commitTitle: 'fix(core): update admin queries balanceSnapshotSec (#4418)'
+      sha: 629864294d5b50dbc2ca63028297be91970e960e
       tags:
-      - 0.20.181-4-g978ee7529
+      - 0.20.182-1-g629864294
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): handle invoice amount unknown error (#4416)'
-      sha: 978ee7529f2e356e9c78e7f623a7710bf5e34789
+      commitTitle: 'fix(core): update admin queries balanceSnapshotSec (#4418)'
+      sha: 629864294d5b50dbc2ca63028297be91970e960e
       tags:
-      - 0.20.181-4-g978ee7529
+      - 0.20.182-1-g629864294
     path: schemas
   - git:
-      commitTitle: 'fix(core): handle invoice amount unknown error (#4416)'
-      sha: 978ee7529f2e356e9c78e7f623a7710bf5e34789
+      commitTitle: 'fix(core): update admin queries balanceSnapshotSec (#4418)'
+      sha: 629864294d5b50dbc2ca63028297be91970e960e
       tags:
-      - 0.20.181-4-g978ee7529
+      - 0.20.182-1-g629864294
     path: gql
   path: graphql
 kind: LockConfig
