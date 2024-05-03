@@ -49,7 +49,10 @@ pub struct StatefulNotification {
 
 impl StatefulNotification {
     pub fn deep_link(&self) -> Option<DeepLink> {
-        self.payload.deep_link()
+        self.payload.action().and_then(|action| match action {
+            Action::OpenDeepLink(deep_link) => Some(deep_link),
+            _ => None,
+        })
     }
 
     pub(super) fn acknowledge(&mut self) {

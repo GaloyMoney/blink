@@ -21,10 +21,6 @@ impl NotificationEvent for MarketingNotificationTriggered {
         UserNotificationCategory::Marketing
     }
 
-    fn deep_link(&self) -> Option<DeepLink> {
-        self.deep_link.clone()
-    }
-
     fn action(&self) -> Option<Action> {
         self.action.clone()
     }

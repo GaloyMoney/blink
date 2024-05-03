@@ -124,9 +124,7 @@ impl DeepLink {
 
 pub trait NotificationEvent: std::fmt::Debug + Send + Sync {
     fn category(&self) -> UserNotificationCategory;
-    fn deep_link(&self) -> Option<DeepLink> {
-        None
-    }
+
     fn should_send_push(&self) -> bool {
         false
     }
