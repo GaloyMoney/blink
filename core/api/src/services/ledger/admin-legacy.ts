@@ -1,4 +1,4 @@
-import { MainBook } from "./books"
+import { MainBookAdmin } from "./books"
 import { getBankOwnerWalletId } from "./caching"
 import {
   assetsMainAccount,
@@ -18,7 +18,9 @@ import {
 
 const getWalletBalance = async (account: string, query = {}) => {
   const params = { account, currency: "BTC", ...query }
-  const { balance } = await MainBook.balance(params)
+  const { balance } = await MainBookAdmin.balance(params, {
+    readPreference: "secondaryPreferred",
+  })
   return balance
 }
 
@@ -54,7 +56,7 @@ export const updateLndEscrow = async (amount: Satoshis) => {
     return { ...escrowData, updated: false }
   }
 
-  const entry = MainBook.entry("escrow")
+  const entry = MainBookAdmin.entry("escrow")
   const metadata = {
     type: LedgerTransactionType.Escrow,
     currency: WalletCurrency.Btc,
@@ -95,7 +97,7 @@ export const addLndChannelOpeningOrClosingFee = async ({
   const bankOwnerPath = toLiabilitiesWalletId(await getBankOwnerWalletId())
 
   try {
-    await MainBook.entry(description)
+    await MainBookAdmin.entry(description)
       .debit(bankOwnerPath, fee, txMetadata)
       .credit(lndLedgerAccountId, fee, txMetadata)
       .commit()
@@ -123,7 +125,7 @@ export const addLndRoutingRevenue = async ({
   const bankOwnerPath = toLiabilitiesWalletId(await getBankOwnerWalletId())
 
   try {
-    await MainBook.entry("routing fee")
+    await MainBookAdmin.entry("routing fee")
       .credit(bankOwnerPath, amount, metadata)
       .debit(lndLedgerAccountId, amount, metadata)
       .commit()
