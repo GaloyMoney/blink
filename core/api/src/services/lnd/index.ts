@@ -111,9 +111,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
   const listActivePubkeys = (): Pubkey[] =>
     getLnds({ active: true, type: "offchain" }).map((lndAuth) => lndAuth.pubkey as Pubkey)
 
-  const listActiveLnd = (): AuthenticatedLnd[] =>
-    getLnds({ active: true, type: "offchain" }).map((lndAuth) => lndAuth.lnd)
-
   const listActiveLndsWithPubkeys = (): { lnd: AuthenticatedLnd; pubkey: Pubkey }[] =>
     getLnds({ active: true, type: "offchain" }).map((lndAuth) => ({
       lnd: lndAuth.lnd,
@@ -814,11 +811,13 @@ export const LndService = (): ILightningService | LightningServiceError => {
 
   const payInvoiceViaPaymentDetailsWithLnd = async ({
     lnd,
+    pubkey,
     decodedInvoice,
     btcPaymentAmount,
     maxFeeAmount,
   }: {
     lnd: AuthenticatedLnd
+    pubkey: Pubkey
     decodedInvoice: LnInvoice
     btcPaymentAmount: BtcPaymentAmount
     maxFeeAmount: BtcPaymentAmount | undefined
@@ -877,7 +876,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       return {
         roundedUpFee: toSats(paymentResult.safe_fee),
         revealedPreImage: paymentResult.secret as RevealedPreImage,
-        sentFromPubkey: defaultPubkey,
+        sentFromPubkey: pubkey,
       }
     } catch (err) {
       if (err instanceof Error && err.message === "Timeout") {
@@ -897,10 +896,11 @@ export const LndService = (): ILightningService | LightningServiceError => {
     btcPaymentAmount: BtcPaymentAmount
     maxFeeAmount: BtcPaymentAmount | undefined
   }): Promise<PayInvoiceResult | LightningServiceError> => {
-    const lnds = listActiveLnd()
-    for (const lnd of lnds) {
+    const lnds = listActiveLndsWithPubkeys()
+    for (const { lnd, pubkey } of lnds) {
       const result = await payInvoiceViaPaymentDetailsWithLnd({
         lnd,
+        pubkey,
         decodedInvoice,
         btcPaymentAmount,
         maxFeeAmount,
