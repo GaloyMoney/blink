@@ -63,7 +63,22 @@ pub enum DeepLinkAction {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum Action {
     OpenDeepLink(DeepLink),
-    OpenExternalUrl(String),
+    OpenExternalUrl(ExternalUrl),
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ExternalUrl(String);
+
+impl ExternalUrl {
+    pub fn into_inner(self) -> String {
+        self.0
+    }
+}
+
+impl From<String> for ExternalUrl {
+    fn from(s: String) -> Self {
+        Self(s)
+    }
 }
 
 impl DeepLink {

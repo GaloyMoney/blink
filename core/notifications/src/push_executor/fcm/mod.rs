@@ -22,6 +22,12 @@ impl DeepLink {
     }
 }
 
+impl ExternalUrl {
+    fn add_to_data(self, data: &mut HashMap<String, String>) {
+        data.insert("url".to_string(), self.into_inner());
+    }
+}
+
 #[derive(Clone)]
 pub struct FcmClient {
     fcm_project_id: String,
@@ -59,11 +65,14 @@ impl FcmClient {
         &self,
         device_token: &PushDeviceToken,
         msg: &LocalizedPushMessage,
-        deep_link: Option<DeepLink>,
+        action: Option<Action>,
     ) -> Result<(), FcmError> {
         let mut data = HashMap::new();
-        if let Some(link) = deep_link {
-            link.add_to_data(&mut data);
+        if let Some(action) = action {
+            match action {
+                Action::OpenDeepLink(deep_link) => deep_link.add_to_data(&mut data),
+                Action::OpenExternalUrl(url) => url.add_to_data(&mut data),
+            }
         }
 
         let notification = Notification {

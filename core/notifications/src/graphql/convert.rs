@@ -22,7 +22,9 @@ impl From<history::StatefulNotification> for types::StatefulNotification {
                     })
                 }
                 Action::OpenExternalUrl(url) => types::NotificationAction::OpenExternalLinkAction(
-                    types::OpenExternalLinkAction { url },
+                    types::OpenExternalLinkAction {
+                        url: url.into_inner(),
+                    },
                 ),
             }),
         }
