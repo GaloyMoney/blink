@@ -948,7 +948,7 @@ const lockedPaymentViaLnSteps = async ({
     await LnPaymentsRepository().persistNew({
       paymentHash: decodedInvoice.paymentHash,
       paymentRequest: decodedInvoice.paymentRequest,
-      sentFromPubkey: outgoingNodePubkey || lndService.defaultPubkey(),
+      sentFromPubkey: outgoingNodePubkey,
     })
 
     if (!(payResult instanceof Error))

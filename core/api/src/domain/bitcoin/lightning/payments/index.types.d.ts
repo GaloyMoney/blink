@@ -10,7 +10,7 @@ type Writeable<T, K extends keyof T> = Pick<T, K> & {
 }
 
 type PersistedLnPaymentLookup = Writeable<LnPaymentLookup, "paymentHash"> & {
-  readonly sentFromPubkey: Pubkey
+  sentFromPubkey: Pubkey
   isCompleteRecord: boolean
 }
 
