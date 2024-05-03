@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: correct ''pay'' build target (#4380)'
-      sha: 6d81f4955bf7f10bf96e143c331b3b93e9757d80
+      commitTitle: 'fix(core): handle invoice amount unknown error (#4416)'
+      sha: 978ee7529f2e356e9c78e7f623a7710bf5e34789
       tags:
-      - 0.20.180-2-g6d81f4955
+      - 0.20.181-4-g978ee7529
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: correct ''pay'' build target (#4380)'
-      sha: 6d81f4955bf7f10bf96e143c331b3b93e9757d80
+      commitTitle: 'fix(core): handle invoice amount unknown error (#4416)'
+      sha: 978ee7529f2e356e9c78e7f623a7710bf5e34789
       tags:
-      - 0.20.180-2-g6d81f4955
+      - 0.20.181-4-g978ee7529
     path: schemas
   - git:
-      commitTitle: 'ci: correct ''pay'' build target (#4380)'
-      sha: 6d81f4955bf7f10bf96e143c331b3b93e9757d80
+      commitTitle: 'fix(core): handle invoice amount unknown error (#4416)'
+      sha: 978ee7529f2e356e9c78e7f623a7710bf5e34789
       tags:
-      - 0.20.180-2-g6d81f4955
+      - 0.20.181-4-g978ee7529
     path: gql
   path: graphql
 kind: LockConfig
