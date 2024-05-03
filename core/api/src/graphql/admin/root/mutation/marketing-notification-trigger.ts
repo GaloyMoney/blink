@@ -6,6 +6,7 @@ import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import DeepLinkScreen from "@/graphql/admin/types/scalar/deep-link-screen"
 import SuccessPayload from "@/graphql/shared/types/payload/success-payload"
 import DeepLinkAction from "@/graphql/admin/types/scalar/deep-link-action"
+import ExternalUrl from "@/graphql/admin/types/scalar/external-url"
 
 const LocalizedNotificationContentInput = GT.Input({
   name: "LocalizedNotificationContentInput",
@@ -18,6 +19,27 @@ const LocalizedNotificationContentInput = GT.Input({
     },
     body: {
       type: GT.NonNull(GT.String),
+    },
+  }),
+})
+
+const OpenDeepLinkInput = GT.Input({
+  name: "OpenDeepLinkInput",
+  fields: () => ({
+    screen: {
+      type: DeepLinkScreen,
+    },
+    action: {
+      type: DeepLinkAction,
+    },
+  }),
+})
+
+const OpenExternalUrlInput = GT.Input({
+  name: "OpenExternalUrlInput",
+  fields: () => ({
+    url: {
+      type: GT.NonNull(ExternalUrl),
     },
   }),
 })
@@ -40,11 +62,11 @@ const MarketingNotificationTriggerInput = GT.Input({
     shouldAddToBulletin: {
       type: GT.NonNull(GT.Boolean),
     },
-    deepLinkScreen: {
-      type: DeepLinkScreen,
+    openDeepLink: {
+      type: OpenDeepLinkInput,
     },
-    deepLinkAction: {
-      type: DeepLinkAction,
+    openExternalUrl: {
+      type: OpenExternalUrlInput,
     },
     localizedNotificationContents: {
       type: GT.NonNullList(LocalizedNotificationContentInput),
@@ -62,8 +84,13 @@ const MarketingNotificationTriggerMutation = GT.Field<
       shouldSendPush: boolean
       shouldAddToHistory: boolean
       shouldAddToBulletin: boolean
-      deepLinkScreen: DeepLinkScreen | Error | undefined
-      deepLinkAction: DeepLinkAction | Error | undefined
+      openDeepLink:
+        | {
+            screen: DeepLinkScreen | Error | undefined
+            action: DeepLinkAction | Error | undefined
+          }
+        | undefined
+      openExternalUrl: { url: string | Error } | undefined
       localizedNotificationContents: {
         title: string
         body: string
@@ -86,8 +113,8 @@ const MarketingNotificationTriggerMutation = GT.Field<
       shouldSendPush,
       shouldAddToHistory,
       shouldAddToBulletin,
-      deepLinkScreen,
-      deepLinkAction,
+      openDeepLink,
+      openExternalUrl,
       localizedNotificationContents,
     } = args.input
 
@@ -99,12 +126,30 @@ const MarketingNotificationTriggerMutation = GT.Field<
       nonErrorUserIdsFilter.push(id)
     }
 
-    if (deepLinkScreen instanceof Error) {
-      return { errors: [{ message: deepLinkScreen.message }], success: false }
+    let nonErrorOpenDeepLink = undefined
+    if (openDeepLink) {
+      if (openDeepLink.action instanceof Error) {
+        return { errors: [{ message: openDeepLink.action.message }], success: false }
+      }
+
+      if (openDeepLink.screen instanceof Error) {
+        return { errors: [{ message: openDeepLink.screen.message }], success: false }
+      }
+
+      nonErrorOpenDeepLink = {
+        screen: openDeepLink.screen,
+        action: openDeepLink.action,
+      }
     }
 
-    if (deepLinkAction instanceof Error) {
-      return { errors: [{ message: deepLinkAction.message }], success: false }
+    let nonErrorOpenExternalUrl = undefined
+    if (openExternalUrl) {
+      if (openExternalUrl.url instanceof Error) {
+        return { errors: [{ message: openExternalUrl.url.message }], success: false }
+      }
+      nonErrorOpenExternalUrl = {
+        url: openExternalUrl.url,
+      }
     }
 
     const nonErrorPhoneCountryCodesFilter: string[] = []
@@ -135,8 +180,8 @@ const MarketingNotificationTriggerMutation = GT.Field<
     const res = await Admin.triggerMarketingNotification({
       userIdsFilter: nonErrorUserIdsFilter,
       phoneCountryCodesFilter: nonErrorPhoneCountryCodesFilter,
-      deepLinkScreen,
-      deepLinkAction,
+      openDeepLink: nonErrorOpenDeepLink,
+      openExternalUrl: nonErrorOpenExternalUrl,
       shouldSendPush,
       shouldAddToHistory,
       shouldAddToBulletin,

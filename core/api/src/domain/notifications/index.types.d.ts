@@ -137,8 +137,17 @@ interface INotificationsService {
 
 type TriggerMarketingNotificationArgs = {
   userIds: UserId[]
-  deepLinkScreen: DeepLinkScreen | undefined
-  deepLinkAction: DeepLinkAction | undefined
+  openDeepLink:
+    | {
+        screen: DeepLinkScreen | undefined
+        action: DeepLinkAction | undefined
+      }
+    | undefined
+  openExternalUrl:
+    | {
+        url: string
+      }
+    | undefined
   shouldSendPush: boolean
   shouldAddToHistory: boolean
   shouldAddToBulletin: boolean

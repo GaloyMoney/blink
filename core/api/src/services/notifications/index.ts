@@ -26,6 +26,7 @@ import {
   MarketingNotificationTriggered,
   DeepLink as ProtoDeepLink,
   HandleNotificationEventResponse,
+  Action,
 } from "./proto/notifications_pb"
 
 import * as notificationsGrpc from "./grpc-client"
@@ -594,28 +595,29 @@ export const NotificationsService = (): INotificationsService => {
   const triggerMarketingNotification = async ({
     userIds,
     localizedContents: localizedPushContents,
-    deepLinkScreen,
-    deepLinkAction,
+    openDeepLink,
+    openExternalUrl,
     shouldSendPush,
     shouldAddToHistory,
     shouldAddToBulletin,
   }: TriggerMarketingNotificationArgs): Promise<true | NotificationsServiceError> => {
     try {
-      const protoDeepLink =
-        deepLinkScreen !== undefined
-          ? deepLinkScreenToGrpcDeepLinkScreen(deepLinkScreen)
-          : undefined
-
-      const protoDeepLinkAction =
-        deepLinkAction !== undefined
-          ? deepLinkActionToGrpcDeepLinkAction(deepLinkAction)
-          : undefined
-
       let deepLink: ProtoDeepLink | undefined = undefined
-      if (protoDeepLink !== undefined || protoDeepLinkAction !== undefined) {
+      if (openDeepLink) {
         deepLink = new ProtoDeepLink()
-        if (protoDeepLink !== undefined) deepLink.setScreen(protoDeepLink)
-        if (protoDeepLinkAction !== undefined) deepLink.setAction(protoDeepLinkAction)
+        if (openDeepLink.screen !== undefined)
+          deepLink.setScreen(deepLinkScreenToGrpcDeepLinkScreen(openDeepLink.screen))
+        if (openDeepLink.action !== undefined)
+          deepLink.setAction(deepLinkActionToGrpcDeepLinkAction(openDeepLink.action))
+      }
+
+      let externalUrl = openExternalUrl?.url
+
+      let action: Action | undefined = undefined
+      if (deepLink !== undefined || externalUrl !== undefined) {
+        action = new Action()
+        if (deepLink !== undefined) action.setDeepLink(deepLink)
+        if (externalUrl !== undefined) action.setExternalUrl(externalUrl)
       }
 
       const marketingNotificationRequests: Promise<HandleNotificationEventResponse>[] = []
@@ -630,7 +632,7 @@ export const NotificationsService = (): INotificationsService => {
           localizedContent.setBody(body)
           marketingNotification.getLocalizedContentMap().set(language, localizedContent)
         })
-        if (deepLink !== undefined) marketingNotification.setDeepLink(deepLink)
+        if (action !== undefined) marketingNotification.setAction(action)
         marketingNotification.setShouldSendPush(shouldSendPush)
         marketingNotification.setShouldAddToHistory(shouldAddToHistory)
         marketingNotification.setShouldAddToBulletin(shouldAddToBulletin)

@@ -25,6 +25,8 @@ export type Scalars = {
   DisplayCurrency: { input: string; output: string; }
   /** Email address */
   EmailAddress: { input: string; output: string; }
+  /** Url that will be fetched on events for the account */
+  ExternalUrl: { input: string; output: string; }
   Language: { input: string; output: string; }
   LnPaymentPreImage: { input: string; output: string; }
   /** BOLT11 lightning invoice payment request with the amount included */
@@ -349,9 +351,9 @@ export type LocalizedNotificationContentInput = {
 };
 
 export type MarketingNotificationTriggerInput = {
-  readonly deepLinkAction?: InputMaybe<DeepLinkAction>;
-  readonly deepLinkScreen?: InputMaybe<DeepLinkScreen>;
   readonly localizedNotificationContents: ReadonlyArray<LocalizedNotificationContentInput>;
+  readonly openDeepLink?: InputMaybe<OpenDeepLinkInput>;
+  readonly openExternalUrl?: InputMaybe<OpenExternalUrlInput>;
   readonly phoneCountryCodesFilter?: InputMaybe<ReadonlyArray<Scalars['CountryCode']['input']>>;
   readonly shouldAddToBulletin: Scalars['Boolean']['input'];
   readonly shouldAddToHistory: Scalars['Boolean']['input'];
@@ -424,6 +426,15 @@ export type MutationMerchantMapValidateArgs = {
 
 export type MutationUserUpdatePhoneArgs = {
   input: UserUpdatePhoneInput;
+};
+
+export type OpenDeepLinkInput = {
+  readonly action?: InputMaybe<DeepLinkAction>;
+  readonly screen?: InputMaybe<DeepLinkScreen>;
+};
+
+export type OpenExternalUrlInput = {
+  readonly url: Scalars['ExternalUrl']['input'];
 };
 
 /** Information about pagination in a connection. */
