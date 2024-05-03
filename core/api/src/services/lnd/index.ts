@@ -76,6 +76,8 @@ import {
   UnknownNextPeerError,
   UnknownRouteNotFoundError,
   decodeInvoice,
+  InvalidInvoiceAmountError,
+  InvoiceAlreadySettledError,
 } from "@/domain/bitcoin/lightning"
 import { CacheKeys } from "@/domain/cache"
 import { LnFees } from "@/domain/payments"
@@ -526,7 +528,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       }
       return registerInvoice
     } catch (err) {
-      return handleCommonLightningServiceErrors(err)
+      return handleReceivePaymentLndErrors(err)
     }
   }
 
@@ -735,14 +737,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       await settleHodlInvoice({ lnd, secret })
       return true
     } catch (err) {
-      const errDetails = parseLndErrorDetails(err)
-      const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
-      switch (true) {
-        case match(KnownLndErrorDetails.SecretDoesNotMatchAnyExistingHodlInvoice):
-          return new SecretDoesNotMatchAnyExistingHodlInvoiceError(err)
-        default:
-          return handleCommonLightningServiceErrors(err)
-      }
+      return handleReceivePaymentLndErrors(err)
     }
   }
 
@@ -760,15 +755,14 @@ export const LndService = (): ILightningService | LightningServiceError => {
       await cancelHodlInvoice({ lnd, id: paymentHash })
       return true
     } catch (err) {
-      const errDetails = parseLndErrorDetails(err)
-      const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
-      switch (true) {
-        case match(KnownLndErrorDetails.InvoiceNotFound):
-        case match(KnownLndErrorDetails.InvoiceAlreadySettled):
-          return true
-        default:
-          return handleCommonLightningServiceErrors(err)
+      const error = handleReceivePaymentLndErrors(err)
+      if (
+        error instanceof InvoiceNotFoundError ||
+        error instanceof InvoiceAlreadySettledError
+      ) {
+        return true
       }
+      return error
     }
   }
 
@@ -975,14 +969,7 @@ const lookupInvoiceByPubkeyAndHash = async ({
 
     return translateLnInvoiceLookup(invoice)
   } catch (err) {
-    const errDetails = parseLndErrorDetails(err)
-    const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
-    switch (true) {
-      case match(KnownLndErrorDetails.InvoiceNotFound):
-        return new InvoiceNotFoundError()
-      default:
-        return handleCommonLightningServiceErrors(err)
-    }
+    return handleReceivePaymentLndErrors(err)
   }
 }
 
@@ -1221,6 +1208,24 @@ const handleSendPaymentLndErrors = ({
       return new InsufficientBalanceForLnPaymentError()
     case match(KnownLndErrorDetails.FeaturePairExists):
       return new InvalidFeatureBitsForLndInvoiceError()
+
+    default:
+      return handleCommonLightningServiceErrors(err)
+  }
+}
+
+const handleReceivePaymentLndErrors = (err: Error | unknown) => {
+  const errDetails = parseLndErrorDetails(err)
+  const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
+  switch (true) {
+    case match(KnownLndErrorDetails.InvoiceNotFound):
+      return new InvoiceNotFoundError()
+    case match(KnownLndErrorDetails.InvoiceAlreadySettled):
+      return new InvoiceAlreadySettledError()
+    case match(KnownLndErrorDetails.InvoiceAmountTooLarge):
+      return new InvalidInvoiceAmountError(err)
+    case match(KnownLndErrorDetails.SecretDoesNotMatchAnyExistingHodlInvoice):
+      return new SecretDoesNotMatchAnyExistingHodlInvoiceError(err)
 
     default:
       return handleCommonLightningServiceErrors(err)
