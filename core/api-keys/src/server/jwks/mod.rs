@@ -3,17 +3,15 @@
 
 mod error;
 
-use std::sync::{Arc, RwLock};
-
-use jsonwebtoken::{jwk::JwkSet, Algorithm, DecodingKey, TokenData, Validation};
-use serde::de::DeserializeOwned;
-
-use axum::{async_trait, http::request::Parts};
-use axum::{
-    extract::FromRef, headers::authorization::Bearer, headers::Authorization, RequestPartsExt,
+use axum::{async_trait, extract::FromRef, http::request::Parts, RequestPartsExt};
+use axum_extra::{
+    headers::authorization::{Authorization, Bearer},
     TypedHeader,
 };
-use serde::Deserialize;
+use jsonwebtoken::{jwk::JwkSet, Algorithm, DecodingKey, TokenData, Validation};
+use serde::{de::DeserializeOwned, Deserialize};
+
+use std::sync::{Arc, RwLock};
 
 pub use error::*;
 

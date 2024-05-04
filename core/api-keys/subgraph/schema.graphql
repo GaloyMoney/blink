@@ -13,7 +13,7 @@ type ApiKey {
 input ApiKeyCreateInput {
 	name: String!
 	expireInDays: Int
-	scopes: [Scope!]! = [READ,WRITE]
+	scopes: [Scope!]! = [READ, WRITE]
 }
 
 type ApiKeyCreatePayload {
@@ -53,9 +53,9 @@ extend type User @key(fields: "id") {
 	apiKeys: [ApiKey!]!
 }
 
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 extend schema @link(
 	url: "https://specs.apollo.dev/federation/v2.3",
 	import: ["@key", "@tag", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@composeDirective", "@interfaceObject"]
 )
-directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT

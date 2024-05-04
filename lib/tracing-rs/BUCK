@@ -15,6 +15,7 @@ galoy_rust_lib(
         "//third-party/rust:tracing-subscriber",
         "//third-party/rust:http",
         "//third-party/rust:tonic",
+        "//third-party/rust:axum-extra",
     ],
     srcs = glob(["src/**/*.rs"]),
     env = {

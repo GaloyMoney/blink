@@ -101,10 +101,20 @@ pub fn inject_tracing_data(span: &Span, tracing_data: &HashMap<String, serde_jso
 }
 
 pub mod http {
-    pub fn extract_tracing(headers: &http::HeaderMap) {
+    pub fn extract_tracing(headers: &axum_extra::headers::HeaderMap) {
         use opentelemetry_http::HeaderExtractor;
         use tracing_opentelemetry::OpenTelemetrySpanExt;
-        let extractor = HeaderExtractor(headers);
+        let mut map = http::HeaderMap::new();
+        for (key, value) in headers.iter() {
+            if let Ok(key) = http::HeaderName::from_bytes(key.as_str().as_bytes()) {
+                if let Ok(s) = value.to_str() {
+                    if let Ok(v) = http::HeaderValue::from_str(s) {
+                        map.insert(key, v);
+                    }
+                }
+            }
+        }
+        let extractor = HeaderExtractor(&map);
         let ctx = opentelemetry::global::get_text_map_propagator(|propagator| {
             propagator.extract(&extractor)
         });

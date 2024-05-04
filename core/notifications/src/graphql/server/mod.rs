@@ -5,6 +5,7 @@ use async_graphql::*;
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{routing::get, Extension, Router};
 use serde::{Deserialize, Serialize};
+
 use std::sync::Arc;
 
 use crate::{app::NotificationsApp, graphql};
@@ -43,9 +44,10 @@ pub async fn run_server(
         .layer(Extension(schema));
 
     println!("Starting graphql server on port {}", config.port);
-    axum::Server::bind(&std::net::SocketAddr::from(([0, 0, 0, 0], config.port)))
-        .serve(app.into_make_service())
-        .await?;
+    let listener =
+        tokio::net::TcpListener::bind(&std::net::SocketAddr::from(([0, 0, 0, 0], config.port)))
+            .await?;
+    axum::serve(listener, app.into_make_service()).await?;
     Ok(())
 }
 

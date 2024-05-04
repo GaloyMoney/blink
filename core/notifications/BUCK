@@ -52,6 +52,7 @@ galoy_rust_bin(
         "//third-party/rust:async-graphql",
         "//third-party/rust:async-graphql-axum",
         "//third-party/rust:axum",
+        "//third-party/rust:axum-extra",
         "//third-party/rust:jsonwebtoken",
         "//third-party/rust:clap",
         "//third-party/rust:derive_builder",
