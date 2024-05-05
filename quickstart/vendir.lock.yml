@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): lookup payment only by payment hash (#4420)'
-      sha: dc50d894c1c15cd3ba77a4eb95548ec1fb61c221
+      commitTitle: 'feat(dashboard): balance history graph (#4339)...'
+      sha: bfa819063bd184a653ae617c71a627586ae1e70a
       tags:
-      - 0.20.182-3-gdc50d894c
+      - 0.20.183-1-gbfa819063
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): lookup payment only by payment hash (#4420)'
-      sha: dc50d894c1c15cd3ba77a4eb95548ec1fb61c221
+      commitTitle: 'feat(dashboard): balance history graph (#4339)...'
+      sha: bfa819063bd184a653ae617c71a627586ae1e70a
       tags:
-      - 0.20.182-3-gdc50d894c
+      - 0.20.183-1-gbfa819063
     path: schemas
   - git:
-      commitTitle: 'fix(core): lookup payment only by payment hash (#4420)'
-      sha: dc50d894c1c15cd3ba77a4eb95548ec1fb61c221
+      commitTitle: 'feat(dashboard): balance history graph (#4339)...'
+      sha: bfa819063bd184a653ae617c71a627586ae1e70a
       tags:
-      - 0.20.182-3-gdc50d894c
+      - 0.20.183-1-gbfa819063
     path: gql
   path: graphql
 kind: LockConfig
