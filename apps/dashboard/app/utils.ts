@@ -39,3 +39,21 @@ export const convertUsdToBtcSats = (
   const current = btcSatBase / 10 ** btcSatOffset
   return Math.floor((100 * usdAmount) / current)
 }
+
+export const formatDateTime = (timestamp: number) => {
+  return new Date(timestamp * 1000).toLocaleString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  })
+}
+
+export const formatMonth = (timestamp: number) => {
+  return new Date(timestamp * 1000).toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+  })
+}
