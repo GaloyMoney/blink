@@ -1,8 +1,8 @@
 import { DomainError, ErrorLevel, ValidationError } from "@/domain/shared"
 
-export class InvalidPushTitleError extends ValidationError {}
-export class InvalidPushBodyError extends ValidationError {}
-export class DuplicateLocalizedPushContentError extends ValidationError {}
+export class InvalidNotificationTitleError extends ValidationError {}
+export class InvalidNotificationBodyError extends ValidationError {}
+export class DuplicateLocalizedNotificationContentError extends ValidationError {}
 
 export class NotificationsError extends DomainError {}
 

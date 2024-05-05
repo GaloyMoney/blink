@@ -19,6 +19,7 @@ export class SecretDoesNotMatchAnyExistingHodlInvoiceError extends LightningServ
 }
 
 export class InvoiceNotFoundError extends LightningServiceError {}
+export class InvoiceAlreadySettledError extends LightningServiceError {}
 export class LnPaymentPendingError extends LightningServiceError {}
 export class LnAlreadyPaidError extends LightningServiceError {}
 export class MaxFeeTooLargeForRoutelessPaymentError extends LightningServiceError {
@@ -48,6 +49,9 @@ export class TemporaryChannelFailureError extends LightningServiceError {}
 export class TemporaryNodeFailureError extends LightningServiceError {}
 export class DestinationMissingDependentFeatureError extends LightningServiceError {}
 export class InvalidFeatureBitsForLndInvoiceError extends LightningServiceError {}
+export class InvalidInvoiceAmountError extends LightningServiceError {
+  level = ErrorLevel.Warn
+}
 export class LookupPaymentTimedOutError extends LightningServiceError {
   level = ErrorLevel.Critical
 }
