@@ -541,6 +541,10 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
         "Unfortunately, we're unable to delete your account automatically at this time. Please reach out to our support team for assistance with the deletion process."
       return new OperationRestrictedError({ message, logger: baseLogger })
 
+    case "InvalidInvoiceAmountError":
+      message = "Invalid invoice amount"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------
@@ -557,6 +561,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "LightningServiceError":
     case "CouldNotDecodeReturnedPaymentRequest":
     case "InvoiceNotFoundError":
+    case "InvoiceAlreadySettledError":
     case "InvoiceNotPaidError":
     case "LnPaymentPendingError":
     case "LnAlreadyPaidError":
@@ -761,13 +766,13 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
         logger: baseLogger,
         forwardToClient: false,
       })
-    case "InvalidPushBodyError":
+    case "InvalidNotificationBodyError":
       message = error.message
       return new ValidationInternalError({ message, logger: baseLogger })
-    case "InvalidPushTitleError":
+    case "InvalidNotificationTitleError":
       message = error.message
       return new ValidationInternalError({ message, logger: baseLogger })
-    case "DuplicateLocalizedPushContentError":
+    case "DuplicateLocalizedNotificationContentError":
       message = "Multiple localized push contents with the same language"
       return new ValidationInternalError({ message, logger: baseLogger })
 
