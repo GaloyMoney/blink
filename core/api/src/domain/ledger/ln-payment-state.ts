@@ -45,6 +45,7 @@ const checkTxns = (
   const validTypes = [
     LedgerTransactionType.Payment,
     LedgerTransactionType.LnFeeReimbursement,
+    LedgerTransactionType.Invoice,
   ]
   for (const txn of txns) {
     if (!validTypes.includes(txn.type as (typeof validTypes)[number])) {
@@ -59,6 +60,25 @@ const checkTxns = (
   return true
 }
 
+// Filter self payments routed via external parties like geyser.fund does
+const filterSelfPayments = (
+  txns: LedgerTransaction<WalletCurrency>[],
+): LedgerTransaction<WalletCurrency>[] | InvalidLnPaymentTxnsBundleError => {
+  const invoiceTxns = txns.filter((tx) => tx.type === LedgerTransactionType.Invoice)
+  const paymentTxns = txns.filter((tx) => tx.type === LedgerTransactionType.Payment)
+
+  if (invoiceTxns.length > 0 && paymentTxns.length === 0) {
+    return new InvalidLnPaymentTxnsBundleError(
+      bundleErrMsg({
+        msg: `Invalid '${LedgerTransactionType.Invoice}' type found with no corresponding payments`,
+        txns,
+      }),
+    )
+  }
+
+  return txns.filter((tx) => tx.type !== LedgerTransactionType.Invoice)
+}
+
 const sortTxnsByTimestampDesc = (txns: LedgerTransaction<WalletCurrency>[]) =>
   txns.sort((txA, txB) => txB.timestamp.getTime() - txA.timestamp.getTime())
 
@@ -69,7 +89,10 @@ export const LnPaymentStateDeterminator = (
     const check = checkTxns(unsortedTxns)
     if (check instanceof Error) return check
 
-    const txns = sortTxnsByTimestampDesc(unsortedTxns)
+    const unfilteredTxns = sortTxnsByTimestampDesc(unsortedTxns)
+
+    const txns = filterSelfPayments(unfilteredTxns)
+    if (txns instanceof Error) return txns
 
     // Pending txns
     const pendingTxns = txns.filter((tx) => tx.pendingConfirmation)

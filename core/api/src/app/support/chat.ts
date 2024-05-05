@@ -12,7 +12,7 @@ const getMessages = async ({
   supportChatId: SupportChatId
   accountId: AccountId
 }) => {
-  const messages = Assistant().getMessages(supportChatId)
+  const messages = await Assistant().getMessages(supportChatId)
   if (messages instanceof ChatAssistantNotFoundError) {
     await initializeSupportChat({ accountId })
     return []
