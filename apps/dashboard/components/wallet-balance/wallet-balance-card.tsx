@@ -22,61 +22,60 @@ const WalletBalanceCard: React.FC<WalletBalanceCardProps> = ({
   <Card
     key={id}
     sx={{
-      minWidth: { xs: "100%", md: "48%" },
+      minWidth: { xs: "100%", md: "49%" },
       boxShadow: "md",
     }}
   >
-    <CardContent orientation="horizontal">
-      <CardContent>
+    <CardContent>
+      <Typography
+        level="body-md"
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Typography>{walletCurrency}</Typography>
+      </Typography>
+      <Typography level="h2">
+        {balance} {currencySymbol}
+      </Typography>
+      <Typography level="body-sm">Pending Amount {pendingIncomingBalance}</Typography>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          gap: "0.5em",
+          justifyContent: "space-between",
+          padding: "0.4em",
+          borderRadius: "0.5em",
+          backgroundColor: "neutral.solidDisabledBg",
+          flexWrap: "wrap",
+        }}
+      >
         <Typography
-          level="body-md"
           sx={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
+            display: {
+              xs: "none",
+              md: "block",
+            },
           }}
+          level="body-xs"
         >
-          <Typography>{walletCurrency}</Typography>
+          Wallet Id
         </Typography>
-        <Typography level="h2">
-          {balance} {currencySymbol}
-        </Typography>
-        <Typography level="body-sm">Pending Amount {pendingIncomingBalance}</Typography>
-        <Box
+        <Typography
           sx={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            gap: "0.5em",
-            justifyContent: "space-between",
-            padding: "0.4em",
-            borderRadius: "0.5em",
-            backgroundColor: "neutral.solidDisabledBg",
+            fontWeight: "560",
           }}
+          level="body-sm"
         >
-          <Typography
-            sx={{
-              display: {
-                xs: "none",
-                md: "block",
-              },
-            }}
-            level="body-xs"
-          >
-            Wallet Id
-          </Typography>
-          <Typography
-            sx={{
-              fontWeight: "560",
-            }}
-            level="body-sm"
-          >
-            {" "}
-            {id}
-          </Typography>
-        </Box>
-      </CardContent>
+          {" "}
+          {id}
+        </Typography>
+      </Box>
     </CardContent>
   </Card>
 )

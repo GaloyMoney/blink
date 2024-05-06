@@ -59,6 +59,7 @@ gql`
                 }
                 ... on InitiationViaLn {
                   paymentHash
+                  paymentRequest
                 }
               }
             }
@@ -125,6 +126,7 @@ gql`
                 }
                 ... on InitiationViaLn {
                   paymentHash
+                  paymentRequest
                 }
               }
             }
@@ -141,7 +143,7 @@ gql`
   }
 `
 
-export async function fetchFirstTransactions({ first }: { first: number }) {
+export async function fetchFirstTransactions({ first }: { first?: number } = {}) {
   const client = await apolloClient.authenticated()
 
   try {
@@ -164,14 +166,14 @@ export async function fetchPaginatedTransactions({
   cursor,
   direction,
 }: {
-  first: number
-  cursor: string | null
+  first?: number
+  cursor: string | null | undefined
   direction: "next" | "previous"
 }) {
   const client = await apolloClient.authenticated()
 
   let variables: {
-    first: number
+    first?: number
     after?: string | null
     before?: string | null
   }

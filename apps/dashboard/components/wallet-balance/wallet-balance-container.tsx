@@ -50,8 +50,12 @@ const WalletBalanceContainer: React.FC<WalletBalanceContainerProps> = ({
         sx={{
           display: "flex",
           flexDirection: "row",
+          justifyContent: "space-between",
           gap: "1em",
-          flexWrap: "wrap",
+          flexWrap: {
+            xs: "wrap",
+            md: "nowrap",
+          },
         }}
       >
         {btcWallet &&

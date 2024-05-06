@@ -55,4 +55,18 @@ impl NotificationEvent for IdentityVerificationApproved {
             body,
         }
     }
+
+    fn should_be_added_to_history(&self) -> bool {
+        true
+    }
+
+    fn to_localized_persistent_message(&self, locale: GaloyLocale) -> LocalizedStatefulMessage {
+        let push_msg = self.to_localized_push_msg(&locale);
+
+        LocalizedStatefulMessage {
+            locale,
+            title: push_msg.title,
+            body: push_msg.body,
+        }
+    }
 }
