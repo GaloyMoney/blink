@@ -3,10 +3,12 @@ mod jwks;
 
 use async_graphql::*;
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
-use axum::{extract::State, headers::HeaderMap, routing::get, Extension, Json, Router};
+use axum::{extract::State, routing::get, Extension, Json, Router};
+use axum_extra::headers::HeaderMap;
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 use tracing::instrument;
+
+use std::sync::Arc;
 
 use crate::{
     app::{ApiKeysApp, ApplicationError},
@@ -48,9 +50,10 @@ pub async fn run_server(config: ServerConfig, api_keys_app: ApiKeysApp) -> anyho
         .layer(Extension(schema));
 
     println!("Starting graphql server on port {}", config.port);
-    axum::Server::bind(&std::net::SocketAddr::from(([0, 0, 0, 0], config.port)))
-        .serve(app.into_make_service())
-        .await?;
+    let listener =
+        tokio::net::TcpListener::bind(&std::net::SocketAddr::from(([0, 0, 0, 0], config.port)))
+            .await?;
+    axum::serve(listener, app.into_make_service()).await?;
     Ok(())
 }
 
