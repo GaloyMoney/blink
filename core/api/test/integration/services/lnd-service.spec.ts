@@ -20,6 +20,7 @@ import {
   PaymentStatus,
   RouteNotFoundError,
   decodeInvoice,
+  LnPaymentAttemptResultType,
 } from "@/domain/bitcoin/lightning"
 import { LnFees } from "@/domain/payments"
 
@@ -42,7 +43,6 @@ import {
   waitFor,
 } from "test/helpers"
 import { BitcoindWalletClient } from "test/helpers/bitcoind"
-import { LnPaymentAttemptResultType } from "@/domain/bitcoin/lightning/ln-payment-result"
 
 const amountInvoice = toSats(1000)
 const btcPaymentAmount = { amount: BigInt(amountInvoice), currency: WalletCurrency.Btc }

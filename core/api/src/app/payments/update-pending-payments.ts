@@ -329,14 +329,6 @@ const lockedPendingPaymentSteps = async ({
     paymentLogger.error({ error: settled }, "no transaction to update")
     return settled
   }
-  const updatedPubkey = await LedgerFacade.updatePubkeyByHash({
-    paymentHash,
-    pubkey: lnPaymentLookup.sentFromPubkey,
-  })
-  if (updatedPubkey instanceof Error) {
-    paymentLogger.error({ error: updatedPubkey }, "no transaction to update")
-    return updatedPubkey
-  }
 
   let roundedUpFee: Satoshis = toSats(0)
   let satsAmount: Satoshis | undefined = undefined

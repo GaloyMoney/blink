@@ -76,6 +76,8 @@ import {
   decodeInvoice,
   InvalidInvoiceAmountError,
   InvoiceAlreadySettledError,
+  LnPaymentAttemptResult,
+  LnPaymentAttemptResultType,
 } from "@/domain/bitcoin/lightning"
 import { CacheKeys } from "@/domain/cache"
 import { LnFees } from "@/domain/payments"
@@ -87,10 +89,6 @@ import { LocalCacheService } from "@/services/cache"
 import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
 
 import { timeoutWithCancel } from "@/utils"
-import {
-  LnPaymentAttemptResult,
-  LnPaymentAttemptResultType,
-} from "@/domain/bitcoin/lightning/ln-payment-result"
 
 const TIMEOUT_PAYMENT = NETWORK !== "regtest" ? 45000 : 3000
 
