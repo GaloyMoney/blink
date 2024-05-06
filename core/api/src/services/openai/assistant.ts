@@ -124,6 +124,7 @@ export const Assistant = (): ChatAssistant => {
           timestamp: item.created_at,
         }))
         .reverse()
+        .slice(1) // we are not sending back the context message from the user, that says the user's language, level, and phone country
 
       return processedResponse
     } catch (err) {
