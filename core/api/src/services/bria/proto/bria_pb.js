@@ -13179,7 +13179,9 @@ proto.services.bria.v1.ListPayoutsRequest.prototype.toObject = function(opt_incl
  */
 proto.services.bria.v1.ListPayoutsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    walletName: jspb.Message.getFieldWithDefault(msg, 1, "")
+    walletName: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    page: jspb.Message.getFieldWithDefault(msg, 2, 0),
+    pageSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -13220,6 +13222,14 @@ proto.services.bria.v1.ListPayoutsRequest.deserializeBinaryFromReader = function
       var value = /** @type {string} */ (reader.readString());
       msg.setWalletName(value);
       break;
+    case 2:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setPage(value);
+      break;
+    case 3:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setPageSize(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -13256,6 +13266,20 @@ proto.services.bria.v1.ListPayoutsRequest.serializeBinaryToWriter = function(mes
       f
     );
   }
+  f = /** @type {number} */ (jspb.Message.getField(message, 2));
+  if (f != null) {
+    writer.writeUint64(
+      2,
+      f
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 3));
+  if (f != null) {
+    writer.writeUint64(
+      3,
+      f
+    );
+  }
 };
 
 
@@ -13274,6 +13298,78 @@ proto.services.bria.v1.ListPayoutsRequest.prototype.getWalletName = function() {
  */
 proto.services.bria.v1.ListPayoutsRequest.prototype.setWalletName = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional uint64 page = 2;
+ * @return {number}
+ */
+proto.services.bria.v1.ListPayoutsRequest.prototype.getPage = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.services.bria.v1.ListPayoutsRequest} returns this
+ */
+proto.services.bria.v1.ListPayoutsRequest.prototype.setPage = function(value) {
+  return jspb.Message.setField(this, 2, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.services.bria.v1.ListPayoutsRequest} returns this
+ */
+proto.services.bria.v1.ListPayoutsRequest.prototype.clearPage = function() {
+  return jspb.Message.setField(this, 2, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.services.bria.v1.ListPayoutsRequest.prototype.hasPage = function() {
+  return jspb.Message.getField(this, 2) != null;
+};
+
+
+/**
+ * optional uint64 page_size = 3;
+ * @return {number}
+ */
+proto.services.bria.v1.ListPayoutsRequest.prototype.getPageSize = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.services.bria.v1.ListPayoutsRequest} returns this
+ */
+proto.services.bria.v1.ListPayoutsRequest.prototype.setPageSize = function(value) {
+  return jspb.Message.setField(this, 3, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.services.bria.v1.ListPayoutsRequest} returns this
+ */
+proto.services.bria.v1.ListPayoutsRequest.prototype.clearPageSize = function() {
+  return jspb.Message.setField(this, 3, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.services.bria.v1.ListPayoutsRequest.prototype.hasPageSize = function() {
+  return jspb.Message.getField(this, 3) != null;
 };
 
 
