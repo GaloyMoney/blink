@@ -5,6 +5,12 @@ import { toSats } from "@/domain/bitcoin"
 
 import { NotificationsService } from "@/services/notifications"
 
+import { waitForNotificationsService } from "test/helpers"
+
+beforeAll(async () => {
+  await waitForNotificationsService()
+})
+
 describe("NotificationsService", () => {
   describe("sendTransaction", () => {
     it("should send a notification", async () => {

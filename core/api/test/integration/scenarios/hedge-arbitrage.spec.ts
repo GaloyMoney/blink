@@ -31,6 +31,7 @@ import {
   randomPhone,
   randomUserId,
   resetLegacyIntegrationLnds,
+  waitForNotificationsService,
 } from "test/helpers"
 
 class ZeroAmountForUsdRecipientError extends Error {}
@@ -65,6 +66,7 @@ beforeAll(async () => {
   await loadBitcoindWallet("outside")
   await resetLegacyIntegrationLnds()
   await bootstrapLndNodes()
+  await waitForNotificationsService()
 })
 
 afterAll(async () => {
