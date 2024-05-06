@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): balance history graph (#4339)...'
-      sha: bfa819063bd184a653ae617c71a627586ae1e70a
+      commitTitle: 'chore: bump @storybook/react-webpack5 from 7.6.3 to 8.0.10 (#4424)...'
+      sha: 033ad2f1a5ea00c3febfb4a91f3b7322d9bbb6a0
       tags:
-      - 0.20.183-1-gbfa819063
+      - 0.20.183-4-g033ad2f1a
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(dashboard): balance history graph (#4339)...'
-      sha: bfa819063bd184a653ae617c71a627586ae1e70a
+      commitTitle: 'chore: bump @storybook/react-webpack5 from 7.6.3 to 8.0.10 (#4424)...'
+      sha: 033ad2f1a5ea00c3febfb4a91f3b7322d9bbb6a0
       tags:
-      - 0.20.183-1-gbfa819063
+      - 0.20.183-4-g033ad2f1a
     path: schemas
   - git:
-      commitTitle: 'feat(dashboard): balance history graph (#4339)...'
-      sha: bfa819063bd184a653ae617c71a627586ae1e70a
+      commitTitle: 'chore: bump @storybook/react-webpack5 from 7.6.3 to 8.0.10 (#4424)...'
+      sha: 033ad2f1a5ea00c3febfb4a91f3b7322d9bbb6a0
       tags:
-      - 0.20.183-1-gbfa819063
+      - 0.20.183-4-g033ad2f1a
     path: gql
   path: graphql
 kind: LockConfig
