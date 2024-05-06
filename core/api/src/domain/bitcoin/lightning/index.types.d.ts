@@ -91,10 +91,12 @@ type LnPaymentLookup = {
 
   readonly confirmedDetails: LnPaymentConfirmedDetails | undefined
   readonly attempts: LnPaymentAttempt[] | undefined
+  readonly sentFromPubkey: Pubkey
 }
 
 type LnFailedPartialPaymentLookup = {
   readonly status: FailedPaymentStatus
+  readonly sentFromPubkey: Pubkey
 }
 
 type LnInvoice = {

@@ -614,7 +614,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
       try {
         const { payments, next } = await getPaymentsFn({ lnd, ...pagingArgs })
         return {
-          lnPayments: payments.map(translateLnPaymentLookup),
+          lnPayments: payments.map((p) =>
+            translateLnPaymentLookup({ p, sentFromPubkey: pubkey }),
+          ),
           endCursor: (next as PagingContinueToken) || false,
         }
       } catch (err) {
@@ -1023,6 +1025,7 @@ const lookupPaymentByPubkeyAndHash = async ({
           hopPubkeys: undefined,
         },
         attempts: undefined,
+        sentFromPubkey: pubkey,
       }
     }
 
@@ -1036,11 +1039,12 @@ const lookupPaymentByPubkeyAndHash = async ({
         roundedUpAmount: toSats(pending.safe_tokens),
         confirmedDetails: undefined,
         attempts: undefined,
+        sentFromPubkey: pubkey,
       }
     }
 
     if (status === PaymentStatus.Failed) {
-      return { status: PaymentStatus.Failed }
+      return { status: PaymentStatus.Failed, sentFromPubkey: pubkey }
     }
 
     return new BadPaymentDataError(JSON.stringify(result))
@@ -1063,7 +1067,13 @@ const lookupPaymentByPubkeyAndHash = async ({
 const isPaymentConfirmed = (p: PaymentResult): p is ConfirmedPaymentResult =>
   p.is_confirmed
 
-const translateLnPaymentLookup = (p: PaymentResult): LnPaymentLookup => ({
+const translateLnPaymentLookup = ({
+  p,
+  sentFromPubkey,
+}: {
+  p: PaymentResult
+  sentFromPubkey: Pubkey
+}): LnPaymentLookup => ({
   createdAt: new Date(p.created_at),
   status: p.is_confirmed ? PaymentStatus.Settled : PaymentStatus.Pending,
   paymentHash: p.id as PaymentHash,
@@ -1081,6 +1091,7 @@ const translateLnPaymentLookup = (p: PaymentResult): LnPaymentLookup => ({
       }
     : undefined,
   attempts: p.attempts,
+  sentFromPubkey,
 })
 
 const translateLnInvoiceLookup = (
