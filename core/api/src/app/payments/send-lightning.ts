@@ -1004,6 +1004,14 @@ const lockedPaymentViaLnSteps = async ({
   const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
   if (settled instanceof Error) return LnSendAttemptResult.err(settled)
 
+  const updatedPubkey = await LedgerFacade.updatePubkeyByHash({
+    paymentHash,
+    pubkey: payResult.sentFromPubkey,
+  })
+  if (updatedPubkey instanceof Error) {
+    recordExceptionInCurrentSpan({ error: updatedPubkey })
+  }
+
   if (!rawRoute) {
     const reimbursed = await reimburseFee({
       paymentFlow,
