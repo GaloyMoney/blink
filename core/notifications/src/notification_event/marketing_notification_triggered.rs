@@ -13,6 +13,7 @@ pub struct MarketingNotificationTriggered {
     pub should_add_to_history: bool,
     pub should_add_to_bulletin: bool,
     pub deep_link: Option<DeepLink>,
+    #[serde(default)]
     pub action: Option<Action>,
 }
 

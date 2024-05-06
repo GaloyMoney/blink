@@ -11,8 +11,6 @@ import NotificationFilteredSender from "../../components/notification/filtered-s
 export default function NotificationsScreen() {
   const [notification, setNotification] = useState<NotificationContent>({
     localizedNotificationContents: [],
-    deepLinkScreen: undefined,
-    deepLinkAction: undefined,
     shouldSendPush: false,
     shouldAddToHistory: false,
     shouldAddToBulletin: false,

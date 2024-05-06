@@ -611,7 +611,7 @@ export const NotificationsService = (): INotificationsService => {
           deepLink.setAction(deepLinkActionToGrpcDeepLinkAction(openDeepLink.action))
       }
 
-      let externalUrl = openExternalUrl?.url
+      const externalUrl = openExternalUrl?.url
 
       let action: Action | undefined = undefined
       if (deepLink !== undefined || externalUrl !== undefined) {

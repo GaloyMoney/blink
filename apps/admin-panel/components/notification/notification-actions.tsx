@@ -41,8 +41,17 @@ export const filteredUserCount = async ({
 export type TriggerMarketingNotificationArgs = {
   userIdsFilter?: string[]
   phoneCountryCodesFilter?: string[]
-  deepLinkScreen: DeepLinkScreen | undefined
-  deepLinkAction: DeepLinkAction | undefined
+  openDeepLink?:
+    | {
+        screen?: DeepLinkScreen | undefined
+        action?: DeepLinkAction | undefined
+      }
+    | undefined
+  openExternalUrl?:
+    | {
+        url: string
+      }
+    | undefined
   shouldSendPush: boolean
   shouldAddToHistory: boolean
   shouldAddToBulletin: boolean
@@ -54,8 +63,8 @@ export type TriggerMarketingNotificationArgs = {
 }
 
 export const triggerMarketingNotification = async ({
-  deepLinkScreen,
-  deepLinkAction,
+  openDeepLink,
+  openExternalUrl,
   shouldSendPush,
   shouldAddToBulletin,
   shouldAddToHistory,
@@ -70,8 +79,8 @@ export const triggerMarketingNotification = async ({
     mutation: MarketingNotificationTriggerDocument,
     variables: {
       input: {
-        deepLinkScreen,
-        deepLinkAction,
+        openDeepLink,
+        openExternalUrl,
         shouldSendPush,
         shouldAddToBulletin,
         shouldAddToHistory,
