@@ -10,7 +10,7 @@ import { setupMongoConnection } from "@/services/mongodb"
 import { WalletInvoice } from "@/services/mongoose/schema"
 import { WalletInvoicesRepository } from "@/services/mongoose"
 
-const nilUUID = "00000000-0000-0000-0000-000000000000"
+const defaultId = "00000000-0000-1000-a000-000000000000"
 
 const cleanInvoice = async ({ paymentHash }: { paymentHash: PaymentHash }) => {
   const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(paymentHash)
@@ -26,7 +26,7 @@ const cleanInvoice = async ({ paymentHash }: { paymentHash: PaymentHash }) => {
   // and we dont want to include it in the interface
   const result = await WalletInvoice.updateOne(
     { _id: paymentHash },
-    { accountId: nilUUID, walletId: nilUUID },
+    { accountId: defaultId, walletId: defaultId },
   )
   if (result.acknowledged && result.modifiedCount > 0) {
     return result.modifiedCount
