@@ -486,6 +486,15 @@ type CurrencyConversionEstimation
   usdCentAmount: CentAmount!
 }
 
+type Delegation
+  @join__type(graph: PUBLIC)
+{
+  app: String!
+  handledAt: Timestamp!
+  remember: Boolean!
+  scope: [String!]!
+}
+
 type DepositFeesInformation
   @join__type(graph: PUBLIC)
 {
@@ -1141,6 +1150,14 @@ type MerchantPayload
 """(Positive) amount of minutes"""
 scalar Minutes
   @join__type(graph: PUBLIC)
+
+type MobileSession
+  @join__type(graph: PUBLIC)
+{
+  expiresAt: Timestamp!
+  id: ID!
+  issuedAt: Timestamp!
+}
 
 type MobileVersions
   @join__type(graph: PUBLIC)
@@ -2079,6 +2096,9 @@ type User
   createdAt: Timestamp! @join__field(graph: PUBLIC)
   defaultAccount: Account! @join__field(graph: PUBLIC)
 
+  """List of Oauth2 delegations"""
+  delegations: [Delegation!]! @join__field(graph: PUBLIC)
+
   """Email address"""
   email: Email @join__field(graph: PUBLIC)
 
@@ -2087,6 +2107,9 @@ type User
   When value is 'default' the intent is to use preferred language from OS settings.
   """
   language: Language! @join__field(graph: PUBLIC)
+
+  """List of mobile sessions"""
+  mobileSessions: [MobileSession!]! @join__field(graph: PUBLIC)
 
   """Phone number with international calling code."""
   phone: Phone @join__field(graph: PUBLIC)

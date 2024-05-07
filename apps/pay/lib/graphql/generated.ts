@@ -448,6 +448,14 @@ export type CurrencyConversionEstimation = {
   readonly usdCentAmount: Scalars['CentAmount'];
 };
 
+export type Delegation = {
+  readonly __typename: 'Delegation';
+  readonly app: Scalars['String'];
+  readonly handledAt: Scalars['Timestamp'];
+  readonly remember: Scalars['Boolean'];
+  readonly scope: ReadonlyArray<Scalars['String']>;
+};
+
 export type DepositFeesInformation = {
   readonly __typename: 'DepositFeesInformation';
   readonly minBankFee: Scalars['String'];
@@ -874,6 +882,13 @@ export type MerchantPayload = {
   readonly __typename: 'MerchantPayload';
   readonly errors: ReadonlyArray<Error>;
   readonly merchant?: Maybe<Merchant>;
+};
+
+export type MobileSession = {
+  readonly __typename: 'MobileSession';
+  readonly expiresAt: Scalars['Timestamp'];
+  readonly id: Scalars['ID'];
+  readonly issuedAt: Scalars['Timestamp'];
 };
 
 export type MobileVersions = {
@@ -1913,6 +1928,8 @@ export type User = {
   readonly contacts: ReadonlyArray<UserContact>;
   readonly createdAt: Scalars['Timestamp'];
   readonly defaultAccount: Account;
+  /** List of Oauth2 delegations */
+  readonly delegations: ReadonlyArray<Delegation>;
   /** Email address */
   readonly email?: Maybe<Email>;
   readonly id: Scalars['ID'];
@@ -1921,6 +1938,8 @@ export type User = {
    * When value is 'default' the intent is to use preferred language from OS settings.
    */
   readonly language: Scalars['Language'];
+  /** List of mobile sessions */
+  readonly mobileSessions: ReadonlyArray<MobileSession>;
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']>;
   readonly supportChat: ReadonlyArray<SupportMessage>;

@@ -3,6 +3,7 @@ import { UsersRepository } from "@/services/mongoose"
 export * from "./update-language"
 export * from "./get-user-language"
 export * from "./add-device-token"
+export * from "./list-sessions"
 
 const users = UsersRepository()
 

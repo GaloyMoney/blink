@@ -489,6 +489,14 @@ export type CurrencyConversionEstimation = {
   readonly usdCentAmount: Scalars['CentAmount']['output'];
 };
 
+export type Delegation = {
+  readonly __typename: 'Delegation';
+  readonly app: Scalars['String']['output'];
+  readonly handledAt: Scalars['Timestamp']['output'];
+  readonly remember: Scalars['Boolean']['output'];
+  readonly scope: ReadonlyArray<Scalars['String']['output']>;
+};
+
 export type DepositFeesInformation = {
   readonly __typename: 'DepositFeesInformation';
   readonly minBankFee: Scalars['String']['output'];
@@ -915,6 +923,13 @@ export type MerchantPayload = {
   readonly __typename: 'MerchantPayload';
   readonly errors: ReadonlyArray<Error>;
   readonly merchant?: Maybe<Merchant>;
+};
+
+export type MobileSession = {
+  readonly __typename: 'MobileSession';
+  readonly expiresAt: Scalars['Timestamp']['output'];
+  readonly id: Scalars['ID']['output'];
+  readonly issuedAt: Scalars['Timestamp']['output'];
 };
 
 export type MobileVersions = {
@@ -2012,6 +2027,8 @@ export type User = {
   readonly contacts: ReadonlyArray<UserContact>;
   readonly createdAt: Scalars['Timestamp']['output'];
   readonly defaultAccount: Account;
+  /** List of Oauth2 delegations */
+  readonly delegations: ReadonlyArray<Delegation>;
   /** Email address */
   readonly email?: Maybe<Email>;
   readonly id: Scalars['ID']['output'];
@@ -2020,6 +2037,8 @@ export type User = {
    * When value is 'default' the intent is to use preferred language from OS settings.
    */
   readonly language: Scalars['Language']['output'];
+  /** List of mobile sessions */
+  readonly mobileSessions: ReadonlyArray<MobileSession>;
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']['output']>;
   readonly statefulNotifications: StatefulNotificationConnection;
@@ -3472,6 +3491,7 @@ export type ResolversTypes = {
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
   Currency: ResolverTypeWrapper<Currency>;
   CurrencyConversionEstimation: ResolverTypeWrapper<CurrencyConversionEstimation>;
+  Delegation: ResolverTypeWrapper<Delegation>;
   DepositFeesInformation: ResolverTypeWrapper<DepositFeesInformation>;
   DeviceNotificationTokenCreateInput: DeviceNotificationTokenCreateInput;
   DisplayCurrency: ResolverTypeWrapper<Scalars['DisplayCurrency']['output']>;
@@ -3537,6 +3557,7 @@ export type ResolversTypes = {
   MerchantMapSuggestInput: MerchantMapSuggestInput;
   MerchantPayload: ResolverTypeWrapper<MerchantPayload>;
   Minutes: ResolverTypeWrapper<Scalars['Minutes']['output']>;
+  MobileSession: ResolverTypeWrapper<MobileSession>;
   MobileVersions: ResolverTypeWrapper<MobileVersions>;
   Mutation: ResolverTypeWrapper<{}>;
   MyUpdatesPayload: ResolverTypeWrapper<Omit<MyUpdatesPayload, 'update'> & { update?: Maybe<ResolversTypes['UserUpdate']> }>;
@@ -3699,6 +3720,7 @@ export type ResolversParentTypes = {
   CountryCode: Scalars['CountryCode']['output'];
   Currency: Currency;
   CurrencyConversionEstimation: CurrencyConversionEstimation;
+  Delegation: Delegation;
   DepositFeesInformation: DepositFeesInformation;
   DeviceNotificationTokenCreateInput: DeviceNotificationTokenCreateInput;
   DisplayCurrency: Scalars['DisplayCurrency']['output'];
@@ -3762,6 +3784,7 @@ export type ResolversParentTypes = {
   MerchantMapSuggestInput: MerchantMapSuggestInput;
   MerchantPayload: MerchantPayload;
   Minutes: Scalars['Minutes']['output'];
+  MobileSession: MobileSession;
   MobileVersions: MobileVersions;
   Mutation: {};
   MyUpdatesPayload: Omit<MyUpdatesPayload, 'update'> & { update?: Maybe<ResolversParentTypes['UserUpdate']> };
@@ -4138,6 +4161,14 @@ export type CurrencyConversionEstimationResolvers<ContextType = any, ParentType 
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type DelegationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Delegation'] = ResolversParentTypes['Delegation']> = {
+  app?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  handledAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
+  remember?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  scope?: Resolver<ReadonlyArray<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type DepositFeesInformationResolvers<ContextType = any, ParentType extends ResolversParentTypes['DepositFeesInformation'] = ResolversParentTypes['DepositFeesInformation']> = {
   minBankFee?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   minBankFeeThreshold?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -4369,6 +4400,13 @@ export type MerchantPayloadResolvers<ContextType = any, ParentType extends Resol
 export interface MinutesScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Minutes'], any> {
   name: 'Minutes';
 }
+
+export type MobileSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MobileSession'] = ResolversParentTypes['MobileSession']> = {
+  expiresAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  issuedAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
 
 export type MobileVersionsResolvers<ContextType = any, ParentType extends ResolversParentTypes['MobileVersions'] = ResolversParentTypes['MobileVersions']> = {
   currentSupported?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -4828,9 +4866,11 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   contacts?: Resolver<ReadonlyArray<ResolversTypes['UserContact']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
   defaultAccount?: Resolver<ResolversTypes['Account'], ParentType, ContextType>;
+  delegations?: Resolver<ReadonlyArray<ResolversTypes['Delegation']>, ParentType, ContextType>;
   email?: Resolver<Maybe<ResolversTypes['Email']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   language?: Resolver<ResolversTypes['Language'], ParentType, ContextType>;
+  mobileSessions?: Resolver<ReadonlyArray<ResolversTypes['MobileSession']>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['Phone']>, ParentType, ContextType>;
   statefulNotifications?: Resolver<ResolversTypes['StatefulNotificationConnection'], ParentType, ContextType, RequireFields<UserStatefulNotificationsArgs, 'first'>>;
   supportChat?: Resolver<ReadonlyArray<ResolversTypes['SupportMessage']>, ParentType, ContextType>;
@@ -4985,6 +5025,7 @@ export type Resolvers<ContextType = any> = {
   CountryCode?: GraphQLScalarType;
   Currency?: CurrencyResolvers<ContextType>;
   CurrencyConversionEstimation?: CurrencyConversionEstimationResolvers<ContextType>;
+  Delegation?: DelegationResolvers<ContextType>;
   DepositFeesInformation?: DepositFeesInformationResolvers<ContextType>;
   DisplayCurrency?: GraphQLScalarType;
   Email?: EmailResolvers<ContextType>;
@@ -5023,6 +5064,7 @@ export type Resolvers<ContextType = any> = {
   Merchant?: MerchantResolvers<ContextType>;
   MerchantPayload?: MerchantPayloadResolvers<ContextType>;
   Minutes?: GraphQLScalarType;
+  MobileSession?: MobileSessionResolvers<ContextType>;
   MobileVersions?: MobileVersionsResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   MyUpdatesPayload?: MyUpdatesPayloadResolvers<ContextType>;

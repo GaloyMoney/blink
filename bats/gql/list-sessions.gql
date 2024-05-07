@@ -1,0 +1,17 @@
+query userDetails {
+  me {
+    id
+    phone
+    mobileSessions {
+      id
+      expiresAt
+      issuedAt
+    }
+    delegations {
+      app
+      handledAt
+      remember
+      scope
+    }
+  }
+}

@@ -21,7 +21,8 @@ hydra_cli create client \
     --format json \
     --scope read --scope write \
     --redirect-uri "$redirect_uri" > "${HYDRA_CLIENT_JSON}" \
-    --name "${hydra_client_name}"
+    --name "${hydra_client_name}" \
+    --skip-consent
 
 CLIENT_ID=$(jq -r '.client_id' < "${HYDRA_CLIENT_JSON}")
 CLIENT_SECRET=$(jq -r '.client_secret' < "${HYDRA_CLIENT_JSON}")

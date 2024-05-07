@@ -354,6 +354,13 @@ type CurrencyConversionEstimation {
   usdCentAmount: CentAmount!
 }
 
+type Delegation {
+  app: String!
+  handledAt: Timestamp!
+  remember: Boolean!
+  scope: [String!]!
+}
+
 type DepositFeesInformation {
   minBankFee: String!
 
@@ -864,6 +871,12 @@ type MerchantPayload {
 
 """(Positive) amount of minutes"""
 scalar Minutes
+
+type MobileSession {
+  expiresAt: Timestamp!
+  id: ID!
+  issuedAt: Timestamp!
+}
 
 type MobileVersions {
   currentSupported: Int!
@@ -1589,6 +1602,9 @@ type User {
   createdAt: Timestamp!
   defaultAccount: Account!
 
+  """List of Oauth2 delegations"""
+  delegations: [Delegation!]!
+
   """Email address"""
   email: Email
   id: ID!
@@ -1598,6 +1614,9 @@ type User {
   When value is 'default' the intent is to use preferred language from OS settings.
   """
   language: Language!
+
+  """List of mobile sessions"""
+  mobileSessions: [MobileSession!]!
 
   """Phone number with international calling code."""
   phone: Phone

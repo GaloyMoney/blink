@@ -24,3 +24,10 @@ setup_file() {
   language="$(graphql_output '.data.me.language')"
   [[ "$language" == "$new_language" ]] || exit 1
 }
+
+@test "user: list sessions" {
+  exec_graphql 'alice' 'list-sessions'
+  sessions="$(graphql_output '.data.me.mobileSessions')"
+  id="$(echo "$sessions" | jq -r '.[0].id')"  # Extracts the ID of the first element
+  [[ "$sessions" != "[]" ]] && [[ -n "$id" ]] || exit 1
+}
