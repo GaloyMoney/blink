@@ -14,7 +14,7 @@ impl From<history::StatefulNotification> for types::StatefulNotification {
             body: notification.message.body.clone(),
             created_at: types::Timestamp::from(created_at),
             acknowledged_at: acknowledeg_at.map(types::Timestamp::from),
-            add_to_bulletin: notification.add_to_bulletin(),
+            bulletin_enabled: notification.add_to_bulletin(),
         }
     }
 }

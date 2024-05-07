@@ -1778,7 +1778,7 @@ type StatefulNotification
   deepLink: String
   createdAt: Timestamp!
   acknowledgedAt: Timestamp
-  addToBulletin: Boolean!
+  bulletinEnabled: Boolean!
 }
 
 input StatefulNotificationAcknowledgeInput
@@ -2063,6 +2063,7 @@ type User
   apiKeys: [ApiKey!]! @join__field(graph: API_KEYS)
   statefulNotifications(first: Int!, after: String): StatefulNotificationConnection! @join__field(graph: NOTIFICATIONS)
   unacknowledgedStatefulNotificationsCount: Int! @join__field(graph: NOTIFICATIONS)
+  unacknowledgedStatefulNotificationsWithBulletinEnabled(first: Int!, after: String): StatefulNotificationConnection! @join__field(graph: NOTIFICATIONS)
 
   """
   Get single contact details.
