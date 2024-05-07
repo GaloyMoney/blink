@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump @storybook/react-webpack5 from 7.6.3 to 8.0.10 (#4424)...'
-      sha: 033ad2f1a5ea00c3febfb4a91f3b7322d9bbb6a0
+      commitTitle: 'feat(notifications): add unacknowledgedStatefulNotificationsWithBulletinEnabled
+        query (#4431)...'
+      sha: 59ca60465b0f60787410c451637e500327512fc6
       tags:
-      - 0.20.183-4-g033ad2f1a
+      - 0.20.184-3-g59ca60465
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump @storybook/react-webpack5 from 7.6.3 to 8.0.10 (#4424)...'
-      sha: 033ad2f1a5ea00c3febfb4a91f3b7322d9bbb6a0
+      commitTitle: 'feat(notifications): add unacknowledgedStatefulNotificationsWithBulletinEnabled
+        query (#4431)...'
+      sha: 59ca60465b0f60787410c451637e500327512fc6
       tags:
-      - 0.20.183-4-g033ad2f1a
+      - 0.20.184-3-g59ca60465
     path: schemas
   - git:
-      commitTitle: 'chore: bump @storybook/react-webpack5 from 7.6.3 to 8.0.10 (#4424)...'
-      sha: 033ad2f1a5ea00c3febfb4a91f3b7322d9bbb6a0
+      commitTitle: 'feat(notifications): add unacknowledgedStatefulNotificationsWithBulletinEnabled
+        query (#4431)...'
+      sha: 59ca60465b0f60787410c451637e500327512fc6
       tags:
-      - 0.20.183-4-g033ad2f1a
+      - 0.20.184-3-g59ca60465
     path: gql
   path: graphql
 kind: LockConfig
