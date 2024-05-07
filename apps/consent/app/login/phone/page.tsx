@@ -11,5 +11,4 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
   const authAction = "Login"
   return <PhoneAuth login_challenge={login_challenge} authAction={authAction} />
 }
-
 export default Login

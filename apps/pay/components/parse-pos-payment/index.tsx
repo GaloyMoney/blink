@@ -11,7 +11,7 @@ import {
   getLocaleConfig,
   extractSearchParams,
   parseDisplayCurrency,
-} from "../../utils/utils"
+} from "../../lib/utils"
 
 import { useDisplayCurrency } from "../../hooks/use-display-currency"
 

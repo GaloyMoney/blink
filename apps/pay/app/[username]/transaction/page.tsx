@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react"
 
 import { useGetPaginatedTransactionsQuery, Transaction } from "@/lib/graphql/generated"
 import LoadingComponent from "@/components/loading"
-import { formatCreateAt, formatDate, formatTime } from "@/utils/date-util"
+import { formatCreateAt, formatDate, formatTime } from "@/lib/utils/date-util"
 import { sendDataToPosCompanion } from "@/app/print-companion-service"
 import useCheckInstalledApps from "@/hooks/use-check-installed-apps"
 

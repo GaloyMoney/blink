@@ -8,7 +8,7 @@ import {
   RealtimePriceInitialQuery,
 } from "../../../lib/graphql/generated"
 
-import { getOriginalRequestInfo } from "../../../utils/utils"
+import { getOriginalRequestInfo } from "../../../lib/utils"
 
 import { client } from "./graphql"
 

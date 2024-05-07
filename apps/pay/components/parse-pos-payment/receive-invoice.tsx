@@ -17,7 +17,7 @@ import { ACTION_TYPE } from "../../app/reducer"
 import PaymentOutcome from "../payment-outcome"
 import { Share } from "../share"
 
-import { extractSearchParams, safeAmount } from "../../utils/utils"
+import { extractSearchParams, safeAmount } from "../../lib/utils"
 
 import LoadingComponent from "../loading"
 

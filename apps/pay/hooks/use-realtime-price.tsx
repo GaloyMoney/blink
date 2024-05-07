@@ -48,7 +48,7 @@ gql`
 const useRealtimePrice = (
   currency: string,
   onSubscriptionDataCallback?: (
-    subscriptionData: SubscriptionResult<RealtimePriceWsSubscription, any>,
+    subscriptionData: SubscriptionResult<RealtimePriceWsSubscription, unknown>,
   ) => void,
 ) => {
   const priceRef = React.useRef<number>(0)

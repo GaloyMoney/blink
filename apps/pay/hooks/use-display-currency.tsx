@@ -2,7 +2,7 @@ import { gql } from "@apollo/client"
 
 import { useCallback, useMemo } from "react"
 
-import { useCurrencyListQuery } from "./graphql/generated"
+import { useCurrencyListQuery } from "@/lib/graphql/generated"
 
 gql`
   query currencyList {

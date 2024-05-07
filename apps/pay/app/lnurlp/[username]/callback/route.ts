@@ -16,7 +16,7 @@ import {
   LnInvoiceCreateOnBehalfOfRecipientMutation,
 } from "../../../../lib/graphql/generated"
 import { client } from "../graphql"
-import { getOriginalRequestInfo } from "../../../../utils/utils"
+import { getOriginalRequestInfo } from "../../../../lib/utils"
 
 gql`
   mutation lnInvoiceCreateOnBehalfOfRecipient(

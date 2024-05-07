@@ -14,7 +14,7 @@ import { useLnInvoicePaymentStatusSubscription } from "../../lib/graphql/generat
 import styles from "./payment-outcome.module.css"
 import Receipt from "./receipt"
 
-import { extractSearchParams } from "@/utils/utils"
+import { extractSearchParams } from "@/lib/utils"
 import { useInvoiceContext } from "@/context/invoice-context"
 import useCheckInstalledApps from "@/hooks/use-check-installed-apps"
 
