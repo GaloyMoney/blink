@@ -295,7 +295,7 @@ impl NotificationsApp {
     }
 
     #[instrument(
-        name = "app.list_bulletin_enabled_stateful_notifications",
+        name = "app.list_unacknowledged_stateful_notifications_with_bulletin",
         skip(self),
         err
     )]
