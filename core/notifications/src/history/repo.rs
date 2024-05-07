@@ -21,11 +21,13 @@ impl PersistentNotifications {
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
         notification: NewStatefulNotification,
     ) -> Result<(), NotificationHistoryError> {
+        let bulletin_enabled = notification.payload.should_be_added_to_bulletin();
         sqlx::query!(
-            r#"INSERT INTO stateful_notifications (id, galoy_user_id)
-            VALUES ($1, $2)"#,
+            r#"INSERT INTO stateful_notifications (id, galoy_user_id, bulletin_enabled)
+            VALUES ($1, $2, $3)"#,
             notification.id as StatefulNotificationId,
             notification.user_id.as_ref(),
+            bulletin_enabled,
         )
         .execute(&mut **tx)
         .await?;
@@ -38,11 +40,13 @@ impl PersistentNotifications {
         tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
         new_notifications: Vec<NewStatefulNotification>,
     ) -> Result<(), NotificationHistoryError> {
-        let mut query_builder =
-            sqlx::QueryBuilder::new("INSERT INTO stateful_notifications (id, galoy_user_id)");
+        let mut query_builder = sqlx::QueryBuilder::new(
+            "INSERT INTO stateful_notifications (id, galoy_user_id, bulletin_enabled)",
+        );
         query_builder.push_values(new_notifications.iter(), |mut builder, notification| {
             builder.push_bind(notification.id as StatefulNotificationId);
             builder.push_bind(notification.user_id.as_ref());
+            builder.push_bind(notification.payload.should_be_added_to_bulletin());
         });
         let query = query_builder.build();
         query.execute(&mut **tx).await?;
@@ -140,5 +144,32 @@ impl PersistentNotifications {
         .await?;
         let res = EntityEvents::load_n::<StatefulNotification>(rows, first)?;
         Ok(res)
+    }
+
+    pub async fn list_unacknowledged_bulletins_for_user(
+        &self,
+        user_id: GaloyUserId,
+    ) -> Result<Vec<StatefulNotification>, NotificationHistoryError> {
+        let rows = sqlx::query_as!(
+            GenericEvent,
+            r#"
+            WITH stateful_notifications AS (
+                SELECT * FROM stateful_notifications WHERE galoy_user_id = $1
+                AND bulletin_enabled IS TRUE AND acknowledged IS FALSE
+                ORDER BY created_at DESC
+                LIMIT 2
+                )
+            SELECT a.id, e.sequence, e.event,
+                      a.created_at AS entity_created_at, e.recorded_at AS event_recorded_at
+            FROM stateful_notifications a
+            JOIN stateful_notification_events e ON a.id = e.id
+            WHERE a.galoy_user_id = $1
+            ORDER BY a.created_at DESC, a.id, e.sequence"#,
+            user_id.as_ref(),
+        )
+        .fetch_all(self.read_pool.inner())
+        .await?;
+        let res = EntityEvents::load_n::<StatefulNotification>(rows, 2)?;
+        Ok(res.0)
     }
 }

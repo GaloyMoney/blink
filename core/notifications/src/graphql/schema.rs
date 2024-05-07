@@ -83,6 +83,23 @@ impl User {
             .await?;
         Ok::<_, async_graphql::Error>(count)
     }
+
+    async fn recent_unacknowledged_bulletins(
+        &self,
+        ctx: &Context<'_>,
+    ) -> async_graphql::Result<Vec<StatefulNotification>> {
+        let app = ctx.data_unchecked::<NotificationsApp>();
+        let user_id = GaloyUserId::from(self.id.0.clone());
+        let notification = app
+            .list_unacknowledged_stateful_notifications_with_bulletin(user_id)
+            .await?;
+        Ok::<_, async_graphql::Error>(
+            notification
+                .into_iter()
+                .map(StatefulNotification::from)
+                .collect(),
+        )
+    }
 }
 
 #[derive(SimpleObject)]

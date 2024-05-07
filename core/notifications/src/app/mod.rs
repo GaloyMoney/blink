@@ -294,6 +294,22 @@ impl NotificationsApp {
         Ok(ret)
     }
 
+    #[instrument(
+        name = "app.list_bulletin_enabled_stateful_notifications",
+        skip(self),
+        err
+    )]
+    pub async fn list_unacknowledged_stateful_notifications_with_bulletin(
+        &self,
+        user_id: GaloyUserId,
+    ) -> Result<Vec<StatefulNotification>, ApplicationError> {
+        let ret = self
+            .history
+            .list_unacknowledged_notifications_with_bulletin_for_user(user_id)
+            .await?;
+        Ok(ret)
+    }
+
     #[instrument(name = "app.acknowledge_notification", skip(self), err)]
     pub async fn acknowledge_notification(
         &self,
