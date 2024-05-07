@@ -32,7 +32,7 @@ type StatefulNotification {
 	deepLink: String
 	createdAt: Timestamp!
 	acknowledgedAt: Timestamp
-	addToBulletin: Boolean!
+	bulletinEnabled: Boolean!
 }
 
 input StatefulNotificationAcknowledgeInput {
@@ -79,7 +79,7 @@ extend type User @key(fields: "id") {
 	id: ID! @external
 	statefulNotifications(first: Int!, after: String): StatefulNotificationConnection!
 	unacknowledgedStatefulNotificationsCount: Int!
-	recentUnacknowledgedBulletins: [StatefulNotification!]!
+	unacknowledgedStatefulNotificationsWithBulletinEnabled(first: Int!, after: String): StatefulNotificationConnection!
 }
 
 directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT

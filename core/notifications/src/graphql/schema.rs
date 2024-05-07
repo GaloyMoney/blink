@@ -84,21 +84,46 @@ impl User {
         Ok::<_, async_graphql::Error>(count)
     }
 
-    async fn recent_unacknowledged_bulletins(
+    async fn unacknowledged_stateful_notifications_with_bulletin_enabled(
         &self,
         ctx: &Context<'_>,
-    ) -> async_graphql::Result<Vec<StatefulNotification>> {
+        first: i32,
+        after: Option<String>,
+    ) -> async_graphql::Result<
+        Connection<
+            StatefulNotificationsByCreatedAtCursor,
+            StatefulNotification,
+            EmptyFields,
+            EmptyFields,
+        >,
+    > {
         let app = ctx.data_unchecked::<NotificationsApp>();
         let user_id = GaloyUserId::from(self.id.0.clone());
-        let notification = app
-            .list_unacknowledged_stateful_notifications_with_bulletin(user_id)
-            .await?;
-        Ok::<_, async_graphql::Error>(
-            notification
-                .into_iter()
-                .map(StatefulNotification::from)
-                .collect(),
+        query(
+            after,
+            None,
+            Some(first),
+            None,
+            |after, _, first, _| async move {
+                let first = first.expect("First always exists");
+                let (notifications, has_next) = app
+                    .list_unacknowledged_stateful_notifications_with_bulletin_enabled(
+                        user_id,
+                        first,
+                        after.map(|after: StatefulNotificationsByCreatedAtCursor| after.id),
+                    )
+                    .await?;
+                let mut connection = Connection::new(false, has_next);
+                connection
+                    .edges
+                    .extend(notifications.into_iter().map(|notification| {
+                        let cursor = StatefulNotificationsByCreatedAtCursor::from(notification.id);
+                        Edge::new(cursor, StatefulNotification::from(notification))
+                    }));
+                Ok::<_, async_graphql::Error>(connection)
+            },
         )
+        .await
     }
 }
 

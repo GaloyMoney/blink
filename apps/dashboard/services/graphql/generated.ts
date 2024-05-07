@@ -1734,8 +1734,8 @@ export type SettlementViaOnChain = {
 export type StatefulNotification = {
   readonly __typename: 'StatefulNotification';
   readonly acknowledgedAt?: Maybe<Scalars['Timestamp']['output']>;
-  readonly addToBulletin: Scalars['Boolean']['output'];
   readonly body: Scalars['String']['output'];
+  readonly bulletinEnabled: Scalars['Boolean']['output'];
   readonly createdAt: Scalars['Timestamp']['output'];
   readonly deepLink?: Maybe<Scalars['String']['output']>;
   readonly id: Scalars['ID']['output'];
@@ -2022,12 +2022,12 @@ export type User = {
   readonly language: Scalars['Language']['output'];
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']['output']>;
-  readonly recentUnacknowledgedBulletins: ReadonlyArray<StatefulNotification>;
   readonly statefulNotifications: StatefulNotificationConnection;
   readonly supportChat: ReadonlyArray<SupportMessage>;
   /** Whether TOTP is enabled for this user. */
   readonly totpEnabled: Scalars['Boolean']['output'];
   readonly unacknowledgedStatefulNotificationsCount: Scalars['Int']['output'];
+  readonly unacknowledgedStatefulNotificationsWithBulletinEnabled: StatefulNotificationConnection;
   /**
    * Optional immutable user friendly identifier.
    * @deprecated will be moved to @Handle in Account and Wallet
@@ -2042,6 +2042,12 @@ export type UserContactByUsernameArgs = {
 
 
 export type UserStatefulNotificationsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  first: Scalars['Int']['input'];
+};
+
+
+export type UserUnacknowledgedStatefulNotificationsWithBulletinEnabledArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   first: Scalars['Int']['input'];
 };
@@ -4684,8 +4690,8 @@ export interface SignedDisplayMajorAmountScalarConfig extends GraphQLScalarTypeC
 
 export type StatefulNotificationResolvers<ContextType = any, ParentType extends ResolversParentTypes['StatefulNotification'] = ResolversParentTypes['StatefulNotification']> = {
   acknowledgedAt?: Resolver<Maybe<ResolversTypes['Timestamp']>, ParentType, ContextType>;
-  addToBulletin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   body?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  bulletinEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
   deepLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -4826,11 +4832,11 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   language?: Resolver<ResolversTypes['Language'], ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['Phone']>, ParentType, ContextType>;
-  recentUnacknowledgedBulletins?: Resolver<ReadonlyArray<ResolversTypes['StatefulNotification']>, ParentType, ContextType>;
   statefulNotifications?: Resolver<ResolversTypes['StatefulNotificationConnection'], ParentType, ContextType, RequireFields<UserStatefulNotificationsArgs, 'first'>>;
   supportChat?: Resolver<ReadonlyArray<ResolversTypes['SupportMessage']>, ParentType, ContextType>;
   totpEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   unacknowledgedStatefulNotificationsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  unacknowledgedStatefulNotificationsWithBulletinEnabled?: Resolver<ResolversTypes['StatefulNotificationConnection'], ParentType, ContextType, RequireFields<UserUnacknowledgedStatefulNotificationsWithBulletinEnabledArgs, 'first'>>;
   username?: Resolver<Maybe<ResolversTypes['Username']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

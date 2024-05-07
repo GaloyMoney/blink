@@ -116,9 +116,11 @@ impl NotificationHistory {
     pub async fn list_unacknowledged_notifications_with_bulletin_for_user(
         &self,
         user_id: GaloyUserId,
-    ) -> Result<Vec<StatefulNotification>, NotificationHistoryError> {
+        first: usize,
+        after: Option<StatefulNotificationId>,
+    ) -> Result<(Vec<StatefulNotification>, bool), NotificationHistoryError> {
         self.repo
-            .list_unacknowledged_bulletins_for_user(user_id)
+            .list_unacknowledged_bulletins_for_user(user_id, first, after)
             .await
     }
 }

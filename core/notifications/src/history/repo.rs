@@ -149,27 +149,36 @@ impl PersistentNotifications {
     pub async fn list_unacknowledged_bulletins_for_user(
         &self,
         user_id: GaloyUserId,
-    ) -> Result<Vec<StatefulNotification>, NotificationHistoryError> {
+        first: usize,
+        after: Option<StatefulNotificationId>,
+    ) -> Result<(Vec<StatefulNotification>, bool), NotificationHistoryError> {
         let rows = sqlx::query_as!(
             GenericEvent,
             r#"
-            WITH stateful_notifications AS (
-                SELECT * FROM stateful_notifications WHERE galoy_user_id = $1
-                AND bulletin_enabled IS TRUE AND acknowledged IS FALSE
-                ORDER BY created_at DESC
-                LIMIT 2
-                )
+            WITH anchor AS (
+            SELECT created_at FROM stateful_notifications
+            WHERE id = $2 AND bulletin_enabled IS TRUE AND acknowledged IS FALSE
+            LIMIT 1
+            )
             SELECT a.id, e.sequence, e.event,
-                      a.created_at AS entity_created_at, e.recorded_at AS event_recorded_at
+               a.created_at AS entity_created_at, e.recorded_at AS event_recorded_at
             FROM stateful_notifications a
             JOIN stateful_notification_events e ON a.id = e.id
             WHERE a.galoy_user_id = $1
-            ORDER BY a.created_at DESC, a.id, e.sequence"#,
+            AND bulletin_enabled IS TRUE
+            AND acknowledged IS FALSE
+            AND ($2 IS NOT NULL AND a.created_at < (SELECT created_at FROM anchor)
+               OR $2 IS NULL)
+            ORDER BY a.created_at DESC, a.id, e.sequence
+            LIMIT $3
+            "#,
             user_id.as_ref(),
+            after as Option<StatefulNotificationId>,
+            first as i64 + 1
         )
         .fetch_all(self.read_pool.inner())
         .await?;
-        let res = EntityEvents::load_n::<StatefulNotification>(rows, 2)?;
-        Ok(res.0)
+        let res = EntityEvents::load_n::<StatefulNotification>(rows, first)?;
+        Ok(res)
     }
 }

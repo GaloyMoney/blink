@@ -295,17 +295,19 @@ impl NotificationsApp {
     }
 
     #[instrument(
-        name = "app.list_unacknowledged_stateful_notifications_with_bulletin",
+        name = "app.list_unacknowledged_stateful_notifications_with_bulletin_enabled",
         skip(self),
         err
     )]
-    pub async fn list_unacknowledged_stateful_notifications_with_bulletin(
+    pub async fn list_unacknowledged_stateful_notifications_with_bulletin_enabled(
         &self,
         user_id: GaloyUserId,
-    ) -> Result<Vec<StatefulNotification>, ApplicationError> {
+        first: usize,
+        after: Option<StatefulNotificationId>,
+    ) -> Result<(Vec<StatefulNotification>, bool), ApplicationError> {
         let ret = self
             .history
-            .list_unacknowledged_notifications_with_bulletin_for_user(user_id)
+            .list_unacknowledged_notifications_with_bulletin_for_user(user_id, first, after)
             .await?;
         Ok(ret)
     }
