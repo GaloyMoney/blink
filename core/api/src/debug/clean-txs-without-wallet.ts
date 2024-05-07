@@ -10,21 +10,26 @@ import { setupMongoConnection } from "@/services/mongodb"
 import { WalletInvoice } from "@/services/mongoose/schema"
 import { WalletInvoicesRepository } from "@/services/mongoose"
 
+const nilUUID = "00000000-0000-0000-0000-000000000000"
+
 const cleanInvoice = async ({ paymentHash }: { paymentHash: PaymentHash }) => {
   const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(paymentHash)
   if (walletInvoice instanceof Error) return walletInvoice
 
-  console.log("Invoice to delete", walletInvoice)
+  console.log("Invoice to update", walletInvoice)
 
   if (walletInvoice.recipientWalletDescriptor.id) {
     return new Error("Invoice with a valid walletId can't be cleaned")
   }
 
-  // WalletInvoicesRepository does not have delete method
+  // WalletInvoicesRepository does not have update method
   // and we dont want to include it in the interface
-  const result = await WalletInvoice.deleteOne({ _id: paymentHash })
-  if (result.acknowledged && result.deletedCount > 0) {
-    return result.deletedCount
+  const result = await WalletInvoice.updateOne(
+    { _id: paymentHash },
+    { accountId: nilUUID, walletId: nilUUID },
+  )
+  if (result.acknowledged && result.modifiedCount > 0) {
+    return result.modifiedCount
   }
 
   return 0
@@ -40,7 +45,7 @@ const main = async () => {
     console.error("Error:", result)
     return
   }
-  console.log(`Invoice ${params.paymentHash} cleaned deleting ${result} records`)
+  console.log(`Invoice ${params.paymentHash} cleaned updating ${result} records`)
 }
 
 setupMongoConnection()
