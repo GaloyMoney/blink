@@ -3,7 +3,11 @@ import client, { register } from "prom-client"
 
 import healthzHandler from "./middlewares/healthz"
 
-import { EXPORTER_ASSETS_LIABILITIES_DELAY_SECS, EXPORTER_PORT, SECS_PER_5_MINS } from "@/config"
+import {
+  EXPORTER_ASSETS_LIABILITIES_DELAY_SECS,
+  EXPORTER_PORT,
+  SECS_PER_5_MINS,
+} from "@/config"
 
 import { Lightning, OnChain } from "@/app"
 
@@ -296,7 +300,9 @@ const createColdStorageWalletGauge = () => {
 
 const getAssetsLiabilitiesDifference = async () => {
   const currentDate = new Date()
-  currentDate.setSeconds(currentDate.getSeconds() - EXPORTER_ASSETS_LIABILITIES_DELAY_SECS)
+  currentDate.setSeconds(
+    currentDate.getSeconds() - EXPORTER_ASSETS_LIABILITIES_DELAY_SECS,
+  )
   const [assets, liabilities] = await Promise.all([
     ledgerAdmin.getAssetsBalance(currentDate),
     ledgerAdmin.getLiabilitiesBalance(currentDate),
