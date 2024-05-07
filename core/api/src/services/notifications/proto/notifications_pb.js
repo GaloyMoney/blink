@@ -7019,10 +7019,9 @@ proto.services.notifications.v1.MarketingNotificationTriggered.toObject = functi
   var f, obj = {
     userIdsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
     localizedContentMap: (f = msg.getLocalizedContentMap()) ? f.toObject(includeInstance, proto.services.notifications.v1.LocalizedContent.toObject) : [],
-    deepLink: (f = msg.getDeepLink()) && proto.services.notifications.v1.DeepLink.toObject(includeInstance, f),
-    shouldSendPush: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
-    shouldAddToHistory: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
-    shouldAddToBulletin: jspb.Message.getBooleanFieldWithDefault(msg, 6, false),
+    shouldSendPush: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
+    shouldAddToHistory: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
+    shouldAddToBulletin: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
     action: (f = msg.getAction()) && proto.services.notifications.v1.Action.toObject(includeInstance, f)
   };
 
@@ -7071,23 +7070,18 @@ proto.services.notifications.v1.MarketingNotificationTriggered.deserializeBinary
          });
       break;
     case 3:
-      var value = new proto.services.notifications.v1.DeepLink;
-      reader.readMessage(value,proto.services.notifications.v1.DeepLink.deserializeBinaryFromReader);
-      msg.setDeepLink(value);
-      break;
-    case 4:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setShouldSendPush(value);
       break;
-    case 5:
+    case 4:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setShouldAddToHistory(value);
       break;
-    case 6:
+    case 5:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setShouldAddToBulletin(value);
       break;
-    case 7:
+    case 6:
       var value = new proto.services.notifications.v1.Action;
       reader.readMessage(value,proto.services.notifications.v1.Action.deserializeBinaryFromReader);
       msg.setAction(value);
@@ -7132,39 +7126,31 @@ proto.services.notifications.v1.MarketingNotificationTriggered.serializeBinaryTo
   if (f && f.getLength() > 0) {
     f.serializeBinary(2, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.services.notifications.v1.LocalizedContent.serializeBinaryToWriter);
   }
-  f = message.getDeepLink();
-  if (f != null) {
-    writer.writeMessage(
-      3,
-      f,
-      proto.services.notifications.v1.DeepLink.serializeBinaryToWriter
-    );
-  }
   f = message.getShouldSendPush();
   if (f) {
     writer.writeBool(
-      4,
+      3,
       f
     );
   }
   f = message.getShouldAddToHistory();
   if (f) {
     writer.writeBool(
-      5,
+      4,
       f
     );
   }
   f = message.getShouldAddToBulletin();
   if (f) {
     writer.writeBool(
-      6,
+      5,
       f
     );
   }
   f = message.getAction();
   if (f != null) {
     writer.writeMessage(
-      7,
+      6,
       f,
       proto.services.notifications.v1.Action.serializeBinaryToWriter
     );
@@ -7233,48 +7219,11 @@ proto.services.notifications.v1.MarketingNotificationTriggered.prototype.clearLo
 
 
 /**
- * optional DeepLink deep_link = 3;
- * @return {?proto.services.notifications.v1.DeepLink}
- */
-proto.services.notifications.v1.MarketingNotificationTriggered.prototype.getDeepLink = function() {
-  return /** @type{?proto.services.notifications.v1.DeepLink} */ (
-    jspb.Message.getWrapperField(this, proto.services.notifications.v1.DeepLink, 3));
-};
-
-
-/**
- * @param {?proto.services.notifications.v1.DeepLink|undefined} value
- * @return {!proto.services.notifications.v1.MarketingNotificationTriggered} returns this
-*/
-proto.services.notifications.v1.MarketingNotificationTriggered.prototype.setDeepLink = function(value) {
-  return jspb.Message.setWrapperField(this, 3, value);
-};
-
-
-/**
- * Clears the message field making it undefined.
- * @return {!proto.services.notifications.v1.MarketingNotificationTriggered} returns this
- */
-proto.services.notifications.v1.MarketingNotificationTriggered.prototype.clearDeepLink = function() {
-  return this.setDeepLink(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.services.notifications.v1.MarketingNotificationTriggered.prototype.hasDeepLink = function() {
-  return jspb.Message.getField(this, 3) != null;
-};
-
-
-/**
- * optional bool should_send_push = 4;
+ * optional bool should_send_push = 3;
  * @return {boolean}
  */
 proto.services.notifications.v1.MarketingNotificationTriggered.prototype.getShouldSendPush = function() {
-  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 4, false));
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 3, false));
 };
 
 
@@ -7283,16 +7232,16 @@ proto.services.notifications.v1.MarketingNotificationTriggered.prototype.getShou
  * @return {!proto.services.notifications.v1.MarketingNotificationTriggered} returns this
  */
 proto.services.notifications.v1.MarketingNotificationTriggered.prototype.setShouldSendPush = function(value) {
-  return jspb.Message.setProto3BooleanField(this, 4, value);
+  return jspb.Message.setProto3BooleanField(this, 3, value);
 };
 
 
 /**
- * optional bool should_add_to_history = 5;
+ * optional bool should_add_to_history = 4;
  * @return {boolean}
  */
 proto.services.notifications.v1.MarketingNotificationTriggered.prototype.getShouldAddToHistory = function() {
-  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 5, false));
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 4, false));
 };
 
 
@@ -7301,16 +7250,16 @@ proto.services.notifications.v1.MarketingNotificationTriggered.prototype.getShou
  * @return {!proto.services.notifications.v1.MarketingNotificationTriggered} returns this
  */
 proto.services.notifications.v1.MarketingNotificationTriggered.prototype.setShouldAddToHistory = function(value) {
-  return jspb.Message.setProto3BooleanField(this, 5, value);
+  return jspb.Message.setProto3BooleanField(this, 4, value);
 };
 
 
 /**
- * optional bool should_add_to_bulletin = 6;
+ * optional bool should_add_to_bulletin = 5;
  * @return {boolean}
  */
 proto.services.notifications.v1.MarketingNotificationTriggered.prototype.getShouldAddToBulletin = function() {
-  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 6, false));
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 5, false));
 };
 
 
@@ -7319,17 +7268,17 @@ proto.services.notifications.v1.MarketingNotificationTriggered.prototype.getShou
  * @return {!proto.services.notifications.v1.MarketingNotificationTriggered} returns this
  */
 proto.services.notifications.v1.MarketingNotificationTriggered.prototype.setShouldAddToBulletin = function(value) {
-  return jspb.Message.setProto3BooleanField(this, 6, value);
+  return jspb.Message.setProto3BooleanField(this, 5, value);
 };
 
 
 /**
- * optional Action action = 7;
+ * optional Action action = 6;
  * @return {?proto.services.notifications.v1.Action}
  */
 proto.services.notifications.v1.MarketingNotificationTriggered.prototype.getAction = function() {
   return /** @type{?proto.services.notifications.v1.Action} */ (
-    jspb.Message.getWrapperField(this, proto.services.notifications.v1.Action, 7));
+    jspb.Message.getWrapperField(this, proto.services.notifications.v1.Action, 6));
 };
 
 
@@ -7338,7 +7287,7 @@ proto.services.notifications.v1.MarketingNotificationTriggered.prototype.getActi
  * @return {!proto.services.notifications.v1.MarketingNotificationTriggered} returns this
 */
 proto.services.notifications.v1.MarketingNotificationTriggered.prototype.setAction = function(value) {
-  return jspb.Message.setWrapperField(this, 7, value);
+  return jspb.Message.setWrapperField(this, 6, value);
 };
 
 
@@ -7356,7 +7305,7 @@ proto.services.notifications.v1.MarketingNotificationTriggered.prototype.clearAc
  * @return {boolean}
  */
 proto.services.notifications.v1.MarketingNotificationTriggered.prototype.hasAction = function() {
-  return jspb.Message.getField(this, 7) != null;
+  return jspb.Message.getField(this, 6) != null;
 };
 
 

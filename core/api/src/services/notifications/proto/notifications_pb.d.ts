@@ -898,11 +898,6 @@ export class MarketingNotificationTriggered extends jspb.Message {
 
     getLocalizedContentMap(): jspb.Map<string, LocalizedContent>;
     clearLocalizedContentMap(): void;
-
-    hasDeepLink(): boolean;
-    clearDeepLink(): void;
-    getDeepLink(): DeepLink | undefined;
-    setDeepLink(value?: DeepLink): MarketingNotificationTriggered;
     getShouldSendPush(): boolean;
     setShouldSendPush(value: boolean): MarketingNotificationTriggered;
     getShouldAddToHistory(): boolean;
@@ -930,7 +925,6 @@ export namespace MarketingNotificationTriggered {
         userIdsList: Array<string>,
 
         localizedContentMap: Array<[string, LocalizedContent.AsObject]>,
-        deepLink?: DeepLink.AsObject,
         shouldSendPush: boolean,
         shouldAddToHistory: boolean,
         shouldAddToBulletin: boolean,

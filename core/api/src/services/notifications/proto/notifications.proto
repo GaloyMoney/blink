@@ -238,11 +238,10 @@ message PriceChanged {
 message MarketingNotificationTriggered {
   repeated string user_ids = 1;
   map<string, LocalizedContent> localized_content = 2;
-  optional DeepLink deep_link = 3; // deprecate this? or make a breaking change?
-  bool should_send_push = 4;
-  bool should_add_to_history = 5;
-  bool should_add_to_bulletin = 6;
-  optional Action action = 7;
+  bool should_send_push = 3;
+  bool should_add_to_history = 4;
+  bool should_add_to_bulletin = 5;
+  optional Action action = 6;
 }
 
 message LocalizedContent {

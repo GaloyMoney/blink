@@ -408,7 +408,6 @@ impl NotificationsService for Notifications {
                             should_add_to_history,
                             should_send_push,
                             user_ids,
-                            deep_link,
                             action,
                         },
                     )),
@@ -437,32 +436,6 @@ impl NotificationsService for Notifications {
                     .cloned()
                     .ok_or_else(|| Status::invalid_argument("default content is required"))?;
 
-                let deep_link = if let Some(deep_link) = deep_link {
-                    let screen = if let Some(screen) = deep_link.screen {
-                        Some(
-                            proto::DeepLinkScreen::try_from(screen)
-                                .map(notification_event::DeepLinkScreen::from)
-                                .map_err(|e| Status::invalid_argument(e.to_string()))?,
-                        )
-                    } else {
-                        None
-                    };
-
-                    let action = if let Some(action) = deep_link.action {
-                        Some(
-                            proto::DeepLinkAction::try_from(action)
-                                .map(notification_event::DeepLinkAction::from)
-                                .map_err(|e| Status::invalid_argument(e.to_string()))?,
-                        )
-                    } else {
-                        None
-                    };
-
-                    Some(notification_event::DeepLink { screen, action })
-                } else {
-                    None
-                };
-
                 let action = action
                     .map(notification_event::Action::try_from)
                     .transpose()?;
@@ -476,7 +449,6 @@ impl NotificationsService for Notifications {
                             should_add_to_bulletin,
                             should_add_to_history,
                             should_send_push,
-                            deep_link,
                             action,
                         },
                     )
