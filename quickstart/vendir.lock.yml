@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(notifications): add unacknowledgedStatefulNotificationsWithBulletinEnabled
-        query (#4431)...'
-      sha: 59ca60465b0f60787410c451637e500327512fc6
+      commitTitle: 'test(core): add wait for notifications service (#4430)'
+      sha: 5844e8fe8593eb55fdedb0d7fd2d20e65b1f9358
       tags:
-      - 0.20.184-3-g59ca60465
+      - 0.20.185-2-g5844e8fe8
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(notifications): add unacknowledgedStatefulNotificationsWithBulletinEnabled
-        query (#4431)...'
-      sha: 59ca60465b0f60787410c451637e500327512fc6
+      commitTitle: 'test(core): add wait for notifications service (#4430)'
+      sha: 5844e8fe8593eb55fdedb0d7fd2d20e65b1f9358
       tags:
-      - 0.20.184-3-g59ca60465
+      - 0.20.185-2-g5844e8fe8
     path: schemas
   - git:
-      commitTitle: 'feat(notifications): add unacknowledgedStatefulNotificationsWithBulletinEnabled
-        query (#4431)...'
-      sha: 59ca60465b0f60787410c451637e500327512fc6
+      commitTitle: 'test(core): add wait for notifications service (#4430)'
+      sha: 5844e8fe8593eb55fdedb0d7fd2d20e65b1f9358
       tags:
-      - 0.20.184-3-g59ca60465
+      - 0.20.185-2-g5844e8fe8
     path: gql
   path: graphql
 kind: LockConfig
