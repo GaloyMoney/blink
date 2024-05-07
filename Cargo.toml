@@ -12,7 +12,7 @@ members = [
 ]
 
 [workspace.dependencies]
-anyhow = "1.0.82"
+anyhow = "1.0.83"
 async-graphql = { version = "7.0.3", default-features = false, features = ["tracing", "chrono", "playground"] }
 async-graphql-axum = "7.0.3"
 axum = { version = "0.7.5", features = ["macros"] }
