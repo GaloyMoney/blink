@@ -120,10 +120,10 @@ setup_file() {
 
 }
 
-@test "notifications: recent unacknowledged bulletins" {
-  local n_bulletins
-  exec_graphql 'alice' 'recent-unacknowledged-bulletins'
-  n_bulletins=$(graphql_output | jq '.data.me.recentUnacknowledgedBulletins | length')
+@test "notifications: list unacknowledged stateful notifications with bulletin enabled" {
+  local n_notifications
+  exec_graphql 'alice' 'list-unacknowledged-stateful-notifications-with-bulletin-enabled'
+  n_notifications=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsWithBulletinEnabled.nodes | length')
   [[ $n_bulletins -eq 0 ]] || exit 1
 
   admin_token="$(read_value 'admin.token')"
@@ -147,14 +147,38 @@ setup_file() {
     }'
   )
 
-  # trigger a marketing notification
+  # trigger two marketing notification
+  exec_admin_graphql "$admin_token" 'marketing-notification-trigger' "$variables"
   exec_admin_graphql "$admin_token" 'marketing-notification-trigger' "$variables"
 
   for i in {1..10}; do
-    exec_graphql 'alice' 'recent-unacknowledged-bulletins'
-    n_bulletins=$(graphql_output | jq '.data.me.recentUnacknowledgedBulletins | length')
-    [[ $n_bulletins -eq 1 ]] && break;
+    exec_graphql 'alice' 'list-unacknowledged-stateful-notifications-with-bulletin-enabled'
+    n_notifications=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsWithBulletinEnabled.nodes | length')
+    [[ $n_notifications -eq 2 ]] && break;
     sleep 1
   done
-  [[ $n_bulletins -eq 1 ]] || exit 1;
+  [[ $n_notifications -eq 2 ]] || exit 1;
+}
+
+@test "notifications: list unacknowledged stateful notifications with bulletin enabled paginated with cursor" {
+  exec_graphql 'alice' 'list-unacknowledged-stateful-notifications-with-bulletin-enabled' '{"first": 1}'
+  n_notifications=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsWithBulletinEnabled.nodes | length')
+  first_id=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsWithBulletinEnabled.nodes[0].id')
+  cursor=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsWithBulletinEnabled.pageInfo.endCursor')
+  next_page=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsWithBulletinEnabled.pageInfo.hasNextPage')
+  [[ $n_notifications -eq 1 ]] || exit 1
+  [[ "$next_page" = "true" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg after "${cursor}" \
+    '{first: 1, after: $after}'
+  )
+  exec_graphql 'alice' 'list-unacknowledged-stateful-notifications-with-bulletin-enabled' "$variables"
+  n_notifications=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsWithBulletinEnabled.nodes | length')
+  second_id=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsWithBulletinEnabled.nodes[0].id')
+  next_page=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsWithBulletinEnabled.pageInfo.hasNextPage')
+  [[ $n_notifications -eq 1 ]] || exit 1
+  [[ "${first_id}" != "${second_id}" ]] || exit 1
+  [[ "$next_page" = "false" ]] || exit 1
 }
