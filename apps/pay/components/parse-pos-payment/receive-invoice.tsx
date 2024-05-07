@@ -12,7 +12,7 @@ import { useScreenshot } from "use-react-screenshot"
 import { USD_INVOICE_EXPIRE_INTERVAL } from "../../config/config"
 import useCreateInvoice from "../../hooks/use-create-Invoice"
 import { LnInvoiceObject } from "../../lib/graphql/index.types"
-import useSatPrice from "../../lib/use-sat-price"
+import useSatPrice from "../../hooks/use-sat-price"
 import { ACTION_TYPE } from "../../app/reducer"
 import PaymentOutcome from "../payment-outcome"
 import { Share } from "../share"
@@ -24,7 +24,7 @@ import LoadingComponent from "../loading"
 import styles from "./parse-payment.module.css"
 import NFCComponent from "./nfc"
 
-import useRealtimePrice from "@/lib/use-realtime-price"
+import useRealtimePrice from "@/hooks/use-realtime-price"
 
 interface Props {
   recipientWalletCurrency?: string

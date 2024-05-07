@@ -13,7 +13,7 @@ import {
   parseDisplayCurrency,
 } from "../../utils/utils"
 
-import { useDisplayCurrency } from "../../lib/use-display-currency"
+import { useDisplayCurrency } from "../../hooks/use-display-currency"
 
 import Memo from "../memo"
 

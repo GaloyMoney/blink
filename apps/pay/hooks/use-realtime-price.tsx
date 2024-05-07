@@ -1,11 +1,12 @@
 import { gql, SubscriptionResult } from "@apollo/client"
 import * as React from "react"
+
 import {
   RealtimePriceWsSubscription,
   useRealtimePriceInitialQuery,
   useRealtimePriceWsSubscription,
 } from "../lib/graphql/generated"
-import { useDisplayCurrency } from "../lib/use-display-currency"
+import { useDisplayCurrency } from "../hooks/use-display-currency"
 
 gql`
   subscription realtimePriceWs($currency: DisplayCurrency!) {
