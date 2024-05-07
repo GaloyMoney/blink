@@ -2063,6 +2063,7 @@ type User
   apiKeys: [ApiKey!]! @join__field(graph: API_KEYS)
   statefulNotifications(first: Int!, after: String): StatefulNotificationConnection! @join__field(graph: NOTIFICATIONS)
   unacknowledgedStatefulNotificationsCount: Int! @join__field(graph: NOTIFICATIONS)
+  recentUnacknowledgedBulletins: [StatefulNotification!]! @join__field(graph: NOTIFICATIONS)
 
   """
   Get single contact details.
