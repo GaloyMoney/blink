@@ -98,7 +98,7 @@ setup_file() {
 }
 
 @test "notifications: unacknowledged stateful notifications count" {
-  exec_graphql 'alice' 'unacknowledged_stateful_notifications_count'
+  exec_graphql 'alice' 'unacknowledged-stateful-notifications-count'
   count=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsCount')
   [[ $count -eq 1 ]] || exit 1
 
@@ -114,8 +114,47 @@ setup_file() {
   )
   exec_graphql 'alice' 'acknowledge-notification' "$variables"
 
-  exec_graphql 'alice' 'unacknowledged_stateful_notifications_count'
+  exec_graphql 'alice' 'unacknowledged-stateful-notifications-count'
   count=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsCount')
   [[ $count -eq 0 ]] || exit 1
 
+}
+
+@test "notifications: recent unacknowledged bulletins" {
+  local n_bulletins
+  exec_graphql 'alice' 'recent-unacknowledged-bulletins'
+  n_bulletins=$(graphql_output | jq '.data.me.recentUnacknowledgedBulletins | length')
+  [[ $n_bulletins -eq 0 ]] || exit 1
+
+  admin_token="$(read_value 'admin.token')"
+
+  variables=$(
+    jq -n \
+    '{
+      input: {
+        localizedNotificationContents: [
+          {
+            language: "en",
+            title: "Test title",
+            body: "test body"
+          }
+        ],
+        shouldSendPush: false,
+        shouldAddToHistory: true,
+        shouldAddToBulletin: true,
+        deepLinkScreen: "EARN"
+      }
+    }'
+  )
+
+  # trigger a marketing notification
+  exec_admin_graphql "$admin_token" 'marketing-notification-trigger' "$variables"
+
+  for i in {1..10}; do
+    exec_graphql 'alice' 'recent-unacknowledged-bulletins'
+    n_bulletins=$(graphql_output | jq '.data.me.recentUnacknowledgedBulletins | length')
+    [[ $n_bulletins -eq 1 ]] && break;
+    sleep 1
+  done
+  [[ $n_bulletins -eq 1 ]] || exit 1;
 }

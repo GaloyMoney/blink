@@ -1,0 +1,11 @@
+query recentUnacknowledgedBulletins{
+  me {
+    id
+    recentUnacknowledgedBulletins {
+      id
+      title
+      body
+      createdAt
+    }
+  }
+}
