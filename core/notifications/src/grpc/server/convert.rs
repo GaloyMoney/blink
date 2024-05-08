@@ -244,3 +244,45 @@ impl From<proto::DeepLinkAction> for notification_event::DeepLinkAction {
         }
     }
 }
+
+impl TryFrom<proto::Action> for notification_event::Action {
+    type Error = tonic::Status;
+
+    fn try_from(action: proto::Action) -> Result<Self, Self::Error> {
+        match action.data {
+            Some(proto::action::Data::DeepLink(deep_link)) => {
+                let screen = if let Some(screen) = deep_link.screen {
+                    Some(
+                        proto::DeepLinkScreen::try_from(screen)
+                            .map(notification_event::DeepLinkScreen::from)
+                            .map_err(|e| tonic::Status::invalid_argument(e.to_string()))?,
+                    )
+                } else {
+                    None
+                };
+
+                let action = if let Some(action) = deep_link.action {
+                    Some(
+                        proto::DeepLinkAction::try_from(action)
+                            .map(notification_event::DeepLinkAction::from)
+                            .map_err(|e| tonic::Status::invalid_argument(e.to_string()))?,
+                    )
+                } else {
+                    None
+                };
+
+                let dl = notification_event::DeepLink { screen, action };
+                Ok(notification_event::Action::OpenDeepLink(dl))
+            }
+            Some(proto::action::Data::ExternalUrl(url)) => {
+                Ok(notification_event::Action::OpenExternalUrl(
+                    notification_event::ExternalUrl::from(url),
+                ))
+            }
+            None => Err(tonic::Status::new(
+                tonic::Code::InvalidArgument,
+                "missing action data",
+            )),
+        }
+    }
+}

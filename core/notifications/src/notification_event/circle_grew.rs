@@ -1,7 +1,7 @@
 use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
-use super::{DeepLink, DeepLinkScreen, NotificationEvent};
+use super::{Action, DeepLink, DeepLinkScreen, NotificationEvent};
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -16,11 +16,11 @@ impl NotificationEvent for CircleGrew {
         UserNotificationCategory::Circles
     }
 
-    fn deep_link(&self) -> Option<DeepLink> {
-        Some(DeepLink {
+    fn action(&self) -> Option<Action> {
+        Some(Action::OpenDeepLink(DeepLink {
             screen: Some(DeepLinkScreen::Circles),
             action: None,
-        })
+        }))
     }
 
     fn should_send_push(&self) -> bool {

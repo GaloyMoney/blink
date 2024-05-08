@@ -16,9 +16,19 @@ use crate::{messages::LocalizedPushMessage, notification_event::*, primitives::P
 pub use config::*;
 use error::*;
 
-impl DeepLink {
+impl Action {
     fn add_to_data(&self, data: &mut HashMap<String, String>) {
-        data.insert("linkTo".to_string(), self.to_link_string());
+        match self {
+            Action::OpenDeepLink(deep_link) => {
+                data.insert("action".to_string(), "open_deep_link".to_string());
+                data.insert("deepLink".to_string(), deep_link.to_link_string());
+                data.insert("linkTo".to_string(), deep_link.to_link_string()); // keep for backwards compatibility in mobile app
+            }
+            Action::OpenExternalUrl(url) => {
+                data.insert("action".to_string(), "open_external_url".to_string());
+                data.insert("url".to_string(), url.clone().into_inner());
+            }
+        }
     }
 }
 
@@ -59,11 +69,11 @@ impl FcmClient {
         &self,
         device_token: &PushDeviceToken,
         msg: &LocalizedPushMessage,
-        deep_link: Option<DeepLink>,
+        action: Option<Action>,
     ) -> Result<(), FcmError> {
         let mut data = HashMap::new();
-        if let Some(link) = deep_link {
-            link.add_to_data(&mut data);
+        if let Some(action) = action {
+            action.add_to_data(&mut data);
         }
 
         let notification = Notification {
