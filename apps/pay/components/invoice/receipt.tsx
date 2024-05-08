@@ -7,9 +7,9 @@ import styles from "./index.module.css"
 import { type ReceiptProps } from "./index.types"
 
 import GaloyIcon from "@/components/galoy-icon"
-import { formattedDate, formattedTime } from "@/utils/date-util"
 
 import { getLocaleConfig } from "@/utils/utils"
+import { formattedDate, formattedTime } from "@/utils/date-util"
 
 function Receipt({ amount, currency, invoice, status }: ReceiptProps) {
   if (!invoice) {

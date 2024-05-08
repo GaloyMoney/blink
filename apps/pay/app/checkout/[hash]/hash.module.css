@@ -44,14 +44,6 @@
   text-transform: capitalize;
 }
 
-.payBtnContainer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  column-gap: 0.5rem;
-  margin-top: 1.5em;
-}
-
 @media (max-width: 768px) {
   .paymentContainer {
     box-shadow: none;

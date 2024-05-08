@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation"
 
 import styles from "./index.module.css"
-import { type CancelInvoiceButtonProps } from "./index.types"
+import { type ReturnInvoiceButtonProps } from "./index.types"
 
-function CancelInvoiceButton({ returnUrl, type, children }: CancelInvoiceButtonProps) {
+function ReturnInvoiceButton({ returnUrl, type, children }: ReturnInvoiceButtonProps) {
   const router = useRouter()
 
   const cancelHandler = () => {
@@ -24,4 +24,4 @@ function CancelInvoiceButton({ returnUrl, type, children }: CancelInvoiceButtonP
     </button>
   )
 }
-export default CancelInvoiceButton
+export default ReturnInvoiceButton

@@ -12,4 +12,5 @@ function PrintButton() {
     </button>
   )
 }
+
 export default PrintButton

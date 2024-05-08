@@ -117,6 +117,14 @@
   margin-right: 10px; /* Adjust as needed */
 }
 
+.statusActionsContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  column-gap: 0.5rem;
+  margin-top: 1.5em;
+}
+
 .primaryBtn {
   background: var(--primary3);
   color: #fff;

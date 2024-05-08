@@ -2,15 +2,21 @@ import { type Invoice } from "../utils"
 
 export type InvoiceProps = {
   title: string
-  paymentRequest: string
-  status: string
   returnUrl: string | null
 }
 
-export type CancelInvoiceButtonProps = {
+export type ReturnInvoiceButtonProps = {
   returnUrl: string | null
   type: "primary" | "secondary"
   children: React.ReactNode
+}
+
+export type ExpirationLabelProps = {
+  expirationDate: number
+}
+
+export type StatusActionsProps = {
+  returnUrl: string | null
 }
 
 export type ReceiptProps = {
