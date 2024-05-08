@@ -78,6 +78,7 @@ type LocaleConfig = {
   decimalSeparator: string
   prefix: string
   suffix: string
+  numberFormatter: Intl.NumberFormat
 }
 
 type IntlConfig = {
@@ -91,6 +92,7 @@ const defaultConfig: LocaleConfig = {
   decimalSeparator: "",
   prefix: "",
   suffix: "",
+  numberFormatter: new Intl.NumberFormat(),
 }
 
 export const getLocaleConfig = (intlConfig?: IntlConfig): LocaleConfig => {
@@ -102,23 +104,26 @@ export const getLocaleConfig = (intlConfig?: IntlConfig): LocaleConfig => {
       )
     : new Intl.NumberFormat()
 
-  return numberFormatter.formatToParts(1000.1).reduce((prev, curr, i): LocaleConfig => {
-    if (curr.type === "currency") {
-      if (i === 0) {
-        return { ...prev, currencySymbol: curr.value, prefix: curr.value }
-      } else {
-        return { ...prev, currencySymbol: curr.value, suffix: curr.value }
+  return numberFormatter.formatToParts(1000.1).reduce(
+    (prev, curr, i): LocaleConfig => {
+      if (curr.type === "currency") {
+        if (i === 0) {
+          return { ...prev, currencySymbol: curr.value, prefix: curr.value }
+        } else {
+          return { ...prev, currencySymbol: curr.value, suffix: curr.value }
+        }
       }
-    }
-    if (curr.type === "group") {
-      return { ...prev, groupSeparator: curr.value }
-    }
-    if (curr.type === "decimal") {
-      return { ...prev, decimalSeparator: curr.value }
-    }
+      if (curr.type === "group") {
+        return { ...prev, groupSeparator: curr.value }
+      }
+      if (curr.type === "decimal") {
+        return { ...prev, decimalSeparator: curr.value }
+      }
 
-    return prev
-  }, defaultConfig)
+      return prev
+    },
+    { ...defaultConfig, numberFormatter },
+  )
 }
 
 export const extractSearchParams = (searchParams: ReadonlyURLSearchParams) => {

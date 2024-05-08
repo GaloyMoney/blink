@@ -6,9 +6,9 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const decodeInvoice = (
-  invoice: string,
-): (bolt11.PaymentRequestObject & { tagsObject: bolt11.TagsObject }) | null => {
+export type Invoice = bolt11.PaymentRequestObject & { tagsObject: bolt11.TagsObject }
+
+export const decodeInvoice = (invoice: string): Invoice | null => {
   if (!invoice) return null
 
   try {

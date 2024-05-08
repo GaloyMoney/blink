@@ -63,3 +63,9 @@
     display: none;
   }
 }
+
+@media print {
+  .title {
+    display: none;
+  }
+}

@@ -18,7 +18,7 @@ function CancelInvoiceButton({ returnUrl }: CancelInvoiceButtonProps) {
   }
 
   return (
-    <button data-testid="pay-btn" className={styles.secondaryBtn} onClick={cancelHandler}>
+    <button className={styles.secondaryBtn} onClick={cancelHandler}>
       <Image src="/icons/close.svg" alt="Back" width="20" height="20"></Image>
       Cancel
     </button>

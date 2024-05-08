@@ -12,6 +12,8 @@ import styles from "./index.module.css"
 
 import { type InvoiceProps } from "./index.types"
 
+import Receipt from "./receipt"
+
 import { Share } from "@/components/share"
 import { decodeInvoice } from "@/components/utils"
 
@@ -27,8 +29,17 @@ export default function Invoice({ title, paymentRequest, status }: InvoiceProps)
   const memo =
     invoice?.tags?.find((t) => t.tagName === "description")?.data?.toString() || ""
 
+  if (!invoice || !invoice.satoshis) {
+    setErrorMessage("Invalid invoice.")
+  }
+
   useEffect(() => {
-    if (!invoice || !invoice.timeExpireDate || status === "EXPIRED") {
+    if (!invoice || !invoice.timeExpireDate || status === "PAID") {
+      return
+    }
+
+    if (status === "EXPIRED") {
+      setErrorMessage("Invoice has expired.")
       return
     }
 
@@ -73,73 +84,100 @@ export default function Invoice({ title, paymentRequest, status }: InvoiceProps)
   if (errorMessage || !invoice || !invoice.satoshis) {
     return (
       <div className={styles.error}>
+        <Image src="/icons/cancel-icon.svg" alt="success icon" width="104" height="104" />
         <p>{errorMessage || "Invalid Invoice"}</p>
       </div>
     )
   }
 
   return (
-    <div className={styles.invoiceContainer}>
-      <div className={styles.amountContainer}>
-        <p>{invoice.satoshis} sats</p>
-      </div>
-      <div className={styles.timerContainer}>
-        <p>{memo}</p>
-      </div>
-      <div>
-        <div
-          data-testid="qrcode-container"
-          ref={qrImageRef}
-          aria-labelledby="QR code of lightning invoice"
-          onClick={copyInvoice}
-        >
-          <QRCode
-            value={invoice.paymentRequest}
-            size={350}
-            logoImage="/blink-qr-logo.png"
-            logoWidth={100}
-          />
+    <div>
+      <div className={styles.invoiceContainer}>
+        <div className={styles.amountContainer}>
+          <p>{invoice.satoshis} sats</p>
         </div>
-
-        <div className={styles.qrClipboard}>
-          <OverlayTrigger
-            show={copied}
-            placement="right"
-            overlay={<Tooltip id="copy">Copied!</Tooltip>}
-          >
-            {() => (
-              // Using the function form of OverlayTrigger avoids a React.findDOMNode warning
-              <button data-testid="copy-btn" title="Copy invoice" onClick={copyInvoice}>
+        <div className={styles.timerContainer}>
+          <p>{memo}</p>
+        </div>
+        <div>
+          {status === "PAID" && (
+            <div className={styles.successContainer}>
+              <div aria-labelledby="Payment successful">
                 <Image
-                  src="/icons/copy-icon.svg"
-                  alt="copy icon"
-                  width="18px"
-                  height="18px"
+                  data-testid="success-icon"
+                  src="/icons/success-icon.svg"
+                  alt="success icon"
+                  width="104"
+                  height="104"
                 />
-                {copied ? "Copied" : "Copy"}
-              </button>
-            )}
-          </OverlayTrigger>
-          <span className={styles.expirationLabel}>
-            {formatInvoiceExpirationTime(seconds)}
-          </span>
-          <Share
-            shareData={shareData}
-            getImage={getImage}
-            image={image}
-            shareState={shareState}
-            onInteraction={handleShareClick}
-          >
-            <Image
-              src="/icons/share-icon.svg"
-              alt="share-icon"
-              width="18px"
-              height="18px"
-            />
-            Share
-          </Share>
+                <p className={styles.text}>The invoice has been paid</p>
+              </div>
+            </div>
+          )}
+
+          {status === "PENDING" && (
+            <>
+              <div
+                data-testid="qrcode-container"
+                ref={qrImageRef}
+                aria-labelledby="QR code of lightning invoice"
+                onClick={copyInvoice}
+              >
+                <QRCode
+                  value={invoice.paymentRequest}
+                  size={350}
+                  logoImage="/blink-qr-logo.png"
+                  logoWidth={100}
+                />
+              </div>
+
+              <div className={styles.qrClipboard}>
+                <OverlayTrigger
+                  show={copied}
+                  placement="right"
+                  overlay={<Tooltip id="copy">Copied!</Tooltip>}
+                >
+                  {() => (
+                    // Using the function form of OverlayTrigger avoids a React.findDOMNode warning
+                    <button
+                      data-testid="copy-btn"
+                      title="Copy invoice"
+                      onClick={copyInvoice}
+                    >
+                      <Image
+                        src="/icons/copy-icon.svg"
+                        alt="copy icon"
+                        width="18px"
+                        height="18px"
+                      />
+                      {copied ? "Copied" : "Copy"}
+                    </button>
+                  )}
+                </OverlayTrigger>
+                <span className={styles.expirationLabel}>
+                  {formatInvoiceExpirationTime(seconds)}
+                </span>
+                <Share
+                  shareData={shareData}
+                  getImage={getImage}
+                  image={image}
+                  shareState={shareState}
+                  onInteraction={handleShareClick}
+                >
+                  <Image
+                    src="/icons/share-icon.svg"
+                    alt="share-icon"
+                    width="18px"
+                    height="18px"
+                  />
+                  Share
+                </Share>
+              </div>
+            </>
+          )}
         </div>
       </div>
+      {status === "PAID" && <Receipt invoice={invoice} status={status} />}
     </div>
   )
 }

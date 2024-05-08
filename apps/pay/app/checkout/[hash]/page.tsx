@@ -8,6 +8,7 @@ import { fetchInvoiceByHash } from "@/app/graphql/queries/invoice-by-hash"
 import Invoice from "@/components/invoice"
 import CancelInvoiceButton from "@/components/invoice/cancel-button"
 import CheckoutLayoutContainer from "@/components/layouts/checkout-layout"
+import PrintButton from "@/components/invoice/print-button"
 
 const CheckoutPage: NextPage<{ params: { hash: string } }> = async (context) => {
   const headersList = headers()
@@ -19,7 +20,8 @@ const CheckoutPage: NextPage<{ params: { hash: string } }> = async (context) => 
     return <div>Error getting invoice for hash: {hash}</div>
   }
 
-  const showCancelBtn = invoice && invoice.status === "PENDING"
+  const showPendingActions = invoice && invoice.status === "PENDING"
+  const showPaidActions = invoice && invoice.status === "PAID"
 
   return (
     <CheckoutLayoutContainer>
@@ -33,11 +35,16 @@ const CheckoutPage: NextPage<{ params: { hash: string } }> = async (context) => 
           paymentRequest={invoice.paymentRequest}
           returnUrl={returnUrl}
         />
-        {showCancelBtn ? (
+        {showPaidActions && (
+          <div className={styles.payBtnContainer}>
+            <PrintButton />
+          </div>
+        )}
+        {showPendingActions && (
           <div className={styles.payBtnContainer}>
             <CancelInvoiceButton returnUrl={returnUrl} />
           </div>
-        ) : null}
+        )}
       </div>
     </CheckoutLayoutContainer>
   )

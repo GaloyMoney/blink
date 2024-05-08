@@ -67,6 +67,29 @@
   height: 3rem;
 }
 
+.successContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.3em 1em;
+
+  color: rgba(17, 25, 40, 1);
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 32px;
+  text-align: center;
+}
+
+.successContainer > div:first-child {
+  display: grid;
+  place-items: center;
+  row-gap: 1rem;
+  margin-bottom: 1em;
+  max-width: 293px;
+}
+
 .error {
   color: red;
   display: flex;
@@ -81,6 +104,7 @@
 }
 
 .error > p {
+  margin-top: 1.5rem;
   text-align: center;
 }
 
@@ -106,4 +130,27 @@
   border-radius: 10em;
   gap: 0.5em;
   cursor: pointer;
+}
+
+.reference {
+  word-break: break-all;
+  width: 270px;
+  margin: auto;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+}
+
+.link:hover {
+  text-decoration: none;
+}
+
+@media print {
+  .invoiceContainer, .secondaryBtn {
+      display:none;
+  }
 }
