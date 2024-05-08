@@ -1,5 +1,6 @@
 import { NextPage } from "next"
 import { headers } from "next/headers"
+import Image from "react-bootstrap/Image"
 
 import styles from "./hash.module.css"
 
@@ -38,11 +39,17 @@ const CheckoutPage: NextPage<{ params: { hash: string } }> = async (context) => 
         {showPaidActions && (
           <div className={styles.payBtnContainer}>
             <PrintButton />
+            <CancelInvoiceButton returnUrl={returnUrl} type="primary">
+              Return to merchant
+            </CancelInvoiceButton>
           </div>
         )}
         {showPendingActions && (
           <div className={styles.payBtnContainer}>
-            <CancelInvoiceButton returnUrl={returnUrl} />
+            <CancelInvoiceButton returnUrl={returnUrl} type="secondary">
+              <Image src="/icons/close.svg" alt="Back" width="20" height="20"></Image>
+              Cancel
+            </CancelInvoiceButton>
           </div>
         )}
       </div>

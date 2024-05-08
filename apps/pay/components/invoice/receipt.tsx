@@ -29,31 +29,33 @@ function Receipt({ amount, currency, invoice, status }: ReceiptProps) {
         {amount && <span> ~ {numberFormatter.format(amount || 0)}</span>}
         <div className="d-flex justify-content-center">
           <table className="my-3 w-100">
-            <tr>
-              <td className="py-3 border-bottom">Date</td>
-              <td className="py-3 border-bottom">
-                {formattedDate(new Date())} at <span>{formattedTime(new Date())}</span>
-              </td>
-            </tr>
+            <tbody>
+              <tr>
+                <td className="py-3 border-bottom">Date</td>
+                <td className="py-3 border-bottom">
+                  {formattedDate(new Date())} at <span>{formattedTime(new Date())}</span>
+                </td>
+              </tr>
 
-            <tr>
-              <td className="py-5 border-bottom">
-                Transaction Reference <br /> (Invoice)
-              </td>
-              <td className="py-5 border-bottom">
-                <div className={styles.reference}>{invoice.paymentRequest}</div>
-              </td>
-            </tr>
+              <tr>
+                <td className="py-5 border-bottom">
+                  Transaction Reference <br /> (Invoice)
+                </td>
+                <td className="py-5 border-bottom">
+                  <div className={styles.reference}>{invoice.paymentRequest}</div>
+                </td>
+              </tr>
 
-            <tr>
-              <td className="py-3 border-bottom">Status</td>
-              <td className="py-3 border-bottom">{status}</td>
-            </tr>
+              <tr>
+                <td className="py-3 border-bottom">Status</td>
+                <td className="py-3 border-bottom">{status}</td>
+              </tr>
 
-            <tr>
-              <td className="py-3 border-bottom">Description</td>
-              <td className="py-3 border-bottom">{memo || "none"}</td>
-            </tr>
+              <tr>
+                <td className="py-3 border-bottom">Description</td>
+                <td className="py-3 border-bottom">{memo || "none"}</td>
+              </tr>
+            </tbody>
           </table>
         </div>
         <div className="link-wrapper">

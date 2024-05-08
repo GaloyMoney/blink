@@ -9,6 +9,8 @@ export type InvoiceProps = {
 
 export type CancelInvoiceButtonProps = {
   returnUrl: string | null
+  type: "primary" | "secondary"
+  children: React.ReactNode
 }
 
 export type ReceiptProps = {

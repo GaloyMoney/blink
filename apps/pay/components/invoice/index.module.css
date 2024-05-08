@@ -117,6 +117,21 @@
   margin-right: 10px; /* Adjust as needed */
 }
 
+.primaryBtn {
+  background: var(--primary3);
+  color: #fff;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  outline: none;
+  padding: 0.9em 3em;
+  border-radius: 10em;
+  gap: 0.5em;
+  cursor: pointer;
+}
+
 .secondaryBtn {
   background: var(--lighterGrey);
   color: #000000;
