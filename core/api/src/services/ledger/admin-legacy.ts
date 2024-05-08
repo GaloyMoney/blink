@@ -24,11 +24,11 @@ const getWalletBalance = async (account: string, query = {}) => {
   return balance
 }
 
-export const getAssetsBalance = (currency = "BTC") =>
-  getWalletBalance(assetsMainAccount, { currency })
+export const getAssetsBalance = (endDate?: Date) =>
+  getWalletBalance(assetsMainAccount, { end_date: endDate })
 
-export const getLiabilitiesBalance = (currency = "BTC") =>
-  getWalletBalance(liabilitiesMainAccount, { currency })
+export const getLiabilitiesBalance = (endDate?: Date) =>
+  getWalletBalance(liabilitiesMainAccount, { end_date: endDate })
 
 export const getLndBalance = () => getWalletBalance(lndLedgerAccountId)
 
