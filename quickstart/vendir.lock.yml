@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(notifications): add notification action (#4417)...'
-      sha: 6f9ad59176dcfcff3699897586ef22d46798ab99
+      commitTitle: 'fix(core): add delay to assets vs liabilities query (#4437)...'
+      sha: c5bfefa5f6276f01be1e593d26e1841bb4c2e044
       tags:
-      - 0.20.185-5-g6f9ad5917
+      - 0.20.186-2-gc5bfefa5f
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(notifications): add notification action (#4417)...'
-      sha: 6f9ad59176dcfcff3699897586ef22d46798ab99
+      commitTitle: 'fix(core): add delay to assets vs liabilities query (#4437)...'
+      sha: c5bfefa5f6276f01be1e593d26e1841bb4c2e044
       tags:
-      - 0.20.185-5-g6f9ad5917
+      - 0.20.186-2-gc5bfefa5f
     path: schemas
   - git:
-      commitTitle: 'feat(notifications): add notification action (#4417)...'
-      sha: 6f9ad59176dcfcff3699897586ef22d46798ab99
+      commitTitle: 'fix(core): add delay to assets vs liabilities query (#4437)...'
+      sha: c5bfefa5f6276f01be1e593d26e1841bb4c2e044
       tags:
-      - 0.20.185-5-g6f9ad5917
+      - 0.20.186-2-gc5bfefa5f
     path: gql
   path: graphql
 kind: LockConfig
