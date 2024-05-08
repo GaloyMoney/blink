@@ -64,8 +64,8 @@ const NotificationFilteredSender = ({ notification }: NotificationFilteredSender
     setSendFilteredNotificationSuccess(false)
 
     const res = await triggerMarketingNotification({
-      deepLinkScreen: notification.deepLinkScreen,
-      deepLinkAction: notification.deepLinkAction,
+      openDeepLink: notification.openDeepLink,
+      openExternalUrl: notification.openExternalUrl,
       shouldSendPush: notification.shouldSendPush,
       shouldAddToHistory: notification.shouldAddToHistory,
       shouldAddToBulletin: notification.shouldAddToBulletin,

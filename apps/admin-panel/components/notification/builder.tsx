@@ -5,11 +5,18 @@ import { ChangeEvent, useState } from "react"
 import { DeepLinkScreen, DeepLinkAction } from "../../generated"
 
 import { LanguageCodes } from "./languages"
+import { NotificationAction } from "./types"
 
 export type NotificationContent = {
   localizedNotificationContents: LocalizedNotificationContent[]
-  deepLinkScreen?: DeepLinkScreen | undefined
-  deepLinkAction?: DeepLinkAction | undefined
+  action?: NotificationAction
+  openDeepLink?: {
+    screen?: DeepLinkScreen | undefined
+    action?: DeepLinkAction | undefined
+  }
+  openExternalUrl?: {
+    url: string
+  }
   shouldSendPush: boolean
   shouldAddToHistory: boolean
   shouldAddToBulletin: boolean
@@ -28,12 +35,66 @@ const NotificationBuilder = ({
   const [body, setBody] = useState("")
   const [language, setLanguage] = useState(LanguageCodes.English)
 
+  const onSetAction = (e: ChangeEvent<HTMLSelectElement>) => {
+    switch (e.target.value as NotificationAction) {
+      case NotificationAction.OpenDeepLink:
+        setNotification({
+          ...notification,
+          action: NotificationAction.OpenDeepLink,
+          openDeepLink: {
+            screen: undefined,
+            action: undefined,
+          },
+          openExternalUrl: undefined,
+        })
+        break
+      case NotificationAction.OpenExternalUrl:
+        setNotification({
+          ...notification,
+          action: NotificationAction.OpenExternalUrl,
+          openDeepLink: undefined,
+          openExternalUrl: {
+            url: "",
+          },
+        })
+        break
+      default:
+        setNotification({
+          ...notification,
+          action: undefined,
+          openDeepLink: undefined,
+          openExternalUrl: undefined,
+        })
+    }
+  }
+
+  const setOpenExternalUrl = (url: string) => {
+    setNotification({
+      ...notification,
+      openExternalUrl: {
+        url,
+      },
+    })
+  }
+
   const onSetDeepLinkScreen = (e: ChangeEvent<HTMLSelectElement>) => {
-    setNotification({ ...notification, deepLinkScreen: e.target.value as DeepLinkScreen })
+    setNotification({
+      ...notification,
+      openDeepLink: {
+        ...notification.openDeepLink,
+        screen: e.target.value as DeepLinkScreen,
+      },
+    })
   }
 
   const onSetDeepLinkAction = (e: ChangeEvent<HTMLSelectElement>) => {
-    setNotification({ ...notification, deepLinkAction: e.target.value as DeepLinkAction })
+    setNotification({
+      ...notification,
+      openDeepLink: {
+        ...notification.openDeepLink,
+        action: e.target.value as DeepLinkAction,
+      },
+    })
   }
 
   const addNotificationContent = (
@@ -71,42 +132,83 @@ const NotificationBuilder = ({
     <div className="rounded bg-white mt-6 p-6 space-y-4 ">
       <h2>Notification Content</h2>
       <form className="space-y-4">
-        <div>
-          <label htmlFor="deepLink">Deep Link</label>
-          <select
-            className="border border-2 rounded block p-1 w-full"
-            id="deepLinkScreen"
-            value={notification.deepLinkScreen}
-            onChange={onSetDeepLinkScreen}
-          >
-            <option value="">None</option>
-            {Object.values(DeepLinkScreen).map((deepLinkScreen) => {
-              return (
-                <option key={deepLinkScreen} value={deepLinkScreen}>
-                  {deepLinkScreen}
-                </option>
-              )
-            })}
-          </select>
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="action">Action</label>
+            <select
+              className="border border-2 rounded block p-1 w-full"
+              id="action"
+              value={notification.action}
+              onChange={onSetAction}
+            >
+              <option value="">None</option>
+              {Object.values(NotificationAction).map((action) => {
+                return (
+                  <option key={action} value={action}>
+                    {action}
+                  </option>
+                )
+              })}
+            </select>
+          </div>
+
+          {notification.action === NotificationAction.OpenDeepLink && (
+            <>
+              <div>
+                <label htmlFor="deepLink">Deep Link Screen</label>
+                <select
+                  className="border border-2 rounded block p-1 w-full"
+                  id="deepLinkScreen"
+                  value={notification.openDeepLink?.screen}
+                  onChange={onSetDeepLinkScreen}
+                >
+                  <option value="">None</option>
+                  {Object.values(DeepLinkScreen).map((deepLinkScreen) => {
+                    return (
+                      <option key={deepLinkScreen} value={deepLinkScreen}>
+                        {deepLinkScreen}
+                      </option>
+                    )
+                  })}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="deepLinkAction">Deep Link Action</label>
+                <select
+                  className="border border-2 rounded block p-1 w-full"
+                  id="deepLinkAction"
+                  value={notification.openDeepLink?.action}
+                  onChange={onSetDeepLinkAction}
+                >
+                  <option value="">None</option>
+                  {Object.values(DeepLinkAction).map((deepLinkAction) => {
+                    return (
+                      <option key={deepLinkAction} value={deepLinkAction}>
+                        {deepLinkAction}
+                      </option>
+                    )
+                  })}
+                </select>
+              </div>
+            </>
+          )}
+          {notification.action === NotificationAction.OpenExternalUrl && (
+            <div>
+              <label htmlFor="openExternalUrl">Open External Url</label>
+              <input
+                type="text"
+                id="openExternalUrl"
+                placeholder="Enter url"
+                name="openExternalUrl"
+                className="block w-full"
+                required
+                value={notification.openExternalUrl?.url || ""}
+                onChange={(e) => setOpenExternalUrl(e.target.value)}
+              />
+            </div>
+          )}
         </div>
-        <div>
-          <label htmlFor="deepLinkAction">Deep Link Action</label>
-          <select
-            className="border border-2 rounded block p-1 w-full"
-            id="deepLinkAction"
-            value={notification.deepLinkAction}
-            onChange={onSetDeepLinkAction}
-          >
-            <option value="">None</option>
-            {Object.values(DeepLinkAction).map((deepLinkAction) => {
-              return (
-                <option key={deepLinkAction} value={deepLinkAction}>
-                  {deepLinkAction}
-                </option>
-              )
-            })}
-          </select>
-        </div>
+
         <div className="space-x-4">
           <input
             type="checkbox"
