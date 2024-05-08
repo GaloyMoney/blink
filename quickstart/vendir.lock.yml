@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(core): add wait for notifications service (#4430)'
-      sha: 5844e8fe8593eb55fdedb0d7fd2d20e65b1f9358
+      commitTitle: 'feat(notifications): add notification action (#4417)...'
+      sha: 6f9ad59176dcfcff3699897586ef22d46798ab99
       tags:
-      - 0.20.185-2-g5844e8fe8
+      - 0.20.185-5-g6f9ad5917
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(core): add wait for notifications service (#4430)'
-      sha: 5844e8fe8593eb55fdedb0d7fd2d20e65b1f9358
+      commitTitle: 'feat(notifications): add notification action (#4417)...'
+      sha: 6f9ad59176dcfcff3699897586ef22d46798ab99
       tags:
-      - 0.20.185-2-g5844e8fe8
+      - 0.20.185-5-g6f9ad5917
     path: schemas
   - git:
-      commitTitle: 'test(core): add wait for notifications service (#4430)'
-      sha: 5844e8fe8593eb55fdedb0d7fd2d20e65b1f9358
+      commitTitle: 'feat(notifications): add notification action (#4417)...'
+      sha: 6f9ad59176dcfcff3699897586ef22d46798ab99
       tags:
-      - 0.20.185-2-g5844e8fe8
+      - 0.20.185-5-g6f9ad5917
     path: gql
   path: graphql
 kind: LockConfig
