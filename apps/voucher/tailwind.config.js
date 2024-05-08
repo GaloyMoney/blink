@@ -15,8 +15,11 @@ module.exports = {
       colors: {
         "custom-green": "#2a9d8f",
         "custom-red": "#d90429",
+        "primary": "#fc5805",
+        "orange": "#ff7e1c",
+        "secondary": "#e6ebef",
       },
     },
   },
   plugins: [],
-};
+}

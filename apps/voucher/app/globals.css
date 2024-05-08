@@ -3,15 +3,42 @@
 @tailwind utilities;
 
 :root {
-  --gradient-orange: linear-gradient(
-      0deg,
-      rgba(0, 0, 0, 0.1),
-      rgba(0, 0, 0, 0.1)
-    ),
+  --gradient-orange: linear-gradient(0deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),
     linear-gradient(45deg, #f6a139 0%, #fb5607 100%);
   --orange: #fe7434;
 }
 
+:root {
+  --transparent: rgba(0, 0, 0, 0);
+  --white: #ffffff;
+  --black: #000000;
+  --lightGrey: #cfd9e2;
+  --lighterGrey: #e6ebef;
+  --lightBlue: #3553ff;
+  --darkGrey: #1d1d1d;
+  --blue: #3050c4;
+  --orange: #ff7e1c;
+  --sky: #c3ccff;
+  --primary: #fc5805;
+  --primaryColorDisabled: #c54404;
+  --primary3: #010101;
+  --primary4: #fe990d;
+  --primary4Disabled: #b36800;
+  --primary5: #ffad0d;
+  --blue5: #4453e2;
+  --grey0: #3a3c51;
+  --grey1: #61637a;
+  --grey2: #9292a0;
+  --grey3: #aeaeb8;
+  --grey4: #e2e2e4;
+  --grey5: #f2f2f4;
+  --loaderForeground: #ecebeb;
+  --loaderBackground: #f3f3f3;
+  --green: #00a700;
+  --error: #dc2626;
+  --error9: #fee2e2;
+  --warning: #f59e0b;
+}
 
 body {
   color: #212529;
@@ -39,7 +66,6 @@ body {
   max-width: 65em;
 }
 
-
 @media print {
   body * {
     visibility: hidden;
@@ -48,7 +74,6 @@ body {
   .print_this * {
     visibility: visible;
     position: initial;
-
   }
 
   @page {
