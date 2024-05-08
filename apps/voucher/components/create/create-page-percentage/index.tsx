@@ -5,7 +5,6 @@ import styles from "../create-link.module.css"
 import Numpad from "@/components/num-pad"
 import { formatOperand } from "@/utils/helpers"
 import Button from "@/components/button"
-import Heading from "@/components/heading"
 
 interface Props {
   commissionPercentage: string
@@ -20,9 +19,8 @@ export default function CreatePagePercentage({
 }: Props) {
   return (
     <>
-      <Heading>Commission Percentage</Heading>
+      <p>Commission Percentage</p>
       <div className="text-3xl font-semibold">{formatOperand(commissionPercentage)}%</div>
-
       <Numpad
         currentAmount={commissionPercentage}
         setCurrentAmount={setCommissionPercentage}

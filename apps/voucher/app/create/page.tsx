@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 import { gql } from "@apollo/client"
 
@@ -7,10 +7,9 @@ import { useSession } from "next-auth/react"
 
 import CreatePageAmount from "@/components/create/create-page-amount"
 import CreatePagePercentage from "@/components/create/create-page-percentage"
-import { Currency, useCurrencyConversionEstimationQuery } from "@/lib/graphql/generated"
-import { calculateAmountAfterCommission, getWalletDetails } from "@/utils/helpers"
+import { Currency } from "@/lib/graphql/generated"
+import { getWalletDetails } from "@/utils/helpers"
 import ConfirmModal from "@/components/create/confirm-modal"
-import InfoComponent from "@/components/info-component"
 import { DEFAULT_CURRENCY } from "@/config/appConfig"
 
 gql`
@@ -58,35 +57,9 @@ export default function CreatePage() {
   )
 
   const [amount, setAmount] = useState<string>("0")
-  const { data: currencyConversion, refetch } = useCurrencyConversionEstimationQuery({
-    variables: {
-      amount: Number(amount),
-      currency: currency.id,
-    },
-    context: {
-      endpoint: "GALOY",
-    },
-    pollInterval: 5000,
-  })
-
-  useEffect(() => {
-    refetch({
-      amount: Number(amount),
-      currency: currency.id,
-    })
-  }, [amount, currency.id, refetch])
 
   const [confirmModal, setConfirmModal] = useState<boolean>(false)
   const [currentPage, setCurrentPage] = useState<string>("AMOUNT")
-
-  const amountInDollars = Number(
-    (currencyConversion?.currencyConversionEstimation.usdCentAmount / 100).toFixed(2),
-  )
-
-  const voucherAmountInDollars = calculateAmountAfterCommission({
-    amount: amountInDollars,
-    commissionRatePercentage: Number(commissionPercentage),
-  })
 
   if (!session?.data?.userData?.me?.defaultAccount.wallets) {
     return null
@@ -109,7 +82,6 @@ export default function CreatePage() {
           amount={amount}
           currency={currency}
           commissionPercentage={commissionPercentage}
-          voucherAmountInDollars={voucherAmountInDollars}
           btcWallet={btcWallet}
           usdWallet={usdWallet}
         />
@@ -122,8 +94,6 @@ export default function CreatePage() {
           setCurrentPage={setCurrentPage}
           setConfirmModal={setConfirmModal}
           commissionPercentage={commissionPercentage}
-          amountInDollars={amountInDollars}
-          voucherAmountInDollars={voucherAmountInDollars}
         />
       </div>
     )
@@ -136,10 +106,6 @@ export default function CreatePage() {
             setCommissionPercentage={setCommissionPercentage}
             setCurrentPage={setCurrentPage}
           />
-          <InfoComponent>
-            Please enter the commission percentage that will be deducted from the original
-            Link amount. The maximum commission is 99 percent.
-          </InfoComponent>
         </div>
       </>
     )

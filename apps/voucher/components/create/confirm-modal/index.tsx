@@ -1,4 +1,4 @@
-import React, { useState, MouseEvent } from "react"
+import React, { useState, MouseEvent, useEffect } from "react"
 
 import { useRouter } from "next/navigation"
 
@@ -8,8 +8,16 @@ import styles from "./confirm-modal.module.css"
 
 import Button from "@/components/button"
 import ModalComponent from "@/components/modal-component"
-import { formatOperand, WalletDetails } from "@/utils/helpers"
-import { Currency, useCreateWithdrawLinkMutation } from "@/lib/graphql/generated"
+import {
+  calculateAmountAfterCommission,
+  formatOperand,
+  WalletDetails,
+} from "@/utils/helpers"
+import {
+  Currency,
+  useCreateWithdrawLinkMutation,
+  useCurrencyConversionEstimationQuery,
+} from "@/lib/graphql/generated"
 import LoadingComponent from "@/components/loading/loading-component"
 
 type Props = {
@@ -18,7 +26,6 @@ type Props = {
   amount: string
   currency: Currency
   commissionPercentage: string
-  voucherAmountInDollars: number
   btcWallet: WalletDetails
   usdWallet: WalletDetails
 }
@@ -29,7 +36,6 @@ const ConfirmModal = ({
   amount,
   currency,
   commissionPercentage,
-  voucherAmountInDollars,
   btcWallet,
   usdWallet,
 }: Props) => {
@@ -37,6 +43,33 @@ const ConfirmModal = ({
   const [modalLoading, setModalLoading] = useState<boolean>(false)
   const [modalError, setModalError] = useState<string | null>(null)
   const [formIsValid, setFormIsValid] = useState(false)
+  const { data: currencyConversion, refetch } = useCurrencyConversionEstimationQuery({
+    variables: {
+      amount: Number(amount),
+      currency: currency.id,
+    },
+    context: {
+      endpoint: "GALOY",
+    },
+    pollInterval: 5000,
+  })
+
+  useEffect(() => {
+    refetch({
+      amount: Number(amount),
+      currency: currency.id,
+    })
+  }, [amount, currency.id, refetch])
+
+  const amountInDollars = Number(
+    (currencyConversion?.currencyConversionEstimation.usdCentAmount / 100).toFixed(2),
+  )
+
+  const voucherAmountInDollars = calculateAmountAfterCommission({
+    amount: amountInDollars,
+    commissionRatePercentage: Number(commissionPercentage),
+  })
+
   const { update } = useSession()
   const [createWithdrawLink, { loading: withdrawLinkLoading }] =
     useCreateWithdrawLinkMutation()
@@ -116,6 +149,7 @@ const ConfirmModal = ({
               <p className={styles.modalText}>{modalError}</p>
               <div className={styles.button_container}>
                 <Button
+                  className="w-full"
                   onClick={() => {
                     setModalError(null)
                   }}
@@ -175,9 +209,12 @@ const ConfirmModal = ({
               </select>
             </div>
 
-            <div className={styles.button_container}>
-              <Button onClick={onClose}>Cancel</Button>
+            <div className="flex gap-2 mt-6">
+              <Button className="w-1/4" variant="link" onClick={onClose}>
+                Cancel
+              </Button>
               <Button
+                className="w-3/4"
                 data-testid="pay-voucher-amount-btn"
                 disabled={!formIsValid}
                 onClick={() =>
