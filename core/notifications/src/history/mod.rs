@@ -80,7 +80,9 @@ impl NotificationHistory {
             new_notifications.push(notification);
         }
 
-        self.repo.create_new_batch(tx, new_notifications).await?;
+        if !new_notifications.is_empty() {
+            self.repo.create_new_batch(tx, new_notifications).await?;
+        }
 
         Ok(())
     }
