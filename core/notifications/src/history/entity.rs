@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     messages::LocalizedStatefulMessage,
-    notification_event::{DeepLink, NotificationEventPayload},
+    notification_event::{Action, DeepLink, NotificationEventPayload},
     primitives::*,
 };
 
@@ -49,7 +49,10 @@ pub struct StatefulNotification {
 
 impl StatefulNotification {
     pub fn deep_link(&self) -> Option<DeepLink> {
-        self.payload.deep_link()
+        self.payload.action().and_then(|action| match action {
+            Action::OpenDeepLink(deep_link) => Some(deep_link),
+            _ => None,
+        })
     }
 
     pub(super) fn acknowledge(&mut self) {
@@ -85,6 +88,10 @@ impl StatefulNotification {
 
     pub fn add_to_bulletin(&self) -> bool {
         self.payload.should_be_added_to_bulletin()
+    }
+
+    pub fn action(&self) -> Option<Action> {
+        self.payload.action()
     }
 }
 

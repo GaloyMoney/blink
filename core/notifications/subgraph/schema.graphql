@@ -2,6 +2,16 @@ type Mutation {
 	statefulNotificationAcknowledge(input: StatefulNotificationAcknowledgeInput!): StatefulNotificationAcknowledgePayload!
 }
 
+union NotificationAction = OpenDeepLinkAction | OpenExternalLinkAction
+
+type OpenDeepLinkAction {
+	deepLink: String!
+}
+
+type OpenExternalLinkAction {
+	url: String!
+}
+
 """
 Information about pagination in a connection
 """
@@ -30,6 +40,7 @@ type StatefulNotification {
 	title: String!
 	body: String!
 	deepLink: String
+	action: NotificationAction
 	createdAt: Timestamp!
 	acknowledgedAt: Timestamp
 	bulletinEnabled: Boolean!

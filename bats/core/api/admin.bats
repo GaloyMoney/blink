@@ -199,7 +199,6 @@ setup_file() {
         shouldSendPush: false,
         shouldAddToHistory: true,
         shouldAddToBulletin: true,
-        deepLinkScreen: "EARN"
       }
     }'
   )

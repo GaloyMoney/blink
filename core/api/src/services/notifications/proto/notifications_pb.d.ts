@@ -898,17 +898,17 @@ export class MarketingNotificationTriggered extends jspb.Message {
 
     getLocalizedContentMap(): jspb.Map<string, LocalizedContent>;
     clearLocalizedContentMap(): void;
-
-    hasDeepLink(): boolean;
-    clearDeepLink(): void;
-    getDeepLink(): DeepLink | undefined;
-    setDeepLink(value?: DeepLink): MarketingNotificationTriggered;
     getShouldSendPush(): boolean;
     setShouldSendPush(value: boolean): MarketingNotificationTriggered;
     getShouldAddToHistory(): boolean;
     setShouldAddToHistory(value: boolean): MarketingNotificationTriggered;
     getShouldAddToBulletin(): boolean;
     setShouldAddToBulletin(value: boolean): MarketingNotificationTriggered;
+
+    hasAction(): boolean;
+    clearAction(): void;
+    getAction(): Action | undefined;
+    setAction(value?: Action): MarketingNotificationTriggered;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): MarketingNotificationTriggered.AsObject;
@@ -925,10 +925,10 @@ export namespace MarketingNotificationTriggered {
         userIdsList: Array<string>,
 
         localizedContentMap: Array<[string, LocalizedContent.AsObject]>,
-        deepLink?: DeepLink.AsObject,
         shouldSendPush: boolean,
         shouldAddToHistory: boolean,
         shouldAddToBulletin: boolean,
+        action?: Action.AsObject,
     }
 }
 
@@ -953,6 +953,44 @@ export namespace LocalizedContent {
         title: string,
         body: string,
     }
+}
+
+export class Action extends jspb.Message { 
+
+    hasDeepLink(): boolean;
+    clearDeepLink(): void;
+    getDeepLink(): DeepLink | undefined;
+    setDeepLink(value?: DeepLink): Action;
+
+    hasExternalUrl(): boolean;
+    clearExternalUrl(): void;
+    getExternalUrl(): string;
+    setExternalUrl(value: string): Action;
+
+    getDataCase(): Action.DataCase;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Action.AsObject;
+    static toObject(includeInstance: boolean, msg: Action): Action.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: Action, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Action;
+    static deserializeBinaryFromReader(message: Action, reader: jspb.BinaryReader): Action;
+}
+
+export namespace Action {
+    export type AsObject = {
+        deepLink?: DeepLink.AsObject,
+        externalUrl: string,
+    }
+
+    export enum DataCase {
+        DATA_NOT_SET = 0,
+        DEEP_LINK = 1,
+        EXTERNAL_URL = 2,
+    }
+
 }
 
 export class DeepLink extends jspb.Message { 

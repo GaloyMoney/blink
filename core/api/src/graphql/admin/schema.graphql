@@ -180,6 +180,9 @@ interface Error {
   path: [String]
 }
 
+"""Url that will be fetched on events for the account"""
+scalar ExternalUrl
+
 type GraphQLApplicationError implements Error {
   code: String
   message: String!
@@ -296,9 +299,9 @@ input LocalizedNotificationContentInput {
 }
 
 input MarketingNotificationTriggerInput {
-  deepLinkAction: DeepLinkAction
-  deepLinkScreen: DeepLinkScreen
   localizedNotificationContents: [LocalizedNotificationContentInput!]!
+  openDeepLink: OpenDeepLinkInput
+  openExternalUrl: OpenExternalUrlInput
   phoneCountryCodesFilter: [CountryCode!]
   shouldAddToBulletin: Boolean!
   shouldAddToHistory: Boolean!
@@ -351,6 +354,15 @@ type Mutation {
 scalar OnChainAddress
 
 scalar OnChainTxHash
+
+input OpenDeepLinkInput {
+  action: DeepLinkAction
+  screen: DeepLinkScreen
+}
+
+input OpenExternalUrlInput {
+  url: ExternalUrl!
+}
 
 """Information about pagination in a connection."""
 type PageInfo {

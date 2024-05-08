@@ -6,8 +6,8 @@ import { NotificationsService } from "@/services/notifications"
 export const triggerMarketingNotification = async ({
   userIdsFilter,
   phoneCountryCodesFilter,
-  deepLinkScreen,
-  deepLinkAction,
+  openDeepLink,
+  openExternalUrl,
   shouldSendPush,
   shouldAddToHistory,
   shouldAddToBulletin,
@@ -46,8 +46,8 @@ export const triggerMarketingNotification = async ({
 
   return NotificationsService().triggerMarketingNotification({
     userIds: userIdsToNotify,
-    deepLinkScreen,
-    deepLinkAction,
+    openDeepLink,
+    openExternalUrl,
     shouldSendPush,
     shouldAddToHistory,
     shouldAddToBulletin,
