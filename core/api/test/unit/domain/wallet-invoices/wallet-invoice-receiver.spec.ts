@@ -30,21 +30,15 @@ describe("WalletInvoiceReceiver", () => {
 
   const recipientAccountId = "recipientAccountId" as AccountId
 
-  const partialRecipientBtcWalletDescriptor = {
+  const recipientBtcWalletDescriptor = {
     id: "recipientBtcWalletId" as WalletId,
     currency: WalletCurrency.Btc,
-  }
-  const recipientBtcWalletDescriptor = {
-    ...partialRecipientBtcWalletDescriptor,
     accountId: recipientAccountId,
   }
 
-  const partialRecipientUsdWalletDescriptor = {
+  const recipientUsdWalletDescriptor = {
     id: "recipientUsdWalletId" as WalletId,
     currency: WalletCurrency.Usd,
-  }
-  const recipientUsdWalletDescriptor = {
-    ...partialRecipientUsdWalletDescriptor,
     accountId: recipientAccountId,
   }
 
@@ -77,7 +71,7 @@ describe("WalletInvoiceReceiver", () => {
       pubkey: "pubkey" as Pubkey,
       usdAmount: undefined,
       paid: false,
-      recipientWalletDescriptor: partialRecipientBtcWalletDescriptor,
+      recipientWalletDescriptor: recipientBtcWalletDescriptor,
       createdAt: new Date(),
       lnInvoice: mockLnInvoice,
       processingCompleted: false,
@@ -116,7 +110,7 @@ describe("WalletInvoiceReceiver", () => {
       const amountUsdInvoice: WalletInvoice = {
         paymentHash: "paymentHash" as PaymentHash,
         secret: "secret" as SecretPreImage,
-        recipientWalletDescriptor: partialRecipientUsdWalletDescriptor,
+        recipientWalletDescriptor: recipientUsdWalletDescriptor,
         selfGenerated: false,
         pubkey: "pubkey" as Pubkey,
         usdAmount: UsdPaymentAmount(BigInt(100)),
@@ -153,7 +147,7 @@ describe("WalletInvoiceReceiver", () => {
       const noAmountUsdInvoice: WalletInvoice = {
         paymentHash: "paymentHash" as PaymentHash,
         secret: "secret" as SecretPreImage,
-        recipientWalletDescriptor: partialRecipientUsdWalletDescriptor,
+        recipientWalletDescriptor: recipientUsdWalletDescriptor,
         selfGenerated: false,
         pubkey: "pubkey" as Pubkey,
         paid: false,

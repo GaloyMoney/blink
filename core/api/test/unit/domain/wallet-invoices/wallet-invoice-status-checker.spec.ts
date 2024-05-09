@@ -9,7 +9,11 @@ const baseInvoice: WalletInvoice = {
   secret: "secretPreImage" as SecretPreImage,
   selfGenerated: true,
   pubkey: "pubkey" as Pubkey,
-  recipientWalletDescriptor: { id: "walletId" as WalletId, currency: WalletCurrency.Usd },
+  recipientWalletDescriptor: {
+    id: "walletId" as WalletId,
+    currency: WalletCurrency.Usd,
+    accountId: "accountId" as AccountId,
+  },
   paid: false,
   createdAt: new Date(Date.now()),
   processingCompleted: false,

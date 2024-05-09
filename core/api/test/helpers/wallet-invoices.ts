@@ -3,10 +3,9 @@ import { randomLedgerExternalId } from "./random"
 import { decodeInvoice, getSecretAndPaymentHash } from "@/domain/bitcoin/lightning"
 import { WalletCurrency } from "@/domain/shared"
 
-export const createMockWalletInvoice = (recipientWalletDescriptor: {
-  currency: WalletCurrency
-  id: WalletId
-}): WalletInvoice => {
+export const createMockWalletInvoice = (
+  recipientWalletDescriptor: WalletDescriptor<WalletCurrency>,
+): WalletInvoice => {
   const externalId = randomLedgerExternalId()
   if (externalId instanceof Error) throw externalId
 

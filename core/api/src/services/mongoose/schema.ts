@@ -37,6 +37,7 @@ const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
   },
 
   accountId: {
+    required: true,
     type: String,
     validate: {
       validator: function (v: string) {
@@ -98,14 +99,15 @@ const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
   },
 
   externalId: {
+    required: true,
     type: String,
-    unique: true,
     validator: (v: string) => !(checkedToLedgerExternalId(v) instanceof Error),
   },
 })
 
 walletInvoiceSchema.index({ walletId: 1, paid: 1 })
 walletInvoiceSchema.index({ paid: 1, processingCompleted: 1 })
+walletInvoiceSchema.index({ accountId: 1, externalId: 1 }, { unique: true })
 
 export const WalletInvoice = mongoose.model<WalletInvoiceRecord>(
   "InvoiceUser",
