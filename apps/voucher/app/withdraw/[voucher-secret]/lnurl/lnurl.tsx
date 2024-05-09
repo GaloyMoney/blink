@@ -188,7 +188,12 @@ export default function LnurlComponent({ voucherSecret, voucherUrl }: Props) {
               </div>
             </div>
             <div className="flex flex-col justify-center align-middle gap-2 w-full m-auto mt-4">
-              <Button className="w-36 m-auto">Open in Wallet</Button>
+              <Button
+                onClick={() => window.open(`lightning:${lnurl}`)}
+                className="w-36 m-auto"
+              >
+                Open in Wallet
+              </Button>
               <Link
                 className="w-28 m-auto"
                 href={`/withdraw/${WithdrawLink.voucherSecret}/onchain`}
