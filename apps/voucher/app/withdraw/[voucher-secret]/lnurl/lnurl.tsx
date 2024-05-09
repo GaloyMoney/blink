@@ -4,17 +4,15 @@ import { QRCode } from "react-qrcode-logo"
 
 import { gql } from "@apollo/client"
 
-import styles from "./lnurl-page.module.css"
+import Image from "next/image"
 
-import { encodeURLToLNURL, formatSecretCode } from "@/utils/helpers"
+import Link from "next/link"
+
+import { encodeURLToLNURL } from "@/utils/helpers"
 import PageLoadingComponents from "@/components/loading/page-loading-component"
 import { useGetWithdrawLinkQuery, Status } from "@/lib/graphql/generated"
 import Button from "@/components/button"
-import InfoComponent from "@/components/info-component"
 import FundsPaid from "@/components/funds-paid"
-import Heading from "@/components/heading"
-import Bold from "@/components/bold"
-import LinkDetails from "@/components/link-details"
 
 gql`
   query GetWithdrawLink($voucherSecret: String) {
@@ -61,7 +59,6 @@ export default function LnurlComponent({ voucherSecret, voucherUrl }: Props) {
 
   const lnurl = encodeURLToLNURL(`${voucherUrl}/api/lnurlw/${WithdrawLink?.uniqueHash}`)
 
-  const url = `${voucherUrl}/withdraw/${WithdrawLink.voucherSecret}?lightning=${lnurl}`
   const copyToClipboard = () => {
     navigator.clipboard.writeText(lnurl)
   }
@@ -89,85 +86,130 @@ export default function LnurlComponent({ voucherSecret, voucherUrl }: Props) {
   return (
     <div className="top_page_container">
       {WithdrawLink?.status === Status.Paid ? (
-        <FundsPaid></FundsPaid>
+        <FundsPaid />
       ) : (
         <>
-          <Heading>
-            {" "}
-            Voucher <Bold>{WithdrawLink?.identifierCode}</Bold> created Successfully{" "}
-          </Heading>
-          <Bold
+          <div className="text-center text-green-600 font-bold text-ld">ACTIVE</div>
+          <div
             style={{
-              textAlign: "center",
+              backgroundImage: "url(/background/green-voucher-pattern.svg)",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
               width: "90%",
+              margin: "0 auto",
+              borderRadius: "1rem",
+              padding: "1rem",
+              boxShadow:
+                "rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px",
             }}
           >
-            Please collect ${WithdrawLink.salesAmountInCents / 100} USD before sharing
-            with the customer
-          </Bold>
-          <LinkDetails withdrawLink={WithdrawLink}></LinkDetails>
-          {revealLNURL ? (
-            <>
-              {" "}
-              <div className={`${styles.LNURL_container} print_this`}>
-                <Heading>LNURL fund withdraw</Heading>
-                <p>scan to redeem</p>
-                <QRCode size={300} value={url} />
-                <p>or visit voucher.blink.sv and redeem with </p>
-                <div className={styles.voucher_container}>
-                  <p> VOUCHER CODE </p>
-                  <p data-testid="voucher-secret">
-                    {formatSecretCode(WithdrawLink?.voucherSecret)}
+            <div className="flex flex-col justify-center align-middle text-md text-center">
+              <div className="flex flex-col gap-2 text-left">
+                <div>
+                  Voucher{" "}
+                  <span data-testid="voucher-id-code-detail" className="font-bold">
+                    {WithdrawLink.identifierCode}
+                  </span>
+                </div>
+                <div>
+                  <p>Value </p>
+                  <p data-testid="voucher-amount-detail" className="text-2xl font-bold">
+                    ${WithdrawLink.voucherAmountInCents / 100}
                   </p>
                 </div>
+                <div>
+                  Price{" "}
+                  <span className="font-bold">
+                    ${WithdrawLink.salesAmountInCents / 100} USD
+                  </span>
+                </div>
+                <div>
+                  Commission{" "}
+                  <span className="font-bold">{WithdrawLink.commissionPercentage}%</span>
+                </div>
               </div>
-              <Button
-                style={{
-                  width: "90%",
-                }}
-                onClick={copyToClipboard}
+              <div className="relative m-auto">
+                {!revealLNURL && (
+                  <button
+                    data-testid="reveal-voucher-btn"
+                    onClick={() => setRevealLNURL(true)}
+                    className="bg-white text-black rounded-full shadow-lg p-2 w-1/3 m-auto absolute z-20 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                  >
+                    Reveal
+                  </button>
+                )}
+                <div
+                  className={`flex flex-col gap-2 m-auto mt-4 ${
+                    revealLNURL ? "" : "blur-sm"
+                  }`}
+                >
+                  <QRCode logoImage="/blink-logo.svg" size={300} value={lnurl} />
+                </div>
+              </div>
+              <div className="w-full flex justify-center justify-between mt-2 w-10/12 m-auto p-2">
+                <div
+                  onClick={copyToClipboard}
+                  className="flex justify-center align-middle gap-2"
+                >
+                  <Image
+                    src="/copy.svg"
+                    alt="copy"
+                    width={23}
+                    height={23}
+                    priority={true}
+                  />
+                  Copy
+                </div>
+                <div
+                  onClick={() => sharePage()}
+                  className="flex justify-center align-middle gap-2"
+                >
+                  <Image
+                    src="/share.svg"
+                    alt="share"
+                    width={23}
+                    height={23}
+                    priority={true}
+                  />
+                  Share
+                </div>
+              </div>
+
+              <div
+                className={`flex flex-col gap-1 mt-4 mb-2 bg-white border-2 w-2/3 m-auto rounded-lg p-1 ${
+                  revealLNURL ? "" : "blur-sm"
+                }`}
               >
-                Copy LNURL
+                <p className="text-center text-sm font-bold"> Voucher Code </p>
+                <p className="font-bold text-2xl" data-testid="voucher-secret">
+                  {WithdrawLink?.voucherSecret}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col justify-center align-middle gap-2 w-full m-auto mt-4">
+              <Button className="w-36 m-auto">Open in Wallet</Button>
+              <Link
+                className="w-28 m-auto"
+                href={`/withdraw/${WithdrawLink.voucherSecret}/onchain`}
+              >
+                <Button className="w-28 m-auto bg-white text-black">Onchain</Button>
+              </Link>
+              <Button
+                className="w-28 flex justify-center align-middle gap-2 m-auto bg-white text-black"
+                onClick={handlePrint}
+              >
+                Print
+                <Image
+                  src="/print.svg"
+                  alt="print"
+                  width={23}
+                  height={23}
+                  priority={true}
+                />
               </Button>
-            </>
-          ) : null}
-          {!revealLNURL ? (
-            <Button
-              style={{
-                width: "90%",
-              }}
-              data-testid="reveal-voucher-btn"
-              onClick={() => setRevealLNURL(true)}
-            >
-              Reveal Voucher
-            </Button>
-          ) : null}
-          <Button
-            style={{
-              width: "90%",
-            }}
-            onClick={() => sharePage()}
-          >
-            Share Voucher
-          </Button>
-          <Button
-            style={{
-              width: "90%",
-            }}
-            onClick={handlePrint}
-          >
-            Print Voucher
-          </Button>
-          <InfoComponent>
-            To redeem instantly for zero fees Download App at blink.sv and scan above QR
-            with Blink
-          </InfoComponent>{" "}
-          <InfoComponent>
-            {`To redeem later or onChain visit voucher.blink.sv and enter the voucher
-            secret, If you can't withdraw links from LNURL, you can scan this QR code with
-            a regular QR scanner. After scanning, visit the URL and choose the "onChain"
-            option.`}
-          </InfoComponent>
+            </div>
+          </div>
         </>
       )}
     </div>
