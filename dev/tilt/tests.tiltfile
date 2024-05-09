@@ -2,8 +2,6 @@ load('./common.tiltfile', 'buck2_dep_inputs')
 load('./config.tiltfile', 'is_ci', 'run_apps', 'tests_to_run')
 load('./docker.tiltfile', 'docker_groups')
 
-LOAD_SYMBOL="<dummy-import-symbol>"
-
 CORE_TEST_LABEL = "core"
 CONSENT_TEST_LABEL = "consent"
 DASHBOARD_TEST_LABEL = "dashboard"

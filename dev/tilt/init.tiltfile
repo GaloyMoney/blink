@@ -1,7 +1,5 @@
 load('./config.tiltfile', 'run_apps')
 
-LOAD_SYMBOL="<dummy-import-symbol>"
-
 local_resource(
   name='init-onchain',
   labels = ['init'],

@@ -1,8 +1,6 @@
 load('./common.tiltfile', 'buck2_dep_inputs')
 load('./config.tiltfile', 'is_ci', 'run_apps', 'core_serve_env')
 
-LOAD_SYMBOL="<dummy-import-symbol>"
-
 dashboard_target = "//apps/dashboard:dev"
 if is_ci:
     dashboard_target = '//apps/dashboard:dashboard'

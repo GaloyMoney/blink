@@ -11,6 +11,6 @@
 # - https://docs.tilt.dev/api.html#api.allow_k8s_contexts
 allow_k8s_contexts(k8s_context())
 
-load('./tilt/init.tiltfile', 'LOAD_SYMBOL')
-load('./tilt/services.tiltfile', 'LOAD_SYMBOL')
-load('./tilt/tests.tiltfile', 'LOAD_SYMBOL')
+include('./tilt/init.tiltfile')
+include('./tilt/services.tiltfile')
+include('./tilt/tests.tiltfile')
