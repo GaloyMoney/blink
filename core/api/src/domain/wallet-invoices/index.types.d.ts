@@ -98,7 +98,7 @@ type WalletInvoiceWithOptionalLnInvoice = {
   selfGenerated: boolean
   pubkey: Pubkey
   usdAmount?: UsdPaymentAmount
-  recipientWalletDescriptor: PartialWalletDescriptor<WalletCurrency>
+  recipientWalletDescriptor: WalletDescriptor<WalletCurrency>
   paid: boolean
   createdAt: Date
   processingCompleted: boolean

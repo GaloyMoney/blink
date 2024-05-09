@@ -8,6 +8,7 @@ const walletInvoices = WalletInvoicesRepository()
 const recipientWalletDescriptor = {
   currency: WalletCurrency.Btc,
   id: crypto.randomUUID() as WalletId,
+  accountId: crypto.randomUUID() as AccountId,
 }
 
 let createdInvoices: WalletInvoice[] = []
@@ -32,6 +33,7 @@ beforeAll(async () => {
     createMockWalletInvoice({
       currency: WalletCurrency.Btc,
       id: crypto.randomUUID() as WalletId,
+      accountId: crypto.randomUUID() as AccountId,
     }),
   )
 })
