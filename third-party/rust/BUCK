@@ -885,23 +885,23 @@ cargo.rust_library(
 
 alias(
     name = "base64",
-    actual = ":base64-0.22.0",
+    actual = ":base64-0.22.1",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "base64-0.22.0.crate",
-    sha256 = "9475866fec1451be56a3c2400fd081ff546538961565ccb5b7142cbd22bc7a51",
-    strip_prefix = "base64-0.22.0",
-    urls = ["https://crates.io/api/v1/crates/base64/0.22.0/download"],
+    name = "base64-0.22.1.crate",
+    sha256 = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6",
+    strip_prefix = "base64-0.22.1",
+    urls = ["https://crates.io/api/v1/crates/base64/0.22.1/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "base64-0.22.0",
-    srcs = [":base64-0.22.0.crate"],
+    name = "base64-0.22.1",
+    srcs = [":base64-0.22.1.crate"],
     crate = "base64",
-    crate_root = "base64-0.22.0.crate/src/lib.rs",
+    crate_root = "base64-0.22.1.crate/src/lib.rs",
     edition = "2018",
     features = [
         "alloc",
@@ -2022,7 +2022,7 @@ cargo.rust_library(
     edition = "2021",
     visibility = [],
     deps = [
-        ":base64-0.22.0",
+        ":base64-0.22.1",
         ":memchr-2.6.4",
     ],
 )
@@ -3892,7 +3892,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":async-trait-0.1.74",
-        ":base64-0.22.0",
+        ":base64-0.22.1",
         ":chumsky-0.9.3",
         ":email-encoding-0.3.0",
         ":email_address-0.2.4",
@@ -7915,7 +7915,7 @@ cargo.rust_library(
     },
     visibility = [],
     deps = [
-        ":base64-0.22.0",
+        ":base64-0.22.1",
         ":hex-0.4.3",
         ":serde-1.0.200",
         ":serde_derive-1.0.200",
@@ -9239,7 +9239,7 @@ cargo.rust_binary(
         ":async-graphql-axum-7.0.3",
         ":axum-0.7.5",
         ":axum-extra-0.9.3",
-        ":base64-0.22.0",
+        ":base64-0.22.1",
         ":chrono-0.4.38",
         ":clap-4.5.4",
         ":derive_builder-0.13.1",

@@ -24,7 +24,7 @@ async-graphql = { version = "7.0.3", default-features = false, features = ["trac
 async-graphql-axum = "7.0.3"
 axum = { version = "0.7.5", features = ["macros"] }
 axum-extra = { version = "0.9.3", default-features = false, features = ["tracing", "typed-header"] }
-base64 = { version = "0.22.0" }
+base64 = { version = "0.22.1" }
 jsonwebtoken = "9.3.0"
 clap = { version = "4.5.4", features = ["derive", "env"] }
 derive_builder = "0.13.1"
