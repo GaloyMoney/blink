@@ -14,7 +14,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../sheet"
-import { Separator } from "../seperator"
+
 import {
   Select,
   SelectContent,
@@ -23,6 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../select"
+
+import { Separator } from "@/components/separator"
 
 import { useDisplayCurrency } from "@/hooks/useDisplayCurrency"
 import { useCurrency } from "@/context/currency-context"
@@ -65,6 +67,12 @@ const Navigation: React.FC = () => {
 export default Navigation
 
 const NavMenu = ({ username }: { username: string }) => {
+  const menuItems = [
+    { path: "/create", label: "Create Link" },
+    { path: "/user/links", label: "My Links" },
+    { path: "/redeem", label: "Redeem" },
+  ]
+
   return (
     <Sheet>
       <SheetTrigger>
@@ -80,34 +88,25 @@ const NavMenu = ({ username }: { username: string }) => {
           </>
         ) : null}
         <div
-          className={`flex flex-col  text-left ${
+          className={`flex flex-col text-left ${
             username ? "mt-5" : "mt-20"
           } justify-center align-middle w-11/12 border-2 border-secondary m-auto rounded-lg`}
         >
-          <SheetClose asChild>
-            <Link className="w-full" href={"/create"}>
-              <div className="w-full hover:bg-secondary p-3 pl-5">Create Link</div>
-            </Link>
-          </SheetClose>
-          <Separator />
-          <SheetClose asChild>
-            <Link className="w-full" href={`/user/links`}>
-              <div className="w-full hover:bg-secondary p-3 pl-5"> My Links</div>
-            </Link>
-          </SheetClose>
-          <Separator />
-          <SheetClose asChild>
-            <Link className="w-full" href={`/redeem`}>
-              <div className="w-full hover:bg-secondary p-3 pl-5"> Redeem</div>
-            </Link>
-          </SheetClose>
+          {menuItems.map((item, index) => (
+            <React.Fragment key={item.path}>
+              <SheetClose asChild>
+                <Link className="w-full" href={item.path}>
+                  <div className="w-full hover:bg-secondary p-3 pl-5">{item.label}</div>
+                </Link>
+              </SheetClose>
+              {index < menuItems.length - 1 && <Separator />}
+            </React.Fragment>
+          ))}
           <Separator />
           <SheetClose asChild>
             <div
               className="w-full hover:bg-secondary p-3 pl-5"
-              onClick={() => {
-                signOut({ callbackUrl: "/" })
-              }}
+              onClick={() => signOut({ callbackUrl: "/" })}
             >
               Log Out
             </div>

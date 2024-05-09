@@ -48,7 +48,7 @@ export default function VoucherSecret({ voucherSecret, voucherUrl }: Props) {
             style={{ width: "90%" }}
             href={`${voucherUrl}/withdraw/${voucherSecret}/lnurl`}
           >
-            <Button>
+            <Button className="w-full">
               <span>LNURLw Link</span>{" "}
             </Button>
           </Link>
@@ -57,7 +57,7 @@ export default function VoucherSecret({ voucherSecret, voucherUrl }: Props) {
             style={{ width: "90%" }}
             href={`${voucherUrl}/withdraw/${voucherSecret}/onchain`}
           >
-            <Button>
+            <Button className="w-full">
               <span>On Chain</span>{" "}
             </Button>
           </Link>
