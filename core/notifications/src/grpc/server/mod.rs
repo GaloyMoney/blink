@@ -409,6 +409,7 @@ impl NotificationsService for Notifications {
                             should_send_push,
                             user_ids,
                             action,
+                            icon,
                         },
                     )),
             }) => {
@@ -440,6 +441,16 @@ impl NotificationsService for Notifications {
                     .map(notification_event::Action::try_from)
                     .transpose()?;
 
+                let icon = if let Some(icon) = icon {
+                    Some(
+                        proto::Icon::try_from(icon)
+                            .map(notification_event::Icon::from)
+                            .map_err(|e| Status::invalid_argument(e.to_string()))?,
+                    )
+                } else {
+                    None
+                };
+
                 self.app
                     .handle_marketing_notification_triggered_event(
                         user_ids,
@@ -450,6 +461,7 @@ impl NotificationsService for Notifications {
                             should_add_to_history,
                             should_send_push,
                             action,
+                            icon,
                         },
                     )
                     .await?;
