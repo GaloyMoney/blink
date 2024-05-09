@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): add debug script to remove invalid wallet invoices
-        (#4415)...'
-      sha: 4214d81ffa0857f206c0adebc34f0ce054018fdb
+      commitTitle: 'chore(core): add (externalId, accountId) invoices index (#4377)...'
+      sha: ed12289ab1ce1610b6ab07654baae1c33a3ad9ac
       tags:
-      - 0.20.187-3-g4214d81ff
+      - 0.20.188-2-ged12289ab
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): add debug script to remove invalid wallet invoices
-        (#4415)...'
-      sha: 4214d81ffa0857f206c0adebc34f0ce054018fdb
+      commitTitle: 'chore(core): add (externalId, accountId) invoices index (#4377)...'
+      sha: ed12289ab1ce1610b6ab07654baae1c33a3ad9ac
       tags:
-      - 0.20.187-3-g4214d81ff
+      - 0.20.188-2-ged12289ab
     path: schemas
   - git:
-      commitTitle: 'chore(core): add debug script to remove invalid wallet invoices
-        (#4415)...'
-      sha: 4214d81ffa0857f206c0adebc34f0ce054018fdb
+      commitTitle: 'chore(core): add (externalId, accountId) invoices index (#4377)...'
+      sha: ed12289ab1ce1610b6ab07654baae1c33a3ad9ac
       tags:
-      - 0.20.187-3-g4214d81ff
+      - 0.20.188-2-ged12289ab
     path: gql
   path: graphql
 kind: LockConfig
