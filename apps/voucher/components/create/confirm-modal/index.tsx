@@ -8,23 +8,19 @@ import styles from "./confirm-modal.module.css"
 
 import Button from "@/components/button"
 import ModalComponent from "@/components/modal-component"
+import { calculateAmountAfterCommission, WalletDetails } from "@/utils/helpers"
 import {
-  calculateAmountAfterCommission,
-  formatOperand,
-  WalletDetails,
-} from "@/utils/helpers"
-import {
-  Currency,
   useCreateWithdrawLinkMutation,
   useCurrencyConversionEstimationQuery,
 } from "@/lib/graphql/generated"
 import LoadingComponent from "@/components/loading/loading-component"
+import { formatCurrency } from "@/lib/utils"
 
 type Props = {
   open: boolean
   onClose: (currency: MouseEvent<HTMLButtonElement>) => void
   amount: string
-  currency: Currency
+  currency: string
   commissionPercentage: string
   btcWallet: WalletDetails
   usdWallet: WalletDetails
@@ -46,20 +42,20 @@ const ConfirmModal = ({
   const { data: currencyConversion, refetch } = useCurrencyConversionEstimationQuery({
     variables: {
       amount: Number(amount),
-      currency: currency.id,
+      currency,
     },
     context: {
       endpoint: "GALOY",
     },
-    pollInterval: 5000,
+    pollInterval: 60000,
   })
 
   useEffect(() => {
     refetch({
       amount: Number(amount),
-      currency: currency.id,
+      currency,
     })
-  }, [amount, currency.id, refetch])
+  }, [amount, currency, refetch])
 
   const amountInDollars = Number(
     (currencyConversion?.currencyConversionEstimation.usdCentAmount / 100).toFixed(2),
@@ -165,8 +161,10 @@ const ConfirmModal = ({
             <div>
               <h3 className={styles.modalSubtitle}>Sales Amount </h3>
               <p className={styles.modalText}>
-                {formatOperand(Number(amount).toFixed(currency.fractionDigits))}{" "}
-                {currency.name}
+                {formatCurrency({
+                  amount: Number(amount),
+                  currency,
+                })}
               </p>
             </div>
             <div>

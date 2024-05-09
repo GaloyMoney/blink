@@ -6,14 +6,12 @@ import styles from "../create-link.module.css"
 import NumPad from "@/components/num-pad"
 import Button from "@/components/button"
 import ModalComponent from "@/components/modal-component"
-import { Currency } from "@/lib/graphql/generated"
 import { formatCurrency } from "@/lib/utils"
 
 interface Props {
   amount: string
   setAmount: (amount: string) => void
-  currency: Currency
-  setCurrency: (currency: Currency) => void
+  currency: string
   setCurrentPage: (accountType: string) => void
   commissionPercentage: string
   setConfirmModal: (currency: boolean) => void
@@ -31,17 +29,6 @@ export default function HomePage({
   const voucherAmount =
     Number(amount) - Number(amount) * (Number(commissionPercentage) / 100)
   const profitAmount = Number(amount) - voucherAmount
-  // const handleCurrencyChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-  //   const selectedCurrency = currencyList.find(
-  //     (currency: Currency) => currency.id === event.target.value,
-  //   )
-  //   localStorage.setItem("currency", JSON.stringify(selectedCurrency))
-  //   setCurrency(selectedCurrency || DEFAULT_CURRENCY)
-  // }
-
-  // if (loading) {
-  //   return <PageLoadingComponent></PageLoadingComponent>
-  // }
 
   const handleConfirmLink = () => {
     if (Number(amount) < 0.01) {
@@ -49,25 +36,6 @@ export default function HomePage({
       return
     }
     setConfirmModal(true)
-  }
-
-  {
-    /* <select
-        id="currency"
-        value={currency.id}
-        className={styles.currency_drop_down}
-        onChange={handleCurrencyChange}
-      >
-        {currencyList.map((currencyOption) => (
-          <option
-            key={currencyOption.id}
-            value={currencyOption.id}
-            className={styles.currency_drop_down_option}
-          >
-            {currencyOption.name}
-          </option>
-        ))}
-      </select> */
   }
 
   return (
@@ -79,7 +47,7 @@ export default function HomePage({
         }}
       >
         <div className={styles.alert_box}>
-          Amount cannot be less than $0.01 USD
+          Amount cannot be less than 0.01
           <Button
             onClick={() => {
               setAlerts(false)
@@ -135,7 +103,7 @@ const SalesAmountSection = ({
   currency,
 }: {
   amount: string
-  currency: { id: string }
+  currency: string
 }) => {
   return (
     <div className="flex flex-col justify-center align-middle text-center gap-3">
@@ -143,7 +111,7 @@ const SalesAmountSection = ({
       <div className="text-4xl font-semibold">
         {formatCurrency({
           amount: Number(amount),
-          currency: currency.id,
+          currency,
         })}
       </div>
     </div>
@@ -155,7 +123,7 @@ const CommissionAndProfitSections = ({
   commissionPercentage,
   profit,
 }: {
-  currency: { id: string }
+  currency: string
   commissionPercentage: number
   profit: number
 }) => {
@@ -170,7 +138,7 @@ const CommissionAndProfitSections = ({
         <div className="text-xl font-bold">
           {formatCurrency({
             amount: Number(profit),
-            currency: currency.id,
+            currency,
           })}
         </div>
       </div>

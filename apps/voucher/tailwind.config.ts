@@ -1,5 +1,6 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+import type { Config } from "tailwindcss"
+
+const config: Config = {
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -18,8 +19,12 @@ module.exports = {
         "primary": "#fc5805",
         "orange": "#ff7e1c",
         "secondary": "#e6ebef",
+        "white": "#ffffff",
+        "black": "#000000",
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 }
+
+export default config

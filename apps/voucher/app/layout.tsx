@@ -6,6 +6,7 @@ import Navigation from "@/components/nav-bar/navigation"
 import ApolloWrapper from "@/config/apollo"
 import SessionProvider from "@/components/session-provider"
 import { env } from "@/env"
+import { CurrencyProvider } from "@/context/currency-context"
 
 const { NEXT_PUBLIC_CORE_URL, NEXT_PUBLIC_VOUCHER_URL } = env
 
@@ -21,10 +22,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         }}
       >
         <html lang="en">
-          <body className={inter.className}>
-            <Navigation />
-            {children}
-          </body>
+          <CurrencyProvider>
+            <body className={inter.className}>
+              <Navigation />
+              {children}
+            </body>
+          </CurrencyProvider>
         </html>
       </ApolloWrapper>
     </SessionProvider>

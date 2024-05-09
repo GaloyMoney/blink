@@ -7,10 +7,9 @@ import { useSession } from "next-auth/react"
 
 import CreatePageAmount from "@/components/create/create-page-amount"
 import CreatePagePercentage from "@/components/create/create-page-percentage"
-import { Currency } from "@/lib/graphql/generated"
 import { getWalletDetails } from "@/utils/helpers"
 import ConfirmModal from "@/components/create/confirm-modal"
-import { DEFAULT_CURRENCY } from "@/config/appConfig"
+import { useCurrency } from "@/context/currency-context"
 
 gql`
   mutation CreateWithdrawLink($input: CreateWithdrawLinkInput!) {
@@ -43,21 +42,15 @@ gql`
 
 export default function CreatePage() {
   const session = useSession()
-
-  const storedCurrency =
-    typeof window !== "undefined" ? localStorage.getItem("currency") : null
+  const { currency } = useCurrency()
   const storedCommission =
     typeof window !== "undefined" ? localStorage.getItem("commission") : null
 
-  const [currency, setCurrency] = useState<Currency>(
-    storedCurrency ? JSON.parse(storedCurrency) : DEFAULT_CURRENCY,
-  )
   const [commissionPercentage, setCommissionPercentage] = useState<string>(
     storedCommission || "0",
   )
 
   const [amount, setAmount] = useState<string>("0")
-
   const [confirmModal, setConfirmModal] = useState<boolean>(false)
   const [currentPage, setCurrentPage] = useState<string>("AMOUNT")
 
@@ -90,7 +83,6 @@ export default function CreatePage() {
           amount={amount}
           currency={currency}
           setAmount={setAmount}
-          setCurrency={setCurrency}
           setCurrentPage={setCurrentPage}
           setConfirmModal={setConfirmModal}
           commissionPercentage={commissionPercentage}

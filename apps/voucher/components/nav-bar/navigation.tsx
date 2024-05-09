@@ -1,33 +1,38 @@
 "use client"
-import React, { useEffect, useRef, useState } from "react"
+import React from "react"
 import { signOut, useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 
 import Button from "../button"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "../sheet"
+import { Separator } from "../seperator"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../select"
+
+import { useDisplayCurrency } from "@/hooks/useDisplayCurrency"
+import { useCurrency } from "@/context/currency-context"
 
 const Navigation: React.FC = () => {
   const router = useRouter()
-  const { data: session } = useSession()
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const [dropdownVisible, setDropdownVisible] = useState(false)
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownVisible(false)
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
-
-  const toggleDropdown = () => setDropdownVisible((prev) => !prev)
+  const { data: session, status } = useSession()
 
   const navigate = (path: string) => {
     router.push(path)
-    setDropdownVisible(false)
   }
 
   return (
@@ -40,7 +45,7 @@ const Navigation: React.FC = () => {
           height={170}
         />
       </Link>
-      {!session?.userData?.me?.id ? (
+      {status === "loading" ? null : !session?.userData?.me?.id ? (
         <Button
           className="w-20"
           variant="link"
@@ -50,46 +55,7 @@ const Navigation: React.FC = () => {
         </Button>
       ) : (
         <div className="flex items-center">
-          <div className="ml-4 relative">
-            <button
-              onClick={toggleDropdown}
-              className="px-1 py-2 flex items-center text-white"
-            >
-              {dropdownVisible ? (
-                <Image src="close-outline.svg" alt="close" height={40} width={40} />
-              ) : (
-                <Image src="menu-outline.svg" alt="menu" height={40} width={40} />
-              )}
-            </button>
-            {dropdownVisible && (
-              <div
-                ref={dropdownRef}
-                className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white py-1 ring-1 ring-black ring-opacity-5 focus:outline-none"
-              >
-                <div
-                  onClick={() => navigate("/create")}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  New Link
-                </div>
-                <div
-                  onClick={() => navigate(`/user/links`)}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  My Links
-                </div>
-                <div
-                  onClick={() => {
-                    signOut()
-                    setDropdownVisible(false)
-                  }}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Logout
-                </div>
-              </div>
-            )}
-          </div>
+          <NavMenu username={session.userData.me.username} />
         </div>
       )}
     </nav>
@@ -97,3 +63,84 @@ const Navigation: React.FC = () => {
 }
 
 export default Navigation
+
+const NavMenu = ({ username }: { username: string }) => {
+  return (
+    <Sheet>
+      <SheetTrigger>
+        <Image src="menu-outline.svg" alt="menu" height={40} priority={true} width={40} />
+      </SheetTrigger>
+      <SheetContent className="m-0 p-0">
+        {username ? (
+          <>
+            <SheetHeader className="flex flex-col pl-5 text-left mt-6 justify-center align-middle w-full">
+              <SheetTitle>{username}</SheetTitle>
+            </SheetHeader>
+            <Separator className="mt-5" />
+          </>
+        ) : null}
+        <div
+          className={`flex flex-col  text-left ${
+            username ? "mt-5" : "mt-20"
+          } justify-center align-middle w-11/12 border-2 border-secondary m-auto rounded-lg`}
+        >
+          <SheetClose asChild>
+            <Link className="w-full" href={"/create"}>
+              <div className="w-full hover:bg-secondary p-3 pl-5">Create Link</div>
+            </Link>
+          </SheetClose>
+          <Separator />
+          <SheetClose asChild>
+            <Link className="w-full" href={`/user/links`}>
+              <div className="w-full hover:bg-secondary p-3 pl-5"> My Links</div>
+            </Link>
+          </SheetClose>
+          <Separator />
+          <SheetClose asChild>
+            <Link className="w-full" href={`/redeem`}>
+              <div className="w-full hover:bg-secondary p-3 pl-5"> Redeem</div>
+            </Link>
+          </SheetClose>
+          <Separator />
+          <SheetClose asChild>
+            <div
+              className="w-full hover:bg-secondary p-3 pl-5"
+              onClick={() => {
+                signOut({ callbackUrl: "/" })
+              }}
+            >
+              Log Out
+            </div>
+          </SheetClose>
+        </div>
+        <div className="mt-4">
+          <CurrencySwitcher />
+        </div>
+      </SheetContent>
+    </Sheet>
+  )
+}
+
+export const CurrencySwitcher = () => {
+  const currencies = useDisplayCurrency()
+  const { currency: selectedCurrency, changeCurrency } = useCurrency()
+
+  return (
+    <div className="w-11/12 m-auto">
+      <Select onValueChange={(value) => changeCurrency(value)}>
+        <SelectTrigger className="text-md">
+          <SelectValue placeholder={selectedCurrency} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {currencies.currencyList.map((currency) => (
+              <SelectItem key={currency.id} value={currency.id}>
+                {currency.name} ({currency.id})
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
