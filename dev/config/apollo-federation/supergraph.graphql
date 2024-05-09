@@ -606,6 +606,62 @@ type GraphQLApplicationError implements Error
 scalar Hex32Bytes
   @join__type(graph: PUBLIC)
 
+enum Icon
+  @join__type(graph: NOTIFICATIONS)
+{
+  ARROW_RIGHT @join__enumValue(graph: NOTIFICATIONS)
+  ARROW_LEFT @join__enumValue(graph: NOTIFICATIONS)
+  BACK_SPACE @join__enumValue(graph: NOTIFICATIONS)
+  BANK @join__enumValue(graph: NOTIFICATIONS)
+  BITCOIN @join__enumValue(graph: NOTIFICATIONS)
+  BOOK @join__enumValue(graph: NOTIFICATIONS)
+  BTC_BOOK @join__enumValue(graph: NOTIFICATIONS)
+  CARET_DOWN @join__enumValue(graph: NOTIFICATIONS)
+  CARET_LEFT @join__enumValue(graph: NOTIFICATIONS)
+  CARET_RIGHT @join__enumValue(graph: NOTIFICATIONS)
+  CARET_UP @join__enumValue(graph: NOTIFICATIONS)
+  CHECK_CIRCLE @join__enumValue(graph: NOTIFICATIONS)
+  CHECK @join__enumValue(graph: NOTIFICATIONS)
+  CLOSE @join__enumValue(graph: NOTIFICATIONS)
+  CLOSE_CROSS_WITH_BACKGROUND @join__enumValue(graph: NOTIFICATIONS)
+  COINS @join__enumValue(graph: NOTIFICATIONS)
+  PEOPLE @join__enumValue(graph: NOTIFICATIONS)
+  COPY_PASTE @join__enumValue(graph: NOTIFICATIONS)
+  DOLLAR @join__enumValue(graph: NOTIFICATIONS)
+  EYE_SLASH @join__enumValue(graph: NOTIFICATIONS)
+  EYE @join__enumValue(graph: NOTIFICATIONS)
+  FILTER @join__enumValue(graph: NOTIFICATIONS)
+  GLOBE @join__enumValue(graph: NOTIFICATIONS)
+  GRAPH @join__enumValue(graph: NOTIFICATIONS)
+  IMAGE @join__enumValue(graph: NOTIFICATIONS)
+  INFO @join__enumValue(graph: NOTIFICATIONS)
+  LIGHTNING @join__enumValue(graph: NOTIFICATIONS)
+  LINK @join__enumValue(graph: NOTIFICATIONS)
+  LOADING @join__enumValue(graph: NOTIFICATIONS)
+  MAGNIFYING_GLASS @join__enumValue(graph: NOTIFICATIONS)
+  MAP @join__enumValue(graph: NOTIFICATIONS)
+  MENU @join__enumValue(graph: NOTIFICATIONS)
+  PENCIL @join__enumValue(graph: NOTIFICATIONS)
+  NOTE @join__enumValue(graph: NOTIFICATIONS)
+  RANK @join__enumValue(graph: NOTIFICATIONS)
+  QR_CODE @join__enumValue(graph: NOTIFICATIONS)
+  QUESTION @join__enumValue(graph: NOTIFICATIONS)
+  RECEIVE @join__enumValue(graph: NOTIFICATIONS)
+  SEND @join__enumValue(graph: NOTIFICATIONS)
+  SETTINGS @join__enumValue(graph: NOTIFICATIONS)
+  SHARE @join__enumValue(graph: NOTIFICATIONS)
+  TRANSFER @join__enumValue(graph: NOTIFICATIONS)
+  USER @join__enumValue(graph: NOTIFICATIONS)
+  VIDEO @join__enumValue(graph: NOTIFICATIONS)
+  WARNING @join__enumValue(graph: NOTIFICATIONS)
+  WARNING_WITH_BACKGROUND @join__enumValue(graph: NOTIFICATIONS)
+  PAYMENT_SUCCESS @join__enumValue(graph: NOTIFICATIONS)
+  PAYMENT_PENDING @join__enumValue(graph: NOTIFICATIONS)
+  PAYMENT_ERROR @join__enumValue(graph: NOTIFICATIONS)
+  BELL @join__enumValue(graph: NOTIFICATIONS)
+  REFRESH @join__enumValue(graph: NOTIFICATIONS)
+}
+
 union InitiationVia
   @join__type(graph: PUBLIC)
   @join__unionMember(graph: PUBLIC, member: "InitiationViaIntraLedger")
@@ -1798,6 +1854,7 @@ type StatefulNotification
   createdAt: Timestamp!
   acknowledgedAt: Timestamp
   bulletinEnabled: Boolean!
+  icon: Icon
 }
 
 input StatefulNotificationAcknowledgeInput

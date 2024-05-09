@@ -23,6 +23,61 @@ pub(super) use price_changed::*;
 pub(super) use transaction_occurred::*;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum Icon {
+    ArrowRight,
+    ArrowLeft,
+    BackSpace,
+    Bank,
+    Bitcoin,
+    Book,
+    BtcBook,
+    CaretDown,
+    CaretLeft,
+    CaretRight,
+    CaretUp,
+    CheckCircle,
+    Check,
+    Close,
+    CloseCrossWithBackground,
+    Coins,
+    People,
+    CopyPaste,
+    Dollar,
+    EyeSlash,
+    Eye,
+    Filter,
+    Globe,
+    Graph,
+    Image,
+    Info,
+    Lightning,
+    Link,
+    Loading,
+    MagnifyingGlass,
+    Map,
+    Menu,
+    Pencil,
+    Note,
+    Rank,
+    QrCode,
+    Question,
+    Receive,
+    Send,
+    Settings,
+    Share,
+    Transfer,
+    User,
+    Video,
+    Warning,
+    WarningWithBackground,
+    PaymentSuccess,
+    PaymentPending,
+    PaymentError,
+    Bell,
+    Refresh,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DeepLink {
     pub screen: Option<DeepLinkScreen>,
     pub action: Option<DeepLinkAction>,
@@ -150,6 +205,10 @@ pub trait NotificationEvent: std::fmt::Debug + Send + Sync {
     }
 
     fn action(&self) -> Option<Action> {
+        None
+    }
+
+    fn icon(&self) -> Option<Icon> {
         None
     }
 }

@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     messages::LocalizedStatefulMessage,
-    notification_event::{Action, DeepLink, NotificationEventPayload},
+    notification_event::{Action, DeepLink, Icon, NotificationEventPayload},
     primitives::*,
 };
 
@@ -92,6 +92,10 @@ impl StatefulNotification {
 
     pub fn action(&self) -> Option<Action> {
         self.payload.action()
+    }
+
+    pub fn icon(&self) -> Option<Icon> {
+        self.payload.icon()
     }
 }
 
