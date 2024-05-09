@@ -78,6 +78,7 @@ filegroup(
             "graphql/**",
             "*.ts",  # env.ts / middleware.ts / instrumentation.ts
             "instrumentation.node.ts",
+            "context/**",
         ]
     ),
 )
