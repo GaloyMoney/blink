@@ -112,11 +112,14 @@ const LnInvoicePaymentStatusByHashSubscription = {
 
     if (!paymentStatusChecker.isExpired) {
       const timeout = Math.max(paymentStatusChecker.expiresAt.getTime() - Date.now(), 0)
-      setTimeout(() => {
-        pubsub.publish({
-          trigger,
-          payload: { paymentHash, paymentRequest, status: WalletInvoiceStatus.Expired },
-        })
+      setTimeout(async () => {
+        const paid = await paymentStatusChecker.invoiceIsPaid()
+        if (!paid) {
+          pubsub.publish({
+            trigger,
+            payload: { paymentHash, paymentRequest, status: WalletInvoiceStatus.Expired },
+          })
+        }
       }, timeout + 1000)
     }
 
