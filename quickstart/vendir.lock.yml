@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): add (externalId, accountId) invoices index (#4377)...'
-      sha: ed12289ab1ce1610b6ab07654baae1c33a3ad9ac
+      commitTitle: 'chore(core): bump deps (#4443)...'
+      sha: 5d9b03e0712bf9a13a579af34c9852b9905a58a9
       tags:
-      - 0.20.188-2-ged12289ab
+      - 0.20.189-1-g5d9b03e07
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): add (externalId, accountId) invoices index (#4377)...'
-      sha: ed12289ab1ce1610b6ab07654baae1c33a3ad9ac
+      commitTitle: 'chore(core): bump deps (#4443)...'
+      sha: 5d9b03e0712bf9a13a579af34c9852b9905a58a9
       tags:
-      - 0.20.188-2-ged12289ab
+      - 0.20.190
     path: schemas
   - git:
-      commitTitle: 'chore(core): add (externalId, accountId) invoices index (#4377)...'
-      sha: ed12289ab1ce1610b6ab07654baae1c33a3ad9ac
+      commitTitle: 'chore(core): bump deps (#4443)...'
+      sha: 5d9b03e0712bf9a13a579af34c9852b9905a58a9
       tags:
-      - 0.20.188-2-ged12289ab
+      - 0.20.190
     path: gql
   path: graphql
 kind: LockConfig
