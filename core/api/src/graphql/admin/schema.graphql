@@ -299,6 +299,7 @@ input LocalizedNotificationContentInput {
 }
 
 input MarketingNotificationTriggerInput {
+  icon: NotificationIcon
   localizedNotificationContents: [LocalizedNotificationContentInput!]!
   openDeepLink: OpenDeepLinkInput
   openExternalUrl: OpenExternalUrlInput
@@ -348,6 +349,60 @@ type Mutation {
   merchantMapDelete(input: MerchantMapDeleteInput!): MerchantPayload!
   merchantMapValidate(input: MerchantMapValidateInput!): MerchantPayload!
   userUpdatePhone(input: UserUpdatePhoneInput!): AccountDetailPayload!
+}
+
+enum NotificationIcon {
+  ARROW_LEFT
+  ARROW_RIGHT
+  BACKSPACE
+  BANK
+  BELL
+  BITCOIN
+  BOOK
+  BTC_BOOK
+  CARET_DOWN
+  CARET_LEFT
+  CARET_RIGHT
+  CARET_UP
+  CHECK
+  CHECK_CIRCLE
+  CLOSE
+  CLOSE_CROSS_WITH_BACKGROUND
+  COINS
+  COPY_PASTE
+  DOLLAR
+  EYE
+  EYE_SLASH
+  FILTER
+  GLOBE
+  GRAPH
+  IMAGE
+  INFO
+  LIGHTNING
+  LINK
+  LOADING
+  MAGNIFYING_GLASS
+  MAP
+  MENU
+  NOTE
+  PAYMENT_ERROR
+  PAYMENT_PENDING
+  PAYMENT_SUCCESS
+  PENCIL
+  PEOPLE
+  QR_CODE
+  QUESTION
+  RANK
+  RECEIVE
+  REFRESH
+  SEND
+  SETTINGS
+  SHARE
+  TRANSFER
+  USER
+  VIDEO
+  WARNING
+  WARNING_WITH_BACKGROUND
 }
 
 """An address for an on-chain bitcoin destination"""

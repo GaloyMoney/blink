@@ -46,6 +46,7 @@ goog.exportSymbol('proto.services.notifications.v1.GetNotificationSettingsReques
 goog.exportSymbol('proto.services.notifications.v1.GetNotificationSettingsResponse', null, global);
 goog.exportSymbol('proto.services.notifications.v1.HandleNotificationEventRequest', null, global);
 goog.exportSymbol('proto.services.notifications.v1.HandleNotificationEventResponse', null, global);
+goog.exportSymbol('proto.services.notifications.v1.Icon', null, global);
 goog.exportSymbol('proto.services.notifications.v1.IdentityVerificationApproved', null, global);
 goog.exportSymbol('proto.services.notifications.v1.IdentityVerificationDeclined', null, global);
 goog.exportSymbol('proto.services.notifications.v1.IdentityVerificationReviewStarted', null, global);
@@ -7022,7 +7023,8 @@ proto.services.notifications.v1.MarketingNotificationTriggered.toObject = functi
     shouldSendPush: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
     shouldAddToHistory: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
     shouldAddToBulletin: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
-    action: (f = msg.getAction()) && proto.services.notifications.v1.Action.toObject(includeInstance, f)
+    action: (f = msg.getAction()) && proto.services.notifications.v1.Action.toObject(includeInstance, f),
+    icon: jspb.Message.getFieldWithDefault(msg, 7, 0)
   };
 
   if (includeInstance) {
@@ -7085,6 +7087,10 @@ proto.services.notifications.v1.MarketingNotificationTriggered.deserializeBinary
       var value = new proto.services.notifications.v1.Action;
       reader.readMessage(value,proto.services.notifications.v1.Action.deserializeBinaryFromReader);
       msg.setAction(value);
+      break;
+    case 7:
+      var value = /** @type {!proto.services.notifications.v1.Icon} */ (reader.readEnum());
+      msg.setIcon(value);
       break;
     default:
       reader.skipField();
@@ -7153,6 +7159,13 @@ proto.services.notifications.v1.MarketingNotificationTriggered.serializeBinaryTo
       6,
       f,
       proto.services.notifications.v1.Action.serializeBinaryToWriter
+    );
+  }
+  f = /** @type {!proto.services.notifications.v1.Icon} */ (jspb.Message.getField(message, 7));
+  if (f != null) {
+    writer.writeEnum(
+      7,
+      f
     );
   }
 };
@@ -7306,6 +7319,42 @@ proto.services.notifications.v1.MarketingNotificationTriggered.prototype.clearAc
  */
 proto.services.notifications.v1.MarketingNotificationTriggered.prototype.hasAction = function() {
   return jspb.Message.getField(this, 6) != null;
+};
+
+
+/**
+ * optional Icon icon = 7;
+ * @return {!proto.services.notifications.v1.Icon}
+ */
+proto.services.notifications.v1.MarketingNotificationTriggered.prototype.getIcon = function() {
+  return /** @type {!proto.services.notifications.v1.Icon} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
+};
+
+
+/**
+ * @param {!proto.services.notifications.v1.Icon} value
+ * @return {!proto.services.notifications.v1.MarketingNotificationTriggered} returns this
+ */
+proto.services.notifications.v1.MarketingNotificationTriggered.prototype.setIcon = function(value) {
+  return jspb.Message.setField(this, 7, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.services.notifications.v1.MarketingNotificationTriggered} returns this
+ */
+proto.services.notifications.v1.MarketingNotificationTriggered.prototype.clearIcon = function() {
+  return jspb.Message.setField(this, 7, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.services.notifications.v1.MarketingNotificationTriggered.prototype.hasIcon = function() {
+  return jspb.Message.getField(this, 7) != null;
 };
 
 
@@ -7991,6 +8040,63 @@ proto.services.notifications.v1.DeepLinkAction = {
   SETLNADDRESSMODAL: 0,
   SETDEFAULTACCOUNTMODAL: 1,
   UPGRADEACCOUNTMODAL: 2
+};
+
+/**
+ * @enum {number}
+ */
+proto.services.notifications.v1.Icon = {
+  ARROWRIGHT: 0,
+  ARROWLEFT: 1,
+  BACKSPACE: 2,
+  BANK: 3,
+  BITCOIN: 4,
+  BOOK: 5,
+  BTCBOOK: 6,
+  CARETDOWN: 7,
+  CARETLEFT: 8,
+  CARETRIGHT: 9,
+  CARETUP: 10,
+  CHECKCIRCLE: 11,
+  CHECK: 12,
+  CLOSE: 13,
+  CLOSECROSSWITHBACKGROUND: 14,
+  COINS: 15,
+  PEOPLEICON: 16,
+  COPYPASTE: 17,
+  DOLLAR: 18,
+  EYESLASH: 19,
+  EYE: 20,
+  FILTER: 21,
+  GLOBE: 22,
+  GRAPH: 23,
+  IMAGE: 24,
+  INFO: 25,
+  LIGHTNING: 26,
+  LINK: 27,
+  LOADING: 28,
+  MAGNIFYINGGLASS: 29,
+  MAPICON: 30,
+  MENU: 31,
+  PENCIL: 32,
+  NOTE: 33,
+  RANK: 34,
+  QRCODE: 35,
+  QUESTION: 36,
+  RECEIVEICON: 37,
+  SEND: 38,
+  SETTINGSICON: 39,
+  SHARE: 40,
+  TRANSFER: 41,
+  USER: 42,
+  VIDEO: 43,
+  WARNING: 44,
+  WARNINGWITHBACKGROUND: 45,
+  PAYMENTSUCCESS: 46,
+  PAYMENTPENDING: 47,
+  PAYMENTERROR: 48,
+  BELL: 49,
+  REFRESH: 50
 };
 
 goog.object.extend(exports, proto.services.notifications.v1);

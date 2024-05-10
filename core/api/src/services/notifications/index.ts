@@ -2,6 +2,7 @@ import {
   deepLinkActionToGrpcDeepLinkAction,
   deepLinkScreenToGrpcDeepLinkScreen,
   grpcNotificationSettingsToNotificationSettings,
+  iconToGrpcIcon,
   notificationCategoryToGrpcNotificationCategory,
   notificationChannelToGrpcNotificationChannel,
 } from "./convert"
@@ -600,6 +601,7 @@ export const NotificationsService = (): INotificationsService => {
     shouldSendPush,
     shouldAddToHistory,
     shouldAddToBulletin,
+    icon,
   }: TriggerMarketingNotificationArgs): Promise<true | NotificationsServiceError> => {
     try {
       let deepLink: ProtoDeepLink | undefined = undefined
@@ -620,6 +622,8 @@ export const NotificationsService = (): INotificationsService => {
         if (externalUrl !== undefined) action.setExternalUrl(externalUrl)
       }
 
+      let protoIcon = icon ? iconToGrpcIcon(icon) : undefined
+
       const marketingNotificationRequests: Promise<HandleNotificationEventResponse>[] = []
       for (let i = 0; i < userIds.length; i += MARKETING_NOTIFICATION_USER_BATCH_SIZE) {
         const userIdsBatch = userIds.slice(i, i + MARKETING_NOTIFICATION_USER_BATCH_SIZE)
@@ -633,6 +637,8 @@ export const NotificationsService = (): INotificationsService => {
           marketingNotification.getLocalizedContentMap().set(language, localizedContent)
         })
         if (action !== undefined) marketingNotification.setAction(action)
+        if (protoIcon !== undefined) marketingNotification.setIcon(protoIcon)
+
         marketingNotification.setShouldSendPush(shouldSendPush)
         marketingNotification.setShouldAddToHistory(shouldAddToHistory)
         marketingNotification.setShouldAddToBulletin(shouldAddToBulletin)

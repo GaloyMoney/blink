@@ -910,6 +910,11 @@ export class MarketingNotificationTriggered extends jspb.Message {
     getAction(): Action | undefined;
     setAction(value?: Action): MarketingNotificationTriggered;
 
+    hasIcon(): boolean;
+    clearIcon(): void;
+    getIcon(): Icon | undefined;
+    setIcon(value: Icon): MarketingNotificationTriggered;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): MarketingNotificationTriggered.AsObject;
     static toObject(includeInstance: boolean, msg: MarketingNotificationTriggered): MarketingNotificationTriggered.AsObject;
@@ -929,6 +934,7 @@ export namespace MarketingNotificationTriggered {
         shouldAddToHistory: boolean,
         shouldAddToBulletin: boolean,
         action?: Action.AsObject,
+        icon?: Icon,
     }
 }
 
@@ -1096,4 +1102,58 @@ export enum DeepLinkAction {
     SETLNADDRESSMODAL = 0,
     SETDEFAULTACCOUNTMODAL = 1,
     UPGRADEACCOUNTMODAL = 2,
+}
+
+export enum Icon {
+    ARROWRIGHT = 0,
+    ARROWLEFT = 1,
+    BACKSPACE = 2,
+    BANK = 3,
+    BITCOIN = 4,
+    BOOK = 5,
+    BTCBOOK = 6,
+    CARETDOWN = 7,
+    CARETLEFT = 8,
+    CARETRIGHT = 9,
+    CARETUP = 10,
+    CHECKCIRCLE = 11,
+    CHECK = 12,
+    CLOSE = 13,
+    CLOSECROSSWITHBACKGROUND = 14,
+    COINS = 15,
+    PEOPLEICON = 16,
+    COPYPASTE = 17,
+    DOLLAR = 18,
+    EYESLASH = 19,
+    EYE = 20,
+    FILTER = 21,
+    GLOBE = 22,
+    GRAPH = 23,
+    IMAGE = 24,
+    INFO = 25,
+    LIGHTNING = 26,
+    LINK = 27,
+    LOADING = 28,
+    MAGNIFYINGGLASS = 29,
+    MAPICON = 30,
+    MENU = 31,
+    PENCIL = 32,
+    NOTE = 33,
+    RANK = 34,
+    QRCODE = 35,
+    QUESTION = 36,
+    RECEIVEICON = 37,
+    SEND = 38,
+    SETTINGSICON = 39,
+    SHARE = 40,
+    TRANSFER = 41,
+    USER = 42,
+    VIDEO = 43,
+    WARNING = 44,
+    WARNINGWITHBACKGROUND = 45,
+    PAYMENTSUCCESS = 46,
+    PAYMENTPENDING = 47,
+    PAYMENTERROR = 48,
+    BELL = 49,
+    REFRESH = 50,
 }
