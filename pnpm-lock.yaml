@@ -369,8 +369,8 @@ importers:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
       react-qrcode-logo:
-        specifier: ^2.9.0
-        version: 2.9.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^2.10.0
+        version: 2.10.0(react-dom@18.2.0)(react@18.2.0)
       recharts:
         specifier: ^2.12.6
         version: 2.12.6(react-dom@18.2.0)(react@18.2.0)
@@ -698,8 +698,8 @@ importers:
         specifier: ^1.2.3
         version: 1.2.4(react@18.2.0)
       react-qrcode-logo:
-        specifier: ^2.9.0
-        version: 2.9.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^2.10.0
+        version: 2.10.0(react-dom@18.2.0)(react@18.2.0)
       react-select:
         specifier: ^5.8.0
         version: 5.8.0(@types/react@18.2.31)(react-dom@18.2.0)(react@18.2.0)
@@ -951,8 +951,8 @@ importers:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
       react-qrcode-logo:
-        specifier: ^2.9.0
-        version: 2.9.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^2.10.0
+        version: 2.10.0(react-dom@18.2.0)(react@18.2.0)
       ssr:
         specifier: link:@apollo/experimental-nextjs-app-support/ssr
         version: link:@apollo/experimental-nextjs-app-support/ssr
@@ -30934,8 +30934,8 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /react-qrcode-logo@2.9.0(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-x9uctB/8kuQ+x7p4V/BRv6qbQV4xYopLcitBuQT3925U/zVFb3bbDUsUZsi7hEKuAX/wRsfhs331FhlPSYCO9Q==}
+  /react-qrcode-logo@2.10.0(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-Q1+jLtcyDl5rLR29YdkXVLzYk62p3+541x00HxURVBQhs6SqFyEZZVhvkU/VQ082ytXa3GdCmGWMLK5z0Vhe7g==}
     peerDependencies:
       react: '>=16.4.1'
       react-dom: '>=16.4.1'
