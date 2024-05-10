@@ -5,8 +5,8 @@ import {
   RealtimePriceWsSubscription,
   useRealtimePriceInitialQuery,
   useRealtimePriceWsSubscription,
-} from "../lib/graphql/generated"
-import { useDisplayCurrency } from "../hooks/use-display-currency"
+} from "@/lib/graphql/generated"
+import { useDisplayCurrency } from "@/hooks/use-display-currency"
 
 gql`
   subscription realtimePriceWs($currency: DisplayCurrency!) {

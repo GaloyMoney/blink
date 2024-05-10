@@ -5,21 +5,21 @@ import Image from "next/image"
 
 import CurrencyInput, { formatValue } from "react-currency-input-field"
 
-import { ACTION_TYPE, ACTIONS } from "../../app/reducer"
+import { ACTION_TYPE, ACTIONS } from "@/app/reducer"
 import {
   safeAmount,
   getLocaleConfig,
   extractSearchParams,
   parseDisplayCurrency,
-} from "../../lib/utils"
+} from "@/lib/utils"
 
-import { useDisplayCurrency } from "../../hooks/use-display-currency"
+import { useDisplayCurrency } from "@/hooks/use-display-currency"
 
-import Memo from "../memo"
+import Memo from "@/components/memo"
 
-import DigitButton from "./digit-button"
-import styles from "./parse-payment.module.css"
-import ReceiveInvoice from "./receive-invoice"
+import DigitButton from "@/components/parse-pos-payment/digit-button"
+import styles from "@/components/parse-pos-payment/parse-payment.module.css"
+import ReceiveInvoice from "@/components/parse-pos-payment/receive-invoice"
 
 import { satCurrencyMetadata } from "@/app/sats-currency-metadata"
 import useDynamicFontSize from "@/hooks/use-dynamic-font-size"

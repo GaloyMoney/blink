@@ -2,10 +2,10 @@
 import React from "react"
 import Image from "react-bootstrap/Image"
 
-import { formattedDate, formattedTime } from "../../lib/utils/date-util"
+import GaloyIcon from "@/components/payment-outcome/galoy-icon"
+import styles from "@/components/payment-outcome/payment-outcome.module.css"
 
-import GaloyIcon from "./galoy-icon"
-import styles from "./payment-outcome.module.css"
+import { formattedDate, formattedTime } from "@/lib/utils/date-util"
 
 interface Props {
   amount: string | string[] | undefined

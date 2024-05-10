@@ -8,15 +8,15 @@ import { gql } from "@apollo/client"
 
 import Redis from "ioredis"
 
-import { env } from "../../../../env"
+import { env } from "@/env"
 import {
   AccountDefaultWalletDocument,
   AccountDefaultWalletQuery,
   LnInvoiceCreateOnBehalfOfRecipientDocument,
   LnInvoiceCreateOnBehalfOfRecipientMutation,
-} from "../../../../lib/graphql/generated"
-import { client } from "../graphql"
-import { getOriginalRequestInfo } from "../../../../lib/utils"
+} from "@/lib/graphql/generated"
+import { client } from "@/app/lnurlp/[username]/graphql"
+import { getOriginalRequestInfo } from "@/lib/utils"
 
 gql`
   mutation lnInvoiceCreateOnBehalfOfRecipient(

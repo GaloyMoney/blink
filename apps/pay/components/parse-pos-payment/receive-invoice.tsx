@@ -9,20 +9,20 @@ import Tooltip from "react-bootstrap/Tooltip"
 import { QRCode } from "react-qrcode-logo"
 import { useScreenshot } from "use-react-screenshot"
 
-import { USD_INVOICE_EXPIRE_INTERVAL } from "../../config/config"
-import useCreateInvoice from "../../hooks/use-create-Invoice"
-import { LnInvoiceObject } from "../../lib/graphql/index.types"
-import useSatPrice from "../../hooks/use-sat-price"
-import { ACTION_TYPE } from "../../app/reducer"
-import PaymentOutcome from "../payment-outcome"
-import { Share } from "../share"
+import { USD_INVOICE_EXPIRE_INTERVAL } from "@/config/config"
+import useCreateInvoice from "@/hooks/use-create-Invoice"
+import { LnInvoiceObject } from "@/lib/graphql/index.types"
+import useSatPrice from "@/hooks/use-sat-price"
+import { ACTION_TYPE } from "@/app/reducer"
+import PaymentOutcome from "@/components/payment-outcome"
+import { Share } from "@/components/share"
 
-import { extractSearchParams, safeAmount } from "../../lib/utils"
+import { extractSearchParams, safeAmount } from "@/lib/utils"
 
-import LoadingComponent from "../loading"
+import LoadingComponent from "@/components/loading"
 
-import styles from "./parse-payment.module.css"
-import NFCComponent from "./nfc"
+import styles from "@/components/parse-pos-payment/parse-payment.module.css"
+import NFCComponent from "@/components/parse-pos-payment/nfc"
 
 import useRealtimePrice from "@/hooks/use-realtime-price"
 

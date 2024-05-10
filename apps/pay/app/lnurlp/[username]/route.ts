@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server"
 
-import { env } from "../../../env"
+import { env } from "@/env"
 import {
   AccountDefaultWalletDocument,
   AccountDefaultWalletQuery,
   RealtimePriceInitialDocument,
   RealtimePriceInitialQuery,
-} from "../../../lib/graphql/generated"
+} from "@/lib/graphql/generated"
 
-import { getOriginalRequestInfo } from "../../../lib/utils"
+import { getOriginalRequestInfo } from "@/lib/utils"
 
-import { client } from "./graphql"
+import { client } from "@/app/lnurlp/[username]/graphql"
 
 const COMMENT_SIZE = 2000 // 2000 characters max for GET
 
