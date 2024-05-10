@@ -33,6 +33,7 @@ const NotificationTestSender = ({ notification }: NotificationTestSenderArgs) =>
       userIdsFilter: [userIdRes.userId],
       openDeepLink: notification.openDeepLink,
       openExternalUrl: notification.openExternalUrl,
+      icon: notification.icon,
       shouldSendPush: notification.shouldSendPush,
       shouldAddToBulletin: notification.shouldAddToBulletin,
       shouldAddToHistory: notification.shouldAddToHistory,

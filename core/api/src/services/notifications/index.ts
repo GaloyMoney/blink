@@ -622,7 +622,7 @@ export const NotificationsService = (): INotificationsService => {
         if (externalUrl !== undefined) action.setExternalUrl(externalUrl)
       }
 
-      let protoIcon = icon ? iconToGrpcIcon(icon) : undefined
+      const protoIcon = icon ? iconToGrpcIcon(icon) : undefined
 
       const marketingNotificationRequests: Promise<HandleNotificationEventResponse>[] = []
       for (let i = 0; i < userIds.length; i += MARKETING_NOTIFICATION_USER_BATCH_SIZE) {
