@@ -39,7 +39,7 @@
     "react-currency-input-field": "^3.6.10",
     "react-dom": "^18.2.0",
     "react-lottie": "^1.2.3",
-    "react-qrcode-logo": "^2.9.0",
+    "react-qrcode-logo": "^2.10.0",
     "react-select": "^5.8.0",
     "react-to-print": "^2.14.12",
     "ssr": "link:@apollo/experimental-nextjs-app-support/ssr",
