@@ -1,6 +1,6 @@
 app:
   push_executor:
     fcm:
-      google_application_credentials_path: "./config/notifications/fake_service_account.json"
+      google_application_credentials_path: "../config/notifications/fake_service_account.json"
   jobs:
     enabled: true

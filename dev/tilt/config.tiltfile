@@ -1,0 +1,16 @@
+load('./common.tiltfile', 'buck2_dep_inputs', 'merge_env_file')
+
+config.define_string_list("test")
+config.define_bool("bats")
+cfg = config.parse()
+
+is_ci = ("ci" in sys.argv) or cfg.get("bats", False)
+
+run_apps = not cfg.get("bats", False)
+
+tests_to_run = cfg.get("test", [])
+
+env_json = buck2_dep_inputs("//dev:serve_env")[0]
+core_serve_env_from_json = read_json(env_json)
+local_env_file = ".env.local"
+core_serve_env = merge_env_file(local_env_file, core_serve_env_from_json)

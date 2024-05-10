@@ -103,13 +103,13 @@ sh_binary(
 )
 
 sh_binary(
-  name = "add-test-users-with-usernames",
-  main = "bin/add-test-users-with-usernames.sh",
+  name = "init-test-users-with-usernames",
+  main = "bin/init-test-users-with-usernames.sh",
 )
 
 sh_binary(
-  name = "fund-user",
-  main = "bin/fund-user.sh",
+  name = "init-user-funds",
+  main = "bin/init-user-funds.sh",
 )
 
 sh_binary(

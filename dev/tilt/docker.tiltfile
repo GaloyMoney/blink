@@ -1,0 +1,51 @@
+docker_groups = {
+    "apps": [
+        "voucher-pg",
+    ],
+    "auth": [
+        "api-keys-pg",
+        "oathkeeper",
+        "hydra",
+        "hydra-migrate",
+        "hydra-pg",
+        "kratos",
+        "kratos-pg",
+    ],
+    "core": [
+        "apollo-router",
+        "mongodb",
+        "notifications-pg",
+        "oathkeeper",
+        "redis",
+        "stablesats",
+        "svix-pg",
+        "svix",
+    ],
+    "bitcoin": [
+        "lnd1",
+        "lnd2",
+        "bria",
+        "bria-pg",
+        "bitcoind",
+        "bitcoind-signer",
+        "fulcrum",
+    ],
+    "integration": [
+        "lnd-outside-1",
+        "lnd-outside-2",
+    ],
+    "price": [
+      "price",
+      "price-history",
+      "price-history-migrate",
+      "price-history-pg"
+    ],
+    "tracing": [
+      "otel-agent",
+    ],
+}
+
+docker_compose("../docker-compose.deps.yml", project_name = "galoy-dev")
+for (label, services) in  docker_groups.items():
+    for service in services:
+        dc_resource(service, labels = [label])
