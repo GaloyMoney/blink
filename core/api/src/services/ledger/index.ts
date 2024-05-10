@@ -312,9 +312,12 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<Satoshis | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
-      const { balance } = await MainBook.balance({
-        account: liabilitiesWalletId,
-      })
+      const { balance } = await MainBook.balance(
+        {
+          account: liabilitiesWalletId,
+        },
+        { readPreference: "primaryPreferred" },
+      )
       if (balance < 0) {
         const dealerUsdWalletId = await caching.getDealerUsdWalletId()
         const dealerBtcWalletId = await caching.getDealerBtcWalletId()
@@ -340,9 +343,12 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<BalanceAmount<S> | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletDescriptor.id)
     try {
-      const { balance } = await MainBook.balance({
-        account: liabilitiesWalletId,
-      })
+      const { balance } = await MainBook.balance(
+        {
+          account: liabilitiesWalletId,
+        },
+        { readPreference: "primaryPreferred" },
+      )
       if (balance < 0) {
         const dealerWalletIds = Object.values(await caching.getDealerWalletIds())
 
