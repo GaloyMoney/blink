@@ -78,14 +78,14 @@ impl PersistentNotifications {
         Ok(())
     }
 
-    pub async fn count_unacknowledged_for_user(
+    pub async fn count_unacknowledged_non_bulletins_for_user(
         &self,
         user_id: GaloyUserId,
     ) -> Result<u64, NotificationHistoryError> {
         let count = sqlx::query_scalar!(
             r#"SELECT COUNT(*) AS "count!"
             FROM stateful_notifications
-            WHERE galoy_user_id = $1 AND acknowledged = FALSE"#,
+            WHERE galoy_user_id = $1 AND acknowledged = FALSE AND bulletin_enabled = FALSE"#,
             user_id.as_ref(),
         )
         .fetch_one(self.read_pool.inner())
