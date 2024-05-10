@@ -108,6 +108,17 @@ impl NotificationHistory {
         self.repo.list_for_user(user_id, first, after).await
     }
 
+    pub async fn list_notifications_without_bulletin_enabled_for_user(
+        &self,
+        user_id: GaloyUserId,
+        first: usize,
+        after: Option<StatefulNotificationId>,
+    ) -> Result<(Vec<StatefulNotification>, bool), NotificationHistoryError> {
+        self.repo
+            .list_for_user_without_bulletin_enabled(user_id, first, after)
+            .await
+    }
+
     pub async fn count_unacknowledged_notifications_without_bulletin_enabled_for_user(
         &self,
         user_id: GaloyUserId,

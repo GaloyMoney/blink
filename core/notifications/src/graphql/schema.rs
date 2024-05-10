@@ -72,6 +72,48 @@ impl User {
         .await
     }
 
+    async fn stateful_notifications_without_bulletin_enabled(
+        &self,
+        ctx: &Context<'_>,
+        first: i32,
+        after: Option<String>,
+    ) -> async_graphql::Result<
+        Connection<
+            StatefulNotificationsByCreatedAtCursor,
+            StatefulNotification,
+            EmptyFields,
+            EmptyFields,
+        >,
+    > {
+        let app = ctx.data_unchecked::<NotificationsApp>();
+        let user_id = GaloyUserId::from(self.id.0.clone());
+        query(
+            after,
+            None,
+            Some(first),
+            None,
+            |after, _, first, _| async move {
+                let first = first.expect("First always exists");
+                let (notifications, has_next) = app
+                    .list_stateful_notifications(
+                        user_id,
+                        first,
+                        after.map(|after: StatefulNotificationsByCreatedAtCursor| after.id),
+                    )
+                    .await?;
+                let mut connection = Connection::new(false, has_next);
+                connection
+                    .edges
+                    .extend(notifications.into_iter().map(|notification| {
+                        let cursor = StatefulNotificationsByCreatedAtCursor::from(notification.id);
+                        Edge::new(cursor, StatefulNotification::from(notification))
+                    }));
+                Ok::<_, async_graphql::Error>(connection)
+            },
+        )
+        .await
+    }
+
     async fn unacknowledged_stateful_notifications_without_bulletin_enabled_count(
         &self,
         ctx: &Context<'_>,

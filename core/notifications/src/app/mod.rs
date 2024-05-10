@@ -295,6 +295,24 @@ impl NotificationsApp {
     }
 
     #[instrument(
+        name = "app.list_stateful_notifications_without_bulletin_enabled",
+        skip(self),
+        err
+    )]
+    pub async fn list_stateful_notifications_without_bulletin_enabled(
+        &self,
+        user_id: GaloyUserId,
+        first: usize,
+        after: Option<StatefulNotificationId>,
+    ) -> Result<(Vec<StatefulNotification>, bool), ApplicationError> {
+        let ret = self
+            .history
+            .list_notifications_without_bulletin_enabled_for_user(user_id, first, after)
+            .await?;
+        Ok(ret)
+    }
+
+    #[instrument(
         name = "app.list_unacknowledged_stateful_notifications_with_bulletin_enabled",
         skip(self),
         err
