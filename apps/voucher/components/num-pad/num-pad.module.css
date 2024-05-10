@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 90%;
+  width: 98%;
 }
 
 .display {
@@ -14,8 +14,7 @@
 
 .grid {
   display: grid;
-  font-weight: 700;
-
+  font-weight: 500;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   width: 100%;
@@ -23,7 +22,7 @@
 
 .button {
   padding: 1rem;
-  font-size: 1.5rem;
+  font-size: 2rem;
   border-radius: 2em;
 }
 
@@ -34,7 +33,7 @@
 
 .clearAll {
   border-width: 0.124em;
-  border-color: var(--orange);;
+  border-color: var(--orange);
   width: 10rem;
   text-align: center;
   padding: 0.5em;
@@ -46,5 +45,11 @@
   align-items: center;
   background: var(--gradient-orange);
   color: rgb(255, 255, 255);
-  gap:0.15em
+  gap: 0.15em;
+}
+
+@media (max-height: 690px) {
+  .button {
+    font-size: 1.5rem;
+  }
 }

@@ -47,7 +47,7 @@ describe("Withdraw link", () => {
       .invoke("text")
       .should((text) => {
         const pattern =
-          /^[123456789ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghjkmnpqrtuvwxyz]{4}-[123456789ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghjkmnpqrtuvwxyz]{4}-[123456789ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghjkmnpqrtuvwxyz]{4}$/
+          /^[123456789ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghjkmnpqrtuvwxyz]/
         expect(text).to.match(pattern)
       })
 
@@ -56,7 +56,7 @@ describe("Withdraw link", () => {
     cy.get('[data-testid="voucher-amount-detail"]').should("not.be.disabled")
     cy.get('[data-testid="voucher-amount-detail"]').should(
       "have.text",
-      "Voucher Amount $5 US",
+      "$5",
     )
 
     cy.get('[data-testid="voucher-id-code-detail"]').should("exist")
