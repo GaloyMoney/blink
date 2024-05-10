@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 // ***********************************************
 // This example commands.ts shows you how to
 // create various custom commands and overwrite
@@ -36,16 +37,22 @@
 //   }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
-
-// eslint-disable-next-line @typescript-eslint/no-namespace
 declare namespace Cypress {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Chainable<Subject> {
     flushRedis(): Chainable<void>
     loginAndGetToken(phone: string, code: string): Chainable<string>
-    graphqlOperation(query: string, variables?: Record<string, unknown>, token: string)
-    fetchMe(token: string)
-    sendInvoicePayment(paymentRequest: string, walletId: string, token: string)
+    graphqlOperation(
+      query: string,
+      token: string,
+      variables?: Record<string, unknown>,
+    ): Chainable<Response<any>>
+    fetchMe(token: string): Chainable<Response<any>>
+    sendInvoicePayment(
+      paymentRequest: string,
+      walletId: string,
+      token: string,
+    ): Chainable<Response<any>>
   }
 }
 
@@ -75,7 +82,7 @@ Cypress.Commands.add("loginAndGetToken", (phone, code) => {
   })
 })
 
-Cypress.Commands.add("graphqlOperation", (query, variables = {}, token) => {
+Cypress.Commands.add("graphqlOperation", (query, token, variables = {}) => {
   return cy.request({
     method: "POST",
     url: "http://localhost:4455/graphql",
@@ -103,7 +110,7 @@ Cypress.Commands.add("fetchMe", (token) => {
       }
     }
   `
-  return cy.graphqlOperation(query, {}, token)
+  return cy.graphqlOperation(query, token, {})
 })
 
 Cypress.Commands.add("sendInvoicePayment", (paymentRequest, walletId, token) => {
@@ -125,5 +132,5 @@ Cypress.Commands.add("sendInvoicePayment", (paymentRequest, walletId, token) => 
       walletId,
     },
   }
-  return cy.graphqlOperation(mutation, variables, token)
+  return cy.graphqlOperation(mutation, token, variables)
 })
