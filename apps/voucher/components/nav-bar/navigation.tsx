@@ -26,7 +26,6 @@ import {
 
 import { Separator } from "@/components/separator"
 
-import { useDisplayCurrency } from "@/hooks/useDisplayCurrency"
 import { useCurrency } from "@/context/currency-context"
 
 const Navigation: React.FC = () => {
@@ -121,8 +120,7 @@ const NavMenu = ({ username }: { username: string }) => {
 }
 
 export const CurrencySwitcher = () => {
-  const currencies = useDisplayCurrency()
-  const { currency: selectedCurrency, changeCurrency } = useCurrency()
+  const { currency: selectedCurrency, changeCurrency, currencyList } = useCurrency()
 
   return (
     <div className="w-11/12 m-auto">
@@ -132,7 +130,7 @@ export const CurrencySwitcher = () => {
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            {currencies.currencyList.map((currency) => (
+            {currencyList.map((currency) => (
               <SelectItem key={currency.id} value={currency.id}>
                 {currency.name} ({currency.id})
               </SelectItem>
