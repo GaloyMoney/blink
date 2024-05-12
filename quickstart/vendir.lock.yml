@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump next from 14.1.0 to 14.1.1 in /apps/map (#4447)...'
-      sha: dda0cf14bb1901c91c3d94a2042400871d0a7fcc
+      commitTitle: 'chore(deps): bump postcss from 8.4.23 to 8.4.31 (#4456)...'
+      sha: 3cd8bcb52cac96292a00e812cfeae7802b6f4225
       tags:
-      - 0.20.190-2-gdda0cf14b
+      - 0.20.191-7-g3cd8bcb52
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump next from 14.1.0 to 14.1.1 in /apps/map (#4447)...'
-      sha: dda0cf14bb1901c91c3d94a2042400871d0a7fcc
+      commitTitle: 'chore(deps): bump postcss from 8.4.23 to 8.4.31 (#4456)...'
+      sha: 3cd8bcb52cac96292a00e812cfeae7802b6f4225
       tags:
-      - 0.20.190-2-gdda0cf14b
+      - 0.20.191-7-g3cd8bcb52
     path: schemas
   - git:
-      commitTitle: 'chore(deps): bump next from 14.1.0 to 14.1.1 in /apps/map (#4447)...'
-      sha: dda0cf14bb1901c91c3d94a2042400871d0a7fcc
+      commitTitle: 'chore(deps): bump postcss from 8.4.23 to 8.4.31 (#4456)...'
+      sha: 3cd8bcb52cac96292a00e812cfeae7802b6f4225
       tags:
-      - 0.20.190-2-gdda0cf14b
+      - 0.20.191-7-g3cd8bcb52
     path: gql
   path: graphql
 kind: LockConfig
