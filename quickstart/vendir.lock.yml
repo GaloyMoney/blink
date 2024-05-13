@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump postcss from 8.4.23 to 8.4.31 (#4456)...'
-      sha: 3cd8bcb52cac96292a00e812cfeae7802b6f4225
+      commitTitle: 'chore(deps-dev): bump @storybook/addon-interactions from 8.0.9
+        to 8.0.10 (#4462)...'
+      sha: f487aff2948471f9c6e394cbd0bc79f0673ab1b0
       tags:
-      - 0.20.191-7-g3cd8bcb52
+      - 0.20.192-3-gf487aff29
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump postcss from 8.4.23 to 8.4.31 (#4456)...'
-      sha: 3cd8bcb52cac96292a00e812cfeae7802b6f4225
+      commitTitle: 'chore(deps-dev): bump @storybook/addon-interactions from 8.0.9
+        to 8.0.10 (#4462)...'
+      sha: f487aff2948471f9c6e394cbd0bc79f0673ab1b0
       tags:
-      - 0.20.191-7-g3cd8bcb52
+      - 0.20.192-3-gf487aff29
     path: schemas
   - git:
-      commitTitle: 'chore(deps): bump postcss from 8.4.23 to 8.4.31 (#4456)...'
-      sha: 3cd8bcb52cac96292a00e812cfeae7802b6f4225
+      commitTitle: 'chore(deps-dev): bump @storybook/addon-interactions from 8.0.9
+        to 8.0.10 (#4462)...'
+      sha: f487aff2948471f9c6e394cbd0bc79f0673ab1b0
       tags:
-      - 0.20.191-7-g3cd8bcb52
+      - 0.20.192-3-gf487aff29
     path: gql
   path: graphql
 kind: LockConfig
