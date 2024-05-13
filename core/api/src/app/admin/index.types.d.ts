@@ -15,6 +15,7 @@ type AdminTriggerMarketingNotificationArgs = {
   shouldSendPush: boolean
   shouldAddToHistory: boolean
   shouldAddToBulletin: boolean
+  icon?: Icon
   localizedNotificationContents: {
     title: string
     body: string

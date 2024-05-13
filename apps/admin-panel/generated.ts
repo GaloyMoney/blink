@@ -351,6 +351,7 @@ export type LocalizedNotificationContentInput = {
 };
 
 export type MarketingNotificationTriggerInput = {
+  readonly icon?: InputMaybe<NotificationIcon>;
   readonly localizedNotificationContents: ReadonlyArray<LocalizedNotificationContentInput>;
   readonly openDeepLink?: InputMaybe<OpenDeepLinkInput>;
   readonly openExternalUrl?: InputMaybe<OpenExternalUrlInput>;
@@ -428,6 +429,61 @@ export type MutationUserUpdatePhoneArgs = {
   input: UserUpdatePhoneInput;
 };
 
+export const NotificationIcon = {
+  ArrowLeft: 'ARROW_LEFT',
+  ArrowRight: 'ARROW_RIGHT',
+  Backspace: 'BACKSPACE',
+  Bank: 'BANK',
+  Bell: 'BELL',
+  Bitcoin: 'BITCOIN',
+  Book: 'BOOK',
+  BtcBook: 'BTC_BOOK',
+  CaretDown: 'CARET_DOWN',
+  CaretLeft: 'CARET_LEFT',
+  CaretRight: 'CARET_RIGHT',
+  CaretUp: 'CARET_UP',
+  Check: 'CHECK',
+  CheckCircle: 'CHECK_CIRCLE',
+  Close: 'CLOSE',
+  CloseCrossWithBackground: 'CLOSE_CROSS_WITH_BACKGROUND',
+  Coins: 'COINS',
+  CopyPaste: 'COPY_PASTE',
+  Dollar: 'DOLLAR',
+  Eye: 'EYE',
+  EyeSlash: 'EYE_SLASH',
+  Filter: 'FILTER',
+  Globe: 'GLOBE',
+  Graph: 'GRAPH',
+  Image: 'IMAGE',
+  Info: 'INFO',
+  Lightning: 'LIGHTNING',
+  Link: 'LINK',
+  Loading: 'LOADING',
+  MagnifyingGlass: 'MAGNIFYING_GLASS',
+  Map: 'MAP',
+  Menu: 'MENU',
+  Note: 'NOTE',
+  PaymentError: 'PAYMENT_ERROR',
+  PaymentPending: 'PAYMENT_PENDING',
+  PaymentSuccess: 'PAYMENT_SUCCESS',
+  Pencil: 'PENCIL',
+  People: 'PEOPLE',
+  QrCode: 'QR_CODE',
+  Question: 'QUESTION',
+  Rank: 'RANK',
+  Receive: 'RECEIVE',
+  Refresh: 'REFRESH',
+  Send: 'SEND',
+  Settings: 'SETTINGS',
+  Share: 'SHARE',
+  Transfer: 'TRANSFER',
+  User: 'USER',
+  Video: 'VIDEO',
+  Warning: 'WARNING',
+  WarningWithBackground: 'WARNING_WITH_BACKGROUND'
+} as const;
+
+export type NotificationIcon = typeof NotificationIcon[keyof typeof NotificationIcon];
 export type OpenDeepLinkInput = {
   readonly action?: InputMaybe<DeepLinkAction>;
   readonly screen?: InputMaybe<DeepLinkScreen>;

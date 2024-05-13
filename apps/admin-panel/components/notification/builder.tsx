@@ -2,7 +2,7 @@
 
 import { ChangeEvent, useState } from "react"
 
-import { DeepLinkScreen, DeepLinkAction } from "../../generated"
+import { DeepLinkScreen, DeepLinkAction, NotificationIcon } from "../../generated"
 
 import { LanguageCodes } from "./languages"
 import { NotificationAction } from "./types"
@@ -17,6 +17,7 @@ export type NotificationContent = {
   openExternalUrl?: {
     url: string
   }
+  icon?: NotificationIcon | undefined
   shouldSendPush: boolean
   shouldAddToHistory: boolean
   shouldAddToBulletin: boolean
@@ -77,12 +78,19 @@ const NotificationBuilder = ({
     })
   }
 
+  const onSetIcon = (e: ChangeEvent<HTMLSelectElement>) => {
+    setNotification({
+      ...notification,
+      icon: e.target.value ? (e.target.value as NotificationIcon) : undefined,
+    })
+  }
+
   const onSetDeepLinkScreen = (e: ChangeEvent<HTMLSelectElement>) => {
     setNotification({
       ...notification,
       openDeepLink: {
         ...notification.openDeepLink,
-        screen: e.target.value as DeepLinkScreen,
+        screen: e.target.value ? (e.target.value as DeepLinkScreen) : undefined,
       },
     })
   }
@@ -92,7 +100,7 @@ const NotificationBuilder = ({
       ...notification,
       openDeepLink: {
         ...notification.openDeepLink,
-        action: e.target.value as DeepLinkAction,
+        action: e.target.value ? (e.target.value as DeepLinkAction) : undefined,
       },
     })
   }
@@ -133,6 +141,24 @@ const NotificationBuilder = ({
       <h2>Notification Content</h2>
       <form className="space-y-4">
         <div className="space-y-4">
+          <div>
+            <label htmlFor="icon">Notification Icon</label>
+            <select
+              className="border border-2 rounded block p-1 w-full"
+              id="icon"
+              value={notification.icon}
+              onChange={onSetIcon}
+            >
+              <option value="">None</option>
+              {Object.values(NotificationIcon).map((icon) => {
+                return (
+                  <option key={icon} value={icon}>
+                    {icon}
+                  </option>
+                )
+              })}
+            </select>
+          </div>
           <div>
             <label htmlFor="action">Action</label>
             <select

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use super::{Action, NotificationEvent};
+use super::{Action, Icon, NotificationEvent};
 use crate::{messages::*, primitives::*};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -14,6 +14,8 @@ pub struct MarketingNotificationTriggered {
     pub should_add_to_bulletin: bool,
     #[serde(default)]
     pub action: Option<Action>,
+    #[serde(default)]
+    pub icon: Option<Icon>,
 }
 
 impl NotificationEvent for MarketingNotificationTriggered {
@@ -51,5 +53,9 @@ impl NotificationEvent for MarketingNotificationTriggered {
             .get(&locale)
             .unwrap_or(&self.default_content)
             .clone()
+    }
+
+    fn icon(&self) -> Option<Icon> {
+        self.icon.clone()
     }
 }

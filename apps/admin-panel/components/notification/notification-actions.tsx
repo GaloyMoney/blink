@@ -14,6 +14,7 @@ import {
   MarketingNotificationTriggerDocument,
   MarketingNotificationTriggerMutation,
   MarketingNotificationTriggerMutationVariables,
+  NotificationIcon,
 } from "../../generated"
 
 export type GetFilteredUserCountArgs = {
@@ -52,6 +53,7 @@ export type TriggerMarketingNotificationArgs = {
         url: string
       }
     | undefined
+  icon?: NotificationIcon | undefined
   shouldSendPush: boolean
   shouldAddToHistory: boolean
   shouldAddToBulletin: boolean
@@ -68,6 +70,7 @@ export const triggerMarketingNotification = async ({
   shouldSendPush,
   shouldAddToBulletin,
   shouldAddToHistory,
+  icon,
   localizedNotificationContents,
   phoneCountryCodesFilter,
   userIdsFilter,
@@ -83,6 +86,7 @@ export const triggerMarketingNotification = async ({
         openExternalUrl,
         shouldSendPush,
         shouldAddToBulletin,
+        icon,
         shouldAddToHistory,
         localizedNotificationContents,
         phoneCountryCodesFilter,

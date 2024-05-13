@@ -67,6 +67,8 @@ type DeepLinkScreen =
 type DeepLinkAction =
   (typeof import("./index").DeepLinkAction)[keyof typeof import("./index").DeepLinkAction]
 
+type Icon = (typeof import("./index").Icon)[keyof typeof import("./index").Icon]
+
 type LocalizedNotificationTitle = string & { readonly brand: unique symbol }
 
 type LocalizedNotificationBody = string & { readonly brand: unique symbol }
@@ -151,5 +153,6 @@ type TriggerMarketingNotificationArgs = {
   shouldSendPush: boolean
   shouldAddToHistory: boolean
   shouldAddToBulletin: boolean
+  icon?: Icon
   localizedContents: Map<UserLanguage, LocalizedNotificationContent>
 }

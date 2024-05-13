@@ -9,6 +9,7 @@ export const triggerMarketingNotification = async ({
   openDeepLink,
   openExternalUrl,
   shouldSendPush,
+  icon,
   shouldAddToHistory,
   shouldAddToBulletin,
   localizedNotificationContents,
@@ -51,6 +52,7 @@ export const triggerMarketingNotification = async ({
     shouldSendPush,
     shouldAddToHistory,
     shouldAddToBulletin,
+    icon,
     localizedContents: localizedNotificationContentsMap,
   })
 }

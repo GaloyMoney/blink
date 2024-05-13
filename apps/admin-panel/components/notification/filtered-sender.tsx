@@ -66,6 +66,7 @@ const NotificationFilteredSender = ({ notification }: NotificationFilteredSender
     const res = await triggerMarketingNotification({
       openDeepLink: notification.openDeepLink,
       openExternalUrl: notification.openExternalUrl,
+      icon: notification.icon,
       shouldSendPush: notification.shouldSendPush,
       shouldAddToHistory: notification.shouldAddToHistory,
       shouldAddToBulletin: notification.shouldAddToBulletin,

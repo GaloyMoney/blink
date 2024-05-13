@@ -286,3 +286,63 @@ impl TryFrom<proto::Action> for notification_event::Action {
         }
     }
 }
+
+impl From<proto::Icon> for notification_event::Icon {
+    fn from(icon: proto::Icon) -> Self {
+        match icon {
+            proto::Icon::ArrowRight => notification_event::Icon::ArrowRight,
+            proto::Icon::ArrowLeft => notification_event::Icon::ArrowLeft,
+            proto::Icon::BackSpace => notification_event::Icon::BackSpace,
+            proto::Icon::Bank => notification_event::Icon::Bank,
+            proto::Icon::Bitcoin => notification_event::Icon::Bitcoin,
+            proto::Icon::Book => notification_event::Icon::Book,
+            proto::Icon::BtcBook => notification_event::Icon::BtcBook,
+            proto::Icon::CaretDown => notification_event::Icon::CaretDown,
+            proto::Icon::CaretLeft => notification_event::Icon::CaretLeft,
+            proto::Icon::CaretRight => notification_event::Icon::CaretRight,
+            proto::Icon::CaretUp => notification_event::Icon::CaretUp,
+            proto::Icon::CheckCircle => notification_event::Icon::CheckCircle,
+            proto::Icon::Check => notification_event::Icon::Check,
+            proto::Icon::Close => notification_event::Icon::Close,
+            proto::Icon::CloseCrossWithBackground => {
+                notification_event::Icon::CloseCrossWithBackground
+            }
+            proto::Icon::Coins => notification_event::Icon::Coins,
+            proto::Icon::PeopleIcon => notification_event::Icon::People,
+            proto::Icon::CopyPaste => notification_event::Icon::CopyPaste,
+            proto::Icon::Dollar => notification_event::Icon::Dollar,
+            proto::Icon::EyeSlash => notification_event::Icon::EyeSlash,
+            proto::Icon::Eye => notification_event::Icon::Eye,
+            proto::Icon::Filter => notification_event::Icon::Filter,
+            proto::Icon::Globe => notification_event::Icon::Globe,
+            proto::Icon::Graph => notification_event::Icon::Graph,
+            proto::Icon::Image => notification_event::Icon::Image,
+            proto::Icon::Info => notification_event::Icon::Info,
+            proto::Icon::Lightning => notification_event::Icon::Lightning,
+            proto::Icon::Link => notification_event::Icon::Link,
+            proto::Icon::Loading => notification_event::Icon::Loading,
+            proto::Icon::MagnifyingGlass => notification_event::Icon::MagnifyingGlass,
+            proto::Icon::MapIcon => notification_event::Icon::Map,
+            proto::Icon::Menu => notification_event::Icon::Menu,
+            proto::Icon::Pencil => notification_event::Icon::Pencil,
+            proto::Icon::Note => notification_event::Icon::Note,
+            proto::Icon::Rank => notification_event::Icon::Rank,
+            proto::Icon::QrCode => notification_event::Icon::QrCode,
+            proto::Icon::Question => notification_event::Icon::Question,
+            proto::Icon::ReceiveIcon => notification_event::Icon::Receive,
+            proto::Icon::Send => notification_event::Icon::Send,
+            proto::Icon::SettingsIcon => notification_event::Icon::Settings,
+            proto::Icon::Share => notification_event::Icon::Share,
+            proto::Icon::Transfer => notification_event::Icon::Transfer,
+            proto::Icon::User => notification_event::Icon::User,
+            proto::Icon::Video => notification_event::Icon::Video,
+            proto::Icon::Warning => notification_event::Icon::Warning,
+            proto::Icon::WarningWithBackground => notification_event::Icon::WarningWithBackground,
+            proto::Icon::PaymentSuccess => notification_event::Icon::PaymentSuccess,
+            proto::Icon::PaymentPending => notification_event::Icon::PaymentPending,
+            proto::Icon::PaymentError => notification_event::Icon::PaymentError,
+            proto::Icon::Bell => notification_event::Icon::Bell,
+            proto::Icon::Refresh => notification_event::Icon::Refresh,
+        }
+    }
+}

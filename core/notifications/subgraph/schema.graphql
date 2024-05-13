@@ -1,3 +1,58 @@
+enum Icon {
+	ARROW_RIGHT
+	ARROW_LEFT
+	BACK_SPACE
+	BANK
+	BITCOIN
+	BOOK
+	BTC_BOOK
+	CARET_DOWN
+	CARET_LEFT
+	CARET_RIGHT
+	CARET_UP
+	CHECK_CIRCLE
+	CHECK
+	CLOSE
+	CLOSE_CROSS_WITH_BACKGROUND
+	COINS
+	PEOPLE
+	COPY_PASTE
+	DOLLAR
+	EYE_SLASH
+	EYE
+	FILTER
+	GLOBE
+	GRAPH
+	IMAGE
+	INFO
+	LIGHTNING
+	LINK
+	LOADING
+	MAGNIFYING_GLASS
+	MAP
+	MENU
+	PENCIL
+	NOTE
+	RANK
+	QR_CODE
+	QUESTION
+	RECEIVE
+	SEND
+	SETTINGS
+	SHARE
+	TRANSFER
+	USER
+	VIDEO
+	WARNING
+	WARNING_WITH_BACKGROUND
+	PAYMENT_SUCCESS
+	PAYMENT_PENDING
+	PAYMENT_ERROR
+	BELL
+	REFRESH
+}
+
+
 type Mutation {
 	statefulNotificationAcknowledge(input: StatefulNotificationAcknowledgeInput!): StatefulNotificationAcknowledgePayload!
 }
@@ -44,6 +99,7 @@ type StatefulNotification {
 	createdAt: Timestamp!
 	acknowledgedAt: Timestamp
 	bulletinEnabled: Boolean!
+	icon: Icon
 }
 
 input StatefulNotificationAcknowledgeInput {
