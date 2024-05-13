@@ -10,9 +10,18 @@ import { CurrencyProvider } from "@/context/currency-context"
 
 const inter = Inter_Tight({ subsets: ["latin"], display: "auto" })
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const coreGqlUrl = env.CORE_URL
-  const voucherUrl = env.VOUCHER_URL
+const getRuntimeEnv = async () => {
+  "use server"
+  return {
+    CORE_URL: env.CORE_URL,
+    VOUCHER_URL: env.VOUCHER_URL,
+  }
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const envVariables = await getRuntimeEnv()
+  const coreGqlUrl = envVariables.CORE_URL
+  const voucherUrl = envVariables.VOUCHER_URL
 
   return (
     <SessionProvider>
