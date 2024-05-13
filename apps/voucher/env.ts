@@ -14,14 +14,14 @@ export const env = createEnv({
     HYDRA_PUBLIC: z.string().default("http://localhost:4444"),
     NEXTAUTH_URL: z.string().default("http://localhost:3006"),
     NEXTAUTH_SECRET: z.string().default("secret"),
-  },
-  shared: {
-    NEXT_PUBLIC_CORE_URL: z.string().default("http://localhost:4455/graphql"),
-    NEXT_PUBLIC_VOUCHER_URL: z.string().default("http://localhost:3006"),
+
+    // PUBLIC URLs
+    CORE_URL: z.string().default("http://localhost:4455/graphql"),
+    VOUCHER_URL: z.string().default("http://localhost:3006"),
   },
   runtimeEnv: {
-    NEXT_PUBLIC_CORE_URL: process.env.NEXT_PUBLIC_CORE_URL,
-    NEXT_PUBLIC_VOUCHER_URL: process.env.NEXT_PUBLIC_VOUCHER_URL,
+    CORE_URL: process.env.CORE_URL,
+    VOUCHER_URL: process.env.VOUCHER_URL,
 
     ESCROW_API_KEY: process.env.ESCROW_API_KEY,
     PG_CON: process.env.PG_CON,

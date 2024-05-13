@@ -10,7 +10,7 @@ export const escrowApolloClient = () => {
         "X-API-KEY": `${env.ESCROW_API_KEY}`,
         "x-requested-with": "XMLHttpRequest",
       },
-      uri: env.NEXT_PUBLIC_CORE_URL,
+      uri: env.CORE_URL,
       fetchOptions: { cache: "no-store" },
       fetch: (uri, options) => {
         const headersWithTrace = options?.headers || {}
