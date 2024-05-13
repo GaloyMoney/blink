@@ -242,6 +242,7 @@ message MarketingNotificationTriggered {
   bool should_add_to_history = 4;
   bool should_add_to_bulletin = 5;
   optional Action action = 6;
+  optional Icon icon = 7;
 }
 
 message LocalizedContent {
@@ -289,4 +290,58 @@ enum DeepLinkAction {
   SetLnAddressModal = 0;
   SetDefaultAccountModal = 1;
   UpgradeAccountModal = 2;
+}
+
+enum Icon {
+  ArrowRight = 0;
+  ArrowLeft = 1;
+  BackSpace = 2;
+  Bank = 3;
+  Bitcoin = 4;
+  Book = 5;
+  BtcBook = 6;
+  CaretDown = 7;
+  CaretLeft = 8;
+  CaretRight = 9;
+  CaretUp = 10;
+  CheckCircle = 11;
+  Check = 12;
+  Close = 13;
+  CloseCrossWithBackground = 14;
+  Coins = 15;
+  PeopleIcon = 16;
+  CopyPaste = 17;
+  Dollar = 18;
+  EyeSlash = 19;
+  Eye = 20;
+  Filter = 21;
+  Globe = 22;
+  Graph = 23;
+  Image = 24;
+  Info = 25;
+  Lightning = 26;
+  Link = 27;
+  Loading = 28;
+  MagnifyingGlass = 29;
+  MapIcon = 30;
+  Menu = 31;
+  Pencil = 32;
+  Note = 33;
+  Rank = 34;
+  QrCode = 35;
+  Question = 36;
+  ReceiveIcon = 37;
+  Send = 38;
+  SettingsIcon = 39;
+  Share = 40;
+  Transfer = 41;
+  User = 42;
+  Video = 43;
+  Warning = 44;
+  WarningWithBackground = 45;
+  PaymentSuccess = 46;
+  PaymentPending = 47;
+  PaymentError = 48;
+  Bell = 49;
+  Refresh = 50;
 }
