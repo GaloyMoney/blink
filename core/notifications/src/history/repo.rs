@@ -155,15 +155,18 @@ impl PersistentNotifications {
         let rows = sqlx::query_as!(
             GenericEvent,
             r#"WITH anchor AS (
-                 SELECT created_at FROM stateful_notifications WHERE id = $2 LIMIT 1
+                 SELECT created_at FROM stateful_notifications
+                 WHERE id = $2 AND bulletin_enabled IS FALSE
+                 LIMIT 1
                )
             SELECT a.id, e.sequence, e.event,
                       a.created_at AS entity_created_at, e.recorded_at AS event_recorded_at
             FROM stateful_notifications a
             JOIN stateful_notification_events e ON a.id = e.id
-            WHERE a.galoy_user_id = $1 AND a.bulletin_enabled = FALSE AND (
+            WHERE a.galoy_user_id = $1 AND (
                     $2 IS NOT NULL AND a.created_at < (SELECT created_at FROM anchor)
                     OR $2 IS NULL)
+                    AND bulletin_enabled IS FALSE
             ORDER BY a.created_at DESC, a.id, e.sequence
             LIMIT $3"#,
             user_id.as_ref(),

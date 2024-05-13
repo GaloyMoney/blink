@@ -13,6 +13,7 @@ query listStatefulNotifications($first: Int = 2, $after: String = null) {
         deepLink
         acknowledgedAt
         createdAt
+        bulletinEnabled
       }
     }
   }

@@ -95,7 +95,7 @@ impl User {
             |after, _, first, _| async move {
                 let first = first.expect("First always exists");
                 let (notifications, has_next) = app
-                    .list_stateful_notifications(
+                    .list_stateful_notifications_without_bulletin_enabled(
                         user_id,
                         first,
                         after.map(|after: StatefulNotificationsByCreatedAtCursor| after.id),
