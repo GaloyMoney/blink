@@ -97,8 +97,8 @@ setup_file() {
 }
 
 @test "notifications: unacknowledged stateful notifications count" {
-  exec_graphql 'alice' 'unacknowledged-stateful-notifications-count'
-  count=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsCount')
+  exec_graphql 'alice' 'unacknowledged-stateful-notifications-without-bulletin-enabled-count'
+  count=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsWithoutBulletinEnabledCount')
   [[ $count -eq 1 ]] || exit 1
 
   exec_graphql 'alice' 'list-stateful-notifications' '{"first": 2}'
@@ -113,8 +113,8 @@ setup_file() {
   )
   exec_graphql 'alice' 'acknowledge-notification' "$variables"
 
-  exec_graphql 'alice' 'unacknowledged-stateful-notifications-count'
-  count=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsCount')
+  exec_graphql 'alice' 'unacknowledged-stateful-notifications-without-bulletin-enabled-count'
+  count=$(graphql_output '.data.me.unacknowledgedStatefulNotificationsWithoutBulletinEnabledCount')
   [[ $count -eq 0 ]] || exit 1
 
 }

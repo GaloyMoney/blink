@@ -2036,11 +2036,12 @@ export type User = {
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']['output']>;
   readonly statefulNotifications: StatefulNotificationConnection;
+  readonly statefulNotificationsWithoutBulletinEnabled: StatefulNotificationConnection;
   readonly supportChat: ReadonlyArray<SupportMessage>;
   /** Whether TOTP is enabled for this user. */
   readonly totpEnabled: Scalars['Boolean']['output'];
-  readonly unacknowledgedStatefulNotificationsCount: Scalars['Int']['output'];
   readonly unacknowledgedStatefulNotificationsWithBulletinEnabled: StatefulNotificationConnection;
+  readonly unacknowledgedStatefulNotificationsWithoutBulletinEnabledCount: Scalars['Int']['output'];
   /**
    * Optional immutable user friendly identifier.
    * @deprecated will be moved to @Handle in Account and Wallet
@@ -2055,6 +2056,12 @@ export type UserContactByUsernameArgs = {
 
 
 export type UserStatefulNotificationsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  first: Scalars['Int']['input'];
+};
+
+
+export type UserStatefulNotificationsWithoutBulletinEnabledArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   first: Scalars['Int']['input'];
 };
@@ -4868,10 +4875,11 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   language?: Resolver<ResolversTypes['Language'], ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['Phone']>, ParentType, ContextType>;
   statefulNotifications?: Resolver<ResolversTypes['StatefulNotificationConnection'], ParentType, ContextType, RequireFields<UserStatefulNotificationsArgs, 'first'>>;
+  statefulNotificationsWithoutBulletinEnabled?: Resolver<ResolversTypes['StatefulNotificationConnection'], ParentType, ContextType, RequireFields<UserStatefulNotificationsWithoutBulletinEnabledArgs, 'first'>>;
   supportChat?: Resolver<ReadonlyArray<ResolversTypes['SupportMessage']>, ParentType, ContextType>;
   totpEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  unacknowledgedStatefulNotificationsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   unacknowledgedStatefulNotificationsWithBulletinEnabled?: Resolver<ResolversTypes['StatefulNotificationConnection'], ParentType, ContextType, RequireFields<UserUnacknowledgedStatefulNotificationsWithBulletinEnabledArgs, 'first'>>;
+  unacknowledgedStatefulNotificationsWithoutBulletinEnabledCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   username?: Resolver<Maybe<ResolversTypes['Username']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

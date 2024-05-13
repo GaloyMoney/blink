@@ -2081,7 +2081,8 @@ type User
   id: ID!
   apiKeys: [ApiKey!]! @join__field(graph: API_KEYS)
   statefulNotifications(first: Int!, after: String): StatefulNotificationConnection! @join__field(graph: NOTIFICATIONS)
-  unacknowledgedStatefulNotificationsCount: Int! @join__field(graph: NOTIFICATIONS)
+  statefulNotificationsWithoutBulletinEnabled(first: Int!, after: String): StatefulNotificationConnection! @join__field(graph: NOTIFICATIONS)
+  unacknowledgedStatefulNotificationsWithoutBulletinEnabledCount: Int! @join__field(graph: NOTIFICATIONS)
   unacknowledgedStatefulNotificationsWithBulletinEnabled(first: Int!, after: String): StatefulNotificationConnection! @join__field(graph: NOTIFICATIONS)
 
   """

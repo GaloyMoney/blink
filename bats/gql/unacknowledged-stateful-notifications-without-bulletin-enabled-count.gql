@@ -1,0 +1,6 @@
+query unacknowledgedStatefulNotificationsWithoutBulletinEnabledCount {
+  me {
+    id
+    unacknowledgedStatefulNotificationsWithoutBulletinEnabledCount
+  }
+}
