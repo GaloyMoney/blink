@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps-dev): bump @storybook/addon-interactions from 8.0.9
-        to 8.0.10 (#4462)...'
-      sha: f487aff2948471f9c6e394cbd0bc79f0673ab1b0
+      commitTitle: 'feat(notifications): add icon to stateful notification (#4444)...'
+      sha: 349a31b6e80df69c481e9a9736b0fe5efb4efce2
       tags:
-      - 0.20.192-3-gf487aff29
+      - 0.20.193-4-g349a31b6e
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps-dev): bump @storybook/addon-interactions from 8.0.9
-        to 8.0.10 (#4462)...'
-      sha: f487aff2948471f9c6e394cbd0bc79f0673ab1b0
+      commitTitle: 'feat(notifications): add icon to stateful notification (#4444)...'
+      sha: 349a31b6e80df69c481e9a9736b0fe5efb4efce2
       tags:
-      - 0.20.192-3-gf487aff29
+      - 0.20.193-4-g349a31b6e
     path: schemas
   - git:
-      commitTitle: 'chore(deps-dev): bump @storybook/addon-interactions from 8.0.9
-        to 8.0.10 (#4462)...'
-      sha: f487aff2948471f9c6e394cbd0bc79f0673ab1b0
+      commitTitle: 'feat(notifications): add icon to stateful notification (#4444)...'
+      sha: 349a31b6e80df69c481e9a9736b0fe5efb4efce2
       tags:
-      - 0.20.192-3-gf487aff29
+      - 0.20.193-4-g349a31b6e
     path: gql
   path: graphql
 kind: LockConfig
