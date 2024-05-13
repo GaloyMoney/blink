@@ -7,6 +7,7 @@ import DeepLinkScreen from "@/graphql/admin/types/scalar/deep-link-screen"
 import SuccessPayload from "@/graphql/shared/types/payload/success-payload"
 import DeepLinkAction from "@/graphql/admin/types/scalar/deep-link-action"
 import ExternalUrl from "@/graphql/admin/types/scalar/external-url"
+import NotificationIcon from "@/graphql/admin/types/scalar/notification-icon"
 
 const LocalizedNotificationContentInput = GT.Input({
   name: "LocalizedNotificationContentInput",
@@ -68,6 +69,9 @@ const MarketingNotificationTriggerInput = GT.Input({
     openExternalUrl: {
       type: OpenExternalUrlInput,
     },
+    icon: {
+      type: NotificationIcon,
+    },
     localizedNotificationContents: {
       type: GT.NonNullList(LocalizedNotificationContentInput),
     },
@@ -84,6 +88,7 @@ const MarketingNotificationTriggerMutation = GT.Field<
       shouldSendPush: boolean
       shouldAddToHistory: boolean
       shouldAddToBulletin: boolean
+      icon: Icon | Error | undefined
       openDeepLink:
         | {
             screen: DeepLinkScreen | Error | undefined
@@ -113,6 +118,7 @@ const MarketingNotificationTriggerMutation = GT.Field<
       shouldSendPush,
       shouldAddToHistory,
       shouldAddToBulletin,
+      icon,
       openDeepLink,
       openExternalUrl,
       localizedNotificationContents,
@@ -140,6 +146,10 @@ const MarketingNotificationTriggerMutation = GT.Field<
         screen: openDeepLink.screen,
         action: openDeepLink.action,
       }
+    }
+
+    if (icon instanceof Error) {
+      return { errors: [{ message: icon.message }], success: false }
     }
 
     let nonErrorOpenExternalUrl = undefined
@@ -185,6 +195,7 @@ const MarketingNotificationTriggerMutation = GT.Field<
       shouldSendPush,
       shouldAddToHistory,
       shouldAddToBulletin,
+      icon,
       localizedNotificationContents: nonErrorLocalizedNotificationContents,
     })
 
