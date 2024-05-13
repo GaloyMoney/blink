@@ -2,17 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+html {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
-}
-
-html {
-  height: -webkit-fill-available;
 }
 
 .error {
@@ -123,7 +125,7 @@ html {
   justify-content: center;
   align-items: center;
   margin: 0 auto;
-  min-height: calc(100vh - 36px);
+  min-height: calc(100dvh - 36px);
   padding: 0 2rem;
 }
 
@@ -145,7 +147,7 @@ html {
   justify-content: center;
   align-items: center;
   margin: 0 auto;
-  min-height: calc(100vh - 36px);
+  min-height: calc(100dvh - 36px);
 }
 
 .loader {
