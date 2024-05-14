@@ -1,9 +1,9 @@
-/* ConfirmModal.module.css */
 .modal_container {
   display: flex;
   flex-direction: column;
-  gap: 0.7em;
+  gap: 1.3em;
   min-height: 10em;
+  justify-content: space-between;
 }
 
 .modalTitle {
@@ -17,7 +17,7 @@
 }
 
 .modalSubtitle {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: bold;
 }
 
