@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump @opentelemetry packages (#4461)...'
-      sha: ded76575ba7dabf994400d74e9a6481e06cb6367
+      commitTitle: 'chore(deps): bump bria proto to ''0.1.106'' (#4427)'
+      sha: 60db2f58e317d41d1626f488fa25e8fa5d8cf582
       tags:
-      - 0.20.196-2-gded76575b
+      - 0.20.197-1-g60db2f58e
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump @opentelemetry packages (#4461)...'
-      sha: ded76575ba7dabf994400d74e9a6481e06cb6367
+      commitTitle: 'chore(deps): bump bria proto to ''0.1.106'' (#4427)'
+      sha: 60db2f58e317d41d1626f488fa25e8fa5d8cf582
       tags:
-      - 0.20.196-2-gded76575b
+      - 0.20.197-1-g60db2f58e
     path: schemas
   - git:
-      commitTitle: 'chore(deps): bump @opentelemetry packages (#4461)...'
-      sha: ded76575ba7dabf994400d74e9a6481e06cb6367
+      commitTitle: 'chore(deps): bump bria proto to ''0.1.106'' (#4427)'
+      sha: 60db2f58e317d41d1626f488fa25e8fa5d8cf582
       tags:
-      - 0.20.196-2-gded76575b
+      - 0.20.197-1-g60db2f58e
     path: gql
   path: graphql
 kind: LockConfig
