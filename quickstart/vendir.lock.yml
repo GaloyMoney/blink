@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: add otel info for pinecone (#4467)...'
-      sha: 163478fabdcb6b4f3f971936d3f5661d0878238a
+      commitTitle: 'chore(deps): bump @opentelemetry packages (#4461)...'
+      sha: ded76575ba7dabf994400d74e9a6481e06cb6367
       tags:
-      - 0.20.195-2-g163478fab
+      - 0.20.196-2-gded76575b
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: add otel info for pinecone (#4467)...'
-      sha: 163478fabdcb6b4f3f971936d3f5661d0878238a
+      commitTitle: 'chore(deps): bump @opentelemetry packages (#4461)...'
+      sha: ded76575ba7dabf994400d74e9a6481e06cb6367
       tags:
-      - 0.20.195-2-g163478fab
+      - 0.20.196-2-gded76575b
     path: schemas
   - git:
-      commitTitle: 'chore: add otel info for pinecone (#4467)...'
-      sha: 163478fabdcb6b4f3f971936d3f5661d0878238a
+      commitTitle: 'chore(deps): bump @opentelemetry packages (#4461)...'
+      sha: ded76575ba7dabf994400d74e9a6481e06cb6367
       tags:
-      - 0.20.195-2-g163478fab
+      - 0.20.196-2-gded76575b
     path: gql
   path: graphql
 kind: LockConfig
