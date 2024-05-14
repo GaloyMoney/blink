@@ -11,3 +11,4 @@ git_charts_branch: main
 git_charts_uri: git@github.com:GaloyMoney/charts.git
 github_app_id: ((github.github_app_id))
 github_app_private_key: ((github.github_app_private_key))
+concourse_locks_git_uri: git@github.com:GaloyMoney/concourse-locks.git

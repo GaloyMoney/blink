@@ -76,3 +76,11 @@ resources:
       branch: main
       pool: docker-hosts
       private_key: #@ data.values.github_private_key
+
+  - name: kaniko-workers
+    type: pool
+    source:
+      uri: #@ data.values.concourse_locks_git_uri
+      branch: main
+      pool: kaniko-workers
+      private_key: #@ data.values.github_private_key
