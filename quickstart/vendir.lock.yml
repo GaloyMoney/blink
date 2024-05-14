@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(notifications): add icon to stateful notification (#4444)...'
-      sha: 349a31b6e80df69c481e9a9736b0fe5efb4efce2
+      commitTitle: 'feat(notifications): query and counts for non bulletins (#4453)...'
+      sha: 5e287ae0fc6ca27a30957797035b1de1e2df5d44
       tags:
-      - 0.20.193-4-g349a31b6e
+      - 0.20.194-1-g5e287ae0f
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(notifications): add icon to stateful notification (#4444)...'
-      sha: 349a31b6e80df69c481e9a9736b0fe5efb4efce2
+      commitTitle: 'feat(notifications): query and counts for non bulletins (#4453)...'
+      sha: 5e287ae0fc6ca27a30957797035b1de1e2df5d44
       tags:
-      - 0.20.193-4-g349a31b6e
+      - 0.20.194-1-g5e287ae0f
     path: schemas
   - git:
-      commitTitle: 'feat(notifications): add icon to stateful notification (#4444)...'
-      sha: 349a31b6e80df69c481e9a9736b0fe5efb4efce2
+      commitTitle: 'feat(notifications): query and counts for non bulletins (#4453)...'
+      sha: 5e287ae0fc6ca27a30957797035b1de1e2df5d44
       tags:
-      - 0.20.193-4-g349a31b6e
+      - 0.20.194-1-g5e287ae0f
     path: gql
   path: graphql
 kind: LockConfig

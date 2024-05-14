@@ -1,7 +1,7 @@
-query listStatefulNotifications($first: Int = 2, $after: String = null) {
+query listStatefulNotificationsWithoutBulletinEnabled($first: Int = 2, $after: String = null) {
   me {
     id
-    statefulNotifications(first: $first, after: $after) {
+    statefulNotificationsWithoutBulletinEnabled(first: $first, after: $after) {
       pageInfo {
         endCursor
         hasNextPage
