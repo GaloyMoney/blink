@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(notifications): query and counts for non bulletins (#4453)...'
-      sha: 5e287ae0fc6ca27a30957797035b1de1e2df5d44
+      commitTitle: 'chore: add otel info for pinecone (#4467)...'
+      sha: 163478fabdcb6b4f3f971936d3f5661d0878238a
       tags:
-      - 0.20.194-1-g5e287ae0f
+      - 0.20.195-2-g163478fab
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(notifications): query and counts for non bulletins (#4453)...'
-      sha: 5e287ae0fc6ca27a30957797035b1de1e2df5d44
+      commitTitle: 'chore: add otel info for pinecone (#4467)...'
+      sha: 163478fabdcb6b4f3f971936d3f5661d0878238a
       tags:
-      - 0.20.194-1-g5e287ae0f
+      - 0.20.195-2-g163478fab
     path: schemas
   - git:
-      commitTitle: 'feat(notifications): query and counts for non bulletins (#4453)...'
-      sha: 5e287ae0fc6ca27a30957797035b1de1e2df5d44
+      commitTitle: 'chore: add otel info for pinecone (#4467)...'
+      sha: 163478fabdcb6b4f3f971936d3f5661d0878238a
       tags:
-      - 0.20.194-1-g5e287ae0f
+      - 0.20.195-2-g163478fab
     path: gql
   path: graphql
 kind: LockConfig
