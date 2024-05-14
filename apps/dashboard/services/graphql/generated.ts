@@ -555,6 +555,61 @@ export type GraphQlApplicationError = Error & {
   readonly path?: Maybe<ReadonlyArray<Maybe<Scalars['String']['output']>>>;
 };
 
+export const Icon = {
+  ArrowLeft: 'ARROW_LEFT',
+  ArrowRight: 'ARROW_RIGHT',
+  BackSpace: 'BACK_SPACE',
+  Bank: 'BANK',
+  Bell: 'BELL',
+  Bitcoin: 'BITCOIN',
+  Book: 'BOOK',
+  BtcBook: 'BTC_BOOK',
+  CaretDown: 'CARET_DOWN',
+  CaretLeft: 'CARET_LEFT',
+  CaretRight: 'CARET_RIGHT',
+  CaretUp: 'CARET_UP',
+  Check: 'CHECK',
+  CheckCircle: 'CHECK_CIRCLE',
+  Close: 'CLOSE',
+  CloseCrossWithBackground: 'CLOSE_CROSS_WITH_BACKGROUND',
+  Coins: 'COINS',
+  CopyPaste: 'COPY_PASTE',
+  Dollar: 'DOLLAR',
+  Eye: 'EYE',
+  EyeSlash: 'EYE_SLASH',
+  Filter: 'FILTER',
+  Globe: 'GLOBE',
+  Graph: 'GRAPH',
+  Image: 'IMAGE',
+  Info: 'INFO',
+  Lightning: 'LIGHTNING',
+  Link: 'LINK',
+  Loading: 'LOADING',
+  MagnifyingGlass: 'MAGNIFYING_GLASS',
+  Map: 'MAP',
+  Menu: 'MENU',
+  Note: 'NOTE',
+  PaymentError: 'PAYMENT_ERROR',
+  PaymentPending: 'PAYMENT_PENDING',
+  PaymentSuccess: 'PAYMENT_SUCCESS',
+  Pencil: 'PENCIL',
+  People: 'PEOPLE',
+  QrCode: 'QR_CODE',
+  Question: 'QUESTION',
+  Rank: 'RANK',
+  Receive: 'RECEIVE',
+  Refresh: 'REFRESH',
+  Send: 'SEND',
+  Settings: 'SETTINGS',
+  Share: 'SHARE',
+  Transfer: 'TRANSFER',
+  User: 'USER',
+  Video: 'VIDEO',
+  Warning: 'WARNING',
+  WarningWithBackground: 'WARNING_WITH_BACKGROUND'
+} as const;
+
+export type Icon = typeof Icon[keyof typeof Icon];
 export type InitiationVia = InitiationViaIntraLedger | InitiationViaLn | InitiationViaOnChain;
 
 export type InitiationViaIntraLedger = {
@@ -1751,6 +1806,7 @@ export type StatefulNotification = {
   readonly bulletinEnabled: Scalars['Boolean']['output'];
   readonly createdAt: Scalars['Timestamp']['output'];
   readonly deepLink?: Maybe<Scalars['String']['output']>;
+  readonly icon?: Maybe<Icon>;
   readonly id: Scalars['ID']['output'];
   readonly title: Scalars['String']['output'];
 };
@@ -2036,11 +2092,12 @@ export type User = {
   /** Phone number with international calling code. */
   readonly phone?: Maybe<Scalars['Phone']['output']>;
   readonly statefulNotifications: StatefulNotificationConnection;
+  readonly statefulNotificationsWithoutBulletinEnabled: StatefulNotificationConnection;
   readonly supportChat: ReadonlyArray<SupportMessage>;
   /** Whether TOTP is enabled for this user. */
   readonly totpEnabled: Scalars['Boolean']['output'];
-  readonly unacknowledgedStatefulNotificationsCount: Scalars['Int']['output'];
   readonly unacknowledgedStatefulNotificationsWithBulletinEnabled: StatefulNotificationConnection;
+  readonly unacknowledgedStatefulNotificationsWithoutBulletinEnabledCount: Scalars['Int']['output'];
   /**
    * Optional immutable user friendly identifier.
    * @deprecated will be moved to @Handle in Account and Wallet
@@ -2055,6 +2112,12 @@ export type UserContactByUsernameArgs = {
 
 
 export type UserStatefulNotificationsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  first: Scalars['Int']['input'];
+};
+
+
+export type UserStatefulNotificationsWithoutBulletinEnabledArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   first: Scalars['Int']['input'];
 };
@@ -3502,6 +3565,7 @@ export type ResolversTypes = {
   Globals: ResolverTypeWrapper<Globals>;
   GraphQLApplicationError: ResolverTypeWrapper<GraphQlApplicationError>;
   Hex32Bytes: ResolverTypeWrapper<Scalars['Hex32Bytes']['output']>;
+  Icon: Icon;
   InitiationVia: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['InitiationVia']>;
   InitiationViaIntraLedger: ResolverTypeWrapper<InitiationViaIntraLedger>;
   InitiationViaLn: ResolverTypeWrapper<InitiationViaLn>;
@@ -4729,6 +4793,7 @@ export type StatefulNotificationResolvers<ContextType = any, ParentType extends 
   bulletinEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
   deepLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  icon?: Resolver<Maybe<ResolversTypes['Icon']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -4868,10 +4933,11 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   language?: Resolver<ResolversTypes['Language'], ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['Phone']>, ParentType, ContextType>;
   statefulNotifications?: Resolver<ResolversTypes['StatefulNotificationConnection'], ParentType, ContextType, RequireFields<UserStatefulNotificationsArgs, 'first'>>;
+  statefulNotificationsWithoutBulletinEnabled?: Resolver<ResolversTypes['StatefulNotificationConnection'], ParentType, ContextType, RequireFields<UserStatefulNotificationsWithoutBulletinEnabledArgs, 'first'>>;
   supportChat?: Resolver<ReadonlyArray<ResolversTypes['SupportMessage']>, ParentType, ContextType>;
   totpEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  unacknowledgedStatefulNotificationsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   unacknowledgedStatefulNotificationsWithBulletinEnabled?: Resolver<ResolversTypes['StatefulNotificationConnection'], ParentType, ContextType, RequireFields<UserUnacknowledgedStatefulNotificationsWithBulletinEnabledArgs, 'first'>>;
+  unacknowledgedStatefulNotificationsWithoutBulletinEnabledCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   username?: Resolver<Maybe<ResolversTypes['Username']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
