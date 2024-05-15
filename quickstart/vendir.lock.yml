@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump postcss from 8.4.31 to 8.4.38 (#4473)...'
-      sha: 9d33bd3cab66d0d40783922f2f4888da061730ca
+      commitTitle: 'chore(deps): bump @headlessui/react from 1.7.19 to 2.0.3 (#4472)...'
+      sha: 4d4291b64a20da55600eb2e7a9fb513768494e7b
       tags:
-      - 0.20.198-3-g9d33bd3ca
+      - 0.20.199-3-g4d4291b64
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump postcss from 8.4.31 to 8.4.38 (#4473)...'
-      sha: 9d33bd3cab66d0d40783922f2f4888da061730ca
+      commitTitle: 'chore(deps): bump @headlessui/react from 1.7.19 to 2.0.3 (#4472)...'
+      sha: 4d4291b64a20da55600eb2e7a9fb513768494e7b
       tags:
-      - 0.20.198-3-g9d33bd3ca
+      - 0.20.199-3-g4d4291b64
     path: schemas
   - git:
-      commitTitle: 'chore(deps): bump postcss from 8.4.31 to 8.4.38 (#4473)...'
-      sha: 9d33bd3cab66d0d40783922f2f4888da061730ca
+      commitTitle: 'chore(deps): bump @headlessui/react from 1.7.19 to 2.0.3 (#4472)...'
+      sha: 4d4291b64a20da55600eb2e7a9fb513768494e7b
       tags:
-      - 0.20.198-3-g9d33bd3ca
+      - 0.20.199-3-g4d4291b64
     path: gql
   path: graphql
 kind: LockConfig
