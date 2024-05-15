@@ -1,6 +1,5 @@
 "use client"
 import React, { useEffect } from "react"
-import Image from "react-bootstrap/Image"
 
 import Head from "next/head"
 
@@ -62,16 +61,6 @@ function ReceivePayment({ searchParams }: Props) {
         />
       </Head>
       <div className={styles.usernameContainer}>
-        {state.createdInvoice && (
-          <button onClick={() => dispatch({ type: ACTIONS.BACK })}>
-            <Image
-              src="/icons/chevron-left-icon.svg"
-              alt="back button"
-              width="10px"
-              height="12px"
-            />
-          </button>
-        )}
         <p className={styles.username}>{`Pay ${username}`}</p>
       </div>
       {username && state ? (
