@@ -1623,6 +1623,16 @@ export class ListPayoutsRequest extends jspb.Message {
     getWalletName(): string;
     setWalletName(value: string): ListPayoutsRequest;
 
+    hasPage(): boolean;
+    clearPage(): void;
+    getPage(): number | undefined;
+    setPage(value: number): ListPayoutsRequest;
+
+    hasPageSize(): boolean;
+    clearPageSize(): void;
+    getPageSize(): number | undefined;
+    setPageSize(value: number): ListPayoutsRequest;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListPayoutsRequest.AsObject;
     static toObject(includeInstance: boolean, msg: ListPayoutsRequest): ListPayoutsRequest.AsObject;
@@ -1636,6 +1646,8 @@ export class ListPayoutsRequest extends jspb.Message {
 export namespace ListPayoutsRequest {
     export type AsObject = {
         walletName: string,
+        page?: number,
+        pageSize?: number,
     }
 }
 
