@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+html {
+  box-sizing: border-box;
+}
+
 :root {
   --gradient-orange: linear-gradient(0deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),
     linear-gradient(45deg, #f6a139 0%, #fb5607 100%);
