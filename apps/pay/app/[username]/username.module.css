@@ -5,7 +5,6 @@
   width: 95%;
   max-width: 40em;
   margin: 0 auto;
-  align-self: center;
   margin-top: 1em;
 }
 
@@ -26,25 +25,6 @@
   justify-content: center;
   align-items: center;
   position: relative;
-}
-
-.usernameContainer > button {
-  background-color: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  outline: none;
-  position: absolute;
-  left: -50%;
-  transition: all 0.5s ease;
-}
-
-.usernameContainer > button:hover,
-.usernameContainer > button:focus {
-  outline: 1px solid rgba(239, 241, 245, 1);
-  border-radius: 50%;
-  padding: 0.75rem 0.85rem;
 }
 
 .username {

@@ -14,7 +14,6 @@ function DigitButton({ digit, disabled, dispatch, displayValue }: Props) {
   return (
     <button
       data-testid={`digit-${value}-btn`}
-      className="digit-button"
       disabled={disabled}
       onClick={() => dispatch({ type: ACTIONS.ADD_DIGIT, payload: digit })}
     >
