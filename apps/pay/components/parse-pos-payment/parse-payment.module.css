@@ -1,16 +1,18 @@
 .digitsContainer {
-  margin-top: 1em;
-  height: 100%;
   width: 100%;
   padding: 1em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .digitsGrid {
-  margin-top: 2em;
   display: grid;
   place-content: center;
-  grid-template-columns: repeat(3, 30%);
-  grid-template-rows: repeat(4, 8vh);
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(4, 6.5rem);
+  width: 100%;
 }
 
 .digitsGrid > button {
@@ -21,23 +23,21 @@
   border-radius: 0.5em;
   border: none;
   outline: none;
-  font-size: 225%;
+  font-size: 2.5rem;
   font-weight: 400;
   color: rgba(17, 25, 40, 1);
   border: 1px solid rgb(255, 255, 255);
 }
 
-@media (max-width: 760px) {
+@media (max-width: 600px) {
   .digitsGrid {
-    margin-top: 1em;
     display: grid;
     place-content: center;
     grid-template-columns: repeat(3, 33.33%);
-    grid-template-rows: repeat(4, 15vh);
+    grid-template-rows: repeat(4, 14dvh);
   }
   .digitsContainer {
-    margin-top: 1em;
-    height: 100%;
+    height: calc(100dvh - 5.5rem);
     width: 100%;
     padding: 0;
   }
@@ -46,6 +46,10 @@
   }
   .digitsGrid > button:active {
     background-color: rgba(233, 233, 236, 0.3); /* Light touch feedback */
+  }
+  .secondaryBtn {
+    width: 80%;
+    max-width: 380px;
   }
 }
 
@@ -58,6 +62,7 @@
   align-items: center;
   justify-content: center;
   column-gap: 0.5rem;
+  width: 100%;
 }
 
 .payBtn,
@@ -93,7 +98,6 @@
 }
 
 .invoiceContainer {
-  margin-top: 1.5em;
   display: grid;
   place-items: center;
 }
@@ -115,7 +119,6 @@
   column-gap: 15px;
   font-size: 16px;
   font-weight: 300;
-  margin-top: 30px;
   margin-bottom: 5px;
 }
 

@@ -5,24 +5,25 @@ import Image from "next/image"
 
 import CurrencyInput, { formatValue } from "react-currency-input-field"
 
-import { ACTION_TYPE, ACTIONS } from "../../app/reducer"
+import { ACTION_TYPE, ACTIONS } from "@/app/reducer"
 import {
   safeAmount,
   getLocaleConfig,
   extractSearchParams,
   parseDisplayCurrency,
-} from "../../utils/utils"
+} from "@/lib/utils"
 
-import { useDisplayCurrency } from "../../lib/use-display-currency"
+import { useDisplayCurrency } from "@/hooks/use-display-currency"
 
-import Memo from "../memo"
+import Memo from "@/components/memo"
 
-import DigitButton from "./digit-button"
-import styles from "./parse-payment.module.css"
-import ReceiveInvoice from "./receive-invoice"
+import DigitButton from "@/components/parse-pos-payment/digit-button"
+import styles from "@/components/parse-pos-payment/parse-payment.module.css"
+import ReceiveInvoice from "@/components/parse-pos-payment/receive-invoice"
 
 import { satCurrencyMetadata } from "@/app/sats-currency-metadata"
 import useDynamicFontSize from "@/hooks/use-dynamic-font-size"
+import { Currency } from "@/lib/graphql/generated"
 
 interface Props {
   defaultWalletCurrency: string
@@ -180,117 +181,164 @@ function ParsePayment({
 
   return (
     <div className={styles.digitsContainer}>
-      <CurrencyInput
-        style={{
-          width: "100%",
-          border: 0,
-          color: "black",
-          backgroundColor: "transparent",
-          textAlign: "center",
-          fontWeight: 600,
-          fontSize: amountFontSize,
-          height: "3rem",
-        }}
-        value={state.currentAmount}
-        intlConfig={{ locale: language, currency: display }}
-        readOnly={true}
-      />
-      {showMemo && <Memo state={state} dispatch={dispatch} />}
-      {state.createdInvoice ? (
-        <ReceiveInvoice
-          dispatch={dispatch}
-          state={state}
-          recipientWalletCurrency={defaultWalletCurrency}
-          walletId={walletId}
+      <div
+        style={
+          !state.createdInvoice
+            ? {
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100%",
+              }
+            : undefined
+        }
+      >
+        <CurrencyInput
+          style={{
+            width: "100%",
+            border: 0,
+            color: "black",
+            textAlign: "center",
+            fontWeight: 600,
+            fontSize: amountFontSize,
+          }}
+          value={state.currentAmount}
+          intlConfig={{ locale: language, currency: display }}
+          readOnly={true}
         />
-      ) : (
+        {showMemo && <Memo state={state} dispatch={dispatch} />}
+      </div>
+
+      {state.createdInvoice ? (
         <>
-          <div className={styles.digitsGrid}>
-            <DigitButton digit={"1"} dispatch={dispatch} />
-            <DigitButton digit={"2"} dispatch={dispatch} />
-            <DigitButton digit={"3"} dispatch={dispatch} />
-            <DigitButton digit={"4"} dispatch={dispatch} />
-            <DigitButton digit={"5"} dispatch={dispatch} />
-            <DigitButton digit={"6"} dispatch={dispatch} />
-            <DigitButton digit={"7"} dispatch={dispatch} />
-            <DigitButton digit={"8"} dispatch={dispatch} />
-            <DigitButton digit={"9"} dispatch={dispatch} />
-            {currencyMetadata.fractionDigits > 0 ? (
-              <DigitButton
-                digit={"."}
-                dispatch={dispatch}
-                displayValue={
-                  getLocaleConfig({ locale: language, currency: display })
-                    .decimalSeparator
-                }
-              />
-            ) : (
-              <DigitButton digit={""} dispatch={dispatch} disabled={true} />
-            )}
-
-            <DigitButton digit={"0"} dispatch={dispatch} />
-            <button
-              data-testid="backspace-btn"
-              onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}
-            >
-              <Image
-                src="/icons/backspace-icon.svg"
-                alt=" digit icon"
-                width={32}
-                height={32}
-              />
-            </button>
-          </div>
+          <ReceiveInvoice
+            dispatch={dispatch}
+            state={state}
+            recipientWalletCurrency={defaultWalletCurrency}
+            walletId={walletId}
+          />
+          <InvoiceBackButton dispatch={dispatch} />
         </>
-      )}
-
-      <div className={styles.payBtnContainer}>
-        <button
-          data-testid="pay-btn"
-          className={state.createdInvoice ? styles.secondaryBtn : styles.payBtn}
-          onClick={() => {
-            if (state.createdInvoice) {
-              dispatch({ type: ACTIONS.CREATE_NEW_INVOICE })
-            } else {
-              dispatch({
-                type: ACTIONS.CREATE_INVOICE,
-                payload: state.currentAmount,
-              })
-            }
+      ) : (
+        <div
+          style={{
+            width: "100%",
           }}
         >
-          {state.createdInvoice ? (
-            <>
-              <Image
-                src="/icons/caret-left.svg"
-                alt="Back"
-                width="20"
-                height="20"
-              ></Image>
-              Back
-            </>
-          ) : (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "0.5em",
-              }}
-            >
-              <Image
-                src={"/icons/lightning-icon.svg"}
-                alt="lightning icon"
-                width="20"
-                height="20"
-              />
-              Create invoice
-            </div>
-          )}
-        </button>
-      </div>
+          <NumpadContainer
+            dispatch={dispatch}
+            currencyMetadata={currencyMetadata}
+            display={display}
+            language={language}
+          />
+          <NumpadButton state={state} dispatch={dispatch} />
+        </div>
+      )}
     </div>
   )
 }
 
 export default ParsePayment
+
+const NumpadButton = ({
+  state,
+  dispatch,
+}: {
+  state: React.ComponentState
+  dispatch: React.Dispatch<ACTION_TYPE>
+}) => {
+  return (
+    <div className={styles.payBtnContainer}>
+      <button
+        data-testid="pay-btn"
+        className={styles.payBtn}
+        onClick={() => {
+          dispatch({
+            type: ACTIONS.CREATE_INVOICE,
+            payload: state.currentAmount,
+          })
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.5em",
+          }}
+        >
+          <Image
+            src={"/icons/lightning-icon.svg"}
+            alt="lightning icon"
+            width="20"
+            height="20"
+          />
+          Create invoice
+        </div>
+      </button>
+    </div>
+  )
+}
+
+const InvoiceBackButton = ({ dispatch }: { dispatch: React.Dispatch<ACTION_TYPE> }) => {
+  return (
+    <div className={styles.payBtnContainer}>
+      <button
+        data-testid="pay-btn"
+        className={styles.secondaryBtn}
+        onClick={() => {
+          dispatch({ type: ACTIONS.CREATE_NEW_INVOICE })
+        }}
+      >
+        <Image src="/icons/caret-left.svg" alt="Back" width="20" height="20"></Image>
+        Back
+      </button>
+    </div>
+  )
+}
+
+const NumpadContainer = ({
+  dispatch,
+  currencyMetadata,
+  display,
+  language,
+}: {
+  dispatch: React.Dispatch<ACTION_TYPE>
+  currencyMetadata: Currency
+  display: string
+  language: string
+}) => {
+  return (
+    <div className={styles.digitsGrid}>
+      <DigitButton digit={"1"} dispatch={dispatch} />
+      <DigitButton digit={"2"} dispatch={dispatch} />
+      <DigitButton digit={"3"} dispatch={dispatch} />
+      <DigitButton digit={"4"} dispatch={dispatch} />
+      <DigitButton digit={"5"} dispatch={dispatch} />
+      <DigitButton digit={"6"} dispatch={dispatch} />
+      <DigitButton digit={"7"} dispatch={dispatch} />
+      <DigitButton digit={"8"} dispatch={dispatch} />
+      <DigitButton digit={"9"} dispatch={dispatch} />
+      {currencyMetadata.fractionDigits > 0 ? (
+        <DigitButton
+          digit={"."}
+          dispatch={dispatch}
+          displayValue={
+            getLocaleConfig({ locale: language, currency: display }).decimalSeparator
+          }
+        />
+      ) : (
+        <DigitButton digit={""} dispatch={dispatch} disabled={true} />
+      )}
+
+      <DigitButton digit={"0"} dispatch={dispatch} />
+      <button
+        data-testid="backspace-btn"
+        onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}
+      >
+        <Image src="/icons/backspace-icon.svg" alt=" digit icon" width={32} height={32} />
+      </button>
+    </div>
+  )
+}
