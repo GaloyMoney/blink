@@ -861,8 +861,8 @@ importers:
         specifier: ^11.11.0
         version: 11.11.0(@emotion/react@11.11.1)(@types/react@18.2.79)(react@18.2.0)
       '@headlessui/react':
-        specifier: ^1.7.14
-        version: 1.7.19(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^2.0.3
+        version: 2.0.3(react-dom@18.2.0)(react@18.2.0)
       '@mui/icons-material':
         specifier: ^5.11.16
         version: 5.14.19(@mui/material@5.14.20)(@types/react@18.2.79)(react@18.2.0)
@@ -8010,8 +8010,25 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
 
+  /@floating-ui/react@0.26.14(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-I2EhfezC+H0WfkMEkCcF9+++PU1Wq08bDKhHHGIoBZVCciiftEQHgrSI4dTUTsa7446SiIVW0gWATliIlVNgfg==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+    dependencies:
+      '@floating-ui/react-dom': 2.0.4(react-dom@18.2.0)(react@18.2.0)
+      '@floating-ui/utils': 0.2.2
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      tabbable: 6.2.0
+    dev: false
+
   /@floating-ui/utils@0.1.6:
     resolution: {integrity: sha512-OfX7E2oUDYxtBvsuS4e/jSn4Q9Qb6DzgeYtsAdkPZ47znpoNsMgZw0+tVijiv3uGNR6dgNlty6r9rzIzHjtd/A==}
+
+  /@floating-ui/utils@0.2.2:
+    resolution: {integrity: sha512-J4yDIIthosAsRZ5CPYP/jQvUAQtlZTTD/4suA08/FEnlxqW3sKS9iAhgsa9VYLZ6vDHn/ixJgIqRQPotoBjxIw==}
+    dev: false
 
   /@galoymoney/client@0.2.6(@bitcoinerlab/secp256k1@1.1.1)(bitcoinjs-lib@5.0.5)(bolt11@1.4.1)(lnurl-pay@1.0.1)(url@0.11.3):
     resolution: {integrity: sha512-HCYMB39EO1/2RJ6Dz9ZJkRDCKd5b3IyaajfR2db4i4hQZ6i4z1nuEFT/04ERu27Mlrxrb0qjHfYmAPTRR20xdg==}
@@ -10368,15 +10385,17 @@ packages:
       yargs: 17.7.2
     dev: false
 
-  /@headlessui/react@1.7.19(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-Ll+8q3OlMJfJbAKM/+/Y2q6PPYbryqNTXDbryx7SXLIDamkF6iQFbriYHga0dY44PvDhvvBWCx1Xj4U5+G4hOw==}
+  /@headlessui/react@2.0.3(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-Xd1h0YZgfhxZ7W1w4TvK0/TZ1c4qaX4liYVUkAXqW1HCLcXSqnMeYAUGJS/BBroBAUL9HErjyFcRpCWRQZ/0lA==}
     engines: {node: '>=10'}
     peerDependencies:
-      react: ^16 || ^17 || ^18
-      react-dom: ^16 || ^17 || ^18
+      react: ^18
+      react-dom: ^18
     dependencies:
-      '@tanstack/react-virtual': 3.3.0(react-dom@18.2.0)(react@18.2.0)
-      client-only: 0.0.1
+      '@floating-ui/react': 0.26.14(react-dom@18.2.0)(react@18.2.0)
+      '@react-aria/focus': 3.17.0(react@18.2.0)
+      '@react-aria/interactions': 3.21.2(react@18.2.0)
+      '@tanstack/react-virtual': 3.5.0(react-dom@18.2.0)(react@18.2.0)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     dev: false
@@ -13688,6 +13707,54 @@ packages:
     dependencies:
       '@babel/runtime': 7.23.7
 
+  /@react-aria/focus@3.17.0(react@18.2.0):
+    resolution: {integrity: sha512-aRzBw1WTUkcIV3xFrqPA6aB8ZVt3XyGpTaSHAypU0Pgoy2wRq9YeJYpbunsKj9CJmskuffvTqXwAjTcaQish1Q==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
+    dependencies:
+      '@react-aria/interactions': 3.21.2(react@18.2.0)
+      '@react-aria/utils': 3.24.0(react@18.2.0)
+      '@react-types/shared': 3.23.0(react@18.2.0)
+      '@swc/helpers': 0.5.2
+      clsx: 2.0.0
+      react: 18.2.0
+    dev: false
+
+  /@react-aria/interactions@3.21.2(react@18.2.0):
+    resolution: {integrity: sha512-Ju706DtoEmI/2vsfu9DCEIjDqsRBVLm/wmt2fr0xKbBca7PtmK8daajxFWz+eTq+EJakvYfLr7gWgLau9HyWXg==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
+    dependencies:
+      '@react-aria/ssr': 3.9.3(react@18.2.0)
+      '@react-aria/utils': 3.24.0(react@18.2.0)
+      '@react-types/shared': 3.23.0(react@18.2.0)
+      '@swc/helpers': 0.5.2
+      react: 18.2.0
+    dev: false
+
+  /@react-aria/ssr@3.9.3(react@18.2.0):
+    resolution: {integrity: sha512-5bUZ93dmvHFcmfUcEN7qzYe8yQQ8JY+nHN6m9/iSDCQ/QmCiE0kWXYwhurjw5ch6I8WokQzx66xKIMHBAa4NNA==}
+    engines: {node: '>= 12'}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
+    dependencies:
+      '@swc/helpers': 0.5.2
+      react: 18.2.0
+    dev: false
+
+  /@react-aria/utils@3.24.0(react@18.2.0):
+    resolution: {integrity: sha512-JAxkPhK5fCvFVNY2YG3TW3m1nTzwRcbz7iyTSkUzLFat4N4LZ7Kzh7NMHsgeE/oMOxd8zLY+XsUxMu/E/2GujA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
+    dependencies:
+      '@react-aria/ssr': 3.9.3(react@18.2.0)
+      '@react-stately/utils': 3.10.0(react@18.2.0)
+      '@react-types/shared': 3.23.0(react@18.2.0)
+      '@swc/helpers': 0.5.2
+      clsx: 2.0.0
+      react: 18.2.0
+    dev: false
+
   /@react-google-maps/api@2.19.2(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-Vt57XWzCKfsUjKOmFUl2erVVfOePkPK5OigF/f+q7UuV/Nm9KDDy1PMFBx+wNahEqOd6a32BxfsykEhBnbU9wQ==}
     peerDependencies:
@@ -13710,6 +13777,23 @@ packages:
 
   /@react-google-maps/marker-clusterer@2.19.2:
     resolution: {integrity: sha512-x9ibmsP0ZVqzyCo1Pitbw+4b6iEXRw/r1TCy3vOUR3eKrzWLnHYZMR325BkZW2r8fnuWE/V3Fp4QZOP9qYORCw==}
+    dev: false
+
+  /@react-stately/utils@3.10.0(react@18.2.0):
+    resolution: {integrity: sha512-nji2i9fTYg65ZWx/3r11zR1F2tGya+mBubRCbMTwHyRnsSLFZaeq/W6lmrOyIy1uMJKBNKLJpqfmpT4x7rw6pg==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
+    dependencies:
+      '@swc/helpers': 0.5.2
+      react: 18.2.0
+    dev: false
+
+  /@react-types/shared@3.23.0(react@18.2.0):
+    resolution: {integrity: sha512-GQm/iPiii3ikcaMNR4WdVkJ4w0mKtV3mLqeSfSqzdqbPr6vONkqXbh3RhPlPmAJs1b4QHnexd/wZQP3U9DHOwQ==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
+    dependencies:
+      react: 18.2.0
     dev: false
 
   /@repeaterjs/repeater@3.0.4:
@@ -16232,19 +16316,19 @@ packages:
       zod: 3.22.4
     dev: false
 
-  /@tanstack/react-virtual@3.3.0(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-QFxmTSZBniq15S0vSZ55P4ToXquMXwJypPXyX/ux7sYo6a2FX3/zWoRLLc4eIOGWTjvzqcIVNKhcuFb+OZL3aQ==}
+  /@tanstack/react-virtual@3.5.0(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-rtvo7KwuIvqK9zb0VZ5IL7fiJAEnG+0EiFZz8FUOs+2mhGqdGmjKIaT1XU7Zq0eFqL0jonLlhbayJI/J2SA/Bw==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
     dependencies:
-      '@tanstack/virtual-core': 3.3.0
+      '@tanstack/virtual-core': 3.5.0
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /@tanstack/virtual-core@3.3.0:
-    resolution: {integrity: sha512-A0004OAa1FcUkPHeeGoKgBrAgjH+uHdDPrw1L7RpkwnODYqRvoilqsHPs8cyTjMg1byZBbiNpQAq2TlFLIaQag==}
+  /@tanstack/virtual-core@3.5.0:
+    resolution: {integrity: sha512-KnPRCkQTyqhanNC0K63GBG3wA8I+D1fQuVnAvcBF8f13akOKeQp1gSbu6f77zCxhEk727iV5oQnbHLYzHrECLg==}
     dev: false
 
   /@testim/chrome-version@1.1.4:
@@ -33442,6 +33526,10 @@ packages:
       '@pkgr/core': 0.1.1
       tslib: 2.6.2
     dev: true
+
+  /tabbable@6.2.0:
+    resolution: {integrity: sha512-Cat63mxsVJlzYvN51JmVXIgNoUokrIaT2zLclCXjRd8boZ0004U4KCs/sToJ75C6sdlByWxpYnb5Boif1VSFew==}
+    dev: false
 
   /tailwind-merge@2.1.0:
     resolution: {integrity: sha512-l11VvI4nSwW7MtLSLYT4ldidDEUwQAMWuSHk7l4zcXZDgnCRa0V3OdCwFfM7DCzakVXMNRwAeje9maFFXT71dQ==}
