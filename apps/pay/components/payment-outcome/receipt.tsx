@@ -6,7 +6,7 @@ import Image from "react-bootstrap/Image"
 import styles from "./payment-outcome.module.css"
 
 import GaloyIcon from "@/components/galoy-icon"
-import { formattedDate, formattedTime } from "@/utils/date-util"
+import { formattedDate, formattedTime } from "@/lib/utils/date-util"
 
 interface Props {
   amount: string | string[] | undefined

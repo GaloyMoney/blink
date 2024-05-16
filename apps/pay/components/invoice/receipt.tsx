@@ -8,8 +8,8 @@ import { type ReceiptProps } from "./index.types"
 
 import GaloyIcon from "@/components/galoy-icon"
 
-import { getLocaleConfig } from "@/utils/utils"
-import { formattedDate, formattedTime } from "@/utils/date-util"
+import { getLocaleConfig } from "@/lib/utils"
+import { formattedDate, formattedTime } from "@/lib/utils/date-util"
 
 function Receipt({ amount, currency, invoice, status }: ReceiptProps) {
   if (!invoice) {
