@@ -121,7 +121,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.24.4",
-    "@babel/preset-env": "^7.24.4",
+    "@babel/preset-env": "^7.24.5",
     "@galoy/eslint-config": "workspace:^",
     "@graphql-tools/jest-transform": "^2.0.0",
     "@jest/test-sequencer": "^29.7.0",
