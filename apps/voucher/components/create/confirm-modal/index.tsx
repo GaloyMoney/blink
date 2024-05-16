@@ -1,4 +1,4 @@
-import React, { useState, MouseEvent, useEffect } from "react"
+import React, { useState, MouseEvent } from "react"
 
 import { useRouter } from "next/navigation"
 
@@ -8,13 +8,14 @@ import styles from "./confirm-modal.module.css"
 
 import Button from "@/components/button"
 import ModalComponent from "@/components/modal-component"
-import { calculateAmountAfterCommission, WalletDetails } from "@/utils/helpers"
+import { WalletDetails } from "@/utils/helpers"
 import {
   useCreateWithdrawLinkMutation,
   useCurrencyConversionEstimationQuery,
 } from "@/lib/graphql/generated"
 import LoadingComponent from "@/components/loading/loading-component"
-import { formatCurrency } from "@/lib/utils"
+import { convertPpmToPercentage, formatCurrency } from "@/lib/utils"
+import { amountCalculator } from "@/lib/amount-calculator"
 
 type Props = {
   open: boolean
@@ -24,16 +25,8 @@ type Props = {
   commissionPercentage: string
   btcWallet: WalletDetails
   usdWallet: WalletDetails
-}
-
-const calculateProfitAmount = ({
-  amount,
-  commissionRatePercentage,
-}: {
-  amount: number
-  commissionRatePercentage: number
-}) => {
-  return (amount * commissionRatePercentage) / 100
+  platformFeesInPpm: number
+  voucherAmountInDollars: number
 }
 
 const ConfirmModal = ({
@@ -44,6 +37,8 @@ const ConfirmModal = ({
   commissionPercentage,
   btcWallet,
   usdWallet,
+  platformFeesInPpm,
+  voucherAmountInDollars,
 }: Props) => {
   const router = useRouter()
   const { update } = useSession()
@@ -56,36 +51,29 @@ const ConfirmModal = ({
   const [createWithdrawLink, { loading: withdrawLinkLoading }] =
     useCreateWithdrawLinkMutation()
 
-  const { data: currencyConversion, refetch } = useCurrencyConversionEstimationQuery({
-    variables: { amount: Number(amount), currency },
-    context: { endpoint: "GALOY" },
-    pollInterval: 60000,
-  })
-
   const { data: currencyDataForOneUnit } = useCurrencyConversionEstimationQuery({
     variables: { amount: 1, currency },
     context: { endpoint: "GALOY" },
   })
 
-  useEffect(() => {
-    refetch({ amount: Number(amount), currency })
-  }, [amount, currency, refetch])
+  const profitAmount = amountCalculator.profitAmount({
+    voucherPrice: Number(amount),
+    commissionPercentage: Number(commissionPercentage),
+  })
 
   const usdToCurrencyRate = Number(
     currencyDataForOneUnit?.currencyConversionEstimation.usdCentAmount / 100,
   )
-  const profitAmount = calculateProfitAmount({
-    amount: Number(amount),
-    commissionRatePercentage: Number(commissionPercentage),
+
+  const platformFeesInPercentage = convertPpmToPercentage({ ppm: platformFeesInPpm })
+  const platformFeesAmount = amountCalculator.profitAmount({
+    voucherPrice: Number(amount),
+    commissionPercentage: platformFeesInPercentage,
   })
 
-  const amountInDollars = Number(
-    (currencyConversion?.currencyConversionEstimation.usdCentAmount / 100).toFixed(2),
-  )
-
-  const voucherAmountInDollars = calculateAmountAfterCommission({
-    amount: amountInDollars,
-    commissionRatePercentage: Number(commissionPercentage),
+  const totalPaying = amountCalculator.voucherAmountAfterCommission({
+    voucherPrice: Number(amount),
+    commissionPercentage: Number(commissionPercentage),
   })
 
   const handleSubmit = async ({
@@ -145,12 +133,14 @@ const ConfirmModal = ({
         <div>
           <h3 className={styles.modalSubtitle}>Price</h3>
           <p className={styles.modalText}>
-            {formatCurrency({ amount: Number(amount), currency })}
+            {formatCurrency({ amount: Number(amount), currency })} {currency}
           </p>
         </div>
         <div>
           <h3 className={`${styles.modalSubtitle} text-right`}>Value</h3>
-          <p className={styles.modalText}>{Number(voucherAmountInDollars)} US Dollar</p>
+          <p className={styles.modalText}>
+            {formatCurrency({ amount: Number(voucherAmountInDollars), currency })} USD
+          </p>
         </div>
       </div>
       <div className="flex justify-between w-full">
@@ -179,6 +169,21 @@ const ConfirmModal = ({
               </p>
             </>
           )}
+        </div>
+      </div>
+      <div className="flex justify-between w-full">
+        <div>
+          <h3 className={styles.modalSubtitle}>Total Paying</h3>
+          <p className={styles.modalText}>
+            {formatCurrency({ amount: totalPaying, currency })} {currency}
+          </p>
+        </div>
+        <div>
+          <h3 className={`${styles.modalSubtitle} text-right`}>Platform fees</h3>
+          <p className={`${styles.modalText} text-right`}>
+            {platformFeesInPercentage}% (
+            {formatCurrency({ amount: platformFeesAmount, currency })} {currency})
+          </p>
         </div>
       </div>
       <div>

@@ -28,6 +28,9 @@ import { intraLedgerUsdPaymentSend } from "@/services/galoy/mutation/send-paymen
 import { escrowApolloClient } from "@/services/galoy/client/escrow"
 import { onChainUsdTxFee } from "@/services/galoy/query/on-chain-usd-tx-fee"
 import { onChainUsdPaymentSend } from "@/services/galoy/mutation/on-chain-payment-sned"
+import { amountCalculator } from "@/lib/amount-calculator"
+
+import { env } from "@/env"
 
 const resolvers = {
   Query: {
@@ -77,7 +80,7 @@ const resolvers = {
       },
     ) => {
       const { commissionPercentage, voucherAmountInCents, walletId } = args.input
-
+      const platformFeesInPpm = env.PLATFORM_FEES_IN_PPM
       const session = await getServerSession(authOptions)
       const userData = session?.userData
       if (!userData || !userData?.me?.defaultAccount?.wallets) {
@@ -104,10 +107,13 @@ const resolvers = {
       if (!escrowUsdWallet || !escrowUsdWallet.id)
         return new Error("Internal Server Error")
 
-      const salesAmountInCents = calculateSalesAmount({
+      const salesAmountInCents = amountCalculator.voucherPrice({
         commissionPercentage,
         voucherAmount: voucherAmountInCents,
+        platformFeesInPpm,
       })
+
+      if (salesAmountInCents <= 0) return new Error("Invalid sales amount")
 
       const userWalletDetails = getWalletDetailsFromWalletId({
         wallets: userData.me?.defaultAccount.wallets,
@@ -178,10 +184,15 @@ const resolvers = {
         })
 
         if (createWithdrawLinkResponse instanceof Error) return createWithdrawLinkResponse
+        const voucherAmountWithFeesInCents =
+          amountCalculator.voucherAmountAfterCommission({
+            voucherPrice: salesAmountInCents,
+            commissionPercentage,
+          })
 
         const usdPaymentResponse = await intraLedgerUsdPaymentSend({
           token: session.accessToken,
-          amount: voucherAmountInCents,
+          amount: voucherAmountWithFeesInCents,
           memo: createMemo({
             voucherAmountInCents,
             commissionPercentage,
@@ -341,16 +352,6 @@ const resolvers = {
 }
 
 export default resolvers
-
-function calculateSalesAmount({
-  commissionPercentage,
-  voucherAmount,
-}: {
-  commissionPercentage: number
-  voucherAmount: number
-}) {
-  return voucherAmount / (1 - commissionPercentage / 100)
-}
 
 const isValidVoucherSecret = (voucherSecret: string) => {
   if (!voucherSecret) {

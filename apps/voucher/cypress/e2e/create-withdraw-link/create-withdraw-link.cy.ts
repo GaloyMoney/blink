@@ -54,10 +54,7 @@ describe("Withdraw link", () => {
     cy.get('[data-testid="voucher-amount-detail"]').should("exist")
     cy.get('[data-testid="voucher-amount-detail"]').should("be.visible")
     cy.get('[data-testid="voucher-amount-detail"]').should("not.be.disabled")
-    cy.get('[data-testid="voucher-amount-detail"]').should(
-      "have.text",
-      "$5",
-    )
+    cy.get('[data-testid="voucher-amount-detail"]').should("have.text", "$4.95")
 
     cy.get('[data-testid="voucher-id-code-detail"]').should("exist")
     cy.get('[data-testid="voucher-id-code-detail"]').should("be.visible")

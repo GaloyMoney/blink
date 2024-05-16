@@ -10,3 +10,13 @@ export function formatCurrency({
     currency,
   }).format(amount)
 }
+
+export const convertPpmToPercentage = ({ ppm }: { ppm: number }) => {
+  return ppm / 10000
+}
+
+export const convertCurrency = {
+  centsToUsd: ({ cents }: { cents: number }) => {
+    return Number((cents / 100).toFixed(2))
+  },
+}
