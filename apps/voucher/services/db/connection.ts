@@ -7,7 +7,6 @@ const knexConfig: Knex.Config = {
   connection: env.PG_CON,
   migrations: {
     directory: "./migrations",
-    extension: "ts",
   },
 }
 
