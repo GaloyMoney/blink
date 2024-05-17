@@ -66,9 +66,10 @@ const ConfirmModal = ({
   )
 
   const platformFeesInPercentage = convertPpmToPercentage({ ppm: platformFeesInPpm })
-  const platformFeesAmount = amountCalculator.profitAmount({
+
+  const platformFeesAmount = amountCalculator.platformFeesAmount({
     voucherPrice: Number(amount),
-    commissionPercentage: platformFeesInPercentage,
+    platformFeesInPpm: platformFeesInPpm,
   })
 
   const totalPaying = amountCalculator.voucherAmountAfterCommission({

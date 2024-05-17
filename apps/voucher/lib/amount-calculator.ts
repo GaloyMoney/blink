@@ -24,6 +24,16 @@ export const amountCalculator = {
     const result = voucherPrice - commissionAmount
     return Math.max(result, 0)
   },
+  platformFeesAmount({
+    voucherPrice,
+    platformFeesInPpm,
+  }: {
+    voucherPrice: number
+    platformFeesInPpm: number
+  }): number {
+    const platformFees = voucherPrice * (platformFeesInPpm / 1000000)
+    return Math.max(platformFees, 0)
+  },
   profitAmount({
     voucherPrice,
     commissionPercentage,

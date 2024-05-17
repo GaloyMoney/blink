@@ -112,7 +112,10 @@ const resolvers = {
         voucherAmount: voucherAmountInCents,
         platformFeesInPpm,
       })
-
+      const platformFeeInCents = amountCalculator.platformFeesAmount({
+        voucherPrice: salesAmountInCents,
+        platformFeesInPpm,
+      })
       if (salesAmountInCents <= 0) return new Error("Invalid sales amount")
 
       const userWalletDetails = getWalletDetailsFromWalletId({
@@ -140,6 +143,7 @@ const resolvers = {
           voucherAmountInCents,
           salesAmountInCents,
           userId: userData.me.id,
+          platformFee: platformFeeInCents,
         })
 
         if (createWithdrawLinkResponse instanceof Error) return createWithdrawLinkResponse
@@ -181,6 +185,7 @@ const resolvers = {
           voucherAmountInCents,
           salesAmountInCents,
           userId: userData.me.id,
+          platformFee: platformFeeInCents,
         })
 
         if (createWithdrawLinkResponse instanceof Error) return createWithdrawLinkResponse
