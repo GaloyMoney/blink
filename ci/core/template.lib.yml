@@ -213,7 +213,6 @@ plan:
     #@ args.append(kaniko_args)
     #@ return args
     #@ end
-    tags: ["kaniko"]
     attempts: 2
     config:
       platform: linux
