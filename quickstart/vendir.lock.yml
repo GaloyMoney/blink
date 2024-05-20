@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump @headlessui/react from 1.7.19 to 2.0.3 (#4472)...'
-      sha: 4d4291b64a20da55600eb2e7a9fb513768494e7b
+      commitTitle: 'fix: assistant function call when multple tool are needed in the
+        same… (#4483)...'
+      sha: 39c01117f30046ea4bac1c3ac8d18ab108a0eb4d
       tags:
-      - 0.20.199-3-g4d4291b64
+      - 0.20.200-1-g39c01117f
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump @headlessui/react from 1.7.19 to 2.0.3 (#4472)...'
-      sha: 4d4291b64a20da55600eb2e7a9fb513768494e7b
+      commitTitle: 'fix: assistant function call when multple tool are needed in the
+        same… (#4483)...'
+      sha: 39c01117f30046ea4bac1c3ac8d18ab108a0eb4d
       tags:
-      - 0.20.199-3-g4d4291b64
+      - 0.20.200-1-g39c01117f
     path: schemas
   - git:
-      commitTitle: 'chore(deps): bump @headlessui/react from 1.7.19 to 2.0.3 (#4472)...'
-      sha: 4d4291b64a20da55600eb2e7a9fb513768494e7b
+      commitTitle: 'fix: assistant function call when multple tool are needed in the
+        same… (#4483)...'
+      sha: 39c01117f30046ea4bac1c3ac8d18ab108a0eb4d
       tags:
-      - 0.20.199-3-g4d4291b64
+      - 0.20.200-1-g39c01117f
     path: gql
   path: graphql
 kind: LockConfig
