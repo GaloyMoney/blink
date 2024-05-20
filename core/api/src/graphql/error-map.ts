@@ -823,6 +823,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "UnknownPineconeError":
     case "CallbackServiceError":
     case "ChatAssistantNotFoundError":
+    case "TimeoutAssistantError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 
