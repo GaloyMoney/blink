@@ -11,6 +11,7 @@ import { sleep } from "@/utils"
 import { UnknownDomainError } from "@/domain/shared"
 import {
   ChatAssistantNotFoundError,
+  TimeoutAssistantError,
   UnknownChatAssistantError,
 } from "@/domain/support/errors"
 
@@ -134,30 +135,36 @@ export const Assistant = (): ChatAssistant => {
     }
   }
 
-  const processAction = async (run: OpenAI.Beta.Threads.Runs.Run) => {
+  const processAction = async (run: OpenAI.Beta.Threads.Runs.Run): Promise<string[]> => {
     const action = run.required_action
     assert(action?.type === "submit_tool_outputs")
 
-    const name = action.submit_tool_outputs.tool_calls[0].function.name
-    assert(name === "queryBlinkKnowledgeBase")
+    const outputs: string[] = []
 
-    const args = action.submit_tool_outputs.tool_calls[0].function.arguments
-    const query = JSON.parse(args).query_str
+    for (const toolCall of action.submit_tool_outputs.tool_calls) {
+      const name = toolCall.function.name
+      assert(name === "queryBlinkKnowledgeBase")
 
-    const vector = await textToVector(query)
-    if (vector instanceof Error) throw vector
+      const args = toolCall.function.arguments
+      const query = JSON.parse(args).query_str
 
-    const relatedQueries = await retrieveRelatedQueries(vector)
-    if (relatedQueries instanceof Error) throw relatedQueries
+      const vector = await textToVector(query)
+      if (vector instanceof Error) throw vector
 
-    let output = ""
-    let i = 0
-    for (const query of relatedQueries) {
-      output += `Context chunk ${i}:\n${query}\n-----\n`
-      i += 1
+      const relatedQueries = await retrieveRelatedQueries(vector)
+      if (relatedQueries instanceof Error) throw relatedQueries
+
+      let output = ""
+      let i = 0
+      for (const query of relatedQueries) {
+        output += `Context chunk ${i}:\n${query}\n-----\n`
+        i += 1
+      }
+
+      outputs.push(output)
     }
 
-    return output
+    return outputs
   }
 
   const waitForCompletion = async ({
@@ -166,8 +173,11 @@ export const Assistant = (): ChatAssistant => {
   }: {
     runId: string
     threadId: string
-  }) => {
+  }): Promise<true | ChatAssistantError> => {
     let run: OpenAI.Beta.Threads.Runs.Run
+    const maxRetries = 60 // Assuming a 30-second timeout with 500ms sleep
+    let retries = 0
+
     try {
       run = await openai.beta.threads.runs.retrieve(threadId, runId)
     } catch (err) {
@@ -177,10 +187,14 @@ export const Assistant = (): ChatAssistant => {
     while (
       ["queued", "in_progress", "cancelling", "requires_action"].includes(run.status)
     ) {
-      // TODO: max timer for this loop
-      // add open telemetry here? or is it already present with the http requests?
+      if (retries >= maxRetries) {
+        return new TimeoutAssistantError()
+      }
 
+      // Add telemetry here if needed
       await sleep(500)
+      retries += 1
+
       try {
         run = await openai.beta.threads.runs.retrieve(threadId, runId)
       } catch (err) {
@@ -188,21 +202,19 @@ export const Assistant = (): ChatAssistant => {
       }
 
       if (run.status === "requires_action") {
-        let output: string
+        let outputs: string[]
         try {
-          output = await processAction(run)
+          outputs = await processAction(run)
         } catch (err) {
           return new UnknownChatAssistantError(err)
         }
 
         try {
           await openai.beta.threads.runs.submitToolOutputs(threadId, runId, {
-            tool_outputs: [
-              {
-                tool_call_id: run.required_action?.submit_tool_outputs.tool_calls[0].id,
-                output,
-              },
-            ],
+            tool_outputs: outputs.map((output, index) => ({
+              tool_call_id: run.required_action?.submit_tool_outputs.tool_calls[index].id,
+              output,
+            })),
           })
         } catch (err) {
           return new UnknownChatAssistantError(err)
@@ -222,12 +234,12 @@ export const Assistant = (): ChatAssistant => {
       const responseThread = messages.data[0]
 
       if (responseThread.content[0]?.type !== "text") {
-        return new UnknownChatAssistantError("last message is not text")
+        return new UnknownChatAssistantError("Last message is not text")
       }
 
       return true
     } else {
-      return new UnknownChatAssistantError("issue running the assistant")
+      return new UnknownChatAssistantError("Issue running the assistant")
     }
   }
 
