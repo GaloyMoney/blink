@@ -107,15 +107,23 @@ const resolvers = {
       if (!escrowUsdWallet || !escrowUsdWallet.id)
         return new Error("Internal Server Error")
 
-      const salesAmountInCents = amountCalculator.voucherPrice({
-        commissionPercentage,
-        voucherAmount: voucherAmountInCents,
-        platformFeesInPpm,
-      })
-      const platformFeeInCents = amountCalculator.platformFeesAmount({
-        voucherPrice: salesAmountInCents,
-        platformFeesInPpm,
-      })
+      const salesAmountInCents = Number(
+        amountCalculator
+          .voucherPrice({
+            commissionPercentage,
+            voucherAmount: voucherAmountInCents,
+            platformFeesInPpm,
+          })
+          .toFixed(0),
+      )
+      const platformFeeInCents = Number(
+        amountCalculator
+          .platformFeesAmount({
+            voucherPrice: salesAmountInCents,
+            platformFeesInPpm,
+          })
+          .toFixed(0),
+      )
       if (salesAmountInCents <= 0) return new Error("Invalid sales amount")
 
       const userWalletDetails = getWalletDetailsFromWalletId({
@@ -189,11 +197,14 @@ const resolvers = {
         })
 
         if (createWithdrawLinkResponse instanceof Error) return createWithdrawLinkResponse
-        const voucherAmountWithFeesInCents =
-          amountCalculator.voucherAmountAfterCommission({
-            voucherPrice: salesAmountInCents,
-            commissionPercentage,
-          })
+        const voucherAmountWithFeesInCents = Number(
+          amountCalculator
+            .voucherAmountAfterCommission({
+              voucherPrice: salesAmountInCents,
+              commissionPercentage,
+            })
+            .toFixed(0),
+        )
 
         const usdPaymentResponse = await intraLedgerUsdPaymentSend({
           token: session.accessToken,
