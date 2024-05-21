@@ -13,7 +13,6 @@ export async function register() {
       })
     } catch (err: unknown) {
       console.log("Error making migrations", err)
-      throw err
     }
   }
 }
