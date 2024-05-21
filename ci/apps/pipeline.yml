@@ -77,10 +77,10 @@ resources:
       pool: docker-hosts
       private_key: #@ data.values.github_private_key
 
-  - name: kaniko-workers
+  - name: blink-docker-img-build
     type: pool
     source:
       uri: #@ data.values.concourse_locks_git_uri
       branch: main
-      pool: kaniko-workers
+      pool: blink-docker-img-build
       private_key: #@ data.values.github_private_key

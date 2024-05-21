@@ -106,7 +106,7 @@ plan:
         - name: repo
       run:
         path: pipeline-tasks/ci/apps/tasks/prepare-docker-build.sh
-  - { put: kaniko-workers, params: { acquire: true } }
+  - { put: blink-docker-img-build, params: { acquire: true } }
   - task: build
     #@ def build_args(app):
     #@ dockerfile_path = "repo/apps/" + app + "/Dockerfile"
@@ -132,9 +132,9 @@ plan:
         path: /bin/sh
         args: #@ build_args(app)
     ensure:
-      put: kaniko-workers
+      put: blink-docker-img-build
       params:
-        release: kaniko-workers
+        release: blink-docker-img-build
   - put: #@ edge_image_resource_name(app)
     params:
       image: image/image.tar
