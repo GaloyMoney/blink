@@ -21,6 +21,7 @@ const config: Config = {
         "secondary": "#e6ebef",
         "white": "#ffffff",
         "black": "#000000",
+        "error": "#dc2626",
       },
     },
   },
