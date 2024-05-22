@@ -18,10 +18,14 @@ export const env = createEnv({
     // PUBLIC URLs
     CORE_URL: z.string().default("http://localhost:4455/graphql"),
     VOUCHER_URL: z.string().default("http://localhost:3006"),
+
+    // fees
+    PLATFORM_FEES_IN_PPM: z.number().default(10000),
   },
   runtimeEnv: {
     CORE_URL: process.env.CORE_URL,
     VOUCHER_URL: process.env.VOUCHER_URL,
+    PLATFORM_FEES_IN_PPM: process.env.PLATFORM_FEES_IN_PPM,
 
     ESCROW_API_KEY: process.env.ESCROW_API_KEY,
     PG_CON: process.env.PG_CON,

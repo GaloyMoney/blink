@@ -90,6 +90,7 @@ export async function createWithdrawLinkMutation(input: {
   voucherAmountInCents: number
   salesAmountInCents: number
   commissionPercentage: number
+  platformFee: number
 }): Promise<WithdrawLink | Error> {
   try {
     let identifierCode = generateCode(6)
