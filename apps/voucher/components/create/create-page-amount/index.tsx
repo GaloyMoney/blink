@@ -6,24 +6,24 @@ import styles from "../create-link.module.css"
 import NumPad from "@/components/num-pad"
 import Button from "@/components/button"
 import ModalComponent from "@/components/modal-component"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, validateCommission } from "@/lib/utils"
 
 interface Props {
   amount: string
   setAmount: (amount: string) => void
   currency: string
-  setCurrentPage: (accountType: string) => void
-  commissionPercentage: string
+  commissionPercentage: number
   setConfirmModal: (currency: boolean) => void
+  setCommissionPercentage: (amount: number) => void
 }
 
 export default function HomePage({
   setAmount,
-  setCurrentPage,
   setConfirmModal,
   amount,
   currency,
   commissionPercentage,
+  setCommissionPercentage,
 }: Props) {
   const [alerts, setAlerts] = useState<boolean>(false)
   const voucherAmount =
@@ -69,23 +69,15 @@ export default function HomePage({
             currency={currency}
             commissionPercentage={Number(commissionPercentage)}
             profit={profitAmount}
+            setCommissionPercentage={setCommissionPercentage}
           />
         </div>
         <div className="flex flex-col items-center justify-center w-full sm:mt-10">
           <NumPad currentAmount={amount} setCurrentAmount={setAmount} unit="FIAT" />
-          <div className="flex justify-between w-10/12 gap-2 mt-4">
-            <Button
-              variant="outline"
-              className="w-1/4"
-              onClick={() => {
-                setCurrentPage("COMMISSION")
-              }}
-            >
-              %
-            </Button>
+          <div className="flex justify-center w-10/12 gap-2 mt-4 align-middle">
             <Button
               data-testid="create-voucher-btn"
-              className="w-3/4"
+              className="w-11/12"
               enabled={true}
               onClick={handleConfirmLink}
             >
@@ -122,16 +114,35 @@ const CommissionAndProfitSections = ({
   currency,
   commissionPercentage,
   profit,
+  setCommissionPercentage,
 }: {
   currency: string
   commissionPercentage: number
   profit: number
+  setCommissionPercentage: (amount: number) => void
 }) => {
   return (
     <div className="flex w-10/12 justify-between sm:w-9/12">
       <div className="text-left">
-        <div className="text-sm ">Commission</div>
-        <div className="text-xl font-bold">{Number(commissionPercentage)}%</div>
+        <div className="text-sm ">
+          <div className="text-sm ">commission</div>
+        </div>
+        <div className="text-xl font-bold">
+          <input
+            type="number"
+            min={0}
+            max={99}
+            value={commissionPercentage}
+            onChange={(e) => {
+              const value = e.target.value
+              const sanitizedValue = validateCommission(value)
+              localStorage.setItem("commission", String(sanitizedValue))
+              setCommissionPercentage(sanitizedValue)
+            }}
+            className="text-xl font-bold bg-secondary rounded-md p-1 w-20"
+          />{" "}
+          %
+        </div>
       </div>
       <div className="text-right">
         <div className="text-sm ">Profit</div>
