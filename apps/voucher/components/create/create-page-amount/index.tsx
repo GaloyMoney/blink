@@ -7,6 +7,7 @@ import NumPad from "@/components/num-pad"
 import Button from "@/components/button"
 import ModalComponent from "@/components/modal-component"
 import { formatCurrency } from "@/lib/utils"
+import { amountCalculator } from "@/lib/amount-calculator"
 
 interface Props {
   amount: string
@@ -15,6 +16,7 @@ interface Props {
   setCurrentPage: (accountType: string) => void
   commissionPercentage: string
   setConfirmModal: (currency: boolean) => void
+  voucherAmountInDollars: number
 }
 
 export default function HomePage({
@@ -24,14 +26,16 @@ export default function HomePage({
   amount,
   currency,
   commissionPercentage,
+  voucherAmountInDollars,
 }: Props) {
   const [alerts, setAlerts] = useState<boolean>(false)
-  const voucherAmount =
-    Number(amount) - Number(amount) * (Number(commissionPercentage) / 100)
-  const profitAmount = Number(amount) - voucherAmount
+  const profitAmount = amountCalculator.profitAmount({
+    voucherPrice: Number(amount),
+    commissionPercentage: Number(commissionPercentage),
+  })
 
   const handleConfirmLink = () => {
-    if (Number(amount) < 0.01) {
+    if (Number(amount) < 0.01 || voucherAmountInDollars < 0.01) {
       setAlerts(true)
       return
     }

@@ -111,18 +111,6 @@ export function formatSecretCode(s: string | null | undefined): string {
   return s.match(/.{1,4}/g)!.join("-")
 }
 
-export function calculateAmountAfterCommission({
-  amount,
-  commissionRatePercentage,
-}: {
-  amount: number
-  commissionRatePercentage: number
-}): number {
-  const commissionDeduction = (amount * commissionRatePercentage) / 100
-  const amountAfterCommission = amount - commissionDeduction
-  return Number(amountAfterCommission.toFixed(2))
-}
-
 export function getOffset(page: number, limit: number) {
   return (page - 1) * limit
 }
