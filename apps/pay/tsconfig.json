@@ -28,11 +28,12 @@
     "paths": {
       "@/*": ["./*"],
       "react": [ "./node_modules/@types/react" ]
-    }
+    },
   },
   "include": [
     "**/*",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "cypress/**/*.ts"
   ],
   "exclude": [
     "node_modules"
