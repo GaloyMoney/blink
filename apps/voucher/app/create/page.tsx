@@ -6,10 +6,10 @@ import { gql } from "@apollo/client"
 import { useSession } from "next-auth/react"
 
 import CreatePageAmount from "@/components/create/create-page-amount"
-import CreatePagePercentage from "@/components/create/create-page-percentage"
 import { getWalletDetails } from "@/utils/helpers"
 import ConfirmModal from "@/components/create/confirm-modal"
 import { useCurrency } from "@/context/currency-context"
+import { validateCommission } from "@/lib/utils"
 
 gql`
   mutation CreateWithdrawLink($input: CreateWithdrawLinkInput!) {
@@ -46,13 +46,12 @@ export default function CreatePage() {
   const storedCommission =
     typeof window !== "undefined" ? localStorage.getItem("commission") : null
 
-  const [commissionPercentage, setCommissionPercentage] = useState<string>(
-    storedCommission || "0",
+  const [commissionPercentage, setCommissionPercentage] = useState<number>(
+    validateCommission(storedCommission || "0"),
   )
 
   const [amount, setAmount] = useState<string>("0")
   const [confirmModal, setConfirmModal] = useState<boolean>(false)
-  const [currentPage, setCurrentPage] = useState<string>("AMOUNT")
 
   if (!session?.data?.userData?.me?.defaultAccount.wallets) {
     return null
@@ -66,8 +65,8 @@ export default function CreatePage() {
     return null
   }
 
-  if (currentPage === "AMOUNT") {
-    return (
+  return (
+    <>
       <div className="top_page_container">
         <ConfirmModal
           open={confirmModal}
@@ -83,23 +82,11 @@ export default function CreatePage() {
           amount={amount}
           currency={currency}
           setAmount={setAmount}
-          setCurrentPage={setCurrentPage}
           setConfirmModal={setConfirmModal}
           commissionPercentage={commissionPercentage}
+          setCommissionPercentage={setCommissionPercentage}
         />
       </div>
-    )
-  } else {
-    return (
-      <>
-        <div className="top_page_container">
-          <CreatePagePercentage
-            commissionPercentage={commissionPercentage}
-            setCommissionPercentage={setCommissionPercentage}
-            setCurrentPage={setCurrentPage}
-          />
-        </div>
-      </>
-    )
-  }
+    </>
+  )
 }

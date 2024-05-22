@@ -21,7 +21,7 @@ type Props = {
   onClose: (currency: MouseEvent<HTMLButtonElement>) => void
   amount: string
   currency: string
-  commissionPercentage: string
+  commissionPercentage: number
   btcWallet: WalletDetails
   usdWallet: WalletDetails
 }
