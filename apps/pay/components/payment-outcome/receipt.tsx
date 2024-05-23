@@ -1,10 +1,11 @@
 "use client"
+
 import React from "react"
 import Image from "react-bootstrap/Image"
 
-import GaloyIcon from "@/components/payment-outcome/galoy-icon"
-import styles from "@/components/payment-outcome/payment-outcome.module.css"
+import styles from "./payment-outcome.module.css"
 
+import GaloyIcon from "@/components/galoy-icon"
 import { formattedDate, formattedTime } from "@/lib/utils/date-util"
 
 interface Props {

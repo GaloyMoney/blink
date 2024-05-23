@@ -1,0 +1,63 @@
+.paymentContainer {
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px,
+    rgb(209, 213, 219) 0px 0px 0px 1px inset;
+  border-radius: 1em;
+  width: 95%;
+  max-width: 40em;
+  margin: 1em auto;
+  align-self: center;
+  padding: 1.5em;
+}
+
+.headerContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.headerContainer > button {
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  outline: none;
+  position: absolute;
+  left: -50%;
+  transition: all 0.5s ease;
+}
+
+.headerContainer > button:hover,
+.headerContainer > button:focus {
+  outline: 1px solid rgba(239, 241, 245, 1);
+  border-radius: 50%;
+  padding: 0.75rem 0.85rem;
+}
+
+.title {
+  color: rgba(17, 25, 40, 1);
+  font-weight: 600;
+  line-height: 24px;
+  margin-top: 12px;
+  margin-bottom: 6px;
+  text-transform: capitalize;
+}
+
+@media (max-width: 768px) {
+  .paymentContainer {
+    box-shadow: none;
+    margin-top: 0;
+    width: 100%;
+  }
+
+  .title {
+    display: none;
+  }
+}
+
+@media print {
+  .title {
+    display: none;
+  }
+}
