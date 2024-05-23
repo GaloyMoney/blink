@@ -66,7 +66,7 @@ const Memo = ({ state, dispatch }: Props) => {
           aria-labelledby="contained-modal-title-vcenter"
           centered
         >
-          <Modal.Header placeholder="" className={styles.modalHeader} closeButton>
+          <Modal.Header className={styles.modalHeader} closeButton>
             Add note
           </Modal.Header>
           <Modal.Body>

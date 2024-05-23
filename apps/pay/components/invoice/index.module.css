@@ -1,0 +1,179 @@
+.invoiceContainer {
+  display: grid;
+  place-items: center;
+}
+
+.timerContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 300px;
+  column-gap: 15px;
+  font-size: 16px;
+  font-weight: 300;
+  margin-top: 30px;
+  margin-bottom: 5px;
+}
+
+.timerContainer > p {
+  margin: 0;
+}
+
+.qrClipboard {
+  text-align: center;
+  justify-content: space-between;
+  padding: 0.3em 1em;
+}
+
+.qrClipboard > button {
+  width: fit-content;
+  background-color: transparent;
+  color: rgba(145, 155, 186, 1);
+  font-weight: 500;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  outline: none;
+  column-gap: 5px;
+  cursor: pointer;
+}
+.qrClipboard > .expirationLabel {
+  font-size: 12px;
+}
+
+.qrClipboard > button:first-child {
+  float: left;
+  cursor: copy;
+}
+
+.qrClipboard > button:first-child:hover {
+  color: green;
+}
+
+.qrClipboard > button:last-child {
+  float: right;
+}
+
+.amountContainer {
+  width: 100%;
+  border: 0px;
+  color: black;
+  background-color: transparent;
+  text-align: center;
+  font-weight: 600;
+  font-size: 48px;
+  height: 3rem;
+}
+
+.successContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.3em 1em;
+
+  color: rgba(17, 25, 40, 1);
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 32px;
+  text-align: center;
+}
+
+.successContainer > div:first-child {
+  display: grid;
+  place-items: center;
+  row-gap: 1rem;
+  margin-bottom: 1em;
+  max-width: 293px;
+}
+
+.error {
+  color: red;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 15% 1rem;
+  margin-top: 2rem;
+  outline: 1px dashed rgba(255, 0, 0, 0.35);
+  flex-direction: column;
+}
+
+.error > p {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.copyAndShare {
+  display: flex;
+  align-items: center;
+}
+
+.textBetween {
+  margin-right: 10px; /* Adjust as needed */
+}
+
+.statusActionsContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  column-gap: 0.5rem;
+  margin-top: 1.5em;
+}
+
+.primaryBtn {
+  background: var(--primary3);
+  color: #fff;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  outline: none;
+  padding: 0.9em 3em;
+  border-radius: 10em;
+  gap: 0.5em;
+  cursor: pointer;
+}
+
+.secondaryBtn {
+  background: var(--lighterGrey);
+  color: #000000;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  outline: none;
+  padding: 0.9em 3em;
+  border-radius: 10em;
+  gap: 0.5em;
+  cursor: pointer;
+}
+
+.reference {
+  word-break: break-all;
+  width: 270px;
+  margin: auto;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+}
+
+.link:hover {
+  text-decoration: none;
+}
+
+@media print {
+  .invoiceContainer, .secondaryBtn {
+      display:none;
+  }
+}
