@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(pay): add checkout page (#4363)...'
-      sha: 09aa439cd065afd89f3dff3ba6e411291285fdf2
+      commitTitle: 'fix(pay): update withAuth middleware params (#4488)...'
+      sha: bb9561728ec930bbe5d40d9b48016896f06f998a
       tags:
-      - 0.20.201-3-g09aa439cd
+      - 0.20.202-1-gbb9561728
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(pay): add checkout page (#4363)...'
-      sha: 09aa439cd065afd89f3dff3ba6e411291285fdf2
+      commitTitle: 'fix(pay): update withAuth middleware params (#4488)...'
+      sha: bb9561728ec930bbe5d40d9b48016896f06f998a
       tags:
-      - 0.20.201-3-g09aa439cd
+      - 0.20.202-1-gbb9561728
     path: schemas
   - git:
-      commitTitle: 'feat(pay): add checkout page (#4363)...'
-      sha: 09aa439cd065afd89f3dff3ba6e411291285fdf2
+      commitTitle: 'fix(pay): update withAuth middleware params (#4488)...'
+      sha: bb9561728ec930bbe5d40d9b48016896f06f998a
       tags:
-      - 0.20.201-3-g09aa439cd
+      - 0.20.202-1-gbb9561728
     path: gql
   path: graphql
 kind: LockConfig
