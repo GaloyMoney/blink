@@ -1,4 +1,4 @@
-import type { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { NextRequestWithAuth, withAuth } from "next-auth/middleware"
 
 export const config = { matcher: ["/:username/transaction", "/checkout/:hash*"] }
