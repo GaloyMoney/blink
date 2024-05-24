@@ -1,5 +1,5 @@
-import { withAuth } from "next-auth/middleware"
-import { NextRequest, NextResponse } from "next/server"
+import type { NextRequest, NextResponse } from "next/server"
+import { NextRequestWithAuth, withAuth } from "next-auth/middleware"
 
 export const config = { matcher: ["/:username/transaction", "/checkout/:hash*"] }
 
@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
     return checkoutMiddleware(request)
   }
 
-  return withAuth()
+  return withAuth(request as NextRequestWithAuth)
 }
 
 async function checkoutMiddleware(request: NextRequest) {
