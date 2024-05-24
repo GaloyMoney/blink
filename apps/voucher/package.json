@@ -10,7 +10,7 @@
     "codegen": "graphql-codegen --config codegen.yml",
     "test:unit": "jest --config=config/jest.config.js --forceExit",
     "db:status": "knex --knexfile ./services/db/connection.ts migrate:status",
-    "db:create": "knex --knexfile ./services/db/connection.ts migrate:make -x ts",
+    "db:create": "knex --knexfile ./services/db/connection.ts migrate:make -x mjs",
     "db:migrate": "knex --knexfile ./services/db/connection.ts migrate:latest",
     "db:rollback": "knex --knexfile ./services/db/connection.ts migrate:rollback",
     "db:create:seed": "knex --knexfile ./services/db/connection.ts seed:make -x ts",
