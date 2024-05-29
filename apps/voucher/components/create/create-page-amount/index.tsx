@@ -10,8 +10,8 @@ import { formatCurrency } from "@/lib/utils"
 import { amountCalculator } from "@/lib/amount-calculator"
 
 interface Props {
-  amount: string
-  setAmount: (amount: string) => void
+  voucherPrice: string
+  setVoucherPrice: (amount: string) => void
   currency: string
   setCurrentPage: (accountType: string) => void
   commissionPercentage: string
@@ -20,22 +20,22 @@ interface Props {
 }
 
 export default function HomePage({
-  setAmount,
+  setVoucherPrice,
   setCurrentPage,
   setConfirmModal,
-  amount,
+  voucherPrice,
   currency,
   commissionPercentage,
   voucherAmountInDollars,
 }: Props) {
   const [alerts, setAlerts] = useState<boolean>(false)
   const profitAmount = amountCalculator.profitAmount({
-    voucherPrice: Number(amount),
+    voucherPrice: Number(voucherPrice),
     commissionPercentage: Number(commissionPercentage),
   })
 
   const handleConfirmLink = () => {
-    if (Number(amount) < 0.01 || voucherAmountInDollars < 0.01) {
+    if (Number(voucherPrice) < 0.01 || voucherAmountInDollars < 0.01) {
       setAlerts(true)
       return
     }
@@ -68,7 +68,7 @@ export default function HomePage({
         className={`flex flex-col sm:h-full h-[calc(100dvh-6rem)] justify-between w-full`}
       >
         <div className="flex flex-col items-center justify-center w-full gap-10">
-          <SalesAmountSection amount={amount} currency={currency} />
+          <SalesAmountSection amount={voucherPrice} currency={currency} />
           <CommissionAndProfitSections
             currency={currency}
             commissionPercentage={Number(commissionPercentage)}
@@ -76,7 +76,11 @@ export default function HomePage({
           />
         </div>
         <div className="flex flex-col items-center justify-center w-full sm:mt-10">
-          <NumPad currentAmount={amount} setCurrentAmount={setAmount} unit="FIAT" />
+          <NumPad
+            currentValue={voucherPrice}
+            setCurrentValue={setVoucherPrice}
+            unit="FIAT"
+          />
           <div className="flex justify-between w-10/12 gap-2 mt-4">
             <Button
               variant="outline"
@@ -111,7 +115,7 @@ const SalesAmountSection = ({
 }) => {
   return (
     <div className="flex flex-col justify-center align-middle text-center gap-3">
-      <p>Sales Amount </p>
+      <p>Voucher Price </p>
       <div className="text-4xl font-semibold">
         {formatCurrency({
           amount: Number(amount),

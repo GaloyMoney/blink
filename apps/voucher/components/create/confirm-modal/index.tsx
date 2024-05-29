@@ -20,7 +20,7 @@ import { amountCalculator } from "@/lib/amount-calculator"
 type Props = {
   open: boolean
   onClose: (currency: MouseEvent<HTMLButtonElement>) => void
-  amount: string
+  voucherPrice: string
   currency: string
   commissionPercentage: string
   btcWallet: WalletDetails
@@ -33,7 +33,7 @@ type Props = {
 const ConfirmModal = ({
   open,
   onClose,
-  amount,
+  voucherPrice,
   currency,
   commissionPercentage,
   btcWallet,
@@ -45,10 +45,9 @@ const ConfirmModal = ({
   const router = useRouter()
   const { update } = useSession()
 
-  const [selectedWalletId, setSelectedWalletId] = useState("")
+  const [selectedWalletId, setSelectedWalletId] = useState(btcWallet.id)
   const [modalLoading, setModalLoading] = useState<boolean>(false)
   const [modalError, setModalError] = useState<string | null>(null)
-  const [formIsValid, setFormIsValid] = useState(false)
 
   const [createWithdrawLink, { loading: withdrawLinkLoading }] =
     useCreateWithdrawLinkMutation()
@@ -59,7 +58,7 @@ const ConfirmModal = ({
   })
 
   const profitAmount = amountCalculator.profitAmount({
-    voucherPrice: Number(amount),
+    voucherPrice: Number(voucherPrice),
     commissionPercentage: Number(commissionPercentage),
   })
 
@@ -70,12 +69,12 @@ const ConfirmModal = ({
   const platformFeesInPercentage = convertPpmToPercentage({ ppm: platformFeesInPpm })
 
   const platformFeesAmount = amountCalculator.platformFeesAmount({
-    voucherPrice: Number(amount),
+    voucherPrice: Number(voucherPrice),
     platformFeesInPpm: platformFeesInPpm,
   })
 
   const totalPaying = amountCalculator.voucherAmountAfterCommission({
-    voucherPrice: Number(amount),
+    voucherPrice: Number(voucherPrice),
     commissionPercentage: Number(commissionPercentage),
   })
 
@@ -125,28 +124,105 @@ const ConfirmModal = ({
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = e.target.value
     setSelectedWalletId(selected === "btc" ? btcWallet.id : usdWallet.id)
-    setFormIsValid(selected !== "default")
   }
 
-  const renderErrorModal = () => (
-    <div className="flex flex-col justify-between gap-4 h-full">
-      <h1 className={styles.modalTitle}>Error</h1>
-      <div className="text-center mt-0">
-        <p className={styles.modalText}>{modalError}</p>
+  return (
+    <ModalComponent open={open} onClose={onClose}>
+      <div className={`${styles.modal_container} h-full`}>
+        {modalLoading || withdrawLinkLoading ? (
+          <LoadingComponent />
+        ) : modalError ? (
+          <ErrorMessage errorMessage={modalError} setModalError={setModalError} />
+        ) : (
+          <Details
+            voucherAmountInDollars={voucherAmountInDollars}
+            commissionPercentage={commissionPercentage}
+            profitAmount={profitAmount}
+            usdToCurrencyRate={usdToCurrencyRate}
+            totalPaying={totalPaying}
+            platformFeesInPercentage={platformFeesInPercentage}
+            platformFeesAmount={platformFeesAmount}
+            currency={currency}
+            btcWallet={btcWallet}
+            usdWallet={usdWallet}
+            handleSelectChange={handleSelectChange}
+            selectedWalletId={selectedWalletId}
+            handleSubmit={handleSubmit}
+            voucherPrice={voucherPrice}
+            onClose={onClose}
+          />
+        )}
       </div>
-      <Button className="w-full" onClick={() => setModalError(null)}>
-        Okay
-      </Button>
-    </div>
+    </ModalComponent>
   )
+}
 
-  const renderConfirmationModal = () => (
+const ErrorMessage = ({
+  errorMessage,
+  setModalError,
+}: {
+  errorMessage: string
+  setModalError: (value: string | null) => void
+}) => (
+  <div className="flex flex-col justify-between gap-4 h-full">
+    <h1 className={styles.modalTitle}>Error</h1>
+    <div className="text-center mt-0">
+      <p className={styles.modalText}>{errorMessage}</p>
+    </div>
+    <Button className="w-full" onClick={() => setModalError(null)}>
+      Okay
+    </Button>
+  </div>
+)
+
+const Details = ({
+  voucherAmountInDollars,
+  commissionPercentage,
+  profitAmount,
+  usdToCurrencyRate,
+  totalPaying,
+  platformFeesInPercentage,
+  platformFeesAmount,
+  currency,
+  btcWallet,
+  usdWallet,
+  handleSelectChange,
+  selectedWalletId,
+  handleSubmit,
+  voucherPrice,
+  onClose,
+}: {
+  voucherAmountInDollars: number
+  commissionPercentage: string
+  profitAmount: number
+  usdToCurrencyRate: number
+  totalPaying: number
+  platformFeesInPercentage: number
+  platformFeesAmount: number
+  currency: string
+  btcWallet: WalletDetails
+  usdWallet: WalletDetails
+  handleSelectChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  selectedWalletId: string
+  voucherPrice: string
+  onClose: (e: MouseEvent<HTMLButtonElement>) => void
+  handleSubmit: ({
+    voucherAmountInCents,
+    commissionPercentage,
+    walletId,
+  }: {
+    voucherAmountInCents: number
+    commissionPercentage: number
+    walletId: string
+  }) => void
+}) => {
+  return (
     <>
       <div className="flex justify-between w-full">
         <div>
           <h3 className={styles.modalSubtitle}>Price</h3>
           <p className={styles.modalText}>
-            {formatCurrency({ amount: Number(amount), currency })} {currency}
+            {formatCurrency({ amount: Number(voucherPrice), currency })} {currency}
           </p>
         </div>
         <div>
@@ -220,7 +296,6 @@ const ConfirmModal = ({
         <Button
           className="w-full"
           data-testid="pay-voucher-amount-btn"
-          disabled={!formIsValid}
           onClick={() =>
             handleSubmit({
               voucherAmountInCents: Number(
@@ -242,20 +317,6 @@ const ConfirmModal = ({
         </Button>
       </div>
     </>
-  )
-
-  return (
-    <ModalComponent open={open} onClose={onClose}>
-      <div className={`${styles.modal_container} h-full`}>
-        {modalLoading || withdrawLinkLoading ? (
-          <LoadingComponent />
-        ) : modalError ? (
-          renderErrorModal()
-        ) : (
-          renderConfirmationModal()
-        )}
-      </div>
-    </ModalComponent>
   )
 }
 

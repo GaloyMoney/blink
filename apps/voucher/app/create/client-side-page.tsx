@@ -57,19 +57,19 @@ export default function CreatePage({ platformFeesInPpm }: Props) {
     storedCommission || "0",
   )
 
-  const [amount, setAmount] = useState<string>("0")
+  const [voucherPrice, setVoucherPrice] = useState<string>("0")
   const [confirmModal, setConfirmModal] = useState<boolean>(false)
   const [currentPage, setCurrentPage] = useState<string>("AMOUNT")
 
   const { data: currencyConversion, refetch } = useCurrencyConversionEstimationQuery({
-    variables: { amount: Number(amount), currency },
+    variables: { amount: Number(voucherPrice), currency },
     context: { endpoint: "GALOY" },
     pollInterval: 60000,
   })
 
   useEffect(() => {
-    refetch({ amount: Number(amount), currency })
-  }, [amount, currency, refetch])
+    refetch({ amount: Number(voucherPrice), currency })
+  }, [voucherPrice, currency, refetch])
 
   const voucherAmountInCents =
     amountCalculator.voucherAmountAfterPlatformFeesAndCommission({
@@ -100,7 +100,7 @@ export default function CreatePage({ platformFeesInPpm }: Props) {
         <ConfirmModal
           open={confirmModal}
           onClose={() => setConfirmModal(false)}
-          amount={amount}
+          voucherPrice={voucherPrice}
           currency={currency}
           commissionPercentage={commissionPercentage}
           btcWallet={btcWallet}
@@ -113,9 +113,9 @@ export default function CreatePage({ platformFeesInPpm }: Props) {
         />
 
         <CreatePageAmount
-          amount={amount}
+          voucherPrice={voucherPrice}
           currency={currency}
-          setAmount={setAmount}
+          setVoucherPrice={setVoucherPrice}
           setCurrentPage={setCurrentPage}
           setConfirmModal={setConfirmModal}
           commissionPercentage={commissionPercentage}
