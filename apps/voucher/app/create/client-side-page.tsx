@@ -3,11 +3,8 @@ import { useEffect, useState } from "react"
 
 import { gql } from "@apollo/client"
 
-import { useSession } from "next-auth/react"
-
 import CreatePageAmount from "@/components/create/create-page-amount"
 import CreatePagePercentage from "@/components/create/create-page-percentage"
-import { getWalletDetails } from "@/utils/helpers"
 import ConfirmModal from "@/components/create/confirm-modal"
 import { useCurrency } from "@/context/currency-context"
 import { useCurrencyConversionEstimationQuery } from "@/lib/graphql/generated"
@@ -48,15 +45,8 @@ type Props = {
 }
 
 export default function CreatePage({ platformFeesInPpm }: Props) {
-  const session = useSession()
   const { currency } = useCurrency()
-
-  const storedCommission =
-    typeof window !== "undefined" ? localStorage.getItem("commission") : null
-  const [commissionPercentage, setCommissionPercentage] = useState<string>(
-    storedCommission || "0",
-  )
-
+  const [commissionPercentage, setCommissionPercentage] = useState("0")
   const [voucherPrice, setVoucherPrice] = useState<string>("0")
   const [confirmModal, setConfirmModal] = useState<boolean>(false)
   const [currentPage, setCurrentPage] = useState<string>("AMOUNT")
@@ -65,11 +55,19 @@ export default function CreatePage({ platformFeesInPpm }: Props) {
     variables: { amount: Number(voucherPrice), currency },
     context: { endpoint: "GALOY" },
     pollInterval: 60000,
+    fetchPolicy: "no-cache",
   })
 
   useEffect(() => {
     refetch({ amount: Number(voucherPrice), currency })
   }, [voucherPrice, currency, refetch])
+
+  useEffect(() => {
+    const value = localStorage.getItem("commission")
+    if (value) {
+      setCommissionPercentage(value)
+    }
+  }, [])
 
   const voucherAmountInCents =
     amountCalculator.voucherAmountAfterPlatformFeesAndCommission({
@@ -82,29 +80,15 @@ export default function CreatePage({ platformFeesInPpm }: Props) {
     cents: voucherAmountInCents,
   })
 
-  if (!session?.data?.userData?.me?.defaultAccount.wallets) {
-    return null
-  }
-
-  const { btcWallet, usdWallet } = getWalletDetails({
-    wallets: session?.data?.userData?.me?.defaultAccount?.wallets,
-  })
-
-  if (!btcWallet || !usdWallet) {
-    return null
-  }
-
   if (currentPage === "AMOUNT") {
     return (
       <div className="top_page_container">
         <ConfirmModal
           open={confirmModal}
           onClose={() => setConfirmModal(false)}
-          voucherPrice={voucherPrice}
+          voucherPrice={Number(voucherPrice)}
           currency={currency}
-          commissionPercentage={commissionPercentage}
-          btcWallet={btcWallet}
-          usdWallet={usdWallet}
+          commissionPercentage={Number(commissionPercentage)}
           platformFeesInPpm={platformFeesInPpm}
           voucherAmountInDollars={voucherAmountInDollars}
           voucherPriceInCents={

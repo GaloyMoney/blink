@@ -53,11 +53,9 @@ export default function HomePage({
         <div className={styles.alert_box}>
           Amount cannot be less than 0.01
           <Button
+            className="w-1/2"
             onClick={() => {
               setAlerts(false)
-            }}
-            style={{
-              width: "8rem",
             }}
           >
             Ok

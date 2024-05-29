@@ -84,8 +84,8 @@ export default function VoucherPage() {
   return (
     <div className="top_page_container">
       <ModalComponent open={modalOpen} onClose={() => setModalOpen(false)}>
-        <div>
-          <p>Invalid Code</p>
+        <div className="flex flex-col gap-4 w-full justify-center align-middle items-center">
+          <p className="text-center">Redeem Code is Invalid please enter a valid Code.</p>
           <Button style={{ width: "8em" }} onClick={() => setModalOpen(false)}>
             Ok
           </Button>

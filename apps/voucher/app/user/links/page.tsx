@@ -42,6 +42,7 @@ export default function UserLinks() {
     variables: {
       status,
     },
+    fetchPolicy: "no-cache",
     pollInterval: poll ? 10000 : 0,
   })
 
