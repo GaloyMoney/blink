@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@apollo/server": "^4.10.4",
-    "@aws-sdk/client-s3": "^3.572.0",
+    "@aws-sdk/client-s3": "^3.583.0",
     "@galoy/gt3-server-node-express-sdk": "workspace:^",
     "@google-cloud/storage": "^7.11.0",
     "@grpc/grpc-js": "^1.10.7",
