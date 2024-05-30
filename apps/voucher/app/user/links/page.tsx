@@ -27,6 +27,8 @@ gql`
         status
         userId
         voucherAmountInCents
+        displayVoucherPrice
+        displayCurrency
       }
     }
   }
