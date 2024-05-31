@@ -7,7 +7,11 @@ import Link from "next/link"
 
 import { encodeURLToLNURL } from "@/utils/helpers"
 import PageLoadingComponents from "@/components/loading/page-loading-component"
-import { useGetWithdrawLinkQuery, Status } from "@/lib/graphql/generated"
+import {
+  useGetWithdrawLinkQuery,
+  Status,
+  WithdrawLinkWithSecret,
+} from "@/lib/graphql/generated"
 import Button from "@/components/button"
 import FundsPaid from "@/components/funds-paid"
 
@@ -25,6 +29,8 @@ gql`
       userId
       voucherAmountInCents
       voucherSecret
+      displayVoucherPrice
+      displayCurrency
     }
   }
 `
@@ -35,13 +41,7 @@ type Props = {
 }
 
 type VoucherDetailsProps = {
-  withdrawLink: {
-    identifierCode: string
-    voucherAmountInCents: number
-    salesAmountInCents: number
-    commissionPercentage: number
-    voucherSecret: string
-  }
+  withdrawLink: WithdrawLinkWithSecret
   revealLNURL: boolean
   lnurl: string
   copyToClipboard: () => void
@@ -151,10 +151,7 @@ const VoucherDetails = ({
             </p>
           </div>
           <div>
-            Price{" "}
-            <span className="font-bold">
-              ${withdrawLink.salesAmountInCents / 100} USD
-            </span>
+            Price <span className="font-bold">{withdrawLink.displayVoucherPrice}</span>
           </div>
           <div>
             Commission{" "}
@@ -174,7 +171,7 @@ const VoucherDetails = ({
           <div
             className={`flex flex-col gap-2 m-auto mt-4 ${revealLNURL ? "" : "blur-sm"}`}
           >
-            <QRCode logoImage="/blink-logo.svg" size={300} value={lnurl} />
+            <QRCode logoImage="/blink-logo.svg" size={280} value={lnurl} />
           </div>
         </div>
         <div className="flex justify-between mt-2 w-11/12 m-auto p-1">

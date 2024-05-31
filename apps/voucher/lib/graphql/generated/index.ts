@@ -77,6 +77,8 @@ export type Scalars = {
   TotpRegistrationId: { input: any; output: any; }
   /** A secret to generate time-based one-time password */
   TotpSecret: { input: any; output: any; }
+  /** An external reference id that can be optionally added for transactions. */
+  TxExternalId: { input: any; output: any; }
   /** Unique identifier of a user */
   Username: { input: any; output: any; }
   /** Unique identifier of a wallet */
@@ -85,6 +87,7 @@ export type Scalars = {
 
 export type Account = {
   callbackEndpoints: Array<CallbackEndpoint>;
+  callbackPortalUrl: Scalars['String']['output'];
   csvTransactions: Scalars['String']['output'];
   defaultWallet: PublicWallet;
   /** @deprecated Shifting property to 'defaultWallet.id' */
@@ -361,6 +364,7 @@ export type CentAmountPayload = {
 export type ConsumerAccount = Account & {
   __typename?: 'ConsumerAccount';
   callbackEndpoints: Array<CallbackEndpoint>;
+  callbackPortalUrl: Scalars['String']['output'];
   /** return CSV stream, base64 encoded, of the list of transactions in the wallet */
   csvTransactions: Scalars['String']['output'];
   defaultWallet: PublicWallet;
@@ -429,6 +433,8 @@ export type Country = {
 
 export type CreateWithdrawLinkInput = {
   commissionPercentage?: InputMaybe<Scalars['Float']['input']>;
+  displayCurrency: Scalars['String']['input'];
+  displayVoucherPrice: Scalars['String']['input'];
   voucherAmountInCents: Scalars['Float']['input'];
   walletId: Scalars['ID']['input'];
 };
@@ -575,6 +581,8 @@ export type IntraLedgerUsdPaymentSendInput = {
 /** A lightning invoice. */
 export type Invoice = {
   createdAt: Scalars['Timestamp']['output'];
+  /** The unique external id set for the invoice. */
+  externalId: Scalars['TxExternalId']['output'];
   /** The payment hash of the lightning invoice. */
   paymentHash: Scalars['PaymentHash']['output'];
   /** The bolt11 invoice to be paid. */
@@ -621,6 +629,7 @@ export type LnAddressPaymentSendInput = {
 export type LnInvoice = Invoice & {
   __typename?: 'LnInvoice';
   createdAt: Scalars['Timestamp']['output'];
+  externalId: Scalars['TxExternalId']['output'];
   paymentHash: Scalars['PaymentHash']['output'];
   paymentRequest: Scalars['LnPaymentRequest']['output'];
   paymentSecret: Scalars['LnPaymentSecret']['output'];
@@ -639,6 +648,7 @@ export type LnInvoiceCreateInput = {
   amount: Scalars['SatAmount']['input'];
   /** Optional invoice expiration time in minutes. */
   expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. */
   memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a BTC wallet belonging to the current account. */
@@ -651,6 +661,7 @@ export type LnInvoiceCreateOnBehalfOfRecipientInput = {
   descriptionHash?: InputMaybe<Scalars['Hex32Bytes']['input']>;
   /** Optional invoice expiration time in minutes. */
   expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. */
   memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a BTC wallet which belongs to any account. */
@@ -707,6 +718,7 @@ export type LnInvoicePaymentStatusPayload = {
 export type LnNoAmountInvoice = Invoice & {
   __typename?: 'LnNoAmountInvoice';
   createdAt: Scalars['Timestamp']['output'];
+  externalId: Scalars['TxExternalId']['output'];
   paymentHash: Scalars['PaymentHash']['output'];
   paymentRequest: Scalars['LnPaymentRequest']['output'];
   paymentSecret: Scalars['LnPaymentSecret']['output'];
@@ -716,6 +728,7 @@ export type LnNoAmountInvoice = Invoice & {
 export type LnNoAmountInvoiceCreateInput = {
   /** Optional invoice expiration time in minutes. */
   expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. */
   memo?: InputMaybe<Scalars['Memo']['input']>;
   /** ID for either a USD or BTC wallet belonging to the account of the current user. */
@@ -725,6 +738,7 @@ export type LnNoAmountInvoiceCreateInput = {
 export type LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = {
   /** Optional invoice expiration time in minutes. */
   expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. */
   memo?: InputMaybe<Scalars['Memo']['input']>;
   /** ID for either a USD or BTC wallet which belongs to the account of any user. */
@@ -787,6 +801,7 @@ export type LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput = {
   descriptionHash?: InputMaybe<Scalars['Hex32Bytes']['input']>;
   /** Optional invoice expiration time in minutes. */
   expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. Acts as a note to the recipient. */
   memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a USD wallet which belongs to the account of any user. */
@@ -798,6 +813,7 @@ export type LnUsdInvoiceCreateInput = {
   amount: Scalars['CentAmount']['input'];
   /** Optional invoice expiration time in minutes. */
   expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. */
   memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a USD wallet belonging to the current user. */
@@ -810,6 +826,7 @@ export type LnUsdInvoiceCreateOnBehalfOfRecipientInput = {
   descriptionHash?: InputMaybe<Scalars['Hex32Bytes']['input']>;
   /** Optional invoice expiration time in minutes. */
   expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
+  externalId?: InputMaybe<Scalars['TxExternalId']['input']>;
   /** Optional memo for the lightning invoice. Acts as a note to the recipient. */
   memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a USD wallet which belongs to the account of any user. */
@@ -986,6 +1003,7 @@ export type Mutation = {
   quizClaim: QuizClaimPayload;
   redeemWithdrawLinkOnChain: RedeemWithdrawLinkOnChainResult;
   supportChatMessageAdd: SupportChatMessageAddPayload;
+  supportChatReset: SuccessPayload;
   /** @deprecated will be moved to AccountContact */
   userContactUpdateAlias: UserContactUpdateAliasPayload;
   userEmailDelete: UserEmailDeletePayload;
@@ -1778,6 +1796,7 @@ export type Transaction = {
   __typename?: 'Transaction';
   createdAt: Scalars['Timestamp']['output'];
   direction: TxDirection;
+  externalId?: Maybe<Scalars['TxExternalId']['output']>;
   id: Scalars['ID']['output'];
   /** From which protocol the payment has been initiated. */
   initiationVia: InitiationVia;
@@ -2214,6 +2233,8 @@ export type WithdrawLink = {
   __typename?: 'WithdrawLink';
   commissionPercentage: Scalars['Float']['output'];
   createdAt: Scalars['String']['output'];
+  displayCurrency: Scalars['String']['output'];
+  displayVoucherPrice: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   identifierCode: Scalars['String']['output'];
   paidAt?: Maybe<Scalars['String']['output']>;
@@ -2227,6 +2248,8 @@ export type WithdrawLinkWithSecret = {
   __typename?: 'WithdrawLinkWithSecret';
   commissionPercentage: Scalars['Float']['output'];
   createdAt: Scalars['String']['output'];
+  displayCurrency: Scalars['String']['output'];
+  displayVoucherPrice: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   identifierCode: Scalars['String']['output'];
   paidAt?: Maybe<Scalars['String']['output']>;
@@ -2263,14 +2286,14 @@ export type GetWithdrawLinksByUserIdQueryVariables = Exact<{
 }>;
 
 
-export type GetWithdrawLinksByUserIdQuery = { __typename?: 'Query', getWithdrawLinksByUserId: { __typename?: 'WithdrawLinksByUserIdResult', withdrawLinks: Array<{ __typename?: 'WithdrawLink', commissionPercentage: number, id: string, createdAt: string, identifierCode: string, paidAt?: string | null, salesAmountInCents: number, status: Status, userId: string, voucherAmountInCents: number }> } };
+export type GetWithdrawLinksByUserIdQuery = { __typename?: 'Query', getWithdrawLinksByUserId: { __typename?: 'WithdrawLinksByUserIdResult', withdrawLinks: Array<{ __typename?: 'WithdrawLink', commissionPercentage: number, id: string, createdAt: string, identifierCode: string, paidAt?: string | null, salesAmountInCents: number, status: Status, userId: string, voucherAmountInCents: number, displayVoucherPrice: string, displayCurrency: string }> } };
 
 export type GetWithdrawLinkQueryVariables = Exact<{
   voucherSecret?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
-export type GetWithdrawLinkQuery = { __typename?: 'Query', getWithdrawLink?: { __typename?: 'WithdrawLinkWithSecret', commissionPercentage: number, createdAt: string, id: string, identifierCode: string, paidAt?: string | null, salesAmountInCents: number, status: Status, uniqueHash: string, userId: string, voucherAmountInCents: number, voucherSecret: string } | null };
+export type GetWithdrawLinkQuery = { __typename?: 'Query', getWithdrawLink?: { __typename?: 'WithdrawLinkWithSecret', commissionPercentage: number, createdAt: string, id: string, identifierCode: string, paidAt?: string | null, salesAmountInCents: number, status: Status, uniqueHash: string, userId: string, voucherAmountInCents: number, voucherSecret: string, displayVoucherPrice: string, displayCurrency: string } | null };
 
 export type OnChainWithdrawLinkMutationVariables = Exact<{
   input: RedeemWithdrawLinkOnChainInput;
@@ -2283,29 +2306,6 @@ export type CurrencyListQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type CurrencyListQuery = { __typename?: 'Query', currencyList: Array<{ __typename?: 'Currency', id: string, symbol: string, name: string, flag: string, fractionDigits: number }> };
-
-export type RealtimePriceInitialQueryVariables = Exact<{
-  currency: Scalars['DisplayCurrency']['input'];
-}>;
-
-
-export type RealtimePriceInitialQuery = { __typename?: 'Query', realtimePrice: { __typename?: 'RealtimePrice', timestamp: any, denominatorCurrency: any, btcSatPrice: { __typename?: 'PriceOfOneSatInMinorUnit', base: any, offset: number }, usdCentPrice: { __typename?: 'PriceOfOneUsdCentInMinorUnit', base: any, offset: number } } };
-
-export type RealtimePriceWsSubscriptionVariables = Exact<{
-  currency: Scalars['DisplayCurrency']['input'];
-}>;
-
-
-export type RealtimePriceWsSubscription = { __typename?: 'Subscription', realtimePrice: { __typename?: 'RealtimePricePayload', errors: Array<{ __typename?: 'GraphQLApplicationError', message: string }>, realtimePrice?: { __typename?: 'RealtimePrice', timestamp: any, denominatorCurrency: any, btcSatPrice: { __typename?: 'PriceOfOneSatInMinorUnit', base: any, offset: number }, usdCentPrice: { __typename?: 'PriceOfOneUsdCentInMinorUnit', base: any, offset: number } } | null } };
-
-export type PriceSubscriptionVariables = Exact<{
-  amount: Scalars['SatAmount']['input'];
-  amountCurrencyUnit: ExchangeCurrencyUnit;
-  priceCurrencyUnit: ExchangeCurrencyUnit;
-}>;
-
-
-export type PriceSubscription = { __typename?: 'Subscription', price: { __typename?: 'PricePayload', errors: Array<{ __typename?: 'GraphQLApplicationError', message: string }>, price?: { __typename?: 'Price', base: any, offset: number, currencyUnit: string, formattedAmount: string } | null } };
 
 export type LnInvoicePaymentSendMutationVariables = Exact<{
   input: LnInvoicePaymentInput;
@@ -2453,6 +2453,8 @@ export const GetWithdrawLinksByUserIdDocument = gql`
       status
       userId
       voucherAmountInCents
+      displayVoucherPrice
+      displayCurrency
     }
   }
 }
@@ -2499,6 +2501,8 @@ export const GetWithdrawLinkDocument = gql`
     userId
     voucherAmountInCents
     voucherSecret
+    displayVoucherPrice
+    displayCurrency
   }
 }
     `;
@@ -2601,136 +2605,6 @@ export function useCurrencyListLazyQuery(baseOptions?: Apollo.LazyQueryHookOptio
 export type CurrencyListQueryHookResult = ReturnType<typeof useCurrencyListQuery>;
 export type CurrencyListLazyQueryHookResult = ReturnType<typeof useCurrencyListLazyQuery>;
 export type CurrencyListQueryResult = Apollo.QueryResult<CurrencyListQuery, CurrencyListQueryVariables>;
-export const RealtimePriceInitialDocument = gql`
-    query RealtimePriceInitial($currency: DisplayCurrency!) {
-  realtimePrice(currency: $currency) {
-    timestamp
-    btcSatPrice {
-      base
-      offset
-    }
-    usdCentPrice {
-      base
-      offset
-    }
-    denominatorCurrency
-  }
-}
-    `;
-
-/**
- * __useRealtimePriceInitialQuery__
- *
- * To run a query within a React component, call `useRealtimePriceInitialQuery` and pass it any options that fit your needs.
- * When your component renders, `useRealtimePriceInitialQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useRealtimePriceInitialQuery({
- *   variables: {
- *      currency: // value for 'currency'
- *   },
- * });
- */
-export function useRealtimePriceInitialQuery(baseOptions: Apollo.QueryHookOptions<RealtimePriceInitialQuery, RealtimePriceInitialQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<RealtimePriceInitialQuery, RealtimePriceInitialQueryVariables>(RealtimePriceInitialDocument, options);
-      }
-export function useRealtimePriceInitialLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<RealtimePriceInitialQuery, RealtimePriceInitialQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<RealtimePriceInitialQuery, RealtimePriceInitialQueryVariables>(RealtimePriceInitialDocument, options);
-        }
-export type RealtimePriceInitialQueryHookResult = ReturnType<typeof useRealtimePriceInitialQuery>;
-export type RealtimePriceInitialLazyQueryHookResult = ReturnType<typeof useRealtimePriceInitialLazyQuery>;
-export type RealtimePriceInitialQueryResult = Apollo.QueryResult<RealtimePriceInitialQuery, RealtimePriceInitialQueryVariables>;
-export const RealtimePriceWsDocument = gql`
-    subscription realtimePriceWs($currency: DisplayCurrency!) {
-  realtimePrice(input: {currency: $currency}) {
-    errors {
-      message
-    }
-    realtimePrice {
-      timestamp
-      btcSatPrice {
-        base
-        offset
-      }
-      usdCentPrice {
-        base
-        offset
-      }
-      denominatorCurrency
-    }
-  }
-}
-    `;
-
-/**
- * __useRealtimePriceWsSubscription__
- *
- * To run a query within a React component, call `useRealtimePriceWsSubscription` and pass it any options that fit your needs.
- * When your component renders, `useRealtimePriceWsSubscription` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useRealtimePriceWsSubscription({
- *   variables: {
- *      currency: // value for 'currency'
- *   },
- * });
- */
-export function useRealtimePriceWsSubscription(baseOptions: Apollo.SubscriptionHookOptions<RealtimePriceWsSubscription, RealtimePriceWsSubscriptionVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useSubscription<RealtimePriceWsSubscription, RealtimePriceWsSubscriptionVariables>(RealtimePriceWsDocument, options);
-      }
-export type RealtimePriceWsSubscriptionHookResult = ReturnType<typeof useRealtimePriceWsSubscription>;
-export type RealtimePriceWsSubscriptionResult = Apollo.SubscriptionResult<RealtimePriceWsSubscription>;
-export const PriceDocument = gql`
-    subscription price($amount: SatAmount!, $amountCurrencyUnit: ExchangeCurrencyUnit!, $priceCurrencyUnit: ExchangeCurrencyUnit!) {
-  price(
-    input: {amount: $amount, amountCurrencyUnit: $amountCurrencyUnit, priceCurrencyUnit: $priceCurrencyUnit}
-  ) {
-    errors {
-      message
-    }
-    price {
-      base
-      offset
-      currencyUnit
-      formattedAmount
-    }
-  }
-}
-    `;
-
-/**
- * __usePriceSubscription__
- *
- * To run a query within a React component, call `usePriceSubscription` and pass it any options that fit your needs.
- * When your component renders, `usePriceSubscription` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = usePriceSubscription({
- *   variables: {
- *      amount: // value for 'amount'
- *      amountCurrencyUnit: // value for 'amountCurrencyUnit'
- *      priceCurrencyUnit: // value for 'priceCurrencyUnit'
- *   },
- * });
- */
-export function usePriceSubscription(baseOptions: Apollo.SubscriptionHookOptions<PriceSubscription, PriceSubscriptionVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useSubscription<PriceSubscription, PriceSubscriptionVariables>(PriceDocument, options);
-      }
-export type PriceSubscriptionHookResult = ReturnType<typeof usePriceSubscription>;
-export type PriceSubscriptionResult = Apollo.SubscriptionResult<PriceSubscription>;
 export const LnInvoicePaymentSendDocument = gql`
     mutation LnInvoicePaymentSend($input: LnInvoicePaymentInput!) {
   lnInvoicePaymentSend(input: $input) {
@@ -3335,6 +3209,7 @@ export type ResolversTypes = {
   TransactionConnection: ResolverTypeWrapper<TransactionConnection>;
   TransactionEdge: ResolverTypeWrapper<TransactionEdge>;
   TxDirection: TxDirection;
+  TxExternalId: ResolverTypeWrapper<Scalars['TxExternalId']['output']>;
   TxNotificationType: TxNotificationType;
   TxStatus: TxStatus;
   UpgradePayload: ResolverTypeWrapper<UpgradePayload>;
@@ -3542,6 +3417,7 @@ export type ResolversParentTypes = {
   Transaction: Omit<Transaction, 'initiationVia' | 'settlementVia'> & { initiationVia: ResolversParentTypes['InitiationVia'], settlementVia: ResolversParentTypes['SettlementVia'] };
   TransactionConnection: TransactionConnection;
   TransactionEdge: TransactionEdge;
+  TxExternalId: Scalars['TxExternalId']['output'];
   UpgradePayload: UpgradePayload;
   UsdWallet: UsdWallet;
   User: User;
@@ -3580,6 +3456,7 @@ export type ResolversParentTypes = {
 export type AccountResolvers<ContextType = any, ParentType extends ResolversParentTypes['Account'] = ResolversParentTypes['Account']> = {
   __resolveType: TypeResolveFn<'ConsumerAccount', ParentType, ContextType>;
   callbackEndpoints?: Resolver<Array<ResolversTypes['CallbackEndpoint']>, ParentType, ContextType>;
+  callbackPortalUrl?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   csvTransactions?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<AccountCsvTransactionsArgs, 'walletIds'>>;
   defaultWallet?: Resolver<ResolversTypes['PublicWallet'], ParentType, ContextType>;
   defaultWalletId?: Resolver<ResolversTypes['WalletId'], ParentType, ContextType>;
@@ -3712,6 +3589,7 @@ export type CentAmountPayloadResolvers<ContextType = any, ParentType extends Res
 
 export type ConsumerAccountResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConsumerAccount'] = ResolversParentTypes['ConsumerAccount']> = {
   callbackEndpoints?: Resolver<Array<ResolversTypes['CallbackEndpoint']>, ParentType, ContextType>;
+  callbackPortalUrl?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   csvTransactions?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<ConsumerAccountCsvTransactionsArgs, 'walletIds'>>;
   defaultWallet?: Resolver<ResolversTypes['PublicWallet'], ParentType, ContextType>;
   defaultWalletId?: Resolver<ResolversTypes['WalletId'], ParentType, ContextType>;
@@ -3872,6 +3750,7 @@ export type IntraLedgerUpdateResolvers<ContextType = any, ParentType extends Res
 export type InvoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Invoice'] = ResolversParentTypes['Invoice']> = {
   __resolveType: TypeResolveFn<'LnInvoice' | 'LnNoAmountInvoice', ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
+  externalId?: Resolver<ResolversTypes['TxExternalId'], ParentType, ContextType>;
   paymentHash?: Resolver<ResolversTypes['PaymentHash'], ParentType, ContextType>;
   paymentRequest?: Resolver<ResolversTypes['LnPaymentRequest'], ParentType, ContextType>;
   paymentSecret?: Resolver<ResolversTypes['LnPaymentSecret'], ParentType, ContextType>;
@@ -3896,6 +3775,7 @@ export interface LanguageScalarConfig extends GraphQLScalarTypeConfig<ResolversT
 
 export type LnInvoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['LnInvoice'] = ResolversParentTypes['LnInvoice']> = {
   createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
+  externalId?: Resolver<ResolversTypes['TxExternalId'], ParentType, ContextType>;
   paymentHash?: Resolver<ResolversTypes['PaymentHash'], ParentType, ContextType>;
   paymentRequest?: Resolver<ResolversTypes['LnPaymentRequest'], ParentType, ContextType>;
   paymentSecret?: Resolver<ResolversTypes['LnPaymentSecret'], ParentType, ContextType>;
@@ -3927,6 +3807,7 @@ export type LnInvoicePaymentStatusPayloadResolvers<ContextType = any, ParentType
 
 export type LnNoAmountInvoiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['LnNoAmountInvoice'] = ResolversParentTypes['LnNoAmountInvoice']> = {
   createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
+  externalId?: Resolver<ResolversTypes['TxExternalId'], ParentType, ContextType>;
   paymentHash?: Resolver<ResolversTypes['PaymentHash'], ParentType, ContextType>;
   paymentRequest?: Resolver<ResolversTypes['LnPaymentRequest'], ParentType, ContextType>;
   paymentSecret?: Resolver<ResolversTypes['LnPaymentSecret'], ParentType, ContextType>;
@@ -4047,6 +3928,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   quizClaim?: Resolver<ResolversTypes['QuizClaimPayload'], ParentType, ContextType, RequireFields<MutationQuizClaimArgs, 'input'>>;
   redeemWithdrawLinkOnChain?: Resolver<ResolversTypes['RedeemWithdrawLinkOnChainResult'], ParentType, ContextType, RequireFields<MutationRedeemWithdrawLinkOnChainArgs, 'input'>>;
   supportChatMessageAdd?: Resolver<ResolversTypes['SupportChatMessageAddPayload'], ParentType, ContextType, RequireFields<MutationSupportChatMessageAddArgs, 'input'>>;
+  supportChatReset?: Resolver<ResolversTypes['SuccessPayload'], ParentType, ContextType>;
   userContactUpdateAlias?: Resolver<ResolversTypes['UserContactUpdateAliasPayload'], ParentType, ContextType, RequireFields<MutationUserContactUpdateAliasArgs, 'input'>>;
   userEmailDelete?: Resolver<ResolversTypes['UserEmailDeletePayload'], ParentType, ContextType>;
   userEmailRegistrationInitiate?: Resolver<ResolversTypes['UserEmailRegistrationInitiatePayload'], ParentType, ContextType, RequireFields<MutationUserEmailRegistrationInitiateArgs, 'input'>>;
@@ -4367,6 +4249,7 @@ export interface TotpSecretScalarConfig extends GraphQLScalarTypeConfig<Resolver
 export type TransactionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Transaction'] = ResolversParentTypes['Transaction']> = {
   createdAt?: Resolver<ResolversTypes['Timestamp'], ParentType, ContextType>;
   direction?: Resolver<ResolversTypes['TxDirection'], ParentType, ContextType>;
+  externalId?: Resolver<Maybe<ResolversTypes['TxExternalId']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   initiationVia?: Resolver<ResolversTypes['InitiationVia'], ParentType, ContextType>;
   memo?: Resolver<Maybe<ResolversTypes['Memo']>, ParentType, ContextType>;
@@ -4393,6 +4276,10 @@ export type TransactionEdgeResolvers<ContextType = any, ParentType extends Resol
   node?: Resolver<ResolversTypes['Transaction'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
+
+export interface TxExternalIdScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['TxExternalId'], any> {
+  name: 'TxExternalId';
+}
 
 export type UpgradePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['UpgradePayload'] = ResolversParentTypes['UpgradePayload']> = {
   authToken?: Resolver<Maybe<ResolversTypes['AuthToken']>, ParentType, ContextType>;
@@ -4544,6 +4431,8 @@ export interface WalletIdScalarConfig extends GraphQLScalarTypeConfig<ResolversT
 export type WithdrawLinkResolvers<ContextType = any, ParentType extends ResolversParentTypes['WithdrawLink'] = ResolversParentTypes['WithdrawLink']> = {
   commissionPercentage?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  displayCurrency?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  displayVoucherPrice?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   identifierCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   paidAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -4557,6 +4446,8 @@ export type WithdrawLinkResolvers<ContextType = any, ParentType extends Resolver
 export type WithdrawLinkWithSecretResolvers<ContextType = any, ParentType extends ResolversParentTypes['WithdrawLinkWithSecret'] = ResolversParentTypes['WithdrawLinkWithSecret']> = {
   commissionPercentage?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  displayCurrency?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  displayVoucherPrice?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   identifierCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   paidAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -4691,6 +4582,7 @@ export type Resolvers<ContextType = any> = {
   Transaction?: TransactionResolvers<ContextType>;
   TransactionConnection?: TransactionConnectionResolvers<ContextType>;
   TransactionEdge?: TransactionEdgeResolvers<ContextType>;
+  TxExternalId?: GraphQLScalarType;
   UpgradePayload?: UpgradePayloadResolvers<ContextType>;
   UsdWallet?: UsdWalletResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

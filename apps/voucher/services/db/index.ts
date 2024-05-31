@@ -18,6 +18,8 @@ type WithdrawLink = {
   voucherAmountInCents: number
   salesAmountInCents: number
   commissionPercentage: number
+  displayVoucherPrice: string
+  displayCurrency: string
 }
 
 export async function getWithdrawLinkBySecret({
@@ -91,6 +93,8 @@ export async function createWithdrawLinkMutation(input: {
   salesAmountInCents: number
   commissionPercentage: number
   platformFee: number
+  displayVoucherPrice: string
+  displayCurrency: string
 }): Promise<WithdrawLink | Error> {
   try {
     let identifierCode = generateCode(6)
