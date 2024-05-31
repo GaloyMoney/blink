@@ -76,6 +76,8 @@ const resolvers = {
           voucherAmountInCents: number
           walletId: string
           commissionPercentage: number
+          displayVoucherPrice: string
+          displayCurrency: string
         }
       },
     ) => {
@@ -152,6 +154,8 @@ const resolvers = {
           salesAmountInCents,
           userId: userData.me.id,
           platformFee: platformFeeInCents,
+          displayVoucherPrice: args.input.displayVoucherPrice,
+          displayCurrency: args.input.displayCurrency,
         })
 
         if (createWithdrawLinkResponse instanceof Error) return createWithdrawLinkResponse
@@ -194,6 +198,8 @@ const resolvers = {
           salesAmountInCents,
           userId: userData.me.id,
           platformFee: platformFeeInCents,
+          displayVoucherPrice: args.input.displayVoucherPrice,
+          displayCurrency: args.input.displayCurrency,
         })
 
         if (createWithdrawLinkResponse instanceof Error) return createWithdrawLinkResponse

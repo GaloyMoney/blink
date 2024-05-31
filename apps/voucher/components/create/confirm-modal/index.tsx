@@ -89,7 +89,18 @@ const ConfirmModal = ({
     setModalLoading(true)
     try {
       const createWithdrawLinkResult = await createWithdrawLink({
-        variables: { input: { voucherAmountInCents, commissionPercentage, walletId } },
+        variables: {
+          input: {
+            voucherAmountInCents,
+            commissionPercentage,
+            walletId,
+            displayCurrency: currency,
+            displayVoucherPrice: formatCurrency({
+              amount: Number(amount),
+              currency,
+            }),
+          },
+        },
       })
       update()
 

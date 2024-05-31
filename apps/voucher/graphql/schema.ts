@@ -16,6 +16,8 @@ type WithdrawLink {
   salesAmountInCents: Float!
   commissionPercentage: Float!
   identifierCode: String!
+  displayVoucherPrice: String!
+  displayCurrency: String!
 }
 
 type WithdrawLinkWithSecret {
@@ -30,6 +32,8 @@ type WithdrawLinkWithSecret {
   voucherSecret: String!
   commissionPercentage: Float!
   uniqueHash: String!
+  displayVoucherPrice: String!
+  displayCurrency: String!  
 }
 
 type WithdrawLinksByUserIdResult {
@@ -59,6 +63,8 @@ input CreateWithdrawLinkInput {
   voucherAmountInCents: Float!
   walletId: ID!
   commissionPercentage: Float
+  displayVoucherPrice: String!
+  displayCurrency: String!
 }
 
 input RedeemWithdrawLinkOnChainInput {
