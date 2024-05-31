@@ -435,7 +435,7 @@ export type CreateWithdrawLinkInput = {
   commissionPercentage?: InputMaybe<Scalars['Float']['input']>;
   displayCurrency: Scalars['String']['input'];
   displayVoucherPrice: Scalars['String']['input'];
-  voucherAmountInCents: Scalars['Float']['input'];
+  salesAmountInCents: Scalars['Float']['input'];
   walletId: Scalars['ID']['input'];
 };
 

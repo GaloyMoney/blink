@@ -107,6 +107,9 @@ export default function CreatePage({ platformFeesInPpm }: Props) {
           usdWallet={usdWallet}
           platformFeesInPpm={platformFeesInPpm}
           voucherAmountInDollars={voucherAmountInDollars}
+          voucherPriceInCents={
+            currencyConversion?.currencyConversionEstimation.usdCentAmount
+          }
         />
 
         <CreatePageAmount
