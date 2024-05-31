@@ -27,6 +27,7 @@ type Props = {
   usdWallet: WalletDetails
   platformFeesInPpm: number
   voucherAmountInDollars: number
+  voucherPriceInCents: number
 }
 
 const ConfirmModal = ({
@@ -39,6 +40,7 @@ const ConfirmModal = ({
   usdWallet,
   platformFeesInPpm,
   voucherAmountInDollars,
+  voucherPriceInCents,
 }: Props) => {
   const router = useRouter()
   const { update } = useSession()
@@ -78,7 +80,6 @@ const ConfirmModal = ({
   })
 
   const handleSubmit = async ({
-    voucherAmountInCents,
     commissionPercentage,
     walletId,
   }: {
@@ -91,7 +92,6 @@ const ConfirmModal = ({
       const createWithdrawLinkResult = await createWithdrawLink({
         variables: {
           input: {
-            voucherAmountInCents,
             commissionPercentage,
             walletId,
             displayCurrency: currency,
@@ -99,6 +99,7 @@ const ConfirmModal = ({
               amount: Number(amount),
               currency,
             }),
+            salesAmountInCents: voucherPriceInCents,
           },
         },
       })
