@@ -73,7 +73,7 @@ const resolvers = {
       _: undefined,
       args: {
         input: {
-          voucherAmountInCents: number
+          salesAmountInCents: number
           walletId: string
           commissionPercentage: number
           displayVoucherPrice: string
@@ -81,13 +81,25 @@ const resolvers = {
         }
       },
     ) => {
-      const { commissionPercentage, voucherAmountInCents, walletId } = args.input
+      const { commissionPercentage, salesAmountInCents, walletId } = args.input
       const platformFeesInPpm = env.PLATFORM_FEES_IN_PPM
       const session = await getServerSession(authOptions)
       const userData = session?.userData
       if (!userData || !userData?.me?.defaultAccount?.wallets) {
         return new Error("Unauthorized")
       }
+
+      if (salesAmountInCents <= 0) return new Error("Invalid sales amount")
+
+      const voucherAmountInCents = Number(
+        amountCalculator
+          .voucherAmountAfterPlatformFeesAndCommission({
+            voucherPrice: salesAmountInCents,
+            commissionPercentage,
+            platformFeesInPpm,
+          })
+          .toFixed(0),
+      )
 
       if (voucherAmountInCents <= 0) return new Error("Invalid Voucher Amount")
       if (commissionPercentage && commissionPercentage < 0)
@@ -109,15 +121,6 @@ const resolvers = {
       if (!escrowUsdWallet || !escrowUsdWallet.id)
         return new Error("Internal Server Error")
 
-      const salesAmountInCents = Number(
-        amountCalculator
-          .voucherPrice({
-            commissionPercentage,
-            voucherAmount: voucherAmountInCents,
-            platformFeesInPpm,
-          })
-          .toFixed(0),
-      )
       const platformFeeInCents = Number(
         amountCalculator
           .platformFeesAmount({
@@ -126,8 +129,6 @@ const resolvers = {
           })
           .toFixed(0),
       )
-      if (salesAmountInCents <= 0) return new Error("Invalid sales amount")
-
       const userWalletDetails = getWalletDetailsFromWalletId({
         wallets: userData.me?.defaultAccount.wallets,
         walletId,

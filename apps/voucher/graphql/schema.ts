@@ -60,7 +60,7 @@ type Mutation {
 }
 
 input CreateWithdrawLinkInput {
-  voucherAmountInCents: Float!
+  salesAmountInCents: Float!
   walletId: ID!
   commissionPercentage: Float
   displayVoucherPrice: String!
