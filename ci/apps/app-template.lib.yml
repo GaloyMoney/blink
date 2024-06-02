@@ -56,7 +56,7 @@ plan:
 #@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
 #@ params["SSH_PRIVATE_KEY"] = "((staging-ssh.ssh_private_key))"
 #@ params["SSH_PUB_KEY"] = "((staging-ssh.ssh_public_key))"
-#@ params["CMD"] = "./dev/bin/tilt-ci.sh " + app
+#@ params["CMD"] = "./dev/bin/tilt-ci-with-build.sh " + app
 name: #@ tilt_integration_test_name(app)
 serial: true
 plan:
