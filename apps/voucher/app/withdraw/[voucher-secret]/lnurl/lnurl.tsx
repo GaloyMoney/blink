@@ -14,6 +14,9 @@ import {
 } from "@/lib/graphql/generated"
 import Button from "@/components/button"
 import FundsPaid from "@/components/funds-paid"
+import useCheckInstalledApps from "@/hooks/use-check-installed-apps"
+import { startPrintCompanion } from "@/lib/print-companion"
+import { formatCurrency } from "@/lib/utils"
 
 gql`
   query GetWithdrawLink($voucherSecret: String) {
@@ -52,6 +55,9 @@ type VoucherDetailsProps = {
 
 export default function LnurlPage({ voucherSecret, voucherUrl }: Props) {
   const [revealLNURL, setRevealLNURL] = useState<boolean>(false)
+  const posCompanionInstalled = useCheckInstalledApps({
+    appId: "com.blink.pos.companion",
+  })
 
   const { loading, error, data } = useGetWithdrawLinkQuery({
     variables: { voucherSecret },
@@ -87,6 +93,19 @@ export default function LnurlPage({ voucherSecret, voucherUrl }: Props) {
   }
 
   const handlePrint = () => {
+    if (posCompanionInstalled) {
+      startPrintCompanion({
+        lnurl,
+        voucherPrice: withdrawLink.displayVoucherPrice,
+        voucherAmount: formatCurrency({
+          amount: withdrawLink.voucherAmountInCents / 100,
+          currency: "USD",
+        }),
+        voucherSecret: withdrawLink.voucherSecret,
+      })
+
+      return
+    }
     setRevealLNURL(true)
     setTimeout(() => {
       window.print()
