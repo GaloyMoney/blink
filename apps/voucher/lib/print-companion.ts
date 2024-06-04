@@ -3,11 +3,15 @@ export function startPrintCompanion(params: {
   voucherPrice: string
   voucherAmount: string
   voucherSecret: string
+  commissionPercentage: number
 }): void {
-  const { lnurl, voucherPrice, voucherAmount, voucherSecret } = params
+  const { lnurl, voucherPrice, voucherAmount, voucherSecret, commissionPercentage } =
+    params
   window.location.href = `blink-pos-companion://print?app=voucher&lnurl=${encodeURIComponent(
     lnurl,
   )}&voucherPrice=${encodeURIComponent(voucherPrice)}&voucherAmount=${encodeURIComponent(
     voucherAmount,
-  )}&voucherSecret=${encodeURIComponent(voucherSecret)}`
+  )}&voucherSecret=${encodeURIComponent(
+    voucherSecret,
+  )}&commissionPercentage=${encodeURIComponent(commissionPercentage)}`
 }

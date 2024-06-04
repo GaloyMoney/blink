@@ -102,6 +102,7 @@ export default function LnurlPage({ voucherSecret, voucherUrl }: Props) {
           currency: "USD",
         }),
         voucherSecret: withdrawLink.voucherSecret,
+        commissionPercentage: withdrawLink.commissionPercentage,
       })
 
       return
