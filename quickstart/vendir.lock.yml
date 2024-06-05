@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: update block duration for request code (#4498)...'
-      sha: 8f843545dad9ad81cf5437b5027007a1b1182540
+      commitTitle: 'chore(api): bump deps (#4494)'
+      sha: e0f20467300320f470ac11bf7e8d6180e0b14b81
       tags:
-      - 0.20.203-6-g8f843545d
+      - 0.20.203-9-ge0f204673
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: update block duration for request code (#4498)...'
-      sha: 8f843545dad9ad81cf5437b5027007a1b1182540
+      commitTitle: 'chore(api): bump deps (#4494)'
+      sha: e0f20467300320f470ac11bf7e8d6180e0b14b81
       tags:
-      - 0.20.203-6-g8f843545d
+      - 0.20.203-9-ge0f204673
     path: schemas
   - git:
-      commitTitle: 'chore: update block duration for request code (#4498)...'
-      sha: 8f843545dad9ad81cf5437b5027007a1b1182540
+      commitTitle: 'chore(api): bump deps (#4494)'
+      sha: e0f20467300320f470ac11bf7e8d6180e0b14b81
       tags:
-      - 0.20.203-6-g8f843545d
+      - 0.20.203-9-ge0f204673
     path: gql
   path: graphql
 kind: LockConfig
