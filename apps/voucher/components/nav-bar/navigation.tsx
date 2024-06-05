@@ -75,7 +75,13 @@ const NavMenu = ({ username }: { username: string }) => {
   return (
     <Sheet>
       <SheetTrigger>
-        <Image src="menu-outline.svg" alt="menu" height={40} priority={true} width={40} />
+        <Image
+          src="/menu-outline.svg"
+          alt="menu"
+          height={40}
+          priority={true}
+          width={40}
+        />
       </SheetTrigger>
       <SheetContent className="m-0 p-0">
         {username ? (
@@ -83,7 +89,7 @@ const NavMenu = ({ username }: { username: string }) => {
             <SheetTitle>{username}</SheetTitle>
           </SheetHeader>
         ) : null}
-        <div className={`mt-${username ? "6" : "14"}`}>
+        <div className={`mt-${username ? "6" : "10"}`}>
           <CurrencySwitcher />
         </div>
         <div className="flex flex-col align-center gap-1 w-full mt-4">
