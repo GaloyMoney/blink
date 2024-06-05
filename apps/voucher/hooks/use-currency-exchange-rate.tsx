@@ -1,5 +1,4 @@
 import { useCurrencyConversionEstimationQuery } from "@/lib/graphql/generated"
-import { convertCurrency } from "@/lib/utils"
 
 export const useCurrencyExchangeRate = ({
   currency,
@@ -9,13 +8,14 @@ export const useCurrencyExchangeRate = ({
   commissionPercentage: number
 }) => {
   const { data: currencyDataForOneUnit } = useCurrencyConversionEstimationQuery({
-    variables: { amount: 1, currency },
+    variables: { amount: 1000, currency },
     context: { endpoint: "GALOY" },
     fetchPolicy: "no-cache",
   })
-  const usdToCurrencyRate = convertCurrency.centsToUsd({
-    cents: currencyDataForOneUnit?.currencyConversionEstimation.usdCentAmount,
-  })
+
+  const usdToCurrencyRate =
+    currencyDataForOneUnit?.currencyConversionEstimation.usdCentAmount / 1000 / 100.0
+
   const voucherValueAfterCommission = usdToCurrencyRate * (1 - commissionPercentage / 100)
   return 1 / voucherValueAfterCommission
 }
