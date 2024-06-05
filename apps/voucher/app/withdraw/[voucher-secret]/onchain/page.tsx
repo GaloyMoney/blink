@@ -134,15 +134,16 @@ export default function Page({ params: { "voucher-secret": voucherSecret } }: Pa
                     Please Note Onchain Withdraw has High fees, Lighting Withdraw is
                     recommended
                   </p>
-                  <div className={styles.modal_button_container}>
+                  <div className="w-full flex flex-col gap-2">
+                    <Button onClick={handleConfirm}>Confirm</Button>
                     <Button
+                      variant="ghost"
                       onClick={() => {
                         setConfirmModal(false)
                       }}
                     >
                       Cancel
                     </Button>
-                    <Button onClick={handleConfirm}>Confirm</Button>
                   </div>
                 </>
               ) : (

@@ -4,40 +4,40 @@ import BackspaceIcon from "@mui/icons-material/Backspace"
 
 import styles from "./num-pad.module.css"
 interface Props {
-  currentAmount: string
-  setCurrentAmount: (amount: string) => void
+  currentValue: string
+  setCurrentValue: (amount: string) => void
   unit: string
 }
 
-const Numpad = ({ currentAmount, setCurrentAmount, unit }: Props) => {
+const Numpad = ({ currentValue, setCurrentValue, unit }: Props) => {
   const handleAmountChange = (digit: string) => {
-    if (digit == "0" && currentAmount == "0") {
+    if (digit == "0" && currentValue == "0") {
       return
     }
-    if (digit === "." && currentAmount.includes(".")) {
+    if (digit === "." && currentValue.includes(".")) {
       return
     }
-    if (currentAmount.match(/(\.[0-9]{2,}$|\..*\.)/)) {
+    if (currentValue.match(/(\.[0-9]{2,}$|\..*\.)/)) {
       return
     }
-    if (currentAmount.length > 14) {
+    if (currentValue.length > 14) {
       return
     }
-    setCurrentAmount(currentAmount + digit)
+    setCurrentValue(currentValue + digit)
   }
 
   const handlePercentageChange = (digit: string) => {
-    const newPercentage = currentAmount + digit
+    const newPercentage = currentValue + digit
     if (newPercentage === "99.") {
       return
     }
-    if (digit === "0" && currentAmount === "0") {
+    if (digit === "0" && currentValue === "0") {
       return
     }
-    if (digit === "." && currentAmount.includes(".")) {
+    if (digit === "." && currentValue.includes(".")) {
       return
     }
-    if (currentAmount.match(/(\.[0-9]{2,}$|\..*\.)/)) {
+    if (currentValue.match(/(\.[0-9]{2,}$|\..*\.)/)) {
       return
     }
     if (parseFloat(newPercentage) > 99) {
@@ -46,8 +46,8 @@ const Numpad = ({ currentAmount, setCurrentAmount, unit }: Props) => {
     if (newPercentage.length > 6) {
       return
     }
-    localStorage.setItem("commission", currentAmount + digit)
-    setCurrentAmount(currentAmount + digit)
+    localStorage.setItem("commission", currentValue + digit)
+    setCurrentValue(currentValue + digit)
   }
 
   const handleChange = (digit: string) => {
@@ -59,7 +59,7 @@ const Numpad = ({ currentAmount, setCurrentAmount, unit }: Props) => {
   }
 
   const handleBackspace = () => {
-    setCurrentAmount(currentAmount.slice(0, -1))
+    setCurrentValue(currentValue.slice(0, -1))
   }
 
   return (

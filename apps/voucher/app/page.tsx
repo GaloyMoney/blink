@@ -41,7 +41,12 @@ const Items = ({
   width?: number
 }) => {
   return (
-    <div className="bg-slate-100 p-5 rounded-lg h-full flex justify-center items-center flex-col gap-3">
+    <div
+      style={{
+        minHeight: "12rem",
+      }}
+      className="bg-slate-100 p-5 rounded-lg h-full flex justify-center items-center flex-col gap-3"
+    >
       <Image
         priority={true}
         width={width}
