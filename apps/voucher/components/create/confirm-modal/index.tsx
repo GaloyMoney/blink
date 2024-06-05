@@ -281,10 +281,10 @@ const Details = ({
             <>
               <h3 className={`${styles.modalSubtitle} text-right`}>Rate</h3>
               <p className={styles.modalText}>
-                {formatCurrency({ amount: 1, currency })} ={" "}
+                {formatCurrency({ amount: 1, currency: "USD" })} ={" "}
                 {formatCurrency({
                   amount: exchangeRate,
-                  currency: "USD",
+                  currency,
                 })}
               </p>
             </>

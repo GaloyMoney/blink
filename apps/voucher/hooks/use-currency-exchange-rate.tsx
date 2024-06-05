@@ -1,4 +1,3 @@
-import { amountCalculator } from "@/lib/amount-calculator"
 import { useCurrencyConversionEstimationQuery } from "@/lib/graphql/generated"
 import { convertCurrency } from "@/lib/utils"
 
@@ -14,14 +13,9 @@ export const useCurrencyExchangeRate = ({
     context: { endpoint: "GALOY" },
     fetchPolicy: "no-cache",
   })
-
   const usdToCurrencyRate = convertCurrency.centsToUsd({
     cents: currencyDataForOneUnit?.currencyConversionEstimation.usdCentAmount,
   })
-  const exchangeRate = amountCalculator.voucherAmountAfterCommission({
-    voucherPrice: 1 / usdToCurrencyRate,
-    commissionPercentage: Number(commissionPercentage),
-  })
-
-  return exchangeRate
+  const voucherValueAfterCommission = usdToCurrencyRate * (1 - commissionPercentage / 100)
+  return 1 / voucherValueAfterCommission
 }
