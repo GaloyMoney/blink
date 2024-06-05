@@ -35,7 +35,7 @@ export const persistAndReturnEntry = async ({
 export const translateToLedgerJournal = (
   savedEntry: Awaited<ReturnType<Entry<ILedgerTransaction, IJournal>["commit"]>>,
 ): LedgerJournal => ({
-  journalId: savedEntry._id.toString(),
+  journalId: savedEntry._id.toString() as LedgerJournalId,
   voided: !!savedEntry.voided,
   transactionIds: savedEntry._transactions.map(
     (id) => id.toString() as LedgerTransactionId,
