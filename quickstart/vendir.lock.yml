@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(pay): update withAuth middleware params (#4488)...'
-      sha: bb9561728ec930bbe5d40d9b48016896f06f998a
+      commitTitle: 'chore: update block duration for request code (#4498)...'
+      sha: 8f843545dad9ad81cf5437b5027007a1b1182540
       tags:
-      - 0.20.202-1-gbb9561728
+      - 0.20.203-6-g8f843545d
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(pay): update withAuth middleware params (#4488)...'
-      sha: bb9561728ec930bbe5d40d9b48016896f06f998a
+      commitTitle: 'chore: update block duration for request code (#4498)...'
+      sha: 8f843545dad9ad81cf5437b5027007a1b1182540
       tags:
-      - 0.20.202-1-gbb9561728
+      - 0.20.203-6-g8f843545d
     path: schemas
   - git:
-      commitTitle: 'fix(pay): update withAuth middleware params (#4488)...'
-      sha: bb9561728ec930bbe5d40d9b48016896f06f998a
+      commitTitle: 'chore: update block duration for request code (#4498)...'
+      sha: 8f843545dad9ad81cf5437b5027007a1b1182540
       tags:
-      - 0.20.202-1-gbb9561728
+      - 0.20.203-6-g8f843545d
     path: gql
   path: graphql
 kind: LockConfig
