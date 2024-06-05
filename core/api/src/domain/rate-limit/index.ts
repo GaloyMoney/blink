@@ -5,11 +5,12 @@ import {
   UserLoginIpRateLimiterExceededError,
   UserLoginIdentifierRateLimiterExceededError,
   UserCodeAttemptIpRateLimiterExceededError,
-  UserCodeAttemptIdentifierRateLimiterExceededError,
+  UserAttemptEmailIdentifierRateLimiterExceededError,
   DeviceAccountCreateRateLimiterExceededError,
   UserCodeAttemptAppcheckJtiLimiterExceededError,
   AddQuizAttemptIpRateLimiterExceededError,
   AddQuizAttemptPhoneRateLimiterExceededError,
+  UserAttemptPhoneIdentifierRateLimiterExceededError,
 } from "./errors"
 
 import {
@@ -20,14 +21,16 @@ import {
   getInvoiceCreateForRecipientAttemptLimits,
   getOnChainAddressCreateAttemptLimits,
   getRequestCodePerIpLimits,
-  getRequestCodePerLoginIdentifierLimits,
+  getRequestCodePerEmailLimits,
   getAppcheckJtiAttemptLimits,
   getAddQuizPerIpLimits,
   getAddQuizPerPhoneLimits,
+  getRequestCodePerPhoneNumberLimits,
 } from "@/config"
 
 export const RateLimitPrefix = {
-  requestCodeAttemptPerLoginIdentifier: "request_code_attempt_id",
+  requestCodeAttemptPerEmail: "request_code_attempt_id",
+  requestCodeAttemptPerPhoneNumber: "request_phone_number_id",
   requestCodeAttemptPerIp: "request_code_attempt_ip",
   loginAttemptPerLoginIdentifier: "login_attempt_id",
   failedLoginAttemptPerIp: "login_attempt_ip",
@@ -43,10 +46,15 @@ export const RateLimitPrefix = {
 type RateLimitPrefixKey = keyof typeof RateLimitPrefix
 
 export const RateLimitConfig: { [key in RateLimitPrefixKey]: RateLimitConfig } = {
-  requestCodeAttemptPerLoginIdentifier: {
-    key: RateLimitPrefix.requestCodeAttemptPerLoginIdentifier,
-    limits: getRequestCodePerLoginIdentifierLimits(),
-    error: UserCodeAttemptIdentifierRateLimiterExceededError,
+  requestCodeAttemptPerEmail: {
+    key: RateLimitPrefix.requestCodeAttemptPerEmail,
+    limits: getRequestCodePerEmailLimits(),
+    error: UserAttemptEmailIdentifierRateLimiterExceededError,
+  },
+  requestCodeAttemptPerPhoneNumber: {
+    key: RateLimitPrefix.requestCodeAttemptPerPhoneNumber,
+    limits: getRequestCodePerPhoneNumberLimits(),
+    error: UserAttemptPhoneIdentifierRateLimiterExceededError,
   },
   requestCodeAttemptPerIp: {
     key: RateLimitPrefix.requestCodeAttemptPerIp,

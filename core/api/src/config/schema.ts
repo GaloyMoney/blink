@@ -256,7 +256,8 @@ export const configSchema = {
     rateLimits: {
       type: "object",
       properties: {
-        requestCodePerLoginIdentifier: rateLimitConfigSchema,
+        requestCodePerEmail: rateLimitConfigSchema,
+        requestCodePerPhoneNumber: rateLimitConfigSchema,
         requestCodePerIp: rateLimitConfigSchema,
         loginAttemptPerLoginIdentifier: rateLimitConfigSchema,
         failedLoginAttemptPerIp: rateLimitConfigSchema,
@@ -269,7 +270,8 @@ export const configSchema = {
         addQuizPerPhone: rateLimitConfigSchema,
       },
       required: [
-        "requestCodePerLoginIdentifier",
+        "requestCodePerEmail",
+        "requestCodePerPhoneNumber",
         "requestCodePerIp",
         "loginAttemptPerLoginIdentifier",
         "failedLoginAttemptPerIp",
@@ -283,10 +285,15 @@ export const configSchema = {
       ],
       additionalProperties: false,
       default: {
-        requestCodePerLoginIdentifier: {
+        requestCodePerEmail: {
           points: 4,
           duration: 3600,
           blockDuration: 10800,
+        },
+        requestCodePerPhoneNumber: {
+          points: 4,
+          duration: 259200,
+          blockDuration: 259200,
         },
         requestCodePerIp: {
           points: 16,

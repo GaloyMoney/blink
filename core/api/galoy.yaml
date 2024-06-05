@@ -47,10 +47,14 @@ admin_accounts:
     phone: "+16505554334"
 test_accounts: []
 rateLimits:
-  requestCodePerLoginIdentifier:
+  requestCodePerEmail:
     points: 4
     duration: 3600
     blockDuration: 10800
+  requestCodePerPhoneNumber:
+    points: 4
+    duration: 259200
+    blockDuration: 259200
   requestCodePerIp:
     points: 16
     duration: 3600

@@ -47,7 +47,7 @@ export const requestPhoneCodeWithCaptcha = async ({
   }
 
   {
-    const limitOk = await checkRequestCodeAttemptPerLoginIdentifierLimits(phone)
+    const limitOk = await checkRequestCodeAttemptPerPhoneNumberLimits(phone)
     if (limitOk instanceof Error) return limitOk
   }
 
@@ -87,7 +87,7 @@ export const requestPhoneCodeForAuthedUser = async ({
   }
 
   {
-    const limitOk = await checkRequestCodeAttemptPerLoginIdentifierLimits(phone)
+    const limitOk = await checkRequestCodeAttemptPerPhoneNumberLimits(phone)
     if (limitOk instanceof Error) return limitOk
   }
 
@@ -128,7 +128,7 @@ export const requestPhoneCodeWithAppcheckJti = async ({
   }
 
   {
-    const limitOk = await checkRequestCodeAttemptPerLoginIdentifierLimits(phone)
+    const limitOk = await checkRequestCodeAttemptPerPhoneNumberLimits(phone)
     if (limitOk instanceof Error) return limitOk
   }
 
@@ -192,12 +192,20 @@ const checkRequestCodeAttemptPerIpLimits = async (
     keyToConsume: ip,
   })
 
-const checkRequestCodeAttemptPerLoginIdentifierLimits = async (
-  loginIdentifier: LoginIdentifier,
+const checkRequestCodeAttemptPerPhoneNumberLimits = async (
+  phoneNumber: PhoneNumber,
 ): Promise<true | RateLimiterExceededError> =>
   consumeLimiter({
-    rateLimitConfig: RateLimitConfig.requestCodeAttemptPerLoginIdentifier,
-    keyToConsume: loginIdentifier,
+    rateLimitConfig: RateLimitConfig.requestCodeAttemptPerPhoneNumber,
+    keyToConsume: phoneNumber,
+  })
+
+const checkRequestCodeAttemptPerLoginIdentifierLimits = async (
+  email: EmailAddress,
+): Promise<true | RateLimiterExceededError> =>
+  consumeLimiter({
+    rateLimitConfig: RateLimitConfig.requestCodeAttemptPerEmail,
+    keyToConsume: email,
   })
 
 const checkRequestCodeAttemptPerAppcheckJtiLimits = async (

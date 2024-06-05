@@ -242,7 +242,8 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = "Too many device account creation, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
-    case "UserCodeAttemptIdentifierRateLimiterExceededError":
+    case "UserAttemptPhoneIdentifierRateLimiterExceededError":
+    case "UserAttemptEmailIdentifierRateLimiterExceededError":
       message = "Too many request code attempts, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 

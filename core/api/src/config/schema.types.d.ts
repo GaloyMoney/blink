@@ -70,7 +70,8 @@ type YamlSchema = {
     code: string
   }[]
   rateLimits: {
-    requestCodePerLoginIdentifier: RateLimitInput
+    requestCodePerEmail: RateLimitInput
+    requestCodePerPhoneNumber: RateLimitInput
     requestCodePerIp: RateLimitInput
     loginAttemptPerLoginIdentifier: RateLimitInput
     failedLoginAttemptPerIp: RateLimitInput

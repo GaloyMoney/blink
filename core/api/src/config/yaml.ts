@@ -172,8 +172,11 @@ const getRateLimits = (config: RateLimitInput): RateLimitOptions => {
   }
 }
 
-export const getRequestCodePerLoginIdentifierLimits = () =>
-  getRateLimits(yamlConfig.rateLimits.requestCodePerLoginIdentifier)
+export const getRequestCodePerEmailLimits = () =>
+  getRateLimits(yamlConfig.rateLimits.requestCodePerEmail)
+
+export const getRequestCodePerPhoneNumberLimits = () =>
+  getRateLimits(yamlConfig.rateLimits.requestCodePerPhoneNumber)
 
 export const getRequestCodePerIpLimits = () =>
   getRateLimits(yamlConfig.rateLimits.requestCodePerIp)
