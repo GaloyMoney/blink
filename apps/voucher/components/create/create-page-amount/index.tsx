@@ -111,15 +111,15 @@ const SalesAmountSection = ({
   amount: string
   currency: string
 }) => {
+  const voucherPriceDisplay = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+  }).format(Number(amount))
+
   return (
     <div className="flex flex-col justify-center align-middle text-center gap-3">
       <p>Voucher Price </p>
-      <div className="text-4xl font-semibold">
-        {formatCurrency({
-          amount: Number(amount),
-          currency,
-        })}
-      </div>
+      <div className="text-4xl font-semibold">{voucherPriceDisplay}</div>
     </div>
   )
 }
