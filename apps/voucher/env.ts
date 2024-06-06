@@ -25,7 +25,7 @@ export const env = createEnv({
   runtimeEnv: {
     CORE_URL: process.env.CORE_URL,
     VOUCHER_URL: process.env.VOUCHER_URL,
-    PLATFORM_FEES_IN_PPM: process.env.PLATFORM_FEES_IN_PPM,
+    PLATFORM_FEES_IN_PPM: Number(process.env.PLATFORM_FEES_IN_PPM || 10000),
 
     ESCROW_API_KEY: process.env.ESCROW_API_KEY,
     PG_CON: process.env.PG_CON,
