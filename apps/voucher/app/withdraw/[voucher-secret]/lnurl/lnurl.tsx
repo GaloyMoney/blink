@@ -103,6 +103,7 @@ export default function LnurlPage({ voucherSecret, voucherUrl }: Props) {
         }),
         voucherSecret: withdrawLink.voucherSecret,
         commissionPercentage: withdrawLink.commissionPercentage,
+        identifierCode: withdrawLink.identifierCode,
       })
 
       return
