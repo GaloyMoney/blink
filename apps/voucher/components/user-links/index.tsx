@@ -6,6 +6,7 @@ import styles from "./user-links.module.css"
 
 import { formatDate } from "@/utils/helpers"
 import { Status, WithdrawLink } from "@/lib/graphql/generated"
+import { formatCurrency } from "@/lib/utils"
 
 interface UserLinksProps {
   withdrawLink: WithdrawLink
@@ -66,15 +67,21 @@ export default function UserLinks({ withdrawLink }: UserLinksProps) {
           </div>
           <div className={styles.DetailsContainer}>
             <div className={styles.LinkDetails}>
-              <Bold>Voucher Amount</Bold>{" "}
-              <p>${withdrawLink.voucherAmountInCents / 100} US</p>
+              <Bold>Voucher Value</Bold>{" "}
+              <p>
+                {formatCurrency({
+                  amount: withdrawLink.voucherAmountInCents / 100,
+                  currency: "USD",
+                })}
+              </p>
             </div>
             <div className={styles.LinkDetails}>
-              <Bold>Percent commission</Bold> <p>{withdrawLink.commissionPercentage}</p>
+              <Bold>Percent commission</Bold>
+              <p>{withdrawLink.commissionPercentage}</p>
             </div>
             <div className={styles.LinkDetails}>
-              <Bold>Sales amount</Bold>{" "}
-              <p>${withdrawLink?.salesAmountInCents / 100} US</p>
+              <Bold>Voucher Price</Bold>
+              <p>{withdrawLink?.displayVoucherPrice}</p>
             </div>
           </div>
         </div>
