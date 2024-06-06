@@ -4,6 +4,7 @@ export function startPrintCompanion(params: {
   voucherAmount: string
   voucherSecret: string
   commissionPercentage: number
+  identifierCode: string
 }): void {
   const { lnurl, voucherPrice, voucherAmount, voucherSecret, commissionPercentage } =
     params
@@ -13,5 +14,7 @@ export function startPrintCompanion(params: {
     voucherAmount,
   )}&voucherSecret=${encodeURIComponent(
     voucherSecret,
-  )}&commissionPercentage=${encodeURIComponent(commissionPercentage)}`
+  )}&commissionPercentage=${encodeURIComponent(
+    commissionPercentage,
+  )}&identifierCode=${encodeURIComponent(params.identifierCode)}`
 }
