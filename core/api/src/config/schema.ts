@@ -457,8 +457,8 @@ export const configSchema = {
       required: ["memoSharingSatsThreshold", "memoSharingCentsThreshold"],
       additionalProperties: false,
       default: {
-        memoSharingSatsThreshold: 1000,
-        memoSharingCentsThreshold: 50,
+        memoSharingSatsThreshold: 50,
+        memoSharingCentsThreshold: 10,
       },
     },
     ipRecording: {

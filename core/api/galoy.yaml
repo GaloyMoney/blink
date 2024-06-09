@@ -123,8 +123,8 @@ accountLimits:
       "1": 5000000
       "2": 20000000
 spamLimits:
-  memoSharingSatsThreshold: 1000
-  memoSharingCentsThreshold: 50
+  memoSharingSatsThreshold: 50
+  memoSharingCentsThreshold: 10
 ipRecording:
   enabled: false
   proxyChecking:
