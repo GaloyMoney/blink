@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(api): bump deps (#4494)'
-      sha: e0f20467300320f470ac11bf7e8d6180e0b14b81
+      commitTitle: 'chore: update threshold for spam limits (#4506)...'
+      sha: 754b81c861bedf37e86ef0210510bb8b74f49f9f
       tags:
-      - 0.20.203-9-ge0f204673
+      - 0.20.204-5-g754b81c86
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(api): bump deps (#4494)'
-      sha: e0f20467300320f470ac11bf7e8d6180e0b14b81
+      commitTitle: 'chore: update threshold for spam limits (#4506)...'
+      sha: 754b81c861bedf37e86ef0210510bb8b74f49f9f
       tags:
-      - 0.20.203-9-ge0f204673
+      - 0.20.204-5-g754b81c86
     path: schemas
   - git:
-      commitTitle: 'chore(api): bump deps (#4494)'
-      sha: e0f20467300320f470ac11bf7e8d6180e0b14b81
+      commitTitle: 'chore: update threshold for spam limits (#4506)...'
+      sha: 754b81c861bedf37e86ef0210510bb8b74f49f9f
       tags:
-      - 0.20.203-9-ge0f204673
+      - 0.20.204-5-g754b81c86
     path: gql
   path: graphql
 kind: LockConfig
