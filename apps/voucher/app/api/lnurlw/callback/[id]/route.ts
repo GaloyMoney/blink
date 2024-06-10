@@ -32,9 +32,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
   try {
     const withdrawLink = await getWithdrawLinkByK1Query({ k1 })
-    if (!withdrawLink) {
+
+    if (!withdrawLink)
       return Response.json({ status: "ERROR", reason: "Withdraw link not found" })
-    }
 
     if (withdrawLink instanceof Error)
       return Response.json({ status: "ERROR", reason: "Internal Server Error" })
@@ -42,9 +42,15 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     if (withdrawLink.id !== id)
       return Response.json({ status: "ERROR", reason: "Invalid Request" })
 
-    // locking so some else can't use this link at the same time
-    if (withdrawLink.status === Status.Paid)
-      return Response.json({ status: "ERROR", reason: "Withdraw link claimed" })
+    if (withdrawLink.status === Status.Pending)
+      return Response.json({
+        status: "ERROR",
+        reason:
+          "Withdrawal link is in pending state. Please contact support if the error persists.",
+      })
+
+    if (withdrawLink.status !== Status.Active)
+      return Response.json({ status: "ERROR", reason: "Withdraw link is not Active" })
 
     const client = escrowApolloClient()
 
@@ -78,8 +84,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     //   }
     // }
 
-    await updateWithdrawLinkStatus({ id, status: Status.Paid })
-
+    await updateWithdrawLinkStatus({ id, status: Status.Pending })
     const lnInvoicePaymentSendResponse = await lnInvoicePaymentSend({
       client,
       input: {
@@ -112,6 +117,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     if (
+      lnInvoicePaymentSendResponse?.lnInvoicePaymentSend?.status ===
+      PaymentSendResult.Pending
+    ) {
+      return Response.json({ status: "ERROR", reason: "Payment went on Pending state" })
+    }
+
+    if (
       lnInvoicePaymentSendResponse?.lnInvoicePaymentSend?.status !==
       PaymentSendResult.Success
     ) {
@@ -119,6 +131,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return Response.json({ status: "ERROR", reason: "Payment not paid" })
     }
 
+    await updateWithdrawLinkStatus({ id, status: Status.Paid })
     return Response.json({ status: "OK" })
   } catch (error) {
     console.error("error paying lnurlw", error)
