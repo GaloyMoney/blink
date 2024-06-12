@@ -312,13 +312,13 @@ services:
       - SSL_KEYFILE=/tls.key
     command: ["Fulcrum", "/fulcrum.conf"]
   bitcoind:
-    image: lncm/bitcoind:v27.0
+    image: lncm/bitcoind:v25.1
     ports:
       - "18443:18443"
     volumes:
       - ${HOST_PROJECT_PATH:-.}/config/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
   bitcoind-signer:
-    image: lncm/bitcoind:v27.0
+    image: lncm/bitcoind:v25.1
     ports: []
     volumes:
       - ${HOST_PROJECT_PATH:-.}/config/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
