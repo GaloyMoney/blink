@@ -21,7 +21,7 @@
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.14.19",
     "@mui/joy": "5.0.0-beta.21",
-    "@mui/material": "^5.14.20",
+    "@mui/material": "^5.15.19",
     "@opentelemetry/api": "^1.8.0",
     "@opentelemetry/core": "1.24.1",
     "@opentelemetry/exporter-trace-otlp-http": "^0.51.1",
