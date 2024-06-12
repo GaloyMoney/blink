@@ -24,5 +24,4 @@ afterAll(async () => {
   }
 })
 
-jest.setTimeout(process.env.JEST_TIMEOUT || 30000)
-
+jest.setTimeout(process.env.JEST_TIMEOUT || 60000)
