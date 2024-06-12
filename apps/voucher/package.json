@@ -30,7 +30,7 @@
     "@emotion/styled": "^11.11.0",
     "@headlessui/react": "^2.0.3",
     "@mui/icons-material": "^5.11.16",
-    "@mui/material": "^5.13.5",
+    "@mui/material": "^5.15.19",
     "@opentelemetry/api": "1.8.0",
     "@opentelemetry/core": "1.24.1",
     "@opentelemetry/exporter-trace-otlp-http": "0.51.1",
