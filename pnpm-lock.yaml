@@ -1141,8 +1141,8 @@ importers:
         specifier: ^0.45.0
         version: 0.45.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/instrumentation-net':
-        specifier: ^0.37.0
-        version: 0.37.0(@opentelemetry/api@1.9.0)
+        specifier: ^0.36.0
+        version: 0.36.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/resources':
         specifier: ^1.25.0
         version: 1.25.0(@opentelemetry/api@1.9.0)
@@ -11092,14 +11092,14 @@ packages:
       - supports-color
     dev: false
 
-  /@opentelemetry/instrumentation-net@0.37.0(@opentelemetry/api@1.9.0):
-    resolution: {integrity: sha512-kLTnWs4R/FtNDvJC7clS7/tBzK7I8DH5IV1I8abog4/1fHh/CFiwWeTRlPlREwcGfVJyL95pDX2Utjviybr5Dg==}
+  /@opentelemetry/instrumentation-net@0.36.0(@opentelemetry/api@1.9.0):
+    resolution: {integrity: sha512-rZlbSgwAJys8lpug+xIeAdO98ypYMAPVqrHqc4AHuUl5S4MULHEcjGLMZLoE/guEGO4xAQ5XUezpRFGM1SAnsg==}
     engines: {node: '>=14'}
     peerDependencies:
       '@opentelemetry/api': ^1.3.0
     dependencies:
       '@opentelemetry/api': 1.9.0
-      '@opentelemetry/instrumentation': 0.52.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/instrumentation': 0.51.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/semantic-conventions': 1.25.0
     transitivePeerDependencies:
       - supports-color
@@ -11112,6 +11112,23 @@ packages:
       '@opentelemetry/api': ^1.3.0
     dependencies:
       '@opentelemetry/api': 1.8.0
+      '@opentelemetry/api-logs': 0.51.1
+      '@types/shimmer': 1.0.5
+      import-in-the-middle: 1.4.2
+      require-in-the-middle: 7.3.0
+      semver: 7.6.2
+      shimmer: 1.2.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /@opentelemetry/instrumentation@0.51.1(@opentelemetry/api@1.9.0):
+    resolution: {integrity: sha512-JIrvhpgqY6437QIqToyozrUG1h5UhwHkaGK/WAX+fkrpyPtc+RO5FkRtUd9BH0MibabHHvqsnBGKfKVijbmp8w==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@opentelemetry/api': ^1.3.0
+    dependencies:
+      '@opentelemetry/api': 1.9.0
       '@opentelemetry/api-logs': 0.51.1
       '@types/shimmer': 1.0.5
       import-in-the-middle: 1.4.2
