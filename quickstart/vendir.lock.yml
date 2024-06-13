@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump deps (#4508)...'
-      sha: 17a234fbfc347c7a211372049f1111023ea7455f
+      commitTitle: 'chore: update lnd (#4509)...'
+      sha: 1e8b0167305eabb1fc95be82722adb5d7592c13f
       tags:
-      - 0.20.205-1-g17a234fbf
+      - 0.20.206-1-g1e8b01673
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump deps (#4508)...'
-      sha: 17a234fbfc347c7a211372049f1111023ea7455f
+      commitTitle: 'chore: update lnd (#4509)...'
+      sha: 1e8b0167305eabb1fc95be82722adb5d7592c13f
       tags:
-      - 0.20.205-1-g17a234fbf
+      - 0.20.206-1-g1e8b01673
     path: schemas
   - git:
-      commitTitle: 'chore(deps): bump deps (#4508)...'
-      sha: 17a234fbfc347c7a211372049f1111023ea7455f
+      commitTitle: 'chore: update lnd (#4509)...'
+      sha: 1e8b0167305eabb1fc95be82722adb5d7592c13f
       tags:
-      - 0.20.205-1-g17a234fbf
+      - 0.20.206-1-g1e8b01673
     path: gql
   path: graphql
 kind: LockConfig
