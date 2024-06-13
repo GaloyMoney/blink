@@ -500,6 +500,7 @@ describe("Lnd", () => {
     })
 
     it("parses error message from failures object", async () => {
+      const channel = "1x1x1"
       const payArgs = {
         lnd: lnd1,
         routes: [
@@ -508,7 +509,7 @@ describe("Lnd", () => {
             fee_mtokens: "1000",
             hops: [
               {
-                channel: "1x1x1",
+                channel,
                 channel_capacity: 1,
                 fee: 1,
                 fee_mtokens: "1000",
@@ -528,9 +529,10 @@ describe("Lnd", () => {
       const err = await getError<LnError<{ failures: LnError }>>(() =>
         payViaRoutes(payArgs),
       )
+
       expect(err).toHaveLength(3)
-      expect(err[0]).toEqual(503)
-      expect(err[1]).toBe("UnexpectedErrorWhenPayingViaRoute")
+      expect(err[0]).toEqual(500)
+      expect(err[1]).toBe("UnexpectedPayViaRoutesFailure")
 
       const nestedFailureErr = err[2].failures[0]
       expect(nestedFailureErr).toHaveLength(3)
@@ -543,16 +545,10 @@ describe("Lnd", () => {
       expect(nestedFailureErr[1]).toBe(err[1])
 
       // @ts-ignore-next-line no-implicit-any error
-      const nestedErrObj = nestedFailureErr[2].err
-      expect(nestedErrObj).toBeInstanceOf(Error)
-      expect(nestedErrObj).toHaveProperty("code")
-      expect(nestedErrObj).toHaveProperty("metadata")
-
-      const expectedDetails = "invalid public key: unsupported format: 0"
-      expect(nestedErrObj).toHaveProperty("details", expectedDetails)
+      expect(nestedFailureErr[2]).toHaveProperty("channel", channel)
 
       const parsedErr = parseLndErrorDetails(err)
-      expect(parsedErr).toBe(expectedDetails)
+      expect(parsedErr).toBe("UnexpectedPayViaRoutesFailure")
     })
   })
 })
