@@ -76,10 +76,24 @@ export const Assistant = (): ChatAssistant => {
     supportChatId: SupportChatId
   }): Promise<true | Error> => {
     try {
-      const runs = await openai.beta.threads.runs.list(supportChatId)
-      for (const run of runs.data) {
-        if (run.status === "in_progress") {
-          await openai.beta.threads.runs.cancel(supportChatId, run.id)
+      let runsCompleted = false
+      while (!runsCompleted) {
+        runsCompleted = true
+        const runs = await openai.beta.threads.runs.list(supportChatId)
+        for (const run of runs.data) {
+          switch (run.status) {
+            case "in_progress":
+            case "cancelling":
+            case "requires_action":
+            case "queued":
+            case "incomplete":
+              await openai.beta.threads.runs.cancel(supportChatId, run.id)
+              runsCompleted = false
+              break
+            default:
+              runsCompleted = true
+              break
+          }
         }
       }
     } catch (err) {
