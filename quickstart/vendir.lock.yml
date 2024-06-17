@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: update lnd (#4509)...'
-      sha: 1e8b0167305eabb1fc95be82722adb5d7592c13f
+      commitTitle: 'fix: alert when user try to send multiple messages quickly to
+        chatbot'
+      sha: af285de687effabe42923926a28d37105f585111
       tags:
-      - 0.20.206-1-g1e8b01673
+      - 0.20.206-3-gaf285de68
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: update lnd (#4509)...'
-      sha: 1e8b0167305eabb1fc95be82722adb5d7592c13f
+      commitTitle: 'fix: alert when user try to send multiple messages quickly to
+        chatbot'
+      sha: af285de687effabe42923926a28d37105f585111
       tags:
-      - 0.20.206-1-g1e8b01673
+      - 0.20.206-3-gaf285de68
     path: schemas
   - git:
-      commitTitle: 'chore: update lnd (#4509)...'
-      sha: 1e8b0167305eabb1fc95be82722adb5d7592c13f
+      commitTitle: 'fix: alert when user try to send multiple messages quickly to
+        chatbot'
+      sha: af285de687effabe42923926a28d37105f585111
       tags:
-      - 0.20.206-1-g1e8b01673
+      - 0.20.206-3-gaf285de68
     path: gql
   path: graphql
 kind: LockConfig
