@@ -331,23 +331,23 @@ cargo.rust_library(
 
 alias(
     name = "async-graphql",
-    actual = ":async-graphql-7.0.5",
+    actual = ":async-graphql-7.0.6",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "async-graphql-7.0.5.crate",
-    sha256 = "d0808e3dc8be9cee801000b9261081cd7caae9935658be7e52d4df3d5c22bdce",
-    strip_prefix = "async-graphql-7.0.5",
-    urls = ["https://crates.io/api/v1/crates/async-graphql/7.0.5/download"],
+    name = "async-graphql-7.0.6.crate",
+    sha256 = "bf338d20ba5bab309f55ce8df95d65ee19446f7737f06f4a64593ab2c6b546ad",
+    strip_prefix = "async-graphql-7.0.6",
+    urls = ["https://crates.io/api/v1/crates/async-graphql/7.0.6/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "async-graphql-7.0.5",
-    srcs = [":async-graphql-7.0.5.crate"],
+    name = "async-graphql-7.0.6",
+    srcs = [":async-graphql-7.0.6.crate"],
     crate = "async_graphql",
-    crate_root = "async-graphql-7.0.5.crate/src/lib.rs",
+    crate_root = "async-graphql-7.0.6.crate/src/lib.rs",
     edition = "2021",
     features = [
         "chrono",
@@ -361,9 +361,9 @@ cargo.rust_library(
     },
     visibility = [],
     deps = [
-        ":async-graphql-derive-7.0.5",
-        ":async-graphql-parser-7.0.5",
-        ":async-graphql-value-7.0.5",
+        ":async-graphql-derive-7.0.6",
+        ":async-graphql-parser-7.0.6",
+        ":async-graphql-value-7.0.6",
         ":async-stream-0.3.5",
         ":async-trait-0.1.80",
         ":base64-0.22.1",
@@ -410,7 +410,7 @@ cargo.rust_library(
     edition = "2021",
     visibility = [],
     deps = [
-        ":async-graphql-7.0.5",
+        ":async-graphql-7.0.6",
         ":async-trait-0.1.80",
         ":axum-0.7.5",
         ":bytes-1.6.0",
@@ -424,24 +424,24 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "async-graphql-derive-7.0.5.crate",
-    sha256 = "ae80fb7b67deeae84441a9eb156359b99be7902d2d706f43836156eec69a8226",
-    strip_prefix = "async-graphql-derive-7.0.5",
-    urls = ["https://crates.io/api/v1/crates/async-graphql-derive/7.0.5/download"],
+    name = "async-graphql-derive-7.0.6.crate",
+    sha256 = "fc51fd6b7102acda72bc94e8ae1543844d5688ff394a6cf7c21f2a07fe2d64e4",
+    strip_prefix = "async-graphql-derive-7.0.6",
+    urls = ["https://crates.io/api/v1/crates/async-graphql-derive/7.0.6/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "async-graphql-derive-7.0.5",
-    srcs = [":async-graphql-derive-7.0.5.crate"],
+    name = "async-graphql-derive-7.0.6",
+    srcs = [":async-graphql-derive-7.0.6.crate"],
     crate = "async_graphql_derive",
-    crate_root = "async-graphql-derive-7.0.5.crate/src/lib.rs",
+    crate_root = "async-graphql-derive-7.0.6.crate/src/lib.rs",
     edition = "2021",
     proc_macro = True,
     visibility = [],
     deps = [
         ":Inflector-0.11.4",
-        ":async-graphql-parser-7.0.5",
+        ":async-graphql-parser-7.0.6",
         ":darling-0.20.8",
         ":proc-macro-crate-3.1.0",
         ":proc-macro2-1.0.82",
@@ -453,22 +453,22 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "async-graphql-parser-7.0.5.crate",
-    sha256 = "8f0fffb19cd96eb084428289f4568b5ad48df32f782f891f709db96384fbdeb2",
-    strip_prefix = "async-graphql-parser-7.0.5",
-    urls = ["https://crates.io/api/v1/crates/async-graphql-parser/7.0.5/download"],
+    name = "async-graphql-parser-7.0.6.crate",
+    sha256 = "75361eefd64e39f89bead4cb45fddbaf60ddb0e7b15fb7c852b6088bcd63071f",
+    strip_prefix = "async-graphql-parser-7.0.6",
+    urls = ["https://crates.io/api/v1/crates/async-graphql-parser/7.0.6/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "async-graphql-parser-7.0.5",
-    srcs = [":async-graphql-parser-7.0.5.crate"],
+    name = "async-graphql-parser-7.0.6",
+    srcs = [":async-graphql-parser-7.0.6.crate"],
     crate = "async_graphql_parser",
-    crate_root = "async-graphql-parser-7.0.5.crate/src/lib.rs",
+    crate_root = "async-graphql-parser-7.0.6.crate/src/lib.rs",
     edition = "2021",
     visibility = [],
     deps = [
-        ":async-graphql-value-7.0.5",
+        ":async-graphql-value-7.0.6",
         ":pest-2.7.10",
         ":serde-1.0.203",
         ":serde_json-1.0.117",
@@ -476,18 +476,18 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "async-graphql-value-7.0.5.crate",
-    sha256 = "c224c93047a7197fe0f1d6eee98245ba6049706c6c04a372864557fb61495e94",
-    strip_prefix = "async-graphql-value-7.0.5",
-    urls = ["https://crates.io/api/v1/crates/async-graphql-value/7.0.5/download"],
+    name = "async-graphql-value-7.0.6.crate",
+    sha256 = "c1f665d2d52b41c4ed1f01c43f3ef27a2fe0af2452ed5c8bc7ac9b1a8719afaa",
+    strip_prefix = "async-graphql-value-7.0.6",
+    urls = ["https://crates.io/api/v1/crates/async-graphql-value/7.0.6/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "async-graphql-value-7.0.5",
-    srcs = [":async-graphql-value-7.0.5.crate"],
+    name = "async-graphql-value-7.0.6",
+    srcs = [":async-graphql-value-7.0.6.crate"],
     crate = "async_graphql_value",
-    crate_root = "async-graphql-value-7.0.5.crate/src/lib.rs",
+    crate_root = "async-graphql-value-7.0.6.crate/src/lib.rs",
     edition = "2021",
     visibility = [],
     deps = [
@@ -5761,7 +5761,7 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":anyhow-1.0.86",
-        ":itertools-0.10.5",
+        ":itertools-0.12.1",
         ":proc-macro2-1.0.82",
         ":quote-1.0.35",
         ":syn-2.0.48",
@@ -9232,7 +9232,7 @@ cargo.rust_binary(
     visibility = [],
     deps = [
         ":anyhow-1.0.86",
-        ":async-graphql-7.0.5",
+        ":async-graphql-7.0.6",
         ":async-graphql-axum-7.0.3",
         ":axum-0.7.5",
         ":axum-extra-0.9.3",
