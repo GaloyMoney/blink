@@ -29,3 +29,40 @@ identity_verification_declined.body: "Δεν μπορέσαμε να επεξε�
 
 identity_verification_review_started.title: "Η επαλήθευση βρίσκεται σε εξέλιξη!"
 identity_verification_review_started.body: "Λάβαμε τα έγγραφά σας και τα επεξεργαζόμαστε."
+
+transaction.intra_ledger_payment.title: "%{walletCurrency} Συναλλαγή"
+transaction.intra_ledger_payment.body: "Αποστολή πληρωμής ύψους %{formattedCurrencyAmount}"
+transaction.intra_ledger_payment.body_display_currency: "Αποστολή πληρωμής ύψους %{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+transaction.intra_ledger_receipt.title: "%{walletCurrency} Συναλλαγή"
+transaction.intra_ledger_receipt.body: "+%{formattedCurrencyAmount}"
+transaction.intra_ledger_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+transaction.onchain_payment.title: "%{walletCurrency} Συναλλαγή"
+transaction.onchain_payment.body_display_currency: "Αποστολή πληρωμής εντός της αλυσίδας του %{displayCurrencyAmount} | %{formattedCurrencyAmount} επιβεβαιώθηκε"
+transaction.onchain_payment.body: "Αποστολή πληρωμής εντός της αλυσιδας του %{formattedCurrencyAmount} επιβεβαιώθηκε"
+
+transaction.onchain_receipt.title: "%{walletCurrency} Συναλλαγή"
+transaction.onchain_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt.body: "+%{formattedCurrencyAmount}"
+
+transaction.lightning_receipt.title: "%{walletCurrency} Συναλλαγή"
+transaction.lightning_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.lightning_receipt.body: "+%{formattedCurrencyAmount}"
+
+transaction.onchain_receipt_pending.title: "%{walletCurrency} Συναλλαγή | Σε αναμονή"
+transaction.onchain_receipt_pending.body_display_currency: "Σε αναμονή +%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt_pending.body: "Σε εναμονή +%{formattedCurrencyAmount}"
+
+transaction.paid_invoice.title: "%{walletCurrency} Συναλλαγή"
+transaction.paid_invoice.body: "+%{formattedCurrencyAmount}"
+transaction.paid_invoice.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+price_changed.up.title: "Το Bitcoin κινείται!"
+price_changed.up.body: "Η τιμή του Bitcoin αυξήθηκε %{change_percent}% την τελευταία μέρα στα %{price}!"
+
+price_changed.down.title: "Το Bitcoin κινείται!"
+price_changed.down.body: "Η τιμή του Bitcoin μειώθηκε %{change_percent}% την τελευταία μέρα στα %{price}!"
+
+security.link_email_reminder.title: "Συνδέστε το email για την ασφάλεια του λογαριασμού σας"
+security.link_email_reminder.body: "Συνδέστε το email σας για να ασφαλίσετε το λογαριασμό σας και να λαμβάνετε σημαντικές ενημερώσεις"
