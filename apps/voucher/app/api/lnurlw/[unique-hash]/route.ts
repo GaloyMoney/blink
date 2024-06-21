@@ -18,8 +18,14 @@ export async function GET(
       return Response.json({ error: "Withdraw link not found", status: 404 })
     if (withdrawLink instanceof Error)
       return Response.json({ error: "Internal Server Error", status: 500 })
-    if (withdrawLink.status === Status.Paid)
-      return Response.json({ error: "Withdraw link claimed", status: 500 })
+    if (withdrawLink.status === Status.Pending)
+      return Response.json({
+        error:
+          "Withdrawal link is in pending state. Please contact support if the error persists.",
+        status: 500,
+      })
+    if (withdrawLink.status !== Status.Active)
+      return Response.json({ error: "Withdraw link is not Active", status: 500 })
 
     const client = escrowApolloClient()
     const realTimePriceResponse = await getRealtimePriceQuery({
