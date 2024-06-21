@@ -155,3 +155,19 @@ export const createMemo = ({
     commissionPercentage ? `with ${commissionPercentage}% Commission` : ""
   }, Voucher Identifier Code: ${identifierCode}`
 }
+
+export const isValidVoucherSecret = (voucherSecret: string) => {
+  if (!voucherSecret) {
+    return false
+  }
+
+  if (voucherSecret.length !== 12) {
+    return false
+  }
+
+  if (!voucherSecret.match(/^[0-9a-zA-Z]+$/)) {
+    return false
+  }
+
+  return true
+}
