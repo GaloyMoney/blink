@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: alert when user try to send multiple messages quickly to
-        chatbot'
-      sha: af285de687effabe42923926a28d37105f585111
+      commitTitle: 'chore(deps): bump react-qrcode-logo from 2.10.0 to 3.0.0 (#4505)...'
+      sha: e98fe29511f5027cfea00b0aea879724cd8889e8
       tags:
-      - 0.20.206-3-gaf285de68
+      - 0.20.207-10-ge98fe2951
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: alert when user try to send multiple messages quickly to
-        chatbot'
-      sha: af285de687effabe42923926a28d37105f585111
+      commitTitle: 'chore(deps): bump react-qrcode-logo from 2.10.0 to 3.0.0 (#4505)...'
+      sha: e98fe29511f5027cfea00b0aea879724cd8889e8
       tags:
-      - 0.20.206-3-gaf285de68
+      - 0.20.207-10-ge98fe2951
     path: schemas
   - git:
-      commitTitle: 'fix: alert when user try to send multiple messages quickly to
-        chatbot'
-      sha: af285de687effabe42923926a28d37105f585111
+      commitTitle: 'chore(deps): bump react-qrcode-logo from 2.10.0 to 3.0.0 (#4505)...'
+      sha: e98fe29511f5027cfea00b0aea879724cd8889e8
       tags:
-      - 0.20.206-3-gaf285de68
+      - 0.20.207-10-ge98fe2951
     path: gql
   path: graphql
 kind: LockConfig
