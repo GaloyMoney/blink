@@ -1,9 +1,7 @@
 import { InvalidEmailAddress } from "@/domain/errors"
 import { checkedToEmailAddress } from "@/domain/users"
 
-// Test suite for checkedToEmailAddress
 describe("checkedToEmailAddress", () => {
-  // Test valid email addresses
   describe("Valid email addresses", () => {
     const validEmails = [
       "test@example.com",
@@ -23,7 +21,6 @@ describe("checkedToEmailAddress", () => {
     )
   })
 
-  // Test invalid email addresses
   describe("Invalid email addresses", () => {
     const invalidEmails = [
       "plainaddress",
