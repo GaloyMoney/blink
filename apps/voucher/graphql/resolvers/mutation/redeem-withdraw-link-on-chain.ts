@@ -64,11 +64,11 @@ export const redeemWithdrawLinkOnChain = async (
   })
 
   if (onChainUsdTxFeeResponse instanceof Error) return onChainUsdTxFeeResponse
+  const totalAmountToBePaid =
+    getWithdrawLinkBySecretResponse.voucherAmountInCents -
+    onChainUsdTxFeeResponse.onChainUsdTxFee.amount
 
-  if (
-    onChainUsdTxFeeResponse.onChainUsdTxFee.amount >=
-    getWithdrawLinkBySecretResponse.voucherAmountInCents
-  )
+  if (totalAmountToBePaid <= 0)
     return new Error("This Voucher Cannot Withdraw On Chain amount is less than fees")
 
   const response = await updateWithdrawLinkStatus({
@@ -82,7 +82,7 @@ export const redeemWithdrawLinkOnChain = async (
     client: escrowClient,
     input: {
       address: onChainAddress,
-      amount: getWithdrawLinkBySecretResponse.voucherAmountInCents,
+      amount: totalAmountToBePaid,
       memo: createMemo({
         voucherAmountInCents: getWithdrawLinkBySecretResponse.voucherAmountInCents,
         commissionPercentage: getWithdrawLinkBySecretResponse.commissionPercentage,
