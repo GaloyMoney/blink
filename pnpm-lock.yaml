@@ -369,8 +369,8 @@ importers:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
       react-qrcode-logo:
-        specifier: ^2.10.0
-        version: 2.10.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^3.0.0
+        version: 3.0.0(react-dom@18.2.0)(react@18.2.0)
       recharts:
         specifier: ^2.12.6
         version: 2.12.6(react-dom@18.2.0)(react@18.2.0)
@@ -701,8 +701,8 @@ importers:
         specifier: ^1.2.3
         version: 1.2.4(react@18.3.1)
       react-qrcode-logo:
-        specifier: ^2.10.0
-        version: 2.10.0(react-dom@18.3.1)(react@18.3.1)
+        specifier: ^3.0.0
+        version: 3.0.0(react-dom@18.3.1)(react@18.3.1)
       react-select:
         specifier: ^5.8.0
         version: 5.8.0(@types/react@18.3.2)(react-dom@18.3.1)(react@18.3.1)
@@ -969,8 +969,8 @@ importers:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
       react-qrcode-logo:
-        specifier: ^2.10.0
-        version: 2.10.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^3.0.0
+        version: 3.0.0(react-dom@18.2.0)(react@18.2.0)
       ssr:
         specifier: link:@apollo/experimental-nextjs-app-support/ssr
         version: link:@apollo/experimental-nextjs-app-support/ssr
@@ -1326,6 +1326,9 @@ importers:
       uuid-by-string:
         specifier: ^4.0.0
         version: 4.0.0
+      validator:
+        specifier: ^13.12.0
+        version: 13.12.0
       ws:
         specifier: ^8.17.0
         version: 8.17.0
@@ -1438,6 +1441,9 @@ importers:
       '@types/set-cookie-parser':
         specifier: ^2.4.7
         version: 2.4.7
+      '@types/validator':
+        specifier: ^13.12.0
+        version: 13.12.0
       '@types/ws':
         specifier: ^8.5.10
         version: 8.5.10
@@ -16695,6 +16701,10 @@ packages:
     resolution: {integrity: sha512-WUtIVRUZ9i5dYXefDEAI7sh9/O7jGvHg7Df/5O/gtH3Yabe5odI3UWopVR1qbPXQtvOxWu3mM4XxlYeZtMWF4g==}
     dev: true
 
+  /@types/validator@13.12.0:
+    resolution: {integrity: sha512-nH45Lk7oPIJ1RVOF6JgFI6Dy0QpHEzq4QecZhvguxYPDwT8c93prCMqAtiIttm39voZ+DDR+qkNnMpJmMBRqag==}
+    dev: true
+
   /@types/warning@3.0.3:
     resolution: {integrity: sha512-D1XC7WK8K+zZEveUPY+cf4+kgauk8N4eHr/XIHXGlGYkHLud6hK9lYfZk1ry1TNh798cZUCgb6MqGEG8DkJt6Q==}
     dev: false
@@ -31279,11 +31289,11 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /react-qrcode-logo@2.10.0(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-Q1+jLtcyDl5rLR29YdkXVLzYk62p3+541x00HxURVBQhs6SqFyEZZVhvkU/VQ082ytXa3GdCmGWMLK5z0Vhe7g==}
+  /react-qrcode-logo@3.0.0(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-2+vZ3GNBdUpYxIKyt6SFZsDGXa0xniyUQ0wPI4O0hJTzRjttPIx1pPnH9IWQmp/4nDMoN47IBhi3Breu1KudYw==}
     peerDependencies:
-      react: '>=16.4.1'
-      react-dom: '>=16.4.1'
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
     dependencies:
       lodash.isequal: 4.5.0
       qrcode-generator: 1.4.4
@@ -31291,11 +31301,11 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /react-qrcode-logo@2.10.0(react-dom@18.3.1)(react@18.3.1):
-    resolution: {integrity: sha512-Q1+jLtcyDl5rLR29YdkXVLzYk62p3+541x00HxURVBQhs6SqFyEZZVhvkU/VQ082ytXa3GdCmGWMLK5z0Vhe7g==}
+  /react-qrcode-logo@3.0.0(react-dom@18.3.1)(react@18.3.1):
+    resolution: {integrity: sha512-2+vZ3GNBdUpYxIKyt6SFZsDGXa0xniyUQ0wPI4O0hJTzRjttPIx1pPnH9IWQmp/4nDMoN47IBhi3Breu1KudYw==}
     peerDependencies:
-      react: '>=16.4.1'
-      react-dom: '>=16.4.1'
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
     dependencies:
       lodash.isequal: 4.5.0
       qrcode-generator: 1.4.4
@@ -34871,6 +34881,11 @@ packages:
       spdx-correct: 3.2.0
       spdx-expression-parse: 3.0.1
     dev: true
+
+  /validator@13.12.0:
+    resolution: {integrity: sha512-c1Q0mCiPlgdTVVVIJIrBuxNicYE+t/7oKeI9MWLj3fh/uq2Pxh/3eeWbVZ4OcGW1TUf53At0njHw5SMdA3tmMg==}
+    engines: {node: '>= 0.10'}
+    dev: false
 
   /value-or-promise@1.0.11:
     resolution: {integrity: sha512-41BrgH+dIbCFXClcSapVs5M6GkENd3gQOJpEfPDNa71LsUGMXDL0jMWpI/Rh7WhX+Aalfz2TTS3Zt5pUsbnhLg==}
