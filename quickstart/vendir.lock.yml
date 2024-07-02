@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump react-qrcode-logo from 2.10.0 to 3.0.0 (#4505)...'
-      sha: e98fe29511f5027cfea00b0aea879724cd8889e8
+      commitTitle: 'fix(core): email validation (#4528)...'
+      sha: b26fe19c389596baab27a6eb9125479a9d9b7941
       tags:
-      - 0.20.207-10-ge98fe2951
+      - 0.20.207-13-gb26fe19c3
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump react-qrcode-logo from 2.10.0 to 3.0.0 (#4505)...'
-      sha: e98fe29511f5027cfea00b0aea879724cd8889e8
+      commitTitle: 'fix(core): email validation (#4528)...'
+      sha: b26fe19c389596baab27a6eb9125479a9d9b7941
       tags:
-      - 0.20.207-10-ge98fe2951
+      - 0.20.207-13-gb26fe19c3
     path: schemas
   - git:
-      commitTitle: 'chore(deps): bump react-qrcode-logo from 2.10.0 to 3.0.0 (#4505)...'
-      sha: e98fe29511f5027cfea00b0aea879724cd8889e8
+      commitTitle: 'fix(core): email validation (#4528)...'
+      sha: b26fe19c389596baab27a6eb9125479a9d9b7941
       tags:
-      - 0.20.207-10-ge98fe2951
+      - 0.20.207-13-gb26fe19c3
     path: gql
   path: graphql
 kind: LockConfig
