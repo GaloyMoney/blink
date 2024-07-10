@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): email validation (#4528)...'
-      sha: b26fe19c389596baab27a6eb9125479a9d9b7941
+      commitTitle: 'fix(core): update quiz phone limits validation (#4537)...'
+      sha: 23e218e8fc8e7e48f8080053417974b3325a2281
       tags:
-      - 0.20.207-13-gb26fe19c3
+      - 0.20.208-1-g23e218e8f
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): email validation (#4528)...'
-      sha: b26fe19c389596baab27a6eb9125479a9d9b7941
+      commitTitle: 'fix(core): update quiz phone limits validation (#4537)...'
+      sha: 23e218e8fc8e7e48f8080053417974b3325a2281
       tags:
-      - 0.20.207-13-gb26fe19c3
+      - 0.20.208-1-g23e218e8f
     path: schemas
   - git:
-      commitTitle: 'fix(core): email validation (#4528)...'
-      sha: b26fe19c389596baab27a6eb9125479a9d9b7941
+      commitTitle: 'fix(core): update quiz phone limits validation (#4537)...'
+      sha: 23e218e8fc8e7e48f8080053417974b3325a2281
       tags:
-      - 0.20.207-13-gb26fe19c3
+      - 0.20.208-1-g23e218e8f
     path: gql
   path: graphql
 kind: LockConfig
