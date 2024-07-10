@@ -93,6 +93,7 @@ export const claimQuiz = async ({
 
   const user = await UsersRepository().findById(recipientAccount.kratosUserId)
   if (user instanceof Error) return user
+  if (!user.phone) return new InvalidPhoneForQuizError()
 
   const phones = user.deletedPhones || []
   if (user.phone) {
