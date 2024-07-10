@@ -96,9 +96,7 @@ export const claimQuiz = async ({
   if (!user.phone) return new InvalidPhoneForQuizError()
 
   const phones = user.deletedPhones || []
-  if (user.phone) {
-    phones.unshift(user.phone)
-  }
+  phones.unshift(user.phone)
 
   for (const phone of phones) {
     const phoneCheck = await checkAddQuizAttemptPerPhoneLimits(phone)
