@@ -32,6 +32,7 @@ import {
 } from "@/services/mongoose"
 import { consumeLimiter } from "@/services/rate-limit"
 import { getFunderWalletId } from "@/services/ledger/caching"
+import { isDisposablePhoneNumber } from "@/services/twilio-service"
 import { AccountsIpsRepository } from "@/services/mongoose/accounts-ips"
 
 type ClaimQuizResult = {
@@ -56,9 +57,10 @@ const checkAddQuizAttemptPerPhoneLimits = async (
   phone: PhoneNumber | undefined,
 ): Promise<true | RateLimiterExceededError> => {
   if (!phone) return new InvalidPhoneForQuizError()
+  if (isDisposablePhoneNumber(phone)) return new InvalidPhoneForQuizError()
 
   return consumeLimiter({
-    rateLimitConfig: RateLimitConfig.addQuizAttemptPerIp,
+    rateLimitConfig: RateLimitConfig.addQuizAttemptPerPhone,
     keyToConsume: phone,
   })
 }
@@ -92,14 +94,15 @@ export const claimQuiz = async ({
   const user = await UsersRepository().findById(recipientAccount.kratosUserId)
   if (user instanceof Error) return user
 
-  const phone =
-    user.phone ||
-    (user.deletedPhones && user.deletedPhones.length > 0
-      ? user.deletedPhones[0]
-      : undefined)
+  const phones = user.deletedPhones || []
+  if (user.phone) {
+    phones.unshift(user.phone)
+  }
 
-  const phoneCheck = await checkAddQuizAttemptPerPhoneLimits(phone)
-  if (phoneCheck instanceof Error) return phoneCheck
+  for (const phone of phones) {
+    const phoneCheck = await checkAddQuizAttemptPerPhoneLimits(phone)
+    if (phoneCheck instanceof Error) return phoneCheck
+  }
 
   const validatedPhoneMetadata = PhoneMetadataAuthorizer(
     quizzesConfig.phoneMetadataValidationSettings,
