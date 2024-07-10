@@ -40,7 +40,7 @@ const notificationsClient = new NotificationsServiceClient(
 
 export const notificationsMetadata = new Metadata()
 
-export const enableNotificationCatgeory = promisify<
+export const enableNotificationCategory = promisify<
   EnableNotificationCategoryRequest,
   Metadata,
   EnableNotificationCategoryResponse

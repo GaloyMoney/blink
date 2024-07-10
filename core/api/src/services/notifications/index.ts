@@ -537,7 +537,7 @@ export const NotificationsService = (): INotificationsService => {
 
       request.setCategory(grpcNotificationCategory)
 
-      const response = await notificationsGrpc.enableNotificationCatgeory(
+      const response = await notificationsGrpc.enableNotificationCategory(
         request,
         notificationsGrpc.notificationsMetadata,
       )
