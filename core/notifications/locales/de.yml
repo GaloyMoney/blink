@@ -14,3 +14,55 @@ circle_threshold_reached.inner.body: "Du hast%{time_frame} %{threshold} Menschen
 
 circle_threshold_reached.outer.title: "Äußerer Kreis Wachstum \U0001F4AA"
 circle_threshold_reached.outer.body: "Dein äußerer Kreis ist auf %{threshold} Menschen gewachsen. Du bringst die Bitcoin adoption voran!"
+
+identity_verification_approved.title: "Ihre Identität wurde bestätigt!"
+identity_verification_approved.body: "Die Dokumente für Ihre Überprüfung wurden bearbeitet."
+
+identity_verification_declined.reason.documents_not_clear: "die hochgeladenen Dokumente waren nicht eindeutig"
+identity_verification_declined.reason.photo_not_clear: "das von Ihnen übermittelte Bild war unscharf"
+identity_verification_declined.reason.documents_do_not_match: "die von Ihnen eingereichten Dokumente stimmen nicht mit Ihrem Selfie und/oder den von Ihnen gemachten Angaben überein."
+identity_verification_declined.reason.documents_expired: "die von Ihnen eingereichten Dokumente sind abgelaufen "
+identity_verification_declined.reason.documents_not_supported: "die von Ihnen eingereichten Dokumente werden nicht unterstützt"
+identity_verification_declined.reason.other: "Ein Fehler ist aufgetreten, bitte kontaktieren Sie den Support"
+identity_verification_declined.title: "Ihre Identität konnte nicht verifiziert werden!"
+identity_verification_declined.body: "Wir waren nicht in der Lage, Ihre Dokumente zu bearbeiten, weil %{reason}."
+
+identity_verification_review_started.title: "Ihre Verifizierung ist in Bearbeitung!"
+identity_verification_review_started.body: "Wir haben Ihre Unterlagen erhalten und bearbeiten sie."
+
+transaction.intra_ledger_payment.title: "%{walletCurrency} Transaktion"
+transaction.intra_ledger_payment.body: "Gesendete Zahlung von %{formattedCurrencyAmount}"
+transaction.intra_ledger_payment.body_display_currency: "Gesendete Zahlung von %{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+transaction.intra_ledger_receipt.title: "%{walletCurrency} Transaktion"
+transaction.intra_ledger_receipt.body: "+%{formattedCurrencyAmount}"
+transaction.intra_ledger_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+transaction.onchain_payment.title: "%{walletCurrency} Transaktion"
+transaction.onchain_payment.body_display_currency: "Gesendete Onchain-Zahlung von %{displayCurrencyAmount} | %{formattedCurrencyAmount} bestätigt"
+transaction.onchain_payment.body: "Gesendete On-Chain-Zahlung von %{formattedCurrencyAmount} bestätigt"
+
+transaction.onchain_receipt.title: "%{walletCurrency} Transaktion"
+transaction.onchain_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt.body: "+%{formattedCurrencyAmount}"
+
+transaction.lightning_receipt.title: "%{walletCurrency} Transaktion"
+transaction.lightning_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.lightning_receipt.body: "+%{formattedCurrencyAmount}"
+
+transaction.onchain_receipt_pending.title: "%{walletCurrency} Transaktion | Ausstehend"
+transaction.onchain_receipt_pending.body_display_currency: "ausstehend +%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt_pending.body: "ausstehend +%{formattedCurrencyAmount}"
+
+transaction.paid_invoice.title: "%{walletCurrency} Transaktion"
+transaction.paid_invoice.body: "+%{formattedCurrencyAmount}"
+transaction.paid_invoice.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+price_changed.up.title: "Bitcoin ist in Bewegung!"
+price_changed.up.body: "Bitcoin ist in den letzten Tagen um %{change_percent}% auf %{price} gestiegen!"
+
+price_changed.down.title: "Bitcoin ist in Bewegung!"
+price_changed.down.body: "Bitcoin ist in den letzten Tagen um %{change_percent}% auf %{price} gefallen!"
+
+security.link_email_reminder.title: "Verbinde deine E-Mail um den Account sicherer zu machen"
+security.link_email_reminder.body: "Verknüpfen Sie Ihre E-Mail, um Ihr Konto zu sichern und wichtige Updates zu erhalten"
