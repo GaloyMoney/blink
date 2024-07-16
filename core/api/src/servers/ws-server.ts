@@ -64,7 +64,7 @@ const getContext = async (
       // TODO: ip not been used currently for subscription.
       // implement some rate limiting.
       const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
-        ? connectionParams?.ip ?? ctx.extra?.request?.socket?.remoteAddress
+        ? (connectionParams?.ip ?? ctx.extra?.request?.socket?.remoteAddress)
         : connectionParams?.["x-real-ip"] || connectionParams?.["x-forwarded-for"]
 
       const ip = parseIps(ipString)
