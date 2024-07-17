@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): update quiz phone limits validation (#4537)...'
-      sha: 23e218e8fc8e7e48f8080053417974b3325a2281
+      commitTitle: 'chore(deps): bump ws from 8.17.0 to 8.17.1 (#4512)...'
+      sha: ae73308ae86a5d5c19a94d7276c4cbb04d245181
       tags:
-      - 0.20.208-1-g23e218e8f
+      - 0.20.210-1-gae73308ae
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): update quiz phone limits validation (#4537)...'
-      sha: 23e218e8fc8e7e48f8080053417974b3325a2281
+      commitTitle: 'chore(deps): bump ws from 8.17.0 to 8.17.1 (#4512)...'
+      sha: ae73308ae86a5d5c19a94d7276c4cbb04d245181
       tags:
-      - 0.20.208-1-g23e218e8f
+      - 0.20.210-1-gae73308ae
     path: schemas
   - git:
-      commitTitle: 'fix(core): update quiz phone limits validation (#4537)...'
-      sha: 23e218e8fc8e7e48f8080053417974b3325a2281
+      commitTitle: 'chore(deps): bump ws from 8.17.0 to 8.17.1 (#4512)...'
+      sha: ae73308ae86a5d5c19a94d7276c4cbb04d245181
       tags:
-      - 0.20.208-1-g23e218e8f
+      - 0.20.210-1-gae73308ae
     path: gql
   path: graphql
 kind: LockConfig
