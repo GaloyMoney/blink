@@ -9,7 +9,7 @@ interface ErrorResponse {
 const errorMessages: { [key: string]: string } = {
   UserCodeAttemptIpRateLimiterExceededError:
     "Your rate limit exceeded, please try after some time.",
-  UserCodeAttemptIdentifierRateLimiterExceededError:
+  UserAttemptEmailIdentifierRateLimiterExceededError:
     "Your rate limit exceeded, please try after some time.",
 }
 
