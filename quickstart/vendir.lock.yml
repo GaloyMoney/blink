@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump ws from 8.17.0 to 8.17.1 (#4512)...'
-      sha: ae73308ae86a5d5c19a94d7276c4cbb04d245181
+      commitTitle: 'chore(deps-dev): bump prettier and @types/prettier (#4540)...'
+      sha: 7ca7a7b70257b12da40f12149f879f7469f27cb3
       tags:
-      - 0.20.210-1-gae73308ae
+      - 0.20.211-2-g7ca7a7b70
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump ws from 8.17.0 to 8.17.1 (#4512)...'
-      sha: ae73308ae86a5d5c19a94d7276c4cbb04d245181
+      commitTitle: 'chore(deps-dev): bump prettier and @types/prettier (#4540)...'
+      sha: 7ca7a7b70257b12da40f12149f879f7469f27cb3
       tags:
-      - 0.20.210-1-gae73308ae
+      - 0.20.211-2-g7ca7a7b70
     path: schemas
   - git:
-      commitTitle: 'chore(deps): bump ws from 8.17.0 to 8.17.1 (#4512)...'
-      sha: ae73308ae86a5d5c19a94d7276c4cbb04d245181
+      commitTitle: 'chore(deps-dev): bump prettier and @types/prettier (#4540)...'
+      sha: 7ca7a7b70257b12da40f12149f879f7469f27cb3
       tags:
-      - 0.20.210-1-gae73308ae
+      - 0.20.211-2-g7ca7a7b70
     path: gql
   path: graphql
 kind: LockConfig
