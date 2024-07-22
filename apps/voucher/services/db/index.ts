@@ -165,3 +165,21 @@ export async function updateWithdrawLinkStatus({
       : new Error("Failed to update withdraw link status")
   }
 }
+
+export async function updateWithdrawLink({
+  id,
+  updates,
+}: {
+  id: string
+  updates: Partial<WithdrawLink>
+}): Promise<WithdrawLink | Error> {
+  try {
+    const [updatedWithdrawLink] = await knex("WithdrawLinks")
+      .where({ id })
+      .update(updates)
+      .returning("*")
+    return updatedWithdrawLink
+  } catch (error) {
+    return error instanceof Error ? error : new Error("Failed to update withdraw link")
+  }
+}

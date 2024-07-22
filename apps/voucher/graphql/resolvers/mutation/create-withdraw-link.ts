@@ -6,7 +6,11 @@ import {
   getWalletDetails,
   getWalletDetailsFromWalletId,
 } from "@/utils/helpers"
-import { createWithdrawLinkMutation, updateWithdrawLinkStatus } from "@/services/db"
+import {
+  createWithdrawLinkMutation,
+  updateWithdrawLink,
+  updateWithdrawLinkStatus,
+} from "@/services/db"
 
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth"
 import { PaymentSendResult, Status, WalletCurrency } from "@/lib/graphql/generated"
@@ -18,6 +22,7 @@ import { escrowApolloClient } from "@/services/galoy/client/escrow"
 import { amountCalculator } from "@/lib/amount-calculator"
 
 import { env } from "@/env"
+import { convertCurrency } from "@/lib/utils"
 
 export const createWithdrawLink = async (
   _: undefined,
@@ -53,8 +58,8 @@ export const createWithdrawLink = async (
 
   // amount that would be sent to user
   const voucherAmountAfterPlatformFeesAndCommission = Number(
-    amountCalculator
-      .voucherAmountAfterPlatformFeesAndCommission({
+    amountCalculator.voucherAmountAfterPlatformFeesAndCommission
+      .fromPrice({
         voucherPrice: salesAmountInCents,
         commissionPercentage,
         platformFeesInPpm,
@@ -265,10 +270,38 @@ export const handleBtcWalletPayment = async ({
   if (btcPaymentResponse.intraLedgerPaymentSend.errors.length > 0)
     return new Error(btcPaymentResponse.intraLedgerPaymentSend.errors[0].message)
 
+  // TODO handle case if settlementDisplayCurrency is changed for some reason
+  if (
+    !btcPaymentResponse.intraLedgerPaymentSend.transaction?.settlementDisplayAmount ||
+    btcPaymentResponse.intraLedgerPaymentSend.transaction.settlementDisplayCurrency !==
+      "USD"
+  ) {
+    console.error("error while verifying Settlement Amount and Settlement Currency")
+    return new Error("Something went wrong, please contact support if error persists")
+  }
+
+  const amountPaidToEscrowInCents = convertCurrency.usdToCents({
+    usd: Math.abs(
+      btcPaymentResponse.intraLedgerPaymentSend.transaction?.settlementDisplayAmount,
+    ),
+  })
+
+  const voucherAmountInCents = Number(
+    amountCalculator.voucherAmountAfterPlatformFeesAndCommission
+      .fromCommission({
+        platformFeesInPpm: env.PLATFORM_FEES_IN_PPM,
+        voucherAmountAfterCommission: amountPaidToEscrowInCents,
+      })
+      .toFixed(0),
+  )
+
   if (btcPaymentResponse.intraLedgerPaymentSend.status === PaymentSendResult.Success) {
-    const response = await updateWithdrawLinkStatus({
+    const response = await updateWithdrawLink({
       id: createWithdrawLinkResponse.id,
-      status: Status.Active,
+      updates: {
+        status: Status.Active,
+        voucherAmountInCents: voucherAmountInCents,
+      },
     })
     return response
   }

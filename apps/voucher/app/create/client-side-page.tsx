@@ -70,7 +70,7 @@ export default function CreatePage({ platformFeesInPpm }: Props) {
   }, [])
 
   const voucherAmountInCents =
-    amountCalculator.voucherAmountAfterPlatformFeesAndCommission({
+    amountCalculator.voucherAmountAfterPlatformFeesAndCommission.fromPrice({
       voucherPrice: currencyConversion?.currencyConversionEstimation.usdCentAmount,
       commissionPercentage: Number(commissionPercentage),
       platformFeesInPpm,
