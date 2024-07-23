@@ -289,6 +289,7 @@ export const handleBtcWalletPayment = async ({
   const voucherAmountInCents = Number(
     amountCalculator.voucherAmountAfterPlatformFeesAndCommission
       .fromCommission({
+        voucherPrice: salesAmountInCents,
         platformFeesInPpm: env.PLATFORM_FEES_IN_PPM,
         voucherAmountAfterCommission: amountPaidToEscrowInCents,
       })
