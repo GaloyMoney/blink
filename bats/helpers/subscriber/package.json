@@ -5,9 +5,9 @@
   },
   "devDependencies": {
     "@types/node": "^20.8.7",
-    "@types/ws": "^8.5.8",
+    "@types/ws": "^8.5.11",
     "graphql-ws": "^5.14.1",
     "tsx": "^4.2.0",
-    "ws": "^8.17.1"
+    "ws": "^8.18.0"
   }
 }
