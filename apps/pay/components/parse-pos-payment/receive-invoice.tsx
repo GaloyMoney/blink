@@ -227,7 +227,7 @@ function ReceiveInvoice({ recipientWalletCurrency, walletId, state, dispatch }: 
     const invalidInvoiceError =
       recipientWalletCurrency === "USD" && Number(amount?.toString()) <= 0
         ? `Enter an amount greater than 1 cent (${usdToSats(0.01).toFixed()} sats)`
-        : expiredInvoiceError ?? null
+        : (expiredInvoiceError ?? null)
     return (
       <div className={styles.error}>
         <p>{errorString}</p>
