@@ -1,32 +1,17 @@
 export const amountCalculator = {
-  voucherAmountAfterPlatformFeesAndCommission: {
-    fromPrice: ({
-      voucherPrice,
-      commissionPercentage,
-      platformFeesInPpm,
-    }: {
-      voucherPrice: number
-      commissionPercentage: number
-      platformFeesInPpm: number
-    }) => {
-      const commissionAmount = voucherPrice * (commissionPercentage / 100)
-      const platformFees = voucherPrice * (platformFeesInPpm / 1000000)
-      const result = voucherPrice - commissionAmount - platformFees
-      return Math.max(result, 0)
-    },
-    fromCommission: ({
-      voucherAmountAfterCommission,
-      platformFeesInPpm,
-      voucherPrice,
-    }: {
-      voucherAmountAfterCommission: number
-      platformFeesInPpm: number
-      voucherPrice: number
-    }) => {
-      const platformFees = voucherPrice * (platformFeesInPpm / 1000000)
-      const result = voucherAmountAfterCommission - platformFees
-      return Math.max(result, 0)
-    },
+  voucherAmountAfterPlatformFeesAndCommission({
+    voucherPrice,
+    commissionPercentage,
+    platformFeesInPpm,
+  }: {
+    voucherPrice: number
+    commissionPercentage: number
+    platformFeesInPpm: number
+  }): number {
+    const commissionAmount = voucherPrice * (commissionPercentage / 100)
+    const platformFees = voucherPrice * (platformFeesInPpm / 1000000)
+    const result = voucherPrice - commissionAmount - platformFees
+    return Math.max(result, 0)
   },
   voucherAmountAfterCommission({
     voucherPrice,
