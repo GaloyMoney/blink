@@ -17,13 +17,11 @@ export const amountCalculator = {
     fromCommission: ({
       voucherAmountAfterCommission,
       platformFeesInPpm,
-      voucherPrice,
     }: {
       voucherAmountAfterCommission: number
       platformFeesInPpm: number
-      voucherPrice: number
     }) => {
-      const platformFees = voucherPrice * (platformFeesInPpm / 1000000)
+      const platformFees = voucherAmountAfterCommission * (platformFeesInPpm / 1000000)
       const result = voucherAmountAfterCommission - platformFees
       return Math.max(result, 0)
     },
