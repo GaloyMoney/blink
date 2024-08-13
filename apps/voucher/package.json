@@ -25,7 +25,7 @@
     "@apollo/client": "^3.7.12",
     "@apollo/experimental-nextjs-app-support": "^0.8.0",
     "@apollo/server": "^4.7.1",
-    "@as-integrations/next": "^2.0.0",
+    "@as-integrations/next": "^3.1.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@headlessui/react": "^2.0.3",
