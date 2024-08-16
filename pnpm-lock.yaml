@@ -1319,6 +1319,9 @@ importers:
       svix:
         specifier: 1.21.0
         version: 1.21.0
+      tiny-secp256k1:
+        specifier: ^2.2.3
+        version: 2.2.3
       twilio:
         specifier: ^5.2.2
         version: 5.2.2
@@ -1524,9 +1527,6 @@ importers:
       spectaql:
         specifier: ^2.3.1
         version: 2.3.1
-      tiny-secp256k1:
-        specifier: ^2.2.3
-        version: 2.2.3
       tree-kill:
         specifier: ^1.2.2
         version: 1.2.2
@@ -34145,6 +34145,7 @@ packages:
     engines: {node: '>=14.0.0'}
     dependencies:
       uint8array-tools: 0.0.7
+    dev: false
 
   /tinyspy@2.2.0:
     resolution: {integrity: sha512-d2eda04AN/cPOR89F7Xv5bK/jrQEhmcLFe6HFldoeO9AJtps+fqEnh486vnT/8y4bw38pSyxDcTCAq+Ks2aJTg==}
@@ -34781,6 +34782,7 @@ packages:
   /uint8array-tools@0.0.7:
     resolution: {integrity: sha512-vrrNZJiusLWoFWBqz5Y5KMCgP9W9hnjZHzZiZRT8oNAkq3d5Z5Oe76jAvVVSRh4U8GGR90N2X1dWtrhvx6L8UQ==}
     engines: {node: '>=14.0.0'}
+    dev: false
 
   /ultron@1.1.1:
     resolution: {integrity: sha512-UIEXBNeYmKptWH6z8ZnqTeS8fV74zG0/eRU9VGkpzz+LIJNs8W/zM/L+7ctCkRrgbNnnR0xxw4bKOr0cW0N0Og==}
