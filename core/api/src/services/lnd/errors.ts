@@ -2,6 +2,7 @@ export const KnownLndErrorDetails = {
   // Off-chain
   InsufficientBalance: /insufficient local balance/,
   InsufficientBalanceToAttemptPayment: /InsufficientBalanceToAttemptPayment/,
+  InsufficientFee: /FeeInsufficient/,
   InvoiceNotFound: /unable to locate invoice/,
   InvoiceAlreadyPaid: /invoice is already paid/,
   UnableToFindRoute: /PaymentPathfindingFailedToFindPossibleRoute/,
