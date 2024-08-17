@@ -407,6 +407,11 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = error.message
       return new InsufficientBalanceError({ message, logger: baseLogger })
 
+    case "InsufficientFeeForLnPaymentError":
+      message =
+        "Payment failed due to an insufficient fee, please try again later or contact support if the problem persists."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "CaptchaUserFailToPassError":
       message = "Captcha validation failed."
       return new ValidationInternalError({ message, logger: baseLogger })

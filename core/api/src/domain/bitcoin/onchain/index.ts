@@ -1,9 +1,21 @@
+import * as ecc from "tiny-secp256k1"
+import { address, initEccLib, Network, networks } from "bitcoinjs-lib"
+
 import { InvalidOnChainAddress, InvalidScanDepthAmount } from "@/domain/errors"
 
 export * from "./errors"
 export * from "./tx-filter"
 export * from "./tx-decoder"
 export * from "./rebalance-checker"
+
+initEccLib(ecc)
+
+const networkMap: Record<BtcNetwork, Network> = {
+  mainnet: networks.bitcoin,
+  testnet: networks.testnet,
+  signet: networks.testnet, // Signet uses testnet parameters
+  regtest: networks.regtest,
+}
 
 export const checkedToOnChainAddress = ({
   network,
@@ -12,16 +24,13 @@ export const checkedToOnChainAddress = ({
   network: BtcNetwork
   value: string
 }): OnChainAddress | ValidationError => {
-  // Regex patterns: https://regexland.com/regex-bitcoin-addresses/
-  const regexes = {
-    mainnet: [/^[13]{1}[a-km-zA-HJ-NP-Z1-9]{26,34}$/, /^bc1[a-z0-9]{39,59}$/i],
-    testnet: [/^[mn2]{1}[a-km-zA-HJ-NP-Z1-9]{26,34}$/, /^tb1[a-z0-9]{39,59}$/i],
-    signet: [/^[mn2]{1}[a-km-zA-HJ-NP-Z1-9]{26,34}$/, /^tb1[a-z0-9]{39,59}$/i],
-    regtest: [/^bcrt1[a-z0-9]{39,59}$/i],
+  try {
+    const bitcoinNetwork = networkMap[network]
+    address.toOutputScript(value, bitcoinNetwork)
+    return value as OnChainAddress
+  } catch (e) {
+    return new InvalidOnChainAddress(e)
   }
-
-  if (regexes[network].some((r) => value.match(r))) return value as OnChainAddress
-  return new InvalidOnChainAddress()
 }
 
 export const checkedToScanDepth = (value: number): ScanDepth | ValidationError => {

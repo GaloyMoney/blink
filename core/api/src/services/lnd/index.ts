@@ -78,6 +78,7 @@ import {
   decodeInvoice,
   InvalidInvoiceAmountError,
   InvoiceAlreadySettledError,
+  InsufficientFeeForLnPaymentError,
 } from "@/domain/bitcoin/lightning"
 import { CacheKeys } from "@/domain/cache"
 import { LnFees } from "@/domain/payments"
@@ -1208,6 +1209,8 @@ const handleSendPaymentLndErrors = ({
       return new InsufficientBalanceForLnPaymentError()
     case match(KnownLndErrorDetails.FeaturePairExists):
       return new InvalidFeatureBitsForLndInvoiceError()
+    case match(KnownLndErrorDetails.InsufficientFee):
+      return new InsufficientFeeForLnPaymentError()
 
     default:
       return handleCommonLightningServiceErrors(err)
