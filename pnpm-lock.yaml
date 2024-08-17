@@ -800,8 +800,8 @@ importers:
         specifier: ^7.0.1
         version: 7.0.1(@babel/plugin-syntax-flow@7.24.7)(@babel/plugin-transform-react-jsx@7.25.2)(eslint@8.54.0)(typescript@5.2.2)
       eslint-plugin-cypress:
-        specifier: ^3.2.0
-        version: 3.2.0(eslint@8.54.0)
+        specifier: ^3.5.0
+        version: 3.5.0(eslint@8.54.0)
       eslint-plugin-flowtype:
         specifier: ^8.0.3
         version: 8.0.3(@babel/plugin-syntax-flow@7.24.7)(@babel/plugin-transform-react-jsx@7.25.2)(eslint@8.54.0)
@@ -23092,8 +23092,8 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-cypress@3.2.0(eslint@8.54.0):
-    resolution: {integrity: sha512-HaxMz6BoU4ay+K4WrG9ZJC1NdX06FqSlAwtRDStjM0ORFT7zCNPNuRJ+kUPc17Rt2AMUBSqeD9L0zTR3uZhPpw==}
+  /eslint-plugin-cypress@3.5.0(eslint@8.54.0):
+    resolution: {integrity: sha512-JZQ6XnBTNI8h1B9M7wJSFzc48SYbh7VMMKaNTQOFa3BQlnmXPrVc4PKen8R+fpv6VleiPeej6VxloGb42zdRvw==}
     peerDependencies:
       eslint: '>=7'
     dependencies:
