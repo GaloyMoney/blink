@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#4539)...'
-      sha: a57dc7215b1f334fec46cd97339a6a0cbe9d01f2
+      commitTitle: 'fix(core): update onchain address validation (#4571)...'
+      sha: a47b5d740d19409e284006d04d67d75417d9aee4
       tags:
-      - 0.20.212-5-ga57dc7215
+      - 0.20.213-2-ga47b5d740
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#4539)...'
-      sha: a57dc7215b1f334fec46cd97339a6a0cbe9d01f2
+      commitTitle: 'fix(core): update onchain address validation (#4571)...'
+      sha: a47b5d740d19409e284006d04d67d75417d9aee4
       tags:
-      - 0.20.212-5-ga57dc7215
+      - 0.20.213-2-ga47b5d740
     path: schemas
   - git:
-      commitTitle: 'chore: bump deps (#4539)...'
-      sha: a57dc7215b1f334fec46cd97339a6a0cbe9d01f2
+      commitTitle: 'fix(core): update onchain address validation (#4571)...'
+      sha: a47b5d740d19409e284006d04d67d75417d9aee4
       tags:
-      - 0.20.212-5-ga57dc7215
+      - 0.20.213-2-ga47b5d740
     path: gql
   path: graphql
 kind: LockConfig
