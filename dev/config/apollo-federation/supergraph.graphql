@@ -818,6 +818,9 @@ input LnAddressPaymentSendInput
   """Lightning address to send to."""
   lnAddress: String!
 
+  """Optional memo to associate with the lightning invoice."""
+  memo: Memo
+
   """Wallet ID to send bitcoin from."""
   walletId: WalletId!
 }
@@ -1073,6 +1076,9 @@ input LnurlPaymentSendInput
 
   """Lnurl string to send to."""
   lnurl: String!
+
+  """Optional memo to associate with the lightning invoice."""
+  memo: Memo
 
   """Wallet ID to send bitcoin from."""
   walletId: WalletId!

@@ -148,6 +148,7 @@ type LnAddressPaymentSendArgs = {
   senderAccount: Account
   lnAddress: string
   amount: number
+  memo: string | null
 }
 
 type LnurlPaymentSendArgs = {
@@ -155,6 +156,7 @@ type LnurlPaymentSendArgs = {
   senderAccount: Account
   lnurl: string
   amount: number
+  memo: string | null
 }
 
 type ProcessedReason =

@@ -614,6 +614,8 @@ export type LnAddressPaymentSendInput = {
   readonly amount: Scalars['SatAmount']['input'];
   /** Lightning address to send to. */
   readonly lnAddress: Scalars['String']['input'];
+  /** Optional memo to associate with the lightning invoice. */
+  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID to send bitcoin from. */
   readonly walletId: Scalars['WalletId']['input'];
 };
@@ -835,6 +837,8 @@ export type LnurlPaymentSendInput = {
   readonly amount: Scalars['SatAmount']['input'];
   /** Lnurl string to send to. */
   readonly lnurl: Scalars['String']['input'];
+  /** Optional memo to associate with the lightning invoice. */
+  readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID to send bitcoin from. */
   readonly walletId: Scalars['WalletId']['input'];
 };
