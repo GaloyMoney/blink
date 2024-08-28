@@ -2,6 +2,7 @@ import { payInvoiceByWalletId } from "./send-lightning"
 
 import { LnurlPayService } from "@/services/lnurl-pay"
 import { checkedToBtcPaymentAmount } from "@/domain/shared"
+import { decodeInvoice } from "@/domain/bitcoin/lightning"
 
 export const lnAddressPaymentSend = async ({
   senderWalletId,
@@ -16,18 +17,26 @@ export const lnAddressPaymentSend = async ({
     return amount
   }
 
-  const invoice = await LnurlPayService().fetchInvoiceFromLnAddressOrLnurl({
-    amount,
-    lnAddressOrLnurl: lnAddress,
-  })
-
-  if (invoice instanceof Error) {
-    return invoice
+  const uncheckedPaymentRequest =
+    await LnurlPayService().fetchInvoiceFromLnAddressOrLnurl({
+      amount,
+      lnAddressOrLnurl: lnAddress,
+    })
+  if (uncheckedPaymentRequest instanceof Error) {
+    return uncheckedPaymentRequest
   }
 
+  const decodedInvoice = decodeInvoice(uncheckedPaymentRequest)
+  const resolvedMemo =
+    decodedInvoice instanceof Error
+      ? memo
+      : decodedInvoice.description
+        ? decodedInvoice.description
+        : memo
+
   return payInvoiceByWalletId({
-    uncheckedPaymentRequest: invoice,
-    memo,
+    uncheckedPaymentRequest,
+    memo: resolvedMemo,
     senderWalletId,
     senderAccount,
   })
@@ -46,18 +55,26 @@ export const lnurlPaymentSend = async ({
     return amount
   }
 
-  const invoice = await LnurlPayService().fetchInvoiceFromLnAddressOrLnurl({
-    amount,
-    lnAddressOrLnurl: lnurl,
-  })
-
-  if (invoice instanceof Error) {
-    return invoice
+  const uncheckedPaymentRequest =
+    await LnurlPayService().fetchInvoiceFromLnAddressOrLnurl({
+      amount,
+      lnAddressOrLnurl: lnurl,
+    })
+  if (uncheckedPaymentRequest instanceof Error) {
+    return uncheckedPaymentRequest
   }
 
+  const decodedInvoice = decodeInvoice(uncheckedPaymentRequest)
+  const resolvedMemo =
+    decodedInvoice instanceof Error
+      ? memo
+      : decodedInvoice.description
+        ? decodedInvoice.description
+        : memo
+
   return payInvoiceByWalletId({
-    uncheckedPaymentRequest: invoice,
-    memo,
+    uncheckedPaymentRequest,
+    memo: resolvedMemo,
     senderWalletId,
     senderAccount,
   })
