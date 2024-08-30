@@ -9,13 +9,16 @@ import { MongoDBInstrumentation } from "@opentelemetry/instrumentation-mongodb"
 import { Span as SdkSpan, SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base"
 import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node"
 import {
-  SEMATTRS_CODE_FUNCTION,
-  SEMATTRS_CODE_NAMESPACE,
-  SEMATTRS_HTTP_CLIENT_IP,
-  SEMATTRS_HTTP_USER_AGENT,
-  SEMATTRS_ENDUSER_ID,
-  SEMRESATTRS_SERVICE_NAME,
-} from "@opentelemetry/semantic-conventions"
+  ATTR_CODE_FUNCTION,
+  ATTR_CODE_NAMESPACE,
+  ATTR_USER_ID,
+  ATTR_SERVICE_NAME,
+} from "@opentelemetry/semantic-conventions/incubating"
+
+// these have been deprecated but we must keep them to avoid issues with alert system
+const ATTR_ENDUSER_ID = "enduser.id"
+const ATTR_HTTP_USER_AGENT = "http.user_agent"
+const ATTR_HTTP_CLIENT_IP = "http.client_ip"
 
 import {
   trace,
@@ -50,13 +53,13 @@ propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 const gqlResponseHook = (span: ExtendedSpan, data: graphqlTypes.ExecutionResult) => {
   const baggage = propagation.getBaggage(context.active())
   if (baggage) {
-    const ip = baggage.getEntry(SEMATTRS_HTTP_CLIENT_IP)
+    const ip = baggage.getEntry(ATTR_HTTP_CLIENT_IP)
     if (ip) {
-      span.setAttribute(SEMATTRS_HTTP_CLIENT_IP, ip.value)
+      span.setAttribute(ATTR_HTTP_CLIENT_IP, ip.value)
     }
-    const userAgent = baggage.getEntry(SEMATTRS_HTTP_USER_AGENT)
+    const userAgent = baggage.getEntry(ATTR_HTTP_USER_AGENT)
     if (userAgent) {
-      span.setAttribute(SEMATTRS_HTTP_USER_AGENT, userAgent.value)
+      span.setAttribute(ATTR_HTTP_USER_AGENT, userAgent.value)
     }
   }
 
@@ -222,7 +225,7 @@ registerInstrumentations({
 const provider = new NodeTracerProvider({
   resource: Resource.default().merge(
     new Resource({
-      [SEMRESATTRS_SERVICE_NAME]: process.env.TRACING_SERVICE_NAME || "galoy-dev",
+      [ATTR_SERVICE_NAME]: process.env.TRACING_SERVICE_NAME || "galoy-dev",
     }),
   ),
 })
@@ -388,8 +391,8 @@ const resolveFunctionSpanOptions = ({
   ignoreFnArgs?: boolean
 }): SpanOptions => {
   const attributes: Attributes = {
-    [SEMATTRS_CODE_FUNCTION]: functionName,
-    [SEMATTRS_CODE_NAMESPACE]: namespace,
+    [ATTR_CODE_FUNCTION]: functionName,
+    [ATTR_CODE_NAMESPACE]: namespace,
     ...spanAttributes,
   }
   if (!ignoreFnArgs && functionArgs && functionArgs.length > 0) {
@@ -398,10 +401,9 @@ const resolveFunctionSpanOptions = ({
     for (const key in params) {
       // @ts-ignore-next-line no-implicit-any error
       const value = params[key]
-      attributes[`${SEMATTRS_CODE_FUNCTION}.params.${key}`] = value
-      attributes[`${SEMATTRS_CODE_FUNCTION}.params.${key}.null`] = value === null
-      attributes[`${SEMATTRS_CODE_FUNCTION}.params.${key}.undefined`] =
-        value === undefined
+      attributes[`${ATTR_CODE_FUNCTION}.params.${key}`] = value
+      attributes[`${ATTR_CODE_FUNCTION}.params.${key}.null`] = value === null
+      attributes[`${ATTR_CODE_FUNCTION}.params.${key}.undefined`] = value === undefined
     }
   }
   return { attributes, root }
@@ -612,15 +614,16 @@ export const shutdownTracing = async () => {
 }
 
 export const SemanticResourceAttributes = {
-  SERVICE_NAME: SEMRESATTRS_SERVICE_NAME,
+  SERVICE_NAME: ATTR_SERVICE_NAME,
 }
 
 export const SemanticAttributes = {
-  CODE_FUNCTION: SEMATTRS_CODE_FUNCTION,
-  CODE_NAMESPACE: SEMATTRS_CODE_NAMESPACE,
-  HTTP_CLIENT_IP: SEMATTRS_HTTP_CLIENT_IP,
-  HTTP_USER_AGENT: SEMATTRS_HTTP_USER_AGENT,
-  ENDUSER_ID: SEMATTRS_ENDUSER_ID,
+  CODE_FUNCTION: ATTR_CODE_FUNCTION,
+  CODE_NAMESPACE: ATTR_CODE_NAMESPACE,
+  HTTP_CLIENT_IP: ATTR_HTTP_CLIENT_IP,
+  HTTP_USER_AGENT: ATTR_HTTP_USER_AGENT,
+  ENDUSER_ID: ATTR_ENDUSER_ID,
+  USER_ID: ATTR_USER_ID,
 }
 
 export const ACCOUNT_USERNAME = "account.username"

@@ -79,6 +79,7 @@ const setGqlContext = async (
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
       [SemanticAttributes.HTTP_USER_AGENT]: req.headers["user-agent"],
       [ACCOUNT_USERNAME]: username,
+      [SemanticAttributes.USER_ID]: tokenPayload?.sub,
       [SemanticAttributes.ENDUSER_ID]: tokenPayload?.sub,
     },
     next,
