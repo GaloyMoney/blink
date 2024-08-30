@@ -57,6 +57,7 @@ const setGqlAdminContext = async (
   addAttributesToCurrentSpanAndPropagate(
     {
       [SemanticAttributes.HTTP_USER_AGENT]: req.headers["user-agent"],
+      [SemanticAttributes.USER_ID]: tokenPayload.sub,
       [SemanticAttributes.ENDUSER_ID]: tokenPayload.sub,
     },
     next,
