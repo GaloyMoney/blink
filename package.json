@@ -12,6 +12,7 @@
     "pnpm": "8"
   },
   "resolutions": {
+    "@types/ws": "^8.5.12",
     "protobufjs": "7.2.5",
     "http-cache-semantics": "4.1.1"
   },

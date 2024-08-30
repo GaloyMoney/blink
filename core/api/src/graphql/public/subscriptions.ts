@@ -31,6 +31,7 @@ const addTracing = () => {
     fields[key].resolve = (source, args, context: GraphQLPublicContextForUser, info) => {
       const { ip, domainAccount } = context
       addAttributesToCurrentSpan({
+        [SemanticAttributes.USER_ID]: domainAccount?.id,
         [SemanticAttributes.ENDUSER_ID]: domainAccount?.id,
         [ACCOUNT_USERNAME]: domainAccount?.username,
         [SemanticAttributes.HTTP_CLIENT_IP]: ip,
