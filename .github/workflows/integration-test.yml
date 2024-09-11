@@ -117,7 +117,7 @@ jobs:
           fi
       - name: Upload Tilt log
         if: steps.prepare_tilt_log.outputs.prepared == 'true'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Tilt log
           path: dev/e2e-tilt.log

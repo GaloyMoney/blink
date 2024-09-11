@@ -33,7 +33,7 @@ jobs:
         run: mv bats/.e2e-tilt.log bats/e2e-tilt.log
       - name: Upload Tilt log
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Tilt log
           path: bats/e2e-tilt.log
