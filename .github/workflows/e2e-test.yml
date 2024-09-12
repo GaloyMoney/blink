@@ -17,9 +17,9 @@ jobs:
           temp-reserve-mb: 12288
       - uses: actions/checkout@v4
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v4
+        uses: DeterminateSystems/nix-installer-action@v14
       - name: Run the Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v2
+        uses: DeterminateSystems/magic-nix-cache-action@v8
       - name: Buck2 build
         run: |
           nix develop -c buck2 build //core/api //core/api-ws-server \

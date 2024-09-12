@@ -15,9 +15,10 @@ jobs:
           root-reserve-mb: 12288
           temp-reserve-mb: 12288
       - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v27
-        with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+      - name: Run the Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v8
       - name: Prepare tilt args from labels
         id: prepare_args
         run: |
