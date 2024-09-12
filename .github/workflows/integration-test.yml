@@ -15,7 +15,7 @@ jobs:
           root-reserve-mb: 12288
           temp-reserve-mb: 12288
       - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v22
+      - uses: cachix/install-nix-action@v27
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Prepare tilt args from labels
@@ -97,7 +97,7 @@ jobs:
           echo "args=$ARGS" >> "$GITHUB_OUTPUT"
           echo "build_args=$BUILD_ARGS" >> "$GITHUB_OUTPUT"
       - name: Build via buck2
-        if: steps.prepare_args.outputs.args != ''
+        if: steps.prepare_args.outputs.build_args != ''
         run: nix develop -c buck2 build ${{ steps.prepare_args.outputs.build_args }}
       - name: Start deps and run tests via tilt
         if: steps.prepare_args.outputs.args != ''
