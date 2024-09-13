@@ -11,9 +11,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v4
+        uses: DeterminateSystems/nix-installer-action@v14
       - name: Run the Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v2
+        uses: DeterminateSystems/magic-nix-cache-action@v8
       - uses: actions/checkout@v4
       - name: Run clean mongodb migration
         run: nix develop -c ./dev/bin/tilt-ci.sh mongodb-migrate

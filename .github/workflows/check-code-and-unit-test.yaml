@@ -15,9 +15,9 @@ jobs:
           root-reserve-mb: 12288
           temp-reserve-mb: 12288
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v4
+        uses: DeterminateSystems/nix-installer-action@v14
       - name: Run the Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v2
+        uses: DeterminateSystems/magic-nix-cache-action@v8
       - uses: actions/checkout@v3
       - name: Prepare buck2 test args from labels
         id: prepare_args
