@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#4577)...'
-      sha: 91fff3f271f801fc0e53eb403849d438b518f514
+      commitTitle: 'chore: bump webpack from 5.89.0 to 5.94.0 (#4578)...'
+      sha: 8982040e75a91909b84bbccb54fe3b59b5963709
       tags:
-      - 0.20.214-2-g91fff3f27
+      - 0.20.215-1-g8982040e7
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#4577)...'
-      sha: 91fff3f271f801fc0e53eb403849d438b518f514
+      commitTitle: 'chore: bump webpack from 5.89.0 to 5.94.0 (#4578)...'
+      sha: 8982040e75a91909b84bbccb54fe3b59b5963709
       tags:
-      - 0.20.214-2-g91fff3f27
+      - 0.20.215-1-g8982040e7
     path: schemas
   - git:
-      commitTitle: 'chore: bump deps (#4577)...'
-      sha: 91fff3f271f801fc0e53eb403849d438b518f514
+      commitTitle: 'chore: bump webpack from 5.89.0 to 5.94.0 (#4578)...'
+      sha: 8982040e75a91909b84bbccb54fe3b59b5963709
       tags:
-      - 0.20.214-2-g91fff3f27
+      - 0.20.215-1-g8982040e7
     path: gql
   path: graphql
 kind: LockConfig
