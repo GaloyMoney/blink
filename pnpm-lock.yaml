@@ -1183,8 +1183,8 @@ importers:
         specifier: ^6.1.6
         version: 6.1.6
       body-parser:
-        specifier: ^1.20.1
-        version: 1.20.2
+        specifier: ^1.20.3
+        version: 1.20.3
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -9627,7 +9627,7 @@ packages:
       '@types/json-stable-stringify': 1.0.36
       '@whatwg-node/fetch': 0.9.17
       chalk: 4.1.2
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.6(supports-color@8.1.1)
       dotenv: 16.4.5
       graphql: 16.8.1
       graphql-request: 6.1.0(graphql@16.8.1)
@@ -9660,7 +9660,7 @@ packages:
       '@types/json-stable-stringify': 1.0.36
       '@whatwg-node/fetch': 0.9.17
       chalk: 4.1.2
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.6(supports-color@8.1.1)
       dotenv: 16.4.5
       graphql: 16.8.1
       graphql-request: 6.1.0(graphql@16.8.1)
@@ -17795,7 +17795,7 @@ packages:
     dependencies:
       '@typescript-eslint/typescript-estree': 7.1.1(typescript@5.2.2)
       '@typescript-eslint/utils': 7.1.1(eslint@8.57.0)(typescript@5.2.2)
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.6(supports-color@8.1.1)
       eslint: 8.57.0
       ts-api-utils: 1.2.1(typescript@5.2.2)
       typescript: 5.2.2
@@ -17815,7 +17815,7 @@ packages:
     dependencies:
       '@typescript-eslint/typescript-estree': 7.1.1(typescript@5.3.3)
       '@typescript-eslint/utils': 7.1.1(eslint@8.57.0)(typescript@5.3.3)
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.6(supports-color@8.1.1)
       eslint: 8.57.0
       ts-api-utils: 1.2.1(typescript@5.3.3)
       typescript: 5.3.3
