@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump webpack from 5.89.0 to 5.94.0 (#4578)...'
-      sha: 8982040e75a91909b84bbccb54fe3b59b5963709
+      commitTitle: 'chore: bump express from 4.19.2 to 4.21.0 (#4584)...'
+      sha: 3fd2c72bb7083598667a1aea4f85cfb73b839bb8
       tags:
-      - 0.20.215-1-g8982040e7
+      - 0.20.216-2-g3fd2c72bb
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump webpack from 5.89.0 to 5.94.0 (#4578)...'
-      sha: 8982040e75a91909b84bbccb54fe3b59b5963709
+      commitTitle: 'chore: bump express from 4.19.2 to 4.21.0 (#4584)...'
+      sha: 3fd2c72bb7083598667a1aea4f85cfb73b839bb8
       tags:
-      - 0.20.215-1-g8982040e7
+      - 0.20.216-2-g3fd2c72bb
     path: schemas
   - git:
-      commitTitle: 'chore: bump webpack from 5.89.0 to 5.94.0 (#4578)...'
-      sha: 8982040e75a91909b84bbccb54fe3b59b5963709
+      commitTitle: 'chore: bump express from 4.19.2 to 4.21.0 (#4584)...'
+      sha: 3fd2c72bb7083598667a1aea4f85cfb73b839bb8
       tags:
-      - 0.20.215-1-g8982040e7
+      - 0.20.216-2-g3fd2c72bb
     path: gql
   path: graphql
 kind: LockConfig
