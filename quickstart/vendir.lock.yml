@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump express from 4.19.2 to 4.21.0 (#4584)...'
-      sha: 3fd2c72bb7083598667a1aea4f85cfb73b839bb8
+      commitTitle: 'chore: bump core deps...'
+      sha: 4a44acceff3c3f7bf43446ffa487abc5bb83f0c0
       tags:
-      - 0.20.216-2-g3fd2c72bb
+      - 0.20.216-4-g4a44accef
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump express from 4.19.2 to 4.21.0 (#4584)...'
-      sha: 3fd2c72bb7083598667a1aea4f85cfb73b839bb8
+      commitTitle: 'chore: bump core deps...'
+      sha: 4a44acceff3c3f7bf43446ffa487abc5bb83f0c0
       tags:
-      - 0.20.216-2-g3fd2c72bb
+      - 0.20.216-4-g4a44accef
     path: schemas
   - git:
-      commitTitle: 'chore: bump express from 4.19.2 to 4.21.0 (#4584)...'
-      sha: 3fd2c72bb7083598667a1aea4f85cfb73b839bb8
+      commitTitle: 'chore: bump core deps...'
+      sha: 4a44acceff3c3f7bf43446ffa487abc5bb83f0c0
       tags:
-      - 0.20.216-2-g3fd2c72bb
+      - 0.20.216-4-g4a44accef
     path: gql
   path: graphql
 kind: LockConfig
