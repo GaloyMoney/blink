@@ -15,6 +15,4 @@ export class ChatAssistantNotFoundError extends SupportError {}
 
 export class TimeoutAssistantError extends SupportError {}
 
-export class UnknownChatAssistantError extends ChatAssistantError {
-  level = ErrorLevel.Critical
-}
+export class UnknownChatAssistantError extends ChatAssistantError {}
