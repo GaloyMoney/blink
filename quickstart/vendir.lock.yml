@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump core deps...'
-      sha: 4a44acceff3c3f7bf43446ffa487abc5bb83f0c0
+      commitTitle: 'chore: demoting chatGPT error to non critical (#4585)'
+      sha: de74741654e9be226d6ee09e0eda3e4d32ba7f01
       tags:
-      - 0.20.216-4-g4a44accef
+      - 0.20.218
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump core deps...'
-      sha: 4a44acceff3c3f7bf43446ffa487abc5bb83f0c0
+      commitTitle: 'chore: demoting chatGPT error to non critical (#4585)'
+      sha: de74741654e9be226d6ee09e0eda3e4d32ba7f01
       tags:
-      - 0.20.216-4-g4a44accef
+      - 0.20.218
     path: schemas
   - git:
-      commitTitle: 'chore: bump core deps...'
-      sha: 4a44acceff3c3f7bf43446ffa487abc5bb83f0c0
+      commitTitle: 'chore: demoting chatGPT error to non critical (#4585)'
+      sha: de74741654e9be226d6ee09e0eda3e4d32ba7f01
       tags:
-      - 0.20.216-4-g4a44accef
+      - 0.20.218
     path: gql
   path: graphql
 kind: LockConfig
