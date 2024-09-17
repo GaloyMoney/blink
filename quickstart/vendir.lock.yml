@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: demoting chatGPT error to non critical (#4585)'
-      sha: de74741654e9be226d6ee09e0eda3e4d32ba7f01
+      commitTitle: 'chore: make twilio error case insensitive (#4587)...'
+      sha: 1bca6c0868fab45a9a6e7759fd75361da3b008a0
       tags:
-      - 0.20.218
+      - 0.20.218-2-g1bca6c086
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: demoting chatGPT error to non critical (#4585)'
-      sha: de74741654e9be226d6ee09e0eda3e4d32ba7f01
+      commitTitle: 'chore: make twilio error case insensitive (#4587)...'
+      sha: 1bca6c0868fab45a9a6e7759fd75361da3b008a0
       tags:
-      - 0.20.218
+      - 0.20.218-2-g1bca6c086
     path: schemas
   - git:
-      commitTitle: 'chore: demoting chatGPT error to non critical (#4585)'
-      sha: de74741654e9be226d6ee09e0eda3e4d32ba7f01
+      commitTitle: 'chore: make twilio error case insensitive (#4587)...'
+      sha: 1bca6c0868fab45a9a6e7759fd75361da3b008a0
       tags:
-      - 0.20.218
+      - 0.20.218-2-g1bca6c086
     path: gql
   path: graphql
 kind: LockConfig
