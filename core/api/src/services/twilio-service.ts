@@ -197,7 +197,7 @@ export const KnownTwilioErrorMessages = {
   UnsubscribedRecipient: /unsubscribed recipient/,
   BadPhoneProviderConnection: /timeout of.*exceeded/,
   BlockedRegion:
-    /The destination phone number has been blocked by Verify Geo-Permissions. .* is blocked for SMS channel for all services/,
+    /The destination phone number has been blocked by Verify Geo-Permissions. .* is blocked for sms channel for all services/i,
   RateLimitsExceeded: /Max.*attempts reached/,
   TooManyConcurrentRequests: /Too many concurrent requests/,
   FraudulentActivityBlock:
