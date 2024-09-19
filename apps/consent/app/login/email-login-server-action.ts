@@ -77,7 +77,7 @@ export async function submitForm(
   }
 
   cookies().set(
-    login_challenge,
+    encodeURIComponent(login_challenge),
     JSON.stringify({
       loginType: LoginType.email,
       loginId: emailCodeRequest,
