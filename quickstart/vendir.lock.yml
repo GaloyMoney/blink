@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: make twilio error case insensitive (#4587)...'
-      sha: 1bca6c0868fab45a9a6e7759fd75361da3b008a0
+      commitTitle: 'fix(consent): encode cookie name (#4593)'
+      sha: a6e48c348df604ecb1173ab9fe2c02b7c582b3f6
       tags:
-      - 0.20.218-2-g1bca6c086
+      - 0.20.219-1-ga6e48c348
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: make twilio error case insensitive (#4587)...'
-      sha: 1bca6c0868fab45a9a6e7759fd75361da3b008a0
+      commitTitle: 'fix(consent): encode cookie name (#4593)'
+      sha: a6e48c348df604ecb1173ab9fe2c02b7c582b3f6
       tags:
-      - 0.20.218-2-g1bca6c086
+      - 0.20.219-1-ga6e48c348
     path: schemas
   - git:
-      commitTitle: 'chore: make twilio error case insensitive (#4587)...'
-      sha: 1bca6c0868fab45a9a6e7759fd75361da3b008a0
+      commitTitle: 'fix(consent): encode cookie name (#4593)'
+      sha: a6e48c348df604ecb1173ab9fe2c02b7c582b3f6
       tags:
-      - 0.20.218-2-g1bca6c086
+      - 0.20.219-1-ga6e48c348
     path: gql
   path: graphql
 kind: LockConfig

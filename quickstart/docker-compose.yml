@@ -68,7 +68,7 @@ services:
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=default
   hydra:
-    image: oryd/hydra:v2.1.2
+    image: oryd/hydra:v2.2.0
     ports:
     - 4444:4444
     - 4445:4445
@@ -82,7 +82,7 @@ services:
     - hydra-migrate
     - hydra-pg
   hydra-migrate:
-    image: oryd/hydra:v2.1.2
+    image: oryd/hydra:v2.2.0
     environment:
     - DSN=postgres://hydra:secret@hydra-pg:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
     command: migrate -c /home/ory/hydra.yml sql -e --yes
@@ -98,7 +98,7 @@ services:
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=hydra
   galoy:
-    image: us.gcr.io/galoy-org/galoy-api@sha256:0fbb0ce48f4989ed7fcbd2d4950671f6079af524f29b80bcbfa8167d8d6bb0cf
+    image: us.gcr.io/galoy-org/galoy-api@sha256:52dcef77a02d264ba17d989cc0e2441b321a8a184ade75b3a4ebdd6936d4b2de
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -161,7 +161,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:a5f3fe2aa7012e4ddfa1bfd5a46cc1a9353e682c8c35a9692b3ae569ab49be92
+    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:2b3f43b6016f41461c56fca5de9f6f84668be20f82817a4f7864f85aab001df0
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -254,7 +254,7 @@ services:
     environment:
     - MONGO_INITDB_DATABASE=galoy
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:67f565ba275c2af2ce1abfbe2420eb643125251fb54334f68f09f9dc5f735133
+    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:cb959fdd76e0d316b0bd72a24c47a508b676bd11037e38154bbcc6c794e079e9
     depends_on:
     - mongodb
     environment:
