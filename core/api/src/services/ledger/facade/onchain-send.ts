@@ -117,10 +117,7 @@ export const recordOnChainSendRevert = async ({
     }
 
     // pending update must be before void to avoid pending voided records
-    await Transaction.updateMany(
-      { _journal: toObjectId(journalId) },
-      { pending: false },
-    )
+    await Transaction.updateMany({ _journal: toObjectId(journalId) }, { pending: false })
 
     const savedEntry = await MainBook.void(journalId, reason)
 
