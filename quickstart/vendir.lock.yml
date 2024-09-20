@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(consent): encode cookie name (#4593)'
-      sha: a6e48c348df604ecb1173ab9fe2c02b7c582b3f6
+      commitTitle: 'chore: bump next from 14.0.1 to 14.2.12 (#4591)...'
+      sha: b6479880f60164822a63d3f390f00e89abc18cb2
       tags:
-      - 0.20.219-1-ga6e48c348
+      - 0.20.220-1-gb6479880f
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(consent): encode cookie name (#4593)'
-      sha: a6e48c348df604ecb1173ab9fe2c02b7c582b3f6
+      commitTitle: 'chore: bump next from 14.0.1 to 14.2.12 (#4591)...'
+      sha: b6479880f60164822a63d3f390f00e89abc18cb2
       tags:
-      - 0.20.219-1-ga6e48c348
+      - 0.20.220-1-gb6479880f
     path: schemas
   - git:
-      commitTitle: 'fix(consent): encode cookie name (#4593)'
-      sha: a6e48c348df604ecb1173ab9fe2c02b7c582b3f6
+      commitTitle: 'chore: bump next from 14.0.1 to 14.2.12 (#4591)...'
+      sha: b6479880f60164822a63d3f390f00e89abc18cb2
       tags:
-      - 0.20.219-1-ga6e48c348
+      - 0.20.220-1-gb6479880f
     path: gql
   path: graphql
 kind: LockConfig
