@@ -99,7 +99,7 @@ export const getCaptchaChallenge = async (
       login_challenge,
     })
     cookies().set(
-      login_challenge,
+      encodeURIComponent(login_challenge),
       JSON.stringify({
         loginType: LoginType.phone,
         value: phone,
@@ -179,7 +179,7 @@ export const sendPhoneCode = async (
   }
 
   cookies().set(
-    login_challenge,
+    encodeURIComponent(login_challenge),
     JSON.stringify({
       loginType: LoginType.phone,
       value: phone,

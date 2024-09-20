@@ -17,7 +17,8 @@ interface VerificationProps {
 
 const Verification = async ({ searchParams }: { searchParams: VerificationProps }) => {
   const { login_challenge } = searchParams
-  const cookieStore = cookies().get(login_challenge)
+  // login_challenge is automatically decoded so we must encode it again to match cookie name
+  const cookieStore = cookies().get(encodeURIComponent(login_challenge))
 
   if (!cookieStore) {
     throw new Error("Cannot find cookies")
