@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump next from 14.0.1 to 14.2.12 (#4591)...'
-      sha: b6479880f60164822a63d3f390f00e89abc18cb2
+      commitTitle: 'fix: remove unnecessary users/wallets creation/funding (#4597)'
+      sha: d6447f67bf1e993cd548a06105a03840df3d7770
       tags:
-      - 0.20.220-1-gb6479880f
+      - 0.20.221-1-gd6447f67b
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump next from 14.0.1 to 14.2.12 (#4591)...'
-      sha: b6479880f60164822a63d3f390f00e89abc18cb2
+      commitTitle: 'fix: remove unnecessary users/wallets creation/funding (#4597)'
+      sha: d6447f67bf1e993cd548a06105a03840df3d7770
       tags:
-      - 0.20.220-1-gb6479880f
+      - 0.20.221-1-gd6447f67b
     path: schemas
   - git:
-      commitTitle: 'chore: bump next from 14.0.1 to 14.2.12 (#4591)...'
-      sha: b6479880f60164822a63d3f390f00e89abc18cb2
+      commitTitle: 'fix: remove unnecessary users/wallets creation/funding (#4597)'
+      sha: d6447f67bf1e993cd548a06105a03840df3d7770
       tags:
-      - 0.20.220-1-gb6479880f
+      - 0.20.221-1-gd6447f67b
     path: gql
   path: graphql
 kind: LockConfig
