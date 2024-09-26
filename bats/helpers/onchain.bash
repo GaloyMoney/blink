@@ -20,22 +20,6 @@ fund_user_onchain() {
   retry 30 1 check_for_onchain_initiated_settled "$token_name" "$address"
 }
 
-check_for_onchain_initiated_settled() {
-  local token_name=$1
-  local address=$2
-  local first=${3:-"1"}
-
-  variables=$(
-  jq -n \
-  --argjson first "$first" \
-  '{"first": $first}'
-  )
-  exec_graphql "$token_name" 'transactions' "$variables"
-
-  settled_status="$(get_from_transaction_by_address $address '.status')"
-  [[ "${settled_status}" = "SUCCESS" ]] || exit 1
-}
-
 get_from_transaction_by_address() {
   property_query=$2
 
