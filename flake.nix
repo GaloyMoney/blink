@@ -23,13 +23,10 @@
     rust-overlay,
   }:
     flake-utils.lib.eachDefaultSystem (system: let
-      # Define pkgs first before applying overlays
-      basePkgs = import nixpkgs { system = system; };
-
       overlays = [
         (self: super: {
-          nodejs = basePkgs.nodejs_20; # Reference nodejs from basePkgs to avoid recursion
-          pnpm = basePkgs.nodePackages.pnpm;
+          nodejs = super.nodejs_20;
+          pnpm = super.nodePackages.pnpm;
         })
         (import rust-overlay)
       ];
