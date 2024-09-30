@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: remove unnecessary users/wallets creation/funding (#4597)'
-      sha: d6447f67bf1e993cd548a06105a03840df3d7770
+      commitTitle: 'chore: remove deprecated bitcoin.active setting (#4600)'
+      sha: 4da5c4805537c3ba554bac098a9bcf11b191caf5
       tags:
-      - 0.20.221-1-gd6447f67b
+      - 0.20.222-2-g4da5c4805
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: remove unnecessary users/wallets creation/funding (#4597)'
-      sha: d6447f67bf1e993cd548a06105a03840df3d7770
+      commitTitle: 'chore: remove deprecated bitcoin.active setting (#4600)'
+      sha: 4da5c4805537c3ba554bac098a9bcf11b191caf5
       tags:
-      - 0.20.221-1-gd6447f67b
+      - 0.20.222-2-g4da5c4805
     path: schemas
   - git:
-      commitTitle: 'fix: remove unnecessary users/wallets creation/funding (#4597)'
-      sha: d6447f67bf1e993cd548a06105a03840df3d7770
+      commitTitle: 'chore: remove deprecated bitcoin.active setting (#4600)'
+      sha: 4da5c4805537c3ba554bac098a9bcf11b191caf5
       tags:
-      - 0.20.221-1-gd6447f67b
+      - 0.20.222-2-g4da5c4805
     path: gql
   path: graphql
 kind: LockConfig
