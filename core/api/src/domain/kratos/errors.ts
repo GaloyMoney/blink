@@ -1,7 +1,4 @@
-import {
-  AuthenticationError,
-  LikelyNoUserWithThisPhoneExistError,
-} from "@/domain/authentication/errors"
+import { AuthenticationError } from "@/domain/authentication/errors"
 import { ErrorLevel } from "@/domain/shared"
 
 export class KratosError extends AuthenticationError {}
