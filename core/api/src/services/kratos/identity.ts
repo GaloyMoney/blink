@@ -2,10 +2,11 @@ import { Identity as KratosIdentity } from "@ory/client"
 
 import { recordExceptionInCurrentSpan } from "../tracing"
 
-import { KratosError, UnknownKratosError } from "./errors"
+import { handleKratosErrors } from "./errors"
 import { getKratosPostgres, kratosAdmin, toDomainIdentity } from "./private"
 
 import { IdentifierNotFoundError } from "@/domain/authentication/errors"
+import { UnknownKratosError } from "@/domain/kratos"
 import { ErrorLevel } from "@/domain/shared"
 
 export const getNextPageToken = (link: string): string | undefined => {
@@ -32,7 +33,7 @@ export const IdentityRepository = (): IIdentityRepository => {
       const res = await kratosAdmin.getIdentity({ id: kratosUserId })
       data = res.data
     } catch (err) {
-      return new UnknownKratosError(err)
+      return handleKratosErrors(err)
     }
 
     return toDomainIdentity(data)
@@ -70,7 +71,7 @@ export const IdentityRepository = (): IIdentityRepository => {
       if (!userId) return new IdentifierNotFoundError()
       return userId
     } catch (err) {
-      return new UnknownKratosError(err)
+      return handleKratosErrors(err)
     }
   }
 
@@ -78,7 +79,7 @@ export const IdentityRepository = (): IIdentityRepository => {
     try {
       await kratosAdmin.deleteIdentity({ id })
     } catch (err) {
-      return new UnknownKratosError(err)
+      return handleKratosErrors(err)
     }
   }
 
@@ -111,7 +112,7 @@ export const IdentityRepository = (): IIdentityRepository => {
         return new UnknownKratosError(err.errors[0])
       }
 
-      return new UnknownKratosError(err)
+      return handleKratosErrors(err)
     }
   }
 

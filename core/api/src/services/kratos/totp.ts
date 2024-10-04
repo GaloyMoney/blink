@@ -2,17 +2,12 @@ import { isAxiosError } from "axios"
 
 import { UiNodeTextAttributes } from "@ory/client"
 
-import {
-  AuthenticationKratosError,
-  MissingTotpKratosError,
-  UnknownKratosError,
-} from "./errors"
+import { handleKratosErrors } from "./errors"
+
 import { kratosAdmin, kratosPublic } from "./private"
 
-import {
-  LikelyBadCoreError,
-  LikelyNoUserWithThisPhoneExistError,
-} from "@/domain/authentication/errors"
+import { LikelyBadCoreError } from "@/domain/authentication/errors"
+import { MissingTotpKratosError } from "@/domain/kratos"
 
 export const kratosInitiateTotp = async (token: AuthToken) => {
   try {
@@ -57,7 +52,7 @@ export const kratosValidateTotp = async ({
       }
     }
 
-    return new UnknownKratosError(err)
+    return handleKratosErrors(err)
   }
 }
 
@@ -101,27 +96,6 @@ export const kratosRemoveTotp = async (userId: UserId) => {
 
     if (removeTotpResponse instanceof Error) return removeTotpResponse
   } catch (err) {
-    return new UnknownKratosError(err)
+    return handleKratosErrors(err)
   }
 }
-
-const handleKratosErrors = (err: Error | unknown) => {
-  if (!(err instanceof Error)) {
-    return new UnknownKratosError(err)
-  }
-
-  const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(err.message)
-  switch (true) {
-    case match(KnownKratosErrorDetails.BadRequestError):
-      return new LikelyNoUserWithThisPhoneExistError(err.message)
-    case match(KnownKratosErrorDetails.UnauthorizedError):
-      return new AuthenticationKratosError(err.message)
-    default:
-      return new UnknownKratosError(err.message)
-  }
-}
-
-const KnownKratosErrorDetails = {
-  BadRequestError: /Request failed with status code 400/,
-  UnauthorizedError: /Request failed with status code 401/,
-} as const

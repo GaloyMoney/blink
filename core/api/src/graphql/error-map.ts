@@ -740,6 +740,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "BriaPayloadError":
     case "KratosError":
     case "AuthenticationKratosError":
+    case "AuthorizationKratosError":
     case "ExtendSessionKratosError":
     case "MultipleCurrenciesForSingleCurrencyOperationError":
     case "MattermostError":

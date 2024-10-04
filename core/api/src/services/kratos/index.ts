@@ -1,20 +1,21 @@
 import { AuthWithPhonePasswordlessService } from "./auth-phone-no-password"
-import { AuthenticationKratosError, UnknownKratosError } from "./errors"
+import { handleKratosErrors } from "./errors"
 import { kratosAdmin, kratosPublic, toDomainSession } from "./private"
 
 import { KRATOS_MASTER_USER_PASSWORD } from "@/config"
 
-import { UuidRegex } from "@/domain/shared"
 import { InvalidFlowId, InvalidTotpCode } from "@/domain/errors"
+import { AuthenticationKratosError, UnknownKratosError } from "@/domain/kratos"
+import { UuidRegex } from "@/domain/shared"
 
-export * from "./auth-phone-no-password"
 export * from "./auth-email-no-password"
+export * from "./auth-phone-no-password"
 export * from "./auth-username-password-deviceid"
 export * from "./cron"
 export * from "./errors"
 export * from "./identity"
-export * from "./totp"
 export * from "./schema"
+export * from "./totp"
 
 export const checkedToEmailRegistrationId = (
   flow: string,
@@ -70,7 +71,7 @@ export const validateKratosToken = async (
     if (err instanceof Error && err.message === "Request failed with status code 401") {
       return new AuthenticationKratosError(err.message)
     }
-    return new UnknownKratosError(err)
+    return handleKratosErrors(err)
   }
 
   // TODO: should return aal level also
@@ -87,30 +88,33 @@ export const listSessions = async (userId: UserId): Promise<Session[] | KratosEr
     const data = res.data as KratosSession[]
     return data.map(toDomainSession)
   } catch (err) {
-    return new UnknownKratosError(err)
+    return handleKratosErrors(err)
   }
 }
 
 export const logoutSessionByAuthToken = async (authToken: AuthToken) => {
-  const authService = AuthWithPhonePasswordlessService()
-  const sessionResponse = await kratosPublic.toSession({ xSessionToken: authToken })
-  const sessionId = sessionResponse.data.id as SessionId
-  await authService.logoutToken({ sessionId })
+  try {
+    const authService = AuthWithPhonePasswordlessService()
+    const sessionResponse = await kratosPublic.toSession({ xSessionToken: authToken })
+    const sessionId = sessionResponse.data.id as SessionId
+    await authService.logoutToken({ sessionId })
+  } catch (err) {
+    return handleKratosErrors(err)
+  }
 }
 
 export const refreshToken = async (authToken: AuthToken): Promise<void | KratosError> => {
-  const method = "password"
-  const password = KRATOS_MASTER_USER_PASSWORD
-
-  const session = await kratosPublic.toSession({ xSessionToken: authToken })
-  const identifier =
-    session.data.identity?.traits?.phone || session.data.identity?.traits?.email
-
-  if (!identifier) {
-    return new UnknownKratosError("No identifier found")
-  }
-
   try {
+    const method = "password"
+    const password = KRATOS_MASTER_USER_PASSWORD
+
+    const session = await kratosPublic.toSession({ xSessionToken: authToken })
+    const identifier =
+      session.data.identity?.traits?.phone || session.data.identity?.traits?.email
+
+    if (!identifier) {
+      return new UnknownKratosError("No identifier found")
+    }
     const flow = await kratosPublic.createNativeLoginFlow({
       refresh: true,
       xSessionToken: authToken,
@@ -125,6 +129,6 @@ export const refreshToken = async (authToken: AuthToken): Promise<void | KratosE
       xSessionToken: authToken,
     })
   } catch (err) {
-    return new UnknownKratosError(err)
+    return handleKratosErrors(err)
   }
 }

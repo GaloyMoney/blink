@@ -1,6 +1,6 @@
 import { IdentityStateEnum } from "@ory/client"
 
-import { UnknownKratosError } from "./errors"
+import { handleKratosErrors } from "./errors"
 import { kratosAdmin } from "./private"
 
 import { baseLogger } from "@/services/logger"
@@ -11,7 +11,7 @@ export const activateUser = async (kratosUserId: UserId): Promise<void | KratosE
     const res = await kratosAdmin.getIdentity({ id: kratosUserId })
     identity = res.data
   } catch (err) {
-    return new UnknownKratosError(err)
+    return handleKratosErrors(err)
   }
 
   try {
@@ -23,7 +23,7 @@ export const activateUser = async (kratosUserId: UserId): Promise<void | KratosE
       },
     })
   } catch (err) {
-    return new UnknownKratosError(err)
+    return handleKratosErrors(err)
   }
 }
 
@@ -36,7 +36,7 @@ export const deactivateUser = async (
     const res = await kratosAdmin.getIdentity({ id: kratosUserId })
     identity = res.data
   } catch (err) {
-    return new UnknownKratosError(err)
+    return handleKratosErrors(err)
   }
 
   try {
@@ -50,7 +50,7 @@ export const deactivateUser = async (
 
     baseLogger.info(res, "deactivateUser result")
   } catch (err) {
-    return new UnknownKratosError(err)
+    return handleKratosErrors(err)
   }
 }
 
@@ -60,7 +60,7 @@ export const revokeSessions = async (
   try {
     await kratosAdmin.deleteIdentitySessions({ id: kratosUserId })
   } catch (err) {
-    return new UnknownKratosError(err)
+    return handleKratosErrors(err)
   }
 }
 
@@ -71,6 +71,6 @@ export const listIdentitySchemas = async (): Promise<
     const res = await kratosAdmin.listIdentitySchemas()
     return res.data
   } catch (err) {
-    return new UnknownKratosError(err)
+    return handleKratosErrors(err)
   }
 }

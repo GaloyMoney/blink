@@ -1,44 +1,30 @@
-import { AuthenticationError } from "@/domain/authentication/errors"
-import { ErrorLevel } from "@/domain/shared"
+import { LikelyNoUserWithThisPhoneExistError } from "@/domain/authentication/errors"
+import {
+  AuthenticationKratosError,
+  AuthorizationKratosError,
+  UnknownKratosError,
+} from "@/domain/kratos"
 
-export class KratosError extends AuthenticationError {}
+export const handleKratosErrors = (err: Error | unknown) => {
+  if (!(err instanceof Error)) {
+    return new UnknownKratosError(err)
+  }
 
-export class MissingSessionIdError extends KratosError {
-  level = ErrorLevel.Critical
+  const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(err.message)
+  switch (true) {
+    case match(KnownKratosErrorDetails.BadRequestError):
+      return new LikelyNoUserWithThisPhoneExistError(err.message)
+    case match(KnownKratosErrorDetails.UnauthorizedError):
+      return new AuthenticationKratosError(err.message)
+    case match(KnownKratosErrorDetails.ForbiddenError):
+      return new AuthorizationKratosError(err.message)
+    default:
+      return new UnknownKratosError(err.message)
+  }
 }
 
-export class AuthenticationKratosError extends KratosError {}
-export class ExtendSessionKratosError extends KratosError {}
-export class InvalidIdentitySessionKratosError extends KratosError {}
-
-export class SessionRefreshRequiredError extends KratosError {}
-
-export class EmailAlreadyExistsError extends KratosError {}
-
-export class PhoneAccountAlreadyExistsError extends KratosError {
-  level = ErrorLevel.Info
-}
-
-export class PhoneAccountAlreadyExistsNeedToSweepFundsError extends KratosError {
-  level = ErrorLevel.Info
-}
-
-export class MissingCreatedAtKratosError extends KratosError {
-  level = ErrorLevel.Critical
-}
-
-export class MissingExpiredAtKratosError extends KratosError {
-  level = ErrorLevel.Critical
-}
-
-export class MissingTotpKratosError extends KratosError {
-  level = ErrorLevel.Critical
-}
-
-export class IncompatibleSchemaUpgradeError extends KratosError {}
-
-export class CodeExpiredKratosError extends KratosError {}
-
-export class UnknownKratosError extends KratosError {
-  level = ErrorLevel.Critical
-}
+const KnownKratosErrorDetails = {
+  BadRequestError: /Request failed with status code 400/,
+  UnauthorizedError: /Request failed with status code 401/,
+  ForbiddenError: /Request failed with status code 403/,
+} as const
