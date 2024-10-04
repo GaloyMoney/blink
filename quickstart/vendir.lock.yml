@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: remove deprecated bitcoin.active setting (#4600)'
-      sha: 4da5c4805537c3ba554bac098a9bcf11b191caf5
+      commitTitle: 'chore: update lnd + bitcoind versions (#4604)...'
+      sha: 620f1a25db01a0f179f891ce3e5912f7ce0635fe
       tags:
-      - 0.20.222-2-g4da5c4805
+      - 0.20.223-2-g620f1a25d
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: remove deprecated bitcoin.active setting (#4600)'
-      sha: 4da5c4805537c3ba554bac098a9bcf11b191caf5
+      commitTitle: 'chore: update lnd + bitcoind versions (#4604)...'
+      sha: 620f1a25db01a0f179f891ce3e5912f7ce0635fe
       tags:
-      - 0.20.222-2-g4da5c4805
+      - 0.20.223-2-g620f1a25d
     path: schemas
   - git:
-      commitTitle: 'chore: remove deprecated bitcoin.active setting (#4600)'
-      sha: 4da5c4805537c3ba554bac098a9bcf11b191caf5
+      commitTitle: 'chore: update lnd + bitcoind versions (#4604)...'
+      sha: 620f1a25db01a0f179f891ce3e5912f7ce0635fe
       tags:
-      - 0.20.222-2-g4da5c4805
+      - 0.20.223-2-g620f1a25d
     path: gql
   path: graphql
 kind: LockConfig
