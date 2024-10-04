@@ -8,8 +8,6 @@ type KratosIdentity = import("@ory/client").Identity
 // in that case the session would be valid but identity would not be returned
 type KratosSession = import("@ory/client").Session
 
-type KratosError = import("./errors").KratosError
-
 type IdentitySchemaContainer = import("@ory/client").IdentitySchemaContainer
 
 type ValidateKratosTokenResult = {
