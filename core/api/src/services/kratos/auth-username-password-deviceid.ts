@@ -2,14 +2,12 @@ import { CreateIdentityBody } from "@ory/client"
 
 import { isAxiosError } from "axios"
 
-import {
-  InvalidIdentitySessionKratosError,
-  KratosError,
-  UnknownKratosError,
-} from "./errors"
-import { kratosAdmin, kratosPublic } from "./private"
 import { AuthWithPhonePasswordlessService } from "./auth-phone-no-password"
+import { kratosAdmin, kratosPublic } from "./private"
 
+import { handleKratosErrors } from "./errors"
+
+import { InvalidIdentitySessionKratosError, UnknownKratosError } from "@/domain/kratos"
 import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
 
 export const AuthWithUsernamePasswordDeviceIdService =
@@ -71,7 +69,7 @@ export const AuthWithUsernamePasswordDeviceIdService =
             `Impossible to get authToken: ${err.message || err}`,
           )
         }
-        return new UnknownKratosError(err)
+        return handleKratosErrors(err)
       }
     }
 

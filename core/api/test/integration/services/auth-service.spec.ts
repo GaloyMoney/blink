@@ -10,11 +10,7 @@ import {
   AuthWithEmailPasswordlessService,
   AuthWithPhonePasswordlessService,
   AuthWithUsernamePasswordDeviceIdService,
-  AuthenticationKratosError,
-  EmailAlreadyExistsError,
   IdentityRepository,
-  IncompatibleSchemaUpgradeError,
-  KratosError,
   SchemaIdType,
   extendSession,
   kratosElevatingSessionWithTotp,
@@ -32,6 +28,12 @@ import {
 } from "@/services/kratos/tests-but-not-prod"
 import { sleep } from "@/utils"
 
+import {
+  AuthenticationKratosError,
+  EmailAlreadyExistsError,
+  IncompatibleSchemaUpgradeError,
+  KratosError,
+} from "@/domain/kratos"
 import {
   getError,
   randomEmail,

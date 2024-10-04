@@ -25,7 +25,6 @@ import {
   AuthWithPhonePasswordlessService,
   AuthWithUsernamePasswordDeviceIdService,
   IdentityRepository,
-  PhoneAccountAlreadyExistsNeedToSweepFundsError,
 } from "@/services/kratos"
 
 import { LedgerService } from "@/services/ledger"
@@ -44,9 +43,9 @@ import { IPMetadataAuthorizer } from "@/domain/accounts-ips/ip-metadata-authoriz
 import { getAccountsOnboardConfig, getDefaultAccountsConfig } from "@/config"
 
 import {
-  UnauthorizedIPForOnboardingError,
-  MissingIPMetadataError,
   InvalidIpMetadataError,
+  MissingIPMetadataError,
+  UnauthorizedIPForOnboardingError,
 } from "@/domain/errors"
 import {
   InvalidPhoneForOnboardingError,
@@ -55,10 +54,11 @@ import {
 import { IpFetcher } from "@/services/ipfetcher"
 
 import { IpFetcherServiceError } from "@/domain/ipfetcher"
-import { ErrorLevel } from "@/domain/shared"
-import { consumeLimiter } from "@/services/rate-limit"
 import { RateLimitConfig } from "@/domain/rate-limit"
 import { RateLimiterExceededError } from "@/domain/rate-limit/errors"
+import { ErrorLevel } from "@/domain/shared"
+import { consumeLimiter } from "@/services/rate-limit"
+import { PhoneAccountAlreadyExistsNeedToSweepFundsError } from "@/domain/kratos"
 
 export const loginWithPhoneToken = async ({
   phone,

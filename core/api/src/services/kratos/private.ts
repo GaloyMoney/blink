@@ -2,14 +2,14 @@ import knex from "knex"
 
 import { Configuration, FrontendApi, IdentityApi } from "@ory/client"
 
+import { SchemaIdType } from "./schema"
+
 import {
   InvalidIdentitySessionKratosError,
   MissingCreatedAtKratosError,
   MissingExpiredAtKratosError,
   UnknownKratosError,
-} from "./errors"
-
-import { SchemaIdType } from "./schema"
+} from "@/domain/kratos"
 
 import { ErrorLevel } from "@/domain/shared"
 import { recordExceptionInCurrentSpan } from "@/services/tracing"
