@@ -30,8 +30,11 @@ export const initiateTotpRegistration = async ({
   if (authToken instanceof Error) {
     return authToken
   }
-  const initiateResponse = kratosInitiateTotp(authToken)
+  const initiateResponse = await kratosInitiateTotp(authToken)
+  if (initiateResponse instanceof Error) return initiateResponse
+
   await logoutSessionByAuthToken(authToken)
+
   return initiateResponse
 }
 
