@@ -15,6 +15,7 @@ export class InvalidIdentitySessionKratosError extends KratosError {}
 export class SessionRefreshRequiredError extends KratosError {}
 
 export class EmailAlreadyExistsError extends KratosError {}
+export class TotpAlreadyExistsError extends KratosError {}
 
 export class PhoneAccountAlreadyExistsError extends KratosError {
   level = ErrorLevel.Info
