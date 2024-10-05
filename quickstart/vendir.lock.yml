@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): avoid logout before initiate totp (#4606)'
-      sha: 0c3a603d5686596f78118eccea7dbc5a9b79aef5
+      commitTitle: 'fix(core): totp already enabled (#4607)'
+      sha: 52e7cea92d30381655f7a7cbdb184feee1fdad2d
       tags:
-      - 0.20.224-1-g0c3a603d5
+      - 0.20.225-1-g52e7cea92
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): avoid logout before initiate totp (#4606)'
-      sha: 0c3a603d5686596f78118eccea7dbc5a9b79aef5
+      commitTitle: 'fix(core): totp already enabled (#4607)'
+      sha: 52e7cea92d30381655f7a7cbdb184feee1fdad2d
       tags:
-      - 0.20.224-1-g0c3a603d5
+      - 0.20.225-1-g52e7cea92
     path: schemas
   - git:
-      commitTitle: 'fix(core): avoid logout before initiate totp (#4606)'
-      sha: 0c3a603d5686596f78118eccea7dbc5a9b79aef5
+      commitTitle: 'fix(core): totp already enabled (#4607)'
+      sha: 52e7cea92d30381655f7a7cbdb184feee1fdad2d
       tags:
-      - 0.20.224-1-g0c3a603d5
+      - 0.20.225-1-g52e7cea92
     path: gql
   path: graphql
 kind: LockConfig
