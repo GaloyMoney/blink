@@ -25,6 +25,7 @@ import {
   AccountAlreadyHasEmailError,
   PhoneAlreadyExistsError,
   EmailAlreadyExistsError,
+  TotpAlreadyExistsError,
   SessionRefreshRequiredError,
   CodeExpiredError,
   UnauthorizedIPForOnboardingError,
@@ -490,6 +491,9 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
 
     case "EmailAlreadyExistsError":
       return new EmailAlreadyExistsError({ logger: baseLogger })
+
+    case "TotpAlreadyExistsError":
+      return new TotpAlreadyExistsError({ logger: baseLogger })
 
     case "CodeExpiredKratosError":
       return new CodeExpiredError({ logger: baseLogger })

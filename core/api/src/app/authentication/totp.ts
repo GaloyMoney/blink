@@ -6,9 +6,11 @@ import {
   AuthTokenUserIdMismatchError,
   IdentifierNotFoundError,
 } from "@/domain/authentication/errors"
+import { TotpAlreadyExistsError } from "@/domain/kratos"
 import {
   AuthWithEmailPasswordlessService,
   AuthWithPhonePasswordlessService,
+  IdentityRepository,
   kratosElevatingSessionWithTotp,
   kratosInitiateTotp,
   kratosRemoveTotp,
@@ -26,6 +28,10 @@ export const initiateTotpRegistration = async ({
 }: {
   userId: UserId
 }): Promise<InitiateTotpRegistrationResult | KratosError> => {
+  const identity = await IdentityRepository().getIdentity(userId)
+  if (identity instanceof Error) return identity
+  if (identity.totpEnabled) return new TotpAlreadyExistsError()
+
   const authToken = await getAuthTokenFromUserId(userId)
   if (authToken instanceof Error) {
     return authToken

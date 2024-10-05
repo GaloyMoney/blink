@@ -362,6 +362,18 @@ export class EmailAlreadyExistsError extends CustomGraphQLError {
   }
 }
 
+export class TotpAlreadyExistsError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
+    super({
+      message:
+        "TOTP has already been enabled for this account. If you need to reset it, please contact support.",
+      forwardToClient: true,
+      code: "TOTP_ACCOUNT_ALREADY_EXISTS_ERROR",
+      ...errData,
+    })
+  }
+}
+
 export class CodeExpiredError extends CustomGraphQLError {
   constructor(errData: CustomGraphQLErrorData) {
     super({
