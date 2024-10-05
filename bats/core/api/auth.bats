@@ -193,7 +193,7 @@ generateTotpCode() {
   [ "$totpEnabled" == "true" ] || exit 1
 
   exec_graphql 'charlie' 'user-totp-registration-initiate'
-  error_message="$(graphql_output '.data.userEmailRegistrationInitiate.errors[0].message')"
+  error_message="$(graphql_output '.data.userTotpRegistrationInitiate.errors[0].message')"
   expected_message="TOTP has already been enabled for this account. If you need to reset it, please contact support."
   [[ "$error_message" == "$expected_message" ]] || exit 1
 }
