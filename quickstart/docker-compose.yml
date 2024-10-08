@@ -92,7 +92,7 @@ services:
     depends_on:
     - hydra-pg
   hydra-pg:
-    image: postgres:14.1
+    image: postgres:15.1
     environment:
     - POSTGRES_USER=hydra
     - POSTGRES_PASSWORD=secret
@@ -298,7 +298,7 @@ services:
     depends_on:
     - price-history-pg
   price-history-pg:
-    image: postgres:14.1
+    image: postgres:15.1
     environment:
     - POSTGRES_USER=galoy-price-usr
     - POSTGRES_PASSWORD=galoy-price-pwd
