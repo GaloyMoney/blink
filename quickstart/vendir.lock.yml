@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): totp already enabled (#4607)'
-      sha: 52e7cea92d30381655f7a7cbdb184feee1fdad2d
+      commitTitle: 'chore(core): add void onchain tx script (#4594)...'
+      sha: 3c48af2a300a389fbea0f1a60a3b149236fc47cb
       tags:
-      - 0.20.225-1-g52e7cea92
+      - 0.20.226-1-g3c48af2a3
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): totp already enabled (#4607)'
-      sha: 52e7cea92d30381655f7a7cbdb184feee1fdad2d
+      commitTitle: 'chore(core): add void onchain tx script (#4594)...'
+      sha: 3c48af2a300a389fbea0f1a60a3b149236fc47cb
       tags:
-      - 0.20.225-1-g52e7cea92
+      - 0.20.226-1-g3c48af2a3
     path: schemas
   - git:
-      commitTitle: 'fix(core): totp already enabled (#4607)'
-      sha: 52e7cea92d30381655f7a7cbdb184feee1fdad2d
+      commitTitle: 'chore(core): add void onchain tx script (#4594)...'
+      sha: 3c48af2a300a389fbea0f1a60a3b149236fc47cb
       tags:
-      - 0.20.225-1-g52e7cea92
+      - 0.20.226-1-g3c48af2a3
     path: gql
   path: graphql
 kind: LockConfig
