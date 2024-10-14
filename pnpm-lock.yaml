@@ -801,8 +801,8 @@ importers:
         specifier: ^7.0.1
         version: 7.0.1(@babel/plugin-syntax-flow@7.24.7)(@babel/plugin-transform-react-jsx@7.25.2)(eslint@8.54.0)(typescript@5.2.2)
       eslint-plugin-cypress:
-        specifier: ^3.2.0
-        version: 3.2.0(eslint@8.54.0)
+        specifier: ^4.0.0
+        version: 4.0.0(eslint@8.54.0)
       eslint-plugin-flowtype:
         specifier: ^8.0.3
         version: 8.0.3(@babel/plugin-syntax-flow@7.24.7)(@babel/plugin-transform-react-jsx@7.25.2)(eslint@8.54.0)
@@ -23083,13 +23083,13 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-cypress@3.2.0(eslint@8.54.0):
-    resolution: {integrity: sha512-HaxMz6BoU4ay+K4WrG9ZJC1NdX06FqSlAwtRDStjM0ORFT7zCNPNuRJ+kUPc17Rt2AMUBSqeD9L0zTR3uZhPpw==}
+  /eslint-plugin-cypress@4.0.0(eslint@8.54.0):
+    resolution: {integrity: sha512-KRzI4zxoOKMhWKRxcikRu/Vjsomnx1vXJEY2CTG+4oluFbXxGuyRC1CLlhmBVOK5/iR17vY7rzuyRbpcx5zEPA==}
     peerDependencies:
-      eslint: '>=7'
+      eslint: '>=9'
     dependencies:
       eslint: 8.54.0
-      globals: 13.24.0
+      globals: 15.11.0
     dev: true
 
   /eslint-plugin-flowtype@8.0.3(@babel/plugin-syntax-flow@7.24.7)(@babel/plugin-transform-react-jsx@7.25.2)(eslint@8.54.0):
@@ -25218,6 +25218,11 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       type-fest: 0.20.2
+
+  /globals@15.11.0:
+    resolution: {integrity: sha512-yeyNSjdbyVaWurlwCpcA6XNBrHTMIeDdj0/hnvX/OLJ9ekOXYbLsLinH/MucQyGvNnXhidTdNhTtJaffL2sMfw==}
+    engines: {node: '>=18'}
+    dev: true
 
   /globalthis@1.0.3:
     resolution: {integrity: sha512-sFdI5LyBiNTHjRd7cGPWapiHWMOXKyuBNX/cWJ3NfzrZQVa8GI/8cofCl74AOVqq9W5kNmguTIzJ/1s2gyI9wA==}
