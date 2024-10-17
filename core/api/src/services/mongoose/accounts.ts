@@ -1,4 +1,4 @@
-import { caseInsensitiveRegex, parseRepositoryError } from "./utils"
+import { parseRepositoryError } from "./utils"
 
 import { AccountStatus } from "@/domain/accounts"
 import {
@@ -44,7 +44,9 @@ export const AccountsRepository = (): IAccountsRepository => {
     username: Username,
   ): Promise<Account | RepositoryError> => {
     try {
-      const result = await Account.findOne({ username: caseInsensitiveRegex(username) })
+      const result = await Account.findOne({ username })
+        .collation({ locale: "en", strength: 2 })
+        .hint({ username: 1 })
       if (!result) {
         return new CouldNotFindAccountFromUsernameError(username)
       }
