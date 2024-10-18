@@ -26,7 +26,7 @@
       overlays = [
         (self: super: {
           nodejs = super.nodejs_20;
-          pnpm = super.nodePackages.pnpm;
+          pnpm = super.pnpm;
         })
         (import rust-overlay)
       ];
