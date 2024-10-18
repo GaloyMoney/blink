@@ -9,7 +9,7 @@ import {
   SECS_PER_5_MINS,
 } from "@/config"
 
-import { Lightning, OnChain } from "@/app"
+import { Lightning, OnChain, Prices } from "@/app"
 
 import { toSeconds } from "@/domain/primitives"
 
@@ -32,6 +32,7 @@ import { activateLndHealthCheck } from "@/services/lnd/health"
 import { ledgerAdmin, setupMongoConnection } from "@/services/mongodb"
 
 import { timeoutWithCancel } from "@/utils"
+import { displayAmountFromNumber, UsdDisplayCurrency } from "@/domain/fiat"
 
 const TIMEOUT_WALLET_BALANCE = 30000
 
@@ -40,12 +41,35 @@ const logger = baseLogger.child({ module: "exporter" })
 const prefix = "galoy"
 
 const main = async () => {
-  const { getLiabilitiesBalance, getLndBalance, getBitcoindBalance, getOnChainBalance } =
-    ledgerAdmin
+  const { getLndBalance, getBitcoindBalance, getOnChainBalance } = ledgerAdmin
+
+  createGauge({
+    name: "assets",
+    description: "how much money (BTC) is on books",
+    collect: async () => {
+      const getDealerBalance = async (getId: () => Promise<WalletId>) => {
+        const walletId = await getId()
+        return getWalletBalance(walletId)
+      }
+
+      const btcAssets = await ledgerAdmin.getAssetsBalance()
+      const dealerBtcLiabilities = await getDealerBalance(getDealerBtcWalletId)
+
+      // Dealer BTC liabilities must be deducted from assets because
+      // Stablesats deposits and withdrawals are processed directly through Bria.
+      return Math.abs(btcAssets) - dealerBtcLiabilities
+    },
+  })
+
   createGauge({
     name: "liabilities",
-    description: "how much money customers has",
-    collect: getLiabilitiesBalance,
+    description: "how much money (BTC) customers has",
+    collect: async () => {
+      const liabilities = await getUserLiabilities()
+      if (liabilities instanceof Error) return 0
+
+      return liabilities
+    },
   })
 
   createGauge({
@@ -107,6 +131,12 @@ const main = async () => {
 
       return balance
     },
+  })
+
+  createGauge({
+    name: "realAssetsVsLiabilities",
+    description: "do we have enough Bitcoin to cover users' liabilities",
+    collect: getRealAssetsVersusLiabilities,
   })
 
   createGauge({
@@ -309,6 +339,81 @@ const getAssetsLiabilitiesDifference = async () => {
   ])
 
   return assets + liabilities
+}
+
+const getUserLiabilities = async () => {
+  const getDealerBalance = async (getId: () => Promise<WalletId>) => {
+    const walletId = await getId()
+    return getWalletBalance(walletId)
+  }
+
+  const btcLiabilities = await ledgerAdmin.getLiabilitiesBalance()
+  const dealerBtcLiabilities = await getDealerBalance(getDealerBtcWalletId)
+
+  // Dealer BTC liabilities must be deducted from liabilities because
+  // Stablesats deposits and withdrawals are processed directly through Bria.
+  const customerBtcLiabilities = btcLiabilities - dealerBtcLiabilities
+
+  const dealerUsdLiabilities = await getDealerBalance(getDealerUsdWalletId)
+  logger.info(
+    {
+      btcLiabilities,
+      dealerBtcLiabilities,
+      customerBtcLiabilities,
+      dealerUsdLiabilities,
+    },
+    "getUserLiabilities balances",
+  )
+  const dealerUsdLiabilitiesDisplay = displayAmountFromNumber({
+    amount: Math.abs(dealerUsdLiabilities),
+    currency: UsdDisplayCurrency,
+  })
+  if (dealerUsdLiabilitiesDisplay instanceof Error) return dealerUsdLiabilitiesDisplay
+
+  const dealerUsdLiabilitiesInSatsAmount = await Prices.estimateWalletsAmounts({
+    amount: Number(dealerUsdLiabilitiesDisplay.displayInMajor),
+    currency: UsdDisplayCurrency,
+  })
+  logger.info(
+    {
+      mayor: dealerUsdLiabilitiesDisplay.displayInMajor,
+      currency: UsdDisplayCurrency,
+      dealerUsdLiabilitiesInSatsAmount,
+    },
+    "getUserLiabilities usd balances",
+  )
+  if (dealerUsdLiabilitiesInSatsAmount instanceof Error)
+    return dealerUsdLiabilitiesInSatsAmount
+
+  return (
+    customerBtcLiabilities + Number(dealerUsdLiabilitiesInSatsAmount.btcSatAmount.amount)
+  )
+}
+
+const getRealAssetsVersusLiabilities = async () => {
+  const [liabilitiesBalance, lndBalance, coldStorage, hotBalance] = await Promise.all([
+    getUserLiabilities(),
+    Lightning.getTotalBalance(),
+    OnChain.getColdBalance(),
+    OnChain.getHotBalance(),
+  ])
+
+  const liabilities = liabilitiesBalance instanceof Error ? 0 : liabilitiesBalance
+  const lnd = lndBalance instanceof Error ? 0 : lndBalance
+  const briaHot = hotBalance instanceof Error ? 0 : Number(hotBalance.amount)
+  const briaCold = coldStorage instanceof Error ? 0 : Number(coldStorage.amount)
+
+  logger.error(
+    { liabilities, lnd, briaHot, briaCold },
+    "getRealAssetsVersusLiabilities balances",
+  )
+
+  return (
+    lnd + // physical assets
+    briaCold + // physical assets
+    briaHot + // physical assets
+    liabilities // value in accounting
+  )
 }
 
 export const getBookingVersusRealWorldAssets = async () => {
