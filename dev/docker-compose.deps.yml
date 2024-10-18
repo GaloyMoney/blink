@@ -339,7 +339,7 @@ services:
     volumes:
       - ${HOST_PROJECT_PATH:-.}/config/otel-agent-config.yaml:/etc/otel-agent-config.yaml
   svix:
-    image: svix/svix-server:v1.11
+    image: svix/svix-server:v1.38
     platform: linux/amd64
     environment:
       WAIT_FOR: "true"
