@@ -41,7 +41,7 @@ services:
     depends_on:
       - price-history-pg
   price-history-pg:
-    image: postgres:14.1
+    image: postgres:15.1
     environment:
       - POSTGRES_USER=galoy-price-usr
       - POSTGRES_PASSWORD=galoy-price-pwd
@@ -52,7 +52,7 @@ services:
       timeout: 30s
       retries: 5
   api-keys-pg:
-    image: postgres:14.1
+    image: postgres:15.1
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
@@ -73,7 +73,7 @@ services:
       timeout: 30s
       retries: 5
   voucher-pg:
-    image: postgres:14.1
+    image: postgres:15.1
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
