@@ -212,7 +212,7 @@ const AccountSchema = new Schema<AccountRecord>(
         unique: true,
         collation: { locale: "en", strength: 2 },
         partialFilterExpression: {
-          username: { $type: "string", $exists: true, $ne: null },
+          username: { $type: "string", $exists: true },
         },
       },
     },
