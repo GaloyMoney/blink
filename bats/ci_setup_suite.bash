@@ -8,10 +8,10 @@ TILT_PID_FILE="${BATS_ROOT_DIR}/.tilt_pid"
 setup_suite() {
   background buck2 run //dev:up -- --bats=True > "${REPO_ROOT}/bats/.e2e-tilt.log"
   echo $! > "$TILT_PID_FILE"
-  await_api_is_up
-  await_api_keys_is_up
-  await_pay_is_up
   await_notifications_is_up
+  await_api_keys_is_up
+  await_api_is_up
+  await_pay_is_up
 }
 
 teardown_suite() {

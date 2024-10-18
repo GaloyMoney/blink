@@ -6,52 +6,40 @@ on:
 
 jobs:
   tests:
-    name: Execute via bats
+    name: execute via bats
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 12288
+          root-reserve-mb: 15360
           temp-reserve-mb: 12288
 
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v14
-        with:
-          extra-setup-flags: "--no-daemon"
 
-      - name: Enable magic Nix cache
+      - name: Run the Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v8
-
-      - name: Cache Buck2 artifacts
-        uses: actions/cache@v3
-        with:
-          path: |
-            /home/runner/.buck2/cache
-            /home/runner/.buck2/buck-out
-          key: ${{ runner.os }}-buck2-cache-${{ hashFiles('**/BUCK2') }}
-          restore-keys: |
-            ${{ runner.os }}-buck2-cache-
 
       - name: Buck2 build
         run: |
-          nix develop -c buck2 build \
-            //core/api //core/api-ws-server \
-            //core/api-keys //apps/dashboard //apps/consent //apps/pay //apps/admin-panel //apps/map //apps/voucher \
+          nix develop -c buck2 build //core/api \
+            //core/api-ws-server \
+            //apps/dashboard \
+            //apps/consent \
+            //apps/pay \
+            //apps/admin-panel \
+            //apps/map \
+            //apps/voucher \
+            //core/api-keys \
             //core/notifications
 
-      - name: Run Bats setup suite script
+      - name: Run bats tests
         run: |
-          bash bats/ci_setup_suite.bash
-
-      - name: Run Bats tests
-        run: |
-          nix develop -c bats -t bats/core/**
+          nix develop -c bats --setup-suite-file bats/ci_setup_suite.bash -t bats/core/**
 
       - name: Rename Tilt log
         if: always()
