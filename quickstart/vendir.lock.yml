@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): add void onchain tx script (#4594)...'
-      sha: 3c48af2a300a389fbea0f1a60a3b149236fc47cb
+      commitTitle: 'fix(deps): PG version sync (#4609)...'
+      sha: 443364e135413efe9ddc8f014798e9bcaaf8d46e
       tags:
-      - 0.20.226-1-g3c48af2a3
+      - 0.20.226-3-g443364e13
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): add void onchain tx script (#4594)...'
-      sha: 3c48af2a300a389fbea0f1a60a3b149236fc47cb
+      commitTitle: 'fix(deps): PG version sync (#4609)...'
+      sha: 443364e135413efe9ddc8f014798e9bcaaf8d46e
       tags:
-      - 0.20.226-1-g3c48af2a3
+      - 0.20.226-3-g443364e13
     path: schemas
   - git:
-      commitTitle: 'chore(core): add void onchain tx script (#4594)...'
-      sha: 3c48af2a300a389fbea0f1a60a3b149236fc47cb
+      commitTitle: 'fix(deps): PG version sync (#4609)...'
+      sha: 443364e135413efe9ddc8f014798e9bcaaf8d46e
       tags:
-      - 0.20.226-1-g3c48af2a3
+      - 0.20.226-3-g443364e13
     path: gql
   path: graphql
 kind: LockConfig
