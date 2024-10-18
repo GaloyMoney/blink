@@ -31,7 +31,7 @@ const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
     type: String,
     validate: {
       validator: function (v: string) {
-        return v.match(WalletIdRegex)
+        return WalletIdRegex.test(v)
       },
     },
   },
@@ -41,7 +41,7 @@ const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
     type: String,
     validate: {
       validator: function (v: string) {
-        return v.match(AccountIdRegex)
+        return AccountIdRegex.test(v)
       },
     },
   },
