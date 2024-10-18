@@ -31,7 +31,7 @@ const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
     type: String,
     validate: {
       validator: function (v: string) {
-        return v.match(WalletIdRegex)
+        return WalletIdRegex.test(v)
       },
     },
   },
@@ -41,7 +41,7 @@ const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
     type: String,
     validate: {
       validator: function (v: string) {
-        return v.match(AccountIdRegex)
+        return AccountIdRegex.test(v)
       },
     },
   },
@@ -202,13 +202,18 @@ const AccountSchema = new Schema<AccountRecord>(
 
     username: {
       type: String,
-      match: [UsernameRegex, "Username can only have alphabets, numbers and underscores"],
+      match: [
+        UsernameRegex,
+        "Username can only have alphabets, numbers, and underscores",
+      ],
       minlength: 3,
       maxlength: 50,
       index: {
         unique: true,
         collation: { locale: "en", strength: 2 },
-        partialFilterExpression: { username: { $type: "string" } },
+        partialFilterExpression: {
+          username: { $type: "string", $exists: true },
+        },
       },
     },
     contactEnabled: {
