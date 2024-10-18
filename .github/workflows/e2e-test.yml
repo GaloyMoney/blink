@@ -6,7 +6,7 @@ on:
 
 jobs:
   tests:
-    name: execute via bats
+    name: Execute via bats
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -15,22 +15,48 @@ jobs:
         with:
           root-reserve-mb: 12288
           temp-reserve-mb: 12288
+
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v14
-      - name: Run the Magic Nix Cache
+        with:
+          extra-setup-flags: "--no-daemon"
+
+      - name: Enable magic Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: Cache Buck2 artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            /home/runner/.buck2/cache
+            /home/runner/.buck2/buck-out
+          key: ${{ runner.os }}-buck2-cache-${{ hashFiles('**/BUCK2') }}
+          restore-keys: |
+            ${{ runner.os }}-buck2-cache-
+
       - name: Buck2 build
         run: |
-          nix develop -c buck2 build //core/api //core/api-ws-server \
+          nix develop -c buck2 build --config=jobs=$(nproc) \
+            //core/api //core/api-ws-server \
             //core/api-keys //apps/dashboard //apps/consent //apps/pay //apps/admin-panel //apps/map //apps/voucher \
             //core/notifications
-      - name: Run bats tests
+
+      - name: Run Bats setup suite script
         run: |
-          nix develop -c bats --setup-suite-file bats/ci_setup_suite.bash -t bats/core/**
+          bash bats/ci_setup_suite.bash
+
+      - name: Run Bats tests
+        run: |
+          nix develop -c bats -t bats/core/**
+
       - name: Rename Tilt log
         if: always()
         run: mv bats/.e2e-tilt.log bats/e2e-tilt.log
+
       - name: Upload Tilt log
         if: always()
         uses: actions/upload-artifact@v4
