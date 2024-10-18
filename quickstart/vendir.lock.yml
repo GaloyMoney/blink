@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(deps): PG version sync (#4609)...'
-      sha: 443364e135413efe9ddc8f014798e9bcaaf8d46e
+      commitTitle: 'perf: update gh actions (#4618)...'
+      sha: e5db88ad0064cde36fc2f66aad5b752d971a4dcc
       tags:
-      - 0.20.226-3-g443364e13
+      - 0.20.227-1-ge5db88ad0
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(deps): PG version sync (#4609)...'
-      sha: 443364e135413efe9ddc8f014798e9bcaaf8d46e
+      commitTitle: 'perf: update gh actions (#4618)...'
+      sha: e5db88ad0064cde36fc2f66aad5b752d971a4dcc
       tags:
-      - 0.20.226-3-g443364e13
+      - 0.20.227-1-ge5db88ad0
     path: schemas
   - git:
-      commitTitle: 'fix(deps): PG version sync (#4609)...'
-      sha: 443364e135413efe9ddc8f014798e9bcaaf8d46e
+      commitTitle: 'perf: update gh actions (#4618)...'
+      sha: e5db88ad0064cde36fc2f66aad5b752d971a4dcc
       tags:
-      - 0.20.226-3-g443364e13
+      - 0.20.227-1-ge5db88ad0
     path: gql
   path: graphql
 kind: LockConfig
