@@ -30,6 +30,16 @@ def _srcs_arg():
 """),
     }
 
+def _package_root_arg():
+    return {
+        "package_root": attrs.option(attrs.string(), default = None, doc = """
+    Sets Go package direactory (relative to BUCK file).
+    By default (or if None passes) package_root is being detected automatically.
+    Empty string of Go package is on the same level as BUCK file otherwise the subdirectory name.
+    Example for srcs = ["foo/bar.go"], package_root = "foo"
+"""),
+    }
+
 def _link_style_arg():
     return {
         "link_style": attrs.option(attrs.enum(LinkableDepType), default = None, doc = """
@@ -45,13 +55,6 @@ def _link_mode_arg():
     Determines the link mode (equivalent of `-mode`). Can be one of the following
      values: `internal`, `external`.
      If no value is provided, the mode is set automatically depending on the other args.
-"""),
-    }
-
-def _cgo_compiler_flags_arg():
-    return {
-        "cgo_compiler_flags": attrs.list(attrs.string(), default = [], doc = """
-    The set of additional compiler flags to pass to `go tool cgo`.
 """),
     }
 
@@ -88,8 +91,6 @@ def _external_linker_flags_arg():
     return {
         "external_linker_flags": attrs.list(attrs.arg(), default = [], doc = """
     Extra external linker flags passed to go link via `-extld` argument.
-     If argument is non-empty or `cgo_library` is used, the link mode
-     will switch to `external`.
 """),
     }
 
@@ -127,8 +128,15 @@ def _embedcfg_arg():
 def _cgo_enabled_arg():
     return {
         "cgo_enabled": attrs.option(attrs.bool(), default = None, doc = """
-    Experimental: Analog of CGO_ENABLED environment-variable.
-    None will be coverted to True if cxx_toolchain availabe for current configuration, otherwiese False.
+    Analog of CGO_ENABLED env-var, applies to this target and its dependencies.
+    If None `go_toolchain.default_cgo_enabled` value will be applied.
+"""),
+    }
+
+def _override_cgo_enabled_arg():
+    return {
+        "override_cgo_enabled": attrs.option(attrs.bool(), default = None, doc = """
+    Per-target analog of CGO_ENABLED env-var, overrides its value for the target, but not for its dependencies.
 """),
     }
 
@@ -139,6 +147,13 @@ def _race_arg():
 """),
     }
 
+def _asan_arg():
+    return {
+        "asan": attrs.bool(default = False, doc = """
+    If true, enable ASAN.
+"""),
+    }
+
 def _tags_arg():
     return {
         "tags": attrs.list(attrs.string(), default = [], doc = """
@@ -146,12 +161,34 @@ def _tags_arg():
 """),
     }
 
+def _cxx_compiler_flags_arg():
+    return {
+        "cxx_compiler_flags": attrs.list(attrs.arg(), default = [], doc = """
+    GCC/Clang flags to use when compiling any of the above C/C++ sources (which require compilation).
+"""),
+    }
+
+def _cxx_preprocessor_flags_arg():
+    return {
+        "cxx_preprocessor_flags": attrs.list(attrs.arg(), default = [], doc = """
+    GCC/Clang flags to use when preprocessing any of the above C/C++ sources (which require preprocessing).
+"""),
+    }
+
+def _generate_exported_header():
+    return {
+        "generate_exported_header": attrs.bool(default = False, doc = """
+    Generate header file with declaration for functions exported with `//export`
+    The header name for target `cell//foo/bar:lib` will be `foo/bar/lib.h`
+"""),
+    }
+
 go_common = struct(
     deps_arg = _deps_arg,
     srcs_arg = _srcs_arg,
+    package_root_arg = _package_root_arg,
     link_style_arg = _link_style_arg,
     link_mode_arg = _link_mode_arg,
-    cgo_compiler_flags_arg = _cgo_compiler_flags_arg,
     package_name_arg = _package_name_arg,
     compiler_flags_arg = _compiler_flags_arg,
     assembler_flags_arg = _assembler_flags_arg,
@@ -159,6 +196,11 @@ go_common = struct(
     external_linker_flags_arg = _external_linker_flags_arg,
     embedcfg_arg = _embedcfg_arg,
     cgo_enabled_arg = _cgo_enabled_arg,
+    override_cgo_enabled_arg = _override_cgo_enabled_arg,
     race_arg = _race_arg,
+    asan_arg = _asan_arg,
     tags_arg = _tags_arg,
+    cxx_compiler_flags_arg = _cxx_compiler_flags_arg,
+    cxx_preprocessor_flags_arg = _cxx_preprocessor_flags_arg,
+    generate_exported_header = _generate_exported_header,
 )

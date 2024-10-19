@@ -12,13 +12,13 @@ def _cgo_enabled_transition(platform, refs, attrs):
     constraints = platform.configuration.constraints
 
     # Cancel transition if the value already set
-    # to enable using configuration modifiers for overiding this option
-    cgo_enabled_setting = refs.cgo_enabled_auto[ConstraintValueInfo].setting
+    # to enable using configuration modifiers for overriding this option
+    cgo_enabled_setting = refs.cgo_enabled_true[ConstraintValueInfo].setting
     if cgo_enabled_setting.label in constraints:
         return platform
 
     if attrs.cgo_enabled == None:
-        cgo_enabled_ref = refs.cgo_enabled_auto
+        return platform
     elif attrs.cgo_enabled == True:
         cgo_enabled_ref = refs.cgo_enabled_true
     else:
@@ -37,10 +37,24 @@ def _cgo_enabled_transition(platform, refs, attrs):
         configuration = new_cfg,
     )
 
-def _compile_shared_transition(platform, refs, _):
-    compile_shared_value = refs.compile_shared_value[ConstraintValueInfo]
+def _race_transition(platform, refs, attrs):
     constraints = platform.configuration.constraints
-    constraints[compile_shared_value.setting.label] = compile_shared_value
+
+    # Cancel transition if the value already set
+    # to enable using configuration modifiers for overriding this option
+    race_setting = refs.race_false[ConstraintValueInfo].setting
+    if race_setting.label in constraints:
+        return platform
+
+    # change configuration only when we can't avoid it
+    if attrs.race == True:
+        race_ref = refs.race_true
+    else:
+        return platform
+
+    race_value = race_ref[ConstraintValueInfo]
+    constraints[race_value.setting.label] = race_value
+
     new_cfg = ConfigurationInfo(
         constraints = constraints,
         values = platform.configuration.values,
@@ -51,22 +65,23 @@ def _compile_shared_transition(platform, refs, _):
         configuration = new_cfg,
     )
 
-def _race_transition(platform, refs, attrs):
+def _asan_transition(platform, refs, attrs):
     constraints = platform.configuration.constraints
 
     # Cancel transition if the value already set
-    # to enable using configuration modifiers for overiding this option
-    race_setting = refs.race_false[ConstraintValueInfo].setting
-    if race_setting.label in constraints:
+    # to enable using configuration modifiers for overriding this option
+    asan_setting = refs.asan_false[ConstraintValueInfo].setting
+    if asan_setting.label in constraints:
         return platform
 
-    if attrs.race == True:
-        race_ref = refs.race_true
+    # change configuration only when we can't avoid it
+    if attrs.asan == True:
+        asan_ref = refs.asan_true
     else:
-        race_ref = refs.race_false
+        return platform
 
-    race_value = race_ref[ConstraintValueInfo]
-    constraints[race_value.setting.label] = race_value
+    asan_value = asan_ref[ConstraintValueInfo]
+    constraints[asan_value.setting.label] = asan_value
 
     new_cfg = ConfigurationInfo(
         constraints = constraints,
@@ -82,7 +97,7 @@ def _coverage_mode_transition(platform, refs, attrs):
     constraints = platform.configuration.constraints
 
     # Cancel transition if the value already set
-    # to enable using configuration modifiers for overiding this option
+    # to enable using configuration modifiers for overriding this option
     coverage_mode_setting = refs.coverage_mode_set[ConstraintValueInfo].setting
     if coverage_mode_setting.label in constraints:
         return platform
@@ -113,13 +128,42 @@ def _coverage_mode_transition(platform, refs, attrs):
 
 def _tags_transition(platform, refs, attrs):
     constraints = platform.configuration.constraints
+
+    if not attrs.tags:
+        return platform
+
     for tag in attrs.tags:
         ref_name = "tag_{}__value".format(tag)
         if not hasattr(refs, ref_name):
-            fail("Add tag '{}' to .buckconfig attrubute `go.allowed_tags` to allow using it".format(tag))
+            fail("Add tag '{}' to .buckconfig attribute `go.allowed_tags` to allow using it".format(tag))
 
         tag_value = getattr(refs, ref_name)[ConstraintValueInfo]
         constraints[tag_value.setting.label] = tag_value
+
+    new_cfg = ConfigurationInfo(
+        constraints = constraints,
+        values = platform.configuration.values,
+    )
+
+    return PlatformInfo(
+        label = platform.label,
+        configuration = new_cfg,
+    )
+
+def _force_mingw_on_windows(platform, refs, _):
+    constraints = platform.configuration.constraints
+
+    abi_gnu_value = refs.abi_gnu[ConstraintValueInfo]
+    if abi_gnu_value.setting.label in constraints and constraints[abi_gnu_value.setting.label] == abi_gnu_value:
+        # Already MinGW/GNU, do nothing
+        return platform
+
+    os_windows_value = refs.os_windows[ConstraintValueInfo]
+    if os_windows_value.setting.label in constraints and constraints[os_windows_value.setting.label] != os_windows_value:
+        # Non-Windows, do nothing
+        return platform
+
+    constraints[abi_gnu_value.setting.label] = abi_gnu_value
 
     new_cfg = ConfigurationInfo(
         constraints = constraints,
@@ -139,10 +183,17 @@ def _chain_transitions(transitions):
 
     return tr
 
-_tansitions = [_cgo_enabled_transition, _compile_shared_transition, _race_transition, _tags_transition]
+_all_level_tansitions = [_force_mingw_on_windows]
+_top_level_tansitions = [_asan_transition, _cgo_enabled_transition, _race_transition, _tags_transition] + _all_level_tansitions
 
-_refs = {
-    "cgo_enabled_auto": "prelude//go/constraints:cgo_enabled_auto",
+_all_level_refs = {
+    "abi_gnu": "prelude//abi/constraints:gnu",
+    "os_windows": "prelude//os/constraints:windows",
+}
+
+_top_level_refs = {
+    "asan_false": "prelude//go/constraints:asan_false",
+    "asan_true": "prelude//go/constraints:asan_true",
     "cgo_enabled_false": "prelude//go/constraints:cgo_enabled_false",
     "cgo_enabled_true": "prelude//go/constraints:cgo_enabled_true",
     "race_false": "prelude//go/constraints:race_false",
@@ -150,22 +201,19 @@ _refs = {
 } | {
     "tag_{}__value".format(tag): constrant_value
     for tag, constrant_value in tag_to_constrant_value().items()
-}
+} | _all_level_refs
 
-_attrs = ["cgo_enabled", "race", "tags"]
+_attrs = ["asan", "cgo_enabled", "race", "tags"]
 
 go_binary_transition = transition(
-    impl = _chain_transitions(_tansitions),
-    refs = _refs | {
-        "compile_shared_value": "prelude//go/constraints:compile_shared_false",
-    },
+    impl = _chain_transitions(_top_level_tansitions),
+    refs = _top_level_refs,
     attrs = _attrs,
 )
 
 go_test_transition = transition(
-    impl = _chain_transitions(_tansitions + [_coverage_mode_transition]),
-    refs = _refs | {
-        "compile_shared_value": "prelude//go/constraints:compile_shared_false",
+    impl = _chain_transitions(_top_level_tansitions + [_coverage_mode_transition]),
+    refs = _top_level_refs | {
         "coverage_mode_atomic": "prelude//go/constraints:coverage_mode_atomic",
         "coverage_mode_count": "prelude//go/constraints:coverage_mode_count",
         "coverage_mode_set": "prelude//go/constraints:coverage_mode_set",
@@ -174,30 +222,39 @@ go_test_transition = transition(
 )
 
 go_exported_library_transition = transition(
-    impl = _chain_transitions(_tansitions),
-    refs = _refs | {
-        "compile_shared_value": "prelude//go/constraints:compile_shared_true",
-    },
+    impl = _chain_transitions(_top_level_tansitions),
+    refs = _top_level_refs,
     attrs = _attrs,
+)
+
+go_library_transition = transition(
+    impl = _chain_transitions(_all_level_tansitions),
+    refs = _all_level_refs,
+    attrs = [],
+)
+
+go_stdlib_transition = transition(
+    impl = _chain_transitions(_all_level_tansitions),
+    refs = _all_level_refs,
+    attrs = [],
 )
 
 cgo_enabled_attr = attrs.default_only(attrs.option(attrs.bool(), default = select({
     "DEFAULT": None,
-    "prelude//go/constraints:cgo_enabled_auto": None,
     "prelude//go/constraints:cgo_enabled_false": False,
     "prelude//go/constraints:cgo_enabled_true": True,
-})))
-
-compile_shared_attr = attrs.default_only(attrs.bool(default = select({
-    "DEFAULT": False,
-    "prelude//go/constraints:compile_shared_false": False,
-    "prelude//go/constraints:compile_shared_true": True,
 })))
 
 race_attr = attrs.default_only(attrs.bool(default = select({
     "DEFAULT": False,
     "prelude//go/constraints:race_false": False,
     "prelude//go/constraints:race_true": True,
+})))
+
+asan_attr = attrs.default_only(attrs.bool(default = select({
+    "DEFAULT": False,
+    "prelude//go/constraints:asan_false": False,
+    "prelude//go/constraints:asan_true": True,
 })))
 
 coverage_mode_attr = attrs.default_only(attrs.option(attrs.enum(GoCoverageMode.values()), default = select({

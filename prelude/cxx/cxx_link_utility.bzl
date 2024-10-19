@@ -7,18 +7,28 @@
 
 load("@prelude//:artifact_tset.bzl", "project_artifacts")
 load("@prelude//:paths.bzl", "paths")
-load("@prelude//cxx:cxx_toolchain_types.bzl", "CxxToolchainInfo")
+load(
+    "@prelude//cxx:cxx_toolchain_types.bzl",
+    "CxxToolchainInfo",
+    "LinkerType",
+)
 load("@prelude//cxx:debug.bzl", "SplitDebugMode")
 load("@prelude//cxx:linker.bzl", "get_rpath_origin")
+load("@prelude//cxx:target_sdk_version.bzl", "get_target_sdk_version_flags")
 load(
     "@prelude//linking:link_info.bzl",
     "LinkArgs",
     "LinkOrdering",  # @unused Used as a type
-    "LinkedObject",  # @unused Used as a type
     "unpack_link_args",
+    "unpack_link_args_excluding_filelist",
     "unpack_link_args_filelist",
 )
 load("@prelude//linking:lto.bzl", "LtoMode")
+load(
+    "@prelude//linking:shared_libraries.bzl",
+    "SharedLibrary",  # @unused Used as a type
+    "create_shlib_symlink_tree",
+)
 load("@prelude//utils:arglike.bzl", "ArgLike")  # @unused Used as a type
 
 def generates_split_debug(toolchain: CxxToolchainInfo):
@@ -36,14 +46,14 @@ def generates_split_debug(toolchain: CxxToolchainInfo):
 
 def linker_map_args(toolchain: CxxToolchainInfo, linker_map) -> LinkArgs:
     linker_type = toolchain.linker_info.type
-    if linker_type == "darwin":
+    if linker_type == LinkerType("darwin"):
         flags = [
             "-Xlinker",
             "-map",
             "-Xlinker",
             linker_map,
         ]
-    elif linker_type == "gnu":
+    elif linker_type == LinkerType("gnu"):
         flags = [
             "-Xlinker",
             "-Map",
@@ -57,22 +67,28 @@ def linker_map_args(toolchain: CxxToolchainInfo, linker_map) -> LinkArgs:
 LinkArgsOutput = record(
     link_args = ArgLike,
     hidden = list[typing.Any],
-    pdb_artifact = [Artifact, None],
+    pdb_artifact = Artifact | None,
     # The filelist artifact which contains the list of all object files.
     # Only present for Darwin linkers. Note that object files referenced
     # _inside_ the filelist are _not_ part of the `hidden` field above.
     # That's by design - we do not want to materialise _all_ object files
     # to inspect the filelist. Intended to be used for debugging.
-    filelist = [Artifact, None],
+    filelist = Artifact | None,
 )
 
+def get_extra_darwin_linker_flags() -> cmd_args:
+    """
+    Returns a cmd_args object filled with hard coded linker flags that should be used for all links with a Darwin toolchain.
+    """
+    return cmd_args("-Wl,-oso_prefix,.")
+
 def make_link_args(
+        ctx: AnalysisContext,
         actions: AnalysisActions,
         cxx_toolchain_info: CxxToolchainInfo,
         links: list[LinkArgs],
         suffix = None,
         output_short_path: [str, None] = None,
-        is_shared: [bool, None] = None,
         link_ordering: [LinkOrdering, None] = None) -> LinkArgsOutput:
     """
     Merges LinkArgs. Returns the args, files that must be present for those
@@ -86,28 +102,32 @@ def make_link_args(
     linker_info = cxx_toolchain_info.linker_info
     linker_type = linker_info.type
 
-    # On Apple platforms, DWARF data is contained in the object files
-    # and executables contains paths to the object files (N_OSO stab).
-    #
-    # By default, ld64 will use absolute file paths in N_OSO entries
-    # which machine-dependent executables. Such executables would not
-    # be debuggable on any host apart from the host which performed
-    # the linking. Instead, we want produce machine-independent
-    # hermetic executables, so we need to relativize those paths.
-    #
-    # This is accomplished by passing the `oso-prefix` flag to ld64,
-    # which will strip the provided prefix from the N_OSO paths.
-    #
-    # The flag accepts a special value, `.`, which means it will
-    # use the current workding directory. This will make all paths
-    # relative to the parent of `buck-out`.
-    #
-    # Because all actions in Buck2 are run from the project root
-    # and `buck-out` is always inside the project root, we can
-    # safely pass `.` as the `-oso_prefix` without having to
-    # write a wrapper script to compute it dynamically.
-    if linker_type == "darwin":
-        args.add(["-Wl,-oso_prefix,."])
+    if linker_type == LinkerType("darwin"):
+        # Darwin requires a target triple specified to
+        # control the deployment target being linked for.
+        args.add(get_target_sdk_version_flags(ctx))
+
+        # On Apple platforms, DWARF data is contained in the object files
+        # and executables contains paths to the object files (N_OSO stab).
+        #
+        # By default, ld64 will use absolute file paths in N_OSO entries
+        # which machine-dependent executables. Such executables would not
+        # be debuggable on any host apart from the host which performed
+        # the linking. Instead, we want produce machine-independent
+        # hermetic executables, so we need to relativize those paths.
+        #
+        # This is accomplished by passing the `oso-prefix` flag to ld64,
+        # which will strip the provided prefix from the N_OSO paths.
+        #
+        # The flag accepts a special value, `.`, which means it will
+        # use the current workding directory. This will make all paths
+        # relative to the parent of `buck-out`.
+        #
+        # Because all actions in Buck2 are run from the project root
+        # and `buck-out` is always inside the project root, we can
+        # safely pass `.` as the `-oso_prefix` without having to
+        # write a wrapper script to compute it dynamically.
+        args.add(get_extra_darwin_linker_flags())
 
     pdb_artifact = None
     if linker_info.is_pdb_generated and output_short_path != None:
@@ -115,23 +135,26 @@ def make_link_args(
         pdb_artifact = actions.declare_output(pdb_filename)
         hidden.append(pdb_artifact.as_output())
 
-    for link in links:
-        args.add(unpack_link_args(link, is_shared, link_ordering = link_ordering))
+    filelists = None
+    if linker_type == LinkerType("darwin"):
+        filelists = filter(None, [unpack_link_args_filelist(link) for link in links])
+        hidden.extend(filelists)
 
-    filelists = filter(None, [unpack_link_args_filelist(link) for link in links])
-    hidden.extend(filelists)
+    for link in links:
+        if filelists:
+            # If we are using a filelist, only add argument that aren't already in the
+            # filelist. This is to avoid duplicate inputs in the link command.
+            args.add(unpack_link_args_excluding_filelist(link, link_ordering = link_ordering))
+        else:
+            args.add(unpack_link_args(link, link_ordering = link_ordering))
+
+    # On Darwin, filelist args _must_ come last as the order can affect symbol
+    # resolution and result in binary size increases.
     filelist_file = None
     if filelists:
-        if linker_type == "gnu":
-            fail("filelist populated for gnu linker")
-        elif linker_type == "darwin":
-            # On Darwin, filelist args _must_ come last as there's semantical difference
-            # of the position.
-            path = actions.write("filelist%s.txt" % suffix, filelists)
-            args.add(["-Xlinker", "-filelist", "-Xlinker", path])
-            filelist_file = path
-        else:
-            fail("Linker type {} not supported".format(linker_type))
+        path = actions.write("filelist%s.txt" % suffix, filelists)
+        args.add(cmd_args(["-Xlinker", "-filelist", "-Xlinker", path]))
+        filelist_file = path
 
     return LinkArgsOutput(
         link_args = args,
@@ -177,22 +200,21 @@ def cxx_sanitizer_runtime_arguments(
     if not linker_info.sanitizer_runtime_files:
         fail("C++ sanitizer runtime enabled but there are no runtime files")
 
-    if linker_info.type == "darwin":
-        runtime_rpath = cmd_args()
+    if linker_info.type == LinkerType("darwin"):
+        # ignore_artifacts as the runtime directory is not required at _link_ time
+        runtime_rpath = cmd_args(ignore_artifacts = True)
         runtime_files = linker_info.sanitizer_runtime_files
         for runtime_shared_lib in runtime_files:
             # Rpath-relative dylibs have an install name of `@rpath/libName.dylib`,
             # which means we need to add the parent dir of the dylib as an rpath.
-            runtime_shared_lib_dir = cmd_args(runtime_shared_lib).parent()
+            runtime_shared_lib_dir = cmd_args(runtime_shared_lib, parent = 1)
 
             # The parent dir of the runtime shared lib must appear as a path
             # relative to the parent dir of the binary. `@executable_path`
             # represents the parent dir of the binary, not the binary itself.
-            runtime_shared_lib_rpath = cmd_args(runtime_shared_lib_dir, format = "-Wl,-rpath,@executable_path/{}").relative_to(output, parent = 1)
+            runtime_shared_lib_rpath = cmd_args(runtime_shared_lib_dir, format = "-Wl,-rpath,@executable_path/{}", relative_to = (output, 1))
             runtime_rpath.add(runtime_shared_lib_rpath)
 
-        # Ignore_artifacts() as the runtime directory is not required at _link_ time
-        runtime_rpath = runtime_rpath.ignore_artifacts()
         return CxxSanitizerRuntimeArguments(
             extra_link_args = [
                 runtime_rpath,
@@ -214,7 +236,7 @@ def executable_shared_lib_arguments(
         ctx: AnalysisContext,
         cxx_toolchain: CxxToolchainInfo,
         output: Artifact,
-        shared_libs: dict[str, LinkedObject]) -> ExecutableSharedLibArguments:
+        shared_libs: list[SharedLibrary]) -> ExecutableSharedLibArguments:
     extra_link_args = []
     runtime_files = []
     shared_libs_symlink_tree = None
@@ -223,30 +245,36 @@ def executable_shared_lib_arguments(
     # of a build. Do not add to runtime_files.
     external_debug_info = project_artifacts(
         actions = ctx.actions,
-        tsets = [shlib.external_debug_info for shlib in shared_libs.values()],
+        tsets = [shlib.lib.external_debug_info for shlib in shared_libs],
     )
 
     linker_type = cxx_toolchain.linker_info.type
 
     if len(shared_libs) > 0:
-        if linker_type == "windows":
+        if linker_type == LinkerType("windows"):
             shared_libs_symlink_tree = [ctx.actions.symlink_file(
-                shlib.output.basename,
-                shlib.output,
-            ) for _, shlib in shared_libs.items()]
+                shlib.lib.output.basename,
+                shlib.lib.output,
+            ) for shlib in shared_libs]
             runtime_files.extend(shared_libs_symlink_tree)
             # Windows doesn't support rpath.
 
         else:
-            shared_libs_symlink_tree = ctx.actions.symlinked_dir(
-                shared_libs_symlink_tree_name(output),
-                {name: shlib.output for name, shlib in shared_libs.items()},
+            shared_libs_symlink_tree = create_shlib_symlink_tree(
+                actions = ctx.actions,
+                out = shared_libs_symlink_tree_name(output),
+                shared_libs = shared_libs,
             )
             runtime_files.append(shared_libs_symlink_tree)
             rpath_reference = get_rpath_origin(linker_type)
 
-            # We ignore_artifacts() here since we don't want the symlink tree to actually be there for the link.
-            rpath_arg = cmd_args(shared_libs_symlink_tree, format = "-Wl,-rpath,{}/{{}}".format(rpath_reference)).relative_to(output, parent = 1).ignore_artifacts()
+            # We ignore_artifacts here since we don't want the symlink tree to actually be there for the link.
+            rpath_arg = cmd_args(
+                shared_libs_symlink_tree,
+                format = "-Wl,-rpath,{}/{{}}".format(rpath_reference),
+                ignore_artifacts = True,
+                relative_to = (output, 1),
+            )
             extra_link_args.append(rpath_arg)
 
     return ExecutableSharedLibArguments(

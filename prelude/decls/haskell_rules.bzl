@@ -10,7 +10,8 @@
 # the generated docs, and so those should be verified to be accurate and
 # well-formatted (and then delete this TODO)
 
-load(":common.bzl", "LinkableDepType", "Linkage", "buck", "prelude_rule")
+load("@prelude//linking:types.bzl", "Linkage")
+load(":common.bzl", "LinkableDepType", "buck", "prelude_rule")
 load(":haskell_common.bzl", "haskell_common")
 load(":native_common.bzl", "native_common")
 
@@ -166,7 +167,7 @@ haskell_library = prelude_rule(
         haskell_common.deps_arg() |
         buck.platform_deps_arg() |
         native_common.link_whole(link_whole_type = attrs.bool(default = False)) |
-        native_common.preferred_linkage(preferred_linkage_type = attrs.enum(Linkage)) |
+        native_common.preferred_linkage(preferred_linkage_type = attrs.enum(Linkage.values())) |
         {
             "contacts": attrs.list(attrs.string(), default = []),
             "default_host_platform": attrs.option(attrs.configuration_label(), default = None),
@@ -231,6 +232,7 @@ haskell_prebuilt_library = prelude_rule(
         } |
         haskell_common.exported_linker_flags_arg() |
         {
+            "exported_post_linker_flags": attrs.list(attrs.arg(anon_target_compatible = True), default = []),
             "contacts": attrs.list(attrs.string(), default = []),
             "cxx_header_dirs": attrs.list(attrs.source(), default = []),
             "db": attrs.source(),

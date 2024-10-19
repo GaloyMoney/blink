@@ -7,8 +7,8 @@
 
 load("@prelude//android:android_toolchain.bzl", "AndroidPlatformInfo", "AndroidToolchainInfo")
 load("@prelude//csharp:toolchain.bzl", "CSharpToolchainInfo")
-load("@prelude//cxx:cxx_toolchain_types.bzl", "CxxPlatformInfo", "CxxToolchainInfo")
 load("@prelude//go:toolchain.bzl", "GoToolchainInfo")
+load("@prelude//go_bootstrap:go_bootstrap.bzl", "GoBootstrapToolchainInfo")
 load("@prelude//haskell:toolchain.bzl", "HaskellPlatformInfo", "HaskellToolchainInfo")
 load("@prelude//java:dex_toolchain.bzl", "DexToolchainInfo")
 load(
@@ -28,14 +28,7 @@ load("@prelude//rust:rust_toolchain.bzl", "RustToolchainInfo")
 load("@prelude//tests:remote_test_execution_toolchain.bzl", "RemoteTestExecutionToolchainInfo")
 load("@prelude//zip_file:zip_file_toolchain.bzl", "ZipFileToolchainInfo")
 
-def _toolchain(lang: str, providers: list[typing.Any], default_only = True) -> Attr:
-    toolchain = attrs.toolchain_dep(default = "toolchains//:" + lang, providers = providers)
-    if default_only:
-        return attrs.default_only(toolchain)
-    else:
-        return toolchain
-
-def _toolchain_with_override(lang: str, providers: list[typing.Any]) -> Attr:
+def _toolchain(lang: str, providers: list[typing.Any]) -> Attr:
     return attrs.toolchain_dep(default = "toolchains//:" + lang, providers = providers)
 
 def _android_toolchain():
@@ -45,19 +38,23 @@ def _csharp_toolchain():
     return _toolchain("csharp", [CSharpToolchainInfo])
 
 def _cxx_toolchain():
-    return _toolchain("cxx", [CxxToolchainInfo, CxxPlatformInfo])
+    # `CxxToolchainInfo, CxxPlatformInfo`, but python doesn't require it
+    return _toolchain("cxx", [])
 
 def _dex_toolchain():
-    return _toolchain_with_override("dex", [DexToolchainInfo])
+    return _toolchain("dex", [DexToolchainInfo])
 
 def _go_toolchain():
     return _toolchain("go", [GoToolchainInfo])
+
+def _go_bootstrap_toolchain():
+    return _toolchain("go_bootstrap", [GoBootstrapToolchainInfo])
 
 def _haskell_toolchain():
     return _toolchain("haskell", [HaskellToolchainInfo, HaskellPlatformInfo])
 
 def _java_toolchain():
-    return _toolchain_with_override("java", [JavaToolchainInfo, JavaPlatformInfo])
+    return _toolchain("java", [JavaToolchainInfo, JavaPlatformInfo])
 
 def _java_for_android_toolchain():
     return _toolchain("java_for_android", [JavaToolchainInfo, JavaPlatformInfo])
@@ -69,11 +66,11 @@ def _java_test_toolchain():
     return _toolchain("java_test", [JavaTestToolchainInfo])
 
 def _kotlin_toolchain():
-    return _toolchain_with_override("kotlin", [KotlinToolchainInfo])
+    return _toolchain("kotlin", [KotlinToolchainInfo])
 
 def _prebuilt_jar_toolchain():
     # Override is allowed for bootstrapping prebuilt jar toolchains
-    return _toolchain_with_override("prebuilt_jar", [PrebuiltJarToolchainInfo])
+    return _toolchain("prebuilt_jar", [PrebuiltJarToolchainInfo])
 
 def _python_toolchain():
     return _toolchain("python", [PythonToolchainInfo, PythonPlatformInfo])
@@ -82,7 +79,7 @@ def _python_bootstrap_toolchain():
     return _toolchain("python_bootstrap", [PythonBootstrapToolchainInfo])
 
 def _rust_toolchain():
-    return _toolchain("rust", [RustToolchainInfo], default_only = False)
+    return _toolchain("rust", [RustToolchainInfo])
 
 def _zip_file_toolchain():
     return _toolchain("zip_file", [ZipFileToolchainInfo])
@@ -96,6 +93,7 @@ toolchains_common = struct(
     cxx = _cxx_toolchain,
     dex = _dex_toolchain,
     go = _go_toolchain,
+    go_bootstrap = _go_bootstrap_toolchain,
     haskell = _haskell_toolchain,
     java = _java_toolchain,
     java_for_android = _java_for_android_toolchain,

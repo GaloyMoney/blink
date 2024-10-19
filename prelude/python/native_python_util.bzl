@@ -178,8 +178,8 @@ def _write_syms_file(
     nm = cxx_toolchain.binary_utilities_info.nm
     symbols_file = ctx.actions.declare_output(name)
 
-    objects_argsfile = ctx.actions.write(name + ".objects.argsfile", objects)
-    objects_args = cmd_args(objects_argsfile).hidden(objects)
+    objects_argsfile = ctx.actions.write(name + ".py_objects_argsfile", objects)
+    objects_args = cmd_args(objects_argsfile, hidden = objects)
 
     script_env = {
         "NM": nm,

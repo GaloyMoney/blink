@@ -50,18 +50,9 @@ def _generate_script(
     # construct links directly to things (which buck1 actually also did for its
     # BUCK_DEFAULT_RUNTIME_RESOURCES).
     if not is_windows:
-        script_content = cmd_args([
+        script_content = cmd_args(
             "#!/usr/bin/env bash",
             "set -e",
-            # This is awkward for two reasons: args doesn't support format strings
-            # and will insert a newline between items and so __RESOURCES_ROOT
-            # is put in a bash array, and we want it to be relative to script's
-            # dir, not the script itself, but there's no way to do that in
-            # starlark.  To deal with this, we strip the first 3 characters
-            # (`../`).
-            "__RESOURCES_ROOT=(",
-            resources_dir,
-            ")",
             # If we access this sh_binary via a unhashed symlink we need to
             # update the relative source.
             '__SRC="${BASH_SOURCE[0]}"',
@@ -72,7 +63,7 @@ def _generate_script(
             # identify what the right format is. For now, this variable lets
             # callees disambiguate (see D28960177 for more context).
             "export BUCK_SH_BINARY_VERSION_UNSTABLE=2",
-            "export BUCK_PROJECT_ROOT=$__SCRIPT_DIR/\"${__RESOURCES_ROOT:3}\"",
+            cmd_args("export BUCK_PROJECT_ROOT=\"$__SCRIPT_DIR/", resources_dir, "\"", delimiter = ""),
             # In buck1, the paths for resources that are outputs of rules have
             # different paths in BUCK_PROJECT_ROOT and
             # BUCK_DEFAULT_RUNTIME_RESOURCES, but we use the same paths. buck1's
@@ -82,13 +73,12 @@ def _generate_script(
             # sources, the paths are the same for both.
             "export BUCK_DEFAULT_RUNTIME_RESOURCES=\"$BUCK_PROJECT_ROOT\"",
             "exec \"$BUCK_PROJECT_ROOT/{}\" \"$@\"".format(main_link),
-        ]).relative_to(script)
+            relative_to = (script, 1),
+        )
     else:
-        script_content = cmd_args([
+        script_content = cmd_args(
             "@echo off",
             "setlocal EnableDelayedExpansion",
-            "set __RESOURCES_ROOT=^",
-            resources_dir,
             # Fully qualified script path.
             "set __SRC=%~f0",
             # This is essentially a realpath.
@@ -96,11 +86,11 @@ def _generate_script(
             # Get parent folder.
             'for %%a in ("%__SRC%") do set "__SCRIPT_DIR=%%~dpa"',
             "set BUCK_SH_BINARY_VERSION_UNSTABLE=2",
-            # ':~3' strips the first 3 chars of __RESOURCES_ROOT.
-            "set BUCK_PROJECT_ROOT=%__SCRIPT_DIR%\\!__RESOURCES_ROOT:~3!",
+            cmd_args("set BUCK_PROJECT_ROOT=%__SCRIPT_DIR%\\", resources_dir, delimiter = ""),
             "set BUCK_DEFAULT_RUNTIME_RESOURCES=%BUCK_PROJECT_ROOT%",
             "%BUCK_PROJECT_ROOT%\\{} %*".format(main_link),
-        ]).relative_to(script)
+            relative_to = (script, 1),
+        )
     actions.write(
         script,
         script_content,
@@ -128,11 +118,13 @@ def sh_binary_impl(ctx):
         is_windows,
     )
 
+    script = script.with_associated_artifacts([resources_dir])
+
     return [
         DefaultInfo(default_output = script, other_outputs = [resources_dir]),
         RunInfo(
             # TODO(cjhopman): Figure out if we need to specify the link targets
             # as inputs. We shouldn't need to, but need to verify it.
-            args = cmd_args(script).hidden(resources_dir),
+            args = cmd_args(script, hidden = resources_dir),
         ),
     ]

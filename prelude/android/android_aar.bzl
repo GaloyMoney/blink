@@ -14,8 +14,9 @@ load("@prelude//android:android_toolchain.bzl", "AndroidToolchainInfo")
 load("@prelude//android:configuration.bzl", "get_deps_by_platform")
 load("@prelude//android:cpu_filters.bzl", "CPU_FILTER_FOR_DEFAULT_PLATFORM", "CPU_FILTER_FOR_PRIMARY_PLATFORM")
 load("@prelude//android:util.bzl", "create_enhancement_context")
-load("@prelude//java:java_providers.bzl", "get_all_java_packaging_deps", "get_all_java_packaging_deps_from_packaging_infos")
+load("@prelude//java:java_providers.bzl", "create_java_packaging_dep", "get_all_java_packaging_deps", "get_all_java_packaging_deps_from_packaging_infos")
 load("@prelude//java:java_toolchain.bzl", "JavaToolchainInfo")
+load("@prelude//utils:argfile.bzl", "argfile")
 load("@prelude//utils:set.bzl", "set")
 
 def android_aar_impl(ctx: AnalysisContext) -> list[Provider]:
@@ -37,16 +38,23 @@ def android_aar_impl(ctx: AnalysisContext) -> list[Provider]:
             get_build_config_java_libraries(ctx, build_config_infos, package_type = "release", exopackage_modes = []),
         ))
 
+    enhancement_ctx = create_enhancement_context(ctx)
+    android_binary_native_library_info = get_android_binary_native_library_info(enhancement_ctx, android_packageable_info, deps_by_platform)
+    java_packaging_deps.extend([create_java_packaging_dep(
+        ctx,
+        lib.library_output.full_library,
+    ) for lib in android_binary_native_library_info.generated_java_code])
+
     jars = [dep.jar for dep in java_packaging_deps if dep.jar]
     classes_jar = ctx.actions.declare_output("classes.jar")
     java_toolchain = ctx.attrs._java_toolchain[JavaToolchainInfo]
     classes_jar_cmd = cmd_args([
         java_toolchain.jar_builder,
         "--entries-to-jar",
-        ctx.actions.write("classes_jar_entries.txt", jars),
+        argfile(actions = ctx.actions, name = "classes_jar_entries.txt", args = jars),
         "--output",
         classes_jar.as_output(),
-    ]).hidden(jars)
+    ])
 
     if ctx.attrs.remove_classes:
         remove_classes_file = ctx.actions.write("remove_classes.txt", ctx.attrs.remove_classes)
@@ -59,6 +67,31 @@ def android_aar_impl(ctx: AnalysisContext) -> list[Provider]:
 
     ctx.actions.run(classes_jar_cmd, category = "create_classes_jar")
 
+    sub_targets = {}
+    dependency_sources_jars = [dep.sources_jar for dep in java_packaging_deps if dep.sources_jar]
+    if dependency_sources_jars:
+        combined_sources_jar = ctx.actions.declare_output("sources.jar")
+        java_toolchain = ctx.attrs._java_toolchain[JavaToolchainInfo]
+        combined_sources_jar_cmd = cmd_args([
+            java_toolchain.jar_builder,
+            "--entries-to-jar",
+            argfile(actions = ctx.actions, name = "combined_sources_jar_entries.txt", args = dependency_sources_jars),
+            "--output",
+            combined_sources_jar.as_output(),
+        ])
+
+        if ctx.attrs.remove_classes:
+            remove_classes_file = ctx.actions.write("sources_remove_classes.txt", ctx.attrs.remove_classes)
+            combined_sources_jar_cmd.add([
+                "--blocklist-patterns",
+                remove_classes_file,
+                "--blocklist-patterns-matcher",
+                "remove_classes_patterns_matcher",
+            ])
+
+        ctx.actions.run(combined_sources_jar_cmd, category = "create_sources_jar")
+        sub_targets["sources.jar"] = [DefaultInfo(default_output = combined_sources_jar)]
+
     entries = [android_manifest, classes_jar]
 
     resource_infos = list(android_packageable_info.resource_infos.traverse()) if android_packageable_info.resource_infos else []
@@ -66,15 +99,15 @@ def android_aar_impl(ctx: AnalysisContext) -> list[Provider]:
     android_toolchain = ctx.attrs._android_toolchain[AndroidToolchainInfo]
     if resource_infos:
         res_dirs = [resource_info.res for resource_info in resource_infos if resource_info.res]
-        if res_dirs:
+        if ctx.attrs.package_resources and res_dirs:
             merged_resource_sources_dir = ctx.actions.declare_output("merged_resource_sources_dir/res", dir = True)
             merge_resource_sources_cmd = cmd_args([
                 android_toolchain.merge_android_resource_sources[RunInfo],
                 "--resource-paths",
-                ctx.actions.write("resource_paths.txt", res_dirs),
+                argfile(actions = ctx.actions, name = "resource_paths.txt", args = res_dirs),
                 "--output",
                 merged_resource_sources_dir.as_output(),
-            ]).hidden(res_dirs)
+            ])
 
             ctx.actions.run(merge_resource_sources_cmd, category = "merge_android_resource_sources")
 
@@ -88,28 +121,31 @@ def android_aar_impl(ctx: AnalysisContext) -> list[Provider]:
     if cxx_resources:
         entries.append(cxx_resources)
 
-    enhancement_ctx = create_enhancement_context(ctx)
-    android_binary_native_library_info = get_android_binary_native_library_info(enhancement_ctx, android_packageable_info, deps_by_platform)
-    native_libs_file = ctx.actions.write("native_libs_entries.txt", android_binary_native_library_info.native_libs_for_primary_apk)
-    native_libs_assets_file = ctx.actions.write("native_libs_assets_entries.txt", android_binary_native_library_info.root_module_native_lib_assets)
+    native_libs_file = argfile(actions = ctx.actions, name = "native_libs_entries.txt", args = android_binary_native_library_info.native_libs_for_primary_apk)
+    native_libs_assets_file = argfile(actions = ctx.actions, name = "native_libs_assets_entries.txt", args = android_binary_native_library_info.root_module_native_lib_assets)
 
     entries_file = ctx.actions.write("entries.txt", entries)
 
     aar = ctx.actions.declare_output("{}.aar".format(ctx.label.name))
-    create_aar_cmd = cmd_args([
-        android_toolchain.aar_builder,
-        "--output_path",
-        aar.as_output(),
-        "--entries_file",
-        entries_file,
-        "--on_duplicate_entry",
-        "fail",
-        "--native_libs_file",
-        native_libs_file,
-        "--native_libs_assets_file",
-        native_libs_assets_file,
-    ]).hidden(entries, android_binary_native_library_info.native_libs_for_primary_apk, android_binary_native_library_info.root_module_native_lib_assets)
+    create_aar_cmd = cmd_args(
+        [
+            android_toolchain.aar_builder,
+            "--output_path",
+            aar.as_output(),
+            "--entries_file",
+            entries_file,
+            "--on_duplicate_entry",
+            "fail",
+            "--native_libs_file",
+            native_libs_file,
+            "--native_libs_assets_file",
+            native_libs_assets_file,
+        ],
+        hidden = [
+            entries,
+        ],
+    )
 
     ctx.actions.run(create_aar_cmd, category = "create_aar")
 
-    return [DefaultInfo(default_outputs = [aar], sub_targets = enhancement_ctx.get_sub_targets())]
+    return [DefaultInfo(default_outputs = [aar], sub_targets = enhancement_ctx.get_sub_targets() | sub_targets)]
