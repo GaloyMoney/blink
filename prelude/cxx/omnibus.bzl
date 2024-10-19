@@ -6,7 +6,11 @@
 # of this source tree.
 
 load("@prelude//:local_only.bzl", "get_resolved_cxx_binary_link_execution_preference")
-load("@prelude//cxx:cxx_toolchain_types.bzl", "PicBehavior")
+load(
+    "@prelude//cxx:cxx_toolchain_types.bzl",
+    "LinkerType",
+    "PicBehavior",
+)
 load(
     "@prelude//cxx:link.bzl",
     "CxxLinkResult",  # @unused Used as a type
@@ -20,7 +24,6 @@ load(
     "LinkInfo",
     "LinkInfos",
     "LinkStrategy",
-    "Linkage",
     "LinkedObject",
     "SharedLibLinkable",
     "get_lib_output_style",
@@ -38,10 +41,16 @@ load(
     "linkable_deps",
     "linkable_graph",
 )
+load(
+    "@prelude//linking:shared_libraries.bzl",
+    "SharedLibrary",  # @unused Used as a type
+    "create_shlib",
+)
+load("@prelude//linking:types.bzl", "Linkage")
 load("@prelude//utils:expect.bzl", "expect")
 load(
     "@prelude//utils:graph_utils.bzl",
-    "breadth_first_traversal_by",
+    "depth_first_traversal_by",
     "post_order_traversal",
 )
 load("@prelude//utils:utils.bzl", "flatten", "value_or")
@@ -118,7 +127,7 @@ OmnibusRootProduct = record(
 # The result of the omnibus link.
 OmnibusSharedLibraries = record(
     omnibus = field([CxxLinkResult, None], None),
-    libraries = field(dict[str, LinkedObject], {}),
+    libraries = field(list[SharedLibrary], []),
     roots = field(dict[Label, OmnibusRootProduct], {}),
     exclusion_roots = field(list[Label]),
     excluded = field(list[Label]),
@@ -139,7 +148,8 @@ def get_roots(deps: list[Dependency]) -> dict[Label, LinkableRootInfo]:
     roots = {}
     for dep in deps:
         if LinkableRootInfo in dep:
-            roots[dep.label] = dep[LinkableRootInfo]
+            root = dep[LinkableRootInfo]
+            roots[root.label] = root
     return roots
 
 def get_excluded(deps: list[Dependency] = []) -> dict[Label, None]:
@@ -151,11 +161,13 @@ def get_excluded(deps: list[Dependency] = []) -> dict[Label, None]:
     return excluded_nodes
 
 def create_linkable_root(
+        label: Label,
         link_infos: LinkInfos,
         name: [str, None] = None,
         deps: list[LinkableGraph | Dependency] = []) -> LinkableRootInfo:
     # Only include dependencies that are linkable.
     return LinkableRootInfo(
+        label = label,
         name = name,
         link_infos = link_infos,
         deps = linkable_deps(deps),
@@ -192,7 +204,7 @@ def _link_deps(
     def find_deps(node: Label):
         return get_deps_for_link(link_infos[node], LinkStrategy("shared"), pic_behavior)
 
-    return breadth_first_traversal_by(link_infos, deps, find_deps)
+    return depth_first_traversal_by(link_infos, deps, find_deps)
 
 def _create_root(
         ctx: AnalysisContext,
@@ -288,10 +300,7 @@ def _create_root(
             links = [LinkArgs(flags = extra_ldflags), LinkArgs(infos = inputs)],
             category_suffix = "omnibus_root",
             identifier = root.name or output,
-            # We prefer local execution because there are lot of cxx_link_omnibus_root
-            # running simultaneously, so while their overall load is reasonable,
-            # their peak execution load is very high.
-            link_execution_preference = LinkExecutionPreference("local"),
+            link_execution_preference = LinkExecutionPreference("any"),
             allow_cache_upload = allow_cache_upload,
         ),
     )
@@ -505,16 +514,16 @@ def _create_omnibus(
 
     # Add global symbols version script.
     # FIXME(agallagher): Support global symbols for darwin.
-    if linker_info.type != "darwin":
+    if linker_info.type != LinkerType("darwin"):
         global_sym_vers = _create_global_symbols_version_script(
             ctx,
             # Extract symbols from roots...
             root_products.values(),
             # ... and the shared libs from excluded nodes.
             [
-                shared_lib.output
+                shared_lib.lib.output
                 for label in spec.excluded
-                for shared_lib in spec.link_infos[label].shared_libs.values()
+                for shared_lib in spec.link_infos[label].shared_libs.libraries
             ],
             # Extract explicit global symbol names from flags in all body link args.
             global_symbols_link_args,
@@ -685,7 +694,7 @@ def create_omnibus_libraries(
     # Create dummy omnibus
     dummy_omnibus = create_dummy_omnibus(ctx, extra_ldflags)
 
-    libraries = {}
+    libraries = []
     root_products = {}
 
     # Link all root nodes against the dummy libomnibus lib.
@@ -704,7 +713,13 @@ def create_omnibus_libraries(
             allow_cache_upload = True,
         )
         if root.name != None:
-            libraries[root.name] = product.shared_library
+            libraries.append(
+                create_shlib(
+                    soname = root.name,
+                    lib = product.shared_library,
+                    label = label,
+                ),
+            )
         root_products[label] = product
 
     # If we have body nodes, then link them into the monolithic libomnibus.so.
@@ -719,12 +734,17 @@ def create_omnibus_libraries(
             prefer_stripped_objects,
             allow_cache_upload = True,
         )
-        libraries[_omnibus_soname(ctx)] = omnibus.linked_object
+        libraries.append(
+            create_shlib(
+                soname = _omnibus_soname(ctx),
+                lib = omnibus.linked_object,
+                label = ctx.label,
+            ),
+        )
 
     # For all excluded nodes, just add their regular shared libs.
     for label in spec.excluded:
-        for name, lib in spec.link_infos[label].shared_libs.items():
-            libraries[name] = lib
+        libraries.extend(spec.link_infos[label].shared_libs.libraries)
 
     return OmnibusSharedLibraries(
         omnibus = omnibus,

@@ -15,6 +15,7 @@ load(
     "@prelude//haskell:util.bzl",
     "attr_deps",
 )
+load("@prelude//utils:argfile.bzl", "at_argfile")
 
 HaskellHaddockInfo = provider(
     fields = {
@@ -70,14 +71,13 @@ def haskell_haddock_lib(ctx: AnalysisContext, pkgname: str) -> Provider:
 
     if args.args_for_file:
         if haskell_toolchain.use_argsfile:
-            argsfile = ctx.actions.declare_output(
-                "haskell_haddock.argsfile",
-            )
             ghcargs = cmd_args(args.args_for_file, format = "--optghc={}")
-            fileargs = cmd_args(ghcargs).add(args.srcs)
-            ctx.actions.write(argsfile.as_output(), fileargs, allow_args = True)
-            cmd.add(cmd_args(argsfile, format = "@{}"))
-            cmd.hidden(fileargs)
+            cmd.add(at_argfile(
+                actions = ctx.actions,
+                name = "args.haskell_haddock_argsfile",
+                args = [ghcargs, args.srcs],
+                allow_args = True,
+            ))
         else:
             cmd.add(args.args_for_file)
 
@@ -101,7 +101,7 @@ def haskell_haddock_lib(ctx: AnalysisContext, pkgname: str) -> Provider:
     )
 
     ctx.actions.run(
-        cmd_args(script).hidden(cmd),
+        cmd_args(script, hidden = cmd),
         category = "haskell_haddock",
         no_outputs_cleanup = True,
     )
@@ -152,7 +152,7 @@ def haskell_haddock_impl(ctx: AnalysisContext) -> list[Provider]:
     )
 
     ctx.actions.run(
-        cmd_args(script).hidden(script_args),
+        cmd_args(script, hidden = script_args),
         category = "haskell_haddock",
         no_outputs_cleanup = True,
     )

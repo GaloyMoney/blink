@@ -14,11 +14,18 @@ load("@prelude//java:java_library.bzl", "build_java_library")
 load("@prelude//java:java_providers.bzl", "JavaLibraryInfo", "JavaPackagingInfo", "get_all_java_packaging_deps_tset")
 load("@prelude//java:java_toolchain.bzl", "JavaTestToolchainInfo", "JavaToolchainInfo")
 load("@prelude//java/utils:java_more_utils.bzl", "get_path_separator_for_exec_os")
-load("@prelude//linking:shared_libraries.bzl", "SharedLibraryInfo", "merge_shared_libraries", "traverse_shared_library_info")
+load(
+    "@prelude//linking:shared_libraries.bzl",
+    "SharedLibraryInfo",
+    "create_shlib_symlink_tree",
+    "merge_shared_libraries",
+    "traverse_shared_library_info",
+)
 load(
     "@prelude//tests:re_utils.bzl",
     "get_re_executors_from_props",
 )
+load("@prelude//utils:argfile.bzl", "at_argfile")
 load("@prelude//utils:expect.bzl", "expect")
 load("@prelude//test/inject_test_run_info.bzl", "inject_test_run_info")
 
@@ -46,11 +53,12 @@ def build_junit_test(
         extra_cmds: list = [],
         extra_classpath_entries: list[Artifact] = []) -> ExternalRunnerTestInfo:
     java_test_toolchain = ctx.attrs._java_test_toolchain[JavaTestToolchainInfo]
+    java_toolchain = ctx.attrs._java_toolchain[JavaToolchainInfo]
 
-    java = ctx.attrs.java[RunInfo] if ctx.attrs.java else ctx.attrs._java_toolchain[JavaToolchainInfo].java_for_tests
+    java = ctx.attrs.java[RunInfo] if ctx.attrs.java else java_toolchain.java_for_tests
 
     cmd = [java] + extra_cmds + ctx.attrs.vm_args + ["-XX:-MaxFDLimit"]
-    if len(java_test_toolchain.jvm_args) > 0:
+    if java_test_toolchain.jvm_args:
         cmd.extend(java_test_toolchain.jvm_args)
 
     classpath = []
@@ -59,6 +67,8 @@ def build_junit_test(
         cmd.append("-Djava.system.class.loader=" + java_test_toolchain.java_custom_class_loader_class)
         cmd.extend(java_test_toolchain.java_custom_class_loader_vm_args)
         classpath.append(java_test_toolchain.java_custom_class_loader_library_jar)
+
+    cmd.append(cmd_args(ctx.attrs.java_agents, format = "-javaagent:{}"))
 
     classpath.extend(
         [java_test_toolchain.test_runner_library_jar] +
@@ -78,14 +88,12 @@ def build_junit_test(
     re_executor, executor_overrides = get_re_executors_from_props(ctx)
 
     # We implicitly make the target run from the project root if remote
-    # excution options were specified.
+    # execution options were specified.
     run_from_cell_root = "buck2_run_from_cell_root" in labels
 
     uses_java8 = "run_with_java8" in labels
 
-    classpath_args = cmd_args()
-    if run_from_cell_root:
-        classpath_args.relative_to(ctx.label.cell_root)
+    relative_to = {"relative_to": ctx.label.cell_root} if run_from_cell_root else {}
 
     if uses_java8:
         # Java 8 does not support using argfiles, and these tests can have huge classpaths so we need another
@@ -94,16 +102,25 @@ def build_junit_test(
         # to the "FileClassPathRunner" as a system variable. The "FileClassPathRunner" then loads all the jars
         # from that file onto the classpath, and delegates running the test to the junit test runner.
         cmd.extend(["-classpath", cmd_args(java_test_toolchain.test_runner_library_jar)])
-        classpath_args.add(cmd_args(classpath))
+        classpath_args = cmd_args(
+            cmd_args(classpath),
+            **relative_to
+        )
         classpath_args_file = ctx.actions.write("classpath_args_file", classpath_args)
-        cmd.append(cmd_args(classpath_args_file, format = "-Dbuck.classpath_file={}").hidden(classpath_args))
+        cmd.append(cmd_args(
+            classpath_args_file,
+            format = "-Dbuck.classpath_file={}",
+            hidden = classpath_args,
+        ))
     else:
         # Java 9+ supports argfiles, so just write the classpath to an argsfile. "FileClassPathRunner" will delegate
         # immediately to the junit test runner.
-        classpath_args.add("-classpath")
-        classpath_args.add(cmd_args(classpath, delimiter = get_path_separator_for_exec_os(ctx)))
-        classpath_args_file = ctx.actions.write("classpath_args_file", classpath_args)
-        cmd.append(cmd_args(classpath_args_file, format = "@{}").hidden(classpath_args))
+        classpath_args = cmd_args(
+            "-classpath",
+            cmd_args(classpath, delimiter = get_path_separator_for_exec_os(ctx)),
+            **relative_to
+        )
+        cmd.append(at_argfile(actions = ctx.actions, name = "classpath_args_file", args = classpath_args))
 
     if (ctx.attrs.test_type == "junit5"):
         cmd.extend(java_test_toolchain.junit5_test_runner_main_class_args)
@@ -113,7 +130,7 @@ def build_junit_test(
         cmd.extend(java_test_toolchain.junit_test_runner_main_class_args)
 
     if ctx.attrs.test_case_timeout_ms:
-        cmd.extend(["--default_test_timeout", str(ctx.attrs.test_case_timeout_ms)])
+        cmd.extend(["--default-test-timeout", str(ctx.attrs.test_case_timeout_ms)])
 
     if ctx.attrs.test_class_names_file:
         class_names = ctx.attrs.test_class_names_file
@@ -128,7 +145,7 @@ def build_junit_test(
             ctx.actions.write("sources.txt", ctx.attrs.srcs),
             "--output",
             class_names.as_output(),
-        ]).hidden(ctx.attrs.srcs)
+        ], hidden = ctx.attrs.srcs)
         ctx.actions.run(list_class_names_cmd, category = "list_class_names")
 
     cmd.extend(["--test-class-names-file", class_names])
@@ -145,12 +162,12 @@ def build_junit_test(
         transitive_class_to_src_map = merge_class_to_source_map_from_jar(
             actions = ctx.actions,
             name = ctx.label.name + ".transitive_class_to_src.json",
-            java_test_toolchain = java_test_toolchain,
+            java_toolchain = java_toolchain,
             relative_to = ctx.label.cell_root if run_from_cell_root else None,
             deps = [tests_class_to_source_info],
         )
         if run_from_cell_root:
-            transitive_class_to_src_map = cmd_args(transitive_class_to_src_map).relative_to(ctx.label.cell_root)
+            transitive_class_to_src_map = cmd_args(transitive_class_to_src_map, relative_to = ctx.label.cell_root)
         env["JACOCO_CLASSNAME_SOURCE_MAP"] = transitive_class_to_src_map
 
     test_info = ExternalRunnerTestInfo(
@@ -180,8 +197,10 @@ def _get_native_libs_env(ctx: AnalysisContext) -> dict:
         deps = shared_library_infos,
     )
 
-    native_linkables = traverse_shared_library_info(shared_library_info)
-    cxx_library_symlink_tree_dict = {so_name: shared_lib.lib.output for so_name, shared_lib in native_linkables.items()}
-    cxx_library_symlink_tree = ctx.actions.symlinked_dir("cxx_library_symlink_tree", cxx_library_symlink_tree_dict)
+    cxx_library_symlink_tree = create_shlib_symlink_tree(
+        actions = ctx.actions,
+        out = "cxx_library_symlink_tree",
+        shared_libs = traverse_shared_library_info(shared_library_info),
+    )
 
     return {"BUCK_LD_SYMLINK_TREE": cxx_library_symlink_tree}

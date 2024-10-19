@@ -129,15 +129,13 @@ def sdl_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
         rover_toolchain.output_sdl[DefaultInfo].default_outputs,
         "--generator-bin",
         ctx.attrs.generator[RunInfo],
+        hidden = ctx.attrs.deps_srcs,
     )
     for arg in ctx.attrs.args:
         cmd.add("--arg", arg)
     cmd.add(
         out.as_output()
     )
-
-    for deps_src in ctx.attrs.deps_srcs:
-        cmd.hidden(deps_src)
 
     ctx.actions.run(cmd, category = "sdl")
     return [DefaultInfo(default_output = out)]
