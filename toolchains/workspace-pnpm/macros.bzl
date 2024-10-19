@@ -198,7 +198,7 @@ def build_node_modules_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
         identifier += "--prod "
 
     cmd.add(out.as_output())
-    cmd.hidden([ctx.attrs.workspace])
+
 
     ctx.actions.run(cmd, category = "pnpm", identifier = identifier + ctx.label.package)
 

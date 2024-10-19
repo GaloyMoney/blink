@@ -33,7 +33,7 @@ def build_node_modules_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
     cmd.add(package_dir)
 
     cmd.add(out.as_output())
-    cmd.hidden([ctx.attrs.pnpm_lock, ctx.attrs.package_json])
+
 
     ctx.actions.run(cmd, category = "pnpm", identifier = "install")
 
