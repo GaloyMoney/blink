@@ -16,4 +16,12 @@ directories:
       - "2024-10-15"
     path: .
   path: third-party/macros
+- contents:
+  - git:
+      commitTitle: Refactor derive(Freeze)...
+      sha: c2fa90e0c6bfc074362893ca389bbf41af2bd9d6
+      tags:
+      - "2024-10-15"
+    path: .
+  path: third-party/rust/fixups/ring/include
 kind: LockConfig

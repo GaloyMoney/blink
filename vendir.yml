@@ -19,3 +19,12 @@ directories:
         includePaths:
           - shim/third-party/macros/*
         newRootPath: shim/third-party/macros
+  - path: third-party/rust/fixups/ring/include
+    contents:
+      - path: .
+        git:
+          url: https://github.com/facebook/buck2.git
+          ref: "2024-10-15"
+        includePaths:
+          - shim/third-party/rust/fixups/ring/include/**/*
+        newRootPath: shim/third-party/rust/fixups/ring/include
