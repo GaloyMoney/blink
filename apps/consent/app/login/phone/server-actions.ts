@@ -1,6 +1,8 @@
 "use server"
-import { cookies, headers } from "next/headers"
+import { createHash } from "crypto"
+
 import { redirect } from "next/navigation"
+import { cookies, headers } from "next/headers"
 import { isValidPhoneNumber } from "libphonenumber-js"
 
 import {
@@ -99,7 +101,7 @@ export const getCaptchaChallenge = async (
       login_challenge,
     })
     cookies().set(
-      encodeURIComponent(login_challenge),
+      createHash("md5").update(login_challenge).digest("hex"),
       JSON.stringify({
         loginType: LoginType.phone,
         value: phone,
@@ -179,7 +181,7 @@ export const sendPhoneCode = async (
   }
 
   cookies().set(
-    encodeURIComponent(login_challenge),
+    createHash("md5").update(login_challenge).digest("hex"),
     JSON.stringify({
       loginType: LoginType.phone,
       value: phone,

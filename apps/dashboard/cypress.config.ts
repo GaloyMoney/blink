@@ -1,7 +1,7 @@
 import { defineConfig } from "cypress"
 import dotenv from "dotenv"
 
-dotenv.config({ path: "../../dev/.envs/next-auth-session.env" })
+dotenv.config({ path: ".next-auth-session.env" })
 
 export default defineConfig({
   e2e: {

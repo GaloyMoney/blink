@@ -3,12 +3,10 @@ describe("Consent integration Test", () => {
     EMAIL: "test@galoy.io",
   }
 
-  before(() => {
-    cy.flushRedis()
-    cy.visit("/api/auth/signin")
-  })
-
   it("Consent integration", () => {
+    cy.flushRedis()
+    cy.visit("/")
+
     cy.contains("button", "Sign in with Blink")
       .should("exist")
       .should("be.visible")
@@ -70,7 +68,7 @@ describe("Consent integration Test", () => {
       cy.getCookie("next-auth.session-token").then((cookie) => {
         if (cookie && cookie.value) {
           cy.writeFile(
-            "../../dev/.envs/next-auth-session.env",
+            ".next-auth-session.env",
             `NEXT_AUTH_SESSION_TOKEN=${cookie.value}\n`,
             {
               flag: "w",

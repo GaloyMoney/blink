@@ -1,4 +1,6 @@
 "use server"
+import { createHash } from "crypto"
+
 import { redirect } from "next/navigation"
 import { cookies, headers } from "next/headers"
 
@@ -77,7 +79,7 @@ export async function submitForm(
   }
 
   cookies().set(
-    encodeURIComponent(login_challenge),
+    createHash("md5").update(login_challenge).digest("hex"),
     JSON.stringify({
       loginType: LoginType.email,
       loginId: emailCodeRequest,

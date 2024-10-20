@@ -1,5 +1,6 @@
-import { testData } from "../../support/test-config"
+import { createHash } from "crypto"
 
+import { testData } from "../../support/test-config"
 describe("Account ID Test", () => {
   let login_challenge: string | null
 
@@ -18,19 +19,27 @@ describe("Account ID Test", () => {
   it("Verification Test", () => {
     cy.log("login challenge : ", login_challenge)
 
-    cy.get("[data-testid=sign_in_with_phone_btn]").should("exist")
-    cy.get("[data-testid=sign_in_with_phone_btn]").should("be.visible")
-    cy.get("[data-testid=sign_in_with_phone_btn]").click()
+    cy.get("[data-testid=sign_in_with_email_btn]")
+      .should("exist")
+      .should("be.visible")
+      .click()
 
-    cy.get("[data-testid=phone_number_input]").should("exist")
-    cy.get("[data-testid=phone_number_input]").should("be.visible")
-    cy.get("[data-testid=phone_number_input]").should("not.be.disabled")
-    cy.get("[data-testid=phone_number_input]").type(testData.PHONE_NUMBER)
+    cy.get("[data-testid=sign_in_with_phone_btn]")
+      .should("exist")
+      .should("be.visible")
+      .click()
 
-    cy.get("[data-testid=phone_login_next_btn]").should("exist")
-    cy.get("[data-testid=phone_login_next_btn]").should("be.visible")
-    cy.get("[data-testid=phone_login_next_btn]").should("not.be.disabled")
-    cy.get("[data-testid=phone_login_next_btn]").click()
+    cy.get("[data-testid=phone_number_input]")
+      .should("exist")
+      .should("be.visible")
+      .should("not.be.disabled")
+      .type(testData.PHONE_NUMBER)
+
+    cy.get("[data-testid=phone_login_next_btn]")
+      .should("exist")
+      .should("be.visible")
+      .should("not.be.disabled")
+      .click()
 
     if (!login_challenge) {
       throw new Error("login_challenge does not found")
@@ -41,7 +50,8 @@ describe("Account ID Test", () => {
       value: testData.PHONE_NUMBER,
       remember: false,
     })
-    cy.setCookie(login_challenge, cookieValue, { secure: true })
+    const cookieName = createHash("md5").update(login_challenge).digest("hex")
+    cy.setCookie(cookieName, cookieValue, { secure: true })
     cy.visit(`/login/verification?login_challenge=${login_challenge}`)
 
     cy.get("[data-testid=verification_code_input]").should("exist")
