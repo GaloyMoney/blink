@@ -1,16 +1,14 @@
 import { defineConfig } from "cypress"
 import dotenv from "dotenv"
 
-dotenv.config({ path: "../../dev/.envs/next-auth-session.env" })
+dotenv.config({ path: ".next-auth-session.env" })
 
 export default defineConfig({
   e2e: {
     baseUrl: "http://localhost:3006",
   },
   defaultCommandTimeout: 30000,
-  env: {
-    NEXT_AUTH_SESSION_TOKEN: process.env.NEXT_AUTH_SESSION_TOKEN,
-  },
+  env: {},
   component: {
     devServer: {
       framework: "next",

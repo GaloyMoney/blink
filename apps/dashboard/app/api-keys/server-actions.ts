@@ -51,7 +51,6 @@ export const revokeApiKeyServerAction = async (id: string) => {
 }
 
 export const createApiKeyServerAction = async (
-  _prevState: ApiKeyResponse,
   form: FormData,
 ): Promise<ApiKeyResponse> => {
   let apiKeyExpiresInDays: number | null = null
@@ -113,8 +112,6 @@ export const createApiKeyServerAction = async (
       responsePayload: null,
     }
   }
-
-  revalidatePath("/api-keys")
 
   return {
     error: false,

@@ -2,24 +2,24 @@ import {
   testData,
   usdWalletExpectedTransactions,
   btcWalletExpectedTransactions,
-} from "../../support/test-data"
+} from "../support/test-data"
 
 describe("Batch payments test", () => {
   beforeEach(() => {
     cy.viewport(1920, 1080)
-    cy.setCookie("next-auth.session-token", testData.NEXT_AUTH_SESSION_TOKEN, {
-      secure: true,
-    })
-    cy.visit("/batch-payments")
+    cy.loginViaEmail(testData.EMAIL)
   })
 
   it("Batch Payments Test", () => {
+    cy.visit("/batch-payments")
+
     cy.get("[data-testid=csv-upload-input]").selectFile("cypress/fixtures/template.csv")
 
-    cy.get("[data-testid=confirm-batch-payments-btn]").should("exist")
-    cy.get("[data-testid=confirm-batch-payments-btn]").should("be.visible")
-    cy.get("[data-testid=confirm-batch-payments-btn]").should("not.be.disabled")
-    cy.get("[data-testid=confirm-batch-payments-btn]").click()
+    cy.get("[data-testid=confirm-batch-payments-btn]")
+      .should("exist")
+      .should("be.visible")
+      .should("not.be.disabled")
+      .click()
 
     cy.get("[data-testid=batch-payments-modal-message]").should(
       "have.text",

@@ -1,4 +1,6 @@
 "use server"
+import { createHash } from "crypto"
+
 import { cookies } from "next/headers"
 
 import VerificationForm from "./form"
@@ -18,7 +20,9 @@ interface VerificationProps {
 const Verification = async ({ searchParams }: { searchParams: VerificationProps }) => {
   const { login_challenge } = searchParams
   // login_challenge is automatically decoded so we must encode it again to match cookie name
-  const cookieStore = cookies().get(encodeURIComponent(login_challenge))
+  const cookieStore = cookies().get(
+    createHash("md5").update(login_challenge).digest("hex"),
+  )
 
   if (!cookieStore) {
     throw new Error("Cannot find cookies")
