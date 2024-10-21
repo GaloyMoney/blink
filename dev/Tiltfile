@@ -655,6 +655,7 @@ local_resource(
 
 local_resource(
     name="setup-voucher",
+    labels = ["test"],
     cmd="buck2 run //dev:setup-voucher-escrow",
     allow_parallel=False,
     auto_init=run_apps,
@@ -681,6 +682,9 @@ local_resource(
 )
 
 docker_groups = {
+    "apps": [
+        "voucher-pg",
+    ],
     "auth": [
         "api-keys-pg",
         "oathkeeper",
@@ -746,6 +750,8 @@ for service in docker_groups["bitcoin"]:
     dc_resource(service, labels = ["bitcoin"])
 for service in docker_groups["tracing"]:
     dc_resource(service, labels = ["tracing"])
+for service in docker_groups["apps"]:
+    dc_resource(service, labels = ["apps"])
 for service in docker_groups["core"]:
     dc_resource(service, labels = ["core"])
 for service in docker_groups["auth"]:

@@ -96,7 +96,7 @@ export const getCaptchaChallenge = async (
   const id = res.id
   const challenge = res.challengeCode
 
-  if (env.NODE_ENV === "development") {
+  if (env.CI || env.NODE_ENV === "development") {
     const params = new URLSearchParams({
       login_challenge,
     })
