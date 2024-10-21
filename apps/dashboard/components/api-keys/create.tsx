@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@mui/joy"
 import AddIcon from "@mui/icons-material/Add"
@@ -27,13 +27,11 @@ const ApiKeyCreate = ({ usdWalletId, btcWalletId }: ApiKeyCreateProps) => {
   const [state, setState] = useState<ApiKeyResponse>(initialState)
 
   const handleModalOpen = useCallback(() => {
-    console.log("handleModalOpen")
     setOpen(true)
     setState(initialState)
   }, [])
 
   const handleModalClose = useCallback(() => {
-    console.log("handleModalClose")
     setOpen(false)
     setState(initialState)
     router.refresh()
@@ -43,14 +41,12 @@ const ApiKeyCreate = ({ usdWalletId, btcWalletId }: ApiKeyCreateProps) => {
     try {
       const result = await createApiKeyServerAction(formData)
       setState(result)
-      console.log("handleFormAction", result)
     } catch (error) {
       setState({
         error: true,
         message: "An error occurred while creating the API key.",
         responsePayload: null,
       })
-      console.log("handleFormAction error", error)
     }
   }, [])
 

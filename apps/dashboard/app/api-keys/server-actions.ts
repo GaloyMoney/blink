@@ -113,8 +113,6 @@ export const createApiKeyServerAction = async (
     }
   }
 
-  revalidatePath("/api-keys")
-
   return {
     error: false,
     message: "API Key created successfully",
