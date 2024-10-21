@@ -75,6 +75,22 @@ export const getCaptchaChallenge = async (
     }
   }
 
+  if (env.CI || env.NODE_ENV === "development") {
+    const params = new URLSearchParams({
+      login_challenge,
+    })
+    cookies().set(
+      createHash("md5").update(login_challenge).digest("hex"),
+      JSON.stringify({
+        loginType: LoginType.phone,
+        value: phone,
+        remember: remember,
+      }),
+      { secure: true },
+    )
+    redirect(`/login/verification?${params}`)
+  }
+
   let res: {
     id: string
     challengeCode: string
@@ -95,22 +111,6 @@ export const getCaptchaChallenge = async (
 
   const id = res.id
   const challenge = res.challengeCode
-
-  if (env.CI || env.NODE_ENV === "development") {
-    const params = new URLSearchParams({
-      login_challenge,
-    })
-    cookies().set(
-      createHash("md5").update(login_challenge).digest("hex"),
-      JSON.stringify({
-        loginType: LoginType.phone,
-        value: phone,
-        remember: remember,
-      }),
-      { secure: true },
-    )
-    redirect(`/login/verification?${params}`)
-  }
 
   return {
     error: false,
