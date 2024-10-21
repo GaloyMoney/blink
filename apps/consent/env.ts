@@ -5,17 +5,17 @@ export const env = createEnv({
   server: {
     HYDRA_ADMIN_URL: z.string().default("http://localhost:4445"),
     CORE_AUTH_URL: z.string().default("http://localhost:4455/auth"),
+    CI: z.boolean().default(false),
   },
   shared: {
     GRAPHQL_ENDPOINT: z.string().default("http://localhost:4455/graphql"),
     NODE_ENV: z.string(),
-    CI: z.boolean().default(false),
   },
   runtimeEnv: {
     CORE_AUTH_URL: process.env.CORE_AUTH_URL,
     HYDRA_ADMIN_URL: process.env.HYDRA_ADMIN_URL,
     GRAPHQL_ENDPOINT: process.env.GRAPHQL_ENDPOINT,
     NODE_ENV: process.env.NODE_ENV,
-    CI: process.env.CI,
+    CI: !!process.env.TILT_HOST,
   },
 })
