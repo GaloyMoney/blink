@@ -372,8 +372,8 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0(react-dom@18.2.0)(react@18.2.0)
       recharts:
-        specifier: ^2.12.6
-        version: 2.12.6(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^2.13.0
+        version: 2.13.0(react-dom@18.2.0)(react@18.2.0)
       zod:
         specifier: ^3.22.4
         version: 3.22.4
@@ -11354,7 +11354,7 @@ packages:
       '@types/react': 18.2.62
       prop-types: 15.8.1
       react: 18.2.0
-      react-is: 18.2.0
+      react-is: 18.3.1
     dev: false
 
   /@mui/utils@5.15.14(@types/react@18.2.79)(react@18.2.0):
@@ -11372,7 +11372,7 @@ packages:
       '@types/react': 18.2.79
       prop-types: 15.8.1
       react: 18.2.0
-      react-is: 18.2.0
+      react-is: 18.3.1
     dev: false
 
   /@mui/utils@5.15.3(@types/react@18.2.62)(react@18.2.0):
@@ -11390,7 +11390,7 @@ packages:
       '@types/react': 18.2.62
       prop-types: 15.8.1
       react: 18.2.0
-      react-is: 18.2.0
+      react-is: 18.3.1
     dev: false
 
   /@ndelangen/get-tarball@3.0.9:
@@ -31878,6 +31878,10 @@ packages:
   /react-is@18.2.0:
     resolution: {integrity: sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==}
 
+  /react-is@18.3.1:
+    resolution: {integrity: sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==}
+    dev: false
+
   /react-lifecycles-compat@3.0.4:
     resolution: {integrity: sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==}
     dev: false
@@ -32315,22 +32319,22 @@ packages:
       decimal.js-light: 2.5.1
     dev: false
 
-  /recharts@2.12.6(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-D+7j9WI+D0NHauah3fKHuNNcRK8bOypPW7os1DERinogGBGaHI7i6tQKJ0aUF3JXyBZ63dyfKIW2WTOPJDxJ8w==}
+  /recharts@2.13.0(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-sbfxjWQ+oLWSZEWmvbq/DFVdeRLqqA6d0CDjKx2PkxVVdoXo16jvENCE+u/x7HxOO+/fwx//nYRwb8p8X6s/lQ==}
     engines: {node: '>=14'}
     peerDependencies:
       react: ^16.0.0 || ^17.0.0 || ^18.0.0
       react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
     dependencies:
-      clsx: 2.0.0
+      clsx: 2.1.1
       eventemitter3: 4.0.7
       lodash: 4.17.21
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
-      react-is: 16.13.1
+      react-is: 18.3.1
       react-smooth: 4.0.1(react-dom@18.2.0)(react@18.2.0)
       recharts-scale: 0.4.5
-      tiny-invariant: 1.3.1
+      tiny-invariant: 1.3.3
       victory-vendor: 36.9.2
     dev: false
 
@@ -34338,13 +34342,8 @@ packages:
       setimmediate: 1.0.5
     dev: true
 
-  /tiny-invariant@1.3.1:
-    resolution: {integrity: sha512-AD5ih2NlSssTCwsMznbvwMZpJ1cbhkGd2uueNxzv2jDlEeZdU04JQfRnggJQ8DrcVBGjAsCKwFBbDlVNtEMlzw==}
-    dev: false
-
   /tiny-invariant@1.3.3:
     resolution: {integrity: sha512-+FbBPE1o9QAYvviau/qC5SE3caw21q3xkvWKBtja5vgqOWIHHJ3ioaq1VPfn/Szqctz2bU/oYeKd9/z5BL+PVg==}
-    dev: true
 
   /tiny-lr@1.1.1:
     resolution: {integrity: sha512-44yhA3tsaRoMOjQQ+5v5mVdqef+kH6Qze9jTpqtVufgYjYt08zyZAwNwwVBj3i1rJMnR52IxOW0LK0vBzgAkuA==}
