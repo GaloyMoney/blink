@@ -120,15 +120,15 @@ Cypress.Commands.add("loginViaEmail", (email: string) => {
           .click()
 
         cy.get("input#write")
-          .should("be.visible") // Ensure the checkbox is visible
-          .should("be.enabled") // Ensure the checkbox is enabled
-          .check({ force: true }) // Try to check the checkbox
+          .should("be.visible")
+          .should("be.enabled")
+          .check({ force: true })
           .should("be.checked")
 
         cy.get("input#read")
-          .should("be.visible") // Ensure the checkbox is visible
-          .should("be.enabled") // Ensure the checkbox is enabled
-          .check({ force: true }) // Try to check the checkbox
+          .should("be.visible")
+          .should("be.enabled")
+          .check({ force: true })
           .should("be.checked")
 
         cy.get("[data-testid=submit_consent_btn]")
