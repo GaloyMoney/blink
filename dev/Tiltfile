@@ -469,6 +469,7 @@ local_resource(
     resource_deps = [
         "apollo-router",
         "hydra",
+        "kratos",
         "api",
         "hydra-consent-test-client",
     ],
@@ -705,6 +706,8 @@ docker_groups = {
         "bria",
         "bria-pg",
         "bitcoind",
+        "fulcrum",
+        "bitcoind-signer",
     ],
     "integration": [
         "lnd-outside-1",
@@ -758,7 +761,9 @@ local_resource(
   labels = ["test"],
   auto_init = is_ci and CORE_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(api_test_target),
-  resource_deps = [res for sublist in docker_groups.values() for res in sublist] + ["notifications"]
+  resource_deps = [
+    "api",
+  ]
 )
 
 local_resource(
