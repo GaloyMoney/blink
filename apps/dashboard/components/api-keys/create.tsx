@@ -286,7 +286,6 @@ const ApiKeyCreate = ({ usdWalletId, btcWalletId }: Prop) => {
                       }}
                     >
                       <Checkbox
-                        data-testid="read-scope-checkbox"
                         name="readScope"
                         id="readScope"
                         label="Read"
@@ -301,6 +300,7 @@ const ApiKeyCreate = ({ usdWalletId, btcWalletId }: Prop) => {
                         defaultChecked
                       />
                       <Checkbox
+                        data-testid="write-scope-checkbox"
                         name="writeScope"
                         id="writeScope"
                         label="Write"
