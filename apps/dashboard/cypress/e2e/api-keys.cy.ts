@@ -2,7 +2,7 @@ import { testData } from "../support/test-data"
 
 describe("Callback Test", () => {
   beforeEach(() => {
-    // cy.viewport(1920, 1080)
+    cy.viewport(1920, 1080)
     cy.loginViaEmail(testData.EMAIL)
   })
 
@@ -16,12 +16,6 @@ describe("Callback Test", () => {
       .click()
 
     cy.get('[data-testid="create-api-add-btn"]')
-      .should("exist")
-      .should("be.visible")
-      .should("not.be.disabled")
-      .click()
-
-    cy.get('[data-testid="create-api-create-btn"]')
       .should("exist")
       .should("be.visible")
       .should("not.be.disabled")
