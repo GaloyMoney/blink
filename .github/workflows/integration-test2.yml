@@ -1,0 +1,169 @@
+name: "Integration test 2"
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, labeled, unlabeled]
+
+jobs:
+  prepare:
+    name: Prepare test matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Set up test matrix
+        id: set-matrix
+        run: |
+          # Properly format the JSON arrays
+          DEFAULT_LABELS='["dashboard","consent","pay","core","admin-panel","map","voucher"]'
+          LABELS=$(echo '${{ toJSON(github.event.pull_request.labels.*.name) }}' | jq -c '.')
+
+          # Use default labels if no labels or only 'ci' label
+          if [ "$LABELS" == "[]" ] || [ "$LABELS" == '["ci"]' ]; then
+            echo "matrix=$DEFAULT_LABELS" >> "$GITHUB_OUTPUT"
+          else
+            echo "matrix=$LABELS" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: prepare
+    name: Build ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        label: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    outputs:
+      build-success: ${{ steps.mark-success.outputs.success }}
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 15360
+          temp-reserve-mb: 12288
+          remove-dotnet: "true"
+
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Run the Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: Prepare build arguments
+        id: prepare_args
+        run: |
+          LABEL="${{ matrix.label }}"
+          BUILD_ARGS=""
+
+          # Core dependencies
+          case "$LABEL" in
+            core|dashboard|consent|pay|admin-panel|map|voucher)
+              BUILD_ARGS+=" //core/api:prod_build"
+              BUILD_ARGS+=" //core/notifications:notifications"
+              ;;
+          esac
+
+          # Node modules dependency
+          case "$LABEL" in
+            dashboard|consent|pay|admin-panel|map|voucher)
+              BUILD_ARGS+=" "//:node_modules""
+              ;;
+          esac
+
+          # Consent and API keys dependencies
+          case "$LABEL" in
+            dashboard|voucher|consent)  # Added consent here
+              BUILD_ARGS+=" //apps/consent:consent"
+              BUILD_ARGS+=" //core/api-keys:api-keys"
+              ;;
+          esac
+
+          # Component-specific build
+          case "$LABEL" in
+            core)
+              ;;
+            pay)
+              BUILD_ARGS+=" //apps/$LABEL:$LABEL-ci"
+              ;;
+            dashboard|consent|admin-panel|map|voucher)
+              BUILD_ARGS+=" //apps/$LABEL:$LABEL"
+              ;;
+          esac
+
+          echo "build_args=$BUILD_ARGS" >> "$GITHUB_OUTPUT"
+
+      - name: Build via buck2
+        if: steps.prepare_args.outputs.build_args != ''
+        run: nix develop -c buck2 build ${{ steps.prepare_args.outputs.build_args }}
+
+      - name: Cache build output
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            buck-out
+            .buckd
+          key: build-${{ matrix.label }}-${{ github.sha }}
+
+      - name: Mark build as successful
+        id: mark-success
+        run: echo "success=${{ matrix.label }}" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: [prepare, build]
+    if: contains(needs.*.outputs.*.build-success, matrix.label)
+    name: Test ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        label: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 15360
+          temp-reserve-mb: 12288
+          remove-dotnet: "true"
+
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Run the Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: Restore build output
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            buck-out
+            .buckd
+          key: build-${{ matrix.label }}-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Run tests via tilt
+        run: nix develop -c xvfb-run ./dev/bin/tilt-ci.sh ${{ matrix.label }}
+
+      - name: Prepare Tilt log
+        id: prepare_tilt_log
+        if: always()
+        run: |
+          TILT_LOG="dev/.e2e-tilt.log"
+          TARGET="dev/e2e-tilt-${{ matrix.label }}.log"
+
+          if [ -f "$TILT_LOG" ]; then
+            mv "$TILT_LOG" "$TARGET"
+            echo "prepared=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prepared=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload Tilt log
+        if: steps.prepare_tilt_log.outputs.prepared == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tilt log - ${{ matrix.label }}
+          path: dev/e2e-tilt-${{ matrix.label }}.log
