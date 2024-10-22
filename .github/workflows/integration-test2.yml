@@ -1,4 +1,4 @@
-name: "Integration test 2P"
+name: "Integration test"
 on:
   pull_request:
     branches: [main]
@@ -74,7 +74,7 @@ jobs:
           echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
 
   build-and-test:
-    name: Build and test ${{ matrix.component }}
+    name: build and test ${{ matrix.component }}
     needs: prepare
     if: needs.prepare.outputs.matrix != '[]'
     runs-on: ubuntu-latest

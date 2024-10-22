@@ -521,6 +521,7 @@ local_resource(
         "oathkeeper",
         "svix",
         "notifications",
+        "stablesats",
     ]
 )
 
