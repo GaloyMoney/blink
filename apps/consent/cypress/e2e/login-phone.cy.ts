@@ -1,16 +1,14 @@
 import { testData } from "../support/test-config"
 
 describe("Account ID Test", () => {
-  before(() => {
+  it("Login Phone Test", () => {
     cy.flushRedis()
     cy.visit(testData.AUTHORIZATION_URL)
     cy.location("search").should((search) => {
       const params = new URLSearchParams(search)
       expect(params.has("login_challenge")).to.be.true
     })
-  })
 
-  it("Login Phone Test", () => {
     cy.get("[data-testid=sign_in_with_email_btn]")
       .should("exist")
       .should("be.visible")
