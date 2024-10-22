@@ -1,0 +1,114 @@
+name: "E2e test"
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: parallel buck2 builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        target:
+          - //core/api
+          - //core/api-ws-server
+          - //core/api-trigger
+          - //core/api-exporter
+          - //apps/dashboard
+          - //apps/consent
+          - //apps/pay
+          - //apps/admin-panel
+          - //apps/map
+          - //apps/voucher
+          - //core/api-keys
+          - //core/notifications
+          - //bats/helpers/callback:run
+          - //bats/helpers/subscriber:run
+          - //bats/helpers/totp:generate
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Run the Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: Build
+        run: |
+          nix develop -c buck2 build ${{ matrix.target }}
+
+      - uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.buck2
+            buck-out
+            .buck-cache
+            prebuilt
+            installed
+            target
+            .buckd
+            buck-out/cache
+          key: buck2-${{ runner.os }}-${{ matrix.target }}
+
+  tests:
+    name: execute via bats
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Run the Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.buck2
+            buck-out
+            .buck-cache
+            prebuilt
+            installed
+            target
+            .buckd
+            buck-out/cache
+          key: buck2-${{ runner.os }}-
+
+      - name: Run bats tests
+        run: |
+          nix develop -c buck2 build //core/api \
+            //core/api-ws-server \
+            //core/api-trigger \
+            //core/api-exporter \
+            //apps/dashboard \
+            //apps/consent \
+            //apps/pay \
+            //apps/admin-panel \
+            //apps/map \
+            //apps/voucher \
+            //core/api-keys \
+            //core/notifications \
+            //bats/helpers/callback:run \
+            //bats/helpers/subscriber:run \
+            //bats/helpers/totp:generate
+          nix develop -c bats --setup-suite-file bats/ci_setup_suite.bash -t bats/core/**
+
+      - name: Rename Tilt log
+        if: always()
+        run: mv bats/.e2e-tilt.log bats/e2e-tilt.log
+
+      - name: Upload Tilt log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tilt log
+          path: bats/e2e-tilt.log
