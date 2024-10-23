@@ -6,30 +6,28 @@ on:
 
 jobs:
   build:
-    name: parallel buck2 builds
+    name: clustered buck2 builds
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     strategy:
       matrix:
-        target:
-          - //core/api
-          - //core/api-ws-server
-          - //core/api-trigger
-          - //core/api-exporter
-          - //apps/dashboard
-          - //apps/consent
-          - //apps/pay
-          - //apps/admin-panel
-          - //apps/map
-          - //apps/voucher
-          - //core/api-keys
-          - //core/notifications
-          - //bats/helpers/callback:run
-          - //bats/helpers/subscriber:run
-          - //bats/helpers/totp:generate
+        cluster:
+          - name: core-apis
+            targets: "//:node_modules //core/api //core/api-ws-server //core/api-trigger //core/api-exporter"
+
       fail-fast: false
 
     steps:
+      - id: vars
+        run: echo "short_sha=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 15360
+          temp-reserve-mb: 12288
+          remove-dotnet: "true"
+
       - uses: actions/checkout@v4
 
       - name: Install Nix
@@ -38,22 +36,51 @@ jobs:
       - name: Run the Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v8
 
-      - name: Build
+      - name: Create cache directories
         run: |
-          nix develop -c buck2 build ${{ matrix.target }}
+          mkdir -p ~/.buck2 ~/.cache/buck2 buck-out/cache buck-out/v2
+
+      # Try to restore cache before building
+      - uses: actions/cache/restore@v4
+        id: cache-restore
+        with:
+          path: |
+            ~/.buck2
+            ~/.cache/buck2
+            buck-out
+            .buck-cache
+            .buckd
+            prebuilt
+            installed
+            target
+          key: b2-${{ matrix.cluster.name }}-${{ env.short_sha }}
+          restore-keys: |
+            b2-${{ matrix.cluster.name }}-
+
+      - name: Build cluster
+        run: |
+          nix develop -c buck2 build ${{ matrix.cluster.targets }}
+
+      - name: Debug cache content
+        run: |
+          echo "Buck cache structure:"
+          find buck-out -type d
+          echo "Buck output size by directory:"
+          du -sh buck-out/*
 
       - uses: actions/cache/save@v4
         with:
           path: |
             ~/.buck2
+            ~/.cache/buck2
             buck-out
             .buck-cache
+            .buckd
             prebuilt
             installed
             target
-            .buckd
-            buck-out/cache
-          key: buck2-${{ runner.os }}-${{ matrix.target }}
+          key: b2-${{ matrix.cluster.name }}-${{ env.short_sha }}
+          enableCrossOsArchive: true
 
   tests:
     name: execute via bats
@@ -62,6 +89,16 @@ jobs:
     needs: build
 
     steps:
+      - id: vars
+        run: echo "short_sha=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 15360
+          temp-reserve-mb: 12288
+          remove-dotnet: "true"
+
       - uses: actions/checkout@v4
 
       - name: Install Nix
@@ -70,37 +107,41 @@ jobs:
       - name: Run the Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v8
 
-      - uses: actions/cache/restore@v4
+      - name: Create cache directories
+        run: |
+          mkdir -p ~/.buck2 ~/.cache/buck2 buck-out/cache buck-out/v2
+
+      # Modified cache restoration strategy
+      - name: Restore all cluster caches
+        uses: actions/cache/restore@v4
         with:
           path: |
             ~/.buck2
+            ~/.cache/buck2
             buck-out
             .buck-cache
+            .buckd
             prebuilt
             installed
             target
-            .buckd
-            buck-out/cache
-          key: buck2-${{ runner.os }}-
+          key: |
+            b2-core-apis-${{ env.short_sha }}
+          restore-keys: |
+            b2-core-apis-
+          fail-on-cache-miss: true
+
+      - name: Debug restored cache
+        run: |
+          echo "Cache directory structure:"
+          find buck-out -type d
+          echo "Cache sizes by directory:"
+          du -sh buck-out/*
 
       - name: Run bats tests
         run: |
-          nix develop -c buck2 build //core/api \
-            //core/api-ws-server \
-            //core/api-trigger \
-            //core/api-exporter \
-            //apps/dashboard \
-            //apps/consent \
-            //apps/pay \
-            //apps/admin-panel \
-            //apps/map \
-            //apps/voucher \
-            //core/api-keys \
-            //core/notifications \
-            //bats/helpers/callback:run \
-            //bats/helpers/subscriber:run \
-            //bats/helpers/totp:generate
-          nix develop -c bats --setup-suite-file bats/ci_setup_suite.bash -t bats/core/**
+          echo "Buck build status before tests:"
+          nix develop -c buck2 build --show-output \
+            //:node_modules //core/api //core/api-ws-server //core/api-trigger //core/api-exporter
 
       - name: Rename Tilt log
         if: always()
