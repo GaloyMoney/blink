@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#4616)...'
-      sha: ef77a566576cced6e91e8dc84547d23f25170e4d
+      commitTitle: 'test(apps): fix dashboard/voucher/consent tests (#4627)...'
+      sha: 9ba48328ca6512aae7a6607343082628ea1d9c47
       tags:
-      - 0.20.228-2-gef77a5665
+      - 0.20.229-6-g9ba48328c
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#4616)...'
-      sha: ef77a566576cced6e91e8dc84547d23f25170e4d
+      commitTitle: 'test(apps): fix dashboard/voucher/consent tests (#4627)...'
+      sha: 9ba48328ca6512aae7a6607343082628ea1d9c47
       tags:
-      - 0.20.228-2-gef77a5665
+      - 0.20.229-6-g9ba48328c
     path: schemas
   - git:
-      commitTitle: 'chore: bump deps (#4616)...'
-      sha: ef77a566576cced6e91e8dc84547d23f25170e4d
+      commitTitle: 'test(apps): fix dashboard/voucher/consent tests (#4627)...'
+      sha: 9ba48328ca6512aae7a6607343082628ea1d9c47
       tags:
-      - 0.20.228-2-gef77a5665
+      - 0.20.229-6-g9ba48328c
     path: gql
   path: graphql
 kind: LockConfig
