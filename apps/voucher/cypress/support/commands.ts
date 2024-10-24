@@ -16,6 +16,7 @@ declare namespace Cypress {
     requestEmailCode(email: string): Chainable<string>
     flushRedis(): Chainable<void>
     loginAndGetToken(phone: string, code: string): Chainable<string>
+    loginViaEmail(email: string): Chainable<null>
     getTransactions(
       authToken: string,
       numberOfTransactions: number,
@@ -60,6 +61,93 @@ Cypress.Commands.add("loginAndGetToken", (phone, code) => {
     expect(response.body).to.have.property("authToken")
     return response.body.authToken
   })
+})
+
+Cypress.Commands.add("loginViaEmail", (email: string) => {
+  cy.session(
+    email,
+    () => {
+      cy.flushRedis()
+      cy.visit("/api/auth/signin")
+
+      cy.contains("button", "Sign in with Blink")
+        .should("exist")
+        .should("be.visible")
+        .should("not.be.disabled")
+        .click()
+
+      cy.get("[data-testid=sign_in_with_phone_btn]")
+        .should("exist")
+        .should("be.visible")
+        .click()
+
+      cy.get("[data-testid=sign_in_with_email_btn]")
+        .should("exist")
+        .should("be.visible")
+        .click()
+
+      cy.get("[data-testid=email_id_input]")
+        .should("exist")
+        .should("be.visible")
+        .should("be.enabled")
+        .type(email)
+        .should("have.value", email)
+
+      cy.get("[data-testid=email_login_next_btn]")
+        .should("exist")
+        .should("be.visible")
+        .should("not.be.disabled")
+        .click()
+
+      cy.getOTP(email).then((otp) => {
+        const code = otp
+        cy.get("[data-testid=verification_code_input]")
+          .should("exist")
+          .should("be.visible")
+          .should("not.be.disabled")
+          .type(code)
+
+        cy.contains("label", "read")
+          .should("exist")
+          .should("be.visible")
+          .should("not.be.disabled")
+          .click()
+
+        cy.contains("label", "write")
+          .should("exist")
+          .should("be.visible")
+          .should("not.be.disabled")
+          .click()
+
+        cy.get("input#write")
+          .should("be.visible")
+          .should("be.enabled")
+          .check({ force: true })
+          .should("be.checked")
+
+        cy.get("input#read")
+          .should("be.visible")
+          .should("be.enabled")
+          .check({ force: true })
+          .should("be.checked")
+
+        cy.get("[data-testid=submit_consent_btn]")
+          .should("exist")
+          .should("be.visible")
+          .should("not.be.disabled")
+          .click()
+
+        cy.url().should("eq", Cypress.config().baseUrl + "/")
+      })
+    },
+    {
+      validate() {
+        cy.getCookie("next-auth.session-token").should("exist")
+        cy.request("/").its("status").should("eq", 200)
+      },
+      cacheAcrossSpecs: true,
+    },
+  )
 })
 
 Cypress.Commands.add("getTransactions", (authToken, numberOfTransactions) => {

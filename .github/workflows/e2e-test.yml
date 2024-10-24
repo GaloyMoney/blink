@@ -26,16 +26,11 @@ jobs:
 
       - name: Buck2 build
         run: |
-          nix develop -c buck2 build //core/api \
-            //core/api-ws-server \
-            //apps/dashboard \
-            //apps/consent \
-            //apps/pay \
-            //apps/admin-panel \
-            //apps/map \
-            //apps/voucher \
-            //core/api-keys \
-            //core/notifications
+          nix develop -c buck2 build \
+            //core/api //core/api-ws-server //core/api-trigger //core/api-exporter \
+            //apps/dashboard //apps/consent //apps/pay //apps/admin-panel //apps/map //apps/voucher \
+            //core/api-keys //core/notifications \
+            //bats/helpers/callback:run //bats/helpers/subscriber:run //bats/helpers/totp:generate
 
       - name: Run bats tests
         run: |

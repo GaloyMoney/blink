@@ -5,26 +5,18 @@ on:
     types: [opened, synchronize, labeled, unlabeled]
 
 jobs:
-  tests:
-    name: execute via tilt
+  prepare:
+    name: prepare build args
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.prepare_args.outputs.matrix }}
     steps:
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 15360
-          temp-reserve-mb: 12288
-          remove-dotnet: "true"
       - uses: actions/checkout@v4
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v14
-      - name: Run the Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v8
       - name: Prepare tilt args from labels
         id: prepare_args
         run: |
-          ARGS=""
-          BUILD_ARGS=""
+          # Initialize variables
+          MATRIX="["
 
           cat <<EOF > labels.json
           ${{ toJSON(github.event.pull_request.labels.*.name) }}
@@ -38,78 +30,80 @@ jobs:
               LABELS=("${DEFAULT_LABELS[@]}")
           fi
 
-          # Handle 'core' dependency
+          # Core dependencies that might be needed
+          CORE_DEPS="//core/api:prod_build //core/notifications:notifications //:node_modules"
+
+          # Process each label into a matrix entry
           for LABEL in "${LABELS[@]}"; do
+            BUILD_ARGS=""
+
+            # Add core dependencies if needed
             case "$LABEL" in
               core|dashboard|consent|pay|admin-panel|map|voucher)
-                BUILD_ARGS+=" //core/api:prod_build"
-                BUILD_ARGS+=" //core/notifications:notifications"
-
-                break
+                BUILD_ARGS+=" $CORE_DEPS"
                 ;;
             esac
-          done
 
-          # Handle root 'node_modules' dependency
-          for LABEL in "${LABELS[@]}"; do
             case "$LABEL" in
-              dashboard|consent|pay|admin-panel|map|voucher)
-                BUILD_ARGS+=" "//:node_modules""
-
-                break
-                ;;
-            esac
-          done
-
-          # Handle 'consent' dependencies
-          for LABEL in "${LABELS[@]}"; do
-            case "$LABEL" in
-              dashboard|voucher)
+              dashboard|voucher|consent)
                 BUILD_ARGS+=" //apps/consent:consent"
                 BUILD_ARGS+=" //core/api-keys:api-keys"
-
-                break
-                ;;
-            esac
-          done
-
-          # Handle other labels
-          for LABEL in "${LABELS[@]}"; do
-            case "$LABEL" in
-              core)
-                ARGS+=" $LABEL"
                 ;;
             esac
 
             case "$LABEL" in
-              dashboard|consent|admin-panel|map|voucher)
-                ARGS+=" $LABEL"
-                BUILD_ARGS+=" //apps/$LABEL:$LABEL"
-                ;;
-
+              core) ;;
               pay)
-                ARGS+=" $LABEL"
                 BUILD_ARGS+=" //apps/$LABEL:$LABEL-ci"
                 ;;
+              dashboard|admin-panel|map|voucher)
+                BUILD_ARGS+=" //apps/$LABEL:$LABEL"
+                ;;
             esac
+
+            # Add matrix entry if we have build args
+            if [ ! -z "$BUILD_ARGS" ]; then
+              if [ "$MATRIX" != "[" ]; then
+                MATRIX+=","
+              fi
+              MATRIX+="{\"component\":\"$LABEL\",\"build_args\":\"$BUILD_ARGS\"}"
+            fi
           done
 
-          echo "Prepared args: $ARGS"
-          echo "Prepared build_args: $BUILD_ARGS"
-          echo "args=$ARGS" >> "$GITHUB_OUTPUT"
-          echo "build_args=$BUILD_ARGS" >> "$GITHUB_OUTPUT"
+          MATRIX+="]"
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+
+  build-and-test:
+    name: build and test ${{ matrix.component }}
+    needs: prepare
+    if: needs.prepare.outputs.matrix != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 15360
+          temp-reserve-mb: 12288
+          remove-dotnet: "true"
+      - uses: actions/checkout@v4
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+      - name: Run the Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v8
       - name: Build via buck2
-        if: steps.prepare_args.outputs.build_args != ''
-        run: nix develop -c buck2 build ${{ steps.prepare_args.outputs.build_args }}
+        run: nix develop -c buck2 build ${{ matrix.build_args }}
       - name: Start deps and run tests via tilt
-        if: steps.prepare_args.outputs.args != ''
-        run: nix develop -c xvfb-run ./dev/bin/tilt-ci.sh ${{ steps.prepare_args.outputs.args }}
+        run: nix develop -c xvfb-run ./dev/bin/tilt-ci.sh ${{ matrix.component }}
       - name: Prepare Tilt log
         id: prepare_tilt_log
         if: always()
         run: |
           TILT_LOG="dev/.e2e-tilt.log"
-          TARGET="dev/e2e-tilt.log"
+          TARGET="dev/e2e-tilt-${{ matrix.component }}.log"
 
           if [ -f "$TILT_LOG" ]; then
             mv "$TILT_LOG" "$TARGET"
@@ -121,5 +115,5 @@ jobs:
         if: steps.prepare_tilt_log.outputs.prepared == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: Tilt log
-          path: dev/e2e-tilt.log
+          name: Tilt log - ${{ matrix.component }}
+          path: dev/e2e-tilt-${{ matrix.component }}.log

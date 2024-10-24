@@ -469,6 +469,7 @@ local_resource(
     resource_deps = [
         "apollo-router",
         "hydra",
+        "kratos",
         "api",
         "hydra-consent-test-client",
     ],
@@ -520,6 +521,7 @@ local_resource(
         "oathkeeper",
         "svix",
         "notifications",
+        "stablesats",
     ]
 )
 
@@ -654,6 +656,7 @@ local_resource(
 
 local_resource(
     name="setup-voucher",
+    labels = ["test"],
     cmd="buck2 run //dev:setup-voucher-escrow",
     allow_parallel=False,
     auto_init=run_apps,
@@ -680,6 +683,9 @@ local_resource(
 )
 
 docker_groups = {
+    "apps": [
+        "voucher-pg",
+    ],
     "auth": [
         "api-keys-pg",
         "oathkeeper",
@@ -705,6 +711,8 @@ docker_groups = {
         "bria",
         "bria-pg",
         "bitcoind",
+        "fulcrum",
+        "bitcoind-signer",
     ],
     "integration": [
         "lnd-outside-1",
@@ -743,6 +751,8 @@ for service in docker_groups["bitcoin"]:
     dc_resource(service, labels = ["bitcoin"])
 for service in docker_groups["tracing"]:
     dc_resource(service, labels = ["tracing"])
+for service in docker_groups["apps"]:
+    dc_resource(service, labels = ["apps"])
 for service in docker_groups["core"]:
     dc_resource(service, labels = ["core"])
 for service in docker_groups["auth"]:
@@ -758,7 +768,9 @@ local_resource(
   labels = ["test"],
   auto_init = is_ci and CORE_TEST_LABEL in cfg.get("test", []),
   cmd = "buck2 test {}".format(api_test_target),
-  resource_deps = [res for sublist in docker_groups.values() for res in sublist] + ["notifications"]
+  resource_deps = [
+    "api",
+  ]
 )
 
 local_resource(
