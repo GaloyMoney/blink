@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test(apps): fix dashboard/voucher/consent tests (#4627)...'
-      sha: 9ba48328ca6512aae7a6607343082628ea1d9c47
+      commitTitle: 'chore(core): update default expiration for BTC invoices (#4638)...'
+      sha: ee75e926b9e696e40d93e7ac3b0fb138da697133
       tags:
-      - 0.20.229-6-g9ba48328c
+      - 0.20.230-1-gee75e926b
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'test(apps): fix dashboard/voucher/consent tests (#4627)...'
-      sha: 9ba48328ca6512aae7a6607343082628ea1d9c47
+      commitTitle: 'chore(core): update default expiration for BTC invoices (#4638)...'
+      sha: ee75e926b9e696e40d93e7ac3b0fb138da697133
       tags:
-      - 0.20.229-6-g9ba48328c
+      - 0.20.230-1-gee75e926b
     path: schemas
   - git:
-      commitTitle: 'test(apps): fix dashboard/voucher/consent tests (#4627)...'
-      sha: 9ba48328ca6512aae7a6607343082628ea1d9c47
+      commitTitle: 'chore(core): update default expiration for BTC invoices (#4638)...'
+      sha: ee75e926b9e696e40d93e7ac3b0fb138da697133
       tags:
-      - 0.20.229-6-g9ba48328c
+      - 0.20.230-1-gee75e926b
     path: gql
   path: graphql
 kind: LockConfig
