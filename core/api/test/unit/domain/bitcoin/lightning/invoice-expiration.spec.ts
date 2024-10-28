@@ -1,8 +1,11 @@
 import { SECS_PER_10_MINS, SECS_PER_DAY } from "@/config"
 
+import {
+  invoiceExpirationForCurrency,
+  INVOICE_EXPIRATIONS,
+} from "@/domain/bitcoin/lightning"
 import { toSeconds } from "@/domain/primitives"
 import { WalletCurrency } from "@/domain/shared"
-import { invoiceExpirationForCurrency } from "@/domain/bitcoin/lightning"
 
 describe("invoiceExpirationForCurrency", () => {
   const BTC = WalletCurrency.Btc
@@ -10,7 +13,9 @@ describe("invoiceExpirationForCurrency", () => {
   const now = new Date("2000-01-01T00:00:00Z")
 
   it("should return expiration for BTC currency with default delay", () => {
-    const expectedExpiration = new Date("2000-01-02T00:00:00.000Z")
+    const expectedExpiration = new Date(
+      now.getTime() + INVOICE_EXPIRATIONS.BTC.defaultValue * 1000,
+    )
     let expiresAt = invoiceExpirationForCurrency(BTC, now)
     expect(expiresAt).toEqual(expectedExpiration)
 
@@ -28,7 +33,9 @@ describe("invoiceExpirationForCurrency", () => {
   })
 
   it("should return expiration for USD currency with default delay", () => {
-    const expectedExpiration = new Date("2000-01-01T00:05:00.000Z")
+    const expectedExpiration = new Date(
+      now.getTime() + INVOICE_EXPIRATIONS.USD.defaultValue * 1000,
+    )
     let expiresAt = invoiceExpirationForCurrency(USD, now)
     expect(expiresAt).toEqual(expectedExpiration)
 

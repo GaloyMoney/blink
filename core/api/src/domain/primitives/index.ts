@@ -1,6 +1,12 @@
 import { InvalidMinutesError, InvalidPaginatedQueryArgsError } from "@/domain/errors"
+
 export const toSeconds = (seconds: number): Seconds => {
   return seconds as Seconds
+}
+
+const SECS_PER_MIN = toSeconds(60)
+export const secondsToMinutes = (seconds: number): Minutes => {
+  return (seconds / SECS_PER_MIN) as Minutes
 }
 
 export const toDays = (days: number): Days => {

@@ -13,7 +13,7 @@ import { updatePendingInvoice } from "@/app/wallets/update-single-pending-invoic
 
 import { toMilliSatsFromNumber, toSats } from "@/domain/bitcoin"
 import { decodeInvoice, getSecretAndPaymentHash } from "@/domain/bitcoin/lightning"
-import { DEFAULT_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
+import { INVOICE_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
 import { LedgerTransactionType } from "@/domain/ledger"
 import { WalletCurrency } from "@/domain/shared"
 import * as DisplayAmountsConverterImpl from "@/domain/fiat"
@@ -84,7 +84,7 @@ describe("update pending invoices", () => {
       )
       if (persisted instanceof Error) throw persisted
 
-      const usdDelayMs = DEFAULT_EXPIRATIONS.USD.delay * 1000
+      const usdDelayMs = INVOICE_EXPIRATIONS.USD.max * 1000
       const timeBuffer = 1000 // buffer for any time library discrepancies
       const pastCreatedAt = new Date(Date.now() - (usdDelayMs + timeBuffer))
       await WalletInvoice.findOneAndUpdate(
@@ -143,7 +143,7 @@ describe("update pending invoices", () => {
       )
       if (persisted instanceof Error) throw persisted
 
-      const btcDelayMs = DEFAULT_EXPIRATIONS.BTC.delay * 1000
+      const btcDelayMs = INVOICE_EXPIRATIONS.BTC.max * 1000
       const timeBuffer = 1000 // buffer for any time library discrepancies
       const pastCreatedAt = new Date(Date.now() - (btcDelayMs + timeBuffer))
       await WalletInvoice.findOneAndUpdate(
@@ -171,7 +171,7 @@ describe("update pending invoices", () => {
     it("should be idempotent", async () => {
       const invoiceAmount = toSats(1)
       const { paymentHash } = getSecretAndPaymentHash()
-      const btcDelayMs = DEFAULT_EXPIRATIONS.BTC.delay * 1000
+      const btcDelayMs = INVOICE_EXPIRATIONS.BTC.max * 1000
       const timeBuffer = 1000 // buffer for any time library discrepancies
       const pastCreatedAt = new Date(Date.now() - (btcDelayMs + timeBuffer))
 
@@ -255,7 +255,7 @@ describe("update pending invoices", () => {
     it("records transaction with ln-receive metadata on ln receive", async () => {
       const invoiceAmount = toSats(1)
       const { paymentHash } = getSecretAndPaymentHash()
-      const btcDelayMs = DEFAULT_EXPIRATIONS.BTC.delay * 1000
+      const btcDelayMs = INVOICE_EXPIRATIONS.BTC.max * 1000
       const timeBuffer = 1000 // buffer for any time library discrepancies
       const pastCreatedAt = new Date(Date.now() - (btcDelayMs + timeBuffer))
 

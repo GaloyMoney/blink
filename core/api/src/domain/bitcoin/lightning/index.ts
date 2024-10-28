@@ -6,6 +6,7 @@ export { decodeInvoice } from "./ln-invoice"
 export {
   invoiceExpirationForCurrency,
   defaultTimeToExpiryInSeconds,
+  INVOICE_EXPIRATIONS,
 } from "./invoice-expiration"
 export * from "./errors"
 

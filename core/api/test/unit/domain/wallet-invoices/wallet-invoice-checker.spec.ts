@@ -1,4 +1,4 @@
-import { DEFAULT_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
+import { INVOICE_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
 import { CouldNotFindWalletInvoiceError, RepositoryError } from "@/domain/errors"
 import { WalletCurrency } from "@/domain/shared"
 import { WalletInvoiceChecker } from "@/domain/wallet-invoices"
@@ -36,7 +36,7 @@ describe("WalletInvoiceChecker", () => {
     })
 
     it("returns true for expired usd invoice", () => {
-      const usdDelayMs = DEFAULT_EXPIRATIONS.USD.delay * 1000
+      const usdDelayMs = INVOICE_EXPIRATIONS.USD.max * 1000
       const timeBuffer = 1000 // buffer for any time library discrepancies
       const pastCreatedAt = new Date(Date.now() - (usdDelayMs + timeBuffer))
       expect(

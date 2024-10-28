@@ -36,7 +36,7 @@ import { TxDecoder } from "@/domain/bitcoin/onchain"
 import { CacheKeys } from "@/domain/cache"
 import { CouldNotFindWalletFromOnChainAddressError } from "@/domain/errors"
 import { checkedToDisplayCurrency } from "@/domain/fiat"
-import { DEFAULT_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
+import { INVOICE_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
 
 import { BriaSubscriber } from "@/services/bria"
@@ -284,8 +284,8 @@ const setupListenersForExistingHodlInvoices = async ({
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
-  const { delay } = DEFAULT_EXPIRATIONS[WalletCurrency.Btc]
-  const createdAfter = new Date(new Date().getTime() - delay * 2 * 1000)
+  const { max } = INVOICE_EXPIRATIONS[WalletCurrency.Btc]
+  const createdAfter = new Date(new Date().getTime() - max * 2 * 1000)
 
   const invoices = lndService.listInvoices({ pubkey, createdAfter })
   if (invoices instanceof Error) return invoices
