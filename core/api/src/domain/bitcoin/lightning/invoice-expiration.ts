@@ -2,16 +2,14 @@ import { toSeconds } from "@/domain/primitives"
 
 const SECS_PER_MIN = toSeconds(60)
 const SECS_PER_5_MINS = toSeconds(60 * 5)
-const SECS_PER_DAY = toSeconds(60 * 60 * 24)
+const SECS_PER_HOUR = toSeconds(60 * 60)
+const SECS_PER_DAY = toSeconds(SECS_PER_HOUR * 24)
 
 export const defaultTimeToExpiryInSeconds = SECS_PER_5_MINS
 
-export const DEFAULT_EXPIRATIONS = {
-  BTC: { delay: SECS_PER_DAY, delayMinutes: (SECS_PER_DAY / SECS_PER_MIN) as Minutes },
-  USD: {
-    delay: defaultTimeToExpiryInSeconds,
-    delayMinutes: (defaultTimeToExpiryInSeconds / SECS_PER_MIN) as Minutes,
-  },
+export const INVOICE_EXPIRATIONS = {
+  BTC: { min: SECS_PER_MIN, max: SECS_PER_DAY, defaultValue: SECS_PER_HOUR },
+  USD: { min: SECS_PER_MIN, max: SECS_PER_5_MINS, defaultValue: SECS_PER_5_MINS },
 }
 
 export const invoiceExpirationForCurrency = (
@@ -20,9 +18,10 @@ export const invoiceExpirationForCurrency = (
   delay?: Seconds,
 ): InvoiceExpiration => {
   let expirationDelay = delay || toSeconds(0)
-  const { delay: defaultDelay } = DEFAULT_EXPIRATIONS[currency]
-  if (expirationDelay < SECS_PER_MIN || expirationDelay > defaultDelay) {
-    expirationDelay = defaultDelay
+  const { min, max, defaultValue } = INVOICE_EXPIRATIONS[currency]
+  const isValidExpiration = expirationDelay >= min && expirationDelay <= max
+  if (!isValidExpiration) {
+    expirationDelay = defaultValue
   }
 
   const expirationTimestamp = now.getTime() + expirationDelay * 1000

@@ -4,9 +4,9 @@ import { AccountValidator } from "@/domain/accounts"
 import { checkedToLedgerExternalId } from "@/domain/ledger"
 import { checkedToWalletId } from "@/domain/wallets"
 import { RateLimitConfig } from "@/domain/rate-limit"
-import { checkedToMinutes } from "@/domain/primitives"
+import { checkedToMinutes, secondsToMinutes } from "@/domain/primitives"
 import { RateLimiterExceededError } from "@/domain/rate-limit/errors"
-import { DEFAULT_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
+import { INVOICE_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
 import { WalletInvoiceBuilder } from "@/domain/wallet-invoices/wallet-invoice-builder"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@/domain/shared"
 
@@ -19,8 +19,8 @@ import {
   WalletsRepository,
 } from "@/services/mongoose"
 
-const defaultBtcExpiration = DEFAULT_EXPIRATIONS["BTC"].delayMinutes
-const defaultUsdExpiration = DEFAULT_EXPIRATIONS["USD"].delayMinutes
+const defaultBtcExpiration = secondsToMinutes(INVOICE_EXPIRATIONS["BTC"].defaultValue)
+const defaultUsdExpiration = secondsToMinutes(INVOICE_EXPIRATIONS["USD"].defaultValue)
 
 const addInvoiceForSelf = async ({
   walletId,
