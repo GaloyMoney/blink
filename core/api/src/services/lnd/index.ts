@@ -1208,6 +1208,7 @@ const handleSendPaymentLndErrors = ({
     case match(KnownLndErrorDetails.InsufficientBalanceToAttemptPayment):
       return new InsufficientBalanceForLnPaymentError()
     case match(KnownLndErrorDetails.FeaturePairExists):
+    case match(KnownLndErrorDetails.UnsupportedPaymentFeature):
       return new InvalidFeatureBitsForLndInvoiceError()
     case match(KnownLndErrorDetails.InsufficientFee):
       return new InsufficientFeeForLnPaymentError()
@@ -1264,6 +1265,7 @@ const handleCommonRouteNotFoundErrors = (err: Error | unknown) => {
       return new DestinationMissingDependentFeatureError()
 
     case match(KnownLndErrorDetails.FeaturePairExists):
+    case match(KnownLndErrorDetails.UnsupportedPaymentFeature):
       return new InvalidFeatureBitsForLndInvoiceError()
 
     default:
