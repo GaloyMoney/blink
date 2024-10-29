@@ -59,7 +59,7 @@ transaction.paid_invoice.body: "+%{formattedCurrencyAmount}"
 transaction.paid_invoice.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
 
 price_changed.up.title: "Bitcoin está en movimento!"
-price_changed.up.body: "Bitcoin ha augmentado %{change_percent}% en el ultimo dia %{price}!"
+price_changed.up.body: "Bitcoin ha aumentado %{change_percent}% en el ultimo dia %{price}!"
 
 price_changed.down.title: "Bitcoin está en movimento!"
 price_changed.down.body: "Bitcoin ha bajado %{change_percent}% en el ultimo dia %{price}!"
