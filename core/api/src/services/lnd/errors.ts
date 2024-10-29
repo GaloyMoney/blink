@@ -23,6 +23,7 @@ export const KnownLndErrorDetails = {
   MissingDependentFeature: /missing dependent feature/,
   FeaturePairExists: /feature pair exists/,
   InvoiceAmountTooLarge: /invoice amount .* BTC is too large/,
+  UnsupportedPaymentFeature: /UnsupportedPaymentFeatureInPayRequest/,
 
   // On-chain
   InsufficientFunds: /insufficient funds available to construct transaction/,
