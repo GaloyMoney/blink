@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): handle unknown error for unsupported payment feature
-        (#4640)'
-      sha: 2eb8c223141ed72c6f6327467a6a8388e791a0d5
+      commitTitle: 'feat(core): update exporter metrics (#4617)...'
+      sha: 748afc2dec19f2521c86cb5132068ba542bdcb36
       tags:
-      - 0.20.231-1-g2eb8c2231
+      - 0.21.0-1-g748afc2de
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): handle unknown error for unsupported payment feature
-        (#4640)'
-      sha: 2eb8c223141ed72c6f6327467a6a8388e791a0d5
+      commitTitle: 'feat(core): update exporter metrics (#4617)...'
+      sha: 748afc2dec19f2521c86cb5132068ba542bdcb36
       tags:
-      - 0.20.231-1-g2eb8c2231
+      - 0.21.0-1-g748afc2de
     path: schemas
   - git:
-      commitTitle: 'fix(core): handle unknown error for unsupported payment feature
-        (#4640)'
-      sha: 2eb8c223141ed72c6f6327467a6a8388e791a0d5
+      commitTitle: 'feat(core): update exporter metrics (#4617)...'
+      sha: 748afc2dec19f2521c86cb5132068ba542bdcb36
       tags:
-      - 0.20.231-1-g2eb8c2231
+      - 0.21.0-1-g748afc2de
     path: gql
   path: graphql
 kind: LockConfig
