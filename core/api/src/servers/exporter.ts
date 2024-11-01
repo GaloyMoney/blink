@@ -301,14 +301,31 @@ const createWalletGauge = ({
   })
 }
 
+const inProgressBalanceQueries = new Map<string, Promise<number>>()
+
 const getWalletBalance = async (walletId: WalletId): Promise<number> => {
-  const walletBalance = await LedgerService().getWalletBalance(walletId)
-  if (walletBalance instanceof Error) {
-    logger.warn({ walletId, walletBalance }, "impossible to get balance")
-    return 0
+  const inProgressKey = `wallet-${walletId}`
+
+  const inProgress = inProgressBalanceQueries.get(inProgressKey)
+  if (inProgress) {
+    return inProgress
   }
 
-  return walletBalance
+  const balancePromise = (async () => {
+    try {
+      const walletBalance = await LedgerService().getWalletBalance(walletId)
+      if (walletBalance instanceof Error) {
+        logger.warn({ walletId, walletBalance }, "impossible to get balance")
+        return 0
+      }
+      return walletBalance
+    } finally {
+      inProgressBalanceQueries.delete(inProgressKey)
+    }
+  })()
+
+  inProgressBalanceQueries.set(inProgressKey, balancePromise)
+  return balancePromise
 }
 
 const createColdStorageWalletGauge = () => {
