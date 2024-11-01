@@ -425,12 +425,8 @@ const getRealAssetsVersusLiabilities = async () => {
     "getRealAssetsVersusLiabilities balances",
   )
 
-  return (
-    lnd + // physical assets
-    briaCold + // physical assets
-    briaHot + // physical assets
-    liabilities // value in accounting
-  )
+  // if it is a negative value then it must match with exchange stablesats balance
+  return lnd + briaCold + briaHot - liabilities
 }
 
 export const getBookingVersusRealWorldAssets = async () => {
