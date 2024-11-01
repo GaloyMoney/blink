@@ -420,7 +420,7 @@ const getRealAssetsVersusLiabilities = async () => {
   const briaHot = hotBalance instanceof Error ? 0 : Number(hotBalance.amount)
   const briaCold = coldStorage instanceof Error ? 0 : Number(coldStorage.amount)
 
-  logger.error(
+  logger.info(
     { liabilities, lnd, briaHot, briaCold },
     "getRealAssetsVersusLiabilities balances",
   )
