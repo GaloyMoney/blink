@@ -16,12 +16,30 @@ import {
   UnknownLedgerError,
 } from "@/domain/ledger"
 
+const inProgressQueries = new Map<string, Promise<number>>()
+
 const getWalletBalance = async (account: string, query = {}) => {
   const params = { account, currency: "BTC", ...query }
-  const { balance } = await MainBookAdmin.balance(params, {
-    readPreference: "secondaryPreferred",
-  })
-  return balance
+  const inProgressKey = `${account}-${JSON.stringify(params)}`
+
+  const inProgress = inProgressQueries.get(inProgressKey)
+  if (inProgress) {
+    return inProgress
+  }
+
+  const balancePromise = (async () => {
+    try {
+      const { balance } = await MainBookAdmin.balance(params, {
+        readPreference: "secondaryPreferred",
+      })
+      return balance
+    } finally {
+      inProgressQueries.delete(inProgressKey)
+    }
+  })()
+
+  inProgressQueries.set(inProgressKey, balancePromise)
+  return balancePromise
 }
 
 export const getAssetsBalance = (endDate?: Date) =>
