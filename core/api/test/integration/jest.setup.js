@@ -13,7 +13,7 @@ jest.mock("@/services/lnd/auth", () => {
 jest.mock("@/app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
 beforeAll(async () => {
-  mongoose = await setupMongoConnection(true)
+  mongoose = await setupMongoConnection({ syncIndexes: true })
 })
 
 afterAll(async () => {
