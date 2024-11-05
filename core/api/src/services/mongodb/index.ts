@@ -27,10 +27,10 @@ const DEFAULT_MONGODB_OPTIONS: mongoose.ConnectOptions = {
   compressors: ["snappy", "zlib"],
 
   maxPoolSize: 100,
-  minPoolSize: 20,
-  maxConnecting: 25, // Maximum number of concurrent connection attempts
+  minPoolSize: 15,
+  maxConnecting: 5, // Maximum number of concurrent connection attempts
 
-  socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+  socketTimeoutMS: 60000, // Close sockets after 60 seconds of inactivity
   connectTimeoutMS: 15000, // Give up initial connection after 15 seconds
   serverSelectionTimeoutMS: 15000, // Keep trying to send operations for 15 seconds
 
