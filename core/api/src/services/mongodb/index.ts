@@ -22,21 +22,27 @@ type SetupMongoConnectionArgs = {
   options?: mongoose.ConnectOptions
 }
 
-const DEFAULT_MONGODB_OPTIONS = {
+const DEFAULT_MONGODB_OPTIONS: mongoose.ConnectOptions = {
   autoIndex: false,
-  maxPoolSize: 50,
-  minPoolSize: 10,
+  compressors: ["snappy", "zlib"],
+
+  maxPoolSize: 100,
+  minPoolSize: 20,
+  maxConnecting: 25, // Maximum number of concurrent connection attempts
+
   socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-  connectTimeoutMS: 20000, // Give up initial connection after 20 seconds
-  serverSelectionTimeoutMS: 10000, // Keep trying to send operations for 10 seconds
+  connectTimeoutMS: 15000, // Give up initial connection after 15 seconds
+  serverSelectionTimeoutMS: 15000, // Keep trying to send operations for 15 seconds
+
   retryWrites: true,
   writeConcern: {
     w: "majority", // Wait for majority acknowledgment
     j: true, // Wait for journal commit
-    wtimeout: 5000, // Write timeout
+    wtimeout: 10000, // Write timeout
   },
-  maxConnecting: 10, // Maximum number of concurrent connection attempts
-  compression: ["snappy", "zlib"], // Enable compression
+
+  retryReads: true,
+  maxStalenessSeconds: 90,
   readPreference: "primaryPreferred", // Prefer primary but allow secondary reads
   readConcern: { level: "majority" }, // Read from majority-committed data
 } as const
