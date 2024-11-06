@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'perf(core): update mongodb default connection settings (#4646)...'
-      sha: ccd31cc0bff2fa644dacf57f83e36af178a17f33
+      commitTitle: 'fix(core): catch error on aws backup storage client creation (#4647)'
+      sha: 847bad97d2a7088f4ed8fc119d189845429bfca1
       tags:
-      - 0.21.1-2-gccd31cc0b
+      - 0.21.2-1-g847bad97d
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'perf(core): update mongodb default connection settings (#4646)...'
-      sha: ccd31cc0bff2fa644dacf57f83e36af178a17f33
+      commitTitle: 'fix(core): catch error on aws backup storage client creation (#4647)'
+      sha: 847bad97d2a7088f4ed8fc119d189845429bfca1
       tags:
-      - 0.21.1-2-gccd31cc0b
+      - 0.21.3
     path: schemas
   - git:
-      commitTitle: 'perf(core): update mongodb default connection settings (#4646)...'
-      sha: ccd31cc0bff2fa644dacf57f83e36af178a17f33
+      commitTitle: 'fix(core): catch error on aws backup storage client creation (#4647)'
+      sha: 847bad97d2a7088f4ed8fc119d189845429bfca1
       tags:
-      - 0.21.1-2-gccd31cc0b
+      - 0.21.3
     path: gql
   path: graphql
 kind: LockConfig
