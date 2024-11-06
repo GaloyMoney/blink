@@ -79,7 +79,7 @@ const main = async (): Promise<true | ApplicationError> => {
   return true
 }
 
-setupMongoConnection(false)
+setupMongoConnection()
   .then(async (mongoose) => {
     await Promise.all(lndsConnect.map((lndParams) => isUp(lndParams)))
     await main()

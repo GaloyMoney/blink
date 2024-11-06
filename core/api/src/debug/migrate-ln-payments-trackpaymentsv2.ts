@@ -137,7 +137,7 @@ const migrateLnPayment = async (
     },
   )
 
-setupMongoConnection(false)
+setupMongoConnection()
   .then(async (mongoose) => {
     await Promise.all(lndsConnect.map((lndParams) => isUp(lndParams)))
     await main()

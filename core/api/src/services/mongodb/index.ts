@@ -17,6 +17,36 @@ import { WalletCurrency } from "@/domain/shared"
 import { lazyLoadLedgerAdmin } from "@/services/ledger"
 import { WalletsRepository } from "@/services/mongoose"
 
+type SetupMongoConnectionArgs = {
+  syncIndexes: boolean
+  options?: mongoose.ConnectOptions
+}
+
+const DEFAULT_MONGODB_OPTIONS: mongoose.ConnectOptions = {
+  autoIndex: false,
+  compressors: ["snappy", "zlib"],
+
+  maxPoolSize: 100,
+  minPoolSize: 15,
+  maxConnecting: 5, // Maximum number of concurrent connection attempts
+
+  socketTimeoutMS: 60000, // Close sockets after 60 seconds of inactivity
+  connectTimeoutMS: 15000, // Give up initial connection after 15 seconds
+  serverSelectionTimeoutMS: 15000, // Keep trying to send operations for 15 seconds
+
+  retryWrites: true,
+  writeConcern: {
+    w: "majority", // Wait for majority acknowledgment
+    j: true, // Wait for journal commit
+    wtimeout: 10000, // Write timeout
+  },
+
+  retryReads: true,
+  maxStalenessSeconds: 90,
+  readPreference: "primaryPreferred", // Prefer primary but allow secondary reads
+  readConcern: { level: "majority" }, // Read from majority-committed data
+} as const
+
 export const ledgerAdmin = lazyLoadLedgerAdmin({
   bankOwnerWalletResolver: async () => {
     const result = await Account.findOne({ role: "bankowner" }, { defaultWalletId: 1 })
@@ -63,9 +93,11 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
 // TODO add an event listenever if we got disconnecter from MongoDb
 // after a first successful connection
 
-export const setupMongoConnection = async (syncIndexes = false) => {
+export const setupMongoConnection = async (
+  { syncIndexes, options }: SetupMongoConnectionArgs = { syncIndexes: false },
+) => {
   try {
-    await mongoose.connect(MONGODB_CON, { autoIndex: false })
+    await mongoose.connect(MONGODB_CON, { ...DEFAULT_MONGODB_OPTIONS, ...options })
   } catch (err) {
     baseLogger.fatal(`error connecting to mongodb`)
     throw err
