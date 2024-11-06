@@ -211,7 +211,10 @@ const main = async () => {
   activateLndHealthCheck()
 }
 
-setupMongoConnection()
+setupMongoConnection({
+  syncIndexes: false,
+  options: { readPreference: "secondaryPreferred", socketTimeoutMS: 120000 },
+})
   .then(() => main())
   .catch((err) => logger.error(err))
 

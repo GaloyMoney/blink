@@ -7,7 +7,7 @@ import { activateLndHealthCheck } from "@/services/lnd/health"
 import { baseLogger } from "@/services/logger"
 import { setupMongoConnection } from "@/services/mongodb"
 
-setupMongoConnection(true)
+setupMongoConnection({ syncIndexes: true })
   .then(async () => {
     activateLndHealthCheck()
 

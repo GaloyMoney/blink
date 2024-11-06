@@ -259,7 +259,7 @@ const getFirstIndex = async (pubkey: Pubkey): Promise<number | ApplicationError>
     : parseInt(indexMatch) + 1
 }
 
-setupMongoConnection(false)
+setupMongoConnection()
   .then(async (mongoose) => {
     await Promise.all(lndsConnect.map((lndParams) => isUp(lndParams)))
     await main()

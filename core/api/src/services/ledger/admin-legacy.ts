@@ -29,9 +29,7 @@ const getWalletBalance = async (account: string, query = {}) => {
 
   const balancePromise = (async () => {
     try {
-      const { balance } = await MainBookAdmin.balance(params, {
-        readPreference: "secondaryPreferred",
-      })
+      const { balance } = await MainBookAdmin.balance(params)
       return balance
     } finally {
       inProgressQueries.delete(inProgressKey)
