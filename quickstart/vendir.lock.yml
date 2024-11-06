@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(core): update exporter metrics (#4617)...'
-      sha: 748afc2dec19f2521c86cb5132068ba542bdcb36
+      commitTitle: 'perf(core): update mongodb default connection settings (#4646)...'
+      sha: ccd31cc0bff2fa644dacf57f83e36af178a17f33
       tags:
-      - 0.21.0-1-g748afc2de
+      - 0.21.1-2-gccd31cc0b
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(core): update exporter metrics (#4617)...'
-      sha: 748afc2dec19f2521c86cb5132068ba542bdcb36
+      commitTitle: 'perf(core): update mongodb default connection settings (#4646)...'
+      sha: ccd31cc0bff2fa644dacf57f83e36af178a17f33
       tags:
-      - 0.21.0-1-g748afc2de
+      - 0.21.1-2-gccd31cc0b
     path: schemas
   - git:
-      commitTitle: 'feat(core): update exporter metrics (#4617)...'
-      sha: 748afc2dec19f2521c86cb5132068ba542bdcb36
+      commitTitle: 'perf(core): update mongodb default connection settings (#4646)...'
+      sha: ccd31cc0bff2fa644dacf57f83e36af178a17f33
       tags:
-      - 0.21.0-1-g748afc2de
+      - 0.21.1-2-gccd31cc0b
     path: gql
   path: graphql
 kind: LockConfig
