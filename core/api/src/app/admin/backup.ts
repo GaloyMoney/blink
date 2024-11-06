@@ -92,14 +92,14 @@ export const uploadBackup =
           },
         },
         async () => {
-          const client = new S3Client({})
-          const command = new PutObjectCommand({
-            Bucket: LND_SCB_BACKUP_BUCKET_NAME,
-            Key: `lnd_scb/${filename}`,
-            Body: backup,
-            ContentMD5: createHash("md5").update(backup).digest("base64"),
-          })
           try {
+            const client = new S3Client({})
+            const command = new PutObjectCommand({
+              Bucket: LND_SCB_BACKUP_BUCKET_NAME,
+              Key: `lnd_scb/${filename}`,
+              Body: backup,
+              ContentMD5: createHash("md5").update(backup).digest("base64"),
+            })
             client.send(command)
             logger.info({ backup }, "Static channel backup to AWS successful.")
             addEventToCurrentSpan("Static channel backup to AWS successful.")
