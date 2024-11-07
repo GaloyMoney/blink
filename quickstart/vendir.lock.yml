@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): update socket timeout (#4648)'
-      sha: c762b94d19f950ed1fc18acb6c5b27f680219272
+      commitTitle: 'fix(core): update read concern to avoid sync issues (#4649)'
+      sha: 1cf7181155c3b592123f9fc12bfd5e34b4b1b066
       tags:
-      - 0.21.3-2-gc762b94d1
+      - 0.21.4-2-g1cf718115
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): update socket timeout (#4648)'
-      sha: c762b94d19f950ed1fc18acb6c5b27f680219272
+      commitTitle: 'fix(core): update read concern to avoid sync issues (#4649)'
+      sha: 1cf7181155c3b592123f9fc12bfd5e34b4b1b066
       tags:
-      - 0.21.3-2-gc762b94d1
+      - 0.21.4-2-g1cf718115
     path: schemas
   - git:
-      commitTitle: 'fix(core): update socket timeout (#4648)'
-      sha: c762b94d19f950ed1fc18acb6c5b27f680219272
+      commitTitle: 'fix(core): update read concern to avoid sync issues (#4649)'
+      sha: 1cf7181155c3b592123f9fc12bfd5e34b4b1b066
       tags:
-      - 0.21.3-2-gc762b94d1
+      - 0.21.4-2-g1cf718115
     path: gql
   path: graphql
 kind: LockConfig
