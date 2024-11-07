@@ -30,7 +30,7 @@ const DEFAULT_MONGODB_OPTIONS: mongoose.ConnectOptions = {
   minPoolSize: 15,
   maxConnecting: 5, // Maximum number of concurrent connection attempts
 
-  socketTimeoutMS: 60000, // Close sockets after 60 seconds of inactivity
+  socketTimeoutMS: 120000, // Close sockets after 120 seconds of inactivity
   connectTimeoutMS: 15000, // Give up initial connection after 15 seconds
   serverSelectionTimeoutMS: 15000, // Keep trying to send operations for 15 seconds
 
