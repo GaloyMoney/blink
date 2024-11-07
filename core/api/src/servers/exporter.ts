@@ -213,7 +213,7 @@ const main = async () => {
 
 setupMongoConnection({
   syncIndexes: false,
-  options: { readPreference: "secondaryPreferred", socketTimeoutMS: 120000 },
+  options: { readPreference: "secondaryPreferred", socketTimeoutMS: 150000 },
 })
   .then(() => main())
   .catch((err) => logger.error(err))
