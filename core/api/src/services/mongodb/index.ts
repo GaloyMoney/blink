@@ -37,14 +37,11 @@ const DEFAULT_MONGODB_OPTIONS: mongoose.ConnectOptions = {
   retryWrites: true,
   writeConcern: {
     w: "majority", // Wait for majority acknowledgment
-    j: true, // Wait for journal commit
-    wtimeout: 10000, // Write timeout
   },
 
   retryReads: true,
   maxStalenessSeconds: 90,
   readPreference: "primaryPreferred", // Prefer primary but allow secondary reads
-  readConcern: { level: "majority" }, // Read from majority-committed data
 } as const
 
 export const ledgerAdmin = lazyLoadLedgerAdmin({
