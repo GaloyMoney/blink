@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): catch error on aws backup storage client creation (#4647)'
-      sha: 847bad97d2a7088f4ed8fc119d189845429bfca1
+      commitTitle: 'fix(core): update socket timeout (#4648)'
+      sha: c762b94d19f950ed1fc18acb6c5b27f680219272
       tags:
-      - 0.21.2-1-g847bad97d
+      - 0.21.3-2-gc762b94d1
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): catch error on aws backup storage client creation (#4647)'
-      sha: 847bad97d2a7088f4ed8fc119d189845429bfca1
+      commitTitle: 'fix(core): update socket timeout (#4648)'
+      sha: c762b94d19f950ed1fc18acb6c5b27f680219272
       tags:
-      - 0.21.3
+      - 0.21.3-2-gc762b94d1
     path: schemas
   - git:
-      commitTitle: 'fix(core): catch error on aws backup storage client creation (#4647)'
-      sha: 847bad97d2a7088f4ed8fc119d189845429bfca1
+      commitTitle: 'fix(core): update socket timeout (#4648)'
+      sha: c762b94d19f950ed1fc18acb6c5b27f680219272
       tags:
-      - 0.21.3
+      - 0.21.3-2-gc762b94d1
     path: gql
   path: graphql
 kind: LockConfig
