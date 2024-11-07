@@ -9,6 +9,7 @@
 
 load("@prelude//:cache_mode.bzl", "CacheModeInfo")
 load("@prelude//:genrule_local_labels.bzl", "genrule_labels_require_local")
+load("@prelude//:genrule_prefer_local_labels.bzl", "genrule_labels_prefer_local")
 load("@prelude//:genrule_toolchain.bzl", "GenruleToolchainInfo")
 load("@prelude//:is_full_meta_repo.bzl", "is_full_meta_repo")
 load("@prelude//android:build_only_native_code.bzl", "is_build_only_native_code")
@@ -39,6 +40,9 @@ _BUILD_ROOT_LABELS = {label: True for label in [
     "app_modules_genrule",  # produces JSON containing file paths that are read from the root dir.
     "android_langpack_strings",  # produces JSON containing file paths that are read from the root dir.
     "windows_long_path_issue",  # Windows: relative path length exceeds PATH_MAX, program cannot access file
+    "flowtype_ota_safety_target",  # produces JSON containing file paths that are project-relative
+    "ctrlr_setting_paths",
+    "llvm_buck_genrule",
 ]}
 
 # In Buck1 the SRCS environment variable is only set if the substring SRCS is on the command line.
@@ -64,6 +68,9 @@ def _requires_build_root(ctx: AnalysisContext) -> bool:
 def _requires_local(ctx: AnalysisContext) -> bool:
     return genrule_labels_require_local(ctx.attrs.labels)
 
+def _prefers_local(ctx: AnalysisContext) -> bool:
+    return genrule_labels_prefer_local(ctx.attrs.labels)
+
 def _ignore_artifacts(ctx: AnalysisContext) -> bool:
     return "buck2_ignore_artifacts" in ctx.attrs.labels
 
@@ -80,6 +87,7 @@ def genrule_attributes() -> dict[str, Attr]:
         "metadata_env_var": attrs.option(attrs.string(), default = None),
         "metadata_path": attrs.option(attrs.string(), default = None),
         "no_outputs_cleanup": attrs.bool(default = False),
+        "remote_execution_dependencies": attrs.list(attrs.dict(key = attrs.string(), value = attrs.string()), default = []),
         "_build_only_native_code": attrs.default_only(attrs.bool(default = is_build_only_native_code())),
         "_genrule_toolchain": attrs.default_only(attrs.toolchain_dep(default = "toolchains//:genrule", providers = [GenruleToolchainInfo])),
     }
@@ -132,6 +140,7 @@ def process_genrule(
         fail("Only one of `out` and `outs` should be set. Got out=`%s`, outs=`%s`" % (repr(out_attr), repr(outs_attr)))
 
     local_only = _requires_local(ctx)
+    prefer_local = _prefers_local(ctx)
 
     # NOTE: Eventually we shouldn't require local_only here, since we should be
     # fine with caching local fallbacks if necessary (or maybe that should be
@@ -173,18 +182,20 @@ def process_genrule(
         cmd = ctx.attrs.bash if ctx.attrs.bash != None else ctx.attrs.cmd
         if cmd == None:
             fail("One of `cmd` or `bash` should be set.")
-    cmd = cmd_args(cmd)
+
+    replace_regex = []
 
     # For backwards compatibility with Buck1.
     if is_windows:
         for re, sub in _WINDOWS_ENV_SUBSTITUTIONS:
-            cmd.replace_regex(re, sub)
+            replace_regex.append((re, sub))
 
         for extra_env_var in extra_env_vars:
-            cmd.replace_regex(regex("\\$(%s\\b|\\{%s\\})" % (extra_env_var, extra_env_var)), "%%%s%%" % extra_env_var)
+            replace_regex.append(
+                (regex("\\$(%s\\b|\\{%s\\})" % (extra_env_var, extra_env_var)), "%%%s%%" % extra_env_var),
+            )
 
-    if _ignore_artifacts(ctx):
-        cmd = cmd.ignore_artifacts()
+    cmd = cmd_args(cmd, ignore_artifacts = _ignore_artifacts(ctx), replace_regex = replace_regex)
 
     if type(ctx.attrs.srcs) == type([]):
         # FIXME: We should always use the short_path, but currently that is sometimes blank.
@@ -226,6 +237,10 @@ def process_genrule(
     # set, we make the action *different*.
     if local_only:
         env_vars["__BUCK2_LOCAL_ONLY_CACHE_BUSTER"] = cmd_args("")
+
+    # see comment above
+    if prefer_local:
+        env_vars["__BUCK2_PREFER_LOCAL_CACHE_BUSTER"] = cmd_args("")
 
     # For now, when uploads are enabled, be safe and avoid sharing cache hits.
     cache_bust = _get_cache_mode(ctx).cache_bust_genrules
@@ -283,15 +298,19 @@ def process_genrule(
 
         if is_windows:
             rewrite_scratch_path = cmd_args(
-                cmd_args(ctx.label.project_root).relative_to(srcs_artifact),
+                cmd_args(ctx.label.project_root, relative_to = srcs_artifact),
                 format = 'set "BUCK_SCRATCH_PATH={}\\%BUCK_SCRATCH_PATH%"',
             )
         else:
             srcs_dir = cmd_args(srcs_dir, quote = "shell")
             rewrite_scratch_path = cmd_args(
-                cmd_args(ctx.label.project_root, quote = "shell").relative_to(srcs_artifact),
+                cmd_args(ctx.label.project_root, quote = "shell", relative_to = srcs_artifact),
                 format = "export BUCK_SCRATCH_PATH={}/$BUCK_SCRATCH_PATH",
             )
+
+        # Relativize all paths in the command to the sandbox dir.
+        for script_cmd in script:
+            script_cmd.relative_to(srcs_artifact)
 
         script = (
             [
@@ -300,12 +319,14 @@ def process_genrule(
                 # Change to the directory that genrules expect.
                 cmd_args(srcs_dir, format = "cd {}"),
             ] +
-            # Relativize all paths in the command to the sandbox dir.
-            [cmd.relative_to(srcs_artifact) for cmd in script]
+            script
         )
 
         # Relative all paths in the env to the sandbox dir.
-        env_vars = {key: val.relative_to(srcs_artifact) for key, val in env_vars.items()}
+        env_vars = {
+            key: cmd_args(value, relative_to = srcs_artifact)
+            for key, value in env_vars.items()
+        }
 
     if is_windows:
         # Should be in the beginning.
@@ -328,15 +349,19 @@ def process_genrule(
         metadata_args["metadata_env_var"] = ctx.attrs.metadata_env_var
     if ctx.attrs.metadata_path:
         metadata_args["metadata_path"] = ctx.attrs.metadata_path
+    if ctx.attrs.remote_execution_dependencies:
+        metadata_args["remote_execution_dependencies"] = ctx.attrs.remote_execution_dependencies
 
     category = "genrule"
     if ctx.attrs.type != None:
         # As of 09/2021, all genrule types were legal snake case if their dashes and periods were replaced with underscores.
         category += "_" + ctx.attrs.type.replace("-", "_").replace(".", "_")
     ctx.actions.run(
-        cmd_args(script_args).hidden([cmd, srcs_artifact, out_artifact.as_output()] + hidden),
+        cmd_args(script_args, hidden = [cmd, srcs_artifact, out_artifact.as_output()] + hidden),
         env = env_vars,
         local_only = local_only,
+        prefer_local = prefer_local,
+        weight = value_or(ctx.attrs.weight, 1),
         allow_cache_upload = cacheable,
         category = category,
         identifier = identifier,

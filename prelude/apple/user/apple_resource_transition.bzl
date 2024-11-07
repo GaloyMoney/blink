@@ -9,16 +9,15 @@ def _is_universal(platform: PlatformInfo, refs: struct) -> bool:
     universal = platform.configuration.constraints.get(refs.universal[ConstraintSettingInfo].label)
     return universal.label == refs.universal_enabled[ConstraintValueInfo].label if universal != None else False
 
-def _impl(platform: PlatformInfo, refs: struct, attrs: struct) -> PlatformInfo:
+def _apple_resource_transition_impl(platform: PlatformInfo, refs: struct, attrs: struct) -> PlatformInfo:
     if attrs.skip_universal_resource_dedupe or not _is_universal(platform, refs):
         return platform
     else:
         cpu_constraint_label = refs.cpu[ConstraintSettingInfo].label
-        universal_constraint_label = refs.universal[ConstraintSettingInfo].label
         filtered_constraints = {
             constraint_setting_label: constraint_setting_value
             for (constraint_setting_label, constraint_setting_value) in platform.configuration.constraints.items()
-            if constraint_setting_label != cpu_constraint_label and constraint_setting_label != universal_constraint_label
+            if constraint_setting_label != cpu_constraint_label
         }
         return PlatformInfo(
             label = "apple_universal_deduped_resource",
@@ -29,11 +28,11 @@ def _impl(platform: PlatformInfo, refs: struct, attrs: struct) -> PlatformInfo:
         )
 
 apple_resource_transition = transition(
-    impl = _impl,
+    impl = _apple_resource_transition_impl,
     refs = {
         "cpu": "config//cpu/constraints:cpu",
-        "universal": "config//build_mode/apple/constraints:universal",
-        "universal_enabled": "config//build_mode/apple/constraints:universal-enabled",
+        "universal": "config//cpu/constraints:universal",
+        "universal_enabled": "config//cpu/constraints:universal-enabled",
     },
     attrs = [
         "skip_universal_resource_dedupe",

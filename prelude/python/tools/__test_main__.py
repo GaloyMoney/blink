@@ -32,7 +32,6 @@ import sys
 import time
 import traceback
 import unittest
-import warnings
 from importlib.machinery import PathFinder
 
 
@@ -117,7 +116,8 @@ class DebugWipeFinder(PathFinder):
 
             def get_code(self, fullname):
                 code = super().get_code(fullname)
-                if code:
+                # This can segfault in 3.12
+                if code and sys.version_info < (3, 12):
                     # Ideally we'd do
                     # code.co_lnotab = b''
                     # But code objects are READONLY. Not to worry though; we'll
@@ -258,7 +258,14 @@ class BuckTestResult(unittest.TextTestResult):
         # test cases, and fall back to looking the test up from the suite
         # otherwise.
         if not hasattr(test, "_testMethodName"):
-            test = self._find_next_test(self._suite)
+            potential_test = self._find_next_test(self._suite)
+
+            if potential_test is not None:
+                test = potential_test
+            elif hasattr(test, "id"):
+                # If the next test can't be found, this could be a failure in class teardown. Fallback
+                # to using the id, which will likely be the method name as the test method.
+                test._testMethodName = test.id()
 
         self._results.append(
             {
@@ -427,6 +434,30 @@ class RegexTestLoader(unittest.TestLoader):
             if robj.search(fullname):
                 matched.append(attrname)
         return matched
+
+    def loadTestsFromName(self, name, module=None):
+        """
+        Tries to find and import the module from `name` and discover test cases inside.
+
+        NOTE: this function is used by the unittest framework and our unittest
+        adapters to integrate with buck/tpx.
+        """
+        suite = super().loadTestsFromName(name, module)
+        for test in suite:
+            if isinstance(test, unittest.loader._FailedTest):
+                # _FailedTest means that the test module couldn't be loaded
+                # (usually, because of a bad import). Instead of pretending to
+                # execute a synthetic test case
+                # `unittest.loader._FailedTest(<failed module>)` and reporting
+                # it to the downstream consumers, we should hard fail.
+                # When static listing is used this will let TPX to associate the
+                # failure to either the main test (for bundled execution) or
+                # individual test cases (regular execution) in a test target,
+                # and not to the synthetic _FailedTest case.
+                print(test._exception, file=sys.stderr)
+                sys.exit(1)
+
+        return suite
 
 
 class Loader:
@@ -657,11 +688,20 @@ class MainProgram:
 
         if self.options.list:
             for test in self.get_tests(test_suite):
+                # Python 3.12 changed the implementation of `TestCase.__str__`.
+                # We construct the name manually here to ensure consistency between
+                # Python versions.
+                # Example: "test_basic (tests.test_object.TestAbsent)".
+                method_name = getattr(test, "_testMethodName", "")
+                cls = test.__class__
                 if self.options.list_format == "python":
-                    name = str(test)
+                    if method_name:
+                        name = f"{method_name} ({cls.__module__}.{cls.__qualname__})"
+                    else:
+                        name = str(test)
+
                 elif self.options.list_format == "buck":
-                    method_name = getattr(test, "_testMethodName", "")
-                    name = _format_test_name(test.__class__, method_name)
+                    name = _format_test_name(cls, method_name)
                 else:
                     raise Exception(
                         "Bad test list format: %s" % (self.options.list_format,)
@@ -757,12 +797,12 @@ class MainProgram:
             analysis[3][-1] if len(analysis[3]) else 0,
         )
         lines = ["N"] * numLines
-        for l in analysis[1]:
-            lines[l - 1] = "C"
-        for l in analysis[2]:
-            lines[l - 1] = "X"
-        for l in analysis[3]:
-            lines[l - 1] = "U"
+        for line in analysis[1]:
+            lines[line - 1] = "C"
+        for line in analysis[2]:
+            lines[line - 1] = "X"
+        for line in analysis[3]:
+            lines[line - 1] = "U"
         return "".join(lines)
 
 

@@ -7,6 +7,7 @@
 
 load(
     "@prelude//apple:resource_groups.bzl",
+    "ResourceGraphNode",  # @unused Used as a type
     "ResourceGroupInfo",
     "create_resource_graph",
     "get_resource_graph_node_map_func",
@@ -15,29 +16,31 @@ load(
     "@prelude//cxx:groups.bzl",
     "compute_mappings",
     "create_group",
+    "get_roots_from_mapping",
     "make_info_subtarget_providers",
     "parse_groups_definitions",
 )
+load(
+    "@prelude//cxx:groups_types.bzl",
+    "GroupMapping",  # @unused Used as a type
+    "Traversal",
+)
 load("@prelude//user:rule_spec.bzl", "RuleRegistrationSpec")
-load("@prelude//decls/common.bzl", "Traversal")
+load("@prelude//utils:utils.bzl", "flatten")
 
-def resource_group_map_attr():
-    return attrs.option(attrs.dep(providers = [ResourceGroupInfo]), default = None)
-
-def _impl(ctx: AnalysisContext) -> list[Provider]:
+def _resource_group_map_impl(ctx: AnalysisContext) -> list[Provider]:
     resource_groups = parse_groups_definitions(ctx.attrs.map, lambda root: root.label)
 
-    # Extract deps from the roots via the raw attrs, as `parse_groups_definitions`
-    # parses them as labels.
-    resource_groups_deps = [
-        mapping[0]
-        for entry in ctx.attrs.map
-        for mapping in entry[1]
-    ]
+    resource_group_to_implicit_deps_mapping = {
+        group: flatten([get_roots_from_mapping(mapping) for mapping in mappings])
+        for group, mappings in ctx.attrs.map
+    }
+    flattend_resource_group_deps = flatten(resource_group_to_implicit_deps_mapping.values())
+
     resource_graph = create_resource_graph(
         ctx = ctx,
         labels = [],
-        deps = resource_groups_deps,
+        deps = flattend_resource_group_deps,
         exported_deps = [],
     )
     resource_graph_node_map = get_resource_graph_node_map_func(resource_graph)()
@@ -49,11 +52,10 @@ def _impl(ctx: AnalysisContext) -> list[Provider]:
                 # ResourceGraphInfo, which `create_resource_graph` removes above.
                 # So make sure we remove them from the mappings too, otherwise
                 # `compute_mappings` crashes on the inconsistency.
-                mappings = [
-                    mapping
-                    for mapping in group.mappings
-                    if mapping.root == None or mapping.root in resource_graph_node_map
-                ],
+                mappings = filter(
+                    None,
+                    [_fixup_mapping_to_only_include_roots_in_the_map(m, resource_graph_node_map) for m in group.mappings],
+                ),
             )
             for group in resource_groups
         },
@@ -71,14 +73,44 @@ def _impl(ctx: AnalysisContext) -> list[Provider]:
             # referenced in our roots, so propagate them here.
             # NOTE(agallagher): We do this to maintain existing behavior here
             # but it's not clear if it's actually desirable behavior.
-            implicit_deps = resource_groups_deps,
+            resource_group_to_implicit_deps_mapping = resource_group_to_implicit_deps_mapping,
         ),
     ]
 
+def _fixup_mapping_to_only_include_roots_in_the_map(mapping: GroupMapping, node_map: dict[Label, ResourceGraphNode]) -> GroupMapping | None:
+    if not mapping.roots:
+        return mapping
+
+    filtered_roots = [
+        root
+        for root in mapping.roots
+        if root in node_map
+    ]
+    if not filtered_roots:
+        return None
+
+    return GroupMapping(
+        roots = filtered_roots,
+        traversal = mapping.traversal,
+        filters = mapping.filters,
+        preferred_linkage = mapping.preferred_linkage,
+    )
+
 registration_spec = RuleRegistrationSpec(
     name = "resource_group_map",
-    impl = _impl,
+    impl = _resource_group_map_impl,
     attrs = {
-        "map": attrs.list(attrs.tuple(attrs.string(), attrs.list(attrs.tuple(attrs.dep(), attrs.enum(Traversal), attrs.option(attrs.string()))))),
+        "map": attrs.list(
+            attrs.tuple(
+                attrs.string(),
+                attrs.list(
+                    attrs.tuple(
+                        attrs.one_of(attrs.dep(), attrs.list(attrs.dep())),
+                        attrs.enum(Traversal.values()),
+                        attrs.option(attrs.string()),
+                    ),
+                ),
+            ),
+        ),
     },
 )

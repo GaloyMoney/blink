@@ -8,10 +8,7 @@
 
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
-      };
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -26,7 +23,7 @@
       overlays = [
         (self: super: {
           nodejs = super.nodejs_20;
-          pnpm = super.nodePackages.pnpm;
+          pnpm = super.pnpm;
         })
         (import rust-overlay)
       ];

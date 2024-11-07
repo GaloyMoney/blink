@@ -10,7 +10,29 @@ import argparse
 import os
 import re
 from io import TextIOWrapper
-from typing import Dict, Iterable, List
+from typing import Dict, FrozenSet, Iterable, List
+
+
+_RESERVED_KEYWORDS: FrozenSet[str] = frozenset(
+    [
+        "config_macros",
+        "conflict",
+        "exclude",
+        "explicit",
+        "extern",
+        "export_as",
+        "export",
+        "framework",
+        "header",
+        "link",
+        "module",
+        "private",
+        "requires",
+        "textual",
+        "umbrella",
+        "use",
+    ]
+)
 
 
 class Module:
@@ -30,7 +52,10 @@ class Module:
 
     def render(self, f: TextIOWrapper, path_prefix: str, indent: int = 0) -> None:
         space = " " * indent
-        f.write(f"{space}module {self.name} {{\n")
+        name = self.name
+        if name in _RESERVED_KEYWORDS:
+            name = f"{name}_"
+        f.write(f"{space}module {name} {{\n")
 
         submodule_names = set()
         for submodule_name in sorted(self.submodules.keys()):
@@ -81,7 +106,7 @@ def _write_submodules(
         module = root_module
         for i, component in enumerate(h.split(os.sep)):
             if i == 0 and component == name:
-                # The common case is we have a singe header path prefix that matches the module name.
+                # The common case is we have a single header path prefix that matches the module name.
                 # In this case we add the headers directly to the root module.
                 pass
             else:

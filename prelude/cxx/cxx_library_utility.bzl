@@ -15,21 +15,21 @@ load(
     "@prelude//linking:link_info.bzl",
     "LinkStrategy",
     "LinkStyle",
-    "Linkage",
     "LinkerFlags",
     "MergedLinkInfo",
 )
+load("@prelude//linking:types.bzl", "Linkage")
 load(
     "@prelude//utils:utils.bzl",
     "flatten",
     "from_named_set",
 )
-load(
-    ":compile.bzl",
-    "CxxCompileOutput",  # @unused Used as a type
-)
 load(":cxx_context.bzl", "get_cxx_platform_info", "get_cxx_toolchain_info")
-load(":cxx_toolchain_types.bzl", "ShlibInterfacesMode")
+load(
+    ":cxx_toolchain_types.bzl",
+    "LinkerType",
+    "ShlibInterfacesMode",
+)
 load(
     ":headers.bzl",
     "cxx_attr_header_namespace",
@@ -147,7 +147,7 @@ def cxx_attr_resources(ctx: AnalysisContext) -> dict[str, ArtifactOutputs]:
     return resources
 
 def cxx_is_gnu(ctx: AnalysisContext) -> bool:
-    return get_cxx_toolchain_info(ctx).linker_info.type == "gnu"
+    return get_cxx_toolchain_info(ctx).linker_info.type == LinkerType("gnu")
 
 def cxx_use_shlib_intfs(ctx: AnalysisContext) -> bool:
     """
@@ -160,6 +160,12 @@ def cxx_use_shlib_intfs(ctx: AnalysisContext) -> bool:
 
     linker_info = get_cxx_toolchain_info(ctx).linker_info
     return linker_info.shlib_interfaces != ShlibInterfacesMode("disabled")
+
+def cxx_use_shlib_intfs_mode(ctx: AnalysisContext, mode: ShlibInterfacesMode) -> bool:
+    """
+    Verify we are using a specific shared library interface mode.
+    """
+    return cxx_use_shlib_intfs(ctx) and get_cxx_toolchain_info(ctx).linker_info.shlib_interfaces == mode
 
 def cxx_platform_supported(ctx: AnalysisContext) -> bool:
     """
@@ -174,17 +180,3 @@ def cxx_platform_supported(ctx: AnalysisContext) -> bool:
         ctx.attrs.supported_platforms_regex,
         get_cxx_platform_info(ctx).name,
     )
-
-def cxx_objects_sub_targets(outs: list[CxxCompileOutput]) -> dict[str, list[Provider]]:
-    objects_sub_targets = {}
-    for obj in outs:
-        sub_targets = {}
-        if obj.clang_trace:
-            sub_targets["clang-trace"] = [DefaultInfo(obj.clang_trace)]
-        if obj.clang_remarks:
-            sub_targets["clang-remarks"] = [DefaultInfo(obj.clang_remarks)]
-        objects_sub_targets[obj.object.short_path] = [DefaultInfo(
-            obj.object,
-            sub_targets = sub_targets,
-        )]
-    return objects_sub_targets

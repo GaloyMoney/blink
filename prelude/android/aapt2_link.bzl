@@ -23,7 +23,7 @@ def get_aapt2_link(
         no_resource_removal: bool,
         should_keep_raw_values: bool,
         package_id_offset: int,
-        resource_stable_ids: [Artifact, None],
+        resource_stable_ids: Artifact | None,
         preferred_density: [str, None],
         filter_locales: bool,
         locales: list[str],
@@ -117,8 +117,11 @@ def get_aapt2_link(
 
         aapt2_compile_rules_args_file = ctx.actions.write("{}/aapt2_compile_rules_args_file".format(identifier), cmd_args(aapt2_compile_rules, delimiter = " "))
         aapt2_command.add("-R")
-        aapt2_command.add(cmd_args(aapt2_compile_rules_args_file, format = "@{}"))
-        aapt2_command.hidden(aapt2_compile_rules)
+        aapt2_command.add(cmd_args(
+            aapt2_compile_rules_args_file,
+            format = "@{}",
+            hidden = aapt2_compile_rules,
+        ))
 
         aapt2_command.add(additional_aapt2_params)
 

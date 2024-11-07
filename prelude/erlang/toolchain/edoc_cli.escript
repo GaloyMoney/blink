@@ -72,7 +72,7 @@ remove_loggers() ->
     [logger:remove_handler(H) || H <- logger:get_handler_ids()].
 
 generate_empty_chunk(File, OutputDir) ->
-    file:write_file(
+    ok = file:write_file(
         chunk_path(File, OutputDir),
         erlang:term_to_binary(failed_to_build_doc_chunk)
     ).
@@ -85,7 +85,7 @@ verify_files_exist(#{files := Files, out_dir := OutputDir}) ->
                 true ->
                     true;
                 false ->
-                    io:format(standard_error, "error: coudn't generate ~s~n", [ChunkPath]),
+                    io:format(standard_error, "error: couldn't generate ~s~n", [ChunkPath]),
                     false
             end
         end,

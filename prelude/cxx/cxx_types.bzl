@@ -5,7 +5,11 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
-load("@prelude//:artifact_tset.bzl", "ArtifactTSet")  # @unused Used as a type
+load("@prelude//:artifact_tset.bzl", "ArtifactInfoTag", "ArtifactTSet")
+load(
+    "@prelude//cxx:link_groups_types.bzl",
+    "LinkGroupInfo",  # @unused Used as a type
+)
 load(
     "@prelude//linking:link_info.bzl",
     "LinkArgs",
@@ -21,7 +25,7 @@ load(
 )
 load(":argsfiles.bzl", "CompileArgsfiles")
 load(
-    ":compile.bzl",
+    ":cxx_sources.bzl",
     "CxxSrcWithFlags",  # @unused Used as a type
 )
 load(
@@ -30,7 +34,6 @@ load(
 )
 load(
     ":link_groups.bzl",
-    "LinkGroupInfo",  # @unused Used as a type
     "LinkGroupLibSpec",  # @unused Used as a type
 )
 load(
@@ -47,6 +50,13 @@ load(
     "cxx_populate_xcode_attributes",
 )
 
+CxxLibraryInfo = provider(
+    fields = dict(
+        target = provider_field(Label),
+        labels = provider_field(list[str]),
+    ),
+)
+
 # Parameters to control which sub targets to define when processing Cxx rules.
 # By default, generates all subtargets.
 CxxRuleSubTargetParams = record(
@@ -60,6 +70,7 @@ CxxRuleSubTargetParams = record(
     xcode_data = field(bool, True),
     objects = field(bool, True),
     bitcode_bundle = field(bool, True),
+    header_unit = field(bool, True),
 )
 
 # Parameters to control which providers to define when processing Cxx rules.
@@ -69,6 +80,7 @@ CxxRuleProviderParams = record(
     default = field(bool, True),
     java_packaging_info = field(bool, True),
     android_packageable_info = field(bool, True),
+    java_global_code_info = field(bool, True),
     linkable_graph = field(bool, True),
     link_style_outputs = field(bool, True),
     merged_native_link_info = field(bool, True),
@@ -80,6 +92,7 @@ CxxRuleProviderParams = record(
     shared_libraries = field(bool, True),
     template_placeholders = field(bool, True),
     preprocessor_for_tests = field(bool, True),
+    third_party_build = field(bool, False),
 )
 
 # Parameters to handle non-Clang sources, e.g Swift on Apple's platforms.
@@ -94,6 +107,8 @@ CxxRuleAdditionalParams = record(
     subtargets = field(dict, {}),  # [str: ["provider"]]
     # Might be used to expose additional providers to cxx layer (e.g to support #headers subtarget for Swift)
     additional_providers_factory = field([typing.Callable, None], None),  # ([CPreprocessorInfo, None]) -> ["provider"]:
+    # The list of tags that should be applied to generated ArtifactTSet of debug information.
+    external_debug_info_tags = field(list[ArtifactInfoTag], []),
 )
 
 # Parameters that allows to configure/extend generic implementation of C++ rules.
@@ -104,15 +119,20 @@ CxxRuleAdditionalParams = record(
 # different and need to be specified. The following record holds the data which
 # is needed to specialize user-facing rule from generic implementation.
 CxxRuleConstructorParams = record(
+    #Required
+
+    # Name of the top level rule utilizing the cxx rule.
+    rule_type = str,
+    # Header layout to use importing headers.
+    headers_layout = CxxHeadersLayout,
+
+    #Optional
+
     # Whether to build an empty shared library. This is utilized for rust_python_extensions
     # so that they can link against the rust shared object.
     build_empty_so = field(bool, False),
-    # Name of the top level rule utilizing the cxx rule.
-    rule_type = str,
     # If the rule is a test.
     is_test = field(bool, False),
-    # Header layout to use importing headers.
-    headers_layout = CxxHeadersLayout,
     # Additional information used to preprocess every unit of translation in the rule.
     extra_preprocessors = field(list[CPreprocessor], []),
     extra_preprocessors_info = field(list[CPreprocessorInfo], []),
@@ -151,6 +171,8 @@ CxxRuleConstructorParams = record(
     soname = field([str, None], None),
     # Optional argument to override the default name of the executable being produced.
     executable_name = field([str, None], None),
+    # Optional argument to set the deffile for the windows linker on a dll
+    deffile = field([Artifact, None], None),
     # If passed to cxx_executable, this field will be used to determine
     # a shared subtarget's default output should be stripped.
     strip_executable = field(bool, False),
@@ -175,7 +197,7 @@ CxxRuleConstructorParams = record(
     # shared libs to include in the symlink tree).
     extra_link_roots = field(list[LinkableProviders], []),
     # Additional shared libs to "package".
-    extra_shared_libs = field(dict[str, SharedLibrary], {}),
+    extra_shared_libs = field(list[SharedLibrary], []),
     auto_link_group_specs = field([list[LinkGroupLibSpec], None], None),
     link_group_info = field([LinkGroupInfo, None], None),
     # Whether to use pre-stripped objects when linking.
@@ -189,4 +211,30 @@ CxxRuleConstructorParams = record(
     extra_linker_outputs_factory = field(typing.Callable, lambda _context: ([], {})),
     # Whether to allow cache uploads for locally-linked executables.
     exe_allow_cache_upload = field(bool, False),
+    # Extra shared library interfaces to propagate, eg from mixed Swift libraries.
+    extra_shared_library_interfaces = field([list[Artifact], None], None),
+    # Compiler flags
+    compiler_flags = field(list[typing.Any], []),
+    lang_compiler_flags = field(dict[typing.Any, typing.Any], {}),
+    # Platform compiler flags
+    platform_compiler_flags = field(list[(str, typing.Any)], []),
+    lang_platform_compiler_flags = field(dict[typing.Any, typing.Any], {}),
+    # Preprocessor flags
+    preprocessor_flags = field(list[typing.Any], []),
+    lang_preprocessor_flags = field(dict[typing.Any, typing.Any], {}),
+    # Platform preprocessor flags
+    platform_preprocessor_flags = field(list[(str, typing.Any)], []),
+    lang_platform_preprocessor_flags = field(dict[typing.Any, typing.Any], {}),
+    # modulename-Swift.h header for building objc targets that rely on this swift dep
+    swift_objc_header = field([Artifact, None], None),
+    error_handler = field([typing.Callable, None], None),
+    index_store_factory = field(typing.Callable | None, None),
+    # Swift index stores to propagate
+    index_stores = field(list[Artifact] | None, None),
+    # Whether to add header units from dependencies to the command line.
+    use_header_units = field(bool, False),
+    # Whether to export a header unit to all dependents.
+    export_header_unit = field([str, None], None),
+    # Filter what headers to include in header units.
+    export_header_unit_filter = field(list[str], []),
 )
