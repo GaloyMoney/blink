@@ -3,9 +3,10 @@
  * pnpm tsx src/debug/populate-journal-transactions.ts <starting_journal_id>
  */
 
+import mongoose from "mongoose"
+
 import { setupMongoConnection } from "@/services/mongodb"
 import { Transaction } from "@/services/ledger/schema"
-import mongoose from "mongoose"
 
 const Journal = mongoose.connection.models["Medici_Journal"]
 
@@ -19,7 +20,7 @@ const populateJournalTransactions = async (startingJournalId: string) => {
 
   let processedCount = 0
   let updatedCount = 0
-  let startTime = Date.now()
+  const startTime = Date.now()
 
   for await (const journal of journals) {
     processedCount++
