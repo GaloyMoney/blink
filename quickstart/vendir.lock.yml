@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): update read concern to avoid sync issues (#4649)'
-      sha: 1cf7181155c3b592123f9fc12bfd5e34b4b1b066
+      commitTitle: 'perf(core): add missing index for paginated query (#4651)'
+      sha: 1e83e384744e3f8657584d51f37dbab434427621
       tags:
-      - 0.21.4-2-g1cf718115
+      - 0.21.5-1-g1e83e3847
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): update read concern to avoid sync issues (#4649)'
-      sha: 1cf7181155c3b592123f9fc12bfd5e34b4b1b066
+      commitTitle: 'perf(core): add missing index for paginated query (#4651)'
+      sha: 1e83e384744e3f8657584d51f37dbab434427621
       tags:
-      - 0.21.4-2-g1cf718115
+      - 0.21.5-1-g1e83e3847
     path: schemas
   - git:
-      commitTitle: 'fix(core): update read concern to avoid sync issues (#4649)'
-      sha: 1cf7181155c3b592123f9fc12bfd5e34b4b1b066
+      commitTitle: 'perf(core): add missing index for paginated query (#4651)'
+      sha: 1e83e384744e3f8657584d51f37dbab434427621
       tags:
-      - 0.21.4-2-g1cf718115
+      - 0.21.5-1-g1e83e3847
     path: gql
   path: graphql
 kind: LockConfig
