@@ -85,7 +85,7 @@ export const paginatedLedger = async ({
 
     if (transactionRecords.length > last) {
       hasPreviousPage = true
-      transactionRecords = transactionRecords.slice(1) // Remove the extra record
+      transactionRecords = transactionRecords.slice(0, last) // Remove the extra record
     }
 
     // Reverse the results to maintain consistent ordering (newest first)
