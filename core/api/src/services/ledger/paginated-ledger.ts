@@ -8,7 +8,6 @@ import { Types } from "mongoose"
 import { parseFilterQuery } from "medici/build/helper/parse/parseFilterQuery"
 
 import { MainBook } from "./books"
-
 import { translateToLedgerTx } from "./translate"
 
 import { Transaction } from "@/services/ledger/schema"
@@ -33,18 +32,7 @@ export const paginatedLedger = async ({
   paginationArgs: PaginatedQueryArgs
 }): Promise<Error | PaginatedQueryResult<LedgerTransaction<WalletCurrency>>> => {
   const filterQuery = parseFilterQuery(filters.mediciFilters, MainBook)
-
   const { first, last, before, after } = paginationArgs
-
-  filterQuery["_id"] = { $exists: true }
-
-  if (after) {
-    filterQuery["_id"] = { $lt: new Types.ObjectId(after) }
-  }
-
-  if (before) {
-    filterQuery["_id"] = { $gt: new Types.ObjectId(before) }
-  }
 
   if (filters.username) {
     filterQuery["username"] = filters.username
@@ -54,35 +42,54 @@ export const paginatedLedger = async ({
     filterQuery["payee_addresses"] = { $in: filters.addresses }
   }
 
-  const documentCount = await Transaction.countDocuments(filterQuery)
-
   // hasPreviousPage and hasNextPage can default to false for the opposite pagination direction per the Connection spec
-  let hasPreviousPage = false
   let hasNextPage = false
+  let hasPreviousPage = false
   let transactionRecords: ILedgerTransaction[] = []
 
+  // Optimize for forward pagination (first/after)
   if (first !== undefined) {
-    if (documentCount > first) {
+    const query = { ...filterQuery }
+    if (after) {
+      query["_id"] = { $lt: new Types.ObjectId(after) }
+    }
+
+    // Fetch one extra record to determine if there are more pages
+    transactionRecords = await Transaction.collection
+      .find<ILedgerTransaction>(query)
+      .sort({ _id: -1 })
+      .limit(first + 1)
+      .toArray()
+
+    if (transactionRecords.length > first) {
       hasNextPage = true
+      transactionRecords = transactionRecords.slice(0, first)
+    }
+  }
+  // Optimize for backward pagination (last/before)
+  else if (last !== undefined) {
+    const query = { ...filterQuery }
+    if (before) {
+      query["_id"] = { $gt: new Types.ObjectId(before) }
     }
 
+    // For backward pagination, we:
+    // 1. Sort in ascending order to get the oldest records first
+    // 2. Limit to last + 1 to check for previous page
+    // 3. Reverse the results to maintain consistent ordering
     transactionRecords = await Transaction.collection
-      .find<ILedgerTransaction>(filterQuery)
-      .sort({ _id: -1 })
-      .limit(first)
+      .find<ILedgerTransaction>(query)
+      .sort({ _id: 1 })
+      .limit(last + 1)
       .toArray()
-  } else {
-    let skipAmount = 0
-    if (documentCount > last) {
+
+    if (transactionRecords.length > last) {
       hasPreviousPage = true
-      skipAmount = documentCount - last
+      transactionRecords = transactionRecords.slice(1) // Remove the extra record
     }
 
-    transactionRecords = await Transaction.collection
-      .find<ILedgerTransaction>(filterQuery)
-      .sort({ _id: -1 })
-      .skip(skipAmount)
-      .toArray()
+    // Reverse the results to maintain consistent ordering (newest first)
+    transactionRecords = transactionRecords.reverse()
   }
 
   const txs = transactionRecords.map((tx) => translateToLedgerTx(tx))
