@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'perf(core): add missing index for paginated query (#4651)'
-      sha: 1e83e384744e3f8657584d51f37dbab434427621
+      commitTitle: 'perf(core): improve backward pagination (#4653)...'
+      sha: f62641f68376772c3f87d4c95439144800c735d2
       tags:
-      - 0.21.5-1-g1e83e3847
+      - 0.21.6-1-gf62641f68
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'perf(core): add missing index for paginated query (#4651)'
-      sha: 1e83e384744e3f8657584d51f37dbab434427621
+      commitTitle: 'perf(core): improve backward pagination (#4653)...'
+      sha: f62641f68376772c3f87d4c95439144800c735d2
       tags:
-      - 0.21.5-1-g1e83e3847
+      - 0.21.6-1-gf62641f68
     path: schemas
   - git:
-      commitTitle: 'perf(core): add missing index for paginated query (#4651)'
-      sha: 1e83e384744e3f8657584d51f37dbab434427621
+      commitTitle: 'perf(core): improve backward pagination (#4653)...'
+      sha: f62641f68376772c3f87d4c95439144800c735d2
       tags:
-      - 0.21.5-1-g1e83e3847
+      - 0.21.6-1-gf62641f68
     path: gql
   path: graphql
 kind: LockConfig
