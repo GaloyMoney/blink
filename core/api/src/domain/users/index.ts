@@ -56,11 +56,15 @@ export const checkedToNonEmptyLanguage = (
 }
 
 export const checkedToDeviceToken = (token: string): DeviceToken | ValidationError => {
-  // token from firebase have a length of 163
-  const correctLength = 163
-  if (token.length !== correctLength) {
+  // iOS tokens: 64 chars (min)
+  // Android tokens: up to 200 chars (max)
+  // Firebase: 142 chars but it is variable
+  const minLength = 64
+  const maxLength = 200
+
+  if (token.length < minLength || token.length > maxLength) {
     return new InvalidDeviceTokenError(
-      `wrong length, expected ${correctLength}, got ${token.length}`,
+      `Invalid token length. Expected between ${minLength}-${maxLength}, got ${token.length}`,
     )
   }
 
