@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'perf(core): improve backward pagination (#4653)...'
-      sha: f62641f68376772c3f87d4c95439144800c735d2
+      commitTitle: 'chore(core): update default btc invoice expiration to 2 hours
+        (#4656)'
+      sha: b0ee5dbfb9aef0351fed214e2c00d1e46a8af570
       tags:
-      - 0.21.6-1-gf62641f68
+      - 0.21.7-1-gb0ee5dbfb
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'perf(core): improve backward pagination (#4653)...'
-      sha: f62641f68376772c3f87d4c95439144800c735d2
+      commitTitle: 'chore(core): update default btc invoice expiration to 2 hours
+        (#4656)'
+      sha: b0ee5dbfb9aef0351fed214e2c00d1e46a8af570
       tags:
-      - 0.21.6-1-gf62641f68
+      - 0.21.7-1-gb0ee5dbfb
     path: schemas
   - git:
-      commitTitle: 'perf(core): improve backward pagination (#4653)...'
-      sha: f62641f68376772c3f87d4c95439144800c735d2
+      commitTitle: 'chore(core): update default btc invoice expiration to 2 hours
+        (#4656)'
+      sha: b0ee5dbfb9aef0351fed214e2c00d1e46a8af570
       tags:
-      - 0.21.6-1-gf62641f68
+      - 0.21.7-1-gb0ee5dbfb
     path: gql
   path: graphql
 kind: LockConfig
