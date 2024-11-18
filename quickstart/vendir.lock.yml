@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): update notifications device token validation length
-        (#4657)'
-      sha: 60f5af19536ac3d895e9f370cac3627fb02fbe24
+      commitTitle: 'fix(core): update exporter db connection settings (#4660)'
+      sha: ee74666caf9d299f091c972add5a05e8feef3b38
       tags:
-      - 0.21.8-1-g60f5af195
+      - 0.21.9-1-gee74666ca
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): update notifications device token validation length
-        (#4657)'
-      sha: 60f5af19536ac3d895e9f370cac3627fb02fbe24
+      commitTitle: 'fix(core): update exporter db connection settings (#4660)'
+      sha: ee74666caf9d299f091c972add5a05e8feef3b38
       tags:
-      - 0.21.8-1-g60f5af195
+      - 0.21.9-1-gee74666ca
     path: schemas
   - git:
-      commitTitle: 'fix(core): update notifications device token validation length
-        (#4657)'
-      sha: 60f5af19536ac3d895e9f370cac3627fb02fbe24
+      commitTitle: 'fix(core): update exporter db connection settings (#4660)'
+      sha: ee74666caf9d299f091c972add5a05e8feef3b38
       tags:
-      - 0.21.8-1-g60f5af195
+      - 0.21.9-1-gee74666ca
     path: gql
   path: graphql
 kind: LockConfig
