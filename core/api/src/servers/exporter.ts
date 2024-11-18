@@ -213,7 +213,12 @@ const main = async () => {
 
 setupMongoConnection({
   syncIndexes: false,
-  options: { readPreference: "secondaryPreferred", socketTimeoutMS: 150000 },
+  options: {
+    retryReads: false, // Disable retries to prevent hanging on slow/complex queries
+    readConcern: { level: "majority" }, // Read from majority-committed data
+    readPreference: "secondaryPreferred", // Exporter only reads data
+    socketTimeoutMS: 300000, // 5 mins
+  },
 })
   .then(() => main())
   .catch((err) => logger.error(err))
