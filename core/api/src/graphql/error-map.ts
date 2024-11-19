@@ -658,7 +658,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "PhoneCarrierTypeNotAllowedError":
     case "PhoneCountryNotAllowedError":
     case "MissingIPMetadataError":
-    case "UndefiniedIPError":
+    case "UndefinedIPError":
     case "UnauthorizedIPMetadataASNError":
     case "InvalidAccountStatusError":
     case "InvalidOnChainAddress":

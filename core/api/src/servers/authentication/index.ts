@@ -10,16 +10,15 @@ import { registerCaptchaGeetest } from "@/app/captcha"
 
 import { UNSECURE_IP_FROM_REQUEST_OBJECT } from "@/config"
 
-import { ErrorLevel } from "@/domain/shared"
+import { ErrorLevel, parseErrorMessageFromUnknown } from "@/domain/shared"
 import { parseIps } from "@/domain/accounts-ips"
 import { checkedToEmailCode, validOneTimeAuthCodeValue } from "@/domain/authentication"
 import {
   EmailCodeInvalidError,
   EmailValidationSubmittedTooOftenError,
 } from "@/domain/authentication/errors"
-import { UndefiniedIPError } from "@/domain/errors"
+import { UndefinedIPError } from "@/domain/errors"
 import { UserLoginIpRateLimiterExceededError } from "@/domain/rate-limit/errors"
-import { parseErrorMessageFromUnknown } from "@/domain/shared"
 import { checkedToEmailAddress, checkedToPhoneNumber } from "@/domain/users"
 
 import {
@@ -43,7 +42,7 @@ authRouter.use((req: Request, res: Response, next: NextFunction) => {
   const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT ? req.ip : req.headers["x-real-ip"]
   const ip = parseIps(ipString)
   if (!ip) {
-    recordExceptionInCurrentSpan({ error: new UndefiniedIPError() })
+    recordExceptionInCurrentSpan({ error: new UndefinedIPError() })
     return res.status(400).send({ error: "IP is not defined" })
   }
   req["originalIp"] = ip as IpAddress
