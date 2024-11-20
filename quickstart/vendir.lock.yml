@@ -2,24 +2,27 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): update exporter db connection settings (#4660)'
-      sha: ee74666caf9d299f091c972add5a05e8feef3b38
+      commitTitle: 'fix(core): update http error codes in authentication endpoints
+        (#4661)...'
+      sha: c38451a448e8a60b80b5fb0b8beec177cb95cf15
       tags:
-      - 0.21.9-1-gee74666ca
+      - 0.21.10-1-gc38451a44
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): update exporter db connection settings (#4660)'
-      sha: ee74666caf9d299f091c972add5a05e8feef3b38
+      commitTitle: 'fix(core): update http error codes in authentication endpoints
+        (#4661)...'
+      sha: c38451a448e8a60b80b5fb0b8beec177cb95cf15
       tags:
-      - 0.21.9-1-gee74666ca
+      - 0.21.10-1-gc38451a44
     path: schemas
   - git:
-      commitTitle: 'fix(core): update exporter db connection settings (#4660)'
-      sha: ee74666caf9d299f091c972add5a05e8feef3b38
+      commitTitle: 'fix(core): update http error codes in authentication endpoints
+        (#4661)...'
+      sha: c38451a448e8a60b80b5fb0b8beec177cb95cf15
       tags:
-      - 0.21.9-1-gee74666ca
+      - 0.21.10-1-gc38451a44
     path: gql
   path: graphql
 kind: LockConfig
