@@ -10,14 +10,15 @@ import { registerCaptchaGeetest } from "@/app/captcha"
 
 import { UNSECURE_IP_FROM_REQUEST_OBJECT } from "@/config"
 
+import { ErrorLevel, parseErrorMessageFromUnknown } from "@/domain/shared"
 import { parseIps } from "@/domain/accounts-ips"
 import { checkedToEmailCode, validOneTimeAuthCodeValue } from "@/domain/authentication"
 import {
   EmailCodeInvalidError,
   EmailValidationSubmittedTooOftenError,
 } from "@/domain/authentication/errors"
+import { UndefinedIPError } from "@/domain/errors"
 import { UserLoginIpRateLimiterExceededError } from "@/domain/rate-limit/errors"
-import { parseErrorMessageFromUnknown } from "@/domain/shared"
 import { checkedToEmailAddress, checkedToPhoneNumber } from "@/domain/users"
 
 import {
@@ -41,8 +42,8 @@ authRouter.use((req: Request, res: Response, next: NextFunction) => {
   const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT ? req.ip : req.headers["x-real-ip"]
   const ip = parseIps(ipString)
   if (!ip) {
-    recordExceptionInCurrentSpan({ error: "IP is not defined" })
-    return res.status(500).send({ error: "IP is not defined" })
+    recordExceptionInCurrentSpan({ error: new UndefinedIPError() })
+    return res.status(400).send({ error: "IP is not defined" })
   }
   req["originalIp"] = ip as IpAddress
 
@@ -50,7 +51,7 @@ authRouter.use((req: Request, res: Response, next: NextFunction) => {
 })
 
 authRouter.use((req: Request, res: Response, next: NextFunction) => {
-  const routeName = req?.url || "unknownRoute" // Extract route from request, fallback to 'unknownRoute'
+  const routeName = req?.url || "unknownRoute"
   const spanName = `servers.authRouter.${routeName}`
 
   const span = tracer.startSpan(spanName)
@@ -95,14 +96,14 @@ authRouter.post("/create/device-account", async (req: Request, res: Response) =>
     })
     if (authToken instanceof Error) {
       recordExceptionInCurrentSpan({ error: authToken })
-      return res.status(500).send({ error: authToken.message })
+      return res.status(401).send({ error: authToken.message })
     }
     addAttributesToCurrentSpan({ "login.deviceAccount": deviceId })
     return res.status(200).send({
       result: authToken,
     })
   } catch (err) {
-    recordExceptionInCurrentSpan({ error: err })
+    recordExceptionInCurrentSpan({ error: err, level: ErrorLevel.Critical })
     return res.status(500).send({ error: parseErrorMessageFromUnknown(err) })
   }
 })
@@ -127,14 +128,14 @@ authRouter.post("/email/code", async (req: Request, res: Response) => {
     const emailLoginId = await Authentication.requestEmailCode({ email, ip })
     if (emailLoginId instanceof Error) {
       recordExceptionInCurrentSpan({ error: emailLoginId.message })
-      return res.status(500).send({ error: emailLoginId.message })
+      return res.status(400).send({ error: emailLoginId.message })
     }
     return res.status(200).send({
       result: emailLoginId,
     })
   } catch (err) {
-    recordExceptionInCurrentSpan({ error: err })
-    return res.status(500).send({ error: err })
+    recordExceptionInCurrentSpan({ error: err, level: ErrorLevel.Critical })
+    return res.status(500).send({ error: parseErrorMessageFromUnknown(err) })
   }
 })
 
@@ -180,14 +181,14 @@ authRouter.post("/email/login", async (req: Request, res: Response) => {
     }
     if (result instanceof Error) {
       recordExceptionInCurrentSpan({ error: result })
-      return res.status(500).send({ error: result.message })
+      return res.status(400).send({ error: result.message })
     }
     const { authToken, totpRequired, id } = result
     return res.status(200).send({
       result: { authToken, totpRequired, id },
     })
   } catch (err) {
-    recordExceptionInCurrentSpan({ error: err })
+    recordExceptionInCurrentSpan({ error: err, level: ErrorLevel.Critical })
     return res.status(500).send({ error: parseErrorMessageFromUnknown(err) })
   }
 })
@@ -233,19 +234,21 @@ authRouter.post("/totp/validate", async (req: Request, res: Response) => {
     }
     if (result instanceof Error) {
       recordExceptionInCurrentSpan({ error: result })
-      return res.status(500).send({ error: result.message })
+      return res.status(400).send({ error: result.message })
     }
     return res.status(200).send()
   } catch (err) {
-    recordExceptionInCurrentSpan({ error: err })
+    recordExceptionInCurrentSpan({ error: err, level: ErrorLevel.Critical })
     return res.status(500).send({ error: parseErrorMessageFromUnknown(err) })
   }
 })
 
 authRouter.post("/phone/captcha", async (req: Request, res: Response) => {
   const result = await registerCaptchaGeetest()
-  if (result instanceof Error)
+  if (result instanceof Error) {
+    recordExceptionInCurrentSpan({ error: result, level: ErrorLevel.Critical })
     return res.status(500).json({ error: "error creating challenge" })
+  }
 
   const { success, gt, challenge, newCaptcha } = result
 
@@ -361,7 +364,7 @@ authRouter.post("/phone/login", async (req: Request, res: Response) => {
     ip,
   })
   if (loginResp instanceof Error) {
-    return res.status(500).send({ error: mapError(loginResp).message })
+    return res.status(401).send({ error: mapError(loginResp).message })
   }
 
   const { authToken, totpRequired, id } = loginResp
