@@ -1617,8 +1617,8 @@ importers:
         specifier: ^7.6.17
         version: 7.6.17(react-dom@18.2.0)(react@18.3.1)
       '@storybook/blocks':
-        specifier: ^7.6.3
-        version: 7.6.3(@types/react-dom@18.2.17)(@types/react@18.2.45)(react-dom@18.2.0)(react@18.3.1)
+        specifier: ^8.4.5
+        version: 8.4.5(react-dom@18.2.0)(react@18.3.1)(storybook@7.6.6)
       '@storybook/react':
         specifier: ^7.6.3
         version: 7.6.3(react-dom@18.2.0)(react@18.3.1)(typescript@5.3.2)
@@ -3123,7 +3123,7 @@ packages:
       '@babel/traverse': 7.25.6
       '@babel/types': 7.25.6
       convert-source-map: 2.0.0
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@5.5.0)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -3145,7 +3145,7 @@ packages:
       '@babel/traverse': 7.25.7
       '@babel/types': 7.25.8
       convert-source-map: 2.0.0
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@5.5.0)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -6935,7 +6935,7 @@ packages:
       '@babel/parser': 7.25.8
       '@babel/template': 7.25.7
       '@babel/types': 7.25.8
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@5.5.0)
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -10468,13 +10468,13 @@ packages:
       '@types/json-stable-stringify': 1.0.36
       '@whatwg-node/fetch': 0.9.21
       chalk: 4.1.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@5.5.0)
       dotenv: 16.4.5
       graphql: 16.9.0
       graphql-request: 6.1.0(graphql@16.9.0)
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.5
-      jose: 5.2.2
+      jose: 5.9.6
       js-yaml: 4.1.0
       json-stable-stringify: 1.1.1
       lodash: 4.17.21
@@ -10501,7 +10501,7 @@ packages:
       '@types/json-stable-stringify': 1.0.36
       '@whatwg-node/fetch': 0.9.21
       chalk: 4.1.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@5.5.0)
       dotenv: 16.4.5
       graphql: 16.8.1
       graphql-request: 6.1.0(graphql@16.8.1)
@@ -10534,13 +10534,13 @@ packages:
       '@types/json-stable-stringify': 1.0.36
       '@whatwg-node/fetch': 0.9.21
       chalk: 4.1.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@5.5.0)
       dotenv: 16.4.5
       graphql: 16.8.1
       graphql-request: 6.1.0(graphql@16.8.1)
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.5
-      jose: 5.2.2
+      jose: 5.9.6
       js-yaml: 4.1.0
       json-stable-stringify: 1.1.1
       lodash: 4.17.21
@@ -15371,7 +15371,7 @@ packages:
       '@storybook/client-logger': 7.6.17
       '@storybook/components': 7.6.17(@types/react-dom@18.2.17)(@types/react@18.2.45)(react-dom@18.2.0)(react@18.3.1)
       '@storybook/core-events': 7.6.17
-      '@storybook/csf': 0.1.5
+      '@storybook/csf': 0.1.11
       '@storybook/docs-tools': 7.6.17
       '@storybook/global': 5.0.0
       '@storybook/manager-api': 7.6.17(react-dom@18.2.0)(react@18.3.1)
@@ -15399,42 +15399,24 @@ packages:
       - supports-color
     dev: true
 
-  /@storybook/blocks@7.6.3(@types/react-dom@18.2.17)(@types/react@18.2.45)(react-dom@18.2.0)(react@18.3.1):
-    resolution: {integrity: sha512-EyjyNNCZMcV9UnBSujwduiq+F1VLVX/f16fTTPqqZOHigyfrG5LoEYC6dwOC4yO/xfWY+h3qJ51yiugMxVl0Vg==}
+  /@storybook/blocks@8.4.5(react-dom@18.2.0)(react@18.3.1)(storybook@7.6.6):
+    resolution: {integrity: sha512-Z+LHauSqm3A4HBR9pUEf9KQhD3/3xYMt0FXgA+GHCAyDa6lFeD1C6r9Y2nlT+9dt8gv9B9oygTZvV6GqFVyRSQ==}
     peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0-beta
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0-beta
+      storybook: ^8.4.5
+    peerDependenciesMeta:
+      react:
+        optional: true
+      react-dom:
+        optional: true
     dependencies:
-      '@storybook/channels': 7.6.3
-      '@storybook/client-logger': 7.6.3
-      '@storybook/components': 7.6.3(@types/react-dom@18.2.17)(@types/react@18.2.45)(react-dom@18.2.0)(react@18.3.1)
-      '@storybook/core-events': 7.6.3
-      '@storybook/csf': 0.1.2
-      '@storybook/docs-tools': 7.6.3
-      '@storybook/global': 5.0.0
-      '@storybook/manager-api': 7.6.3(react-dom@18.2.0)(react@18.3.1)
-      '@storybook/preview-api': 7.6.3
-      '@storybook/theming': 7.6.3(react-dom@18.2.0)(react@18.3.1)
-      '@storybook/types': 7.6.3
-      '@types/lodash': 4.14.199
-      color-convert: 2.0.1
-      dequal: 2.0.3
-      lodash: 4.17.21
-      markdown-to-jsx: 7.3.2(react@18.3.1)
-      memoizerific: 1.11.3
-      polished: 4.2.2
+      '@storybook/csf': 0.1.11
+      '@storybook/icons': 1.2.12(react-dom@18.2.0)(react@18.3.1)
       react: 18.3.1
-      react-colorful: 5.6.1(react-dom@18.2.0)(react@18.3.1)
       react-dom: 18.2.0(react@18.3.1)
-      telejson: 7.2.0
-      tocbot: 4.23.0
+      storybook: 7.6.6
       ts-dedent: 2.2.0
-      util-deprecate: 1.0.2
-    transitivePeerDependencies:
-      - '@types/react'
-      - '@types/react-dom'
-      - encoding
-      - supports-color
     dev: true
 
   /@storybook/builder-manager@7.6.6:
@@ -15654,7 +15636,7 @@ packages:
       '@babel/core': 7.25.2
       '@babel/preset-env': 7.23.5(@babel/core@7.25.2)
       '@babel/types': 7.25.6
-      '@storybook/csf': 0.1.5
+      '@storybook/csf': 0.1.11
       '@storybook/csf-tools': 7.6.6
       '@storybook/node-logger': 7.6.6
       '@storybook/types': 7.6.6
@@ -15678,7 +15660,7 @@ packages:
       '@radix-ui/react-select': 1.2.2(@types/react-dom@18.2.17)(@types/react@18.2.45)(react-dom@18.2.0)(react@18.3.1)
       '@radix-ui/react-toolbar': 1.0.4(@types/react-dom@18.2.17)(@types/react@18.2.45)(react-dom@18.2.0)(react@18.3.1)
       '@storybook/client-logger': 7.6.17
-      '@storybook/csf': 0.1.5
+      '@storybook/csf': 0.1.11
       '@storybook/global': 5.0.0
       '@storybook/theming': 7.6.17(react-dom@18.2.0)(react@18.3.1)
       '@storybook/types': 7.6.17
@@ -15701,7 +15683,7 @@ packages:
       '@radix-ui/react-select': 1.2.2(@types/react-dom@18.2.17)(@types/react@18.2.45)(react-dom@18.2.0)(react@18.3.1)
       '@radix-ui/react-toolbar': 1.0.4(@types/react-dom@18.2.17)(@types/react@18.2.45)(react-dom@18.2.0)(react@18.3.1)
       '@storybook/client-logger': 7.6.3
-      '@storybook/csf': 0.1.5
+      '@storybook/csf': 0.1.11
       '@storybook/global': 5.0.0
       '@storybook/theming': 7.6.3(react-dom@18.2.0)(react@18.3.1)
       '@storybook/types': 7.6.3
@@ -15878,7 +15860,7 @@ packages:
   /@storybook/core-events@8.1.0:
     resolution: {integrity: sha512-9oCACeyYqH7rZVHglzH//cJXdP0mM5d2nBM4kgFgTTLJpbb0+SrF0rD0EVpHfA1l4Kz7pgzTY6Xj2p4mEiZ0Qg==}
     dependencies:
-      '@storybook/csf': 0.1.7
+      '@storybook/csf': 0.1.11
       ts-dedent: 2.2.0
     dev: true
 
@@ -15891,7 +15873,7 @@ packages:
       '@storybook/channels': 7.6.6
       '@storybook/core-common': 7.6.6
       '@storybook/core-events': 7.6.6
-      '@storybook/csf': 0.1.5
+      '@storybook/csf': 0.1.11
       '@storybook/csf-tools': 7.6.6
       '@storybook/docs-mdx': 0.1.0
       '@storybook/global': 5.0.0
@@ -15962,7 +15944,7 @@ packages:
       '@babel/parser': 7.25.6
       '@babel/traverse': 7.25.6
       '@babel/types': 7.25.6
-      '@storybook/csf': 0.1.5
+      '@storybook/csf': 0.1.11
       '@storybook/types': 7.6.17
       fs-extra: 11.2.0
       recast: 0.23.6
@@ -15978,7 +15960,7 @@ packages:
       '@babel/parser': 7.25.6
       '@babel/traverse': 7.25.6
       '@babel/types': 7.25.6
-      '@storybook/csf': 0.1.5
+      '@storybook/csf': 0.1.11
       '@storybook/types': 7.6.3
       fs-extra: 11.2.0
       recast: 0.23.6
@@ -15994,7 +15976,7 @@ packages:
       '@babel/parser': 7.25.6
       '@babel/traverse': 7.25.6
       '@babel/types': 7.25.6
-      '@storybook/csf': 0.1.5
+      '@storybook/csf': 0.1.11
       '@storybook/types': 7.6.6
       fs-extra: 11.2.0
       recast: 0.23.6
@@ -16010,7 +15992,7 @@ packages:
       '@babel/parser': 7.25.6
       '@babel/traverse': 7.25.6
       '@babel/types': 7.25.6
-      '@storybook/csf': 0.1.5
+      '@storybook/csf': 0.1.11
       '@storybook/types': 8.0.10
       fs-extra: 11.2.0
       recast: 0.23.6
@@ -16019,20 +16001,14 @@ packages:
       - supports-color
     dev: true
 
+  /@storybook/csf@0.1.11:
+    resolution: {integrity: sha512-dHYFQH3mA+EtnCkHXzicbLgsvzYjcDJ1JWsogbItZogkPHgSJM/Wr71uMkcvw8v9mmCyP4NpXJuu6bPoVsOnzg==}
+    dependencies:
+      type-fest: 2.19.0
+    dev: true
+
   /@storybook/csf@0.1.2:
     resolution: {integrity: sha512-ePrvE/pS1vsKR9Xr+o+YwdqNgHUyXvg+1Xjx0h9LrVx7Zq4zNe06pd63F5EvzTbCbJsHj7GHr9tkiaqm7U8WRA==}
-    dependencies:
-      type-fest: 2.19.0
-    dev: true
-
-  /@storybook/csf@0.1.5:
-    resolution: {integrity: sha512-pW7Dtk/bE2JGrAe/KuBY4Io02NBe/2CLP2DkgVgWlSwvEVdm/rbQyiwy8RaL0lQlJCv9CsGBY+n9HQG8d4bZjQ==}
-    dependencies:
-      type-fest: 2.19.0
-    dev: true
-
-  /@storybook/csf@0.1.7:
-    resolution: {integrity: sha512-53JeLZBibjQxi0Ep+/AJTfxlofJlxy1jXcSKENlnKxHjWEYyHQCumMP5yTFjf7vhNnMjEpV3zx6t23ssFiGRyw==}
     dependencies:
       type-fest: 2.19.0
     dev: true
@@ -16091,6 +16067,17 @@ packages:
     resolution: {integrity: sha512-FcOqPAXACP0I3oJ/ws6/rrPT9WGhu915Cg8D02a9YxLo0DE9zI+a9A5gRGvmQ09fiWPukqI8ZAEoQEdWUKMQdQ==}
     dev: true
 
+  /@storybook/icons@1.2.12(react-dom@18.2.0)(react@18.3.1):
+    resolution: {integrity: sha512-UxgyK5W3/UV4VrI3dl6ajGfHM4aOqMAkFLWe2KibeQudLf6NJpDrDMSHwZj+3iKC4jFU7dkKbbtH2h/al4sW3Q==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.3.1
+      react-dom: 18.2.0(react@18.3.1)
+    dev: true
+
   /@storybook/instrumenter@7.6.3:
     resolution: {integrity: sha512-U1cbF0tewMQtKeLinQqUM5Mpcz1z5tsKhV9xAJKguvYVxllWvCA6cVxDM5fc66ws2mXpwFDcb82Kx05lMdmEoA==}
     dependencies:
@@ -16121,7 +16108,7 @@ packages:
       '@storybook/channels': 7.6.17
       '@storybook/client-logger': 7.6.17
       '@storybook/core-events': 7.6.17
-      '@storybook/csf': 0.1.5
+      '@storybook/csf': 0.1.11
       '@storybook/global': 5.0.0
       '@storybook/router': 7.6.17
       '@storybook/theming': 7.6.17(react-dom@18.2.0)(react@18.3.1)
@@ -16143,7 +16130,7 @@ packages:
       '@storybook/channels': 7.6.3
       '@storybook/client-logger': 7.6.3
       '@storybook/core-events': 7.6.3
-      '@storybook/csf': 0.1.5
+      '@storybook/csf': 0.1.11
       '@storybook/global': 5.0.0
       '@storybook/router': 7.6.3
       '@storybook/theming': 7.6.3(react-dom@18.2.0)(react@18.3.1)
@@ -16242,7 +16229,7 @@ packages:
       '@storybook/channels': 7.6.17
       '@storybook/client-logger': 7.6.17
       '@storybook/core-events': 7.6.17
-      '@storybook/csf': 0.1.5
+      '@storybook/csf': 0.1.11
       '@storybook/global': 5.0.0
       '@storybook/types': 7.6.17
       '@types/qs': 6.9.16
@@ -16261,7 +16248,7 @@ packages:
       '@storybook/channels': 7.6.3
       '@storybook/client-logger': 7.6.3
       '@storybook/core-events': 7.6.3
-      '@storybook/csf': 0.1.5
+      '@storybook/csf': 0.1.11
       '@storybook/global': 5.0.0
       '@storybook/types': 7.6.3
       '@types/qs': 6.9.16
@@ -16280,7 +16267,7 @@ packages:
       '@storybook/channels': 7.6.6
       '@storybook/client-logger': 7.6.6
       '@storybook/core-events': 7.6.6
-      '@storybook/csf': 0.1.5
+      '@storybook/csf': 0.1.11
       '@storybook/global': 5.0.0
       '@storybook/types': 7.6.6
       '@types/qs': 6.9.16
@@ -16299,7 +16286,7 @@ packages:
       '@storybook/channels': 8.0.10
       '@storybook/client-logger': 8.0.10
       '@storybook/core-events': 8.0.10
-      '@storybook/csf': 0.1.5
+      '@storybook/csf': 0.1.11
       '@storybook/global': 5.0.0
       '@storybook/types': 8.0.10
       '@types/qs': 6.9.16
@@ -16318,7 +16305,7 @@ packages:
       '@storybook/channels': 8.1.0
       '@storybook/client-logger': 8.1.0
       '@storybook/core-events': 8.1.0
-      '@storybook/csf': 0.1.7
+      '@storybook/csf': 0.1.11
       '@storybook/global': 5.0.0
       '@storybook/types': 8.1.0
       '@types/qs': 6.9.16
@@ -16341,7 +16328,7 @@ packages:
       typescript: '>= 4.x'
       webpack: '>= 4'
     dependencies:
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@5.5.0)
       endent: 2.1.0
       find-cache-dir: 3.3.2
       flat-cache: 3.2.0
@@ -21131,7 +21118,7 @@ packages:
       '@testim/chrome-version': 1.1.4
       axios: 1.7.7
       compare-versions: 6.1.0
-      extract-zip: 2.0.1(supports-color@8.1.1)
+      extract-zip: 2.0.1
       proxy-agent: 6.4.0
       proxy-from-env: 1.1.0
       tcp-port-used: 1.0.2
@@ -22291,7 +22278,6 @@ packages:
     dependencies:
       ms: 2.1.3
       supports-color: 5.5.0
-    dev: true
 
   /debug@4.3.7(supports-color@8.1.1):
     resolution: {integrity: sha512-Er2nc/H7RrMXZBFCEim6TCmMk02Z8vLC2Rbi1KEBggpo0fS6l0S1nnapwmIi3yW/+GOJap1Krg4w0Hg80oCqgQ==}
@@ -22304,6 +22290,7 @@ packages:
     dependencies:
       ms: 2.1.3
       supports-color: 8.1.1
+    dev: true
 
   /decamelize@1.2.0:
     resolution: {integrity: sha512-z2S+W9X73hAUUki+N+9Za2lBlun89zigOyGrsax+KUQ6wKW4ZoWpEYBkGhQjwAjjDCkWxhY0VKEhk8wzY7F5cA==}
@@ -22600,7 +22587,7 @@ packages:
     hasBin: true
     dependencies:
       address: 1.2.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -23307,7 +23294,7 @@ packages:
     peerDependencies:
       esbuild: '>=0.12 <1'
     dependencies:
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@5.5.0)
       esbuild: 0.18.20
     transitivePeerDependencies:
       - supports-color
@@ -23318,7 +23305,7 @@ packages:
     peerDependencies:
       esbuild: '>=0.12 <1'
     dependencies:
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@5.5.0)
       esbuild: 0.20.2
     transitivePeerDependencies:
       - supports-color
@@ -24928,6 +24915,20 @@ packages:
       debug: 2.6.9
       mkdirp: 0.5.6
       yauzl: 2.10.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /extract-zip@2.0.1:
+    resolution: {integrity: sha512-GDhU9ntwuKyGXdZBUgTIe+vXnWj0fppUEtMDL0+idd5Sta8TGpHssn/eusA9mrPr9qNDym6SxAYZjNvCn/9RBg==}
+    engines: {node: '>= 10.17.0'}
+    hasBin: true
+    dependencies:
+      debug: 4.3.7(supports-color@5.5.0)
+      get-stream: 5.2.0
+      yauzl: 2.10.0
+    optionalDependencies:
+      '@types/yauzl': 2.10.3
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -26949,7 +26950,7 @@ packages:
     dependencies:
       '@tootallnate/once': 2.0.0
       agent-base: 6.0.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -27024,7 +27025,7 @@ packages:
     engines: {node: '>= 6.0.0'}
     dependencies:
       agent-base: 5.1.1
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -27788,7 +27789,7 @@ packages:
     resolution: {integrity: sha512-n3s8EwkdFIJCG3BPKBYvskgXGoy88ARzvegkitk60NxRdwltLOTaH7CUiMRXvwYorl0Q712iEjcWB+fK/MrWVw==}
     engines: {node: '>=10'}
     dependencies:
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@5.5.0)
       istanbul-lib-coverage: 3.2.0
       source-map: 0.6.1
     transitivePeerDependencies:
@@ -28516,10 +28517,6 @@ packages:
   /jose@4.15.9:
     resolution: {integrity: sha512-1vUQX+IdDMVPj4k8kOxgUqlcK518yluMuGZwqlr44FS1ppZB/5GWh4rZG89erpOBOJjU/OBsnCVFfapsRz6nEA==}
     dev: false
-
-  /jose@5.2.2:
-    resolution: {integrity: sha512-/WByRr4jDcsKlvMd1dRJnPfS1GVO3WuKyaurJ/vvXcOaUQO8rnNObCQMlv/5uCceVQIq5Q4WLF44ohsdiTohdg==}
-    dev: true
 
   /jose@5.9.6:
     resolution: {integrity: sha512-AMlnetc9+CV9asI19zHmrgS/WYsWUwCn2R7RzlbJWD7F9eWYUTGyBmU9o6PxngtLGOiDGPRu+Uc4fhKzbpteZQ==}
@@ -30064,7 +30061,7 @@ packages:
     resolution: {integrity: sha512-iQMncpmEK8R8ncT8HJGsGc9Dsp8xcgYMVSbs5jgnm1lFHTZqMJTUWTDx1LBO8+mK3tPNZWFLBghQEIOULSTHZg==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -32181,7 +32178,7 @@ packages:
     engines: {node: '>=8.16.0'}
     dependencies:
       '@types/mime-types': 2.1.4
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@5.5.0)
       extract-zip: 1.7.0
       https-proxy-agent: 4.0.0
       mime: 2.6.0
