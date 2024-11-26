@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): update http error codes in authentication endpoints
-        (#4661)...'
-      sha: c38451a448e8a60b80b5fb0b8beec177cb95cf15
+      commitTitle: 'chore(deps): bump bria proto to ''0.1.108'' (#4667)'
+      sha: 8284169f18c5b4e49b4c8012c2a6e095320da6c1
       tags:
-      - 0.21.10-1-gc38451a44
+      - 0.21.11-1-g8284169f1
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): update http error codes in authentication endpoints
-        (#4661)...'
-      sha: c38451a448e8a60b80b5fb0b8beec177cb95cf15
+      commitTitle: 'chore(deps): bump bria proto to ''0.1.108'' (#4667)'
+      sha: 8284169f18c5b4e49b4c8012c2a6e095320da6c1
       tags:
-      - 0.21.10-1-gc38451a44
+      - 0.21.11-1-g8284169f1
     path: schemas
   - git:
-      commitTitle: 'fix(core): update http error codes in authentication endpoints
-        (#4661)...'
-      sha: c38451a448e8a60b80b5fb0b8beec177cb95cf15
+      commitTitle: 'chore(deps): bump bria proto to ''0.1.108'' (#4667)'
+      sha: 8284169f18c5b4e49b4c8012c2a6e095320da6c1
       tags:
-      - 0.21.10-1-gc38451a44
+      - 0.21.11-1-g8284169f1
     path: gql
   path: graphql
 kind: LockConfig
