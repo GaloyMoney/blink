@@ -396,6 +396,8 @@ message Payout {
   string external_id = 7;
   optional google.protobuf.Struct metadata = 8;
   optional uint32 batch_inclusion_estimated_at = 11;
+  optional string tx_id = 12;
+  optional uint32 vout = 13;
 }
 
 message ListPayoutsResponse {

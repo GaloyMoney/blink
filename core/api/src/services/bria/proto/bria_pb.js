@@ -13601,7 +13601,9 @@ proto.services.bria.v1.Payout.toObject = function(includeInstance, msg) {
     cancelled: jspb.Message.getBooleanFieldWithDefault(msg, 9, false),
     externalId: jspb.Message.getFieldWithDefault(msg, 7, ""),
     metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Struct.toObject(includeInstance, f),
-    batchInclusionEstimatedAt: jspb.Message.getFieldWithDefault(msg, 11, 0)
+    batchInclusionEstimatedAt: jspb.Message.getFieldWithDefault(msg, 11, 0),
+    txId: jspb.Message.getFieldWithDefault(msg, 12, ""),
+    vout: jspb.Message.getFieldWithDefault(msg, 13, 0)
   };
 
   if (includeInstance) {
@@ -13683,6 +13685,14 @@ proto.services.bria.v1.Payout.deserializeBinaryFromReader = function(msg, reader
     case 11:
       var value = /** @type {number} */ (reader.readUint32());
       msg.setBatchInclusionEstimatedAt(value);
+      break;
+    case 12:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTxId(value);
+      break;
+    case 13:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setVout(value);
       break;
     default:
       reader.skipField();
@@ -13789,6 +13799,20 @@ proto.services.bria.v1.Payout.serializeBinaryToWriter = function(message, writer
   if (f != null) {
     writer.writeUint32(
       11,
+      f
+    );
+  }
+  f = /** @type {string} */ (jspb.Message.getField(message, 12));
+  if (f != null) {
+    writer.writeString(
+      12,
+      f
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 13));
+  if (f != null) {
+    writer.writeUint32(
+      13,
       f
     );
   }
@@ -14082,6 +14106,78 @@ proto.services.bria.v1.Payout.prototype.clearBatchInclusionEstimatedAt = functio
  */
 proto.services.bria.v1.Payout.prototype.hasBatchInclusionEstimatedAt = function() {
   return jspb.Message.getField(this, 11) != null;
+};
+
+
+/**
+ * optional string tx_id = 12;
+ * @return {string}
+ */
+proto.services.bria.v1.Payout.prototype.getTxId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 12, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.services.bria.v1.Payout} returns this
+ */
+proto.services.bria.v1.Payout.prototype.setTxId = function(value) {
+  return jspb.Message.setField(this, 12, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.services.bria.v1.Payout} returns this
+ */
+proto.services.bria.v1.Payout.prototype.clearTxId = function() {
+  return jspb.Message.setField(this, 12, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.services.bria.v1.Payout.prototype.hasTxId = function() {
+  return jspb.Message.getField(this, 12) != null;
+};
+
+
+/**
+ * optional uint32 vout = 13;
+ * @return {number}
+ */
+proto.services.bria.v1.Payout.prototype.getVout = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 13, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.services.bria.v1.Payout} returns this
+ */
+proto.services.bria.v1.Payout.prototype.setVout = function(value) {
+  return jspb.Message.setField(this, 13, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.services.bria.v1.Payout} returns this
+ */
+proto.services.bria.v1.Payout.prototype.clearVout = function() {
+  return jspb.Message.setField(this, 13, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.services.bria.v1.Payout.prototype.hasVout = function() {
+  return jspb.Message.getField(this, 13) != null;
 };
 
 
