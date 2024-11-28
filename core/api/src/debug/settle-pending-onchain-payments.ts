@@ -1,10 +1,8 @@
 /**
  * how to run:
  *
- * pnpm tsx src/debug/void-onchain-payment.ts <journal id> <payout id>
+ * pnpm tsx src/debug/settle-pending-onchain-payments.ts
  *
- * <journal id>: journal id to void.
- * <payout id>: bria payout id
  */
 
 import { Wallets } from "@/app"
