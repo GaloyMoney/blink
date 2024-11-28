@@ -280,6 +280,9 @@ export const OnChainService = (): IOnChainService => {
         id: response.getId() as PayoutId,
         journalId,
         batchInclusionEstimatedAt: response.getBatchInclusionEstimatedAt(),
+        batchId: undefined,
+        txId: undefined,
+        vout: undefined,
       }
     } catch (err) {
       const errMsg = parseErrorMessageFromUnknown(err)
