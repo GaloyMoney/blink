@@ -10,6 +10,7 @@ type OnChainAddressRequestId = string & { readonly brand: unique symbol }
 type BlockId = string & { readonly brand: unique symbol }
 type OnChainTxHash = string & { readonly brand: unique symbol }
 type PayoutId = string & { readonly brand: unique symbol }
+type BatchId = string & { readonly brand: unique symbol }
 type OnChainTxVout = number & { readonly brand: unique symbol }
 type ScanDepth = number & { readonly brand: unique symbol }
 type TxOut = {
@@ -92,6 +93,9 @@ type OnChainPayout = {
   id: PayoutId
   journalId: LedgerJournalId
   batchInclusionEstimatedAt: number | undefined
+  batchId: BatchId | undefined
+  txId: OnChainTxHash | undefined
+  vout: OnChainTxVout | undefined
 }
 
 type OnChainEventHandler = (event: OnChainEvent) => true | ApplicationError

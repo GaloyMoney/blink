@@ -233,16 +233,15 @@ export const OnChainService = (): IOnChainService => {
 
       const response = await getPayout(request, metadata)
       const foundPayout = response.getPayout()
-
       if (foundPayout === undefined) return new PayoutNotFoundError()
-      let batchInclusionEstimatedAt = undefined
-      if (foundPayout.hasBatchInclusionEstimatedAt()) {
-        batchInclusionEstimatedAt = foundPayout.getBatchInclusionEstimatedAt()
-      }
+
       return {
         id: foundPayout.getId() as PayoutId,
         journalId: foundPayout.getExternalId() as LedgerJournalId,
-        batchInclusionEstimatedAt,
+        batchInclusionEstimatedAt: foundPayout.getBatchInclusionEstimatedAt(),
+        batchId: foundPayout.getBatchId() as BatchId,
+        txId: foundPayout.getTxId() as OnChainTxHash,
+        vout: foundPayout.getVout() as OnChainTxVout,
       }
     } catch (err) {
       if (
