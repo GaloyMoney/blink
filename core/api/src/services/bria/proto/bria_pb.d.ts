@@ -1713,6 +1713,16 @@ export class Payout extends jspb.Message {
     getBatchInclusionEstimatedAt(): number | undefined;
     setBatchInclusionEstimatedAt(value: number): Payout;
 
+    hasTxId(): boolean;
+    clearTxId(): void;
+    getTxId(): string | undefined;
+    setTxId(value: string): Payout;
+
+    hasVout(): boolean;
+    clearVout(): void;
+    getVout(): number | undefined;
+    setVout(value: number): Payout;
+
     getDestinationCase(): Payout.DestinationCase;
 
     serializeBinary(): Uint8Array;
@@ -1738,6 +1748,8 @@ export namespace Payout {
         externalId: string,
         metadata?: google_protobuf_struct_pb.Struct.AsObject,
         batchInclusionEstimatedAt?: number,
+        txId?: string,
+        vout?: number,
     }
 
     export enum DestinationCase {
