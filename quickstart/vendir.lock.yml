@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump bria proto to ''0.1.108'' (#4667)'
-      sha: 8284169f18c5b4e49b4c8012c2a6e095320da6c1
+      commitTitle: 'chore: add debug script to fix journals consistency (#4650)...'
+      sha: c18a4910af7bf492d32de92d20c3e3a250382650
       tags:
-      - 0.21.11-1-g8284169f1
+      - 0.21.12
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(deps): bump bria proto to ''0.1.108'' (#4667)'
-      sha: 8284169f18c5b4e49b4c8012c2a6e095320da6c1
+      commitTitle: 'chore: add debug script to fix journals consistency (#4650)...'
+      sha: c18a4910af7bf492d32de92d20c3e3a250382650
       tags:
-      - 0.21.11-1-g8284169f1
+      - 0.21.12
     path: schemas
   - git:
-      commitTitle: 'chore(deps): bump bria proto to ''0.1.108'' (#4667)'
-      sha: 8284169f18c5b4e49b4c8012c2a6e095320da6c1
+      commitTitle: 'chore: add debug script to fix journals consistency (#4650)...'
+      sha: c18a4910af7bf492d32de92d20c3e3a250382650
       tags:
-      - 0.21.11-1-g8284169f1
+      - 0.21.12
     path: gql
   path: graphql
 kind: LockConfig
