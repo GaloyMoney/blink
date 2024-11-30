@@ -21,7 +21,7 @@ const processPayment = async (payment: LedgerTransaction<WalletCurrency>) => {
   if (payout instanceof Error) {
     return new Error(`Failed to get payout: ${payout.name} - ${payout.message}`)
   }
-  if (!payout.batchId || !payout.txId || !payout.vout) {
+  if (!payout.batchId || !payout.txId || payout.vout === undefined) {
     return new Error("Missing required payout details")
   }
 

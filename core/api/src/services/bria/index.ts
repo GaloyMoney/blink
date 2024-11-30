@@ -235,13 +235,15 @@ export const OnChainService = (): IOnChainService => {
       const foundPayout = response.getPayout()
       if (foundPayout === undefined) return new PayoutNotFoundError()
 
+      //fix issue with proto gen default values
+      const txId = (foundPayout.getTxId() as OnChainTxHash) || undefined
       return {
         id: foundPayout.getId() as PayoutId,
         journalId: foundPayout.getExternalId() as LedgerJournalId,
         batchInclusionEstimatedAt: foundPayout.getBatchInclusionEstimatedAt(),
         batchId: foundPayout.getBatchId() as BatchId,
-        txId: foundPayout.getTxId() as OnChainTxHash,
-        vout: foundPayout.getVout() as OnChainTxVout,
+        txId,
+        vout: txId ? (foundPayout.getVout() as OnChainTxVout) : undefined,
       }
     } catch (err) {
       if (

@@ -497,10 +497,21 @@ export const LedgerService = (): ILedgerService => {
     | AsyncGenerator<LedgerTransaction<WalletCurrency>>
     | LedgerServiceError {
     try {
+      const bankOwnerWalletId = await caching.getBankOwnerWalletId()
+      const dealerUsdWalletId = await caching.getDealerUsdWalletId()
+      const dealerBtcWalletId = await caching.getDealerBtcWalletId()
+
+      const excludedAccounts = [
+        toLiabilitiesWalletId(bankOwnerWalletId),
+        toLiabilitiesWalletId(dealerUsdWalletId),
+        toLiabilitiesWalletId(dealerBtcWalletId),
+      ]
+
       const transactions = Transaction.find({
         type: LedgerTransactionType.OnchainPayment,
         pending: true,
         account_path: liabilitiesMainAccount,
+        accounts: { $nin: excludedAccounts },
       }).cursor({ batchSize: 100 })
 
       for await (const tx of transactions) {
