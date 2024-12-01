@@ -233,16 +233,17 @@ export const OnChainService = (): IOnChainService => {
 
       const response = await getPayout(request, metadata)
       const foundPayout = response.getPayout()
-
       if (foundPayout === undefined) return new PayoutNotFoundError()
-      let batchInclusionEstimatedAt = undefined
-      if (foundPayout.hasBatchInclusionEstimatedAt()) {
-        batchInclusionEstimatedAt = foundPayout.getBatchInclusionEstimatedAt()
-      }
+
+      //fix issue with proto gen default values
+      const txId = (foundPayout.getTxId() as OnChainTxHash) || undefined
       return {
         id: foundPayout.getId() as PayoutId,
         journalId: foundPayout.getExternalId() as LedgerJournalId,
-        batchInclusionEstimatedAt,
+        batchInclusionEstimatedAt: foundPayout.getBatchInclusionEstimatedAt(),
+        batchId: foundPayout.getBatchId() as BatchId,
+        txId,
+        vout: txId ? (foundPayout.getVout() as OnChainTxVout) : undefined,
       }
     } catch (err) {
       if (
@@ -281,6 +282,9 @@ export const OnChainService = (): IOnChainService => {
         id: response.getId() as PayoutId,
         journalId,
         batchInclusionEstimatedAt: response.getBatchInclusionEstimatedAt(),
+        batchId: undefined,
+        txId: undefined,
+        vout: undefined,
       }
     } catch (err) {
       const errMsg = parseErrorMessageFromUnknown(err)

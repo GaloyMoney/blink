@@ -330,6 +330,10 @@ interface ILedgerService {
 
   listWalletIdsWithPendingPayments: () => AsyncGenerator<WalletId> | LedgerServiceError
 
+  listPendingOnchainPayments: () =>
+    | AsyncGenerator<LedgerTransaction<WalletCurrency>>
+    | LedgerServiceError
+
   addColdStorageTxReceive<T extends DisplayCurrency>(
     args: AddColdStorageTxReceiveArgs<T>,
   ): Promise<LedgerJournal | LedgerServiceError>
