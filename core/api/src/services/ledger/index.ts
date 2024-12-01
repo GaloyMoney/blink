@@ -493,6 +493,35 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
+  const listPendingOnchainPayments = async function* ():
+    | AsyncGenerator<LedgerTransaction<WalletCurrency>>
+    | LedgerServiceError {
+    try {
+      const bankOwnerWalletId = await caching.getBankOwnerWalletId()
+      const dealerUsdWalletId = await caching.getDealerUsdWalletId()
+      const dealerBtcWalletId = await caching.getDealerBtcWalletId()
+
+      const excludedAccounts = [
+        toLiabilitiesWalletId(bankOwnerWalletId),
+        toLiabilitiesWalletId(dealerUsdWalletId),
+        toLiabilitiesWalletId(dealerBtcWalletId),
+      ]
+
+      const transactions = Transaction.find({
+        type: LedgerTransactionType.OnchainPayment,
+        pending: true,
+        account_path: liabilitiesMainAccount,
+        accounts: { $nin: excludedAccounts },
+      }).cursor({ batchSize: 100 })
+
+      for await (const tx of transactions) {
+        yield translateToLedgerTx(tx)
+      }
+    } catch (error) {
+      return new UnknownLedgerError(error)
+    }
+  }
+
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.ledger",
     fns: {
@@ -516,6 +545,7 @@ export const LedgerService = (): ILedgerService => {
       isLnTxRecorded,
       getWalletIdByPaymentHash,
       listWalletIdsWithPendingPayments,
+      listPendingOnchainPayments,
       ...admin,
       ...send,
     },
