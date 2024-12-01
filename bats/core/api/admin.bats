@@ -99,21 +99,48 @@ setup_file() {
   [[ "$returned_id" == "$user_id" ]] || exit 1
 }
 
-@test "admin: can upgrade account level" {
+@test "admin: can upgrade and downgrade account level" {
   admin_token="$(read_value 'admin.token')"
   id="$(read_value 'tester.id')"
 
+  change_account_level() {
+    local admin_token="$1"
+    local account_id="$2"
+    local target_level="$3"
+
+    variables=$(
+      jq -n \
+      --arg level "$target_level" \
+      --arg accountId "$account_id" \
+      '{input: {level: $level, accountId: $accountId}}'
+    )
+
+    exec_admin_graphql "$admin_token" 'account-update-level' "$variables"
+    refetched_id="$(graphql_output '.data.accountUpdateLevel.accountDetails.id')"
+    [[ "$refetched_id" == "$account_id" ]] || exit 1
+    level="$(graphql_output '.data.accountUpdateLevel.accountDetails.level')"
+    [[ "$level" == "$target_level" ]] || exit 1
+  }
+
   variables=$(
     jq -n \
-    --arg level "TWO" \
     --arg accountId "$id" \
-    '{input: {level: $level, accountId: $accountId}}'
+    '{accountId: $accountId}'
   )
-  exec_admin_graphql "$admin_token" 'account-update-level' "$variables"
-  refetched_id="$(graphql_output '.data.accountUpdateLevel.accountDetails.id')"
-  [[ "$refetched_id" == "$id" ]] || exit 1
-  level="$(graphql_output '.data.accountUpdateLevel.accountDetails.level')"
-  [[ "$level" == "TWO" ]] || exit 1
+  exec_admin_graphql "$admin_token" 'account-details-by-account-id' "$variables"
+  returned_id="$(graphql_output '.data.accountDetailsByAccountId.id')"
+  [[ "$returned_id" == "$id" ]] || exit 1
+  level="$(graphql_output '.data.accountDetailsByAccountId.level')"
+  [[ "$level" == "ONE" ]] || exit 1
+
+  # Upgrade to TWO
+  change_account_level "$admin_token" "$id" "TWO"
+
+  # Upgrade to THREE
+  change_account_level "$admin_token" "$id" "THREE"
+
+  # Downgrade back to TWO
+  change_account_level "$admin_token" "$id" "TWO"
 }
 
 @test "admin: can lock account" {

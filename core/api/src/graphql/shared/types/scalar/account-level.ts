@@ -6,6 +6,7 @@ const AccountLevel = GT.Enum({
     ZERO: { value: 0 }, // Limited account capabilities
     ONE: { value: 1 }, // We have the user's phone number
     TWO: { value: 2 }, // We have the user's identity
+    THREE: { value: 3 },
   },
 })
 

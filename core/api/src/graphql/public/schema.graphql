@@ -68,6 +68,7 @@ input AccountEnableNotificationChannelInput {
 
 enum AccountLevel {
   ONE
+  THREE
   TWO
   ZERO
 }
