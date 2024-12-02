@@ -1,6 +1,7 @@
 query accountDetailsByAccountId($accountId: ID!) {
   accountDetailsByAccountId(accountId: $accountId) {
     id
+    level
     owner {
       id
     }

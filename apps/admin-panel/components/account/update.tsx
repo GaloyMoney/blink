@@ -100,13 +100,19 @@ const AccountUpdate: React.FC<PropType> = ({ auditedAccount }) => {
               </button>
             </ConfirmForm>
           )}
-          {auditedAccount.level === "TWO" && (
+          {(auditedAccount.level === "TWO" || auditedAccount.level === "THREE") && (
             <ConfirmForm
               action={updateLevel}
-              message="Are you sure you want to downgrade the user to level 1?"
+              message={`Are you sure you want to downgrade the user to level ${auditedAccount.level === "THREE" ? "2" : "1"}?`}
             >
               <input type="hidden" name="id" value={auditedAccount.id} />
-              <input type="hidden" name="level" value={AccountLevel.One} />
+              <input
+                type="hidden"
+                name="level"
+                value={
+                  auditedAccount.level === "THREE" ? AccountLevel.Two : AccountLevel.One
+                }
+              />
               <button className="text-sm mx-4 bg-green-500 hover:bg-green-700 text-white font-bold p-2 border border-green-700 rounded disabled:opacity-50">
                 {"Downgrade"}
               </button>

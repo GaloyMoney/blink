@@ -105,6 +105,7 @@ enum AccountLevel
   @join__type(graph: PUBLIC)
 {
   ONE @join__enumValue(graph: PUBLIC)
+  THREE @join__enumValue(graph: PUBLIC)
   TWO @join__enumValue(graph: PUBLIC)
   ZERO @join__enumValue(graph: PUBLIC)
 }
