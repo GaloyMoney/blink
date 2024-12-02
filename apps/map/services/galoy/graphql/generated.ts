@@ -161,6 +161,7 @@ export type AccountEnableNotificationChannelInput = {
 
 export const AccountLevel = {
   One: 'ONE',
+  Three: 'THREE',
   Two: 'TWO',
   Zero: 'ZERO'
 } as const;
