@@ -8,6 +8,7 @@ scalar AccountId
 
 enum AccountLevel {
   ONE
+  THREE
   TWO
   ZERO
 }

@@ -7,6 +7,8 @@ import {
   EstimatePayoutFeeResponse,
   GetAddressRequest,
   GetAddressResponse,
+  GetBatchRequest,
+  GetBatchResponse,
   GetPayoutRequest,
   GetPayoutResponse,
   GetWalletBalanceSummaryRequest,
@@ -58,3 +60,7 @@ export const estimatePayoutFee = promisify<
 >(bitcoinBridgeClient.estimatePayoutFee.bind(bitcoinBridgeClient))
 
 export const subscribeAll = bitcoinBridgeClient.subscribeAll.bind(bitcoinBridgeClient)
+
+export const getBatch = promisify<GetBatchRequest, Metadata, GetBatchResponse>(
+  bitcoinBridgeClient.getBatch.bind(bitcoinBridgeClient),
+)
