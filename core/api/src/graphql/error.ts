@@ -421,7 +421,7 @@ export class InvalidPhoneForOnboardingError extends CustomGraphQLError {
 export class UnauthorizedIPMetadataCountryError extends CustomGraphQLError {
   constructor(errData: CustomGraphQLErrorData) {
     super({
-      message: "Country not not authorized for quizzes.",
+      message: "Country not authorized for quizzes.",
       forwardToClient: true,
       code: "UNAUTHORIZED_COUNTRY_IP_FOR_QUIZZES",
       ...errData,
