@@ -2,27 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(quickstart): update env variables in docker compose template
-        (#4683)'
-      sha: 6aa2670c67132da6f3fd3aeaba86245d1e028099
+      commitTitle: 'fix: update quickstart docker compose deps (#4684)'
+      sha: 888b29856385cf89ccbdcb4d7023faee2e1b066e
       tags:
-      - 0.21.14-1-g6aa2670c6
+      - 0.21.15-1-g888b29856
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(quickstart): update env variables in docker compose template
-        (#4683)'
-      sha: 6aa2670c67132da6f3fd3aeaba86245d1e028099
+      commitTitle: 'fix: update quickstart docker compose deps (#4684)'
+      sha: 888b29856385cf89ccbdcb4d7023faee2e1b066e
       tags:
-      - 0.21.14-1-g6aa2670c6
+      - 0.21.15-1-g888b29856
     path: schemas
   - git:
-      commitTitle: 'fix(quickstart): update env variables in docker compose template
-        (#4683)'
-      sha: 6aa2670c67132da6f3fd3aeaba86245d1e028099
+      commitTitle: 'fix: update quickstart docker compose deps (#4684)'
+      sha: 888b29856385cf89ccbdcb4d7023faee2e1b066e
       tags:
-      - 0.21.14-1-g6aa2670c6
+      - 0.21.15-1-g888b29856
     path: gql
   path: graphql
 kind: LockConfig

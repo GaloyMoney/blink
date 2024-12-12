@@ -98,7 +98,7 @@ services:
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=hydra
   galoy:
-    image: us.gcr.io/galoy-org/galoy-api@sha256:bd56a94ac9142ba771aa6d1e193c449c669bf2706f5de5727ffab7e50460eb4a
+    image: us.gcr.io/galoy-org/galoy-api@sha256:3a56597239aa1caf5c59cca1861c812310c6b3f99020de93527590439522d63b
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -139,7 +139,6 @@ services:
     - EXPORTER_PORT=3003
     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-agent:4318
     depends_on:
-    - trigger
     - apollo-router
     - oathkeeper
     - kratos
@@ -149,12 +148,16 @@ services:
     - mongodb
     - redis
     - stablesats
+    - notifications
+    - price
+    - price-history
+    - svix
     networks:
       default:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:c8479ff0088f3cbed3205e160d130a6fe2e8f1efb7b66d68e295fbb26c7eb119
+    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:6057867f063ff205a9297a080d2d49e105bed20a8d41358d98cc01b978fddc69
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -195,9 +198,7 @@ services:
     - EXPORTER_PORT=3003
     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-agent:4318
     depends_on:
-    - lnd1
-    - bria
-    - mongodb
+    - galoy
   notifications:
     image: us.gcr.io/galoy-org/galoy-notifications@sha256:71c53ab3d9a4282d44d0605b95f1691ebc23334e8108bd4d06021a0c627a1205
     environment:
@@ -241,7 +242,7 @@ services:
     environment:
     - MONGO_INITDB_DATABASE=galoy
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:19b9cd06466116bc6d25d1c495438ac64b4fec05bde47ca9b83b7a8c1cd4633f
+    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:aa18803258d758b3d176460cf728d66f4c930783f8109919852a20a6a237821f
     depends_on:
     - mongodb
     environment:
