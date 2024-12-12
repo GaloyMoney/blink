@@ -94,7 +94,6 @@ services:
 #@ end
     environment: #@ core_env
     depends_on:
-    - trigger
     - apollo-router
     - oathkeeper
     - kratos
@@ -104,6 +103,10 @@ services:
     - mongodb
     - redis
     - stablesats
+    - notifications
+    - price
+    - price-history
+    - svix
     networks:
       default:
         aliases:
@@ -120,9 +123,7 @@ services:
 #@ end
     environment: #@ core_env
     depends_on:
-    - lnd1
-    - bria
-    - mongodb
+    - galoy
 
   notifications:
 #@ if galoy_notifications_image_digest == "local":
