@@ -139,6 +139,8 @@ services:
     command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --watch-courier --sqa-opt-out"'
     environment:
       DSN: postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
+    depends_on:
+      - kratos-pg
     volumes:
       - ${HOST_PROJECT_PATH:-.}/config/ory:/home/ory
   kratos-pg:
@@ -338,7 +340,6 @@ services:
       - ${HOST_PROJECT_PATH:-.}/config/otel-agent-config.yaml:/etc/otel-agent-config.yaml
   svix:
     image: svix/svix-server:v1.38
-    platform: linux/amd64
     environment:
       WAIT_FOR: "true"
       SVIX_DB_DSN: postgresql://postgres:postgres@svix-pg/postgres
