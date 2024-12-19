@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: update quickstart docker compose deps (#4684)'
-      sha: 888b29856385cf89ccbdcb4d7023faee2e1b066e
+      commitTitle: 'chore: update lnd version to 0.18.4 (#4691)'
+      sha: a2ab6e3912ebae6b517480c0317f576dfd13d50e
       tags:
-      - 0.21.15-1-g888b29856
+      - 0.21.16-1-ga2ab6e391
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: update quickstart docker compose deps (#4684)'
-      sha: 888b29856385cf89ccbdcb4d7023faee2e1b066e
+      commitTitle: 'chore: update lnd version to 0.18.4 (#4691)'
+      sha: a2ab6e3912ebae6b517480c0317f576dfd13d50e
       tags:
-      - 0.21.15-1-g888b29856
+      - 0.21.16-1-ga2ab6e391
     path: schemas
   - git:
-      commitTitle: 'fix: update quickstart docker compose deps (#4684)'
-      sha: 888b29856385cf89ccbdcb4d7023faee2e1b066e
+      commitTitle: 'chore: update lnd version to 0.18.4 (#4691)'
+      sha: a2ab6e3912ebae6b517480c0317f576dfd13d50e
       tags:
-      - 0.21.15-1-g888b29856
+      - 0.21.16-1-ga2ab6e391
     path: gql
   path: graphql
 kind: LockConfig
