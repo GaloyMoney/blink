@@ -139,8 +139,6 @@ services:
     command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --watch-courier --sqa-opt-out"'
     environment:
       DSN: postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
-    links:
-      - kratos-pg:kratos-pg
     volumes:
       - ${HOST_PROJECT_PATH:-.}/config/ory:/home/ory
   kratos-pg:
