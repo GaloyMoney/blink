@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: update lnd version to 0.18.4 (#4691)'
-      sha: a2ab6e3912ebae6b517480c0317f576dfd13d50e
+      commitTitle: 'fix(core): remove links from docker compose (#4693)...'
+      sha: 38a25bdbcd1091bb7a6b22434a2f15b4ec736a30
       tags:
-      - 0.21.16-1-ga2ab6e391
+      - 0.21.17-1-g38a25bdbc
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: update lnd version to 0.18.4 (#4691)'
-      sha: a2ab6e3912ebae6b517480c0317f576dfd13d50e
+      commitTitle: 'fix(core): remove links from docker compose (#4693)...'
+      sha: 38a25bdbcd1091bb7a6b22434a2f15b4ec736a30
       tags:
-      - 0.21.16-1-ga2ab6e391
+      - 0.21.17-1-g38a25bdbc
     path: schemas
   - git:
-      commitTitle: 'chore: update lnd version to 0.18.4 (#4691)'
-      sha: a2ab6e3912ebae6b517480c0317f576dfd13d50e
+      commitTitle: 'fix(core): remove links from docker compose (#4693)...'
+      sha: 38a25bdbcd1091bb7a6b22434a2f15b4ec736a30
       tags:
-      - 0.21.16-1-ga2ab6e391
+      - 0.21.17-1-g38a25bdbc
     path: gql
   path: graphql
 kind: LockConfig

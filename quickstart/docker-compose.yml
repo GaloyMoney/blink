@@ -55,8 +55,8 @@ services:
     command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --watch-courier --sqa-opt-out"'
     environment:
       DSN: postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
-    links:
-    - kratos-pg:kratos-pg
+    depends_on:
+    - kratos-pg
     volumes:
     - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/ory:/home/ory
   kratos-pg:
@@ -98,7 +98,7 @@ services:
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=hydra
   galoy:
-    image: us.gcr.io/galoy-org/galoy-api@sha256:a180c47010ae7892ec7c04207885f98ae51ae8fed248a5a5826fe22149eb6a27
+    image: us.gcr.io/galoy-org/galoy-api@sha256:d946a4de44c88dc188f5f416176c350acfecce8173b034bde75d7360b6865454
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -157,7 +157,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:c57593a4915284e415a93103d3bfef1f6ab1948cbf8e95129c96967fdf620646
+    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:9dd26b7190215326627364fbb76d0cb9b98fd9debafb48db69b74cd09b223aeb
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -242,7 +242,7 @@ services:
     environment:
     - MONGO_INITDB_DATABASE=galoy
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:7360aa4dc96740cd29ee4931e651f15d3e1e90d25bb79387e943eb25b7a656b6
+    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:bdf753fcf44e8eab32d5b0410b79fffcb58a8d5f389be1d92fd261cdc15fc0a7
     depends_on:
     - mongodb
     environment:
@@ -449,7 +449,6 @@ services:
     - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/config/otel-agent-config.yaml:/etc/otel-agent-config.yaml
   svix:
     image: svix/svix-server:v1.38
-    platform: linux/amd64
     environment:
       WAIT_FOR: "true"
       SVIX_DB_DSN: postgresql://postgres:postgres@svix-pg/postgres
