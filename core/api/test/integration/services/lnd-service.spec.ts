@@ -11,7 +11,7 @@ import {
 
 import { LND1_PUBKEY, MS_PER_SEC } from "@/config"
 
-import { WalletCurrency } from "@/domain/shared"
+import { ONE_SAT, WalletCurrency } from "@/domain/shared"
 import { toSats } from "@/domain/bitcoin"
 import {
   InvoiceNotFoundError,
@@ -22,7 +22,6 @@ import {
   RouteNotFoundError,
   decodeInvoice,
 } from "@/domain/bitcoin/lightning"
-import { LnFees } from "@/domain/payments"
 
 import { LndService } from "@/services/lnd"
 import { parseLndErrorDetails } from "@/services/lnd/config"
@@ -304,7 +303,7 @@ describe("Lnd", () => {
       const paid = await lndService.payInvoiceViaPaymentDetails({
         decodedInvoice: lnInvoice,
         btcPaymentAmount,
-        maxFeeAmount: LnFees().maxProtocolAndBankFee(btcPaymentAmount),
+        maxFeeAmount: ONE_SAT,
       })
       expect(paid).toBeInstanceOf(RouteNotFoundError)
     })

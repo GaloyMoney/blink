@@ -1,4 +1,4 @@
-import { FEECAP_BASIS_POINTS } from "@/domain/bitcoin"
+import { FEECAP_BASIS_POINTS, FEECAP_MIN } from "@/domain/bitcoin"
 import { MaxFeeTooLargeForRoutelessPaymentError } from "@/domain/bitcoin/lightning"
 import {
   WalletCurrency,
@@ -14,15 +14,22 @@ const calc = AmountCalculator()
 export const LnFees = () => {
   const feeCapBasisPoints = FEECAP_BASIS_POINTS
 
-  const maxProtocolAndBankFee = <T extends WalletCurrency>(amount: PaymentAmount<T>) => {
-    if (amount.amount == 0n) {
-      return amount
-    }
+  const maxProtocolAndBankFee = <T extends WalletCurrency>(
+    amount: PaymentAmount<T>,
+  ): PaymentAmount<T> => {
+    if (amount.amount === 0n) return amount
 
-    const maxFee = calc.mulBasisPoints(amount, feeCapBasisPoints)
+    const defaultMaxFee = calc.mulBasisPoints(amount, feeCapBasisPoints)
+
+    const getMaxAmount = (fee: PaymentAmount<T>) => (fee.amount === 0n ? 1n : fee.amount)
+
+    const maxFee =
+      amount.currency === WalletCurrency.Btc
+        ? getMaxAmount(calc.max(defaultMaxFee, FEECAP_MIN as PaymentAmount<T>)) // allow micro payments
+        : getMaxAmount(defaultMaxFee)
 
     return {
-      amount: maxFee.amount === 0n ? 1n : maxFee.amount,
+      amount: maxFee,
       currency: amount.currency,
     }
   }
