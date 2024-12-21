@@ -22,7 +22,6 @@ import {
   RouteNotFoundError,
   decodeInvoice,
 } from "@/domain/bitcoin/lightning"
-import { LnFees } from "@/domain/payments"
 
 import { LndService } from "@/services/lnd"
 import { parseLndErrorDetails } from "@/services/lnd/config"
