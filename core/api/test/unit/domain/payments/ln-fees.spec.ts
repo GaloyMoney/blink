@@ -1,3 +1,4 @@
+import { FEECAP_MIN } from "@/domain/bitcoin"
 import { AmountCalculator, ONE_CENT, ONE_SAT, WalletCurrency } from "@/domain/shared"
 import { LnFees, WalletPriceRatio } from "@/domain/payments"
 import { MaxFeeTooLargeForRoutelessPaymentError } from "@/domain/bitcoin/lightning"
@@ -29,13 +30,43 @@ describe("LnFees", () => {
     })
 
     it("handles a small amount", () => {
-      const btcAmount = {
+      let btcAmount = {
         amount: 1n,
         currency: WalletCurrency.Btc,
       }
       expect(LnFees().maxProtocolAndBankFee(btcAmount)).toEqual({
-        amount: 1n,
+        amount: FEECAP_MIN.amount,
         currency: WalletCurrency.Btc,
+      })
+
+      btcAmount = {
+        amount: 1000n,
+        currency: WalletCurrency.Btc,
+      }
+      expect(LnFees().maxProtocolAndBankFee(btcAmount)).toEqual({
+        amount: FEECAP_MIN.amount,
+        currency: WalletCurrency.Btc,
+      })
+
+      const usdAmount = {
+        amount: 1n,
+        currency: WalletCurrency.Usd,
+      }
+      expect(LnFees().maxProtocolAndBankFee(usdAmount)).toEqual({
+        amount: 1n,
+        currency: WalletCurrency.Usd,
+      })
+    })
+
+    it("does not apply FEECAP_MIN to USD amounts", () => {
+      const usdAmount = {
+        amount: 1000n,
+        currency: WalletCurrency.Usd,
+      }
+      // With 0.5% fee cap, 1000 cents would result in 5 cents fee
+      expect(LnFees().maxProtocolAndBankFee(usdAmount)).toEqual({
+        amount: 5n,
+        currency: WalletCurrency.Usd,
       })
     })
   })
@@ -179,7 +210,7 @@ describe("LnFees", () => {
       it("fails for a 1 sat large Btc maxFee", () => {
         expect(
           LnFees().verifyMaxFee({
-            maxFeeAmount: calc.add(ONE_SAT, ONE_SAT),
+            maxFeeAmount: calc.add(FEECAP_MIN, ONE_SAT),
             btcPaymentAmount: ONE_SAT,
             usdPaymentAmount: ONE_CENT,
             priceRatio,
