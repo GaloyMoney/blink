@@ -2,7 +2,7 @@ import {
   InvalidCurrencyBaseAmountError,
   InvalidSatoshiAmountError,
 } from "@/domain/errors"
-import { MAX_SATS, BtcAmountTooLargeError } from "@/domain/shared"
+import { MAX_SATS, BtcAmountTooLargeError, WalletCurrency } from "@/domain/shared"
 
 export const SATS_PER_BTC = 10 ** 8
 
@@ -57,4 +57,7 @@ export const BtcNetwork = {
 
 // Offchain routing fees are capped at 0.5%
 export const FEECAP_BASIS_POINTS = 50n // 100 basis points == 1%
-export const FEEMIN = toSats(10) // sats
+export const FEECAP_MIN = {
+  amount: 10n,
+  currency: WalletCurrency.Btc,
+}
