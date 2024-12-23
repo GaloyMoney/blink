@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): remove links from docker compose (#4693)...'
-      sha: 38a25bdbcd1091bb7a6b22434a2f15b4ec736a30
+      commitTitle: 'fix(core): allow micro payments (#4696)...'
+      sha: a335b40158245b0bb93ed6e60c540ea09d9e1aa3
       tags:
-      - 0.21.17-1-g38a25bdbc
+      - 0.21.18-1-ga335b4015
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): remove links from docker compose (#4693)...'
-      sha: 38a25bdbcd1091bb7a6b22434a2f15b4ec736a30
+      commitTitle: 'fix(core): allow micro payments (#4696)...'
+      sha: a335b40158245b0bb93ed6e60c540ea09d9e1aa3
       tags:
-      - 0.21.17-1-g38a25bdbc
+      - 0.21.18-1-ga335b4015
     path: schemas
   - git:
-      commitTitle: 'fix(core): remove links from docker compose (#4693)...'
-      sha: 38a25bdbcd1091bb7a6b22434a2f15b4ec736a30
+      commitTitle: 'fix(core): allow micro payments (#4696)...'
+      sha: a335b40158245b0bb93ed6e60c540ea09d9e1aa3
       tags:
-      - 0.21.17-1-g38a25bdbc
+      - 0.21.18-1-ga335b4015
     path: gql
   path: graphql
 kind: LockConfig
