@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): allow micro payments (#4696)...'
-      sha: a335b40158245b0bb93ed6e60c540ea09d9e1aa3
+      commitTitle: 'chore: bump db deps /core/api (#4672)...'
+      sha: 012fde31438d34be2b67bf8321f4912c98f8e092
       tags:
-      - 0.21.18-1-ga335b4015
+      - 0.21.19-3-g012fde314
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): allow micro payments (#4696)...'
-      sha: a335b40158245b0bb93ed6e60c540ea09d9e1aa3
+      commitTitle: 'chore: bump db deps /core/api (#4672)...'
+      sha: 012fde31438d34be2b67bf8321f4912c98f8e092
       tags:
-      - 0.21.18-1-ga335b4015
+      - 0.21.19-3-g012fde314
     path: schemas
   - git:
-      commitTitle: 'fix(core): allow micro payments (#4696)...'
-      sha: a335b40158245b0bb93ed6e60c540ea09d9e1aa3
+      commitTitle: 'chore: bump db deps /core/api (#4672)...'
+      sha: 012fde31438d34be2b67bf8321f4912c98f8e092
       tags:
-      - 0.21.18-1-ga335b4015
+      - 0.21.19-3-g012fde314
     path: gql
   path: graphql
 kind: LockConfig
