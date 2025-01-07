@@ -256,7 +256,7 @@ def kotlin_library_impl(ctx: AnalysisContext) -> list[Provider]:
             shared_library_info,
             cxx_resource_info,
             linkable_graph,
-            # Add an unused default output in case this target is used an an attr.source() anywhere.
+            # Add an unused default output in case this target is used an attr.source() anywhere.
             DefaultInfo(default_output = ctx.actions.write("{}/unused.jar".format(ctx.label.name), [])),
             TemplatePlaceholderInfo(keyed_variables = {
                 "classpath": "unused_but_needed_for_analysis",

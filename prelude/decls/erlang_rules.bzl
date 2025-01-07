@@ -117,7 +117,7 @@ rules_attributes = {
                 developers should be to reduce usages of this field._ **DO NOT ADD ANY MORE USAGES!!**
             """),
         "extra_properties": attrs.option(attrs.dict(key = attrs.string(), value = attrs.one_of(attrs.string(), attrs.list(attrs.string()))), default = None, doc = """
-                The extra_properties field can be used to specify extra key-value pairs which is are not defined in
+                The extra_properties field can be used to specify extra key-value pairs which are not defined in
                 [application_opt()](https://www.erlang.org/doc/man/application.html#load-2). The key-value pair will be stored in the
                 applications `.app` file and can be accessed by `file:consult/1`.
             """),
