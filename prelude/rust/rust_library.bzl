@@ -741,7 +741,7 @@ def _native_providers(
         # Proc-macros never have a native form
         return []
 
-    # If advanced_unstable_linking is set on the the rust toolchain, then build this artifact
+    # If advanced_unstable_linking is set on the rust toolchain, then build this artifact
     # using the "native-unbundled" linkage language. See LinkageLang docs for more details
     advanced_unstable_linking = compile_ctx.toolchain_info.advanced_unstable_linking
     lang = LinkageLang("native-unbundled") if advanced_unstable_linking else LinkageLang("native")

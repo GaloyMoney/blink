@@ -404,7 +404,7 @@ def _create_non_template_providers(
         library_output: optional JavaClasspathEntry that represents library output
         declared_deps: declared dependencies (usually comes from `deps` field of the rule)
         exported_deps: dependencies that are exposed to dependent rules as compiling deps
-        exported_provided_deps: dependencies that are are exposed to dependent rules and not be included into packaging
+        exported_provided_deps: dependencies that are exposed to dependent rules and not be included into packaging
         runtime_deps: dependencies that are used for packaging only
     """
     packaging_deps = declared_deps + exported_deps + runtime_deps
