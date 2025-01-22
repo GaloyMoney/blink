@@ -29,7 +29,7 @@ export const submitFeedback = async ({
   try {
     const response = await axios.post(
       MATTERMOST_WEBHOOK_URL,
-      { text },
+      { text, msg: text },
       { headers: { "Content-Type": "application/json" } },
     )
 
