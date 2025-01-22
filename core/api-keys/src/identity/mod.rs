@@ -133,34 +133,7 @@ impl Identities {
                 .collect::<Vec<_>>();
             Ok((IdentityApiKeyId::from(record.id), record.subject_id, scopes))
         } else {
-            // look up by encrypted key and set hashed_key
-            let record = sqlx::query!(
-                r#"WITH updated_key AS (
-                 UPDATE identity_api_keys k
-                 SET last_used_at = NOW(), hashed_key = digest($1, 'sha256')
-                 FROM identities i
-                 WHERE k.identity_id = i.id
-                 AND k.revoked = false
-                 AND k.encrypted_key = crypt($1, k.encrypted_key)
-                 AND (k.expires_at > NOW() OR k.expires_at IS NULL)
-                 RETURNING k.id, i.subject_id, k.scopes
-               )
-               SELECT id, subject_id, scopes FROM updated_key"#,
-                code
-            )
-            .fetch_optional(&self.pool)
-            .await?;
-
-            if let Some(record) = record {
-                let scopes = record
-                    .scopes
-                    .into_iter()
-                    .map(|s| s.parse::<Scope>().expect("Invalid scope"))
-                    .collect::<Vec<_>>();
-                Ok((IdentityApiKeyId::from(record.id), record.subject_id, scopes))
-            } else {
-                Err(IdentityError::NoActiveKeyFound)
-            }
+            Err(IdentityError::NoActiveKeyFound)
         }
     }
 
