@@ -12,7 +12,7 @@ import { getOriginalRequestInfo } from "@/lib/utils"
 
 import { client } from "@/app/lnurlp/[username]/graphql"
 
-const COMMENT_SIZE = 2000 // 2000 characters max for GET
+const COMMENT_SIZE = 0 // 2000 characters max for GET
 
 const nostrEnabled = !!env.NOSTR_PUBKEY
 
