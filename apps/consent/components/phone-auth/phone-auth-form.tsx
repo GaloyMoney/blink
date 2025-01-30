@@ -34,19 +34,21 @@ import SelectComponent from "@/components/select"
 import RegisterLink from "@/components/register-link"
 
 import { GetCaptchaChallengeResponse } from "@/app/types/phone-auth.types"
+import { SupportedCountry } from "@/app/graphql/queries/get-supported-countries"
 
 interface AuthFormProps {
   authAction: "Register" | "Login"
   login_challenge: string
-  countryCodes: Array<CountryCode>
+  countries: Array<SupportedCountry>
 }
 
 const PhoneAuthForm: React.FC<AuthFormProps> = ({
   login_challenge,
-  countryCodes,
+  countries,
   authAction,
 }) => {
   const [phoneNumber, setPhoneNumber] = useState<string>("")
+  const [selectedCountry, setSelectedCountry] = useState<CountryCode | undefined>()
   const [state, formAction] = useFormState<GetCaptchaChallengeResponse, FormData>(
     getCaptchaChallenge,
     {
@@ -108,6 +110,14 @@ const PhoneAuthForm: React.FC<AuthFormProps> = ({
     return null
   }
 
+  const getAvailableChannels = (selectedCountry: CountryCode | undefined) => {
+    const country = countries.find((c) => c.id === selectedCountry)
+    return country?.supportedAuthChannels.map((c) => c) || ["SMS"]
+  }
+
+  const countryCodes: CountryCode[] = countries.map(
+    (country) => country.id as CountryCode,
+  )
   return (
     <>
       {renderCaptchaChallenge()}
@@ -124,12 +134,13 @@ const PhoneAuthForm: React.FC<AuthFormProps> = ({
           id="phone"
           name="phone"
           onChange={handlePhoneNumberChange}
+          onCountryChange={setSelectedCountry}
         />
         <SelectComponent
           id="channel"
           name="channel"
           defaultValue="SMS"
-          options={["SMS", "WhatsApp"]}
+          options={getAvailableChannels(selectedCountry)}
           required
         ></SelectComponent>
         <div className="flex items-center mb-4">
