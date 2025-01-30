@@ -98,7 +98,7 @@ services:
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=hydra
   galoy:
-    image: us.gcr.io/galoy-org/galoy-api@sha256:3ddf3176d5bfd52c29b1c04167746a92ba362968407fe804e3ee04eb206fad83
+    image: us.gcr.io/galoy-org/galoy-api@sha256:c33ab0f117d7f7c1fa4d5ca25ab1db5e96232c9283bea1c16161b4e97252252f
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -157,7 +157,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:579619c2d842227233cb6fd6eca82fc51ee5acc4589253f30268f3a418cdf51e
+    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:831c56af29b3da16871d695e54c70a4c5623602fb87a278deff08bb8ad729bdf
     environment:
     - HELMREVISION=dev
     - NETWORK=regtest
@@ -242,7 +242,7 @@ services:
     environment:
     - MONGO_INITDB_DATABASE=galoy
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:256a134a764d97d7e57417f2a9f7b6625c46dd19a2e809f60d9475ecaca7fe44
+    image: us.gcr.io/galoy-org/galoy-api-migrate@sha256:096563a85d500d4b409089e8ba33f9162748f7b80252e1160687de186c368cde
     depends_on:
     - mongodb
     environment:

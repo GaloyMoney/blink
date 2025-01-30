@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump db deps /core/api (#4672)...'
-      sha: 012fde31438d34be2b67bf8321f4912c98f8e092
+      commitTitle: 'chore(core): update feedback webhook content (#4717)...'
+      sha: 55f8f0a32bece8422eac051fbae0dac526441237
       tags:
-      - 0.21.19-3-g012fde314
+      - 0.21.20-1-g55f8f0a32
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump db deps /core/api (#4672)...'
-      sha: 012fde31438d34be2b67bf8321f4912c98f8e092
+      commitTitle: 'chore(core): update feedback webhook content (#4717)...'
+      sha: 55f8f0a32bece8422eac051fbae0dac526441237
       tags:
-      - 0.21.19-3-g012fde314
+      - 0.21.20-1-g55f8f0a32
     path: schemas
   - git:
-      commitTitle: 'chore: bump db deps /core/api (#4672)...'
-      sha: 012fde31438d34be2b67bf8321f4912c98f8e092
+      commitTitle: 'chore(core): update feedback webhook content (#4717)...'
+      sha: 55f8f0a32bece8422eac051fbae0dac526441237
       tags:
-      - 0.21.19-3-g012fde314
+      - 0.21.20-1-g55f8f0a32
     path: gql
   path: graphql
 kind: LockConfig
