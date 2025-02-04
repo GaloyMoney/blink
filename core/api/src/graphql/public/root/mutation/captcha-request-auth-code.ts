@@ -4,7 +4,6 @@ import Phone from "@/graphql/shared/types/scalar/phone"
 import SuccessPayload from "@/graphql/shared/types/payload/success-payload"
 import { Authentication } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
-import { ChannelType } from "@/domain/phone-provider"
 import PhoneCodeChannelType from "@/graphql/shared/types/scalar/phone-code-channel-type"
 import { InputValidationError } from "@/graphql/error"
 
@@ -45,7 +44,7 @@ const CaptchaRequestAuthCodeMutation = GT.Field<
       challengeCode: geetestChallenge,
       validationCode: geetestValidate,
       secCode: geetestSeccode,
-      channel: channelInput,
+      channel,
     } = args.input
 
     if (phone instanceof Error) return { errors: [{ message: phone.message }] }
@@ -55,15 +54,11 @@ const CaptchaRequestAuthCodeMutation = GT.Field<
       return { errors: [{ message: geetestValidate.message }] }
     if (geetestSeccode instanceof Error)
       return { errors: [{ message: geetestSeccode.message }] }
-    if (channelInput instanceof Error)
-      return { errors: [{ message: channelInput.message }] }
+    if (channel instanceof Error) return { errors: [{ message: channel.message }] }
 
     if (ip === undefined) {
       return { errors: [{ message: "ip is undefined" }] }
     }
-
-    let channel: ChannelType = ChannelType.Sms
-    if (channelInput === "WHATSAPP") channel = ChannelType.Whatsapp
 
     const result = await Authentication.requestPhoneCodeWithCaptcha({
       phone,

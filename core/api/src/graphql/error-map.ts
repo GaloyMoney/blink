@@ -555,6 +555,11 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = "Invalid invoice amount"
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "InvalidChannel":
+    case "InvalidChannelForCountry":
+      message = "Invalid channel"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------
