@@ -49,7 +49,11 @@ export const checkedToChannel = (
   phone: string,
   channel: string,
 ): ChannelType | ValidationError => {
-  if (!phone || !channel) {
+  if (!phone) {
+    return new InvalidPhoneNumber(phone)
+  }
+
+  if (!channel) {
     return new InvalidChannel(channel)
   }
 

@@ -1,4 +1,4 @@
-import { checkedToChannel } from "@/domain/phone-provider"
+import { checkedToChannel, ChannelType } from "@/domain/phone-provider"
 import {
   InvalidPhoneNumber,
   InvalidChannel,
@@ -11,13 +11,13 @@ jest.mock("@/config", () => ({
   getWhatsAppAuthUnsupportedCountries: () => ["US"],
 }))
 
-describe("channel-check", () => {
+describe("checkedToChannel", () => {
   const validUsPhone = "+16505554321"
   const validUkPhone = "+447874482105"
 
   it("fails with empty phone", () => {
     const result = checkedToChannel("", "sms")
-    expect(result).toBeInstanceOf(InvalidChannel)
+    expect(result).toBeInstanceOf(InvalidPhoneNumber)
   })
 
   it("fails with empty channel", () => {
@@ -43,7 +43,7 @@ describe("channel-check", () => {
   describe("SMS channel", () => {
     it("succeeds for supported country", () => {
       const result = checkedToChannel(validUsPhone, "sms")
-      expect(result).toBe("sms")
+      expect(result).toBe(ChannelType.Sms)
     })
 
     it("fails for unsupported country", () => {
@@ -53,14 +53,14 @@ describe("channel-check", () => {
 
     it("is case insensitive", () => {
       const result = checkedToChannel(validUsPhone, "SMS")
-      expect(result).toBe("sms")
+      expect(result).toBe(ChannelType.Sms)
     })
   })
 
   describe("WhatsApp channel", () => {
     it("succeeds for supported country", () => {
       const result = checkedToChannel(validUkPhone, "whatsapp")
-      expect(result).toBe("whatsapp")
+      expect(result).toBe(ChannelType.Whatsapp)
     })
 
     it("fails for unsupported country", () => {
@@ -70,7 +70,7 @@ describe("channel-check", () => {
 
     it("is case insensitive", () => {
       const result = checkedToChannel(validUkPhone, "WhatsApp")
-      expect(result).toBe("whatsapp")
+      expect(result).toBe(ChannelType.Whatsapp)
     })
   })
 
@@ -78,7 +78,7 @@ describe("channel-check", () => {
     it("handles undefined phone", () => {
       // @ts-expect-error Testing undefined case
       const result = checkedToChannel(undefined, "sms")
-      expect(result).toBeInstanceOf(InvalidChannel)
+      expect(result).toBeInstanceOf(InvalidPhoneNumber)
     })
 
     it("handles undefined channel", () => {
@@ -90,7 +90,7 @@ describe("channel-check", () => {
     it("handles null phone", () => {
       // @ts-expect-error Testing null case
       const result = checkedToChannel(null, "sms")
-      expect(result).toBeInstanceOf(InvalidChannel)
+      expect(result).toBeInstanceOf(InvalidPhoneNumber)
     })
 
     it("handles null channel", () => {
