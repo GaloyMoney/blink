@@ -34,7 +34,7 @@ const UserPhoneRegistrationInitiateMutation = GT.Field<
     input: { type: GT.NonNull(UserPhoneRegistrationInitiateInput) },
   },
   resolve: async (_, args, { ip, user }) => {
-    const { phone, channel: channelInput } = args.input
+    const { phone, channel } = args.input
 
     if (ip === undefined) {
       return { errors: [{ message: "ip is undefined" }] }
@@ -44,12 +44,7 @@ const UserPhoneRegistrationInitiateMutation = GT.Field<
       return { errors: [{ message: phone.message }] }
     }
 
-    if (channelInput instanceof Error)
-      return { errors: [{ message: channelInput.message }] }
-
-    let channel: ChannelType = ChannelType.Sms
-    if (channelInput?.toLowerCase() === ChannelType.Whatsapp)
-      channel = ChannelType.Whatsapp
+    if (channel instanceof Error) return { errors: [{ message: channel.message }] }
 
     const success = await Authentication.requestPhoneCodeForAuthedUser({
       phone,

@@ -4,6 +4,7 @@ import {
   getGeetestConfig,
   getTestAccounts,
 } from "@/config"
+import { checkedToChannel } from "@/domain/phone-provider"
 import { TestAccountsChecker } from "@/domain/accounts/test-accounts-checker"
 import { PhoneAlreadyExistsError } from "@/domain/authentication/errors"
 import { NotImplementedError } from "@/domain/errors"
@@ -29,7 +30,7 @@ export const requestPhoneCodeWithCaptcha = async ({
   geetestValidate: string
   geetestSeccode: string
   ip: IpAddress
-  channel: ChannelType
+  channel: string
 }): Promise<true | ApplicationError> => {
   const geeTestConfig = getGeetestConfig()
   const geetest = Geetest(geeTestConfig)
@@ -67,7 +68,14 @@ export const requestPhoneCodeWithCaptcha = async ({
   const user = await UsersRepository().findByPhone(phone)
   const phoneExists = !(user instanceof Error)
 
-  return TwilioClient().initiateVerify({ to: phone, channel, phoneExists })
+  const checkedChannel = checkedToChannel(phone, channel)
+  if (checkedChannel instanceof Error) return checkedChannel
+
+  return TwilioClient().initiateVerify({
+    to: phone,
+    channel: checkedChannel,
+    phoneExists,
+  })
 }
 
 export const requestPhoneCodeForAuthedUser = async ({
@@ -78,7 +86,7 @@ export const requestPhoneCodeForAuthedUser = async ({
 }: {
   phone: PhoneNumber
   ip: IpAddress
-  channel: ChannelType
+  channel: string
   user: User
 }): Promise<true | PhoneProviderServiceError> => {
   {
@@ -108,7 +116,14 @@ export const requestPhoneCodeForAuthedUser = async ({
     return true
   }
 
-  return TwilioClient().initiateVerify({ to: phone, channel, phoneExists: false })
+  const checkedChannel = checkedToChannel(phone, channel)
+  if (checkedChannel instanceof Error) return checkedChannel
+
+  return TwilioClient().initiateVerify({
+    to: phone,
+    channel: checkedChannel,
+    phoneExists: false,
+  })
 }
 
 export const requestPhoneCodeWithAppcheckJti = async ({
@@ -119,7 +134,7 @@ export const requestPhoneCodeWithAppcheckJti = async ({
 }: {
   phone: PhoneNumber
   ip: IpAddress
-  channel: ChannelType
+  channel: string
   appcheckJti: string
 }): Promise<true | PhoneProviderServiceError> => {
   {
@@ -155,7 +170,14 @@ export const requestPhoneCodeWithAppcheckJti = async ({
   const user = await UsersRepository().findByPhone(phone)
   const phoneExists = !(user instanceof Error)
 
-  return TwilioClient().initiateVerify({ to: phone, channel, phoneExists })
+  const checkedChannel = checkedToChannel(phone, channel)
+  if (checkedChannel instanceof Error) return checkedChannel
+
+  return TwilioClient().initiateVerify({
+    to: phone,
+    channel: checkedChannel,
+    phoneExists,
+  })
 }
 
 export const requestEmailCode = async ({
