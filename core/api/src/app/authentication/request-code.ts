@@ -52,9 +52,6 @@ export const requestPhoneCodeWithCaptcha = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  const checkedChannel = checkedToChannel(phone, channel)
-  if (checkedChannel instanceof Error) return checkedChannel
-
   if (UNSECURE_DEFAULT_LOGIN_CODE) {
     return true
   }
@@ -70,6 +67,9 @@ export const requestPhoneCodeWithCaptcha = async ({
 
   const user = await UsersRepository().findByPhone(phone)
   const phoneExists = !(user instanceof Error)
+
+  const checkedChannel = checkedToChannel(phone, channel)
+  if (checkedChannel instanceof Error) return checkedChannel
 
   return TwilioClient().initiateVerify({
     to: phone,
@@ -103,9 +103,6 @@ export const requestPhoneCodeForAuthedUser = async ({
     return new PhoneAlreadyExistsError()
   }
 
-  const checkedChannel = checkedToChannel(phone, channel)
-  if (checkedChannel instanceof Error) return checkedChannel
-
   if (UNSECURE_DEFAULT_LOGIN_CODE) {
     return true
   }
@@ -118,6 +115,9 @@ export const requestPhoneCodeForAuthedUser = async ({
   if (TestAccountsChecker(testAccounts).isPhoneTest(phone)) {
     return true
   }
+
+  const checkedChannel = checkedToChannel(phone, channel)
+  if (checkedChannel instanceof Error) return checkedChannel
 
   return TwilioClient().initiateVerify({
     to: phone,
@@ -154,9 +154,6 @@ export const requestPhoneCodeWithAppcheckJti = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  const checkedChannel = checkedToChannel(phone, channel)
-  if (checkedChannel instanceof Error) return checkedChannel
-
   if (UNSECURE_DEFAULT_LOGIN_CODE) {
     return true
   }
@@ -172,6 +169,9 @@ export const requestPhoneCodeWithAppcheckJti = async ({
 
   const user = await UsersRepository().findByPhone(phone)
   const phoneExists = !(user instanceof Error)
+
+  const checkedChannel = checkedToChannel(phone, channel)
+  if (checkedChannel instanceof Error) return checkedChannel
 
   return TwilioClient().initiateVerify({
     to: phone,
