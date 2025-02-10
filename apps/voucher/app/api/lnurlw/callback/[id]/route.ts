@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server"
 
 import { getWithdrawLinkByK1Query, updateWithdrawLinkStatus } from "@/services/db"
-import { createMemo, getWalletDetails } from "@/utils/helpers"
+import { createMemo, getWalletDetails, decodeInvoice } from "@/utils/helpers"
 import { PaymentSendResult, Status } from "@/lib/graphql/generated"
 import { escrowApolloClient } from "@/services/galoy/client/escrow"
 import { fetchUserData } from "@/services/galoy/query/me"
@@ -54,35 +54,14 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     const client = escrowApolloClient()
 
-    // TODO this function is suppose to check if amount request is exactly same as the amount we want to send. But it is not always same therefore need to check approximate value and requested should smaller than or equal to actual value
-    // const realTimePriceResponse = await getRealtimePriceQuery({
-    //   client,
-    // })
+    const decodedInvoice = decodeInvoice(invoice)
+    const hasValidAmount =
+      !!withdrawLink.voucherAmountInSats &&
+      decodedInvoice?.satoshis === withdrawLink.voucherAmountInSats
 
-    // if (realTimePriceResponse instanceof Error)
-    //   return Response.json({ status: "ERROR", reason: "Internal Server Error" })
-
-    // withdrawLink.voucherAmount = convertCentsToSats({
-    //   response: realTimePriceResponse,
-    //   cents: Number(withdrawLink.voucherAmount),
-    // })
-
-    // if (CORE_URL !== "api.staging.galoy.io") {
-    //   const amount = decode(pr).sections.find(
-    //     (section: any) => section.name === "amount",
-    //   )?.value
-    //   if (!(amount === withdrawLink.voucherAmount * 1000)) {
-    //     if (withdrawLink.accountType === "USD") {
-    //       return Response.json({
-    //         status: "ERROR",
-    //         reason:
-    //           "Invalid amount. This is a USD account Link, try withdrawing fast after scanning the link",
-    //       })
-    //     } else {
-    //       return Response.json({ status: "ERROR", reason: "Invalid amount" })
-    //     }
-    //   }
-    // }
+    if (!hasValidAmount) {
+      return Response.json({ error: "Invalid invoice amount", status: 400 })
+    }
 
     await updateWithdrawLinkStatus({ id, status: Status.Pending })
     const lnInvoicePaymentSendResponse = await lnInvoicePaymentSend({

@@ -47,6 +47,7 @@
     "@t3-oss/env-nextjs": "^0.6.0",
     "autoprefixer": "10.4.14",
     "bech32": "^2.0.0",
+    "bolt11": "1.4.1",
     "class-variance-authority": "^0.7.0",
     "dotenv": "^16.0.3",
     "eslint": "8.40.0",

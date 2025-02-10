@@ -16,6 +16,7 @@ type WithdrawLink = {
   paidAt?: Date
   status: Status
   voucherAmountInCents: number
+  voucherAmountInSats?: bigint
   salesAmountInCents: number
   commissionPercentage: number
   displayVoucherPrice: string
@@ -163,5 +164,25 @@ export async function updateWithdrawLinkStatus({
     return error instanceof Error
       ? error
       : new Error("Failed to update withdraw link status")
+  }
+}
+
+export async function updateWithdrawLinkSatsAmount({
+  id,
+  voucherAmountInSats,
+}: {
+  id: string
+  voucherAmountInSats: bigint
+}): Promise<WithdrawLink | Error> {
+  try {
+    const [withdrawLink] = await knex("WithdrawLinks")
+      .where({ id })
+      .update({ voucherAmountInSats })
+      .returning("*")
+    return withdrawLink
+  } catch (error) {
+    return error instanceof Error
+      ? error
+      : new Error("Failed to update withdraw link amount")
   }
 }
