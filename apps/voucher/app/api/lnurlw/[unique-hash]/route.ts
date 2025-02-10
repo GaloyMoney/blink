@@ -45,10 +45,11 @@ export async function GET(
 
     const updated = await updateWithdrawLinkSatsAmount({
       id: withdrawLink.id,
-      voucherAmountInSats,
+      voucherAmountInSats: BigInt(voucherAmountInSats),
     })
-    if (updated instanceof Error)
+    if (updated instanceof Error) {
       return Response.json({ error: "Internal Server Error", status: 500 })
+    }
 
     return Response.json({
       tag: "withdrawRequest",
