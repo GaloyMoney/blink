@@ -17,6 +17,7 @@ type WithdrawLink = {
   status: Status
   voucherAmountInCents: number
   voucherAmountInSats?: bigint
+  voucherAmountInSatsAt?: Date
   salesAmountInCents: number
   commissionPercentage: number
   displayVoucherPrice: string
@@ -153,11 +154,10 @@ export async function updateWithdrawLinkStatus({
   status: Status
 }): Promise<WithdrawLink | Error> {
   try {
+    const paidAt = status === Status.Active ? null : new Date(Date.now())
     const [withdrawLink] = await knex("WithdrawLinks")
       .where({ id })
-      .update({
-        status,
-      })
+      .update({ status, paidAt })
       .returning("*")
     return withdrawLink
   } catch (error) {
@@ -175,9 +175,10 @@ export async function updateWithdrawLinkSatsAmount({
   voucherAmountInSats: bigint
 }): Promise<WithdrawLink | Error> {
   try {
+    const voucherAmountInSatsAt = new Date(Date.now())
     const [withdrawLink] = await knex("WithdrawLinks")
       .where({ id })
-      .update({ voucherAmountInSats })
+      .update({ voucherAmountInSats, voucherAmountInSatsAt })
       .returning("*")
     return withdrawLink
   } catch (error) {

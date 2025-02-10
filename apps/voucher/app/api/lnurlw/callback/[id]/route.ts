@@ -7,6 +7,8 @@ import { escrowApolloClient } from "@/services/galoy/client/escrow"
 import { fetchUserData } from "@/services/galoy/query/me"
 import { lnInvoicePaymentSend } from "@/services/galoy/mutation/ln-invoice-payment-send"
 
+const QUOTE_EXPIRATION_MS = 2 * 60 * 1000 // 2 minutes
+
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const searchParams = request.nextUrl.searchParams
   const { id } = params
@@ -52,18 +54,28 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     if (withdrawLink.status !== Status.Active)
       return Response.json({ status: "ERROR", reason: "Withdraw link is not Active" })
 
-    const client = escrowApolloClient()
+    if (!withdrawLink.voucherAmountInSats || !withdrawLink.voucherAmountInSatsAt) {
+      return Response.json({ error: "Invalid invoice amount", status: 400 })
+    }
 
-    const decodedInvoice = decodeInvoice(invoice)
+    const expirationMs =
+      withdrawLink.voucherAmountInSatsAt.getTime() + QUOTE_EXPIRATION_MS
+
+    if (Date.now() > expirationMs) {
+      return Response.json({ error: "Quote has expired, please try again", status: 400 })
+    }
+
+    const decodedInvoice = decodeInvoice(pr)
     const hasValidAmount =
-      !!withdrawLink.voucherAmountInSats &&
-      decodedInvoice?.satoshis === withdrawLink.voucherAmountInSats
+      decodedInvoice?.satoshis === Number(withdrawLink.voucherAmountInSats)
 
     if (!hasValidAmount) {
       return Response.json({ error: "Invalid invoice amount", status: 400 })
     }
 
     await updateWithdrawLinkStatus({ id, status: Status.Pending })
+
+    const client = escrowApolloClient()
     const lnInvoicePaymentSendResponse = await lnInvoicePaymentSend({
       client,
       input: {
