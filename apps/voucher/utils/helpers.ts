@@ -1,5 +1,6 @@
-import { v4 as uuidv4 } from "uuid"
 import { bech32 } from "bech32"
+import * as bolt11 from "bolt11"
+import { v4 as uuidv4 } from "uuid"
 
 import { RealtimePriceQuery } from "@/lib/graphql/generated"
 
@@ -170,4 +171,27 @@ export const isValidVoucherSecret = (voucherSecret: string) => {
   }
 
   return true
+}
+
+export const decodeInvoice = (
+  invoice: string,
+): (bolt11.PaymentRequestObject & { tagsObject: bolt11.TagsObject }) | null => {
+  if (!invoice) return null
+
+  try {
+    let network: bolt11.Network | undefined = undefined
+    // hack to support signet invoices, remove when it is supported in bolt11
+    if (invoice.startsWith("lntbs")) {
+      network = {
+        bech32: "tbs",
+        pubKeyHash: 0x6f,
+        scriptHash: 0xc4,
+        validWitnessVersions: [0, 1],
+      }
+    }
+
+    return bolt11.decode(invoice, network)
+  } catch {
+    return null
+  }
 }

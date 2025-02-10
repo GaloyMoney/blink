@@ -1,4 +1,7 @@
-import { getWithdrawLinkByUniqueHashQuery } from "@/services/db"
+import {
+  getWithdrawLinkByUniqueHashQuery,
+  updateWithdrawLinkSatsAmount,
+} from "@/services/db"
 import { convertCentsToSats, createMemo } from "@/utils/helpers"
 import { env } from "@/env"
 import { getRealtimePriceQuery } from "@/services/galoy/query/get-real-time-price"
@@ -39,6 +42,14 @@ export async function GET(
       response: realTimePriceResponse,
       cents: Number(withdrawLink.voucherAmountInCents),
     })
+
+    const updated = await updateWithdrawLinkSatsAmount({
+      id: withdrawLink.id,
+      voucherAmountInSats: BigInt(voucherAmountInSats),
+    })
+    if (updated instanceof Error) {
+      return Response.json({ error: "Internal Server Error", status: 500 })
+    }
 
     return Response.json({
       tag: "withdrawRequest",
