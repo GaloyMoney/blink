@@ -1,11 +1,13 @@
 import { NextRequest } from "next/server"
 
 import { getWithdrawLinkByK1Query, updateWithdrawLinkStatus } from "@/services/db"
-import { createMemo, getWalletDetails } from "@/utils/helpers"
+import { createMemo, getWalletDetails, decodeInvoice } from "@/utils/helpers"
 import { PaymentSendResult, Status } from "@/lib/graphql/generated"
 import { escrowApolloClient } from "@/services/galoy/client/escrow"
 import { fetchUserData } from "@/services/galoy/query/me"
 import { lnInvoicePaymentSend } from "@/services/galoy/mutation/ln-invoice-payment-send"
+
+const QUOTE_EXPIRATION_MS = 2 * 60 * 1000 // 2 minutes
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const searchParams = request.nextUrl.searchParams
@@ -52,39 +54,28 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     if (withdrawLink.status !== Status.Active)
       return Response.json({ status: "ERROR", reason: "Withdraw link is not Active" })
 
-    const client = escrowApolloClient()
+    if (!withdrawLink.voucherAmountInSats || !withdrawLink.voucherAmountInSatsAt) {
+      return Response.json({ error: "Invalid invoice amount", status: 400 })
+    }
 
-    // TODO this function is suppose to check if amount request is exactly same as the amount we want to send. But it is not always same therefore need to check approximate value and requested should smaller than or equal to actual value
-    // const realTimePriceResponse = await getRealtimePriceQuery({
-    //   client,
-    // })
+    const expirationMs =
+      withdrawLink.voucherAmountInSatsAt.getTime() + QUOTE_EXPIRATION_MS
 
-    // if (realTimePriceResponse instanceof Error)
-    //   return Response.json({ status: "ERROR", reason: "Internal Server Error" })
+    if (Date.now() > expirationMs) {
+      return Response.json({ error: "Quote has expired, please try again", status: 400 })
+    }
 
-    // withdrawLink.voucherAmount = convertCentsToSats({
-    //   response: realTimePriceResponse,
-    //   cents: Number(withdrawLink.voucherAmount),
-    // })
+    const decodedInvoice = decodeInvoice(pr)
+    const hasValidAmount =
+      decodedInvoice?.satoshis === Number(withdrawLink.voucherAmountInSats)
 
-    // if (CORE_URL !== "api.staging.galoy.io") {
-    //   const amount = decode(pr).sections.find(
-    //     (section: any) => section.name === "amount",
-    //   )?.value
-    //   if (!(amount === withdrawLink.voucherAmount * 1000)) {
-    //     if (withdrawLink.accountType === "USD") {
-    //       return Response.json({
-    //         status: "ERROR",
-    //         reason:
-    //           "Invalid amount. This is a USD account Link, try withdrawing fast after scanning the link",
-    //       })
-    //     } else {
-    //       return Response.json({ status: "ERROR", reason: "Invalid amount" })
-    //     }
-    //   }
-    // }
+    if (!hasValidAmount) {
+      return Response.json({ error: "Invalid invoice amount", status: 400 })
+    }
 
     await updateWithdrawLinkStatus({ id, status: Status.Pending })
+
+    const client = escrowApolloClient()
     const lnInvoicePaymentSendResponse = await lnInvoicePaymentSend({
       client,
       input: {
