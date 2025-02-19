@@ -8,6 +8,7 @@ overrides:
   '@types/ws': ^8.5.12
   protobufjs: 7.2.5
   http-cache-semantics: 4.1.1
+  elliptic: ^6.6.1
 
 importers:
 
@@ -914,6 +915,9 @@ importers:
       bech32:
         specifier: ^2.0.0
         version: 2.0.0
+      bolt11:
+        specifier: 1.4.1
+        version: 1.4.1
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.0
@@ -16976,7 +16980,7 @@ packages:
   /@types/bn.js@4.11.6:
     resolution: {integrity: sha512-pqr857jrp2kPuO9uRjZ3PwnJTjoQy+fcdxvBTvHm6dkmEL9q+hDD/2j/0ELOBPtPnS8LjCX0gI9nbl8lVkadpg==}
     dependencies:
-      '@types/node': 20.10.1
+      '@types/node': 20.11.24
     dev: false
 
   /@types/body-parser@1.19.5:
@@ -17437,6 +17441,7 @@ packages:
     resolution: {integrity: sha512-T2qwhjWwGH81vUEx4EXmBKsTJRXFXNZTL4v0gi01+zyBmCwzE6TyHszqX01m+QHTEq+EZNo13NeJIdEqf+Myrg==}
     dependencies:
       undici-types: 5.26.5
+    dev: true
 
   /@types/node@20.10.3:
     resolution: {integrity: sha512-XJavIpZqiXID5Yxnxv3RUDKTN5b81ddNC3ecsA0SoFXz/QU8OGBwZGMomiq0zw+uuqbL/krztv/DINAQ/EV4gg==}
@@ -17961,7 +17966,7 @@ packages:
       '@typescript-eslint/scope-manager': 5.62.0
       '@typescript-eslint/types': 5.62.0
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.6.3)
-      debug: 4.4.0(supports-color@5.5.0)
+      debug: 4.3.6
       eslint: 8.54.0
       typescript: 5.6.3
     transitivePeerDependencies:
@@ -22685,8 +22690,8 @@ packages:
   /electron-to-chromium@1.5.77:
     resolution: {integrity: sha512-AnJSrt5JpRVgY6dgd5yccguLc5A7oMSF0Kt3fcW+Hp5WTuFbl5upeSFZbMZYy2o7jhmIhU8Ekrd82GhyXUqUUg==}
 
-  /elliptic@6.5.4:
-    resolution: {integrity: sha512-iLhC6ULemrljPZb+QutR5TQGB+pdW6KGD5RSegS+8sorOZT+rdQFbsQFJgvN3eRqNALqJer4oQ16YvJHlU8hzQ==}
+  /elliptic@6.6.1:
+    resolution: {integrity: sha512-RaddvvMatK2LJHqFJ+YA4WysVN5Ita9E35botqIYspQ4TkRAlCicdzKOjlyv/1Za5RyTNn7di//eEV0uTAfe3g==}
     dependencies:
       bn.js: 4.12.0
       brorand: 1.1.0
@@ -33182,7 +33187,7 @@ packages:
     engines: {node: '>=10.0.0'}
     requiresBuild: true
     dependencies:
-      elliptic: 6.5.4
+      elliptic: 6.6.1
       node-addon-api: 2.0.2
       node-gyp-build: 4.7.1
     dev: false
@@ -34710,7 +34715,7 @@ packages:
       bindings: 1.5.0
       bn.js: 4.12.0
       create-hmac: 1.1.7
-      elliptic: 6.5.4
+      elliptic: 6.6.1
       nan: 2.18.0
     dev: false
 
