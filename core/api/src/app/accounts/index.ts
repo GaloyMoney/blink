@@ -24,6 +24,7 @@ export * from "./disable-notification-channel"
 export * from "./get-pending-incoming-on-chain-transactions-for-account"
 export * from "./get-invoices-for-account"
 export * from "./get-notification-settings-for-account"
+export * from "./get-account-for-username-or-phone"
 
 const accounts = AccountsRepository()
 
