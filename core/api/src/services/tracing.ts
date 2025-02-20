@@ -1,3 +1,4 @@
+import { IncomingMessage } from "http"
 import { W3CTraceContextPropagator } from "@opentelemetry/core"
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http"
 import { registerInstrumentations } from "@opentelemetry/instrumentation"
@@ -9,13 +10,14 @@ import { MongoDBInstrumentation } from "@opentelemetry/instrumentation-mongodb"
 import { Span as SdkSpan, SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base"
 import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node"
 import {
-  ATTR_CODE_FUNCTION,
+  ATTR_CODE_FUNCTION_NAME,
   ATTR_CODE_NAMESPACE,
   ATTR_USER_ID,
   ATTR_SERVICE_NAME,
-} from "@opentelemetry/semantic-conventions/incubating"
+} from "@opentelemetry/semantic-conventions/build/src/index-incubating"
 
 // these have been deprecated but we must keep them to avoid issues with alert system
+const ATTR_CODE_FUNCTION_PREFIX = "code.function"
 const ATTR_ENDUSER_ID = "enduser.id"
 const ATTR_HTTP_USER_AGENT = "http.user_agent"
 const ATTR_HTTP_CLIENT_IP = "http.client_ip"
@@ -42,6 +44,7 @@ import { Resource } from "@opentelemetry/resources"
 import { baseLogger } from "./logger"
 
 import { ErrorLevel, RankedErrorLevel, parseErrorFromUnknown } from "@/domain/shared"
+
 type ExtendedException = Exclude<Exception, string> & {
   level?: ErrorLevel
 }
@@ -193,7 +196,10 @@ registerInstrumentations({
   instrumentations: [
     new NetInstrumentation(),
     new HttpInstrumentation({
-      ignoreIncomingPaths: ["/healthz"],
+      ignoreIncomingRequestHook: (request: IncomingMessage): boolean => {
+        const url = request.url || ""
+        return url.includes("/healthz")
+      },
       headersToSpanAttributes: {
         server: {
           requestHeaders: [
@@ -391,7 +397,8 @@ const resolveFunctionSpanOptions = ({
   ignoreFnArgs?: boolean
 }): SpanOptions => {
   const attributes: Attributes = {
-    [ATTR_CODE_FUNCTION]: functionName,
+    [ATTR_CODE_FUNCTION_NAME]: functionName,
+    [ATTR_CODE_FUNCTION_PREFIX]: functionName,
     [ATTR_CODE_NAMESPACE]: namespace,
     ...spanAttributes,
   }
@@ -401,9 +408,10 @@ const resolveFunctionSpanOptions = ({
     for (const key in params) {
       // @ts-ignore-next-line no-implicit-any error
       const value = params[key]
-      attributes[`${ATTR_CODE_FUNCTION}.params.${key}`] = value
-      attributes[`${ATTR_CODE_FUNCTION}.params.${key}.null`] = value === null
-      attributes[`${ATTR_CODE_FUNCTION}.params.${key}.undefined`] = value === undefined
+      attributes[`${ATTR_CODE_FUNCTION_PREFIX}.params.${key}`] = value
+      attributes[`${ATTR_CODE_FUNCTION_PREFIX}.params.${key}.null`] = value === null
+      attributes[`${ATTR_CODE_FUNCTION_PREFIX}.params.${key}.undefined`] =
+        value === undefined
     }
   }
   return { attributes, root }
@@ -618,7 +626,7 @@ export const SemanticResourceAttributes = {
 }
 
 export const SemanticAttributes = {
-  CODE_FUNCTION: ATTR_CODE_FUNCTION,
+  CODE_FUNCTION: ATTR_CODE_FUNCTION_PREFIX,
   CODE_NAMESPACE: ATTR_CODE_NAMESPACE,
   HTTP_CLIENT_IP: ATTR_HTTP_CLIENT_IP,
   HTTP_USER_AGENT: ATTR_HTTP_USER_AGENT,
