@@ -23,23 +23,33 @@ const upgradeToPhoneSchema = async ({
   phone: PhoneNumber
   userId: UserId
 }) => {
-  const userUpdated = await UsersRepository().findById(userId)
-  if (userUpdated instanceof Error) return userUpdated
+  const user = await UsersRepository().findById(userId)
+  if (user instanceof Error) return user
 
   const identities = IdentityRepository()
-  const result = await identities.getUserIdFromIdentifier(phone)
+  const kratosUserId = await identities.getUserIdFromIdentifier(phone)
 
   // phone account must not exist
-  if (result instanceof IdentifierNotFoundError) {
+  if (kratosUserId instanceof IdentifierNotFoundError) {
+    if (kratosUserId instanceof Error) return kratosUserId
+    if (kratosUserId !== user.id)
+      return new Error(
+        `User ids do not match. kratosUserId: ${kratosUserId} - UserId: ${user.id}`,
+      )
     return await AuthWithUsernamePasswordDeviceIdService().upgradeToPhoneSchema({
       phone,
       userId,
     })
   }
 
-  if (result instanceof Error) return result
+  if (kratosUserId instanceof Error) return kratosUserId
 
-  return new Error(`Schema already upgraded for user ${result}`)
+  if (kratosUserId !== user.id)
+    return new Error(
+      `User ids do not match. kratosUserId: ${kratosUserId} - UserId: ${user.id}`,
+    )
+
+  return new Error(`Schema already upgraded for user ${kratosUserId}`)
 }
 
 const main = async () => {
