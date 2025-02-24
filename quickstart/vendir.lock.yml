@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): update feedback webhook content (#4717)...'
-      sha: 55f8f0a32bece8422eac051fbae0dac526441237
+      commitTitle: 'fix(voucher): add locks to withdrawals (#4752)...'
+      sha: 9673a9c8d5c40edec6349539c314006ac763ca5f
       tags:
-      - 0.21.20-1-g55f8f0a32
+      - 0.21.23-1-g9673a9c8d
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): update feedback webhook content (#4717)...'
-      sha: 55f8f0a32bece8422eac051fbae0dac526441237
+      commitTitle: 'fix(voucher): add locks to withdrawals (#4752)...'
+      sha: 9673a9c8d5c40edec6349539c314006ac763ca5f
       tags:
-      - 0.21.20-1-g55f8f0a32
+      - 0.21.23-1-g9673a9c8d
     path: schemas
   - git:
-      commitTitle: 'chore(core): update feedback webhook content (#4717)...'
-      sha: 55f8f0a32bece8422eac051fbae0dac526441237
+      commitTitle: 'fix(voucher): add locks to withdrawals (#4752)...'
+      sha: 9673a9c8d5c40edec6349539c314006ac763ca5f
       tags:
-      - 0.21.20-1-g55f8f0a32
+      - 0.21.23-1-g9673a9c8d
     path: gql
   path: graphql
 kind: LockConfig
