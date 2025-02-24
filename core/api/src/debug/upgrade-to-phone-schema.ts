@@ -31,11 +31,6 @@ const upgradeToPhoneSchema = async ({
 
   // phone account must not exist
   if (kratosUserId instanceof IdentifierNotFoundError) {
-    if (kratosUserId instanceof Error) return kratosUserId
-    if (kratosUserId !== user.id)
-      return new Error(
-        `User ids do not match. kratosUserId: ${kratosUserId} - UserId: ${user.id}`,
-      )
     return await AuthWithUsernamePasswordDeviceIdService().upgradeToPhoneSchema({
       phone,
       userId,
