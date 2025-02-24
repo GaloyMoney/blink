@@ -23,9 +23,8 @@ afterAll(async () => {
   }
 })
 
-describe("Lock Functions", () => {
+describe("Lock service", () => {
   describe("lockVoucherSecret", () => {
-    // Original tests
     it("should return result when async function succeeds", async () => {
       const expectedResult = { data: "success" }
       const asyncFn = jest.fn().mockResolvedValue(expectedResult)
@@ -57,7 +56,6 @@ describe("Lock Functions", () => {
       expect(result).toBe(error)
     })
 
-    // New concurrency tests
     it("should serialize concurrent operations with the same secret", async () => {
       const executionOrder: number[] = []
       const delay1 = 1
@@ -130,7 +128,6 @@ describe("Lock Functions", () => {
   })
 
   describe("lockVoucherK1", () => {
-    // Original tests
     it("should return result when async function succeeds", async () => {
       const expectedResult = { data: "success" }
       const asyncFn = jest.fn().mockResolvedValue(expectedResult)
@@ -162,7 +159,6 @@ describe("Lock Functions", () => {
       expect(result).toBe(error)
     })
 
-    // New concurrency tests
     it("should serialize concurrent operations with the same k1", async () => {
       const executionOrder: number[] = []
       const delay1 = 1
