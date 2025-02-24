@@ -31,7 +31,7 @@ const upgradeToPhoneSchema = async ({
 
   // phone account must not exist
   if (kratosUserId instanceof IdentifierNotFoundError) {
-    return await AuthWithUsernamePasswordDeviceIdService().upgradeToPhoneSchema({
+    return AuthWithUsernamePasswordDeviceIdService().upgradeToPhoneSchema({
       phone,
       userId,
     })
