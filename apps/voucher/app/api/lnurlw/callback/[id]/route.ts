@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server"
 
+import { lockVoucherK1 } from "@/services/lock"
 import { getWithdrawLinkByK1Query, updateWithdrawLinkStatus } from "@/services/db"
 import { createMemo, getWalletDetails, decodeInvoice } from "@/utils/helpers"
 import { PaymentSendResult, Status } from "@/lib/graphql/generated"
@@ -32,100 +33,102 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   if (usdWallet instanceof Error || !usdWallet)
     return Response.json({ status: "ERROR", reason: "Internal Server Error" })
 
-  try {
-    const withdrawLink = await getWithdrawLinkByK1Query({ k1 })
+  const result = await lockVoucherK1(k1, async () => {
+    try {
+      const withdrawLink = await getWithdrawLinkByK1Query({ k1 })
 
-    if (!withdrawLink)
-      return Response.json({ status: "ERROR", reason: "Withdraw link not found" })
+      if (!withdrawLink) return new Error("Withdraw link not found")
 
-    if (withdrawLink instanceof Error)
-      return Response.json({ status: "ERROR", reason: "Internal Server Error" })
+      if (withdrawLink instanceof Error) return new Error("Internal Server Error")
 
-    if (withdrawLink.id !== id)
-      return Response.json({ status: "ERROR", reason: "Invalid Request" })
+      if (withdrawLink.id !== id)
+        return Response.json({ error: "Invalid Request", status: 400 })
 
-    if (withdrawLink.status === Status.Pending)
-      return Response.json({
-        status: "ERROR",
-        reason:
+      if (withdrawLink.status === Status.Pending)
+        return new Error(
           "Withdrawal link is in pending state. Please contact support if the error persists.",
+        )
+
+      if (withdrawLink.status !== Status.Active)
+        return new Error("Withdraw link is not Active")
+
+      if (!withdrawLink.voucherAmountInSats || !withdrawLink.voucherAmountInSatsAt) {
+        return Response.json({ error: "Invalid invoice amount", status: 400 })
+      }
+
+      const expirationMs =
+        withdrawLink.voucherAmountInSatsAt.getTime() + QUOTE_EXPIRATION_MS
+
+      if (Date.now() > expirationMs) {
+        return Response.json({
+          error: "Quote has expired, please try again",
+          status: 400,
+        })
+      }
+
+      const decodedInvoice = decodeInvoice(pr)
+      const hasValidAmount =
+        decodedInvoice?.satoshis === Number(withdrawLink.voucherAmountInSats)
+
+      if (!hasValidAmount) {
+        return Response.json({ error: "Invalid invoice amount", status: 400 })
+      }
+
+      await updateWithdrawLinkStatus({ id, status: Status.Pending })
+
+      const client = escrowApolloClient()
+      const lnInvoicePaymentSendResponse = await lnInvoicePaymentSend({
+        client,
+        input: {
+          memo: createMemo({
+            voucherAmountInCents: withdrawLink.voucherAmountInCents,
+            identifierCode: withdrawLink.identifierCode,
+            commissionPercentage: withdrawLink.commissionPercentage,
+          }),
+          walletId: usdWallet.id,
+          paymentRequest: pr,
+        },
       })
 
-    if (withdrawLink.status !== Status.Active)
-      return Response.json({ status: "ERROR", reason: "Withdraw link is not Active" })
+      if (lnInvoicePaymentSendResponse instanceof Error) {
+        console.error(lnInvoicePaymentSendResponse)
+        await updateWithdrawLinkStatus({ id, status: Status.Active })
+        return new Error(lnInvoicePaymentSendResponse.message)
+      }
 
-    if (!withdrawLink.voucherAmountInSats || !withdrawLink.voucherAmountInSatsAt) {
-      return Response.json({ error: "Invalid invoice amount", status: 400 })
+      if (lnInvoicePaymentSendResponse.lnInvoicePaymentSend.errors.length > 0) {
+        console.error(lnInvoicePaymentSendResponse.lnInvoicePaymentSend.errors)
+        await updateWithdrawLinkStatus({ id, status: Status.Active })
+        return new Error(
+          lnInvoicePaymentSendResponse.lnInvoicePaymentSend.errors[0].message,
+        )
+      }
+
+      if (
+        lnInvoicePaymentSendResponse?.lnInvoicePaymentSend?.status ===
+        PaymentSendResult.Pending
+      ) {
+        return new Error("Payment went on Pending state")
+      }
+
+      if (
+        lnInvoicePaymentSendResponse?.lnInvoicePaymentSend?.status !==
+        PaymentSendResult.Success
+      ) {
+        await updateWithdrawLinkStatus({ id, status: Status.Active })
+        return new Error("Payment not paid")
+      }
+
+      await updateWithdrawLinkStatus({ id, status: Status.Paid })
+      return Response.json({ status: "OK" })
+    } catch (error) {
+      console.error("error paying lnurlw", error)
+      return new Error("Internal Server Error")
     }
+  })
 
-    const expirationMs =
-      withdrawLink.voucherAmountInSatsAt.getTime() + QUOTE_EXPIRATION_MS
+  if (result instanceof Error)
+    return Response.json({ status: "ERROR", reason: result.message })
 
-    if (Date.now() > expirationMs) {
-      return Response.json({ error: "Quote has expired, please try again", status: 400 })
-    }
-
-    const decodedInvoice = decodeInvoice(pr)
-    const hasValidAmount =
-      decodedInvoice?.satoshis === Number(withdrawLink.voucherAmountInSats)
-
-    if (!hasValidAmount) {
-      return Response.json({ error: "Invalid invoice amount", status: 400 })
-    }
-
-    await updateWithdrawLinkStatus({ id, status: Status.Pending })
-
-    const client = escrowApolloClient()
-    const lnInvoicePaymentSendResponse = await lnInvoicePaymentSend({
-      client,
-      input: {
-        memo: createMemo({
-          voucherAmountInCents: withdrawLink.voucherAmountInCents,
-          identifierCode: withdrawLink.identifierCode,
-          commissionPercentage: withdrawLink.commissionPercentage,
-        }),
-        walletId: usdWallet.id,
-        paymentRequest: pr,
-      },
-    })
-
-    if (lnInvoicePaymentSendResponse instanceof Error) {
-      console.error(lnInvoicePaymentSendResponse)
-      await updateWithdrawLinkStatus({ id, status: Status.Active })
-      return Response.json({
-        status: "ERROR",
-        reason: lnInvoicePaymentSendResponse.message,
-      })
-    }
-
-    if (lnInvoicePaymentSendResponse.lnInvoicePaymentSend.errors.length > 0) {
-      console.error(lnInvoicePaymentSendResponse.lnInvoicePaymentSend.errors)
-      await updateWithdrawLinkStatus({ id, status: Status.Active })
-      return Response.json({
-        status: "ERROR",
-        reason: lnInvoicePaymentSendResponse.lnInvoicePaymentSend.errors[0].message,
-      })
-    }
-
-    if (
-      lnInvoicePaymentSendResponse?.lnInvoicePaymentSend?.status ===
-      PaymentSendResult.Pending
-    ) {
-      return Response.json({ status: "ERROR", reason: "Payment went on Pending state" })
-    }
-
-    if (
-      lnInvoicePaymentSendResponse?.lnInvoicePaymentSend?.status !==
-      PaymentSendResult.Success
-    ) {
-      await updateWithdrawLinkStatus({ id, status: Status.Active })
-      return Response.json({ status: "ERROR", reason: "Payment not paid" })
-    }
-
-    await updateWithdrawLinkStatus({ id, status: Status.Paid })
-    return Response.json({ status: "OK" })
-  } catch (error) {
-    console.error("error paying lnurlw", error)
-    Response.json({ status: "ERROR", reason: "Internal Server Error" })
-  }
+  return result
 }
