@@ -19,7 +19,9 @@
     "eslint-fix": "eslint \"{app,components,graphql,pages}/**/*.ts\" --fix",
     "cypress:run": "cypress run",
     "cypress:open": "cypress open",
-    "lint:fix": "eslint --max-warnings 0 --fix --ext .ts,.tsx ."
+    "lint:fix": "eslint --max-warnings 0 --fix --ext .ts,.tsx .",
+    "test:integration": "jest --roots test/integration --bail --runInBand --verbose $TEST",
+    "test": "pnpm test:integration && pnpm cypress:run"
   },
   "dependencies": {
     "@apollo/client": "^3.7.12",
