@@ -11,7 +11,12 @@
 // })
 
 import { knex } from "@/services/db/knex"
-import { lockVoucherSecret, lockVoucherK1 } from "@/services/lock"
+import {
+  lockVoucherSecret,
+  lockVoucherK1,
+  getVoucherSecretLockResource,
+  getVoucherK1LockResource,
+} from "@/services/lock"
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -24,6 +29,34 @@ afterAll(async () => {
 })
 
 describe("Lock service", () => {
+  describe("getVoucherSecretLockResource", () => {
+    it("should return a correctly formatted lock resource string", () => {
+      const result = getVoucherSecretLockResource("test-secret")
+      expect(result).toBe("v:s:test-secret")
+    })
+
+    it("should truncate result to 36 characters when input is too long", () => {
+      const longSecret = "this-is-a-very-long-secret-that-exceeds-36-characters-limit"
+      const result = getVoucherSecretLockResource(longSecret)
+      expect(result.length).toBe(36)
+      expect(result).toBe("v:s:this-is-a-very-long-secret-that-")
+    })
+  })
+
+  describe("getVoucherK1LockResource", () => {
+    it("should return a correctly formatted lock resource string", () => {
+      const result = getVoucherK1LockResource("test-k1")
+      expect(result).toBe("v:k:test-k1")
+    })
+
+    it("should truncate result to 36 characters when input is too long", () => {
+      const longK1 = "this-is-a-very-long-k1-that-exceeds-36-characters-limit"
+      const result = getVoucherK1LockResource(longK1)
+      expect(result.length).toBe(36)
+      expect(result).toBe("v:k:this-is-a-very-long-k1-that-exce")
+    })
+  })
+
   describe("lockVoucherSecret", () => {
     it("should return result when async function succeeds", async () => {
       const expectedResult = { data: "success" }
