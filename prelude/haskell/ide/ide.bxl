@@ -27,13 +27,15 @@ load("@prelude//paths.bzl", "paths")
 # 1. Finding its owner target, if the input is a file
 # 2. Finding the target's "project", which involves a rdeps search
 # 3. Computing the project solution (flags, sources and dependencies)
-# 4. Outputing the solution as JSON
+# 4. Outputting the solution as JSON
 
 _HASKELL_BIN = "prelude//rules.bzl:haskell_binary"
 _HASKELL_IDE = "prelude//rules.bzl:haskell_ide"
 _HASKELL_LIB = "prelude//rules.bzl:haskell_library"
 
 linkStyle = LinkStyle("static")
+
+configuration_modifiers = ["ovr_config//third-party/ghc/constraints:8.8.3"]
 
 def _impl_target(ctx):
     target = ctx.cli_args.target
@@ -95,7 +97,10 @@ def _find_project_and_solve(ctx, target, project_universe = []):
 
 def _find_target_in_universe(ctx, target, project_universe):
     for p in project_universe:
-        cfg_p = ctx.configured_targets(p)
+        cfg_p = ctx.configured_targets(
+            p,
+            modifiers = configuration_modifiers,
+        )
         members = cfg_p.resolved_attrs_eager(ctx).include_projects
         for member in members:
             if target.label.raw_target() == member.label.raw_target():
@@ -124,7 +129,10 @@ def _solution_for_haskell_ide(ctx, target):
     results = []
     deps = {}
     for dep in resolved_attrs.deps_query:
-        t = ctx.configured_targets(dep.label.raw_target())
+        t = ctx.configured_targets(
+            dep.label.raw_target(),
+            modifiers = configuration_modifiers,
+        )
         if (t.rule_type == _HASKELL_LIB or t.rule_type == _HASKELL_BIN):
             deps[dep.label] = t
     for lib in deps.values():
@@ -156,7 +164,7 @@ def _solution_for_haskell_lib(ctx, target, exclude):
     import_dirs = {}
     root = ctx.root()
     for key, item in resolved_attrs.srcs.items():
-        # because BXL wont give you the path of an ensured artifact
+        # because BXL won't give you the path of an ensured artifact
         sp = get_path_without_materialization(item, ctx)
         (_, ext) = paths.split_extension(sp)
         diff = sp.removesuffix(paths.replace_extension(key, ext))
@@ -259,7 +267,7 @@ def _assembleSolution(ctx, linkStyle, result):
     for provider in result["haskell_deps"].values():
         info = provider.info.get(linkStyle)
         if info != None:
-            for item in info:
+            for item in info.traverse():
                 if result["exclude_packages"].get(item.name) == None:
                     hlis[item.name] = item
     for hli in hlis.values():

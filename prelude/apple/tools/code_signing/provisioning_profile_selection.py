@@ -9,6 +9,8 @@
 
 import datetime
 import logging
+import re
+from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, cast, Dict, List, Optional, Tuple
 
@@ -135,10 +137,52 @@ def _check_developer_certificates_match(
     )
 
 
+def _make_multiple_matching_profiles_message(
+    profiles: list[ProvisioningProfileMetadata],
+    strict_search: bool,
+) -> str:
+    messages = [f"Found MULTIPLE matching profiles: {len(profiles)}"]
+    messages += [
+        f"    Matching Profile = UUID:{profile.uuid}, file path: {profile.file_path}"
+        for profile in profiles
+    ]
+
+    if strict_search:
+        messages += [
+            "Strict provisioning profile search is ENABLED, build will FAIL due to ambiguous provisioning profile search results.",
+            "To resolve the problem, ensure only a single profile matches.",
+            "To unblock, you have two options:",
+            "Option 1: Disable strict provisioning profile search for the targets failing to build.",
+            "    If the target failing to build is an `apple_bundle()`, set the `strict_provisioning_profile_search` attribute to `False`.",
+            "    If the target failing to build is produced by `ios_binary()`, set the `bundle_strict_provisioning_profile_search` attribute to `False`.",
+            "    You can commit such a change, so that the issue can be investigated without blocking other developers.",
+            "    NB: This is a TEMPORARY WORKAROUND, as it only disables the strict checking, it does not resolve the ambiguity.",
+            "Option 2: Pass `--config apple.strict_provisioning_profile_search=false` as part of your build command.",
+            "    DO NOT COMMIT such a change by adding this to any CI configs.",
+        ]
+
+    return "\n".join(messages)
+
+
 @dataclass
 class SelectedProvisioningProfileInfo:
     profile: ProvisioningProfileMetadata
     identity: CodeSigningIdentity
+
+
+def _filter_matching_selected_provisioning_profile_infos(
+    selected_profile_infos: list[SelectedProvisioningProfileInfo],
+    provisioning_profile_filter: Optional[str],
+) -> list[SelectedProvisioningProfileInfo]:
+    if len(selected_profile_infos) <= 1 or (not provisioning_profile_filter):
+        return selected_profile_infos
+
+    preference_regex = re.compile(provisioning_profile_filter)
+    return [
+        matching_profile_info
+        for matching_profile_info in selected_profile_infos
+        if preference_regex.search(matching_profile_info.profile.file_path.name)
+    ]
 
 
 # See `ProvisioningProfileStore::getBestProvisioningProfile` in `ProvisioningProfileStore.java` for Buck v1 equivalent
@@ -148,6 +192,8 @@ def select_best_provisioning_profile(
     provisioning_profiles: List[ProvisioningProfileMetadata],
     entitlements: Optional[Dict[str, Any]],
     platform: ApplePlatform,
+    strict_search: bool,
+    provisioning_profile_filter: Optional[str],
 ) -> Tuple[
     Optional[SelectedProvisioningProfileInfo], List[IProvisioningProfileDiagnostics]
 ]:
@@ -169,7 +215,6 @@ def select_best_provisioning_profile(
     maybe_team_id_constraint = _parse_team_id_from_entitlements(entitlements)
 
     best_match_length = -1
-    result = None
 
     # Used for error messages
     diagnostics: List[IProvisioningProfileDiagnostics] = []
@@ -179,6 +224,8 @@ def select_best_provisioning_profile(
         _LOGGER.info(
             f"Skipping provisioning profile `{mismatch.profile.file_path.name}`: {mismatch.log_message()}"
         )
+
+    selected_profile_infos_for_match_length = defaultdict(list)
 
     for profile in provisioning_profiles:
         app_id = profile.get_app_id()
@@ -250,8 +297,58 @@ def select_best_provisioning_profile(
         _LOGGER.info(
             f"Matching provisioning profile `{profile.file_path.name}` with score {current_match_length}"
         )
+
+        selected_profile_info = SelectedProvisioningProfileInfo(profile, certificate)
+        selected_profile_infos_for_match_length[current_match_length] += [
+            selected_profile_info
+        ]
+
         if current_match_length > best_match_length:
             best_match_length = current_match_length
-            result = SelectedProvisioningProfileInfo(profile, certificate)
+
+    all_matching_selected_profile_infos = selected_profile_infos_for_match_length.get(
+        best_match_length, []
+    )
+
+    all_matching_selected_profile_infos = (
+        _filter_matching_selected_provisioning_profile_infos(
+            all_matching_selected_profile_infos, provisioning_profile_filter
+        )
+    )
+
+    if len(all_matching_selected_profile_infos) > 1:
+        all_matching_profiles = [
+            selected_profile_info.profile
+            for selected_profile_info in all_matching_selected_profile_infos
+        ]
+        multiple_profiles_message = _make_multiple_matching_profiles_message(
+            all_matching_profiles,
+            strict_search,
+        )
+        _LOGGER.info(multiple_profiles_message)
+        if strict_search:
+            raise CodeSignProvisioningError(multiple_profiles_message)
+
+    result = (
+        # By definition, we always pick the _last_ matching prov profile
+        all_matching_selected_profile_infos[-1]
+        if all_matching_selected_profile_infos
+        else None
+    )
+
+    if result:
+        _LOGGER.info(
+            (
+                f"Found matching provisioning profile and identity\n"
+                f"  Selected Identity: {result.identity}\n"
+                f"  Provisioning Profile: `{result.profile.file_path.name}`\n"
+                f"    UUID: {result.profile.uuid}\n"
+                f"    File: {result.profile.file_path}\n"
+                f"    Expiration: {result.profile.expiration_date}\n"
+                f"    Platforms: {result.profile.platforms}\n"
+                f"    Fingerprints: {result.profile.developer_certificate_fingerprints}\n"
+                f"    Entitlements: {result.profile.entitlements}"
+            )
+        )
 
     return result, diagnostics

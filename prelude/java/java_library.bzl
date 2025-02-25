@@ -6,6 +6,7 @@
 # of this source tree.
 
 load("@prelude//:paths.bzl", "paths")
+load("@prelude//:validation_deps.bzl", "get_validation_deps_outputs")
 load("@prelude//android:android_providers.bzl", "merge_android_packageable_info")
 load(
     "@prelude//java:java_providers.bzl",
@@ -17,6 +18,7 @@ load(
     "create_java_library_providers",
     "create_native_providers",
     "derive_compiling_deps",
+    "generate_java_classpath_snapshot",
     "make_compile_outputs",
     "to_list",
 )
@@ -42,9 +44,8 @@ _SUPPORTED_ARCHIVE_SUFFIXES = [".src.zip", "-sources.jar"]
 def _process_classpath(
         actions: AnalysisActions,
         classpath_args: cmd_args,
-        cmd: cmd_args,
         args_file_name: str,
-        option_name: str):
+        option_name: str) -> cmd_args:
     # write joined classpath string into args file
     classpath_args_file, _ = actions.write(
         args_file_name,
@@ -52,13 +53,15 @@ def _process_classpath(
         allow_args = True,
     )
 
-    # mark classpath artifacts as input
-    cmd.hidden(classpath_args)
+    return cmd_args(
+        option_name,
+        # add classpath args file to cmd
+        classpath_args_file,
+        # mark classpath artifacts as input
+        hidden = classpath_args,
+    )
 
-    # add classpath args file to cmd
-    cmd.add(option_name, classpath_args_file)
-
-def classpath_args(ctx: AnalysisContext, args):
+def _classpath_args(ctx: AnalysisContext, args):
     return cmd_args(args, delimiter = get_path_separator_for_exec_os(ctx))
 
 def _process_plugins(
@@ -66,8 +69,8 @@ def _process_plugins(
         actions_identifier: [str, None],
         annotation_processor_properties: AnnotationProcessorProperties,
         plugin_params: [PluginParams, None],
-        javac_args: cmd_args,
-        cmd: cmd_args):
+        javac_args: cmd_args) -> cmd_args:
+    cmd = cmd_args()
     processors_classpath_tsets = []
 
     # Process Annotation processors
@@ -109,14 +112,15 @@ def _process_plugins(
         processors_classpath_tset = None
 
     if processors_classpath_tset:
-        processors_classpath = classpath_args(ctx, processors_classpath_tset.project_as_args("full_jar_args"))
-        _process_classpath(
+        processors_classpath = _classpath_args(ctx, processors_classpath_tset.project_as_args("full_jar_args"))
+        cmd.add(_process_classpath(
             ctx.actions,
             processors_classpath,
-            cmd,
             declare_prefixed_name("plugin_cp_args", actions_identifier),
             "--javac_processors_classpath_file",
-        )
+        ))
+
+    return cmd
 
 def _build_classpath(actions: AnalysisActions, deps: list[Dependency], additional_classpath_entries: list[Artifact], classpath_args_projection: str) -> [cmd_args, None]:
     compiling_deps_tset = derive_compiling_deps(actions, None, deps)
@@ -132,12 +136,11 @@ def _build_classpath(actions: AnalysisActions, deps: list[Dependency], additiona
 
 def _build_bootclasspath(bootclasspath_entries: list[Artifact], source_level: int, java_toolchain: JavaToolchainInfo) -> list[Artifact]:
     bootclasspath_list = []
-    if source_level in [7, 8]:
+    if source_level in [8]:
         if bootclasspath_entries:
             bootclasspath_list = bootclasspath_entries
-        elif source_level == 7:
-            bootclasspath_list = java_toolchain.bootclasspath_7
         elif source_level == 8:
+            expect(java_toolchain.bootclasspath_8, "Must specify bootclasspath for source level 8")
             bootclasspath_list = java_toolchain.bootclasspath_8
     return bootclasspath_list
 
@@ -155,8 +158,8 @@ def _append_javac_params(
         extra_arguments: cmd_args,
         additional_classpath_entries: list[Artifact],
         bootclasspath_entries: list[Artifact],
-        cmd: cmd_args,
-        generated_sources_dir: Artifact):
+        generated_sources_dir: Artifact) -> cmd_args:
+    cmd = cmd_args()
     javac_args = cmd_args(
         "-encoding",
         "utf-8",
@@ -168,13 +171,12 @@ def _append_javac_params(
 
     compiling_classpath = _build_classpath(ctx.actions, deps, additional_classpath_entries, "args_for_compiling")
     if compiling_classpath:
-        _process_classpath(
+        cmd.add(_process_classpath(
             ctx.actions,
-            classpath_args(ctx, compiling_classpath),
-            cmd,
+            _classpath_args(ctx, compiling_classpath),
             declare_prefixed_name("classpath_args", actions_identifier),
             "--javac_classpath_file",
-        )
+        ))
     else:
         javac_args.add("-classpath ''")
 
@@ -185,22 +187,20 @@ def _append_javac_params(
 
     bootclasspath_list = _build_bootclasspath(bootclasspath_entries, source_level, java_toolchain)
     if bootclasspath_list:
-        _process_classpath(
+        cmd.add(_process_classpath(
             ctx.actions,
-            classpath_args(ctx, bootclasspath_list),
-            cmd,
+            _classpath_args(ctx, bootclasspath_list),
             declare_prefixed_name("bootclasspath_args", actions_identifier),
             "--javac_bootclasspath_file",
-        )
+        ))
 
-    _process_plugins(
+    cmd.add(_process_plugins(
         ctx,
         actions_identifier,
         annotation_processor_properties,
         javac_plugin_params,
         javac_args,
-        cmd,
-    )
+    ))
 
     cmd.add("--generated_sources_dir", generated_sources_dir.as_output())
 
@@ -212,19 +212,21 @@ def _append_javac_params(
         javac_args,
         allow_args = True,
     )
-    cmd.hidden(javac_args)
+    cmd.add(cmd_args(hidden = javac_args))
 
     # mark plain srcs artifacts as input
-    cmd.hidden(plain_sources)
+    cmd.add(cmd_args(hidden = plain_sources))
 
     cmd.add("--javac_args_file", args_file)
 
     if zipped_sources:
         cmd.add("--zipped_sources_file", ctx.actions.write(declare_prefixed_name("zipped_source_args", actions_identifier), zipped_sources))
-        cmd.hidden(zipped_sources)
+        cmd.add(cmd_args(hidden = zipped_sources))
 
     if remove_classes:
         cmd.add("--remove_classes", ctx.actions.write(declare_prefixed_name("remove_classes_args", actions_identifier), remove_classes))
+
+    return cmd
 
 def split_on_archives_and_plain_files(
         srcs: list[Artifact],
@@ -275,13 +277,13 @@ def compile_to_jar(
         srcs: list[Artifact],
         *,
         abi_generation_mode: [AbiGenerationMode, None] = None,
-        output: [Artifact, None] = None,
+        output: Artifact | None = None,
         actions_identifier: [str, None] = None,
         javac_tool: [typing.Any, None] = None,
         resources: [list[Artifact], None] = None,
         resources_root: [str, None] = None,
         remove_classes: [list[str], None] = None,
-        manifest_file: [Artifact, None] = None,
+        manifest_file: Artifact | None = None,
         annotation_processor_properties: [AnnotationProcessorProperties, None] = None,
         plugin_params: [PluginParams, None] = None,
         source_level: [int, None] = None,
@@ -291,9 +293,10 @@ def compile_to_jar(
         source_only_abi_deps: [list[Dependency], None] = None,
         extra_arguments: [cmd_args, None] = None,
         additional_classpath_entries: [list[Artifact], None] = None,
-        additional_compiled_srcs: [Artifact, None] = None,
+        additional_compiled_srcs: Artifact | None = None,
         bootclasspath_entries: [list[Artifact], None] = None,
-        is_creating_subtarget: bool = False) -> JavaCompileOutputs:
+        is_creating_subtarget: bool = False,
+        debug_port: [int, None] = None) -> JavaCompileOutputs:
     if not additional_classpath_entries:
         additional_classpath_entries = []
     if not bootclasspath_entries:
@@ -347,6 +350,7 @@ def compile_to_jar(
         bootclasspath_entries,
         is_building_android_binary,
         is_creating_subtarget,
+        debug_port,
     )
 
 def _create_jar_artifact(
@@ -355,13 +359,13 @@ def _create_jar_artifact(
         abi_generation_mode: [AbiGenerationMode, None],
         java_toolchain: JavaToolchainInfo,
         label: Label,
-        output: [Artifact, None],
+        output: Artifact | None,
         javac_tool: [typing.Any, None],
         srcs: list[Artifact],
         remove_classes: list[str],
         resources: list[Artifact],
         resources_root: [str, None],
-        manifest_file: [Artifact, None],
+        manifest_file: Artifact | None,
         annotation_processor_properties: AnnotationProcessorProperties,
         plugin_params: [PluginParams, None],
         source_level: int,
@@ -371,10 +375,11 @@ def _create_jar_artifact(
         _source_only_abi_deps: list[Dependency],
         extra_arguments: cmd_args,
         additional_classpath_entries: list[Artifact],
-        additional_compiled_srcs: [Artifact, None],
+        additional_compiled_srcs: Artifact | None,
         bootclasspath_entries: list[Artifact],
         _is_building_android_binary: bool,
-        _is_creating_subtarget: bool = False) -> JavaCompileOutputs:
+        _is_creating_subtarget: bool = False,
+        _debug_port: [int, None] = None) -> JavaCompileOutputs:
     """
     Creates jar artifact.
 
@@ -412,7 +417,7 @@ def _create_jar_artifact(
     generated_sources_dir = None
     if not skip_javac:
         generated_sources_dir = ctx.actions.declare_output(declare_prefixed_name("generated_sources", actions_identifier), dir = True)
-        _append_javac_params(
+        compile_and_package_cmd.add(_append_javac_params(
             ctx,
             actions_identifier,
             java_toolchain,
@@ -426,9 +431,8 @@ def _create_jar_artifact(
             extra_arguments,
             additional_classpath_entries,
             bootclasspath_entries,
-            compile_and_package_cmd,
             generated_sources_dir,
-        )
+        ))
 
     ctx.actions.run(compile_and_package_cmd, category = "javac_and_jar", identifier = actions_identifier)
 
@@ -437,11 +441,14 @@ def _create_jar_artifact(
     has_postprocessor = hasattr(ctx.attrs, "jar_postprocessor") and ctx.attrs.jar_postprocessor
     final_jar = postprocess_jar(ctx.actions, ctx.attrs.jar_postprocessor[RunInfo], jar_out, actions_identifier) if has_postprocessor else jar_out
 
+    jar_snapshot = generate_java_classpath_snapshot(ctx.actions, java_toolchain.cp_snapshot_generator, abi or final_jar, actions_identifier)
     return make_compile_outputs(
         full_library = final_jar,
+        preprocessed_library = jar_out,
         class_abi = abi,
         required_for_source_only_abi = required_for_source_only_abi,
         annotation_processor_output = generated_sources_dir,
+        abi_jar_snapshot = jar_snapshot,
     )
 
 def _check_dep_types(deps: list[Dependency]):
@@ -462,6 +469,10 @@ def _check_exported_deps(exported_deps: list[Dependency], attr_name: str):
             JavaLibraryInfo in exported_dep,
             "Exported deps are meant to be forwarded onto the classpath for dependents, so only " +
             "make sense for a target that emits Java bytecode, {} in {} does not.".format(exported_dep, attr_name),
+        )
+        expect(
+            not exported_dep[JavaLibraryInfo].may_not_be_exported,
+            "{} has 'may_not_be_exported' label and should not be present in {}.".format(exported_dep.label.raw_target(), attr_name),
         )
 
 # TODO(T145137403) remove need for this
@@ -502,7 +513,11 @@ def java_library_impl(ctx: AnalysisContext) -> list[Provider]:
         _check_dep_types(ctx.attrs.exported_provided_deps)
         _check_dep_types(ctx.attrs.runtime_deps)
 
-    java_providers = build_java_library(ctx, ctx.attrs.srcs)
+    java_providers = build_java_library(
+        ctx = ctx,
+        srcs = ctx.attrs.srcs,
+        validation_deps_outputs = get_validation_deps_outputs(ctx),
+    )
 
     return to_list(java_providers) + [android_packageable_info]
 
@@ -512,10 +527,11 @@ def build_java_library(
         run_annotation_processors = True,
         additional_classpath_entries: list[Artifact] = [],
         bootclasspath_entries: list[Artifact] = [],
-        additional_compiled_srcs: [Artifact, None] = None,
+        additional_compiled_srcs: Artifact | None = None,
         generated_sources: list[Artifact] = [],
         override_abi_generation_mode: [AbiGenerationMode, None] = None,
-        extra_sub_targets: dict = {}) -> JavaProviders:
+        extra_sub_targets: dict = {},
+        validation_deps_outputs: [list[Artifact], None] = None) -> JavaProviders:
     expect(
         not getattr(ctx.attrs, "_build_only_native_code", False),
         "Shouldn't call build_java_library if we're only building native code!",
@@ -564,6 +580,7 @@ def build_java_library(
             "additional_compiled_srcs": additional_compiled_srcs,
             "annotation_processor_properties": annotation_processor_properties,
             "bootclasspath_entries": bootclasspath_entries,
+            "debug_port": getattr(ctx.attrs, "debug_port", None),
             "deps": first_order_deps,
             "javac_tool": derive_javac(ctx.attrs.javac) if ctx.attrs.javac else None,
             "manifest_file": manifest_file,
@@ -577,10 +594,17 @@ def build_java_library(
             "target_level": target_level,
         }
 
+        # The outputs of validation_deps need to be added as hidden arguments
+        # to an action for the validation_deps targets to be built and enforced.
+        extra_arguments = cmd_args(
+            ctx.attrs.extra_arguments,
+            hidden = validation_deps_outputs or [],
+        )
+
         outputs = compile_to_jar(
             ctx,
             plugin_params = plugin_params,
-            extra_arguments = cmd_args(ctx.attrs.extra_arguments),
+            extra_arguments = extra_arguments,
             **common_compile_kwargs
         )
 
@@ -626,7 +650,8 @@ def build_java_library(
             ctx.actions.write("gwt_entries.txt", entries),
             "--output",
             gwt_output.as_output(),
-        ).hidden(entries)
+            hidden = entries,
+        )
 
         ctx.actions.run(gwt_cmd_args, category = "gwt_module")
 
@@ -639,9 +664,18 @@ def build_java_library(
             DefaultInfo(default_output = all_generated_sources[0]),
         ]}
 
-    java_library_info, java_packaging_info, shared_library_info, cxx_resource_info, linkable_graph, template_placeholder_info, intellij_info = create_java_library_providers(
+    class_to_src_map, sources_jar, class_to_src_map_sub_targets = get_class_to_source_map_info(
+        ctx,
+        outputs = outputs,
+        deps = ctx.attrs.deps + deps_query + ctx.attrs.exported_deps,
+        generate_sources_jar = True,
+    )
+    extra_sub_targets = extra_sub_targets | class_to_src_map_sub_targets
+
+    java_library_info, java_packaging_info, global_code_info, shared_library_info, cxx_resource_info, linkable_graph, template_placeholder_info, intellij_info = create_java_library_providers(
         ctx,
         library_output = outputs.classpath_entry if outputs else None,
+        global_code_config = java_toolchain.global_code_config,
         declared_deps = ctx.attrs.deps + deps_query,
         exported_deps = ctx.attrs.exported_deps,
         provided_deps = ctx.attrs.provided_deps + provided_deps_query,
@@ -650,15 +684,10 @@ def build_java_library(
         needs_desugar = source_level > 7 or target_level > 7,
         generated_sources = all_generated_sources,
         has_srcs = has_srcs,
+        sources_jar = sources_jar,
         gwt_module = gwt_output,
+        preprocessed_library = outputs.preprocessed_library if outputs else None,
     )
-
-    class_to_src_map, class_to_src_map_sub_targets = get_class_to_source_map_info(
-        ctx,
-        outputs = outputs,
-        deps = ctx.attrs.deps + deps_query + ctx.attrs.exported_deps,
-    )
-    extra_sub_targets = extra_sub_targets | class_to_src_map_sub_targets
 
     default_info = get_default_info(
         ctx.actions,
@@ -671,6 +700,7 @@ def build_java_library(
         java_library_info = java_library_info,
         java_library_intellij_info = intellij_info,
         java_packaging_info = java_packaging_info,
+        java_global_code_info = global_code_info,
         shared_library_info = shared_library_info,
         cxx_resource_info = cxx_resource_info,
         linkable_graph = linkable_graph,

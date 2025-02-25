@@ -12,7 +12,7 @@ from __future__ import annotations
 import functools
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from apple.tools.code_signing.codesign_bundle import CodesignConfiguration
 
@@ -26,6 +26,8 @@ class BundleSpecItem:
     # Should be bundle relative path, empty string means the root of the bundle
     dst: str
     codesign_on_copy: bool = False
+    codesign_entitlements: Optional[str] = None
+    codesign_flags_override: Optional[List[str]] = None
 
     def __eq__(self: BundleSpecItem, other: Optional[BundleSpecItem]) -> bool:
         return (
@@ -33,19 +35,55 @@ class BundleSpecItem:
             and self.src == other.src
             and self.dst == other.dst
             and self.codesign_on_copy == other.codesign_on_copy
+            and self.codesign_entitlements == other.codesign_entitlements
+            and self.codesign_flags_override == other.codesign_flags_override
         )
 
     def __ne__(self: BundleSpecItem, other: BundleSpecItem) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self: BundleSpecItem) -> int:
-        return hash((self.src, self.dst, self.codesign_on_copy))
+        return hash(
+            (
+                self.src,
+                self.dst,
+                self.codesign_on_copy,
+                self.codesign_entitlements,
+                (
+                    tuple(self.codesign_flags_override)
+                    if self.codesign_flags_override is not None
+                    else hash(None)
+                ),
+            )
+        )
 
     def __lt__(self: BundleSpecItem, other: BundleSpecItem) -> bool:
         return (
             self.src < other.src
             or self.dst < other.dst
             or self.codesign_on_copy < other.codesign_on_copy
+            or (
+                self.codesign_entitlements < other.codesign_entitlements
+                if (
+                    self.codesign_entitlements is not None
+                    and other.codesign_entitlements is not None
+                )
+                else (
+                    self.codesign_entitlements is None
+                    and other.codesign_entitlements is not None
+                )
+            )
+            or (
+                self.codesign_flags_override < other.codesign_flags_override
+                if (
+                    self.codesign_flags_override is not None
+                    and other.codesign_flags_override is not None
+                )
+                else (
+                    self.codesign_flags_override is None
+                    and other.codesign_flags_override is not None
+                )
+            )
         )
 
 
@@ -62,3 +100,5 @@ class IncrementalContext:
     codesigned: bool
     codesign_configuration: Optional[CodesignConfiguration]
     codesign_identity: Optional[str]
+    codesign_arguments: List[str]
+    versioned_if_macos: bool

@@ -2,11 +2,11 @@
   "name": "turbo",
   "version": "1.0.0",
   "dependencies": {
-    "turbo": "^1.10.3"
+    "turbo": "^2.2.0"
   },
   "engines": {
     "node": "20",
-    "pnpm": ">=8 <9"
+    "pnpm": "9"
   },
-  "packageManager": "pnpm@8.7.6"
+  "packageManager": "pnpm@9.12.1"
 }
