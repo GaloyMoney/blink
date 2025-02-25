@@ -120,20 +120,22 @@ describe("Lock service", () => {
     it("should allow concurrent operations with different secrets", async () => {
       const executionOrder: number[] = []
       const delay1 = 100
-      const delay2 = 50
+      const delay2 = 1
 
       const fn1 = jest.fn().mockImplementation(async () => {
+        await delay(delay1)
         executionOrder.push(1)
         return { data: "first" }
       })
 
       const fn2 = jest.fn().mockImplementation(async () => {
+        await delay(delay2)
         executionOrder.push(2)
         return { data: "second" }
       })
 
-      const promise1 = delay(delay1).then(() => lockVoucherSecret("secret1", fn1))
-      const promise2 = delay(delay2).then(() => lockVoucherSecret("secret2", fn2))
+      const promise1 = delay(1).then(() => lockVoucherSecret("secret1", fn1))
+      const promise2 = delay(10).then(() => lockVoucherSecret("secret2", fn2))
       const [result1, result2] = await Promise.all([promise1, promise2])
 
       // Verify results
@@ -223,20 +225,22 @@ describe("Lock service", () => {
     it("should allow concurrent operations with different k1s", async () => {
       const executionOrder: number[] = []
       const delay1 = 100
-      const delay2 = 50
+      const delay2 = 1
 
       const fn1 = jest.fn().mockImplementation(async () => {
+        await delay(delay1)
         executionOrder.push(1)
         return { data: "first" }
       })
 
       const fn2 = jest.fn().mockImplementation(async () => {
+        await delay(delay2)
         executionOrder.push(2)
         return { data: "second" }
       })
 
-      const promise1 = delay(delay1).then(() => lockVoucherK1("k1-1", fn1))
-      const promise2 = delay(delay2).then(() => lockVoucherK1("k1-2", fn2))
+      const promise1 = delay(1).then(() => lockVoucherK1("k1-1", fn1))
+      const promise2 = delay(10).then(() => lockVoucherK1("k1-2", fn2))
       const [result1, result2] = await Promise.all([promise1, promise2])
 
       // Verify results
