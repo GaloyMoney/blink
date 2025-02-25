@@ -2,8 +2,9 @@ import DistributedLock from "@ndustrial/node-distributed-lock"
 
 import { knex } from "@/services/db/knex"
 
-const getVoucherSecretLockResource = (secret: string) => `locks:voucher:secret:${secret}`
-const getVoucherK1LockResource = (k1: string) => `locks:voucher:k1:${k1}`
+export const getVoucherSecretLockResource = (secret: string) =>
+  `v:s:${secret}`.substring(0, 36)
+export const getVoucherK1LockResource = (k1: string) => `v:k:${k1}`.substring(0, 36)
 
 const lock = async <Res>(
   path: string,
