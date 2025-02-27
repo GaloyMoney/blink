@@ -1,7 +1,7 @@
 import { UsernameRegex } from "@/domain/accounts"
+import { checkedToPhoneNumber } from "@/domain/users"
 import { InputValidationError } from "@/graphql/error"
 import { GT } from "@/graphql/index"
-import { PhoneNumberRegex } from "@/domain/users"
 
 const Username = GT.Scalar({
   name: "Username",
@@ -24,9 +24,12 @@ function validUsernameValue(value: string) {
   if (value.match(UsernameRegex)) {
     return value.toLowerCase()
   }
-  if (value.match(PhoneNumberRegex)) {
+
+  const checkedPhoneNumber = checkedToPhoneNumber(value)
+  if (!(checkedPhoneNumber instanceof Error)) {
     return value
   }
+
   return new InputValidationError({ message: "Invalid value for Username" })
 }
 
