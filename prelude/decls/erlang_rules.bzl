@@ -60,7 +60,7 @@ common_application_attributes = {
     """),
     "version": attrs.string(default = "1.0.0", doc = """
         The `version` field specifies the applications version that is materialized as `vsn` field in the generated `*.app`
-        file. If you use the the `app_src` field and specify a version in the referenced template in addition to the version
+        file. If you use the `app_src` field and specify a version in the referenced template in addition to the version
         field, the versions need to be identical.
 
         If no version is specified in either the `app_src` template or the `version` field, a fallback version string of
