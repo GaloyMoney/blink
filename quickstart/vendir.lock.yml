@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(voucher): add locks to withdrawals (#4752)...'
-      sha: 9673a9c8d5c40edec6349539c314006ac763ca5f
+      commitTitle: 'chore(core): update invoice default expiration (#4763)'
+      sha: 1e1d01adab33d6315981eb3e4ee9dc4ef91c295e
       tags:
-      - 0.21.23-1-g9673a9c8d
+      - 0.21.24-3-g1e1d01ada
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(voucher): add locks to withdrawals (#4752)...'
-      sha: 9673a9c8d5c40edec6349539c314006ac763ca5f
+      commitTitle: 'chore(core): update invoice default expiration (#4763)'
+      sha: 1e1d01adab33d6315981eb3e4ee9dc4ef91c295e
       tags:
-      - 0.21.23-1-g9673a9c8d
+      - 0.21.24-3-g1e1d01ada
     path: schemas
   - git:
-      commitTitle: 'fix(voucher): add locks to withdrawals (#4752)...'
-      sha: 9673a9c8d5c40edec6349539c314006ac763ca5f
+      commitTitle: 'chore(core): update invoice default expiration (#4763)'
+      sha: 1e1d01adab33d6315981eb3e4ee9dc4ef91c295e
       tags:
-      - 0.21.23-1-g9673a9c8d
+      - 0.21.24-3-g1e1d01ada
     path: gql
   path: graphql
 kind: LockConfig

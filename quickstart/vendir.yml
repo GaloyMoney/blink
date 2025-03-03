@@ -6,7 +6,7 @@ directories:
   - path: ./
     git:
       url: https://github.com/GaloyMoney/galoy.git
-      ref: 9673a9c8d5c40edec6349539c314006ac763ca5f
+      ref: 1e1d01adab33d6315981eb3e4ee9dc4ef91c295e
     includePaths:
     - dev/**/*
     excludePaths:
@@ -18,7 +18,7 @@ directories:
   - path: schemas/
     git:
       url: https://github.com/GaloyMoney/galoy.git
-      ref: 9673a9c8d5c40edec6349539c314006ac763ca5f
+      ref: 1e1d01adab33d6315981eb3e4ee9dc4ef91c295e
     includePaths:
     - core/api/src/graphql/public/schema.graphql
     - core/api/src/graphql/admin/schema.graphql
@@ -26,7 +26,7 @@ directories:
   - path: gql/
     git:
       url: https://github.com/GaloyMoney/galoy.git
-      ref: 9673a9c8d5c40edec6349539c314006ac763ca5f
+      ref: 1e1d01adab33d6315981eb3e4ee9dc4ef91c295e
     includePaths:
     - bats/gql/**/*
     newRootPath: bats/gql
