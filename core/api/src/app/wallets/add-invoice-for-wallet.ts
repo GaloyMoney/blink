@@ -20,7 +20,13 @@ import {
 } from "@/services/mongoose"
 
 const defaultBtcExpiration = secondsToMinutes(INVOICE_EXPIRATIONS["BTC"].defaultValue)
+const defaultNoAmountBtcExpiration = secondsToMinutes(
+  INVOICE_EXPIRATIONS["BTC"].defaultValueNoAmount,
+)
 const defaultUsdExpiration = secondsToMinutes(INVOICE_EXPIRATIONS["USD"].defaultValue)
+const defaultNoAmountUsdExpiration = secondsToMinutes(
+  INVOICE_EXPIRATIONS["USD"].defaultValueNoAmount,
+)
 
 const addInvoiceForSelf = async ({
   walletId,
@@ -133,10 +139,10 @@ export const addInvoiceNoAmountForSelfForAnyWallet = async (
   const walletId = checkedToWalletId(args.walletId)
   if (walletId instanceof Error) return walletId
 
-  let defaultExpiresIn = defaultBtcExpiration
+  let defaultExpiresIn = defaultNoAmountBtcExpiration
   const validated = await validateIsBtcWallet(walletId)
   if (validated instanceof Error) {
-    defaultExpiresIn = defaultUsdExpiration
+    defaultExpiresIn = defaultNoAmountUsdExpiration
   }
 
   const expiresIn = checkedToMinutes(args.expiresIn || defaultExpiresIn)
@@ -299,10 +305,10 @@ export const addInvoiceNoAmountForRecipientForAnyWallet = async (
   const recipientWalletId = checkedToWalletId(args.recipientWalletId)
   if (recipientWalletId instanceof Error) return recipientWalletId
 
-  let defaultExpiresIn = defaultBtcExpiration
+  let defaultExpiresIn = defaultNoAmountBtcExpiration
   const validated = await validateIsBtcWallet(recipientWalletId)
   if (validated instanceof Error) {
-    defaultExpiresIn = defaultUsdExpiration
+    defaultExpiresIn = defaultNoAmountUsdExpiration
   }
 
   const expiresIn = checkedToMinutes(args.expiresIn || defaultExpiresIn)
