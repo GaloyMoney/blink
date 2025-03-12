@@ -20,9 +20,12 @@ const AccountDefaultWalletQuery = GT.Field({
       throw username
     }
 
-    const wallet = await Accounts.getDefaultWalletByUsernameOrPhone(username, walletCurrency)
-    
-    if(wallet instanceof Error) {
+    const wallet = await Accounts.getDefaultWalletByUsernameOrPhone(
+      username,
+      walletCurrency,
+    )
+
+    if (wallet instanceof Error) {
       throw mapError(wallet)
     }
 

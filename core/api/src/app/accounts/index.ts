@@ -25,7 +25,6 @@ export * from "./get-pending-incoming-on-chain-transactions-for-account"
 export * from "./get-invoices-for-account"
 export * from "./get-notification-settings-for-account"
 export * from "./get-default-wallet-for-username-phone"
-export * from "./get-transactions-for-account"
 
 const accounts = AccountsRepository()
 

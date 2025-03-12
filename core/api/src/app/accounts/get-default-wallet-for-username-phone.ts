@@ -1,11 +1,12 @@
+import { getWalletFromAccount } from "./get-wallet-from-account"
+
 import { checkedToUsername } from "@/domain/accounts"
 import { checkedToPhoneNumber } from "@/domain/users"
 import { AccountsRepository, UsersRepository } from "@/services/mongoose"
-import { getWalletFromAccount } from "./get-wallet-from-account"
 
 export const getDefaultWalletByUsernameOrPhone = async (
   value: Username | PhoneNumber,
-  walletCurrency?: WalletCurrency
+  walletCurrency?: WalletCurrency,
 ): Promise<Wallet | RepositoryError> => {
   const checkedUsername = checkedToUsername(value)
   if (!(checkedUsername instanceof Error)) {
