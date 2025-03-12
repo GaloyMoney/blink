@@ -42,7 +42,7 @@
     "ioredis": "^5.3.1",
     "js-lnurl": "^0.6.0",
     "lodash.debounce": "^4.0.8",
-    "next": "14.2.21",
+    "next": "15.2.2",
     "next-auth": "^4.24.11",
     "pino": "8.20.0",
     "react": "^18.3.1",
