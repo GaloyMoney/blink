@@ -39,7 +39,7 @@ transaction.intra_ledger_receipt.body: "+%{formattedCurrencyAmount}"
 transaction.intra_ledger_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
 
 transaction.onchain_payment.title: "Transakcja %{walletCurrency}"
-transaction.onchain_payment.body_display_currency: "Wysłana płatność on-chain na %{displayCurrencyAmount} | %{formattedCurrencyAmount} potwierdzone."
+transaction.onchain_payment.body_display_currency: "Wysłana płatność on-chain na %{displayCurrencyAmount} | %{formattedCurrencyAmount} została potwierdzona"
 transaction.onchain_payment.body: "Wysłana płatność on-chain na %{formattedCurrencyAmount} została potwierdzona"
 
 transaction.onchain_receipt.title: "Transakcja %{walletCurrency}"
