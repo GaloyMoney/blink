@@ -8,6 +8,8 @@ import {
   MaxFeeTooLargeForRoutelessPaymentError,
   PaymentSendStatus,
   decodeInvoice,
+  TemporaryChannelFailureError,
+  defaultTimeToExpiryInSeconds,
 } from "@/domain/bitcoin/lightning"
 import { UsdDisplayCurrency, toCents } from "@/domain/fiat"
 import { LnPaymentRequestNonZeroAmountRequiredError } from "@/domain/payments"
@@ -19,6 +21,7 @@ import {
   SelfPaymentError,
   TradeIntraAccountLimitsExceededError,
   WithdrawalLimitsExceededError,
+  CouldNotFindLightningPaymentFlowError,
 } from "@/domain/errors"
 import { AmountCalculator, WalletCurrency } from "@/domain/shared"
 import * as LnFeesImpl from "@/domain/payments"
@@ -27,6 +30,7 @@ import * as DisplayAmountsConverterImpl from "@/domain/fiat"
 import {
   AccountsRepository,
   LnPaymentsRepository,
+  PaymentFlowStateRepository,
   WalletInvoicesRepository,
 } from "@/services/mongoose"
 import { LedgerService } from "@/services/ledger"
@@ -601,6 +605,73 @@ describe("initiated via lightning", () => {
       // Note: 1st call is funding balance in test, 2nd call is fee reimbursement
       const args = recordOffChainReceiveSpy.mock.calls[1][0]
       expect(args.metadata.type).toBe(LedgerTransactionType.LnFeeReimbursement)
+    })
+
+    it("delete payment flow when lightning service returns TemporaryChannelFailureError", async () => {
+      // Setup mocks
+      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
+      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+        ...LnServiceOrig(),
+        defaultPubkey: (): Pubkey => DEFAULT_PUBKEY,
+        listAllPubkeys: () => [],
+        payInvoiceViaRoutes: () => new TemporaryChannelFailureError(),
+      })
+
+      // Create users
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      // Execute probe
+      const { error } = await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
+        walletId: newWalletDescriptor.id,
+        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
+        amount,
+      })
+      expect(error).toBeUndefined()
+
+      let paymentFlow = await PaymentFlowStateRepository(
+        defaultTimeToExpiryInSeconds,
+      ).findLightningPaymentFlow<S, R>({
+        walletId: newWalletDescriptor.id,
+        paymentHash: noAmountLnInvoice.paymentHash,
+        inputAmount: btcPaymentAmount.amount,
+      })
+      expect(paymentFlow).not.toBeInstanceOf(Error)
+
+      // Execute pay
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
+        memo,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        amount,
+      })
+      expect(paymentResult).toBeInstanceOf(TemporaryChannelFailureError)
+
+      paymentFlow = await PaymentFlowStateRepository(
+        defaultTimeToExpiryInSeconds,
+      ).findLightningPaymentFlow<S, R>({
+        walletId: newWalletDescriptor.id,
+        paymentHash: noAmountLnInvoice.paymentHash,
+        inputAmount: btcPaymentAmount.amount,
+      })
+      expect(paymentFlow).toBeInstanceOf(CouldNotFindLightningPaymentFlowError)
+
+      // Restore system state
+      lndServiceSpy.mockRestore()
     })
   })
 

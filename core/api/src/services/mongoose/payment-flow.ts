@@ -62,7 +62,7 @@ export const PaymentFlowStateRepository = (
       if (paymentFlow instanceof Error) return paymentFlow
 
       if (isExpired({ paymentFlow, expiryTimeInSeconds })) {
-        deleteLightningPaymentFlow({ ...hash, walletId, inputAmount })
+        deletePaymentFlow({ ...hash, walletId, inputAmount })
         return new CouldNotFindLightningPaymentFlowError()
       }
 
@@ -128,7 +128,7 @@ export const PaymentFlowStateRepository = (
     }
   }
 
-  const deleteLightningPaymentFlow = async ({
+  const deletePaymentFlow = async ({
     walletId,
     paymentHash,
     intraLedgerHash,
@@ -173,12 +173,26 @@ export const PaymentFlowStateRepository = (
     }
   }
 
+  const deleteLightningPaymentFlow = async <
+    S extends WalletCurrency,
+    R extends WalletCurrency,
+  >(
+    paymentFlow: PaymentFlow<S, R>,
+  ): Promise<true | RepositoryError> => {
+    const { senderWalletId: walletId, paymentHash, inputAmount } = paymentFlow
+    if (!paymentHash) {
+      return new BadInputsForFindError(JSON.stringify(paymentFlow))
+    }
+    return deletePaymentFlow({ paymentHash, walletId, inputAmount })
+  }
+
   return {
     findLightningPaymentFlow,
     persistNew,
     updateLightningPaymentFlow,
     markLightningPaymentFlowNotPending,
     deleteExpiredLightningPaymentFlows,
+    deleteLightningPaymentFlow,
   }
 }
 
