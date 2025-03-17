@@ -644,7 +644,7 @@ describe("initiated via lightning", () => {
 
       let paymentFlow = await PaymentFlowStateRepository(
         defaultTimeToExpiryInSeconds,
-      ).findLightningPaymentFlow<S, R>({
+      ).findLightningPaymentFlow({
         walletId: newWalletDescriptor.id,
         paymentHash: noAmountLnInvoice.paymentHash,
         inputAmount: btcPaymentAmount.amount,
@@ -663,7 +663,7 @@ describe("initiated via lightning", () => {
 
       paymentFlow = await PaymentFlowStateRepository(
         defaultTimeToExpiryInSeconds,
-      ).findLightningPaymentFlow<S, R>({
+      ).findLightningPaymentFlow({
         walletId: newWalletDescriptor.id,
         paymentHash: noAmountLnInvoice.paymentHash,
         inputAmount: btcPaymentAmount.amount,
