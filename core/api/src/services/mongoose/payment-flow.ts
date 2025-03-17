@@ -183,7 +183,10 @@ export const PaymentFlowStateRepository = (
     if (!paymentHash) {
       return new BadInputsForFindError(JSON.stringify(paymentFlow))
     }
-    return deletePaymentFlow({ paymentHash, walletId, inputAmount })
+    const result = await deletePaymentFlow({ paymentHash, walletId, inputAmount })
+    if (result instanceof Error) return result
+
+    return true
   }
 
   return {
