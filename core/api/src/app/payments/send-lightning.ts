@@ -15,6 +15,7 @@ import {
   LnAlreadyPaidError,
   LnPaymentPendingError,
   PaymentSendStatus,
+  TemporaryChannelFailureError,
 } from "@/domain/bitcoin/lightning"
 import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@/domain/errors"
 import { DisplayAmountsConverter } from "@/domain/fiat"
@@ -995,6 +996,13 @@ const lockedPaymentViaLnSteps = async ({
     if (updateJournalTxnsState instanceof Error) {
       return LnSendAttemptResult.err(updateJournalTxnsState)
     }
+
+    // Delete the payment flow when there is a temporary channel failure
+    // This allows an immediate retry instead of waiting for the 5-minute timeout period
+    if (payResult instanceof TemporaryChannelFailureError) {
+      await paymentFlowRepo.deleteLightningPaymentFlow(paymentFlow)
+    }
+
     return payResult instanceof LnAlreadyPaidError
       ? LnSendAttemptResult.alreadyPaid(journalId)
       : LnSendAttemptResult.errWithJournal({ journalId, error: payResult })

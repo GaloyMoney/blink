@@ -427,4 +427,7 @@ interface IPaymentFlowRepository {
     paymentFlowIndex: PaymentFlowStateIndex,
   ): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
   deleteExpiredLightningPaymentFlows(): Promise<number | RepositoryError>
+  deleteLightningPaymentFlow<S extends WalletCurrency>(
+    paymentFlow: PaymentFlow<S, WalletCurrency>,
+  ): Promise<true | RepositoryError>
 }
