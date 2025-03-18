@@ -8,18 +8,18 @@ introspection:
 
 info:
   title: GraphQL API Reference
-  description: Welcome to the Galoy API reference!
+  description: Welcome to the Blink API reference!
   contact:
-    name: Galoy developer community
-    url: https://chat.galoy.io/
+    name: Blink developer community
+    url: https://chat.blink.sv/
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
   x-introItems:
-    - title: Galoy API Tutorial
+    - title: Blink API Tutorial
       description: #@ data.read("TUTORIAL.md")
 
 servers:
-  - url: https://api.staging.galoy.io/graphql
-    description: Testnet
+  - url: https://api.staging.blink.sv/graphql
+    description: Signet
     production: false

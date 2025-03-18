@@ -1,11 +1,11 @@
 # Galoy
 
-[![Mattermost](https://img.shields.io/badge/chat-on%20mattermost-blue?style=social&logo=mattermost)](https://chat.galoy.io)
+[![Mattermost](https://img.shields.io/badge/chat-on%20mattermost-blue?style=social&logo=mattermost)](https://chat.blink.sv)
 [![GitHub Repo stars](https://img.shields.io/github/stars/GaloyMoney/galoy?style=social)](https://github.com/GaloyMoney/galoy/stargazers)
 [![Twitter Follow](https://img.shields.io/twitter/follow/GaloyMoney?style=social)](https://twitter.com/GaloyMoney)
 
 ## 💡 Get help
-[Q&A](https://github.com/GaloyMoney/galoy/discussions) or [Mattermost 💬](https://chat.galoy.io)
+[Q&A](https://github.com/GaloyMoney/blink/discussions) or [Mattermost 💬](https://chat.blink.sv)
 
 ## TLDR
 
@@ -16,13 +16,13 @@ This repo represents the main API that brings all functionality together.
 ## Responsible Disclosure
 
 Found critical bugs/vulnerabilities?
-Please contact our team by email at security@galoy.io . 
+Please contact our team by email at security@blink.sv . 
 
 ## Get Started
 
 Want to try it out and contribute? Check out the [dev documentation](./docs/DEVELOPMENT_ENVIRONMENT.md) to deploy locally with a docker-compose script.
 
-If you have questions, you can [join our Workspace](https://chat.galoy.io)
+If you have questions, you can [join our Workspace](https://chat.blink.sv)
 
 For an overview of all relevant repositories checkout [awesome-galoy](https://github.com/GaloyMoney/awesome-galoy).
 
