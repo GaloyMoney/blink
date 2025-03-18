@@ -232,7 +232,7 @@ def interpret_provisioning_profile_diagnostics(
         return "".join(
             [
                 header,
-                f"The provisioning profile `{mismatch.profile.file_path.name}` is the the best match; however, it has expired",
+                f"The provisioning profile `{mismatch.profile.file_path.name}` is the best match; however, it has expired",
                 f"Please download and install a valid profile from {META_IOS_PROVISIONING_PROFILES_LINK}",
                 footer,
             ]
