@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): update invoice default expiration (#4763)'
-      sha: 1e1d01adab33d6315981eb3e4ee9dc4ef91c295e
+      commitTitle: 'chore(core): bump deps (#4780)'
+      sha: e9050ff457c9e5a6cf3422831407e1e98098ce26
       tags:
-      - 0.21.24-3-g1e1d01ada
+      - 0.21.27
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): update invoice default expiration (#4763)'
-      sha: 1e1d01adab33d6315981eb3e4ee9dc4ef91c295e
+      commitTitle: 'chore(core): bump deps (#4780)'
+      sha: e9050ff457c9e5a6cf3422831407e1e98098ce26
       tags:
-      - 0.21.24-3-g1e1d01ada
+      - 0.21.27
     path: schemas
   - git:
-      commitTitle: 'chore(core): update invoice default expiration (#4763)'
-      sha: 1e1d01adab33d6315981eb3e4ee9dc4ef91c295e
+      commitTitle: 'chore(core): bump deps (#4780)'
+      sha: e9050ff457c9e5a6cf3422831407e1e98098ce26
       tags:
-      - 0.21.24-3-g1e1d01ada
+      - 0.21.27
     path: gql
   path: graphql
 kind: LockConfig
