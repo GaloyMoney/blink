@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
+    "lint": "next lint",
     "start": "next start",
     "lint:fix": "eslint --max-warnings 0 --fix --ext .ts,.tsx .",
     "codegen": "graphql-codegen --config codegen.yml",
