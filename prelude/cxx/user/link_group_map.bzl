@@ -7,13 +7,17 @@
 
 load(
     "@prelude//cxx:groups.bzl",
+    "get_roots_from_mapping",
     "make_info_subtarget_providers",
     "parse_groups_definitions",
 )
 load(
     "@prelude//cxx:link_groups.bzl",
-    "LinkGroupInfo",
     "build_link_group_info",
+)
+load(
+    "@prelude//cxx:link_groups_types.bzl",
+    "link_group_inlined_map_attr",
 )
 load(
     "@prelude//linking:link_groups.bzl",
@@ -33,78 +37,20 @@ load(
     "SharedLibraryInfo",
 )
 load("@prelude//user:rule_spec.bzl", "RuleRegistrationSpec")
-load("@prelude//decls/common.bzl", "Linkage", "Traversal")
-
-def _v1_attrs(
-        optional_root: bool = False,
-        # Whether we should parse `root` fields as a `dependency`, instead of a `label`.
-        root_is_dep: bool = True):
-    if root_is_dep:
-        attrs_root = attrs.dep(providers = [
-            LinkGroupLibInfo,
-            LinkableGraph,
-            MergedLinkInfo,
-            SharedLibraryInfo,
-        ])
-    else:
-        attrs_root = attrs.label()
-
-    if optional_root:
-        attrs_root = attrs.option(attrs_root)
-
-    return attrs.list(
-        attrs.tuple(
-            # name
-            attrs.string(),
-            # list of mappings
-            attrs.list(
-                # a single mapping
-                attrs.tuple(
-                    # root node
-                    attrs_root,
-                    # traversal
-                    attrs.enum(Traversal),
-                    # filters, either `None`, a single filter, or a list of filters
-                    # (which must all match).
-                    attrs.option(attrs.one_of(attrs.list(attrs.string()), attrs.string())),
-                    # linkage
-                    attrs.option(attrs.enum(Linkage)),
-                ),
-            ),
-            # attributes
-            attrs.option(
-                attrs.dict(key = attrs.string(), value = attrs.any(), sorted = False),
-            ),
-        ),
-    )
-
-def link_group_map_attr():
-    v2_attrs = attrs.dep(providers = [LinkGroupInfo])
-    return attrs.option(
-        attrs.one_of(
-            v2_attrs,
-            _v1_attrs(
-                optional_root = True,
-                # Inlined `link_group_map` will parse roots as `label`s, to avoid
-                # bloating deps w/ unrelated mappings (e.g. it's common to use
-                # a default mapping for all rules, which would otherwise add
-                # unrelated deps to them).
-                root_is_dep = False,
-            ),
-        ),
-        default = None,
-    )
+load("@prelude//utils:utils.bzl", "flatten")
 
 def _impl(ctx: AnalysisContext) -> list[Provider]:
     # Extract graphs from the roots via the raw attrs, as `parse_groups_definitions`
     # parses them as labels.
+
+    deps = flatten([
+        get_roots_from_mapping(mapping)
+        for entry in ctx.attrs.map
+        for mapping in entry[1]
+    ])
     linkable_graph = create_linkable_graph(
         ctx,
-        deps = [
-            mapping[0][LinkableGraph]
-            for entry in ctx.attrs.map
-            for mapping in entry[1]
-        ],
+        deps = [dep[LinkableGraph] for dep in deps],
     )
     link_groups = parse_groups_definitions(ctx.attrs.map, lambda root: root.label)
     link_group_info = build_link_group_info(linkable_graph, link_groups)
@@ -119,6 +65,15 @@ registration_spec = RuleRegistrationSpec(
     name = "link_group_map",
     impl = _impl,
     attrs = {
-        "map": _v1_attrs(),
+        "map": link_group_inlined_map_attr(
+            root_attr = attrs.dep(
+                providers = [
+                    LinkGroupLibInfo,
+                    LinkableGraph,
+                    MergedLinkInfo,
+                    SharedLibraryInfo,
+                ],
+            ),
+        ),
     },
 )

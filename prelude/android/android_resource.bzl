@@ -5,14 +5,16 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
-load("@prelude//java:java_providers.bzl", "get_java_packaging_info")
+load("@prelude//java:java_providers.bzl", "derive_compiling_deps", "get_global_code_info", "get_java_packaging_info")
+load("@prelude//java:java_toolchain.bzl", "JavaToolchainInfo")
+load("@prelude//utils:argfile.bzl", "argfile")
 load("@prelude//utils:expect.bzl", "expect")
 load(":android_providers.bzl", "AndroidResourceInfo", "ExportedAndroidResourceInfo", "RESOURCE_PRIORITY_NORMAL", "merge_android_packageable_info")
 load(":android_toolchain.bzl", "AndroidToolchainInfo")
 
 JAVA_PACKAGE_FILENAME = "java_package.txt"
 
-def _convert_to_artifact_dir(ctx: AnalysisContext, attr: [Dependency, dict, Artifact, None], attr_name: str) -> [Artifact, None]:
+def _convert_to_artifact_dir(ctx: AnalysisContext, attr: [Dependency, dict, Artifact, None], attr_name: str) -> Artifact | None:
     if isinstance(attr, Dependency):
         expect(len(attr[DefaultInfo].default_outputs) == 1, "Expect one default output from build dep of attr {}!".format(attr_name))
         return attr[DefaultInfo].default_outputs[0]
@@ -73,6 +75,8 @@ def android_resource_impl(ctx: AnalysisContext) -> list[Provider]:
     providers.append(merge_android_packageable_info(ctx.label, ctx.actions, ctx.attrs.deps, manifest = ctx.attrs.manifest, resource_info = resource_info))
     providers.append(get_java_packaging_info(ctx, ctx.attrs.deps))
     providers.append(DefaultInfo(default_output = default_output, sub_targets = sub_targets))
+    compiling_deps = derive_compiling_deps(ctx.actions, None, ctx.attrs.deps)
+    providers.append(get_global_code_info(ctx, ctx.attrs.deps, ctx.attrs.deps, derive_compiling_deps(ctx.actions, None, []), compiling_deps, compiling_deps, ctx.attrs._java_toolchain[JavaToolchainInfo].global_code_config))
 
     return providers
 
@@ -82,20 +86,20 @@ def aapt2_compile(
         android_toolchain: AndroidToolchainInfo,
         skip_crunch_pngs: bool = False,
         identifier: [str, None] = None) -> Artifact:
-    aapt2_command = cmd_args(android_toolchain.aapt2)
-    aapt2_command.add("compile")
-    aapt2_command.add("--legacy")
+    aapt2_command = [cmd_args(android_toolchain.aapt2)]
+    aapt2_command.append("compile")
+    aapt2_command.append("--legacy")
     if skip_crunch_pngs:
-        aapt2_command.add("--no-crunch")
-    aapt2_command.add(["--dir", resources_dir])
+        aapt2_command.append("--no-crunch")
+    aapt2_command.extend(["--dir", resources_dir])
     aapt2_output = ctx.actions.declare_output("{}_resources.flata".format(identifier) if identifier else "resources.flata")
-    aapt2_command.add("-o", aapt2_output.as_output())
+    aapt2_command.extend(["-o", aapt2_output.as_output()])
 
-    ctx.actions.run(aapt2_command, category = "aapt2_compile", identifier = identifier)
+    ctx.actions.run(cmd_args(aapt2_command), category = "aapt2_compile", identifier = identifier)
 
     return aapt2_output
 
-def _get_package(ctx: AnalysisContext, package: [str, None], manifest: [Artifact, None]) -> Artifact:
+def _get_package(ctx: AnalysisContext, package: [str, None], manifest: Artifact | None) -> Artifact:
     if package:
         return ctx.actions.write(JAVA_PACKAGE_FILENAME, package)
     else:
@@ -104,9 +108,13 @@ def _get_package(ctx: AnalysisContext, package: [str, None], manifest: [Artifact
 
 def extract_package_from_manifest(ctx: AnalysisContext, manifest: Artifact) -> Artifact:
     r_dot_java_package = ctx.actions.declare_output(JAVA_PACKAGE_FILENAME)
-    extract_package_cmd = cmd_args(ctx.attrs._android_toolchain[AndroidToolchainInfo].manifest_utils[RunInfo])
-    extract_package_cmd.add(["--manifest-path", manifest])
-    extract_package_cmd.add(["--package-output", r_dot_java_package.as_output()])
+    extract_package_cmd = cmd_args(
+        ctx.attrs._android_toolchain[AndroidToolchainInfo].manifest_utils[RunInfo],
+        "--manifest-path",
+        manifest,
+        "--package-output",
+        r_dot_java_package.as_output(),
+    )
 
     ctx.actions.run(extract_package_cmd, category = "android_extract_package")
 
@@ -125,10 +133,9 @@ def get_text_symbols(
     dep_symbols = _get_dep_symbols(deps)
     dep_symbol_paths.add(dep_symbols)
 
-    dep_symbol_paths_file, _ = ctx.actions.write("{}_dep_symbol_paths_file".format(identifier) if identifier else "dep_symbol_paths_file", dep_symbol_paths, allow_args = True)
+    dep_symbol_paths_file = argfile(actions = ctx.actions, name = "{}_dep_symbol_paths_file".format(identifier) if identifier else "dep_symbol_paths_file", args = dep_symbol_paths, allow_args = True)
 
     mini_aapt_cmd.add(["--dep-symbol-paths", dep_symbol_paths_file])
-    mini_aapt_cmd.hidden(dep_symbols)
 
     text_symbols = ctx.actions.declare_output("{}_R.txt".format(identifier) if identifier else "R.txt")
     mini_aapt_cmd.add(["--output-path", text_symbols.as_output()])

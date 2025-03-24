@@ -1,3 +1,9 @@
+load("@prelude//utils:source_listing.bzl", "source_listing")
+
+oncall("build_infra")
+
+source_listing()
+
 # Used by open source projects to support `prelude//`
 
 constraint_setting(
@@ -20,6 +26,12 @@ constraint_value(
 # Represents various flavors of ARM64, e.g., arm64_32
 constraint_value(
     name = "arm64",
+    constraint_setting = ":cpu",
+    visibility = ["PUBLIC"],
+)
+
+constraint_value(
+    name = "arm64_32",
     constraint_setting = ":cpu",
     visibility = ["PUBLIC"],
 )

@@ -5,76 +5,69 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
-load("@prelude//apple:apple_toolchain_types.bzl", "AppleToolchainInfo")
-load("@prelude//cxx:preprocessor.bzl", "CPreprocessor", "CPreprocessorArgs")
-load(":apple_sdk.bzl", "get_apple_sdk_name")
+load("@prelude//cxx:target_sdk_version.bzl", "get_target_sdk_version")
 
-# TODO(T112099448): In the future, the min version flag should live on the apple_toolchain()
-# TODO(T113776898): Switch to -mtargetos= flag which should live on the apple_toolchain()
-_APPLE_MIN_VERSION_FLAG_SDK_MAP = {
-    "iphoneos": "-mios-version-min",
-    "iphonesimulator": "-mios-simulator-version-min",
-    "maccatalyst": "-mios-version-min",  # Catalyst uses iOS min version flags
-    "macosx": "-mmacosx-version-min",
-    "watchos": "-mwatchos-version-min",
-    "watchsimulator": "-mwatchsimulator-version-min",
+_MACCATALYST_IOS_TO_MACOS_VERSION_MAP = {
+    "13.0": "10.15",  # Catalina
+    "13.1": "10.15",
+    "13.2": "10.15.1",
+    "13.3": "10.15.2",
+    "13.4": "10.15.4",
+    "13.5": "10.15.5",
+    "13.6": "10.15.5",  # Xcode reported 10.15
+    "14.0": "11.0",  # Big Sur
+    "14.1": "11.0",
+    "14.2": "11.0",
+    "14.3": "11.1",
+    "14.4": "11.2",
+    "14.5": "11.3",
+    "14.6": "11.4",
+    "14.7": "11.5",
+    "15.0": "12.0",  # Monterey
+    "15.1": "12.0",  # Xcode reported 10.15
+    "15.2": "12.1",
+    "15.3": "12.2",
+    "15.4": "12.3",
+    "15.5": "12.4",
+    "15.6": "12.5",
+    "16.0": "13.0",  # Ventura
+    "16.1": "13.0",
+    "16.2": "13.1",
+    "16.3": "13.2",
+    "16.4": "13.3",
+    "16.5": "13.4",
+    "16.6": "13.5",
+    "17.0": "14.0",  # Sonoma
+    "17.1": "14.1",
+    "17.2": "14.2",
+    "17.3": "14.3",
+    "17.4": "14.4",
+    "17.5": "14.5",
+    "18.0": "15.0",
+    "18.1": "15.1",
 }
 
-# Returns the target SDK version for apple_(binary|library) and uses
-# apple_toolchain() min version as a fallback. This is the central place
-# where the version for a particular node is defined, no other places
-# should be accessing `attrs.target_sdk_version` or `attrs.min_version`.
-def get_min_deployment_version_for_node(ctx: AnalysisContext) -> [None, str]:
-    toolchain_min_version = ctx.attrs._apple_toolchain[AppleToolchainInfo].min_version
-    if toolchain_min_version == "":
-        toolchain_min_version = None
-    return getattr(ctx.attrs, "target_sdk_version", None) or toolchain_min_version
+_SDK_NAME_TO_PLATFORM_NAME_OVERRIDE_MAP = {
+    "maccatalyst": "macosx",
+}
 
-# Returns the min deployment flag to pass to the compiler + linker
-def _get_min_deployment_version_target_flag(ctx: AnalysisContext) -> [None, str]:
-    target_sdk_version = get_min_deployment_version_for_node(ctx)
-    if target_sdk_version == None:
-        return None
+def get_platform_version_for_sdk_version(sdk_name: str, sdk_version: str) -> str:
+    if sdk_name == "maccatalyst":
+        macos_version = _MACCATALYST_IOS_TO_MACOS_VERSION_MAP.get(sdk_version, None)
+        if macos_version == None:
+            fail("No macos version for maccatalyst version {}".format(sdk_version))
+        return macos_version
 
-    sdk_name = get_apple_sdk_name(ctx)
-    min_version_flag = _APPLE_MIN_VERSION_FLAG_SDK_MAP.get(sdk_name)
-    if min_version_flag == None:
-        fail("Could not determine min version flag for SDK {}".format(sdk_name))
+    return sdk_version
 
-    return "{}={}".format(min_version_flag, target_sdk_version)
+def get_platform_name_for_sdk(sdk_name: str) -> str:
+    return _SDK_NAME_TO_PLATFORM_NAME_OVERRIDE_MAP.get(sdk_name, sdk_name)
 
-# There are two main ways in which we can pass target SDK version:
-# - versioned target triple
-# - unversioned target triple + version flag
-#
-# A versioned target triple overrides any version flags and requires
-# additional flags to disable the warning/error (`-Woverriding-t-option`),
-# so we prefer to use an unversioned target triple + version flag.
-#
-# Furthermore, we want to ensure that there's _exactly one_ version flag
-# on a compiler/link line. This makes debugging easier and avoids issues
-# with multiple layers each adding/overriding target SDK. It also makes
-# it easier to switch to versioned target triple.
-#
-# There are exactly two ways in which to specify the target SDK:
-# - apple_toolchain.min_version sets the default value
-# - apple_(binary|library).target_sdk_version sets the per-target value
-#
-# apple_toolchain() rules should _never_ add any version flags because
-# the rule does _not_ know whether a particular target will request a
-# non-default value. Otherwise, we end up with multiple version flags,
-# one added by the toolchain and then additional overrides by targets.
+# Returns the target_sdk_version specified for this build, falling
+# back to the toolchain version when unset.
+def get_min_deployment_version_for_node(ctx: AnalysisContext) -> str:
+    version = get_target_sdk_version(ctx)
+    if version == None:
+        fail("No target_sdk_version set on target or toolchain")
 
-def get_min_deployment_version_target_linker_flags(ctx: AnalysisContext) -> list[str]:
-    min_version_flag = _get_min_deployment_version_target_flag(ctx)
-    return [min_version_flag] if min_version_flag != None else []
-
-def get_min_deployment_version_target_preprocessor_flags(ctx: AnalysisContext) -> list[CPreprocessor]:
-    min_version_flag = _get_min_deployment_version_target_flag(ctx)
-    if min_version_flag == None:
-        return []
-
-    args = cmd_args(min_version_flag)
-    return [CPreprocessor(
-        relative_args = CPreprocessorArgs(args = [args]),
-    )]
+    return version

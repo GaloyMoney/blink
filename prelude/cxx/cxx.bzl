@@ -11,12 +11,12 @@ load(
     "merge_android_packageable_info",
 )
 load("@prelude//apple:resource_groups.bzl", "create_resource_graph")
-load(
-    "@prelude//apple:xcode.bzl",
-    "get_project_root_file",
-)
 load("@prelude//cxx:cxx_sources.bzl", "get_srcs_with_flags")
 load("@prelude//cxx:cxx_utility.bzl", "cxx_attrs_get_allow_cache_upload")
+load(
+    "@prelude//cxx:link_groups_types.bzl",
+    "LinkGroupInfo",  # @unused Used as a type
+)
 load("@prelude//linking:execution_preference.bzl", "LinkExecutionPreference")
 load(
     "@prelude//linking:link_groups.bzl",
@@ -33,7 +33,6 @@ load(
     "LinkInfo",
     "LinkInfos",
     "LinkStrategy",
-    "Linkage",
     "LinkedObject",
     "SharedLibLinkable",
     "create_merged_link_info",
@@ -56,13 +55,28 @@ load(
     "@prelude//linking:linkables.bzl",
     "linkables",
 )
-load("@prelude//linking:shared_libraries.bzl", "SharedLibraryInfo", "create_shared_libraries", "merge_shared_libraries")
+load(
+    "@prelude//linking:shared_libraries.bzl",
+    "SharedLibraries",
+    "SharedLibraryInfo",
+    "create_shlib_from_ctx",
+    "extract_soname_from_shlib",
+    "merge_shared_libraries",
+    "to_soname",
+)
 load("@prelude//linking:strip.bzl", "strip_debug_info")
+load("@prelude//linking:types.bzl", "Linkage")
 load("@prelude//os_lookup:defs.bzl", "OsLookup")
+load("@prelude//python:manifest.bzl", "create_manifest_for_entries")
 load(
     "@prelude//tests:re_utils.bzl",
     "get_re_executors_from_props",
 )
+load(
+    "@prelude//third-party:build.bzl",
+    "create_third_party_build_info",
+)
+load("@prelude//unix:providers.bzl", "UnixEnv", "create_unix_env_info")
 load("@prelude//utils:expect.bzl", "expect")
 load(
     "@prelude//utils:utils.bzl",
@@ -94,8 +108,8 @@ load(
     "CxxRuleSubTargetParams",
 )
 load(
-    ":groups.bzl",
-    "Group",  # @unused Used as a type
+    ":groups_types.bzl",
+    "Group",
     "MATCH_ALL_LABEL",
     "NO_MATCH_LABEL",
 )
@@ -110,7 +124,6 @@ load(
 )
 load(
     ":link_groups.bzl",
-    "LinkGroupInfo",  # @unused Used as a type
     "LinkGroupLibSpec",
     "get_link_group_info",
 )
@@ -179,7 +192,9 @@ def cxx_library_impl(ctx: AnalysisContext) -> list[Provider]:
         sub_target_params, provider_params = _get_params_for_android_binary_cxx_library()
     else:
         sub_target_params = CxxRuleSubTargetParams()
-        provider_params = CxxRuleProviderParams()
+        provider_params = CxxRuleProviderParams(
+            third_party_build = True,
+        )
 
     params = CxxRuleConstructorParams(
         rule_type = "cxx_library",
@@ -188,6 +203,17 @@ def cxx_library_impl(ctx: AnalysisContext) -> list[Provider]:
         output_style_sub_targets_and_providers_factory = _get_shared_link_style_sub_targets_and_providers,
         generate_sub_targets = sub_target_params,
         generate_providers = provider_params,
+        compiler_flags = ctx.attrs.compiler_flags,
+        lang_compiler_flags = ctx.attrs.lang_compiler_flags,
+        platform_compiler_flags = ctx.attrs.platform_compiler_flags,
+        lang_platform_compiler_flags = ctx.attrs.lang_platform_compiler_flags,
+        preprocessor_flags = ctx.attrs.preprocessor_flags,
+        lang_preprocessor_flags = ctx.attrs.lang_preprocessor_flags,
+        platform_preprocessor_flags = ctx.attrs.platform_preprocessor_flags,
+        lang_platform_preprocessor_flags = ctx.attrs.lang_platform_preprocessor_flags,
+        use_header_units = ctx.attrs.use_header_units,
+        export_header_unit = ctx.attrs.export_header_unit,
+        export_header_unit_filter = ctx.attrs.export_header_unit_filter,
     )
     output = cxx_library_parameterized(ctx, params)
     return output.providers
@@ -239,6 +265,15 @@ def cxx_binary_impl(ctx: AnalysisContext) -> list[Provider]:
         prefer_stripped_objects = ctx.attrs.prefer_stripped_objects,
         exe_allow_cache_upload = cxx_attrs_get_allow_cache_upload(ctx.attrs),
         extra_link_roots = linkables(ctx.attrs.link_group_deps),
+        compiler_flags = ctx.attrs.compiler_flags,
+        lang_compiler_flags = ctx.attrs.lang_compiler_flags,
+        platform_compiler_flags = ctx.attrs.platform_compiler_flags,
+        lang_platform_compiler_flags = ctx.attrs.lang_platform_compiler_flags,
+        preprocessor_flags = ctx.attrs.preprocessor_flags,
+        lang_preprocessor_flags = ctx.attrs.lang_preprocessor_flags,
+        platform_preprocessor_flags = ctx.attrs.platform_preprocessor_flags,
+        lang_platform_preprocessor_flags = ctx.attrs.lang_platform_preprocessor_flags,
+        use_header_units = ctx.attrs.use_header_units,
     )
     output = cxx_executable(ctx, params)
 
@@ -247,6 +282,28 @@ def cxx_binary_impl(ctx: AnalysisContext) -> list[Provider]:
         extra_providers.append(LinkCommandDebugOutputInfo(debug_outputs = [output.link_command_debug_output]))
     if output.sanitizer_runtime_files:
         extra_providers.append(CxxSanitizerRuntimeInfo(runtime_files = output.sanitizer_runtime_files))
+
+    # Unix env provider.
+    extra_providers.append(
+        create_unix_env_info(
+            actions = ctx.actions,
+            env = UnixEnv(
+                label = ctx.label,
+                binaries = [
+                    create_manifest_for_entries(
+                        ctx = ctx,
+                        name = "unix_env",
+                        entries = [
+                            (ctx.label.name, output.binary, ""),
+                        ],
+                    ),
+                ],
+            ),
+            # TODO(agallagher): We only want to traverse deps when dynamically
+            # linking.
+            #deps = ctx.attrs.deps,
+        ),
+    )
 
     # When an executable is the output of a build, also materialize all the
     # unpacked external debuginfo that goes with it. This makes `buck2 build
@@ -272,7 +329,7 @@ def cxx_binary_impl(ctx: AnalysisContext) -> list[Provider]:
             other_outputs = other_outputs,
             sub_targets = output.sub_targets,
         ),
-        RunInfo(args = cmd_args(output.binary).hidden(output.runtime_files)),
+        RunInfo(args = cmd_args(output.binary, hidden = output.runtime_files)),
         output.compilation_db,
         output.xcode_data,
         output.dist_info,
@@ -359,31 +416,37 @@ def prebuilt_cxx_library_impl(ctx: AnalysisContext) -> list[Provider]:
 
     # Prepare the stripped static lib.
     static_lib_stripped = None
-    if static_lib != None:
+    if not ctx.attrs.prestripped and static_lib != None:
         static_lib_stripped = strip_debug_info(ctx, static_lib.short_path, static_lib)
 
     # Prepare the stripped static PIC lib.  If the static PIC lib is the same
     # artifact as the static lib, then just re-use the stripped static lib.
     static_pic_lib_stripped = None
-    if static_lib == static_pic_lib:
-        static_pic_lib_stripped = static_lib_stripped
-    elif static_pic_lib != None:
-        static_pic_lib_stripped = strip_debug_info(ctx, static_pic_lib.short_path, static_pic_lib)
+    if not ctx.attrs.prestripped:
+        if static_lib == static_pic_lib:
+            static_pic_lib_stripped = static_lib_stripped
+        elif static_pic_lib != None:
+            static_pic_lib_stripped = strip_debug_info(ctx, static_pic_lib.short_path, static_pic_lib)
 
     if ctx.attrs.soname != None:
         soname = get_shared_library_name_for_param(linker_info, ctx.attrs.soname)
+    elif shared_lib != None and ctx.attrs.extract_soname:
+        soname = extract_soname_from_shlib(
+            actions = ctx.actions,
+            name = "__soname__.txt",
+            shared_lib = shared_lib,
+        )
     else:
         soname = get_shared_library_name(linker_info, ctx.label.name, apply_default_prefix = True)
+    soname = to_soname(soname)
 
     # Use ctx.attrs.deps instead of cxx_attr_deps, since prebuilt rules don't have platform_deps.
     first_order_deps = ctx.attrs.deps
     exported_first_order_deps = cxx_attr_exported_deps(ctx)
 
-    project_root_file = get_project_root_file(ctx)
-
     # Exported preprocessor info.
     inherited_pp_infos = cxx_inherited_preprocessor_infos(exported_first_order_deps)
-    generic_exported_pre = cxx_exported_preprocessor_info(ctx, cxx_get_regular_cxx_headers_layout(ctx), project_root_file, [])
+    generic_exported_pre = cxx_exported_preprocessor_info(ctx, cxx_get_regular_cxx_headers_layout(ctx), [])
     args = []
     compiler_type = get_cxx_toolchain_info(ctx).cxx_compiler_info.compiler_type
     if header_dirs != None:
@@ -391,12 +454,13 @@ def prebuilt_cxx_library_impl(ctx: AnalysisContext) -> list[Provider]:
             args.append(format_system_include_arg(cmd_args(x), compiler_type))
     exported_items = [generic_exported_pre]
     if args:
-        exported_items.append(CPreprocessor(relative_args = CPreprocessorArgs(args = args)))
-    providers.append(cxx_merge_cpreprocessors(
+        exported_items.append(CPreprocessor(args = CPreprocessorArgs(args = args)))
+    propagated_preprocessor = cxx_merge_cpreprocessors(
         ctx,
         exported_items,
         inherited_pp_infos,
-    ))
+    )
+    providers.append(propagated_preprocessor)
 
     inherited_link = cxx_inherited_link_info(first_order_deps)
     inherited_exported_link = cxx_inherited_link_info(exported_first_order_deps)
@@ -406,7 +470,7 @@ def prebuilt_cxx_library_impl(ctx: AnalysisContext) -> list[Provider]:
     # Gather link infos, outputs, and shared libs for effective link style.
     outputs = {}
     libraries = {}
-    solibs = {}
+    solibs = []
     sub_targets = {}
     for output_style in get_output_styles_for_linkage(preferred_linkage):
         out = None
@@ -421,19 +485,21 @@ def prebuilt_cxx_library_impl(ctx: AnalysisContext) -> list[Provider]:
                     archive = Archive(artifact = lib),
                     linker_type = linker_type,
                     link_whole = ctx.attrs.link_whole,
+                    # prebuilt archives are compiled to object code instead of IR
+                    supports_lto = False,
                 )
 
             if output_style == LibOutputStyle("archive"):
                 if static_lib:
                     out = static_lib
                     linkable = archive_linkable(static_lib)
-                    linkable_stripped = archive_linkable(static_lib_stripped)
+                    linkable_stripped = archive_linkable(static_lib_stripped) if static_lib_stripped else None
             elif output_style == LibOutputStyle("pic_archive"):
                 lib = static_pic_lib or static_lib
                 if lib:
                     out = lib
                     linkable = archive_linkable(lib)
-                    linkable_stripped = archive_linkable(static_pic_lib_stripped or static_lib_stripped)
+                    linkable_stripped = archive_linkable(static_pic_lib_stripped or static_lib_stripped) if (static_pic_lib_stripped or static_lib_stripped) else None
             else:  # shared
                 # If no shared library was provided, link one from the static libraries.
                 if shared_lib != None:
@@ -449,8 +515,8 @@ def prebuilt_cxx_library_impl(ctx: AnalysisContext) -> list[Provider]:
                         shlink_args.extend(get_link_whole_args(linker_type, [lib]))
                         link_result = cxx_link_shared_library(
                             ctx = ctx,
-                            output = soname,
-                            name = soname,
+                            output = soname.ensure_str(),
+                            name = soname.ensure_str(),
                             opts = link_options(
                                 links = [
                                     LinkArgs(flags = shlink_args),
@@ -491,12 +557,18 @@ def prebuilt_cxx_library_impl(ctx: AnalysisContext) -> list[Provider]:
                     # Provided means something external to the build will provide
                     # the libraries, so we don't need to propagate anything.
                     if not ctx.attrs.provided:
-                        solibs[soname] = shared_lib
+                        solibs.append(
+                            create_shlib_from_ctx(
+                                ctx = ctx,
+                                lib = shared_lib,
+                                soname = soname,
+                            ),
+                        )
 
                     # Provide a sub-target that always provides the shared lib
                     # using the soname.
-                    if soname and shared_lib.output.basename != paths.basename(soname):
-                        soname_lib = ctx.actions.copy_file(soname, shared_lib.output)
+                    if soname and soname.is_str and shared_lib.output.basename != paths.basename(soname.ensure_str()):
+                        soname_lib = ctx.actions.copy_file(soname.ensure_str(), shared_lib.output)
                     else:
                         soname_lib = shared_lib.output
                     sub_targets["soname-lib"] = [DefaultInfo(default_output = soname_lib)]
@@ -528,16 +600,8 @@ def prebuilt_cxx_library_impl(ctx: AnalysisContext) -> list[Provider]:
             default_output = outputs[output_style],
         )]
 
-    # Create the default output for the library rule given it's link style and preferred linkage
     cxx_toolchain = get_cxx_toolchain_info(ctx)
     pic_behavior = cxx_toolchain.pic_behavior
-    link_strategy = to_link_strategy(cxx_toolchain.linker_info.link_style)
-    actual_output_style = get_lib_output_style(link_strategy, preferred_linkage, pic_behavior)
-    output = outputs[actual_output_style]
-    providers.append(DefaultInfo(
-        default_output = output,
-        sub_targets = sub_targets,
-    ))
 
     # Propagate link info provider.
     providers.append(create_merged_link_info(
@@ -553,19 +617,60 @@ def prebuilt_cxx_library_impl(ctx: AnalysisContext) -> list[Provider]:
     ))
 
     # Propagate shared libraries up the tree.
+    shared_libs = SharedLibraries(libraries = solibs)
     providers.append(merge_shared_libraries(
         ctx.actions,
-        create_shared_libraries(ctx, solibs),
+        shared_libs,
         filter(None, [x.get(SharedLibraryInfo) for x in exported_first_order_deps]),
     ))
 
+    providers.append(
+        create_unix_env_info(
+            actions = ctx.actions,
+            env = UnixEnv(
+                label = ctx.label,
+                native_libs = [shared_libs],
+            ),
+            deps = ctx.attrs.deps + ctx.attrs.exported_deps,
+        ),
+    )
+
+    # Third-party provider.
+    third_party_build_info = create_third_party_build_info(
+        ctx = ctx,
+        paths = [] if header_dirs == None else [(d.short_path, d) for d in header_dirs],
+        cxx_headers = [propagated_preprocessor],
+        shared_libs = shared_libs.libraries,
+        cxx_header_dirs = ["include"] + ([] if header_dirs == None else [d.short_path for d in header_dirs]),
+        deps = ctx.attrs.deps + cxx_attr_exported_deps(ctx),
+    )
+    providers.append(third_party_build_info)
+    sub_targets["third-party-build"] = [
+        DefaultInfo(
+            default_output = third_party_build_info.build.root.artifact,
+            sub_targets = dict(
+                manifest = [DefaultInfo(default_output = third_party_build_info.build.manifest)],
+            ),
+        ),
+    ]
+
+    # Create the default output for the library rule given it's link style and preferred linkage
+    link_strategy = to_link_strategy(cxx_toolchain.linker_info.link_style)
+    actual_output_style = get_lib_output_style(link_strategy, preferred_linkage, pic_behavior)
+    output = outputs[actual_output_style]
+    providers.append(DefaultInfo(
+        default_output = output,
+        sub_targets = sub_targets,
+    ))
+
     # Omnibus root provider.
-    if LibOutputStyle("pic_archive") in libraries and (static_pic_lib or static_lib) and not ctx.attrs.header_only:
+    if LibOutputStyle("pic_archive") in libraries and (static_pic_lib or static_lib) and not ctx.attrs.header_only and soname.is_str:
         # TODO(cjhopman): This doesn't support thin archives
         linkable_root = create_linkable_root(
-            name = soname,
+            label = ctx.label,
+            name = soname.ensure_str(),
             link_infos = LinkInfos(default = LinkInfo(
-                name = soname,
+                name = soname.ensure_str(),
                 pre_flags = (
                     linker_flags.exported_flags +
                     linker_flags.flags
@@ -593,14 +698,14 @@ def prebuilt_cxx_library_impl(ctx: AnalysisContext) -> list[Provider]:
             ctx,
             linkable_node = create_linkable_node(
                 ctx = ctx,
-                default_soname = soname,
+                default_soname = soname.as_str(),
                 preferred_linkage = preferred_linkage,
                 default_link_strategy = to_link_strategy(cxx_toolchain.linker_info.link_style),
                 exported_deps = exported_first_order_deps,
                 # If we don't have link input for this link style, we pass in `None` so
                 # that omnibus knows to avoid it.
                 link_infos = libraries,
-                shared_libs = solibs,
+                shared_libs = shared_libs,
                 linker_flags = linker_flags,
                 can_be_asset = getattr(ctx.attrs, "can_be_asset", False) or False,
             ),
@@ -652,10 +757,18 @@ def cxx_test_impl(ctx: AnalysisContext) -> list[Provider]:
         auto_link_group_specs = get_auto_link_group_specs(ctx, link_group_info),
         prefer_stripped_objects = ctx.attrs.prefer_stripped_objects,
         extra_link_roots = linkables(ctx.attrs.link_group_deps),
+        compiler_flags = ctx.attrs.compiler_flags,
+        lang_compiler_flags = ctx.attrs.lang_compiler_flags,
+        platform_compiler_flags = ctx.attrs.platform_compiler_flags,
+        lang_platform_compiler_flags = ctx.attrs.lang_platform_compiler_flags,
+        preprocessor_flags = ctx.attrs.preprocessor_flags,
+        lang_preprocessor_flags = ctx.attrs.lang_preprocessor_flags,
+        platform_preprocessor_flags = ctx.attrs.platform_preprocessor_flags,
+        lang_platform_preprocessor_flags = ctx.attrs.lang_platform_preprocessor_flags,
     )
     output = cxx_executable(ctx, params, is_cxx_test = True)
 
-    command = [cmd_args(output.binary).hidden(output.runtime_files)] + ctx.attrs.args
+    command = [cmd_args(output.binary, hidden = output.runtime_files)] + ctx.attrs.args
 
     # Setup RE executors based on the `remote_execution` param.
     re_executor, executor_overrides = get_re_executors_from_props(ctx)

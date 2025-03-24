@@ -55,6 +55,8 @@ class TestSelection(unittest.TestCase):
             [expired_provisioning_profile],
             {},
             ApplePlatform.ios_device,
+            False,
+            None,
         )
         self.assertIsNone(selected)
         self.verify_diagnostic_info_candidate_profile(
@@ -70,8 +72,118 @@ class TestSelection(unittest.TestCase):
             [fresh_provisioning_profiles],
             {},
             ApplePlatform.ios_device,
+            False,
+            None,
         )
         self.assertIsNotNone(selected)
+
+    def test_multiple_matching_profiles_strict_mode(self):
+        info_plist = InfoPlistMetadata("com.company.application", None, False)
+        identity = CodeSigningIdentity(
+            "fingerprint",
+            "name",
+        )
+        first = ProvisioningProfileMetadata(
+            Path("/foo.first"),
+            "00000000-0000-0000-0000-000000000000",
+            datetime.max,
+            {"iOS"},
+            {identity.fingerprint},
+            {"application-identifier": "AAAAAAAAAA.*"},
+        )
+        second = ProvisioningProfileMetadata(
+            Path("/foo.second"),
+            "00000000-0000-0000-0000-000000000000",
+            datetime.max,
+            {"iOS"},
+            {identity.fingerprint},
+            {"application-identifier": "AAAAAAAAAA.*"},
+        )
+        profiles = [
+            first,
+            second,
+        ]
+
+        selection_failed = False
+        try:
+            _, _ = select_best_provisioning_profile(
+                info_plist,
+                [identity],
+                profiles,
+                {"keychain-access-groups": ["AAAAAAAAAA.*"]},
+                ApplePlatform.ios_device,
+                True,
+                None,
+            )
+        except Exception:
+            selection_failed = True
+
+        self.assertTrue(selection_failed)
+
+    def test_multiple_matching_profiles_with_preference(self):
+        info_plist = InfoPlistMetadata("com.company.application", None, False)
+        identity = CodeSigningIdentity(
+            "fingerprint",
+            "name",
+        )
+        first = ProvisioningProfileMetadata(
+            Path("/foo.first"),
+            "00000000-0000-0000-0000-000000000000",
+            datetime.max,
+            {"iOS"},
+            {identity.fingerprint},
+            {"application-identifier": "AAAAAAAAAA.*"},
+        )
+        second = ProvisioningProfileMetadata(
+            Path("/foo.second"),
+            "00000000-0000-0000-0000-000000000000",
+            datetime.max,
+            {"iOS"},
+            {identity.fingerprint},
+            {"application-identifier": "AAAAAAAAAA.*"},
+        )
+        third = ProvisioningProfileMetadata(
+            Path("/foo.third"),
+            "00000000-0000-0000-0000-000000000000",
+            datetime.max,
+            {"iOS"},
+            {identity.fingerprint},
+            {"application-identifier": "AAAAAAAAAA.*"},
+        )
+        profiles = [
+            first,
+            second,
+            third,
+        ]
+
+        selection_failed = False
+        try:
+            _, _ = select_best_provisioning_profile(
+                info_plist,
+                [identity],
+                profiles,
+                {"keychain-access-groups": ["AAAAAAAAAA.*"]},
+                ApplePlatform.ios_device,
+                True,
+                None,
+            )
+        except Exception:
+            selection_failed = True
+
+        # Check selection fails without preference
+        self.assertTrue(selection_failed)
+
+        selected_profile_info, _ = select_best_provisioning_profile(
+            info_plist,
+            [identity],
+            profiles,
+            {"keychain-access-groups": ["AAAAAAAAAA.*"]},
+            ApplePlatform.ios_device,
+            True,
+            ".+second",
+        )
+        # Check the middle profile got chosen (i.e., not first or last)
+        self.assertEqual(selected_profile_info.profile, second)
 
     def test_prefix_override(self):
         info_plist = InfoPlistMetadata("com.company.application", None, False)
@@ -104,6 +216,8 @@ class TestSelection(unittest.TestCase):
             profiles,
             {"keychain-access-groups": ["AAAAAAAAAA.*"]},
             ApplePlatform.ios_device,
+            False,
+            None,
         )
         self.assertEqual(selected, SelectedProvisioningProfileInfo(expected, identity))
 
@@ -153,6 +267,8 @@ class TestSelection(unittest.TestCase):
                 "com.apple.security.application-groups": ["foo", "bar"],
             },
             ApplePlatform.ios_device,
+            False,
+            None,
         )
         self.assertEqual(selected, SelectedProvisioningProfileInfo(expected, identity))
 
@@ -165,6 +281,8 @@ class TestSelection(unittest.TestCase):
                 "com.apple.security.application-groups": ["foo", "bar"],
             },
             ApplePlatform.ios_device,
+            False,
+            None,
         )
         self.assertEqual(selected, SelectedProvisioningProfileInfo(expected, identity))
 
@@ -177,6 +295,8 @@ class TestSelection(unittest.TestCase):
                 "com.apple.security.application-groups": ["foo", "xxx"],
             },
             ApplePlatform.ios_device,
+            False,
+            None,
         )
         self.assertIsNone(selected)
         self.verify_diagnostic_info_candidate_profile(
@@ -222,6 +342,8 @@ class TestSelection(unittest.TestCase):
             profiles,
             {},
             ApplePlatform.ios_device,
+            False,
+            None,
         )
         self.assertEqual(
             selected, SelectedProvisioningProfileInfo(expected, valid_identity)
@@ -232,6 +354,8 @@ class TestSelection(unittest.TestCase):
             [unexpected],
             {},
             ApplePlatform.ios_device,
+            False,
+            None,
         )
         self.assertIsNone(selected)
         self.verify_diagnostic_info_candidate_profile(
@@ -274,6 +398,8 @@ class TestSelection(unittest.TestCase):
             profiles,
             {},
             ApplePlatform.ios_device,
+            False,
+            None,
         )
         self.assertEqual(selected, SelectedProvisioningProfileInfo(expected, identity))
 
@@ -283,6 +409,8 @@ class TestSelection(unittest.TestCase):
             reversed(profiles),
             {},
             ApplePlatform.ios_device,
+            False,
+            None,
         )
         self.assertEqual(selected, SelectedProvisioningProfileInfo(expected, identity))
 
@@ -308,6 +436,8 @@ class TestSelection(unittest.TestCase):
             [expected],
             None,
             ApplePlatform.ios_device,
+            False,
+            None,
         )
         self.assertEqual(selected, SelectedProvisioningProfileInfo(expected, identity))
 
@@ -340,6 +470,8 @@ class TestSelection(unittest.TestCase):
                 "aps-environment": "production",
             },
             ApplePlatform.ios_device,
+            False,
+            None,
         )
         self.assertIsNotNone(selected)
 
@@ -371,6 +503,8 @@ class TestSelection(unittest.TestCase):
                 "com.made.up.entitlement": "buck",
             },
             ApplePlatform.ios_device,
+            False,
+            None,
         )
         self.assertIsNone(selected)
         self.verify_diagnostic_info_candidate_profile(
