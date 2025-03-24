@@ -1,4 +1,17 @@
-import { btc2sat, sat2btc } from "@/domain/bitcoin"
+import {
+  btc2sat,
+  sat2btc,
+  toSats,
+  toMilliSatsFromNumber,
+  toMilliSatsFromString,
+  checkedToCurrencyBaseAmount,
+  checkedToSats,
+  isSha256Hash,
+} from "@/domain/bitcoin"
+import {
+  InvalidCurrencyBaseAmountError,
+  InvalidSatoshiAmountError,
+} from "@/domain/errors"
 import { elapsedSinceTimestamp } from "@/utils"
 
 describe("utils", () => {
@@ -19,6 +32,52 @@ describe("utils", () => {
       expect(sat2btc(112356780)).toEqual(1.1235678)
       expect(sat2btc(-120000000)).toEqual(-1.2)
       expect(sat2btc(-112356780)).toEqual(-1.1235678)
+    })
+  })
+
+  describe("toSats", () => {
+    it("toSats converts number or bigint to satoshis", () => {
+      expect(toSats(12345)).toBe(12345)
+      expect(toSats(BigInt(12345))).toBe(12345)
+    })
+  })
+
+  describe("toMilliSatsFromNumber", () => {
+    it("toMilliSatsFromNumber converts number to millisatoshis", () => {
+      expect(toMilliSatsFromNumber(12345)).toBe(12345)
+    })
+  })
+
+  describe("toMilliSatsFromString", () => {
+    it("toMilliSatsFromString converts string to millisatoshis", () => {
+      expect(toMilliSatsFromString("12345")).toBe(12345)
+      expect(toMilliSatsFromString("0")).toBe(0)
+    })
+  })
+
+  describe("checkedToCurrencyBaseAmount", () => {
+    it("checkedToCurrencyBaseAmount validates currency base amount", () => {
+      expect(checkedToCurrencyBaseAmount(12345)).toBe(12345)
+      expect(checkedToCurrencyBaseAmount(0)).toBeInstanceOf(
+        InvalidCurrencyBaseAmountError,
+      )
+    })
+  })
+
+  describe("checkedToSats", () => {
+    it("checkedToSats validates satoshi amount", () => {
+      expect(checkedToSats(12345)).toBe(12345)
+      expect(checkedToSats(0)).toBeInstanceOf(InvalidSatoshiAmountError)
+    })
+  })
+
+  describe("isSha256Hash", () => {
+    it("isSha256Hash validates SHA-256 hash format", () => {
+      expect(
+        isSha256Hash("a3c45e9f8b7d0f4c5a1234567890abcdef1234567890abcdef1234567890abcd"),
+      ).toBe(true)
+      expect(isSha256Hash("not-a-hash")).toBe(false)
+      expect(isSha256Hash("123")).toBe(false)
     })
   })
 
