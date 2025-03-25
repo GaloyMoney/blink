@@ -110,24 +110,28 @@ usd_amount=50
   [[ "$error_msg" == "Account does not exist for username idontexist" ]] || exit 1
 }
 
-@test "public-ln-receive: account details - can fetch default wallet with phone number" {
+@test "public-ln-receive: account details - can fetch BTC and USD wallets with phone number" {
   token_name=$ALICE
-  btc_wallet_id="$token_name.btc_wallet_id"
   local phone="$(read_value $token_name.phone)"
 
-  variables=$(
-    jq -n \
-    --arg phone "$phone" \
-    --arg walletCurrency "BTC" \
-    '{username: $phone, walletCurrency: $walletCurrency}'
-  )
-  exec_graphql 'anon' 'account-default-wallet' "$variables"
+  for currency in BTC USD; do
+    expected_wallet_id_key="$token_name.${currency,,}_wallet_id"
+    expected_wallet_id="$(read_value "$expected_wallet_id_key")"
 
-  receiver_wallet_id="$(graphql_output '.data.accountDefaultWallet.id')"
-  received_currency="$(graphql_output '.data.accountDefaultWallet.currency')"
+    variables=$(
+      jq -n \
+      --arg phone "$phone" \
+      --arg walletCurrency "$currency" \
+      '{username: $phone, walletCurrency: $walletCurrency}'
+    )
+    exec_graphql 'anon' 'account-default-wallet' "$variables"
 
-  [[ "$received_currency" == "BTC" ]] || exit 1
-  [[ "$receiver_wallet_id" == "$(read_value $btc_wallet_id)" ]] || exit 1
+    receiver_wallet_id="$(graphql_output '.data.accountDefaultWallet.id')"
+    received_currency="$(graphql_output '.data.accountDefaultWallet.currency')"
+
+    [[ "$received_currency" == "$currency" ]] || exit 1
+    [[ "$receiver_wallet_id" == "$expected_wallet_id" ]] || exit 1
+  done
 }
 
 @test "public-ln-receive: account details - fail for invalid phone number format" {
