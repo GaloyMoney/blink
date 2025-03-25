@@ -5,7 +5,7 @@ export const getWalletFromAccount = async (
   account: Account,
   walletCurrency?: WalletCurrency,
   usernameOrPhone?: Username | PhoneNumber,
-): Promise<Wallet | RepositoryError> => {
+): Promise<Wallet | ApplicationError> => {
   const wallets = await WalletsRepository().listByAccountId(account.id)
   if (wallets instanceof Error) return wallets
 

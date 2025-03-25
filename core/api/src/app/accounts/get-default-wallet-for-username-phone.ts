@@ -8,7 +8,7 @@ import { AccountsRepository, UsersRepository } from "@/services/mongoose"
 export const getDefaultWalletByUsernameOrPhone = async (
   usernameOrPhone: Username | PhoneNumber,
   walletCurrency?: WalletCurrency,
-): Promise<Wallet | RepositoryError> => {
+): Promise<Wallet | ApplicationError> => {
   const checkedUsername = checkedToUsername(usernameOrPhone)
   if (!(checkedUsername instanceof Error)) {
     const account = await AccountsRepository().findByUsername(checkedUsername)
