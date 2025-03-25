@@ -1,10 +1,12 @@
-import { CouldNotFindWalletFromUsernameAndCurrencyError } from "@/domain/errors"
+import {
+  CouldNotFindDefaultWalletForAccount,
+  CouldNotFindWalletForCurrency
+} from "@/domain/errors"
 import { WalletsRepository } from "@/services/mongoose"
 
 export const getWalletFromAccount = async (
   account: Account,
   walletCurrency?: WalletCurrency,
-  usernameOrPhone?: Username | PhoneNumber,
 ): Promise<Wallet | ApplicationError> => {
   const wallets = await WalletsRepository().listByAccountId(account.id)
   if (wallets instanceof Error) return wallets
@@ -12,12 +14,12 @@ export const getWalletFromAccount = async (
   if (!walletCurrency) {
     return (
       wallets.find((wallet) => wallet.id === account.defaultWalletId) ??
-      new CouldNotFindWalletFromUsernameAndCurrencyError(usernameOrPhone)
+      new CouldNotFindDefaultWalletForAccount(account.id)
     )
   }
 
   return (
     wallets.find((wallet) => wallet.currency === walletCurrency) ??
-    new CouldNotFindWalletFromUsernameAndCurrencyError(usernameOrPhone)
+    new CouldNotFindWalletForCurrency(walletCurrency)
   )
 }
