@@ -4,7 +4,7 @@ import { WalletsRepository } from "@/services/mongoose"
 export const getWalletFromAccount = async (
   account: Account,
   walletCurrency?: WalletCurrency,
-  value?: Username | PhoneNumber,
+  usernameOrPhone?: Username | PhoneNumber,
 ): Promise<Wallet | RepositoryError> => {
   const wallets = await WalletsRepository().listByAccountId(account.id)
   if (wallets instanceof Error) return wallets
@@ -12,12 +12,12 @@ export const getWalletFromAccount = async (
   if (!walletCurrency) {
     return (
       wallets.find((wallet) => wallet.id === account.defaultWalletId) ??
-      new CouldNotFindWalletFromUsernameAndCurrencyError(value)
+      new CouldNotFindWalletFromUsernameAndCurrencyError(usernameOrPhone)
     )
   }
 
   return (
     wallets.find((wallet) => wallet.currency === walletCurrency) ??
-    new CouldNotFindWalletFromUsernameAndCurrencyError(value)
+    new CouldNotFindWalletFromUsernameAndCurrencyError(usernameOrPhone)
   )
 }
