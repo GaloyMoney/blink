@@ -1,5 +1,6 @@
 import { getWalletFromAccount } from "./get-wallet-from-account"
 
+import { CouldNotFindWalletFromUsernameAndCurrencyError } from "@/domain/errors"
 import { checkedToUsername } from "@/domain/accounts"
 import { checkedToPhoneNumber } from "@/domain/users"
 import { AccountsRepository, UsersRepository } from "@/services/mongoose"
@@ -16,7 +17,8 @@ export const getDefaultWalletByUsernameOrPhone = async (
   }
 
   const checkedPhoneNumber = checkedToPhoneNumber(usernameOrPhone)
-  if (checkedPhoneNumber instanceof Error) return checkedPhoneNumber
+  if (checkedPhoneNumber instanceof Error)
+    return new CouldNotFindWalletFromUsernameAndCurrencyError(checkedPhoneNumber)
 
   const user = await UsersRepository().findByPhone(checkedPhoneNumber)
   if (user instanceof Error) return user
