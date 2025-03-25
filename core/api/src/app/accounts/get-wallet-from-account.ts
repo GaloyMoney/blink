@@ -1,6 +1,6 @@
 import {
   CouldNotFindDefaultWalletForAccount,
-  CouldNotFindWalletForCurrency
+  CouldNotFindWalletForCurrency,
 } from "@/domain/errors"
 import { WalletsRepository } from "@/services/mongoose"
 
