@@ -18,7 +18,7 @@ export const getDefaultWalletByUsernameOrPhone = async (
 
   const checkedPhoneNumber = checkedToPhoneNumber(usernameOrPhone)
   if (checkedPhoneNumber instanceof Error)
-    return new CouldNotFindWalletFromUsernameAndCurrencyError(checkedPhoneNumber)
+    return new CouldNotFindWalletFromUsernameAndCurrencyError(usernameOrPhone)
 
   const user = await UsersRepository().findByPhone(checkedPhoneNumber)
   if (user instanceof Error) return user
