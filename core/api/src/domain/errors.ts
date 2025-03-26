@@ -49,6 +49,12 @@ export class CouldNotFindWalletFromAccountIdAndCurrencyError extends CouldNotFin
 export class CouldNotFindWalletFromOnChainAddressError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressesError extends CouldNotFindError {}
 export class CouldNotFindWalletOnChainPendingReceiveError extends CouldNotFindError {}
+export class CouldNotFindDefaultWalletForAccount extends CouldNotFindError {
+  level = ErrorLevel.Critical
+}
+export class CouldNotFindWalletForCurrency extends CouldNotFindError {
+  level = ErrorLevel.Critical
+}
 export class NoTransactionToUpdateError extends CouldNotFindError {}
 export class CouldNotFindLightningPaymentFlowError extends CouldNotFindError {}
 export class CouldNotUpdateLightningPaymentFlowError extends CouldNotFindError {

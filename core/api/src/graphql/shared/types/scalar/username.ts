@@ -1,4 +1,5 @@
 import { UsernameRegex } from "@/domain/accounts"
+import { checkedToPhoneNumber } from "@/domain/users"
 import { InputValidationError } from "@/graphql/error"
 import { GT } from "@/graphql/index"
 
@@ -23,6 +24,12 @@ function validUsernameValue(value: string) {
   if (value.match(UsernameRegex)) {
     return value.toLowerCase()
   }
+
+  const checkedPhoneNumber = checkedToPhoneNumber(value)
+  if (!(checkedPhoneNumber instanceof Error)) {
+    return checkedPhoneNumber
+  }
+
   return new InputValidationError({ message: "Invalid value for Username" })
 }
 
