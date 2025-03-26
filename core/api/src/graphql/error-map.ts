@@ -601,6 +601,8 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "NoContactForUsernameError":
     case "NoWalletExistsForUserError":
     case "NoBtcWalletExistsForAccountError":
+    case "CouldNotFindDefaultWalletForAccount":
+    case "CouldNotFindWalletForCurrency":
     case "LimitsExceededError":
     case "CouldNotFindLightningPaymentFlowError":
     case "NoExpiredLightningPaymentFlowsError":
