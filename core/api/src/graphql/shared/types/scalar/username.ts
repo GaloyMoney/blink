@@ -27,7 +27,7 @@ function validUsernameValue(value: string) {
 
   const checkedPhoneNumber = checkedToPhoneNumber(value)
   if (!(checkedPhoneNumber instanceof Error)) {
-    return value
+    return checkedPhoneNumber
   }
 
   return new InputValidationError({ message: "Invalid value for Username" })
