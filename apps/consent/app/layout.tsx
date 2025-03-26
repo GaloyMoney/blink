@@ -5,9 +5,9 @@ import "react-toastify/dist/ReactToastify.css"
 import Script from "next/script"
 import type { Metadata } from "next"
 import { Inter_Tight } from "next/font/google"
-import { ToastContainer } from "react-toastify"
 
-import Theme from "../components/next-themes-provider"
+import Theme from "@/components/next-themes-provider"
+import ToastProvider from "@/components/toast-provider"
 
 const inter = Inter_Tight({ subsets: ["latin"] })
 export const metadata: Metadata = {
@@ -20,18 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <Script src="/gt.js" />
       <body className={inter.className}>
-        <ToastContainer
-          position="top-center"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
+        <ToastProvider />
         <Theme>{children}</Theme>
       </body>
     </html>
