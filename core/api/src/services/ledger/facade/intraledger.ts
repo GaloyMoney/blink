@@ -12,6 +12,7 @@ export const recordIntraledger = async ({
   senderWalletDescriptor,
   recipientWalletDescriptor,
   amount,
+  externalId,
   metadata,
   additionalDebitMetadata,
   additionalCreditMetadata,
@@ -23,6 +24,7 @@ export const recordIntraledger = async ({
   let entry = MainBook.entry(description)
   const builder = EntryBuilder({
     staticAccountIds: accountIds,
+    externalId,
     entry,
     metadata,
     additionalInternalMetadata,

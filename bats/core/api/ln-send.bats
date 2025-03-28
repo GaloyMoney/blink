@@ -342,6 +342,7 @@ usd_amount=50
 @test "ln-send: intraledger settled - lnInvoicePaymentSend from btc to btc, with contacts check" {
   token_name="$ALICE"
   btc_wallet_name="$token_name.btc_wallet_id"
+  external_id="external-id-1"
 
   create_user "$BOB"
   user_update_username "$BOB"
@@ -360,7 +361,8 @@ usd_amount=50
     jq -n \
     --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
     --arg amount "$btc_amount" \
-    '{input: {walletId: $wallet_id, amount: $amount}}'
+    --arg external_id "$external_id" \
+    '{input: {walletId: $wallet_id, amount: $amount, externalId: $external_id}}'
   )
   exec_graphql "$BOB" 'ln-invoice-create' "$variables"
   invoice="$(graphql_output '.data.lnInvoiceCreate.invoice')"
@@ -369,6 +371,8 @@ usd_amount=50
   [[ "${payment_request}" != "null" ]] || exit 1
   payment_hash="$(echo $invoice | jq -r '.paymentHash')"
   [[ "${payment_hash}" != "null" ]] || exit 1
+  payment_external_id="$(echo $invoice | jq -r '.externalId')"
+  [[ "${payment_external_id}" == "${external_id}" ]] || exit 1
 
   variables=$(
     jq -n \
@@ -391,9 +395,15 @@ usd_amount=50
   transaction_payment_hash_from_pre_image=$(echo -n $transaction_payment_pre_image | xxd -r -p | sha256sum | cut -d ' ' -f1)
   [[ "${transaction_payment_hash_from_pre_image}" == "${payment_hash}" ]] || exit 1
 
+  transaction_external_id="$(graphql_output '.data.lnInvoicePaymentSend.transaction.externalId')"
+  [[ "${transaction_external_id}" == "${external_id}" ]] || exit 1
+
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
   check_for_ln_initiated_settled "$BOB" "$payment_hash"
+
+  tx_query_external_id="$(get_from_transaction_by_ln_hash_and_status $payment_hash 'SUCCESS' '.externalId')"
+  [[ "${tx_query_external_id}" == "${external_id}" ]] || exit 1
 
   final_balance="$(balance_for_wallet $token_name 'BTC')"
   wallet_diff="$(( $initial_balance - $final_balance ))"
@@ -413,6 +423,7 @@ usd_amount=50
 @test "ln-send: intraledger settled - lnInvoicePaymentSend from usd to btc" {
   token_name="$ALICE"
   usd_wallet_name="$token_name.usd_wallet_id"
+  external_id="external-id-2"
 
   create_user "$BOB"
   user_update_username "$BOB"
@@ -425,7 +436,8 @@ usd_amount=50
     jq -n \
     --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
     --arg amount "$btc_amount" \
-    '{input: {walletId: $wallet_id, amount: $amount}}'
+    --arg external_id "$external_id" \
+    '{input: {walletId: $wallet_id, amount: $amount, externalId: $external_id}}'
   )
   exec_graphql "$BOB" 'ln-invoice-create' "$variables"
   invoice="$(graphql_output '.data.lnInvoiceCreate.invoice')"
@@ -434,6 +446,8 @@ usd_amount=50
   [[ "${payment_request}" != "null" ]] || exit 1
   payment_hash="$(echo $invoice | jq -r '.paymentHash')"
   [[ "${payment_hash}" != "null" ]] || exit 1
+  payment_external_id="$(echo $invoice | jq -r '.externalId')"
+  [[ "${payment_external_id}" == "${external_id}" ]] || exit 1
 
   variables=$(
     jq -n \
@@ -460,9 +474,15 @@ usd_amount=50
   transaction_payment_hash_from_pre_image=$(echo -n $transaction_payment_pre_image | xxd -r -p | sha256sum | cut -d ' ' -f1)
   [[ "${transaction_payment_hash_from_pre_image}" == "${payment_hash}" ]] || exit 1
 
+  transaction_external_id="$(graphql_output '.data.lnInvoicePaymentSend.transaction.externalId')"
+  [[ "${transaction_external_id}" == "${external_id}" ]] || exit 1
+
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
   check_for_ln_initiated_settled "$BOB" "$payment_hash"
+
+  tx_query_external_id="$(get_from_transaction_by_ln_hash_and_status $payment_hash 'SUCCESS' '.externalId')"
+  [[ "${tx_query_external_id}" == "${external_id}" ]] || exit 1
 
   final_recipient_balance="$(balance_for_wallet $BOB 'BTC')"
   recipient_wallet_diff="$(( $final_recipient_balance - $initial_recipient_balance ))"
@@ -476,6 +496,7 @@ usd_amount=50
 @test "ln-send: intraledger settled - lnNoAmountInvoicePaymentSend from btc to usd" {
   token_name="$ALICE"
   btc_wallet_name="$token_name.btc_wallet_id"
+  external_id="external-id-3"
 
   create_user "$BOB"
   user_update_username "$BOB"
@@ -487,7 +508,8 @@ usd_amount=50
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value $bob_usd_wallet_name)" \
-    '{input: {walletId: $wallet_id}}'
+    --arg external_id "$external_id" \
+    '{input: {walletId: $wallet_id, externalId: $external_id}}'
   )
   exec_graphql "$BOB" 'ln-no-amount-invoice-create' "$variables"
   invoice="$(graphql_output '.data.lnNoAmountInvoiceCreate.invoice')"
@@ -496,6 +518,8 @@ usd_amount=50
   [[ "${payment_request}" != "null" ]] || exit 1
   payment_hash="$(echo $invoice | jq -r '.paymentHash')"
   [[ "${payment_hash}" != "null" ]] || exit 1
+  payment_external_id="$(echo $invoice | jq -r '.externalId')"
+  [[ "${payment_external_id}" == "${external_id}" ]] || exit 1
 
   variables=$(
     jq -n \
@@ -509,9 +533,25 @@ usd_amount=50
   send_status="$(graphql_output '.data.lnNoAmountInvoicePaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
+  transaction_payment_hash="$(graphql_output '.data.lnNoAmountInvoicePaymentSend.transaction.initiationVia.paymentHash')"
+  [[ "${transaction_payment_hash}" == "${payment_hash}" ]] || exit 1
+
+  transaction_payment_request="$(graphql_output '.data.lnNoAmountInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
+  [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
+
+  transaction_payment_pre_image="$(graphql_output '.data.lnNoAmountInvoicePaymentSend.transaction.settlementVia.preImage')"
+  transaction_payment_hash_from_pre_image=$(echo -n $transaction_payment_pre_image | xxd -r -p | sha256sum | cut -d ' ' -f1)
+  [[ "${transaction_payment_hash_from_pre_image}" == "${payment_hash}" ]] || exit 1
+
+  transaction_external_id="$(graphql_output '.data.lnNoAmountInvoicePaymentSend.transaction.externalId')"
+  [[ "${transaction_external_id}" == "${external_id}" ]] || exit 1
+
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
   check_for_ln_initiated_settled "$BOB" "$payment_hash"
+
+  tx_query_external_id="$(get_from_transaction_by_ln_hash_and_status $payment_hash 'SUCCESS' '.externalId')"
+  [[ "${tx_query_external_id}" == "${external_id}" ]] || exit 1
 
   final_balance="$(balance_for_wallet $token_name 'BTC')"
   wallet_diff="$(( $initial_balance - $final_balance ))"
@@ -525,6 +565,7 @@ usd_amount=50
 @test "ln-send: intraledger settled - lnNoAmountUsdInvoicePaymentSend from usd to usd" {
   token_name="$ALICE"
   usd_wallet_name="$token_name.usd_wallet_id"
+  external_id="external-id-4"
 
   create_user "$BOB"
   user_update_username "$BOB"
@@ -536,7 +577,8 @@ usd_amount=50
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value $bob_usd_wallet_name)" \
-    '{input: {walletId: $wallet_id}}'
+    --arg external_id "$external_id" \
+    '{input: {walletId: $wallet_id, externalId: $external_id}}'
   )
   exec_graphql "$BOB" 'ln-no-amount-invoice-create' "$variables"
   invoice="$(graphql_output '.data.lnNoAmountInvoiceCreate.invoice')"
@@ -545,6 +587,8 @@ usd_amount=50
   [[ "${payment_request}" != "null" ]] || exit 1
   payment_hash="$(echo $invoice | jq -r '.paymentHash')"
   [[ "${payment_hash}" != "null" ]] || exit 1
+  payment_external_id="$(echo $invoice | jq -r '.externalId')"
+  [[ "${payment_external_id}" == "${external_id}" ]] || exit 1
 
   variables=$(
     jq -n \
@@ -558,9 +602,25 @@ usd_amount=50
   send_status="$(graphql_output '.data.lnNoAmountUsdInvoicePaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
+  transaction_payment_hash="$(graphql_output '.data.lnNoAmountUsdInvoicePaymentSend.transaction.initiationVia.paymentHash')"
+  [[ "${transaction_payment_hash}" == "${payment_hash}" ]] || exit 1
+
+  transaction_payment_request="$(graphql_output '.data.lnNoAmountUsdInvoicePaymentSend.transaction.initiationVia.paymentRequest')"
+  [[ "${transaction_payment_request}" == "${payment_request}" ]] || exit 1
+
+  transaction_payment_pre_image="$(graphql_output '.data.lnNoAmountUsdInvoicePaymentSend.transaction.settlementVia.preImage')"
+  transaction_payment_hash_from_pre_image=$(echo -n $transaction_payment_pre_image | xxd -r -p | sha256sum | cut -d ' ' -f1)
+  [[ "${transaction_payment_hash_from_pre_image}" == "${payment_hash}" ]] || exit 1
+
+  transaction_external_id="$(graphql_output '.data.lnNoAmountUsdInvoicePaymentSend.transaction.externalId')"
+  [[ "${transaction_external_id}" == "${external_id}" ]] || exit 1
+
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
   check_for_ln_initiated_settled "$BOB" "$payment_hash"
+
+  tx_query_external_id="$(get_from_transaction_by_ln_hash_and_status $payment_hash 'SUCCESS' '.externalId')"
+  [[ "${tx_query_external_id}" == "${external_id}" ]] || exit 1
 
   final_balance="$(balance_for_wallet $token_name 'USD')"
   wallet_diff="$(( $initial_balance - $final_balance ))"

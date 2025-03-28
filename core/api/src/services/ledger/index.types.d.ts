@@ -48,6 +48,7 @@ type RecordIntraledgerArgs = {
     usd: UsdPaymentAmount
     btc: BtcPaymentAmount
   }
+  externalId?: LedgerExternalId
   metadata: IntraledgerLedgerMetadata
   additionalDebitMetadata: TxMetadata
   additionalCreditMetadata: TxMetadata
