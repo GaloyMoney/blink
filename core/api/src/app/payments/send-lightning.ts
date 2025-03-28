@@ -675,6 +675,11 @@ const lockedPaymentViaIntraledgerSteps = async ({
     }))
   }
 
+  const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(paymentHash)
+  if (walletInvoice instanceof Error) {
+    return IntraLedgerSendAttemptResult.err(walletInvoice)
+  }
+
   const journal = await LedgerFacade.recordIntraledger({
     description: paymentFlow.descriptionFromInvoice,
     amount: {
@@ -683,6 +688,7 @@ const lockedPaymentViaIntraledgerSteps = async ({
     },
     senderWalletDescriptor,
     recipientWalletDescriptor,
+    externalId: walletInvoice.externalId,
     metadata,
     additionalDebitMetadata,
     additionalCreditMetadata,
