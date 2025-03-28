@@ -1,4 +1,8 @@
-query transactionsByAddress($first: Int, $after: String, $address: OnChainAddress!) {
+query transactionsByAddress(
+  $first: Int
+  $after: String
+  $address: OnChainAddress!
+) {
   me {
     defaultAccount {
       displayCurrency
@@ -23,6 +27,7 @@ fragment TransactionList on TransactionConnection {
     node {
       __typename
       id
+      externalId
       status
       direction
       memo

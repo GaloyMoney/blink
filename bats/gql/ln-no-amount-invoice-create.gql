@@ -3,6 +3,7 @@ mutation lnNoAmountInvoiceCreate($input: LnNoAmountInvoiceCreateInput!) {
     invoice {
       paymentRequest
       paymentHash
+      externalId
     }
     errors {
       message

@@ -5,6 +5,7 @@ mutation lnInvoicePaymentSend($input: LnInvoicePaymentInput!) {
     }
     status
     transaction {
+      externalId
       initiationVia {
         ... on InitiationViaLn {
           paymentHash
