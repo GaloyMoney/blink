@@ -52,7 +52,7 @@ def _cpu_split_transition_impl(
 
     cpu_name_to_cpu_constraint = {}
     if os_label == refs.ios[ConstraintValueInfo].label:
-        if sdk == None or sdk_label == refs.ios_simulator_sdk[ConstraintValueInfo].label:
+        if sdk == None or sdk_label == refs.ios_simulator_sdk[ConstraintValueInfo].label or sdk_label == refs.maccatalyst_sdk[ConstraintValueInfo].label:
             # default to simulator if SDK is not specified
             cpu_name_to_cpu_constraint["arm64"] = refs.arm64[ConstraintValueInfo]
             cpu_name_to_cpu_constraint["x86_64"] = refs.x86_64[ConstraintValueInfo]
@@ -63,10 +63,9 @@ def _cpu_split_transition_impl(
     elif os_label == refs.watchos[ConstraintValueInfo].label:
         if sdk == None or sdk_label == refs.watchos_simulator_sdk[ConstraintValueInfo].label:
             cpu_name_to_cpu_constraint["arm64"] = refs.arm64[ConstraintValueInfo]
-            cpu_name_to_cpu_constraint["x86_64"] = refs.x86_64[ConstraintValueInfo]
         elif sdk_label == refs.watchos_device_sdk[ConstraintValueInfo].label:
             cpu_name_to_cpu_constraint["arm64"] = refs.arm64[ConstraintValueInfo]
-            cpu_name_to_cpu_constraint["arm32"] = refs.arm32[ConstraintValueInfo]
+            cpu_name_to_cpu_constraint["arm64_32"] = refs.arm64_32[ConstraintValueInfo]
         else:
             fail("Unsupported SDK {} for WatchOS".format(sdk_label))
     elif os_label == refs.macos[ConstraintValueInfo].label:
@@ -103,15 +102,17 @@ cpu_split_transition = transition(
     refs = {
         "arm32": "config//cpu/constraints:arm32",
         "arm64": "config//cpu/constraints:arm64",
+        "arm64_32": "config//cpu/constraints:arm64_32",
         "cpu": "config//cpu/constraints:cpu",
         "ios": "config//os/constraints:iphoneos",
         "ios_device_sdk": "config//os/sdk/apple/constraints:iphoneos",
         "ios_simulator_sdk": "config//os/sdk/apple/constraints:iphonesimulator",
+        "maccatalyst_sdk": "config//os/sdk/apple/constraints:maccatalyst",
         "macos": "config//os/constraints:macos",
         "os": "config//os/constraints:os",
         "sdk": "config//os/sdk/apple/constraints:_",
-        "universal": "config//build_mode/apple/constraints:universal",
-        "universal_enabled": "config//build_mode/apple/constraints:universal-enabled",
+        "universal": "config//cpu/constraints:universal",
+        "universal_enabled": "config//cpu/constraints:universal-enabled",
         "watchos": "config//os/constraints:watchos",
         "watchos_device_sdk": "config//os/sdk/apple/constraints:watchos",
         "watchos_simulator_sdk": "config//os/sdk/apple/constraints:watchsimulator",

@@ -6,6 +6,7 @@
 # of this source tree.
 
 load("@prelude//:buck2_compatibility.bzl", "BUCK2_COMPATIBILITY_ATTRIB_NAME", "BUCK2_COMPATIBILITY_ATTRIB_TYPE", "check_buck2_compatibility")
+load("@prelude//apple:apple_platforms.bzl", "APPLE_PLATFORMS_KEY")
 load("@prelude//configurations:rules.bzl", _config_implemented_rules = "implemented_rules")
 load("@prelude//decls/common.bzl", "prelude_rule")
 load("@prelude//is_full_meta_repo.bzl", "is_full_meta_repo")
@@ -22,7 +23,7 @@ def _unimplemented_impl(name):
     # some features disabled.
     return partial(_unimplemented, name)
 
-def _mk_rule(rule_spec: typing.Any, extra_attrs: dict[str, typing.Any] = dict(), **kwargs):
+def _mk_rule(rule_spec: typing.Any, extra_attrs: dict[str, typing.Any] = dict(), impl_override: [typing.Callable, None] = None, **kwargs):
     name = rule_spec.name
     attributes = rule_spec.attrs
 
@@ -53,8 +54,8 @@ def _mk_rule(rule_spec: typing.Any, extra_attrs: dict[str, typing.Any] = dict(),
 
     # Add _apple_platforms to all rules so that we may query the target platform to use until we support configuration
     # modifiers and can use them to set the configuration to use for operations.
-    # Map of string identifer to platform.
-    attributes["_apple_platforms"] = attrs.dict(key = attrs.string(), value = attrs.dep(), sorted = False, default = {})
+    # Map of string identifier to platform.
+    attributes[APPLE_PLATFORMS_KEY] = attrs.dict(key = attrs.string(), value = attrs.dep(), sorted = False, default = {})
 
     extra_args = dict(kwargs)
     cfg = transitions.get(name)
@@ -84,6 +85,8 @@ def _mk_rule(rule_spec: typing.Any, extra_attrs: dict[str, typing.Any] = dict(),
         impl = extra_impl
     if not impl:
         impl = _unimplemented_impl(name)
+    if impl_override != None:
+        impl = impl_override
     if rule_spec.uses_plugins != None:
         extra_args["uses_plugins"] = rule_spec.uses_plugins
 
@@ -144,7 +147,7 @@ rules = {rule.name: _mk_rule(rule) for rule in _declared_rules.values()}
 load_symbols(rules)
 
 # TODO(akrieger): Remove this and instead refactor to allow impl bzl files to export attrs.
-def clone_rule(rule: str, extra_attrs: dict[str, typing.Any] = dict(), **kwargs):
+def clone_rule(rule: str, extra_attrs: dict[str, typing.Any] = dict(), impl_override = None, **kwargs):
     if not rule in _declared_rules:
         fail("Tried clone rule {} which does not exist".format(rule))
-    return _mk_rule(_declared_rules[rule], extra_attrs, **kwargs)
+    return _mk_rule(_declared_rules[rule], extra_attrs, impl_override, **kwargs)

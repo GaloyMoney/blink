@@ -5,6 +5,7 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
+load("@prelude//:validation_deps.bzl", "VALIDATION_DEPS_ATTR_NAME")
 load("@prelude//android:build_only_native_code.bzl", "is_build_only_native_code")
 load("@prelude//android:configuration.bzl", "is_building_android_binary_attr")
 load("@prelude//android:min_sdk_version.bzl", "get_min_sdk_version_constraint_value_name", "get_min_sdk_version_range")
@@ -64,8 +65,8 @@ extra_attributes = {
     },
     "java_library": {
         "abi_generation_mode": attrs.option(attrs.enum(AbiGenerationMode), default = None),
-        "javac": attrs.option(attrs.one_of(attrs.exec_dep(), attrs.source()), default = None),
         "resources_root": attrs.option(attrs.string(), default = None),
+        VALIDATION_DEPS_ATTR_NAME: attrs.set(attrs.dep(), sorted = True, default = []),
         "_build_only_native_code": attrs.default_only(attrs.bool(default = is_build_only_native_code())),
         "_dex_min_sdk_version": attrs.option(attrs.int(), default = dex_min_sdk_version()),
         "_dex_toolchain": toolchains_common.dex(),
@@ -78,7 +79,7 @@ extra_attributes = {
     },
     "java_test": {
         "abi_generation_mode": attrs.option(attrs.enum(AbiGenerationMode), default = None),
-        "javac": attrs.option(attrs.one_of(attrs.exec_dep(), attrs.source()), default = None),
+        "java_agents": attrs.list(attrs.source(), default = []),
         "resources_root": attrs.option(attrs.string(), default = None),
         "test_class_names_file": attrs.option(attrs.source(), default = None),
         "unbundled_resources_root": attrs.option(attrs.source(allow_directory = True), default = None),
@@ -94,6 +95,7 @@ extra_attributes = {
     },
     "prebuilt_jar": {
         "generate_abi": attrs.bool(default = True),
+        "is_executable": attrs.bool(default = False),
         # Prebuilt jars are quick to build, and often contain third-party code, which in turn is
         # often a source of annotations and constants. To ease migration to ABI generation from
         # source without deps, we have them present during ABI gen by default.

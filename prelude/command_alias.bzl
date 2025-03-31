@@ -58,15 +58,18 @@ def _command_alias_impl_target_unix(ctx, exec_is_windows: bool):
         exec_is_windows,
     )
 
-    run_info_args = cmd_args()
+    run_info_args_args = []
+    run_info_args_hidden = []
     if len(ctx.attrs.env) > 0 or len(ctx.attrs.platform_exe.items()) > 0:
-        run_info_args.add(trampoline)
-        run_info_args.hidden(trampoline_args)
+        run_info_args_args.append(trampoline)
+        run_info_args_hidden.append(trampoline_args)
     else:
-        run_info_args.add(base.args)
-        run_info_args.add(ctx.attrs.args)
+        run_info_args_args.append(base.args)
+        run_info_args_args.append(ctx.attrs.args)
 
-    run_info_args.hidden(ctx.attrs.resources)
+    run_info_args_hidden.append(ctx.attrs.resources)
+
+    run_info_args = cmd_args(run_info_args_args, hidden = run_info_args_hidden)
 
     return [
         DefaultInfo(default_output = trampoline, other_outputs = [trampoline_args] + ctx.attrs.resources),
@@ -86,6 +89,12 @@ def _command_alias_impl_target_windows(ctx, exec_is_windows: bool):
     trampoline_args = cmd_args()
     trampoline_args.add("@echo off")
 
+    if "close_stdin" in ctx.attrs.labels:
+        # Avoids waiting for input on the "Terminate batch job (Y/N)?" prompt.
+        # The prompt itself is unavoidable, but we can avoid having to wait for input.
+        # This will call the same trampoline batch file with stdin disabled
+        trampoline_args.add("if not defined STDIN_CLOSED (set STDIN_CLOSED=1 & CALL <NUL %0 %* & GOTO :EOF)")
+
     # Set BUCK_COMMAND_ALIAS_ABSOLUTE to the drive and full path of the script being created here
     # We use this below to prefix any artifacts being referenced in the script
     trampoline_args.add("set BUCK_COMMAND_ALIAS_ABSOLUTE=%~dp0")
@@ -103,6 +112,7 @@ def _command_alias_impl_target_windows(ctx, exec_is_windows: bool):
 
     # Add on %* to handle any other args passed through the command
     cmd.add("%*")
+
     trampoline_args.add(cmd)
 
     trampoline = _relativize_path(
@@ -113,15 +123,18 @@ def _command_alias_impl_target_windows(ctx, exec_is_windows: bool):
         exec_is_windows,
     )
 
-    run_info_args = cmd_args()
+    run_info_args_args = []
+    run_info_args_hidden = []
     if len(ctx.attrs.env) > 0:
-        run_info_args.add(trampoline)
-        run_info_args.hidden(trampoline_args)
+        run_info_args_args.append(trampoline)
+        run_info_args_hidden.append(trampoline_args)
     else:
-        run_info_args.add(base.args)
-        run_info_args.add(ctx.attrs.args)
+        run_info_args_args.append(base.args)
+        run_info_args_args.append(ctx.attrs.args)
 
-    run_info_args.hidden(ctx.attrs.resources)
+    run_info_args_hidden.append(ctx.attrs.resources)
+
+    run_info_args = cmd_args(run_info_args_args, hidden = run_info_args_hidden)
 
     return [
         DefaultInfo(default_output = trampoline, other_outputs = [trampoline_args] + ctx.attrs.resources),
@@ -148,7 +161,11 @@ def _relativize_path_unix(
         trampoline_args: cmd_args) -> Artifact:
     # FIXME(ndmitchell): more straightforward relativization with better API
     non_materialized_reference = ctx.actions.write("dummy", "")
-    trampoline_args.relative_to(non_materialized_reference, parent = 1).absolute_prefix("__BUCK_COMMAND_ALIAS_ABSOLUTE__/")
+    trampoline_args = cmd_args(
+        trampoline_args,
+        relative_to = (non_materialized_reference, 1),
+        absolute_prefix = "__BUCK_COMMAND_ALIAS_ABSOLUTE__/",
+    )
 
     trampoline_tmp, _ = ctx.actions.write("__command_alias_trampoline.{}.pre".format(extension), trampoline_args, allow_args = True)
 
@@ -178,7 +195,11 @@ def _relativize_path_windows(
         trampoline_args: cmd_args) -> Artifact:
     # FIXME(ndmitchell): more straightforward relativization with better API
     non_materialized_reference = ctx.actions.write("dummy", "")
-    trampoline_args.relative_to(non_materialized_reference, parent = 1).absolute_prefix(var + "/")
+    trampoline_args = cmd_args(
+        trampoline_args,
+        relative_to = (non_materialized_reference, 1),
+        absolute_prefix = var + "/",
+    )
 
     trampoline, _ = ctx.actions.write("__command_alias_trampoline.{}".format(extension), trampoline_args, allow_args = True)
 
@@ -209,7 +230,10 @@ def _add_args_declaration_to_trampoline_args(trampoline_args: cmd_args, base: Ru
 
     trampoline_args.add(")")
 
-def _get_run_info_from_exe(exe: Dependency) -> RunInfo:
+def _get_run_info_from_exe(exe: Dependency | Artifact) -> RunInfo:
+    if isinstance(exe, Artifact):
+        return RunInfo(args = cmd_args(exe))
+
     run_info = exe.get(RunInfo)
     if run_info == None:
         run_info = RunInfo(

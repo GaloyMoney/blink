@@ -28,12 +28,12 @@ def build_node_modules_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
     cmd = cmd_args(
         ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
         simple_pnpm_toolchain.build_node_modules[DefaultInfo].default_outputs,
+        hidden = [ctx.attrs.pnpm_lock, ctx.attrs.package_json]
     )
     cmd.add("--root-dir")
     cmd.add(package_dir)
 
     cmd.add(out.as_output())
-    cmd.hidden([ctx.attrs.pnpm_lock, ctx.attrs.package_json])
 
     ctx.actions.run(cmd, category = "pnpm", identifier = "install")
 

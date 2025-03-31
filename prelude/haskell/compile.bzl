@@ -12,11 +12,7 @@ load(
 )
 load(
     "@prelude//haskell:library_info.bzl",
-    "HaskellLibraryInfo",
-)
-load(
-    "@prelude//haskell:link_info.bzl",
-    "merge_haskell_link_infos",
+    "HaskellLibraryInfoTSet",
 )
 load(
     "@prelude//haskell:toolchain.bzl",
@@ -35,6 +31,7 @@ load(
     "@prelude//linking:link_info.bzl",
     "LinkStyle",
 )
+load("@prelude//utils:argfile.bzl", "at_argfile")
 
 # The type of the return value of the `_compile()` function.
 CompileResultInfo = record(
@@ -54,7 +51,7 @@ CompileArgsInfo = record(
 PackagesInfo = record(
     exposed_package_args = cmd_args,
     packagedb_args = cmd_args,
-    transitive_deps = field(list[HaskellLibraryInfo]),
+    transitive_deps = field(HaskellLibraryInfoTSet),
 )
 
 def _package_flag(toolchain: HaskellToolchainInfo) -> str:
@@ -71,39 +68,40 @@ def get_packages_info(
     haskell_toolchain = ctx.attrs._haskell_toolchain[HaskellToolchainInfo]
 
     # Collect library dependencies. Note that these don't need to be in a
-    # particular order and we really want to remove duplicates (there
-    # are a *lot* of duplicates).
-    libs = {}
+    # particular order.
     direct_deps_link_info = attr_deps_haskell_link_infos(ctx)
-    merged_hs_link_info = merge_haskell_link_infos(direct_deps_link_info)
-
-    hs_link_info = merged_hs_link_info.prof_info if enable_profiling else merged_hs_link_info.info
-
-    for lib in hs_link_info[link_style]:
-        libs[lib.db] = lib  # lib.db is a good enough unique key
+    libs = ctx.actions.tset(
+        HaskellLibraryInfoTSet,
+        children = [
+            lib.prof_info[link_style] if enable_profiling else lib.info[link_style]
+            for lib in direct_deps_link_info
+        ],
+    )
 
     # base is special and gets exposed by default
     package_flag = _package_flag(haskell_toolchain)
     exposed_package_args = cmd_args([package_flag, "base"])
 
     packagedb_args = cmd_args()
+    packagedb_set = {}
 
-    for lib in libs.values():
-        exposed_package_args.hidden(lib.import_dirs.values())
-        exposed_package_args.hidden(lib.stub_dirs)
+    for lib in libs.traverse():
+        packagedb_set[lib.db] = None
+        hidden_args = cmd_args(hidden = [
+            lib.import_dirs.values(),
+            lib.stub_dirs,
+            # libs of dependencies might be needed at compile time if
+            # we're using Template Haskell:
+            lib.libs,
+        ])
 
-        # libs of dependencies might be needed at compile time if
-        # we're using Template Haskell:
-        exposed_package_args.hidden(lib.libs)
+        exposed_package_args.add(hidden_args)
 
-        packagedb_args.hidden(lib.import_dirs.values())
-        packagedb_args.hidden(lib.stub_dirs)
-        packagedb_args.hidden(lib.libs)
+        packagedb_args.add(hidden_args)
 
-    for lib in libs.values():
-        # These we need to add for all the packages/dependencies, i.e.
-        # direct and transitive (e.g. `fbcode-common-hs-util-hs-array`)
-        packagedb_args.add("-package-db", lib.db)
+    # These we need to add for all the packages/dependencies, i.e.
+    # direct and transitive (e.g. `fbcode-common-hs-util-hs-array`)
+    packagedb_args.add([cmd_args("-package-db", x) for x in packagedb_set])
 
     haskell_direct_deps_lib_infos = attr_deps_haskell_lib_infos(
         ctx,
@@ -122,7 +120,7 @@ def get_packages_info(
     return PackagesInfo(
         exposed_package_args = exposed_package_args,
         packagedb_args = packagedb_args,
-        transitive_deps = libs.values(),
+        transitive_deps = libs,
     )
 
 def compile_args(
@@ -198,14 +196,19 @@ def compile_args(
     if pkgname:
         compile_args.add(["-this-unit-id", pkgname])
 
-    srcs = cmd_args()
+    arg_srcs = []
+    hidden_srcs = []
     for (path, src) in srcs_to_pairs(ctx.attrs.srcs):
         # hs-boot files aren't expected to be an argument to compiler but does need
         # to be included in the directory of the associated src file
         if is_haskell_src(path):
-            srcs.add(src)
+            arg_srcs.append(src)
         else:
-            srcs.hidden(src)
+            hidden_srcs.append(src)
+    srcs = cmd_args(
+        arg_srcs,
+        hidden = hidden_srcs,
+    )
 
     producing_indices = "-fwrite-ide-info" in ctx.attrs.compiler_flags
 
@@ -238,13 +241,12 @@ def compile(
 
     if args.args_for_file:
         if haskell_toolchain.use_argsfile:
-            argsfile = ctx.actions.declare_output(
-                "haskell_compile_" + artifact_suffix + ".argsfile",
-            )
-            for_file = cmd_args(args.args_for_file).add(args.srcs)
-            ctx.actions.write(argsfile.as_output(), for_file, allow_args = True)
-            compile_cmd.add(cmd_args(argsfile, format = "@{}"))
-            compile_cmd.hidden(for_file)
+            compile_cmd.add(at_argfile(
+                actions = ctx.actions,
+                name = artifact_suffix + ".haskell_compile_argsfile",
+                args = [args.args_for_file, args.srcs],
+                allow_args = True,
+            ))
         else:
             compile_cmd.add(args.args_for_file)
             compile_cmd.add(args.srcs)

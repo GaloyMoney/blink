@@ -141,6 +141,7 @@ def build_workspace_node_modules_impl(ctx: AnalysisContext) -> list[DefaultInfo]
     cmd = cmd_args(
         ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
         pnpm_toolchain.build_workspace_node_modules[DefaultInfo].default_outputs,
+        hidden = [ctx.attrs.pnpm_lock]
     )
     if ctx.attrs.root_workspace:
         cmd.add("--package-dir")
@@ -149,7 +150,6 @@ def build_workspace_node_modules_impl(ctx: AnalysisContext) -> list[DefaultInfo]
         cmd.add("--root-dir")
         cmd.add(package_dir)
     cmd.add(out.as_output())
-    cmd.hidden([ctx.attrs.pnpm_lock])
 
     ctx.actions.run(cmd, category = "pnpm", identifier = "install")
 
@@ -187,6 +187,7 @@ def build_node_modules_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
         pnpm_toolchain.build_node_modules[DefaultInfo].default_outputs,
         "--turbo-bin",
         ctx.attrs.turbo_bin[RunInfo],
+        hidden = [ctx.attrs.workspace]
     )
 
     cmd.add("--package-dir")
@@ -198,7 +199,6 @@ def build_node_modules_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
         identifier += "--prod "
 
     cmd.add(out.as_output())
-    cmd.hidden([ctx.attrs.workspace])
 
     ctx.actions.run(cmd, category = "pnpm", identifier = identifier + ctx.label.package)
 
@@ -1200,13 +1200,13 @@ fi
 
     env_json = ctx.attrs.env_json if ctx.attrs.env_json else ""
     args = cmd_args([
-        script,
-        ctx.label.package,
-        env_json,
-        ctx.attrs.command
-    ])
-    args.hidden([ctx.attrs.deps])
-    args.hidden([ctx.attrs.srcs])
+            script,
+            ctx.label.package,
+            env_json,
+            ctx.attrs.command,
+        ],
+        hidden=ctx.attrs.deps + ctx.attrs.srcs
+    )
 
     return [DefaultInfo(), RunInfo(args = args)]
 
@@ -1249,13 +1249,13 @@ exec pnpm run --report-summary "$npm_run_command"
     env_json = ctx.attrs.env_json if ctx.attrs.env_json else ""
 
     run_cmd_args = cmd_args([
-        script,
-        ctx.label.package,
-        env_json,
-        ctx.attrs.command,
-    ])
-    run_cmd_args.hidden([ctx.attrs.deps])
-    run_cmd_args.hidden([ctx.attrs.srcs])
+            script,
+            ctx.label.package,
+            env_json,
+            ctx.attrs.command,
+        ],
+        hidden=ctx.attrs.deps + ctx.attrs.srcs
+    )
     args_file = ctx.actions.write("args.txt", run_cmd_args)
 
     return inject_test_run_info(
@@ -1392,14 +1392,14 @@ def graphql_codegen_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
         "--package-dir",
         cmd_args([build_context.workspace_root, ctx.label.package], delimiter = "/"),
         "--config",
-        ctx.attrs.config
+        ctx.attrs.config,
+        hidden=ctx.attrs.srcs
     )
     for schema in ctx.attrs.schemas:
         cmd.add(
             "--schema",
             cmd_args(schema),
         )
-    cmd.hidden([ctx.attrs.srcs])
     cmd.add(out.as_output())
 
     ctx.actions.run(cmd, category = "codegen")

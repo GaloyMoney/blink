@@ -75,6 +75,7 @@ def find_with_vswhere_exe():
             "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
             "-format",
             "json",
+            "-utf8",
             "-nologo",
         ],
         encoding="utf-8",
@@ -189,7 +190,7 @@ def get_sdk10_dir():
     windows_sdk_dir = os.environ.get("WindowsSdkDir")
     windows_sdk_version = os.environ.get("WindowsSDKVersion")
     if windows_sdk_dir is not None and windows_sdk_version is not None:
-        return windows_sdk_dir, windows_sdk_version.removesuffix("\\")
+        return Path(windows_sdk_dir), windows_sdk_version.removesuffix("\\")
 
     registry = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
     key_name = "SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v10.0"
@@ -309,7 +310,7 @@ def main():
         cl_exe, cvtres_exe, lib_exe, ml64_exe, link_exe = (
             find_in_path(exe) for exe in VC_EXE_NAMES
         )
-        rc_exe = find_in_path("rc.exe", optional=True)
+        rc_exe = find_in_path("rc.exe", is_optional=True)
     elif "EWDKDIR" in os.environ:
         cl_exe, cvtres_exe, lib_exe, ml64_exe, link_exe, rc_exe = find_with_ewdk(
             Path(os.environ["EWDKDIR"])

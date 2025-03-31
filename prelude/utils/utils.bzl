@@ -12,6 +12,12 @@ load("@prelude//utils:expect.bzl", "expect")
 def value_or(x: [None, typing.Any], default: typing.Any) -> typing.Any:
     return default if x == None else x
 
+def values_or(*xs: typing.Any | None) -> typing.Any | None:
+    for x in xs:
+        if x != None:
+            return x
+    return None
+
 # Flatten a list of lists into a list
 def flatten(xss: list[list[typing.Any]]) -> list[typing.Any]:
     return [x for xs in xss for x in xs]
@@ -50,9 +56,6 @@ def from_named_set(srcs: [dict[str, Artifact | Dependency], list[Artifact | Depe
 def map_idx(key: typing.Any, vals: list[typing.Any]) -> list[typing.Any]:
     return [x[key] for x in vals]
 
-def filter_idx(key: typing.Any, vals: list[typing.Any]) -> list[typing.Any]:
-    return [x for x in vals if key in x]
-
 def filter_and_map_idx(key: typing.Any, vals: list[typing.Any]) -> list[typing.Any]:
     return [x[key] for x in vals if key in x]
 
@@ -63,7 +66,7 @@ def idx(x: [typing.Any, None], key: typing.Any) -> [typing.Any, None]:
 def dedupe_by_value(vals: list[typing.Any]) -> list[typing.Any]:
     return {val: None for val in vals}.keys()
 
-def map_val(func: typing.Callable, val: [typing.Any, None]) -> [typing.Any, None]:
+def map_val(func: typing.Callable[[typing.Any], typing.Any], val: [typing.Any, None]) -> [typing.Any, None]:
     """
     If `val` if `None`, return `None`, else apply `func` to `val` and return the
     result.

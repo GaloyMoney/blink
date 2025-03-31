@@ -16,6 +16,7 @@ load(
     "@prelude//cxx:cxx.bzl",
     "get_auto_link_group_specs",
 )
+load("@prelude//cxx:cxx_context.bzl", "get_cxx_toolchain_info")
 load(
     "@prelude//cxx:cxx_library_utility.bzl",
     "cxx_is_gnu",
@@ -23,7 +24,6 @@ load(
 load("@prelude//cxx:cxx_toolchain_types.bzl", "PicBehavior")
 load(
     "@prelude//cxx:link_groups.bzl",
-    "LinkGroupInfo",  # @unused Used as a type
     "LinkGroupLinkInfo",  # @unused Used as a type
     "create_link_groups",
     "get_filtered_labels_to_links_map",
@@ -32,6 +32,16 @@ load(
     "get_link_group",
     "get_link_group_info",
     "get_link_group_preferred_linkage",
+    "get_public_link_group_nodes",
+)
+load(
+    "@prelude//cxx:link_groups_types.bzl",
+    "LinkGroupInfo",  # @unused Used as a type
+)
+load(
+    "@prelude//cxx:linker.bzl",
+    "get_default_shared_library_name",
+    "get_shared_library_name_for_param",
 )
 load(
     "@prelude//linking:link_groups.bzl",
@@ -40,9 +50,9 @@ load(
 )
 load(
     "@prelude//linking:link_info.bzl",
+    "LibOutputStyle",
     "LinkInfo",
     "LinkStrategy",
-    "Linkage",  # @unused Used as a type
     "MergedLinkInfo",
     "get_link_args_for_strategy",
     "unpack_external_debug_info",
@@ -58,21 +68,35 @@ load(
     "SharedLibraryInfo",
 )
 load(
+    "@prelude//linking:types.bzl",
+    "Linkage",  # @unused Used as a type
+)
+load(
+    "@prelude//utils:type_defs.bzl",
+    "is_dict",
+    "is_string",
+)
+load(
+    ":build_params.bzl",
+    "MetadataKind",  # @unused Used as a type
+)
+load(
     ":context.bzl",
     "CrateName",  # @unused Used as a type
     "DepCollectionContext",  # @unused Used as a type
 )
-load(":rust_toolchain.bzl", "PanicRuntime")
+load(":rust_toolchain.bzl", "PanicRuntime", "RustToolchainInfo")
 
 # Link strategy for targets which do not set an explicit `link_style` attribute.
+#
+# These values are also used as the defaults for check/clippy subtargets on
+# libraries, and are the only way in which metadata-fast output can be built.
+#
+# Internally at Meta, these are a good choice for a default because they allow
+# sharing work between check builds and dev mode builds, which have shared link
+# strategy, and so consume their dependencies as `static_pic`.
 DEFAULT_STATIC_LINK_STRATEGY = LinkStrategy("static_pic")
-
-# Override dylib crates to static_pic, so that Rust code is always
-# statically linked.
-# In v1 we always linked Rust deps statically, even for "shared" link style
-# That shouldn't be necessary, but fully shared needs some more debugging,
-# so default to v1 behaviour. (Should be controlled with the `rust.force_rlib` option)
-FORCE_RLIB = True
+DEFAULT_STATIC_LIB_OUTPUT_STYLE = LibOutputStyle("pic_archive")
 
 RustProcMacroPlugin = plugins.kind()
 
@@ -86,22 +110,16 @@ RustProcMacroMarker = provider(fields = {
 
 # Information which is keyed on link_style
 RustLinkStrategyInfo = record(
-    # Path to library or binary
-    rlib = field(Artifact),
+    # Path to the rlib, rmeta, dylib, etc.
+    outputs = field(dict[MetadataKind, Artifact]),
     # Transitive dependencies which are relevant to the consumer. For crate types which do not
     # propagate their deps (specifically proc macros), this set is empty
     # This does not include the proc macros, which are passed separately in `RustLinkInfo`
-    transitive_deps = field(dict[Artifact, CrateName]),
-
-    # Path for library metadata (used for check or pipelining)
-    rmeta = field(Artifact),
-    # Transitive rmeta deps. This is the same dict as `transitive_deps`, except that it has the
-    # rmeta and not the rlib artifact
-    transitive_rmeta_deps = field(dict[Artifact, CrateName]),
+    transitive_deps = field(dict[MetadataKind, dict[Artifact, CrateName]]),
     transitive_proc_macro_deps = field(dict[RustProcMacroMarker, ()]),
 
     # Path to PDB file with Windows debug data.
-    pdb = field([Artifact, None]),
+    pdb = field(Artifact | None),
     # Debug info which is referenced -- but not included -- by the linkable rlib.
     external_debug_info = field(ArtifactTSet),
 )
@@ -114,11 +132,28 @@ RustLinkInfo = provider(
         "crate": CrateName,
         # strategies - information about each LinkStrategy as RustLinkStrategyInfo
         "strategies": dict[LinkStrategy, RustLinkStrategyInfo],
-        # Rust interacts with the native link graph in a non-standard way. Specifically, imagine we
-        # have a Rust library `:B` with its only one dependency `:A`, another Rust library. The Rust
-        # rules give Rust -> Rust dependencies special treatment, and as a result, the
-        # `MergedLinkInfo` provided from `:B` is not a "superset" of the `MergedLinkInfo` provided
-        # from `:A` (concrete differences discussed below).
+        # Rust interacts with the native link graph in a non-standard way.
+        #
+        # The first difference is in the re-export behavior of Rust compared to C++. The native link
+        # providers make an assumption that if one node in the link graph references a symbol in
+        # another node in the link graph, there is also a corresponding edge in the link graph.
+        # Specifically, the first node must declare a direct dependency on the second, a transitive
+        # dependency is not enough. For C++, this just means that each library depends in the link
+        # graph on its direct deps and their exported deps.
+        #
+        # For Rust, the situation is different. Because of re-exports and generics causing delayed
+        # codegen, the generated object files for a Rust library can generate symbol references to
+        # any of the library's transitive Rust dependencies, as well as to the immediate C++
+        # dependencies of those libraries. So to account for that, each Rust library reports direct
+        # dependencies on all of those libraries in the link graph. The `merged_link_infos` and
+        # `linkable_graphs` lists are the providers from all of those libraries.
+        #
+        # The second difference is unique to the case where `advanced_unstable_linking` is not set
+        # on the toolchain. Imagine we have a Rust library `:B` with its only one dependency `:A`,
+        # another Rust library. The Rust rules give Rust -> Rust dependencies special treatment in
+        # the non-`advanced_unstable_linking` case. As a result, the `MergedLinkInfo` provided from
+        # `:B` is not a "superset" of the `MergedLinkInfo` provided from `:A` (concrete differences
+        # discussed below).
         #
         # This distinction is implemented by effectively having each Rust library provide two sets
         # of link providers. The first is the link providers used across Rust -> Rust dependency
@@ -127,27 +162,18 @@ RustLinkInfo = provider(
         # is a superset of the first, that is it includes anything that the first link providers
         # added.
         #
-        # The way in which the native link providers and Rust link providers differ depends on
-        # whether `advanced_unstable_linking` is set on the toolchain.
+        # The concrete difference is that the Rust `MergedLinkInfo` provided by `:A` is only the
+        # result of merging the `MergedLinkInfo`s from `:A`'s deps, and does not contain anything
+        # about `:A`. Instead, when `:B` produces the native `MergedLinkInfo`, it will add a single
+        # static library that bundles all transitive Rust deps, including `:A` (and similarly for
+        # the DSO case).
         #
-        #  * Without `advanced_unstable_linking`, the Rust `MergedLinkInfo` provided by `:A` is only
-        #    the result of merging the `MergedLinkInfo`s from `:A`'s deps, and does not contain
-        #    anything about `:A`. Instead, when `:B` produces the native `MergedLinkInfo`, it will
-        #    add a single static library that bundles all transitive Rust deps, including `:A` (and
-        #    similarly for the DSO case).
-        #  * With `advanced_unstable_linking`, the Rust `MergedLinkInfo` provided by a `:A` does
-        #    include a linkable from `:A`, however that linkable is always the rlib (a static
-        #    library), regardless of `:A`'s preferred linkage or the link strategy. This matches the
-        #    `FORCE_RLIB` behavior, in which Rust -> Rust dependency edges are always statically
-        #    linked. The native link provider then depends on that, and only adds a linkable for the
-        #    `shared_lib` case.
-        "merged_link_info": MergedLinkInfo,
-        "shared_libs": SharedLibraryInfo,
-        # Because of the weird representation of `LinkableGraph`, there is no
-        # correct way to merge multiple linkable graphs without adding a new
-        # node at the same time. So we store a list to be able to depend on more
-        # than one
+        # With `advanced_unstable_linkin`, Rust libraries essentially behave just like C++
+        # libraries in the link graph, with the handling of transitive dependencies being the only
+        # difference.
+        "merged_link_infos": dict[ConfiguredTargetLabel, MergedLinkInfo],
         "linkable_graphs": list[LinkableGraph],
+        "shared_libs": SharedLibraryInfo,
         # LinkGroupLibInfo intentionally omitted because the Rust -> Rust version
         # never needs to be different from the Rust -> native version
         #
@@ -163,14 +189,14 @@ RustLinkInfo = provider(
     },
 )
 
-def _adjust_link_strategy_for_rust_dependencies(dep_link_strategy: LinkStrategy) -> LinkStrategy:
-    if FORCE_RLIB and dep_link_strategy == LinkStrategy("shared"):
+def _adjust_link_strategy_for_rust_dependencies(toolchain_info: RustToolchainInfo, dep_link_strategy: LinkStrategy) -> LinkStrategy:
+    if dep_link_strategy == LinkStrategy("shared") and not toolchain_info.advanced_unstable_linking:
         return DEFAULT_STATIC_LINK_STRATEGY
     else:
         return dep_link_strategy
 
-def strategy_info(info: RustLinkInfo, dep_link_strategy: LinkStrategy) -> RustLinkStrategyInfo:
-    rust_dep_link_strategy = _adjust_link_strategy_for_rust_dependencies(dep_link_strategy)
+def strategy_info(toolchain_info: RustToolchainInfo, info: RustLinkInfo, dep_link_strategy: LinkStrategy) -> RustLinkStrategyInfo:
+    rust_dep_link_strategy = _adjust_link_strategy_for_rust_dependencies(toolchain_info, dep_link_strategy)
 
     return info.strategies[rust_dep_link_strategy]
 
@@ -179,7 +205,7 @@ RustOrNativeDependency = record(
     # The actual dependency
     dep = field(Dependency),
     # The local name, if any (for `named_deps`)
-    name = field([None, str]),
+    name = field(None | str | ResolvedStringWithMacros),
     # Any flags for the dependency (`flagged_deps`), which are passed on to rustc.
     flags = field(list[str]),
 )
@@ -187,7 +213,8 @@ RustOrNativeDependency = record(
 RustDependency = record(
     info = field(RustLinkInfo),
     label = field(ConfiguredProvidersLabel),
-    name = field([None, str]),
+    dep = field(Dependency),
+    name = field(None | str | ResolvedStringWithMacros),
     flags = field(list[str]),
     proc_macro_marker = field([None, RustProcMacroMarker]),
 )
@@ -206,34 +233,29 @@ RustCxxLinkGroupInfo = record(
     link_group_libs = field(dict[str, [LinkGroupLib, None]]),
     # mapping from target labels to the corresponding link group link_info
     labels_to_links_map = field(dict[Label, LinkGroupLinkInfo]),
+    # Target to link group name where it was actually linked into
+    targets_consumed_by_link_groups = field(dict[Label, str]),
     # preferred linkage mode for link group libraries
     link_group_preferred_linkage = field(dict[Label, Linkage]),
 )
 
-def enable_link_groups(
-        ctx: AnalysisContext,
-        link_strategy: [LinkStrategy, None],
-        specified_link_strategy: LinkStrategy,
-        is_binary: bool):
-    if not (cxx_is_gnu(ctx) and is_binary):
-        # check minium requirements
+def enable_link_groups(ctx: AnalysisContext):
+    if not cxx_is_gnu(ctx):
+        # check minimum requirements
         return False
-    if link_strategy == LinkStrategy("shared") or link_strategy != specified_link_strategy:
-        # check whether we should run link groups analysis for the given link strategy
-        return False
-
-    # check whether link groups is enabled
     return ctx.attrs.auto_link_groups and ctx.attrs.link_group_map
 
 # Returns all first-order dependencies.
 def _do_resolve_deps(
         deps: list[Dependency],
-        named_deps: dict[str, Dependency],
+        named_deps: dict[str, Dependency] | list[(ResolvedStringWithMacros, Dependency)],
         flagged_deps: list[(Dependency, list[str])] = []) -> list[RustOrNativeDependency]:
+    named_deps_items = named_deps.items() if is_dict(named_deps) else named_deps
+
     return [
         RustOrNativeDependency(name = name, dep = dep, flags = flags)
         for name, dep, flags in [(None, dep, []) for dep in deps] +
-                                [(name, dep, []) for name, dep in named_deps.items()] +
+                                [(name, dep, []) for name, dep in named_deps_items] +
                                 [(None, dep, flags) for dep, flags in flagged_deps]
     ]
 
@@ -294,17 +316,15 @@ def gather_explicit_sysroot_deps(dep_ctx: DepCollectionContext) -> list[RustOrNa
 def resolve_deps(
         ctx: AnalysisContext,
         dep_ctx: DepCollectionContext) -> list[RustOrNativeDependency]:
-    # The `getattr`s are needed for when we're operating on
-    # `prebuilt_rust_library` rules, which don't have those attrs.
     dependencies = _do_resolve_deps(
         deps = ctx.attrs.deps,
-        named_deps = getattr(ctx.attrs, "named_deps", {}),
-        flagged_deps = getattr(ctx.attrs, "flagged_deps", []),
+        named_deps = ctx.attrs.named_deps,
+        flagged_deps = ctx.attrs.flagged_deps,
     )
 
     if dep_ctx.include_doc_deps:
         dependencies.extend(_do_resolve_deps(
-            deps = ctx.attrs.doc_deps,
+            deps = getattr(ctx.attrs, "doc_deps", []),
             named_deps = getattr(ctx.attrs, "doc_named_deps", {}),
         ))
 
@@ -331,6 +351,7 @@ def resolve_rust_deps_inner(
         rust_deps.append(RustDependency(
             info = info,
             label = label,
+            dep = dep.dep,
             name = dep.name,
             flags = dep.flags,
             proc_macro_marker = proc_macro_marker,
@@ -377,9 +398,13 @@ def inherited_exported_link_deps(ctx: AnalysisContext, dep_ctx: DepCollectionCon
     deps = {}
     for dep in _native_link_dependencies(ctx, dep_ctx):
         deps[dep.label] = dep
-    for info in _rust_non_proc_macro_link_infos(ctx, dep_ctx):
-        for dep in info.exported_link_deps:
+    for dep in resolve_rust_deps(ctx, dep_ctx):
+        if dep.proc_macro_marker != None:
+            continue
+
+        for dep in dep.info.exported_link_deps:
             deps[dep.label] = dep
+
     return deps.values()
 
 def inherited_rust_cxx_link_group_info(
@@ -411,19 +436,27 @@ def inherited_rust_cxx_link_group_info(
             # handle labels that are mutated by version alias
             executable_deps.append(g.nodes.value.label)
 
+    public_link_group_nodes = get_public_link_group_nodes(
+        linkable_graph_node_map,
+        link_group_mappings,
+        executable_deps,
+        link_group,
+    )
+
     linked_link_groups = create_link_groups(
         ctx = ctx,
         link_groups = link_groups,
+        link_strategy = link_strategy,
         link_group_mappings = link_group_mappings,
         link_group_preferred_linkage = link_group_preferred_linkage,
         executable_deps = executable_deps,
         linker_flags = [],
         link_group_specs = auto_link_group_specs,
-        root_link_group = link_group,
         linkable_graph_node_map = linkable_graph_node_map,
         other_roots = [],
         prefer_stripped_objects = False,  # Does Rust ever use stripped objects?
         anonymous = ctx.attrs.anonymous_link_groups,
+        public_nodes = public_link_group_nodes,
     )
 
     auto_link_groups = {}
@@ -434,7 +467,8 @@ def inherited_rust_cxx_link_group_info(
         if linked_link_group.library != None:
             link_group_libs[name] = linked_link_group.library
 
-    labels_to_links_map = get_filtered_labels_to_links_map(
+    labels_to_links = get_filtered_labels_to_links_map(
+        public_link_group_nodes,
         linkable_graph_node_map,
         link_group,
         link_groups,
@@ -453,23 +487,28 @@ def inherited_rust_cxx_link_group_info(
     )
 
     return RustCxxLinkGroupInfo(
-        filtered_links = get_filtered_links(labels_to_links_map),
+        filtered_links = get_filtered_links(labels_to_links.map),
         symbol_files_info = LinkInfo(
             pre_flags = linked_link_groups.symbol_ldflags,
         ),
-        filtered_targets = get_filtered_targets(labels_to_links_map),
+        filtered_targets = get_filtered_targets(labels_to_links.map),
         link_group_info = link_group_info,
         link_group_libs = link_group_libs,
-        labels_to_links_map = labels_to_links_map,
+        labels_to_links_map = labels_to_links.map,
+        targets_consumed_by_link_groups = linked_link_groups.targets_consumed_by_link_groups,
         link_group_preferred_linkage = link_group_preferred_linkage,
     )
 
 def inherited_merged_link_infos(
         ctx: AnalysisContext,
-        dep_ctx: DepCollectionContext) -> list[MergedLinkInfo]:
-    infos = []
-    infos.extend([d[MergedLinkInfo] for d in _native_link_dependencies(ctx, dep_ctx)])
-    infos.extend([d.merged_link_info for d in _rust_non_proc_macro_link_infos(ctx, dep_ctx) if d.merged_link_info])
+        dep_ctx: DepCollectionContext) -> dict[ConfiguredTargetLabel, MergedLinkInfo]:
+    infos = {}
+    for d in _native_link_dependencies(ctx, dep_ctx):
+        g = d.get(MergedLinkInfo)
+        if g:
+            infos[d.label.configured_target()] = g
+    for info in _rust_non_proc_macro_link_infos(ctx, dep_ctx):
+        infos.update(info.merged_link_infos)
     return infos
 
 def inherited_shared_libs(
@@ -504,20 +543,22 @@ def inherited_rust_external_debug_info(
         ctx: AnalysisContext,
         dep_ctx: DepCollectionContext,
         link_strategy: LinkStrategy) -> list[ArtifactTSet]:
-    return [strategy_info(d.info, link_strategy).external_debug_info for d in resolve_rust_deps(ctx, dep_ctx)]
+    toolchain_info = ctx.attrs._rust_toolchain[RustToolchainInfo]
+    return [strategy_info(toolchain_info, d.info, link_strategy).external_debug_info for d in resolve_rust_deps(ctx, dep_ctx)]
 
 def inherited_external_debug_info(
         ctx: AnalysisContext,
         dep_ctx: DepCollectionContext,
-        dwo_output_directory: [Artifact, None],
+        dwo_output_directory: Artifact | None,
         dep_link_strategy: LinkStrategy) -> ArtifactTSet:
     inherited_debug_infos = []
     inherited_link_infos = []
+    toolchain_info = ctx.attrs._rust_toolchain[RustToolchainInfo]
 
     for d in resolve_deps(ctx, dep_ctx):
         if RustLinkInfo in d.dep:
-            inherited_debug_infos.append(strategy_info(d.dep[RustLinkInfo], dep_link_strategy).external_debug_info)
-            inherited_link_infos.append(d.dep[RustLinkInfo].merged_link_info)
+            inherited_debug_infos.append(strategy_info(toolchain_info, d.dep[RustLinkInfo], dep_link_strategy).external_debug_info)
+            inherited_link_infos.extend(d.dep[RustLinkInfo].merged_link_infos.values())
         elif MergedLinkInfo in d.dep:
             inherited_link_infos.append(d.dep[MergedLinkInfo])
 
@@ -531,8 +572,8 @@ def inherited_external_debug_info(
         children = inherited_debug_infos,
     )
 
-def normalize_crate(label: str) -> str:
-    return label.replace("-", "_")
+def normalize_crate(label: str | ResolvedStringWithMacros) -> str | ResolvedStringWithMacros:
+    return label.replace("-", "_") if is_string(label) else label
 
 def attr_simple_crate_for_filenames(ctx: AnalysisContext) -> str:
     """
@@ -565,6 +606,15 @@ def attr_crate(ctx: AnalysisContext) -> CrateName:
     if dynamic:
         dynamic = dynamic.get(DefaultInfo).default_outputs[0]
     return CrateName(
-        simple = ctx.attrs.crate or normalize_crate(ctx.label.name),
+        simple = normalize_crate(ctx.attrs.crate or ctx.label.name),
         dynamic = dynamic,
     )
+
+def attr_soname(ctx: AnalysisContext) -> str:
+    """
+    Get the shared library name to set for the given rust library.
+    """
+    linker_info = get_cxx_toolchain_info(ctx).linker_info
+    if ctx.attrs.soname != None:
+        return get_shared_library_name_for_param(linker_info, ctx.attrs.soname)
+    return get_default_shared_library_name(linker_info, ctx.label)

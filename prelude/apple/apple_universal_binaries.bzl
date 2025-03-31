@@ -11,20 +11,42 @@ load(":apple_bundle_types.bzl", "AppleBundleBinaryOutput")
 load(":apple_toolchain_types.bzl", "AppleToolsInfo")
 load(":debug.bzl", "AppleDebuggableInfo")
 
+def get_universal_binary_name(ctx: AnalysisContext) -> str:
+    if ctx.attrs.executable_name:
+        return ctx.attrs.executable_name
+    binary_deps = ctx.attrs.executable
+
+    # Because `binary_deps` is a split transition of the same target,
+    # the filenames would be identical, so we just pick the first one.
+    first_binary_dep = binary_deps.values()[0]
+    first_binary_artifact = first_binary_dep[DefaultInfo].default_outputs[0]
+
+    # The universal executable should have the same name as the base/thin ones
+    return first_binary_artifact.short_path
+
+def lipo_binaries(
+        ctx: AnalysisContext,
+        binary_deps: dict[str, Dependency],
+        binary_name: [str, None],
+        lipo: RunInfo) -> Artifact:
+    binary_output = ctx.actions.declare_output("UniversalBinary" if binary_name == None else binary_name, dir = False)
+    lipo_cmd = [lipo]
+
+    for (_, binary) in binary_deps.items():
+        lipo_cmd.append(cmd_args(binary[DefaultInfo].default_outputs[0]))
+
+    lipo_cmd.extend(["-create", "-output", binary_output.as_output()])
+    ctx.actions.run(cmd_args(lipo_cmd), category = "lipo")
+
+    return binary_output
+
 def create_universal_binary(
         ctx: AnalysisContext,
         binary_deps: dict[str, Dependency],
         binary_name: [str, None],
         dsym_bundle_name: [str, None],
         split_arch_dsym: bool) -> AppleBundleBinaryOutput:
-    binary_output = ctx.actions.declare_output("UniversalBinary" if binary_name == None else binary_name, dir = False)
-    lipo_cmd = cmd_args([ctx.attrs._apple_toolchain[AppleToolchainInfo].lipo])
-
-    for (_, binary) in binary_deps.items():
-        lipo_cmd.add(cmd_args(binary[DefaultInfo].default_outputs[0]))
-
-    lipo_cmd.add(["-create", "-output", binary_output.as_output()])
-    ctx.actions.run(lipo_cmd, category = "lipo")
+    binary_output = lipo_binaries(ctx, binary_deps, binary_name, ctx.attrs._apple_toolchain[AppleToolchainInfo].lipo)
 
     # Universal binaries can be created out of plain `cxx_binary()` / `cxx_library()`
     # which lack the `AppleDebuggableInfo` provider.
@@ -34,12 +56,12 @@ def create_universal_binary(
     dsym_output = None
     if split_arch_dsym and contains_full_debuggable_info:
         dsym_output = ctx.actions.declare_output("UniversalBinary.dSYM" if dsym_bundle_name == None else dsym_bundle_name, dir = True)
-        dsym_combine_cmd = cmd_args([ctx.attrs._apple_tools[AppleToolsInfo].split_arch_combine_dsym_bundles_tool])
+        dsym_combine_cmd = [ctx.attrs._apple_tools[AppleToolsInfo].split_arch_combine_dsym_bundles_tool]
 
         for (arch, binary) in binary_deps.items():
-            dsym_combine_cmd.add(["--dsym-bundle", cmd_args(binary.get(AppleDebuggableInfo).dsyms[0]), "--arch", arch])
-        dsym_combine_cmd.add(["--output", dsym_output.as_output()])
-        ctx.actions.run(dsym_combine_cmd, category = "universal_binaries_dsym")
+            dsym_combine_cmd.extend(["--dsym-bundle", cmd_args(binary.get(AppleDebuggableInfo).dsyms[0]), "--arch", arch])
+        dsym_combine_cmd.extend(["--output", dsym_output.as_output()])
+        ctx.actions.run(cmd_args(dsym_combine_cmd), category = "universal_binaries_dsym")
 
     all_debug_info_tsets = []
     if contains_full_debuggable_info:

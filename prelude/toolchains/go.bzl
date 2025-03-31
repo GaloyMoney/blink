@@ -6,9 +6,10 @@
 # of this source tree.
 
 load("@prelude//go:toolchain.bzl", "GoToolchainInfo")
+load("@prelude//go_bootstrap:go_bootstrap.bzl", "GoBootstrapToolchainInfo")
 load("@prelude//utils:cmd_script.bzl", "ScriptOs", "cmd_script")
 
-def _system_go_toolchain_impl(ctx):
+def go_platform() -> (str, str):
     arch = host_info().arch
     if arch.is_aarch64:
         go_arch = "arm64"
@@ -27,8 +28,42 @@ def _system_go_toolchain_impl(ctx):
     else:
         fail("Unsupported go os: {}".format(os))
 
-    script_os = ScriptOs("windows" if os.is_windows else "unix")
-    go = "go.exe" if os.is_windows else "go"
+    return go_os, go_arch
+
+def _system_go_bootstrap_toolchain_impl(ctx):
+    go_os, go_arch = go_platform()
+
+    script_os = ScriptOs("windows" if go_os == "windows" else "unix")
+    go = "go.exe" if go_os == "windows" else "go"
+
+    return [
+        DefaultInfo(),
+        GoBootstrapToolchainInfo(
+            env_go_arch = go_arch,
+            env_go_os = go_os,
+            go = RunInfo(cmd_script(ctx, "go", cmd_args(go), script_os)),
+            go_wrapper = ctx.attrs.go_wrapper[RunInfo],
+        ),
+    ]
+
+system_go_bootstrap_toolchain = rule(
+    impl = _system_go_bootstrap_toolchain_impl,
+    doc = """Example system go toolchain rules (WIP). Usage:
+  system_go_bootstrap_toolchain(
+      name = "go_bootstrap",
+      visibility = ["PUBLIC"],
+  )""",
+    attrs = {
+        "go_wrapper": attrs.default_only(attrs.dep(providers = [RunInfo], default = "prelude//go/tools:go_wrapper_py")),
+    },
+    is_toolchain_rule = True,
+)
+
+def _system_go_toolchain_impl(ctx):
+    go_os, go_arch = go_platform()
+
+    script_os = ScriptOs("windows" if go_os == "windows" else "unix")
+    go = "go.exe" if go_os == "windows" else "go"
 
     return [
         DefaultInfo(),
@@ -36,16 +71,13 @@ def _system_go_toolchain_impl(ctx):
             assembler = RunInfo(cmd_script(ctx, "asm", cmd_args(go, "tool", "asm"), script_os)),
             cgo = RunInfo(cmd_script(ctx, "cgo", cmd_args(go, "tool", "cgo"), script_os)),
             cgo_wrapper = ctx.attrs.cgo_wrapper[RunInfo],
-            compile_wrapper = ctx.attrs.compile_wrapper[RunInfo],
             concat_files = ctx.attrs.concat_files[RunInfo],
             compiler = RunInfo(cmd_script(ctx, "compile", cmd_args(go, "tool", "compile"), script_os)),
             cover = RunInfo(cmd_script(ctx, "cover", cmd_args(go, "tool", "cover"), script_os)),
-            cover_srcs = ctx.attrs.cover_srcs[RunInfo],
-            cxx_toolchain_for_linking = None,
+            default_cgo_enabled = False,
             env_go_arch = go_arch,
             env_go_os = go_os,
             external_linker_flags = [],
-            filter_srcs = ctx.attrs.filter_srcs[RunInfo],
             gen_stdlib_importcfg = ctx.attrs.gen_stdlib_importcfg[RunInfo],
             go = RunInfo(cmd_script(ctx, "go", cmd_args(go), script_os)),
             go_wrapper = ctx.attrs.go_wrapper[RunInfo],
@@ -67,12 +99,9 @@ system_go_toolchain = rule(
   )""",
     attrs = {
         "cgo_wrapper": attrs.default_only(attrs.dep(providers = [RunInfo], default = "prelude//go/tools:cgo_wrapper")),
-        "compile_wrapper": attrs.default_only(attrs.dep(providers = [RunInfo], default = "prelude//go/tools:compile_wrapper")),
-        "concat_files": attrs.default_only(attrs.dep(providers = [RunInfo], default = "prelude//go/tools:concat_files")),
-        "cover_srcs": attrs.default_only(attrs.dep(providers = [RunInfo], default = "prelude//go/tools:cover_srcs")),
-        "filter_srcs": attrs.default_only(attrs.dep(providers = [RunInfo], default = "prelude//go/tools:filter_srcs")),
+        "concat_files": attrs.default_only(attrs.dep(providers = [RunInfo], default = "prelude//go_bootstrap/tools:go_concat_files")),
         "gen_stdlib_importcfg": attrs.default_only(attrs.dep(providers = [RunInfo], default = "prelude//go/tools:gen_stdlib_importcfg")),
-        "go_wrapper": attrs.default_only(attrs.dep(providers = [RunInfo], default = "prelude//go/tools:go_wrapper")),
+        "go_wrapper": attrs.default_only(attrs.dep(providers = [RunInfo], default = "prelude//go_bootstrap/tools:go_go_wrapper")),
     },
     is_toolchain_rule = True,
 )

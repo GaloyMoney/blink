@@ -20,13 +20,15 @@ def _impl(ctx: AnalysisContext) -> list[Provider]:
         [
             cmd_args(output, format = "mkdir -p {}"),
             cmd_args(output, format = "cd {}"),
-            cmd_args(archive, format = "tar -xzf {}").relative_to(output),
+            cmd_args(archive, format = "tar -xzf {}", relative_to = output),
         ],
         is_executable = True,
         allow_args = True,
     )
-    ctx.actions.run(cmd_args(["/bin/sh", script])
-        .hidden([archive, output.as_output()]), category = "extract_archive")
+    ctx.actions.run(
+        cmd_args(["/bin/sh", script], hidden = [archive, output.as_output()]),
+        category = "extract_archive",
+    )
 
     return [DefaultInfo(default_output = output)]
 
