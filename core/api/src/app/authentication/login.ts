@@ -14,6 +14,7 @@ import {
   IdentifierNotFoundError,
   WaitingDataTelegramPassportError,
   InvalidNonceTelegramPassportError,
+  InvalidNoncePhoneTelegramPassportError,
 } from "@/domain/authentication/errors"
 
 import {
@@ -291,8 +292,8 @@ export const loginTelegramPassportNonceWithPhone = async ({
   }
 
   const loginKey = telegramPassportLoginKey(nonce)
-  const validLoginNonce = await redisCache.get<PhoneNumber>({ key: loginKey })
-  if (validLoginNonce instanceof Error) {
+  const phoneNumberFromNonce = await redisCache.get<PhoneNumber>({ key: loginKey })
+  if (phoneNumberFromNonce instanceof Error) {
     // if it is valid telegram has not sent data to the webhook
     const requestKey = telegramPassportRequestKey(nonce)
     const validRequestNonce = await redisCache.get<PhoneNumber>({ key: requestKey })
@@ -300,6 +301,10 @@ export const loginTelegramPassportNonceWithPhone = async ({
       return new InvalidNonceTelegramPassportError(nonce)
 
     return new WaitingDataTelegramPassportError(nonce)
+  }
+
+  if (phoneNumberFromNonce !== phone) {
+    return new InvalidNoncePhoneTelegramPassportError(nonce)
   }
 
   // invalidate login with the same nonce

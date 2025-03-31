@@ -82,11 +82,15 @@ export const getCallbackServiceConfig = (): SvixConfig => {
 
 export const getBriaConfig = getBriaPartialConfigFromYaml
 
+export const isTelegramPassportEnabled = () =>
+  !!env.TELEGRAM_BOT_API_TOKEN && !!env.TELEGRAM_PASSPORT_PRIVATE_KEY
+
 export const COMMITHASH = env.COMMITHASH
 export const HELMREVISION = env.HELMREVISION
 export const LOGLEVEL = env.LOGLEVEL
 export const UNSECURE_DEFAULT_LOGIN_CODE = env.UNSECURE_DEFAULT_LOGIN_CODE
 export const UNSECURE_IP_FROM_REQUEST_OBJECT = env.UNSECURE_IP_FROM_REQUEST_OBJECT
+export const TELEGRAM_BOT_API_TOKEN = env.TELEGRAM_BOT_API_TOKEN
 export const TELEGRAM_PASSPORT_PRIVATE_KEY = env.TELEGRAM_PASSPORT_PRIVATE_KEY
 export const EXPORTER_PORT = env.EXPORTER_PORT
 export const TRIGGER_PORT = env.TRIGGER_PORT

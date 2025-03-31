@@ -1,5 +1,3 @@
-import { randomUUID } from "crypto"
-
 import { RateLimitConfig } from "@/domain/rate-limit"
 import { checkedToPhoneNumber } from "@/domain/users"
 import { RateLimiterExceededError } from "@/domain/rate-limit/errors"
@@ -7,7 +5,10 @@ import { RateLimiterExceededError } from "@/domain/rate-limit/errors"
 import { RedisCacheService } from "@/services/cache"
 import { consumeLimiter } from "@/services/rate-limit"
 import { SECS_PER_10_MINS } from "@/config"
-import { telegramPassportRequestKey } from "@/domain/authentication"
+import {
+  createTelegramPassportNonce,
+  telegramPassportRequestKey,
+} from "@/domain/authentication"
 
 const redisCache = RedisCacheService()
 
@@ -28,7 +29,7 @@ export const requestTelegramPassportNonce = async ({
     await checkRequestTelegramPassportNonceAttemptPerPhoneNumberLimits(checkedPhoneNumber)
   if (phoneLimitOk instanceof Error) return phoneLimitOk
 
-  const nonce = randomUUID() as TelegramPassportNonce
+  const nonce = createTelegramPassportNonce()
   const requestKey = telegramPassportRequestKey(nonce)
 
   const result = await redisCache.set<PhoneNumber>({

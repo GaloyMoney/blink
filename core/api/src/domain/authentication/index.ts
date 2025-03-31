@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto"
+
 import { EmailCodeInvalidError } from "./errors"
 
 import { CacheKeys } from "@/domain/cache"
@@ -48,6 +50,10 @@ export const validOneTimeAuthCodeValue = (code: string) => {
     return code as PhoneCode
   }
   return new PhoneCodeInvalidError({ message: "Invalid value for OneTimeAuthCode" })
+}
+
+export const createTelegramPassportNonce = (): TelegramPassportNonce => {
+  return randomUUID() as TelegramPassportNonce
 }
 
 export const checkedToTelegramPassportNonce = (

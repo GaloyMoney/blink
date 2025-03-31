@@ -553,10 +553,12 @@ type AsyncFunctionType = (
 export const wrapAsyncFunctionsToRunInSpan = <F extends object>({
   namespace,
   fns,
+  root,
   spanAttributes,
 }: {
   namespace: string
   fns: F
+  root?: boolean
   spanAttributes?: Attributes
 }): F => {
   const functions: Record<string, FunctionType | AsyncFunctionType> = {}
@@ -569,6 +571,7 @@ export const wrapAsyncFunctionsToRunInSpan = <F extends object>({
         namespace,
         fn: func,
         fnName: fnKey,
+        root,
         spanAttributes,
       })
       continue
@@ -579,6 +582,7 @@ export const wrapAsyncFunctionsToRunInSpan = <F extends object>({
         namespace,
         fn: fns[fn] as AsyncFunctionType,
         fnName: fnKey,
+        root,
         spanAttributes,
       })
       continue

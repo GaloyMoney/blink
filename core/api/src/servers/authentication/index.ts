@@ -1,30 +1,27 @@
+import cors from "cors"
 import basicAuth from "basic-auth"
 import bodyParser from "body-parser"
-import cors from "cors"
 import express, { NextFunction, Request, Response } from "express"
 
-import {
-  loginWithTelegramPassportNonce,
-  requestTelegramPassportNonce,
-} from "./telegram-passport"
+import { telegramPassportRouter } from "./telegram-passport"
 
-import { mapError } from "@/graphql/error-map"
+import { UNSECURE_IP_FROM_REQUEST_OBJECT } from "@/config"
 
 import { Authentication } from "@/app"
 import { registerCaptchaGeetest } from "@/app/captcha"
 
-import { UNSECURE_IP_FROM_REQUEST_OBJECT } from "@/config"
+import { mapError } from "@/graphql/error-map"
 
-import { ErrorLevel, parseErrorMessageFromUnknown } from "@/domain/shared"
-import { parseIps } from "@/domain/accounts-ips"
-import { checkedToEmailCode, validOneTimeAuthCodeValue } from "@/domain/authentication"
 import {
   EmailCodeInvalidError,
   EmailValidationSubmittedTooOftenError,
 } from "@/domain/authentication/errors"
+import { parseIps } from "@/domain/accounts-ips"
 import { UndefinedIPError } from "@/domain/errors"
-import { UserLoginIpRateLimiterExceededError } from "@/domain/rate-limit/errors"
+import { ErrorLevel, parseErrorMessageFromUnknown } from "@/domain/shared"
 import { checkedToEmailAddress, checkedToPhoneNumber } from "@/domain/users"
+import { UserLoginIpRateLimiterExceededError } from "@/domain/rate-limit/errors"
+import { checkedToEmailCode, validOneTimeAuthCodeValue } from "@/domain/authentication"
 
 import {
   checkedToAuthToken,
@@ -375,7 +372,6 @@ authRouter.post("/phone/login", async (req: Request, res: Response) => {
   })
 })
 
-authRouter.post("/telegram-passport/nonce", requestTelegramPassportNonce)
-authRouter.post("/telegram-passport/login", loginWithTelegramPassportNonce)
+authRouter.use("/telegram-passport", telegramPassportRouter)
 
 export default authRouter

@@ -1,6 +1,7 @@
 import { Request, Response } from "express"
 
-import { env } from "@/config/env"
+import { isTelegramPassportEnabled } from "@/config"
+
 import { Authentication } from "@/app"
 import { mapError } from "@/graphql/error-map"
 
@@ -8,7 +9,7 @@ export const requestTelegramPassportNonce = async (req: Request, res: Response) 
   const ip = req.originalIp
   const phone = req.body.phone
 
-  if (!env.TELEGRAM_PASSPORT_PRIVATE_KEY) {
+  if (!isTelegramPassportEnabled()) {
     return res
       .status(400)
       .send({ error: "Telegram passport authentication is not enabled" })
