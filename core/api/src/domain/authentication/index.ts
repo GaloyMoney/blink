@@ -1,5 +1,8 @@
 import { EmailCodeInvalidError } from "./errors"
 
+import { CacheKeys } from "@/domain/cache"
+import { UuidRegex } from "@/domain/shared"
+import { InvalidTelegramPassportNonceError } from "@/domain/errors"
 import { ChannelType, PhoneCodeInvalidError } from "@/domain/phone-provider"
 
 export const getSupportedCountries = ({
@@ -46,3 +49,18 @@ export const validOneTimeAuthCodeValue = (code: string) => {
   }
   return new PhoneCodeInvalidError({ message: "Invalid value for OneTimeAuthCode" })
 }
+
+export const checkedToTelegramPassportNonce = (
+  nonce: string,
+): TelegramPassportNonce | ValidationError => {
+  if (!nonce.match(UuidRegex)) {
+    return new InvalidTelegramPassportNonceError(nonce)
+  }
+  return nonce as TelegramPassportNonce
+}
+
+export const telegramPassportRequestKey = (nonce: TelegramPassportNonce) =>
+  `${CacheKeys.TelegramPassportNonce}:request:${nonce}`
+
+export const telegramPassportLoginKey = (nonce: TelegramPassportNonce) =>
+  `${CacheKeys.TelegramPassportNonce}:login:${nonce}`

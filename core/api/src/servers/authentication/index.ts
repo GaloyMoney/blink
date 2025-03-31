@@ -3,6 +3,11 @@ import bodyParser from "body-parser"
 import cors from "cors"
 import express, { NextFunction, Request, Response } from "express"
 
+import {
+  loginWithTelegramPassportNonce,
+  requestTelegramPassportNonce,
+} from "./telegram-passport"
+
 import { mapError } from "@/graphql/error-map"
 
 import { Authentication } from "@/app"
@@ -369,5 +374,8 @@ authRouter.post("/phone/login", async (req: Request, res: Response) => {
     id,
   })
 })
+
+authRouter.post("/telegram-passport/nonce", requestTelegramPassportNonce)
+authRouter.post("/telegram-passport/login", loginWithTelegramPassportNonce)
 
 export default authRouter

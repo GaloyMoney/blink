@@ -39,6 +39,7 @@ import {
   QuizClaimedTooEarlyError,
   PriceServiceOfflineError,
   OperationRestrictedError,
+  AuthorizationError,
 } from "@/graphql/error"
 import { baseLogger } from "@/services/logger"
 
@@ -251,6 +252,15 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "UserCodeAttemptIpRateLimiterExceededError":
       message =
         "Too many phone code attempts on same network, please wait for a while and try again."
+      return new TooManyRequestError({ message, logger: baseLogger })
+
+    case "TelegramPassportNonceAttemptPhoneRateLimiterExceededError":
+      message = "Too many nonce attempts, please wait for a while and try again."
+      return new TooManyRequestError({ message, logger: baseLogger })
+
+    case "TelegramPassportNonceAttemptIpRateLimiterExceededError":
+      message =
+        "Too many nonce attempts on same network, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
     case "CreateDeviceAccountIpRateLimiterExceededError":
@@ -560,6 +570,15 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = "Invalid channel"
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "InvalidNonceTelegramPassportError":
+      message = `Invalid nonce ${error.message})`
+      return new NotFoundError({ message, logger: baseLogger })
+
+    case "WaitingDataTelegramPassportError":
+      message =
+        "Authorization data from Telegram is still pending. Please wait a few seconds and try again."
+      return new AuthorizationError({ message, logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------
@@ -665,6 +684,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "PhoneCarrierTypeNotAllowedError":
     case "PhoneCountryNotAllowedError":
     case "MissingIPMetadataError":
+    case "InvalidTelegramPassportNonceError":
     case "UndefinedIPError":
     case "UnauthorizedIPMetadataASNError":
     case "InvalidAccountStatusError":

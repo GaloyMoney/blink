@@ -74,6 +74,8 @@ type YamlSchema = {
     requestCodePerEmail: RateLimitInput
     requestCodePerPhoneNumber: RateLimitInput
     requestCodePerIp: RateLimitInput
+    requestTelegramPassportNoncePerPhoneNumber: RateLimitInput
+    requestTelegramPassportNoncePerIp: RateLimitInput
     loginAttemptPerLoginIdentifier: RateLimitInput
     failedLoginAttemptPerIp: RateLimitInput
     invoiceCreateAttempt: RateLimitInput

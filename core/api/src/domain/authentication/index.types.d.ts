@@ -16,6 +16,8 @@ type HashedAuthToken = string & { readonly brand: unique symbol }
 type TotpSecret = string & { readonly brand: unique symbol }
 type TotpCode = string & { readonly brand: unique symbol }
 
+type TelegramPassportNonce = string & { readonly brand: unique symbol }
+
 type IdentityBase = {
   id: UserId
   createdAt: Date
