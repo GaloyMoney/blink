@@ -1964,8 +1964,8 @@ proto.services.bria.v1.CreateProfileRequest.prototype.toObject = function(opt_in
  */
 proto.services.bria.v1.CreateProfileRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    spendingPolicy: (f = msg.getSpendingPolicy()) && proto.services.bria.v1.SpendingPolicy.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+spendingPolicy: (f = msg.getSpendingPolicy()) && proto.services.bria.v1.SpendingPolicy.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -2152,8 +2152,8 @@ proto.services.bria.v1.SpendingPolicy.prototype.toObject = function(opt_includeI
  */
 proto.services.bria.v1.SpendingPolicy.toObject = function(includeInstance, msg) {
   var f, obj = {
-    allowedPayoutAddressesList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
-    maxPayoutSats: jspb.Message.getFieldWithDefault(msg, 2, 0)
+allowedPayoutAddressesList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
+maxPayoutSats: (f = jspb.Message.getField(msg, 2)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -2349,7 +2349,7 @@ proto.services.bria.v1.CreateProfileResponse.prototype.toObject = function(opt_i
  */
 proto.services.bria.v1.CreateProfileResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, "")
+id: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -2479,8 +2479,8 @@ proto.services.bria.v1.UpdateProfileRequest.prototype.toObject = function(opt_in
  */
 proto.services.bria.v1.UpdateProfileRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    spendingPolicy: (f = msg.getSpendingPolicy()) && proto.services.bria.v1.SpendingPolicy.toObject(includeInstance, f)
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+spendingPolicy: (f = msg.getSpendingPolicy()) && proto.services.bria.v1.SpendingPolicy.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -2761,7 +2761,7 @@ proto.services.bria.v1.CreateProfileApiKeyRequest.prototype.toObject = function(
  */
 proto.services.bria.v1.CreateProfileApiKeyRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    profileName: jspb.Message.getFieldWithDefault(msg, 1, "")
+profileName: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -2891,8 +2891,8 @@ proto.services.bria.v1.CreateProfileApiKeyResponse.prototype.toObject = function
  */
 proto.services.bria.v1.CreateProfileApiKeyResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    key: jspb.Message.getFieldWithDefault(msg, 2, "")
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+key: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -3152,9 +3152,9 @@ proto.services.bria.v1.Profile.prototype.toObject = function(opt_includeInstance
  */
 proto.services.bria.v1.Profile.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    name: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    spendingPolicy: (f = msg.getSpendingPolicy()) && proto.services.bria.v1.SpendingPolicy.toObject(includeInstance, f)
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+name: jspb.Message.getFieldWithDefault(msg, 2, ""),
+spendingPolicy: (f = msg.getSpendingPolicy()) && proto.services.bria.v1.SpendingPolicy.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3370,7 +3370,7 @@ proto.services.bria.v1.ListProfilesResponse.prototype.toObject = function(opt_in
  */
 proto.services.bria.v1.ListProfilesResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    profilesList: jspb.Message.toObjectList(msg.getProfilesList(),
+profilesList: jspb.Message.toObjectList(msg.getProfilesList(),
     proto.services.bria.v1.Profile.toObject, includeInstance)
   };
 
@@ -3523,9 +3523,9 @@ proto.services.bria.v1.ImportXpubRequest.prototype.toObject = function(opt_inclu
  */
 proto.services.bria.v1.ImportXpubRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    xpub: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    derivation: jspb.Message.getFieldWithDefault(msg, 3, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+xpub: jspb.Message.getFieldWithDefault(msg, 2, ""),
+derivation: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -3713,7 +3713,7 @@ proto.services.bria.v1.ImportXpubResponse.prototype.toObject = function(opt_incl
  */
 proto.services.bria.v1.ImportXpubResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, "")
+id: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -3869,9 +3869,9 @@ proto.services.bria.v1.SetSignerConfigRequest.prototype.toObject = function(opt_
  */
 proto.services.bria.v1.SetSignerConfigRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    xpubRef: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    lnd: (f = msg.getLnd()) && proto.services.bria.v1.LndSignerConfig.toObject(includeInstance, f),
-    bitcoind: (f = msg.getBitcoind()) && proto.services.bria.v1.BitcoindSignerConfig.toObject(includeInstance, f)
+xpubRef: jspb.Message.getFieldWithDefault(msg, 1, ""),
+lnd: (f = msg.getLnd()) && proto.services.bria.v1.LndSignerConfig.toObject(includeInstance, f),
+bitcoind: (f = msg.getBitcoind()) && proto.services.bria.v1.BitcoindSignerConfig.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -4101,9 +4101,9 @@ proto.services.bria.v1.LndSignerConfig.prototype.toObject = function(opt_include
  */
 proto.services.bria.v1.LndSignerConfig.toObject = function(includeInstance, msg) {
   var f, obj = {
-    endpoint: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    certBase64: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    macaroonBase64: jspb.Message.getFieldWithDefault(msg, 3, "")
+endpoint: jspb.Message.getFieldWithDefault(msg, 1, ""),
+certBase64: jspb.Message.getFieldWithDefault(msg, 2, ""),
+macaroonBase64: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -4291,9 +4291,9 @@ proto.services.bria.v1.BitcoindSignerConfig.prototype.toObject = function(opt_in
  */
 proto.services.bria.v1.BitcoindSignerConfig.toObject = function(includeInstance, msg) {
   var f, obj = {
-    endpoint: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    rpcUser: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    rpcPassword: jspb.Message.getFieldWithDefault(msg, 3, "")
+endpoint: jspb.Message.getFieldWithDefault(msg, 1, ""),
+rpcUser: jspb.Message.getFieldWithDefault(msg, 2, ""),
+rpcPassword: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -4582,9 +4582,9 @@ proto.services.bria.v1.SubmitSignedPsbtRequest.prototype.toObject = function(opt
  */
 proto.services.bria.v1.SubmitSignedPsbtRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    batchId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    xpubRef: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    signedPsbt: jspb.Message.getFieldWithDefault(msg, 3, "")
+batchId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+xpubRef: jspb.Message.getFieldWithDefault(msg, 2, ""),
+signedPsbt: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -4900,9 +4900,9 @@ proto.services.bria.v1.KeychainConfig.prototype.toObject = function(opt_includeI
  */
 proto.services.bria.v1.KeychainConfig.toObject = function(includeInstance, msg) {
   var f, obj = {
-    wpkh: (f = msg.getWpkh()) && proto.services.bria.v1.KeychainConfig.Wpkh.toObject(includeInstance, f),
-    descriptors: (f = msg.getDescriptors()) && proto.services.bria.v1.KeychainConfig.Descriptors.toObject(includeInstance, f),
-    sortedMultisig: (f = msg.getSortedMultisig()) && proto.services.bria.v1.KeychainConfig.SortedMultisig.toObject(includeInstance, f)
+wpkh: (f = msg.getWpkh()) && proto.services.bria.v1.KeychainConfig.Wpkh.toObject(includeInstance, f),
+descriptors: (f = msg.getDescriptors()) && proto.services.bria.v1.KeychainConfig.Descriptors.toObject(includeInstance, f),
+sortedMultisig: (f = msg.getSortedMultisig()) && proto.services.bria.v1.KeychainConfig.SortedMultisig.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -5042,8 +5042,8 @@ proto.services.bria.v1.KeychainConfig.Wpkh.prototype.toObject = function(opt_inc
  */
 proto.services.bria.v1.KeychainConfig.Wpkh.toObject = function(includeInstance, msg) {
   var f, obj = {
-    xpub: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    derivationPath: jspb.Message.getFieldWithDefault(msg, 2, "")
+xpub: jspb.Message.getFieldWithDefault(msg, 1, ""),
+derivationPath: (f = jspb.Message.getField(msg, 2)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -5220,8 +5220,8 @@ proto.services.bria.v1.KeychainConfig.Descriptors.prototype.toObject = function(
  */
 proto.services.bria.v1.KeychainConfig.Descriptors.toObject = function(includeInstance, msg) {
   var f, obj = {
-    external: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    internal: jspb.Message.getFieldWithDefault(msg, 2, "")
+external: jspb.Message.getFieldWithDefault(msg, 1, ""),
+internal: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -5387,8 +5387,8 @@ proto.services.bria.v1.KeychainConfig.SortedMultisig.prototype.toObject = functi
  */
 proto.services.bria.v1.KeychainConfig.SortedMultisig.toObject = function(includeInstance, msg) {
   var f, obj = {
-    xpubsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
-    threshold: jspb.Message.getFieldWithDefault(msg, 2, 0)
+xpubsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
+threshold: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -5677,8 +5677,8 @@ proto.services.bria.v1.CreateWalletRequest.prototype.toObject = function(opt_inc
  */
 proto.services.bria.v1.CreateWalletRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    keychainConfig: (f = msg.getKeychainConfig()) && proto.services.bria.v1.KeychainConfig.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+keychainConfig: (f = msg.getKeychainConfig()) && proto.services.bria.v1.KeychainConfig.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -5865,8 +5865,8 @@ proto.services.bria.v1.CreateWalletResponse.prototype.toObject = function(opt_in
  */
 proto.services.bria.v1.CreateWalletResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    xpubIdsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+xpubIdsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -6152,7 +6152,7 @@ proto.services.bria.v1.ListWalletsResponse.prototype.toObject = function(opt_inc
  */
 proto.services.bria.v1.ListWalletsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    walletsList: jspb.Message.toObjectList(msg.getWalletsList(),
+walletsList: jspb.Message.toObjectList(msg.getWalletsList(),
     proto.services.bria.v1.Wallet.toObject, includeInstance)
   };
 
@@ -6305,9 +6305,9 @@ proto.services.bria.v1.Wallet.prototype.toObject = function(opt_includeInstance)
  */
 proto.services.bria.v1.Wallet.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    name: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    config: (f = msg.getConfig()) && proto.services.bria.v1.WalletConfig.toObject(includeInstance, f)
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+name: jspb.Message.getFieldWithDefault(msg, 2, ""),
+config: (f = msg.getConfig()) && proto.services.bria.v1.WalletConfig.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -6516,8 +6516,8 @@ proto.services.bria.v1.WalletConfig.prototype.toObject = function(opt_includeIns
  */
 proto.services.bria.v1.WalletConfig.toObject = function(includeInstance, msg) {
   var f, obj = {
-    settleIncomeAfterNConfs: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    settleChangeAfterNConfs: jspb.Message.getFieldWithDefault(msg, 2, 0)
+settleIncomeAfterNConfs: jspb.Message.getFieldWithDefault(msg, 1, 0),
+settleChangeAfterNConfs: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -6676,9 +6676,9 @@ proto.services.bria.v1.NewAddressRequest.prototype.toObject = function(opt_inclu
  */
 proto.services.bria.v1.NewAddressRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    walletName: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    externalId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Struct.toObject(includeInstance, f)
+walletName: jspb.Message.getFieldWithDefault(msg, 1, ""),
+externalId: (f = jspb.Message.getField(msg, 2)) == null ? undefined : f,
+metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Struct.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -6905,7 +6905,7 @@ proto.services.bria.v1.NewAddressResponse.prototype.toObject = function(opt_incl
  */
 proto.services.bria.v1.NewAddressResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    address: jspb.Message.getFieldWithDefault(msg, 1, "")
+address: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -7035,9 +7035,9 @@ proto.services.bria.v1.UpdateAddressRequest.prototype.toObject = function(opt_in
  */
 proto.services.bria.v1.UpdateAddressRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    address: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    newExternalId: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    newMetadata: (f = msg.getNewMetadata()) && google_protobuf_struct_pb.Struct.toObject(includeInstance, f)
+address: jspb.Message.getFieldWithDefault(msg, 2, ""),
+newExternalId: (f = jspb.Message.getField(msg, 3)) == null ? undefined : f,
+newMetadata: (f = msg.getNewMetadata()) && google_protobuf_struct_pb.Struct.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -7365,7 +7365,7 @@ proto.services.bria.v1.ListAddressesRequest.prototype.toObject = function(opt_in
  */
 proto.services.bria.v1.ListAddressesRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    walletName: jspb.Message.getFieldWithDefault(msg, 1, "")
+walletName: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -7502,8 +7502,8 @@ proto.services.bria.v1.ListAddressesResponse.prototype.toObject = function(opt_i
  */
 proto.services.bria.v1.ListAddressesResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    walletId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    addressesList: jspb.Message.toObjectList(msg.getAddressesList(),
+walletId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+addressesList: jspb.Message.toObjectList(msg.getAddressesList(),
     proto.services.bria.v1.WalletAddress.toObject, includeInstance)
   };
 
@@ -7685,9 +7685,9 @@ proto.services.bria.v1.WalletAddress.prototype.toObject = function(opt_includeIn
  */
 proto.services.bria.v1.WalletAddress.toObject = function(includeInstance, msg) {
   var f, obj = {
-    address: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    externalId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Struct.toObject(includeInstance, f)
+address: jspb.Message.getFieldWithDefault(msg, 1, ""),
+externalId: jspb.Message.getFieldWithDefault(msg, 2, ""),
+metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Struct.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -7922,8 +7922,8 @@ proto.services.bria.v1.GetAddressRequest.prototype.toObject = function(opt_inclu
  */
 proto.services.bria.v1.GetAddressRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    address: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    externalId: jspb.Message.getFieldWithDefault(msg, 2, "")
+address: (f = jspb.Message.getField(msg, 1)) == null ? undefined : f,
+externalId: (f = jspb.Message.getField(msg, 2)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -8118,11 +8118,11 @@ proto.services.bria.v1.GetAddressResponse.prototype.toObject = function(opt_incl
  */
 proto.services.bria.v1.GetAddressResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    address: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    walletId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    changeAddress: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
-    externalId: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Struct.toObject(includeInstance, f)
+address: (f = jspb.Message.getField(msg, 1)) == null ? undefined : f,
+walletId: jspb.Message.getFieldWithDefault(msg, 2, ""),
+changeAddress: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
+externalId: (f = jspb.Message.getField(msg, 4)) == null ? undefined : f,
+metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Struct.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -8425,7 +8425,7 @@ proto.services.bria.v1.ListUtxosRequest.prototype.toObject = function(opt_includ
  */
 proto.services.bria.v1.ListUtxosRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    walletName: jspb.Message.getFieldWithDefault(msg, 1, "")
+walletName: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -8555,12 +8555,12 @@ proto.services.bria.v1.Utxo.prototype.toObject = function(opt_includeInstance) {
  */
 proto.services.bria.v1.Utxo.toObject = function(includeInstance, msg) {
   var f, obj = {
-    outpoint: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    addressIdx: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    value: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    address: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    changeOutput: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
-    blockHeight: jspb.Message.getFieldWithDefault(msg, 6, 0)
+outpoint: jspb.Message.getFieldWithDefault(msg, 1, ""),
+addressIdx: jspb.Message.getFieldWithDefault(msg, 2, 0),
+value: jspb.Message.getFieldWithDefault(msg, 3, 0),
+address: (f = jspb.Message.getField(msg, 4)) == null ? undefined : f,
+changeOutput: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
+blockHeight: (f = jspb.Message.getField(msg, 6)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -8878,8 +8878,8 @@ proto.services.bria.v1.KeychainUtxos.prototype.toObject = function(opt_includeIn
  */
 proto.services.bria.v1.KeychainUtxos.toObject = function(includeInstance, msg) {
   var f, obj = {
-    keychainId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    utxosList: jspb.Message.toObjectList(msg.getUtxosList(),
+keychainId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+utxosList: jspb.Message.toObjectList(msg.getUtxosList(),
     proto.services.bria.v1.Utxo.toObject, includeInstance)
   };
 
@@ -9068,8 +9068,8 @@ proto.services.bria.v1.ListUtxosResponse.prototype.toObject = function(opt_inclu
  */
 proto.services.bria.v1.ListUtxosResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    walletId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    keychainsList: jspb.Message.toObjectList(msg.getKeychainsList(),
+walletId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+keychainsList: jspb.Message.toObjectList(msg.getKeychainsList(),
     proto.services.bria.v1.KeychainUtxos.toObject, includeInstance)
   };
 
@@ -9251,7 +9251,7 @@ proto.services.bria.v1.GetWalletBalanceSummaryRequest.prototype.toObject = funct
  */
 proto.services.bria.v1.GetWalletBalanceSummaryRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    walletName: jspb.Message.getFieldWithDefault(msg, 1, "")
+walletName: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -9381,16 +9381,16 @@ proto.services.bria.v1.GetWalletBalanceSummaryResponse.prototype.toObject = func
  */
 proto.services.bria.v1.GetWalletBalanceSummaryResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    effectivePendingIncome: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    effectiveSettled: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    effectivePendingOutgoing: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    effectiveEncumberedOutgoing: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    utxoEncumberedIncoming: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    utxoPendingIncoming: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    utxoSettled: jspb.Message.getFieldWithDefault(msg, 7, 0),
-    utxoPendingOutgoing: jspb.Message.getFieldWithDefault(msg, 8, 0),
-    feesPending: jspb.Message.getFieldWithDefault(msg, 9, 0),
-    feesEncumbered: jspb.Message.getFieldWithDefault(msg, 10, 0)
+effectivePendingIncome: jspb.Message.getFieldWithDefault(msg, 1, 0),
+effectiveSettled: jspb.Message.getFieldWithDefault(msg, 2, 0),
+effectivePendingOutgoing: jspb.Message.getFieldWithDefault(msg, 3, 0),
+effectiveEncumberedOutgoing: jspb.Message.getFieldWithDefault(msg, 4, 0),
+utxoEncumberedIncoming: jspb.Message.getFieldWithDefault(msg, 5, 0),
+utxoPendingIncoming: jspb.Message.getFieldWithDefault(msg, 6, 0),
+utxoSettled: jspb.Message.getFieldWithDefault(msg, 7, 0),
+utxoPendingOutgoing: jspb.Message.getFieldWithDefault(msg, 8, 0),
+feesPending: jspb.Message.getFieldWithDefault(msg, 9, 0),
+feesEncumbered: jspb.Message.getFieldWithDefault(msg, 10, 0)
   };
 
   if (includeInstance) {
@@ -9882,16 +9882,16 @@ proto.services.bria.v1.GetAccountBalanceSummaryResponse.prototype.toObject = fun
  */
 proto.services.bria.v1.GetAccountBalanceSummaryResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    effectivePendingIncome: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    effectiveSettled: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    effectivePendingOutgoing: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    effectiveEncumberedOutgoing: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    utxoEncumberedIncoming: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    utxoPendingIncoming: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    utxoSettled: jspb.Message.getFieldWithDefault(msg, 7, 0),
-    utxoPendingOutgoing: jspb.Message.getFieldWithDefault(msg, 8, 0),
-    feesPending: jspb.Message.getFieldWithDefault(msg, 9, 0),
-    feesEncumbered: jspb.Message.getFieldWithDefault(msg, 10, 0)
+effectivePendingIncome: jspb.Message.getFieldWithDefault(msg, 1, 0),
+effectiveSettled: jspb.Message.getFieldWithDefault(msg, 2, 0),
+effectivePendingOutgoing: jspb.Message.getFieldWithDefault(msg, 3, 0),
+effectiveEncumberedOutgoing: jspb.Message.getFieldWithDefault(msg, 4, 0),
+utxoEncumberedIncoming: jspb.Message.getFieldWithDefault(msg, 5, 0),
+utxoPendingIncoming: jspb.Message.getFieldWithDefault(msg, 6, 0),
+utxoSettled: jspb.Message.getFieldWithDefault(msg, 7, 0),
+utxoPendingOutgoing: jspb.Message.getFieldWithDefault(msg, 8, 0),
+feesPending: jspb.Message.getFieldWithDefault(msg, 9, 0),
+feesEncumbered: jspb.Message.getFieldWithDefault(msg, 10, 0)
   };
 
   if (includeInstance) {
@@ -10282,9 +10282,9 @@ proto.services.bria.v1.CreatePayoutQueueRequest.prototype.toObject = function(op
  */
 proto.services.bria.v1.CreatePayoutQueueRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    description: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    config: (f = msg.getConfig()) && proto.services.bria.v1.PayoutQueueConfig.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+description: (f = jspb.Message.getField(msg, 2)) == null ? undefined : f,
+config: (f = msg.getConfig()) && proto.services.bria.v1.PayoutQueueConfig.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -10537,13 +10537,13 @@ proto.services.bria.v1.PayoutQueueConfig.prototype.toObject = function(opt_inclu
  */
 proto.services.bria.v1.PayoutQueueConfig.toObject = function(includeInstance, msg) {
   var f, obj = {
-    txPriority: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    consolidateDeprecatedKeychains: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
-    manual: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
-    intervalSecs: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    cpfpPayoutsAfterMins: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    cpfpPayoutsAfterBlocks: jspb.Message.getFieldWithDefault(msg, 7, 0),
-    forceMinChangeSats: jspb.Message.getFieldWithDefault(msg, 8, 0)
+txPriority: jspb.Message.getFieldWithDefault(msg, 1, 0),
+consolidateDeprecatedKeychains: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
+manual: (f = jspb.Message.getBooleanField(msg, 4)) == null ? undefined : f,
+intervalSecs: (f = jspb.Message.getField(msg, 5)) == null ? undefined : f,
+cpfpPayoutsAfterMins: (f = jspb.Message.getField(msg, 6)) == null ? undefined : f,
+cpfpPayoutsAfterBlocks: (f = jspb.Message.getField(msg, 7)) == null ? undefined : f,
+forceMinChangeSats: (f = jspb.Message.getField(msg, 8)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -10937,7 +10937,7 @@ proto.services.bria.v1.CreatePayoutQueueResponse.prototype.toObject = function(o
  */
 proto.services.bria.v1.CreatePayoutQueueResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, "")
+id: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -11067,7 +11067,7 @@ proto.services.bria.v1.TriggerPayoutQueueRequest.prototype.toObject = function(o
  */
 proto.services.bria.v1.TriggerPayoutQueueRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -11298,10 +11298,10 @@ proto.services.bria.v1.PayoutQueue.prototype.toObject = function(opt_includeInst
  */
 proto.services.bria.v1.PayoutQueue.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    name: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    description: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    config: (f = msg.getConfig()) && proto.services.bria.v1.PayoutQueueConfig.toObject(includeInstance, f)
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+name: jspb.Message.getFieldWithDefault(msg, 2, ""),
+description: (f = jspb.Message.getField(msg, 3)) == null ? undefined : f,
+config: (f = msg.getConfig()) && proto.services.bria.v1.PayoutQueueConfig.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -11564,7 +11564,7 @@ proto.services.bria.v1.ListPayoutQueuesResponse.prototype.toObject = function(op
  */
 proto.services.bria.v1.ListPayoutQueuesResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    payoutQueuesList: jspb.Message.toObjectList(msg.getPayoutQueuesList(),
+payoutQueuesList: jspb.Message.toObjectList(msg.getPayoutQueuesList(),
     proto.services.bria.v1.PayoutQueue.toObject, includeInstance)
   };
 
@@ -11818,9 +11818,9 @@ proto.services.bria.v1.UpdatePayoutQueueRequest.prototype.toObject = function(op
  */
 proto.services.bria.v1.UpdatePayoutQueueRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    newDescription: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    newConfig: (f = msg.getNewConfig()) && proto.services.bria.v1.PayoutQueueConfig.toObject(includeInstance, f)
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+newDescription: (f = jspb.Message.getField(msg, 2)) == null ? undefined : f,
+newConfig: (f = msg.getNewConfig()) && proto.services.bria.v1.PayoutQueueConfig.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -12174,11 +12174,11 @@ proto.services.bria.v1.EstimatePayoutFeeRequest.prototype.toObject = function(op
  */
 proto.services.bria.v1.EstimatePayoutFeeRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    walletName: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    payoutQueueName: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    onchainAddress: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    destinationWalletName: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    satoshis: jspb.Message.getFieldWithDefault(msg, 4, 0)
+walletName: jspb.Message.getFieldWithDefault(msg, 1, ""),
+payoutQueueName: jspb.Message.getFieldWithDefault(msg, 2, ""),
+onchainAddress: (f = jspb.Message.getField(msg, 3)) == null ? undefined : f,
+destinationWalletName: (f = jspb.Message.getField(msg, 5)) == null ? undefined : f,
+satoshis: jspb.Message.getFieldWithDefault(msg, 4, 0)
   };
 
   if (includeInstance) {
@@ -12460,7 +12460,7 @@ proto.services.bria.v1.EstimatePayoutFeeResponse.prototype.toObject = function(o
  */
 proto.services.bria.v1.EstimatePayoutFeeResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    satoshis: jspb.Message.getFieldWithDefault(msg, 1, 0)
+satoshis: jspb.Message.getFieldWithDefault(msg, 1, 0)
   };
 
   if (includeInstance) {
@@ -12616,13 +12616,13 @@ proto.services.bria.v1.SubmitPayoutRequest.prototype.toObject = function(opt_inc
  */
 proto.services.bria.v1.SubmitPayoutRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    walletName: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    payoutQueueName: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    onchainAddress: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    destinationWalletName: jspb.Message.getFieldWithDefault(msg, 7, ""),
-    satoshis: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    externalId: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Struct.toObject(includeInstance, f)
+walletName: jspb.Message.getFieldWithDefault(msg, 1, ""),
+payoutQueueName: jspb.Message.getFieldWithDefault(msg, 2, ""),
+onchainAddress: (f = jspb.Message.getField(msg, 3)) == null ? undefined : f,
+destinationWalletName: (f = jspb.Message.getField(msg, 7)) == null ? undefined : f,
+satoshis: jspb.Message.getFieldWithDefault(msg, 4, 0),
+externalId: (f = jspb.Message.getField(msg, 5)) == null ? undefined : f,
+metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Struct.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -13001,8 +13001,8 @@ proto.services.bria.v1.SubmitPayoutResponse.prototype.toObject = function(opt_in
  */
 proto.services.bria.v1.SubmitPayoutResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    batchInclusionEstimatedAt: jspb.Message.getFieldWithDefault(msg, 2, 0)
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+batchInclusionEstimatedAt: (f = jspb.Message.getField(msg, 2)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -13179,9 +13179,9 @@ proto.services.bria.v1.ListPayoutsRequest.prototype.toObject = function(opt_incl
  */
 proto.services.bria.v1.ListPayoutsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    walletName: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    page: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    pageSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
+walletName: jspb.Message.getFieldWithDefault(msg, 1, ""),
+page: (f = jspb.Message.getField(msg, 2)) == null ? undefined : f,
+pageSize: (f = jspb.Message.getField(msg, 3)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -13405,8 +13405,8 @@ proto.services.bria.v1.BriaWalletDestination.prototype.toObject = function(opt_i
  */
 proto.services.bria.v1.BriaWalletDestination.toObject = function(includeInstance, msg) {
   var f, obj = {
-    walletId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    address: jspb.Message.getFieldWithDefault(msg, 2, "")
+walletId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+address: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -13591,19 +13591,19 @@ proto.services.bria.v1.Payout.prototype.toObject = function(opt_includeInstance)
  */
 proto.services.bria.v1.Payout.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    walletId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    payoutQueueId: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    batchId: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    satoshis: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    onchainAddress: jspb.Message.getFieldWithDefault(msg, 6, ""),
-    wallet: (f = msg.getWallet()) && proto.services.bria.v1.BriaWalletDestination.toObject(includeInstance, f),
-    cancelled: jspb.Message.getBooleanFieldWithDefault(msg, 9, false),
-    externalId: jspb.Message.getFieldWithDefault(msg, 7, ""),
-    metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Struct.toObject(includeInstance, f),
-    batchInclusionEstimatedAt: jspb.Message.getFieldWithDefault(msg, 11, 0),
-    txId: jspb.Message.getFieldWithDefault(msg, 12, ""),
-    vout: jspb.Message.getFieldWithDefault(msg, 13, 0)
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+walletId: jspb.Message.getFieldWithDefault(msg, 2, ""),
+payoutQueueId: jspb.Message.getFieldWithDefault(msg, 3, ""),
+batchId: (f = jspb.Message.getField(msg, 4)) == null ? undefined : f,
+satoshis: jspb.Message.getFieldWithDefault(msg, 5, 0),
+onchainAddress: (f = jspb.Message.getField(msg, 6)) == null ? undefined : f,
+wallet: (f = msg.getWallet()) && proto.services.bria.v1.BriaWalletDestination.toObject(includeInstance, f),
+cancelled: jspb.Message.getBooleanFieldWithDefault(msg, 9, false),
+externalId: jspb.Message.getFieldWithDefault(msg, 7, ""),
+metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Struct.toObject(includeInstance, f),
+batchInclusionEstimatedAt: (f = jspb.Message.getField(msg, 11)) == null ? undefined : f,
+txId: (f = jspb.Message.getField(msg, 12)) == null ? undefined : f,
+vout: (f = jspb.Message.getField(msg, 13)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -14220,7 +14220,7 @@ proto.services.bria.v1.ListPayoutsResponse.prototype.toObject = function(opt_inc
  */
 proto.services.bria.v1.ListPayoutsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    payoutsList: jspb.Message.toObjectList(msg.getPayoutsList(),
+payoutsList: jspb.Message.toObjectList(msg.getPayoutsList(),
     proto.services.bria.v1.Payout.toObject, includeInstance)
   };
 
@@ -14399,8 +14399,8 @@ proto.services.bria.v1.GetPayoutRequest.prototype.toObject = function(opt_includ
  */
 proto.services.bria.v1.GetPayoutRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    externalId: jspb.Message.getFieldWithDefault(msg, 2, "")
+id: (f = jspb.Message.getField(msg, 1)) == null ? undefined : f,
+externalId: (f = jspb.Message.getField(msg, 2)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -14595,7 +14595,7 @@ proto.services.bria.v1.GetPayoutResponse.prototype.toObject = function(opt_inclu
  */
 proto.services.bria.v1.GetPayoutResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    payout: (f = msg.getPayout()) && proto.services.bria.v1.Payout.toObject(includeInstance, f)
+payout: (f = msg.getPayout()) && proto.services.bria.v1.Payout.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -14746,7 +14746,7 @@ proto.services.bria.v1.CancelPayoutRequest.prototype.toObject = function(opt_inc
  */
 proto.services.bria.v1.CancelPayoutRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, "")
+id: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -14977,7 +14977,7 @@ proto.services.bria.v1.GetBatchRequest.prototype.toObject = function(opt_include
  */
 proto.services.bria.v1.GetBatchRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, "")
+id: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -15114,13 +15114,13 @@ proto.services.bria.v1.GetBatchResponse.prototype.toObject = function(opt_includ
  */
 proto.services.bria.v1.GetBatchResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    payoutQueueId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    txId: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    unsignedPsbt: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    walletSummariesList: jspb.Message.toObjectList(msg.getWalletSummariesList(),
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+payoutQueueId: jspb.Message.getFieldWithDefault(msg, 2, ""),
+txId: jspb.Message.getFieldWithDefault(msg, 3, ""),
+unsignedPsbt: jspb.Message.getFieldWithDefault(msg, 4, ""),
+walletSummariesList: jspb.Message.toObjectList(msg.getWalletSummariesList(),
     proto.services.bria.v1.BatchWalletSummary.toObject, includeInstance),
-    signingSessionsList: jspb.Message.toObjectList(msg.getSigningSessionsList(),
+signingSessionsList: jspb.Message.toObjectList(msg.getSigningSessionsList(),
     proto.services.bria.v1.SigningSession.toObject, includeInstance)
   };
 
@@ -15447,10 +15447,10 @@ proto.services.bria.v1.BatchWalletSummary.prototype.toObject = function(opt_incl
  */
 proto.services.bria.v1.BatchWalletSummary.toObject = function(includeInstance, msg) {
   var f, obj = {
-    walletId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    totalSpentSats: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    feeSats: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    payoutsList: jspb.Message.toObjectList(msg.getPayoutsList(),
+walletId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+totalSpentSats: jspb.Message.getFieldWithDefault(msg, 2, 0),
+feeSats: jspb.Message.getFieldWithDefault(msg, 3, 0),
+payoutsList: jspb.Message.toObjectList(msg.getPayoutsList(),
     proto.services.bria.v1.PayoutSummary.toObject, includeInstance)
   };
 
@@ -15716,10 +15716,10 @@ proto.services.bria.v1.PayoutSummary.prototype.toObject = function(opt_includeIn
  */
 proto.services.bria.v1.PayoutSummary.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    satoshis: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    onchainAddress: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    wallet: (f = msg.getWallet()) && proto.services.bria.v1.BriaWalletDestination.toObject(includeInstance, f)
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+satoshis: jspb.Message.getFieldWithDefault(msg, 2, 0),
+onchainAddress: (f = jspb.Message.getField(msg, 3)) == null ? undefined : f,
+wallet: (f = msg.getWallet()) && proto.services.bria.v1.BriaWalletDestination.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -15975,11 +15975,11 @@ proto.services.bria.v1.SigningSession.prototype.toObject = function(opt_includeI
  */
 proto.services.bria.v1.SigningSession.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    batchId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    xpubId: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    state: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    failureReason: jspb.Message.getFieldWithDefault(msg, 5, "")
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+batchId: jspb.Message.getFieldWithDefault(msg, 2, ""),
+xpubId: jspb.Message.getFieldWithDefault(msg, 3, ""),
+state: jspb.Message.getFieldWithDefault(msg, 4, ""),
+failureReason: (f = jspb.Message.getField(msg, 5)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -16351,7 +16351,7 @@ proto.services.bria.v1.ListXpubsResponse.prototype.toObject = function(opt_inclu
  */
 proto.services.bria.v1.ListXpubsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    xpubsList: jspb.Message.toObjectList(msg.getXpubsList(),
+xpubsList: jspb.Message.toObjectList(msg.getXpubsList(),
     proto.services.bria.v1.Xpub.toObject, includeInstance)
   };
 
@@ -16504,11 +16504,11 @@ proto.services.bria.v1.Xpub.prototype.toObject = function(opt_includeInstance) {
  */
 proto.services.bria.v1.Xpub.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    xpub: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    derivationPath: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    hasSignerConfig: jspb.Message.getBooleanFieldWithDefault(msg, 5, false)
+id: jspb.Message.getFieldWithDefault(msg, 4, ""),
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+xpub: jspb.Message.getFieldWithDefault(msg, 2, ""),
+derivationPath: (f = jspb.Message.getField(msg, 3)) == null ? undefined : f,
+hasSignerConfig: jspb.Message.getBooleanFieldWithDefault(msg, 5, false)
   };
 
   if (includeInstance) {
@@ -16772,8 +16772,8 @@ proto.services.bria.v1.SubscribeAllRequest.prototype.toObject = function(opt_inc
  */
 proto.services.bria.v1.SubscribeAllRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    afterSequence: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    augment: jspb.Message.getBooleanFieldWithDefault(msg, 2, false)
+afterSequence: (f = jspb.Message.getField(msg, 1)) == null ? undefined : f,
+augment: (f = jspb.Message.getBooleanField(msg, 2)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -17000,17 +17000,17 @@ proto.services.bria.v1.BriaEvent.prototype.toObject = function(opt_includeInstan
  */
 proto.services.bria.v1.BriaEvent.toObject = function(includeInstance, msg) {
   var f, obj = {
-    sequence: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    recordedAt: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    augmentation: (f = msg.getAugmentation()) && proto.services.bria.v1.EventAugmentation.toObject(includeInstance, f),
-    utxoDetected: (f = msg.getUtxoDetected()) && proto.services.bria.v1.UtxoDetected.toObject(includeInstance, f),
-    utxoSettled: (f = msg.getUtxoSettled()) && proto.services.bria.v1.UtxoSettled.toObject(includeInstance, f),
-    utxoDropped: (f = msg.getUtxoDropped()) && proto.services.bria.v1.UtxoDropped.toObject(includeInstance, f),
-    payoutSubmitted: (f = msg.getPayoutSubmitted()) && proto.services.bria.v1.PayoutSubmitted.toObject(includeInstance, f),
-    payoutCancelled: (f = msg.getPayoutCancelled()) && proto.services.bria.v1.PayoutCancelled.toObject(includeInstance, f),
-    payoutCommitted: (f = msg.getPayoutCommitted()) && proto.services.bria.v1.PayoutCommitted.toObject(includeInstance, f),
-    payoutBroadcast: (f = msg.getPayoutBroadcast()) && proto.services.bria.v1.PayoutBroadcast.toObject(includeInstance, f),
-    payoutSettled: (f = msg.getPayoutSettled()) && proto.services.bria.v1.PayoutSettled.toObject(includeInstance, f)
+sequence: jspb.Message.getFieldWithDefault(msg, 1, 0),
+recordedAt: jspb.Message.getFieldWithDefault(msg, 2, 0),
+augmentation: (f = msg.getAugmentation()) && proto.services.bria.v1.EventAugmentation.toObject(includeInstance, f),
+utxoDetected: (f = msg.getUtxoDetected()) && proto.services.bria.v1.UtxoDetected.toObject(includeInstance, f),
+utxoSettled: (f = msg.getUtxoSettled()) && proto.services.bria.v1.UtxoSettled.toObject(includeInstance, f),
+utxoDropped: (f = msg.getUtxoDropped()) && proto.services.bria.v1.UtxoDropped.toObject(includeInstance, f),
+payoutSubmitted: (f = msg.getPayoutSubmitted()) && proto.services.bria.v1.PayoutSubmitted.toObject(includeInstance, f),
+payoutCancelled: (f = msg.getPayoutCancelled()) && proto.services.bria.v1.PayoutCancelled.toObject(includeInstance, f),
+payoutCommitted: (f = msg.getPayoutCommitted()) && proto.services.bria.v1.PayoutCommitted.toObject(includeInstance, f),
+payoutBroadcast: (f = msg.getPayoutBroadcast()) && proto.services.bria.v1.PayoutBroadcast.toObject(includeInstance, f),
+payoutSettled: (f = msg.getPayoutSettled()) && proto.services.bria.v1.PayoutSettled.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -17619,8 +17619,8 @@ proto.services.bria.v1.EventAugmentation.prototype.toObject = function(opt_inclu
  */
 proto.services.bria.v1.EventAugmentation.toObject = function(includeInstance, msg) {
   var f, obj = {
-    addressInfo: (f = msg.getAddressInfo()) && proto.services.bria.v1.WalletAddress.toObject(includeInstance, f),
-    payoutInfo: (f = msg.getPayoutInfo()) && proto.services.bria.v1.Payout.toObject(includeInstance, f)
+addressInfo: (f = msg.getAddressInfo()) && proto.services.bria.v1.WalletAddress.toObject(includeInstance, f),
+payoutInfo: (f = msg.getPayoutInfo()) && proto.services.bria.v1.Payout.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -17821,11 +17821,11 @@ proto.services.bria.v1.UtxoDetected.prototype.toObject = function(opt_includeIns
  */
 proto.services.bria.v1.UtxoDetected.toObject = function(includeInstance, msg) {
   var f, obj = {
-    walletId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    txId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    vout: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    satoshis: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    address: jspb.Message.getFieldWithDefault(msg, 5, "")
+walletId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+txId: jspb.Message.getFieldWithDefault(msg, 2, ""),
+vout: jspb.Message.getFieldWithDefault(msg, 3, 0),
+satoshis: jspb.Message.getFieldWithDefault(msg, 4, 0),
+address: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
 
   if (includeInstance) {
@@ -18071,13 +18071,13 @@ proto.services.bria.v1.UtxoSettled.prototype.toObject = function(opt_includeInst
  */
 proto.services.bria.v1.UtxoSettled.toObject = function(includeInstance, msg) {
   var f, obj = {
-    walletId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    txId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    vout: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    satoshis: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    address: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    blockHeight: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    blockTime: jspb.Message.getFieldWithDefault(msg, 7, 0)
+walletId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+txId: jspb.Message.getFieldWithDefault(msg, 2, ""),
+vout: jspb.Message.getFieldWithDefault(msg, 3, 0),
+satoshis: jspb.Message.getFieldWithDefault(msg, 4, 0),
+address: jspb.Message.getFieldWithDefault(msg, 5, ""),
+blockHeight: jspb.Message.getFieldWithDefault(msg, 6, 0),
+blockTime: jspb.Message.getFieldWithDefault(msg, 7, 0)
   };
 
   if (includeInstance) {
@@ -18381,11 +18381,11 @@ proto.services.bria.v1.UtxoDropped.prototype.toObject = function(opt_includeInst
  */
 proto.services.bria.v1.UtxoDropped.toObject = function(includeInstance, msg) {
   var f, obj = {
-    walletId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    txId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    vout: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    satoshis: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    address: jspb.Message.getFieldWithDefault(msg, 5, "")
+walletId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+txId: jspb.Message.getFieldWithDefault(msg, 2, ""),
+vout: jspb.Message.getFieldWithDefault(msg, 3, 0),
+satoshis: jspb.Message.getFieldWithDefault(msg, 4, 0),
+address: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
 
   if (includeInstance) {
@@ -18657,12 +18657,12 @@ proto.services.bria.v1.PayoutSubmitted.prototype.toObject = function(opt_include
  */
 proto.services.bria.v1.PayoutSubmitted.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    walletId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    payoutQueueId: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    satoshis: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    onchainAddress: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    wallet: (f = msg.getWallet()) && proto.services.bria.v1.BriaWalletDestination.toObject(includeInstance, f)
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+walletId: jspb.Message.getFieldWithDefault(msg, 2, ""),
+payoutQueueId: jspb.Message.getFieldWithDefault(msg, 3, ""),
+satoshis: jspb.Message.getFieldWithDefault(msg, 4, 0),
+onchainAddress: (f = jspb.Message.getField(msg, 5)) == null ? undefined : f,
+wallet: (f = msg.getWallet()) && proto.services.bria.v1.BriaWalletDestination.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -19002,12 +19002,12 @@ proto.services.bria.v1.PayoutCancelled.prototype.toObject = function(opt_include
  */
 proto.services.bria.v1.PayoutCancelled.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    walletId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    payoutQueueId: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    satoshis: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    onchainAddress: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    wallet: (f = msg.getWallet()) && proto.services.bria.v1.BriaWalletDestination.toObject(includeInstance, f)
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+walletId: jspb.Message.getFieldWithDefault(msg, 2, ""),
+payoutQueueId: jspb.Message.getFieldWithDefault(msg, 3, ""),
+satoshis: jspb.Message.getFieldWithDefault(msg, 4, 0),
+onchainAddress: (f = jspb.Message.getField(msg, 5)) == null ? undefined : f,
+wallet: (f = msg.getWallet()) && proto.services.bria.v1.BriaWalletDestination.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -19347,15 +19347,15 @@ proto.services.bria.v1.PayoutCommitted.prototype.toObject = function(opt_include
  */
 proto.services.bria.v1.PayoutCommitted.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    txId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    vout: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    walletId: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    payoutQueueId: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    satoshis: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    onchainAddress: jspb.Message.getFieldWithDefault(msg, 7, ""),
-    wallet: (f = msg.getWallet()) && proto.services.bria.v1.BriaWalletDestination.toObject(includeInstance, f),
-    proportionalFeeSats: jspb.Message.getFieldWithDefault(msg, 8, 0)
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+txId: jspb.Message.getFieldWithDefault(msg, 2, ""),
+vout: jspb.Message.getFieldWithDefault(msg, 3, 0),
+walletId: jspb.Message.getFieldWithDefault(msg, 4, ""),
+payoutQueueId: jspb.Message.getFieldWithDefault(msg, 5, ""),
+satoshis: jspb.Message.getFieldWithDefault(msg, 6, 0),
+onchainAddress: (f = jspb.Message.getField(msg, 7)) == null ? undefined : f,
+wallet: (f = msg.getWallet()) && proto.services.bria.v1.BriaWalletDestination.toObject(includeInstance, f),
+proportionalFeeSats: jspb.Message.getFieldWithDefault(msg, 8, 0)
   };
 
   if (includeInstance) {
@@ -19782,15 +19782,15 @@ proto.services.bria.v1.PayoutBroadcast.prototype.toObject = function(opt_include
  */
 proto.services.bria.v1.PayoutBroadcast.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    txId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    vout: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    walletId: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    payoutQueueId: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    satoshis: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    onchainAddress: jspb.Message.getFieldWithDefault(msg, 7, ""),
-    wallet: (f = msg.getWallet()) && proto.services.bria.v1.BriaWalletDestination.toObject(includeInstance, f),
-    proportionalFeeSats: jspb.Message.getFieldWithDefault(msg, 8, 0)
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+txId: jspb.Message.getFieldWithDefault(msg, 2, ""),
+vout: jspb.Message.getFieldWithDefault(msg, 3, 0),
+walletId: jspb.Message.getFieldWithDefault(msg, 4, ""),
+payoutQueueId: jspb.Message.getFieldWithDefault(msg, 5, ""),
+satoshis: jspb.Message.getFieldWithDefault(msg, 6, 0),
+onchainAddress: (f = jspb.Message.getField(msg, 7)) == null ? undefined : f,
+wallet: (f = msg.getWallet()) && proto.services.bria.v1.BriaWalletDestination.toObject(includeInstance, f),
+proportionalFeeSats: jspb.Message.getFieldWithDefault(msg, 8, 0)
   };
 
   if (includeInstance) {
@@ -20217,15 +20217,15 @@ proto.services.bria.v1.PayoutSettled.prototype.toObject = function(opt_includeIn
  */
 proto.services.bria.v1.PayoutSettled.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    txId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    vout: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    walletId: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    payoutQueueId: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    satoshis: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    onchainAddress: jspb.Message.getFieldWithDefault(msg, 7, ""),
-    wallet: (f = msg.getWallet()) && proto.services.bria.v1.BriaWalletDestination.toObject(includeInstance, f),
-    proportionalFeeSats: jspb.Message.getFieldWithDefault(msg, 8, 0)
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+txId: jspb.Message.getFieldWithDefault(msg, 2, ""),
+vout: jspb.Message.getFieldWithDefault(msg, 3, 0),
+walletId: jspb.Message.getFieldWithDefault(msg, 4, ""),
+payoutQueueId: jspb.Message.getFieldWithDefault(msg, 5, ""),
+satoshis: jspb.Message.getFieldWithDefault(msg, 6, 0),
+onchainAddress: (f = jspb.Message.getField(msg, 7)) == null ? undefined : f,
+wallet: (f = msg.getWallet()) && proto.services.bria.v1.BriaWalletDestination.toObject(includeInstance, f),
+proportionalFeeSats: jspb.Message.getFieldWithDefault(msg, 8, 0)
   };
 
   if (includeInstance) {
