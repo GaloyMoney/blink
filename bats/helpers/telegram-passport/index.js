@@ -1,10 +1,10 @@
 /**
- * Final Telegram Passport Generator
+ * Telegram Passport Generator
  *
  * This script generates valid Telegram Passport payloads for testing.
  * Features:
  * - Proper AES block alignment
- * - Optional test script generation
+ * - Console output by default with option to write to file
  * - Custom nonce support
  * - Configurable keys directory path
  */
@@ -20,7 +20,7 @@ function initializeKeys(keysDir) {
   // Create keys directory if needed
   if (!fs.existsSync(keysDir)) {
     fs.mkdirSync(keysDir, { recursive: true });
-    console.log(`Created keys directory: ${keysDir}`);
+    console.error(`Created keys directory: ${keysDir}`);
   }
 
   const privateKeyPath = path.join(keysDir, "private.pem");
@@ -28,7 +28,7 @@ function initializeKeys(keysDir) {
 
   // Generate RSA keys if they don't exist
   if (!fs.existsSync(privateKeyPath) || !fs.existsSync(publicKeyPath)) {
-    console.log("Generating new RSA key pair...");
+    console.error("Generating new RSA key pair...");
     const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
       modulusLength: 2048,
       publicKeyEncoding: { type: "spki", format: "pem" },
@@ -37,9 +37,9 @@ function initializeKeys(keysDir) {
 
     fs.writeFileSync(privateKeyPath, privateKey);
     fs.writeFileSync(publicKeyPath, publicKey);
-    console.log(`Keys generated and saved in: ${keysDir}`);
+    console.error(`Keys generated and saved in: ${keysDir}`);
   } else {
-    console.log(`Using existing keys from: ${keysDir}`);
+    console.error(`Using existing keys from: ${keysDir}`);
   }
 
   // Load and return the public key
@@ -244,7 +244,7 @@ try {
 `;
 
   fs.writeFileSync("test-decryption.js", testScript);
-  console.log("Test script saved to test-decryption.js");
+  console.error("Test script saved to test-decryption.js");
 }
 
 /**
@@ -257,6 +257,9 @@ function parseArgs() {
     nonce: null,
     generateTestScript: false,
     keysDir: path.join(process.cwd(), "keys"),
+    outputToFile: false,
+    outputFile: "telegram_webhook_payload.json",
+    quiet: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -271,8 +274,16 @@ function parseArgs() {
     } else if (arg === "--keys-dir" && i + 1 < args.length) {
       options.keysDir = args[i + 1];
       i++;
+    } else if (arg === "--output-file" && i + 1 < args.length) {
+      options.outputFile = args[i + 1];
+      options.outputToFile = true;
+      i++;
+    } else if (arg === "--output-to-file") {
+      options.outputToFile = true;
     } else if (arg === "--test-script") {
       options.generateTestScript = true;
+    } else if (arg === "--quiet") {
+      options.quiet = true;
     } else if (arg === "--help" || arg === "-h") {
       showHelp();
       process.exit(0);
@@ -289,7 +300,7 @@ function parseArgs() {
  * Show help message
  */
 function showHelp() {
-  console.log(`
+  console.error(`
 Telegram Passport Generator
 
 Usage:
@@ -299,13 +310,16 @@ Options:
   --phone <number>      Phone number to use (default: 573001234000)
   --nonce <string>      Custom nonce value (default: random generated)
   --keys-dir <path>     Directory for RSA keys (default: ./keys)
+  --output-to-file      Write payload to file instead of stdout
+  --output-file <path>  Specify output file path (implies --output-to-file)
   --test-script         Generate test script (default: false)
+  --quiet               Suppress status messages
   -h, --help            Show this help message
 
 Examples:
   node ${path.basename(__filename)} --phone 573009876543
-  node ${path.basename(__filename)} --phone 573001234000 --nonce abc123 --test-script
-  node ${path.basename(__filename)} --keys-dir /path/to/my/keys
+  node ${path.basename(__filename)} --phone 573001234000 --nonce abc123 --output-to-file
+  node ${path.basename(__filename)} --keys-dir /path/to/my/keys --output-file custom_payload.json
   `);
 }
 
@@ -318,9 +332,13 @@ function main() {
     // Initialize or load keys
     const publicKey = initializeKeys(options.keysDir);
 
-    console.log(`Generating payload for phone number: ${options.phoneNumber}`);
-    if (options.nonce) {
-      console.log(`Using custom nonce: ${options.nonce}`);
+    if (!options.quiet) {
+      console.error(
+        `Generating payload for phone number: ${options.phoneNumber}`,
+      );
+      if (options.nonce) {
+        console.error(`Using custom nonce: ${options.nonce}`);
+      }
     }
 
     // Create payload
@@ -330,10 +348,19 @@ function main() {
       publicKey,
     );
 
-    // Save to file
-    const outputFile = "telegram_webhook_payload.json";
-    fs.writeFileSync(outputFile, JSON.stringify(payload, null, 2));
-    console.log(`Payload saved to ${outputFile}`);
+    // Output the payload
+    const payloadJson = JSON.stringify(payload, null, 2);
+
+    if (options.outputToFile) {
+      // Save to file
+      fs.writeFileSync(options.outputFile, payloadJson);
+      if (!options.quiet) {
+        console.error(`Payload saved to ${options.outputFile}`);
+      }
+    } else {
+      // Output to stdout
+      console.log(payloadJson);
+    }
 
     // Generate test script if requested
     if (options.generateTestScript) {

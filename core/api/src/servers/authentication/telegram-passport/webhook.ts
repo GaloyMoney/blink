@@ -31,7 +31,7 @@ export const handleTelegramPassportWebhook = async (req: Request, res: Response)
     return res.status(403).send("Unauthorized")
   }
 
-  if (!req.body || !req.body.passport_data) {
+  if (!req.body || !req.body.message || !req.body.message.passport_data) {
     return res.status(400).send({ error: "Missing passport_data in request" })
   }
 
@@ -39,7 +39,9 @@ export const handleTelegramPassportWebhook = async (req: Request, res: Response)
     const telegramPassport = new TelegramPassport(
       Buffer.from(env.TELEGRAM_PASSPORT_PRIVATE_KEY || "", "base64"),
     )
-    const decryptedData = telegramPassport.decryptPassportData(req.body.passport_data)
+    const decryptedData = telegramPassport.decryptPassportData(
+      req.body.message.passport_data,
+    )
 
     const authorizeNonce = await Authentication.authorizeTelegramPassportNonce({
       phone: decryptedData.phone_number || "",

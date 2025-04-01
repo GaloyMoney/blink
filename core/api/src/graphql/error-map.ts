@@ -571,7 +571,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "InvalidNonceTelegramPassportError":
-      message = `Invalid nonce ${error.message})`
+      message = `Invalid nonce ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
     case "WaitingDataTelegramPassportError":

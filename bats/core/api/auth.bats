@@ -8,6 +8,7 @@ KRATOS_PG_CON="postgres://dbuser:secret@localhost:5432/default?sslmode=disable"
 GALOY_ENDPOINT="localhost:4455"
 TELEGRAM_PASSPORT_SCRIPT="bats/helpers/telegram-passport/index.js"
 TELEGRAM_PASSPORT_KEYS_DIR="dev/config/telegram-passport"
+TELEGRAM_BOT_API_TOKEN="MTExMTExMTExMTpUZUxlR3JBbUJvVHRPa0Vu"
 
 setup_file() {
   clear_cache
@@ -54,34 +55,40 @@ simulateTelegramPassportWebhook() {
 
   echo "Simulating Telegram Passport webhook data for nonce: $nonce and phone: $phone"
 
-  # Create a temporary file to store the webhook payload
+  # Create a temporary file to store the webhook payload and response
   local tempPayload=$(mktemp)
+  local tempResponse=$(mktemp)
 
   # Generate the properly encrypted Telegram Passport data using our script
-  node $TELEGRAM_PASSPORT_SCRIPT --phone "$phone" --nonce "$nonce" --keys-dir "$TELEGRAM_PASSPORT_KEYS_DIR"
+  # Capture the output directly instead of writing to a file
+  node $TELEGRAM_PASSPORT_SCRIPT --phone "$phone" --nonce "$nonce" --keys-dir "$TELEGRAM_PASSPORT_KEYS_DIR" --quiet > "$tempPayload"
 
-  # Get the generated payload
-  if [ -f "telegram_webhook_payload.json" ]; then
+  # Check if payload was generated successfully
+  if [ -s "$tempPayload" ]; then
+    # Calculate the request hash
+    request_hash=$(echo -n "$TELEGRAM_BOT_API_TOKEN" | base64 -d | sha256sum | awk '{print $1}')
+
     # Call the webhook endpoint with the generated payload
     curl -s -X POST -H "Content-Type: application/json" \
-      -d @telegram_webhook_payload.json \
-      "http://${GALOY_ENDPOINT}/auth/telegram-passport/webhook" > "$tempPayload"
+      -d @"$tempPayload" \
+      "http://${GALOY_ENDPOINT}/auth/telegram-passport/webhook?hash=${request_hash}" > "$tempResponse"
 
     # Log results for debugging
     echo "Webhook response:"
-    cat "$tempPayload"
+    cat "$tempResponse"
 
     # Clean up
     rm -f "$tempPayload"
-    rm -f "telegram_webhook_payload.json"
+    rm -f "$tempResponse"
 
     return 0
   else
     echo "Error: Failed to generate Telegram Passport webhook payload"
+    rm -f "$tempPayload"
+    rm -f "$tempResponse"
     return 1
   fi
 }
-
 
 @test "auth: create user" {
   create_user 'charlie'
@@ -189,39 +196,38 @@ simulateTelegramPassportWebhook() {
   variables="{\"phone\": \"$phone\"}"
   curl_request "http://${GALOY_ENDPOINT}/auth/telegram-passport/nonce" "$variables"
   nonce=$(curl_output '.nonce')
-
-  # Verify nonce is valid
   [ -n "$nonce" ] || exit 1
 
   # Step 2: Try to login with the nonce before Telegram Passport webhook is called
-  # This should fail with "Waiting for data from Telegram Passport" error
   variables="{\"nonce\": \"$nonce\", \"phone\": \"$phone\"}"
   curl_request "http://${GALOY_ENDPOINT}/auth/telegram-passport/login" "$variables"
-
-  # Verify that we get the expected error about waiting for data
   error=$(curl_output '.error')
-  [[ "$error" =~ "Waiting for data from Telegram Passport" ]] || exit 1
+  [[ "$error" =~ "Authorization data from Telegram is still pending" ]] || exit 1
 
   # Step 3: Simulate Telegram Passport webhook authorization
   # Generate and send the encrypted webhook data to authorize the nonce
   simulateTelegramPassportWebhook "$nonce" "$phone"
-
-  # Give the system a moment to process the webhook
-  sleep 1
 
   # Step 4: Now try to login again, which should succeed
   variables="{\"nonce\": \"$nonce\", \"phone\": \"$phone\"}"
   curl_request "http://${GALOY_ENDPOINT}/auth/telegram-passport/login" "$variables"
 
   # Verify the login was successful
-  authToken=$(curl_output '.result.authToken')
+  userId=$(curl_output '.id')
+  authToken=$(curl_output '.authToken')
+  totpRequired=$(curl_output '.totpRequired')
+  [ -n "$userId" ] || exit 1
   [ -n "$authToken" ] || exit 1
-
-  totpRequired=$(curl_output '.result.totpRequired')
   [[ "$totpRequired" == "false" ]] || exit 1
 
-  userId=$(curl_output '.result.id')
-  [ -n "$userId" ] || exit 1
+  exec_graphql "diana" "identity"
+  [[ "$(graphql_output '.data.me.id')" == "$userId" ]] || exit 1
+  [[ "$(graphql_output '.data.me.totpEnabled')" == "$totpRequired" ]] || exit 1
+
+  # Step 5: Try to login again with the same nonce, which should fail
+  curl_request "http://${GALOY_ENDPOINT}/auth/telegram-passport/login" "$variables"
+  error=$(curl_output '.error')
+  [[ "$error" =~ "Invalid nonce $nonce" ]] || exit 1
 }
 
 @test "auth: remove phone login" {
