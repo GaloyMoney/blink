@@ -16,7 +16,7 @@ const logger = baseLogger.child({ module: "trigger" })
 
 const setupHash = isTelegramPassportEnabled()
   ? createHash("sha256")
-      .update(Buffer.from(env.TELEGRAM_BOT_API_TOKEN || "", "utf8"))
+      .update(Buffer.from(env.TELEGRAM_BOT_API_TOKEN || "", "base64"))
       .digest("hex")
   : undefined
 
@@ -36,7 +36,9 @@ export const handleTelegramPassportWebhook = async (req: Request, res: Response)
   }
 
   try {
-    const telegramPassport = new TelegramPassport(env.TELEGRAM_PASSPORT_PRIVATE_KEY + "")
+    const telegramPassport = new TelegramPassport(
+      Buffer.from(env.TELEGRAM_PASSPORT_PRIVATE_KEY || "", "base64"),
+    )
     const decryptedData = telegramPassport.decryptPassportData(req.body.passport_data)
 
     const authorizeNonce = await Authentication.authorizeTelegramPassportNonce({
@@ -71,12 +73,12 @@ export const handleTelegramPassportWebhookSetup = async (req: Request, res: Resp
   const host = req.headers["x-forwarded-host"] || req.headers.host
   const baseUrl = `${protocol}://${host}/`
   try {
+    const token = Buffer.from(env.TELEGRAM_BOT_API_TOKEN || "", "base64").toString()
     const webhookUrl = `${baseUrl}/auth/telegram-passport/webhook?hash=${setupHash}`
 
-    const response = await axios.post(
-      `https://api.telegram.org/bot${env.TELEGRAM_BOT_API_TOKEN}/setWebhook`,
-      { url: webhookUrl },
-    )
+    const response = await axios.post(`https://api.telegram.org/bot${token}/setWebhook`, {
+      url: webhookUrl,
+    })
 
     return res.json({ success: response.status === 200 })
   } catch (error) {
