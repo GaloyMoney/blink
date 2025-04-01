@@ -188,7 +188,7 @@ simulateTelegramPassportWebhook() {
   # TODO: email to the sender highlighting the email was removed
 }
 
-@test "auth: telegram passport login flow" {
+@test "auth: login with telegram passport" {
   create_user 'diana'
   phone="$(read_value diana.phone)"
 
