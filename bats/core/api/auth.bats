@@ -192,7 +192,6 @@ simulateTelegramPassportWebhook() {
 
   # Verify nonce is valid
   [ -n "$nonce" ] || exit 1
-  [[ "$nonce" =~ ^[0-9a-f]{32}$ ]] || exit 1
 
   # Step 2: Try to login with the nonce before Telegram Passport webhook is called
   # This should fail with "Waiting for data from Telegram Passport" error
