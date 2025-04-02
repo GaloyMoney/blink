@@ -24,6 +24,9 @@ export const env = createEnv({
       .pipe(z.coerce.boolean())
       .default(false),
 
+    TELEGRAM_BOT_API_TOKEN: z.string().optional(),
+    TELEGRAM_PASSPORT_PRIVATE_KEY: z.string().optional(),
+
     EXPORTER_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(3000),
     TRIGGER_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(8888),
     WEBSOCKET_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(4000),
@@ -152,6 +155,9 @@ export const env = createEnv({
 
     UNSECURE_DEFAULT_LOGIN_CODE: process.env.UNSECURE_DEFAULT_LOGIN_CODE,
     UNSECURE_IP_FROM_REQUEST_OBJECT: process.env.UNSECURE_IP_FROM_REQUEST_OBJECT,
+
+    TELEGRAM_BOT_API_TOKEN: process.env.TELEGRAM_BOT_API_TOKEN,
+    TELEGRAM_PASSPORT_PRIVATE_KEY: process.env.TELEGRAM_PASSPORT_PRIVATE_KEY,
 
     EXPORTER_PORT: process.env.EXPORTER_PORT,
     TRIGGER_PORT: process.env.TRIGGER_PORT,

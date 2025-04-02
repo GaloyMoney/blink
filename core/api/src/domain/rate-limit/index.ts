@@ -11,6 +11,8 @@ import {
   AddQuizAttemptIpRateLimiterExceededError,
   AddQuizAttemptPhoneRateLimiterExceededError,
   UserAttemptPhoneIdentifierRateLimiterExceededError,
+  TelegramPassportNonceAttemptIpRateLimiterExceededError,
+  TelegramPassportNonceAttemptPhoneRateLimiterExceededError,
 } from "./errors"
 
 import {
@@ -21,6 +23,8 @@ import {
   getInvoiceCreateForRecipientAttemptLimits,
   getOnChainAddressCreateAttemptLimits,
   getRequestCodePerIpLimits,
+  getRequestTelegramPassportNoncePerPhoneNumberLimits,
+  getRequestTelegramPassportNoncePerIpLimits,
   getRequestCodePerEmailLimits,
   getAppcheckJtiAttemptLimits,
   getAddQuizPerIpLimits,
@@ -32,6 +36,9 @@ export const RateLimitPrefix = {
   requestCodeAttemptPerEmail: "request_code_attempt_id",
   requestCodeAttemptPerPhoneNumber: "request_phone_number_id",
   requestCodeAttemptPerIp: "request_code_attempt_ip",
+  requestTelegramPassportNonceAttemptPerPhoneNumber:
+    "request_tg_passport_nonce_attempt_phone_number",
+  requestTelegramPassportNonceAttemptPerIp: "request_tg_passport_nonce_attempt_ip",
   loginAttemptPerLoginIdentifier: "login_attempt_id",
   failedLoginAttemptPerIp: "login_attempt_ip",
   invoiceCreate: "invoice_create",
@@ -60,6 +67,16 @@ export const RateLimitConfig: { [key in RateLimitPrefixKey]: RateLimitConfig } =
     key: RateLimitPrefix.requestCodeAttemptPerIp,
     limits: getRequestCodePerIpLimits(),
     error: UserCodeAttemptIpRateLimiterExceededError,
+  },
+  requestTelegramPassportNonceAttemptPerPhoneNumber: {
+    key: RateLimitPrefix.requestTelegramPassportNonceAttemptPerPhoneNumber,
+    limits: getRequestTelegramPassportNoncePerPhoneNumberLimits(),
+    error: TelegramPassportNonceAttemptPhoneRateLimiterExceededError,
+  },
+  requestTelegramPassportNonceAttemptPerIp: {
+    key: RateLimitPrefix.requestTelegramPassportNonceAttemptPerIp,
+    limits: getRequestTelegramPassportNoncePerIpLimits(),
+    error: TelegramPassportNonceAttemptIpRateLimiterExceededError,
   },
   loginAttemptPerLoginIdentifier: {
     key: RateLimitPrefix.loginAttemptPerLoginIdentifier,

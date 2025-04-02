@@ -23,7 +23,7 @@ const PhoneNumberRegex = /^\+\d{7,14}$/i // FIXME {7,14} to be refined
 export const checkedToPhoneNumber = (
   phoneNumber: string,
 ): PhoneNumber | ValidationError => {
-  if (!phoneNumber.match(PhoneNumberRegex)) {
+  if (!phoneNumber || !phoneNumber.match(PhoneNumberRegex)) {
     return new InvalidPhoneNumber(phoneNumber)
   }
   return phoneNumber as PhoneNumber
