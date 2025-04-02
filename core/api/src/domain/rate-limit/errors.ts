@@ -11,6 +11,8 @@ export class RateLimiterExceededError extends RateLimitServiceError {}
 export class UserAttemptEmailIdentifierRateLimiterExceededError extends RateLimiterExceededError {}
 export class UserAttemptPhoneIdentifierRateLimiterExceededError extends RateLimiterExceededError {}
 export class UserCodeAttemptIpRateLimiterExceededError extends RateLimiterExceededError {}
+export class TelegramPassportNonceAttemptPhoneRateLimiterExceededError extends RateLimiterExceededError {}
+export class TelegramPassportNonceAttemptIpRateLimiterExceededError extends RateLimiterExceededError {}
 export class CreateDeviceAccountIpRateLimiterExceededError extends RateLimiterExceededError {}
 export class UserLoginIpRateLimiterExceededError extends RateLimiterExceededError {}
 export class UserLoginIdentifierRateLimiterExceededError extends RateLimiterExceededError {}

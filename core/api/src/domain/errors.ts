@@ -124,6 +124,7 @@ export class NoBtcWalletExistsForAccountError extends ValidationError {}
 export class InvalidQuizQuestionIdError extends ValidationError {}
 export class QuizClaimedTooEarlyError extends ValidationError {}
 export class MissingIPMetadataError extends ValidationError {}
+export class InvalidTelegramPassportNonceError extends ValidationError {}
 export class UndefinedIPError extends ValidationError {
   level = ErrorLevel.Critical
 }

@@ -13,6 +13,10 @@ export class EmailCodeExpiredError extends AuthenticationError {}
 export class EmailUnverifiedError extends AuthenticationError {}
 export class AccountAlreadyHasEmailError extends AuthenticationError {}
 
+export class InvalidNonceTelegramPassportError extends AuthenticationError {}
+export class InvalidNoncePhoneTelegramPassportError extends AuthenticationError {}
+export class WaitingDataTelegramPassportError extends AuthenticationError {}
+
 export class IdentifierNotFoundError extends AuthenticationError {}
 
 export class EmailValidationSubmittedTooOftenError extends AuthenticationError {}

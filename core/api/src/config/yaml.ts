@@ -181,6 +181,12 @@ export const getRequestCodePerPhoneNumberLimits = () =>
 export const getRequestCodePerIpLimits = () =>
   getRateLimits(yamlConfig.rateLimits.requestCodePerIp)
 
+export const getRequestTelegramPassportNoncePerPhoneNumberLimits = () =>
+  getRateLimits(yamlConfig.rateLimits.requestTelegramPassportNoncePerPhoneNumber)
+
+export const getRequestTelegramPassportNoncePerIpLimits = () =>
+  getRateLimits(yamlConfig.rateLimits.requestTelegramPassportNoncePerIp)
+
 export const getLoginAttemptPerLoginIdentifierLimits = () =>
   getRateLimits(yamlConfig.rateLimits.loginAttemptPerLoginIdentifier)
 
