@@ -150,7 +150,7 @@ teardown() {
   [[ "${send_status}" = "SUCCESS" ]]
 }
 
-@test "intraledger-send: (usd) wallet can send and recover sats to unregistered phone user" {
+@test "intraledger-send: (btc) wallet can send and recover sats to unregistered phone user" {
   local from_token_name="$ALICE"
   local from_wallet_name="$from_token_name.btc_wallet_id"
 
