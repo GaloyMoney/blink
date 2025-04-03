@@ -1,19 +1,23 @@
 import dedent from "dedent"
 
 import { Payments } from "@/app"
-import { checkedToWalletId } from "@/domain/wallets"
+import { WalletCurrency } from "@/domain/shared"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import { GT } from "@/graphql/index"
 import PaymentSendPayload from "@/graphql/public/types/payload/payment-send"
 import Memo from "@/graphql/shared/types/scalar/memo"
 import SatAmount from "@/graphql/shared/types/scalar/sat-amount"
 import WalletId from "@/graphql/shared/types/scalar/wallet-id"
+import WalletIdOrPhone from "@/graphql/shared/types/scalar/wallet-id-or-phone"
 
 const IntraLedgerPaymentSendInput = GT.Input({
   name: "IntraLedgerPaymentSendInput",
   fields: () => ({
     walletId: { type: GT.NonNull(WalletId), description: "The wallet ID of the sender." }, // TODO: rename senderWalletId
-    recipientWalletId: { type: GT.NonNull(WalletId) },
+    recipientWalletId: {
+      type: GT.NonNull(WalletIdOrPhone),
+      description: "The recipient wallet ID or phone number.",
+    },
     amount: { type: GT.NonNull(SatAmount), description: "Amount in satoshis." },
     memo: { type: Memo, description: "Optional memo to be attached to the payment." },
   }),
@@ -38,23 +42,15 @@ const IntraLedgerPaymentSendMutation = GT.Field<null, GraphQLPublicContextAuth>(
       }
     }
 
-    const senderWalletId = checkedToWalletId(walletId)
-    if (senderWalletId instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(senderWalletId)] }
-    }
-
-    const recipientWalletIdChecked = checkedToWalletId(recipientWalletId)
-    if (recipientWalletIdChecked instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(recipientWalletIdChecked)] }
-    }
-
-    const result = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
-      recipientWalletId,
+    const result = await Payments.intraledgerPaymentSendToWalletOrPhone({
+      recipientIdentifier: recipientWalletId,
+      recipientWalletCurrency: WalletCurrency.Btc,
       memo,
       amount,
       senderWalletId: walletId,
       senderAccount: domainAccount,
     })
+
     if (result instanceof Error) {
       return { status: "failed", errors: [mapAndParseErrorForGqlResponse(result)] }
     }

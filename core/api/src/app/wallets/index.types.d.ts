@@ -116,6 +116,12 @@ type IntraLedgerPaymentSendUsernameArgs = PaymentSendArgs & {
   amount: Satoshis
 }
 
+type IntraLedgerPaymentSendWalletIdOrPhoneArgs = PaymentSendArgs & {
+  recipientWalletCurrency: WalletCurrency
+  recipientIdentifier: WalletId | PhoneNumber
+  amount: number
+}
+
 type IntraLedgerPaymentSendWalletIdArgs = PaymentSendArgs & {
   recipientWalletId: WalletId
   amount: number

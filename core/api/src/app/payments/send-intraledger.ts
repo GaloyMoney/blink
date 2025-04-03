@@ -6,6 +6,8 @@ import {
   addContactsAfterSend,
   checkIntraledgerLimits,
   checkTradeIntraAccountLimits,
+  createUserAndAccountFromPhone,
+  getWalletFromAccount,
 } from "@/app/accounts"
 import {
   btcFromUsdMidPriceFn,
@@ -24,8 +26,9 @@ import {
   toDisplayBaseAmount,
 } from "@/domain/payments"
 import { AccountValidator } from "@/domain/accounts"
+import { checkedToPhoneNumber } from "@/domain/users"
 import { DisplayAmountsConverter } from "@/domain/fiat"
-import { ErrorLevel } from "@/domain/shared"
+import { ErrorLevel, WalletCurrency } from "@/domain/shared"
 import { PaymentSendStatus } from "@/domain/bitcoin/lightning"
 import { ResourceExpiredLockServiceError } from "@/domain/lock"
 import { checkedToWalletId, SettlementMethod } from "@/domain/wallets"
@@ -135,6 +138,49 @@ const intraledgerPaymentSendWalletId = async ({
   }
 
   return paymentSendResult
+}
+
+export const intraledgerPaymentSendToWalletOrPhone = async (
+  args: IntraLedgerPaymentSendWalletIdOrPhoneArgs,
+): Promise<PaymentSendResult | ApplicationError> => {
+  const {
+    senderWalletId,
+    recipientIdentifier,
+    recipientWalletCurrency,
+    amount,
+    memo,
+    senderAccount,
+  } = args
+
+  const senderWalletIdChecked = checkedToWalletId(senderWalletId)
+  if (senderWalletIdChecked instanceof Error) return senderWalletIdChecked
+
+  let recipientValue = recipientIdentifier
+  const recipientCheked = checkedToPhoneNumber(recipientIdentifier)
+  if (!(recipientCheked instanceof Error)) {
+    const account = await createUserAndAccountFromPhone({ phone: recipientCheked })
+    if (account instanceof Error) return account
+
+    const recipientWallet = await getWalletFromAccount(account, recipientWalletCurrency)
+    if (recipientWallet instanceof Error) return recipientWallet
+
+    recipientValue = recipientWallet.id
+  }
+
+  const recipientWalletIdChecked = checkedToWalletId(recipientValue)
+  if (recipientWalletIdChecked instanceof Error) return recipientWalletIdChecked
+
+  const commonArgs = {
+    senderWalletId: senderWalletIdChecked,
+    recipientWalletId: recipientWalletIdChecked,
+    amount,
+    memo,
+    senderAccount,
+  }
+
+  return recipientWalletCurrency === WalletCurrency.Btc
+    ? intraledgerPaymentSendWalletIdForBtcWallet(commonArgs)
+    : intraledgerPaymentSendWalletIdForUsdWallet(commonArgs)
 }
 
 export const intraledgerPaymentSendWalletIdForBtcWallet = async (
