@@ -149,3 +149,57 @@ teardown() {
   send_status="$(graphql_output '.data.intraLedgerUsdPaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]]
 }
+
+@test "intraledger-send: send sats to phone number without account - btc wallet" {
+  local from_token_name="$ALICE"
+  local from_wallet_name="$from_token_name.btc_wallet_id"
+
+  local phone="$(random_phone)"
+  local amount=$(( RANDOM % 1000 + 1 ))  # (1–1000) sats
+
+  # Send sats to the phone number (auto-create account)
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $from_wallet_name)" \
+    --arg recipient_wallet_id "$phone" \
+    --arg amount "$amount" \
+    '{input: {walletId: $wallet_id, recipientWalletId: $recipient_wallet_id, amount: $amount}}'
+  )
+  exec_graphql "$from_token_name" 'intraledger-payment-send' "$variables"
+  send_status="$(graphql_output '.data.intraLedgerPaymentSend.status')"
+  [[ "$send_status" == "SUCCESS" ]] || exit 1
+
+  # Login to the new account to verify BTC balance
+  login_user 'recipient' "$phone"
+
+  exec_graphql 'recipient' 'wallets-for-account'
+  btc_balance=$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .balance')
+  [[ "$btc_balance" == "$amount" ]] || exit 1
+}
+
+@test "intraledger-send: send sats to phone number without account - usd wallet" {
+  local from_token_name="$ALICE"
+  local from_wallet_name="$from_token_name.usd_wallet_id"
+
+  local phone="$(random_phone)"
+  local amount=$(( RANDOM % 100 + 1 ))  # (1–100) sats
+
+  # Send sats to the phone number (auto-create account)
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $from_wallet_name)" \
+    --arg recipient_wallet_id "$phone" \
+    --arg amount "$amount" \
+    '{input: {walletId: $wallet_id, recipientWalletId: $recipient_wallet_id, amount: $amount}}'
+  )
+  exec_graphql "$from_token_name" 'intraledger-usd-payment-send' "$variables"
+  send_status="$(graphql_output '.data.intraLedgerUsdPaymentSend.status')"
+  [[ "$send_status" == "SUCCESS" ]] || exit 1
+
+  # Login to the new account to verify USD balance
+  login_user 'recipient' "$phone"
+
+  exec_graphql 'recipient' 'wallets-for-account'
+  usd_balance=$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "USD") .balance')
+  [[ "$usd_balance" == "$amount" ]] || exit 1
+}
