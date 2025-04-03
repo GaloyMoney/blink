@@ -156,9 +156,9 @@ export const intraledgerPaymentSendToWalletOrPhone = async (
   if (senderWalletIdChecked instanceof Error) return senderWalletIdChecked
 
   let recipientValue = recipientIdentifier
-  const recipientCheked = checkedToPhoneNumber(recipientIdentifier)
-  if (!(recipientCheked instanceof Error)) {
-    const account = await createUserAndAccountFromPhone({ phone: recipientCheked })
+  const recipientChecked = checkedToPhoneNumber(recipientIdentifier)
+  if (!(recipientChecked instanceof Error)) {
+    const account = await createUserAndAccountFromPhone({ phone: recipientChecked })
     if (account instanceof Error) return account
 
     const recipientWallet = await getWalletFromAccount(account, recipientWalletCurrency)
