@@ -83,6 +83,8 @@ export type Scalars = {
   Username: { input: string; output: string; }
   /** Unique identifier of a wallet */
   WalletId: { input: string; output: string; }
+  /** A Wallet ID (UUID) or a phone number including country code */
+  WalletIdOrPhone: { input: string; output: string; }
   join__FieldSet: { input: string; output: string; }
   link__Import: { input: string; output: string; }
   _FieldSet: { input: string; output: string; }
@@ -636,7 +638,8 @@ export type IntraLedgerPaymentSendInput = {
   readonly amount: Scalars['SatAmount']['input'];
   /** Optional memo to be attached to the payment. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly recipientWalletId: Scalars['WalletId']['input'];
+  /** The recipient wallet ID or phone number. */
+  readonly recipientWalletId: Scalars['WalletIdOrPhone']['input'];
   /** The wallet ID of the sender. */
   readonly walletId: Scalars['WalletId']['input'];
 };
@@ -660,7 +663,8 @@ export type IntraLedgerUsdPaymentSendInput = {
   readonly amount: Scalars['CentAmount']['input'];
   /** Optional memo to be attached to the payment. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly recipientWalletId: Scalars['WalletId']['input'];
+  /** The recipient wallet ID or phone number. */
+  readonly recipientWalletId: Scalars['WalletIdOrPhone']['input'];
   /** The wallet ID of the sender. */
   readonly walletId: Scalars['WalletId']['input'];
 };
@@ -3729,6 +3733,7 @@ export type ResolversTypes = {
   Wallet: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Wallet']>;
   WalletCurrency: WalletCurrency;
   WalletId: ResolverTypeWrapper<Scalars['WalletId']['output']>;
+  WalletIdOrPhone: ResolverTypeWrapper<Scalars['WalletIdOrPhone']['output']>;
   join__FieldSet: ResolverTypeWrapper<Scalars['join__FieldSet']['output']>;
   join__Graph: Join__Graph;
   link__Import: ResolverTypeWrapper<Scalars['link__Import']['output']>;
@@ -3945,6 +3950,7 @@ export type ResolversParentTypes = {
   Username: Scalars['Username']['output'];
   Wallet: ResolversInterfaceTypes<ResolversParentTypes>['Wallet'];
   WalletId: Scalars['WalletId']['output'];
+  WalletIdOrPhone: Scalars['WalletIdOrPhone']['output'];
   join__FieldSet: Scalars['join__FieldSet']['output'];
   link__Import: Scalars['link__Import']['output'];
 };
@@ -5050,6 +5056,10 @@ export interface WalletIdScalarConfig extends GraphQLScalarTypeConfig<ResolversT
   name: 'WalletId';
 }
 
+export interface WalletIdOrPhoneScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['WalletIdOrPhone'], any> {
+  name: 'WalletIdOrPhone';
+}
+
 export interface Join__FieldSetScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['join__FieldSet'], any> {
   name: 'join__FieldSet';
 }
@@ -5204,6 +5214,7 @@ export type Resolvers<ContextType = any> = {
   Username?: GraphQLScalarType;
   Wallet?: WalletResolvers<ContextType>;
   WalletId?: GraphQLScalarType;
+  WalletIdOrPhone?: GraphQLScalarType;
   join__FieldSet?: GraphQLScalarType;
   link__Import?: GraphQLScalarType;
 };

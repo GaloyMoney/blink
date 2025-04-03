@@ -80,6 +80,8 @@ export type Scalars = {
   Username: { input: string; output: string; }
   /** Unique identifier of a wallet */
   WalletId: { input: string; output: string; }
+  /** A Wallet ID (UUID) or a phone number including country code */
+  WalletIdOrPhone: { input: string; output: string; }
 };
 
 export type Account = {
@@ -541,7 +543,8 @@ export type IntraLedgerPaymentSendInput = {
   readonly amount: Scalars['SatAmount']['input'];
   /** Optional memo to be attached to the payment. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly recipientWalletId: Scalars['WalletId']['input'];
+  /** The recipient wallet ID or phone number. */
+  readonly recipientWalletId: Scalars['WalletIdOrPhone']['input'];
   /** The wallet ID of the sender. */
   readonly walletId: Scalars['WalletId']['input'];
 };
@@ -565,7 +568,8 @@ export type IntraLedgerUsdPaymentSendInput = {
   readonly amount: Scalars['CentAmount']['input'];
   /** Optional memo to be attached to the payment. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
-  readonly recipientWalletId: Scalars['WalletId']['input'];
+  /** The recipient wallet ID or phone number. */
+  readonly recipientWalletId: Scalars['WalletIdOrPhone']['input'];
   /** The wallet ID of the sender. */
   readonly walletId: Scalars['WalletId']['input'];
 };

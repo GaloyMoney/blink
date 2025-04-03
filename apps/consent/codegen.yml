@@ -44,6 +44,7 @@ generates:
         TxExternalIdSubstring: "string"
         Username: "string"
         WalletId: "string"
+        WalletIdOrPhone: "string"
         Seconds: "number"
         DisplayCurrency: "string"
         SignedDisplayMajorAmount: "string"
