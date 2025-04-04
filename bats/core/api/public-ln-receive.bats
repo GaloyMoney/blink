@@ -166,7 +166,7 @@ usd_amount=50
 }
 
 @test "public-ln-receive: account details - fail for non existent phone number" {
-  non_existent_phone="+999999999999"
+  non_existent_phone=$(random_phone)
 
   variables=$(
     jq -n \
