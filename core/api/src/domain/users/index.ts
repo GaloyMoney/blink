@@ -18,15 +18,23 @@ export * from "./phone-metadata-authorizer"
 
 // TODO: we could be using https://gitlab.com/catamphetamine/libphonenumber-js#readme
 // for a more precise "regex"
-const PhoneNumberRegex = /^\+\d{7,14}$/i // FIXME {7,14} to be refined
+const PhoneNumberRegex = /^\+?\d{7,14}$/i // FIXME {7,14} to be refined
 
 export const checkedToPhoneNumber = (
   phoneNumber: string,
 ): PhoneNumber | ValidationError => {
-  if (!phoneNumber || !phoneNumber.match(PhoneNumberRegex)) {
+  if (!phoneNumber) {
     return new InvalidPhoneNumber(phoneNumber)
   }
-  return phoneNumber as PhoneNumber
+
+  if (!phoneNumber.match(PhoneNumberRegex)) {
+    return new InvalidPhoneNumber(phoneNumber)
+  }
+
+  // If valid, ensure it has a + prefix
+  const normalizedPhone = phoneNumber.startsWith("+") ? phoneNumber : `+${phoneNumber}`
+
+  return normalizedPhone as PhoneNumber
 }
 
 export const checkedToEmailAddress = (

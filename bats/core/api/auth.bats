@@ -206,7 +206,7 @@ simulateTelegramPassportWebhook() {
 
   # Step 3: Simulate Telegram Passport webhook authorization
   # Generate and send the encrypted webhook data to authorize the nonce
-  simulateTelegramPassportWebhook "$nonce" "$phone"
+  simulateTelegramPassportWebhook "$nonce" "${phone//+/}"
 
   # Step 4: Now try to login again, which should succeed
   variables="{\"nonce\": \"$nonce\", \"phone\": \"$phone\"}"
