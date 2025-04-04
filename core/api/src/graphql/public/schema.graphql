@@ -473,7 +473,9 @@ input IntraLedgerPaymentSendInput {
 
   """Optional memo to be attached to the payment."""
   memo: Memo
-  recipientWalletId: WalletId!
+
+  """The recipient wallet ID or phone number."""
+  recipientWalletId: WalletIdOrPhone!
 
   """The wallet ID of the sender."""
   walletId: WalletId!
@@ -494,7 +496,9 @@ input IntraLedgerUsdPaymentSendInput {
 
   """Optional memo to be attached to the payment."""
   memo: Memo
-  recipientWalletId: WalletId!
+
+  """The recipient wallet ID or phone number."""
+  recipientWalletId: WalletIdOrPhone!
 
   """The wallet ID of the sender."""
   walletId: WalletId!
@@ -1863,3 +1867,6 @@ enum WalletCurrency {
 
 """Unique identifier of a wallet"""
 scalar WalletId
+
+"""A Wallet ID (UUID) or a phone number including country code"""
+scalar WalletIdOrPhone
