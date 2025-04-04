@@ -26,7 +26,7 @@ export const checkedToPhoneNumber = (value: string): PhoneNumber | ValidationErr
   const normalizedPhone = trimmedValue.startsWith("+") ? trimmedValue : `+${trimmedValue}`
   const phoneNumber = parsePhoneNumberFromString(normalizedPhone)
   if (!phoneNumber?.country) {
-    return new InvalidPhoneNumber(value)
+    return new InvalidPhoneNumber(trimmedValue)
   }
 
   return `${phoneNumber.number}` as PhoneNumber
