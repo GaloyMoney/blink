@@ -23,12 +23,20 @@ describe("phonenumber-check", () => {
   })
 
   it("Success with valid phone number without + prefix", () => {
-    const phone = checkedToPhoneNumber("16505554321")
+    let phone = checkedToPhoneNumber("16505554321")
+    expect(phone).toEqual("+16505554321")
+    phone = checkedToPhoneNumber("1 650-555-4321")
+    expect(phone).toEqual("+16505554321")
+    phone = checkedToPhoneNumber("1 (650) 555-4321")
     expect(phone).toEqual("+16505554321")
   })
 
   it("Success on good phone number with + prefix", () => {
-    const phone = checkedToPhoneNumber("+16505554321")
+    let phone = checkedToPhoneNumber("+16505554321")
+    expect(phone).toEqual("+16505554321")
+    phone = checkedToPhoneNumber("+1 650-555-4321")
+    expect(phone).toEqual("+16505554321")
+    phone = checkedToPhoneNumber("+1 (650) 555-4321")
     expect(phone).toEqual("+16505554321")
   })
 
