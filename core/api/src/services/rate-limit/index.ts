@@ -20,7 +20,7 @@ export const RedisRateLimitService = ({
       await limiter.consume(key)
       return true
     } catch (err) {
-      return new RateLimiterExceededError()
+      return new RateLimiterExceededError(err)
     }
   }
 
