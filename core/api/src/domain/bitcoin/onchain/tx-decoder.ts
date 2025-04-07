@@ -30,7 +30,7 @@ const decodeOutput = (tx: Transaction, network: Network): TxOut[] => {
     let decodedAddress: OnChainAddress | null = null
     try {
       decodedAddress = address.fromOutputScript(out.script, network) as OnChainAddress
-    } catch (_) {
+    } catch {
       // OP_RETURN outputs don't have a valid address associated with them
     }
     return {
