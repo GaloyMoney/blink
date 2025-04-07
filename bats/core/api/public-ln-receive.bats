@@ -165,19 +165,40 @@ usd_amount=50
   [[ "$error_msg" == "Invalid value for Username" ]] || exit 1
 }
 
-@test "public-ln-receive: account details - fail for non existent phone number" {
-  non_existent_phone=$(random_phone)
+@test "public-ln-receive: account-default-wallet creates BTC wallet for new phone number" {
+  local phone="$(random_phone)"
 
   variables=$(
     jq -n \
-    --arg phone "$non_existent_phone" \
-    '{username: $phone}'
+    --arg phone "$phone" \
+    --arg walletCurrency "BTC" \
+    '{username: $phone, walletCurrency: $walletCurrency}'
   )
   exec_graphql 'anon' 'account-default-wallet' "$variables"
 
-  error_msg="$(graphql_output '.errors[0].message')"
+  receiver_wallet_id="$(graphql_output '.data.accountDefaultWallet.id')"
+  received_currency="$(graphql_output '.data.accountDefaultWallet.currency')"
 
-  [[ "$error_msg" == "User does not exist for phone Unknown error" ]] || exit 1
+  [[ -n "$receiver_wallet_id" ]] || fail "Wallet ID should not be empty"
+  [[ "$received_currency" == "BTC" ]] || fail "Expected BTC wallet, got: $received_currency"
+}
+
+@test "public-ln-receive: account-default-wallet creates USD wallet for new phone number" {
+  local phone="$(random_phone)"
+
+  variables=$(
+    jq -n \
+    --arg phone "$phone" \
+    --arg walletCurrency "USD" \
+    '{username: $phone, walletCurrency: $walletCurrency}'
+  )
+  exec_graphql 'anon' 'account-default-wallet' "$variables"
+
+  receiver_wallet_id="$(graphql_output '.data.accountDefaultWallet.id')"
+  received_currency="$(graphql_output '.data.accountDefaultWallet.currency')"
+
+  [[ -n "$receiver_wallet_id" ]] || fail "Wallet ID should not be empty"
+  [[ "$received_currency" == "USD" ]] || fail "Expected USD wallet, got: $received_currency"
 }
 
 @test "public-ln-receive: receive via invoice - can receive on btc invoice, with subscription by payment request" {
