@@ -149,3 +149,91 @@ teardown() {
   send_status="$(graphql_output '.data.intraLedgerUsdPaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]]
 }
+
+@test "intraledger-send: (btc) wallet can send and recover sats to unregistered phone user" {
+  local from_token_name="$ALICE"
+  local from_wallet_name="$from_token_name.btc_wallet_id"
+
+  local phone="$(random_phone)"
+  local amount=$(( RANDOM % 100 + 1 ))  # (1–100) sats
+
+  # Create recipient user manually
+  login_user 'recipient' "$phone"
+  cache_value recipient.phone "$phone"
+
+  # Get BTC wallet ID for recipient
+  exec_graphql 'recipient' 'wallets-for-account'
+  recipient_wallet_id=$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .id')
+
+  # Send sats to the phone number (account already exists)
+  variables=$( jq -n \
+    --arg wallet_id "$(read_value $from_wallet_name)" \
+    --arg recipient_wallet_id "$recipient_wallet_id" \
+    --arg amount "$amount" \
+    '{input: {walletId: $wallet_id, recipientWalletId: $recipient_wallet_id, amount: $amount}}' )
+  exec_graphql "$from_token_name" 'intraledger-payment-send' "$variables"
+  send_status="$(graphql_output '.data.intraLedgerPaymentSend.status')"
+  [[ "$send_status" == "SUCCESS" ]] || exit 1
+
+  # Verify recipient balance
+  exec_graphql 'recipient' 'wallets-for-account'
+  btc_balance=$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .balance')
+  [[ "$btc_balance" == "$amount" ]] || exit 1
+
+  # Send back to sender
+  variables=$( jq -n \
+    --arg wallet_id "$recipient_wallet_id" \
+    --arg recipient_wallet_id "$(read_value $from_wallet_name)" \
+    --arg amount "$amount" \
+    '{input: {walletId: $wallet_id, recipientWalletId: $recipient_wallet_id, amount: $amount}}' )
+  exec_graphql 'recipient' 'intraledger-payment-send' "$variables"
+  send_back_status="$(graphql_output '.data.intraLedgerPaymentSend.status')"
+  [[ "$send_back_status" == "SUCCESS" ]] || exit 1
+
+  final_balance="$(balance_for_check)"
+  [[ "$final_balance" == "0" ]] || fail "Balance not restored. Remaining: $final_balance"
+}
+
+@test "intraledger-send: (usd) wallet can send and recover usd to unregistered phone user" {
+  local from_token_name="$ALICE"
+  local from_wallet_name="$from_token_name.usd_wallet_id"
+
+  local phone="$(random_phone)"
+  local amount=$(( RANDOM % 10 + 1 ))  # (1–10) USD
+
+  # Create recipient user manually
+  login_user 'recipient' "$phone"
+  cache_value recipient.phone "$phone"
+
+  # Get USD wallet ID for recipient
+  exec_graphql 'recipient' 'wallets-for-account'
+  recipient_wallet_id=$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "USD") .id')
+
+  # Send sats to the phone number (account already exists)
+  variables=$( jq -n \
+    --arg wallet_id "$(read_value $from_wallet_name)" \
+    --arg recipient_wallet_id "$recipient_wallet_id" \
+    --arg amount "$amount" \
+    '{input: {walletId: $wallet_id, recipientWalletId: $recipient_wallet_id, amount: $amount}}' )
+  exec_graphql "$from_token_name" 'intraledger-usd-payment-send' "$variables"
+  send_status="$(graphql_output '.data.intraLedgerUsdPaymentSend.status')"
+  [[ "$send_status" == "SUCCESS" ]] || exit 1
+
+  # Verify recipient balance
+  exec_graphql 'recipient' 'wallets-for-account'
+  usd_balance=$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "USD") .balance')
+  [[ "$usd_balance" == "$amount" ]] || exit 1
+
+  # Send back to sender
+  variables=$( jq -n \
+    --arg wallet_id "$recipient_wallet_id" \
+    --arg recipient_wallet_id "$(read_value $from_wallet_name)" \
+    --arg amount "$amount" \
+    '{input: {walletId: $wallet_id, recipientWalletId: $recipient_wallet_id, amount: $amount}}' )
+  exec_graphql 'recipient' 'intraledger-usd-payment-send' "$variables"
+  send_back_status="$(graphql_output '.data.intraLedgerUsdPaymentSend.status')"
+  [[ "$send_back_status" == "SUCCESS" ]] || exit 1
+
+  final_balance="$(balance_for_check)"
+  [[ "$final_balance" == "0" ]] || fail "Balance not restored. Remaining: $final_balance"
+}
