@@ -1,8 +1,10 @@
 import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/config"
 
+import { createUserByPhone } from "@/app/users"
 import { AccountLevel } from "@/domain/accounts"
 import { WalletType } from "@/domain/wallets"
 import { displayCurrencyFromCountryCode } from "@/domain/price"
+import { CouldNotFindAccountFromKratosIdError } from "@/domain/errors"
 
 import {
   AccountsRepository,
@@ -119,4 +121,31 @@ export const createAccountWithPhoneIdentifier = async ({
   if (account instanceof Error) return account
 
   return account
+}
+
+export const createUserAndAccountFromPhone = async ({
+  phone,
+}: {
+  phone: PhoneNumber
+}): Promise<Account | ApplicationError> => {
+  const user = await createUserByPhone(phone)
+
+  if (user instanceof Error) return user
+
+  const existingAccount = await AccountsRepository().findByUserId(user.id)
+  if (existingAccount instanceof CouldNotFindAccountFromKratosIdError) {
+    const account = await createAccountWithPhoneIdentifier({
+      newAccountInfo: {
+        phone,
+        kratosUserId: user.id,
+      },
+      config: getDefaultAccountsConfig(),
+    })
+
+    return account
+  }
+
+  if (existingAccount instanceof Error) return existingAccount
+
+  return existingAccount
 }

@@ -1,4 +1,5 @@
 import { getWalletFromAccount } from "./get-wallet-from-account"
+import { createUserAndAccountFromPhone } from "./create-account"
 
 import { CouldNotFindWalletFromUsernameAndCurrencyError } from "@/domain/errors"
 import { checkedToUsername } from "@/domain/accounts"
@@ -9,19 +10,41 @@ export const getDefaultWalletByUsernameOrPhone = async (
   usernameOrPhone: Username | PhoneNumber,
   walletCurrency?: WalletCurrency,
 ): Promise<Wallet | ApplicationError> => {
-  const checkedUsername = checkedToUsername(usernameOrPhone)
-  if (!(checkedUsername instanceof Error)) {
-    const account = await AccountsRepository().findByUsername(checkedUsername)
-    if (account instanceof Error) return account
-    return getWalletFromAccount(account, walletCurrency)
+  const username = checkedToUsername(usernameOrPhone)
+  if (!(username instanceof Error)) {
+    return getWalletByUsername(username, walletCurrency)
   }
 
-  const checkedPhoneNumber = checkedToPhoneNumber(usernameOrPhone)
-  if (checkedPhoneNumber instanceof Error)
+  const phone = checkedToPhoneNumber(usernameOrPhone)
+  if (phone instanceof Error) {
     return new CouldNotFindWalletFromUsernameAndCurrencyError(usernameOrPhone)
+  }
 
-  const user = await UsersRepository().findByPhone(checkedPhoneNumber)
-  if (user instanceof Error) return user
+  return getWalletByPhone(phone, walletCurrency)
+}
+
+const getWalletByUsername = async (
+  username: Username,
+  walletCurrency?: WalletCurrency,
+): Promise<Wallet | ApplicationError> => {
+  const account = await AccountsRepository().findByUsername(username)
+  if (account instanceof Error) return account
+
+  return getWalletFromAccount(account, walletCurrency)
+}
+
+const getWalletByPhone = async (
+  phone: PhoneNumber,
+  walletCurrency?: WalletCurrency,
+): Promise<Wallet | ApplicationError> => {
+  const user = await UsersRepository().findByPhone(phone)
+
+  if (user instanceof Error) {
+    const account = await createUserAndAccountFromPhone({ phone })
+    if (account instanceof Error) return user
+
+    return getWalletFromAccount(account, walletCurrency)
+  }
 
   const account = await AccountsRepository().findByUserId(user.id)
   if (account instanceof Error) return account

@@ -23,6 +23,7 @@ export * from "./enable-notification-channel"
 export * from "./disable-notification-channel"
 export * from "./get-pending-incoming-on-chain-transactions-for-account"
 export * from "./get-invoices-for-account"
+export * from "./get-wallet-from-account"
 export * from "./get-notification-settings-for-account"
 export * from "./get-default-wallet-for-username-phone"
 
