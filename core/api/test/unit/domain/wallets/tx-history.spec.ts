@@ -315,14 +315,8 @@ describe("translates ledger txs to wallet txs", () => {
 
       // Modify satsAmount-related-dependent properties
       const expectedTransactionsModified = expected.map((tx) => {
-        const { ...rest } = tx
-
-        delete rest.settlementFee
-        delete rest.settlementDisplayAmount
-        delete rest.settlementDisplayFee
-        delete rest.settlementDisplayPrice
-
         return {
+          ...tx,
           settlementFee: 0,
           settlementDisplayAmount: "0.00",
           settlementDisplayFee: "0.00",
@@ -331,7 +325,6 @@ describe("translates ledger txs to wallet txs", () => {
             displayCurrency: UsdDisplayCurrency,
             walletCurrency: tx.settlementCurrency,
           }),
-          ...rest,
         }
       })
 
