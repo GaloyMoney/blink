@@ -1,6 +1,7 @@
 import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/config"
 
 import { createUserByPhone } from "@/app/users"
+import { isRealPhoneNumber } from "@/app/authentication"
 import { AccountLevel } from "@/domain/accounts"
 import { WalletType } from "@/domain/wallets"
 import { displayCurrencyFromCountryCode } from "@/domain/price"
@@ -128,6 +129,10 @@ export const createUserAndAccountFromPhone = async ({
 }: {
   phone: PhoneNumber
 }): Promise<Account | ApplicationError> => {
+  const validPhone = await isRealPhoneNumber(phone)
+
+  if (validPhone instanceof Error) return validPhone
+
   const user = await createUserByPhone(phone)
 
   if (user instanceof Error) return user
