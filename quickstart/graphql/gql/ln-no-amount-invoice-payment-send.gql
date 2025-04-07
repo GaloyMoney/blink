@@ -4,5 +4,22 @@ mutation lnNoAmountInvoicePaymentSend($input: LnNoAmountInvoicePaymentInput!) {
       message
     }
     status
+    transaction {
+      externalId
+      initiationVia {
+        ... on InitiationViaLn {
+          paymentHash
+          paymentRequest
+        }
+      }
+      settlementVia {
+        ... on SettlementViaIntraLedger {
+          preImage
+        }
+        ... on SettlementViaLn {
+          preImage
+        }
+      }
+    }
   }
 }

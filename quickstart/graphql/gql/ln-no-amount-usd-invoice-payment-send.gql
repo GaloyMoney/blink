@@ -1,8 +1,27 @@
-mutation lnNoAmountUsdInvoicePaymentSend($input: LnNoAmountUsdInvoicePaymentInput!) {
+mutation lnNoAmountUsdInvoicePaymentSend(
+  $input: LnNoAmountUsdInvoicePaymentInput!
+) {
   lnNoAmountUsdInvoicePaymentSend(input: $input) {
     errors {
       message
     }
     status
+    transaction {
+      externalId
+      initiationVia {
+        ... on InitiationViaLn {
+          paymentHash
+          paymentRequest
+        }
+      }
+      settlementVia {
+        ... on SettlementViaIntraLedger {
+          preImage
+        }
+        ... on SettlementViaLn {
+          preImage
+        }
+      }
+    }
   }
 }

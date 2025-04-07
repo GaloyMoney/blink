@@ -33,6 +33,7 @@ fragment TransactionList on TransactionConnection {
     node {
       __typename
       id
+      externalId
       status
       direction
       memo
