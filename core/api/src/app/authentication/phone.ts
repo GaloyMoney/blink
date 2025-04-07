@@ -6,11 +6,15 @@ import {
 
 import { PhoneAlreadyExistsError } from "@/domain/authentication/errors"
 
-import { isPhoneCodeValid } from "@/services/twilio-service"
+import { InvalidPhoneMetadataForOnboardingError } from "@/domain/users/errors"
+
+import { isPhoneCodeValid, TwilioClient } from "@/services/twilio-service"
 
 import { UsersRepository } from "@/services/mongoose"
 
 import { AuthWithEmailPasswordlessService } from "@/services/kratos"
+
+import { getAccountsOnboardConfig } from "@/config"
 
 export const verifyPhone = async ({
   userId,
@@ -57,6 +61,28 @@ export const verifyPhone = async ({
   if (res instanceof Error) return res
 
   return update
+}
+
+export const isRealPhoneNumber = async (
+  phone: PhoneNumber,
+): Promise<boolean | ApplicationError> => {
+  const { phoneMetadataValidationSettings } = getAccountsOnboardConfig()
+
+  if (!phoneMetadataValidationSettings.enabled) {
+    return true
+  }
+
+  const metadata = await TwilioClient().getCarrier(phone)
+
+  if (
+    metadata instanceof Error ||
+    metadata.carrier?.type == null ||
+    metadata.carrier?.error_code
+  ) {
+    return new InvalidPhoneMetadataForOnboardingError()
+  }
+
+  return true
 }
 
 export const removePhoneFromIdentity = async ({
