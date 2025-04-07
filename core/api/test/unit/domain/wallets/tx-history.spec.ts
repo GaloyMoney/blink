@@ -298,27 +298,15 @@ describe("translates ledger txs to wallet txs", () => {
 
       // Remove satsAmount-related properties
       const ledgerTransactionsModified = ledgerTransactions.map((tx) => {
-        const {
-          satsAmount,
-          satsFee,
-          centsAmount,
-          centsFee,
-          displayAmount,
-          displayFee,
-          displayCurrency,
-          ...rest
-        } = tx
+        const { ...rest } = tx
 
-        const removed = [
-          satsAmount,
-          satsFee,
-          centsAmount,
-          centsFee,
-          displayAmount,
-          displayFee,
-          displayCurrency,
-        ]
-        removed // dummy call to satisfy type-checker
+        delete rest.satsAmount
+        delete rest.satsFee
+        delete rest.centsAmount
+        delete rest.centsFee
+        delete rest.displayAmount
+        delete rest.displayFee
+        delete rest.displayCurrency
 
         return rest
       })
@@ -327,21 +315,12 @@ describe("translates ledger txs to wallet txs", () => {
 
       // Modify satsAmount-related-dependent properties
       const expectedTransactionsModified = expected.map((tx) => {
-        const {
-          settlementFee,
-          settlementDisplayAmount,
-          settlementDisplayFee,
-          settlementDisplayPrice,
-          ...rest
-        } = tx
+        const { ...rest } = tx
 
-        const removed = [
-          settlementFee,
-          settlementDisplayAmount,
-          settlementDisplayFee,
-          settlementDisplayPrice,
-        ]
-        removed // dummy call to satisfy type-checker
+        delete rest.settlementFee
+        delete rest.settlementDisplayAmount
+        delete rest.settlementDisplayFee
+        delete rest.settlementDisplayPrice
 
         return {
           settlementFee: 0,

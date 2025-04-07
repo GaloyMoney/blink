@@ -14,13 +14,10 @@ export const WalletOnChainPendingReceiveRepository =
   (): IWalletOnChainPendingReceiveRepository => {
     const listByWalletIds = async ({
       walletIds,
-      paginationArgs,
     }: ListWalletOnChainPendingReceiveArgs): Promise<
       WalletOnChainSettledTransaction[] | RepositoryError
     > => {
       // TODO: implement pagination
-      !!paginationArgs
-
       try {
         const result: WalletOnChainPendingReceiveRecord[] =
           await WalletOnChainPendingReceive.find({
@@ -38,13 +35,10 @@ export const WalletOnChainPendingReceiveRepository =
     const listByWalletIdsAndAddresses = async ({
       walletIds,
       addresses,
-      paginationArgs,
     }: ListWalletOnChainPendingReceiveByAddressesArgs): Promise<
       WalletOnChainSettledTransaction[] | RepositoryError
     > => {
       // TODO: implement pagination
-      !!paginationArgs
-
       try {
         const result: WalletOnChainPendingReceiveRecord[] =
           await WalletOnChainPendingReceive.find({
