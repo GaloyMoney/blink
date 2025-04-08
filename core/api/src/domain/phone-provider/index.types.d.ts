@@ -21,4 +21,13 @@ interface IPhoneProviderService {
     to: PhoneNumber
     code: PhoneCode
   }): Promise<true | PhoneProviderServiceError>
+  sendSMSNotification({
+    to,
+    body,
+    from,
+  }: {
+    to: PhoneNumber
+    body: string
+    from?: string
+  }): Promise<true | PhoneProviderServiceError>
 }
