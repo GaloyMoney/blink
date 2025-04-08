@@ -46,7 +46,8 @@ import {
   UnknownNotificationsServiceError,
 } from "@/domain/notifications"
 import { toSats } from "@/domain/bitcoin"
-import { AccountLevel } from "@/domain/accounts"
+import { AccountLevel, AccountStatus } from "@/domain/accounts"
+import { welcomeSmsTemplate } from "@/domain/sms-templates"
 import { WalletCurrency } from "@/domain/shared"
 import { TxStatus } from "@/domain/wallets/tx-status"
 import { CallbackEventType } from "@/domain/callback"
@@ -58,6 +59,9 @@ import { majorToMinorUnit, toCents, UsdDisplayCurrency } from "@/domain/fiat"
 import { PubSubService } from "@/services/pubsub"
 import { CallbackService } from "@/services/svix"
 import { wrapAsyncFunctionsToRunInSpan, wrapAsyncToRunInSpan } from "@/services/tracing"
+import { TwilioClient } from "@/services/twilio-service"
+import { AccountsRepository } from "@/services/mongoose"
+import { getUser } from "@/app/users"
 
 export const NotificationsService = (): INotificationsService => {
   const pubsub = PubSubService()
@@ -248,6 +252,48 @@ export const NotificationsService = (): INotificationsService => {
     }
   }
 
+  const sendWelcomeNotification = async ({
+    recipient, transaction
+  }: NotificatioSendTransactionArgs): Promise<true | NotificationsServiceError> => {
+    try {
+      const accountsRepo = AccountsRepository()
+      const account = await accountsRepo.findByUserId(recipient.userId)
+      if (account instanceof Error) return account
+  
+      if (account.status !== AccountStatus.Invited) return true
+  
+      const user = await getUser(recipient.userId)
+      if (user instanceof Error) return user
+
+      const phoneNumber = user.phone
+      if (!phoneNumber) {
+        return new UnknownNotificationsServiceError(phoneNumber)
+      }
+
+      const amount =
+      transaction.settlementCurrency === WalletCurrency.Btc 
+          ? Number(toSats(transaction.settlementAmount))
+          : Number(toCents(transaction.settlementAmount)) / 100
+
+      const body = welcomeSmsTemplate({
+        currency: transaction.settlementCurrency,
+        amount,
+        phoneNumber,
+      })
+
+      const result = await TwilioClient().sendSMSNotification({
+        to: phoneNumber,
+        body,
+      })
+
+      if (result instanceof Error) return result
+
+      return true
+    } catch (err) {
+      return handleCommonNotificationErrors(err)
+    }
+  }
+
   const sendTransactionCallbackNotification = async ({
     recipient,
     transaction,
@@ -281,6 +327,7 @@ export const NotificationsService = (): INotificationsService => {
       // Notify the recipient and public subscribers (via GraphQL subscription if any)
       sendTransactionPubSubNotification({ recipient, transaction }),
       sendTransactionCallbackNotification({ recipient, transaction }),
+      sendWelcomeNotification({ recipient, transaction }),
     ])
     return result.then((results) => {
       for (const result of results) {
