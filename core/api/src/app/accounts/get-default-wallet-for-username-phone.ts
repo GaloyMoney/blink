@@ -1,5 +1,5 @@
 import { getWalletFromAccount } from "./get-wallet-from-account"
-import { createUserAndAccountFromPhone } from "./create-account"
+import { createInvitedAccountFromPhone } from "./create-account"
 
 import { CouldNotFindWalletFromUsernameAndCurrencyError } from "@/domain/errors"
 import { checkedToUsername } from "@/domain/accounts"
@@ -40,7 +40,7 @@ const getWalletByPhone = async (
   const user = await UsersRepository().findByPhone(phone)
 
   if (user instanceof Error) {
-    const account = await createUserAndAccountFromPhone({ phone })
+    const account = await createInvitedAccountFromPhone({ phone })
     if (account instanceof Error) return user
 
     return getWalletFromAccount(account, walletCurrency)
