@@ -164,7 +164,7 @@ export const TwilioClient = (): IPhoneProviderService => {
 
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.twilio",
-    fns: { getCarrier, validateVerify, initiateVerify , sendSMSNotification },
+    fns: { getCarrier, validateVerify, initiateVerify, sendSMSNotification },
   })
 }
 

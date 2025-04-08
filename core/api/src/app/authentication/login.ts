@@ -3,8 +3,10 @@ import {
   checkLoginAttemptPerLoginIdentifierLimits,
   rewardFailedLoginAttemptPerIpLimits,
 } from "./ratelimits"
+import { activeInvitedAccount } from "./active-invited-account"
 
 import { upgradeAccountFromDeviceToPhone } from "@/app/accounts"
+
 import {
   createAccountForDeviceAccount,
   createAccountWithPhoneIdentifier,
@@ -143,6 +145,10 @@ export const loginWithPhoneToken = async ({
   }
 
   if (userId instanceof Error) return userId
+
+  const activeAccount = await activeInvitedAccount(userId)
+
+  if (activeAccount instanceof Error) return activeAccount
 
   const kratosResult = await authService.loginToken({ phone })
   if (kratosResult instanceof Error) return kratosResult
