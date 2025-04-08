@@ -157,13 +157,15 @@ teardown() {
   local phone="$(random_phone)"
   local amount=$(( RANDOM % 100 + 1 ))  # (1–100) sats
 
-  # Create recipient user manually
-  login_user 'recipient' "$phone"
-  cache_value recipient.phone "$phone"
-
-  # Get BTC wallet ID for recipient
-  exec_graphql 'recipient' 'wallets-for-account'
-  recipient_wallet_id=$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .id')
+  # If account does not exist for the phone number, create an Invited account automatically
+  variables=$(
+    jq -n \
+    --arg phone "$phone" \
+    --arg walletCurrency "BTC" \
+    '{username: $phone, walletCurrency: $walletCurrency}'
+  )
+  exec_graphql 'anon' 'account-default-wallet' "$variables"
+  recipient_wallet_id=$(graphql_output '.data.accountDefaultWallet.id')
 
   # Send sats to the phone number (account already exists)
   variables=$( jq -n \
@@ -174,6 +176,9 @@ teardown() {
   exec_graphql "$from_token_name" 'intraledger-payment-send' "$variables"
   send_status="$(graphql_output '.data.intraLedgerPaymentSend.status')"
   [[ "$send_status" == "SUCCESS" ]] || exit 1
+
+  # Login to the new account to verify BTC balance
+  login_user 'recipient' "$phone"
 
   # Verify recipient balance
   exec_graphql 'recipient' 'wallets-for-account'
@@ -201,13 +206,15 @@ teardown() {
   local phone="$(random_phone)"
   local amount=$(( RANDOM % 10 + 1 ))  # (1–10) USD
 
-  # Create recipient user manually
-  login_user 'recipient' "$phone"
-  cache_value recipient.phone "$phone"
-
-  # Get USD wallet ID for recipient
-  exec_graphql 'recipient' 'wallets-for-account'
-  recipient_wallet_id=$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "USD") .id')
+  # If account does not exist for the phone number, create an Invited account automatically
+  variables=$(
+    jq -n \
+    --arg phone "$phone" \
+    --arg walletCurrency "USD" \
+    '{username: $phone, walletCurrency: $walletCurrency}'
+  )
+  exec_graphql 'anon' 'account-default-wallet' "$variables"
+  recipient_wallet_id=$(graphql_output '.data.accountDefaultWallet.id')
 
   # Send sats to the phone number (account already exists)
   variables=$( jq -n \
@@ -218,6 +225,9 @@ teardown() {
   exec_graphql "$from_token_name" 'intraledger-usd-payment-send' "$variables"
   send_status="$(graphql_output '.data.intraLedgerUsdPaymentSend.status')"
   [[ "$send_status" == "SUCCESS" ]] || exit 1
+
+  # Login to the new account to verify USD balance
+  login_user 'recipient' "$phone"
 
   # Verify recipient balance
   exec_graphql 'recipient' 'wallets-for-account'
