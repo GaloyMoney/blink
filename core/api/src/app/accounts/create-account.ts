@@ -2,7 +2,7 @@ import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/confi
 
 import { createUserByPhone } from "@/app/users"
 import { isRealPhoneNumber } from "@/app/authentication"
-import { AccountLevel } from "@/domain/accounts"
+import { AccountLevel, AccountStatus } from "@/domain/accounts"
 import { WalletType } from "@/domain/wallets"
 import { displayCurrencyFromCountryCode } from "@/domain/price"
 import { CouldNotFindAccountFromKratosIdError } from "@/domain/errors"
@@ -55,7 +55,9 @@ const initializeCreatedAccount = async ({
 
   account.contactEnabled = account.role === "user"
 
-  account.statusHistory = [{ status: config.initialStatus, comment: "Initial Status" }]
+  account.statusHistory = [
+    { status: config.initialStatus, comment: config.initialComment ?? "Initial Status" },
+  ]
   account.level = config.initialLevel
 
   if (countryCode) {
@@ -124,7 +126,7 @@ export const createAccountWithPhoneIdentifier = async ({
   return account
 }
 
-export const createUserAndAccountFromPhone = async ({
+export const createInvitedAccountFromPhone = async ({
   phone,
 }: {
   phone: PhoneNumber
@@ -139,12 +141,17 @@ export const createUserAndAccountFromPhone = async ({
 
   const existingAccount = await AccountsRepository().findByUserId(user.id)
   if (existingAccount instanceof CouldNotFindAccountFromKratosIdError) {
+    const invitedAccountsConfig = getDefaultAccountsConfig()
+
+    invitedAccountsConfig.initialStatus = AccountStatus.Invited
+    invitedAccountsConfig.initialComment = "Invited account"
+
     const account = await createAccountWithPhoneIdentifier({
       newAccountInfo: {
         phone,
         kratosUserId: user.id,
       },
-      config: getDefaultAccountsConfig(),
+      config: invitedAccountsConfig,
     })
 
     return account
