@@ -78,6 +78,29 @@ export const TwilioClient = (): IPhoneProviderService => {
     return true
   }
 
+  const sendSMSNotification = async ({
+    to,
+    body,
+    from,
+  }: {
+    to: PhoneNumber
+    body: string
+    from?: string
+  }): Promise<true | PhoneProviderServiceError> => {
+    try {
+      await client.messages.create({
+        to,
+        from: from || TWILIO_VERIFY_SERVICE_ID,
+        body,
+      })
+
+      return true
+    } catch (err) {
+      baseLogger.error({ err }, "impossible to send sms")
+      return handleCommonErrors(err)
+    }
+  }
+
   const validateVerify = async ({
     to,
     code,
@@ -141,7 +164,7 @@ export const TwilioClient = (): IPhoneProviderService => {
 
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.twilio",
-    fns: { getCarrier, validateVerify, initiateVerify },
+    fns: { getCarrier, validateVerify, initiateVerify , sendSMSNotification },
   })
 }
 
