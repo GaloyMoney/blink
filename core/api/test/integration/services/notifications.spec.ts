@@ -5,7 +5,8 @@ import { toSats } from "@/domain/bitcoin"
 
 import { NotificationsService } from "@/services/notifications"
 
-import { waitForNotificationsService } from "test/helpers"
+import { createRandomUserAndBtcWallet, waitForNotificationsService } from "test/helpers"
+import { AccountsRepository } from "@/services/mongoose"
 
 beforeAll(async () => {
   await waitForNotificationsService()
@@ -14,9 +15,17 @@ beforeAll(async () => {
 describe("NotificationsService", () => {
   describe("sendTransaction", () => {
     it("should send a notification", async () => {
-      const accountId = "AccountId" as AccountId
-      const walletId = "walletId" as WalletId
-      const userId = "UserId" as UserId
+      // Create user
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      const userId = newAccount.kratosUserId
+      const walletId = newWalletDescriptor.id
+      const accountId = newWalletDescriptor.accountId
+
       const paymentAmount = {
         amount: 1000n,
         currency: WalletCurrency.Btc,
