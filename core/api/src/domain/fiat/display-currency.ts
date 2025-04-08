@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js"
+import { BigNumber } from "bignumber.js"
 
 import { safeBigInt, WalletCurrency } from "@/domain/shared"
 

@@ -208,7 +208,6 @@ describe("OnChainPaymentFlowBuilder", () => {
     describe("with address", () => {
       const withAddressBuilder = onChainBuilder.withAddress(address)
 
-      /* eslint @typescript-eslint/ban-ts-comment: "off" */
       // @ts-ignore-next-line no-implicit-any error
       const checkAddress = (payment) => {
         expect(payment).toEqual(

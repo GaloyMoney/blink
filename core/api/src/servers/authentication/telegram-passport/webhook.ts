@@ -73,7 +73,7 @@ export const handleTelegramPassportWebhookSetup = async (req: Request, res: Resp
 
   const protocol = req.headers["x-forwarded-proto"] || req.protocol
   const host = req.headers["x-forwarded-host"] || req.headers.host
-  const baseUrl = `${protocol}://${host}/`
+  const baseUrl = `${protocol}://${host}`
   try {
     const token = Buffer.from(env.TELEGRAM_BOT_API_TOKEN || "", "base64").toString()
     const webhookUrl = `${baseUrl}/auth/telegram-passport/webhook?hash=${setupHash}`

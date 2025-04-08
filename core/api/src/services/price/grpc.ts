@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const PROTO_PATH_PRICE = __dirname + "/protos/price.proto"
 const PROTO_PATH_PRICE_HISTORY = __dirname + "/protos/price_history.proto"
 

@@ -1,4 +1,5 @@
 import isEmail from "validator/lib/isEmail"
+import { parsePhoneNumberFromString } from "libphonenumber-js"
 
 import { Languages } from "./languages"
 
@@ -16,17 +17,19 @@ import { UuidRegex } from "@/domain/shared"
 export * from "./phone-metadata-validator"
 export * from "./phone-metadata-authorizer"
 
-// TODO: we could be using https://gitlab.com/catamphetamine/libphonenumber-js#readme
-// for a more precise "regex"
-const PhoneNumberRegex = /^\+\d{7,14}$/i // FIXME {7,14} to be refined
-
-export const checkedToPhoneNumber = (
-  phoneNumber: string,
-): PhoneNumber | ValidationError => {
-  if (!phoneNumber || !phoneNumber.match(PhoneNumberRegex)) {
-    return new InvalidPhoneNumber(phoneNumber)
+export const checkedToPhoneNumber = (value: string): PhoneNumber | ValidationError => {
+  if (!value) {
+    return new InvalidPhoneNumber("Empty value")
   }
-  return phoneNumber as PhoneNumber
+
+  const trimmedValue = value.trim()
+  const normalizedPhone = trimmedValue.startsWith("+") ? trimmedValue : `+${trimmedValue}`
+  const phoneNumber = parsePhoneNumberFromString(normalizedPhone)
+  if (!phoneNumber?.country) {
+    return new InvalidPhoneNumber(trimmedValue)
+  }
+
+  return `${phoneNumber.number}` as PhoneNumber
 }
 
 export const checkedToEmailAddress = (

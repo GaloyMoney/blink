@@ -10,6 +10,7 @@ query transactionsForWalletByPaymentRequest(
         transactionsByPaymentRequest(paymentRequest: $paymentRequest) {
           __typename
           id
+          externalId
           status
           direction
           memo

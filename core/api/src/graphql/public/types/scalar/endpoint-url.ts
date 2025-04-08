@@ -27,7 +27,7 @@ function validUrlValue(value: string) {
       return new InputValidationError({ message: "Invalid value for EndpointUrl" })
     }
     return value
-  } catch (error) {
+  } catch {
     return new InputValidationError({ message: "Invalid value for EndpointUrl" })
   }
 }

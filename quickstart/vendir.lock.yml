@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(core): allow wallet query by phone (#4750)...'
-      sha: cf7d76f45e2e08275a0284b8de4379a20aed056a
+      commitTitle: 'chore(core): bump eslint (#4796)...'
+      sha: 2779c87123250fbcd709ead029941a158021a0b4
       tags:
-      - 0.21.27-3-gcf7d76f45
+      - 0.21.31-1-g2779c8712
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(core): allow wallet query by phone (#4750)...'
-      sha: cf7d76f45e2e08275a0284b8de4379a20aed056a
+      commitTitle: 'chore(core): bump eslint (#4796)...'
+      sha: 2779c87123250fbcd709ead029941a158021a0b4
       tags:
-      - 0.21.27-3-gcf7d76f45
+      - 0.21.31-1-g2779c8712
     path: schemas
   - git:
-      commitTitle: 'feat(core): allow wallet query by phone (#4750)...'
-      sha: cf7d76f45e2e08275a0284b8de4379a20aed056a
+      commitTitle: 'chore(core): bump eslint (#4796)...'
+      sha: 2779c87123250fbcd709ead029941a158021a0b4
       tags:
-      - 0.21.27-3-gcf7d76f45
+      - 0.21.31-1-g2779c8712
     path: gql
   path: graphql
 kind: LockConfig

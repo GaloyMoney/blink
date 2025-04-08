@@ -536,7 +536,6 @@ describe("Lnd", () => {
       const nestedFailureErr = err[2].failures[0]
       expect(nestedFailureErr).toHaveLength(3)
 
-      /* eslint @typescript-eslint/ban-ts-comment: "off" */
       // @ts-ignore-next-line no-implicit-any error
       expect(nestedFailureErr[0]).toEqual(err[0])
 

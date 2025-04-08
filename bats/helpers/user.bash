@@ -75,7 +75,19 @@ create_user_with_metadata() {
 }
 
 random_phone() {
-  printf "+1%010d\n" $(( ($RANDOM * 1000000) + ($RANDOM % 1000000) ))
+  local area_codes=(212 213 214 215 312 310 415 408 617 202 404 305 713 206 303 312 205 216 412 702 612 718 619 704 314 505 602 508 813 630 503 615 714 804 916 512 314 651 919 510)
+
+  # Pick a random area code from the list
+  local area_code=${area_codes[$RANDOM % ${#area_codes[@]}]}
+
+  # Generate a random exchange - avoid invalid exchanges (e.g., those starting with 0 or 1)
+  local exchange=$(( ($RANDOM % 8) + 2 ))$(( $RANDOM % 10 ))$(( $RANDOM % 10 ))
+
+  # Generate a random subscriber number
+  local subscriber=$(( $RANDOM % 10000 ))
+
+  # Format as +1XXXXXXXXXX
+  printf "+1%s%s%04d\n" "$area_code" "$exchange" "$subscriber"
 }
 
 user_update_username() {

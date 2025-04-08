@@ -10,6 +10,7 @@ query transactionsForWalletByPaymentHash(
         transactionsByPaymentHash(paymentHash: $paymentHash) {
           __typename
           id
+          externalId
           status
           direction
           memo
