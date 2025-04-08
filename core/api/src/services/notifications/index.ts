@@ -253,15 +253,16 @@ export const NotificationsService = (): INotificationsService => {
   }
 
   const sendWelcomeNotification = async ({
-    recipient, transaction
+    recipient,
+    transaction,
   }: NotificatioSendTransactionArgs): Promise<true | NotificationsServiceError> => {
     try {
       const accountsRepo = AccountsRepository()
       const account = await accountsRepo.findByUserId(recipient.userId)
       if (account instanceof Error) return account
-  
+
       if (account.status !== AccountStatus.Invited) return true
-  
+
       const user = await getUser(recipient.userId)
       if (user instanceof Error) return user
 
@@ -271,7 +272,7 @@ export const NotificationsService = (): INotificationsService => {
       }
 
       const amount =
-      transaction.settlementCurrency === WalletCurrency.Btc 
+        transaction.settlementCurrency === WalletCurrency.Btc
           ? Number(toSats(transaction.settlementAmount))
           : Number(toCents(transaction.settlementAmount)) / 100
 
