@@ -1,4 +1,5 @@
 import { WalletCurrency } from "../shared"
+
 import { WelcomeTemplateParams } from "./types"
 
 export const welcomeSmsTemplate = ({
