@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(core): bump eslint (#4796)...'
-      sha: 2779c87123250fbcd709ead029941a158021a0b4
+      commitTitle: 'fix: make an exception for a special phone number (#4799)'
+      sha: 16994b3bde9f3f34540f4ebfb50bf49392f1a386
       tags:
-      - 0.21.31-1-g2779c8712
+      - 0.21.32-1-g16994b3bd
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(core): bump eslint (#4796)...'
-      sha: 2779c87123250fbcd709ead029941a158021a0b4
+      commitTitle: 'fix: make an exception for a special phone number (#4799)'
+      sha: 16994b3bde9f3f34540f4ebfb50bf49392f1a386
       tags:
-      - 0.21.31-1-g2779c8712
+      - 0.21.32-1-g16994b3bd
     path: schemas
   - git:
-      commitTitle: 'chore(core): bump eslint (#4796)...'
-      sha: 2779c87123250fbcd709ead029941a158021a0b4
+      commitTitle: 'fix: make an exception for a special phone number (#4799)'
+      sha: 16994b3bde9f3f34540f4ebfb50bf49392f1a386
       tags:
-      - 0.21.31-1-g2779c8712
+      - 0.21.32-1-g16994b3bd
     path: gql
   path: graphql
 kind: LockConfig
