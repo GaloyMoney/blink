@@ -26,7 +26,10 @@ export const checkedToPhoneNumber = (value: string): PhoneNumber | ValidationErr
   const normalizedPhone = trimmedValue.startsWith("+") ? trimmedValue : `+${trimmedValue}`
 
   // Special exception for the specific phone number
-  if (normalizedPhone === "+1928282918" || normalizedPhone.replace(/\s+/g, "") === "+1928282918") {
+  if (
+    normalizedPhone === "+1928282918" ||
+    normalizedPhone.replace(/\s+/g, "") === "+1928282918"
+  ) {
     return normalizedPhone as PhoneNumber
   }
 
