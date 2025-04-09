@@ -3,7 +3,7 @@ import fs from "fs"
 import path from "path"
 
 import Ajv from "ajv"
-import yaml from "js-yaml"
+import * as yaml from "js-yaml"
 
 import mergeWith from "lodash.mergewith"
 

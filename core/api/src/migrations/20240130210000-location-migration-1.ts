@@ -1,7 +1,7 @@
 /* eslint @typescript-eslint/ban-ts-comment: "off" */
 // @ts-nocheck
 // ignore error below @typescript-eslint/no-var-requires
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+
 const nodeCrypto = require("crypto")
 
 async function migrateAccounts(db, batchSize = 100) {

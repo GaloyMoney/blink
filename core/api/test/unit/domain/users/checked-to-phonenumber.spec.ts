@@ -63,4 +63,18 @@ describe("phonenumber-check", () => {
     phone = checkedToPhoneNumber("  16505554321  ")
     expect(phone).toEqual("+16505554321")
   })
+
+  it("Accepts the special exception phone number +1928282918", () => {
+    // This phone number would normally be invalid (only 9 digits after country code)
+    // but we've added a special exception for it
+    const phone = checkedToPhoneNumber("+1928282918")
+    expect(phone).toEqual("+1928282918")
+
+    // Also test with spaces and without + prefix
+    const phoneWithSpaces = checkedToPhoneNumber(" +1 928 282 918 ")
+    expect(phoneWithSpaces).toEqual("+1 928 282 918")
+
+    const phoneWithoutPlus = checkedToPhoneNumber("1928282918")
+    expect(phoneWithoutPlus).toEqual("+1928282918")
+  })
 })
