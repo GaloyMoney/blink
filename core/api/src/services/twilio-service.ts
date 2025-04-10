@@ -82,18 +82,13 @@ export const TwilioClient = (): IPhoneProviderService => {
   const sendSMSNotification = async ({
     to,
     body,
-    from,
   }: {
     to: PhoneNumber
     body: string
     from?: string
   }): Promise<true | PhoneProviderServiceError> => {
     try {
-      await client.messages.create({
-        to,
-        from: from || TWILIO_VERIFY_SERVICE_ID,
-        body,
-      })
+      await client.messages.create({ to, body })
 
       return true
     } catch (err) {
