@@ -6,7 +6,7 @@ import { toSats } from "@/domain/bitcoin"
 import { NotificationsService } from "@/services/notifications"
 
 import { createRandomUserAndBtcWallet, waitForNotificationsService } from "test/helpers"
-import { AccountsRepository } from "@/services/mongoose"
+import { AccountsRepository, UsersRepository } from "@/services/mongoose"
 
 beforeAll(async () => {
   await waitForNotificationsService()
@@ -22,7 +22,10 @@ describe("NotificationsService", () => {
       )
       if (newAccount instanceof Error) throw newAccount
 
-      const userId = newAccount.kratosUserId
+      const user = await UsersRepository().findById(newAccount.kratosUserId)
+      if (user instanceof Error) throw user
+
+      const { kratosUserId, username, status } = newAccount
       const walletId = newWalletDescriptor.id
       const accountId = newWalletDescriptor.accountId
 
@@ -57,8 +60,11 @@ describe("NotificationsService", () => {
         recipient: {
           accountId,
           walletId,
-          userId,
+          userId: kratosUserId,
           level: AccountLevel.One,
+          status,
+          username,
+          phoneNumber: user.phone,
         },
         transaction: {
           id: "id" as LedgerTransactionId,

@@ -38,7 +38,11 @@ import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
 } from "@/services/tracing"
-import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
+import {
+  AccountsRepository,
+  UsersRepository,
+  WalletsRepository,
+} from "@/services/mongoose"
 import { NotificationsService } from "@/services/notifications"
 
 const dealer = DealerPriceService()
@@ -56,7 +60,8 @@ const intraledgerPaymentSendWalletId = async ({
   })
   if (validatedPaymentInputs instanceof Error) return validatedPaymentInputs
 
-  const { senderWallet, recipientWallet, recipientAccount } = validatedPaymentInputs
+  const { senderWallet, recipientWallet, recipientAccount, recipientUser, senderUser } =
+    validatedPaymentInputs
 
   const { currency: recipientWalletCurrency } = recipientWallet
   const {
@@ -120,6 +125,8 @@ const intraledgerPaymentSendWalletId = async ({
     senderAccount,
     senderWalletId: senderWallet.id,
     recipientAccount,
+    recipientUser,
+    senderUser,
     memo,
   })
   if (paymentSendResult instanceof Error) return paymentSendResult
@@ -158,7 +165,13 @@ const validateIntraledgerPaymentInputs = async ({
   uncheckedSenderWalletId: string
   uncheckedRecipientWalletId: string
 }): Promise<
-  | { senderWallet: Wallet; recipientWallet: Wallet; recipientAccount: Account }
+  | {
+      senderWallet: Wallet
+      recipientWallet: Wallet
+      recipientAccount: Account
+      recipientUser: User
+      senderUser: User
+    }
   | ApplicationError
 > => {
   const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
@@ -185,6 +198,12 @@ const validateIntraledgerPaymentInputs = async ({
   const recipientAccountValidator = AccountValidator(recipientAccount)
   if (recipientAccountValidator instanceof Error) return recipientAccountValidator
 
+  const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
+  if (recipientUser instanceof Error) return recipientUser
+
+  const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
+  if (senderUser instanceof Error) return senderUser
+
   addAttributesToCurrentSpan({
     "payment.intraLedger.senderWalletId": senderWalletId,
     "payment.intraLedger.senderWalletCurrency": senderWallet.currency,
@@ -196,6 +215,8 @@ const validateIntraledgerPaymentInputs = async ({
     senderWallet,
     recipientWallet,
     recipientAccount,
+    recipientUser,
+    senderUser,
   }
 }
 
@@ -207,12 +228,16 @@ const executePaymentViaIntraledger = async <
   senderAccount,
   senderWalletId,
   recipientAccount,
+  recipientUser,
+  senderUser,
   memo,
 }: {
   paymentFlow: PaymentFlow<S, R>
   senderAccount: Account
   senderWalletId: WalletId
   recipientAccount: Account
+  recipientUser: User
+  senderUser: User
   memo: string | null
 }): Promise<PaymentSendResult | ApplicationError> => {
   addAttributesToCurrentSpan({
@@ -245,6 +270,9 @@ const executePaymentViaIntraledger = async <
     walletId: recipientWalletDescriptor.id,
     userId: recipientAccount.kratosUserId,
     level: recipientAccount.level,
+    status: recipientAccount.status,
+    username: recipientAccount.username,
+    phoneNumber: recipientUser.phone,
   }
 
   const senderAsNotificationRecipient = {
@@ -252,6 +280,9 @@ const executePaymentViaIntraledger = async <
     walletId: senderWalletId,
     userId: senderAccount.kratosUserId,
     level: senderAccount.level,
+    status: senderAccount.status,
+    username: senderAccount.username,
+    phoneNumber: senderUser.phone,
   }
 
   const journalId = await LockService().lockWalletId(senderWalletId, async (signal) =>
