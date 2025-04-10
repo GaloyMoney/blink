@@ -1,7 +1,6 @@
 import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/config"
 
 import { createUserByPhone } from "@/app/users"
-import { isRealPhoneNumber } from "@/app/authentication"
 import { AccountLevel, AccountStatus } from "@/domain/accounts"
 import { WalletType } from "@/domain/wallets"
 import { displayCurrencyFromCountryCode } from "@/domain/price"
@@ -13,6 +12,7 @@ import {
   WalletsRepository,
 } from "@/services/mongoose"
 import { PriceService } from "@/services/price"
+import { TwilioClient } from "@/services/twilio-service"
 
 const initializeCreatedAccount = async ({
   account,
@@ -131,9 +131,9 @@ export const createInvitedAccountFromPhone = async ({
 }: {
   phone: PhoneNumber
 }): Promise<Account | ApplicationError> => {
-  const validPhone = await isRealPhoneNumber(phone)
+  const validationResult = await TwilioClient().validateDestination(phone)
 
-  if (validPhone instanceof Error) return validPhone
+  if (validationResult instanceof Error) return validationResult
 
   const user = await createUserByPhone(phone)
 
