@@ -3,7 +3,8 @@ import {
   checkLoginAttemptPerLoginIdentifierLimits,
   rewardFailedLoginAttemptPerIpLimits,
 } from "./ratelimits"
-import { activeInvitedAccount } from "./active-invited-account"
+
+import { activateInvitedAccount } from "./activate-invited-account"
 
 import { upgradeAccountFromDeviceToPhone } from "@/app/accounts"
 
@@ -146,7 +147,7 @@ export const loginWithPhoneToken = async ({
 
   if (userId instanceof Error) return userId
 
-  const activeAccount = await activeInvitedAccount(userId)
+  const activeAccount = await activateInvitedAccount(userId)
 
   if (activeAccount instanceof Error) return activeAccount
 
