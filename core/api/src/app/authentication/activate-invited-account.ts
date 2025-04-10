@@ -1,7 +1,7 @@
 import { AccountStatus } from "@/domain/accounts"
 import { AccountsRepository } from "@/services/mongoose"
 
-export const activeInvitedAccount = async (
+export const activateInvitedAccount = async (
   userId: UserId,
 ): Promise<Account | ApplicationError> => {
   const accountsRepo = AccountsRepository()
