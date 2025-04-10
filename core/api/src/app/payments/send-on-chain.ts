@@ -45,7 +45,11 @@ import { DealerPriceService } from "@/services/dealer-price"
 import { LedgerService } from "@/services/ledger"
 import { LockService } from "@/services/lock"
 import { baseLogger } from "@/services/logger"
-import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
+import {
+  AccountsRepository,
+  UsersRepository,
+  WalletsRepository,
+} from "@/services/mongoose"
 import { NotificationsService } from "@/services/notifications"
 import { addAttributesToCurrentSpan } from "@/services/tracing"
 
@@ -275,6 +279,12 @@ const executePaymentViaIntraledger = async <
   const accountValidator = AccountValidator(recipientAccount)
   if (accountValidator instanceof Error) return accountValidator
 
+  const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
+  if (recipientUser instanceof Error) return recipientUser
+
+  const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
+  if (senderUser instanceof Error) return senderUser
+
   // Limit check
   const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
@@ -311,6 +321,9 @@ const executePaymentViaIntraledger = async <
     walletId: recipientWalletDescriptor.id,
     userId: recipientAccount.kratosUserId,
     level: recipientAccount.level,
+    status: recipientAccount.status,
+    username: recipientAccount.username,
+    phoneNumber: recipientUser.phone,
   }
 
   const recipientWalletTransaction = await getTransactionForWalletByJournalId({
@@ -330,6 +343,9 @@ const executePaymentViaIntraledger = async <
     walletId: senderWalletId,
     userId: senderAccount.kratosUserId,
     level: senderAccount.level,
+    status: senderAccount.status,
+    username: senderAccount.username,
+    phoneNumber: senderUser.phone,
   }
 
   const senderWalletTransaction = await getTransactionForWalletByJournalId({
