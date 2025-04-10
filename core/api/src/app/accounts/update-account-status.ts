@@ -9,7 +9,7 @@ export const updateAccountStatus = async ({
 }: {
   accountId: string
   status: string
-  updatedByPrivilegedClientId: PrivilegedClientId
+  updatedByPrivilegedClientId?: PrivilegedClientId
   comment?: string
 }): Promise<Account | ApplicationError> => {
   const accountsRepo = AccountsRepository()
@@ -25,8 +25,8 @@ export const updateAccountStatus = async ({
 
   account.statusHistory = (account.statusHistory ?? []).concat({
     status: statusChecked,
-    updatedByPrivilegedClientId,
     comment,
+    ...(updatedByPrivilegedClientId && { updatedByPrivilegedClientId }),
   })
   return accountsRepo.update(account)
 }
