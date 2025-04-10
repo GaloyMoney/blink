@@ -34,7 +34,7 @@ export const AuthWithUsernamePasswordDeviceIdService =
 
         await kratosAdmin.createIdentity({ createIdentityBody })
       } catch (err) {
-        // we continue if there is 409/Conflit,
+        // we continue if there is 409/Conflict,
         // because it means the identity already exists
         if (isAxiosError(err) && err.response?.status !== 409) {
           return new UnknownKratosError(
