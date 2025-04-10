@@ -9,6 +9,7 @@ import {
   TWILIO_AUTH_TOKEN,
   TWILIO_VERIFY_SERVICE_ID,
   UNSECURE_DEFAULT_LOGIN_CODE,
+  getAccountsOnboardConfig,
   getTestAccounts,
 } from "@/config"
 import {
@@ -78,6 +79,46 @@ export const TwilioClient = (): IPhoneProviderService => {
     return true
   }
 
+  const sendSMSNotification = async ({
+    to,
+    body,
+  }: {
+    to: PhoneNumber
+    body: string
+    from?: string
+  }): Promise<true | PhoneProviderServiceError> => {
+    try {
+      await client.messages.create({ to, body })
+
+      return true
+    } catch (err) {
+      baseLogger.error({ err }, "impossible to send sms")
+      return handleCommonErrors(err)
+    }
+  }
+
+  const validateDestination = async (
+    phone: PhoneNumber,
+  ): Promise<true | ApplicationError> => {
+    const { phoneMetadataValidationSettings } = getAccountsOnboardConfig()
+
+    if (!phoneMetadataValidationSettings.enabled) {
+      return true
+    }
+
+    const metadata = await getCarrier(phone)
+
+    if (
+      metadata instanceof Error ||
+      metadata.carrier?.type == null ||
+      metadata.carrier?.error_code
+    ) {
+      return new InvalidPhoneNumberPhoneProviderError(phone)
+    }
+
+    return true
+  }
+
   const validateVerify = async ({
     to,
     code,
@@ -141,7 +182,13 @@ export const TwilioClient = (): IPhoneProviderService => {
 
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.twilio",
-    fns: { getCarrier, validateVerify, initiateVerify },
+    fns: {
+      getCarrier,
+      validateVerify,
+      initiateVerify,
+      sendSMSNotification,
+      validateDestination,
+    },
   })
 }
 

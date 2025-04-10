@@ -1,8 +1,10 @@
 import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/config"
 
-import { AccountLevel } from "@/domain/accounts"
+import { createUserByPhone } from "@/app/users"
+import { AccountLevel, AccountStatus } from "@/domain/accounts"
 import { WalletType } from "@/domain/wallets"
 import { displayCurrencyFromCountryCode } from "@/domain/price"
+import { CouldNotFindAccountFromKratosIdError } from "@/domain/errors"
 
 import {
   AccountsRepository,
@@ -10,6 +12,7 @@ import {
   WalletsRepository,
 } from "@/services/mongoose"
 import { PriceService } from "@/services/price"
+import { TwilioClient } from "@/services/twilio-service"
 
 const initializeCreatedAccount = async ({
   account,
@@ -52,7 +55,9 @@ const initializeCreatedAccount = async ({
 
   account.contactEnabled = account.role === "user"
 
-  account.statusHistory = [{ status: config.initialStatus, comment: "Initial Status" }]
+  account.statusHistory = [
+    { status: config.initialStatus, comment: config.initialComment ?? "Initial Status" },
+  ]
   account.level = config.initialLevel
 
   if (countryCode) {
@@ -119,4 +124,40 @@ export const createAccountWithPhoneIdentifier = async ({
   if (account instanceof Error) return account
 
   return account
+}
+
+export const createInvitedAccountFromPhone = async ({
+  phone,
+}: {
+  phone: PhoneNumber
+}): Promise<Account | ApplicationError> => {
+  const validationResult = await TwilioClient().validateDestination(phone)
+
+  if (validationResult instanceof Error) return validationResult
+
+  const user = await createUserByPhone(phone)
+
+  if (user instanceof Error) return user
+
+  const existingAccount = await AccountsRepository().findByUserId(user.id)
+  if (existingAccount instanceof CouldNotFindAccountFromKratosIdError) {
+    const invitedAccountsConfig = getDefaultAccountsConfig()
+
+    invitedAccountsConfig.initialStatus = AccountStatus.Invited
+    invitedAccountsConfig.initialComment = "Invited account"
+
+    const account = await createAccountWithPhoneIdentifier({
+      newAccountInfo: {
+        phone,
+        kratosUserId: user.id,
+      },
+      config: invitedAccountsConfig,
+    })
+
+    return account
+  }
+
+  if (existingAccount instanceof Error) return existingAccount
+
+  return existingAccount
 }

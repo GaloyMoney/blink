@@ -5,6 +5,7 @@ type PhoneCodeInvalidError = import("./errors").PhoneCodeInvalidError
 
 interface IPhoneProviderService {
   getCarrier(phone: PhoneNumber): Promise<PhoneMetadata | PhoneProviderServiceError>
+  validateDestination(phone: PhoneNumber): Promise<true | ApplicationError>
   initiateVerify({
     to,
     channel,
@@ -20,5 +21,14 @@ interface IPhoneProviderService {
   }: {
     to: PhoneNumber
     code: PhoneCode
+  }): Promise<true | PhoneProviderServiceError>
+  sendSMSNotification({
+    to,
+    body,
+    from,
+  }: {
+    to: PhoneNumber
+    body: string
+    from?: string
   }): Promise<true | PhoneProviderServiceError>
 }

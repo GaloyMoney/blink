@@ -40,6 +40,9 @@ type NotificationRecipient = {
   userId: UserId
   walletId: WalletId
   level: AccountLevel
+  status: AccountStatus
+  username?: Username
+  phoneNumber?: PhoneNumber
 }
 
 type NotificatioSendTransactionArgs = {
