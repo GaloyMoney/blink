@@ -1,3 +1,4 @@
+import { updateAccountStatus } from "@/app/accounts"
 import { AccountStatus } from "@/domain/accounts"
 import { AccountsRepository } from "@/services/mongoose"
 
@@ -12,10 +13,9 @@ export const activateInvitedAccount = async (
 
   if (account.status !== AccountStatus.Invited) return account
 
-  account.statusHistory = (account.statusHistory ?? []).concat({
+  return updateAccountStatus({
+    accountId: account.id,
     status: AccountStatus.Active,
     comment: "Initial Status",
   })
-
-  return accountsRepo.update(account)
 }
