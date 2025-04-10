@@ -60,8 +60,6 @@ import { PubSubService } from "@/services/pubsub"
 import { CallbackService } from "@/services/svix"
 import { wrapAsyncFunctionsToRunInSpan, wrapAsyncToRunInSpan } from "@/services/tracing"
 import { TwilioClient } from "@/services/twilio-service"
-import { AccountsRepository } from "@/services/mongoose"
-import { getUser } from "@/app/users"
 
 export const NotificationsService = (): INotificationsService => {
   const pubsub = PubSubService()
@@ -257,27 +255,18 @@ export const NotificationsService = (): INotificationsService => {
     transaction,
   }: NotificatioSendTransactionArgs): Promise<true | NotificationsServiceError> => {
     try {
-      const accountsRepo = AccountsRepository()
-      const account = await accountsRepo.findByUserId(recipient.userId)
-      if (account instanceof Error) return account
+      const { settlementCurrency, settlementAmount } = transaction
+      const { status, phoneNumber } = recipient
 
-      if (account.status !== AccountStatus.Invited) return true
-
-      const user = await getUser(recipient.userId)
-      if (user instanceof Error) return user
-
-      const phoneNumber = user.phone
-      if (!phoneNumber) {
-        return new UnknownNotificationsServiceError(phoneNumber)
-      }
+      if (status !== AccountStatus.Invited || !phoneNumber) return true
 
       const amount =
-        transaction.settlementCurrency === WalletCurrency.Btc
-          ? Number(toSats(transaction.settlementAmount))
-          : Number(toCents(transaction.settlementAmount)) / 100
+        settlementCurrency === WalletCurrency.Btc
+          ? Number(toSats(settlementAmount))
+          : Number(toCents(settlementAmount)) / 100
 
       const body = welcomeSmsTemplate({
-        currency: transaction.settlementCurrency,
+        currency: settlementCurrency,
         amount,
         phoneNumber,
       })

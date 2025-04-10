@@ -185,6 +185,9 @@ const addSettledTransactionBeforeFinally = async ({
         walletId: wallet.id,
         userId: user.id,
         level: account.level,
+        status: account.status,
+        username: account.username,
+        phoneNumber: user.phone,
       },
       transaction: walletTransaction,
     })
