@@ -67,7 +67,7 @@ const TelegramPassportAuth = async ({
   let error = null
 
   try {
-    authData = await authApi.requestTelegramPassportNonce({
+    authData = await authApi.requestTelegramPassportAuthData({
       phone,
       customHeaders,
     })
