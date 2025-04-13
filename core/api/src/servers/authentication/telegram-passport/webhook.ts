@@ -74,12 +74,14 @@ export const handleTelegramPassportWebhookSetup = async (req: Request, res: Resp
   const host = req.headers["x-forwarded-host"] || req.headers.host
   const baseUrl = `${protocol}://${host}`
   try {
-    const token = Buffer.from(env.TELEGRAM_BOT_API_TOKEN || "", "base64").toString()
     const webhookUrl = `${baseUrl}/auth/telegram-passport/webhook?hash=${setupHash}`
 
-    const response = await axios.post(`https://api.telegram.org/bot${token}/setWebhook`, {
-      url: webhookUrl,
-    })
+    const response = await axios.post(
+      `https://api.telegram.org/bot${TELEGRAM_BOT_API_TOKEN}/setWebhook`,
+      {
+        url: webhookUrl,
+      },
+    )
 
     return res.json({ success: response.status === 200 })
   } catch (error) {
