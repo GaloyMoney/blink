@@ -25,6 +25,12 @@ describe("Account ID Test", () => {
       .should("not.be.disabled")
       .type(testData.PHONE_NUMBER)
 
+    cy.get("[data-testid=phone_number_channel_select]")
+      .should("exist")
+      .should("be.visible")
+      .should("not.be.disabled")
+      .select("SMS")
+
     cy.get("[data-testid=phone_login_next_btn]")
       .should("exist")
       .should("be.visible")

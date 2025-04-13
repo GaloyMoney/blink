@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import Script from "next/script"
 import { useRouter } from "next/navigation"
 
@@ -40,8 +40,27 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
     }
   }
 
+  const checkAuthStatus = useCallback(async () => {
+    try {
+      const result = await telegramAuth(login_challenge, phone, authData.nonce)
+
+      if (result.success && result.redirectUrl) {
+        router.push(result.redirectUrl)
+        return
+      }
+
+      setLoading(false)
+      setError(result.message || "Authentication failed")
+    } catch (error) {
+      console.error("Error during authentication:", error)
+
+      setLoading(false)
+      setError("Authentication failed after multiple attempts. Please try again.")
+    }
+  }, [login_challenge, phone, authData, router])
+
   // Handle Telegram auth manually instead of using callback_url
-  const handleTelegramAuth = async () => {
+  const handleTelegramAuth = useCallback(async () => {
     setLoading(true)
     setError(null)
 
@@ -64,26 +83,7 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
       setLoading(false)
       setError("Telegram SDK not loaded. Please refresh the page and try again.")
     }
-  }
-
-  const checkAuthStatus = async () => {
-    try {
-      const result = await telegramAuth(login_challenge, phone, authData.nonce)
-
-      if (result.success && result.redirectUrl) {
-        router.push(result.redirectUrl)
-        return
-      }
-
-      setLoading(false)
-      setError(result.message || "Authentication failed")
-    } catch (error) {
-      console.error("Error during authentication:", error)
-
-      setLoading(false)
-      setError("Authentication failed after multiple attempts. Please try again.")
-    }
-  }
+  }, [authData, checkAuthStatus])
 
   useEffect(() => {
     const initTelegramPassport = () => {
@@ -119,7 +119,7 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
     return () => {
       window.removeEventListener("telegram-passport-sdk-loaded", initTelegramPassport)
     }
-  }, [login_challenge, phone, authData])
+  }, [login_challenge, phone, authData, handleTelegramAuth])
 
   return (
     <div className="flex flex-col items-center">

@@ -140,6 +140,7 @@ const PhoneAuthForm: React.FC<AuthFormProps> = ({
           <SelectComponent
             id="channel"
             name="channel"
+            data-testid="phone_number_channel_select"
             defaultValue="SMS"
             options={getAvailableChannels(selectedCountry)}
             required
