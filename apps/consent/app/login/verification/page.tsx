@@ -4,10 +4,11 @@ import { createHash } from "crypto"
 import { cookies } from "next/headers"
 
 import VerificationForm from "./form"
+import { validateAuthToken } from "./server-actions"
 
-import MainContent from "@/components/main-container"
 import Card from "@/components/card"
 import Logo from "@/components/logo"
+import MainContent from "@/components/main-container"
 import { LoginType } from "@/app/types/index.types"
 
 interface VerificationProps {
@@ -28,13 +29,20 @@ const Verification = async ({ searchParams }: { searchParams: VerificationProps 
     throw new Error("Cannot find cookies")
   }
 
-  const { loginType, value, remember, loginId } = JSON.parse(cookieStore.value)
+  const { loginType, value, remember, loginId, authToken, totpRequired } = JSON.parse(
+    cookieStore.value,
+  )
+
   if (!login_challenge || !value || !loginType) {
     throw new Error("Invalid Request")
   }
 
   if (loginType === LoginType.email && !loginId) {
     throw new Error("Invalid Request for Email")
+  }
+
+  if (authToken && !totpRequired) {
+    await validateAuthToken({ loginChallenge: login_challenge, authToken, remember })
   }
 
   return (
@@ -47,6 +55,8 @@ const Verification = async ({ searchParams }: { searchParams: VerificationProps 
           loginType={loginType}
           value={value}
           remember={remember}
+          authToken={authToken}
+          totpRequired={totpRequired}
         />
       </Card>
     </MainContent>
