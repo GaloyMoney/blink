@@ -5,9 +5,10 @@ import { createHash } from "crypto"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 
+import { LoginType } from "@/app/types/index.types"
+import { handleAxiosError } from "@/app/error-handler"
 import { hydraClient } from "@/services/hydra"
 import authApi from "@/services/galoy-auth"
-import { LoginType } from "@/app/types/index.types"
 
 export async function cancelAuth(loginChallenge: string) {
   // Reject the OAuth login request
@@ -60,11 +61,12 @@ export async function telegramAuth(loginChallenge: string, phone: string, nonce:
       redirectUrl: `/login/verification?login_challenge=${loginChallenge}`,
     }
   } catch (error) {
-    console.error("Telegram authentication error:", error.response?.data?.error || error)
+    const axiosError = handleAxiosError(error)
+    console.error("Telegram authentication error:", axiosError)
 
     return {
       success: false,
-      message: error.response?.data?.error || "Authentication failed. Please try again.",
+      message: axiosError.message || "Authentication failed. Please try again.",
     }
   }
 }
