@@ -126,7 +126,7 @@ const authApi = {
   },
 
   // Telegram Passport APIs
-  requestTelegramPassportNonce: async ({
+  requestTelegramPassportAuthData: async ({
     phone,
     customHeaders,
   }: {
@@ -143,7 +143,7 @@ const authApi = {
     callback_url?: string
   }> => {
     const response = await axiosInstance.post(
-      "/telegram-passport/nonce",
+      "/telegram-passport/auth-data",
       { phone },
       customHeaders ? { headers: customHeaders } : undefined,
     )

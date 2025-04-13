@@ -19,7 +19,7 @@ if (isTelegramPassportEnabled()) {
   )
 }
 
-export const requestTelegramPassportNonce = async (req: Request, res: Response) => {
+export const requestTelegramPassportAuthData = async (req: Request, res: Response) => {
   const ip = req.originalIp
   const phone = req.body.phone
 
