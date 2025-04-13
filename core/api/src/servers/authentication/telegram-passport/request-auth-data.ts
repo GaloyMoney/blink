@@ -1,5 +1,3 @@
-import { createPrivateKey, createPublicKey } from "crypto"
-
 import { Request, Response } from "express"
 
 import { getPublicKey, getBotIdFromToken } from "./utils"

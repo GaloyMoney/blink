@@ -4,6 +4,7 @@ import { cookies, headers } from "next/headers"
 
 import TelegramAuthForm from "./telegram-auth-form"
 
+import { handleAxiosError } from "@/app/error-handler"
 import MainContent from "@/components/main-container"
 import Card from "@/components/card"
 import Logo from "@/components/logo"
@@ -72,8 +73,9 @@ const TelegramPassportAuth = async ({
       customHeaders,
     })
   } catch (err) {
-    console.error("Error requesting Telegram Passport nonce:", err)
-    error = err.response?.data?.error || err.message
+    console.error("Error requesting Telegram Passport auth data:", err)
+    const axiosError = handleAxiosError(err)
+    error = axiosError.message
   }
 
   return (
