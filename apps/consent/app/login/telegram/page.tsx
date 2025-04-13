@@ -63,15 +63,14 @@ const TelegramPassportAuth = async ({
     "x-forwarded-for": headersList.get("x-forwarded-for"),
   }
 
-  let nonce = null
+  let authData = null
   let error = null
 
   try {
-    const result = await authApi.requestTelegramPassportNonce({
+    authData = await authApi.requestTelegramPassportNonce({
       phone,
       customHeaders,
     })
-    nonce = result.nonce
   } catch (err) {
     console.error("Error requesting Telegram Passport nonce:", err)
     error = err.response?.data?.error || err.message
@@ -92,11 +91,11 @@ const TelegramPassportAuth = async ({
           </div>
         )}
 
-        {nonce && (
+        {authData && (
           <TelegramAuthForm
             login_challenge={login_challenge}
             phone={phone}
-            nonce={nonce}
+            authData={authData}
           />
         )}
       </Card>

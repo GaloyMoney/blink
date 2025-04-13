@@ -10,24 +10,22 @@ import SecondaryButton from "@/components/button/secondary-button-component"
 interface TelegramAuthFormProps {
   login_challenge: string
   phone: string
-  nonce: string
+  authData: {
+    bot_id: number
+    scope: {
+      data: string[]
+      v: number
+    }
+    public_key: string
+    nonce: string
+    callback_url?: string
+  }
 }
-
-const TELEGRAM_BOT_ID = 5130895329
-const TELEGRAM_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAweXJKoO7pm6oRUuO+vir
-VdQlAEKE6qXAzfF7o7m2WaHBCOQok5h7R2xzUffjKfuco2qQUUsoMqfd8XKFZ703
-YkbH0xvuCmbe3vE/8kGL8IXDVGicv7O3OpRecEZocy5HQUOfritlzXU2WAcFSqt5
-vWh6Ej6nFLtntcGBf747I4tZjae4J8XkQg0zf59mlIAQG3PVStEdJnDyskWpQH0Q
-HuJCrkxMdq0OHNrzS//8OXb6UgRZYRSUCL7ZBO2kpK3RU/gprcvStlh3ZJUNt59P
-P1Dl+JcSvvWQM07rmi8UxIH67jVL8qz4rD9G9iV4BpHAO7rwA3AEEwMs55lX8LUQ
-HQIDAQAB
------END PUBLIC KEY-----`
 
 const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
   login_challenge,
   phone,
-  nonce,
+  authData,
 }) => {
   const telegramButtonRef = useRef<HTMLDivElement>(null)
   const [loading, setLoading] = useState(false)
@@ -47,23 +45,8 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
     setLoading(true)
     setError(null)
 
-    // The SDK will automatically handle the deep linking
-    // We'll use window.Telegram.Passport.auth directly instead of createAuthButton
     if (typeof window.Telegram !== "undefined") {
-      // Create auth data
-      const authData = {
-        bot_id: TELEGRAM_BOT_ID,
-        scope: {
-          data: ["phone_number"],
-          v: 1,
-        },
-        public_key: TELEGRAM_PUBLIC_KEY,
-        nonce: nonce,
-      }
-
-      // Custom tooltip toggle function to handle status
       const tooltipToggle = (show: boolean) => {
-        console.log("tooltipToggle", show)
         if (!show) {
           // When Telegram app is closed/returned, check auth status
           checkAuthStatus()
@@ -71,7 +54,6 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
       }
 
       try {
-        // Pass auth data to Telegram SDK without callback_url
         window.Telegram.Passport.auth(authData, tooltipToggle)
       } catch (err) {
         console.error("Error launching Telegram auth:", err)
@@ -84,10 +66,9 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
     }
   }
 
-  // Check auth status periodically after Telegram app is opened
   const checkAuthStatus = async () => {
     try {
-      const result = await telegramAuth(login_challenge, phone, nonce)
+      const result = await telegramAuth(login_challenge, phone, authData.nonce)
 
       if (result.success && result.redirectUrl) {
         router.push(result.redirectUrl)
@@ -105,29 +86,11 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
   }
 
   useEffect(() => {
-    // Initialize Telegram Passport button after the SDK is loaded
     const initTelegramPassport = () => {
       if (typeof window.Telegram !== "undefined" && telegramButtonRef.current) {
-        // Create callback URL - this will be the endpoint that Telegram calls after auth
-        // const callbackUrl = `${window.location.origin}/api/telegram/callback?login_challenge=${encodeURIComponent(login_challenge)}&phone=${encodeURIComponent(phone)}&nonce=${encodeURIComponent(nonce)}`
-
-        // Create auth button using Telegram SDK
-        window.Telegram.Passport.createAuthButton(
-          telegramButtonRef.current,
-          {
-            bot_id: TELEGRAM_BOT_ID,
-            scope: {
-              data: ["phone_number"],
-              v: 1,
-            },
-            public_key: TELEGRAM_PUBLIC_KEY,
-            nonce: nonce,
-            // callback_url: callbackUrl,
-          },
-          {
-            text: "Log in with Telegram",
-          },
-        )
+        window.Telegram.Passport.createAuthButton(telegramButtonRef.current, authData, {
+          text: "Log in with Telegram",
+        })
 
         // Override the button click to use our custom handler
         const buttonElement = telegramButtonRef.current.querySelector("button")
@@ -156,7 +119,7 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
     return () => {
       window.removeEventListener("telegram-passport-sdk-loaded", initTelegramPassport)
     }
-  }, [login_challenge, phone, nonce])
+  }, [login_challenge, phone, authData])
 
   return (
     <div className="flex flex-col items-center">
@@ -168,10 +131,6 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
         }}
       />
 
-      {/* <p className="mb-4 text-center">
-        Click the button below to authenticate with Telegram Passport
-      </p> */}
-
       {error && (
         <div className="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-md">
           {error}
@@ -179,7 +138,7 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
             className="ml-2 text-red-700 font-bold"
             onClick={() => {
               setError(null)
-              setLoading(false)
+              setLoading(true)
               checkAuthStatus()
             }}
           >
@@ -190,11 +149,13 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
 
       {loading ? (
         <div className="flex flex-col items-center justify-center p-4">
-          <div className="w-8 h-8 border-t-2 border-blue-500 rounded-full animate-spin mb-4"></div>
+          <div className="w-8 h-8 border-t-2 border-blue-500 rounded-full animate-spin mt-4 mb-4"></div>
           <p>Waiting for Telegram authentication...</p>
         </div>
       ) : (
-        <div ref={telegramButtonRef} id="telegram-passport-auth" className="mb-6"></div>
+        !error && (
+          <div ref={telegramButtonRef} id="telegram-passport-auth" className="mb-6"></div>
+        )
       )}
 
       <div className="flex flex-col space-y-2 w-full">
@@ -202,10 +163,6 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
           Cancel
         </SecondaryButton>
       </div>
-
-      {/* <p className="mt-4 text-sm text-gray-500">
-        After authorizing in Telegram, you will be automatically logged in
-      </p> */}
     </div>
   )
 }

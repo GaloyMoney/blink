@@ -132,7 +132,16 @@ const authApi = {
   }: {
     phone: string
     customHeaders?: object
-  }): Promise<{ nonce: string }> => {
+  }): Promise<{
+    bot_id: number
+    scope: {
+      data: string[]
+      v: number
+    }
+    public_key: string
+    nonce: string
+    callback_url?: string
+  }> => {
     const response = await axiosInstance.post(
       "/telegram-passport/nonce",
       { phone },
@@ -156,7 +165,7 @@ const authApi = {
       customHeaders ? { headers: customHeaders } : undefined,
     )
     return response.data
-  }
+  },
 }
 
 export default authApi
