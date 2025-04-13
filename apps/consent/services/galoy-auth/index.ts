@@ -143,7 +143,7 @@ const authApi = {
     callback_url?: string
   }> => {
     const response = await axiosInstance.post(
-      "/telegram-passport/auth-data",
+      "/telegram-passport/request-params",
       { phone },
       customHeaders ? { headers: customHeaders } : undefined,
     )

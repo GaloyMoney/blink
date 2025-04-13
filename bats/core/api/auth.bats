@@ -194,7 +194,7 @@ simulateTelegramPassportWebhook() {
 
   # Step 1: Request Telegram Passport nonce
   variables="{\"phone\": \"$phone\"}"
-  curl_request "http://${GALOY_ENDPOINT}/auth/telegram-passport/auth-data" "$variables"
+  curl_request "http://${GALOY_ENDPOINT}/auth/telegram-passport/request-params" "$variables"
   nonce=$(curl_output '.nonce')
   [ -n "$nonce" ] || exit 1
 

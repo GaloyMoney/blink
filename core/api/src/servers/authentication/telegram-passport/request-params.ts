@@ -17,7 +17,7 @@ if (isTelegramPassportEnabled()) {
   )
 }
 
-export const requestTelegramPassportAuthData = async (req: Request, res: Response) => {
+export const getTelegramPassportRequestParams = async (req: Request, res: Response) => {
   const ip = req.originalIp
   const phone = req.body.phone
 
