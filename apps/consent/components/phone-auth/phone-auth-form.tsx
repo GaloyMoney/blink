@@ -136,13 +136,15 @@ const PhoneAuthForm: React.FC<AuthFormProps> = ({
           onChange={handlePhoneNumberChange}
           onCountryChange={setSelectedCountry}
         />
-        <SelectComponent
-          id="channel"
-          name="channel"
-          defaultValue="SMS"
-          options={getAvailableChannels(selectedCountry)}
-          required
-        ></SelectComponent>
+        {selectedCountry && (
+          <SelectComponent
+            id="channel"
+            name="channel"
+            defaultValue="SMS"
+            options={getAvailableChannels(selectedCountry)}
+            required
+          ></SelectComponent>
+        )}
         <div className="flex items-center mb-4">
           <label className="text-[var(--inputColor)] text-sm flex items-center">
             <input

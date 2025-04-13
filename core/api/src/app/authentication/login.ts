@@ -4,50 +4,49 @@ import {
   rewardFailedLoginAttemptPerIpLimits,
 } from "./ratelimits"
 
+import { upgradeAccountFromDeviceToPhone } from "@/app/accounts"
 import {
   createAccountForDeviceAccount,
   createAccountWithPhoneIdentifier,
 } from "@/app/accounts/create-account"
+import {
+  checkedToEmailCode,
+  telegramPassportLoginKey,
+  telegramPassportRequestKey,
+} from "@/domain/authentication"
+
+import { getAccountsOnboardConfig, getDefaultAccountsConfig } from "@/config"
 
 import {
   EmailUnverifiedError,
   IdentifierNotFoundError,
-  WaitingDataTelegramPassportError,
-  InvalidNonceTelegramPassportError,
   InvalidNoncePhoneTelegramPassportError,
+  InvalidNonceTelegramPassportError,
+  WaitingDataTelegramPassportError,
 } from "@/domain/authentication/errors"
-
+import { ChannelType, checkedToChannel } from "@/domain/phone-provider"
 import {
   checkedToDeviceId,
   checkedToIdentityPassword,
   checkedToIdentityUsername,
   PhoneMetadataAuthorizer,
 } from "@/domain/users"
+
 import {
   AuthWithEmailPasswordlessService,
   AuthWithPhonePasswordlessService,
   AuthWithUsernamePasswordDeviceIdService,
   IdentityRepository,
 } from "@/services/kratos"
-
 import { LedgerService } from "@/services/ledger"
 import { WalletsRepository } from "@/services/mongoose"
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
 } from "@/services/tracing"
-
-import { upgradeAccountFromDeviceToPhone } from "@/app/accounts"
-import {
-  checkedToEmailCode,
-  telegramPassportLoginKey,
-  telegramPassportRequestKey,
-} from "@/domain/authentication"
 import { isPhoneCodeValid, TwilioClient } from "@/services/twilio-service"
 
 import { IPMetadataAuthorizer } from "@/domain/accounts-ips/ip-metadata-authorizer"
-
-import { getAccountsOnboardConfig, getDefaultAccountsConfig } from "@/config"
 
 import {
   InvalidIpMetadataError,
@@ -61,11 +60,11 @@ import {
 import { IpFetcher } from "@/services/ipfetcher"
 
 import { IpFetcherServiceError } from "@/domain/ipfetcher"
+import { PhoneAccountAlreadyExistsNeedToSweepFundsError } from "@/domain/kratos"
 import { RateLimitConfig } from "@/domain/rate-limit"
 import { RateLimiterExceededError } from "@/domain/rate-limit/errors"
 import { ErrorLevel } from "@/domain/shared"
 import { consumeLimiter } from "@/services/rate-limit"
-import { PhoneAccountAlreadyExistsNeedToSweepFundsError } from "@/domain/kratos"
 
 import { RedisCacheService } from "@/services/cache"
 
@@ -281,6 +280,9 @@ export const loginTelegramPassportNonceWithPhone = async ({
   nonce: TelegramPassportNonce
   ip: IpAddress
 }): Promise<LoginWithPhoneTokenResult | ApplicationError> => {
+  const isValidPhoneForChannel = checkedToChannel(phone, ChannelType.Telegram)
+  if (isValidPhoneForChannel instanceof Error) return isValidPhoneForChannel
+
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk

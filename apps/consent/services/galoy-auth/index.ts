@@ -124,6 +124,39 @@ const authApi = {
     )
     return response.data.result
   },
+
+  // Telegram Passport APIs
+  requestTelegramPassportNonce: async ({
+    phone,
+    customHeaders,
+  }: {
+    phone: string
+    customHeaders?: object
+  }): Promise<{ nonce: string }> => {
+    const response = await axiosInstance.post(
+      "/telegram-passport/nonce",
+      { phone },
+      customHeaders ? { headers: customHeaders } : undefined,
+    )
+    return response.data
+  },
+
+  loginWithTelegramPassport: async ({
+    nonce,
+    phone,
+    customHeaders,
+  }: {
+    nonce: string
+    phone: string
+    customHeaders?: object
+  }): Promise<LoginResult> => {
+    const response = await axiosInstance.post(
+      "/telegram-passport/login",
+      { nonce, phone },
+      customHeaders ? { headers: customHeaders } : undefined,
+    )
+    return response.data
+  }
 }
 
 export default authApi

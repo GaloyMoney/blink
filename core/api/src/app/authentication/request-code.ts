@@ -4,10 +4,10 @@ import {
   getGeetestConfig,
   getTestAccounts,
 } from "@/config"
-import { checkedToChannel } from "@/domain/phone-provider"
+import { ChannelType, checkedToChannel } from "@/domain/phone-provider"
 import { TestAccountsChecker } from "@/domain/accounts/test-accounts-checker"
 import { PhoneAlreadyExistsError } from "@/domain/authentication/errors"
-import { NotImplementedError } from "@/domain/errors"
+import { InvalidChannel, NotImplementedError } from "@/domain/errors"
 import { RateLimitConfig } from "@/domain/rate-limit"
 import { RateLimiterExceededError } from "@/domain/rate-limit/errors"
 import Geetest from "@/services/geetest"
@@ -71,6 +71,10 @@ export const requestPhoneCodeWithCaptcha = async ({
   const checkedChannel = checkedToChannel(phone, channel)
   if (checkedChannel instanceof Error) return checkedChannel
 
+  if (`${checkedChannel}` === ChannelType.Telegram) {
+    return new InvalidChannel(channel)
+  }
+
   return TwilioClient().initiateVerify({
     to: phone,
     channel: checkedChannel,
@@ -118,6 +122,10 @@ export const requestPhoneCodeForAuthedUser = async ({
 
   const checkedChannel = checkedToChannel(phone, channel)
   if (checkedChannel instanceof Error) return checkedChannel
+
+  if (`${checkedChannel}` === ChannelType.Telegram) {
+    return new InvalidChannel(channel)
+  }
 
   return TwilioClient().initiateVerify({
     to: phone,
@@ -172,6 +180,10 @@ export const requestPhoneCodeWithAppcheckJti = async ({
 
   const checkedChannel = checkedToChannel(phone, channel)
   if (checkedChannel instanceof Error) return checkedChannel
+
+  if (`${checkedChannel}` === ChannelType.Telegram) {
+    return new InvalidChannel(channel)
+  }
 
   return TwilioClient().initiateVerify({
     to: phone,

@@ -1,4 +1,5 @@
 "use server"
+
 import { headers } from "next/headers"
 
 import { redirect } from "next/navigation"
@@ -11,6 +12,37 @@ import { LoginType } from "@/app/types/index.types"
 import authApi from "@/services/galoy-auth"
 
 import { hydraClient } from "@/services/hydra"
+
+export async function validateAuthToken({
+  loginChallenge,
+  authToken,
+  remember = false,
+}: {
+  loginChallenge: string
+  authToken: string
+  remember: boolean
+}) {
+  if (!loginChallenge || !authToken) {
+    return
+  }
+
+  const userId = await getUserId(authToken)
+  if (!userId || typeof userId !== "string") {
+    throw new Error("UserId not found")
+  }
+
+  const response2 = await hydraClient.acceptOAuth2LoginRequest({
+    loginChallenge,
+    acceptOAuth2LoginRequest: {
+      subject: userId,
+      remember,
+      remember_for: 3600,
+      acr: "2",
+    },
+  })
+
+  redirect(response2.data.redirect_to)
+}
 
 export const submitFormTotp = async (
   _prevState: VerificationTotpResponse,
@@ -49,11 +81,6 @@ export const submitFormTotp = async (
   if (!userId || typeof userId !== "string") {
     throw new Error("UserId not found")
   }
-
-  // TODO: check if this 1st call is necessary
-  await hydraClient.getOAuth2LoginRequest({
-    loginChallenge: login_challenge,
-  })
 
   const response2 = await hydraClient.acceptOAuth2LoginRequest({
     loginChallenge: login_challenge,
@@ -153,11 +180,6 @@ export const submitForm = async (
   if (!userId) {
     throw new Error("Invalid userId")
   }
-
-  // TODO: check if this 1st call is necessary
-  await hydraClient.getOAuth2LoginRequest({
-    loginChallenge: login_challenge,
-  })
 
   const response2 = await hydraClient.acceptOAuth2LoginRequest({
     loginChallenge: login_challenge,

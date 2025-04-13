@@ -11,15 +11,21 @@ export const getSupportedCountries = ({
   allCountries,
   unsupportedSmsCountries,
   unsupportedWhatsAppCountries,
+  unsupportedTelegramCountries,
 }: {
   allCountries: CountryCode[]
   unsupportedSmsCountries: CountryCode[]
   unsupportedWhatsAppCountries: CountryCode[]
+  unsupportedTelegramCountries: CountryCode[]
 }): Country[] => {
   const countries: Country[] = []
 
   for (const country of allCountries) {
     const supportedAuthMethods: ChannelType[] = []
+
+    if (!unsupportedTelegramCountries.includes(country)) {
+      supportedAuthMethods.push(ChannelType.Telegram)
+    }
 
     if (!unsupportedSmsCountries.includes(country)) {
       supportedAuthMethods.push(ChannelType.Sms)

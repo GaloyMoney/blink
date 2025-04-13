@@ -17,6 +17,8 @@ interface VerificationFormProps {
   remember: string
   loginType: string
   value: string
+  authToken?: string
+  totpRequired?: boolean
 }
 
 const VerificationForm: React.FC<VerificationFormProps> = ({
@@ -25,6 +27,8 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
   remember,
   loginType,
   value,
+  authToken,
+  totpRequired,
 }) => {
   const [stateVerificationCode, formActionVerificationCode] = useFormState<
     VerificationCodeResponse,
@@ -58,14 +62,17 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
     stateTwoFA.responsePayload = null
   }
 
+  const isTotpRequired =
+    totpRequired || stateVerificationCode?.responsePayload?.totpRequired
+  const token = authToken || stateVerificationCode?.responsePayload?.authToken
+
   return (
     <>
-      {stateVerificationCode?.responsePayload?.totpRequired &&
-      stateVerificationCode?.responsePayload?.authToken ? (
+      {isTotpRequired && token ? (
         <TwoFaVerificationForm
           formActionTwoFA={formActionTwoFA}
           login_challenge={login_challenge}
-          authToken={stateVerificationCode.responsePayload.authToken}
+          authToken={token}
         />
       ) : (
         <VerificationCodeForm
