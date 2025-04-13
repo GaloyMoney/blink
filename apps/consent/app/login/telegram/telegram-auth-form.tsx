@@ -199,7 +199,7 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
 // Add TypeScript interface for Telegram global object
 declare global {
   interface Window {
-    checkAuthStatus: () => Promise<void>
+    checkAuthStatus?: () => Promise<void>
     Telegram?: {
       Passport: {
         auth: (
