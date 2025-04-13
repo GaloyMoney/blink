@@ -1575,6 +1575,7 @@ enum PhoneCodeChannelType
   @join__type(graph: PUBLIC)
 {
   SMS @join__enumValue(graph: PUBLIC)
+  TELEGRAM @join__enumValue(graph: PUBLIC)
   WHATSAPP @join__enumValue(graph: PUBLIC)
 }
 
