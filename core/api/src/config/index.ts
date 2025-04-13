@@ -1,3 +1,5 @@
+import { createPrivateKey, createPublicKey } from "crypto"
+
 import {
   getBriaPartialConfigFromYaml,
   MEMO_SHARING_CENTS_THRESHOLD,
@@ -85,13 +87,60 @@ export const getBriaConfig = getBriaPartialConfigFromYaml
 export const isTelegramPassportEnabled = () =>
   !!env.TELEGRAM_BOT_API_TOKEN && !!env.TELEGRAM_PASSPORT_PRIVATE_KEY
 
+/**
+ * Extracts the telegram bot ID from a token
+ * @param token - The token string to parse
+ * @returns The extracted bot ID or empty string if the token is invalid
+ */
+const getTelegramBotId = (token: string | undefined): string | null => {
+  if (!token || typeof token !== "string") {
+    return ""
+  }
+
+  const parts = token.split(":")
+
+  if (parts.length !== 2 || !parts[0]) {
+    return ""
+  }
+
+  return parts[0]
+}
+
+/**
+ * Extracts a public key in PEM format from a private key
+ * @param privateKeyPem - Private key in PEM format as string or Buffer
+ * @returns The public key in PEM format or empty string if extraction fails
+ */
+const getPublicKey = (privateKeyPem: string | Buffer | undefined): string | null => {
+  if (!privateKeyPem) {
+    return ""
+  }
+
+  try {
+    const privateKeyObject = createPrivateKey({
+      key: privateKeyPem,
+      format: "pem",
+    })
+
+    return createPublicKey(privateKeyObject)
+      .export({ format: "pem", type: "spki" })
+      .toString()
+  } catch {
+    return ""
+  }
+}
+
 export const COMMITHASH = env.COMMITHASH
 export const HELMREVISION = env.HELMREVISION
 export const LOGLEVEL = env.LOGLEVEL
 export const UNSECURE_DEFAULT_LOGIN_CODE = env.UNSECURE_DEFAULT_LOGIN_CODE
 export const UNSECURE_IP_FROM_REQUEST_OBJECT = env.UNSECURE_IP_FROM_REQUEST_OBJECT
 export const TELEGRAM_BOT_API_TOKEN = env.TELEGRAM_BOT_API_TOKEN
+export const TELEGRAM_BOT_ID = getTelegramBotId(env.TELEGRAM_BOT_API_TOKEN)
 export const TELEGRAM_PASSPORT_PRIVATE_KEY = env.TELEGRAM_PASSPORT_PRIVATE_KEY
+export const TELEGRAM_PASSPORT_PUBLIC_KEY = getPublicKey(
+  env.TELEGRAM_PASSPORT_PRIVATE_KEY,
+)
 export const EXPORTER_PORT = env.EXPORTER_PORT
 export const TRIGGER_PORT = env.TRIGGER_PORT
 export const WEBSOCKET_PORT = env.WEBSOCKET_PORT

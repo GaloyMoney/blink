@@ -1,21 +1,13 @@
 import { Request, Response } from "express"
 
-import { getPublicKey, getBotIdFromToken } from "./utils"
-
-import { env } from "@/config/env"
-import { isTelegramPassportEnabled } from "@/config"
+import {
+  isTelegramPassportEnabled,
+  TELEGRAM_BOT_ID,
+  TELEGRAM_PASSPORT_PUBLIC_KEY,
+} from "@/config"
 
 import { Authentication } from "@/app"
 import { mapError } from "@/graphql/error-map"
-
-let publicKey = ""
-let botId = ""
-if (isTelegramPassportEnabled()) {
-  publicKey = getPublicKey(Buffer.from(env.TELEGRAM_PASSPORT_PRIVATE_KEY || "", "base64"))
-  botId = getBotIdFromToken(
-    Buffer.from(env.TELEGRAM_BOT_API_TOKEN || "", "base64").toString("utf8"),
-  )
-}
 
 export const getTelegramPassportRequestParams = async (req: Request, res: Response) => {
   const ip = req.originalIp
@@ -40,12 +32,12 @@ export const getTelegramPassportRequestParams = async (req: Request, res: Respon
   }
 
   return res.json({
-    bot_id: botId,
+    bot_id: TELEGRAM_BOT_ID,
     scope: {
       data: ["phone_number"],
       v: 1,
     },
-    public_key: publicKey,
+    public_key: TELEGRAM_PASSPORT_PUBLIC_KEY,
     nonce,
   })
 }
