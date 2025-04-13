@@ -1,6 +1,7 @@
 import { RateLimitConfig } from "@/domain/rate-limit"
 import { checkedToPhoneNumber } from "@/domain/users"
 import { RateLimiterExceededError } from "@/domain/rate-limit/errors"
+import { checkedToChannel, ChannelType } from "@/domain/phone-provider"
 
 import { RedisCacheService } from "@/services/cache"
 import { consumeLimiter } from "@/services/rate-limit"
@@ -21,6 +22,9 @@ export const requestTelegramPassportNonce = async ({
 }): Promise<TelegramPassportNonce | ApplicationError> => {
   const checkedPhoneNumber = checkedToPhoneNumber(phone)
   if (checkedPhoneNumber instanceof Error) return checkedPhoneNumber
+
+  const isValidPhoneForChannel = checkedToChannel(phone, ChannelType.Telegram)
+  if (isValidPhoneForChannel instanceof Error) return isValidPhoneForChannel
 
   const ipLimitOk = await checkRequestTelegramPassportNonceAttemptPerIpLimits(ip)
   if (ipLimitOk instanceof Error) return ipLimitOk

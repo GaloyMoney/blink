@@ -42,6 +42,7 @@ declare namespace Cypress {
   interface Chainable<Subject> {
     getOTP(email: string): Chainable<string>
     requestEmailCode(email: string): Chainable<string>
+    simulateTelegramPassportWebhook(phone: string, nonce: string): Chainable<boolean>
     flushRedis(): Chainable<void>
   }
 }
@@ -70,6 +71,28 @@ Cypress.Commands.add("requestEmailCode", (email) => {
     })
     .then((response) => {
       return response.body.result
+    })
+})
+
+Cypress.Commands.add("simulateTelegramPassportWebhook", (phone, nonce) => {
+  return cy
+    .exec(
+      `
+      export PROJECT_ROOT="$(pwd)/../.."
+      source ../../bats/helpers/telegram.bash
+      simulateTelegramPassportWebhook "${nonce}" "${phone.replace("+", "")}"
+      `,
+    )
+    .then((result) => {
+      cy.log("Telegram Passport webhook simulation result:")
+      cy.log(result.stdout)
+
+      if (result.code !== 0) {
+        throw new Error(`Failed to simulate Telegram Passport webhook: ${result.stderr}`)
+      }
+
+      // Return a wrapped value that Cypress can chain from
+      return cy.wrap(true)
     })
 })
 

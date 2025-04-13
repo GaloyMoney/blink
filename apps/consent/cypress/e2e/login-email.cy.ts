@@ -1,7 +1,7 @@
 import { testData } from "../support/test-config"
 
-describe("Account ID Test", () => {
-  it("Login email Test", () => {
+describe("Login Email", () => {
+  it("should be able to login", () => {
     const email = testData.EMAIL
 
     cy.flushRedis()

@@ -1,7 +1,7 @@
 import { testData } from "../support/test-config"
 
 describe("Login Phone", () => {
-  it("should be able to login via SMS", () => {
+  it("should be able to login via telegram passport", () => {
     cy.flushRedis()
     cy.visit(testData.AUTHORIZATION_URL)
     cy.location("search").should((search) => {
@@ -29,7 +29,7 @@ describe("Login Phone", () => {
       .should("exist")
       .should("be.visible")
       .should("not.be.disabled")
-      .select("SMS")
+      .select("TELEGRAM")
 
     cy.get("[data-testid=phone_login_next_btn]")
       .should("exist")
@@ -37,15 +37,28 @@ describe("Login Phone", () => {
       .should("not.be.disabled")
       .click()
 
-    cy.get("[data-testid=verification_code_input]")
+    // Get the Telegram auth button and extract the nonce
+    cy.get("[data-testid=telegram_passport_auth_btn]")
       .should("exist")
       .should("be.visible")
       .should("not.be.disabled")
-      .type(testData.VERIFICATION_CODE)
+      .then(($button) => {
+        const nonce = $button.attr("data-testnonce")
 
-    cy.get("[data-testid=submit_consent_btn]")
-      .should("exist")
-      .should("be.visible")
-      .should("not.be.disabled")
+        // Simulate the Telegram Passport webhook using the nonce from the attribute
+        cy.simulateTelegramPassportWebhook(testData.PHONE_NUMBER, nonce || "").then(
+          () => {
+            cy.window().then((win) => {
+              win.checkAuthStatus().then(() => {
+                // After successful authentication, user should be redirected to the consent page
+                cy.get("[data-testid=submit_consent_btn]", { timeout: 15000 })
+                  .should("exist")
+                  .should("be.visible")
+                  .should("not.be.disabled")
+              })
+            })
+          },
+        )
+      })
   })
 })

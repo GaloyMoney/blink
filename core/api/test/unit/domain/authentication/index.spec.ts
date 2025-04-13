@@ -6,6 +6,7 @@ describe("getSupportedCountries", () => {
       allCountries: ["CA", "US", "SV"] as CountryCode[],
       unsupportedSmsCountries: ["CA", "SV"] as CountryCode[],
       unsupportedWhatsAppCountries: ["US", "SV"] as CountryCode[],
+      unsupportedTelegramCountries: ["US", "CA"] as CountryCode[],
     })
 
     expect(countries).toEqual([
@@ -16,6 +17,10 @@ describe("getSupportedCountries", () => {
       {
         id: "US",
         supportedAuthChannels: ["sms"],
+      },
+      {
+        id: "SV",
+        supportedAuthChannels: ["telegram"],
       },
     ])
   })

@@ -640,6 +640,11 @@ export const configSchema = {
       items: { type: "string" },
       default: [],
     },
+    telegramAuthUnsupportedCountries: {
+      type: "array",
+      items: { type: "string" },
+      default: [],
+    },
   },
   required: [
     "lightningAddressDomain",
@@ -669,6 +674,7 @@ export const configSchema = {
     "skipFeeProbeConfig",
     "smsAuthUnsupportedCountries",
     "whatsAppAuthUnsupportedCountries",
+    "telegramAuthUnsupportedCountries",
   ],
   additionalProperties: false,
 } as const

@@ -9,6 +9,7 @@ jest.mock("@/config", () => ({
   ...jest.requireActual("@/config"),
   getSmsAuthUnsupportedCountries: () => ["GB"],
   getWhatsAppAuthUnsupportedCountries: () => ["US"],
+  getTelegramAuthUnsupportedCountries: () => ["US"],
 }))
 
 describe("checkedToChannel", () => {
@@ -71,6 +72,23 @@ describe("checkedToChannel", () => {
     it("is case insensitive", () => {
       const result = checkedToChannel(validUkPhone, "WhatsApp")
       expect(result).toBe(ChannelType.Whatsapp)
+    })
+  })
+
+  describe("Telegram channel", () => {
+    it("succeeds for supported country", () => {
+      const result = checkedToChannel(validUkPhone, "telegram")
+      expect(result).toBe(ChannelType.Telegram)
+    })
+
+    it("fails for unsupported country", () => {
+      const result = checkedToChannel(validUsPhone, "telegram")
+      expect(result).toBeInstanceOf(InvalidChannelForCountry)
+    })
+
+    it("is case insensitive", () => {
+      const result = checkedToChannel(validUkPhone, "Telegram")
+      expect(result).toBe(ChannelType.Telegram)
     })
   })
 

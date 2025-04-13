@@ -4,8 +4,11 @@ import axios from "axios"
 import { Request, Response } from "express"
 import { TelegramPassport } from "@merqva/telegram-passport"
 
-import { env } from "@/config/env"
-import { isTelegramPassportEnabled } from "@/config"
+import {
+  isTelegramPassportEnabled,
+  TELEGRAM_BOT_API_TOKEN,
+  TELEGRAM_PASSPORT_PRIVATE_KEY,
+} from "@/config"
 
 import { Authentication } from "@/app"
 import { mapError } from "@/graphql/error-map"
@@ -15,9 +18,7 @@ import { baseLogger } from "@/services/logger"
 const logger = baseLogger.child({ module: "trigger" })
 
 const setupHash = isTelegramPassportEnabled()
-  ? createHash("sha256")
-      .update(Buffer.from(env.TELEGRAM_BOT_API_TOKEN || "", "base64"))
-      .digest("hex")
+  ? createHash("sha256").update(TELEGRAM_BOT_API_TOKEN).digest("hex")
   : undefined
 
 export const handleTelegramPassportWebhook = async (req: Request, res: Response) => {
@@ -36,9 +37,7 @@ export const handleTelegramPassportWebhook = async (req: Request, res: Response)
   }
 
   try {
-    const telegramPassport = new TelegramPassport(
-      Buffer.from(env.TELEGRAM_PASSPORT_PRIVATE_KEY || "", "base64"),
-    )
+    const telegramPassport = new TelegramPassport(TELEGRAM_PASSPORT_PRIVATE_KEY)
     const decryptedData = telegramPassport.decryptPassportData(
       req.body.message.passport_data,
     )
@@ -75,12 +74,14 @@ export const handleTelegramPassportWebhookSetup = async (req: Request, res: Resp
   const host = req.headers["x-forwarded-host"] || req.headers.host
   const baseUrl = `${protocol}://${host}`
   try {
-    const token = Buffer.from(env.TELEGRAM_BOT_API_TOKEN || "", "base64").toString()
     const webhookUrl = `${baseUrl}/auth/telegram-passport/webhook?hash=${setupHash}`
 
-    const response = await axios.post(`https://api.telegram.org/bot${token}/setWebhook`, {
-      url: webhookUrl,
-    })
+    const response = await axios.post(
+      `https://api.telegram.org/bot${TELEGRAM_BOT_API_TOKEN}/setWebhook`,
+      {
+        url: webhookUrl,
+      },
+    )
 
     return res.json({ success: response.status === 200 })
   } catch (error) {

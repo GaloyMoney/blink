@@ -40,6 +40,7 @@ export const getCaptchaChallenge = async (
   ) {
     throw new Error("Invalid Values provided")
   }
+
   channel = channel.toLowerCase()
   if (submitValue === SubmitValue.denyAccess) {
     console.log("User denied access")
@@ -73,6 +74,24 @@ export const getCaptchaChallenge = async (
         },
       },
     }
+  }
+
+  // Special handling for Telegram Passport
+  if (channel.toLowerCase() === "telegram") {
+    const params = new URLSearchParams({
+      login_challenge,
+      phone,
+    })
+    cookies().set(
+      createHash("md5").update(login_challenge).digest("hex"),
+      JSON.stringify({
+        loginType: LoginType.phone,
+        value: phone,
+        remember: remember,
+      }),
+      { secure: true },
+    )
+    redirect(`/login/telegram?${params}`)
   }
 
   if (env.CI || env.NODE_ENV === "development") {

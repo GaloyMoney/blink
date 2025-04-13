@@ -13,7 +13,7 @@ gql`
     }
   }
 `
-export type AuthChannels = "SMS" | "WHATSAPP"
+export type AuthChannels = "TELEGRAM" | "SMS" | "WHATSAPP"
 
 export interface SupportedCountry {
   readonly id: string
