@@ -125,8 +125,7 @@ const authApi = {
     return response.data.result
   },
 
-  // Telegram Passport APIs
-  requestTelegramPassportAuthData: async ({
+  getTelegramPassportRequestParams: async ({
     phone,
     customHeaders,
   }: {

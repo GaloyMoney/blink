@@ -11,7 +11,6 @@ import { hydraClient } from "@/services/hydra"
 import authApi from "@/services/galoy-auth"
 
 export async function cancelAuth(loginChallenge: string) {
-  // Reject the OAuth login request
   const response = await hydraClient.rejectOAuth2LoginRequest({
     loginChallenge,
     rejectOAuth2Request: {
@@ -32,7 +31,6 @@ export async function telegramAuth(loginChallenge: string, phone: string, nonce:
 
     const normalizedPhone = phone.replace(/\s+/g, "")
 
-    // Authenticate with Telegram Passport
     const { authToken, totpRequired } = await authApi.loginWithTelegramPassport({
       nonce,
       phone: normalizedPhone,
@@ -42,7 +40,6 @@ export async function telegramAuth(loginChallenge: string, phone: string, nonce:
       return { success: false, message: "Authentication failed" }
     }
 
-    // Set auth cookie
     cookies().set(
       createHash("md5").update(loginChallenge).digest("hex"),
       JSON.stringify({
@@ -55,7 +52,6 @@ export async function telegramAuth(loginChallenge: string, phone: string, nonce:
       { secure: true, sameSite: "lax" },
     )
 
-    // Return success with redirect URL instead of using redirect()
     return {
       success: true,
       redirectUrl: `/login/verification?login_challenge=${loginChallenge}`,

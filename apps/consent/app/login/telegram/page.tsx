@@ -1,6 +1,5 @@
 import React from "react"
-import { redirect } from "next/navigation"
-import { cookies, headers } from "next/headers"
+import { headers } from "next/headers"
 
 import TelegramAuthForm from "./telegram-auth-form"
 
@@ -10,7 +9,6 @@ import Card from "@/components/card"
 import Logo from "@/components/logo"
 import Heading from "@/components/heading"
 import SubHeading from "@/components/sub-heading"
-import { hydraClient } from "@/services/hydra"
 import authApi from "@/services/galoy-auth"
 
 interface TelegramPassportProps {
@@ -29,35 +27,6 @@ const TelegramPassportAuth = async ({
     throw new Error("Invalid Request: Missing login_challenge or phone")
   }
 
-  const { data: body } = await hydraClient.getOAuth2LoginRequest(
-    {
-      loginChallenge: login_challenge,
-    },
-    {
-      headers: {
-        Cookie: cookies().toString(),
-      },
-    },
-  )
-
-  if (body.skip) {
-    const { data: response } = await hydraClient.acceptOAuth2LoginRequest(
-      {
-        loginChallenge: login_challenge,
-        acceptOAuth2LoginRequest: {
-          subject: String(body.subject),
-        },
-      },
-      {
-        headers: {
-          Cookie: cookies().toString(),
-        },
-      },
-    )
-    redirect(String(response.redirect_to))
-  }
-
-  // Request a nonce for Telegram Passport authentication
   const headersList = headers()
   const customHeaders = {
     "x-real-ip": headersList.get("x-real-ip"),
@@ -68,7 +37,7 @@ const TelegramPassportAuth = async ({
   let error = null
 
   try {
-    authData = await authApi.requestTelegramPassportAuthData({
+    authData = await authApi.getTelegramPassportRequestParams({
       phone,
       customHeaders,
     })

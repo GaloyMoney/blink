@@ -121,6 +121,15 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
     }
   }, [login_challenge, phone, authData, handleTelegramAuth])
 
+  useEffect(() => {
+    // Expose functions for testing
+    window.checkAuthStatus = checkAuthStatus
+
+    return () => {
+      delete window.checkAuthStatus
+    }
+  }, [checkAuthStatus])
+
   return (
     <div className="flex flex-col items-center">
       <Script
@@ -136,6 +145,7 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
           {error}
           <button
             className="ml-2 text-red-700 font-bold"
+            data-testid="telegram_passport_try_again_btn"
             onClick={() => {
               setError(null)
               setLoading(true)
@@ -150,11 +160,30 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
       {loading ? (
         <div className="flex flex-col items-center justify-center p-4">
           <div className="w-8 h-8 border-t-2 border-blue-500 rounded-full animate-spin mt-4 mb-4"></div>
-          <p>Waiting for Telegram authentication...</p>
+          <p>
+            Waiting for Telegram authentication...
+            <button
+              className="ml-2 font-semibold text-[var(--primaryButtonBackground)] dark:text-[var(--primaryButtonBackground)] hover:underline"
+              data-testid="telegram_passport_refresh_btn"
+              onClick={() => {
+                setError(null)
+                setLoading(true)
+                checkAuthStatus()
+              }}
+            >
+              refresh
+            </button>
+          </p>
         </div>
       ) : (
         !error && (
-          <div ref={telegramButtonRef} id="telegram-passport-auth" className="mb-6"></div>
+          <div
+            ref={telegramButtonRef}
+            id="telegram-passport-auth"
+            data-testid="telegram_passport_auth_btn"
+            data-testnonce={authData.nonce}
+            className="mb-6"
+          ></div>
         )
       )}
 
@@ -170,6 +199,7 @@ const TelegramAuthForm: React.FC<TelegramAuthFormProps> = ({
 // Add TypeScript interface for Telegram global object
 declare global {
   interface Window {
+    checkAuthStatus: () => Promise<void>
     Telegram?: {
       Passport: {
         auth: (
