@@ -257,7 +257,6 @@ export const NotificationsService = (): INotificationsService => {
     try {
       const { settlementCurrency, settlementAmount } = transaction
       const { status, phoneNumber } = recipient
-
       if (status !== AccountStatus.Invited || !phoneNumber) return true
 
       const amount =
@@ -276,7 +275,6 @@ export const NotificationsService = (): INotificationsService => {
         contentSid,
         contentVariables,
       })
-
       if (result instanceof Error) return result
 
       return true

@@ -148,7 +148,6 @@ export const loginWithPhoneToken = async ({
   if (userId instanceof Error) return userId
 
   const activeAccount = await activateInvitedAccount(userId)
-
   if (activeAccount instanceof Error) return activeAccount
 
   const kratosResult = await authService.loginToken({ phone })

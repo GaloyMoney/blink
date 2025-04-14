@@ -6,7 +6,6 @@ export const AccountValidator = (
   account: Account,
 ): AccountValidator | ValidationError => {
   const allowedStatuses: AccountStatus[] = [AccountStatus.Active, AccountStatus.Invited]
-
   if (!allowedStatuses.includes(account.status)) {
     return new InactiveAccountError(account.id)
   }
