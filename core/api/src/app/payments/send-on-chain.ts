@@ -322,7 +322,6 @@ const executePaymentViaIntraledger = async <
     userId: recipientAccount.kratosUserId,
     level: recipientAccount.level,
     status: recipientAccount.status,
-    username: recipientAccount.username,
     phoneNumber: recipientUser.phone,
   }
 
@@ -344,7 +343,6 @@ const executePaymentViaIntraledger = async <
     userId: senderAccount.kratosUserId,
     level: senderAccount.level,
     status: senderAccount.status,
-    username: senderAccount.username,
     phoneNumber: senderUser.phone,
   }
 

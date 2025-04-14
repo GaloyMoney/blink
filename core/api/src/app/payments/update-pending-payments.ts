@@ -223,7 +223,6 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       userId: senderUser.id,
       level: senderAccount.level,
       status: senderAccount.status,
-      username: senderAccount.username,
       phoneNumber: senderUser.phone,
     }
 

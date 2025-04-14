@@ -64,7 +64,6 @@ export const settlePayout = async (
       userId: user.id,
       level: account.level,
       status: account.status,
-      username: account.username,
       phoneNumber: user.phone,
     },
     transaction: walletTransaction,

@@ -41,7 +41,6 @@ type NotificationRecipient = {
   walletId: WalletId
   level: AccountLevel
   status: AccountStatus
-  username?: Username
   phoneNumber?: PhoneNumber
 }
 
