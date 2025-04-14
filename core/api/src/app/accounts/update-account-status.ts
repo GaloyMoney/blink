@@ -25,8 +25,8 @@ export const updateAccountStatus = async ({
 
   account.statusHistory = (account.statusHistory ?? []).concat({
     status: statusChecked,
+    updatedByPrivilegedClientId,
     comment,
-    ...(updatedByPrivilegedClientId && { updatedByPrivilegedClientId }),
   })
   return accountsRepo.update(account)
 }

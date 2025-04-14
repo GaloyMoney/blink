@@ -1,6 +1,6 @@
 import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/config"
 
-import { createUserByPhone } from "@/app/users"
+import { createKratosIdentityByPhone } from "@/app/authentication"
 import { AccountLevel, AccountStatus } from "@/domain/accounts"
 import { WalletType } from "@/domain/wallets"
 import { displayCurrencyFromCountryCode } from "@/domain/price"
@@ -131,28 +131,26 @@ export const createInvitedAccountFromPhone = async ({
 }: {
   phone: PhoneNumber
 }): Promise<Account | ApplicationError> => {
+  const kratosUserId = await createKratosIdentityByPhone(phone)
+  if (kratosUserId instanceof Error) return kratosUserId
+
   const validationResult = await TwilioClient().validateDestination(phone)
   if (validationResult instanceof Error) return validationResult
 
-  const user = await createUserByPhone(phone)
-  if (user instanceof Error) return user
-
-  const existingAccount = await AccountsRepository().findByUserId(user.id)
+  const existingAccount = await AccountsRepository().findByUserId(kratosUserId)
   if (existingAccount instanceof CouldNotFindAccountFromKratosIdError) {
     const invitedAccountsConfig = getDefaultAccountsConfig()
 
     invitedAccountsConfig.initialStatus = AccountStatus.Invited
     invitedAccountsConfig.initialComment = "Invited account"
 
-    const account = await createAccountWithPhoneIdentifier({
+    return createAccountWithPhoneIdentifier({
       newAccountInfo: {
         phone,
-        kratosUserId: user.id,
+        kratosUserId,
       },
       config: invitedAccountsConfig,
     })
-
-    return account
   }
 
   return existingAccount

@@ -8,9 +8,7 @@ export const activateInvitedAccount = async (
   const accountsRepo = AccountsRepository()
 
   const account = await accountsRepo.findByUserId(userId)
-
   if (account instanceof Error) return account
-
   if (account.status !== AccountStatus.Invited) return account
 
   return updateAccountStatus({
