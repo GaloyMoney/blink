@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
 
-import { isTelegramPassportEnabled, UNSECURE_IP_FROM_REQUEST_OBJECT } from "@/config"
+import { isTelegramPassportEnabled } from "@/config"
 
 import { Authentication } from "@/app"
 import { mapError } from "@/graphql/error-map"
@@ -11,9 +11,7 @@ import { checkedToTelegramPassportNonce } from "@/domain/authentication"
 import { recordExceptionInCurrentSpan } from "@/services/tracing"
 
 export const loginWithTelegramPassportNonce = async (req: Request, res: Response) => {
-  const ip = UNSECURE_IP_FROM_REQUEST_OBJECT
-    ? req.ip
-    : req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
+  const ip = req.originalIp
   const nonceRaw = req.body.nonce
   const phoneRaw = req.body.phone
 
