@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat(consent): add telegram auth (#4800)...'
-      sha: 105248a1619fe138b18f7332396ed9e4eb1ad7bf
+      commitTitle: 'chore: bump axios from 1.7.5 to 1.8.4 (#4782)...'
+      sha: ea5b28563a375bc9f16a845570a06e9aef2a5cf8
       tags:
-      - 0.21.33-1-g105248a16
+      - 0.21.33-3-gea5b28563
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat(consent): add telegram auth (#4800)...'
-      sha: 105248a1619fe138b18f7332396ed9e4eb1ad7bf
+      commitTitle: 'chore: bump axios from 1.7.5 to 1.8.4 (#4782)...'
+      sha: ea5b28563a375bc9f16a845570a06e9aef2a5cf8
       tags:
-      - 0.21.33-1-g105248a16
+      - 0.21.33-3-gea5b28563
     path: schemas
   - git:
-      commitTitle: 'feat(consent): add telegram auth (#4800)...'
-      sha: 105248a1619fe138b18f7332396ed9e4eb1ad7bf
+      commitTitle: 'chore: bump axios from 1.7.5 to 1.8.4 (#4782)...'
+      sha: ea5b28563a375bc9f16a845570a06e9aef2a5cf8
       tags:
-      - 0.21.33-1-g105248a16
+      - 0.21.33-3-gea5b28563
     path: gql
   path: graphql
 kind: LockConfig
