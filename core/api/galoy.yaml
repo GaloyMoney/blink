@@ -171,3 +171,4 @@ skipFeeProbeConfig:
   chanId: []
 smsAuthUnsupportedCountries: []
 whatsAppAuthUnsupportedCountries: []
+telegramAuthUnsupportedCountries: []

@@ -331,3 +331,7 @@ export const getSmsAuthUnsupportedCountries = (): CountryCode[] => {
 export const getWhatsAppAuthUnsupportedCountries = (): CountryCode[] => {
   return yamlConfig.whatsAppAuthUnsupportedCountries as CountryCode[]
 }
+
+export const getTelegramAuthUnsupportedCountries = (): CountryCode[] => {
+  return yamlConfig.telegramAuthUnsupportedCountries as CountryCode[]
+}

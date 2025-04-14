@@ -1,7 +1,7 @@
 import express from "express"
 
 import * as LoginMod from "./login"
-import * as RequestNonceMod from "./request-nonce"
+import * as RequestParamsMod from "./request-params"
 import * as WebhookMod from "./webhook"
 
 import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
@@ -11,13 +11,13 @@ const handlers = wrapAsyncFunctionsToRunInSpan({
   namespace: "servers.authentication.telegram-passport",
   fns: {
     ...LoginMod,
-    ...RequestNonceMod,
+    ...RequestParamsMod,
     ...WebhookMod,
   },
 })
 
 const router = express.Router({ caseSensitive: true })
-router.post("/nonce", handlers.requestTelegramPassportNonce)
+router.post("/request-params", handlers.getTelegramPassportRequestParams)
 router.post("/login", handlers.loginWithTelegramPassportNonce)
 router.get("/webhook", handlers.handleTelegramPassportWebhookSetup)
 router.post("/webhook", handlers.handleTelegramPassportWebhook)

@@ -5,6 +5,7 @@ const PhoneCodeChannelType = GT.Enum({
   values: {
     SMS: {},
     WHATSAPP: {},
+    TELEGRAM: {},
   },
 })
 

@@ -8,6 +8,7 @@ import {
 import {
   getSmsAuthUnsupportedCountries,
   getWhatsAppAuthUnsupportedCountries,
+  getTelegramAuthUnsupportedCountries,
 } from "@/config"
 
 export * from "./errors"
@@ -38,11 +39,13 @@ export const CarrierType = {
 export const ChannelType = {
   Sms: "sms",
   Whatsapp: "whatsapp",
+  Telegram: "telegram",
 } as const
 
 const CHANNEL_CONFIG = {
   [ChannelType.Sms]: getSmsAuthUnsupportedCountries,
   [ChannelType.Whatsapp]: getWhatsAppAuthUnsupportedCountries,
+  [ChannelType.Telegram]: getTelegramAuthUnsupportedCountries,
 } as const
 
 export const checkedToChannel = (
