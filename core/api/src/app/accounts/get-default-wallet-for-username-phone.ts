@@ -1,10 +1,15 @@
 import { getWalletFromAccount } from "./get-wallet-from-account"
 import { createInvitedAccountFromPhone } from "./create-account"
 
-import { CouldNotFindWalletFromUsernameAndCurrencyError } from "@/domain/errors"
+import {
+  CouldNotFindUserFromPhoneError,
+  CouldNotFindWalletFromUsernameAndCurrencyError,
+} from "@/domain/errors"
 import { checkedToUsername } from "@/domain/accounts"
 import { checkedToPhoneNumber } from "@/domain/users"
 import { AccountsRepository, UsersRepository } from "@/services/mongoose"
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
+import { ErrorLevel } from "@/domain/shared"
 
 export const getDefaultWalletByUsernameOrPhone = async (
   usernameOrPhone: Username | PhoneNumber,
@@ -39,12 +44,25 @@ const getWalletByPhone = async (
 ): Promise<Wallet | ApplicationError> => {
   const user = await UsersRepository().findByPhone(phone)
 
-  if (user instanceof Error) {
+  if (user instanceof CouldNotFindUserFromPhoneError) {
     const account = await createInvitedAccountFromPhone({ phone })
-    if (account instanceof Error) return user
+    if (account instanceof Error) {
+      recordExceptionInCurrentSpan({
+        error: account,
+        level: ErrorLevel.Warn,
+        attributes: {
+          walletCurrency,
+          phone,
+        },
+      })
+
+      return account
+    }
 
     return getWalletFromAccount(account, walletCurrency)
   }
+
+  if (user instanceof Error) return user
 
   const account = await AccountsRepository().findByUserId(user.id)
   if (account instanceof Error) return account

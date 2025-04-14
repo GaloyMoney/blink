@@ -1,6 +1,4 @@
-import { WalletCurrency } from "../shared"
-
-import { WelcomeTemplateParams } from "./types"
+import { WalletCurrency } from "@/domain/shared"
 
 export const welcomeSmsTemplate = ({
   amount,
