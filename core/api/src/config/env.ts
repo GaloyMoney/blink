@@ -43,6 +43,8 @@ export const env = createEnv({
     TWILIO_ACCOUNT_SID: z.string().min(1),
     TWILIO_AUTH_TOKEN: z.string().min(1),
     TWILIO_VERIFY_SERVICE_ID: z.string().min(1),
+    TWILIO_MESSAGING_SERVICE_ID: z.string().min(1),
+    TWILIO_WELCOME_CONTENT_SID: z.string().min(1),
 
     KRATOS_PUBLIC_API: z.string().url(),
     KRATOS_ADMIN_API: z.string().url(),
@@ -177,6 +179,8 @@ export const env = createEnv({
     TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID,
     TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN,
     TWILIO_VERIFY_SERVICE_ID: process.env.TWILIO_VERIFY_SERVICE_ID,
+    TWILIO_MESSAGING_SERVICE_ID: process.env.TWILIO_MESSAGING_SERVICE_ID,
+    TWILIO_WELCOME_CONTENT_SID: process.env.TWILIO_WELCOME_CONTENT_SID,
 
     KRATOS_PUBLIC_API: process.env.KRATOS_PUBLIC_API,
     KRATOS_ADMIN_API: process.env.KRATOS_ADMIN_API,

@@ -5,6 +5,8 @@
   "TWILIO_ACCOUNT_SID": "AC_twilio_id",
   "TWILIO_AUTH_TOKEN": "AC_twilio_auth_token",
   "TWILIO_VERIFY_SERVICE_ID": "VA_twilio_service",
+  "TWILIO_MESSAGING_SERVICE_ID": "VA_twilio_messaging_service",
+  "TWILIO_WELCOME_CONTENT_SID": "VA_twilio_welcome_content_sid",
   "KRATOS_PG_CON": "postgres://dbuser:secret@localhost:5432/default?sslmode=disable",
   "KRATOS_PUBLIC_API": "http://localhost:4433",
   "KRATOS_ADMIN_API": "http://localhost:4434",

@@ -265,15 +265,16 @@ export const NotificationsService = (): INotificationsService => {
           ? Number(toSats(settlementAmount))
           : Number(toCents(settlementAmount)) / 100
 
-      const body = welcomeSmsTemplate({
+      const { contentSid, contentVariables } = welcomeSmsTemplate({
         currency: settlementCurrency,
         amount,
         phoneNumber,
       })
 
-      const result = await TwilioClient().sendSMSNotification({
+      const result = await TwilioClient().sendTemplatedSMS({
         to: phoneNumber,
-        body,
+        contentSid,
+        contentVariables,
       })
 
       if (result instanceof Error) return result
