@@ -3,7 +3,7 @@
 import { createHash } from "crypto"
 
 import { redirect } from "next/navigation"
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
 
 import { LoginType } from "@/app/types/index.types"
 import { handleAxiosError } from "@/app/error-handler"
@@ -31,9 +31,16 @@ export async function telegramAuth(loginChallenge: string, phone: string, nonce:
 
     const normalizedPhone = phone.replace(/\s+/g, "")
 
+    const headersList = headers()
+    const customHeaders = {
+      "x-real-ip": headersList.get("x-real-ip"),
+      "x-forwarded-for": headersList.get("x-forwarded-for"),
+    }
+
     const { authToken, totpRequired } = await authApi.loginWithTelegramPassport({
       nonce,
       phone: normalizedPhone,
+      customHeaders,
     })
 
     if (!authToken) {
