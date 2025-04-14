@@ -151,7 +151,6 @@ export const addPendingTransaction = async ({
         userId: recipientUser.id,
         level: account.level,
         status: account.status,
-        username: account.username,
         phoneNumber: recipientUser.phone,
       },
       transaction: res,
