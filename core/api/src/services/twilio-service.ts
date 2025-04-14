@@ -109,13 +109,9 @@ export const TwilioClient = (): IPhoneProviderService => {
     phone: PhoneNumber,
   ): Promise<true | PhoneProviderServiceError> => {
     const { phoneMetadataValidationSettings } = getAccountsOnboardConfig()
-
-    if (!phoneMetadataValidationSettings.enabled) {
-      return true
-    }
+    if (!phoneMetadataValidationSettings.enabled) return true
 
     const metadata = await getCarrier(phone)
-
     if (
       metadata instanceof Error ||
       metadata.carrier?.type == null ||
