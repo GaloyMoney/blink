@@ -63,7 +63,7 @@
     "@ory/client": "^1.15.6",
     "@t3-oss/env-core": "^0.7.3",
     "ajv": "^8.17.1",
-    "axios": "^1.8.3",
+    "axios": "^1.8.4",
     "basic-auth": "^2.0.1",
     "bignumber.js": "^9.1.2",
     "bip32": "^4.0.0",
