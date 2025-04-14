@@ -25,7 +25,7 @@ describe("NotificationsService", () => {
       const user = await UsersRepository().findById(newAccount.kratosUserId)
       if (user instanceof Error) throw user
 
-      const { kratosUserId, username, status } = newAccount
+      const { kratosUserId, status } = newAccount
       const walletId = newWalletDescriptor.id
       const accountId = newWalletDescriptor.accountId
 
@@ -63,7 +63,6 @@ describe("NotificationsService", () => {
           userId: kratosUserId,
           level: AccountLevel.One,
           status,
-          username,
           phoneNumber: user.phone,
         },
         transaction: {
