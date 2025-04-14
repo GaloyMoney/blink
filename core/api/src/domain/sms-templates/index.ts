@@ -1,2 +1,1 @@
-export * from "./types"
-export { welcomeSmsTemplate } from "./welcome"
+export * from "./welcome"

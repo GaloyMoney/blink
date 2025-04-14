@@ -56,7 +56,7 @@ const initializeCreatedAccount = async ({
   account.contactEnabled = account.role === "user"
 
   account.statusHistory = [
-    { status: config.initialStatus, comment: config.initialComment ?? "Initial Status" },
+    { status: config.initialStatus, comment: config.initialComment || "Initial Status" },
   ]
   account.level = config.initialLevel
 
@@ -132,11 +132,9 @@ export const createInvitedAccountFromPhone = async ({
   phone: PhoneNumber
 }): Promise<Account | ApplicationError> => {
   const validationResult = await TwilioClient().validateDestination(phone)
-
   if (validationResult instanceof Error) return validationResult
 
   const user = await createUserByPhone(phone)
-
   if (user instanceof Error) return user
 
   const existingAccount = await AccountsRepository().findByUserId(user.id)
@@ -156,8 +154,6 @@ export const createInvitedAccountFromPhone = async ({
 
     return account
   }
-
-  if (existingAccount instanceof Error) return existingAccount
 
   return existingAccount
 }

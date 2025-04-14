@@ -1,4 +1,4 @@
-export type WelcomeTemplateParams = {
+type WelcomeTemplateParams = {
   amount: number
   currency: WalletCurrency
   phoneNumber: string
