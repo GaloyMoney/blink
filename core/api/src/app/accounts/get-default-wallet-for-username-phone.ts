@@ -8,8 +8,6 @@ import {
 import { checkedToUsername } from "@/domain/accounts"
 import { checkedToPhoneNumber } from "@/domain/users"
 import { AccountsRepository, UsersRepository } from "@/services/mongoose"
-import { recordExceptionInCurrentSpan } from "@/services/tracing"
-import { ErrorLevel } from "@/domain/shared"
 
 export const getDefaultWalletByUsernameOrPhone = async (
   usernameOrPhone: Username | PhoneNumber,
@@ -46,18 +44,7 @@ const getWalletByPhone = async (
 
   if (user instanceof CouldNotFindUserFromPhoneError) {
     const account = await createInvitedAccountFromPhone({ phone })
-    if (account instanceof Error) {
-      recordExceptionInCurrentSpan({
-        error: account,
-        level: ErrorLevel.Warn,
-        attributes: {
-          walletCurrency,
-          phone,
-        },
-      })
-
-      return account
-    }
+    if (account instanceof Error) return account
 
     return getWalletFromAccount(account, walletCurrency)
   }

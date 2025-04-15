@@ -5,6 +5,7 @@ import {
 } from "./ratelimits"
 
 import { activateInvitedAccount } from "./activate-invited-account"
+import { getPhoneMetadata } from "./get-phone-metadata"
 
 import { upgradeAccountFromDeviceToPhone } from "@/app/accounts"
 
@@ -32,7 +33,6 @@ import {
   checkedToDeviceId,
   checkedToIdentityPassword,
   checkedToIdentityUsername,
-  PhoneMetadataAuthorizer,
 } from "@/domain/users"
 
 import {
@@ -47,7 +47,7 @@ import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
 } from "@/services/tracing"
-import { isPhoneCodeValid, TwilioClient } from "@/services/twilio-service"
+import { isPhoneCodeValid } from "@/services/twilio-service"
 
 import { IPMetadataAuthorizer } from "@/domain/accounts-ips/ip-metadata-authorizer"
 
@@ -56,10 +56,6 @@ import {
   MissingIPMetadataError,
   UnauthorizedIPForOnboardingError,
 } from "@/domain/errors"
-import {
-  InvalidPhoneForOnboardingError,
-  InvalidPhoneMetadataForOnboardingError,
-} from "@/domain/users/errors"
 import { IpFetcher } from "@/services/ipfetcher"
 
 import { IpFetcherServiceError } from "@/domain/ipfetcher"
@@ -366,6 +362,9 @@ export const loginTelegramPassportNonceWithPhone = async ({
 
   if (userId instanceof Error) return userId
 
+  const activeAccount = await activateInvitedAccount(userId)
+  if (activeAccount instanceof Error) return activeAccount
+
   const kratosResult = await authService.loginToken({ phone })
   if (kratosResult instanceof Error) return kratosResult
 
@@ -502,32 +501,7 @@ const isAllowedToOnboard = async ({
     }
   }
 
-  const newPhoneMetadata = await TwilioClient().getCarrier(phone)
-  if (newPhoneMetadata instanceof Error) {
-    if (!phoneMetadataValidationSettings.enabled) {
-      return undefined
-    }
-
-    return new InvalidPhoneMetadataForOnboardingError()
-  }
-
-  const phoneMetadata = newPhoneMetadata
-
-  if (phoneMetadataValidationSettings.enabled) {
-    const authorizedPhoneMetadata = PhoneMetadataAuthorizer(
-      phoneMetadataValidationSettings,
-    ).authorize(phoneMetadata)
-
-    addAttributesToCurrentSpan({
-      "login.phoneMetadata": JSON.stringify(phoneMetadata),
-    })
-
-    if (authorizedPhoneMetadata instanceof Error) {
-      return new InvalidPhoneForOnboardingError(authorizedPhoneMetadata.name)
-    }
-  }
-
-  return phoneMetadata
+  return getPhoneMetadata({ phone })
 }
 
 const checkDeviceLoginAttemptPerAppcheckJtiLimits = async (
