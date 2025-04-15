@@ -150,7 +150,7 @@ teardown() {
   [[ "${send_status}" = "SUCCESS" ]]
 }
 
-@test "intraledger-send: (btc) wallet can send and recover sats to unregistered phone user" {
+@test "intraledger-send: (btc) wallet can send sats to unregistered phone user" {
   local from_token_name="$ALICE"
   local from_wallet_name="$from_token_name.btc_wallet_id"
 
@@ -199,7 +199,7 @@ teardown() {
   [[ "$final_balance" == "0" ]] || fail "Balance not restored. Remaining: $final_balance"
 }
 
-@test "intraledger-send: (usd) wallet can send and recover usd to unregistered phone user" {
+@test "intraledger-send: (usd) wallet can send usd to unregistered phone user" {
   local from_token_name="$ALICE"
   local from_wallet_name="$from_token_name.usd_wallet_id"
 
