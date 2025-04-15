@@ -259,16 +259,12 @@ export const NotificationsService = (): INotificationsService => {
       const { status, phoneNumber } = recipient
       if (status !== AccountStatus.Invited || !phoneNumber) return true
 
-      const amount =
-        settlementCurrency === WalletCurrency.Btc
-          ? Number(toSats(settlementAmount))
-          : Number(toCents(settlementAmount)) / 100
-
       const { contentSid, contentVariables } = welcomeSmsTemplate({
         currency: settlementCurrency,
-        amount,
+        amount: settlementAmount,
         phoneNumber,
       })
+      if (!contentSid) return true
 
       const result = await TwilioClient().sendTemplatedSMS({
         to: phoneNumber,

@@ -10,7 +10,6 @@ import {
   TWILIO_VERIFY_SERVICE_ID,
   TWILIO_MESSAGING_SERVICE_ID,
   UNSECURE_DEFAULT_LOGIN_CODE,
-  getAccountsOnboardConfig,
   getTestAccounts,
 } from "@/config"
 import {
@@ -90,6 +89,8 @@ export const TwilioClient = (): IPhoneProviderService => {
     contentSid: string
     contentVariables: Record<string, string>
   }): Promise<true | PhoneProviderServiceError> => {
+    if (!messagingServiceSid) return true
+
     try {
       await client.messages.create({
         to,
@@ -108,16 +109,19 @@ export const TwilioClient = (): IPhoneProviderService => {
   const validateDestination = async (
     phone: PhoneNumber,
   ): Promise<true | PhoneProviderServiceError> => {
-    const { phoneMetadataValidationSettings } = getAccountsOnboardConfig()
-    if (!phoneMetadataValidationSettings.enabled) return true
+    if (isDisposablePhoneNumber(phone)) {
+      return new InvalidTypePhoneProviderError("disposable")
+    }
 
-    const metadata = await getCarrier(phone)
-    if (
-      metadata instanceof Error ||
-      metadata.carrier?.type == null ||
-      metadata.carrier?.error_code
-    ) {
-      return new InvalidPhoneNumberPhoneProviderError(phone)
+    const lookup = await client.lookups.v2.phoneNumbers(phone).fetch({
+      fields: "line_type_intelligence",
+    })
+
+    if (!lookup.lineTypeIntelligence) {
+      return new MissingTypePhoneProviderError()
+    }
+    if (lookup.lineTypeIntelligence.type === "nonFixedVoip") {
+      return new InvalidTypePhoneProviderError("nonFixedVoip")
     }
 
     return true
