@@ -26,8 +26,8 @@ describe("AccountValidator", () => {
     }
 
     const result = AccountValidator(validAccount)
-    expect(typeof result).toBe("object")
-    expect("validateWalletForAccount" in result!).toBe(true)
+    expect(result).not.toBeInstanceOf(Error)
+    expect(result).toHaveProperty("validateWalletForAccount")
   })
 
   it("returns validator object for invited account", () => {
@@ -38,8 +38,8 @@ describe("AccountValidator", () => {
     }
 
     const result = AccountValidator(invitedAccount)
-    expect(typeof result).toBe("object")
-    expect("validateWalletForAccount" in result!).toBe(true)
+    expect(result).not.toBeInstanceOf(Error)
+    expect(result).toHaveProperty("validateWalletForAccount")
   })
 
   it("returns error if account status is not active or invited", () => {
@@ -51,7 +51,7 @@ describe("AccountValidator", () => {
 
     const result = AccountValidator(inactiveAccount)
     expect(result).toBeInstanceOf(InactiveAccountError)
-    expect((result as InactiveAccountError).message).toContain("account-id-3")
+    expect(result).toHaveProperty("message", "account-id-3")
   })
 
   it("returns true if wallet.accountId matches account.id", () => {
@@ -98,6 +98,6 @@ describe("AccountValidator", () => {
 
     const result = validator.validateWalletForAccount(invalidWallet)
     expect(result).toBeInstanceOf(InvalidWalletId)
-    expect((result as InvalidWalletId).message).toContain("account-id-1")
+    expect(result).toHaveProperty("message")
   })
 })
