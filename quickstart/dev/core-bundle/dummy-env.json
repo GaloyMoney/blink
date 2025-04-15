@@ -6,8 +6,6 @@
     "TWILIO_ACCOUNT_SID": "dummy",
     "TWILIO_AUTH_TOKEN": "dummy",
     "TWILIO_VERIFY_SERVICE_ID": "dummy",
-    "TWILIO_MESSAGING_SERVICE_ID": "dummy",
-    "TWILIO_WELCOME_CONTENT_SID": "dummy",
     "KRATOS_PUBLIC_API": "http://dummy",
     "KRATOS_ADMIN_API": "http://dummy",
     "KRATOS_MASTER_USER_PASSWORD": "dummy",
