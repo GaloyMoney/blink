@@ -61,5 +61,8 @@ transaction.paid_invoice.body_display_currency: "+%{displayCurrencyAmount} | %{f
 price_changed.up.title: "Bitcoin s'està movent!"
 price_changed.up.body: "Bitcoin s'ha incrementat %{change_percent}% l'útim dia %{price}!"
 
+price_changed.down.title: "Bitcoin s'està movent!"
+price_changed.down.body: "Bitcoin ha baixat %{change_percent}% en l´útim dia fins a %{price}!"
+
 security.link_email_reminder.title: "Enllaça el correu electrònic per assegurar el compte"
 security.link_email_reminder.body: "Enllaça el teu correu electrònic per protegir el teu compte i rebre actualitzacions importants"
