@@ -1,4 +1,9 @@
-import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/config"
+import {
+  ConfigError,
+  getAccountsOnboardConfig,
+  getAdminAccounts,
+  getDefaultAccountsConfig,
+} from "@/config"
 
 import { createKratosIdentityByPhone } from "@/app/authentication"
 import { AccountLevel, AccountStatus } from "@/domain/accounts"
@@ -131,11 +136,15 @@ export const createInvitedAccountFromPhone = async ({
 }: {
   phone: PhoneNumber
 }): Promise<Account | ApplicationError> => {
+  const { phoneMetadataValidationSettings } = getAccountsOnboardConfig()
+
   const kratosUserId = await createKratosIdentityByPhone(phone)
   if (kratosUserId instanceof Error) return kratosUserId
 
-  const validationResult = await TwilioClient().validateDestination(phone)
-  if (validationResult instanceof Error) return validationResult
+  if (phoneMetadataValidationSettings.enabled) {
+    const validationResult = await TwilioClient().validateDestination(phone)
+    if (validationResult instanceof Error) return validationResult
+  }
 
   const existingAccount = await AccountsRepository().findByUserId(kratosUserId)
   if (existingAccount instanceof CouldNotFindAccountFromKratosIdError) {

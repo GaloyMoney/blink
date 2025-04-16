@@ -109,22 +109,26 @@ export const TwilioClient = (): IPhoneProviderService => {
   const validateDestination = async (
     phone: PhoneNumber,
   ): Promise<true | PhoneProviderServiceError> => {
-    if (isDisposablePhoneNumber(phone)) {
-      return new InvalidTypePhoneProviderError("disposable")
-    }
+    try {
+      if (isDisposablePhoneNumber(phone)) {
+        return new InvalidTypePhoneProviderError("disposable")
+      }
 
-    const lookup = await client.lookups.v2.phoneNumbers(phone).fetch({
-      fields: "line_type_intelligence",
-    })
+      const lookup = await client.lookups.v2.phoneNumbers(phone).fetch({
+        fields: "line_type_intelligence",
+      })
 
-    if (!lookup.lineTypeIntelligence) {
-      return new MissingTypePhoneProviderError()
-    }
-    if (lookup.lineTypeIntelligence.type === "nonFixedVoip") {
-      return new InvalidTypePhoneProviderError("nonFixedVoip")
-    }
+      if (!lookup.lineTypeIntelligence) {
+        return new MissingTypePhoneProviderError()
+      }
+      if (lookup.lineTypeIntelligence.type === "nonFixedVoip") {
+        return new InvalidTypePhoneProviderError("nonFixedVoip")
+      }
 
-    return true
+      return true
+    } catch (err) {
+      return handleCommonErrors(err)
+    }
   }
 
   const validateVerify = async ({
