@@ -20,7 +20,7 @@ export const welcomeSmsTemplate = ({
       : `$${currencyAmount.toFixed(2)}`
 
   return {
-    contentSid: TWILIO_WELCOME_CONTENT_SID,
+    contentSid: TWILIO_WELCOME_CONTENT_SID || "",
     contentVariables: {
       formattedAmount,
       phoneNumber,
