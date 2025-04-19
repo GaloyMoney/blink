@@ -357,16 +357,22 @@ const createColdStorageWalletGauge = () => {
 }
 
 const getAssetsLiabilitiesDifference = async () => {
-  const currentDate = new Date()
-  currentDate.setSeconds(
-    currentDate.getSeconds() - EXPORTER_ASSETS_LIABILITIES_DELAY_SECS,
-  )
-  const [assets, liabilities] = await Promise.all([
-    ledgerAdmin.getAssetsBalance(currentDate),
-    ledgerAdmin.getLiabilitiesBalance(currentDate),
-  ])
+  try {
+    const currentDate = new Date()
+    currentDate.setSeconds(
+      currentDate.getSeconds() - EXPORTER_ASSETS_LIABILITIES_DELAY_SECS,
+    )
 
-  return assets + liabilities
+    const [assets, liabilities] = await Promise.all([
+      ledgerAdmin.getAssetsBalance(currentDate),
+      ledgerAdmin.getLiabilitiesBalance(currentDate),
+    ])
+
+    return assets + liabilities
+  } catch (err) {
+    logger.error({ err }, "Could not get AssetsLiabilitiesDifference")
+    return 0
+  }
 }
 
 const getUserLiabilities = async () => {
@@ -441,26 +447,31 @@ const getRealAssetsVersusLiabilities = async () => {
 }
 
 export const getBookingVersusRealWorldAssets = async () => {
-  const [lightning, bitcoin, onChain, lndBalance, coldStorage, hotBalance] =
-    await Promise.all([
-      ledgerAdmin.getLndBalance(),
-      ledgerAdmin.getBitcoindBalance(),
-      ledgerAdmin.getOnChainBalance(),
-      Lightning.getTotalBalance(),
-      OnChain.getColdBalance(),
-      OnChain.getHotBalance(),
-    ])
+  try {
+    const [lightning, bitcoin, onChain, lndBalance, coldStorage, hotBalance] =
+      await Promise.all([
+        ledgerAdmin.getLndBalance(),
+        ledgerAdmin.getBitcoindBalance(),
+        ledgerAdmin.getOnChainBalance(),
+        Lightning.getTotalBalance(),
+        OnChain.getColdBalance(),
+        OnChain.getHotBalance(),
+      ])
 
-  const lnd = lndBalance instanceof Error ? 0 : lndBalance
-  const briaHot = hotBalance instanceof Error ? 0 : Number(hotBalance.amount)
-  const briaCold = coldStorage instanceof Error ? 0 : Number(coldStorage.amount)
+    const lnd = lndBalance instanceof Error ? 0 : lndBalance
+    const briaHot = hotBalance instanceof Error ? 0 : Number(hotBalance.amount)
+    const briaCold = coldStorage instanceof Error ? 0 : Number(coldStorage.amount)
 
-  return (
-    lnd + // physical assets
-    briaCold + // physical assets
-    briaHot + // physical assets
-    (lightning + bitcoin + onChain) // value in accounting
-  )
+    return (
+      lnd + // physical assets
+      briaCold + // physical assets
+      briaHot + // physical assets
+      (lightning + bitcoin + onChain) // value in accounting
+    )
+  } catch (err) {
+    logger.error({ err }, "Could not get BookingVersusRealWorldAssets")
+    return 0
+  }
 }
 
 createGauge({
