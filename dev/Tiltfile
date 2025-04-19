@@ -487,6 +487,7 @@ callback_target = "//bats/helpers/callback:run"
 local_resource(
     "callback",
     labels = ["test"],
+    cmd = "buck2 build {}".format(callback_target),
     serve_cmd = "buck2 run {}".format(callback_target),
     allow_parallel = True,
     deps = _buck2_dep_inputs(callback_target),
