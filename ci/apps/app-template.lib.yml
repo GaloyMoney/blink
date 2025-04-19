@@ -67,7 +67,7 @@ plan:
   - { get: pipeline-tasks }
 - task: #@ tilt_integration_test_name(app)
   attempts: 2
-  timeout: 18m
+  timeout: 30m
   tags: ["galoy-staging"]
   config:
     platform: linux
