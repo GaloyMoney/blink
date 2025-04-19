@@ -217,7 +217,7 @@ setupMongoConnection({
     retryReads: false, // Disable retries to prevent hanging on slow/complex queries
     readConcern: { level: "majority" }, // Read from majority-committed data
     readPreference: "secondaryPreferred", // Exporter only reads data
-    socketTimeoutMS: 300000, // 5 mins
+    socketTimeoutMS: 540000, // 9 mins
   },
 })
   .then(() => main())
@@ -327,6 +327,9 @@ const getWalletBalance = async (walletId: WalletId): Promise<number> => {
         return 0
       }
       return walletBalance
+    } catch (err) {
+      logger.warn({ err }, `Could not get wallet balace for id: ${walletId}.`)
+      return 0
     } finally {
       inProgressBalanceQueries.delete(inProgressKey)
     }
