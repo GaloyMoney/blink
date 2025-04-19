@@ -1,10 +1,11 @@
 #!/bin/bash
 
 echo "Running build..."
-buck2 build //bats/helpers/callback:run //bats/helpers/subscriber:run //bats/helpers/totp:generate \
-  //core/api-keys //core/notifications \
+buck2 build \
   //core/api //core/api-ws-server //core/api-trigger //core/api-exporter \
-  //apps/dashboard //apps/consent //apps/pay //apps/admin-panel //apps/map //apps/voucher
+  //apps/dashboard //apps/consent //apps/pay //apps/admin-panel //apps/map //apps/voucher \
+  //core/api-keys //core/notifications \
+  //bats/helpers/callback:run //bats/helpers/subscriber:run //bats/helpers/totp:generate
 
 echo "Running bats tests..."
 if [ "$1" != "" ]; then
