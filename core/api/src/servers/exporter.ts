@@ -241,9 +241,13 @@ const createGauge = ({
     name: `${prefix}_${name}`,
     help: description,
     async collect() {
-      const value = await collectFn()
-      addAttributesToCurrentSpan({ [`${name}_value`]: `${value}` })
-      this.set(value)
+      try {
+        const value = await collectFn()
+        addAttributesToCurrentSpan({ [`${name}_value`]: `${value}` })
+        this.set(value)
+      } catch (err) {
+        logger.error({ err }, `Could not collect ${prefix}_${name} gauge value.`)
+      }
     },
   })
 }
