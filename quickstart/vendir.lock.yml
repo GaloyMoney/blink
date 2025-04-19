@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: update delay in await ci funcs (#4807)'
-      sha: cf1c8981f698ca7ef2622dc3e24cf236cd0e2e43
+      commitTitle: 'chore: update callback cmd (#4809)...'
+      sha: fe7da7faa3b30c686481e31dc6ce3581994b6a74
       tags:
-      - 0.21.34-4-gcf1c8981f
+      - 0.21.34-7-gfe7da7faa
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: update delay in await ci funcs (#4807)'
-      sha: cf1c8981f698ca7ef2622dc3e24cf236cd0e2e43
+      commitTitle: 'chore: update callback cmd (#4809)...'
+      sha: fe7da7faa3b30c686481e31dc6ce3581994b6a74
       tags:
-      - 0.21.34-4-gcf1c8981f
+      - 0.21.34-7-gfe7da7faa
     path: schemas
   - git:
-      commitTitle: 'chore: update delay in await ci funcs (#4807)'
-      sha: cf1c8981f698ca7ef2622dc3e24cf236cd0e2e43
+      commitTitle: 'chore: update callback cmd (#4809)...'
+      sha: fe7da7faa3b30c686481e31dc6ce3581994b6a74
       tags:
-      - 0.21.34-4-gcf1c8981f
+      - 0.21.34-7-gfe7da7faa
     path: gql
   path: graphql
 kind: LockConfig
