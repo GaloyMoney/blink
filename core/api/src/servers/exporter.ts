@@ -217,7 +217,7 @@ setupMongoConnection({
     retryReads: false, // Disable retries to prevent hanging on slow/complex queries
     readConcern: { level: "majority" }, // Read from majority-committed data
     readPreference: "secondaryPreferred", // Exporter only reads data
-    socketTimeoutMS: 300000, // 5 mins
+    socketTimeoutMS: 540000, // 9 mins
   },
 })
   .then(() => main())
@@ -241,9 +241,13 @@ const createGauge = ({
     name: `${prefix}_${name}`,
     help: description,
     async collect() {
-      const value = await collectFn()
-      addAttributesToCurrentSpan({ [`${name}_value`]: `${value}` })
-      this.set(value)
+      try {
+        const value = await collectFn()
+        addAttributesToCurrentSpan({ [`${name}_value`]: `${value}` })
+        this.set(value)
+      } catch (err) {
+        logger.error({ err }, `Could not collect ${prefix}_${name} gauge value.`)
+      }
     },
   })
 }
@@ -327,6 +331,9 @@ const getWalletBalance = async (walletId: WalletId): Promise<number> => {
         return 0
       }
       return walletBalance
+    } catch (err) {
+      logger.warn({ err }, `Could not get wallet balace for id: ${walletId}.`)
+      return 0
     } finally {
       inProgressBalanceQueries.delete(inProgressKey)
     }
@@ -354,16 +361,22 @@ const createColdStorageWalletGauge = () => {
 }
 
 const getAssetsLiabilitiesDifference = async () => {
-  const currentDate = new Date()
-  currentDate.setSeconds(
-    currentDate.getSeconds() - EXPORTER_ASSETS_LIABILITIES_DELAY_SECS,
-  )
-  const [assets, liabilities] = await Promise.all([
-    ledgerAdmin.getAssetsBalance(currentDate),
-    ledgerAdmin.getLiabilitiesBalance(currentDate),
-  ])
+  try {
+    const currentDate = new Date()
+    currentDate.setSeconds(
+      currentDate.getSeconds() - EXPORTER_ASSETS_LIABILITIES_DELAY_SECS,
+    )
 
-  return assets + liabilities
+    const [assets, liabilities] = await Promise.all([
+      ledgerAdmin.getAssetsBalance(currentDate),
+      ledgerAdmin.getLiabilitiesBalance(currentDate),
+    ])
+
+    return assets + liabilities
+  } catch (err) {
+    logger.error({ err }, "Could not get AssetsLiabilitiesDifference")
+    return 0
+  }
 }
 
 const getUserLiabilities = async () => {
@@ -438,26 +451,31 @@ const getRealAssetsVersusLiabilities = async () => {
 }
 
 export const getBookingVersusRealWorldAssets = async () => {
-  const [lightning, bitcoin, onChain, lndBalance, coldStorage, hotBalance] =
-    await Promise.all([
-      ledgerAdmin.getLndBalance(),
-      ledgerAdmin.getBitcoindBalance(),
-      ledgerAdmin.getOnChainBalance(),
-      Lightning.getTotalBalance(),
-      OnChain.getColdBalance(),
-      OnChain.getHotBalance(),
-    ])
+  try {
+    const [lightning, bitcoin, onChain, lndBalance, coldStorage, hotBalance] =
+      await Promise.all([
+        ledgerAdmin.getLndBalance(),
+        ledgerAdmin.getBitcoindBalance(),
+        ledgerAdmin.getOnChainBalance(),
+        Lightning.getTotalBalance(),
+        OnChain.getColdBalance(),
+        OnChain.getHotBalance(),
+      ])
 
-  const lnd = lndBalance instanceof Error ? 0 : lndBalance
-  const briaHot = hotBalance instanceof Error ? 0 : Number(hotBalance.amount)
-  const briaCold = coldStorage instanceof Error ? 0 : Number(coldStorage.amount)
+    const lnd = lndBalance instanceof Error ? 0 : lndBalance
+    const briaHot = hotBalance instanceof Error ? 0 : Number(hotBalance.amount)
+    const briaCold = coldStorage instanceof Error ? 0 : Number(coldStorage.amount)
 
-  return (
-    lnd + // physical assets
-    briaCold + // physical assets
-    briaHot + // physical assets
-    (lightning + bitcoin + onChain) // value in accounting
-  )
+    return (
+      lnd + // physical assets
+      briaCold + // physical assets
+      briaHot + // physical assets
+      (lightning + bitcoin + onChain) // value in accounting
+    )
+  } catch (err) {
+    logger.error({ err }, "Could not get BookingVersusRealWorldAssets")
+    return 0
+  }
 }
 
 createGauge({
