@@ -1627,8 +1627,8 @@ importers:
         specifier: ^7.6.17
         version: 7.6.17(react-dom@18.2.0)(react@18.3.1)
       '@storybook/blocks':
-        specifier: ^7.6.3
-        version: 7.6.3(@types/react-dom@18.2.17)(@types/react@18.2.45)(react-dom@18.2.0)(react@18.3.1)
+        specifier: ^8.6.12
+        version: 8.6.12(react-dom@18.2.0)(react@18.3.1)(storybook@7.6.6)
       '@storybook/react':
         specifier: ^7.6.3
         version: 7.6.3(react-dom@18.2.0)(react@18.3.1)(typescript@5.3.2)
@@ -15211,42 +15211,23 @@ packages:
       - supports-color
     dev: true
 
-  /@storybook/blocks@7.6.3(@types/react-dom@18.2.17)(@types/react@18.2.45)(react-dom@18.2.0)(react@18.3.1):
-    resolution: {integrity: sha512-EyjyNNCZMcV9UnBSujwduiq+F1VLVX/f16fTTPqqZOHigyfrG5LoEYC6dwOC4yO/xfWY+h3qJ51yiugMxVl0Vg==}
+  /@storybook/blocks@8.6.12(react-dom@18.2.0)(react@18.3.1)(storybook@7.6.6):
+    resolution: {integrity: sha512-DohlTq6HM1jDbHYiXL4ZvZ00VkhpUp5uftzj/CZDLY1fYHRjqtaTwWm2/OpceivMA8zDitLcq5atEZN+f+siTg==}
     peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      storybook: ^8.6.12
+    peerDependenciesMeta:
+      react:
+        optional: true
+      react-dom:
+        optional: true
     dependencies:
-      '@storybook/channels': 7.6.3
-      '@storybook/client-logger': 7.6.3
-      '@storybook/components': 7.6.3(@types/react-dom@18.2.17)(@types/react@18.2.45)(react-dom@18.2.0)(react@18.3.1)
-      '@storybook/core-events': 7.6.3
-      '@storybook/csf': 0.1.2
-      '@storybook/docs-tools': 7.6.3
-      '@storybook/global': 5.0.0
-      '@storybook/manager-api': 7.6.3(react-dom@18.2.0)(react@18.3.1)
-      '@storybook/preview-api': 7.6.3
-      '@storybook/theming': 7.6.3(react-dom@18.2.0)(react@18.3.1)
-      '@storybook/types': 7.6.3
-      '@types/lodash': 4.14.199
-      color-convert: 2.0.1
-      dequal: 2.0.3
-      lodash: 4.17.21
-      markdown-to-jsx: 7.3.2(react@18.3.1)
-      memoizerific: 1.11.3
-      polished: 4.2.2
+      '@storybook/icons': 1.4.0(react-dom@18.2.0)(react@18.3.1)
       react: 18.3.1
-      react-colorful: 5.6.1(react-dom@18.2.0)(react@18.3.1)
       react-dom: 18.2.0(react@18.3.1)
-      telejson: 7.2.0
-      tocbot: 4.23.0
+      storybook: 7.6.6
       ts-dedent: 2.2.0
-      util-deprecate: 1.0.2
-    transitivePeerDependencies:
-      - '@types/react'
-      - '@types/react-dom'
-      - encoding
-      - supports-color
     dev: true
 
   /@storybook/builder-manager@7.6.6:
@@ -15901,6 +15882,17 @@ packages:
 
   /@storybook/global@5.0.0:
     resolution: {integrity: sha512-FcOqPAXACP0I3oJ/ws6/rrPT9WGhu915Cg8D02a9YxLo0DE9zI+a9A5gRGvmQ09fiWPukqI8ZAEoQEdWUKMQdQ==}
+    dev: true
+
+  /@storybook/icons@1.4.0(react-dom@18.2.0)(react@18.3.1):
+    resolution: {integrity: sha512-Td73IeJxOyalzvjQL+JXx72jlIYHgs+REaHiREOqfpo3A2AYYG71AUbcv+lg7mEDIweKVCxsMQ0UKo634c8XeA==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0-beta
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0-beta
+    dependencies:
+      react: 18.3.1
+      react-dom: 18.2.0(react@18.3.1)
     dev: true
 
   /@storybook/instrumenter@7.6.3:
