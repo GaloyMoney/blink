@@ -23,13 +23,13 @@ teardown_suite() {
 }
 
 await_api_is_up() {
-  server_is_up() {
+  api_is_up() {
     exec_graphql 'anon' 'globals'
     network="$(graphql_output '.data.globals.network')"
     [[ "${network}" = "regtest" ]] || exit 1
   }
 
-  retry 360 5 server_is_up
+  retry 360 5 api_is_up
 }
 
 await_pay_is_up() {
