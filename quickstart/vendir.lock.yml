@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: update callback cmd (#4809)...'
-      sha: fe7da7faa3b30c686481e31dc6ce3581994b6a74
+      commitTitle: 'chore(ci): add bats ci run script (#4810)'
+      sha: de2441d0dfc1d5ea2bd0c7d1b016ffe228027d04
       tags:
-      - 0.21.34-7-gfe7da7faa
+      - 0.21.34-9-gde2441d0d
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: update callback cmd (#4809)...'
-      sha: fe7da7faa3b30c686481e31dc6ce3581994b6a74
+      commitTitle: 'chore(ci): add bats ci run script (#4810)'
+      sha: de2441d0dfc1d5ea2bd0c7d1b016ffe228027d04
       tags:
-      - 0.21.34-7-gfe7da7faa
+      - 0.21.34-9-gde2441d0d
     path: schemas
   - git:
-      commitTitle: 'chore: update callback cmd (#4809)...'
-      sha: fe7da7faa3b30c686481e31dc6ce3581994b6a74
+      commitTitle: 'chore(ci): add bats ci run script (#4810)'
+      sha: de2441d0dfc1d5ea2bd0c7d1b016ffe228027d04
       tags:
-      - 0.21.34-7-gfe7da7faa
+      - 0.21.34-9-gde2441d0d
     path: gql
   path: graphql
 kind: LockConfig
