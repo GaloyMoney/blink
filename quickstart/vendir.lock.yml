@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump axios from 1.7.5 to 1.8.4 (#4782)...'
-      sha: ea5b28563a375bc9f16a845570a06e9aef2a5cf8
+      commitTitle: 'chore: bump mongoose from 8.9.5 to 8.10.1 (#4747)...'
+      sha: 58466addd1f8c0fb110b597d0673e2000d74d856
       tags:
-      - 0.21.33-3-gea5b28563
+      - 0.21.34-2-g58466addd
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump axios from 1.7.5 to 1.8.4 (#4782)...'
-      sha: ea5b28563a375bc9f16a845570a06e9aef2a5cf8
+      commitTitle: 'chore: bump mongoose from 8.9.5 to 8.10.1 (#4747)...'
+      sha: 58466addd1f8c0fb110b597d0673e2000d74d856
       tags:
-      - 0.21.33-3-gea5b28563
+      - 0.21.34-2-g58466addd
     path: schemas
   - git:
-      commitTitle: 'chore: bump axios from 1.7.5 to 1.8.4 (#4782)...'
-      sha: ea5b28563a375bc9f16a845570a06e9aef2a5cf8
+      commitTitle: 'chore: bump mongoose from 8.9.5 to 8.10.1 (#4747)...'
+      sha: 58466addd1f8c0fb110b597d0673e2000d74d856
       tags:
-      - 0.21.33-3-gea5b28563
+      - 0.21.34-2-g58466addd
     path: gql
   path: graphql
 kind: LockConfig
