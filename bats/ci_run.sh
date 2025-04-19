@@ -1,11 +1,17 @@
 #!/bin/bash
 
-echo "Running build..."
-buck2 build \
-  //core/api //core/api-ws-server //core/api-trigger //core/api-exporter \
-  //apps/dashboard //apps/consent //apps/pay //apps/admin-panel //apps/map //apps/voucher \
-  //core/api-keys //core/notifications \
-  //bats/helpers/callback:run //bats/helpers/subscriber:run //bats/helpers/totp:generate
+echo "Running rust builds..."
+buck2 build //core/api-keys //core/notifications
+
+echo "Running api builds..."
+buck2 build //core/api
+buck2 build //core/api-ws-server //core/api-trigger //core/api-exporter
+
+echo "Running apps builds..."
+buck2 build //apps/dashboard //apps/consent //apps/pay //apps/admin-panel //apps/map //apps/voucher
+
+echo "Running bats helpers builds..."
+buck2 build //bats/helpers/callback:run //bats/helpers/subscriber:run //bats/helpers/totp:generate
 
 echo "Running bats tests..."
 if [ "$1" != "" ]; then
