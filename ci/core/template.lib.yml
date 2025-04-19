@@ -49,7 +49,7 @@ plan:
 #@ end
 
 #@ def component_bats_tests(component):
-#@   return on_nix_host(component_bats_tests_name(component), component, "bats --setup-suite-file bats/ci_setup_suite.bash -t bats/core/" + component)
+#@   return on_nix_host(component_bats_tests_name(component), component, "./bats/ci_run.sh " + component)
 #@ end
 
 #@ def bump_image_in_chart_name(component):
