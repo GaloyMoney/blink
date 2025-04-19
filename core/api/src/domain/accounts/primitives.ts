@@ -7,6 +7,7 @@ export const AccountLevel = {
 
 export const AccountStatus = {
   New: "new",
+  Invited: "invited",
   Pending: "pending",
   Active: "active",
   Locked: "locked",

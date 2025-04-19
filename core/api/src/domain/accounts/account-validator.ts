@@ -5,7 +5,8 @@ import { InactiveAccountError, InvalidWalletId } from "@/domain/errors"
 export const AccountValidator = (
   account: Account,
 ): AccountValidator | ValidationError => {
-  if (account.status !== AccountStatus.Active) {
+  const allowedStatuses: AccountStatus[] = [AccountStatus.Active, AccountStatus.Invited]
+  if (!allowedStatuses.includes(account.status)) {
     return new InactiveAccountError(account.id)
   }
 

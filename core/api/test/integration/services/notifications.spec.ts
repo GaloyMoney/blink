@@ -17,6 +17,7 @@ describe("NotificationsService", () => {
       const accountId = "AccountId" as AccountId
       const walletId = "walletId" as WalletId
       const userId = "UserId" as UserId
+
       const paymentAmount = {
         amount: 1000n,
         currency: WalletCurrency.Btc,
@@ -50,6 +51,7 @@ describe("NotificationsService", () => {
           walletId,
           userId,
           level: AccountLevel.One,
+          status: "active",
         },
         transaction: {
           id: "id" as LedgerTransactionId,

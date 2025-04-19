@@ -9,7 +9,7 @@ export const updateAccountStatus = async ({
 }: {
   accountId: string
   status: string
-  updatedByPrivilegedClientId: PrivilegedClientId
+  updatedByPrivilegedClientId?: PrivilegedClientId
   comment?: string
 }): Promise<Account | ApplicationError> => {
   const accountsRepo = AccountsRepository()

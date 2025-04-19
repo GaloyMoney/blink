@@ -33,6 +33,7 @@ type IpMetadataValidationSettings = {
 
 type AccountsConfig = {
   initialStatus: AccountStatus
+  initialComment?: string
   initialWallets: WalletCurrency[]
   initialLevel: AccountLevel
   maxDeletions: number

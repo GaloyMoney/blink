@@ -222,6 +222,8 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
       walletId,
       userId: senderUser.id,
       level: senderAccount.level,
+      status: senderAccount.status,
+      phoneNumber: senderUser.phone,
     }
 
     // Prepare updateLnPaymentState args
