@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump mongoose from 8.9.5 to 8.10.1 (#4747)...'
-      sha: 58466addd1f8c0fb110b597d0673e2000d74d856
+      commitTitle: 'chore: update delay in await ci funcs (#4807)'
+      sha: cf1c8981f698ca7ef2622dc3e24cf236cd0e2e43
       tags:
-      - 0.21.34-2-g58466addd
+      - 0.21.34-4-gcf1c8981f
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump mongoose from 8.9.5 to 8.10.1 (#4747)...'
-      sha: 58466addd1f8c0fb110b597d0673e2000d74d856
+      commitTitle: 'chore: update delay in await ci funcs (#4807)'
+      sha: cf1c8981f698ca7ef2622dc3e24cf236cd0e2e43
       tags:
-      - 0.21.34-2-g58466addd
+      - 0.21.34-4-gcf1c8981f
     path: schemas
   - git:
-      commitTitle: 'chore: bump mongoose from 8.9.5 to 8.10.1 (#4747)...'
-      sha: 58466addd1f8c0fb110b597d0673e2000d74d856
+      commitTitle: 'chore: update delay in await ci funcs (#4807)'
+      sha: cf1c8981f698ca7ef2622dc3e24cf236cd0e2e43
       tags:
-      - 0.21.34-2-g58466addd
+      - 0.21.34-4-gcf1c8981f
     path: gql
   path: graphql
 kind: LockConfig
