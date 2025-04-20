@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: update build cmds in bats ci run (#4812)'
-      sha: 382832da102a3ab9a6274b91b9a93fb8b8970e5b
+      commitTitle: 'chore: bump deps (#4813)'
+      sha: 6bfe14dcba34b66396eabf1c9faad105caa58ba4
       tags:
-      - 0.21.34-12-g382832da1
+      - 0.21.34-14-g6bfe14dcb
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: update build cmds in bats ci run (#4812)'
-      sha: 382832da102a3ab9a6274b91b9a93fb8b8970e5b
+      commitTitle: 'chore: bump deps (#4813)'
+      sha: 6bfe14dcba34b66396eabf1c9faad105caa58ba4
       tags:
-      - 0.21.34-12-g382832da1
+      - 0.21.34-14-g6bfe14dcb
     path: schemas
   - git:
-      commitTitle: 'chore: update build cmds in bats ci run (#4812)'
-      sha: 382832da102a3ab9a6274b91b9a93fb8b8970e5b
+      commitTitle: 'chore: bump deps (#4813)'
+      sha: 6bfe14dcba34b66396eabf1c9faad105caa58ba4
       tags:
-      - 0.21.34-12-g382832da1
+      - 0.21.34-14-g6bfe14dcb
     path: gql
   path: graphql
 kind: LockConfig
