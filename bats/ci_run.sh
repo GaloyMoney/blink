@@ -4,8 +4,8 @@ echo "Running rust builds..."
 buck2 build //core/api-keys //core/notifications
 
 echo "Running api builds..."
-buck2 build //core/api
-buck2 build //core/api-ws-server //core/api-trigger //core/api-exporter
+buck2 build //:node_modules
+buck2 build //core/api //core/api-ws-server //core/api-trigger //core/api-exporter
 
 echo "Running apps builds..."
 buck2 build //apps/dashboard //apps/consent //apps/pay //apps/admin-panel //apps/map //apps/voucher
