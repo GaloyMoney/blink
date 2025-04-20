@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: add root node_modules build (#4815)'
-      sha: 5f37e93fa7cd6529089e81e939939fed24b273f5
+      commitTitle: 'chore: update ci run cmd + gh action e2e (#4816)...'
+      sha: 3df700903f057830aac47b85aedab0f1ad4449c6
       tags:
-      - 0.21.34-16-g5f37e93fa
+      - 0.21.34-18-g3df700903
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: add root node_modules build (#4815)'
-      sha: 5f37e93fa7cd6529089e81e939939fed24b273f5
+      commitTitle: 'chore: update ci run cmd + gh action e2e (#4816)...'
+      sha: 3df700903f057830aac47b85aedab0f1ad4449c6
       tags:
-      - 0.21.34-16-g5f37e93fa
+      - 0.21.34-18-g3df700903
     path: schemas
   - git:
-      commitTitle: 'fix: add root node_modules build (#4815)'
-      sha: 5f37e93fa7cd6529089e81e939939fed24b273f5
+      commitTitle: 'chore: update ci run cmd + gh action e2e (#4816)...'
+      sha: 3df700903f057830aac47b85aedab0f1ad4449c6
       tags:
-      - 0.21.34-16-g5f37e93fa
+      - 0.21.34-18-g3df700903
     path: gql
   path: graphql
 kind: LockConfig
