@@ -1,14 +1,13 @@
 #!/bin/bash
 
 echo "Running rust builds..."
-buck2 build //core/api-keys //core/notifications
+buck2 build //core/api-keys:api-keys //core/notifications:notifications //:node_modules
 
 echo "Running api builds..."
-buck2 build //:node_modules
-buck2 build //core/api //core/api-ws-server //core/api-trigger //core/api-exporter
+buck2 build //core/api:api //core/api-ws-server:api-ws-server //core/api-trigger:api-trigger //core/api-exporter:api-exporter
 
 echo "Running apps builds..."
-buck2 build //apps/dashboard //apps/consent //apps/pay //apps/admin-panel //apps/map //apps/voucher
+buck2 build //apps/dashboard:dashboard //apps/consent:consent //apps/pay:pay-ci //apps/admin-panel:admin-panel //apps/map:map //apps/voucher:voucher
 
 echo "Running bats helpers builds..."
 buck2 build //bats/helpers/callback:run //bats/helpers/subscriber:run //bats/helpers/totp:generate
