@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#4813)'
-      sha: 6bfe14dcba34b66396eabf1c9faad105caa58ba4
+      commitTitle: 'fix: add root node_modules build (#4815)'
+      sha: 5f37e93fa7cd6529089e81e939939fed24b273f5
       tags:
-      - 0.21.34-14-g6bfe14dcb
+      - 0.21.34-16-g5f37e93fa
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#4813)'
-      sha: 6bfe14dcba34b66396eabf1c9faad105caa58ba4
+      commitTitle: 'fix: add root node_modules build (#4815)'
+      sha: 5f37e93fa7cd6529089e81e939939fed24b273f5
       tags:
-      - 0.21.34-14-g6bfe14dcb
+      - 0.21.34-16-g5f37e93fa
     path: schemas
   - git:
-      commitTitle: 'chore: bump deps (#4813)'
-      sha: 6bfe14dcba34b66396eabf1c9faad105caa58ba4
+      commitTitle: 'fix: add root node_modules build (#4815)'
+      sha: 5f37e93fa7cd6529089e81e939939fed24b273f5
       tags:
-      - 0.21.34-14-g6bfe14dcb
+      - 0.21.34-16-g5f37e93fa
     path: gql
   path: graphql
 kind: LockConfig
