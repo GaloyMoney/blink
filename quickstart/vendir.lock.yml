@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: pnpm build tools (#4819)'
-      sha: c5fbd89d07cc01145bf97856ec5e1e2a2237fc7b
+      commitTitle: 'fix: pnpm build node modules (#4820)'
+      sha: 4c779289aeedb9f7734a607381b48c60f23f6005
       tags:
-      - 0.21.34-23-gc5fbd89d0
+      - 0.21.34-25-g4c779289a
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: pnpm build tools (#4819)'
-      sha: c5fbd89d07cc01145bf97856ec5e1e2a2237fc7b
+      commitTitle: 'fix: pnpm build node modules (#4820)'
+      sha: 4c779289aeedb9f7734a607381b48c60f23f6005
       tags:
-      - 0.21.34-23-gc5fbd89d0
+      - 0.21.34-25-g4c779289a
     path: schemas
   - git:
-      commitTitle: 'fix: pnpm build tools (#4819)'
-      sha: c5fbd89d07cc01145bf97856ec5e1e2a2237fc7b
+      commitTitle: 'fix: pnpm build node modules (#4820)'
+      sha: 4c779289aeedb9f7734a607381b48c60f23f6005
       tags:
-      - 0.21.34-23-gc5fbd89d0
+      - 0.21.34-25-g4c779289a
     path: gql
   path: graphql
 kind: LockConfig
