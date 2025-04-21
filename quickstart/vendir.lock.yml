@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: update ci run cmd + gh action e2e (#4816)...'
-      sha: 3df700903f057830aac47b85aedab0f1ad4449c6
+      commitTitle: 'chore: add verbose to buck2 build (#4817)'
+      sha: 58d8ed6945c637278ae26cd970f99e6971b607eb
       tags:
-      - 0.21.34-18-g3df700903
+      - 0.21.34-20-g58d8ed694
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: update ci run cmd + gh action e2e (#4816)...'
-      sha: 3df700903f057830aac47b85aedab0f1ad4449c6
+      commitTitle: 'chore: add verbose to buck2 build (#4817)'
+      sha: 58d8ed6945c637278ae26cd970f99e6971b607eb
       tags:
-      - 0.21.34-18-g3df700903
+      - 0.21.34-20-g58d8ed694
     path: schemas
   - git:
-      commitTitle: 'chore: update ci run cmd + gh action e2e (#4816)...'
-      sha: 3df700903f057830aac47b85aedab0f1ad4449c6
+      commitTitle: 'chore: add verbose to buck2 build (#4817)'
+      sha: 58d8ed6945c637278ae26cd970f99e6971b607eb
       tags:
-      - 0.21.34-18-g3df700903
+      - 0.21.34-20-g58d8ed694
     path: gql
   path: graphql
 kind: LockConfig
