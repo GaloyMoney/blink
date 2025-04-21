@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: add timeout to node modules build (#4821)...'
-      sha: 1eb7aa55a29461e70148c580505469f1b8ed6096
+      commitTitle: 'test: remove apps builds from ci run (#4824)'
+      sha: 9acfbb2a66d35a7a7230b4814163103ebdfcbc21
       tags:
-      - 0.21.34-27-g1eb7aa55a
+      - 0.21.35-1-g9acfbb2a6
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: add timeout to node modules build (#4821)...'
-      sha: 1eb7aa55a29461e70148c580505469f1b8ed6096
+      commitTitle: 'test: remove apps builds from ci run (#4824)'
+      sha: 9acfbb2a66d35a7a7230b4814163103ebdfcbc21
       tags:
-      - 0.21.34-27-g1eb7aa55a
+      - 0.21.35-1-g9acfbb2a6
     path: schemas
   - git:
-      commitTitle: 'fix: add timeout to node modules build (#4821)...'
-      sha: 1eb7aa55a29461e70148c580505469f1b8ed6096
+      commitTitle: 'test: remove apps builds from ci run (#4824)'
+      sha: 9acfbb2a66d35a7a7230b4814163103ebdfcbc21
       tags:
-      - 0.21.34-27-g1eb7aa55a
+      - 0.21.35-1-g9acfbb2a6
     path: gql
   path: graphql
 kind: LockConfig
