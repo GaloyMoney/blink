@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: pnpm build node modules (#4820)'
-      sha: 4c779289aeedb9f7734a607381b48c60f23f6005
+      commitTitle: 'fix: add timeout to node modules build (#4821)...'
+      sha: 1eb7aa55a29461e70148c580505469f1b8ed6096
       tags:
-      - 0.21.34-25-g4c779289a
+      - 0.21.34-27-g1eb7aa55a
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: pnpm build node modules (#4820)'
-      sha: 4c779289aeedb9f7734a607381b48c60f23f6005
+      commitTitle: 'fix: add timeout to node modules build (#4821)...'
+      sha: 1eb7aa55a29461e70148c580505469f1b8ed6096
       tags:
-      - 0.21.34-25-g4c779289a
+      - 0.21.34-27-g1eb7aa55a
     path: schemas
   - git:
-      commitTitle: 'fix: pnpm build node modules (#4820)'
-      sha: 4c779289aeedb9f7734a607381b48c60f23f6005
+      commitTitle: 'fix: add timeout to node modules build (#4821)...'
+      sha: 1eb7aa55a29461e70148c580505469f1b8ed6096
       tags:
-      - 0.21.34-25-g4c779289a
+      - 0.21.34-27-g1eb7aa55a
     path: gql
   path: graphql
 kind: LockConfig
