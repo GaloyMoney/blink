@@ -1,7 +1,10 @@
 #!/bin/bash
 
+echo "Running node_modules build..."
+buck2 build //:node_modules --verbose 4
+
 echo "Running rust builds..."
-buck2 build //core/api-keys:api-keys //core/notifications:notifications //:node_modules
+buck2 build //core/api-keys:api-keys //core/notifications:notifications
 
 echo "Running api builds..."
 buck2 build //core/api:api //core/api-ws-server:api-ws-server //core/api-trigger:api-trigger //core/api-exporter:api-exporter
