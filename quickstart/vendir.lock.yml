@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: add verbose to buck2 build (#4817)'
-      sha: 58d8ed6945c637278ae26cd970f99e6971b607eb
+      commitTitle: 'fix: pnpm build tools (#4819)'
+      sha: c5fbd89d07cc01145bf97856ec5e1e2a2237fc7b
       tags:
-      - 0.21.34-20-g58d8ed694
+      - 0.21.34-23-gc5fbd89d0
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: add verbose to buck2 build (#4817)'
-      sha: 58d8ed6945c637278ae26cd970f99e6971b607eb
+      commitTitle: 'fix: pnpm build tools (#4819)'
+      sha: c5fbd89d07cc01145bf97856ec5e1e2a2237fc7b
       tags:
-      - 0.21.34-20-g58d8ed694
+      - 0.21.34-23-gc5fbd89d0
     path: schemas
   - git:
-      commitTitle: 'chore: add verbose to buck2 build (#4817)'
-      sha: 58d8ed6945c637278ae26cd970f99e6971b607eb
+      commitTitle: 'fix: pnpm build tools (#4819)'
+      sha: c5fbd89d07cc01145bf97856ec5e1e2a2237fc7b
       tags:
-      - 0.21.34-20-g58d8ed694
+      - 0.21.34-23-gc5fbd89d0
     path: gql
   path: graphql
 kind: LockConfig
