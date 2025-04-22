@@ -19,6 +19,8 @@ import {
 import { PriceService } from "@/services/price"
 import { TwilioClient } from "@/services/twilio-service"
 
+const { phoneMetadataValidationSettings } = getAccountsOnboardConfig()
+
 const initializeCreatedAccount = async ({
   account,
   config,
@@ -136,15 +138,13 @@ export const createInvitedAccountFromPhone = async ({
 }: {
   phone: PhoneNumber
 }): Promise<Account | ApplicationError> => {
-  const { phoneMetadataValidationSettings } = getAccountsOnboardConfig()
-
-  const kratosUserId = await createKratosIdentityByPhone(phone)
-  if (kratosUserId instanceof Error) return kratosUserId
-
   if (phoneMetadataValidationSettings.enabled) {
     const validationResult = await TwilioClient().validateDestination(phone)
     if (validationResult instanceof Error) return validationResult
   }
+
+  const kratosUserId = await createKratosIdentityByPhone(phone)
+  if (kratosUserId instanceof Error) return kratosUserId
 
   const existingAccount = await AccountsRepository().findByUserId(kratosUserId)
   if (existingAccount instanceof CouldNotFindAccountFromKratosIdError) {
