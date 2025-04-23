@@ -11,6 +11,11 @@ describe("username-check", () => {
     expect(username).toBeInstanceOf(Error)
   })
 
+  it("Fails if starting with 1", () => {
+    const username = checkedToUsername("1ab")
+    expect(username).toBeInstanceOf(Error)
+  })
+
   it("Fails if starting with +", () => {
     const username = checkedToUsername("+57300123456")
     expect(username).toBeInstanceOf(Error)
