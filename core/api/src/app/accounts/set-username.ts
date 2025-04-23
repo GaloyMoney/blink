@@ -6,6 +6,8 @@ import {
   UsernameIsImmutableError,
   UsernameNotAvailableError,
 } from "@/domain/accounts"
+import { checkedToPhoneNumber } from "@/domain/users"
+
 import { AccountsRepository } from "@/services/mongoose"
 
 export const setUsername = async ({
@@ -17,6 +19,12 @@ export const setUsername = async ({
 }): Promise<Account | ApplicationError> => {
   const checkedUsername = checkedToUsername(username)
   if (checkedUsername instanceof Error) return checkedUsername
+
+  // username can't be a valid phone number
+  const phone = checkedToPhoneNumber(username)
+  if (!(phone instanceof Error)) {
+    return new UsernameNotAvailableError()
+  }
 
   const accountId = checkedToAccountId(accountIdRaw)
   if (accountId instanceof Error) return accountId

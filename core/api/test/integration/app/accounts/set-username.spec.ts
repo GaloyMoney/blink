@@ -31,4 +31,18 @@ describe("Set username", () => {
     const res = await setUsername({ accountId: crypto.randomUUID(), username: "alice" })
     expect(res).toBeInstanceOf(UsernameIsImmutableError)
   })
+
+  it("fails to set username with a valid phone number", async () => {
+    let result = await setUsername({
+      accountId: crypto.randomUUID(),
+      username: "57300123456",
+    })
+    expect(result).toBeInstanceOf(UsernameNotAvailableError)
+
+    result = await setUsername({
+      accountId: crypto.randomUUID(),
+      username: "+57300123456",
+    })
+    expect(result).toBeInstanceOf(UsernameNotAvailableError)
+  })
 })
