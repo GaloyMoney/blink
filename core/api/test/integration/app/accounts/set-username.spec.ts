@@ -1,5 +1,8 @@
 import { setUsername } from "@/app/accounts"
+
+import { InvalidUsername } from "@/domain/errors"
 import { UsernameIsImmutableError, UsernameNotAvailableError } from "@/domain/accounts"
+
 import * as MongooseImpl from "@/services/mongoose"
 
 afterEach(() => {
@@ -37,12 +40,12 @@ describe("Set username", () => {
       accountId: crypto.randomUUID(),
       username: "57300123456",
     })
-    expect(result).toBeInstanceOf(UsernameNotAvailableError)
+    expect(result).toBeInstanceOf(InvalidUsername)
 
     result = await setUsername({
       accountId: crypto.randomUUID(),
       username: "+57300123456",
     })
-    expect(result).toBeInstanceOf(UsernameNotAvailableError)
+    expect(result).toBeInstanceOf(InvalidUsername)
   })
 })

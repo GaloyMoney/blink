@@ -8,7 +8,9 @@ export const usernameAvailable = async (
   username: Username,
 ): Promise<boolean | ApplicationError> => {
   const checkedUsername = checkedToUsername(username)
-  if (checkedUsername instanceof Error) return checkedUsername
+  if (checkedUsername instanceof Error) {
+    return false
+  }
 
   // username can't be a valid phone number
   const phone = checkedToPhoneNumber(username)
