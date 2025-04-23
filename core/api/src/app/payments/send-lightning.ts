@@ -467,11 +467,16 @@ const executePaymentViaIntraledger = async <
     )
   }
 
+  const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
+  if (recipientUser instanceof Error) return recipientUser
+
   const recipientAsNotificationRecipient = {
     accountId: recipientAccount.id,
     walletId: recipientWalletDescriptor.id,
     userId: recipientAccount.kratosUserId,
     level: recipientAccount.level,
+    status: recipientAccount.status,
+    phoneNumber: recipientUser.phone,
   }
 
   const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
@@ -482,6 +487,8 @@ const executePaymentViaIntraledger = async <
     walletId: senderWalletId,
     userId: senderAccount.kratosUserId,
     level: senderAccount.level,
+    status: senderAccount.status,
+    phoneNumber: senderUser.phone,
   }
 
   const paymentSendAttemptResult = await LockService().lockWalletId(
@@ -747,11 +754,16 @@ const executePaymentViaLn = async ({
   if (accountWalletDescriptors instanceof Error) return accountWalletDescriptors
   const walletIds = [accountWalletDescriptors.BTC.id, accountWalletDescriptors.USD.id]
 
+  const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
+  if (senderUser instanceof Error) return senderUser
+
   const notificationRecipient = {
     accountId: senderAccount.id,
     walletId: senderWalletId,
     userId: senderAccount.kratosUserId,
     level: senderAccount.level,
+    status: senderAccount.status,
+    phoneNumber: senderUser.phone,
   }
 
   const paymentSendAttemptResult = await LockService().lockWalletId(

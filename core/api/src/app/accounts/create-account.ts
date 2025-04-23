@@ -1,8 +1,15 @@
-import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/config"
+import {
+  ConfigError,
+  getAccountsOnboardConfig,
+  getAdminAccounts,
+  getDefaultAccountsConfig,
+} from "@/config"
 
-import { AccountLevel } from "@/domain/accounts"
+import { createKratosIdentityByPhone } from "@/app/authentication"
+import { AccountLevel, AccountStatus } from "@/domain/accounts"
 import { WalletType } from "@/domain/wallets"
 import { displayCurrencyFromCountryCode } from "@/domain/price"
+import { CouldNotFindAccountFromKratosIdError } from "@/domain/errors"
 
 import {
   AccountsRepository,
@@ -10,6 +17,9 @@ import {
   WalletsRepository,
 } from "@/services/mongoose"
 import { PriceService } from "@/services/price"
+import { TwilioClient } from "@/services/twilio-service"
+
+const { phoneMetadataValidationSettings } = getAccountsOnboardConfig()
 
 const initializeCreatedAccount = async ({
   account,
@@ -52,7 +62,9 @@ const initializeCreatedAccount = async ({
 
   account.contactEnabled = account.role === "user"
 
-  account.statusHistory = [{ status: config.initialStatus, comment: "Initial Status" }]
+  account.statusHistory = [
+    { status: config.initialStatus, comment: config.initialComment || "Initial Status" },
+  ]
   account.level = config.initialLevel
 
   if (countryCode) {
@@ -119,4 +131,36 @@ export const createAccountWithPhoneIdentifier = async ({
   if (account instanceof Error) return account
 
   return account
+}
+
+export const createInvitedAccountFromPhone = async ({
+  phone,
+}: {
+  phone: PhoneNumber
+}): Promise<Account | ApplicationError> => {
+  if (phoneMetadataValidationSettings.enabled) {
+    const validationResult = await TwilioClient().validateDestination(phone)
+    if (validationResult instanceof Error) return validationResult
+  }
+
+  const kratosUserId = await createKratosIdentityByPhone(phone)
+  if (kratosUserId instanceof Error) return kratosUserId
+
+  const existingAccount = await AccountsRepository().findByUserId(kratosUserId)
+  if (existingAccount instanceof CouldNotFindAccountFromKratosIdError) {
+    const invitedAccountsConfig = getDefaultAccountsConfig()
+
+    invitedAccountsConfig.initialStatus = AccountStatus.Invited
+    invitedAccountsConfig.initialComment = "Invited account"
+
+    return createAccountWithPhoneIdentifier({
+      newAccountInfo: {
+        phone,
+        kratosUserId,
+      },
+      config: invitedAccountsConfig,
+    })
+  }
+
+  return existingAccount
 }

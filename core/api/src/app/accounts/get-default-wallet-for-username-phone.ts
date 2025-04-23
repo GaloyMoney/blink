@@ -1,6 +1,10 @@
 import { getWalletFromAccount } from "./get-wallet-from-account"
+import { createInvitedAccountFromPhone } from "./create-account"
 
-import { CouldNotFindWalletFromUsernameAndCurrencyError } from "@/domain/errors"
+import {
+  CouldNotFindUserFromPhoneError,
+  CouldNotFindWalletFromUsernameAndCurrencyError,
+} from "@/domain/errors"
 import { checkedToUsername } from "@/domain/accounts"
 import { checkedToPhoneNumber } from "@/domain/users"
 import { AccountsRepository, UsersRepository } from "@/services/mongoose"
@@ -9,18 +13,42 @@ export const getDefaultWalletByUsernameOrPhone = async (
   usernameOrPhone: Username | PhoneNumber,
   walletCurrency?: WalletCurrency,
 ): Promise<Wallet | ApplicationError> => {
-  const checkedUsername = checkedToUsername(usernameOrPhone)
-  if (!(checkedUsername instanceof Error)) {
-    const account = await AccountsRepository().findByUsername(checkedUsername)
+  const username = checkedToUsername(usernameOrPhone)
+  if (!(username instanceof Error)) {
+    return getWalletByUsername(username, walletCurrency)
+  }
+
+  const phone = checkedToPhoneNumber(usernameOrPhone)
+  if (phone instanceof Error) {
+    return new CouldNotFindWalletFromUsernameAndCurrencyError(usernameOrPhone)
+  }
+
+  return getWalletByPhone(phone, walletCurrency)
+}
+
+const getWalletByUsername = async (
+  username: Username,
+  walletCurrency?: WalletCurrency,
+): Promise<Wallet | ApplicationError> => {
+  const account = await AccountsRepository().findByUsername(username)
+  if (account instanceof Error) return account
+
+  return getWalletFromAccount(account, walletCurrency)
+}
+
+const getWalletByPhone = async (
+  phone: PhoneNumber,
+  walletCurrency?: WalletCurrency,
+): Promise<Wallet | ApplicationError> => {
+  const user = await UsersRepository().findByPhone(phone)
+
+  if (user instanceof CouldNotFindUserFromPhoneError) {
+    const account = await createInvitedAccountFromPhone({ phone })
     if (account instanceof Error) return account
+
     return getWalletFromAccount(account, walletCurrency)
   }
 
-  const checkedPhoneNumber = checkedToPhoneNumber(usernameOrPhone)
-  if (checkedPhoneNumber instanceof Error)
-    return new CouldNotFindWalletFromUsernameAndCurrencyError(usernameOrPhone)
-
-  const user = await UsersRepository().findByPhone(checkedPhoneNumber)
   if (user instanceof Error) return user
 
   const account = await AccountsRepository().findByUserId(user.id)

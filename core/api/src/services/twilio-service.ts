@@ -8,6 +8,7 @@ import {
   TWILIO_ACCOUNT_SID,
   TWILIO_AUTH_TOKEN,
   TWILIO_VERIFY_SERVICE_ID,
+  TWILIO_MESSAGING_SERVICE_ID,
   UNSECURE_DEFAULT_LOGIN_CODE,
   getTestAccounts,
 } from "@/config"
@@ -38,6 +39,7 @@ export const TwilioClient = (): IPhoneProviderService => {
   const accountSid = TWILIO_ACCOUNT_SID
   const authToken = TWILIO_AUTH_TOKEN
   const verifyService = TWILIO_VERIFY_SERVICE_ID
+  const messagingServiceSid = TWILIO_MESSAGING_SERVICE_ID
 
   const client = twilio(accountSid, authToken)
   const verify = client.verify.v2.services(verifyService)
@@ -76,6 +78,57 @@ export const TwilioClient = (): IPhoneProviderService => {
     }
 
     return true
+  }
+
+  const sendTemplatedSMS = async ({
+    to,
+    contentSid,
+    contentVariables,
+  }: {
+    to: PhoneNumber
+    contentSid: string
+    contentVariables: Record<string, string>
+  }): Promise<true | PhoneProviderServiceError> => {
+    if (!messagingServiceSid) return true
+
+    try {
+      await client.messages.create({
+        to,
+        contentSid,
+        messagingServiceSid,
+        contentVariables: JSON.stringify(contentVariables),
+      })
+
+      return true
+    } catch (err) {
+      baseLogger.error({ err }, "impossible to send templated sms")
+      return handleCommonErrors(err)
+    }
+  }
+
+  const validateDestination = async (
+    phone: PhoneNumber,
+  ): Promise<true | PhoneProviderServiceError> => {
+    try {
+      if (isDisposablePhoneNumber(phone)) {
+        return new InvalidTypePhoneProviderError("disposable")
+      }
+
+      const lookup = await client.lookups.v2.phoneNumbers(phone).fetch({
+        fields: "line_type_intelligence",
+      })
+
+      if (!lookup.lineTypeIntelligence) {
+        return new MissingTypePhoneProviderError()
+      }
+      if (lookup.lineTypeIntelligence.type === "nonFixedVoip") {
+        return new InvalidTypePhoneProviderError("nonFixedVoip")
+      }
+
+      return true
+    } catch (err) {
+      return handleCommonErrors(err)
+    }
   }
 
   const validateVerify = async ({
@@ -141,7 +194,13 @@ export const TwilioClient = (): IPhoneProviderService => {
 
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.twilio",
-    fns: { getCarrier, validateVerify, initiateVerify },
+    fns: {
+      getCarrier,
+      validateVerify,
+      initiateVerify,
+      sendTemplatedSMS,
+      validateDestination,
+    },
   })
 }
 
