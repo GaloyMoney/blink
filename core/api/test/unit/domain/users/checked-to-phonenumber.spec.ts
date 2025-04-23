@@ -56,6 +56,11 @@ describe("phonenumber-check", () => {
     expect(phone).toBeInstanceOf(InvalidPhoneNumber)
   })
 
+  it("Fails for short phone numbers", () => {
+    const phone = checkedToPhoneNumber("+321313123")
+    expect(phone).toBeInstanceOf(InvalidPhoneNumber)
+  })
+
   it("Handles phone numbers with whitespace", () => {
     let phone = checkedToPhoneNumber(" +16505554321 ")
     expect(phone).toEqual("+16505554321")

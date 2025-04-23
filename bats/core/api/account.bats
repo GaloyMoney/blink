@@ -19,6 +19,47 @@ setup_file() {
   create_user 'bob'
 }
 
+@test "account: fails to set username when is a valid phone" {
+  username_to_set="573001234567"
+
+  variables=$(
+    jq -n \
+    --arg username "$username_to_set" \
+    '{username: $username}'
+  )
+  exec_graphql 'anon' 'username-available' "$variables"
+  username_available="$(graphql_output '.data.usernameAvailable')"
+  [[ "$username_available" == "false" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg username "$username_to_set" \
+    '{input: {username: $username}}'
+  )
+  exec_graphql 'alice' 'user-update-username' "$variables"
+  num_errors="$(graphql_output '.data.userUpdateUsername.errors | length')"
+  [[ "$num_errors" == "1" ]] || exit 1
+
+  username_to_set="+$username_to_set"
+  variables=$(
+    jq -n \
+    --arg username "$username_to_set" \
+    '{username: $username}'
+  )
+  exec_graphql 'anon' 'username-available' "$variables"
+  username_available="$(graphql_output '.data.usernameAvailable')"
+  [[ "$username_available" == "false" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg username "$username_to_set" \
+    '{input: {username: $username}}'
+  )
+  exec_graphql 'alice' 'user-update-username' "$variables"
+  num_errors="$(graphql_output '.data.userUpdateUsername.errors | length')"
+  [[ "$num_errors" == "1" ]] || exit 1
+}
+
 @test "account: sets username" {
   suffix="$RANDOM"
   username_to_set=$"alice_$suffix"
