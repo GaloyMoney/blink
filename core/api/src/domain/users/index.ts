@@ -34,11 +34,11 @@ export const checkedToPhoneNumber = (value: string): PhoneNumber | ValidationErr
   }
 
   const phoneNumber = parsePhoneNumberFromString(normalizedPhone)
-  if (!phoneNumber?.country) {
-    return new InvalidPhoneNumber(trimmedValue)
+  if (phoneNumber?.country && phoneNumber?.isPossible() && phoneNumber?.isValid()) {
+    return `${phoneNumber.number}` as PhoneNumber
   }
 
-  return `${phoneNumber.number}` as PhoneNumber
+  return new InvalidPhoneNumber(trimmedValue)
 }
 
 export const checkedToEmailAddress = (

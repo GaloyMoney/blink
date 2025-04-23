@@ -17,7 +17,7 @@ describe("username-check", () => {
   })
 
   it("Fails if starting with +", () => {
-    const username = checkedToUsername("+57300123456")
+    const username = checkedToUsername("+573001234567")
     expect(username).toBeInstanceOf(Error)
   })
 

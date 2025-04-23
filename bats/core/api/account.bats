@@ -20,7 +20,7 @@ setup_file() {
 }
 
 @test "account: fails to set username when is a valid phone" {
-  username_to_set="57300123456"
+  username_to_set="573001234567"
 
   variables=$(
     jq -n \

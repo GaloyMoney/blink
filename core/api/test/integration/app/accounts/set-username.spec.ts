@@ -38,13 +38,13 @@ describe("Set username", () => {
   it("fails to set username with a valid phone number", async () => {
     let result = await setUsername({
       accountId: crypto.randomUUID(),
-      username: "57300123456",
+      username: "573001234567",
     })
     expect(result).toBeInstanceOf(InvalidUsername)
 
     result = await setUsername({
       accountId: crypto.randomUUID(),
-      username: "+57300123456",
+      username: "+573001234567",
     })
     expect(result).toBeInstanceOf(InvalidUsername)
   })
