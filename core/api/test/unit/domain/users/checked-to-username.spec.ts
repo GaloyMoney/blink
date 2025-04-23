@@ -16,6 +16,11 @@ describe("username-check", () => {
     expect(username).toBeInstanceOf(Error)
   })
 
+  it("Fails if starting with +", () => {
+    const username = checkedToUsername("+573001234567")
+    expect(username).toBeInstanceOf(Error)
+  })
+
   it("Fails wrapped segwit address", () => {
     const username = checkedToUsername("32ksNi7zSt3t2aesvoEWhGMUEwCFg9UCCG")
     expect(username).toBeInstanceOf(Error)
