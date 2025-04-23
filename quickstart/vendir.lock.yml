@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: remove apps builds from ci run (#4824)'
-      sha: 9acfbb2a66d35a7a7230b4814163103ebdfcbc21
+      commitTitle: 'feat(core): create an invited account by phone (#4798)...'
+      sha: 09b18ce441c942310ecf56b4b7b79fd47ebe6bab
       tags:
-      - 0.21.35-1-g9acfbb2a6
+      - 0.21.36-1-g09b18ce44
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: remove apps builds from ci run (#4824)'
-      sha: 9acfbb2a66d35a7a7230b4814163103ebdfcbc21
+      commitTitle: 'feat(core): create an invited account by phone (#4798)...'
+      sha: 09b18ce441c942310ecf56b4b7b79fd47ebe6bab
       tags:
-      - 0.21.35-1-g9acfbb2a6
+      - 0.21.36-1-g09b18ce44
     path: schemas
   - git:
-      commitTitle: 'test: remove apps builds from ci run (#4824)'
-      sha: 9acfbb2a66d35a7a7230b4814163103ebdfcbc21
+      commitTitle: 'feat(core): create an invited account by phone (#4798)...'
+      sha: 09b18ce441c942310ecf56b4b7b79fd47ebe6bab
       tags:
-      - 0.21.35-1-g9acfbb2a6
+      - 0.21.36-1-g09b18ce44
     path: gql
   path: graphql
 kind: LockConfig
