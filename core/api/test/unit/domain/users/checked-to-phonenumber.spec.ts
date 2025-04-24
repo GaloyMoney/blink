@@ -3,7 +3,9 @@ import { checkedToPhoneNumber } from "@/domain/users"
 
 describe("phonenumber-check", () => {
   it("Fail just prefix", () => {
-    const phone = checkedToPhoneNumber("+1")
+    let phone = checkedToPhoneNumber("+1")
+    expect(phone).toBeInstanceOf(InvalidPhoneNumber)
+    phone = checkedToPhoneNumber("001")
     expect(phone).toBeInstanceOf(InvalidPhoneNumber)
   })
 
@@ -13,17 +15,23 @@ describe("phonenumber-check", () => {
   })
 
   it("Fail incompleted phone number", () => {
-    const phone = checkedToPhoneNumber("+1650")
+    let phone = checkedToPhoneNumber("+1650")
+    expect(phone).toBeInstanceOf(InvalidPhoneNumber)
+    phone = checkedToPhoneNumber("001650")
     expect(phone).toBeInstanceOf(InvalidPhoneNumber)
   })
 
   it("Fail with non digits", () => {
-    const phone = checkedToPhoneNumber("+1650555abcd")
+    let phone = checkedToPhoneNumber("+1650555abcd")
+    expect(phone).toBeInstanceOf(InvalidPhoneNumber)
+    phone = checkedToPhoneNumber("001650555abcd")
     expect(phone).toBeInstanceOf(InvalidPhoneNumber)
   })
 
   it("Success with valid phone number without + prefix", () => {
     let phone = checkedToPhoneNumber("16505554321")
+    expect(phone).toEqual("+16505554321")
+    phone = checkedToPhoneNumber("0016505554321")
     expect(phone).toEqual("+16505554321")
     phone = checkedToPhoneNumber("1 650-555-4321")
     expect(phone).toEqual("+16505554321")
@@ -37,6 +45,15 @@ describe("phonenumber-check", () => {
     phone = checkedToPhoneNumber("+1 650-555-4321")
     expect(phone).toEqual("+16505554321")
     phone = checkedToPhoneNumber("+1 (650) 555-4321")
+    expect(phone).toEqual("+16505554321")
+  })
+
+  it("Success on good phone number with 00 prefix", () => {
+    let phone = checkedToPhoneNumber("0016505554321")
+    expect(phone).toEqual("+16505554321")
+    phone = checkedToPhoneNumber("001 650-555-4321")
+    expect(phone).toEqual("+16505554321")
+    phone = checkedToPhoneNumber("001 (650) 555-4321")
     expect(phone).toEqual("+16505554321")
   })
 
@@ -56,11 +73,46 @@ describe("phonenumber-check", () => {
     expect(phone).toBeInstanceOf(InvalidPhoneNumber)
   })
 
+  it("Fails with double 00 prefix", () => {
+    const phone = checkedToPhoneNumber("000016505554321")
+    expect(phone).toBeInstanceOf(InvalidPhoneNumber)
+  })
+
+  it("Fails for short phone numbers", () => {
+    let phone = checkedToPhoneNumber("+321313123")
+    expect(phone).toBeInstanceOf(InvalidPhoneNumber)
+    phone = checkedToPhoneNumber("00321313123")
+    expect(phone).toBeInstanceOf(InvalidPhoneNumber)
+  })
+
+  it("Fails with extremely long phone numbers", () => {
+    const phone = checkedToPhoneNumber("+12345678901234567890")
+    expect(phone).toBeInstanceOf(InvalidPhoneNumber)
+  })
+
+  it("Fails mixed prefixes", () => {
+    let phone = checkedToPhoneNumber("+0016505554321")
+    expect(phone).toBeInstanceOf(InvalidPhoneNumber)
+    phone = checkedToPhoneNumber("00+16505554321")
+    expect(phone).toBeInstanceOf(InvalidPhoneNumber)
+  })
+
+  it("Handles various international formats", () => {
+    let phone = checkedToPhoneNumber("+447911123456")
+    expect(phone).toEqual("+447911123456")
+
+    phone = checkedToPhoneNumber("00491711234567")
+    expect(phone).toEqual("+491711234567")
+  })
+
   it("Handles phone numbers with whitespace", () => {
     let phone = checkedToPhoneNumber(" +16505554321 ")
     expect(phone).toEqual("+16505554321")
 
     phone = checkedToPhoneNumber("  16505554321  ")
+    expect(phone).toEqual("+16505554321")
+
+    phone = checkedToPhoneNumber("  0016505554321  ")
     expect(phone).toEqual("+16505554321")
   })
 

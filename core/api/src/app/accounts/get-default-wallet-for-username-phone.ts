@@ -13,13 +13,17 @@ export const getDefaultWalletByUsernameOrPhone = async (
   usernameOrPhone: Username | PhoneNumber,
   walletCurrency?: WalletCurrency,
 ): Promise<Wallet | ApplicationError> => {
+  let wallet: Wallet | ApplicationError | undefined = undefined
   const username = checkedToUsername(usernameOrPhone)
   if (!(username instanceof Error)) {
-    return getWalletByUsername(username, walletCurrency)
+    wallet = await getWalletByUsername(username, walletCurrency)
+    // we need to do this because previously username allowed valid phone numbers
+    if (!(wallet instanceof Error)) return wallet
   }
 
   const phone = checkedToPhoneNumber(usernameOrPhone)
   if (phone instanceof Error) {
+    if (wallet instanceof Error) return wallet
     return new CouldNotFindWalletFromUsernameAndCurrencyError(usernameOrPhone)
   }
 

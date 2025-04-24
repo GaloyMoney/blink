@@ -1,5 +1,8 @@
 import { setUsername } from "@/app/accounts"
+
+import { InvalidUsername } from "@/domain/errors"
 import { UsernameIsImmutableError, UsernameNotAvailableError } from "@/domain/accounts"
+
 import * as MongooseImpl from "@/services/mongoose"
 
 afterEach(() => {
@@ -30,5 +33,19 @@ describe("Set username", () => {
 
     const res = await setUsername({ accountId: crypto.randomUUID(), username: "alice" })
     expect(res).toBeInstanceOf(UsernameIsImmutableError)
+  })
+
+  it("fails to set username with a valid phone number", async () => {
+    let result = await setUsername({
+      accountId: crypto.randomUUID(),
+      username: "573001234567",
+    })
+    expect(result).toBeInstanceOf(InvalidUsername)
+
+    result = await setUsername({
+      accountId: crypto.randomUUID(),
+      username: "+573001234567",
+    })
+    expect(result).toBeInstanceOf(InvalidUsername)
   })
 })
