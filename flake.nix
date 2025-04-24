@@ -162,9 +162,10 @@
             export HOME="$(dirname $(pwd))/home"
             mkdir -p build
 
-            buck2 build "$buck2_target" --verbose 8
+            buck2 build //:node_modules  --verbose 8
+            buck2 build "$buck2_target:$bin_target" --verbose 8
 
-            result=$(buck2 build --show-simple-output "$buck2_target" 2> /dev/null)
+            result=$(buck2 build --show-simple-output "$buck2_target:$bin_target" 2> /dev/null)
 
             mkdir -p "build/$name-$system"
             cp -rpv "$result" "build/$name-$system/"
