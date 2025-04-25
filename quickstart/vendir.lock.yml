@@ -2,24 +2,24 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix(core): allow 00 prefix (#4827)'
-      sha: 1d3a50fda0917c721c4f9462d825ab45f99df9ea
+      commitTitle: 'fix: increase pnpm build timeouts to 30 mins (#4829)'
+      sha: a5d4ed0ad4f010b457e6cd56db68d6d46922647a
       tags:
-      - 0.21.38-1-g1d3a50fda
+      - 0.21.39-1-ga5d4ed0ad
     path: .
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix(core): allow 00 prefix (#4827)'
-      sha: 1d3a50fda0917c721c4f9462d825ab45f99df9ea
+      commitTitle: 'fix: increase pnpm build timeouts to 30 mins (#4829)'
+      sha: a5d4ed0ad4f010b457e6cd56db68d6d46922647a
       tags:
-      - 0.21.38-1-g1d3a50fda
+      - 0.21.39-1-ga5d4ed0ad
     path: schemas
   - git:
-      commitTitle: 'fix(core): allow 00 prefix (#4827)'
-      sha: 1d3a50fda0917c721c4f9462d825ab45f99df9ea
+      commitTitle: 'fix: increase pnpm build timeouts to 30 mins (#4829)'
+      sha: a5d4ed0ad4f010b457e6cd56db68d6d46922647a
       tags:
-      - 0.21.38-1-g1d3a50fda
+      - 0.21.39-1-ga5d4ed0ad
     path: gql
   path: graphql
 kind: LockConfig
