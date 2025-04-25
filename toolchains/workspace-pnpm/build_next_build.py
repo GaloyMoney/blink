@@ -37,7 +37,7 @@ def create_symlink(src, dest, description=""):
     return True
 
 
-def run_command(cmd, cwd=None, env=None, timeout=600):
+def run_command(cmd, cwd=None, env=None, timeout=1800):
     """Run a command with improved error handling and timeout."""
     print(f"Running command: {' '.join(cmd)} in {cwd}", file=sys.stderr)
     try:
