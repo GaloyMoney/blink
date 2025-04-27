@@ -61,7 +61,8 @@ const ConfirmModal = ({
   if (
     status === "unauthenticated" ||
     !sessionData?.userData?.me?.id ||
-    unauthorizedError
+    unauthorizedError ||
+    sessionData?.error === "RefreshAccessTokenError"
   ) {
     return (
       <ModalComponent open={true}>
