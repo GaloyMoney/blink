@@ -208,3 +208,12 @@ type WalletOnChainPendingReceiveRecord = {
   displayPriceCurrency: string
   createdAt: Date
 }
+
+interface ContactRecord {
+  accountId: string
+  contactId: string
+  type: string
+  alias?: string
+  transactionsCount: number
+  createdAt: Date
+}

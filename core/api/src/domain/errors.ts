@@ -73,6 +73,9 @@ export class CouldNotFindMerchantFromIdError extends CouldNotFindError {}
 export class CouldNotFindAccountFromPhoneError extends CouldNotFindError {}
 export class CouldNotFindTransactionsForAccountError extends CouldNotFindError {}
 export class CouldNotFindAccountFromKratosIdError extends CouldNotFindError {}
+export class CouldNotFindContactFromAccountIdError extends CouldNotFindError {}
+export class CouldNotFindContactFromContactIdError extends CouldNotFindError {}
+export class CouldNotUpdateContactError extends RepositoryError {}
 
 export class QuizAlreadyPresentError extends DomainError {}
 

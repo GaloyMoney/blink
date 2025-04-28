@@ -8,7 +8,7 @@ import { WalletIdRegex, WalletType } from "@/domain/wallets"
 import { WalletCurrency } from "@/domain/shared"
 
 import { Languages } from "@/domain/users"
-
+import { ContactType } from "@/domain/contacts"
 import { CarrierType } from "@/domain/phone-provider"
 import { checkedToLedgerExternalId } from "@/domain/ledger"
 
@@ -558,3 +558,40 @@ export const WalletOnChainPendingReceive =
     "WalletOnChainPendingReceive",
     WalletOnChainPendingReceiveSchema,
   )
+
+const ContactSchema = new Schema<ContactRecord>(
+  {
+    accountId: {
+      type: String,
+      ref: "Account",
+      index: true,
+      required: true,
+    },
+    contactId: {
+      type: String,
+      required: true,
+    },
+    type: {
+      type: String,
+      enum: Object.values(ContactType),
+      required: true,
+    },
+    alias: {
+      type: String,
+      required: false,
+    },
+    transactionsCount: {
+      type: Number,
+      default: 1,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { id: false },
+)
+
+ContactSchema.index({ accountId: 1, contactId: 1 }, { unique: true })
+
+export const Contact = mongoose.model<ContactRecord>("Contact", ContactSchema)
