@@ -9,10 +9,13 @@ import {
 } from "@/domain/errors"
 
 export const ContactsRepository = (): IContactsRepository => {
-  const findByAccountId = async (
-    accountId: AccountId,
-    type?: ContactType,
-  ): Promise<Contact[] | RepositoryError> => {
+  const findByAccountId = async ({
+    accountId,
+    type,
+  }: {
+    accountId: AccountId
+    type?: ContactType
+  }): Promise<Contact[] | RepositoryError> => {
     try {
       const query: Record<string, unknown> = { accountId }
       if (type) query.type = type
@@ -28,10 +31,13 @@ export const ContactsRepository = (): IContactsRepository => {
     }
   }
 
-  const findByContactId = async (
-    contactId: string,
-    type?: ContactType,
-  ): Promise<Contact[] | RepositoryError> => {
+  const findByContactId = async ({
+    contactId,
+    type,
+  }: {
+    contactId: string
+    type?: ContactType
+  }): Promise<Contact[] | RepositoryError> => {
     try {
       const query: Record<string, unknown> = { contactId }
       if (type) query.type = type
