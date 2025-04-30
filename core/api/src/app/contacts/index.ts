@@ -1,1 +1,1 @@
-export * from "./contact-upsert"
+export * from "./upsert-contact"
