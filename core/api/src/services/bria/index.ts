@@ -129,9 +129,18 @@ export const OnChainService = (): IOnChainService => {
     }
   }
 
-  const getColdBalance = async (): Promise<BtcPaymentAmount | OnChainServiceError> => {
+  const getColdBalance = async (
+    walletName?: string,
+  ): Promise<BtcPaymentAmount | OnChainServiceError> => {
     const request = new GetWalletBalanceSummaryRequest()
-    request.setWalletName(briaConfig.coldStorage.walletName)
+
+    // If a specific wallet name is provided, use it
+    // Otherwise, use the active rebalance wallet name from config
+    const targetWalletName = walletName
+      ? findColdWalletName(walletName)
+      : getDefaultColdWalletName()
+
+    request.setWalletName(targetWalletName)
 
     try {
       const response = await getWalletBalanceSummary(request, metadata)
@@ -143,6 +152,40 @@ export const OnChainService = (): IOnChainService => {
     } catch (error) {
       return new UnknownOnChainServiceError(error)
     }
+  }
+
+  // Helper function to get the default cold wallet name (active rebalance wallet)
+  const getDefaultColdWalletName = (): string => {
+    // Find the wallet configuration for the active rebalance wallet
+    const activeWalletName = briaConfig.coldStorage.activeRebalanceWalletName
+    const coldWallet = briaConfig.coldStorage.coldWallets.find(
+      (wallet) => wallet.name === activeWalletName,
+    )
+
+    // If found, return its walletName, otherwise return the first wallet in the list
+    return coldWallet
+      ? coldWallet.walletName
+      : briaConfig.coldStorage.coldWallets[0]?.walletName || "cold"
+  }
+
+  // Helper function to find the wallet name for a given cold wallet identifier
+  const findColdWalletName = (walletIdentifier: string): string => {
+    // Check if the identifier matches any wallet in the cold wallets list
+    const coldWallet = briaConfig.coldStorage.coldWallets.find(
+      (wallet) => wallet.name === walletIdentifier,
+    )
+
+    if (coldWallet) {
+      return coldWallet.walletName
+    }
+
+    // If the identifier is "default", return the active rebalance wallet
+    if (walletIdentifier === "default") {
+      return getDefaultColdWalletName()
+    }
+
+    // If no match is found, return the active rebalance wallet
+    return getDefaultColdWalletName()
   }
 
   const getAddressForWallet = async ({
@@ -307,7 +350,7 @@ export const OnChainService = (): IOnChainService => {
     const request = new SubmitPayoutRequest()
     request.setWalletName(briaConfig.hotWalletName)
     request.setPayoutQueueName(briaConfig.coldStorage.hotToColdRebalanceQueueName)
-    request.setDestinationWalletName(briaConfig.coldStorage.walletName)
+    request.setDestinationWalletName(getDefaultColdWalletName())
     request.setSatoshis(Number(amount.amount))
     request.setMetadata(constructMetadata({ galoy: { rebalanceToColdWallet: true } }))
 

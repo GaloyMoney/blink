@@ -7,6 +7,7 @@ import {
   EXPORTER_ASSETS_LIABILITIES_DELAY_SECS,
   EXPORTER_PORT,
   SECS_PER_5_MINS,
+  getBriaConfig,
 } from "@/config"
 
 import { Lightning, OnChain, Prices } from "@/app"
@@ -344,20 +345,36 @@ const getWalletBalance = async (walletId: WalletId): Promise<number> => {
 }
 
 const createColdStorageWalletGauge = () => {
-  const name = `bria_cold_storage`
-  const description = `amount in wallet ${name}`
-  return createGauge({
-    name,
-    description,
-    collect: async () => {
-      const balance = await OnChain.getColdBalance()
-      if (balance instanceof Error) {
-        logger.error(`error getting ${name} balance`)
-        return 0
-      }
-      return Number(balance.amount)
-    },
-  })
+  const briaConfig = getBriaConfig()
+
+  // Create gauges for all cold wallets in the list
+  for (const coldWallet of briaConfig.coldStorage.coldWallets) {
+    // Determine if this is the active rebalance wallet
+    const isActiveRebalanceWallet =
+      coldWallet.name === briaConfig.coldStorage.activeRebalanceWalletName
+
+    // For the active rebalance wallet, use the standard name for backward compatibility
+    const metricName = isActiveRebalanceWallet
+      ? `bria_cold_storage`
+      : `bria_cold_storage_${coldWallet.name}`
+
+    const description = isActiveRebalanceWallet
+      ? `amount in active cold wallet (${coldWallet.name})`
+      : `amount in cold wallet ${coldWallet.name}`
+
+    createGauge({
+      name: metricName,
+      description,
+      collect: async () => {
+        const balance = await OnChain.getColdBalance(coldWallet.name)
+        if (balance instanceof Error) {
+          logger.error(`error getting ${metricName} balance`)
+          return 0
+        }
+        return Number(balance.amount)
+      },
+    })
+  }
 }
 
 const getAssetsLiabilitiesDifference = async () => {
@@ -429,6 +446,8 @@ const getUserLiabilities = async () => {
 }
 
 const getRealAssetsVersusLiabilities = async () => {
+  const briaConfig = getBriaConfig()
+
   const [liabilitiesBalance, lndBalance, coldStorage, hotBalance] = await Promise.all([
     getUserLiabilities(),
     Lightning.getTotalBalance(),
@@ -441,13 +460,29 @@ const getRealAssetsVersusLiabilities = async () => {
   const briaHot = hotBalance instanceof Error ? 0 : Number(hotBalance.amount)
   const briaCold = coldStorage instanceof Error ? 0 : Number(coldStorage.amount)
 
+  // Calculate the balance of non-active cold wallets
+  let nonActiveWalletsBalance = 0
+
+  // Get all cold wallets that are not the active rebalance wallet
+  const nonActiveWallets = briaConfig.coldStorage.coldWallets.filter(
+    (wallet) => wallet.name !== briaConfig.coldStorage.activeRebalanceWalletName,
+  )
+
+  // Sum up the balances of all non-active cold wallets
+  for (const wallet of nonActiveWallets) {
+    const walletBalance = await OnChain.getColdBalance(wallet.name)
+    if (!(walletBalance instanceof Error)) {
+      nonActiveWalletsBalance += Number(walletBalance.amount)
+    }
+  }
+
   logger.info(
-    { liabilities, lnd, briaHot, briaCold },
+    { liabilities, lnd, briaHot, briaCold, nonActiveWalletsBalance },
     "getRealAssetsVersusLiabilities balances",
   )
 
   // if it is a negative value then it must match with exchange stablesats balance
-  return lnd + briaCold + briaHot - liabilities
+  return lnd + briaCold + briaHot + nonActiveWalletsBalance - liabilities
 }
 
 export const getBookingVersusRealWorldAssets = async () => {
@@ -462,14 +497,32 @@ export const getBookingVersusRealWorldAssets = async () => {
         OnChain.getHotBalance(),
       ])
 
+    const briaConfig = getBriaConfig()
     const lnd = lndBalance instanceof Error ? 0 : lndBalance
     const briaHot = hotBalance instanceof Error ? 0 : Number(hotBalance.amount)
     const briaCold = coldStorage instanceof Error ? 0 : Number(coldStorage.amount)
+
+    // Calculate the balance of non-active cold wallets
+    let nonActiveWalletsBalance = 0
+
+    // Get all cold wallets that are not the active rebalance wallet
+    const nonActiveWallets = briaConfig.coldStorage.coldWallets.filter(
+      (wallet) => wallet.name !== briaConfig.coldStorage.activeRebalanceWalletName,
+    )
+
+    // Sum up the balances of all non-active cold wallets
+    for (const wallet of nonActiveWallets) {
+      const walletBalance = await OnChain.getColdBalance(wallet.name)
+      if (!(walletBalance instanceof Error)) {
+        nonActiveWalletsBalance += Number(walletBalance.amount)
+      }
+    }
 
     return (
       lnd + // physical assets
       briaCold + // physical assets
       briaHot + // physical assets
+      nonActiveWalletsBalance + // non-active cold wallets physical assets
       (lightning + bitcoin + onChain) // value in accounting
     )
   } catch (err) {
