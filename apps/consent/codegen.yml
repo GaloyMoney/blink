@@ -60,3 +60,7 @@ generates:
         EndpointUrl: "string"
         Object: "string"
         NotificationCategory: "string"
+        Identifier: "string"
+        AccountId: "string"
+        ContactId: "string"
+        ContactType: "string"
