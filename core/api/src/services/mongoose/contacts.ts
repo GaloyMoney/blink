@@ -5,58 +5,37 @@ import {
   RepositoryError,
   CouldNotUpdateContactError,
   CouldNotFindContactFromAccountIdError,
-  CouldNotFindContactFromContactIdError,
 } from "@/domain/errors"
 
 export const ContactsRepository = (): IContactsRepository => {
-  const findByAccountId = async ({
+  const findContact = async ({
     accountId,
-    type,
+    identifier,
   }: {
     accountId: AccountId
-    type?: ContactType
-  }): Promise<Contact[] | RepositoryError> => {
+    identifier: string
+  }): Promise<Contact | RepositoryError> => {
     try {
-      const query: Record<string, unknown> = { accountId }
-      if (type) query.type = type
-
-      const results = await Contact.find(query)
-      if (!results.length) {
+      const result = await Contact.findOne({ accountId, identifier })
+      if (!result) {
         return new CouldNotFindContactFromAccountIdError(accountId)
       }
 
-      return results.map(contactFromRaw)
+      return contactFromRaw(result)
     } catch (err) {
       return parseRepositoryError(err)
     }
   }
 
-  const findByContactId = async ({
-    contactId,
-    type,
-  }: {
-    contactId: string
-    type?: ContactType
-  }): Promise<Contact[] | RepositoryError> => {
+  const persistNew = async (
+    contactInput: NewContactInput,
+  ): Promise<Contact | RepositoryError> => {
     try {
-      const query: Record<string, unknown> = { contactId }
-      if (type) query.type = type
+      const contact = await new Contact({
+        ...contactInput,
+      }).save()
 
-      const results = await Contact.find(query)
-      if (!results.length) {
-        return new CouldNotFindContactFromContactIdError(contactId)
-      }
-
-      return results.map(contactFromRaw)
-    } catch (err) {
-      return parseRepositoryError(err)
-    }
-  }
-
-  const persistNew = async (contact: Contact): Promise<Contact | RepositoryError> => {
-    try {
-      const created = await new Contact(contactToRaw(contact)).save()
-      return contactFromRaw(created)
+      return contactFromRaw(contact)
     } catch (err) {
       return parseRepositoryError(err)
     }
@@ -65,7 +44,7 @@ export const ContactsRepository = (): IContactsRepository => {
   const update = async (contact: Contact): Promise<Contact | RepositoryError> => {
     try {
       const result = await Contact.findOneAndUpdate(
-        { accountId: contact.accountId, contactId: contact.contactId },
+        { accountId: contact.accountId, id: contact.id },
         contactToRaw(contact),
         { new: true },
       )
@@ -78,16 +57,16 @@ export const ContactsRepository = (): IContactsRepository => {
   }
 
   return {
-    findByAccountId,
-    findByContactId,
+    findContact,
     persistNew,
     update,
   }
 }
 
 const contactFromRaw = (result: ContactRecord): Contact => ({
+  id: result.id as ContactId,
   accountId: result.accountId as AccountId,
-  contactId: result.contactId,
+  identifier: result.identifier,
   type: result.type as ContactType,
   alias: result.alias ?? "",
   transactionsCount: result.transactionsCount,
@@ -95,8 +74,9 @@ const contactFromRaw = (result: ContactRecord): Contact => ({
 })
 
 const contactToRaw = (contact: Contact): ContactRecord => ({
+  id: contact.id,
   accountId: contact.accountId,
-  contactId: contact.contactId,
+  identifier: contact.identifier,
   type: contact.type,
   alias: contact.alias,
   transactionsCount: contact.transactionsCount,

@@ -2,26 +2,27 @@ type ContactType =
   (typeof import("./primitives").ContactType)[keyof typeof import("./primitives").ContactType]
 
 type Contact = {
+  readonly id: ContactId
+  readonly createdAt: Date
   accountId: AccountId
-  contactId: string
   type: ContactType
+  identifier: string
   alias: string
   transactionsCount: number
-  createdAt: Date
 }
 
+type NewContactInput = Omit<Contact, "id" | "createdAt">
+
 interface IContactsRepository {
-  findByAccountId(
-    accountId: AccountId,
-    type?: ContactType,
-  ): Promise<Contact[] | RepositoryError>
+  findContact({
+    accountId,
+    identifier,
+  }: {
+    accountId: AccountId
+    identifier?: string
+  }): Promise<Contact | RepositoryError>
 
-  findByContactId(
-    contactId: string,
-    type?: ContactType,
-  ): Promise<Contact[] | RepositoryError>
-
-  persistNew(contact: Contact): Promise<Contact | RepositoryError>
+  persistNew(contact: NewContactInput): Promise<Contact | RepositoryError>
 
   update(contact: Contact): Promise<Contact | RepositoryError>
 }
