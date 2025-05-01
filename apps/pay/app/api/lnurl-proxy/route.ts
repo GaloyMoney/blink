@@ -6,16 +6,13 @@ export async function POST(request: NextRequest) {
     const { lnurl, paymentRequest } = await request.json()
 
     if (!lnurl) {
-      return NextResponse.json(
-        { error: "Missing lnurl parameter" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "Missing lnurl parameter" }, { status: 400 })
     }
 
     if (!paymentRequest) {
       return NextResponse.json(
         { error: "Missing paymentRequest parameter" },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -24,7 +21,7 @@ export async function POST(request: NextRequest) {
     if (!("tag" in lnurlParams && lnurlParams.tag === "withdrawRequest")) {
       return NextResponse.json(
         { error: "Not a properly configured lnurl withdraw tag" },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -45,7 +42,7 @@ export async function POST(request: NextRequest) {
     console.error("Error processing LNURL request:", error)
     return NextResponse.json(
       { error: "Failed to process LNURL request" },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

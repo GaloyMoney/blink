@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react"
+
 import LoadingComponent from "../loading"
 
 import styles from "./parse-payment.module.css"
