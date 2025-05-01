@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     const lnurlParams = await getParams(lnurl)
 
-    if (lnurlParams.tag !== "withdrawRequest") {
+    if (!("tag" in lnurlParams && lnurlParams.tag === "withdrawRequest")) {
       return NextResponse.json(
         { error: "Not a properly configured lnurl withdraw tag" },
         { status: 400 }
