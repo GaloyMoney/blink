@@ -1,7 +1,4 @@
 import React, { useState, useEffect } from "react"
-// Import removed as we'll use our proxy instead
-// import { getParams } from "js-lnurl"
-
 import LoadingComponent from "../loading"
 
 import styles from "./parse-payment.module.css"

@@ -12,31 +12,36 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // If we have both lnurl and paymentRequest, we're doing a direct payment
-    if (lnurl && paymentRequest) {
-      const lnurlParams = await getParams(lnurl)
-
-      if (!("tag" in lnurlParams && lnurlParams.tag === "withdrawRequest")) {
-        return NextResponse.json(
-          { error: "Not a properly configured lnurl withdraw tag" },
-          { status: 400 }
-        )
-      }
-
-      const { callback, k1 } = lnurlParams
-
-      const urlObject = new URL(callback)
-      const searchParams = urlObject.searchParams
-      searchParams.set("k1", k1)
-      searchParams.set("pr", paymentRequest)
-
-      const url = urlObject.toString()
-
-      const result = await fetch(url)
-      const data = await result.json()
-
-      return NextResponse.json(data, { status: result.ok ? 200 : 400 })
+    if (!paymentRequest) {
+      return NextResponse.json(
+        { error: "Missing paymentRequest parameter" },
+        { status: 400 }
+      )
     }
+
+    const lnurlParams = await getParams(lnurl)
+
+    if (lnurlParams.tag !== "withdrawRequest") {
+      return NextResponse.json(
+        { error: "Not a properly configured lnurl withdraw tag" },
+        { status: 400 }
+      )
+    }
+
+    const { callback, k1 } = lnurlParams
+
+    const urlObject = new URL(callback)
+    const searchParams = urlObject.searchParams
+    searchParams.set("k1", k1)
+    searchParams.set("pr", paymentRequest)
+
+    const url = urlObject.toString()
+
+    const result = await fetch(url)
+    const data = await result.json()
+
+    return NextResponse.json(data, { status: result.ok ? 200 : 400 })
+
 
     // If we only have lnurl, just get the params
     const params = await getParams(lnurl)
