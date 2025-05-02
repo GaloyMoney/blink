@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react"
-import { getParams } from "js-lnurl"
 
 import LoadingComponent from "../loading"
 
@@ -155,28 +154,19 @@ function NFCComponent({ paymentRequest }: Props) {
         })
 
       setIsLoading(true)
-      const lnurlParams = await getParams(nfcMessage)
 
-      if (!("tag" in lnurlParams && lnurlParams.tag === "withdrawRequest")) {
-        alert(
-          `not a properly configured lnurl withdraw tag\n\n${nfcMessage}\n\n${
-            "reason" in lnurlParams && lnurlParams.reason
-          }`,
-        )
-        setIsLoading(false)
-        return
-      }
-
-      const { callback, k1 } = lnurlParams
-
-      const urlObject = new URL(callback)
-      const searchParams = urlObject.searchParams
-      searchParams.set("k1", k1)
-      searchParams.set("pr", paymentRequest)
-
-      const url = urlObject.toString()
-
-      const result = await fetch(url)
+      // Use our proxy endpoint to handle the LNURL request
+      // This avoids CORS issues by making the request server-side
+      const result = await fetch("/api/lnurl-proxy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          lnurl: nfcMessage,
+          paymentRequest,
+        }),
+      })
       if (result.ok) {
         const lnurlResponse = await result.json()
         if (lnurlResponse?.status?.toLowerCase() !== "ok") {
@@ -195,7 +185,7 @@ function NFCComponent({ paymentRequest }: Props) {
             errorMessage += decoded.message
           }
         } finally {
-          let message = `Error processing payment.\n\nHTTP error code: ${result.status}`
+          let message = `Error processing boltcard payment.\n\nHTTP error code: ${result.status}`
           if (errorMessage) {
             message += `\n\nError message: ${errorMessage}`
           }
@@ -244,7 +234,7 @@ function NFCComponent({ paymentRequest }: Props) {
             disabled={hasNFCPermission || !isNfcSupported}
           >
             {!isNfcSupported
-              ? "Bold card not supported"
+              ? "Bolt card not supported"
               : hasNFCPermission
                 ? "Boltcard activated"
                 : "Activate boltcard"}
