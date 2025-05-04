@@ -1,0 +1,68 @@
+_version: 1
+
+circle_time_frame.month: "w tym miesiącu"
+circle_time_frame.all_time: ""
+
+circle_type.inner: "wewnętrznego kręgu"
+circle_type.outer: "zewnętrznego kręgu"
+
+circle_grew.title: "Twoje kręgi Blink się powiększają!"
+circle_grew.body: "Ktoś właśnie dołączył do Twojego %{circle_type}."
+
+circle_threshold_reached.inner.title: "Świetny krąg wewnętrzny ! \U0001F919"
+circle_threshold_reached.inner.body: "Powitałeś już %{threshold} osób w Blink%{time_frame}. Tak trzymaj!"
+
+circle_threshold_reached.outer.title: "Postęp w zewnętrznym kręgu \U0001F4AA"
+circle_threshold_reached.outer.body: "Twój Zewnętrzny Krąg osiągnął %{threshold} osób. Napędzasz adopcję Bitcoina!"
+
+identity_verification_approved.title: "Twoja tożsamość została zweryfikowana!"
+identity_verification_approved.body: "Dokumenty do Twojej weryfikacji zostały przetworzone."
+
+identity_verification_declined.reason.documents_not_clear: "przesłane dokumenty były nieczytelne"
+identity_verification_declined.reason.photo_not_clear: "przesłane zdjęcie było nieczytelne"
+identity_verification_declined.reason.documents_do_not_match: "przesłane dokumenty nie pasowały do Twojego selfie i/lub podanych informacji"
+identity_verification_declined.reason.documents_expired: "przesłane dokumenty były przeterminowane"
+identity_verification_declined.reason.documents_not_supported: "przesłane dokumenty nie są obsługiwane"
+identity_verification_declined.reason.other: "wystąpił błąd, skontaktuj się z pomocą techniczną"
+identity_verification_declined.title: "Nie udało się zweryfikować Twojej tożsamości!"
+identity_verification_declined.body: "Nie udało nam się przetworzyć twoich dokumentów z powodu: %{reason}."
+
+identity_verification_review_started.title: "Twoja weryfikacja jest w toku!"
+identity_verification_review_started.body: "Otrzymaliśmy Twoje dokumenty i przetwarzamy je."
+
+transaction.intra_ledger_payment.title: "Transakcja %{walletCurrency}"
+transaction.intra_ledger_payment.body: "Wysłano płatność na %{formattedCurrencyAmount}"
+transaction.intra_ledger_payment.body_display_currency: "Wysłano płatność na %{displayCurrencyAmount}  | %{formattedCurrencyAmount}"
+
+transaction.intra_ledger_receipt.title: "Transakcja %{walletCurrency}"
+transaction.intra_ledger_receipt.body: "+%{formattedCurrencyAmount}"
+transaction.intra_ledger_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+transaction.onchain_payment.title: "Transakcja %{walletCurrency}"
+transaction.onchain_payment.body_display_currency: "Wysłana płatność on-chain na %{displayCurrencyAmount} | %{formattedCurrencyAmount} została potwierdzona"
+transaction.onchain_payment.body: "Wysłana płatność on-chain na %{formattedCurrencyAmount} została potwierdzona"
+
+transaction.onchain_receipt.title: "Transakcja %{walletCurrency}"
+transaction.onchain_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt.body: "+%{formattedCurrencyAmount}"
+
+transaction.lightning_receipt.title: "Transakcja %{walletCurrency}"
+transaction.lightning_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.lightning_receipt.body: "+%{formattedCurrencyAmount}"
+
+transaction.onchain_receipt_pending.title: "Transakcja %{walletCurrency} | Oczekująca"
+transaction.onchain_receipt_pending.body_display_currency: "oczekujące +%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt_pending.body: "oczekujące +%{formattedCurrencyAmount}"
+
+transaction.paid_invoice.title: "Transakcja %{walletCurrency}"
+transaction.paid_invoice.body: "+%{formattedCurrencyAmount}"
+transaction.paid_invoice.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+price_changed.up.title: "Bitcoin nabiera tempa!"
+price_changed.up.body: "Bitcoin wzrósł o %{change_percent}% w ciągu ostatniego dnia do %{price}!"
+
+price_changed.down.title: "Bitcoin nabiera tempa!"
+price_changed.down.body: "Bitcoin spadł o %{change_percent}% w ciągu ostatniego dnia do %{price}!"
+
+security.link_email_reminder.title: "Połącz email, aby zabezpieczyć konto"
+security.link_email_reminder.body: "Połącz swój email, aby zabezpieczyć konto i otrzymywać ważne aktualizacje"
