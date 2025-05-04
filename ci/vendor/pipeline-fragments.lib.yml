@@ -44,6 +44,12 @@ source:
   repository: #@ release_concourse_image()
 #@ end
 
+#@ def nix_task_image_config():
+type: registry-image
+source:
+  repository: nixpkgs/nix-flakes
+#@ end
+
 #@ def slack_failure_notification():
 #@ fail_url = "<$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME| :face_with_symbols_on_mouth: $BUILD_JOB_NAME> failed!"
 put: slack
@@ -52,6 +58,25 @@ params:
   username: concourse
   icon_url: https://cl.ly/2F421Y300u07/concourse-logo-blue-transparent.png
   text:    #@ fail_url
+#@ end
+
+#@ def check_code():
+name: check-code
+serial: true
+plan:
+- in_parallel:
+  - { get: repo, trigger: true }
+  - { get: pipeline-tasks }
+- task: check-code
+  config:
+    platform: linux
+    image_resource: #@ nix_task_image_config()
+    inputs:
+    - name: pipeline-tasks
+    - name: repo
+    run:
+      path: pipeline-tasks/ci/vendor/tasks/check-code.sh
+on_failure: #@ slack_failure_notification()
 #@ end
 
 #@ def nodejs_check_code():
@@ -265,21 +290,27 @@ plan:
     run:
       path: pipeline-tasks/ci/vendor/tasks/docker-prep-docker-build-env.sh
 - task: build
-  privileged: true
   config:
     platform: linux
     image_resource:
       type: registry-image
       source:
-        repository: vito/oci-build-task
+        repository: gcr.io/kaniko-project/executor
+        tag: debug
     inputs:
     - name: repo
     outputs:
     - name: image
-    params:
-      CONTEXT: repo
     run:
-      path: build
+      path: /kaniko/executor
+      args:
+        - --dockerfile=Dockerfile
+        - --context=repo
+        - --use-new-run
+        - --single-snapshot
+        - --cache=false
+        - --no-push
+        - --tar-path=image/image.tar
 - put: edge-image
   params:
     image: image/image.tar
@@ -370,6 +401,7 @@ plan:
       platform: linux
       image_resource: #@ nodejs_task_image_config()
       inputs:
+        - name: repo
         - name: pipeline-tasks
         - name: edge-image
         - name: charts-repo
@@ -400,7 +432,7 @@ webhook_token: ((webhook.secret))
 name: pipeline-tasks
 type: git
 source:
-  paths: [ci/vendor/*, ci/tasks/*, ci/config/*, ci/apps/tasks/*, Makefile]
+  paths: [ci/vendor/*, ci/tasks/*, ci/config/*, Makefile]
   uri: #@ data.values.git_uri
   branch: #@ data.values.git_branch
   private_key: #@ data.values.github_private_key
@@ -413,14 +445,14 @@ source:
   tag: edge
   username: #@ data.values.docker_registry_user
   password: #@ data.values.docker_registry_password
-  repository: #@ public_docker_registry() if publicRepo else private_docker_registry() + "/" + data.values.gh_repository
+  repository: #@ public_docker_registry() + "/" + data.values.gh_repository if publicRepo else private_docker_registry() + "/" + data.values.gh_repository
 #@ end
 
 #@ def nodejs_deps_resource(webhook = False):
 name: deps
 type: git
 source:
-  paths: [core/api/yarn.lock]
+  paths: [yarn.lock]
   uri: #@ data.values.git_uri
   branch: #@ data.values.git_branch
   private_key: #@ data.values.github_private_key
@@ -477,13 +509,13 @@ source:
   private_key: #@ data.values.github_private_key
 #@ end
 
-#@ def versioned_image_resource():
+#@ def versioned_image_resource(publicRepo = True):
 name: versioned-image
 type: registry-image
 source:
   username: #@ data.values.docker_registry_user
   password: #@ data.values.docker_registry_password
-  repository: #@ public_docker_registry() + "/" + data.values.gh_repository
+  repository: #@ public_docker_registry() + "/" + data.values.gh_repository if publicRepo else private_docker_registry() + "/" + data.values.gh_repository
 #@ end
 
 #@ def gh_release_resource():
