@@ -7,7 +7,7 @@
 
 %% % @format
 
-%% @doc Simple gen_server that will run the the test and
+%% @doc Simple gen_server that will run the test and
 %% communicates the result to the test runner.
 
 -module(ct_runner).
