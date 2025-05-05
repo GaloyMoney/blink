@@ -37,7 +37,32 @@ def create_symlink(src, dest, description=""):
     return True
 
 
-def run_command(cmd, cwd=None, env=None, timeout=600):
+def copy_directory(src, dest, description=""):
+    """Copy a directory from src to dest, handling existing destinations."""
+    # Ensure the source exists
+    if not os.path.exists(src):
+        print(f"Error: Source directory {src} does not exist", file=sys.stderr)
+        return False
+
+    # Ensure the parent directory exists
+    parent_dir = os.path.dirname(dest)
+    os.makedirs(parent_dir, exist_ok=True)
+
+    # Remove destination if it exists
+    if os.path.exists(dest):
+        if os.path.islink(dest):
+            os.unlink(dest)
+        else:
+            shutil.rmtree(dest)
+
+    # Copy the directory
+    desc_text = f" ({description})" if description else ""
+    print(f"Copying directory{desc_text}: {src} -> {dest}", file=sys.stderr)
+    shutil.copytree(src, dest, symlinks=True, dirs_exist_ok=True)
+    print(f"Directory{desc_text} copied successfully", file=sys.stderr)
+    return True
+
+def run_command(cmd, cwd=None, env=None, timeout=1800):
     """Run a command with improved error handling and timeout."""
     print(f"Running command: {' '.join(cmd)} in {cwd}", file=sys.stderr)
     try:
@@ -141,7 +166,7 @@ if __name__ == "__main__":
             standalone_dir = os.path.join(args.out_path, ".next", "standalone", args.package_dir)
             os.makedirs(standalone_dir, exist_ok=True)
 
-            if not create_symlink(
+            if not copy_directory(
                 public_src,
                 os.path.join(standalone_dir, "public"),
                 "public"
@@ -154,7 +179,7 @@ if __name__ == "__main__":
             standalone_next_dir = os.path.join(args.out_path, ".next", "standalone", args.package_dir, ".next")
             os.makedirs(standalone_next_dir, exist_ok=True)
 
-            if not create_symlink(
+            if not copy_directory(
                 static_src,
                 os.path.join(standalone_next_dir, "static"),
                 "static"
