@@ -29,6 +29,11 @@ login_user() {
   usd_wallet_id="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "USD") .id')"
   [[ "${usd_wallet_id}" != "null" ]]
   cache_value "$token_name.usd_wallet_id" "$usd_wallet_id"
+
+  exec_graphql "$token_name" 'default-account'
+  account_id="$(graphql_output '.data.me.defaultAccount.id')"
+  [[ -n "$account_id" && "$account_id" != "null" ]]
+  cache_value "$token_name.account_id" "$account_id"
 }
 
 create_user() {
@@ -128,14 +133,27 @@ ensure_username_is_present() {
 }
 
 is_contact() {
-  local token_name="$1"
-  local contact_username="$(read_value "$2.username")"
+  local owner_token_name="$1"
+  local other_token_name="$2"
 
-  exec_graphql "$token_name" 'contacts'
-  local fetched_username=$(
-    graphql_output \
-    --arg contact_username "$contact_username" \
-    '.data.me.contacts[] | select(.username == $contact_username) .username'
-  )
-  [[ "$fetched_username" == "$contact_username" ]] || return 1
+  local owner_account_id
+  owner_account_id=$(read_value "$owner_token_name.account_id")
+  [[ -n "$owner_account_id" ]] || return 1
+
+  local contact_identifier
+  contact_identifier=$(read_value "$other_token_name.username")
+  [[ -n "$contact_identifier" ]] || return 1
+
+  local mongo_query
+  mongo_query=$(echo "db.contacts.findOne(
+    {
+      accountId: \"$owner_account_id\",
+      identifier: \"$contact_identifier\"
+    }
+  );" | tr -d '[:space:]')
+
+  local result
+  result=$(mongo_cli "$mongo_query" 2>&1)
+
+  [[ "$result" != "null" && -n "$result" ]]
 }
