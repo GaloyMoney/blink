@@ -41,6 +41,7 @@ import UserLoginMutation from "@/graphql/public/root/mutation/user-login"
 import AccountDeleteMutation from "@/graphql/public/root/mutation/account-delete"
 import AccountUpdateDefaultWalletIdMutation from "@/graphql/public/root/mutation/account-update-default-wallet-id"
 import AccountUpdateDisplayCurrencyMutation from "@/graphql/public/root/mutation/account-update-display-currency"
+import AccountContactUpsertMutation from "@/graphql/public/root/mutation/account-contact-upsert"
 import FeedbackSubmitMutation from "@/graphql/public/root/mutation/feedback-submit"
 import OnChainPaymentSendMutation from "@/graphql/public/root/mutation/onchain-payment-send"
 import OnChainPaymentSendAllMutation from "@/graphql/public/root/mutation/onchain-payment-send-all"
@@ -109,6 +110,7 @@ export const mutationFields = {
       userContactUpdateAlias: UserContactUpdateAliasMutation,
       accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdMutation,
       accountUpdateDisplayCurrency: AccountUpdateDisplayCurrencyMutation,
+      accountContactUpsert: AccountContactUpsertMutation,
       accountEnableNotificationCategory: AccountEnableNotificationCategoryMutation,
       accountDisableNotificationCategory: AccountDisableNotificationCategoryMutation,
       accountEnableNotificationChannel: AccountEnableNotificationChannelMutation,

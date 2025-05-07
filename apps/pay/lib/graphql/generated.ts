@@ -23,6 +23,8 @@ export type Scalars = {
   CentAmount: { input: number; output: number; }
   /** An alias name that a user can set for a wallet (with which they have transactions) */
   ContactAlias: { input: string; output: string; }
+  /** Unique identifier of a contact */
+  ContactId: { input: string; output: string; }
   /** A CCA2 country code (ex US, FR, etc) */
   CountryCode: { input: string; output: string; }
   /** Display currency of an account */
@@ -38,6 +40,8 @@ export type Scalars = {
   Feedback: { input: string; output: string; }
   /** Hex-encoded string of 32 bytes */
   Hex32Bytes: { input: string; output: string; }
+  /** Unique value used to identify a contact (e.g., username or lnAddress) */
+  Identifier: { input: string; output: string; }
   Language: { input: string; output: string; }
   LnPaymentPreImage: { input: string; output: string; }
   /** BOLT11 lightning invoice payment request with the amount included */
@@ -134,6 +138,12 @@ export type AccountTransactionsArgs = {
 
 export type AccountWalletByIdArgs = {
   walletId: Scalars['WalletId']['input'];
+};
+
+export type AccountContactUpsertInput = {
+  readonly alias?: InputMaybe<Scalars['ContactAlias']['input']>;
+  readonly identifier?: InputMaybe<Scalars['Identifier']['input']>;
+  readonly type: ContactType;
 };
 
 export type AccountDeletePayload = {
@@ -417,6 +427,34 @@ export type ConsumerAccountTransactionsArgs = {
 
 export type ConsumerAccountWalletByIdArgs = {
   walletId: Scalars['WalletId']['input'];
+};
+
+export type Contact = {
+  readonly __typename: 'Contact';
+  /** Alias name the user assigns to the contact. */
+  readonly alias?: Maybe<Scalars['ContactAlias']['output']>;
+  /** Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC) */
+  readonly createdAt: Scalars['Timestamp']['output'];
+  /** ID of the contact user or external identifier. */
+  readonly id: Scalars['ContactId']['output'];
+  /** Username or lnAddress that identifies the contact. */
+  readonly identifier: Scalars['Identifier']['output'];
+  /** Total number of transactions with this contact. */
+  readonly transactionsCount: Scalars['Int']['output'];
+  /** Type of the contact (intraledger, lnaddress, etc.). */
+  readonly type: ContactType;
+};
+
+export const ContactType = {
+  Intraledger: 'INTRALEDGER',
+  Lnaddress: 'LNADDRESS'
+} as const;
+
+export type ContactType = typeof ContactType[keyof typeof ContactType];
+export type ContactUpdateOrCreatePayload = {
+  readonly __typename: 'ContactUpdateOrCreatePayload';
+  readonly contact?: Maybe<Contact>;
+  readonly errors: ReadonlyArray<Error>;
 };
 
 export type Coordinates = {
@@ -888,6 +926,7 @@ export type MobileVersions = {
 
 export type Mutation = {
   readonly __typename: 'Mutation';
+  readonly accountContactUpsert: ContactUpdateOrCreatePayload;
   readonly accountDelete: AccountDeletePayload;
   readonly accountDisableNotificationCategory: AccountUpdateNotificationSettingsPayload;
   readonly accountDisableNotificationChannel: AccountUpdateNotificationSettingsPayload;
@@ -1013,6 +1052,11 @@ export type Mutation = {
   readonly userUpdateLanguage: UserUpdateLanguagePayload;
   /** @deprecated Username will be moved to @Handle in Accounts. Also SetUsername naming should be used instead of UpdateUsername to reflect the idempotency of Handles */
   readonly userUpdateUsername: UserUpdateUsernamePayload;
+};
+
+
+export type MutationAccountContactUpsertArgs = {
+  input: AccountContactUpsertInput;
 };
 
 

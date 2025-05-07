@@ -68,6 +68,14 @@ interface Account
   wallets: [Wallet!]!
 }
 
+input AccountContactUpsertInput
+  @join__type(graph: PUBLIC)
+{
+  alias: ContactAlias
+  identifier: Identifier
+  type: ContactType!
+}
+
 type AccountDeletePayload
   @join__type(graph: PUBLIC)
 {
@@ -437,11 +445,53 @@ type ConsumerAccount implements Account
   wallets: [Wallet!]!
 }
 
+type Contact
+  @join__type(graph: PUBLIC)
+{
+  """Alias name the user assigns to the contact."""
+  alias: ContactAlias
+
+  """
+  Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC)
+  """
+  createdAt: Timestamp!
+
+  """ID of the contact user or external identifier."""
+  id: ContactId!
+
+  """Username or lnAddress that identifies the contact."""
+  identifier: Identifier!
+
+  """Total number of transactions with this contact."""
+  transactionsCount: Int!
+
+  """Type of the contact (intraledger, lnaddress, etc.)."""
+  type: ContactType!
+}
+
 """
 An alias name that a user can set for a wallet (with which they have transactions)
 """
 scalar ContactAlias
   @join__type(graph: PUBLIC)
+
+"""Unique identifier of a contact"""
+scalar ContactId
+  @join__type(graph: PUBLIC)
+
+enum ContactType
+  @join__type(graph: PUBLIC)
+{
+  INTRALEDGER @join__enumValue(graph: PUBLIC)
+  LNADDRESS @join__enumValue(graph: PUBLIC)
+}
+
+type ContactUpdateOrCreatePayload
+  @join__type(graph: PUBLIC)
+{
+  contact: Contact
+  errors: [Error!]!
+}
 
 type Coordinates
   @join__type(graph: PUBLIC)
@@ -662,6 +712,10 @@ enum Icon
   BELL @join__enumValue(graph: NOTIFICATIONS)
   REFRESH @join__enumValue(graph: NOTIFICATIONS)
 }
+
+"""Unique value used to identify a contact (e.g., username or lnAddress)"""
+scalar Identifier
+  @join__type(graph: PUBLIC)
 
 union InitiationVia
   @join__type(graph: PUBLIC)
@@ -1215,6 +1269,7 @@ type Mutation
   apiKeyCreate(input: ApiKeyCreateInput!): ApiKeyCreatePayload! @join__field(graph: API_KEYS)
   apiKeyRevoke(input: ApiKeyRevokeInput!): ApiKeyRevokePayload! @join__field(graph: API_KEYS)
   statefulNotificationAcknowledge(input: StatefulNotificationAcknowledgeInput!): StatefulNotificationAcknowledgePayload! @join__field(graph: NOTIFICATIONS)
+  accountContactUpsert(input: AccountContactUpsertInput!): ContactUpdateOrCreatePayload! @join__field(graph: PUBLIC)
   accountDelete: AccountDeletePayload! @join__field(graph: PUBLIC)
   accountDisableNotificationCategory(input: AccountDisableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
   accountDisableNotificationChannel(input: AccountDisableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload! @join__field(graph: PUBLIC)
