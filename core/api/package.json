@@ -105,7 +105,7 @@
     "lodash.sortby": "^4.7.0",
     "lodash.sumby": "^4.6.0",
     "medici": "^7.1.0",
-    "mongoose": "8.13.2",
+    "mongoose": "8.14.2",
     "node-cache": "^5.1.2",
     "openai": "^4.87.4",
     "pg": "^8.14.1",
