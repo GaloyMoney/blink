@@ -9,7 +9,7 @@
 %
 % Let's assume we have two hooks cth_a and cth_b, and cth_a has
 % higher priority than cth_b (so lower numerical value). Then
-% CT will call the the hooks in the following order (we show
+% CT will call the hooks in the following order (we show
 % suite stuff, group and testcase is the same):
 %
 % cth_a:pre_init_per_suite
