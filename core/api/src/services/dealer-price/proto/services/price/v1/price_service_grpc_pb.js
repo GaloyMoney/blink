@@ -305,4 +305,4 @@ var PriceServiceService = exports.PriceServiceService = {
   },
 };
 
-exports.PriceServiceClient = grpc.makeGenericClientConstructor(PriceServiceService);
+exports.PriceServiceClient = grpc.makeGenericClientConstructor(PriceServiceService, 'PriceService');

@@ -449,7 +449,7 @@ proto.services.price.v1.GetCentsFromSatsForImmediateBuyRequest.prototype.toObjec
  */
 proto.services.price.v1.GetCentsFromSatsForImmediateBuyRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    amountInSatoshis: jspb.Message.getFieldWithDefault(msg, 1, 0)
+amountInSatoshis: jspb.Message.getFieldWithDefault(msg, 1, 0)
   };
 
   if (includeInstance) {
@@ -579,7 +579,7 @@ proto.services.price.v1.GetCentsFromSatsForImmediateBuyResponse.prototype.toObje
  */
 proto.services.price.v1.GetCentsFromSatsForImmediateBuyResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0)
+amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0)
   };
 
   if (includeInstance) {
@@ -709,7 +709,7 @@ proto.services.price.v1.GetCentsFromSatsForImmediateSellRequest.prototype.toObje
  */
 proto.services.price.v1.GetCentsFromSatsForImmediateSellRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    amountInSatoshis: jspb.Message.getFieldWithDefault(msg, 1, 0)
+amountInSatoshis: jspb.Message.getFieldWithDefault(msg, 1, 0)
   };
 
   if (includeInstance) {
@@ -839,7 +839,7 @@ proto.services.price.v1.GetCentsFromSatsForImmediateSellResponse.prototype.toObj
  */
 proto.services.price.v1.GetCentsFromSatsForImmediateSellResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0)
+amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0)
   };
 
   if (includeInstance) {
@@ -969,8 +969,8 @@ proto.services.price.v1.GetCentsFromSatsForFutureBuyRequest.prototype.toObject =
  */
 proto.services.price.v1.GetCentsFromSatsForFutureBuyRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    amountInSatoshis: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    timeInSeconds: jspb.Message.getFieldWithDefault(msg, 2, 0)
+amountInSatoshis: jspb.Message.getFieldWithDefault(msg, 1, 0),
+timeInSeconds: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -1129,7 +1129,7 @@ proto.services.price.v1.GetCentsFromSatsForFutureBuyResponse.prototype.toObject 
  */
 proto.services.price.v1.GetCentsFromSatsForFutureBuyResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0)
+amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0)
   };
 
   if (includeInstance) {
@@ -1259,8 +1259,8 @@ proto.services.price.v1.GetCentsFromSatsForFutureSellRequest.prototype.toObject 
  */
 proto.services.price.v1.GetCentsFromSatsForFutureSellRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    amountInSatoshis: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    timeInSeconds: jspb.Message.getFieldWithDefault(msg, 2, 0)
+amountInSatoshis: jspb.Message.getFieldWithDefault(msg, 1, 0),
+timeInSeconds: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -1419,7 +1419,7 @@ proto.services.price.v1.GetCentsFromSatsForFutureSellResponse.prototype.toObject
  */
 proto.services.price.v1.GetCentsFromSatsForFutureSellResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0)
+amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0)
   };
 
   if (includeInstance) {
@@ -1549,7 +1549,7 @@ proto.services.price.v1.GetSatsFromCentsForImmediateBuyRequest.prototype.toObjec
  */
 proto.services.price.v1.GetSatsFromCentsForImmediateBuyRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0)
+amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0)
   };
 
   if (includeInstance) {
@@ -1679,7 +1679,7 @@ proto.services.price.v1.GetSatsFromCentsForImmediateBuyResponse.prototype.toObje
  */
 proto.services.price.v1.GetSatsFromCentsForImmediateBuyResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    amountInSatoshis: jspb.Message.getFieldWithDefault(msg, 1, 0)
+amountInSatoshis: jspb.Message.getFieldWithDefault(msg, 1, 0)
   };
 
   if (includeInstance) {
@@ -1809,7 +1809,7 @@ proto.services.price.v1.GetSatsFromCentsForImmediateSellRequest.prototype.toObje
  */
 proto.services.price.v1.GetSatsFromCentsForImmediateSellRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0)
+amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0)
   };
 
   if (includeInstance) {
@@ -1939,7 +1939,7 @@ proto.services.price.v1.GetSatsFromCentsForImmediateSellResponse.prototype.toObj
  */
 proto.services.price.v1.GetSatsFromCentsForImmediateSellResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    amountInSatoshis: jspb.Message.getFieldWithDefault(msg, 1, 0)
+amountInSatoshis: jspb.Message.getFieldWithDefault(msg, 1, 0)
   };
 
   if (includeInstance) {
@@ -2069,8 +2069,8 @@ proto.services.price.v1.GetSatsFromCentsForFutureBuyRequest.prototype.toObject =
  */
 proto.services.price.v1.GetSatsFromCentsForFutureBuyRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    timeInSeconds: jspb.Message.getFieldWithDefault(msg, 2, 0)
+amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0),
+timeInSeconds: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -2229,7 +2229,7 @@ proto.services.price.v1.GetSatsFromCentsForFutureBuyResponse.prototype.toObject 
  */
 proto.services.price.v1.GetSatsFromCentsForFutureBuyResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    amountInSatoshis: jspb.Message.getFieldWithDefault(msg, 1, 0)
+amountInSatoshis: jspb.Message.getFieldWithDefault(msg, 1, 0)
   };
 
   if (includeInstance) {
@@ -2359,8 +2359,8 @@ proto.services.price.v1.GetSatsFromCentsForFutureSellRequest.prototype.toObject 
  */
 proto.services.price.v1.GetSatsFromCentsForFutureSellRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    timeInSeconds: jspb.Message.getFieldWithDefault(msg, 2, 0)
+amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0),
+timeInSeconds: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -2519,7 +2519,7 @@ proto.services.price.v1.GetSatsFromCentsForFutureSellResponse.prototype.toObject
  */
 proto.services.price.v1.GetSatsFromCentsForFutureSellResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    amountInSatoshis: jspb.Message.getFieldWithDefault(msg, 1, 0)
+amountInSatoshis: jspb.Message.getFieldWithDefault(msg, 1, 0)
   };
 
   if (includeInstance) {
@@ -2750,7 +2750,7 @@ proto.services.price.v1.GetCentsPerSatsExchangeMidRateResponse.prototype.toObjec
  */
 proto.services.price.v1.GetCentsPerSatsExchangeMidRateResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    ratioInCentsPerSatoshis: jspb.Message.getFloatingPointFieldWithDefault(msg, 1, 0.0)
+ratioInCentsPerSatoshis: jspb.Message.getFloatingPointFieldWithDefault(msg, 1, 0.0)
   };
 
   if (includeInstance) {
