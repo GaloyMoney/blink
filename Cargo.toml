@@ -34,7 +34,7 @@ uuid = { version = "1.11.0", features = ["serde", "v4"] }
 rand = "0.8.5"
 serde_with = "3.8.1"
 tracing = "0.1.37"
-tracing-subscriber = { version = "0.3.18", features = ["env-filter", "json"] }
+tracing-subscriber = { version = "0.3.20", features = ["env-filter", "json"] }
 tracing-opentelemetry = "0.20.0"
 opentelemetry-otlp = { version = "0.13.0", features = ["http-proto", "reqwest-client"] }
 opentelemetry = { version = "0.20.0", features = ["trace", "rt-tokio"]}
