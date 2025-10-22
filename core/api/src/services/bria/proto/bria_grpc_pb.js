@@ -933,4 +933,4 @@ var BriaServiceService = exports.BriaServiceService = {
   },
 };
 
-exports.BriaServiceClient = grpc.makeGenericClientConstructor(BriaServiceService);
+exports.BriaServiceClient = grpc.makeGenericClientConstructor(BriaServiceService, 'BriaService');
