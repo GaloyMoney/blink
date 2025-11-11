@@ -1,0 +1,68 @@
+_version: 1
+
+circle_time_frame.month: "tento měsíc"
+circle_time_frame.all_time: ""
+
+circle_type.inner: "vnitřní kruh"
+circle_type.outer: "vnější kruh"
+
+circle_grew.title: "Vaše Blink Kruhy rostou!"
+circle_grew.body: "Někdo byl právě přidán do vašeho %{circle_type}."
+
+circle_threshold_reached.inner.title: "Pěkný vnitřní kruh! \U0001F919"
+circle_threshold_reached.inner.body: "Přivítali jste %{threshold} lidí na Blink%{time_frame}. Jen tak dál!"
+
+circle_threshold_reached.outer.title: "Přírůstky vnějšího kruhu \U0001F4AA"
+circle_threshold_reached.outer.body: "Váš vnější okruh dosáhl %{threshold} lidí. Jste hnací silou adopce Bitcoinu!"
+
+identity_verification_approved.title: "Vaše totožnost byla ověřena!"
+identity_verification_approved.body: "Dokumenty pro vaše ověření byly zpracovány."
+
+identity_verification_declined.reason.documents_not_clear: "nahrané dokumenty nebyly jasné"
+identity_verification_declined.reason.photo_not_clear: "obrázek, který jste předložili, nebyl jasný"
+identity_verification_declined.reason.documents_do_not_match: "dokumenty, které jste předložili, neodpovídaly vašemu selfie a/nebo informacím, které jste poskytli."
+identity_verification_declined.reason.documents_expired: "platnost vámi předložených dokumentů vypršela"
+identity_verification_declined.reason.documents_not_supported: "vámi předložené dokumenty nejsou podporovány"
+identity_verification_declined.reason.other: "došlo k chybě, kontaktujte prosím podporu"
+identity_verification_declined.title: "Vaši totožnost se nepodařilo ověřit!"
+identity_verification_declined.body: "Vaše dokumenty jsme nemohli zpracovat, protože %{reason}."
+
+identity_verification_review_started.title: "Probíhá vaše ověřování!"
+identity_verification_review_started.body: "Vaše dokumenty jsme obdrželi a zpracováváme je."
+
+transaction.intra_ledger_payment.title: "%{walletCurrency} Transakce"
+transaction.intra_ledger_payment.body: "Odeslaná platba %{formattedCurrencyAmount}"
+transaction.intra_ledger_payment.body_display_currency: "Odeslaná platba %{displayCurrencyAmount}  | %{formattedCurrencyAmount}"
+
+transaction.intra_ledger_receipt.title: "%{walletCurrency} Transakce"
+transaction.intra_ledger_receipt.body: "+%{formattedCurrencyAmount}"
+transaction.intra_ledger_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+transaction.onchain_payment.title: "%{walletCurrency} Transakce"
+transaction.onchain_payment.body_display_currency: "Odeslaná onchain platba %{displayCurrencyAmount} | %{formattedCurrencyAmount} potvrzena"
+transaction.onchain_payment.body: "Odeslaná onchain platba %{formattedCurrencyAmount} potvrzena"
+
+transaction.onchain_receipt.title: "%{walletCurrency} Transakce"
+transaction.onchain_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt.body: "+%{formattedCurrencyAmount}"
+
+transaction.lightning_receipt.title: "%{walletCurrency} Transakce"
+transaction.lightning_receipt.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.lightning_receipt.body: "+%{formattedCurrencyAmount}"
+
+transaction.onchain_receipt_pending.title: "%{walletCurrency} Transakce | Čekající"
+transaction.onchain_receipt_pending.body_display_currency: "čekající +%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+transaction.onchain_receipt_pending.body: "čekající +%{formattedCurrencyAmount}"
+
+transaction.paid_invoice.title: "%{walletCurrency} Transakce"
+transaction.paid_invoice.body: "+%{formattedCurrencyAmount}"
+transaction.paid_invoice.body_display_currency: "+%{displayCurrencyAmount} | %{formattedCurrencyAmount}"
+
+price_changed.up.title: "Bitcoin je v pohybu!"
+price_changed.up.body: "Bitcoin vzrostl %{change_percent}% poslední den na %{price}!"
+
+price_changed.down.title: "Bitcoin je v pohybu!"
+price_changed.down.body: "Bitcoin klesl %{change_percent}% poslední den na %{price}!"
+
+security.link_email_reminder.title: "Propojit e-mail se zabezpečeným účtem"
+security.link_email_reminder.body: "Propojte svůj e-mail, abyste zabezpečili svůj účet a dostávali důležité aktualizace."
